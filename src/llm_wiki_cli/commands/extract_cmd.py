@@ -277,7 +277,18 @@ def get_call_graph(inventory: dict) -> dict:
 
     workflows: dict[str, dict] = {}
 
+    # Determine which paths are test files — skip them for workflow detection
+    _TEST_STEMS = {"conftest"}
+    _TEST_DIRS = {"tests", "test", "__tests__"}
+
     for fp, data in inventory.items():
+        fp_path = Path(fp)
+        # Skip test files: file stem starts with 'test_' or lives under a tests dir
+        if fp_path.stem.startswith("test_") or fp_path.stem in _TEST_STEMS:
+            continue
+        if _TEST_DIRS & set(fp_path.parts):
+            continue
+
         mod = _module_name(fp)
         imports = data.get("imports", [])
 
@@ -321,9 +332,8 @@ def get_call_graph(inventory: dict) -> dict:
                 # Check docstring for symbol mentions
                 if sym_name in fn.get("docstring", ""):
                     referenced = True
-                # For the entry-point function name heuristic: if it's in the
-                # same module as the import, it likely calls it
-                if referenced or sym_name in imported_symbols:
+
+                if referenced:
                     touched_modules.add(src_mod)
                     chain.append(f"{src_mod}.{sym_name}")
 
