@@ -11,6 +11,7 @@ def main():
     # init command
     init_parser = subparsers.add_parser("init", help="Scaffold LLM Wiki structure and schema")
     init_parser.add_argument("--agent", choices=AGENT_CHOICES, default="generic", help="Target agent format for rules/constraints")
+    init_parser.add_argument("--wiki-dir", default="docs/llm_wiki", help="Wiki directory to create (default: docs/llm_wiki)")
 
     # extract command
     # ... (skipping extract/lint)

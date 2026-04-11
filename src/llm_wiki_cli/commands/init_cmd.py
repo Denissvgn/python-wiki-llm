@@ -1,23 +1,26 @@
 import os
 from pathlib import Path
 
-# Enhanced and consistent schema template for all agents
-WIKI_INSTRUCTIONS = """
+_DEFAULT_WIKI_DIR = "docs/llm_wiki"
+
+
+def _wiki_instructions(wiki_dir: str) -> str:
+    return f"""
 # --- LLM Wiki Maintainer Constraints ---
-You are operating within an LLM Wiki architecture. The project's persistent memory is stored in `docs/llm_wiki/`.
+You are operating within an LLM Wiki architecture. The project's persistent memory is stored in `{wiki_dir}/`.
 
 ## Before you start
-- ALWAYS read `docs/llm_wiki/index.md` before planning a new feature or making architectural changes.
+- ALWAYS read `{wiki_dir}/index.md` before planning a new feature or making architectural changes.
 - Consult relevant entity and module pages to understand existing patterns before writing new code.
 
 ## When you change code
-- UPDATE `docs/llm_wiki/entities/<ClassName>.md` when you add, modify, or remove a class.
-- UPDATE `docs/llm_wiki/modules/<filename>.md` when you add, modify, or remove a module.
-- UPDATE `docs/llm_wiki/workflows/<name>.md` when a cross-module flow changes.
-- LOG a concise summary of your changes in `docs/llm_wiki/log.md` (append-only, newest at bottom).
+- UPDATE `{wiki_dir}/entities/<ClassName>.md` when you add, modify, or remove a class.
+- UPDATE `{wiki_dir}/modules/<filename>.md` when you add, modify, or remove a module.
+- UPDATE `{wiki_dir}/workflows/<name>.md` when a cross-module flow changes.
+- LOG a concise summary of your changes in `{wiki_dir}/log.md` (append-only, newest at bottom).
 
 ## Quality checks
-- Run `llm-wiki lint --wiki-dir docs/llm_wiki --src-dir .` to verify wiki consistency.
+- Run `llm-wiki lint --wiki-dir {wiki_dir} --src-dir .` to verify wiki consistency.
 - Run `llm-wiki extract --src-dir .` to see the live AST inventory.
 - Never leave the wiki in a state where lint reports errors.
 
@@ -28,52 +31,35 @@ You are operating within an LLM Wiki architecture. The project's persistent memo
 # --- End LLM Wiki Constraints ---
 """
 
-# Agent-specific preambles prepended before the shared instructions
-_CLAUDE_PREAMBLE = """\
-# Project Wiki
 
-This project uses an LLM Wiki for persistent architectural memory.
-Read `docs/llm_wiki/index.md` first when starting any task.
+def _build_schema_content(agent: str, wiki_dir: str) -> str:
+    instructions = _wiki_instructions(wiki_dir)
+    preambles = {
+        "claude": f"# Project Wiki\n\nThis project uses an LLM Wiki for persistent architectural memory.\nRead `{wiki_dir}/index.md` first when starting any task.\n\n",
+        "cursor": f"# Cursor Rules — LLM Wiki Project\n\nThis project maintains a living wiki at `{wiki_dir}/`.\nAlways consult it before making changes.\n\n",
+        "copilot": f"# Copilot Instructions — LLM Wiki Project\n\nThis project uses `{wiki_dir}/` as persistent documentation.\nConsult the wiki before suggesting changes.\n\n",
+    }
+    preamble = preambles.get(agent, f"# Agent Instructions — LLM Wiki Project\n\nThis project uses `{wiki_dir}/` for architectural memory.\n\n")
+    return preamble + instructions
 
-"""
 
-_CURSOR_PREAMBLE = """\
-# Cursor Rules — LLM Wiki Project
-
-This project maintains a living wiki at `docs/llm_wiki/`.
-Always consult it before making changes.
-
-"""
-
-_COPILOT_PREAMBLE = """\
-# Copilot Instructions — LLM Wiki Project
-
-This project uses `docs/llm_wiki/` as persistent documentation.
-Consult the wiki before suggesting changes.
-
-"""
-
-_GENERIC_PREAMBLE = """\
-# Agent Instructions — LLM Wiki Project
-
-This project uses `docs/llm_wiki/` for architectural memory.
-
-"""
-
-SCHEMA_TEMPLATES = {
-    "claude": {"filename": "CLAUDE.md", "content": _CLAUDE_PREAMBLE + WIKI_INSTRUCTIONS},
-    "cursor": {"filename": ".cursorrules", "content": _CURSOR_PREAMBLE + WIKI_INSTRUCTIONS},
-    "copilot": {"filename": ".github/copilot-instructions.md", "content": _COPILOT_PREAMBLE + WIKI_INSTRUCTIONS},
-    "aider": {"filename": ".aider.conf.yml", "content": _GENERIC_PREAMBLE + WIKI_INSTRUCTIONS},
-    "opencode": {"filename": ".opencode/instructions.md", "content": _GENERIC_PREAMBLE + WIKI_INSTRUCTIONS},
-    "generic": {"filename": ".agents.md", "content": _GENERIC_PREAMBLE + WIKI_INSTRUCTIONS},
+# Filenames are static; content is built dynamically at runtime
+SCHEMA_FILENAMES = {
+    "claude": "CLAUDE.md",
+    "cursor": ".cursorrules",
+    "copilot": ".github/copilot-instructions.md",
+    "aider": ".aider.conf.yml",
+    "opencode": ".opencode/instructions.md",
+    "generic": ".agents.md",
 }
 
+
 def run(args):
+    wiki_dir = getattr(args, "wiki_dir", _DEFAULT_WIKI_DIR)
     print(f"Initializing LLM Wiki with {args.agent} schema...")
     
     # 1. Create directory structure
-    base_dir = Path("docs/llm_wiki")
+    base_dir = Path(wiki_dir)
     directories = [
         base_dir,
         base_dir / "entities",
@@ -100,13 +86,13 @@ def run(args):
             f.write("# Architectural Log\n\nAppend-only chronological log.\n\n")
 
     # 3. Create or Append to Agent Schema
-    schema = SCHEMA_TEMPLATES.get(args.agent)
-    if schema:
-        schema_path = Path(schema["filename"])
+    filename = SCHEMA_FILENAMES.get(args.agent)
+    if filename:
+        schema_path = Path(filename)
         # ensure parent exists (e.g. for .github/)
         schema_path.parent.mkdir(parents=True, exist_ok=True)
         
-        content_to_add = schema["content"]
+        content_to_add = _build_schema_content(args.agent, wiki_dir)
         
         if schema_path.exists():
             with open(schema_path, "r") as f:
@@ -125,3 +111,4 @@ def run(args):
             print(f"Created agent schema file: {schema_path}")
     
     print("LLM Wiki initialized successfully.")
+

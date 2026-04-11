@@ -7,7 +7,7 @@ from llm_wiki_cli.commands import init_cmd
 
 
 def _make_args(**kwargs):
-    defaults = {"agent": "generic"}
+    defaults = {"agent": "generic", "wiki_dir": "docs/llm_wiki"}
     defaults.update(kwargs)
     return types.SimpleNamespace(**defaults)
 
@@ -82,3 +82,20 @@ class TestInitPreservesContent:
 
         base = Path("docs/llm_wiki")
         assert (base / "index.md").exists()
+
+
+class TestInitCustomWikiDir:
+    def test_custom_wiki_dir_created(self, tmp_project):
+        args = _make_args(agent="claude", wiki_dir="my_docs/wiki")
+        init_cmd.run(args)
+
+        assert Path("my_docs/wiki").exists()
+        assert Path("my_docs/wiki/index.md").exists()
+
+    def test_agent_file_uses_custom_path(self, tmp_project):
+        args = _make_args(agent="claude", wiki_dir="my_docs/wiki")
+        init_cmd.run(args)
+
+        content = Path("CLAUDE.md").read_text()
+        assert "my_docs/wiki" in content
+        assert "docs/llm_wiki" not in content

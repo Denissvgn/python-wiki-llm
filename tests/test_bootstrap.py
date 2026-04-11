@@ -125,3 +125,38 @@ class TestBootstrapSkipWorkflows:
         workflows_dir = wiki_dir / "workflows"
         workflow_files = list(workflows_dir.glob("*.md"))
         assert len(workflow_files) == 0
+
+
+class TestBootstrapUpdatesAgentConstraints:
+    def test_updates_path_in_constraint_block(self, tmp_project, capsys):
+        from llm_wiki_cli.commands import init_cmd
+        import types
+
+        init_cmd.run(types.SimpleNamespace(agent="claude", wiki_dir="docs/llm_wiki"))
+        assert "docs/llm_wiki" in Path("CLAUDE.md").read_text()
+
+        # Bootstrap to a different wiki dir
+        wiki_dir = tmp_project / "my_docs" / "wiki"
+        args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
+        bootstrap_cmd.run(args)
+
+        content = Path("CLAUDE.md").read_text()
+        # Verify the constraint block was updated (preamble outside the block is unchanged)
+        start = content.index("# --- LLM Wiki Maintainer Constraints ---")
+        end = content.index("# --- End LLM Wiki Constraints ---") + len("# --- End LLM Wiki Constraints ---")
+        block = content[start:end]
+        assert str(wiki_dir) in block
+        assert "docs/llm_wiki" not in block
+
+    def test_no_change_when_default_path(self, tmp_project, capsys):
+        from llm_wiki_cli.commands import init_cmd
+        import types
+
+        init_cmd.run(types.SimpleNamespace(agent="claude", wiki_dir="docs/llm_wiki"))
+        original = Path("CLAUDE.md").read_text()
+
+        # Bootstrap with the default path — file should be unchanged
+        args = _make_args(src_dir=".", wiki_dir="docs/llm_wiki")
+        bootstrap_cmd.run(args)
+
+        assert Path("CLAUDE.md").read_text() == original

@@ -423,3 +423,61 @@ def run(args):
         f"created from {len(inventory)} source files "
         f"({sum(len(v) for v in relationships.values())} cross-references)."
     )
+
+    # 6. Update agent constraint files if wiki-dir differs from default
+    _update_agent_constraints(str(wiki_dir))
+
+
+_CONSTRAINT_START = "# --- LLM Wiki Maintainer Constraints ---"
+_CONSTRAINT_END = "# --- End LLM Wiki Constraints ---"
+_DEFAULT_WIKI_DIR = "docs/llm_wiki"
+
+# All agent schema files that may contain wiki path references
+_AGENT_SCHEMA_FILES = [
+    "CLAUDE.md",
+    "AGENTS.md",
+    ".cursorrules",
+    ".github/copilot-instructions.md",
+    ".agents.md",
+    ".aider.conf.yml",
+    ".opencode/instructions.md",
+]
+
+
+def _update_agent_constraints(wiki_dir: str) -> None:
+    """Replace docs/llm_wiki path references inside the constraint block
+    in any existing agent schema files to match the actual wiki_dir."""
+    # Normalize: treat both as Path to allow absolute/relative comparison
+    wiki_path = Path(wiki_dir)
+    default_path = Path(_DEFAULT_WIKI_DIR)
+    # Nothing to do if the resolved paths are the same or wiki_dir already
+    # contains the default string (handles the relative == relative case)
+    if wiki_path == default_path or wiki_dir == _DEFAULT_WIKI_DIR:
+        return
+    # Also skip if the resolved absolute paths are equivalent
+    try:
+        if wiki_path.resolve() == default_path.resolve():
+            return
+    except OSError:
+        pass
+
+    updated = []
+    for filename in _AGENT_SCHEMA_FILES:
+        p = Path(filename)
+        if not p.exists():
+            continue
+        text = p.read_text()
+        if _CONSTRAINT_START not in text or _CONSTRAINT_END not in text:
+            continue
+
+        # Replace only within the constraint block to avoid touching user content
+        start_idx = text.index(_CONSTRAINT_START)
+        end_idx = text.index(_CONSTRAINT_END, start_idx) + len(_CONSTRAINT_END)
+        block = text[start_idx:end_idx]
+        new_block = block.replace(_DEFAULT_WIKI_DIR, wiki_dir)
+        if new_block != block:
+            p.write_text(text[:start_idx] + new_block + text[end_idx:])
+            updated.append(filename)
+
+    if updated:
+        print(f"\nUpdated wiki path to `{wiki_dir}` in: {', '.join(updated)}")
