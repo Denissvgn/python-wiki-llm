@@ -1,0 +1,129 @@
+"""Tests for commands/uninstall_cmd.py"""
+import types
+from pathlib import Path
+
+from llm_wiki_cli.commands import uninstall_cmd
+
+
+def _make_args(**kwargs):
+    defaults = {
+        "wiki_dir": "docs/llm_wiki",
+        "remove_wiki": False,
+        "dry_run": False,
+    }
+    defaults.update(kwargs)
+    return types.SimpleNamespace(**defaults)
+
+
+def _setup_wiki_project(project_dir: Path):
+    """Set up a project with wiki artifacts for uninstall testing."""
+    # Wiki dir
+    wiki = project_dir / "docs" / "llm_wiki"
+    for d in ["entities", "modules", "workflows"]:
+        (wiki / d).mkdir(parents=True, exist_ok=True)
+    (wiki / "index.md").write_text("# Index\n")
+    (wiki / "log.md").write_text("# Log\n")
+
+    # Agent schema
+    Path("CLAUDE.md").write_text(uninstall_cmd.CONSTRAINT_START + "\nstuff\n" + uninstall_cmd.CONSTRAINT_END + "\n")
+
+    # Git hooks
+    hooks_dir = project_dir / ".git" / "hooks"
+    hooks_dir.mkdir(parents=True, exist_ok=True)
+    (hooks_dir / "post-commit").write_text("#!/bin/sh\n# LLM Wiki sync\nnohup llm-wiki trigger-agent &\n")
+    (hooks_dir / "post-commit").chmod(0o755)
+
+    # Temp files
+    (project_dir / ".git" / "llm-wiki-prompt.txt").write_text("prompt")
+    (project_dir / ".git" / "llm-wiki-sync.log").write_text("log")
+
+    return wiki
+
+
+class TestUninstallRemovesHooks:
+    def test_removes_hook(self, tmp_project, capsys, monkeypatch):
+        _setup_wiki_project(tmp_project)
+        monkeypatch.setattr("builtins.input", lambda _: "y")
+
+        args = _make_args()
+        uninstall_cmd.run(args)
+        out = capsys.readouterr().out
+
+        hook = tmp_project / ".git" / "hooks" / "post-commit"
+        assert not hook.exists()
+
+    def test_preserves_non_wiki_hook(self, tmp_project, capsys, monkeypatch):
+        hooks_dir = tmp_project / ".git" / "hooks"
+        hooks_dir.mkdir(parents=True, exist_ok=True)
+        (hooks_dir / "post-commit").write_text("#!/bin/sh\necho custom\n")
+
+        monkeypatch.setattr("builtins.input", lambda _: "y")
+        args = _make_args()
+        uninstall_cmd.run(args)
+
+        assert (hooks_dir / "post-commit").exists()
+
+
+class TestUninstallStripsConstraints:
+    def test_strips_wiki_block(self, tmp_project, capsys, monkeypatch):
+        _setup_wiki_project(tmp_project)
+        Path("CLAUDE.md").write_text(
+            "# My Rules\n\n"
+            + uninstall_cmd.CONSTRAINT_START
+            + "\nwiki stuff\n"
+            + uninstall_cmd.CONSTRAINT_END
+            + "\n"
+        )
+        monkeypatch.setattr("builtins.input", lambda _: "y")
+
+        args = _make_args()
+        uninstall_cmd.run(args)
+
+        content = Path("CLAUDE.md").read_text()
+        assert "My Rules" in content
+        assert "LLM Wiki Maintainer Constraints" not in content
+
+    def test_deletes_wiki_only_schema(self, tmp_project, capsys, monkeypatch):
+        _setup_wiki_project(tmp_project)
+        monkeypatch.setattr("builtins.input", lambda _: "y")
+
+        args = _make_args()
+        uninstall_cmd.run(args)
+
+        # CLAUDE.md contained only wiki block, should be deleted
+        assert not Path("CLAUDE.md").exists()
+
+
+class TestUninstallKeepsWiki:
+    def test_wiki_preserved_by_default(self, tmp_project, capsys, monkeypatch):
+        wiki = _setup_wiki_project(tmp_project)
+        monkeypatch.setattr("builtins.input", lambda _: "y")
+
+        args = _make_args(remove_wiki=False)
+        uninstall_cmd.run(args)
+
+        assert wiki.exists()
+        assert (wiki / "index.md").exists()
+
+    def test_remove_wiki_flag(self, tmp_project, capsys, monkeypatch):
+        wiki = _setup_wiki_project(tmp_project)
+        monkeypatch.setattr("builtins.input", lambda _: "y")
+
+        args = _make_args(remove_wiki=True)
+        uninstall_cmd.run(args)
+
+        assert not wiki.exists()
+
+
+class TestUninstallDryRun:
+    def test_dry_run_no_changes(self, tmp_project, capsys):
+        wiki = _setup_wiki_project(tmp_project)
+        hook = tmp_project / ".git" / "hooks" / "post-commit"
+
+        args = _make_args(dry_run=True)
+        uninstall_cmd.run(args)
+
+        # Everything should still exist
+        assert wiki.exists()
+        assert hook.exists()
+        assert Path("CLAUDE.md").exists()

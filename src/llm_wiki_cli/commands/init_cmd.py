@@ -6,19 +6,67 @@ WIKI_INSTRUCTIONS = """
 # --- LLM Wiki Maintainer Constraints ---
 You are operating within an LLM Wiki architecture. The project's persistent memory is stored in `docs/llm_wiki/`.
 
-CRITICAL RULES:
-1. ALWAYS read `docs/llm_wiki/index.md` before planning a new feature or making architectural changes.
-2. UPDATE `docs/llm_wiki/entities/` and `docs/llm_wiki/modules/` whenever you create, modify, or deprecate systems so the documentation perfectly matches the codebase.
-3. LOG all meaningful changes in `docs/llm_wiki/log.md`.
-4. Run the local `llm-wiki extract` context tool to verify that the physical Python structure perfectly maps to the documentation you write.
+## Before you start
+- ALWAYS read `docs/llm_wiki/index.md` before planning a new feature or making architectural changes.
+- Consult relevant entity and module pages to understand existing patterns before writing new code.
+
+## When you change code
+- UPDATE `docs/llm_wiki/entities/<ClassName>.md` when you add, modify, or remove a class.
+- UPDATE `docs/llm_wiki/modules/<filename>.md` when you add, modify, or remove a module.
+- UPDATE `docs/llm_wiki/workflows/<name>.md` when a cross-module flow changes.
+- LOG a concise summary of your changes in `docs/llm_wiki/log.md` (append-only, newest at bottom).
+
+## Quality checks
+- Run `llm-wiki lint --wiki-dir docs/llm_wiki --src-dir .` to verify wiki consistency.
+- Run `llm-wiki extract --src-dir .` to see the live AST inventory.
+- Never leave the wiki in a state where lint reports errors.
+
+## Formatting rules
+- Entity pages must have: Location, Bases, Module link, Attributes table, Methods table, Relationships.
+- Module pages must have: Path, Imports table, Classes summary, Functions table.
+- Use relative markdown links between pages (e.g., `../entities/User.md`).
 # --- End LLM Wiki Constraints ---
 """
 
+# Agent-specific preambles prepended before the shared instructions
+_CLAUDE_PREAMBLE = """\
+# Project Wiki
+
+This project uses an LLM Wiki for persistent architectural memory.
+Read `docs/llm_wiki/index.md` first when starting any task.
+
+"""
+
+_CURSOR_PREAMBLE = """\
+# Cursor Rules — LLM Wiki Project
+
+This project maintains a living wiki at `docs/llm_wiki/`.
+Always consult it before making changes.
+
+"""
+
+_COPILOT_PREAMBLE = """\
+# Copilot Instructions — LLM Wiki Project
+
+This project uses `docs/llm_wiki/` as persistent documentation.
+Consult the wiki before suggesting changes.
+
+"""
+
+_GENERIC_PREAMBLE = """\
+# Agent Instructions — LLM Wiki Project
+
+This project uses `docs/llm_wiki/` for architectural memory.
+
+"""
+
 SCHEMA_TEMPLATES = {
-    "claude": {"filename": "CLAUDE.md", "content": WIKI_INSTRUCTIONS},
-    "cursor": {"filename": ".cursorrules", "content": WIKI_INSTRUCTIONS},
-    "copilot": {"filename": ".github/copilot-instructions.md", "content": WIKI_INSTRUCTIONS},
-    "generic": {"filename": ".agents.md", "content": WIKI_INSTRUCTIONS}
+    "claude": {"filename": "CLAUDE.md", "content": _CLAUDE_PREAMBLE + WIKI_INSTRUCTIONS},
+    "cursor": {"filename": ".cursorrules", "content": _CURSOR_PREAMBLE + WIKI_INSTRUCTIONS},
+    "copilot": {"filename": ".github/copilot-instructions.md", "content": _COPILOT_PREAMBLE + WIKI_INSTRUCTIONS},
+    "aider": {"filename": ".aider.conf.yml", "content": _GENERIC_PREAMBLE + WIKI_INSTRUCTIONS},
+    "opencode": {"filename": ".opencode/instructions.md", "content": _GENERIC_PREAMBLE + WIKI_INSTRUCTIONS},
+    "generic": {"filename": ".agents.md", "content": _GENERIC_PREAMBLE + WIKI_INSTRUCTIONS},
 }
 
 def run(args):

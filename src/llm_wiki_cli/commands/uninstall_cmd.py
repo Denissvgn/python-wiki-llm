@@ -16,6 +16,8 @@ AGENT_SCHEMA_FILES = [
     ".cursorrules",
     ".github/copilot-instructions.md",
     ".agents.md",
+    ".aider.conf.yml",
+    ".opencode/instructions.md",
 ]
 
 # Hooks that install-hook may have written

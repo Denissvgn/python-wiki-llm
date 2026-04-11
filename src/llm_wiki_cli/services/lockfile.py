@@ -1,5 +1,5 @@
-import fcntl
 import os
+import sys
 from pathlib import Path
 
 
@@ -10,7 +10,8 @@ class LockAcquisitionError(Exception):
 class WikiLock:
     """Exclusive file lock to prevent concurrent wiki syncs.
 
-    Uses fcntl.flock() for non-blocking exclusive locking on .git/llm-wiki.lock.
+    Uses fcntl.flock() on POSIX and msvcrt.locking() on Windows
+    for non-blocking exclusive locking on .git/llm-wiki.lock.
     """
 
     def __init__(self, git_dir: Path = Path(".git")):
@@ -20,7 +21,12 @@ class WikiLock:
     def __enter__(self):
         self._fd = open(self._lock_path, "w")
         try:
-            fcntl.flock(self._fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            if sys.platform == "win32":
+                import msvcrt
+                msvcrt.locking(self._fd.fileno(), msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(self._fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except (BlockingIOError, OSError):
             self._fd.close()
             self._fd = None
@@ -34,7 +40,16 @@ class WikiLock:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self._fd is not None:
-            fcntl.flock(self._fd, fcntl.LOCK_UN)
+            if sys.platform == "win32":
+                import msvcrt
+                try:
+                    self._fd.seek(0)
+                    msvcrt.locking(self._fd.fileno(), msvcrt.LK_UNLCK, 1)
+                except OSError:
+                    pass
+            else:
+                import fcntl
+                fcntl.flock(self._fd, fcntl.LOCK_UN)
             self._fd.close()
             self._fd = None
         return False
