@@ -1,6 +1,6 @@
 # LLM Wiki CLI
 
-A companion CLI designed to help Native LLM Coding Agents (like Claude Code, OpenCode, Cursor, or Aider) autonomously maintain a persistent architectural memory ("Wiki") of your Python projects.
+A companion CLI designed to help Native LLM Coding Agents (like Claude Code, OpenCode, Cursor, Copilot, or Aider) autonomously maintain a persistent architectural memory ("Wiki") of your Python projects.
 
 By providing constant, up-to-date documentation via a local wiki, your LLM agents will stop rediscovering project boundaries from scratch upon every interaction. Instead, the agent learns to consult the `docs/llm_wiki` first, and updates it gracefully whenever a commit alters the software architecture.
 
@@ -12,8 +12,21 @@ By providing constant, up-to-date documentation via a local wiki, your LLM agent
 
 This tool bridges the context gap using a **Hybrid Approach**:
 1. **Extraction**: The CLI uses native `ast` processing to rapidly map Pydantic models, class inheritance, attributes, method signatures, decorators, imports, and top-level functions without forcing the LLM to waste context tokens loading megabytes of raw text.
-2. **Strict Schema Constraints**: The tool scaffolds specific prompt constraints (e.g., `CLAUDE.md` or `.cursorrules`) dictating that your agent *must* act as the overarching librarian for `docs/llm_wiki/`.
-3. **Cross-Agentic Post-Commit Delegation**: A local `.git/hooks/post-commit` script is installed. Every time you (or your agent) commits code, a background process captures the `git diff`, merges it with the structural AST, and **invokes your primary LLM subagent** entirely in the background via the shell (with no human blocking interaction). The subagent then autonomously updates the local markdown wiki files and commits the updates.
+2. **Strict Schema Constraints**: The tool scaffolds specific prompt constraints (e.g., `CLAUDE.md` or `.github/copilot-instructions.md`) dictating that your agent *must* act as the overarching librarian for `docs/llm_wiki/`.
+3. **Post-Commit Wiki Sync**: A local `.git/hooks/post-commit` script is installed. The sync strategy depends on the agent type:
+   - **CLI agents** (`claude`, `aider`, `opencode`): every commit spawns a fully detached background process that captures the `git diff`, merges it with the structural AST, and invokes the agent headlessly to update the wiki automatically.
+   - **IDE agents** (`copilot`, `cursor`, `generic`): every commit generates a ready-to-paste sync prompt at `.git/llm-wiki-prompt.txt`. You paste it into your IDE chat to trigger the update.
+
+## Agent Support
+
+| Agent | Schema file | Auto-sync mode |
+|---|---|---|
+| `claude` | `CLAUDE.md` | Headless background process |
+| `aider` | `.aider.conf.yml` | Headless background process |
+| `opencode` | `.opencode/instructions.md` | Headless background process |
+| `copilot` | `.github/copilot-instructions.md` | IDE prompt (paste into chat) |
+| `cursor` | `.cursorrules` | IDE prompt (paste into chat) |
+| `generic` | `.agents.md` | IDE prompt (paste into chat) |
 
 ## Installation
 
@@ -30,18 +43,28 @@ pip install -e .
 
 ## Setup & Initialization
 
-You must bootstrap the wiki and the agent's constraints schema inside the root of your project:
+Bootstrap the wiki and agent constraint schema inside the root of your project:
 
 ```bash
 llm-wiki init --agent claude
 ```
-*(Supports: `--agent claude`, `--agent cursor`, `--agent copilot`, `--agent generic`)*
+
+Supported agents: `claude`, `aider`, `opencode`, `copilot`, `cursor`, `generic`.
 
 **What this does**:
-- Creates `docs/llm_wiki/index.md` (The table of contents).
-- Creates `docs/llm_wiki/log.md` (The append-only chronological ledger of state changes).
+- Creates `docs/llm_wiki/index.md` (table of contents).
+- Creates `docs/llm_wiki/log.md` (append-only chronological ledger).
 - Scaffolds `entities/`, `modules/`, and `workflows/` directories.
-- Writes the specific instruction constraints (e.g. `CLAUDE.md`) in your root directory so the agent knows the rules of the system.
+- Writes the agent-specific instruction file (e.g. `CLAUDE.md`, `.github/copilot-instructions.md`) so the agent knows the rules of the system.
+- Saves the chosen agent to `docs/llm_wiki/.llm-wiki-agent` so subsequent commands (like `install-hook`) pick it up automatically.
+
+> If you pass a CLI agent (`claude`, `aider`, `opencode`) that is not installed on your `PATH`, `init` will warn you but still create all files.
+
+Use `--wiki-dir` to change the default wiki location:
+
+```bash
+llm-wiki init --agent copilot --wiki-dir .wiki
+```
 
 ## Bootstrap an Existing Codebase
 
@@ -64,10 +87,57 @@ llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki
 
 ## Automation Setup (Highly Recommended)
 
-To ensure your wiki never falls out of sync with your codebase, install the detached background watcher:
+Install the post-commit hook to keep the wiki in sync automatically:
 
 ```bash
 llm-wiki install-hook
+```
+
+The agent is read automatically from `docs/llm_wiki/.llm-wiki-agent` (written by `init`). You can override it:
+
+```bash
+llm-wiki install-hook --agent aider
+llm-wiki install-hook --wiki-dir .wiki        # custom wiki dir
+```
+
+### CLI Agents (Claude, Aider, OpenCode)
+
+The post-commit hook spawns `llm-wiki trigger-agent` as a detached background process via `nohup`:
+
+1. Calculates `git diff HEAD~1..HEAD`.
+2. Parses the Python project for Class/Function AST models via `llm-wiki extract`.
+3. Writes a temporary command payload to `.git/llm-wiki-prompt.txt`.
+4. Spawns the CLI agent (e.g., `claude -p --dangerously-skip-permissions`) and pipes the prompt in.
+5. The agent updates the `docs/llm_wiki/` markdown files and commits the result.
+
+Inspect the background log at any time:
+```bash
+cat .git/llm-wiki-sync.log
+```
+
+### IDE Agents (Copilot, Cursor, Generic)
+
+Because IDE agents run inside the editor and have no headless CLI interface, the post-commit hook generates a sync prompt instead:
+
+1. Calculates the diff + AST context.
+2. Writes the ready-to-paste prompt to `.git/llm-wiki-prompt.txt`.
+3. Prints a reminder in the terminal.
+
+After every commit you'll see:
+```
+╔══════════════════════════════════════════════════════════════╗
+║  LLM Wiki: paste the sync prompt into your IDE agent chat.  ║
+║  File: .git/llm-wiki-prompt.txt                             ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+Paste the file contents into your agent chat to trigger the wiki update.
+
+You can also generate the prompt manually at any time (without committing):
+```bash
+llm-wiki generate-prompt
+llm-wiki generate-prompt --print              # print to stdout
+llm-wiki generate-prompt --wiki-dir .wiki     # custom wiki dir
 ```
 
 ### Auto Version Bumping (Opt-In)
@@ -94,26 +164,12 @@ llm-wiki bump --minor          # 0.1.6 -> 0.2.0
 llm-wiki bump --patch --stage  # bump + git add (for hook use)
 ```
 
-### How the Post-Commit Trigger Invokes
-
-When you successfully commit code using `git commit`, the hook spawns the `llm-wiki trigger-agent` process in a detached background state via `nohup`.
-1. It calculates `git diff HEAD~1..HEAD`.
-2. It parses the Python project for Class/Function AST models via `llm-wiki extract`.
-3. It writes a temporary command payload to `.git/llm-wiki-prompt.txt`.
-4. It natively spawns your CLI assistant (e.g., `claude --print --prompt-file .git/llm-wiki-prompt.txt`) routing standard input to `/dev/null`.
-5. The subagent digests the diff natively, modifies the `docs/llm_wiki/` markdown files, and commits the result.
-
-You can inspect the detached log at any time:
-```bash
-cat .git/llm-wiki-sync.log
-```
-
 ## Manual Commands
 
-You or your agent can manually invoke the helper subset:
+You or your agent can manually invoke any part of the pipeline:
 
 ### 1. Structural Extraction
-Extracts the project topology into token-friendly JSON representation:
+Extracts the project topology into a token-friendly JSON representation:
 ```bash
 llm-wiki extract --src-dir .
 ```
@@ -126,7 +182,16 @@ llm-wiki lint --wiki-dir docs/llm_wiki --src-dir .
 
 Returns exit code `1` on any issues, making it CI-compatible.
 
-### 3. Version Bump
+### 3. Generate Sync Prompt (IDE agents)
+Builds the diff + AST sync prompt and writes it to a file for pasting into your IDE agent chat:
+```bash
+llm-wiki generate-prompt
+llm-wiki generate-prompt --print              # print to stdout instead
+llm-wiki generate-prompt --no-diff           # skip git diff (e.g. no commits yet)
+llm-wiki generate-prompt --output my.txt     # custom output path
+```
+
+### 4. Version Bump
 Manually bump the project version:
 ```bash
 llm-wiki bump --patch   # increment patch

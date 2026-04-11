@@ -6,9 +6,7 @@ _DEFAULT_WIKI_DIR = "docs/llm_wiki"
 
 
 def _wiki_instructions(wiki_dir: str) -> str:
-    return f"""
-# --- LLM Wiki Maintainer Constraints ---
-You are operating within an LLM Wiki architecture. The project's persistent memory is stored in `{wiki_dir}/`.
+    return f"""You are operating within an LLM Wiki architecture. The project's persistent memory is stored in `{wiki_dir}/`.
 
 ## Before you start
 - ALWAYS read `{wiki_dir}/index.md` before planning a new feature or making architectural changes.
@@ -29,7 +27,6 @@ You are operating within an LLM Wiki architecture. The project's persistent memo
 - Entity pages must have: Location, Bases, Module link, Attributes table, Methods table, Relationships.
 - Module pages must have: Path, Imports table, Classes summary, Functions table.
 - Use relative markdown links between pages (e.g., `../entities/User.md`).
-# --- End LLM Wiki Constraints ---
 """
 
 
@@ -55,6 +52,10 @@ updated automatically on commit. You are responsible for keeping it current:
 3. **Never skip the update** — a stale wiki defeats the purpose of the system.
 """
 
+# Marker boundaries used to wrap the entire generated block
+_CONSTRAINT_START = "# --- LLM Wiki Maintainer Constraints ---"
+_CONSTRAINT_END = "# --- End LLM Wiki Constraints ---"
+
 
 def _build_schema_content(agent: str, wiki_dir: str) -> str:
     instructions = _wiki_instructions(wiki_dir)
@@ -65,7 +66,8 @@ def _build_schema_content(agent: str, wiki_dir: str) -> str:
     }
     preamble = preambles.get(agent, f"# Agent Instructions — LLM Wiki Project\n\nThis project uses `{wiki_dir}/` for architectural memory.\n\n")
     extra = _IDE_SYNC_INSTRUCTIONS if agent in _IDE_AGENTS else ""
-    return preamble + instructions + extra
+    body = preamble + instructions + extra
+    return f"{_CONSTRAINT_START}\n{body.strip()}\n{_CONSTRAINT_END}\n"
 
 
 # Agents that have a real CLI executable (used by trigger-agent / install-hook)

@@ -61,6 +61,11 @@ echo "╔═══════════════════════�
 echo "║  LLM Wiki: paste the sync prompt into your IDE agent chat.  ║"
 echo "║  File: .git/llm-wiki-prompt.txt                             ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
+
+# Auto-open in VS Code if running inside the integrated terminal
+if [ -n "$TERM_PROGRAM" ] && [ "$TERM_PROGRAM" = "vscode" ]; then
+    code .git/llm-wiki-prompt.txt 2>/dev/null || true
+fi
 """
 
 
