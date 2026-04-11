@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 
 _DEFAULT_WIKI_DIR = "docs/llm_wiki"
@@ -43,7 +44,13 @@ def _build_schema_content(agent: str, wiki_dir: str) -> str:
     return preamble + instructions
 
 
-# Filenames are static; content is built dynamically at runtime
+# Agents that have a real CLI executable (used by trigger-agent / install-hook)
+_CLI_AGENTS: dict[str, str] = {
+    "claude": "claude",
+    "aider": "aider",
+    "opencode": "opencode",
+}
+
 SCHEMA_FILENAMES = {
     "claude": "CLAUDE.md",
     "cursor": ".cursorrules",
@@ -57,6 +64,17 @@ SCHEMA_FILENAMES = {
 def run(args):
     wiki_dir = getattr(args, "wiki_dir", _DEFAULT_WIKI_DIR)
     print(f"Initializing LLM Wiki with {args.agent} schema...")
+
+    # Warn if the agent has a CLI executable that isn't installed
+    executable = _CLI_AGENTS.get(args.agent)
+    if executable and not shutil.which(executable):
+        print(
+            f"\nWarning: '{executable}' is not installed or not on PATH.\n"
+            f"The schema file will be created, but background auto-sync\n"
+            f"(`llm-wiki trigger-agent --agent {args.agent}`) will not work\n"
+            f"until '{executable}' is installed.\n"
+        )
+
     
     # 1. Create directory structure
     base_dir = Path(wiki_dir)
@@ -110,5 +128,10 @@ def run(args):
                 f.write(content_to_add)
             print(f"Created agent schema file: {schema_path}")
     
+    # 4. Persist the chosen agent so install-hook can read it
+    agent_config_path = base_dir / ".llm-wiki-agent"
+    with open(agent_config_path, "w") as f:
+        f.write(args.agent)
+
     print("LLM Wiki initialized successfully.")
 

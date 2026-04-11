@@ -2,8 +2,24 @@ import os
 from pathlib import Path
 import stat
 
-# ── Post-commit: wiki sync (always installed) ─────────────────────────
-POST_COMMIT_CONTENT = """#!/bin/sh
+_DEFAULT_WIKI_DIR = "docs/llm_wiki"
+
+# Agents that support headless CLI execution (can be used in post-commit hook)
+_CLI_AGENTS = {"claude", "aider", "opencode"}
+# Agents that are IDE-only and cannot run headlessly
+_UI_ONLY_AGENTS = {"cursor", "copilot", "generic"}
+
+
+def _read_agent_config(wiki_dir: str) -> str | None:
+    """Read the agent name persisted by `llm-wiki init`."""
+    config_path = Path(wiki_dir) / ".llm-wiki-agent"
+    if config_path.exists():
+        return config_path.read_text().strip()
+    return None
+
+
+def _build_post_commit(agent: str) -> str:
+    return f"""#!/bin/sh
 
 # LLM Wiki Auto-Sync Post-Commit Hook
 # Triggers the wiki update in the background so it doesn't block the developer
@@ -11,8 +27,8 @@ POST_COMMIT_CONTENT = """#!/bin/sh
 echo "Triggering LLM Wiki subagent sync in the background..."
 
 # Configurable via environment variables (no need to re-install hook)
-LLM_WIKI_TIMEOUT="${LLM_WIKI_TIMEOUT:-300}"
-LLM_WIKI_MAX_DIFF="${LLM_WIKI_MAX_DIFF:-1000}"
+LLM_WIKI_TIMEOUT="${{LLM_WIKI_TIMEOUT:-300}}"
+LLM_WIKI_MAX_DIFF="${{LLM_WIKI_MAX_DIFF:-1000}}"
 
 # Find the virtual environment if it exists, or run globally
 if [ -f ".venv/bin/llm-wiki" ]; then
@@ -21,7 +37,7 @@ else
     CLI="llm-wiki"
 fi
 
-nohup $CLI trigger-agent --timeout "$LLM_WIKI_TIMEOUT" --max-diff-lines "$LLM_WIKI_MAX_DIFF" > .git/llm-wiki-sync.log 2>&1 &
+nohup $CLI trigger-agent --agent {agent} --timeout "$LLM_WIKI_TIMEOUT" --max-diff-lines "$LLM_WIKI_MAX_DIFF" > .git/llm-wiki-sync.log 2>&1 &
 """
 
 # ── Pre-commit: patch bump (opt-in) ──────────────────────────────────
@@ -97,9 +113,38 @@ def run(args):
     hooks_dir.mkdir(exist_ok=True)
 
     enable_versioning = getattr(args, "enable_versioning", False)
+    wiki_dir = getattr(args, "wiki_dir", _DEFAULT_WIKI_DIR)
 
-    # Always install post-commit (wiki sync)
-    _install_hook(hooks_dir, "post-commit", POST_COMMIT_CONTENT)
+    # Resolve agent: CLI override > config file > fallback
+    agent = getattr(args, "agent", None)
+    if not agent:
+        agent = _read_agent_config(wiki_dir)
+        if not agent:
+            print(
+                f"Warning: No agent config found at {wiki_dir}/.llm-wiki-agent.\n"
+                f"Run `llm-wiki init --agent <agent>` first, or pass --agent to this command.\n"
+                f"Defaulting to 'claude'."
+            )
+            agent = "claude"
+
+    # Warn (and skip hook install) if agent is UI-only
+    if agent in _UI_ONLY_AGENTS:
+        print(
+            f"Note: Agent '{agent}' is a UI-based IDE assistant and does not support\n"
+            f"headless background execution. The post-commit wiki sync hook will not be installed.\n"
+            f"If you want background auto-sync, re-initialize with a CLI agent:\n"
+            f"  llm-wiki init --agent claude\n"
+            f"  llm-wiki install-hook"
+        )
+        if enable_versioning:
+            _install_hook(hooks_dir, "pre-commit", PRE_COMMIT_CONTENT)
+            _install_hook(hooks_dir, "pre-push", PRE_PUSH_CONTENT)
+            print("\nVersion auto-bump hooks installed (these do not require a CLI agent).")
+        return
+
+    # Always install post-commit (wiki sync) with the resolved agent baked in
+    _install_hook(hooks_dir, "post-commit", _build_post_commit(agent))
+    print(f"  Agent: {agent}")
 
     if enable_versioning:
         _install_hook(hooks_dir, "pre-commit", PRE_COMMIT_CONTENT)
