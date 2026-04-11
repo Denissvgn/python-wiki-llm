@@ -19,6 +19,23 @@ CLI_AGENTS: dict[str, str] = {
 # Agents that are IDE-only and cannot run headlessly
 IDE_AGENTS: set[str] = {"cursor", "copilot", "generic"}
 
+# Docker file discovery patterns
+DOCKERFILE_PATTERNS: list[str] = [
+    "Dockerfile",
+    "Dockerfile.*",
+    "*.dockerfile",
+]
+COMPOSE_PATTERNS: list[str] = [
+    "docker-compose.yml",
+    "docker-compose.*.yml",
+    "docker-compose.yaml",
+    "docker-compose.*.yaml",
+    "compose.yml",
+    "compose.*.yml",
+    "compose.yaml",
+    "compose.*.yaml",
+]
+
 
 def validate_path(path: str, label: str = "path") -> Path:
     """Ensure *path* resolves inside the current working directory.

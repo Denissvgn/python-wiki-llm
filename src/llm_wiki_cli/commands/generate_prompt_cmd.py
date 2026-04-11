@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 
 from ..config import DEFAULT_WIKI_DIR, validate_path
-from .extract_cmd import get_inventory, get_call_graph
+from .extract_cmd import get_inventory, get_call_graph, get_docker_inventory
 
 _DEFAULT_PROMPT_FILE = ".git/llm-wiki-prompt.txt"
 
@@ -15,6 +15,15 @@ def _build_prompt(diff_text: str, wiki_dir: str, src_dir: str) -> str:
     ast_json = json.dumps(inventory, indent=2)
     call_graph = get_call_graph(inventory)
     graph_json = json.dumps(call_graph, indent=2)
+    docker_inv = get_docker_inventory(src_dir)
+    docker_json = json.dumps(docker_inv, indent=2) if docker_inv else ""
+
+    docker_section = ""
+    if docker_json:
+        docker_section = f"""
+Here is the Docker/Compose inventory:
+{docker_json}
+"""
 
     return f"""\
 You are an overarching Wiki synchronizer.
@@ -25,7 +34,7 @@ Here is the AST structure of the Python codebase:
 
 Here is the cross-module call graph (functions touching 3+ internal modules):
 {graph_json}
-
+{docker_section}
 Here is the Git Diff (most recent commit):
 {diff_text}
 
@@ -37,8 +46,10 @@ TASK:
 sequences, added/removed pipeline steps), create or update the relevant `{wiki_dir}/workflows/*.md` page.
 5. Read existing workflow pages in `{wiki_dir}/workflows/` to check if any existing flows are \
 affected by this commit. Update or delete stale workflows.
-6. Append an entry to `{wiki_dir}/log.md`.
-7. Use `git add {wiki_dir}/` and `git commit -m "docs(wiki): auto-update [bot]"` to save your \
+6. If the diff changes Dockerfiles or docker-compose files, update the \
+corresponding `{wiki_dir}/infrastructure/*.md` pages.
+7. Append an entry to `{wiki_dir}/log.md`.
+8. Use `git add {wiki_dir}/` and `git commit -m "docs(wiki): auto-update [bot]"` to save your \
 changes if any.
 """
 

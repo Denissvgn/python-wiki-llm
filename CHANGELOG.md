@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Docker/Compose wiki support** — `bootstrap` now discovers Dockerfiles and docker-compose/compose YAML files, parses them, and generates structured `infrastructure/` wiki pages with build stages, ports, env vars, volumes, services, and cross-references to Python modules for COPY targets
+- **Dockerfile parser** — line-based parser extracts FROM (multi-stage), EXPOSE, ENV, VOLUME, COPY/ADD, WORKDIR, ARG, LABEL, ENTRYPOINT, CMD, HEALTHCHECK; handles continuation lines
+- **docker-compose parser** — lightweight line-based YAML parser (zero dependencies) extracting services, ports, volumes, environment, depends_on, command, networks, named volumes
+- **`infrastructure/` wiki section** — new directory alongside entities, modules, workflows; scaffolded by `init`, populated by `bootstrap`, indexed in `index.md`
+- **Infrastructure lint checks** — `lint` now detects undocumented Docker files and stale infrastructure pages
+- **Compose parser rewrite** — arbitrary-depth nesting for deploy/healthcheck/depends_on/build, inline YAML list parsing (`["CMD", ...]` and `[infra]`), lazy list-to-dict promotion fixing environment/build/depends_on returning empty lists
+- **Recursive Docker file discovery** — `get_docker_inventory()` now searches subdirectories and detects non-standard compose filenames (e.g., `core.yml`, `infra.yml`) via content-based heuristic
+
+### Fixed
+- Compose parser flush-list bug — nested key:value blocks (environment, build, depends_on, healthcheck, deploy) were overwritten with `[]` on the next sibling key
+- Dockerfile discovery no longer matches `.md` documentation files as Dockerfiles
+- **Docker inventory in prompts** — `generate-prompt` and `extract` now include Docker/Compose file inventory for agent context
+- **44 new tests** — `test_docker_extract.py` (24), `test_docker_bootstrap.py` (11), `test_docker_lint.py` (9)
 - **`status` command** — displays wiki directory, configured agent, installed hooks, circuit breaker state, and page counts
 - **`config.py` module** — centralized `DEFAULT_WIKI_DIR`, `AGENT_CHOICES`, `CLI_AGENTS`, `IDE_AGENTS` constants and `validate_path()` utility
 - **Path validation** — `--wiki-dir` and `--src-dir` arguments are validated to prevent path traversal; rejects paths outside the project root

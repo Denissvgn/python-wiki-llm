@@ -6,7 +6,7 @@ from collections import defaultdict
 from datetime import date
 from pathlib import Path
 
-from .extract_cmd import get_inventory, get_call_graph
+from .extract_cmd import get_inventory, get_call_graph, get_docker_inventory
 from ..config import validate_path
 
 
@@ -243,7 +243,7 @@ def _generate_module_md(filepath: str, file_data: dict) -> str:
     return "\n".join(lines)
 
 
-def _generate_index_md(entity_names: list[str], module_entries: list[dict], workflow_entries: list[dict] | None = None) -> str:
+def _generate_index_md(entity_names: list[str], module_entries: list[dict], workflow_entries: list[dict] | None = None, infra_entries: list[dict] | None = None) -> str:
     """Generate the full index.md content."""
     lines = [
         "# LLM Wiki Index",
@@ -274,6 +274,16 @@ def _generate_index_md(entity_names: list[str], module_entries: list[dict], work
         for wf in sorted(workflow_entries, key=lambda w: w["name"]):
             entry_point = wf.get("entry", "")
             lines.append(f"- [{wf['name']}](workflows/{wf['name']}.md) - entry: `{entry_point}`")
+        lines.append("")
+
+    lines.append("## Infrastructure")
+    lines.append("")
+
+    if infra_entries:
+        for entry in sorted(infra_entries, key=lambda e: e["name"]):
+            desc = entry.get("type", "")
+            suffix = f" - {desc}" if desc else ""
+            lines.append(f"- [{entry['name']}](infrastructure/{entry['name']}.md){suffix}")
         lines.append("")
 
     return "\n".join(lines)
@@ -317,6 +327,220 @@ def _generate_workflow_md(name: str, wf: dict) -> str:
     return "\n".join(lines)
 
 
+def _generate_docker_md(filename: str, info: dict, module_stems: set[str] | None = None) -> str:
+    """Generate a wiki page for a Dockerfile or docker-compose file."""
+    if info["type"] == "dockerfile":
+        return _generate_dockerfile_md(filename, info, module_stems)
+    return _generate_compose_md(filename, info, module_stems)
+
+
+def _generate_dockerfile_md(filename: str, info: dict, module_stems: set[str] | None = None) -> str:
+    """Generate markdown for a Dockerfile."""
+    stages = info.get("stages", [])
+    ports = info.get("ports", [])
+    env_vars = info.get("env_vars", [])
+    volumes = info.get("volumes", [])
+    copies = info.get("copies", [])
+    build_args = info.get("build_args", [])
+    labels = info.get("labels", {})
+    entrypoint = info.get("entrypoint", "")
+    cmd = info.get("cmd", "")
+    workdir = info.get("workdir", "")
+    healthcheck = info.get("healthcheck", "")
+
+    base_images = [s["image"] for s in stages] if stages else ["unknown"]
+
+    lines = [
+        f"# {filename}",
+        "",
+        f"**Path:** `{filename}`",
+        f"**Base Image(s):** {', '.join(f'`{img}`' for img in base_images)}",
+        "",
+    ]
+
+    # Build stages
+    if len(stages) > 1 or (stages and stages[0].get("alias")):
+        lines.append("## Build Stages")
+        lines.append("")
+        lines.append("| Stage | Base Image |")
+        lines.append("|-------|-----------|")
+        for s in stages:
+            alias = f"`{s['alias']}`" if s.get("alias") else "*(final)*"
+            lines.append(f"| {alias} | `{s['image']}` |")
+        lines.append("")
+
+    # Exposed ports
+    if ports:
+        lines.append("## Exposed Ports")
+        lines.append("")
+        for p in ports:
+            lines.append(f"- `{p}`")
+        lines.append("")
+
+    # Build args
+    if build_args:
+        lines.append("## Build Arguments")
+        lines.append("")
+        lines.append("| Argument | Default |")
+        lines.append("|----------|---------|")
+        for a in build_args:
+            default = f"`{a['default']}`" if a["default"] else "—"
+            lines.append(f"| `{a['name']}` | {default} |")
+        lines.append("")
+
+    # Environment variables
+    if env_vars:
+        lines.append("## Environment Variables")
+        lines.append("")
+        lines.append("| Variable | Default |")
+        lines.append("|----------|---------|")
+        for e in env_vars:
+            default = f"`{e['default']}`" if e["default"] else "—"
+            lines.append(f"| `{e['name']}` | {default} |")
+        lines.append("")
+
+    # Volumes
+    if volumes:
+        lines.append("## Volumes")
+        lines.append("")
+        for v in volumes:
+            lines.append(f"- `{v}`")
+        lines.append("")
+
+    # Working directory
+    if workdir:
+        lines.append(f"**Working Directory:** `{workdir}`")
+        lines.append("")
+
+    # Entry point / CMD
+    if entrypoint or cmd:
+        lines.append("## Entry Point")
+        lines.append("")
+        if entrypoint:
+            lines.append(f"**ENTRYPOINT:** `{entrypoint}`")
+        if cmd:
+            lines.append(f"**CMD:** `{cmd}`")
+        lines.append("")
+
+    # File copies
+    if copies:
+        lines.append("## File Copies")
+        lines.append("")
+        lines.append("| Instruction | Source | Destination | From Stage |")
+        lines.append("|-------------|--------|-------------|------------|")
+        for c in copies:
+            stage = f"`{c['from_stage']}`" if c.get("from_stage") else "—"
+            src_text = f"`{c['src']}`"
+            # Cross-reference to module page if the copied file is a known Python module
+            if module_stems:
+                for stem in module_stems:
+                    if f"{stem}.py" in c["src"]:
+                        src_text = f"[`{c['src']}`](../modules/{stem}.md)"
+                        break
+            lines.append(f"| `{c['instruction']}` | {src_text} | `{c['dest']}` | {stage} |")
+        lines.append("")
+
+    # Labels
+    if labels:
+        lines.append("## Labels")
+        lines.append("")
+        lines.append("| Key | Value |")
+        lines.append("|-----|-------|")
+        for k, v in labels.items():
+            lines.append(f"| `{k}` | `{v}` |")
+        lines.append("")
+
+    # Healthcheck
+    if healthcheck:
+        lines.append(f"**Healthcheck:** `{healthcheck}`")
+        lines.append("")
+
+    return "\n".join(lines)
+
+
+def _generate_compose_md(filename: str, info: dict, module_stems: set[str] | None = None) -> str:
+    """Generate markdown for a docker-compose / compose file."""
+    services = info.get("services", {})
+    networks = info.get("networks", [])
+    named_volumes = info.get("volumes", [])
+
+    lines = [
+        f"# {filename}",
+        "",
+        f"**Path:** `{filename}`",
+        "",
+    ]
+
+    # Services summary table
+    if services:
+        lines.append("## Services")
+        lines.append("")
+        lines.append("| Service | Image / Build | Ports | Depends On |")
+        lines.append("|---------|---------------|-------|------------|")
+        for name, svc in services.items():
+            image = svc.get("image", "")
+            build = svc.get("build", "")
+            if isinstance(build, dict):
+                build = build.get("context", ".")
+            img_str = f"build: `{build}`" if build else (f"`{image}`" if image else "—")
+            ports = svc.get("ports", [])
+            ports_str = ", ".join(f"`{p}`" for p in ports) if isinstance(ports, list) else (f"`{ports}`" if ports else "—")
+            depends = svc.get("depends_on", [])
+            deps_str = ", ".join(f"`{d}`" for d in depends) if isinstance(depends, list) else (f"`{depends}`" if depends else "—")
+            lines.append(f"| `{name}` | {img_str} | {ports_str} | {deps_str} |")
+        lines.append("")
+
+        # Per-service detail
+        for name, svc in services.items():
+            lines.append(f"### {name}")
+            lines.append("")
+            image = svc.get("image", "")
+            build = svc.get("build", "")
+            if build:
+                ctx = build if isinstance(build, str) else build.get("context", ".")
+                lines.append(f"- **Build context:** `{ctx}`")
+            if image:
+                lines.append(f"- **Image:** `{image}`")
+            ports = svc.get("ports", [])
+            if ports:
+                ports_list = ports if isinstance(ports, list) else [ports]
+                lines.append(f"- **Ports:** {', '.join(f'`{p}`' for p in ports_list)}")
+            vols = svc.get("volumes", [])
+            if vols:
+                vols_list = vols if isinstance(vols, list) else [vols]
+                lines.append(f"- **Volumes:** {', '.join(f'`{v}`' for v in vols_list)}")
+            env = svc.get("environment", [])
+            if env:
+                env_list = env if isinstance(env, list) else [env]
+                lines.append(f"- **Environment:** {', '.join(f'`{e}`' for e in env_list)}")
+            depends = svc.get("depends_on", [])
+            if depends:
+                deps_list = depends if isinstance(depends, list) else [depends]
+                lines.append(f"- **Depends on:** {', '.join(f'`{d}`' for d in deps_list)}")
+            command = svc.get("command", "")
+            if command:
+                lines.append(f"- **Command:** `{command}`")
+            lines.append("")
+
+    # Networks
+    if networks:
+        lines.append("## Networks")
+        lines.append("")
+        for n in networks:
+            lines.append(f"- `{n}`")
+        lines.append("")
+
+    # Named volumes
+    if named_volumes:
+        lines.append("## Named Volumes")
+        lines.append("")
+        for v in named_volumes:
+            lines.append(f"- `{v}`")
+        lines.append("")
+
+    return "\n".join(lines)
+
+
 def run(args):
     src_dir = args.src_dir
     wiki_dir = Path(args.wiki_dir)
@@ -330,7 +554,7 @@ def run(args):
     print(f"Wiki output directory: {wiki_dir}")
 
     # Ensure wiki structure exists
-    for subdir in ["entities", "modules", "workflows"]:
+    for subdir in ["entities", "modules", "workflows", "infrastructure"]:
         (wiki_dir / subdir).mkdir(parents=True, exist_ok=True)
 
     # 1. Extract full AST inventory
@@ -392,12 +616,28 @@ def run(args):
                 print(f"  CREATE workflow: {wf_name}")
             workflow_entries.append({"name": wf_name, "entry": wf_data["entry"]})
 
-    # 4. Rebuild index.md
+    # 4. Generate infrastructure pages (Dockerfile, docker-compose, etc.)
+    infra_entries = []
+    infra_created = 0
+    docker_inventory = get_docker_inventory(src_dir)
+    module_stems = {_module_name_from_path(fp) for fp in inventory}
+    for docker_file, docker_info in docker_inventory.items():
+        page_name = docker_file.replace("/", "_").replace(".", "_")
+        infra_path = wiki_dir / "infrastructure" / f"{page_name}.md"
+        if infra_path.exists() and not args.overwrite:
+            print(f"  SKIP infrastructure (exists): {page_name}")
+        else:
+            infra_path.write_text(_generate_docker_md(docker_file, docker_info, module_stems))
+            infra_created += 1
+            print(f"  CREATE infrastructure: {page_name}")
+        infra_entries.append({"name": page_name, "type": docker_info["type"]})
+
+    # 5. Rebuild index.md
     index_path = wiki_dir / "index.md"
-    index_path.write_text(_generate_index_md(all_entity_names, module_entries, workflow_entries or None))
+    index_path.write_text(_generate_index_md(all_entity_names, module_entries, workflow_entries or None, infra_entries or None))
     print(f"  WRITE index.md")
 
-    # 5. Append log entry
+    # 6. Append log entry
     log_path = wiki_dir / "log.md"
     today = date.today().isoformat()
     log_entry = (
@@ -408,8 +648,10 @@ def run(args):
         f"- Entities created: {entities_created}\n"
         f"- Modules created: {modules_created}\n"
         f"- Workflows created: {workflows_created}\n"
+        f"- Infrastructure created: {infra_created}\n"
         f"- Total classes tracked: {len(all_entity_names)}\n"
         f"- Total files scanned: {len(inventory)}\n"
+        f"- Docker/Compose files: {len(docker_inventory)}\n"
         f"- Cross-references resolved: {sum(len(v) for v in relationships.values())}\n"
     )
     if log_path.exists():
@@ -422,12 +664,13 @@ def run(args):
 
     print(
         f"\nBootstrap complete: {entities_created} entities, "
-        f"{modules_created} modules, {workflows_created} workflows "
+        f"{modules_created} modules, {workflows_created} workflows, "
+        f"{infra_created} infrastructure "
         f"created from {len(inventory)} source files "
         f"({sum(len(v) for v in relationships.values())} cross-references)."
     )
 
-    # 6. Update agent constraint files if wiki-dir differs from default
+    # 7. Update agent constraint files if wiki-dir differs from default
     _update_agent_constraints(str(wiki_dir))
 
 

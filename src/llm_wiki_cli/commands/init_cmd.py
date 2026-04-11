@@ -19,6 +19,7 @@ def _wiki_instructions(wiki_dir: str) -> str:
 - UPDATE `{wiki_dir}/entities/<ClassName>.md` when you add, modify, or remove a class.
 - UPDATE `{wiki_dir}/modules/<filename>.md` when you add, modify, or remove a module.
 - UPDATE `{wiki_dir}/workflows/<name>.md` when a cross-module flow changes.
+- UPDATE `{wiki_dir}/infrastructure/<name>.md` when a Dockerfile or docker-compose file changes.
 - LOG a concise summary of your changes in `{wiki_dir}/log.md` (append-only, newest at bottom).
 
 ## Quality checks
@@ -29,6 +30,7 @@ def _wiki_instructions(wiki_dir: str) -> str:
 ## Formatting rules
 - Entity pages must have: Location, Bases, Module link, Attributes table, Methods table, Relationships.
 - Module pages must have: Path, Imports table, Classes summary, Functions table.
+- Infrastructure pages must have: Path, type-specific sections (stages, services, ports, env vars, etc.).
 - Use relative markdown links between pages (e.g., `../entities/User.md`).
 """
 
@@ -108,7 +110,8 @@ def run(args):
         base_dir,
         base_dir / "entities",
         base_dir / "modules",
-        base_dir / "workflows"
+        base_dir / "workflows",
+        base_dir / "infrastructure",
     ]
     
     try:
@@ -126,7 +129,7 @@ def run(args):
     index_path = base_dir / "index.md"
     if not index_path.exists():
         with open(index_path, "w") as f:
-            f.write("# LLM Wiki Index\n\nCatalog of project modules and entities.\n\n## Entities\n\n## Modules\n\n## Workflows\n")
+            f.write("# LLM Wiki Index\n\nCatalog of project modules and entities.\n\n## Entities\n\n## Modules\n\n## Workflows\n\n## Infrastructure\n")
             
     log_path = base_dir / "log.md"
     if not log_path.exists():

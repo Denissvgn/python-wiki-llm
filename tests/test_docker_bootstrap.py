@@ -1,0 +1,174 @@
+"""Tests for Docker infrastructure page generation in bootstrap_cmd."""
+from __future__ import annotations
+
+import os
+import textwrap
+from pathlib import Path
+
+import pytest
+
+from llm_wiki_cli.commands.bootstrap_cmd import (
+    _generate_docker_md,
+)
+from llm_wiki_cli.commands.extract_cmd import _parse_dockerfile, _parse_compose
+
+
+class TestGenerateDockerfileMd:
+    def test_single_stage(self):
+        info = _parse_dockerfile("FROM python:3.12-slim\nEXPOSE 8000\nCMD python main.py\n")
+        md = _generate_docker_md("Dockerfile", info)
+        assert "# Dockerfile" in md
+        assert "`python:3.12-slim`" in md
+        assert "`8000`" in md
+        assert "python main.py" in md
+
+    def test_multi_stage_has_table(self):
+        text = "FROM python:3.12 AS builder\nFROM python:3.12-slim AS runtime\n"
+        info = _parse_dockerfile(text)
+        md = _generate_docker_md("Dockerfile", info)
+        assert "## Build Stages" in md
+        assert "`builder`" in md
+        assert "`runtime`" in md
+
+    def test_env_vars_section(self):
+        text = "FROM alpine\nENV APP_ENV=production\n"
+        info = _parse_dockerfile(text)
+        md = _generate_docker_md("Dockerfile", info)
+        assert "## Environment Variables" in md
+        assert "`APP_ENV`" in md
+        assert "`production`" in md
+
+    def test_volumes_section(self):
+        text = 'FROM alpine\nVOLUME ["/data"]\n'
+        info = _parse_dockerfile(text)
+        md = _generate_docker_md("Dockerfile", info)
+        assert "## Volumes" in md
+        assert "`/data`" in md
+
+    def test_build_args_section(self):
+        text = "FROM alpine\nARG VERSION=1.0\n"
+        info = _parse_dockerfile(text)
+        md = _generate_docker_md("Dockerfile", info)
+        assert "## Build Arguments" in md
+        assert "`VERSION`" in md
+
+    def test_copy_cross_reference(self):
+        text = "FROM alpine\nCOPY main.py /app/\n"
+        info = _parse_dockerfile(text)
+        md = _generate_docker_md("Dockerfile", info, module_stems={"main"})
+        assert "[`main.py`](../modules/main.md)" in md
+
+    def test_copy_no_cross_reference(self):
+        text = "FROM alpine\nCOPY config.txt /app/\n"
+        info = _parse_dockerfile(text)
+        md = _generate_docker_md("Dockerfile", info, module_stems={"main"})
+        assert "`config.txt`" in md
+        assert "../modules/" not in md
+
+    def test_healthcheck_section(self):
+        text = "FROM alpine\nHEALTHCHECK CMD curl -f http://localhost/\n"
+        info = _parse_dockerfile(text)
+        md = _generate_docker_md("Dockerfile", info)
+        assert "Healthcheck" in md
+
+
+class TestGenerateComposeMd:
+    def test_basic_services(self):
+        text = textwrap.dedent("""\
+            services:
+              web:
+                build: .
+                ports:
+                  - "8000:8000"
+              db:
+                image: postgres:16
+        """)
+        info = _parse_compose(text)
+        md = _generate_docker_md("docker-compose.yml", info)
+        assert "# docker-compose.yml" in md
+        assert "## Services" in md
+        assert "`web`" in md
+        assert "`db`" in md
+
+    def test_per_service_detail(self):
+        text = textwrap.dedent("""\
+            services:
+              app:
+                image: myapp:latest
+                command: python run.py
+        """)
+        info = _parse_compose(text)
+        md = _generate_docker_md("docker-compose.yml", info)
+        assert "### app" in md
+        assert "`myapp:latest`" in md
+        assert "python run.py" in md
+
+    def test_networks_and_volumes(self):
+        text = textwrap.dedent("""\
+            services:
+              web:
+                image: nginx
+            networks:
+              frontend:
+            volumes:
+              pgdata:
+        """)
+        info = _parse_compose(text)
+        md = _generate_docker_md("docker-compose.yml", info)
+        assert "## Networks" in md
+        assert "`frontend`" in md
+        assert "## Named Volumes" in md
+        assert "`pgdata`" in md
+
+
+class TestBootstrapInfrastructureIntegration:
+    """Integration test: bootstrap generates infrastructure pages from Docker files."""
+
+    def test_bootstrap_creates_infra_pages(self, tmp_path):
+        """Run bootstrap on a project with Docker files and verify pages."""
+        proj = tmp_path / "proj"
+        proj.mkdir()
+
+        # Create a Python file so bootstrap has something
+        (proj / "app.py").write_text("class App:\n    pass\n")
+
+        # Create Docker files
+        (proj / "Dockerfile").write_text("FROM python:3.12\nEXPOSE 8000\n")
+        (proj / "docker-compose.yml").write_text(
+            "services:\n  web:\n    build: .\n    ports:\n      - \"8000:8000\"\n"
+        )
+
+        # Set up wiki dir inside the project (validate_path needs it inside cwd)
+        wiki = proj / "docs" / "llm_wiki"
+        for subdir in ["entities", "modules", "workflows", "infrastructure"]:
+            (wiki / subdir).mkdir(parents=True)
+        (wiki / "log.md").write_text("# Log\n")
+
+        old_cwd = os.getcwd()
+        os.chdir(proj)
+        try:
+            from llm_wiki_cli.commands import bootstrap_cmd
+            import argparse
+            args = argparse.Namespace(
+                src_dir=".",
+                wiki_dir=str(wiki),
+                overwrite=True,
+                depth="full",
+                skip_workflows=True,
+            )
+            bootstrap_cmd.run(args)
+
+            # Check infrastructure pages created
+            infra_dir = wiki / "infrastructure"
+            infra_pages = list(infra_dir.glob("*.md"))
+            page_names = {p.stem for p in infra_pages}
+            assert "Dockerfile" in page_names
+            assert "docker-compose_yml" in page_names
+
+            # Check index.md has Infrastructure section
+            index_content = (wiki / "index.md").read_text()
+            assert "## Infrastructure" in index_content
+            assert "Dockerfile" in index_content
+            assert "docker-compose_yml" in index_content
+        finally:
+            os.chdir(old_cwd)

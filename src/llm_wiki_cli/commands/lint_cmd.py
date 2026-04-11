@@ -5,7 +5,7 @@ import re
 import sys
 from pathlib import Path
 
-from .extract_cmd import get_inventory, get_call_graph
+from .extract_cmd import get_inventory, get_call_graph, get_docker_inventory
 from ..config import validate_path
 
 # basic regex for [text](url)
@@ -50,6 +50,20 @@ def _collect_documented_workflows(wiki_dir: Path) -> set[str]:
     if not workflows_dir.exists():
         return set()
     return {p.stem for p in workflows_dir.glob("*.md")}
+
+
+def _collect_documented_infrastructure(wiki_dir: Path) -> set[str]:
+    """Return the set of infrastructure page names that have wiki pages."""
+    infra_dir = wiki_dir / "infrastructure"
+    if not infra_dir.exists():
+        return set()
+    return {p.stem for p in infra_dir.glob("*.md")}
+
+
+def _collect_docker_files(src_dir: str) -> set[str]:
+    """Return the set of Docker/Compose file page-names found in source."""
+    docker_inv = get_docker_inventory(src_dir)
+    return {f.replace("/", "_").replace(".", "_") for f in docker_inv}
 
 
 def run(args):
@@ -201,6 +215,29 @@ def run(args):
         print(f"  Found {len(missing_wf)} missing workflow(s).\n")
     else:
         print("  ✅ All detected workflows documented.\n")
+
+    # ── 6. Infrastructure checks (Docker/Compose) ────────────────────
+    documented_infra = _collect_documented_infrastructure(wiki_dir)
+    code_docker = _collect_docker_files(src_dir)
+
+    undoc_infra = code_docker - documented_infra
+    stale_infra = documented_infra - code_docker
+
+    if undoc_infra:
+        for name in sorted(undoc_infra):
+            print(f"  ⚠️  Undocumented Docker file (in source, not in wiki): {name}")
+        issues += len(undoc_infra)
+        print(f"  Found {len(undoc_infra)} undocumented Docker file(s).\n")
+    else:
+        print("  ✅ All Docker/Compose files documented.\n")
+
+    if stale_infra:
+        for name in sorted(stale_infra):
+            print(f"  ⚠️  Stale infrastructure page (in wiki, source file removed): {name}")
+        issues += len(stale_infra)
+        print(f"  Found {len(stale_infra)} stale infrastructure page(s).\n")
+    else:
+        print("  ✅ No stale infrastructure pages.\n")
 
     # ── Summary ───────────────────────────────────────────────────────
     if issues == 0:
