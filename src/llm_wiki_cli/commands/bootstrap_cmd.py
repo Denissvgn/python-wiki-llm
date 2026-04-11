@@ -7,6 +7,7 @@ from datetime import date
 from pathlib import Path
 
 from .extract_cmd import get_inventory, get_call_graph
+from ..config import validate_path
 
 
 def _module_name_from_path(filepath: str) -> str:
@@ -319,6 +320,8 @@ def _generate_workflow_md(name: str, wf: dict) -> str:
 def run(args):
     src_dir = args.src_dir
     wiki_dir = Path(args.wiki_dir)
+    validate_path(str(wiki_dir), "--wiki-dir")
+    validate_path(src_dir, "--src-dir")
     depth = getattr(args, "depth", "full")
     deep = depth == "full"
     skip_workflows = getattr(args, "skip_workflows", False)
@@ -430,7 +433,8 @@ def run(args):
 
 _CONSTRAINT_START = "# --- LLM Wiki Maintainer Constraints ---"
 _CONSTRAINT_END = "# --- End LLM Wiki Constraints ---"
-_DEFAULT_WIKI_DIR = "docs/llm_wiki"
+
+from ..config import DEFAULT_WIKI_DIR as _DEFAULT_WIKI_DIR
 
 # All agent schema files that may contain wiki path references
 _AGENT_SCHEMA_FILES = [

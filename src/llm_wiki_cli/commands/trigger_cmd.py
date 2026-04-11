@@ -1,9 +1,11 @@
 import subprocess
 import os
+import sys
 from pathlib import Path
 from . import extract_cmd
 from ..services.lockfile import WikiLock, LockAcquisitionError
 from ..services import circuit_breaker
+from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS
 import json
 
 GIT_DIR = Path(".git")
@@ -16,14 +18,11 @@ def run(args):
         print("Circuit breaker reset. Wiki auto-sync is re-enabled.")
         return
 
-    # Agents that are UI-based and don't support headless CLI execution
-    UI_ONLY_AGENTS = ["cursor", "copilot", "generic"]
-
-    if args.agent in UI_ONLY_AGENTS:
+    if args.agent in IDE_AGENTS:
         print(f"Error: Agent '{args.agent}' is a UI-based assistant for IDEs.")
         print(f"To use background auto-sync, you must specify a CLI-native agent like 'claude' or 'aider'.")
         print(f"Example: llm-wiki trigger-agent --agent claude")
-        return
+        sys.exit(1)
 
     # --- Fuse: Concurrency Lock ---
     try:
@@ -35,6 +34,8 @@ def run(args):
 
 def _run_sync(args):
     """Core sync logic, executed inside the concurrency lock."""
+
+    wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
 
     # --- Fuse: Circuit Breaker ---
     if circuit_breaker.check_breaker(GIT_DIR):
@@ -58,6 +59,7 @@ def _run_sync(args):
         return
     except subprocess.CalledProcessError as e:
         print(f"Git diff failed. Are there commits? {e}")
+        circuit_breaker.record_failure(GIT_DIR)
         return
 
     if not diff_text.strip():
@@ -98,13 +100,13 @@ Here is the Git Diff:
 {diff_text}
 
 TASK:
-1. Identify all `docs/llm_wiki/*` markdown pages that need to be updated.
+1. Identify all `{wiki_dir}/*` markdown pages that need to be updated.
 2. Read them using your file reading capabilities.
 3. Update entity and module pages to reflect the changes (e.g. new schemas, new logic, deleted code).
-4. If the diff modifies the interaction pattern between 3+ modules (new imports, changed call sequences, added/removed pipeline steps), create or update the relevant `docs/llm_wiki/workflows/*.md` page.
-5. Read existing workflow pages in `docs/llm_wiki/workflows/` to check if any existing flows are affected by this commit. Update or delete stale workflows.
-6. Append an entry to `docs/llm_wiki/log.md`.
-7. Use `git add docs/llm_wiki/` and `git commit -m "docs(wiki): auto-update [bot]"` to save your changes if any.
+4. If the diff modifies the interaction pattern between 3+ modules (new imports, changed call sequences, added/removed pipeline steps), create or update the relevant `{wiki_dir}/workflows/*.md` page.
+5. Read existing workflow pages in `{wiki_dir}/workflows/` to check if any existing flows are affected by this commit. Update or delete stale workflows.
+6. Append an entry to `{wiki_dir}/log.md`.
+7. Use `git add {wiki_dir}/` and `git commit -m "docs(wiki): auto-update [bot]"` to save your changes if any.
 """
 
     # 4. Save the prompt to a temp file

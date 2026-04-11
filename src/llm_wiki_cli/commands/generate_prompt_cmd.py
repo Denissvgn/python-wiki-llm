@@ -4,6 +4,7 @@ import json
 import subprocess
 from pathlib import Path
 
+from ..config import DEFAULT_WIKI_DIR, validate_path
 from .extract_cmd import get_inventory, get_call_graph
 
 _DEFAULT_PROMPT_FILE = ".git/llm-wiki-prompt.txt"
@@ -43,8 +44,10 @@ changes if any.
 
 
 def run(args) -> None:
-    wiki_dir: str = getattr(args, "wiki_dir", "docs/llm_wiki")
+    wiki_dir: str = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     src_dir: str = getattr(args, "src_dir", ".")
+    validate_path(wiki_dir, "--wiki-dir")
+    validate_path(src_dir, "--src-dir")
     output: str = getattr(args, "output", _DEFAULT_PROMPT_FILE)
     print_only: bool = getattr(args, "print_prompt", False)
     no_diff: bool = getattr(args, "no_diff", False)

@@ -176,6 +176,13 @@ class ComponentVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
 
+_EXCLUDED_DIRS = {
+    "venv", ".venv", "env", ".env",
+    ".tox", "node_modules", "__pycache__",
+    ".eggs", "build", "dist", ".git",
+}
+
+
 def get_inventory(src_dir, deep=False):
     """Scan Python files and return inventory.
     
@@ -186,7 +193,7 @@ def get_inventory(src_dir, deep=False):
     inventory = {}
 
     for py_file in src_path.rglob("*.py"):
-        if "venv" in py_file.parts or ".venv" in py_file.parts:
+        if _EXCLUDED_DIRS & set(py_file.parts):
             continue
 
         with open(py_file, "r") as f:

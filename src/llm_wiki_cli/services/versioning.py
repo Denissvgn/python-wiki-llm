@@ -43,6 +43,7 @@ def read_version(path: Path) -> str | None:
 def write_version(path: Path, new_version: str) -> None:
     """Update the version string in-place, preserving file format."""
     content = path.read_text()
+    original = content
     for filename, pattern in VERSION_PATTERNS:
         if path.name == filename:
             if filename == "VERSION":
@@ -57,6 +58,8 @@ def write_version(path: Path, new_version: str) -> None:
                     return "".join(groups)
                 content = pattern.sub(_replacer, content, count=1)
             break
+    if content == original:
+        raise ValueError(f"Version pattern not found in {path}")
     path.write_text(content)
 
 

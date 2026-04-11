@@ -1,13 +1,16 @@
-import os
-from pathlib import Path
-import stat
+from __future__ import annotations
 
-_DEFAULT_WIKI_DIR = "docs/llm_wiki"
+import os
+import stat
+import sys
+from pathlib import Path
+
+from ..config import CLI_AGENTS, DEFAULT_WIKI_DIR, IDE_AGENTS, validate_path
 
 # Agents that support headless CLI execution (can be used in post-commit hook)
-_CLI_AGENTS = {"claude", "aider", "opencode"}
+_CLI_AGENTS = set(CLI_AGENTS)
 # Agents that are IDE-only and cannot run headlessly
-_UI_ONLY_AGENTS = {"cursor", "copilot", "generic"}
+_UI_ONLY_AGENTS = IDE_AGENTS
 
 
 def _read_agent_config(wiki_dir: str) -> str | None:
@@ -37,7 +40,7 @@ else
     CLI="llm-wiki"
 fi
 
-nohup $CLI trigger-agent --agent {agent} --timeout "$LLM_WIKI_TIMEOUT" --max-diff-lines "$LLM_WIKI_MAX_DIFF" > .git/llm-wiki-sync.log 2>&1 &
+nohup "$CLI" trigger-agent --agent {agent} --timeout "$LLM_WIKI_TIMEOUT" --max-diff-lines "$LLM_WIKI_MAX_DIFF" > .git/llm-wiki-sync.log 2>&1 &
 """
 
 
@@ -54,7 +57,7 @@ else
     CLI="llm-wiki"
 fi
 
-$CLI generate-prompt --wiki-dir {wiki_dir} --output .git/llm-wiki-prompt.txt
+"$CLI" generate-prompt --wiki-dir {wiki_dir} --output .git/llm-wiki-prompt.txt
 
 echo ""
 echo "╔══════════════════════════════════════════════════════════════╗"
@@ -85,7 +88,7 @@ else
     CLI="llm-wiki"
 fi
 
-$CLI bump --patch --stage
+"$CLI" bump --patch --stage
 """
 
 # ── Pre-push: minor bump (opt-in) ────────────────────────────────────
@@ -104,7 +107,7 @@ else
     CLI="llm-wiki"
 fi
 
-$CLI bump --minor --stage
+"$CLI" bump --minor --stage
 
 # Commit the version bump, skipping pre-commit hook to avoid extra patch bump
 LLM_WIKI_SKIP_BUMP=1 git commit --no-verify -m "chore: bump minor version [auto]"
@@ -113,7 +116,7 @@ LLM_WIKI_SKIP_BUMP=1 git commit --no-verify -m "chore: bump minor version [auto]
 REMOTE="$1"
 # Read the ref info from stdin (passed by git)
 while read local_ref local_sha remote_ref remote_sha; do
-    LLM_WIKI_PUSHING=1 git push --no-verify "$REMOTE" "$local_ref:$remote_ref"
+    LLM_WIKI_PUSHING=1 git push --no-verify "$REMOTE" "${local_ref}:${remote_ref}"
 done
 
 # Abort the original push (ours already went through)
@@ -135,13 +138,14 @@ def run(args):
     git_dir = Path(".git")
     if not git_dir.exists():
         print("Error: No .git directory found. Are you in the root of a git repository?")
-        return
+        sys.exit(1)
 
     hooks_dir = git_dir / "hooks"
     hooks_dir.mkdir(exist_ok=True)
 
     enable_versioning = getattr(args, "enable_versioning", False)
-    wiki_dir = getattr(args, "wiki_dir", _DEFAULT_WIKI_DIR)
+    wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
+    validate_path(wiki_dir, "--wiki-dir")
 
     # Resolve agent: CLI override > config file > fallback
     agent = getattr(args, "agent", None)

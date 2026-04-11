@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import os
 import shutil
+import sys
 from pathlib import Path
 
-_DEFAULT_WIKI_DIR = "docs/llm_wiki"
+from ..config import CLI_AGENTS, DEFAULT_WIKI_DIR, IDE_AGENTS, validate_path
 
 
 def _wiki_instructions(wiki_dir: str) -> str:
@@ -30,7 +33,7 @@ def _wiki_instructions(wiki_dir: str) -> str:
 """
 
 
-_IDE_AGENTS = {"cursor", "copilot", "generic"}
+_IDE_AGENTS = IDE_AGENTS
 
 _IDE_SYNC_INSTRUCTIONS = """\
 
@@ -71,11 +74,7 @@ def _build_schema_content(agent: str, wiki_dir: str) -> str:
 
 
 # Agents that have a real CLI executable (used by trigger-agent / install-hook)
-_CLI_AGENTS: dict[str, str] = {
-    "claude": "claude",
-    "aider": "aider",
-    "opencode": "opencode",
-}
+_CLI_AGENTS = CLI_AGENTS
 
 SCHEMA_FILENAMES = {
     "claude": "CLAUDE.md",
@@ -88,7 +87,8 @@ SCHEMA_FILENAMES = {
 
 
 def run(args):
-    wiki_dir = getattr(args, "wiki_dir", _DEFAULT_WIKI_DIR)
+    wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
+    validate_path(wiki_dir, "--wiki-dir")
     print(f"Initializing LLM Wiki with {args.agent} schema...")
 
     # Warn if the agent has a CLI executable that isn't installed
@@ -111,10 +111,14 @@ def run(args):
         base_dir / "workflows"
     ]
     
-    for d in directories:
-        d.mkdir(parents=True, exist_ok=True)
-        # Create empty .gitkeep so git tracks empty dirs
-        (d / ".gitkeep").touch()
+    try:
+        for d in directories:
+            d.mkdir(parents=True, exist_ok=True)
+            # Create empty .gitkeep so git tracks empty dirs
+            (d / ".gitkeep").touch()
+    except OSError as exc:
+        print(f"Error creating wiki directories: {exc}")
+        sys.exit(1)
         
     print(f"Created wiki directories in {base_dir}/")
     
@@ -158,6 +162,25 @@ def run(args):
     agent_config_path = base_dir / ".llm-wiki-agent"
     with open(agent_config_path, "w") as f:
         f.write(args.agent)
+
+    # 5. Add llm-wiki temp files to .gitignore
+    _GITIGNORE_ENTRIES = [
+        ".git/llm-wiki-prompt.txt",
+        ".git/llm-wiki.lock",
+        ".git/llm-wiki-breaker.json",
+        ".git/llm-wiki-sync.log",
+    ]
+    gitignore = Path(".gitignore")
+    existing = gitignore.read_text() if gitignore.exists() else ""
+    to_add = [e for e in _GITIGNORE_ENTRIES if e not in existing]
+    if to_add:
+        with open(gitignore, "a") as f:
+            if existing and not existing.endswith("\n"):
+                f.write("\n")
+            f.write("# LLM Wiki temp files\n")
+            for entry in to_add:
+                f.write(entry + "\n")
+        print(f"Added {len(to_add)} entries to .gitignore")
 
     print("LLM Wiki initialized successfully.")
 

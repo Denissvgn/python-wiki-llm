@@ -2,6 +2,8 @@ import re
 import shutil
 from pathlib import Path
 
+from ..config import DEFAULT_WIKI_DIR
+
 # Marker boundaries used by init_cmd to inject constraints
 CONSTRAINT_START = "# --- LLM Wiki Maintainer Constraints ---"
 CONSTRAINT_END = "# --- End LLM Wiki Constraints ---"
@@ -149,7 +151,7 @@ def _remove_temp_files(dry_run: bool = False) -> int:
 
 
 def run(args):
-    wiki_dir = Path(getattr(args, "wiki_dir", "docs/llm_wiki"))
+    wiki_dir = Path(getattr(args, "wiki_dir", DEFAULT_WIKI_DIR))
     remove_wiki = getattr(args, "remove_wiki", False)
     dry_run = getattr(args, "dry_run", False)
 

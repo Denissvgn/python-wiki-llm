@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llm-wiki-cli"
-version = "0.1.2"
+version = "0.1.4"
 description = "CLI tool to maintain hybrid LLM Wikis for Python projects."
 readme = "README.md"
 license = {text = "MIT"}
@@ -21,9 +21,7 @@ classifiers = [
     "Operating System :: OS Independent",
     "Topic :: Software Development :: Documentation",
 ]
-dependencies = [
-    "pydantic>=2.0.0"
-]
+dependencies = []
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0", "pytest-cov>=4.0"]

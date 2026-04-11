@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **`status` command** — displays wiki directory, configured agent, installed hooks, circuit breaker state, and page counts
+- **`config.py` module** — centralized `DEFAULT_WIKI_DIR`, `AGENT_CHOICES`, `CLI_AGENTS`, `IDE_AGENTS` constants and `validate_path()` utility
+- **Path validation** — `--wiki-dir` and `--src-dir` arguments are validated to prevent path traversal; rejects paths outside the project root
+- **`.gitignore` auto-entries** — `init` appends llm-wiki temp file patterns (`.git/llm-wiki-*.txt`, `.lock`, `.json`, `.log`) to `.gitignore`
+- **Global error handler** — `cli.py` catches unhandled exceptions and prints a friendly message instead of a raw traceback
+- **22 new tests** — `test_config.py` (7), `test_status.py` (10), `test_trigger.py` (5) covering path validation, status output, and trigger edge cases (mock-based)
 - **`generate-prompt` command** — builds a diff + AST sync prompt and writes it to `.git/llm-wiki-prompt.txt` for pasting into IDE agent chats; supports `--print`, `--no-diff`, `--output`, `--wiki-dir`, `--src-dir`
 - **IDE agent hook** — `install-hook` now installs a prompt-generation post-commit hook for `copilot`, `cursor`, and `generic` agents (instead of skipping); prints a reminder box after every commit
 - **Agent config persistence** — `init` writes `{wiki_dir}/.llm-wiki-agent` so `install-hook` and `generate-prompt` automatically pick up the chosen agent without requiring `--agent` every time
@@ -19,6 +25,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - `install-hook` for CLI agents (`claude`, `aider`, `opencode`) now bakes the agent name directly into the post-commit script (`--agent <name>`) rather than relying on the default
 - `install-hook` for IDE agents no longer skips installation — it installs the prompt-generation hook instead
+- Standardized exit codes: `init`, `hook`, and `trigger-agent` now use `sys.exit(1)` on error paths (matching `lint`)
+- `trigger-agent` prompt template now respects `--wiki-dir` instead of hardcoding `docs/llm_wiki`
+- Expanded directory exclusions in `extract` — skips `env`, `.tox`, `node_modules`, `__pycache__`, `.eggs`, `build`, `dist`, `.git` in addition to `venv`/`.venv`
+- Shell hook scripts now quote `"$CLI"` and shell variables for paths containing spaces
+
+### Fixed
+- **Python 3.9 crash** — added `from __future__ import annotations` to `init_cmd.py` and `hook_cmd.py` (used PEP 585/604 syntax without import)
+- **Windows lock size** — `msvcrt.locking()` now locks 4096 bytes instead of 1 byte in `lockfile.py`
+- **Windows unlock** — prints warning to stderr instead of silently swallowing `OSError` on unlock
+- **Circuit breaker** — `trigger-agent` now records failure when `git diff` raises `CalledProcessError` (was silently returning)
+- **Version write validation** — `write_version()` raises `ValueError` if the regex doesn't match (was silently writing unchanged content)
+- Removed debug comment (`# Debug sync`) from `cli.py`
+
+### Removed
+- **`storage.py`** — removed unused `WikiStorage` class and `pydantic` runtime dependency (zero dependencies now)
 
 ## [0.1.1] - 2026-04-11
 

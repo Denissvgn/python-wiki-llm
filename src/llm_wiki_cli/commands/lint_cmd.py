@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 from .extract_cmd import get_inventory, get_call_graph
+from ..config import validate_path
 
 # basic regex for [text](url)
 LINK_RE = re.compile(r'\[.+?\]\((.+?)\)')
@@ -54,6 +55,8 @@ def _collect_documented_workflows(wiki_dir: Path) -> set[str]:
 def run(args):
     wiki_dir = Path(args.wiki_dir)
     src_dir = getattr(args, "src_dir", ".")
+    validate_path(str(wiki_dir), "--wiki-dir")
+    validate_path(src_dir, "--src-dir")
     issues = 0
 
     print(f"Linting Wiki at: {wiki_dir}")

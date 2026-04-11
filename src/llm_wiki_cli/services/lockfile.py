@@ -3,6 +3,9 @@ import sys
 from pathlib import Path
 
 
+_LOCK_SIZE = 4096
+
+
 class LockAcquisitionError(Exception):
     """Raised when the wiki lock cannot be acquired (another sync is running)."""
 
@@ -23,7 +26,7 @@ class WikiLock:
         try:
             if sys.platform == "win32":
                 import msvcrt
-                msvcrt.locking(self._fd.fileno(), msvcrt.LK_NBLCK, 1)
+                msvcrt.locking(self._fd.fileno(), msvcrt.LK_NBLCK, _LOCK_SIZE)
             else:
                 import fcntl
                 fcntl.flock(self._fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -44,9 +47,9 @@ class WikiLock:
                 import msvcrt
                 try:
                     self._fd.seek(0)
-                    msvcrt.locking(self._fd.fileno(), msvcrt.LK_UNLCK, 1)
+                    msvcrt.locking(self._fd.fileno(), msvcrt.LK_UNLCK, _LOCK_SIZE)
                 except OSError:
-                    pass
+                    print("Warning: failed to release wiki lock file.", file=sys.stderr)
             else:
                 import fcntl
                 fcntl.flock(self._fd, fcntl.LOCK_UN)
