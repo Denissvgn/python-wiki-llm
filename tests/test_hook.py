@@ -8,7 +8,7 @@ from llm_wiki_cli.commands import hook_cmd
 
 
 def _make_args(**kwargs):
-    defaults = {"enable_versioning": False, "wiki_dir": "docs/llm_wiki", "agent": None}
+    defaults = {"wiki_dir": "docs/llm_wiki", "agent": None}
     defaults.update(kwargs)
     return types.SimpleNamespace(**defaults)
 
@@ -135,8 +135,3 @@ class TestPostCommitAutoCommitGuard:
         hook_cmd.run(args)
         hook_text = Path(".git/hooks/post-commit").read_text()
         assert "LLM_WIKI_AUTO_COMMIT" in hook_text
-
-    def test_pre_push_sets_auto_commit_on_commit(self, tmp_project):
-        """pre-push commit line must export LLM_WIKI_AUTO_COMMIT so post-commit skips."""
-        assert "LLM_WIKI_AUTO_COMMIT=1" in hook_cmd.PRE_PUSH_CONTENT
-        assert "git commit" in hook_cmd.PRE_PUSH_CONTENT

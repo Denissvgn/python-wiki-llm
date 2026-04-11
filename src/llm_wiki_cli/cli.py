@@ -23,13 +23,11 @@ def main():
     lint_parser.add_argument("--src-dir", default=".", help="Source directory to cross-reference against")
 
     # hook command
-    hook_parser = subparsers.add_parser("install-hook", help="Install git hooks (wiki sync + optional versioning)")
+    hook_parser = subparsers.add_parser("install-hook", help="Install git hooks for wiki sync")
     hook_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
                              help="Wiki directory to read agent config from (default: docs/llm_wiki)")
     hook_parser.add_argument("--agent", choices=AGENT_CHOICES, default=None,
                              help="Override the agent for the post-commit hook (default: read from wiki config)")
-    hook_parser.add_argument("--enable-versioning", action="store_true",
-                             help="Enable auto version bumping (patch on commit, minor on push)")
 
     # trigger command
     trigger_parser = subparsers.add_parser("trigger-agent", help="Trigger subagent to update wiki using diff")

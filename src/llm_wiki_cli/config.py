@@ -43,7 +43,7 @@ def validate_path(path: str, label: str = "path") -> Path:
     Raises SystemExit with a clear message if the resolved path escapes the
     repository root (cwd).
     """
-    resolved = Path(path).resolve()
+    resolved = (Path.cwd() / path).resolve()
     cwd = Path.cwd().resolve()
     try:
         resolved.relative_to(cwd)
