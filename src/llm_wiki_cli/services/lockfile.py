@@ -19,7 +19,7 @@ class WikiLock:
         self._fd = None
 
     def __enter__(self):
-        self._fd = open(self._lock_path, "w")
+        self._fd = open(self._lock_path, "w+")
         try:
             if sys.platform == "win32":
                 import msvcrt

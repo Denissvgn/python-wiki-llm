@@ -33,7 +33,7 @@ def save_state(git_dir: Path, state: dict) -> None:
     try:
         with os.fdopen(fd, "w") as f:
             json.dump(state, f, indent=2)
-        os.rename(tmp, path)
+        os.replace(tmp, path)
     except BaseException:
         try:
             os.unlink(tmp)

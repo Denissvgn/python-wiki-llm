@@ -13,8 +13,11 @@ class TestWikiLock:
 
     def test_writes_pid(self, tmp_path):
         import os
-        with WikiLock(git_dir=tmp_path):
-            content = (tmp_path / "llm-wiki.lock").read_text()
+        with WikiLock(git_dir=tmp_path) as lock:
+            # On Windows, msvcrt locks prevent other handles from reading;
+            # read through the lock's own file descriptor instead.
+            lock._fd.seek(0)
+            content = lock._fd.read()
             assert str(os.getpid()) in content
 
     def test_double_lock_raises(self, tmp_path):
