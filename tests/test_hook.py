@@ -117,3 +117,26 @@ class TestHookReadsCustomWikiDir:
 
         hook_text = (Path(".git/hooks/post-commit")).read_text()
         assert "--agent aider" in hook_text
+
+
+class TestPostCommitAutoCommitGuard:
+    """post-commit hooks must skip when LLM_WIKI_AUTO_COMMIT is set."""
+
+    def test_cli_post_commit_has_auto_commit_guard(self, tmp_project):
+        _write_agent_config("docs/llm_wiki", "claude")
+        args = _make_args()
+        hook_cmd.run(args)
+        hook_text = Path(".git/hooks/post-commit").read_text()
+        assert "LLM_WIKI_AUTO_COMMIT" in hook_text
+
+    def test_ide_post_commit_has_auto_commit_guard(self, tmp_project):
+        _write_agent_config("docs/llm_wiki", "copilot")
+        args = _make_args()
+        hook_cmd.run(args)
+        hook_text = Path(".git/hooks/post-commit").read_text()
+        assert "LLM_WIKI_AUTO_COMMIT" in hook_text
+
+    def test_pre_push_sets_auto_commit_on_commit(self, tmp_project):
+        """pre-push commit line must export LLM_WIKI_AUTO_COMMIT so post-commit skips."""
+        assert "LLM_WIKI_AUTO_COMMIT=1" in hook_cmd.PRE_PUSH_CONTENT
+        assert "git commit" in hook_cmd.PRE_PUSH_CONTENT

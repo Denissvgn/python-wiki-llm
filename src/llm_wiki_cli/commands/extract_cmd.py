@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 import json
+import os
 import re
 from pathlib import Path
 
@@ -676,10 +677,15 @@ def get_docker_inventory(src_dir: str) -> dict:
        catches non-standard names like ``infra.yml`` or ``core.yml`` that
        are common in split-compose layouts.
 
-    Returns a dict of relative-path -> parsed data.
+    Returns a dict of relative-path -> parsed data.  Keys always use
+    forward slashes regardless of the host OS.
     """
     src_path = Path(src_dir)
     inventory: dict[str, dict] = {}
+
+    def _rel(path: Path) -> str:
+        """Return a forward-slash relative path (consistent across OSes)."""
+        return str(path.relative_to(src_path)).replace(os.sep, "/")
 
     # Suffixes that should never be treated as Dockerfiles
     _DOC_SUFFIXES = {".md", ".txt", ".rst", ".html", ".json"}
@@ -690,7 +696,7 @@ def get_docker_inventory(src_dir: str) -> dict:
             if match.suffix.lower() in _DOC_SUFFIXES:
                 continue
             if match.is_file() and _EXCLUDED_DIRS.isdisjoint(match.relative_to(src_path).parts):
-                rel = str(match.relative_to(src_path))
+                rel = _rel(match)
                 if rel not in inventory:
                     inventory[rel] = _parse_dockerfile(match.read_text(errors="replace"))
 
@@ -698,7 +704,7 @@ def get_docker_inventory(src_dir: str) -> dict:
     for pattern in COMPOSE_PATTERNS:
         for match in src_path.rglob(pattern):
             if match.is_file() and _EXCLUDED_DIRS.isdisjoint(match.relative_to(src_path).parts):
-                rel = str(match.relative_to(src_path))
+                rel = _rel(match)
                 if rel not in inventory:
                     inventory[rel] = _parse_compose(match.read_text(errors="replace"))
 
@@ -709,7 +715,7 @@ def get_docker_inventory(src_dir: str) -> dict:
                 continue
             if not _EXCLUDED_DIRS.isdisjoint(match.relative_to(src_path).parts):
                 continue
-            rel = str(match.relative_to(src_path))
+            rel = _rel(match)
             if rel in inventory:
                 continue
             text = match.read_text(errors="replace")
