@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 from collections import defaultdict
 from datetime import date
@@ -13,6 +14,47 @@ from ..config import validate_path
 def _module_name_from_path(filepath: str) -> str:
     """Derive a short module name from a file path."""
     return Path(filepath).stem
+
+
+# Directory names too generic to use as service-level qualifiers.
+_GENERIC_DIRS = {"src", "lib", "app", "pkg", "core", "main", "tests", "test"}
+
+
+def _qualifier_for(filepath: str, src_dir: str) -> str:
+    """Build a filesystem-safe path-derived qualifier, unique per source file.
+
+    Skips generic directory names and joins remaining path components with '__',
+    always including the file stem so the qualifier is uniquely tied to the file.
+    """
+    p = Path(filepath)
+    try:
+        rel = p.relative_to(Path(src_dir))
+    except ValueError:
+        rel = p
+    dirs = [
+        pt for pt in rel.parts[:-1]
+        if pt.lower() not in _GENERIC_DIRS and not pt.startswith(".")
+    ]
+    # Include the file stem so two different files in the same directory
+    # can never share a qualifier (OS guarantees unique filenames per dir).
+    dirs.append(p.stem)
+    joined = "__".join(dirs) if dirs else p.stem
+    return re.sub(r"[^a-zA-Z0-9]+", "_", joined)
+
+
+def _page_name_for_module(filepath: str, src_dir: str, colliding_stems: set[str]) -> str:
+    """Return the wiki page stem for a module, qualifying on collision."""
+    stem = Path(filepath).stem
+    if stem in colliding_stems:
+        return f"{_qualifier_for(filepath, src_dir)}__{stem}"
+    return stem
+
+
+def _page_name_for_entity(cls_name: str, filepath: str, src_dir: str, colliding_cls: set[str]) -> str:
+    """Return the wiki page stem for an entity, qualifying on collision."""
+    if cls_name in colliding_cls:
+        return f"{_qualifier_for(filepath, src_dir)}__{cls_name}"
+    return cls_name
 
 
 def _build_relationships(inventory: dict) -> dict:
@@ -92,7 +134,7 @@ def _format_signature(fn: dict) -> str:
     return sig
 
 
-def _generate_entity_md(class_info: dict, filepath: str, relationships: dict) -> str:
+def _generate_entity_md(class_info: dict, filepath: str, relationships: dict, mod_page_name: str | None = None) -> str:
     """Generate comprehensive markdown for a class entity."""
     name = class_info["name"]
     bases = class_info.get("bases", [])
@@ -101,7 +143,7 @@ def _generate_entity_md(class_info: dict, filepath: str, relationships: dict) ->
     decorators = class_info.get("decorators", [])
     attributes = class_info.get("attributes", [])
     methods = class_info.get("methods", [])
-    mod_name = _module_name_from_path(filepath)
+    mod_name = mod_page_name if mod_page_name is not None else _module_name_from_path(filepath)
 
     bases_str = ", ".join(f"`{b}`" for b in bases) if bases else "—"
 
@@ -174,7 +216,7 @@ def _generate_entity_md(class_info: dict, filepath: str, relationships: dict) ->
     return "\n".join(lines)
 
 
-def _generate_module_md(filepath: str, file_data: dict) -> str:
+def _generate_module_md(filepath: str, file_data: dict, entity_page_map: dict | None = None) -> str:
     """Generate comprehensive markdown for a module page."""
     mod_name = _module_name_from_path(filepath)
     classes = file_data.get("classes", [])
@@ -220,7 +262,8 @@ def _generate_module_md(filepath: str, file_data: dict) -> str:
         lines.append("| Class | Line | Bases | Description |")
         lines.append("|-------|------|-------|-------------|")
         for c in classes:
-            entity_link = f"[{c['name']}](../entities/{c['name']}.md)"
+            page_name = (entity_page_map or {}).get(c["name"], c["name"])
+            entity_link = f"[{c['name']}](../entities/{page_name}.md)"
             bases = ", ".join(f"`{b}`" for b in c.get("bases", [])) or "—"
             doc = c.get("docstring", "").split("\n")[0] if c.get("docstring") else "—"
             lines.append(f"| {entity_link} | {c.get('line', '?')} | {bases} | {doc} |")
@@ -571,32 +614,57 @@ def run(args):
     module_entries = []
     entities_created = 0
     modules_created = 0
+    _seen_entity_pages: set[str] = set()  # dedup index entries
+
+    # Pre-scan: detect name collisions across files so pages can be disambiguated.
+    _stem_to_fps: dict = defaultdict(list)
+    _cls_to_fps: dict = defaultdict(list)
+    for fp, data in inventory.items():
+        _stem_to_fps[Path(fp).stem].append(fp)
+        for cls in data.get("classes", []):
+            _cls_to_fps[cls["name"]].append(fp)
+    colliding_stems = {stem for stem, fps in _stem_to_fps.items() if len(fps) > 1}
+    colliding_cls = {name for name, fps in _cls_to_fps.items() if len(fps) > 1}
+    # Precompute per-file entity page names: (cls_name, filepath) -> page_stem
+    _entity_page_name_cache: dict = {
+        (cls["name"], fp): _page_name_for_entity(cls["name"], fp, src_dir, colliding_cls)
+        for fp, data in inventory.items()
+        for cls in data.get("classes", [])
+    }
 
     for filepath, file_data in inventory.items():
-        mod_name = _module_name_from_path(filepath)
+        mod_page_name = _page_name_for_module(filepath, src_dir, colliding_stems)
+        # Map cls_name -> page_stem for classes in this file (used by module page links)
+        file_entity_page_map = {
+            cls["name"]: _entity_page_name_cache[(cls["name"], filepath)]
+            for cls in file_data.get("classes", [])
+        }
 
         # Generate entity pages for each class
         for cls in file_data.get("classes", []):
-            entity_path = wiki_dir / "entities" / f"{cls['name']}.md"
+            entity_page_name = file_entity_page_map[cls["name"]]
+            entity_path = wiki_dir / "entities" / f"{entity_page_name}.md"
             if entity_path.exists() and not args.overwrite:
-                print(f"  SKIP entity (exists): {cls['name']}")
+                print(f"  SKIP entity (exists): {entity_page_name}")
             else:
-                entity_path.write_text(_generate_entity_md(cls, filepath, relationships))
+                entity_path.write_text(_generate_entity_md(cls, filepath, relationships, mod_page_name))
                 entities_created += 1
-                print(f"  CREATE entity: {cls['name']}")
-            all_entity_names.append(cls["name"])
+                print(f"  CREATE entity: {entity_page_name}")
+            if entity_page_name not in _seen_entity_pages:
+                all_entity_names.append(entity_page_name)
+                _seen_entity_pages.add(entity_page_name)
 
         # Generate module page
-        module_path = wiki_dir / "modules" / f"{mod_name}.md"
+        module_path = wiki_dir / "modules" / f"{mod_page_name}.md"
         if module_path.exists() and not args.overwrite:
-            print(f"  SKIP module (exists): {mod_name}")
+            print(f"  SKIP module (exists): {mod_page_name}")
         else:
-            module_path.write_text(_generate_module_md(filepath, file_data))
+            module_path.write_text(_generate_module_md(filepath, file_data, file_entity_page_map))
             modules_created += 1
-            print(f"  CREATE module: {mod_name}")
+            print(f"  CREATE module: {mod_page_name}")
 
         module_entries.append({
-            "name": mod_name,
+            "name": mod_page_name,
             "path": filepath,
             "docstring": file_data.get("module_docstring", ""),
         })
