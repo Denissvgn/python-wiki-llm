@@ -1,0 +1,91 @@
+import argparse
+import sys
+from .commands import init_cmd, extract_cmd, lint_cmd, hook_cmd, trigger_cmd, bootstrap_cmd, bump_cmd, uninstall_cmd
+
+def main():
+    parser = argparse.ArgumentParser(description="LLM Wiki CLI")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    AGENT_CHOICES = ["claude", "cursor", "copilot", "aider", "opencode", "generic"]
+
+    # init command
+    init_parser = subparsers.add_parser("init", help="Scaffold LLM Wiki structure and schema")
+    init_parser.add_argument("--agent", choices=AGENT_CHOICES, default="generic", help="Target agent format for rules/constraints")
+
+    # extract command
+    # ... (skipping extract/lint)
+    extract_parser = subparsers.add_parser("extract", help="Extract project AST and structure into wiki")
+    extract_parser.add_argument("--src-dir", default=".", help="Source directory to scan")
+
+    # lint command
+    lint_parser = subparsers.add_parser("lint", help="Lint LLM Wiki for broken links, orphans, and AST drift")
+    lint_parser.add_argument("--wiki-dir", default="docs/llm_wiki", help="Wiki directory to lint")
+    lint_parser.add_argument("--src-dir", default=".", help="Source directory to cross-reference against")
+
+    # hook command
+    hook_parser = subparsers.add_parser("install-hook", help="Install git hooks (wiki sync + optional versioning)")
+    hook_parser.add_argument("--enable-versioning", action="store_true",
+                             help="Enable auto version bumping (patch on commit, minor on push)")
+
+    # trigger command
+    trigger_parser = subparsers.add_parser("trigger-agent", help="Trigger subagent to update wiki using diff")
+    trigger_parser.add_argument("--agent", choices=AGENT_CHOICES, default="claude", help="Agent executable to invoke for background sync")
+    trigger_parser.add_argument("--reset-breaker", action="store_true",
+                                help="Reset the circuit breaker after consecutive failures and exit")
+    trigger_parser.add_argument("--timeout", type=int, default=300,
+                                help="Timeout in seconds for the subagent process (default: 300)")
+    trigger_parser.add_argument("--max-diff-lines", type=int, default=1000,
+                                help="Skip sync if diff exceeds this many lines (default: 1000)")
+    trigger_parser.add_argument("--force", action="store_true",
+                                help="Bypass the diff size guard (does not bypass lock or circuit breaker)")
+
+    # bootstrap command
+    bootstrap_parser = subparsers.add_parser("bootstrap", help="Generate initial wiki for an existing codebase")
+    bootstrap_parser.add_argument("--src-dir", default=".", help="Source directory to scan")
+    bootstrap_parser.add_argument("--wiki-dir", default="docs/llm_wiki", help="Wiki output directory")
+    bootstrap_parser.add_argument("--overwrite", action="store_true", help="Overwrite existing entity/module pages")
+    bootstrap_parser.add_argument("--depth", choices=["shallow", "full"], default="full",
+                                  help="shallow=names only, full=docstrings/attrs/methods/imports/relationships (default: full)")
+    bootstrap_parser.add_argument("--skip-workflows", action="store_true",
+                                  help="Skip automatic workflow page generation from call graph")
+
+    # bump command
+    bump_parser = subparsers.add_parser("bump", help="Bump project version (patch or minor)")
+    bump_group = bump_parser.add_mutually_exclusive_group(required=True)
+    bump_group.add_argument("--patch", dest="bump_type", action="store_const", const="patch",
+                            help="Bump patch version (0.1.5 -> 0.1.6)")
+    bump_group.add_argument("--minor", dest="bump_type", action="store_const", const="minor",
+                            help="Bump minor version (0.1.6 -> 0.2.0)")
+    bump_parser.add_argument("--stage", action="store_true",
+                             help="Git-add the version file after bumping (for use in hooks)")
+
+    # uninstall command
+    uninstall_parser = subparsers.add_parser("uninstall", help="Remove all LLM Wiki artifacts from the project")
+    uninstall_parser.add_argument("--wiki-dir", default="docs/llm_wiki", help="Wiki directory path")
+    uninstall_parser.add_argument("--remove-wiki", action="store_true",
+                                  help="Also remove the wiki documentation directory")
+    uninstall_parser.add_argument("--dry-run", action="store_true",
+                                  help="Preview what would be removed without deleting anything")
+
+    args = parser.parse_args()
+
+    if args.command == "init":
+        init_cmd.run(args)
+    elif args.command == "extract":
+        extract_cmd.run(args)
+    elif args.command == "lint":
+        lint_cmd.run(args)
+    elif args.command == "install-hook":
+        hook_cmd.run(args)
+    elif args.command == "trigger-agent":
+        trigger_cmd.run(args)
+    elif args.command == "bootstrap":
+        bootstrap_cmd.run(args)
+    elif args.command == "bump":
+        bump_cmd.run(args)
+    elif args.command == "uninstall":
+        uninstall_cmd.run(args)
+
+if __name__ == "__main__":
+    main()
+# Debug sync

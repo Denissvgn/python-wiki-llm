@@ -1,0 +1,205 @@
+import os
+import re
+import sys
+from pathlib import Path
+
+from .extract_cmd import get_inventory, get_call_graph
+
+# basic regex for [text](url)
+LINK_RE = re.compile(r'\[.+?\]\((.+?)\)')
+
+
+def _collect_documented_entities(wiki_dir: Path) -> set[str]:
+    """Return the set of entity names that have wiki pages."""
+    entities_dir = wiki_dir / "entities"
+    if not entities_dir.exists():
+        return set()
+    return {p.stem for p in entities_dir.glob("*.md")}
+
+
+def _collect_code_classes(src_dir: str) -> set[str]:
+    """Return the set of class names found by AST scanning."""
+    inventory = get_inventory(src_dir)
+    classes = set()
+    for file_data in inventory.values():
+        for cls in file_data.get("classes", []):
+            classes.add(cls["name"])
+    return classes
+
+
+def _collect_documented_modules(wiki_dir: Path) -> set[str]:
+    """Return the set of module names that have wiki pages."""
+    modules_dir = wiki_dir / "modules"
+    if not modules_dir.exists():
+        return set()
+    return {p.stem for p in modules_dir.glob("*.md")}
+
+
+def _collect_code_modules(src_dir: str) -> set[str]:
+    """Return the set of module names (file stems) with tracked components."""
+    inventory = get_inventory(src_dir)
+    return {Path(fp).stem for fp in inventory}
+
+
+def _collect_documented_workflows(wiki_dir: Path) -> set[str]:
+    """Return the set of workflow names that have wiki pages."""
+    workflows_dir = wiki_dir / "workflows"
+    if not workflows_dir.exists():
+        return set()
+    return {p.stem for p in workflows_dir.glob("*.md")}
+
+
+def run(args):
+    wiki_dir = Path(args.wiki_dir)
+    src_dir = getattr(args, "src_dir", ".")
+    issues = 0
+
+    print(f"Linting Wiki at: {wiki_dir}")
+
+    if not wiki_dir.exists():
+        print(f"Error: Directory {wiki_dir} does not exist.")
+        sys.exit(1)
+
+    pages = list(wiki_dir.rglob("*.md"))
+
+    # ── 1. Broken Links ──────────────────────────────────────────────
+    broken_links = 0
+    for page in pages:
+        with open(page, "r") as f:
+            content = f.read()
+            links = LINK_RE.findall(content)
+
+            for link in links:
+                if link.startswith("http://") or link.startswith("https://"):
+                    continue
+                target = (page.parent / link).resolve()
+                if not target.exists():
+                    print(f"  ❌ Broken link in {page.relative_to(wiki_dir)} -> {link}")
+                    broken_links += 1
+
+    issues += broken_links
+    if broken_links:
+        print(f"  Found {broken_links} broken link(s).\n")
+    else:
+        print("  ✅ No broken links.\n")
+
+    # ── 2. Orphan Pages (not referenced in index.md) ─────────────────
+    orphan_count = 0
+    index_path = wiki_dir / "index.md"
+    referenced_files: list[Path] = []
+    if index_path.exists():
+        with open(index_path, "r") as f:
+            index_content = f.read()
+            index_links = LINK_RE.findall(index_content)
+
+            for link in index_links:
+                if not link.startswith("http"):
+                    target = (index_path.parent / link).resolve()
+                    referenced_files.append(target)
+
+            for page in pages:
+                if page.name in ["index.md", "log.md"]:
+                    continue
+                if page.resolve() not in referenced_files:
+                    print(f"  ⚠️  Orphan page (not in index.md): {page.relative_to(wiki_dir)}")
+                    orphan_count += 1
+
+    issues += orphan_count
+    if orphan_count:
+        print(f"  Found {orphan_count} orphan page(s).\n")
+    else:
+        print("  ✅ No orphan pages.\n")
+
+    # ── 3. AST ↔ Wiki Cross-Reference (entities) ─────────────────────
+    documented_entities = _collect_documented_entities(wiki_dir)
+    code_classes = _collect_code_classes(src_dir)
+
+    undocumented = code_classes - documented_entities
+    stale = documented_entities - code_classes
+
+    if undocumented:
+        for name in sorted(undocumented):
+            print(f"  ⚠️  Undocumented class (in code, not in wiki): {name}")
+        issues += len(undocumented)
+        print(f"  Found {len(undocumented)} undocumented class(es).\n")
+    else:
+        print("  ✅ All classes documented.\n")
+
+    if stale:
+        for name in sorted(stale):
+            print(f"  ⚠️  Stale entity (in wiki, not in code): {name}")
+        issues += len(stale)
+        print(f"  Found {len(stale)} stale entity page(s).\n")
+    else:
+        print("  ✅ No stale entity pages.\n")
+
+    # ── 4. AST ↔ Wiki Cross-Reference (modules) ──────────────────────
+    documented_modules = _collect_documented_modules(wiki_dir)
+    code_modules = _collect_code_modules(src_dir)
+
+    undoc_mods = code_modules - documented_modules
+    stale_mods = documented_modules - code_modules
+
+    if undoc_mods:
+        for name in sorted(undoc_mods):
+            print(f"  ⚠️  Undocumented module (in code, not in wiki): {name}")
+        issues += len(undoc_mods)
+        print(f"  Found {len(undoc_mods)} undocumented module(s).\n")
+    else:
+        print("  ✅ All modules documented.\n")
+
+    if stale_mods:
+        for name in sorted(stale_mods):
+            print(f"  ⚠️  Stale module (in wiki, not in code): {name}")
+        issues += len(stale_mods)
+        print(f"  Found {len(stale_mods)} stale module page(s).\n")
+    else:
+        print("  ✅ No stale module pages.\n")
+
+    # ── 5. Workflow checks ────────────────────────────────────────────
+    documented_workflows = _collect_documented_workflows(wiki_dir)
+
+    # 5a. Check workflow pages reference existing modules
+    workflows_dir = wiki_dir / "workflows"
+    stale_wf = 0
+    if workflows_dir.exists():
+        for wf_page in workflows_dir.glob("*.md"):
+            with open(wf_page, "r") as f:
+                content = f.read()
+            wf_links = LINK_RE.findall(content)
+            for link in wf_links:
+                if link.startswith("http"):
+                    continue
+                target = (wf_page.parent / link).resolve()
+                if not target.exists():
+                    print(f"  ⚠️  Broken link in workflow {wf_page.stem} -> {link}")
+                    stale_wf += 1
+
+    issues += stale_wf
+    if stale_wf:
+        print(f"  Found {stale_wf} broken workflow link(s).\n")
+    else:
+        print("  ✅ No broken workflow links.\n")
+
+    # 5b. Detect missing workflows (call chains with 3+ modules but no page)
+    try:
+        deep_inventory = get_inventory(src_dir, deep=True)
+        detected_workflows = set(get_call_graph(deep_inventory).keys())
+    except Exception:
+        detected_workflows = set()
+
+    missing_wf = detected_workflows - documented_workflows
+    if missing_wf:
+        for name in sorted(missing_wf):
+            print(f"  ⚠️  Missing workflow (detected in code, no wiki page): {name}")
+        issues += len(missing_wf)
+        print(f"  Found {len(missing_wf)} missing workflow(s).\n")
+    else:
+        print("  ✅ All detected workflows documented.\n")
+
+    # ── Summary ───────────────────────────────────────────────────────
+    if issues == 0:
+        print("✅ Lint passed: wiki is fully consistent.")
+    else:
+        print(f"❌ Lint found {issues} issue(s).")
+        sys.exit(1)
