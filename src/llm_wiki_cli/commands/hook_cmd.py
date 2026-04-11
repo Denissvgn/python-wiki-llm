@@ -91,10 +91,11 @@ fi
 "$CLI" bump --patch --stage
 """
 
-# ── Pre-push: minor bump (opt-in) ────────────────────────────────────
+# ── Pre-push: minor bump + CHANGELOG stamp (opt-in) ─────────────────
 PRE_PUSH_CONTENT = """#!/bin/sh
 
 # LLM Wiki Version Bump — minor on every push (resets patch to 0)
+# Also stamps the [Unreleased] CHANGELOG section with the new version.
 
 # Guard: prevent recursion when we re-push from inside this hook
 if [ -n "$LLM_WIKI_PUSHING" ]; then
@@ -107,9 +108,13 @@ else
     CLI="llm-wiki"
 fi
 
+# 1. Bump the version (minor) and stage the version file
 "$CLI" bump --minor --stage
 
-# Commit the version bump, skipping pre-commit hook to avoid extra patch bump
+# 2. Stamp the CHANGELOG [Unreleased] section with the new version and stage it
+"$CLI" release --stage
+
+# Commit the version bump + CHANGELOG stamp, skipping pre-commit hook
 LLM_WIKI_SKIP_BUMP=1 git commit --no-verify -m "chore: bump minor version [auto]"
 
 # Re-push with recursion guard, including the new commit
@@ -171,11 +176,9 @@ def run(args):
             f"  llm-wiki generate-prompt"
         )
         if enable_versioning:
-            _install_hook(hooks_dir, "pre-commit", PRE_COMMIT_CONTENT)
             _install_hook(hooks_dir, "pre-push", PRE_PUSH_CONTENT)
-            print("\nVersion auto-bump enabled:")
-            print("  • pre-commit  → patch bump (0.1.5 → 0.1.6)")
-            print("  • pre-push    → minor bump (0.1.6 → 0.2.0)")
+            print("\nVersion auto-bump + CHANGELOG stamping enabled:")
+            print("  • pre-push  → minor bump + stamp [Unreleased] → [new version]")
         else:
             print("\nVersion auto-bump: disabled (use --enable-versioning to activate)")
         print("\nHook installation complete.")
@@ -186,11 +189,9 @@ def run(args):
     print(f"  Agent: {agent}")
 
     if enable_versioning:
-        _install_hook(hooks_dir, "pre-commit", PRE_COMMIT_CONTENT)
         _install_hook(hooks_dir, "pre-push", PRE_PUSH_CONTENT)
-        print("\nVersion auto-bump enabled:")
-        print("  • pre-commit  → patch bump (0.1.5 → 0.1.6)")
-        print("  • pre-push    → minor bump (0.1.6 → 0.2.0)")
+        print("\nVersion auto-bump + CHANGELOG stamping enabled:")
+        print("  • pre-push  → minor bump + stamp [Unreleased] → [new version]")
     else:
         print("\nVersion auto-bump: disabled (use --enable-versioning to activate)")
 

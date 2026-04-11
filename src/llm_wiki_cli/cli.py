@@ -1,6 +1,6 @@
 import argparse
 import sys
-from .commands import init_cmd, extract_cmd, lint_cmd, hook_cmd, trigger_cmd, bootstrap_cmd, bump_cmd, uninstall_cmd, generate_prompt_cmd, status_cmd
+from .commands import init_cmd, extract_cmd, lint_cmd, hook_cmd, trigger_cmd, bootstrap_cmd, bump_cmd, uninstall_cmd, generate_prompt_cmd, status_cmd, release_cmd
 from .config import AGENT_CHOICES, DEFAULT_WIKI_DIR
 
 def main():
@@ -83,6 +83,20 @@ def main():
     status_parser = subparsers.add_parser("status", help="Show LLM Wiki status (agent, hooks, breaker, pages)")
     status_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR, help="Wiki directory path")
 
+    # release command
+    release_parser = subparsers.add_parser(
+        "release",
+        help="Stamp the [Unreleased] CHANGELOG section with the current version",
+    )
+    release_parser.add_argument(
+        "--changelog", default="CHANGELOG.md",
+        help="Path to the changelog file (default: CHANGELOG.md)",
+    )
+    release_parser.add_argument(
+        "--stage", action="store_true",
+        help="Git-add CHANGELOG.md after stamping (for use in hooks)",
+    )
+
     args = parser.parse_args()
 
     try:
@@ -106,6 +120,8 @@ def main():
             uninstall_cmd.run(args)
         elif args.command == "status":
             status_cmd.run(args)
+        elif args.command == "release":
+            release_cmd.run(args)
     except KeyboardInterrupt:
         print("\nAborted.")
         sys.exit(130)

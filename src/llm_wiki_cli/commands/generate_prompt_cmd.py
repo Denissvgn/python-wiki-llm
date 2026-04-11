@@ -49,8 +49,14 @@ affected by this commit. Update or delete stale workflows.
 6. If the diff changes Dockerfiles or docker-compose files, update the \
 corresponding `{wiki_dir}/infrastructure/*.md` pages.
 7. Append an entry to `{wiki_dir}/log.md`.
-8. Use `git add {wiki_dir}/` and `git commit -m "docs(wiki): auto-update [bot]"` to save your \
-changes if any.
+8. **Changelog** — read `CHANGELOG.md`. Based on the diff, append one or more concise bullet \
+points under the appropriate sub-heading (`### Added`, `### Fixed`, `### Changed`, `### Removed`, \
+`### Deprecated`, or `### Security`) inside the existing `## [Unreleased]` section. Follow the \
+Keep a Changelog format (https://keepachangelog.com). Only add entries for user-facing changes; \
+skip pure refactors, test-only commits, or doc-only changes that have no impact on the public \
+interface. Stage it with `git add CHANGELOG.md`.
+9. Use `git add {wiki_dir}/` and `git commit -m "docs(wiki): auto-update [bot]"` to save your \
+changes if any (this single commit covers both wiki pages and CHANGELOG updates).
 """
 
 
