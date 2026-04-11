@@ -40,7 +40,30 @@ fi
 nohup $CLI trigger-agent --agent {agent} --timeout "$LLM_WIKI_TIMEOUT" --max-diff-lines "$LLM_WIKI_MAX_DIFF" > .git/llm-wiki-sync.log 2>&1 &
 """
 
-# ── Pre-commit: patch bump (opt-in) ──────────────────────────────────
+
+def _build_ide_post_commit(wiki_dir: str) -> str:
+    return f"""#!/bin/sh
+
+# LLM Wiki — IDE Agent Prompt Helper (Post-Commit Hook)
+# Generates a ready-to-paste sync prompt for IDE agents (Copilot, Cursor, etc.)
+# The agent cannot run headlessly, so this hook prepares the work for you.
+
+if [ -f ".venv/bin/llm-wiki" ]; then
+    CLI=".venv/bin/llm-wiki"
+else
+    CLI="llm-wiki"
+fi
+
+$CLI generate-prompt --wiki-dir {wiki_dir} --output .git/llm-wiki-prompt.txt
+
+echo ""
+echo "╔══════════════════════════════════════════════════════════════╗"
+echo "║  LLM Wiki: paste the sync prompt into your IDE agent chat.  ║"
+echo "║  File: .git/llm-wiki-prompt.txt                             ║"
+echo "╚══════════════════════════════════════════════════════════════╝"
+"""
+
+
 PRE_COMMIT_CONTENT = """#!/bin/sh
 
 # LLM Wiki Version Bump — patch on every commit
@@ -127,22 +150,29 @@ def run(args):
             )
             agent = "claude"
 
-    # Warn (and skip hook install) if agent is UI-only
+    # IDE-only agent: install the prompt-generation hook instead of the headless sync hook
     if agent in _UI_ONLY_AGENTS:
+        _install_hook(hooks_dir, "post-commit", _build_ide_post_commit(wiki_dir))
+        print(f"  Agent: {agent} (IDE mode — prompt-generation hook)")
         print(
-            f"Note: Agent '{agent}' is a UI-based IDE assistant and does not support\n"
-            f"headless background execution. The post-commit wiki sync hook will not be installed.\n"
-            f"If you want background auto-sync, re-initialize with a CLI agent:\n"
-            f"  llm-wiki init --agent claude\n"
-            f"  llm-wiki install-hook"
+            f"\nIDE sync hook installed. After each commit, a prompt file will be generated at\n"
+            f"  .git/llm-wiki-prompt.txt\n"
+            f"Paste its contents into your {agent} chat to sync the wiki.\n"
+            f"You can also generate it manually at any time:\n"
+            f"  llm-wiki generate-prompt"
         )
         if enable_versioning:
             _install_hook(hooks_dir, "pre-commit", PRE_COMMIT_CONTENT)
             _install_hook(hooks_dir, "pre-push", PRE_PUSH_CONTENT)
-            print("\nVersion auto-bump hooks installed (these do not require a CLI agent).")
+            print("\nVersion auto-bump enabled:")
+            print("  • pre-commit  → patch bump (0.1.5 → 0.1.6)")
+            print("  • pre-push    → minor bump (0.1.6 → 0.2.0)")
+        else:
+            print("\nVersion auto-bump: disabled (use --enable-versioning to activate)")
+        print("\nHook installation complete.")
         return
 
-    # Always install post-commit (wiki sync) with the resolved agent baked in
+    # CLI agent: install headless auto-sync hook with agent baked in
     _install_hook(hooks_dir, "post-commit", _build_post_commit(agent))
     print(f"  Agent: {agent}")
 

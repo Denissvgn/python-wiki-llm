@@ -33,6 +33,29 @@ You are operating within an LLM Wiki architecture. The project's persistent memo
 """
 
 
+_IDE_AGENTS = {"cursor", "copilot", "generic"}
+
+_IDE_SYNC_INSTRUCTIONS = """\
+
+## How to sync the wiki in this IDE session
+Because you run inside the IDE (not as a background CLI process), the wiki is NOT
+updated automatically on commit. You are responsible for keeping it current:
+
+1. **After every code change in this session** that adds, removes, or modifies a
+   class, function, module, or cross-module flow:
+   - Update the relevant `entities/` and `modules/` pages immediately.
+   - If 3+ modules are now connected differently, update or create a `workflows/` page.
+   - Append a one-line summary to `log.md`.
+2. **To do a full re-sync manually**, run in the terminal:
+   ```
+   llm-wiki generate-prompt
+   ```
+   This builds a diff + AST prompt in `.git/llm-wiki-prompt.txt`. Open that file
+   and paste its contents into this chat to trigger a full wiki update.
+3. **Never skip the update** — a stale wiki defeats the purpose of the system.
+"""
+
+
 def _build_schema_content(agent: str, wiki_dir: str) -> str:
     instructions = _wiki_instructions(wiki_dir)
     preambles = {
@@ -41,7 +64,8 @@ def _build_schema_content(agent: str, wiki_dir: str) -> str:
         "copilot": f"# Copilot Instructions — LLM Wiki Project\n\nThis project uses `{wiki_dir}/` as persistent documentation.\nConsult the wiki before suggesting changes.\n\n",
     }
     preamble = preambles.get(agent, f"# Agent Instructions — LLM Wiki Project\n\nThis project uses `{wiki_dir}/` for architectural memory.\n\n")
-    return preamble + instructions
+    extra = _IDE_SYNC_INSTRUCTIONS if agent in _IDE_AGENTS else ""
+    return preamble + instructions + extra
 
 
 # Agents that have a real CLI executable (used by trigger-agent / install-hook)

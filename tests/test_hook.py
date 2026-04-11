@@ -52,40 +52,61 @@ class TestHookReadsAgentConfig:
         assert "--agent claude" in hook_text
 
 
-class TestHookSkipsForUIOnlyAgent:
-    def test_no_post_commit_for_copilot(self, tmp_project, capsys):
-        """copilot is UI-only — post-commit hook must not be installed."""
+class TestHookIDEAgentInstallsPromptHook:
+    """IDE agents get a prompt-generation hook, not a headless sync hook."""
+
+    def test_post_commit_installed_for_copilot(self, tmp_project, capsys):
         _write_agent_config("docs/llm_wiki", "copilot")
         args = _make_args()
         hook_cmd.run(args)
 
-        assert not (Path(".git/hooks/post-commit")).exists()
-        out = capsys.readouterr().out
-        assert "UI-based" in out or "not be installed" in out
+        hook_path = Path(".git/hooks/post-commit")
+        assert hook_path.exists()
+        hook_text = hook_path.read_text()
+        assert "generate-prompt" in hook_text
+        assert "trigger-agent" not in hook_text
 
-    def test_no_post_commit_for_cursor(self, tmp_project, capsys):
+    def test_post_commit_installed_for_cursor(self, tmp_project, capsys):
         _write_agent_config("docs/llm_wiki", "cursor")
         args = _make_args()
         hook_cmd.run(args)
 
-        assert not (Path(".git/hooks/post-commit")).exists()
+        hook_text = Path(".git/hooks/post-commit").read_text()
+        assert "generate-prompt" in hook_text
 
-    def test_no_post_commit_for_generic(self, tmp_project, capsys):
+    def test_post_commit_installed_for_generic(self, tmp_project, capsys):
         _write_agent_config("docs/llm_wiki", "generic")
         args = _make_args()
         hook_cmd.run(args)
 
-        assert not (Path(".git/hooks/post-commit")).exists()
+        hook_text = Path(".git/hooks/post-commit").read_text()
+        assert "generate-prompt" in hook_text
+
+    def test_ide_hook_contains_wiki_dir(self, tmp_project):
+        _write_agent_config("my_docs/wiki", "copilot")
+        args = _make_args(wiki_dir="my_docs/wiki")
+        hook_cmd.run(args)
+
+        hook_text = Path(".git/hooks/post-commit").read_text()
+        assert "my_docs/wiki" in hook_text
 
     def test_agent_override_bypasses_ui_restriction(self, tmp_project, capsys):
-        """Passing --agent claude explicitly still installs the hook even if config says copilot."""
+        """Passing --agent claude explicitly still installs the headless hook even if config says copilot."""
         _write_agent_config("docs/llm_wiki", "copilot")
         args = _make_args(agent="claude")
         hook_cmd.run(args)
 
-        assert (Path(".git/hooks/post-commit")).exists()
-        hook_text = (Path(".git/hooks/post-commit")).read_text()
+        hook_text = Path(".git/hooks/post-commit").read_text()
         assert "--agent claude" in hook_text
+        assert "generate-prompt" not in hook_text
+
+    def test_ide_output_message_mentions_paste(self, tmp_project, capsys):
+        _write_agent_config("docs/llm_wiki", "copilot")
+        args = _make_args()
+        hook_cmd.run(args)
+
+        out = capsys.readouterr().out
+        assert "generate-prompt" in out or "paste" in out.lower()
 
 
 class TestHookReadsCustomWikiDir:

@@ -1,6 +1,6 @@
 import argparse
 import sys
-from .commands import init_cmd, extract_cmd, lint_cmd, hook_cmd, trigger_cmd, bootstrap_cmd, bump_cmd, uninstall_cmd
+from .commands import init_cmd, extract_cmd, lint_cmd, hook_cmd, trigger_cmd, bootstrap_cmd, bump_cmd, uninstall_cmd, generate_prompt_cmd
 
 def main():
     parser = argparse.ArgumentParser(description="LLM Wiki CLI")
@@ -64,6 +64,14 @@ def main():
     bump_parser.add_argument("--stage", action="store_true",
                              help="Git-add the version file after bumping (for use in hooks)")
 
+    # generate-prompt command
+    gp_parser = subparsers.add_parser("generate-prompt", help="Build a wiki sync prompt for IDE agents (Copilot, Cursor, etc.)")
+    gp_parser.add_argument("--wiki-dir", default="docs/llm_wiki", help="Wiki directory (default: docs/llm_wiki)")
+    gp_parser.add_argument("--src-dir", default=".", help="Source directory to scan (default: .)")
+    gp_parser.add_argument("--output", default=".git/llm-wiki-prompt.txt", help="Output file path (default: .git/llm-wiki-prompt.txt)")
+    gp_parser.add_argument("--print", dest="print_prompt", action="store_true", help="Print the prompt to stdout instead of writing to a file")
+    gp_parser.add_argument("--no-diff", action="store_true", help="Skip git diff (useful when no commits exist yet)")
+
     # uninstall command
     uninstall_parser = subparsers.add_parser("uninstall", help="Remove all LLM Wiki artifacts from the project")
     uninstall_parser.add_argument("--wiki-dir", default="docs/llm_wiki", help="Wiki directory path")
@@ -88,6 +96,8 @@ def main():
         bootstrap_cmd.run(args)
     elif args.command == "bump":
         bump_cmd.run(args)
+    elif args.command == "generate-prompt":
+        generate_prompt_cmd.run(args)
     elif args.command == "uninstall":
         uninstall_cmd.run(args)
 
