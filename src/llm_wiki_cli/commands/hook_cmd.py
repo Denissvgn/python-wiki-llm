@@ -52,7 +52,7 @@ nohup "$CLI" trigger-agent --agent {agent} --timeout "$LLM_WIKI_TIMEOUT" --max-d
 def _build_ide_post_commit(wiki_dir: str) -> str:
     return f"""#!/bin/sh
 
-# LLM Wiki — IDE Agent Prompt Helper (Post-Commit Hook)
+# LLM Wiki -- IDE Agent Prompt Helper (Post-Commit Hook)
 # Generates a ready-to-paste sync prompt for IDE agents (Copilot, Cursor, etc.)
 # The agent cannot run headlessly, so this hook prepares the work for you.
 
@@ -70,10 +70,10 @@ fi
 "$CLI" generate-prompt --wiki-dir {wiki_dir} --output .git/llm-wiki-prompt.txt
 
 echo ""
-echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║  LLM Wiki: paste the sync prompt into your IDE agent chat.  ║"
-echo "║  File: .git/llm-wiki-prompt.txt                             ║"
-echo "╚══════════════════════════════════════════════════════════════╝"
+echo "+--------------------------------------------------------------+"
+echo "|  LLM Wiki: paste the sync prompt into your IDE agent chat.  |"
+echo "|  File: .git/llm-wiki-prompt.txt                             |"
+echo "+--------------------------------------------------------------+"
 
 # Auto-open in VS Code if running inside the integrated terminal
 if [ -n "$TERM_PROGRAM" ] && [ "$TERM_PROGRAM" = "vscode" ]; then
@@ -84,7 +84,7 @@ fi
 
 PRE_COMMIT_CONTENT = """#!/bin/sh
 
-# LLM Wiki Version Bump — patch on every commit
+# LLM Wiki Version Bump -- patch on every commit
 # Skip if this commit was made by the pre-push minor-bump (--no-verify)
 
 # Guard: skip if LLM_WIKI_SKIP_BUMP is set
@@ -101,10 +101,10 @@ fi
 "$CLI" bump --patch --stage
 """
 
-# ── Pre-push: minor bump + CHANGELOG stamp (opt-in) ─────────────────
+# -- Pre-push: minor bump + CHANGELOG stamp (opt-in) -------------------------
 PRE_PUSH_CONTENT = """#!/bin/sh
 
-# LLM Wiki Version Bump — minor on every push (resets patch to 0)
+# LLM Wiki Version Bump -- minor on every push (resets patch to 0)
 # Also stamps the [Unreleased] CHANGELOG section with the new version.
 
 # Guard: prevent recursion when we re-push from inside this hook
@@ -137,12 +137,12 @@ done
 
 echo ""
 echo "==> Push completed successfully (version bumped + CHANGELOG stamped)."
-echo "    Ignore the 'failed to push' message below — it is expected."
+echo "    Ignore the 'failed to push' message below -- it is expected."
 echo "    (The hook must abort the original push because its bump commit"
 echo "     was already pushed by the inner push above.)"
 
 # Abort the original push (ours already went through).
-# Git will print 'error: failed to push some refs' — this is cosmetic only.
+# Git will print 'error: failed to push some refs' -- this is cosmetic only.
 exit 1
 """
 
@@ -185,7 +185,7 @@ def run(args):
     # IDE-only agent: install the prompt-generation hook instead of the headless sync hook
     if agent in _UI_ONLY_AGENTS:
         _install_hook(hooks_dir, "post-commit", _build_ide_post_commit(wiki_dir))
-        print(f"  Agent: {agent} (IDE mode — prompt-generation hook)")
+        print(f"  Agent: {agent} (IDE mode -- prompt-generation hook)")
         print(
             f"\nIDE sync hook installed. After each commit, a prompt file will be generated at\n"
             f"  .git/llm-wiki-prompt.txt\n"
@@ -196,7 +196,7 @@ def run(args):
         if enable_versioning:
             _install_hook(hooks_dir, "pre-push", PRE_PUSH_CONTENT)
             print("\nVersion auto-bump + CHANGELOG stamping enabled:")
-            print("  • pre-push  → minor bump + stamp [Unreleased] → [new version]")
+            print("  - pre-push  -> minor bump + stamp [Unreleased] -> [new version]")
         else:
             print("\nVersion auto-bump: disabled (use --enable-versioning to activate)")
         print("\nHook installation complete.")
@@ -209,7 +209,7 @@ def run(args):
     if enable_versioning:
         _install_hook(hooks_dir, "pre-push", PRE_PUSH_CONTENT)
         print("\nVersion auto-bump + CHANGELOG stamping enabled:")
-        print("  • pre-push  → minor bump + stamp [Unreleased] → [new version]")
+        print("  - pre-push  -> minor bump + stamp [Unreleased] -> [new version]")
     else:
         print("\nVersion auto-bump: disabled (use --enable-versioning to activate)")
 
