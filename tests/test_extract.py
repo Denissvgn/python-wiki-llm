@@ -2,7 +2,7 @@
 import textwrap
 from pathlib import Path
 
-from llm_wiki_cli.commands.extract_cmd import get_inventory, get_call_graph
+from llm_wiki_cli.commands.extract_cmd import get_inventory, get_call_graph, _summarize_inventory
 
 
 class TestGetInventory:
@@ -175,3 +175,48 @@ class TestGetCallGraph:
         inventory = get_inventory(str(tmp_path), deep=True)
         graph = get_call_graph(inventory)
         assert graph == {}
+
+
+class TestOnlyFiles:
+    def test_restricts_to_specified_files(self, tmp_path):
+        (tmp_path / "a.py").write_text("class A: pass\n")
+        (tmp_path / "b.py").write_text("class B: pass\n")
+        (tmp_path / "c.py").write_text("class C: pass\n")
+        inventory = get_inventory(str(tmp_path), only_files=["a.py", "c.py"])
+        keys = {Path(k).name for k in inventory}
+        assert keys == {"a.py", "c.py"}
+
+    def test_ignores_missing_files(self, tmp_path):
+        (tmp_path / "a.py").write_text("class A: pass\n")
+        inventory = get_inventory(str(tmp_path), only_files=["a.py", "nope.py"])
+        assert len(inventory) == 1
+
+    def test_ignores_non_python_files(self, tmp_path):
+        (tmp_path / "readme.md").write_text("# Hi\n")
+        (tmp_path / "a.py").write_text("class A: pass\n")
+        inventory = get_inventory(str(tmp_path), only_files=["readme.md", "a.py"])
+        assert len(inventory) == 1
+
+
+class TestSummarizeInventory:
+    def test_collapses_to_names(self, tmp_path):
+        (tmp_path / "models.py").write_text(textwrap.dedent("""\
+            class Foo:
+                pass
+
+            class Bar:
+                pass
+
+            def helper():
+                pass
+        """))
+        inventory = get_inventory(str(tmp_path))
+        summary = _summarize_inventory(inventory)
+        data = list(summary.values())[0]
+        assert data["classes"] == ["Foo", "Bar"]
+        assert data["functions"] == ["helper"]
+        # No nested details (line numbers, bases, etc.)
+        assert isinstance(data["classes"][0], str)
+
+    def test_empty_inventory(self):
+        assert _summarize_inventory({}) == {}

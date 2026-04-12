@@ -17,14 +17,19 @@ The project's wiki lives at `{wiki_dir}/`.
 Run these commands in the terminal to collect current state:
 
 ```bash
-# Live AST inventory of all Python classes, functions, and modules
-llm-wiki extract --src-dir {src_dir}
+# Changed files only — compact inventory of what was modified in the last commit
+llm-wiki extract --src-dir {src_dir} --changed --summary
 
-# Recent changes (last commit)
+# Full diff of the last commit
 git diff HEAD~1..HEAD
 
-# Wiki health check
+# Wiki health check — reports broken links, orphans, undocumented classes
 llm-wiki lint --wiki-dir {wiki_dir} --src-dir {src_dir}
+```
+
+If you need the full detail (methods, params, docstrings) for a specific file, run:
+```bash
+llm-wiki extract --src-dir {src_dir} --paths path/to/file.py
 ```
 
 ## Step 2 — Update the wiki

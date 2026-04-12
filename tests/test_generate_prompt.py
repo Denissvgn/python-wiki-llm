@@ -42,6 +42,8 @@ class TestGeneratePromptWritesFile:
 
         content = Path(".git/llm-wiki-prompt.txt").read_text()
         assert "llm-wiki extract" in content
+        assert "--changed" in content
+        assert "--summary" in content
 
     def test_custom_output_path(self, tmp_project, tmp_path):
         out_file = str(tmp_path / "my_prompt.txt")

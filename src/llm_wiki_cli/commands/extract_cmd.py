@@ -4,6 +4,7 @@ import ast
 import json
 import os
 import re
+import subprocess
 from pathlib import Path
 
 from ..config import COMPOSE_PATTERNS, DOCKERFILE_PATTERNS
@@ -187,16 +188,27 @@ _EXCLUDED_DIRS = {
 }
 
 
-def get_inventory(src_dir, deep=False):
+def get_inventory(src_dir, deep=False, only_files=None):
     """Scan Python files and return inventory.
     
     If deep=True, returns enriched data (docstrings, attributes, methods, imports).
     If deep=False, returns the slim format for backward compatibility.
+    If only_files is given, restrict to those relative paths.
     """
     src_path = Path(src_dir)
     inventory = {}
 
-    for py_file in src_path.rglob("*.py"):
+    if only_files is not None:
+        # Resolve each relative path against src_dir
+        py_files = []
+        for f in only_files:
+            p = src_path / f
+            if p.suffix == ".py" and p.exists():
+                py_files.append(p)
+    else:
+        py_files = list(src_path.rglob("*.py"))
+
+    for py_file in py_files:
         if _EXCLUDED_DIRS & set(py_file.parts):
             continue
 
@@ -236,13 +248,75 @@ def get_inventory(src_dir, deep=False):
     return inventory
 
 
+def _git_changed_files(src_dir: str) -> list[str] | None:
+    """Return list of files changed in the last commit, relative to *src_dir*.
+
+    Returns None if git is unavailable or there are no commits.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--name-only", "HEAD~1..HEAD"],
+            capture_output=True, text=True, check=True, timeout=15,
+            cwd=src_dir,
+        )
+        return [line for line in result.stdout.splitlines() if line.strip()]
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
+        return None
+
+
+def _summarize_inventory(inventory: dict) -> dict:
+    """Produce a compact one-line-per-symbol summary from a shallow inventory."""
+    summary: dict[str, dict] = {}
+    for fp, data in inventory.items():
+        entry: dict[str, list] = {}
+        cls_names = [c["name"] for c in data.get("classes", [])]
+        fn_names = [f["name"] for f in data.get("functions", [])]
+        if cls_names:
+            entry["classes"] = cls_names
+        if fn_names:
+            entry["functions"] = fn_names
+        if entry:
+            summary[fp] = entry
+    return summary
+
+
 def run(args):
-    print(f"Extracting inventory from {args.src_dir}...")
-    inventory = get_inventory(args.src_dir)
-    print(json.dumps(inventory, indent=2))
+    src_dir: str = getattr(args, "src_dir", ".")
+    changed: bool = getattr(args, "changed", False)
+    summary: bool = getattr(args, "summary", False)
+    paths: list[str] | None = getattr(args, "paths", None)
+
+    only_files = None
+
+    if changed and paths:
+        print("Error: --changed and --paths are mutually exclusive.")
+        return
+
+    if changed:
+        only_files = _git_changed_files(src_dir)
+        if only_files is None:
+            print("Warning: Could not get changed files from git. Falling back to full scan.")
+        elif not only_files:
+            print("No files changed in the last commit.")
+            return
+        else:
+            print(f"Extracting {len(only_files)} changed file(s)...")
+    elif paths:
+        only_files = paths
+        print(f"Extracting {len(only_files)} specified path(s)...")
+    else:
+        print(f"Extracting inventory from {src_dir}...")
+
+    inventory = get_inventory(src_dir, only_files=only_files)
+
+    if summary:
+        compact = _summarize_inventory(inventory)
+        print(json.dumps(compact, indent=2))
+    else:
+        print(json.dumps(inventory, indent=2))
     print(f"Extracted {len(inventory)} files with tracked components.")
 
-    docker_inv = get_docker_inventory(args.src_dir)
+    docker_inv = get_docker_inventory(src_dir)
     if docker_inv:
         print(f"\nDocker inventory ({len(docker_inv)} file(s)):")
         print(json.dumps(docker_inv, indent=2))

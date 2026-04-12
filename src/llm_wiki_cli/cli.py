@@ -16,6 +16,12 @@ def main():
     # ... (skipping extract/lint)
     extract_parser = subparsers.add_parser("extract", help="Extract project AST and structure into wiki")
     extract_parser.add_argument("--src-dir", default=".", help="Source directory to scan")
+    extract_parser.add_argument("--changed", action="store_true",
+                                help="Only extract files changed in the last git commit")
+    extract_parser.add_argument("--summary", action="store_true",
+                                help="Compact output: file paths with class/function names only")
+    extract_parser.add_argument("--paths", nargs="+", metavar="FILE",
+                                help="Only extract specific file paths (relative to --src-dir)")
 
     # lint command
     lint_parser = subparsers.add_parser("lint", help="Lint LLM Wiki for broken links, orphans, and AST drift")
