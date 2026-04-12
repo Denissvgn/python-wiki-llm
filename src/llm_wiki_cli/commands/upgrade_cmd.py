@@ -17,7 +17,7 @@ import stat
 import sys
 from pathlib import Path
 
-from ..config import AGENT_CHOICES, CLI_AGENTS, DEFAULT_WIKI_DIR, IDE_AGENTS, validate_path
+from ..config import AGENT_CHOICES, CLI_AGENTS, DEFAULT_WIKI_DIR, IDE_AGENTS, get_agent_config_path, validate_path
 from ..services.schema import (
     ALL_SCHEMA_FILES,
     CONSTRAINT_START,
@@ -40,7 +40,7 @@ _GITIGNORE_ENTRIES = [
 
 def _read_agent_config(wiki_dir: str) -> str | None:
     """Read the agent name persisted by `llm-wiki init`."""
-    config_path = Path(wiki_dir) / ".llm-wiki-agent"
+    config_path = get_agent_config_path(wiki_dir)
     if config_path.exists():
         return config_path.read_text().strip()
     return None
@@ -58,7 +58,7 @@ def _resolve_agent(args, wiki_dir: str) -> str:
 
     print(
         "Error: Cannot determine agent.\n"
-        f"  No --agent flag provided and no config found at {wiki_dir}/.llm-wiki-agent\n\n"
+        f"  No --agent flag provided and no config found at .git/.llm-wiki-agent\n\n"
         "  Either run `llm-wiki init --agent <agent>` first,\n"
         "  or pass --agent to this command:\n"
         f"    llm-wiki upgrade --agent <{'|'.join(AGENT_CHOICES)}>",
@@ -202,8 +202,7 @@ def run(args):
         print("  Already up to date")
 
     # 5. Persist agent config
-    agent_config = Path(wiki_dir) / ".llm-wiki-agent"
-    agent_config.parent.mkdir(parents=True, exist_ok=True)
+    agent_config = get_agent_config_path(wiki_dir)
     agent_config.write_text(agent)
 
     # Warn if CLI agent executable missing

@@ -36,7 +36,7 @@ class TestStatusAgent:
     def test_shows_configured_agent(self, tmp_project, capsys):
         wiki = tmp_project / "docs" / "llm_wiki"
         wiki.mkdir(parents=True)
-        (wiki / ".llm-wiki-agent").write_text("claude")
+        (tmp_project / ".git" / ".llm-wiki-agent").write_text("claude")
 
         status_cmd.run(_make_args(wiki_dir=str(wiki)))
         out = capsys.readouterr().out
@@ -46,7 +46,7 @@ class TestStatusAgent:
     def test_shows_ide_agent(self, tmp_project, capsys):
         wiki = tmp_project / "docs" / "llm_wiki"
         wiki.mkdir(parents=True)
-        (wiki / ".llm-wiki-agent").write_text("copilot")
+        (tmp_project / ".git" / ".llm-wiki-agent").write_text("copilot")
 
         status_cmd.run(_make_args(wiki_dir=str(wiki)))
         out = capsys.readouterr().out

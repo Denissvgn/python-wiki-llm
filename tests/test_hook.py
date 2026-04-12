@@ -14,9 +14,9 @@ def _make_args(**kwargs):
 
 
 def _write_agent_config(wiki_dir: str, agent: str):
-    p = Path(wiki_dir)
-    p.mkdir(parents=True, exist_ok=True)
-    (p / ".llm-wiki-agent").write_text(agent)
+    git_config = Path(".git") / ".llm-wiki-agent"
+    git_config.parent.mkdir(parents=True, exist_ok=True)
+    git_config.write_text(agent)
 
 
 class TestHookReadsAgentConfig:

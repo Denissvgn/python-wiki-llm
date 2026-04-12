@@ -70,3 +70,18 @@ def validate_path(path: str, label: str = "path") -> Path:
 EXTRACTOR_REGISTRY: dict[str, str] = {
     "python": "llm_wiki_cli.extractors.python_extractor:PythonExtractor",
 }
+
+
+def get_agent_config_path(wiki_dir: "str | Path") -> Path:
+    """Return the local-only agent config file path.
+
+    Stored at ``.git/.llm-wiki-agent`` so it is never committed and each
+    developer on a shared repo can use their own preferred agent without
+    affecting teammates.
+
+    Falls back to ``wiki_dir/.llm-wiki-agent`` when not inside a git
+    repository (e.g. bare CI environments or tests that don't init git).
+    """
+    if Path(".git").is_dir():
+        return Path(".git") / ".llm-wiki-agent"
+    return Path(wiki_dir) / ".llm-wiki-agent"

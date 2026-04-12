@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS
+from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS, get_agent_config_path
 from ..services import circuit_breaker
 
 
@@ -28,7 +28,7 @@ def run(args) -> None:
         print(f"Wiki directory:  {wiki_dir} (not found)")
 
     # Agent config
-    agent_config = wiki_path / ".llm-wiki-agent"
+    agent_config = get_agent_config_path(wiki_dir)
     if agent_config.exists():
         agent = agent_config.read_text().strip()
         mode = "IDE" if agent in IDE_AGENTS else "CLI"

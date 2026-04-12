@@ -1,6 +1,6 @@
 import argparse
 import sys
-from .commands import init_cmd, extract_cmd, lint_cmd, hook_cmd, trigger_cmd, bootstrap_cmd, bump_cmd, uninstall_cmd, generate_prompt_cmd, status_cmd, release_cmd, upgrade_cmd
+from .commands import init_cmd, extract_cmd, lint_cmd, hook_cmd, trigger_cmd, bootstrap_cmd, bump_cmd, uninstall_cmd, generate_prompt_cmd, status_cmd, release_cmd, upgrade_cmd, sync_cmd
 from .config import AGENT_CHOICES, DEFAULT_WIKI_DIR
 
 def main():
@@ -110,6 +110,15 @@ def main():
     upgrade_parser.add_argument("--agent", choices=AGENT_CHOICES, default=None,
                                 help="Switch to a different agent (default: keep current)")
 
+    # sync command
+    sync_parser = subparsers.add_parser(
+        "sync",
+        help="Incrementally update wiki pages for files that changed since last bootstrap/sync",
+    )
+    sync_parser.add_argument("--src-dir", default=".", help="Source directory to scan (default: .)")
+    sync_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                             help="Wiki directory (default: docs/llm_wiki)")
+
     args = parser.parse_args()
 
     try:
@@ -137,6 +146,8 @@ def main():
             release_cmd.run(args)
         elif args.command == "upgrade":
             upgrade_cmd.run(args)
+        elif args.command == "sync":
+            sync_cmd.run(args)
     except KeyboardInterrupt:
         print("\nAborted.")
         sys.exit(130)

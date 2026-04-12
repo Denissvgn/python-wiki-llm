@@ -135,7 +135,7 @@ class TestUpgradeSwitchAgent:
         assert CONSTRAINT_START in new_schema.read_text()
 
         # Config should be updated
-        config = Path("docs/llm_wiki/.llm-wiki-agent").read_text().strip()
+        config = Path(".git/.llm-wiki-agent").read_text().strip()
         assert config == "cursor"
 
     def test_switch_preserves_old_user_content(self, tmp_path):

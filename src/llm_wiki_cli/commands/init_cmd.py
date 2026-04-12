@@ -5,7 +5,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from ..config import CLI_AGENTS, DEFAULT_WIKI_DIR, validate_path
+from ..config import CLI_AGENTS, DEFAULT_WIKI_DIR, get_agent_config_path, validate_path
 from ..services.schema import (
     CONSTRAINT_START as _CONSTRAINT_START,
     SCHEMA_FILENAMES,
@@ -91,7 +91,7 @@ def run(args):
             print(f"Created agent schema file: {schema_path}")
     
     # 4. Persist the chosen agent so install-hook can read it
-    agent_config_path = base_dir / ".llm-wiki-agent"
+    agent_config_path = get_agent_config_path(base_dir)
     with open(agent_config_path, "w") as f:
         f.write(args.agent)
 

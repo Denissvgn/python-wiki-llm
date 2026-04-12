@@ -5,7 +5,7 @@ import stat
 import sys
 from pathlib import Path
 
-from ..config import CLI_AGENTS, DEFAULT_WIKI_DIR, IDE_AGENTS, validate_path
+from ..config import CLI_AGENTS, DEFAULT_WIKI_DIR, IDE_AGENTS, get_agent_config_path, validate_path
 
 # Agents that support headless CLI execution (can be used in post-commit hook)
 _CLI_AGENTS = set(CLI_AGENTS)
@@ -15,7 +15,7 @@ _UI_ONLY_AGENTS = IDE_AGENTS
 
 def _read_agent_config(wiki_dir: str) -> str | None:
     """Read the agent name persisted by `llm-wiki init`."""
-    config_path = Path(wiki_dir) / ".llm-wiki-agent"
+    config_path = get_agent_config_path(wiki_dir)
     if config_path.exists():
         return config_path.read_text().strip()
     return None
@@ -112,7 +112,7 @@ def run(args):
         agent = _read_agent_config(wiki_dir)
         if not agent:
             print(
-                f"Warning: No agent config found at {wiki_dir}/.llm-wiki-agent.\n"
+                f"Warning: No agent config found at .git/.llm-wiki-agent.\n"
                 f"Run `llm-wiki init --agent <agent>` first, or pass --agent to this command.\n"
                 f"Defaulting to 'claude'."
             )

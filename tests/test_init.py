@@ -135,7 +135,7 @@ class TestInitPersistsAgentConfig:
         """init writes .llm-wiki-agent with the chosen agent name."""
         args = _make_args(agent="claude")
         init_cmd.run(args)
-        config = Path("docs/llm_wiki/.llm-wiki-agent")
+        config = Path(".git/.llm-wiki-agent")
         assert config.exists()
         assert config.read_text().strip() == "claude"
 
@@ -144,12 +144,12 @@ class TestInitPersistsAgentConfig:
         for agent in ("aider", "cursor", "copilot", "generic"):
             args = _make_args(agent=agent)
             init_cmd.run(args)
-            config = Path("docs/llm_wiki/.llm-wiki-agent")
+            config = Path(".git/.llm-wiki-agent")
             assert config.read_text().strip() == agent
 
     def test_agent_config_custom_wiki_dir(self, tmp_project):
-        """Config is written inside the custom wiki dir, not the default."""
+        """Config is written to .git/ regardless of which wiki dir is used."""
         args = _make_args(agent="opencode", wiki_dir="my_docs/wiki")
         init_cmd.run(args)
-        assert (Path("my_docs/wiki/.llm-wiki-agent")).read_text().strip() == "opencode"
-        assert not (Path("docs/llm_wiki/.llm-wiki-agent")).exists()
+        assert (Path(".git/.llm-wiki-agent")).read_text().strip() == "opencode"
+        assert not (Path("my_docs/wiki/.llm-wiki-agent")).exists()
