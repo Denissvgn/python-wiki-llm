@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 from ..config import CLI_AGENTS, DEFAULT_WIKI_DIR, get_agent_config_path, validate_path, write_config
+from ..services.io import read_md, write_md
 from ..services.schema import (
     CONSTRAINT_START as _CONSTRAINT_START,
     SCHEMA_FILENAMES,
@@ -57,13 +58,11 @@ def run(args):
     # 2. Create core files if they don't exist
     index_path = base_dir / "index.md"
     if not index_path.exists():
-        with open(index_path, "w") as f:
-            f.write("# LLM Wiki Index\n\nCatalog of project modules and entities.\n\n## Entities\n\n## Modules\n\n## Workflows\n\n## Infrastructure\n")
+        write_md(index_path, "# LLM Wiki Index\n\nCatalog of project modules and entities.\n\n## Entities\n\n## Modules\n\n## Workflows\n\n## Infrastructure\n")
             
     log_path = base_dir / "log.md"
     if not log_path.exists():
-        with open(log_path, "w") as f:
-            f.write("# Architectural Log\n\nAppend-only chronological log.\n\n")
+        write_md(log_path, "# Architectural Log\n\nAppend-only chronological log.\n\n")
 
     # 3. Create or Append to Agent Schema
     quality_hints = not getattr(args, "no_quality_hints", False)
@@ -76,19 +75,15 @@ def run(args):
         content_to_add = _build_schema_content(args.agent, wiki_dir, quality_hints=quality_hints)
         
         if schema_path.exists():
-            with open(schema_path, "r") as f:
-                existing_content = f.read()
+            existing_content = read_md(schema_path)
                 
             if _CONSTRAINT_START not in existing_content:
-                with open(schema_path, "a") as f:
-                    # Append cleanly
-                    f.write("\n\n" + content_to_add)
+                write_md(schema_path, existing_content + "\n\n" + content_to_add)
                 print(f"Appended agent constraints to existing file: {schema_path}")
             else:
                 print(f"Agent constraints already exist in {schema_path}, skipping append.")
         else:
-            with open(schema_path, "w") as f:
-                f.write(content_to_add)
+            write_md(schema_path, content_to_add)
             print(f"Created agent schema file: {schema_path}")
     
     # 4. Persist the chosen agent so install-hook can read it

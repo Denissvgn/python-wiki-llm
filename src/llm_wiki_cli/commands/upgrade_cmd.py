@@ -18,6 +18,7 @@ import sys
 from pathlib import Path
 
 from ..config import AGENT_CHOICES, CLI_AGENTS, DEFAULT_WIKI_DIR, IDE_AGENTS, get_agent_config_path, read_config, validate_path, write_config
+from ..services.io import read_md, write_md
 from ..services.schema import (
     ALL_SCHEMA_FILES,
     CONSTRAINT_START,
@@ -86,11 +87,11 @@ def _upgrade_schema(agent: str, wiki_dir: str, old_agent: str | None, *, quality
         if old_filename:
             old_path = Path(old_filename)
             if old_path.exists():
-                existing = old_path.read_text()
+                existing = read_md(old_path)
                 if CONSTRAINT_START in existing:
                     stripped = strip_wiki_block(existing)
                     if stripped:
-                        old_path.write_text(stripped)
+                        write_md(old_path, stripped)
                         print(f"  Cleaned constraint block from: {old_filename}")
                     else:
                         old_path.unlink()
@@ -120,14 +121,14 @@ def _upgrade_dirs(wiki_dir: str) -> int:
     # Ensure core files exist
     index_path = base / "index.md"
     if not index_path.exists():
-        index_path.write_text(
+        write_md(index_path,
             "# LLM Wiki Index\n\nCatalog of project modules and entities.\n\n"
             "## Entities\n\n## Modules\n\n## Workflows\n\n## Infrastructure\n"
         )
         created += 1
     log_path = base / "log.md"
     if not log_path.exists():
-        log_path.write_text("# Architectural Log\n\nAppend-only chronological log.\n\n")
+        write_md(log_path, "# Architectural Log\n\nAppend-only chronological log.\n\n")
         created += 1
     return created
 

@@ -9,6 +9,7 @@ from pathlib import Path
 
 from .extract_cmd import get_inventory, get_call_graph, get_docker_inventory
 from ..config import validate_path
+from ..services.io import read_md, write_md
 
 
 def _module_name_from_path(filepath: str) -> str:
@@ -647,7 +648,7 @@ def run(args):
             if entity_path.exists() and not args.overwrite:
                 print(f"  SKIP entity (exists): {entity_page_name}")
             else:
-                entity_path.write_text(_generate_entity_md(cls, filepath, relationships, mod_page_name))
+                write_md(entity_path, _generate_entity_md(cls, filepath, relationships, mod_page_name))
                 entities_created += 1
                 print(f"  CREATE entity: {entity_page_name}")
             if entity_page_name not in _seen_entity_pages:
@@ -659,7 +660,7 @@ def run(args):
         if module_path.exists() and not args.overwrite:
             print(f"  SKIP module (exists): {mod_page_name}")
         else:
-            module_path.write_text(_generate_module_md(filepath, file_data, file_entity_page_map))
+            write_md(module_path, _generate_module_md(filepath, file_data, file_entity_page_map))
             modules_created += 1
             print(f"  CREATE module: {mod_page_name}")
 
@@ -679,7 +680,7 @@ def run(args):
             if wf_path.exists() and not args.overwrite:
                 print(f"  SKIP workflow (exists): {wf_name}")
             else:
-                wf_path.write_text(_generate_workflow_md(wf_name, wf_data))
+                write_md(wf_path, _generate_workflow_md(wf_name, wf_data))
                 workflows_created += 1
                 print(f"  CREATE workflow: {wf_name}")
             workflow_entries.append({"name": wf_name, "entry": wf_data["entry"]})
@@ -695,14 +696,14 @@ def run(args):
         if infra_path.exists() and not args.overwrite:
             print(f"  SKIP infrastructure (exists): {page_name}")
         else:
-            infra_path.write_text(_generate_docker_md(docker_file, docker_info, module_stems))
+            write_md(infra_path, _generate_docker_md(docker_file, docker_info, module_stems))
             infra_created += 1
             print(f"  CREATE infrastructure: {page_name}")
         infra_entries.append({"name": page_name, "type": docker_info["type"]})
 
     # 5. Rebuild index.md
     index_path = wiki_dir / "index.md"
-    index_path.write_text(_generate_index_md(all_entity_names, module_entries, workflow_entries or None, infra_entries or None))
+    write_md(index_path, _generate_index_md(all_entity_names, module_entries, workflow_entries or None, infra_entries or None))
     print(f"  WRITE index.md")
 
     # 6. Append log entry
@@ -723,12 +724,10 @@ def run(args):
         f"- Cross-references resolved: {sum(len(v) for v in relationships.values())}\n"
     )
     if log_path.exists():
-        with open(log_path, "a") as f:
-            f.write(log_entry)
+        existing_log = read_md(log_path)
+        write_md(log_path, existing_log + log_entry)
     else:
-        with open(log_path, "w") as f:
-            f.write("# Architectural Log\n\nAppend-only chronological log.\n")
-            f.write(log_entry)
+        write_md(log_path, "# Architectural Log\n\nAppend-only chronological log.\n" + log_entry)
 
     print(
         f"\nBootstrap complete: {entities_created} entities, "
@@ -772,7 +771,7 @@ def _update_agent_constraints(wiki_dir: str) -> None:
         p = Path(filename)
         if not p.exists():
             continue
-        text = p.read_text()
+        text = read_md(p)
         if _CONSTRAINT_START not in text or _CONSTRAINT_END not in text:
             continue
 
@@ -782,7 +781,7 @@ def _update_agent_constraints(wiki_dir: str) -> None:
         block = text[start_idx:end_idx]
         new_block = block.replace(_DEFAULT_WIKI_DIR, wiki_dir)
         if new_block != block:
-            p.write_text(text[:start_idx] + new_block + text[end_idx:])
+            write_md(p, text[:start_idx] + new_block + text[end_idx:])
             updated.append(filename)
 
     if updated:

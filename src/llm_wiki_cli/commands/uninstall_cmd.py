@@ -2,6 +2,7 @@ import shutil
 from pathlib import Path
 
 from ..config import DEFAULT_WIKI_DIR
+from ..services.io import read_md, write_md
 from ..services.schema import (
     ALL_SCHEMA_FILES as AGENT_SCHEMA_FILES,
     CONSTRAINT_START,
@@ -45,7 +46,7 @@ def _remove_hooks(dry_run: bool = False) -> int:
         if not hook_path.exists():
             continue
 
-        content = hook_path.read_text()
+        content = hook_path.read_text(encoding="utf-8")
         if HOOK_SIGNATURE not in content:
             print(f"  SKIP hook {name} (not ours — contains custom user content)")
             continue
@@ -73,7 +74,7 @@ def _clean_agent_schemas(dry_run: bool = False) -> int:
         if not schema_path.exists():
             continue
 
-        content = schema_path.read_text()
+        content = read_md(schema_path)
         if CONSTRAINT_START not in content:
             continue
 
@@ -86,7 +87,7 @@ def _clean_agent_schemas(dry_run: bool = False) -> int:
                 print(f"  WOULD DELETE: {filename} (only contained wiki constraints)")
         else:
             if stripped:
-                schema_path.write_text(stripped)
+                write_md(schema_path, stripped)
                 print(f"  CLEANED block from: {filename} (user content preserved)")
             else:
                 schema_path.unlink()
@@ -148,8 +149,8 @@ def run(args):
     schema_count = 0
     for filename in AGENT_SCHEMA_FILES:
         p = Path(filename)
-        if p.exists() and CONSTRAINT_START in p.read_text():
-            stripped = _strip_wiki_block(p.read_text())
+        if p.exists() and CONSTRAINT_START in read_md(p):
+            stripped = _strip_wiki_block(read_md(p))
             if stripped:
                 print(f"  {filename} — will strip wiki block (user content preserved)")
             else:

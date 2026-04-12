@@ -7,6 +7,8 @@ from pathlib import Path
 
 from .extract_cmd import get_inventory, get_call_graph, get_docker_inventory
 from ..config import validate_path
+from ..services.io import read_md
+from ..services.io import read_md
 
 # basic regex for [text](url)
 LINK_RE = re.compile(r'\[.+?\]\((.+?)\)')
@@ -84,17 +86,16 @@ def run(args):
     # ── 1. Broken Links ──────────────────────────────────────────────
     broken_links = 0
     for page in pages:
-        with open(page, "r") as f:
-            content = f.read()
-            links = LINK_RE.findall(content)
+        content = read_md(page)
+        links = LINK_RE.findall(content)
 
-            for link in links:
-                if link.startswith("http://") or link.startswith("https://"):
-                    continue
-                target = (page.parent / link).resolve()
-                if not target.exists():
-                    print(f"  ❌ Broken link in {page.relative_to(wiki_dir)} -> {link}")
-                    broken_links += 1
+        for link in links:
+            if link.startswith("http://") or link.startswith("https://"):
+                continue
+            target = (page.parent / link).resolve()
+            if not target.exists():
+                print(f"  ❌ Broken link in {page.relative_to(wiki_dir)} -> {link}")
+                broken_links += 1
 
     issues += broken_links
     if broken_links:
@@ -107,21 +108,20 @@ def run(args):
     index_path = wiki_dir / "index.md"
     referenced_files: list[Path] = []
     if index_path.exists():
-        with open(index_path, "r") as f:
-            index_content = f.read()
-            index_links = LINK_RE.findall(index_content)
+        index_content = read_md(index_path)
+        index_links = LINK_RE.findall(index_content)
 
-            for link in index_links:
-                if not link.startswith("http"):
-                    target = (index_path.parent / link).resolve()
-                    referenced_files.append(target)
+        for link in index_links:
+            if not link.startswith("http"):
+                target = (index_path.parent / link).resolve()
+                referenced_files.append(target)
 
-            for page in pages:
-                if page.name in ["index.md", "log.md"]:
-                    continue
-                if page.resolve() not in referenced_files:
-                    print(f"  ⚠️  Orphan page (not in index.md): {page.relative_to(wiki_dir)}")
-                    orphan_count += 1
+        for page in pages:
+            if page.name in ["index.md", "log.md"]:
+                continue
+            if page.resolve() not in referenced_files:
+                print(f"  ⚠️  Orphan page (not in index.md): {page.relative_to(wiki_dir)}")
+                orphan_count += 1
 
     issues += orphan_count
     if orphan_count:
@@ -183,10 +183,9 @@ def run(args):
     stale_wf = 0
     if workflows_dir.exists():
         for wf_page in workflows_dir.glob("*.md"):
-            with open(wf_page, "r") as f:
-                content = f.read()
-            wf_links = LINK_RE.findall(content)
-            for link in wf_links:
+            content = read_md(wf_page)
+            links = LINK_RE.findall(content)
+            for link in links:
                 if link.startswith("http"):
                     continue
                 target = (wf_page.parent / link).resolve()

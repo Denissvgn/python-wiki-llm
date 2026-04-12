@@ -33,6 +33,7 @@ from .bootstrap_cmd import (
     _qualifier_for,
 )
 from ..config import validate_path
+from ..services.io import read_md, write_md
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -271,7 +272,7 @@ def _apply_diff(
             entity_path = wiki_dir / "entities" / f"{entity_page_name}.md"
             content = _generate_entity_md(cls, filepath, relationships, mod_page_name)
             is_new = not entity_path.exists()
-            entity_path.write_text(content)
+            write_md(entity_path, content)
             if is_new:
                 result.created += 1
                 print(f"  CREATE entity: {entity_page_name}")
@@ -283,7 +284,7 @@ def _apply_diff(
         module_path = wiki_dir / "modules" / f"{mod_page_name}.md"
         content = _generate_module_md(filepath, file_data, file_entity_page_map)
         is_new = not module_path.exists()
-        module_path.write_text(content)
+        write_md(module_path, content)
         if is_new:
             result.created += 1
             print(f"  CREATE module: {mod_page_name}")
@@ -322,9 +323,9 @@ def _apply_diff(
 
             if entity_page_name:
                 entity_path = wiki_dir / "entities" / f"{entity_page_name}.md"
-                text = entity_path.read_text(encoding="utf-8")
+                text = read_md(entity_path)
                 if _DEPRECATION_HEADER not in text:
-                    entity_path.write_text(_DEPRECATION_HEADER + text, encoding="utf-8")
+                    write_md(entity_path, _DEPRECATION_HEADER + text)
                     deprecated_count += 1
                     result.deprecated += 1
                     print(f"  DEPRECATE entity: {entity_page_name}")
@@ -339,9 +340,9 @@ def _apply_diff(
                 break
 
         if mod_page_path.exists():
-            text = mod_page_path.read_text(encoding="utf-8")
+            text = read_md(mod_page_path)
             if _DEPRECATION_HEADER not in text:
-                mod_page_path.write_text(_DEPRECATION_HEADER + text, encoding="utf-8")
+                write_md(mod_page_path, _DEPRECATION_HEADER + text)
                 result.deprecated += 1
                 print(f"  DEPRECATE module: {mod_page_path.stem}")
 
@@ -443,7 +444,7 @@ def _rebuild_index(wiki_dir: Path, inventory: dict, src_dir: str) -> None:
     infra_entries = _list_existing_pages(wiki_dir / "infrastructure", "type")
 
     index_path = wiki_dir / "index.md"
-    index_path.write_text(
+    write_md(index_path,
         _generate_index_md(all_entity_names, module_entries, workflow_entries or None, infra_entries or None)
     )
     print("  WRITE index.md")
@@ -478,10 +479,8 @@ def _append_log(wiki_dir: Path, src_dir: str, diff: SyncDiff, result: SyncResult
         f"- Moved entities: {moved_str}\n"
     )
     if log_path.exists():
-        with open(log_path, "a", encoding="utf-8") as fh:
-            fh.write(entry)
+        existing_log = read_md(log_path)
+        write_md(log_path, existing_log + entry)
     else:
-        with open(log_path, "w", encoding="utf-8") as fh:
-            fh.write("# Architectural Log\n\nAppend-only chronological log.\n")
-            fh.write(entry)
+        write_md(log_path, "# Architectural Log\n\nAppend-only chronological log.\n" + entry)
     print("  APPEND log.md")

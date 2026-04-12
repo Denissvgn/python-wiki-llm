@@ -10,6 +10,7 @@ import re
 from pathlib import Path
 
 from ..config import IDE_AGENTS
+from .io import read_md, write_md
 
 # Marker boundaries used to wrap the entire generated block
 CONSTRAINT_START = "# --- LLM Wiki Maintainer Constraints ---"
@@ -130,14 +131,14 @@ def replace_schema_block(schema_path: Path, new_content: str) -> None:
     """
     if not schema_path.exists():
         schema_path.parent.mkdir(parents=True, exist_ok=True)
-        schema_path.write_text(new_content)
+        write_md(schema_path, new_content)
         return
 
-    existing = schema_path.read_text()
+    existing = read_md(schema_path)
     if CONSTRAINT_START not in existing:
         # No existing block — append
         sep = "\n\n" if existing and not existing.endswith("\n\n") else ("\n" if existing and not existing.endswith("\n") else "")
-        schema_path.write_text(existing + sep + new_content)
+        write_md(schema_path, existing + sep + new_content)
         return
 
     # Replace existing block
@@ -146,4 +147,4 @@ def replace_schema_block(schema_path: Path, new_content: str) -> None:
         re.DOTALL,
     )
     updated = pattern.sub(new_content, existing)
-    schema_path.write_text(updated)
+    write_md(schema_path, updated)
