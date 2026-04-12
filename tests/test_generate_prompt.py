@@ -1,7 +1,6 @@
 """Tests for commands/generate_prompt_cmd.py"""
 from __future__ import annotations
 
-import subprocess
 import types
 from pathlib import Path
 
@@ -16,7 +15,6 @@ def _make_args(**kwargs):
         "src_dir": ".",
         "output": ".git/llm-wiki-prompt.txt",
         "print_prompt": False,
-        "no_diff": True,  # avoid needing real git commits in tests
     }
     defaults.update(kwargs)
     return types.SimpleNamespace(**defaults)
@@ -38,13 +36,12 @@ class TestGeneratePromptWritesFile:
         content = Path(".git/llm-wiki-prompt.txt").read_text()
         assert "my_docs/wiki" in content
 
-    def test_prompt_contains_ast_structure(self, tmp_project):
+    def test_prompt_contains_extract_command(self, tmp_project):
         args = _make_args()
         generate_prompt_cmd.run(args)
 
         content = Path(".git/llm-wiki-prompt.txt").read_text()
-        # The AST JSON block should be present
-        assert "AST structure" in content
+        assert "llm-wiki extract" in content
 
     def test_custom_output_path(self, tmp_project, tmp_path):
         out_file = str(tmp_path / "my_prompt.txt")
@@ -66,20 +63,18 @@ class TestGeneratePromptPrintMode:
 
 
 class TestGeneratePromptBuildPrompt:
-    def test_no_diff_skips_git(self, tmp_project):
-        """With --no-diff, function should not call git and succeed."""
-        args = _make_args(no_diff=True)
-        generate_prompt_cmd.run(args)  # must not raise
-
-    def test_diff_included_when_available(self, tmp_project):
-        """When no_diff=False and git works, diff text is included in the prompt."""
-        # Create a commit so HEAD~1 exists
-        subprocess.run(["git", "add", "."], cwd=".", capture_output=True)
-        subprocess.run(["git", "commit", "-m", "initial"], cwd=".", capture_output=True)
-        subprocess.run(["git", "add", "."], cwd=".", capture_output=True)
-        subprocess.run(["git", "commit", "-m", "second"], cwd=".", capture_output=True)
-
-        args = _make_args(no_diff=False)
+    def test_prompt_contains_step_headings(self, tmp_project):
+        """Prompt should have the three instructional steps."""
+        args = _make_args()
         generate_prompt_cmd.run(args)
         content = Path(".git/llm-wiki-prompt.txt").read_text()
-        assert "Git Diff" in content
+        assert "Step 1" in content
+        assert "Step 2" in content
+        assert "Step 3" in content
+
+    def test_prompt_contains_git_diff_command(self, tmp_project):
+        """Prompt should instruct the agent to run git diff."""
+        args = _make_args()
+        generate_prompt_cmd.run(args)
+        content = Path(".git/llm-wiki-prompt.txt").read_text()
+        assert "git diff HEAD~1..HEAD" in content

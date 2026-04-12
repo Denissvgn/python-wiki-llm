@@ -67,7 +67,6 @@ def main():
     gp_parser.add_argument("--src-dir", default=".", help="Source directory to scan (default: .)")
     gp_parser.add_argument("--output", default=".git/llm-wiki-prompt.txt", help="Output file path (default: .git/llm-wiki-prompt.txt)")
     gp_parser.add_argument("--print", dest="print_prompt", action="store_true", help="Print the prompt to stdout instead of writing to a file")
-    gp_parser.add_argument("--no-diff", action="store_true", help="Skip git diff (useful when no commits exist yet)")
 
     # uninstall command
     uninstall_parser = subparsers.add_parser("uninstall", help="Remove all LLM Wiki artifacts from the project")

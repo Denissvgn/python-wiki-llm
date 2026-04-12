@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llm-wiki-cli"
-version = "0.2.4"
+version = "0.2.5"
 description = "CLI tool to maintain hybrid LLM Wikis for Python projects."
 readme = "README.md"
 license = {text = "MIT"}
