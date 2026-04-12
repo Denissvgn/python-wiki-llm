@@ -216,7 +216,7 @@ def _scan_python_files(
         if EXCLUDED_DIRS & set(py_file.parts):
             continue
 
-        with open(py_file, "r") as f:
+        with open(py_file, "r", encoding="utf-8") as f:
             try:
                 source = f.read()
                 tree = ast.parse(source, filename=str(py_file))

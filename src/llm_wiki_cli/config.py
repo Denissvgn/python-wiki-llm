@@ -107,7 +107,7 @@ def read_config(wiki_dir: "str | Path") -> dict:
     if not config_path.exists():
         return dict(_DEFAULT_CONFIG)
 
-    raw = config_path.read_text().strip()
+    raw = config_path.read_text(encoding="utf-8").strip()
 
     # Backward compat: bare string = old format (just the agent name)
     if not raw.startswith("{"):
@@ -132,4 +132,4 @@ def write_config(wiki_dir: "str | Path", data: dict) -> None:
     """Persist the llm-wiki config dict to the agent config file."""
     config_path = get_agent_config_path(wiki_dir)
     config_path.parent.mkdir(parents=True, exist_ok=True)
-    config_path.write_text(json.dumps(data, indent=2) + "\n")
+    config_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")

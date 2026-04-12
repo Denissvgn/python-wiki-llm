@@ -80,7 +80,7 @@ def run(args) -> None:
 
     out_path = Path(output)
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(prompt)
+    out_path.write_text(prompt, encoding="utf-8")
 
     print(f"Wiki sync prompt written to: {out_path}")
     print()

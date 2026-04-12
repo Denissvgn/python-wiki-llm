@@ -26,7 +26,7 @@ def find_version_file(root: str = ".") -> Path | None:
 
 def read_version(path: Path) -> str | None:
     """Parse X.Y.Z version from a detected file."""
-    content = path.read_text()
+    content = path.read_text(encoding="utf-8")
     for filename, pattern in VERSION_PATTERNS:
         if path.name == filename:
             match = pattern.search(content)
@@ -42,7 +42,7 @@ def read_version(path: Path) -> str | None:
 
 def write_version(path: Path, new_version: str) -> None:
     """Update the version string in-place, preserving file format."""
-    content = path.read_text()
+    content = path.read_text(encoding="utf-8")
     original = content
     for filename, pattern in VERSION_PATTERNS:
         if path.name == filename:
@@ -60,7 +60,7 @@ def write_version(path: Path, new_version: str) -> None:
             break
     if content == original:
         raise ValueError(f"Version pattern not found in {path}")
-    path.write_text(content)
+    path.write_text(content, encoding="utf-8")
 
 
 def bump_patch(version: str) -> str:

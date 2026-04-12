@@ -25,6 +25,10 @@ def read_md(path: Path) -> str:
 
 
 def write_md(path: Path, text: str) -> None:
-    """Write *text* to *path* as UTF-8 with Unix line-endings."""
+    """Write *text* to *path* as UTF-8 with Unix line-endings.
+
+    Uses ``write_bytes`` so that Windows text-mode doesn't translate
+    ``\\n`` into ``\\r\\n`` behind our back.
+    """
     normalized = text.replace("\r\n", "\n").replace("\r", "\n")
-    path.write_text(normalized, encoding="utf-8")
+    path.write_bytes(normalized.encode("utf-8"))

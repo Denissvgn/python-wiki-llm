@@ -135,15 +135,18 @@ def replace_schema_block(schema_path: Path, new_content: str) -> None:
         return
 
     existing = read_md(schema_path)
+    # Normalize newlines for consistent matching
+    existing = existing.replace("\r\n", "\n").replace("\r", "\n")
     if CONSTRAINT_START not in existing:
         # No existing block — append
         sep = "\n\n" if existing and not existing.endswith("\n\n") else ("\n" if existing and not existing.endswith("\n") else "")
         write_md(schema_path, existing + sep + new_content)
         return
 
-    # Replace existing block
+    # Replace existing block (consume any trailing whitespace after CONSTRAINT_END
+    # so repeated runs don't accumulate blank lines)
     pattern = re.compile(
-        re.escape(CONSTRAINT_START) + r'.*?' + re.escape(CONSTRAINT_END) + r'\n?',
+        re.escape(CONSTRAINT_START) + r'.*?' + re.escape(CONSTRAINT_END) + r'\n*',
         re.DOTALL,
     )
     updated = pattern.sub(new_content, existing)
