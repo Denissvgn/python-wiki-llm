@@ -27,7 +27,7 @@ class TestHookReadsAgentConfig:
         hook_cmd.run(args)
 
 
-        hook_text = (Path(".git/hooks/post-commit")).read_text()
+        hook_text = (Path(".git/hooks/post-commit")).read_text(encoding="utf-8")
         assert "--agent aider" in hook_text
 
     def test_hook_bakes_agent_from_cli_override(self, tmp_project):
@@ -36,7 +36,7 @@ class TestHookReadsAgentConfig:
         args = _make_args(agent="opencode")
         hook_cmd.run(args)
 
-        hook_text = (Path(".git/hooks/post-commit")).read_text()
+        hook_text = (Path(".git/hooks/post-commit")).read_text(encoding="utf-8")
         assert "--agent opencode" in hook_text
         assert "--agent aider" not in hook_text
 
@@ -48,7 +48,7 @@ class TestHookReadsAgentConfig:
         out = capsys.readouterr().out
         assert "warning" in out.lower() or "Warning" in out
 
-        hook_text = (Path(".git/hooks/post-commit")).read_text()
+        hook_text = (Path(".git/hooks/post-commit")).read_text(encoding="utf-8")
         assert "--agent claude" in hook_text
 
 
@@ -62,7 +62,7 @@ class TestHookIDEAgentInstallsPromptHook:
 
         hook_path = Path(".git/hooks/post-commit")
         assert hook_path.exists()
-        hook_text = hook_path.read_text()
+        hook_text = hook_path.read_text(encoding="utf-8")
         assert "generate-prompt" in hook_text
         assert "trigger-agent" not in hook_text
 
@@ -71,7 +71,7 @@ class TestHookIDEAgentInstallsPromptHook:
         args = _make_args()
         hook_cmd.run(args)
 
-        hook_text = Path(".git/hooks/post-commit").read_text()
+        hook_text = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
         assert "generate-prompt" in hook_text
 
     def test_post_commit_installed_for_generic(self, tmp_project, capsys):
@@ -79,7 +79,7 @@ class TestHookIDEAgentInstallsPromptHook:
         args = _make_args()
         hook_cmd.run(args)
 
-        hook_text = Path(".git/hooks/post-commit").read_text()
+        hook_text = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
         assert "generate-prompt" in hook_text
 
     def test_ide_hook_contains_wiki_dir(self, tmp_project):
@@ -87,7 +87,7 @@ class TestHookIDEAgentInstallsPromptHook:
         args = _make_args(wiki_dir="my_docs/wiki")
         hook_cmd.run(args)
 
-        hook_text = Path(".git/hooks/post-commit").read_text()
+        hook_text = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
         assert "my_docs/wiki" in hook_text
 
     def test_agent_override_bypasses_ui_restriction(self, tmp_project, capsys):
@@ -96,7 +96,7 @@ class TestHookIDEAgentInstallsPromptHook:
         args = _make_args(agent="claude")
         hook_cmd.run(args)
 
-        hook_text = Path(".git/hooks/post-commit").read_text()
+        hook_text = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
         assert "--agent claude" in hook_text
         assert "generate-prompt" not in hook_text
 
@@ -115,7 +115,7 @@ class TestHookReadsCustomWikiDir:
         args = _make_args(wiki_dir="my_docs/wiki")
         hook_cmd.run(args)
 
-        hook_text = (Path(".git/hooks/post-commit")).read_text()
+        hook_text = (Path(".git/hooks/post-commit")).read_text(encoding="utf-8")
         assert "--agent aider" in hook_text
 
 
@@ -126,12 +126,12 @@ class TestPostCommitAutoCommitGuard:
         _write_agent_config("docs/llm_wiki", "claude")
         args = _make_args()
         hook_cmd.run(args)
-        hook_text = Path(".git/hooks/post-commit").read_text()
+        hook_text = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
         assert "LLM_WIKI_AUTO_COMMIT" in hook_text
 
     def test_ide_post_commit_has_auto_commit_guard(self, tmp_project):
         _write_agent_config("docs/llm_wiki", "copilot")
         args = _make_args()
         hook_cmd.run(args)
-        hook_text = Path(".git/hooks/post-commit").read_text()
+        hook_text = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
         assert "LLM_WIKI_AUTO_COMMIT" in hook_text

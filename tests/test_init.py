@@ -32,7 +32,7 @@ class TestInitCreatesStructure:
         base = Path("docs/llm_wiki")
         assert (base / "index.md").exists()
         assert (base / "log.md").exists()
-        assert "Index" in (base / "index.md").read_text()
+        assert "Index" in (base / "index.md").read_text(encoding="utf-8")
 
 
 class TestInitAgentSchemas:
@@ -40,7 +40,7 @@ class TestInitAgentSchemas:
         args = _make_args(agent="claude")
         init_cmd.run(args)
         assert Path("CLAUDE.md").exists()
-        content = Path("CLAUDE.md").read_text()
+        content = Path("CLAUDE.md").read_text(encoding="utf-8")
         assert "LLM Wiki Maintainer Constraints" in content
 
     def test_cursor_agent(self, tmp_project):
@@ -65,7 +65,7 @@ class TestInitPreservesContent:
         args = _make_args(agent="claude")
         init_cmd.run(args)
 
-        content = Path("CLAUDE.md").read_text()
+        content = Path("CLAUDE.md").read_text(encoding="utf-8")
         assert "My Custom Rules" in content
         assert "LLM Wiki Maintainer Constraints" in content
 
@@ -74,7 +74,7 @@ class TestInitPreservesContent:
         init_cmd.run(args)
         init_cmd.run(args)  # run twice
 
-        content = Path("CLAUDE.md").read_text()
+        content = Path("CLAUDE.md").read_text(encoding="utf-8")
         assert content.count("LLM Wiki Maintainer Constraints") == 1
 
     def test_idempotent_structure(self, tmp_project):
@@ -98,7 +98,7 @@ class TestInitCustomWikiDir:
         args = _make_args(agent="claude", wiki_dir="my_docs/wiki")
         init_cmd.run(args)
 
-        content = Path("CLAUDE.md").read_text()
+        content = Path("CLAUDE.md").read_text(encoding="utf-8")
         assert "my_docs/wiki" in content
         assert "docs/llm_wiki" not in content
 
@@ -163,14 +163,14 @@ class TestInitQualityHints:
     def test_default_includes_hints(self, tmp_project):
         args = _make_args(agent="claude")
         init_cmd.run(args)
-        content = Path("CLAUDE.md").read_text()
+        content = Path("CLAUDE.md").read_text(encoding="utf-8")
         assert "Agent quality guidelines" in content
         assert "Surgical Changes" in content
 
     def test_no_quality_hints_flag(self, tmp_project):
         args = _make_args(agent="claude", no_quality_hints=True)
         init_cmd.run(args)
-        content = Path("CLAUDE.md").read_text()
+        content = Path("CLAUDE.md").read_text(encoding="utf-8")
         assert "Agent quality guidelines" not in content
         assert "Surgical Changes" not in content
         # Rest of constraints should still be there

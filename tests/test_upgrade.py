@@ -54,13 +54,13 @@ class TestUpgradeRefreshesSchema:
         os.chdir(tmp_path)
 
         schema = Path(SCHEMA_FILENAMES["copilot"])
-        original = schema.read_text()
+        original = schema.read_text(encoding="utf-8")
         assert original.count(CONSTRAINT_START) == 1
 
         # Upgrade
         upgrade_cmd.run(_make_args())
 
-        updated = schema.read_text()
+        updated = schema.read_text(encoding="utf-8")
         assert updated.count(CONSTRAINT_START) == 1
         assert updated.count(CONSTRAINT_END) == 1
 
@@ -74,7 +74,7 @@ class TestUpgradeRefreshesSchema:
 
         upgrade_cmd.run(_make_args())
 
-        content = Path(SCHEMA_FILENAMES["copilot"]).read_text()
+        content = Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
         assert expected_block.strip() in content
 
 
@@ -86,13 +86,13 @@ class TestUpgradePreservesUserContent:
         os.chdir(tmp_path)
 
         schema = Path(SCHEMA_FILENAMES["copilot"])
-        content = schema.read_text()
+        content = schema.read_text(encoding="utf-8")
         user_rule = "\n# My custom rule\nAlways use type hints.\n"
         schema.write_text(user_rule + content)
 
         upgrade_cmd.run(_make_args())
 
-        updated = schema.read_text()
+        updated = schema.read_text(encoding="utf-8")
         assert "My custom rule" in updated
         assert "Always use type hints." in updated
         assert updated.count(CONSTRAINT_START) == 1
@@ -111,7 +111,7 @@ class TestUpgradePreservesWiki:
 
         upgrade_cmd.run(_make_args())
 
-        assert entity.read_text() == "# Foo\n\nMy entity.\n"
+        assert entity.read_text(encoding="utf-8") == "# Foo\n\nMy entity.\n"
 
 
 class TestUpgradeSwitchAgent:
@@ -128,12 +128,12 @@ class TestUpgradeSwitchAgent:
 
         # Old schema file should be cleaned/removed
         if old_schema.exists():
-            assert CONSTRAINT_START not in old_schema.read_text()
+            assert CONSTRAINT_START not in old_schema.read_text(encoding="utf-8")
 
         # New schema file should exist
         new_schema = Path(SCHEMA_FILENAMES["cursor"])
         assert new_schema.exists()
-        assert CONSTRAINT_START in new_schema.read_text()
+        assert CONSTRAINT_START in new_schema.read_text(encoding="utf-8")
 
         # Config should be updated
         config = read_config("docs/llm_wiki")
@@ -144,14 +144,14 @@ class TestUpgradeSwitchAgent:
         os.chdir(tmp_path)
 
         old_schema = Path(SCHEMA_FILENAMES["copilot"])
-        content = old_schema.read_text()
+        content = old_schema.read_text(encoding="utf-8")
         old_schema.write_text("# My Copilot Rules\nUse Python 3.12.\n\n" + content)
 
         upgrade_cmd.run(_make_args(agent="cursor"))
 
         # Old file should still exist with user content
         assert old_schema.exists()
-        remaining = old_schema.read_text()
+        remaining = old_schema.read_text(encoding="utf-8")
         assert "My Copilot Rules" in remaining
         assert CONSTRAINT_START not in remaining
 
@@ -172,7 +172,7 @@ class TestUpgradeReinstallsHooks:
         upgrade_cmd.run(_make_args())
 
         assert hook.exists()
-        content = hook.read_text()
+        content = hook.read_text(encoding="utf-8")
         assert "LLM Wiki" in content
 
     def test_hooks_refreshed_on_agent_switch(self, tmp_path):
@@ -182,12 +182,12 @@ class TestUpgradeReinstallsHooks:
         # Install initial hooks
         upgrade_cmd.run(_make_args())
         hook = Path(".git/hooks/post-commit")
-        old_content = hook.read_text()
+        old_content = hook.read_text(encoding="utf-8")
         assert "generate-prompt" in old_content  # IDE mode
 
         # Switch to CLI agent
         upgrade_cmd.run(_make_args(agent="claude"))
-        new_content = hook.read_text()
+        new_content = hook.read_text(encoding="utf-8")
         assert "trigger-agent" in new_content  # CLI mode
 
 
@@ -237,7 +237,7 @@ class TestUpgradeQualityHints:
 
         upgrade_cmd.run(_make_args())
 
-        content = Path(SCHEMA_FILENAMES["copilot"]).read_text()
+        content = Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
         assert "Agent quality guidelines" in content
         assert "Surgical Changes" in content
 
@@ -247,7 +247,7 @@ class TestUpgradeQualityHints:
 
         upgrade_cmd.run(_make_args(quality_hints=False))
 
-        content = Path(SCHEMA_FILENAMES["copilot"]).read_text()
+        content = Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
         assert "Agent quality guidelines" not in content
         assert CONSTRAINT_START in content
 
@@ -271,7 +271,7 @@ class TestUpgradeQualityHints:
 
         upgrade_cmd.run(_make_args())  # no quality_hints flag
 
-        content = Path(SCHEMA_FILENAMES["copilot"]).read_text()
+        content = Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
         assert "Agent quality guidelines" not in content
         config = read_config("docs/llm_wiki")
         assert config["quality_hints"] is False
@@ -283,11 +283,11 @@ class TestUpgradeQualityHints:
 
         # Disable
         upgrade_cmd.run(_make_args(quality_hints=False))
-        assert "Agent quality guidelines" not in Path(SCHEMA_FILENAMES["copilot"]).read_text()
+        assert "Agent quality guidelines" not in Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
 
         # Re-enable
         upgrade_cmd.run(_make_args(quality_hints=True))
-        content = Path(SCHEMA_FILENAMES["copilot"]).read_text()
+        content = Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
         assert "Agent quality guidelines" in content
         config = read_config("docs/llm_wiki")
         assert config["quality_hints"] is True
@@ -306,7 +306,7 @@ class TestUpgradeGitignore:
 
         upgrade_cmd.run(_make_args())
 
-        content = gi.read_text()
+        content = gi.read_text(encoding="utf-8")
         assert ".git/llm-wiki-prompt.txt" in content
         assert ".git/llm-wiki.lock" in content
         assert "*.pyc" in content  # user content preserved
@@ -320,14 +320,14 @@ class TestUpgradeIdempotent:
         os.chdir(tmp_path)
 
         upgrade_cmd.run(_make_args())
-        first = Path(SCHEMA_FILENAMES["copilot"]).read_text()
-        hook_first = Path(".git/hooks/post-commit").read_text()
-        gi_first = Path(".gitignore").read_text()
+        first = Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
+        hook_first = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
+        gi_first = Path(".gitignore").read_text(encoding="utf-8")
 
         upgrade_cmd.run(_make_args())
-        second = Path(SCHEMA_FILENAMES["copilot"]).read_text()
-        hook_second = Path(".git/hooks/post-commit").read_text()
-        gi_second = Path(".gitignore").read_text()
+        second = Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
+        hook_second = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
+        gi_second = Path(".gitignore").read_text(encoding="utf-8")
 
         assert first == second
         assert hook_first == hook_second

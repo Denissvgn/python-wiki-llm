@@ -88,7 +88,7 @@ class TestE2ELifecycle:
         assert Path(f"{wiki_dir}/modules").is_dir()
         assert Path(f"{wiki_dir}/workflows").is_dir()
         assert Path("CLAUDE.md").exists()
-        assert "LLM Wiki" in Path("CLAUDE.md").read_text()
+        assert "LLM Wiki" in Path("CLAUDE.md").read_text(encoding="utf-8")
 
         # ── 2. Bootstrap ─────────────────────────────────────────────
         bootstrap_cmd.run(_ns(
@@ -102,14 +102,14 @@ class TestE2ELifecycle:
         assert Path(f"{wiki_dir}/modules/api.md").exists()
 
         # Index should link all entities and modules
-        index = Path(f"{wiki_dir}/index.md").read_text()
+        index = Path(f"{wiki_dir}/index.md").read_text(encoding="utf-8")
         assert "User" in index
         assert "Team" in index
         assert "models" in index
         assert "api" in index
 
         # Log should have bootstrap entry
-        log = Path(f"{wiki_dir}/log.md").read_text()
+        log = Path(f"{wiki_dir}/log.md").read_text(encoding="utf-8")
         assert "bootstrap" in log.lower()
 
         # ── 3. Lint (should pass — wiki is consistent) ───────────────
@@ -146,7 +146,7 @@ class TestE2ELifecycle:
         out = capsys.readouterr().out
         assert "0.1.0 -> 0.1.1" in out
 
-        content = Path("pyproject.toml").read_text()
+        content = Path("pyproject.toml").read_text(encoding="utf-8")
         assert "0.1.1" in content
 
         # Bump minor
@@ -173,4 +173,4 @@ class TestE2ELifecycle:
         assert not Path(wiki_dir).exists()
         # CLAUDE.md may still exist (preamble content) but wiki block should be gone
         if Path("CLAUDE.md").exists():
-            assert "LLM Wiki Maintainer Constraints" not in Path("CLAUDE.md").read_text()
+            assert "LLM Wiki Maintainer Constraints" not in Path("CLAUDE.md").read_text(encoding="utf-8")

@@ -33,14 +33,14 @@ class TestGeneratePromptWritesFile:
         args = _make_args(wiki_dir="my_docs/wiki")
         generate_prompt_cmd.run(args)
 
-        content = Path(".git/llm-wiki-prompt.txt").read_text()
+        content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
         assert "my_docs/wiki" in content
 
     def test_prompt_contains_extract_command(self, tmp_project):
         args = _make_args()
         generate_prompt_cmd.run(args)
 
-        content = Path(".git/llm-wiki-prompt.txt").read_text()
+        content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
         assert "llm-wiki extract" in content
         assert "--changed" in content
         assert "--summary" in content
@@ -69,7 +69,7 @@ class TestGeneratePromptBuildPrompt:
         """Prompt should have the goal-driven section headings."""
         args = _make_args()
         generate_prompt_cmd.run(args)
-        content = Path(".git/llm-wiki-prompt.txt").read_text()
+        content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
         assert "## Context" in content
         assert "## Success Criteria" in content
         assert "## Verify & Commit" in content
@@ -78,7 +78,7 @@ class TestGeneratePromptBuildPrompt:
         """Prompt should frame lint exit 0 as a success criterion."""
         args = _make_args()
         generate_prompt_cmd.run(args)
-        content = Path(".git/llm-wiki-prompt.txt").read_text()
+        content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
         assert "llm-wiki lint" in content
         assert "exits 0" in content
 
@@ -86,7 +86,7 @@ class TestGeneratePromptBuildPrompt:
         """Prompt should require a log.md entry as a success criterion."""
         args = _make_args()
         generate_prompt_cmd.run(args)
-        content = Path(".git/llm-wiki-prompt.txt").read_text()
+        content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
         assert "log.md" in content
         assert "new entry" in content
 
@@ -94,12 +94,12 @@ class TestGeneratePromptBuildPrompt:
         """Prompt should instruct agents to only modify affected pages."""
         args = _make_args()
         generate_prompt_cmd.run(args)
-        content = Path(".git/llm-wiki-prompt.txt").read_text()
+        content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
         assert "Only affected pages" in content
 
     def test_prompt_contains_git_diff_command(self, tmp_project):
         """Prompt should instruct the agent to run git diff."""
         args = _make_args()
         generate_prompt_cmd.run(args)
-        content = Path(".git/llm-wiki-prompt.txt").read_text()
+        content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
         assert "git diff HEAD~1..HEAD" in content

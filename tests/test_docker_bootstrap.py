@@ -166,7 +166,7 @@ class TestBootstrapInfrastructureIntegration:
             assert "docker-compose_yml" in page_names
 
             # Check index.md has Infrastructure section
-            index_content = (wiki / "index.md").read_text()
+            index_content = (wiki / "index.md").read_text(encoding="utf-8")
             assert "## Infrastructure" in index_content
             assert "Dockerfile" in index_content
             assert "docker-compose_yml" in index_content

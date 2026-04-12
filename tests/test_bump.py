@@ -22,7 +22,7 @@ class TestBumpPatchCmd:
     def test_version_changed_on_disk(self, tmp_project):
         args = _make_args(bump_type="patch")
         bump_cmd.run(args)
-        content = Path("pyproject.toml").read_text()
+        content = Path("pyproject.toml").read_text(encoding="utf-8")
         assert '0.1.1' in content
 
 

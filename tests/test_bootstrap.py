@@ -76,7 +76,7 @@ class TestBootstrapCollisions:
         args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
         bootstrap_cmd.run(args)
 
-        entity_pages = {p.stem: p.read_text() for p in (wiki_dir / "entities").glob("*.md")}
+        entity_pages = {p.stem: p.read_text(encoding="utf-8") for p in (wiki_dir / "entities").glob("*.md")}
         auth_page = next(v for k, v in entity_pages.items() if "auth_service" in k)
         order_page = next(v for k, v in entity_pages.items() if "order_service" in k)
 
@@ -102,7 +102,7 @@ class TestBootstrapCollisions:
         args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
         bootstrap_cmd.run(args)
 
-        lines = (wiki_dir / "index.md").read_text().splitlines()
+        lines = (wiki_dir / "index.md").read_text(encoding="utf-8").splitlines()
         link_lines = [l for l in lines if l.startswith("- [")]
         seen = set()
         for line in link_lines:
@@ -133,7 +133,7 @@ class TestBootstrapEntityPages:
         args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
         bootstrap_cmd.run(args)
 
-        content = (wiki_dir / "entities" / "User.md").read_text()
+        content = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
         assert "# User" in content
         assert "name" in content
         assert "email" in content
@@ -153,7 +153,7 @@ class TestBootstrapModulePages:
         args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
         bootstrap_cmd.run(args)
 
-        content = (wiki_dir / "modules" / "models.md").read_text()
+        content = (wiki_dir / "modules" / "models.md").read_text(encoding="utf-8")
         assert "# models Module" in content
 
 
@@ -163,7 +163,7 @@ class TestBootstrapIndex:
         args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
         bootstrap_cmd.run(args)
 
-        index = (wiki_dir / "index.md").read_text()
+        index = (wiki_dir / "index.md").read_text(encoding="utf-8")
         assert "User" in index
         assert "Item" in index
         assert "models" in index
@@ -175,7 +175,7 @@ class TestBootstrapLog:
         args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
         bootstrap_cmd.run(args)
 
-        log = (wiki_dir / "log.md").read_text()
+        log = (wiki_dir / "log.md").read_text(encoding="utf-8")
         assert "bootstrap" in log.lower()
 
 
@@ -191,7 +191,7 @@ class TestBootstrapOverwrite:
 
         # Run again without --overwrite
         bootstrap_cmd.run(args)
-        assert user_page.read_text() == "CUSTOM CONTENT"
+        assert user_page.read_text(encoding="utf-8") == "CUSTOM CONTENT"
 
     def test_overwrite_flag(self, tmp_project, capsys):
         wiki_dir = tmp_project / "docs" / "llm_wiki"
@@ -203,8 +203,8 @@ class TestBootstrapOverwrite:
 
         args_ow = _make_args(src_dir=".", wiki_dir=str(wiki_dir), overwrite=True)
         bootstrap_cmd.run(args_ow)
-        assert user_page.read_text() != "CUSTOM CONTENT"
-        assert "# User" in user_page.read_text()
+        assert user_page.read_text(encoding="utf-8") != "CUSTOM CONTENT"
+        assert "# User" in user_page.read_text(encoding="utf-8")
 
 
 class TestBootstrapShallow:
@@ -234,14 +234,14 @@ class TestBootstrapUpdatesAgentConstraints:
         import types
 
         init_cmd.run(types.SimpleNamespace(agent="claude", wiki_dir="docs/llm_wiki"))
-        assert "docs/llm_wiki" in Path("CLAUDE.md").read_text()
+        assert "docs/llm_wiki" in Path("CLAUDE.md").read_text(encoding="utf-8")
 
         # Bootstrap to a different wiki dir
         wiki_dir = tmp_project / "my_docs" / "wiki"
         args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
         bootstrap_cmd.run(args)
 
-        content = Path("CLAUDE.md").read_text()
+        content = Path("CLAUDE.md").read_text(encoding="utf-8")
         # Verify the constraint block was updated (preamble outside the block is unchanged)
         start = content.index("# --- LLM Wiki Maintainer Constraints ---")
         end = content.index("# --- End LLM Wiki Constraints ---") + len("# --- End LLM Wiki Constraints ---")
@@ -254,10 +254,10 @@ class TestBootstrapUpdatesAgentConstraints:
         import types
 
         init_cmd.run(types.SimpleNamespace(agent="claude", wiki_dir="docs/llm_wiki"))
-        original = Path("CLAUDE.md").read_text()
+        original = Path("CLAUDE.md").read_text(encoding="utf-8")
 
         # Bootstrap with the default path — file should be unchanged
         args = _make_args(src_dir=".", wiki_dir="docs/llm_wiki")
         bootstrap_cmd.run(args)
 
-        assert Path("CLAUDE.md").read_text() == original
+        assert Path("CLAUDE.md").read_text(encoding="utf-8") == original

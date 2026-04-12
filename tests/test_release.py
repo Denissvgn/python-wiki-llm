@@ -200,7 +200,7 @@ class TestReleaseCmdRun:
         self._write_changelog(_BASE_CHANGELOG)
         args = _make_args()
         release_cmd.run(args)
-        result = Path("CHANGELOG.md").read_text()
+        result = Path("CHANGELOG.md").read_text(encoding="utf-8")
         assert "## [0.1.0]" in result  # tmp_project uses version 0.1.0
         assert "## [Unreleased]" in result
 
@@ -250,7 +250,7 @@ class TestReleaseCmdRun:
         out = capsys.readouterr().out
         assert "empty" in out.lower() or "nothing" in out.lower()
         # File must be untouched
-        assert Path("CHANGELOG.md").read_text() == _EMPTY_UNRELEASED
+        assert Path("CHANGELOG.md").read_text(encoding="utf-8") == _EMPTY_UNRELEASED
 
     def test_empty_unreleased_does_not_stage(self, tmp_project):
         """Empty [Unreleased] should not stage CHANGELOG even with --stage."""

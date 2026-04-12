@@ -100,8 +100,8 @@ class TestReadWriteVersion:
         write_version(p, "2.0.0")
         assert read_version(p) == "2.0.0"
         # preserve other content
-        assert 'name = "foo"' in p.read_text()
-        assert 'description = "bar"' in p.read_text()
+        assert 'name = "foo"' in p.read_text(encoding="utf-8")
+        assert 'description = "bar"' in p.read_text(encoding="utf-8")
 
     def test_write_setup_cfg(self, tmp_path):
         p = tmp_path / "setup.cfg"

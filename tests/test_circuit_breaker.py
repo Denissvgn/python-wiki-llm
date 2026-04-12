@@ -95,5 +95,5 @@ class TestAtomicWrite:
         record_failure(tmp_path)
         path = tmp_path / "llm-wiki-breaker.json"
         assert path.exists()
-        data = json.loads(path.read_text())
+        data = json.loads(path.read_text(encoding="utf-8"))
         assert "consecutive_failures" in data

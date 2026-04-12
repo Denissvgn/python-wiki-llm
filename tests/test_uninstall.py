@@ -79,7 +79,7 @@ class TestUninstallStripsConstraints:
         args = _make_args()
         uninstall_cmd.run(args)
 
-        content = Path("CLAUDE.md").read_text()
+        content = Path("CLAUDE.md").read_text(encoding="utf-8")
         assert "My Rules" in content
         assert "LLM Wiki Maintainer Constraints" not in content
 

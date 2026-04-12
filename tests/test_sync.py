@@ -143,7 +143,7 @@ class TestUnchangedFile:
     def test_entity_page_not_rewritten(self, bootstrapped_project, capsys):
         proj, wiki_dir = bootstrapped_project
         entity_path = wiki_dir / "entities" / "User.md"
-        original_content = entity_path.read_text()
+        original_content = entity_path.read_text(encoding="utf-8")
         original_mtime = entity_path.stat().st_mtime
 
         args = _make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir))
@@ -178,7 +178,7 @@ class TestChangedFile:
         assert "UPDATE entity: User" in captured.out
 
         # Entity page should contain the new attribute
-        entity_content = (wiki_dir / "entities" / "User.md").read_text()
+        entity_content = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
         assert "role" in entity_content
 
     def test_module_page_updated(self, bootstrapped_project, capsys):
@@ -274,7 +274,7 @@ class TestMovedClass:
 
         captured = capsys.readouterr()
         # The entity page should be updated (now points at users.py)
-        entity_content = (wiki_dir / "entities" / "User.md").read_text()
+        entity_content = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
         assert "users.py" in entity_content
 
         # Moved entities should be mentioned in summary
@@ -309,7 +309,7 @@ class TestDeletedClass:
         captured = capsys.readouterr()
         assert "DEPRECATE" in captured.out
 
-        entity_content = (wiki_dir / "entities" / "User.md").read_text()
+        entity_content = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
         assert "⚠️" in entity_content
         assert "Stale" in entity_content
 
@@ -324,7 +324,7 @@ class TestDeletedClass:
         _write_manifest_from_bootstrap_from_disk(wiki_dir, proj)
         sync_cmd.run(args)
 
-        content = (wiki_dir / "entities" / "User.md").read_text()
+        content = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
         # Header must appear exactly once
         assert content.count("⚠️") == 1
 
@@ -334,7 +334,7 @@ class TestDeletedClass:
 
         sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
 
-        module_content = (wiki_dir / "modules" / "models.md").read_text()
+        module_content = (wiki_dir / "modules" / "models.md").read_text(encoding="utf-8")
         assert "⚠️" in module_content
 
 
@@ -366,10 +366,10 @@ class TestDiffOutput:
         proj, wiki_dir = bootstrapped_project
         (proj / "models.py").write_text("class User:\n    changed: str = ''\n")
 
-        log_before = (wiki_dir / "log.md").read_text() if (wiki_dir / "log.md").exists() else ""
+        log_before = (wiki_dir / "log.md").read_text(encoding="utf-8") if (wiki_dir / "log.md").exists() else ""
 
         sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
 
-        log_after = (wiki_dir / "log.md").read_text()
+        log_after = (wiki_dir / "log.md").read_text(encoding="utf-8")
         assert len(log_after) > len(log_before)
         assert "incremental sync" in log_after
