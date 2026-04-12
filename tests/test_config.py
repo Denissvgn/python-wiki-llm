@@ -1,4 +1,5 @@
 """Tests for config.py — shared constants and validate_path."""
+import json
 import os
 import types
 from pathlib import Path
@@ -10,7 +11,9 @@ from llm_wiki_cli.config import (
     CLI_AGENTS,
     DEFAULT_WIKI_DIR,
     IDE_AGENTS,
+    read_config,
     validate_path,
+    write_config,
 )
 
 
@@ -54,3 +57,53 @@ class TestValidatePath:
         sub.mkdir()
         result = validate_path(str(sub), "--wiki-dir")
         assert result == sub
+
+
+class TestReadWriteConfig:
+    """Round-trip JSON config and backward compatibility."""
+
+    def test_write_then_read(self, tmp_path):
+        os.chdir(tmp_path)
+        wiki = tmp_path / "docs" / "wiki"
+        wiki.mkdir(parents=True)
+        data = {"agent": "copilot", "quality_hints": False}
+        write_config(str(wiki), data)
+        result = read_config(str(wiki))
+        assert result["agent"] == "copilot"
+        assert result["quality_hints"] is False
+
+    def test_defaults_when_no_file(self, tmp_path):
+        os.chdir(tmp_path)
+        result = read_config(str(tmp_path / "nonexistent"))
+        assert result["agent"] == "generic"
+        assert result["quality_hints"] is True
+
+    def test_backward_compat_bare_string(self, tmp_path):
+        os.chdir(tmp_path)
+        wiki = tmp_path / "docs" / "wiki"
+        wiki.mkdir(parents=True)
+        config_path = wiki / ".llm-wiki-agent"
+        config_path.write_text("claude")
+        result = read_config(str(wiki))
+        assert result["agent"] == "claude"
+        assert result["quality_hints"] is True
+
+    def test_missing_key_gets_default(self, tmp_path):
+        os.chdir(tmp_path)
+        wiki = tmp_path / "docs" / "wiki"
+        wiki.mkdir(parents=True)
+        config_path = wiki / ".llm-wiki-agent"
+        config_path.write_text(json.dumps({"agent": "aider"}))
+        result = read_config(str(wiki))
+        assert result["agent"] == "aider"
+        assert result["quality_hints"] is True
+
+    def test_corrupted_json_returns_defaults(self, tmp_path):
+        os.chdir(tmp_path)
+        wiki = tmp_path / "docs" / "wiki"
+        wiki.mkdir(parents=True)
+        config_path = wiki / ".llm-wiki-agent"
+        config_path.write_text("{invalid json!!}")
+        result = read_config(str(wiki))
+        assert result["agent"] == "generic"
+        assert result["quality_hints"] is True

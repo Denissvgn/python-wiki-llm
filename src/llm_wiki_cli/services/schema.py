@@ -56,6 +56,15 @@ updated automatically on commit. You are responsible for keeping it current:
 3. **Never skip the update** — a stale wiki defeats the purpose of the system.
 """
 
+_QUALITY_HINTS = """\
+
+## Agent quality guidelines
+- **Surgical Changes:** Only modify wiki pages directly affected by your code change.
+  Don't "improve" adjacent pages, reformat existing content, or refactor unrelated docs.
+- **Think Before Editing:** If a wiki page structure is unclear, state what's confusing
+  rather than guessing. Don't silently rewrite pages you don't fully understand.
+"""
+
 
 def _wiki_instructions(wiki_dir: str) -> str:
     return f"""You are operating within an LLM Wiki architecture. The project's persistent memory is stored in `{wiki_dir}/`.
@@ -85,7 +94,7 @@ def _wiki_instructions(wiki_dir: str) -> str:
 """
 
 
-def build_schema_content(agent: str, wiki_dir: str) -> str:
+def build_schema_content(agent: str, wiki_dir: str, *, quality_hints: bool = True) -> str:
     """Build the full constraint block for the given agent and wiki directory."""
     instructions = _wiki_instructions(wiki_dir)
     preambles = {
@@ -94,8 +103,9 @@ def build_schema_content(agent: str, wiki_dir: str) -> str:
         "copilot": f"# Copilot Instructions — LLM Wiki Project\n\nThis project uses `{wiki_dir}/` as persistent documentation.\nConsult the wiki before suggesting changes.\n\n",
     }
     preamble = preambles.get(agent, f"# Agent Instructions — LLM Wiki Project\n\nThis project uses `{wiki_dir}/` for architectural memory.\n\n")
+    hints = _QUALITY_HINTS if quality_hints else ""
     extra = _IDE_SYNC_INSTRUCTIONS if agent in IDE_AGENTS else ""
-    body = preamble + instructions + extra
+    body = preamble + instructions + hints + extra
     return f"{CONSTRAINT_START}\n{body.strip()}\n{CONSTRAINT_END}\n"
 
 

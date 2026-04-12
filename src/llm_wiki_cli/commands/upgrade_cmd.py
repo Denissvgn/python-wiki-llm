@@ -17,7 +17,7 @@ import stat
 import sys
 from pathlib import Path
 
-from ..config import AGENT_CHOICES, CLI_AGENTS, DEFAULT_WIKI_DIR, IDE_AGENTS, get_agent_config_path, validate_path
+from ..config import AGENT_CHOICES, CLI_AGENTS, DEFAULT_WIKI_DIR, IDE_AGENTS, get_agent_config_path, read_config, validate_path, write_config
 from ..services.schema import (
     ALL_SCHEMA_FILES,
     CONSTRAINT_START,
@@ -40,9 +40,14 @@ _GITIGNORE_ENTRIES = [
 
 def _read_agent_config(wiki_dir: str) -> str | None:
     """Read the agent name persisted by `llm-wiki init`."""
+    config = read_config(wiki_dir)
+    agent = config.get("agent")
+    if agent and agent != "generic":
+        return agent
+    # Check if config file actually exists (defaults return "generic")
     config_path = get_agent_config_path(wiki_dir)
     if config_path.exists():
-        return config_path.read_text().strip()
+        return agent
     return None
 
 
@@ -67,12 +72,12 @@ def _resolve_agent(args, wiki_dir: str) -> str:
     sys.exit(1)
 
 
-def _upgrade_schema(agent: str, wiki_dir: str, old_agent: str | None) -> str:
+def _upgrade_schema(agent: str, wiki_dir: str, old_agent: str | None, *, quality_hints: bool = True) -> str:
     """Replace or migrate the agent schema constraint block.
 
     Returns a summary message.
     """
-    new_content = build_schema_content(agent, wiki_dir)
+    new_content = build_schema_content(agent, wiki_dir, quality_hints=quality_hints)
     new_filename = SCHEMA_FILENAMES.get(agent)
 
     if old_agent and old_agent != agent:
@@ -168,6 +173,14 @@ def run(args):
     old_agent = _read_agent_config(wiki_dir)
     switching = old_agent and old_agent != agent
 
+    # Resolve quality_hints: CLI flag > stored config > default (True)
+    cli_hints = getattr(args, "quality_hints", None)
+    if cli_hints is not None:
+        quality_hints = cli_hints
+    else:
+        stored = read_config(wiki_dir)
+        quality_hints = stored.get("quality_hints", True)
+
     print("LLM Wiki Upgrade")
     print("=" * 40)
 
@@ -178,7 +191,7 @@ def run(args):
 
     # 1. Schema constraint block
     print("\n1. Agent Schema:")
-    schema_file = _upgrade_schema(agent, wiki_dir, old_agent)
+    schema_file = _upgrade_schema(agent, wiki_dir, old_agent, quality_hints=quality_hints)
     print(f"  Updated: {schema_file}")
 
     # 2. Wiki directories
@@ -202,8 +215,7 @@ def run(args):
         print("  Already up to date")
 
     # 5. Persist agent config
-    agent_config = get_agent_config_path(wiki_dir)
-    agent_config.write_text(agent)
+    write_config(wiki_dir, {"agent": agent, "quality_hints": quality_hints})
 
     # Warn if CLI agent executable missing
     executable = CLI_AGENTS.get(agent)

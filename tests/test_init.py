@@ -1,9 +1,11 @@
 """Tests for commands/init_cmd.py"""
+import json
 import os
 import types
 from pathlib import Path
 
 from llm_wiki_cli.commands import init_cmd
+from llm_wiki_cli.config import read_config
 
 
 def _make_args(**kwargs):
@@ -135,21 +137,53 @@ class TestInitPersistsAgentConfig:
         """init writes .llm-wiki-agent with the chosen agent name."""
         args = _make_args(agent="claude")
         init_cmd.run(args)
-        config = Path(".git/.llm-wiki-agent")
-        assert config.exists()
-        assert config.read_text().strip() == "claude"
+        config = read_config("docs/llm_wiki")
+        assert config["agent"] == "claude"
 
     def test_agent_config_reflects_chosen_agent(self, tmp_project):
         """The config file stores whichever agent was passed."""
         for agent in ("aider", "cursor", "copilot", "generic"):
             args = _make_args(agent=agent)
             init_cmd.run(args)
-            config = Path(".git/.llm-wiki-agent")
-            assert config.read_text().strip() == agent
+            config = read_config("docs/llm_wiki")
+            assert config["agent"] == agent
 
     def test_agent_config_custom_wiki_dir(self, tmp_project):
         """Config is written to .git/ regardless of which wiki dir is used."""
         args = _make_args(agent="opencode", wiki_dir="my_docs/wiki")
         init_cmd.run(args)
-        assert (Path(".git/.llm-wiki-agent")).read_text().strip() == "opencode"
+        config = read_config("my_docs/wiki")
+        assert config["agent"] == "opencode"
         assert not (Path("my_docs/wiki/.llm-wiki-agent")).exists()
+
+
+class TestInitQualityHints:
+    """Quality hints are included by default, excluded with --no-quality-hints."""
+
+    def test_default_includes_hints(self, tmp_project):
+        args = _make_args(agent="claude")
+        init_cmd.run(args)
+        content = Path("CLAUDE.md").read_text()
+        assert "Agent quality guidelines" in content
+        assert "Surgical Changes" in content
+
+    def test_no_quality_hints_flag(self, tmp_project):
+        args = _make_args(agent="claude", no_quality_hints=True)
+        init_cmd.run(args)
+        content = Path("CLAUDE.md").read_text()
+        assert "Agent quality guidelines" not in content
+        assert "Surgical Changes" not in content
+        # Rest of constraints should still be there
+        assert "LLM Wiki Maintainer Constraints" in content
+
+    def test_no_quality_hints_persisted(self, tmp_project):
+        args = _make_args(agent="copilot", no_quality_hints=True)
+        init_cmd.run(args)
+        config = read_config("docs/llm_wiki")
+        assert config["quality_hints"] is False
+
+    def test_default_hints_persisted(self, tmp_project):
+        args = _make_args(agent="copilot")
+        init_cmd.run(args)
+        config = read_config("docs/llm_wiki")
+        assert config["quality_hints"] is True

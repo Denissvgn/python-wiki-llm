@@ -9,6 +9,7 @@ from types import SimpleNamespace
 import pytest
 
 from llm_wiki_cli.commands import upgrade_cmd
+from llm_wiki_cli.config import read_config
 from llm_wiki_cli.services.schema import CONSTRAINT_START, CONSTRAINT_END, SCHEMA_FILENAMES
 
 
@@ -135,8 +136,8 @@ class TestUpgradeSwitchAgent:
         assert CONSTRAINT_START in new_schema.read_text()
 
         # Config should be updated
-        config = Path(".git/.llm-wiki-agent").read_text().strip()
-        assert config == "cursor"
+        config = read_config("docs/llm_wiki")
+        assert config["agent"] == "cursor"
 
     def test_switch_preserves_old_user_content(self, tmp_path):
         _init_project(tmp_path, agent="copilot")
@@ -225,6 +226,71 @@ class TestUpgradeNoAgentConfig:
             upgrade_cmd.run(_make_args())
 
         assert exc_info.value.code == 1
+
+
+class TestUpgradeQualityHints:
+    """Quality hints preference handling across init/upgrade lifecycle."""
+
+    def test_default_includes_hints(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+
+        upgrade_cmd.run(_make_args())
+
+        content = Path(SCHEMA_FILENAMES["copilot"]).read_text()
+        assert "Agent quality guidelines" in content
+        assert "Surgical Changes" in content
+
+    def test_no_quality_hints_flag(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+
+        upgrade_cmd.run(_make_args(quality_hints=False))
+
+        content = Path(SCHEMA_FILENAMES["copilot"]).read_text()
+        assert "Agent quality guidelines" not in content
+        assert CONSTRAINT_START in content
+
+    def test_no_quality_hints_persisted(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+
+        upgrade_cmd.run(_make_args(quality_hints=False))
+
+        config = read_config("docs/llm_wiki")
+        assert config["quality_hints"] is False
+
+    def test_preserves_stored_no_hints(self, tmp_path):
+        """Init with hints disabled, upgrade without flag → still disabled."""
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+
+        # Simulate stored config with quality_hints=False
+        from llm_wiki_cli.config import write_config
+        write_config("docs/llm_wiki", {"agent": "copilot", "quality_hints": False})
+
+        upgrade_cmd.run(_make_args())  # no quality_hints flag
+
+        content = Path(SCHEMA_FILENAMES["copilot"]).read_text()
+        assert "Agent quality guidelines" not in content
+        config = read_config("docs/llm_wiki")
+        assert config["quality_hints"] is False
+
+    def test_reenable_hints(self, tmp_path):
+        """Upgrade with --quality-hints re-enables after previously disabled."""
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+
+        # Disable
+        upgrade_cmd.run(_make_args(quality_hints=False))
+        assert "Agent quality guidelines" not in Path(SCHEMA_FILENAMES["copilot"]).read_text()
+
+        # Re-enable
+        upgrade_cmd.run(_make_args(quality_hints=True))
+        content = Path(SCHEMA_FILENAMES["copilot"]).read_text()
+        assert "Agent quality guidelines" in content
+        config = read_config("docs/llm_wiki")
+        assert config["quality_hints"] is True
 
 
 class TestUpgradeGitignore:

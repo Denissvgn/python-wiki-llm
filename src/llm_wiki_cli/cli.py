@@ -11,6 +11,8 @@ def main():
     init_parser = subparsers.add_parser("init", help="Scaffold LLM Wiki structure and schema")
     init_parser.add_argument("--agent", choices=AGENT_CHOICES, default="generic", help="Target agent format for rules/constraints")
     init_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR, help="Wiki directory to create (default: docs/llm_wiki)")
+    init_parser.add_argument("--no-quality-hints", action="store_true", default=False,
+                             help="Omit agent quality guidelines from the constraint block")
 
     # extract command
     # ... (skipping extract/lint)
@@ -109,6 +111,11 @@ def main():
                                 help="Wiki directory path (default: docs/llm_wiki)")
     upgrade_parser.add_argument("--agent", choices=AGENT_CHOICES, default=None,
                                 help="Switch to a different agent (default: keep current)")
+    upgrade_hints = upgrade_parser.add_mutually_exclusive_group()
+    upgrade_hints.add_argument("--quality-hints", dest="quality_hints", action="store_true", default=None,
+                               help="Include agent quality guidelines in the constraint block")
+    upgrade_hints.add_argument("--no-quality-hints", dest="quality_hints", action="store_false",
+                               help="Omit agent quality guidelines from the constraint block")
 
     # sync command
     sync_parser = subparsers.add_parser(

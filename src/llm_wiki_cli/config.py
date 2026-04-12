@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -85,3 +86,50 @@ def get_agent_config_path(wiki_dir: "str | Path") -> Path:
     if Path(".git").is_dir():
         return Path(".git") / ".llm-wiki-agent"
     return Path(wiki_dir) / ".llm-wiki-agent"
+
+
+# Default config values for new installations.
+_DEFAULT_CONFIG: dict[str, object] = {
+    "agent": "generic",
+    "quality_hints": True,
+}
+
+
+def read_config(wiki_dir: "str | Path") -> dict:
+    """Read the persisted llm-wiki config as a dict.
+
+    Handles backward compatibility: if the file contains a bare agent name
+    string (pre-v0.3 format), it is treated as ``{"agent": "<value>", "quality_hints": true}``.
+
+    Returns *_DEFAULT_CONFIG* values for any missing keys.
+    """
+    config_path = get_agent_config_path(wiki_dir)
+    if not config_path.exists():
+        return dict(_DEFAULT_CONFIG)
+
+    raw = config_path.read_text().strip()
+
+    # Backward compat: bare string = old format (just the agent name)
+    if not raw.startswith("{"):
+        result = dict(_DEFAULT_CONFIG)
+        result["agent"] = raw
+        return result
+
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        # Corrupted file — treat as defaults
+        result = dict(_DEFAULT_CONFIG)
+        return result
+
+    # Fill in any missing keys from defaults
+    for key, default in _DEFAULT_CONFIG.items():
+        data.setdefault(key, default)
+    return data
+
+
+def write_config(wiki_dir: "str | Path", data: dict) -> None:
+    """Persist the llm-wiki config dict to the agent config file."""
+    config_path = get_agent_config_path(wiki_dir)
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text(json.dumps(data, indent=2) + "\n")

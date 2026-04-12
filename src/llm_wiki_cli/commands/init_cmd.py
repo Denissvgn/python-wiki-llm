@@ -5,7 +5,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from ..config import CLI_AGENTS, DEFAULT_WIKI_DIR, get_agent_config_path, validate_path
+from ..config import CLI_AGENTS, DEFAULT_WIKI_DIR, get_agent_config_path, validate_path, write_config
 from ..services.schema import (
     CONSTRAINT_START as _CONSTRAINT_START,
     SCHEMA_FILENAMES,
@@ -66,13 +66,14 @@ def run(args):
             f.write("# Architectural Log\n\nAppend-only chronological log.\n\n")
 
     # 3. Create or Append to Agent Schema
+    quality_hints = not getattr(args, "no_quality_hints", False)
     filename = SCHEMA_FILENAMES.get(args.agent)
     if filename:
         schema_path = Path(filename)
         # ensure parent exists (e.g. for .github/)
         schema_path.parent.mkdir(parents=True, exist_ok=True)
         
-        content_to_add = _build_schema_content(args.agent, wiki_dir)
+        content_to_add = _build_schema_content(args.agent, wiki_dir, quality_hints=quality_hints)
         
         if schema_path.exists():
             with open(schema_path, "r") as f:
@@ -91,9 +92,7 @@ def run(args):
             print(f"Created agent schema file: {schema_path}")
     
     # 4. Persist the chosen agent so install-hook can read it
-    agent_config_path = get_agent_config_path(base_dir)
-    with open(agent_config_path, "w") as f:
-        f.write(args.agent)
+    write_config(base_dir, {"agent": args.agent, "quality_hints": quality_hints})
 
     # 5. Add llm-wiki temp files to .gitignore
     _GITIGNORE_ENTRIES = [

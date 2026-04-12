@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS, get_agent_config_path
+from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS, read_config, get_agent_config_path
 from ..services import circuit_breaker
 
 
@@ -30,9 +30,12 @@ def run(args) -> None:
     # Agent config
     agent_config = get_agent_config_path(wiki_dir)
     if agent_config.exists():
-        agent = agent_config.read_text().strip()
+        config = read_config(wiki_dir)
+        agent = config.get("agent", "unknown")
         mode = "IDE" if agent in IDE_AGENTS else "CLI"
         print(f"Agent:           {agent} ({mode})")
+        hints = config.get("quality_hints", True)
+        print(f"Quality hints:   {'enabled' if hints else 'disabled'}")
     else:
         print("Agent:           not configured (run `llm-wiki init --agent <agent>`)")
 
