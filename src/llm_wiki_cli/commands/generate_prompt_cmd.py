@@ -12,40 +12,50 @@ def _build_prompt(wiki_dir: str, src_dir: str) -> str:
 You are a Wiki synchronizer for this project.
 The project's wiki lives at `{wiki_dir}/`.
 
-## Step 1 — Gather context
+## Context
 
-Run these commands in the terminal to collect current state:
+Run these commands to understand what changed:
 
 ```bash
-# Changed files only — compact inventory of what was modified in the last commit
+# Changed files — compact inventory of what was modified in the last commit
 llm-wiki extract --src-dir {src_dir} --changed --summary
 
 # Full diff of the last commit
 git diff HEAD~1..HEAD
 
-# Wiki health check — reports broken links, orphans, undocumented classes
+# Current wiki health — shows what's already broken vs. what you need to fix
 llm-wiki lint --wiki-dir {wiki_dir} --src-dir {src_dir}
 ```
 
-If you need the full detail (methods, params, docstrings) for a specific file, run:
+For full detail (methods, params, docstrings) on a specific file:
 ```bash
 llm-wiki extract --src-dir {src_dir} --paths path/to/file.py
 ```
 
-## Step 2 — Update the wiki
+## Success Criteria
 
-Based on the command output above:
+Your work is done when **all** of the following are true:
 
-1. Update `{wiki_dir}/entities/<ClassName>.md` for any added, changed, or removed classes.
-2. Update `{wiki_dir}/modules/<filename>.md` for any added, changed, or removed modules.
-3. If 3+ modules interact differently (new imports, changed call sequences, added/removed \
-pipeline steps), update or create `{wiki_dir}/workflows/*.md`.
-4. If Dockerfiles or compose files changed, update `{wiki_dir}/infrastructure/*.md`.
-5. Append a one-line entry to `{wiki_dir}/log.md`.
-6. Update `CHANGELOG.md` under `## [Unreleased]` for user-facing changes only \
-(skip pure refactors, test-only, or doc-only commits). Follow Keep a Changelog format.
+1. **`llm-wiki lint` exits 0** — no broken links, no orphan pages, no undocumented \
+classes, no stale entities, no missing modules, no broken workflow links, \
+no undocumented infrastructure files.
+2. **Only affected pages changed** — modify wiki pages that correspond to code \
+touched in the diff. Do not edit unrelated pages or reformat existing content.
+3. **`{wiki_dir}/log.md` has a new entry** — one concise line describing what changed, \
+appended at the bottom.
+4. **`CHANGELOG.md` updated** (if applicable) — add an entry under `## [Unreleased]` \
+for user-facing changes. Skip for pure refactors, test-only, or doc-only commits. \
+*(Not verified by lint.)*
 
-## Step 3 — Commit
+## Verify & Commit
+
+After making your changes, run:
+
+```bash
+llm-wiki lint --wiki-dir {wiki_dir} --src-dir {src_dir}
+```
+
+If lint reports issues, fix them and re-run until it exits 0. Then commit:
 
 ```bash
 git add {wiki_dir}/ CHANGELOG.md

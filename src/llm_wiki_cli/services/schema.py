@@ -44,9 +44,9 @@ updated automatically on commit. You are responsible for keeping it current:
 
 1. **After every code change in this session** that adds, removes, or modifies a
    class, function, module, or cross-module flow:
-   - Update the relevant `entities/` and `modules/` pages immediately.
-   - If 3+ modules are now connected differently, update or create a `workflows/` page.
+   - Update the affected `entities/`, `modules/`, `workflows/`, and `infrastructure/` pages.
    - Append a one-line summary to `log.md`.
+   - Run `llm-wiki lint` to verify your changes. Fix any issues until it exits 0.
 2. **To do a full re-sync manually**, run in the terminal:
    ```
    llm-wiki generate-prompt
@@ -72,8 +72,9 @@ def _wiki_instructions(wiki_dir: str) -> str:
 - LOG a concise summary of your changes in `{wiki_dir}/log.md` (append-only, newest at bottom).
 
 ## Quality checks
-- Run `llm-wiki lint --wiki-dir {wiki_dir} --src-dir .` to verify wiki consistency.
-- Run `llm-wiki extract --src-dir .` to see the live AST inventory.
+- Your wiki changes are **complete** when `llm-wiki lint --wiki-dir {wiki_dir} --src-dir .` exits 0.
+- Run lint after every wiki update. If it reports issues, fix them and re-run until it passes.
+- Run `llm-wiki extract --src-dir .` to see the live AST inventory when you need detail.
 - Never leave the wiki in a state where lint reports errors.
 
 ## Formatting rules

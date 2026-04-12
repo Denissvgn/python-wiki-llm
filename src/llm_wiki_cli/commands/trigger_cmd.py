@@ -87,26 +87,46 @@ def _run_sync(args):
 
     # 3. Create context prompt for the subagent
     prompt = f"""
-You are an overarching Wiki synchronizer subagent.
-A new commit was just made. 
+You are a Wiki synchronizer subagent.
+A new commit was just made. Your task is to update the wiki at `{wiki_dir}/`.
 
-Here is the AST structure of the python codebase:
+## Context
+
+AST structure of the codebase:
 {ast_json}
 
-Here is the cross-module call graph (functions touching 3+ internal modules):
+Cross-module call graph (functions touching 3+ internal modules):
 {graph_json}
 
-Here is the Git Diff:
+Git diff:
 {diff_text}
 
-TASK:
-1. Identify all `{wiki_dir}/*` markdown pages that need to be updated.
-2. Read them using your file reading capabilities.
-3. Update entity and module pages to reflect the changes (e.g. new schemas, new logic, deleted code).
-4. If the diff modifies the interaction pattern between 3+ modules (new imports, changed call sequences, added/removed pipeline steps), create or update the relevant `{wiki_dir}/workflows/*.md` page.
-5. Read existing workflow pages in `{wiki_dir}/workflows/` to check if any existing flows are affected by this commit. Update or delete stale workflows.
-6. Append an entry to `{wiki_dir}/log.md`.
-7. Use `git add {wiki_dir}/` and `git commit -m "docs(wiki): auto-update [bot]"` to save your changes if any.
+## Success Criteria
+
+Your work is done when **all** of the following are true:
+
+1. **`llm-wiki lint --wiki-dir {wiki_dir} --src-dir .` exits 0** — no broken links, \
+no orphan pages, no undocumented classes, no stale entities, no missing modules, \
+no broken workflow links, no undocumented infrastructure files.
+2. **Only affected pages changed** — modify wiki pages that correspond to code \
+touched in the diff. Do not edit unrelated pages or reformat existing content.
+3. **`{wiki_dir}/log.md` has a new entry** — one concise line describing what changed, \
+appended at the bottom.
+
+## Loop
+
+After making your changes, run:
+
+```bash
+llm-wiki lint --wiki-dir {wiki_dir} --src-dir .
+```
+
+If lint reports issues, fix them and re-run. **Repeat until lint exits 0.** Then commit:
+
+```bash
+git add {wiki_dir}/
+git commit -m "docs(wiki): auto-update [bot]"
+```
 """
 
     # 4. Save the prompt to a temp file

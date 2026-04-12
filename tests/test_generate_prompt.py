@@ -65,14 +65,37 @@ class TestGeneratePromptPrintMode:
 
 
 class TestGeneratePromptBuildPrompt:
-    def test_prompt_contains_step_headings(self, tmp_project):
-        """Prompt should have the three instructional steps."""
+    def test_prompt_contains_section_headings(self, tmp_project):
+        """Prompt should have the goal-driven section headings."""
         args = _make_args()
         generate_prompt_cmd.run(args)
         content = Path(".git/llm-wiki-prompt.txt").read_text()
-        assert "Step 1" in content
-        assert "Step 2" in content
-        assert "Step 3" in content
+        assert "## Context" in content
+        assert "## Success Criteria" in content
+        assert "## Verify & Commit" in content
+
+    def test_prompt_contains_lint_success_criterion(self, tmp_project):
+        """Prompt should frame lint exit 0 as a success criterion."""
+        args = _make_args()
+        generate_prompt_cmd.run(args)
+        content = Path(".git/llm-wiki-prompt.txt").read_text()
+        assert "llm-wiki lint" in content
+        assert "exits 0" in content
+
+    def test_prompt_contains_log_criterion(self, tmp_project):
+        """Prompt should require a log.md entry as a success criterion."""
+        args = _make_args()
+        generate_prompt_cmd.run(args)
+        content = Path(".git/llm-wiki-prompt.txt").read_text()
+        assert "log.md" in content
+        assert "new entry" in content
+
+    def test_prompt_contains_only_affected_criterion(self, tmp_project):
+        """Prompt should instruct agents to only modify affected pages."""
+        args = _make_args()
+        generate_prompt_cmd.run(args)
+        content = Path(".git/llm-wiki-prompt.txt").read_text()
+        assert "Only affected pages" in content
 
     def test_prompt_contains_git_diff_command(self, tmp_project):
         """Prompt should instruct the agent to run git diff."""
