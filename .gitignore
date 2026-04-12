@@ -6,3 +6,8 @@ __pycache__/
 dist/
 build/
 .DS_Store
+# LLM Wiki temp files
+.git/llm-wiki-prompt.txt
+.git/llm-wiki.lock
+.git/llm-wiki-breaker.json
+.git/llm-wiki-sync.log

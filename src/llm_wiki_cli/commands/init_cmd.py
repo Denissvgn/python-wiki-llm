@@ -5,87 +5,16 @@ import shutil
 import sys
 from pathlib import Path
 
-from ..config import CLI_AGENTS, DEFAULT_WIKI_DIR, IDE_AGENTS, validate_path
-
-
-def _wiki_instructions(wiki_dir: str) -> str:
-    return f"""You are operating within an LLM Wiki architecture. The project's persistent memory is stored in `{wiki_dir}/`.
-
-## Before you start
-- ALWAYS read `{wiki_dir}/index.md` before planning a new feature or making architectural changes.
-- Consult relevant entity and module pages to understand existing patterns before writing new code.
-
-## When you change code
-- UPDATE `{wiki_dir}/entities/<ClassName>.md` when you add, modify, or remove a class.
-- UPDATE `{wiki_dir}/modules/<filename>.md` when you add, modify, or remove a module.
-- UPDATE `{wiki_dir}/workflows/<name>.md` when a cross-module flow changes.
-- UPDATE `{wiki_dir}/infrastructure/<name>.md` when a Dockerfile or docker-compose file changes.
-- LOG a concise summary of your changes in `{wiki_dir}/log.md` (append-only, newest at bottom).
-
-## Quality checks
-- Run `llm-wiki lint --wiki-dir {wiki_dir} --src-dir .` to verify wiki consistency.
-- Run `llm-wiki extract --src-dir .` to see the live AST inventory.
-- Never leave the wiki in a state where lint reports errors.
-
-## Formatting rules
-- Entity pages must have: Location, Bases, Module link, Attributes table, Methods table, Relationships.
-- Module pages must have: Path, Imports table, Classes summary, Functions table.
-- Infrastructure pages must have: Path, type-specific sections (stages, services, ports, env vars, etc.).
-- Use relative markdown links between pages (e.g., `../entities/User.md`).
-"""
-
-
-_IDE_AGENTS = IDE_AGENTS
-
-_IDE_SYNC_INSTRUCTIONS = """\
-
-## How to sync the wiki in this IDE session
-Because you run inside the IDE (not as a background CLI process), the wiki is NOT
-updated automatically on commit. You are responsible for keeping it current:
-
-1. **After every code change in this session** that adds, removes, or modifies a
-   class, function, module, or cross-module flow:
-   - Update the relevant `entities/` and `modules/` pages immediately.
-   - If 3+ modules are now connected differently, update or create a `workflows/` page.
-   - Append a one-line summary to `log.md`.
-2. **To do a full re-sync manually**, run in the terminal:
-   ```
-   llm-wiki generate-prompt
-   ```
-   This builds a diff + AST prompt in `.git/llm-wiki-prompt.txt`. Open that file
-   and paste its contents into this chat to trigger a full wiki update.
-3. **Never skip the update** — a stale wiki defeats the purpose of the system.
-"""
-
-# Marker boundaries used to wrap the entire generated block
-_CONSTRAINT_START = "# --- LLM Wiki Maintainer Constraints ---"
-_CONSTRAINT_END = "# --- End LLM Wiki Constraints ---"
-
-
-def _build_schema_content(agent: str, wiki_dir: str) -> str:
-    instructions = _wiki_instructions(wiki_dir)
-    preambles = {
-        "claude": f"# Project Wiki\n\nThis project uses an LLM Wiki for persistent architectural memory.\nRead `{wiki_dir}/index.md` first when starting any task.\n\n",
-        "cursor": f"# Cursor Rules — LLM Wiki Project\n\nThis project maintains a living wiki at `{wiki_dir}/`.\nAlways consult it before making changes.\n\n",
-        "copilot": f"# Copilot Instructions — LLM Wiki Project\n\nThis project uses `{wiki_dir}/` as persistent documentation.\nConsult the wiki before suggesting changes.\n\n",
-    }
-    preamble = preambles.get(agent, f"# Agent Instructions — LLM Wiki Project\n\nThis project uses `{wiki_dir}/` for architectural memory.\n\n")
-    extra = _IDE_SYNC_INSTRUCTIONS if agent in _IDE_AGENTS else ""
-    body = preamble + instructions + extra
-    return f"{_CONSTRAINT_START}\n{body.strip()}\n{_CONSTRAINT_END}\n"
+from ..config import CLI_AGENTS, DEFAULT_WIKI_DIR, validate_path
+from ..services.schema import (
+    CONSTRAINT_START as _CONSTRAINT_START,
+    SCHEMA_FILENAMES,
+    build_schema_content as _build_schema_content,
+)
 
 
 # Agents that have a real CLI executable (used by trigger-agent / install-hook)
 _CLI_AGENTS = CLI_AGENTS
-
-SCHEMA_FILENAMES = {
-    "claude": "CLAUDE.md",
-    "cursor": ".cursorrules",
-    "copilot": ".github/copilot-instructions.md",
-    "aider": ".aider.conf.yml",
-    "opencode": ".opencode/instructions.md",
-    "generic": ".agents.md",
-}
 
 
 def run(args):
@@ -149,7 +78,7 @@ def run(args):
             with open(schema_path, "r") as f:
                 existing_content = f.read()
                 
-            if "# --- LLM Wiki Maintainer Constraints ---" not in existing_content:
+            if _CONSTRAINT_START not in existing_content:
                 with open(schema_path, "a") as f:
                     # Append cleanly
                     f.write("\n\n" + content_to_add)

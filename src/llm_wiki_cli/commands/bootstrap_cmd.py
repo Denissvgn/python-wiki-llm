@@ -742,21 +742,12 @@ def run(args):
     _update_agent_constraints(str(wiki_dir))
 
 
-_CONSTRAINT_START = "# --- LLM Wiki Maintainer Constraints ---"
-_CONSTRAINT_END = "# --- End LLM Wiki Constraints ---"
-
 from ..config import DEFAULT_WIKI_DIR as _DEFAULT_WIKI_DIR
-
-# All agent schema files that may contain wiki path references
-_AGENT_SCHEMA_FILES = [
-    "CLAUDE.md",
-    "AGENTS.md",
-    ".cursorrules",
-    ".github/copilot-instructions.md",
-    ".agents.md",
-    ".aider.conf.yml",
-    ".opencode/instructions.md",
-]
+from ..services.schema import (
+    ALL_SCHEMA_FILES as _AGENT_SCHEMA_FILES,
+    CONSTRAINT_START as _CONSTRAINT_START,
+    CONSTRAINT_END as _CONSTRAINT_END,
+)
 
 
 def _update_agent_constraints(wiki_dir: str) -> None:

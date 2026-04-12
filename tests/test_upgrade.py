@@ -1,0 +1,271 @@
+"""Tests for llm-wiki upgrade command."""
+
+import os
+import subprocess
+import textwrap
+from pathlib import Path
+from types import SimpleNamespace
+
+import pytest
+
+from llm_wiki_cli.commands import upgrade_cmd
+from llm_wiki_cli.services.schema import CONSTRAINT_START, CONSTRAINT_END, SCHEMA_FILENAMES
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _init_project(proj: Path, agent: str = "copilot", wiki_dir: str = "docs/llm_wiki"):
+    """Run a minimal init to create the wiki structure and schema file."""
+    subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
+    subprocess.run(["git", "-C", str(proj), "config", "user.email", "t@t.com"],
+                   capture_output=True, check=True)
+    subprocess.run(["git", "-C", str(proj), "config", "user.name", "T"],
+                   capture_output=True, check=True)
+
+    from llm_wiki_cli.commands import init_cmd
+    old_cwd = os.getcwd()
+    os.chdir(proj)
+    try:
+        args = SimpleNamespace(agent=agent, wiki_dir=wiki_dir)
+        init_cmd.run(args)
+    finally:
+        os.chdir(old_cwd)
+
+
+def _make_args(**kwargs):
+    defaults = {"wiki_dir": "docs/llm_wiki", "agent": None}
+    defaults.update(kwargs)
+    return SimpleNamespace(**defaults)
+
+
+# ---------------------------------------------------------------------------
+# Tests
+# ---------------------------------------------------------------------------
+
+
+class TestUpgradeRefreshesSchema:
+    """Constraint block content is replaced (not duplicated) on upgrade."""
+
+    def test_block_replaced_not_duplicated(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+
+        schema = Path(SCHEMA_FILENAMES["copilot"])
+        original = schema.read_text()
+        assert original.count(CONSTRAINT_START) == 1
+
+        # Upgrade
+        upgrade_cmd.run(_make_args())
+
+        updated = schema.read_text()
+        assert updated.count(CONSTRAINT_START) == 1
+        assert updated.count(CONSTRAINT_END) == 1
+
+    def test_block_content_is_latest(self, tmp_path):
+        """After upgrade the block matches what build_schema_content produces."""
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+
+        from llm_wiki_cli.services.schema import build_schema_content
+        expected_block = build_schema_content("copilot", "docs/llm_wiki")
+
+        upgrade_cmd.run(_make_args())
+
+        content = Path(SCHEMA_FILENAMES["copilot"]).read_text()
+        assert expected_block.strip() in content
+
+
+class TestUpgradePreservesUserContent:
+    """User text outside the constraint markers survives upgrade."""
+
+    def test_user_rules_preserved(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+
+        schema = Path(SCHEMA_FILENAMES["copilot"])
+        content = schema.read_text()
+        user_rule = "\n# My custom rule\nAlways use type hints.\n"
+        schema.write_text(user_rule + content)
+
+        upgrade_cmd.run(_make_args())
+
+        updated = schema.read_text()
+        assert "My custom rule" in updated
+        assert "Always use type hints." in updated
+        assert updated.count(CONSTRAINT_START) == 1
+
+
+class TestUpgradePreservesWiki:
+    """Entity/module pages are never modified by upgrade."""
+
+    def test_wiki_pages_untouched(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+
+        wiki = Path("docs/llm_wiki")
+        entity = wiki / "entities" / "Foo.md"
+        entity.write_text("# Foo\n\nMy entity.\n")
+
+        upgrade_cmd.run(_make_args())
+
+        assert entity.read_text() == "# Foo\n\nMy entity.\n"
+
+
+class TestUpgradeSwitchAgent:
+    """Switching agents cleans old schema, writes new one, updates config."""
+
+    def test_switch_copilot_to_cursor(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+
+        old_schema = Path(SCHEMA_FILENAMES["copilot"])
+        assert old_schema.exists()
+
+        upgrade_cmd.run(_make_args(agent="cursor"))
+
+        # Old schema file should be cleaned/removed
+        if old_schema.exists():
+            assert CONSTRAINT_START not in old_schema.read_text()
+
+        # New schema file should exist
+        new_schema = Path(SCHEMA_FILENAMES["cursor"])
+        assert new_schema.exists()
+        assert CONSTRAINT_START in new_schema.read_text()
+
+        # Config should be updated
+        config = Path("docs/llm_wiki/.llm-wiki-agent").read_text().strip()
+        assert config == "cursor"
+
+    def test_switch_preserves_old_user_content(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+
+        old_schema = Path(SCHEMA_FILENAMES["copilot"])
+        content = old_schema.read_text()
+        old_schema.write_text("# My Copilot Rules\nUse Python 3.12.\n\n" + content)
+
+        upgrade_cmd.run(_make_args(agent="cursor"))
+
+        # Old file should still exist with user content
+        assert old_schema.exists()
+        remaining = old_schema.read_text()
+        assert "My Copilot Rules" in remaining
+        assert CONSTRAINT_START not in remaining
+
+
+class TestUpgradeReinstallsHooks:
+    """Hook files are updated on upgrade."""
+
+    def test_hooks_installed(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+
+        hook = Path(".git/hooks/post-commit")
+        # Remove any existing hook
+        if hook.exists():
+            hook.unlink()
+        assert not hook.exists()
+
+        upgrade_cmd.run(_make_args())
+
+        assert hook.exists()
+        content = hook.read_text()
+        assert "LLM Wiki" in content
+
+    def test_hooks_refreshed_on_agent_switch(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+
+        # Install initial hooks
+        upgrade_cmd.run(_make_args())
+        hook = Path(".git/hooks/post-commit")
+        old_content = hook.read_text()
+        assert "generate-prompt" in old_content  # IDE mode
+
+        # Switch to CLI agent
+        upgrade_cmd.run(_make_args(agent="claude"))
+        new_content = hook.read_text()
+        assert "trigger-agent" in new_content  # CLI mode
+
+
+class TestUpgradeCreatesNewDirs:
+    """New subdirectories appear on upgrade from an older version."""
+
+    def test_infrastructure_dir_created(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+
+        # Simulate an older install without infrastructure/
+        infra = Path("docs/llm_wiki/infrastructure")
+        if infra.exists():
+            import shutil
+            shutil.rmtree(infra)
+        assert not infra.exists()
+
+        upgrade_cmd.run(_make_args())
+
+        assert infra.exists()
+        assert (infra / ".gitkeep").exists()
+
+
+class TestUpgradeNoAgentConfig:
+    """Errors helpfully if no agent is resolvable."""
+
+    def test_error_without_agent(self, tmp_path):
+        subprocess.run(["git", "init", str(tmp_path)], capture_output=True, check=True)
+        os.chdir(tmp_path)
+
+        # No init, no config, no --agent flag
+        wiki = Path("docs/llm_wiki")
+        wiki.mkdir(parents=True, exist_ok=True)
+
+        with pytest.raises(SystemExit) as exc_info:
+            upgrade_cmd.run(_make_args())
+
+        assert exc_info.value.code == 1
+
+
+class TestUpgradeGitignore:
+    """Missing .gitignore entries are appended."""
+
+    def test_entries_added(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+
+        # Remove gitignore entries
+        gi = Path(".gitignore")
+        gi.write_text("# Other stuff\n*.pyc\n")
+
+        upgrade_cmd.run(_make_args())
+
+        content = gi.read_text()
+        assert ".git/llm-wiki-prompt.txt" in content
+        assert ".git/llm-wiki.lock" in content
+        assert "*.pyc" in content  # user content preserved
+
+
+class TestUpgradeIdempotent:
+    """Running upgrade twice produces the same result."""
+
+    def test_double_upgrade(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+
+        upgrade_cmd.run(_make_args())
+        first = Path(SCHEMA_FILENAMES["copilot"]).read_text()
+        hook_first = Path(".git/hooks/post-commit").read_text()
+        gi_first = Path(".gitignore").read_text()
+
+        upgrade_cmd.run(_make_args())
+        second = Path(SCHEMA_FILENAMES["copilot"]).read_text()
+        hook_second = Path(".git/hooks/post-commit").read_text()
+        gi_second = Path(".gitignore").read_text()
+
+        assert first == second
+        assert hook_first == hook_second
+        # gitignore may have an extra header line on second run if entries
+        # already exist, but the important entries should appear exactly once
+        for entry in [".git/llm-wiki-prompt.txt", ".git/llm-wiki.lock"]:
+            assert gi_second.count(entry) == 1

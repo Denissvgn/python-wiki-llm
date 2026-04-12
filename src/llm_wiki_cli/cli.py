@@ -1,6 +1,6 @@
 import argparse
 import sys
-from .commands import init_cmd, extract_cmd, lint_cmd, hook_cmd, trigger_cmd, bootstrap_cmd, bump_cmd, uninstall_cmd, generate_prompt_cmd, status_cmd, release_cmd
+from .commands import init_cmd, extract_cmd, lint_cmd, hook_cmd, trigger_cmd, bootstrap_cmd, bump_cmd, uninstall_cmd, generate_prompt_cmd, status_cmd, release_cmd, upgrade_cmd
 from .config import AGENT_CHOICES, DEFAULT_WIKI_DIR
 
 def main():
@@ -100,6 +100,16 @@ def main():
         help="Git-add CHANGELOG.md after stamping (for use in hooks)",
     )
 
+    # upgrade command
+    upgrade_parser = subparsers.add_parser(
+        "upgrade",
+        help="Refresh all framework-managed artifacts (schema, hooks, dirs) in place",
+    )
+    upgrade_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                                help="Wiki directory path (default: docs/llm_wiki)")
+    upgrade_parser.add_argument("--agent", choices=AGENT_CHOICES, default=None,
+                                help="Switch to a different agent (default: keep current)")
+
     args = parser.parse_args()
 
     try:
@@ -125,6 +135,8 @@ def main():
             status_cmd.run(args)
         elif args.command == "release":
             release_cmd.run(args)
+        elif args.command == "upgrade":
+            upgrade_cmd.run(args)
     except KeyboardInterrupt:
         print("\nAborted.")
         sys.exit(130)

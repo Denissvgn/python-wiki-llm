@@ -1,26 +1,16 @@
-import re
 import shutil
 from pathlib import Path
 
 from ..config import DEFAULT_WIKI_DIR
-
-# Marker boundaries used by init_cmd to inject constraints
-CONSTRAINT_START = "# --- LLM Wiki Maintainer Constraints ---"
-CONSTRAINT_END = "# --- End LLM Wiki Constraints ---"
+from ..services.schema import (
+    ALL_SCHEMA_FILES as AGENT_SCHEMA_FILES,
+    CONSTRAINT_START,
+    CONSTRAINT_END,
+    strip_wiki_block as _strip_wiki_block,
+)
 
 # Hook identifier — all llm-wiki hooks contain this string
 HOOK_SIGNATURE = "LLM Wiki"
-
-# All possible agent schema files that init_cmd may have created/modified
-AGENT_SCHEMA_FILES = [
-    "CLAUDE.md",
-    "AGENTS.md",
-    ".cursorrules",
-    ".github/copilot-instructions.md",
-    ".agents.md",
-    ".aider.conf.yml",
-    ".opencode/instructions.md",
-]
 
 # Hooks that install-hook may have written
 HOOK_NAMES = ["post-commit", "pre-commit", "pre-push"]
@@ -40,21 +30,6 @@ def _confirm(prompt: str) -> bool:
         print()
         return False
     return answer in ("y", "yes")
-
-
-def _strip_wiki_block(content: str) -> str:
-    """Remove the LLM Wiki constraint block from file content.
-    
-    Handles the block including surrounding blank lines so the file
-    stays clean after removal.
-    """
-    # Match from the start marker through the end marker, plus surrounding whitespace
-    pattern = re.compile(
-        r'\n*' + re.escape(CONSTRAINT_START) + r'.*?' + re.escape(CONSTRAINT_END) + r'\n*',
-        re.DOTALL,
-    )
-    cleaned = pattern.sub('\n', content)
-    return cleaned.strip() + '\n' if cleaned.strip() else ''
 
 
 def _remove_hooks(dry_run: bool = False) -> int:
