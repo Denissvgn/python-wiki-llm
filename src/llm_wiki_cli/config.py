@@ -7,6 +7,13 @@ from pathlib import Path
 
 DEFAULT_WIKI_DIR = "docs/llm_wiki"
 
+# Directories excluded from all source-file scans (Python AST and Docker).
+EXCLUDED_DIRS: set[str] = {
+    "venv", ".venv", "env", ".env",
+    ".tox", "node_modules", "__pycache__",
+    ".eggs", "build", "dist", ".git",
+}
+
 AGENT_CHOICES = ["claude", "cursor", "copilot", "aider", "opencode", "generic"]
 
 # Agents that have a real CLI executable (key=agent name, value=executable)
@@ -55,3 +62,11 @@ def validate_path(path: str, label: str = "path") -> Path:
         )
         sys.exit(1)
     return resolved
+
+
+# Registry mapping language name → extractor entry point.
+# Format: "module.path:ClassName"
+# New extractors (TypeScript, Go, Rust, …) are registered here.
+EXTRACTOR_REGISTRY: dict[str, str] = {
+    "python": "llm_wiki_cli.extractors.python_extractor:PythonExtractor",
+}
