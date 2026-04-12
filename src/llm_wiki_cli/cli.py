@@ -1,6 +1,6 @@
 import argparse
 import sys
-from .commands import init_cmd, extract_cmd, lint_cmd, hook_cmd, trigger_cmd, bootstrap_cmd, bump_cmd, uninstall_cmd, generate_prompt_cmd, status_cmd, release_cmd, upgrade_cmd, sync_cmd
+from .commands import init_cmd, extract_cmd, lint_cmd, hook_cmd, trigger_cmd, bootstrap_cmd, bump_cmd, uninstall_cmd, generate_prompt_cmd, status_cmd, release_cmd, upgrade_cmd, sync_cmd, context_cmd
 from .config import AGENT_CHOICES, DEFAULT_WIKI_DIR
 
 def main():
@@ -119,6 +119,20 @@ def main():
     sync_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
                              help="Wiki directory (default: docs/llm_wiki)")
 
+    # context command
+    context_parser = subparsers.add_parser(
+        "context",
+        help="Return priority-ranked, token-budgeted codebase context for LLM agents",
+    )
+    context_parser.add_argument("--budget", type=int, required=True,
+                                help="Token budget for the context payload")
+    context_parser.add_argument("--src-dir", default=".",
+                                help="Source directory to scan (default: .)")
+    context_parser.add_argument("--format", choices=["json", "markdown"], default="json",
+                                help="Output format (default: json)")
+    context_parser.add_argument("--focus", choices=["changed", "all"], default="changed",
+                                help="changed=prioritise git diff files, all=treat every file as high priority (default: changed)")
+
     args = parser.parse_args()
 
     try:
@@ -148,6 +162,8 @@ def main():
             upgrade_cmd.run(args)
         elif args.command == "sync":
             sync_cmd.run(args)
+        elif args.command == "context":
+            context_cmd.run(args)
     except KeyboardInterrupt:
         print("\nAborted.")
         sys.exit(130)
