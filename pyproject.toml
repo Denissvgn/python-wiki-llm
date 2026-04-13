@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llm-wiki-cli"
-version = "0.3.6"
+version = "0.3.7"
 description = "CLI tool to maintain hybrid LLM Wikis for Python projects."
 readme = "README.md"
 license = {text = "MIT"}
@@ -28,6 +28,8 @@ dev = ["pytest>=7.0", "pytest-cov>=4.0"]
 # TypeScript extraction requires Node.js + npm at runtime (no Python deps).
 # Run: npm install in src/llm_wiki_cli/extractors/ts_scripts/
 typescript = []
+# Go extraction requires the Go toolchain at runtime (no Python deps).
+go = []
 
 [project.urls]
 Homepage = "https://github.com/Denissvgn/python-wiki-llm"
@@ -41,7 +43,12 @@ llm-wiki = "llm_wiki_cli.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-"llm_wiki_cli" = ["extractors/ts_scripts/package.json", "extractors/ts_scripts/extract.js"]
+"llm_wiki_cli" = [
+    "extractors/ts_scripts/package.json",
+    "extractors/ts_scripts/extract.js",
+    "extractors/go_scripts/main.go",
+    "extractors/go_scripts/go.mod",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -71,6 +71,7 @@ def validate_path(path: str, label: str = "path") -> Path:
 EXTRACTOR_REGISTRY: dict[str, str] = {
     "python": "llm_wiki_cli.extractors.python_extractor:PythonExtractor",
     "typescript": "llm_wiki_cli.extractors.ts_extractor:TypeScriptExtractor",
+    "go": "llm_wiki_cli.extractors.go_extractor:GoExtractor",
 }
 
 
