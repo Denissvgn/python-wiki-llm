@@ -1,0 +1,10 @@
+{
+  "name": "llm-wiki-ts-extractor",
+  "version": "1.0.0",
+  "description": "TypeScript AST extractor for llm-wiki-cli",
+  "private": true,
+  "main": "extract.js",
+  "dependencies": {
+    "ts-morph": "^24.0.0"
+  }
+}

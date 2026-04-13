@@ -475,10 +475,11 @@ def _generate_dockerfile_md(filename: str, info: dict, module_stems: set[str] | 
         for c in copies:
             stage = f"`{c['from_stage']}`" if c.get("from_stage") else "—"
             src_text = f"`{c['src']}`"
-            # Cross-reference to module page if the copied file is a known Python module
+            # Cross-reference to module page if the copied file is a known source module
+            _SOURCE_EXTS = (".py", ".ts", ".tsx", ".js", ".jsx")
             if module_stems:
                 for stem in module_stems:
-                    if f"{stem}.py" in c["src"]:
+                    if any(f"{stem}{ext}" in c["src"] for ext in _SOURCE_EXTS):
                         src_text = f"[`{c['src']}`](../modules/{stem}.md)"
                         break
             lines.append(f"| `{c['instruction']}` | {src_text} | `{c['dest']}` | {stage} |")
