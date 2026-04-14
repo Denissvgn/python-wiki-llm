@@ -108,7 +108,7 @@ class TypeScriptExtractor:
         cmd = [
             "node",
             str(_TS_SCRIPTS_DIR / "extract.js"),
-            "--src-dir", src_dir,
+            "--src-dir", str(Path(src_dir).resolve()),
         ]
         if only_files:
             cmd += ["--only-files", ",".join(only_files)]
@@ -161,5 +161,12 @@ class TypeScriptExtractor:
 
         for entry in inventory.values():
             entry["language"] = "typescript"
+
+        # Exclude files from the extractor's own bundled scripts directory.
+        scripts_abs = str(_TS_SCRIPTS_DIR.resolve()) + "/"
+        inventory = {
+            fp: data for fp, data in inventory.items()
+            if not str(Path(fp).resolve()).startswith(scripts_abs)
+        }
 
         return inventory

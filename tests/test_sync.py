@@ -93,7 +93,7 @@ def _write_manifest_from_bootstrap(proj: Path, wiki_dir: Path) -> None:
     inventory = get_inventory(str(proj), deep=True)
     colliding_stems, colliding_cls, entity_page_cache = _collision_maps(inventory, str(proj))
     module_page_map = {
-        fp: _page_name_for_module(fp, str(proj), colliding_stems)
+        fp: _page_name_for_module(fp)
         for fp in inventory
     }
     manifest = SyncManifest.build_from_inventory(

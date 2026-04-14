@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import re
 import subprocess
 from collections import defaultdict
 from datetime import date
@@ -17,51 +16,25 @@ def _module_name_from_path(filepath: str) -> str:
     return Path(filepath).stem
 
 
-# Directory names too generic to use as service-level qualifiers.
-_GENERIC_DIRS = {"src", "lib", "app", "pkg", "core", "main", "tests", "test"}
+def _page_name_for_module(filepath: str) -> str:
+    """Return the wiki page stem for a module."""
+    return Path(filepath).stem
 
 
-def _qualifier_for(filepath: str, src_dir: str) -> str:
-    """Build a filesystem-safe path-derived qualifier, unique per source file.
-
-    Skips generic directory names and joins remaining path components with '__',
-    always including the file stem so the qualifier is uniquely tied to the file.
-    """
-    p = Path(filepath)
-    try:
-        rel = p.relative_to(Path(src_dir))
-    except ValueError:
-        rel = p
-    dirs = [
-        pt for pt in rel.parts[:-1]
-        if pt.lower() not in _GENERIC_DIRS and not pt.startswith(".")
-    ]
-    # Include the file stem so two different files in the same directory
-    # can never share a qualifier (OS guarantees unique filenames per dir).
-    dirs.append(p.stem)
-    joined = "__".join(dirs) if dirs else p.stem
-    return re.sub(r"[^a-zA-Z0-9]+", "_", joined)
-
-
-def _page_name_for_module(filepath: str, src_dir: str, colliding_stems: set[str]) -> str:
-    """Return the wiki page stem for a module, qualifying on collision."""
-    stem = Path(filepath).stem
-    if stem in colliding_stems:
-        return f"{_qualifier_for(filepath, src_dir)}__{stem}"
-    return stem
-
-
-def _page_name_for_entity(cls_name: str, filepath: str, src_dir: str, colliding_cls: set[str]) -> str:
-    """Return the wiki page stem for an entity, qualifying on collision."""
-    if cls_name in colliding_cls:
-        return f"{_qualifier_for(filepath, src_dir)}__{cls_name}"
+def _page_name_for_entity(cls_name: str) -> str:
+    """Return the wiki page stem for an entity."""
     return cls_name
 
 
-def _build_relationships(inventory: dict) -> dict:
+def _build_relationships(inventory: dict, module_page_map: dict[str, str] | None = None) -> dict:
     """Cross-reference imports against known entity names to build a usage graph.
     
-    Returns a dict mapping entity name -> list of {module, function, relationship} dicts.
+    Returns a dict mapping entity name -> list of {module, module_page, function, relationship} dicts.
+
+    *module_page_map*: optional mapping of filepath -> wiki page stem produced by
+    ``_page_name_for_module``.  When provided every relationship record carries
+    ``module_page`` so that generated links point to the correct page even when
+    the module stem was qualified to resolve a collision.
     """
     # Collect all known entity (class) names
     entity_to_file = {}
@@ -71,9 +44,11 @@ def _build_relationships(inventory: dict) -> dict:
 
     # relationship map: entity_name -> [{"module": ..., "function": ..., "rel": ...}]
     relationships = defaultdict(list)
+    _mod_page_map = module_page_map or {}
 
     for filepath, data in inventory.items():
         mod_name = _module_name_from_path(filepath)
+        mod_page = _mod_page_map.get(filepath, mod_name)
         imports = data.get("imports", [])
         imported_names = {imp["name"] for imp in imports}
 
@@ -100,6 +75,7 @@ def _build_relationships(inventory: dict) -> dict:
                     if mentions_entity:
                         relationships[entity_name].append({
                             "module": mod_name,
+                            "module_page": mod_page,
                             "module_path": filepath,
                             "function": fn["name"],
                             "rel": "used_by",
@@ -109,6 +85,7 @@ def _build_relationships(inventory: dict) -> dict:
                 if not any(r["module"] == mod_name for r in relationships[entity_name]):
                     relationships[entity_name].append({
                         "module": mod_name,
+                        "module_page": mod_page,
                         "module_path": filepath,
                         "function": None,
                         "rel": "imported_by",
@@ -205,7 +182,8 @@ def _generate_entity_md(class_info: dict, filepath: str, relationships: dict, mo
     lines.append("")
     if rels:
         for r in rels:
-            mod_link = f"[{r['module']}](../modules/{r['module']}.md)"
+            page = r.get("module_page", r["module"])
+            mod_link = f"[{r['module']}](../modules/{page}.md)"
             if r.get("function"):
                 lines.append(f"- **{r['rel']}**: `{r['function']}()` in {mod_link}")
             else:
@@ -609,33 +587,30 @@ def run(args):
         print("No Python files with classes or functions found. Nothing to bootstrap.")
         return
 
-    # 2. Build cross-reference relationships (only meaningful in deep mode)
-    relationships = _build_relationships(inventory) if deep else {}
-
     all_entity_names = []
     module_entries = []
     entities_created = 0
     modules_created = 0
     _seen_entity_pages: set[str] = set()  # dedup index entries
 
-    # Pre-scan: detect name collisions across files so pages can be disambiguated.
-    _stem_to_fps: dict = defaultdict(list)
-    _cls_to_fps: dict = defaultdict(list)
-    for fp, data in inventory.items():
-        _stem_to_fps[Path(fp).stem].append(fp)
-        for cls in data.get("classes", []):
-            _cls_to_fps[cls["name"]].append(fp)
-    colliding_stems = {stem for stem, fps in _stem_to_fps.items() if len(fps) > 1}
-    colliding_cls = {name for name, fps in _cls_to_fps.items() if len(fps) > 1}
-    # Precompute per-file entity page names: (cls_name, filepath) -> page_stem
+    # Precompute module page name map: filepath -> page_stem
+    _module_page_map: dict[str, str] = {
+        fp: _page_name_for_module(fp)
+        for fp in inventory
+    }
+
+    # Precompute per-file entity page names: cls_name -> page_stem
     _entity_page_name_cache: dict = {
-        (cls["name"], fp): _page_name_for_entity(cls["name"], fp, src_dir, colliding_cls)
+        (cls["name"], fp): _page_name_for_entity(cls["name"])
         for fp, data in inventory.items()
         for cls in data.get("classes", [])
     }
 
+    # 2. Build cross-reference relationships (only meaningful in deep mode)
+    relationships = _build_relationships(inventory, _module_page_map) if deep else {}
+
     for filepath, file_data in inventory.items():
-        mod_page_name = _page_name_for_module(filepath, src_dir, colliding_stems)
+        mod_page_name = _module_page_map[filepath]
         # Map cls_name -> page_stem for classes in this file (used by module page links)
         file_entity_page_map = {
             cls["name"]: _entity_page_name_cache[(cls["name"], filepath)]

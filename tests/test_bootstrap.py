@@ -57,7 +57,8 @@ def tmp_collision_project(tmp_path):
 
 
 class TestBootstrapCollisions:
-    def test_entity_collision_creates_two_qualified_pages(self, tmp_collision_project, capsys):
+    def test_entity_collision_uses_simple_name(self, tmp_collision_project, capsys):
+        """When two files define the same class name, only one page is created (last-writer-wins)."""
         wiki_dir = tmp_collision_project / "docs" / "llm_wiki"
         args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
         bootstrap_cmd.run(args)
@@ -65,25 +66,22 @@ class TestBootstrapCollisions:
         entity_pages = list((wiki_dir / "entities").glob("*.md"))
         entity_names = {p.stem for p in entity_pages}
 
-        # Unqualified page must NOT exist — both are disambiguated
-        assert "Config" not in entity_names
-        # Both qualified pages must exist
-        assert any("auth_service" in n and "Config" in n for n in entity_names), entity_names
-        assert any("order_service" in n and "Config" in n for n in entity_names), entity_names
+        # Simple unqualified page must exist — no qualifier prefixes
+        assert "Config" in entity_names
+        # No qualifier-prefixed pages should exist
+        assert not any("__" in n for n in entity_names), entity_names
 
-    def test_entity_pages_point_to_correct_source(self, tmp_collision_project, capsys):
+    def test_entity_page_contains_valid_source(self, tmp_collision_project, capsys):
         wiki_dir = tmp_collision_project / "docs" / "llm_wiki"
         args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
         bootstrap_cmd.run(args)
 
-        entity_pages = {p.stem: p.read_text(encoding="utf-8") for p in (wiki_dir / "entities").glob("*.md")}
-        auth_page = next(v for k, v in entity_pages.items() if "auth_service" in k)
-        order_page = next(v for k, v in entity_pages.items() if "order_service" in k)
+        content = (wiki_dir / "entities" / "Config.md").read_text(encoding="utf-8")
+        # Page must reference one of the two source files
+        assert "config.py" in content
 
-        assert "auth-service" in auth_page
-        assert "order-service" in order_page
-
-    def test_module_collision_creates_two_qualified_pages(self, tmp_collision_project, capsys):
+    def test_module_collision_uses_simple_name(self, tmp_collision_project, capsys):
+        """When two files share the same stem, only one module page is created (last-writer-wins)."""
         wiki_dir = tmp_collision_project / "docs" / "llm_wiki"
         args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
         bootstrap_cmd.run(args)
@@ -91,11 +89,10 @@ class TestBootstrapCollisions:
         module_pages = list((wiki_dir / "modules").glob("*.md"))
         module_names = {p.stem for p in module_pages}
 
-        # Unqualified page must NOT exist
-        assert "config" not in module_names
-        # Both qualified pages must exist
-        assert any("auth_service" in n and "config" in n for n in module_names), module_names
-        assert any("order_service" in n and "config" in n for n in module_names), module_names
+        # Simple unqualified page must exist
+        assert "config" in module_names
+        # No qualifier-prefixed pages should exist
+        assert not any("__" in n for n in module_names), module_names
 
     def test_index_has_no_duplicate_entries(self, tmp_collision_project, capsys):
         wiki_dir = tmp_collision_project / "docs" / "llm_wiki"

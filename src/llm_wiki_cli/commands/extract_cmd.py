@@ -5,6 +5,7 @@ import json
 import os
 import re
 import subprocess
+import sys
 from pathlib import Path
 
 from ..config import COMPOSE_PATTERNS, DOCKERFILE_PATTERNS, EXCLUDED_DIRS, EXTRACTOR_REGISTRY
@@ -28,16 +29,20 @@ def _load_extractor(entry_point: str):
 
 
 def get_inventory(src_dir, deep=False, only_files=None):
-    """Scan Python files and return inventory.
+    """Scan source files across all registered languages and return inventory.
 
-    Backward-compatible wrapper around :class:`PythonExtractor`.
+    Runs every extractor in :data:`EXTRACTOR_REGISTRY` and merges the
+    results into a single dict keyed by file path.
 
     If deep=True, returns enriched data (docstrings, attributes, methods, imports).
     If deep=False, returns the slim format for backward compatibility.
     If only_files is given, restrict to those relative paths.
     """
-    extractor = _load_extractor(EXTRACTOR_REGISTRY["python"])
-    return extractor.extract(src_dir, only_files=only_files, deep=deep)
+    inventory: dict = {}
+    for _lang, entry_point in EXTRACTOR_REGISTRY.items():
+        extractor = _load_extractor(entry_point)
+        inventory.update(extractor.extract(src_dir, only_files=only_files, deep=deep))
+    return inventory
 
 
 def _git_changed_files(src_dir: str) -> list[str] | None:
@@ -76,48 +81,47 @@ def run(args):
     src_dir: str = getattr(args, "src_dir", ".")
     changed: bool = getattr(args, "changed", False)
     summary: bool = getattr(args, "summary", False)
+    deep: bool = getattr(args, "deep", False)
     paths: list[str] | None = getattr(args, "paths", None)
 
     only_files = None
 
     if changed and paths:
-        print("Error: --changed and --paths are mutually exclusive.")
+        print("Error: --changed and --paths are mutually exclusive.", file=sys.stderr)
         return
 
     if changed:
         only_files = _git_changed_files(src_dir)
         if only_files is None:
-            print("Warning: Could not get changed files from git. Falling back to full scan.")
+            print("Warning: Could not get changed files from git. Falling back to full scan.", file=sys.stderr)
         elif not only_files:
-            print("No files changed in the last commit.")
+            print("No files changed in the last commit.", file=sys.stderr)
             return
         else:
-            print(f"Extracting {len(only_files)} changed file(s)...")
+            print(f"Extracting {len(only_files)} changed file(s)...", file=sys.stderr)
     elif paths:
         only_files = paths
-        print(f"Extracting {len(only_files)} specified path(s)...")
+        print(f"Extracting {len(only_files)} specified path(s)...", file=sys.stderr)
     else:
-        print(f"Extracting inventory from {src_dir}...")
+        print(f"Extracting inventory from {src_dir}...", file=sys.stderr)
 
-    # Run all registered extractors and merge results
-    inventory: dict = {}
-    for _lang, entry_point in EXTRACTOR_REGISTRY.items():
-        extractor = _load_extractor(entry_point)
-        inventory.update(extractor.extract(src_dir, only_files=only_files))
+    inventory = get_inventory(src_dir, deep=deep, only_files=only_files)
 
     if summary:
-        compact = _summarize_inventory(inventory)
-        print(json.dumps(compact, indent=2))
-    else:
-        print(json.dumps(inventory, indent=2))
-    print(f"Extracted {len(inventory)} files with tracked components.")
+        inventory = _summarize_inventory(inventory)
 
     docker_inv = get_docker_inventory(src_dir)
+
+    output: dict = {"inventory": inventory}
     if docker_inv:
-        print(f"\nDocker inventory ({len(docker_inv)} file(s)):")
-        print(json.dumps(docker_inv, indent=2))
+        output["docker"] = docker_inv
+
+    print(json.dumps(output, indent=2))
+    print(f"Extracted {len(inventory)} files with tracked components.", file=sys.stderr)
+    if docker_inv:
+        print(f"Docker inventory: {len(docker_inv)} file(s).", file=sys.stderr)
     else:
-        print("\nNo Docker/Compose files found.")
+        print("No Docker/Compose files found.", file=sys.stderr)
 
 
 # ── Call-graph extraction for workflow detection ──────────────────────

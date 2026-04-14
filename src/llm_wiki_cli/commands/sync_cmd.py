@@ -15,7 +15,6 @@ from __future__ import annotations
 import hashlib
 import json
 import sys
-from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
@@ -30,7 +29,6 @@ from .bootstrap_cmd import (
     _module_name_from_path,
     _page_name_for_entity,
     _page_name_for_module,
-    _qualifier_for,
 )
 from ..config import validate_path
 from ..services.io import read_md, write_md
@@ -215,25 +213,15 @@ def _collision_maps(
 ) -> tuple[set[str], set[str], dict[tuple[str, str], str]]:
     """Return (colliding_stems, colliding_cls, entity_page_name_cache).
 
-    Must be computed over the *full* inventory so that a newly added file
-    that duplicates an existing class/module name is properly qualified.
+    Collision detection is no longer used; the sets are always empty.
+    Kept for API compatibility with :class:`SyncManifest.build_from_inventory`.
     """
-    stem_to_fps: dict[str, list[str]] = defaultdict(list)
-    cls_to_fps: dict[str, list[str]] = defaultdict(list)
-    for fp, data in inventory.items():
-        stem_to_fps[Path(fp).stem].append(fp)
-        for cls in data.get("classes", []):
-            cls_to_fps[cls["name"]].append(fp)
-
-    colliding_stems = {s for s, fps in stem_to_fps.items() if len(fps) > 1}
-    colliding_cls = {n for n, fps in cls_to_fps.items() if len(fps) > 1}
-
     entity_page_cache: dict[tuple[str, str], str] = {
-        (cls["name"], fp): _page_name_for_entity(cls["name"], fp, src_dir, colliding_cls)
+        (cls["name"], fp): _page_name_for_entity(cls["name"])
         for fp, data in inventory.items()
         for cls in data.get("classes", [])
     }
-    return colliding_stems, colliding_cls, entity_page_cache
+    return set(), set(), entity_page_cache
 
 
 def _apply_diff(
@@ -258,7 +246,7 @@ def _apply_diff(
     # ── New + changed files ────────────────────────────────────────────────────
     for filepath in diff.new_files + diff.changed_files:
         file_data = inventory[filepath]
-        mod_page_name = _page_name_for_module(filepath, src_dir, colliding_stems)
+        mod_page_name = _page_name_for_module(filepath)
         module_page_map[filepath] = mod_page_name
 
         file_entity_page_map = {
@@ -294,7 +282,7 @@ def _apply_diff(
 
     # ── Unchanged files ────────────────────────────────────────────────────────
     for filepath in diff.unchanged_files:
-        mod_page_name = _page_name_for_module(filepath, src_dir, colliding_stems)
+        mod_page_name = _page_name_for_module(filepath)
         module_page_map[filepath] = mod_page_name
         entity_count = len(inventory[filepath].get("classes", []))
         result.skipped += 1 + entity_count  # 1 module page + N entity pages
@@ -398,7 +386,7 @@ def run(args) -> None:
     # 7. Compute collision maps + module page map for manifest, then save
     colliding_stems, colliding_cls, entity_page_cache = _collision_maps(inventory, src_dir)
     module_page_map = {
-        fp: _page_name_for_module(fp, src_dir, colliding_stems)
+        fp: _page_name_for_module(fp)
         for fp in inventory
     }
     updated_manifest = SyncManifest.build_from_inventory(
@@ -427,7 +415,7 @@ def _rebuild_index(wiki_dir: Path, inventory: dict, src_dir: str) -> None:
     module_entries: list[dict] = []
 
     for filepath, file_data in inventory.items():
-        mod_page_name = _page_name_for_module(filepath, src_dir, colliding_stems)
+        mod_page_name = _page_name_for_module(filepath)
         module_entries.append({
             "name": mod_page_name,
             "path": filepath,

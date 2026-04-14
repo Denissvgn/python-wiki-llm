@@ -72,6 +72,7 @@ EXTRACTOR_REGISTRY: dict[str, str] = {
     "python": "llm_wiki_cli.extractors.python_extractor:PythonExtractor",
     "typescript": "llm_wiki_cli.extractors.ts_extractor:TypeScriptExtractor",
     "go": "llm_wiki_cli.extractors.go_extractor:GoExtractor",
+    "rust": "llm_wiki_cli.extractors.rust_extractor:RustExtractor",
 }
 
 
