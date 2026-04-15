@@ -1,10 +1,14 @@
 """Shared fixtures for llm_wiki_cli tests."""
 import os
+import shutil
 import subprocess
 import textwrap
 from pathlib import Path
 
 import pytest
+
+# True when git is on PATH; used to skip/stub git-dependent steps
+_GIT_AVAILABLE = shutil.which("git") is not None
 
 
 @pytest.fixture
@@ -13,10 +17,14 @@ def tmp_project(tmp_path):
     proj = tmp_path / "project"
     proj.mkdir()
 
-    # git init
-    subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
-    subprocess.run(["git", "-C", str(proj), "config", "user.email", "test@test.com"], capture_output=True, check=True)
-    subprocess.run(["git", "-C", str(proj), "config", "user.name", "Test"], capture_output=True, check=True)
+    # git init — optional; create a stub .git dir if git is unavailable so that
+    # tests relying on the path (e.g. circuit breaker state files) still work.
+    if _GIT_AVAILABLE:
+        subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(proj), "config", "user.email", "test@test.com"], capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(proj), "config", "user.name", "Test"], capture_output=True, check=True)
+    else:
+        (proj / ".git").mkdir(exist_ok=True)
 
     # sample Python files
     (proj / "models.py").write_text(textwrap.dedent("""\

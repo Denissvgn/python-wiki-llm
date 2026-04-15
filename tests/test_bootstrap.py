@@ -1,11 +1,16 @@
 """Tests for commands/bootstrap_cmd.py"""
 import os
-import types
+import shutil
+import subprocess
 import textwrap
+import types
 from pathlib import Path
 
 import pytest
 from llm_wiki_cli.commands import bootstrap_cmd
+
+# True when git is on PATH; used to guard git-dependent fixture steps.
+_GIT_AVAILABLE = shutil.which("git") is not None
 
 
 def _make_args(**kwargs):
@@ -27,9 +32,12 @@ def tmp_collision_project(tmp_path):
     proj.mkdir()
 
     import subprocess
-    subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
-    subprocess.run(["git", "-C", str(proj), "config", "user.email", "t@t.com"], capture_output=True, check=True)
-    subprocess.run(["git", "-C", str(proj), "config", "user.name", "T"], capture_output=True, check=True)
+    if _GIT_AVAILABLE:
+        subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(proj), "config", "user.email", "t@t.com"], capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(proj), "config", "user.name", "T"], capture_output=True, check=True)
+    else:
+        (proj / ".git").mkdir(exist_ok=True)
 
     (proj / "pyproject.toml").write_text('[project]\nname = "sample"\nversion = "0.1.0"\n')
 

@@ -57,7 +57,7 @@ def _run_sync(args):
         print("Git diff timed out (30s). Aborting.")
         circuit_breaker.record_failure(GIT_DIR)
         return
-    except subprocess.CalledProcessError as e:
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
         print(f"Git diff failed. Are there commits? {e}")
         circuit_breaker.record_failure(GIT_DIR)
         return

@@ -1,8 +1,10 @@
 """Tests for commands/bump_cmd.py"""
+import shutil
 import subprocess
 import types
 from pathlib import Path
 
+import pytest
 from llm_wiki_cli.commands import bump_cmd
 
 
@@ -35,6 +37,7 @@ class TestBumpMinorCmd:
 
 
 class TestBumpStageFlag:
+    @pytest.mark.skipif(shutil.which("git") is None, reason="git not available")
     def test_stage_git_adds(self, tmp_project, capsys):
         # Initial commit so git is ready
         subprocess.run(["git", "add", "."], capture_output=True)

@@ -142,5 +142,8 @@ def run(args):
     print(f"CHANGELOG.md: [Unreleased] → [{version}] ({date.today().isoformat()})")
 
     if getattr(args, "stage", False):
-        subprocess.run(["git", "add", str(changelog_path)], check=False)
-        print(f"Staged: {changelog_path}")
+        try:
+            subprocess.run(["git", "add", str(changelog_path)], check=False)
+            print(f"Staged: {changelog_path}")
+        except FileNotFoundError:
+            pass  # git not available; skip staging
