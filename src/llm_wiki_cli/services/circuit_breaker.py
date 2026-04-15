@@ -22,7 +22,7 @@ def load_state(git_dir: Path) -> dict:
     path = _state_path(git_dir)
     if not path.exists():
         return dict(_DEFAULT_STATE)
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 

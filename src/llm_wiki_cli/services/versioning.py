@@ -60,7 +60,7 @@ def write_version(path: Path, new_version: str) -> None:
             break
     if content == original:
         raise ValueError(f"Version pattern not found in {path}")
-    path.write_text(content, encoding="utf-8")
+    path.write_bytes(content.encode("utf-8"))
 
 
 def bump_patch(version: str) -> str:

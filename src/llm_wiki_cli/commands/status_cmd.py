@@ -46,7 +46,7 @@ def run(args) -> None:
         for hook_name in ["post-commit", "pre-commit", "pre-push"]:
             hook_file = hooks_dir / hook_name
             if hook_file.exists():
-                content = hook_file.read_text()
+                content = hook_file.read_text(encoding="utf-8")
                 if "LLM Wiki" in content:
                     installed.append(hook_name)
         if installed:

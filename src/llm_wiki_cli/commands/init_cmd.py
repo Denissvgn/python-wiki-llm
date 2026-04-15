@@ -97,10 +97,10 @@ def run(args):
         ".git/llm-wiki-sync.log",
     ]
     gitignore = Path(".gitignore")
-    existing = gitignore.read_text() if gitignore.exists() else ""
+    existing = gitignore.read_text(encoding="utf-8") if gitignore.exists() else ""
     to_add = [e for e in _GITIGNORE_ENTRIES if e not in existing]
     if to_add:
-        with open(gitignore, "a") as f:
+        with open(gitignore, "a", encoding="utf-8") as f:
             if existing and not existing.endswith("\n"):
                 f.write("\n")
             f.write("# LLM Wiki temp files\n")

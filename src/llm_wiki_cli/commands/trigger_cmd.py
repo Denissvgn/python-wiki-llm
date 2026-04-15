@@ -131,7 +131,7 @@ git commit -m "docs(wiki): auto-update [bot]"
 
     # 4. Save the prompt to a temp file
     prompt_file = Path(".git/llm-wiki-prompt.txt")
-    with open(prompt_file, "w") as f:
+    with open(prompt_file, "w", encoding="utf-8") as f:
         f.write(prompt)
 
     # 5. Delegate to Subagent via CLI
@@ -151,12 +151,9 @@ git commit -m "docs(wiki): auto-update [bot]"
     try:
         print(f"Running command: {' '.join(cmd)}")
 
-        with open(prompt_file, 'r') as f:
-            prompt_content = f.read()
-
         if args.agent == "claude":
             result = subprocess.run(
-                cmd, input=prompt_content, capture_output=True, text=True,
+                cmd, input=prompt, capture_output=True, text=True,
                 timeout=timeout,
             )
         else:
@@ -171,8 +168,12 @@ git commit -m "docs(wiki): auto-update [bot]"
         if result.stderr:
             print("stderr:", result.stderr)
 
-        # --- Fuse: record success ---
-        circuit_breaker.record_success(GIT_DIR)
+        # --- Fuse: record success / failure based on exit code ---
+        if result.returncode != 0:
+            print(f"Subagent exited with code {result.returncode}.")
+            circuit_breaker.record_failure(GIT_DIR)
+        else:
+            circuit_breaker.record_success(GIT_DIR)
 
     except subprocess.TimeoutExpired:
         print(f"Subagent timed out after {timeout}s. Process killed.")

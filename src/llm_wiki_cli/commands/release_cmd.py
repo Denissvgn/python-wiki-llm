@@ -138,7 +138,7 @@ def run(args):
         print("CHANGELOG.md: [Unreleased] is empty — nothing to stamp (run after the agent adds entries).")
         return
 
-    changelog_path.write_text(new_text, encoding="utf-8")
+    changelog_path.write_bytes(new_text.encode("utf-8"))
     print(f"CHANGELOG.md: [Unreleased] → [{version}] ({date.today().isoformat()})")
 
     if getattr(args, "stage", False):

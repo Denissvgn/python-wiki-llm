@@ -8,7 +8,6 @@ from pathlib import Path
 from .extract_cmd import get_inventory, get_call_graph, get_docker_inventory
 from ..config import validate_path
 from ..services.io import read_md
-from ..services.io import read_md
 
 # basic regex for [text](url)
 LINK_RE = re.compile(r'\[.+?\]\((.+?)\)')
