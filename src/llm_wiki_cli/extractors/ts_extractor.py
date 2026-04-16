@@ -43,6 +43,9 @@ def _ensure_npm_deps() -> bool:
             capture_output=True,
             check=True,
             timeout=120,
+            # npm is a .cmd batch script on Windows; CreateProcess cannot
+            # execute .cmd files directly, so we need shell=True there.
+            shell=(sys.platform == "win32"),
         )
         return True
     except subprocess.CalledProcessError as exc:
@@ -52,9 +55,9 @@ def _ensure_npm_deps() -> bool:
             file=sys.stderr,
         )
         return False
-    except subprocess.TimeoutExpired:
+    except (subprocess.TimeoutExpired, FileNotFoundError):
         print(
-            "llm-wiki TypeScript extractor: npm install timed out.",
+            "llm-wiki TypeScript extractor: npm install timed out or not found.",
             file=sys.stderr,
         )
         return False
