@@ -39,10 +39,14 @@ def _ensure_npm_deps() -> bool:
 
     try:
         subprocess.run(
-            ["npm", "install", "--prefix", str(_TS_SCRIPTS_DIR)],
+            ["npm", "install"],
             capture_output=True,
             check=True,
             timeout=120,
+            # Run from the ts_scripts directory so npm finds package.json
+            # there.  Using --prefix instead is unreliable on Windows where
+            # modern npm still reads package.json from CWD.
+            cwd=str(_TS_SCRIPTS_DIR),
             # npm is a .cmd batch script on Windows; CreateProcess cannot
             # execute .cmd files directly, so we need shell=True there.
             shell=(sys.platform == "win32"),
