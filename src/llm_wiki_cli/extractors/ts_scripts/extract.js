@@ -24,6 +24,10 @@ function getArg(flag, defaultValue = null) {
 }
 
 const srcDir = path.resolve(getArg("--src-dir", "."));
+// ts-morph normalises all paths to forward slashes, even on Windows.
+// We keep a forward-slash version of srcDir for path comparisons against
+// ts-morph's getFilePath() output so that startsWith() works on Windows.
+const srcDirPosix = srcDir.split(path.sep).join("/");
 const onlyFilesArg = getArg("--only-files", null);
 const deep = args.includes("--deep");
 const extensionsArg = getArg("--extensions", ".ts,.tsx");
@@ -67,7 +71,8 @@ const project = new Project(projectOptions);
 function isExcluded(filePath) {
   // Exclude only the directory segments, not the filename itself.
   // Without .slice(0,-1) a file named "dist.ts" would be incorrectly excluded.
-  const parts = filePath.split(path.sep).slice(0, -1);
+  // Split on both / and \ to handle ts-morph (forward-slash) and native paths.
+  const parts = filePath.split(/[/\\]/).slice(0, -1);
   return parts.some((part) => EXCLUDED_DIRS.has(part));
 }
 
@@ -428,8 +433,9 @@ const inventory = {};
 for (const sourceFile of project.getSourceFiles()) {
   // Skip files outside srcDir (e.g. from lib.d.ts loaded via tsconfig).
   // Use separator-aware prefix to avoid false matches on sibling dirs like src-gen/.
+  // ts-morph always returns forward-slash paths, so compare against srcDirPosix.
   const fp = sourceFile.getFilePath();
-  if (!fp.startsWith(srcDir + path.sep) && fp !== srcDir) continue;
+  if (!fp.startsWith(srcDirPosix + "/") && fp !== srcDirPosix) continue;
   if (isExcluded(fp)) continue;
 
   try {

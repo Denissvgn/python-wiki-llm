@@ -178,10 +178,12 @@ class TypeScriptExtractor:
             entry["language"] = "typescript"
 
         # Exclude files from the extractor's own bundled scripts directory.
-        scripts_abs = str(_TS_SCRIPTS_DIR.resolve()) + "/"
+        # ts-morph returns forward-slash paths even on Windows, so normalise
+        # the comparison path to forward slashes as well.
+        scripts_abs = _TS_SCRIPTS_DIR.resolve().as_posix() + "/"
         inventory = {
             fp: data for fp, data in inventory.items()
-            if not str(Path(fp).resolve()).startswith(scripts_abs)
+            if not fp.replace("\\", "/").startswith(scripts_abs)
         }
 
         return inventory
