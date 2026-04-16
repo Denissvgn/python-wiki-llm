@@ -37,20 +37,28 @@ def _ensure_npm_deps() -> bool:
         )
         return False
 
+    scripts_dir = str(_TS_SCRIPTS_DIR.resolve())
     try:
-        subprocess.run(
-            ["npm", "install"],
-            capture_output=True,
-            check=True,
-            timeout=120,
-            # Run from the ts_scripts directory so npm finds package.json
-            # there.  Using --prefix instead is unreliable on Windows where
-            # modern npm still reads package.json from CWD.
-            cwd=str(_TS_SCRIPTS_DIR),
-            # npm is a .cmd batch script on Windows; CreateProcess cannot
-            # execute .cmd files directly, so we need shell=True there.
-            shell=(sys.platform == "win32"),
-        )
+        if sys.platform == "win32":
+            # npm on Windows is a .cmd batch script — it requires shell=True.
+            # Using subprocess `cwd=` with shell=True can be unreliable
+            # when the Python process CWD has been changed (e.g. by tests),
+            # so we embed an explicit `cd /d` to guarantee the directory.
+            subprocess.run(
+                f'cd /d "{scripts_dir}" && npm install',
+                capture_output=True,
+                check=True,
+                timeout=120,
+                shell=True,
+            )
+        else:
+            subprocess.run(
+                ["npm", "install"],
+                capture_output=True,
+                check=True,
+                timeout=120,
+                cwd=scripts_dir,
+            )
         return True
     except subprocess.CalledProcessError as exc:
         print(
