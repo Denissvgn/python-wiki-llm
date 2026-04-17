@@ -11,6 +11,14 @@ import pytest
 _GIT_AVAILABLE = shutil.which("git") is not None
 
 
+@pytest.fixture(autouse=True)
+def _restore_cwd():
+    """Safety net: restore CWD after every test, even if it fails mid-chdir."""
+    old = os.getcwd()
+    yield
+    os.chdir(old)
+
+
 @pytest.fixture
 def tmp_project(tmp_path):
     """Create a temporary project directory with git init and sample Python files."""

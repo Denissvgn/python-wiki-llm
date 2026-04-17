@@ -175,7 +175,7 @@ class TestRelativePathKeys:
         (sub / "deep.py").write_text("class Deep: pass\n")
         inventory = get_inventory(str(tmp_path))
         key = list(inventory.keys())[0]
-        assert key == str(Path("pkg/sub/deep.py"))
+        assert key == "pkg/sub/deep.py"
 
 
 class TestExcludedDirsRelative:

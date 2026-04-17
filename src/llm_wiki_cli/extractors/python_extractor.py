@@ -298,7 +298,7 @@ def _scan_python_files(
                     fns.append(fn)
                 file_entry["functions"] = fns
 
-            inventory[str(rel)] = file_entry
+            inventory[rel.as_posix()] = file_entry
 
     return inventory
 

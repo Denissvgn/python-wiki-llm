@@ -17,14 +17,6 @@ from llm_wiki_cli.config import (
 )
 
 
-@pytest.fixture(autouse=True)
-def _restore_cwd():
-    """Restore CWD after tests that use os.chdir()."""
-    old = os.getcwd()
-    yield
-    os.chdir(old)
-
-
 class TestConstants:
     def test_default_wiki_dir(self):
         assert DEFAULT_WIKI_DIR == "docs/llm_wiki"

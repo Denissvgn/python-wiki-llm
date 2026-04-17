@@ -71,7 +71,7 @@ def _collect_documented_infrastructure(wiki_dir: Path) -> set[str]:
 def _collect_docker_files(src_dir: str) -> set[str]:
     """Return the set of Docker/Compose file page-names found in source."""
     docker_inv = get_docker_inventory(src_dir)
-    return {f.replace("/", "_").replace(".", "_") for f in docker_inv}
+    return {f.replace("\\", "/").replace("/", "_").replace(".", "_") for f in docker_inv}
 
 
 def run(args):

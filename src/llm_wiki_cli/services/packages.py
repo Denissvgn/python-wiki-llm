@@ -96,9 +96,9 @@ def discover_packages(src_dir: str) -> list[PackageInfo]:
             continue
         packages.append(PackageInfo(
             name=name,
-            root=str(rel.parent) if rel.parent != Path(".") else ".",
+            root=rel.parent.as_posix() if rel.parent != Path(".") else ".",
             version=info.get("version", "0.0.0"),
-            marker_path=str(rel),
+            marker_path=rel.as_posix(),
         ))
 
     for marker in sorted(src_path.rglob("setup.py")):
@@ -106,7 +106,8 @@ def discover_packages(src_dir: str) -> list[PackageInfo]:
         if not EXCLUDED_DIRS.isdisjoint(rel.parts):
             continue
         # Skip if a pyproject.toml already covers this directory
-        if any(p.root == (str(rel.parent) if rel.parent != Path(".") else ".") for p in packages):
+        rel_root = rel.parent.as_posix() if rel.parent != Path(".") else "."
+        if any(p.root == rel_root for p in packages):
             continue
         try:
             text = marker.read_text(encoding="utf-8")
@@ -118,9 +119,9 @@ def discover_packages(src_dir: str) -> list[PackageInfo]:
             continue
         packages.append(PackageInfo(
             name=name,
-            root=str(rel.parent) if rel.parent != Path(".") else ".",
+            root=rel.parent.as_posix() if rel.parent != Path(".") else ".",
             version=info.get("version", "0.0.0"),
-            marker_path=str(rel),
+            marker_path=rel.as_posix(),
         ))
 
     return packages
