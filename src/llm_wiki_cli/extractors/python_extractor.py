@@ -124,11 +124,14 @@ def _extract_class_attributes(node) -> list[dict]:
 
 
 class ComponentVisitor(ast.NodeVisitor):
-    def __init__(self):
+    def __init__(self, deep: bool = False):
         self.classes = []
         self.functions = []  # top-level functions only
         self.imports = []
+        self.constants = []  # UPPER_CASE module-level assignments
+        self.has_all = False  # whether __all__ is defined
         self._class_depth = 0
+        self._deep = deep
 
     def visit_Import(self, node):
         for alias in node.names:
@@ -175,13 +178,37 @@ class ComponentVisitor(ast.NodeVisitor):
 
     def visit_FunctionDef(self, node):
         # Only capture top-level functions (not methods inside classes)
-        if self._class_depth == 0 and not node.name.startswith("_"):
-            self.functions.append(_extract_function_info(node))
+        if self._class_depth == 0:
+            if not node.name.startswith("_"):
+                self.functions.append(_extract_function_info(node))
+            elif self._deep:
+                info = _extract_function_info(node)
+                info["private"] = True
+                self.functions.append(info)
         self.generic_visit(node)
 
     def visit_AsyncFunctionDef(self, node):
-        if self._class_depth == 0 and not node.name.startswith("_"):
-            self.functions.append(_extract_function_info(node))
+        if self._class_depth == 0:
+            if not node.name.startswith("_"):
+                self.functions.append(_extract_function_info(node))
+            elif self._deep:
+                info = _extract_function_info(node)
+                info["private"] = True
+                self.functions.append(info)
+        self.generic_visit(node)
+
+    def visit_Assign(self, node):
+        """Detect module-level UPPER_CASE constants and ``__all__``."""
+        if self._class_depth == 0:
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    if target.id == "__all__":
+                        self.has_all = True
+                    elif target.id == target.id.upper() and target.id.replace("_", "").isalnum() and not target.id[0].isdigit():
+                        self.constants.append({
+                            "name": target.id,
+                            "line": node.lineno,
+                        })
         self.generic_visit(node)
 
 
@@ -192,14 +219,16 @@ def _scan_python_files(
     src_dir: str,
     deep: bool = False,
     only_files: list[str] | None = None,
+    include_empty: bool = False,
 ) -> dict:
     """Scan Python files under *src_dir* and return a raw inventory dict.
 
-    The returned dict maps absolute filepath strings to file entry dicts.
-    The ``"language"`` key is intentionally absent here — callers (e.g.
-    :class:`PythonExtractor`) are responsible for stamping it.
+    The returned dict maps *relative* filepath strings (relative to
+    *src_dir*) to file entry dicts.  The ``"language"`` key is
+    intentionally absent here — callers (e.g. :class:`PythonExtractor`)
+    are responsible for stamping it.
     """
-    src_path = Path(src_dir)
+    src_path = Path(src_dir).resolve()
     inventory = {}
 
     if only_files is not None:
@@ -213,7 +242,11 @@ def _scan_python_files(
         py_files = list(src_path.rglob("*.py"))
 
     for py_file in py_files:
-        if EXCLUDED_DIRS & set(py_file.parts):
+        # Use *relative* parts so that parent directories outside src_dir
+        # (e.g. a project living under a folder named "env") don't
+        # trigger false exclusions.
+        rel = py_file.relative_to(src_path)
+        if not EXCLUDED_DIRS.isdisjoint(rel.parts):
             continue
 
         with open(py_file, "r", encoding="utf-8") as f:
@@ -223,14 +256,28 @@ def _scan_python_files(
             except SyntaxError:
                 continue
 
-        visitor = ComponentVisitor()
+        visitor = ComponentVisitor(deep=deep)
         visitor.visit(tree)
 
-        if visitor.classes or visitor.functions:
+        # Include the file if it has classes, public functions, constants,
+        # __all__, or (in deep mode) private functions.
+        has_content = (
+            visitor.classes
+            or visitor.functions
+            or visitor.constants
+            or visitor.has_all
+            or include_empty
+        )
+        if has_content:
             file_entry = {
                 "classes": visitor.classes,
                 "functions": visitor.functions,
             }
+
+            if visitor.constants:
+                file_entry["constants"] = visitor.constants
+            if visitor.has_all:
+                file_entry["has_all"] = True
 
             if deep:
                 file_entry["imports"] = visitor.imports
@@ -241,13 +288,17 @@ def _scan_python_files(
                     {"name": c["name"], "bases": c["bases"], "line": c["line"]}
                     for c in visitor.classes
                 ]
-                file_entry["functions"] = [
-                    {"name": f["name"], "line": f["line"],
-                     **({"async": True} if f.get("is_async") else {})}
-                    for f in visitor.functions
-                ]
+                fns = []
+                for f in visitor.functions:
+                    fn = {"name": f["name"], "line": f["line"]}
+                    if f.get("is_async"):
+                        fn["async"] = True
+                    if f.get("private"):
+                        fn["private"] = True
+                    fns.append(fn)
+                file_entry["functions"] = fns
 
-            inventory[str(py_file)] = file_entry
+            inventory[str(rel)] = file_entry
 
     return inventory
 
@@ -266,12 +317,16 @@ class PythonExtractor:
         src_dir: str,
         only_files: list[str] | None = None,
         deep: bool = False,
+        include_empty: bool = False,
     ) -> dict:
         """Scan *src_dir* for Python files and return an inventory dict.
 
         Each file entry includes ``"language": "python"``.
         """
-        inventory = _scan_python_files(src_dir, deep=deep, only_files=only_files)
+        inventory = _scan_python_files(
+            src_dir, deep=deep, only_files=only_files,
+            include_empty=include_empty,
+        )
         for entry in inventory.values():
             entry["language"] = "python"
         return inventory

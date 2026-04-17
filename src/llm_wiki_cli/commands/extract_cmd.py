@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 from ..config import COMPOSE_PATTERNS, DOCKERFILE_PATTERNS, EXCLUDED_DIRS, EXTRACTOR_REGISTRY
+from ..services.packages import discover_packages, stamp_inventory_packages
 
 # Re-export ComponentVisitor so existing callers that import it from here
 # continue to work without modification.
@@ -28,7 +29,7 @@ def _load_extractor(entry_point: str):
 # ── Backward-compatible public API ───────────────────────────────────
 
 
-def get_inventory(src_dir, deep=False, only_files=None):
+def get_inventory(src_dir, deep=False, only_files=None, include_empty=False):
     """Scan source files across all registered languages and return inventory.
 
     Runs every extractor in :data:`EXTRACTOR_REGISTRY` and merges the
@@ -37,11 +38,29 @@ def get_inventory(src_dir, deep=False, only_files=None):
     If deep=True, returns enriched data (docstrings, attributes, methods, imports).
     If deep=False, returns the slim format for backward compatibility.
     If only_files is given, restrict to those relative paths.
+    If include_empty=True, include all .py files even without extractable components.
+
+    Each entry is stamped with a ``"package"`` key (package name or
+    ``None``) derived from ``pyproject.toml`` / ``setup.py`` markers.
     """
     inventory: dict = {}
     for _lang, entry_point in EXTRACTOR_REGISTRY.items():
         extractor = _load_extractor(entry_point)
-        inventory.update(extractor.extract(src_dir, only_files=only_files, deep=deep))
+        # Only Python extractor supports include_empty; others ignore it
+        try:
+            inventory.update(extractor.extract(
+                src_dir, only_files=only_files, deep=deep,
+                include_empty=include_empty,
+            ))
+        except TypeError:
+            inventory.update(extractor.extract(
+                src_dir, only_files=only_files, deep=deep,
+            ))
+
+    # Stamp package ownership
+    packages = discover_packages(src_dir)
+    stamp_inventory_packages(inventory, packages)
+
     return inventory
 
 
@@ -83,6 +102,8 @@ def run(args):
     summary: bool = getattr(args, "summary", False)
     deep: bool = getattr(args, "deep", False)
     paths: list[str] | None = getattr(args, "paths", None)
+    package_filter: str | None = getattr(args, "package", None)
+    include_empty: bool = getattr(args, "include_empty", False)
 
     only_files = None
 
@@ -105,7 +126,17 @@ def run(args):
     else:
         print(f"Extracting inventory from {src_dir}...", file=sys.stderr)
 
-    inventory = get_inventory(src_dir, deep=deep, only_files=only_files)
+    inventory = get_inventory(src_dir, deep=deep, only_files=only_files,
+                              include_empty=include_empty)
+
+    if package_filter:
+        inventory = {
+            fp: data for fp, data in inventory.items()
+            if data.get("package") == package_filter
+        }
+        if not inventory:
+            print(f"No files found for package '{package_filter}'.", file=sys.stderr)
+            return
 
     if summary:
         inventory = _summarize_inventory(inventory)

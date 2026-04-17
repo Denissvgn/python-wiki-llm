@@ -17,13 +17,93 @@ def _module_name_from_path(filepath: str) -> str:
 
 
 def _page_name_for_module(filepath: str) -> str:
-    """Return the wiki page stem for a module."""
+    """Return the wiki page stem for a module.
+
+    For collision-aware naming use :func:`build_module_page_map` instead.
+    """
     return Path(filepath).stem
 
 
 def _page_name_for_entity(cls_name: str) -> str:
-    """Return the wiki page stem for an entity."""
+    """Return the wiki page stem for an entity.
+
+    For collision-aware naming use :func:`build_entity_page_map` instead.
+    """
     return cls_name
+
+
+# ── Collision-aware page-name builders ────────────────────────────────
+
+
+def _disambiguate_paths(fps: list[str], stem: str) -> dict[str, str]:
+    """Given filepaths sharing *stem*, return ``{filepath: unique_name}``.
+
+    Progressively adds parent directory components until every name is
+    unique.  Falls back to the full path (sans extension) if needed.
+    """
+    max_depth = max(len(Path(fp).parts) for fp in fps)
+    for depth in range(1, max_depth):
+        candidates: dict[str, str] = {}
+        for fp in fps:
+            dir_parts = Path(fp).parts[:-1]  # directories only
+            prefix_parts = dir_parts[-depth:] if len(dir_parts) >= depth else dir_parts
+            candidates[fp] = "_".join(prefix_parts) + "_" + stem
+        if len(set(candidates.values())) == len(fps):
+            return candidates
+    # Fallback: full path (always unique)
+    return {
+        fp: str(Path(fp).with_suffix("")).replace("/", "_").replace("\\", "_")
+        for fp in fps
+    }
+
+
+def build_module_page_map(inventory: dict) -> dict[str, str]:
+    """Return ``{filepath: page_stem}`` qualifying colliding stems.
+
+    When two files share the same stem (e.g. ``pkg_a/cli.py`` and
+    ``pkg_b/cli.py``) parent directory components are prepended to
+    disambiguate.  Non-colliding stems keep their short name.
+    """
+    from collections import defaultdict
+
+    stem_groups: defaultdict[str, list[str]] = defaultdict(list)
+    for fp in inventory:
+        stem_groups[Path(fp).stem].append(fp)
+
+    page_map: dict[str, str] = {}
+    for stem, fps in stem_groups.items():
+        if len(fps) == 1:
+            page_map[fps[0]] = stem
+        else:
+            page_map.update(_disambiguate_paths(fps, stem))
+    return page_map
+
+
+def build_entity_page_map(inventory: dict) -> dict[tuple[str, str], str]:
+    """Return ``{(class_name, filepath): page_stem}`` qualifying collisions.
+
+    Uses the already-disambiguated module page name as prefix when two
+    classes share the same name across different files.  This guarantees
+    uniqueness because module page names are themselves unique.
+    """
+    from collections import Counter
+
+    cls_count: Counter[str] = Counter()
+    for fp, data in inventory.items():
+        for cls in data.get("classes", []):
+            cls_count[cls["name"]] += 1
+
+    mod_page_map = build_module_page_map(inventory)
+
+    page_map: dict[tuple[str, str], str] = {}
+    for fp, data in inventory.items():
+        for cls in data.get("classes", []):
+            name = cls["name"]
+            if cls_count[name] > 1:
+                page_map[(name, fp)] = f"{mod_page_map[fp]}_{name}"
+            else:
+                page_map[(name, fp)] = name
+    return page_map
 
 
 def _build_relationships(inventory: dict, module_page_map: dict[str, str] | None = None) -> dict:
@@ -594,17 +674,10 @@ def run(args):
     _seen_entity_pages: set[str] = set()  # dedup index entries
 
     # Precompute module page name map: filepath -> page_stem
-    _module_page_map: dict[str, str] = {
-        fp: _page_name_for_module(fp)
-        for fp in inventory
-    }
+    _module_page_map: dict[str, str] = build_module_page_map(inventory)
 
-    # Precompute per-file entity page names: cls_name -> page_stem
-    _entity_page_name_cache: dict = {
-        (cls["name"], fp): _page_name_for_entity(cls["name"])
-        for fp, data in inventory.items()
-        for cls in data.get("classes", [])
-    }
+    # Precompute per-file entity page names: (cls_name, filepath) -> page_stem
+    _entity_page_name_cache: dict = build_entity_page_map(inventory)
 
     # 2. Build cross-reference relationships (only meaningful in deep mode)
     relationships = _build_relationships(inventory, _module_page_map) if deep else {}
@@ -715,6 +788,15 @@ def run(args):
 
     # 7. Update agent constraint files if wiki-dir differs from default
     _update_agent_constraints(str(wiki_dir))
+
+    # 8. Save sync manifest so `llm-wiki sync` can run incrementally
+    from .sync_cmd import SyncManifest  # local import to avoid circular dep
+
+    manifest = SyncManifest.build_from_inventory(
+        inventory, src_dir, _entity_page_name_cache, _module_page_map,
+    )
+    manifest.save(wiki_dir)
+    print(f"  WRITE {wiki_dir / '.llm-wiki-manifest.json'}")
 
 
 from ..config import DEFAULT_WIKI_DIR as _DEFAULT_WIKI_DIR

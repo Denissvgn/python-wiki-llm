@@ -55,6 +55,41 @@ updated automatically on commit. You are responsible for keeping it current:
    This builds a diff + AST prompt in `.git/llm-wiki-prompt.txt`. Open that file
    and paste its contents into this chat to trigger a full wiki update.
 3. **Never skip the update** — a stale wiki defeats the purpose of the system.
+
+## Using `llm-wiki sync` for incremental updates
+`sync` compares source file hashes against a stored manifest and regenerates only
+the wiki pages whose source has changed. Use it instead of a full re-bootstrap:
+
+```
+llm-wiki sync
+```
+
+- **When to use:** after pulling new code, after a rebase, or whenever you suspect
+  the wiki is stale but don't want to regenerate everything.
+- Sync creates/updates entity and module pages for new or changed files, marks
+  removed files with a ⚠️ Stale header, and rebuilds `index.md`.
+- If no manifest exists yet (project bootstrapped by an older version), sync will
+  **seed a baseline manifest** from the current source state without modifying
+  pages. Subsequent runs then work incrementally.
+- After sync finishes, always run `llm-wiki lint` to verify consistency.
+
+## Using `llm-wiki context` for large codebases
+`context` produces a token-budgeted, priority-ranked snapshot of the codebase —
+ideal for feeding into an LLM prompt when the full extract output is too large:
+
+```
+llm-wiki context --budget <TOKENS> --src-dir . --format markdown --focus changed
+```
+
+- **`--budget`** (required): maximum token count for the output.
+- **`--focus changed`** (default): prioritises files from the last git commit.
+  Changed files get full detail, their 1-hop import neighbours get slim detail,
+  everything else gets names only. Use `--focus all` to treat every file equally.
+- **`--format`**: `json` (default, structured) or `markdown` (human-readable with
+  tier-labelled sections).
+- **When to use:** before starting a complex task on a large project, pass the
+  context output to the agent so it has an accurate, right-sized view of the
+  codebase without exceeding the context window.
 """
 
 _QUALITY_HINTS = """\

@@ -127,6 +127,116 @@ class TestNoManifest:
         assert MANIFEST_FILENAME in captured.err
 
 
+class TestSeedManifest:
+    """When no manifest exists but a wiki does, sync seeds a baseline manifest."""
+
+    def test_seeds_manifest_when_wiki_exists(self, tmp_path, capsys):
+        """sync creates a manifest without modifying any wiki pages."""
+        import subprocess
+
+        proj = tmp_path / "project"
+        proj.mkdir()
+        subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
+        subprocess.run(
+            ["git", "-C", str(proj), "config", "user.email", "t@t.com"],
+            capture_output=True, check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(proj), "config", "user.name", "T"],
+            capture_output=True, check=True,
+        )
+        (proj / "models.py").write_text("class User:\n    name: str = ''\n")
+
+        wiki_dir = proj / "docs" / "llm_wiki"
+        old_cwd = os.getcwd()
+        os.chdir(proj)
+        try:
+            # Bootstrap without manifest (simulate old version)
+            bootstrap_cmd.run(
+                _make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki_dir))
+            )
+            # Remove the manifest that new bootstrap creates
+            (wiki_dir / MANIFEST_FILENAME).unlink(missing_ok=True)
+            assert not (wiki_dir / MANIFEST_FILENAME).exists()
+
+            # Record existing page content
+            entity_before = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
+
+            # Run sync — should seed, not fail
+            args = _make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir))
+            sync_cmd.run(args)
+
+            # Manifest now exists
+            assert (wiki_dir / MANIFEST_FILENAME).exists()
+
+            # Pages were NOT modified
+            entity_after = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
+            assert entity_after == entity_before
+
+            captured = capsys.readouterr()
+            assert "seeding" in captured.out.lower()
+        finally:
+            os.chdir(old_cwd)
+
+    def test_seed_then_sync_detects_changes(self, tmp_path, capsys):
+        """After seeding, a source change is detected by the next sync."""
+        import subprocess
+
+        proj = tmp_path / "project"
+        proj.mkdir()
+        subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
+        subprocess.run(
+            ["git", "-C", str(proj), "config", "user.email", "t@t.com"],
+            capture_output=True, check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(proj), "config", "user.name", "T"],
+            capture_output=True, check=True,
+        )
+        (proj / "models.py").write_text("class User:\n    name: str = ''\n")
+
+        wiki_dir = proj / "docs" / "llm_wiki"
+        old_cwd = os.getcwd()
+        os.chdir(proj)
+        try:
+            bootstrap_cmd.run(
+                _make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki_dir))
+            )
+            (wiki_dir / MANIFEST_FILENAME).unlink(missing_ok=True)
+
+            # Seed manifest
+            sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+            capsys.readouterr()  # clear output
+
+            # Modify source
+            (proj / "models.py").write_text(
+                "class User:\n    name: str = ''\n    email: str = ''\n"
+            )
+
+            # Next sync should detect the change
+            sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+            captured = capsys.readouterr()
+            assert "1 updated" in captured.out.lower() or "1 created" in captured.out.lower() or "sync complete" in captured.out.lower()
+        finally:
+            os.chdir(old_cwd)
+
+    def test_still_errors_without_wiki(self, tmp_path, capsys):
+        """If neither manifest nor wiki index exists, still exit 1."""
+        wiki_dir = tmp_path / "docs" / "llm_wiki"
+        wiki_dir.mkdir(parents=True)
+        # No index.md → should still fail
+        args = _make_sync_args(src_dir=str(tmp_path), wiki_dir=str(wiki_dir))
+
+        old_cwd = os.getcwd()
+        os.chdir(tmp_path)
+        try:
+            with pytest.raises(SystemExit) as exc_info:
+                sync_cmd.run(args)
+            assert exc_info.value.code == 1
+        finally:
+            os.chdir(old_cwd)
+
+
 class TestUnchangedFile:
     """When nothing changed, sync prints 'up to date' and skips all pages."""
 

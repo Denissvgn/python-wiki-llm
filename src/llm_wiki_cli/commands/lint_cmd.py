@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 from .extract_cmd import get_inventory, get_call_graph, get_docker_inventory
+from .bootstrap_cmd import build_module_page_map, build_entity_page_map
 from ..config import validate_path
 from ..services.io import read_md
 
@@ -22,13 +23,14 @@ def _collect_documented_entities(wiki_dir: Path) -> set[str]:
 
 
 def _collect_code_classes(src_dir: str) -> set[str]:
-    """Return the set of class names found by AST scanning."""
+    """Return the set of entity page names found by AST scanning.
+
+    Uses collision-aware naming so that duplicate class names across
+    different modules are qualified (e.g. ``parser_Parser``).
+    """
     inventory = get_inventory(src_dir)
-    classes = set()
-    for file_data in inventory.values():
-        for cls in file_data.get("classes", []):
-            classes.add(cls["name"])
-    return classes
+    entity_map = build_entity_page_map(inventory)
+    return set(entity_map.values())
 
 
 def _collect_documented_modules(wiki_dir: Path) -> set[str]:
@@ -40,9 +42,14 @@ def _collect_documented_modules(wiki_dir: Path) -> set[str]:
 
 
 def _collect_code_modules(src_dir: str) -> set[str]:
-    """Return the set of module names (file stems) with tracked components."""
+    """Return the set of module page names with tracked components.
+
+    Uses collision-aware naming so that duplicate file stems across
+    different directories are qualified (e.g. ``pkg_a_cli``).
+    """
     inventory = get_inventory(src_dir)
-    return {Path(fp).stem for fp in inventory}
+    mod_map = build_module_page_map(inventory)
+    return set(mod_map.values())
 
 
 def _collect_documented_workflows(wiki_dir: Path) -> set[str]:

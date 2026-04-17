@@ -66,7 +66,7 @@ def tmp_collision_project(tmp_path):
 
 class TestBootstrapCollisions:
     def test_entity_collision_uses_simple_name(self, tmp_collision_project, capsys):
-        """When two files define the same class name, only one page is created (last-writer-wins)."""
+        """When two files define the same class name, both get qualified pages."""
         wiki_dir = tmp_collision_project / "docs" / "llm_wiki"
         args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
         bootstrap_cmd.run(args)
@@ -74,22 +74,27 @@ class TestBootstrapCollisions:
         entity_pages = list((wiki_dir / "entities").glob("*.md"))
         entity_names = {p.stem for p in entity_pages}
 
-        # Simple unqualified page must exist — no qualifier prefixes
-        assert "Config" in entity_names
-        # No qualifier-prefixed pages should exist
-        assert not any("__" in n for n in entity_names), entity_names
+        # Both qualified entities must exist (one per source file)
+        assert len([n for n in entity_names if "Config" in n]) == 2
+        # Each qualified name must end with _Config
+        for n in entity_names:
+            if "Config" in n:
+                assert n.endswith("_Config"), n
 
     def test_entity_page_contains_valid_source(self, tmp_collision_project, capsys):
         wiki_dir = tmp_collision_project / "docs" / "llm_wiki"
         args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
         bootstrap_cmd.run(args)
 
-        content = (wiki_dir / "entities" / "Config.md").read_text(encoding="utf-8")
-        # Page must reference one of the two source files
-        assert "config.py" in content
+        entity_pages = list((wiki_dir / "entities").glob("*Config*.md"))
+        assert len(entity_pages) >= 1
+        for ep in entity_pages:
+            content = ep.read_text(encoding="utf-8")
+            # Page must reference one of the two source files
+            assert "config.py" in content
 
     def test_module_collision_uses_simple_name(self, tmp_collision_project, capsys):
-        """When two files share the same stem, only one module page is created (last-writer-wins)."""
+        """When two files share the same stem, both get qualified module pages."""
         wiki_dir = tmp_collision_project / "docs" / "llm_wiki"
         args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
         bootstrap_cmd.run(args)
@@ -97,10 +102,8 @@ class TestBootstrapCollisions:
         module_pages = list((wiki_dir / "modules").glob("*.md"))
         module_names = {p.stem for p in module_pages}
 
-        # Simple unqualified page must exist
-        assert "config" in module_names
-        # No qualifier-prefixed pages should exist
-        assert not any("__" in n for n in module_names), module_names
+        # Both qualified modules must exist (one per source file)
+        assert len([n for n in module_names if "config" in n]) == 2
 
     def test_index_has_no_duplicate_entries(self, tmp_collision_project, capsys):
         wiki_dir = tmp_collision_project / "docs" / "llm_wiki"
@@ -266,3 +269,45 @@ class TestBootstrapUpdatesAgentConstraints:
         bootstrap_cmd.run(args)
 
         assert Path("CLAUDE.md").read_text(encoding="utf-8") == original
+
+
+class TestBootstrapCreatesManifest:
+    """bootstrap must write a sync manifest so `llm-wiki sync` works afterwards."""
+
+    def test_manifest_created(self, tmp_project, capsys):
+        wiki_dir = tmp_project / "docs" / "llm_wiki"
+        args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
+        bootstrap_cmd.run(args)
+
+        manifest_path = wiki_dir / ".llm-wiki-manifest.json"
+        assert manifest_path.exists(), "bootstrap should create the sync manifest"
+
+    def test_manifest_contains_sources(self, tmp_project, capsys):
+        import json
+
+        wiki_dir = tmp_project / "docs" / "llm_wiki"
+        args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
+        bootstrap_cmd.run(args)
+
+        data = json.loads((wiki_dir / ".llm-wiki-manifest.json").read_text(encoding="utf-8"))
+        assert "sources" in data
+        assert len(data["sources"]) > 0
+        # Every source entry should have a hash and entities list
+        for filepath, entry in data["sources"].items():
+            assert "hash" in entry
+            assert "entities" in entry
+
+    def test_sync_succeeds_after_bootstrap(self, tmp_project, capsys):
+        """After bootstrap, running sync should not fail with 'no manifest'."""
+        from llm_wiki_cli.commands import sync_cmd
+        import types
+
+        wiki_dir = tmp_project / "docs" / "llm_wiki"
+        args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
+        bootstrap_cmd.run(args)
+
+        sync_args = types.SimpleNamespace(
+            src_dir=".", wiki_dir=str(wiki_dir),
+        )
+        # Should not raise SystemExit
+        sync_cmd.run(sync_args)

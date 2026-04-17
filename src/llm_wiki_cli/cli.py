@@ -26,6 +26,10 @@ def main():
                                 help="Only extract specific file paths (relative to --src-dir)")
     extract_parser.add_argument("--deep", action="store_true",
                                 help="Include docstrings, params, attributes, and imports")
+    extract_parser.add_argument("--package", default=None, metavar="NAME",
+                                help="Only include files belonging to the named package")
+    extract_parser.add_argument("--include-empty", action="store_true",
+                                help="Include all .py files even if they have no extractable components")
 
     # lint command
     lint_parser = subparsers.add_parser("lint", help="Lint LLM Wiki for broken links, orphans, and AST drift")
