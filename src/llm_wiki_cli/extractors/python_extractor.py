@@ -5,7 +5,7 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-from ..config import EXCLUDED_DIRS
+from ..config import EXCLUDED_DIRS, is_ignored_by_gitignore
 
 
 # ── AST helper utilities ──────────────────────────────────────────────
@@ -247,6 +247,12 @@ def _scan_python_files(
         # trigger false exclusions.
         rel = py_file.relative_to(src_path)
         if not EXCLUDED_DIRS.isdisjoint(rel.parts):
+            continue
+        
+        # Check .gitignore (respects project's ignore rules)
+        rel_str = str(rel).replace("\\", "/")
+        gitignore_path = src_path / ".gitignore"
+        if is_ignored_by_gitignore(rel_str, gitignore_path):
             continue
 
         with open(py_file, "r", encoding="utf-8") as f:

@@ -98,6 +98,85 @@ _DEFAULT_CONFIG: dict[str, object] = {
 }
 
 
+def _parse_gitignore_patterns(gitignore_path: Path) -> list[tuple[str, bool]]:
+    """Parse a .gitignore file and return list of (pattern, is_negation) tuples.
+    
+    Handles basic gitignore syntax:
+    - Lines starting with # are comments
+    - Lines starting with ! are negation (not excluded)
+    - Trailing / means match directories only
+    - Returns list of (pattern, is_negation) tuples
+    """
+    patterns = []
+    if not gitignore_path.exists():
+        return patterns
+    
+    try:
+        with open(gitignore_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.rstrip("\n\r")
+                # Skip comments and empty lines
+                if not line or line.startswith("#"):
+                    continue
+                # Check for negation
+                is_negation = line.startswith("!")
+                if is_negation:
+                    line = line[1:]
+                # Strip trailing slash (means dir-only, but we treat as same for simplicity)
+                line = line.rstrip("/")
+                if line:
+                    patterns.append((line, is_negation))
+    except OSError:
+        pass
+    return patterns
+
+
+def _match_gitignore_pattern(rel_path: str, pattern: str) -> bool:
+    """Check if a relative path matches a gitignore pattern.
+    
+    Supports:
+    - Literal filenames: "*.pyc"
+    - Directory prefixes: "build/", "node_modules/"
+    - Wildcards: "*", "**" (recursive)
+    """
+    from fnmatch import fnmatch
+    
+    # Convert path separators to forward slashes for consistent matching
+    rel_path = rel_path.replace("\\", "/")
+    pattern = pattern.replace("\\", "/")
+    
+    # If pattern ends with **, it matches recursively
+    if pattern.endswith("/**"):
+        pattern = pattern[:-3]  # Remove /**
+        return rel_path.startswith(pattern)
+    
+    # If pattern contains /, match from start
+    if "/" in pattern:
+        return fnmatch(rel_path, pattern)
+    
+    # Otherwise match against any path component
+    for part in rel_path.split("/"):
+        if fnmatch(part, pattern):
+            return True
+    return False
+
+
+def is_ignored_by_gitignore(rel_path: str, gitignore_path: Path = Path(".gitignore")) -> bool:
+    """Check if a relative path is ignored according to .gitignore.
+    
+    Returns True if the path should be excluded (is ignored).
+    """
+    patterns = _parse_gitignore_patterns(gitignore_path)
+    
+    # Process patterns in order, last matching rule wins
+    is_ignored = False
+    for pattern, is_negation in patterns:
+        if _match_gitignore_pattern(rel_path, pattern):
+            is_ignored = not is_negation
+    
+    return is_ignored
+
+
 def read_config(wiki_dir: "str | Path") -> dict:
     """Read the persisted llm-wiki config as a dict.
 

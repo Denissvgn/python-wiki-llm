@@ -592,15 +592,32 @@ def get_docker_inventory(src_dir: str) -> dict:
        catches non-standard names like ``infra.yml`` or ``core.yml`` that
        are common in split-compose layouts.
 
+    Respects .gitignore rules to skip ignored files.
+
     Returns a dict of relative-path -> parsed data.  Keys always use
     forward slashes regardless of the host OS.
     """
+    from ..config import is_ignored_by_gitignore
+    
     src_path = Path(src_dir)
     inventory: dict[str, dict] = {}
 
     def _rel(path: Path) -> str:
         """Return a forward-slash relative path (consistent across OSes)."""
         return str(path.relative_to(src_path)).replace(os.sep, "/")
+    
+    def _should_skip(path: Path) -> bool:
+        """Check if a path should be skipped (excluded_dirs or gitignore)."""
+        rel = path.relative_to(src_path)
+        # Check hardcoded exclusions
+        if not EXCLUDED_DIRS.isdisjoint(rel.parts):
+            return True
+        # Check .gitignore
+        rel_str = str(rel).replace("\\", "/")
+        gitignore_path = src_path / ".gitignore"
+        if is_ignored_by_gitignore(rel_str, gitignore_path):
+            return True
+        return False
 
     # Suffixes that should never be treated as Dockerfiles
     _DOC_SUFFIXES = {".md", ".txt", ".rst", ".html", ".json"}
@@ -610,7 +627,7 @@ def get_docker_inventory(src_dir: str) -> dict:
         for match in src_path.rglob(pattern):
             if match.suffix.lower() in _DOC_SUFFIXES:
                 continue
-            if match.is_file() and EXCLUDED_DIRS.isdisjoint(match.relative_to(src_path).parts):
+            if match.is_file() and not _should_skip(match):
                 rel = _rel(match)
                 if rel not in inventory:
                     inventory[rel] = _parse_dockerfile(match.read_text(errors="replace"))
@@ -618,7 +635,7 @@ def get_docker_inventory(src_dir: str) -> dict:
     # Discover Compose files — name-based (recursive)
     for pattern in COMPOSE_PATTERNS:
         for match in src_path.rglob(pattern):
-            if match.is_file() and EXCLUDED_DIRS.isdisjoint(match.relative_to(src_path).parts):
+            if match.is_file() and not _should_skip(match):
                 rel = _rel(match)
                 if rel not in inventory:
                     inventory[rel] = _parse_compose(match.read_text(errors="replace"))
@@ -628,7 +645,7 @@ def get_docker_inventory(src_dir: str) -> dict:
         for match in src_path.rglob(ext):
             if not match.is_file():
                 continue
-            if not EXCLUDED_DIRS.isdisjoint(match.relative_to(src_path).parts):
+            if _should_skip(match):
                 continue
             rel = _rel(match)
             if rel in inventory:
