@@ -110,11 +110,29 @@ def _wiki_instructions(wiki_dir: str) -> str:
 - Consult relevant entity and module pages to understand existing patterns before writing new code.
 
 ## When you change code
-- UPDATE `{wiki_dir}/entities/<ClassName>.md` when you add, modify, or remove a class.
-- UPDATE `{wiki_dir}/modules/<filename>.md` when you add, modify, or remove a module.
+- UPDATE entity pages in `{wiki_dir}/entities/` when you add, modify, or remove a class.
+- UPDATE module pages in `{wiki_dir}/modules/` when you add, modify, or remove a module.
 - UPDATE `{wiki_dir}/workflows/<name>.md` when a cross-module flow changes.
-- UPDATE `{wiki_dir}/infrastructure/<name>.md` when a Dockerfile or docker-compose file changes.
+- UPDATE infrastructure pages in `{wiki_dir}/infrastructure/` when a Dockerfile or docker-compose file changes.
 - LOG a concise summary of your changes in `{wiki_dir}/log.md` (append-only, newest at bottom).
+
+## Wiki file naming rules
+Page filenames **must** match the conventions enforced by `llm-wiki lint`:
+
+- **Entity pages** (`entities/`): Use the class name as the file stem
+  (e.g., class `MyClass` → `MyClass.md`). When two classes in different modules
+  share the same name, prefix with the disambiguated module stem:
+  `<module_stem>_<ClassName>.md` (e.g., `pkg_a_cli_Parser.md`).
+- **Module pages** (`modules/`): Use the source file stem — the filename without
+  its extension (e.g., `cli.py` → `cli.md`, `main.rs` → `main.md`). When two
+  files share the same stem in different directories, parent directory components
+  are prepended with underscores until unique (e.g., `pkg_a/cli.py` and
+  `pkg_b/cli.py` → `pkg_a_cli.md` and `pkg_b_cli.md`).
+- **Infrastructure pages** (`infrastructure/`): Take the relative path of the
+  Docker/Compose file and replace `/` and `.` with `_`
+  (e.g., `Dockerfile` → `Dockerfile.md`, `test_project/Dockerfile` →
+  `test_project_Dockerfile.md`, `docker-compose.yml` → `docker-compose_yml.md`).
+- **Workflow pages** (`workflows/`): Free-form descriptive names.
 
 ## Quality checks
 - Your wiki changes are **complete** when `llm-wiki lint --wiki-dir {wiki_dir} --src-dir .` exits 0.

@@ -740,7 +740,7 @@ def run(args):
     docker_inventory = get_docker_inventory(src_dir)
     module_stems = {_module_name_from_path(fp) for fp in inventory}
     for docker_file, docker_info in docker_inventory.items():
-        page_name = docker_file.replace("/", "_").replace(".", "_")
+        page_name = docker_file.replace("\\", "/").replace("/", "_").replace(".", "_")
         infra_path = wiki_dir / "infrastructure" / f"{page_name}.md"
         if infra_path.exists() and not args.overwrite:
             print(f"  SKIP infrastructure (exists): {page_name}")
