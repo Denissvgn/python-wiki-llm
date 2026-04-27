@@ -19,7 +19,10 @@ def _is_legacy_page(path: Path, wiki_dir: Path) -> bool:
     try:
         return path.relative_to(wiki_dir).parts[:1] == ("legacy",)
     except ValueError:
-        return False
+        try:
+            return path.resolve().relative_to(wiki_dir.resolve()).parts[:1] == ("legacy",)
+        except ValueError:
+            return False
 
 
 def _collect_documented_entities(wiki_dir: Path) -> set[str]:

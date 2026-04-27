@@ -58,6 +58,11 @@ def _make_wiki(proj: Path) -> Path:
     return wiki
 
 
+def _has_legacy_archive(wiki: Path, *parts: str) -> bool:
+    legacy_root = wiki / "legacy"
+    return any((archive / Path(*parts)).exists() for archive in legacy_root.glob("migrate-*"))
+
+
 class TestMigrateHelpers:
     def test_metadata_normalizes_absolute_paths(self, tmp_path):
         proj = tmp_path / "proj"
@@ -130,9 +135,9 @@ class TestMigrateIntegration:
         assert (wiki / "modules" / "sidecars_workspace_server.md").exists()
         assert "Manual workspace notes" in (wiki / "modules" / "sidecars_workspace_server.md").read_text(encoding="utf-8")
         assert "../modules/api_server.md" in (wiki / "workflows" / "flow.md").read_text(encoding="utf-8")
-        assert list((wiki / "legacy").glob("migrate-*/modules/server.md"))
-        assert list((wiki / "legacy").glob("migrate-*/modules/workspace_server.md"))
-        assert list((wiki / "legacy").glob("migrate-*/modules/orphan.md"))
+        assert _has_legacy_archive(wiki, "modules", "server.md")
+        assert _has_legacy_archive(wiki, "modules", "workspace_server.md")
+        assert _has_legacy_archive(wiki, "modules", "orphan.md")
         assert (wiki / MANIFEST_FILENAME).exists()
 
         lint_cmd.run(_make_args())
@@ -165,7 +170,7 @@ class TestMigrateIntegration:
         assert "../modules/app_workspace_server.md" in infra
         assert "../modules/workspace_server.md" not in infra
         assert "Legacy Notes" in infra
-        assert list((wiki / "legacy").glob("migrate-*/infrastructure/docker_Dockerfile_workspace.md"))
+        assert _has_legacy_archive(wiki, "infrastructure", "docker_Dockerfile_workspace.md")
 
         lint_cmd.run(_make_args())
         output = capsys.readouterr().out
@@ -189,7 +194,7 @@ class TestMigrateIntegration:
         assert (wiki / "modules" / "client.md").exists()
         assert (wiki / "entities" / "Project.md").exists()
         assert not (wiki / "modules" / f"{old_module}.md").exists()
-        assert list((wiki / "legacy").glob(f"migrate-*/modules/{old_module}.md"))
+        assert _has_legacy_archive(wiki, "modules", f"{old_module}.md")
 
         lint_cmd.run(_make_args())
         output = capsys.readouterr().out

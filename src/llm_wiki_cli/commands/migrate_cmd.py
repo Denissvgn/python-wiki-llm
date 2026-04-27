@@ -97,7 +97,10 @@ def _normalize_source_path(value: str | None, src_dir: str) -> str | None:
 
 
 def _page_rel(path: Path, wiki_dir: Path) -> str:
-    return path.relative_to(wiki_dir).as_posix()
+    try:
+        return path.relative_to(wiki_dir).as_posix()
+    except ValueError:
+        return path.resolve().relative_to(wiki_dir.resolve()).as_posix()
 
 
 def _read_existing_page(path: Path, wiki_dir: Path, src_dir: str) -> ExistingPage:
@@ -372,7 +375,10 @@ def _is_legacy_path(path: Path, wiki_dir: Path) -> bool:
     try:
         return path.relative_to(wiki_dir).parts[:1] == ("legacy",)
     except ValueError:
-        return False
+        try:
+            return path.resolve().relative_to(wiki_dir.resolve()).parts[:1] == ("legacy",)
+        except ValueError:
+            return False
 
 
 def _active_markdown_pages(wiki_dir: Path) -> list[Path]:
@@ -408,7 +414,10 @@ def _rewrite_links_in_content(content: str, page: Path, wiki_dir: Path, link_map
         if not new_rel:
             return match.group(0)
 
-        relative = os.path.relpath(wiki_dir / new_rel, start=page.parent).replace(os.sep, "/")
+        try:
+            relative = os.path.relpath(wiki_dir / new_rel, start=page.parent).replace(os.sep, "/")
+        except ValueError:
+            return match.group(0)
         if sep:
             relative += f"#{anchor}"
         return f"{prefix}{relative}{suffix}"
