@@ -1,6 +1,6 @@
 import argparse
 import sys
-from .commands import init_cmd, extract_cmd, lint_cmd, hook_cmd, trigger_cmd, bootstrap_cmd, bump_cmd, uninstall_cmd, generate_prompt_cmd, status_cmd, release_cmd, upgrade_cmd, sync_cmd, context_cmd
+from .commands import init_cmd, extract_cmd, lint_cmd, hook_cmd, trigger_cmd, bootstrap_cmd, bump_cmd, uninstall_cmd, generate_prompt_cmd, status_cmd, release_cmd, upgrade_cmd, sync_cmd, context_cmd, migrate_cmd
 from .config import AGENT_CHOICES, DEFAULT_WIKI_DIR
 from . import __version__
 
@@ -134,6 +134,17 @@ def main():
     sync_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
                              help="Wiki directory (default: docs/llm_wiki)")
 
+    # migrate command
+    migrate_parser = subparsers.add_parser(
+        "migrate",
+        help="Reconcile legacy wiki pages with current canonical naming",
+    )
+    migrate_parser.add_argument("--src-dir", default=".", help="Source directory to scan (default: .)")
+    migrate_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                                help="Wiki directory (default: docs/llm_wiki)")
+    migrate_parser.add_argument("--dry-run", action="store_true",
+                                help="Preview migration actions without modifying files")
+
     # context command
     context_parser = subparsers.add_parser(
         "context",
@@ -177,6 +188,8 @@ def main():
             upgrade_cmd.run(args)
         elif args.command == "sync":
             sync_cmd.run(args)
+        elif args.command == "migrate":
+            migrate_cmd.run(args)
         elif args.command == "context":
             context_cmd.run(args)
     except KeyboardInterrupt:

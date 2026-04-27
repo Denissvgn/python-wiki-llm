@@ -14,6 +14,14 @@ from ..services.io import read_md
 LINK_RE = re.compile(r'\[.+?\]\((.+?)\)')
 
 
+def _is_legacy_page(path: Path, wiki_dir: Path) -> bool:
+    """Return True for archived migration pages that lint should ignore."""
+    try:
+        return path.relative_to(wiki_dir).parts[:1] == ("legacy",)
+    except ValueError:
+        return False
+
+
 def _collect_documented_entities(wiki_dir: Path) -> set[str]:
     """Return the set of entity names that have wiki pages."""
     entities_dir = wiki_dir / "entities"
@@ -87,7 +95,10 @@ def run(args):
         print(f"Error: Directory {wiki_dir} does not exist.")
         sys.exit(1)
 
-    pages = list(wiki_dir.rglob("*.md"))
+    pages = [
+        page for page in wiki_dir.rglob("*.md")
+        if not _is_legacy_page(page, wiki_dir)
+    ]
 
     # ── 1. Broken Links ──────────────────────────────────────────────
     broken_links = 0

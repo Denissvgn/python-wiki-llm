@@ -119,19 +119,27 @@ def _wiki_instructions(wiki_dir: str) -> str:
 ## Wiki file naming rules
 Page filenames **must** match the conventions enforced by `llm-wiki lint`:
 
-- **Entity pages** (`entities/`): Use the class name as the file stem
-  (e.g., class `MyClass` → `MyClass.md`). When two classes in different modules
-  share the same name, prefix with the disambiguated module stem:
-  `<module_stem>_<ClassName>.md` (e.g., `pkg_a_cli_Parser.md`).
-- **Module pages** (`modules/`): Use the source file stem — the filename without
-  its extension (e.g., `cli.py` → `cli.md`, `main.rs` → `main.md`). When two
-  files share the same stem in different directories, parent directory components
-  are prepended with underscores until unique (e.g., `pkg_a/cli.py` and
-  `pkg_b/cli.py` → `pkg_a_cli.md` and `pkg_b_cli.md`).
+- Treat `{wiki_dir}/index.md` as the source of truth for existing page names.
+  Do not guess links from raw class names or filenames when collisions are
+  possible. If in doubt, run `llm-wiki extract --src-dir .` and match the
+  source path to the existing index entry.
+- **Entity pages** (`entities/`): Use the class name as the file stem when it is
+  unique (e.g., class `MyClass` → `MyClass.md`). When two classes in different
+  modules share the same name, prefix with the disambiguated module page stem:
+  `<module_page_stem>_<ClassName>.md` (e.g., `pkg_a_cli_Parser.md`).
+- **Module pages** (`modules/`): Use the source path from the extractor,
+  relative to `--src-dir`. A unique file stem uses `<stem>.md`
+  (e.g., `cli.py` → `cli.md`, `main.rs` → `main.md`). When two files share the
+  same stem in different directories, parent directory components are prepended
+  with underscores until unique (e.g., `pkg_a/cli.py` and `pkg_b/cli.py` →
+  `pkg_a_cli.md` and `pkg_b_cli.md`).
 - **Infrastructure pages** (`infrastructure/`): Take the relative path of the
   Docker/Compose file and replace `/` and `.` with `_`
   (e.g., `Dockerfile` → `Dockerfile.md`, `test_project/Dockerfile` →
   `test_project_Dockerfile.md`, `docker-compose.yml` → `docker-compose_yml.md`).
+  Links from infrastructure pages to source modules must target the actual
+  module page stem from `index.md`; if a COPY/ADD source is ambiguous, leave it
+  as code text instead of creating a guessed link.
 - **Workflow pages** (`workflows/`): Free-form descriptive names.
 
 ## Quality checks

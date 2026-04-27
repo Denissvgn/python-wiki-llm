@@ -42,6 +42,9 @@ class TestInitAgentSchemas:
         assert Path("CLAUDE.md").exists()
         content = Path("CLAUDE.md").read_text(encoding="utf-8")
         assert "LLM Wiki Maintainer Constraints" in content
+        assert "source of truth for existing page names" in content
+        assert "<module_page_stem>_<ClassName>.md" in content
+        assert "if a COPY/ADD source is ambiguous" in content
 
     def test_cursor_agent(self, tmp_project):
         args = _make_args(agent="cursor")
