@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import shutil
+import subprocess
 import textwrap
 from pathlib import Path
 from unittest.mock import patch
@@ -15,10 +16,36 @@ from llm_wiki_cli.extractors.ts_extractor import TypeScriptExtractor
 # Skip all tests when Node.js is not available on this machine.
 # ---------------------------------------------------------------------------
 
-NODE_AVAILABLE = shutil.which("node") is not None
+def _command_available(*cmd: str) -> bool:
+    if shutil.which(cmd[0]) is None:
+        return False
+    try:
+        subprocess.run(
+            list(cmd),
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=10,
+        )
+        return True
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
+        return False
+
+
+TS_NODE_MODULES = (
+    Path(__file__).parents[1]
+    / "src"
+    / "llm_wiki_cli"
+    / "extractors"
+    / "ts_scripts"
+    / "node_modules"
+)
+NODE_AVAILABLE = _command_available("node", "--version") and (
+    TS_NODE_MODULES.exists() or _command_available("npm", "--version")
+)
 skip_no_node = pytest.mark.skipif(
     not NODE_AVAILABLE,
-    reason="Node.js not found — TypeScript extractor tests skipped",
+    reason="Node.js/ts-morph toolchain not available — TypeScript extractor tests skipped",
 )
 
 # ---------------------------------------------------------------------------
@@ -362,6 +389,51 @@ class TestTypeScriptExtractorWithoutNode:
             TypeScriptExtractor().extract(str(tmp_path))
         err = capsys.readouterr().err
         assert "node" in err.lower() or "nodejs" in err.lower() or "node.js" in err.lower()
+
+
+class TestTypeScriptExtractorWrapper:
+    def test_windows_style_inventory_keys_are_normalized(self, tmp_path):
+        result = subprocess.CompletedProcess(
+            args=["node"],
+            returncode=0,
+            stdout='{"web\\\\src\\\\app.ts": {"classes": [], "functions": []}}',
+            stderr="",
+        )
+        with patch("llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"):
+            with patch("llm_wiki_cli.extractors.ts_extractor._ensure_npm_deps", return_value=True):
+                with patch("llm_wiki_cli.extractors.ts_extractor.subprocess.run", return_value=result):
+                    inv = TypeScriptExtractor().extract(str(tmp_path))
+
+        assert "web/src/app.ts" in inv
+        assert "web\\src\\app.ts" not in inv
+        assert inv["web/src/app.ts"]["language"] == "typescript"
+
+    def test_malformed_json_returns_empty(self, tmp_path, capsys):
+        result = subprocess.CompletedProcess(
+            args=["node"],
+            returncode=0,
+            stdout="{not-json",
+            stderr="",
+        )
+        with patch("llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"):
+            with patch("llm_wiki_cli.extractors.ts_extractor._ensure_npm_deps", return_value=True):
+                with patch("llm_wiki_cli.extractors.ts_extractor.subprocess.run", return_value=result):
+                    inv = TypeScriptExtractor().extract(str(tmp_path))
+
+        assert inv == {}
+        assert "malformed JSON" in capsys.readouterr().err
+
+    def test_timeout_returns_empty(self, tmp_path, capsys):
+        with patch("llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"):
+            with patch("llm_wiki_cli.extractors.ts_extractor._ensure_npm_deps", return_value=True):
+                with patch(
+                    "llm_wiki_cli.extractors.ts_extractor.subprocess.run",
+                    side_effect=subprocess.TimeoutExpired(["node"], 120),
+                ):
+                    inv = TypeScriptExtractor().extract(str(tmp_path))
+
+        assert inv == {}
+        assert "timed out" in capsys.readouterr().err
 
 
 # ===========================================================================

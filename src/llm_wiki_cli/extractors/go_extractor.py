@@ -121,7 +121,7 @@ class GoExtractor:
         # Exclude files from the extractor's own bundled scripts directory.
         scripts_abs = _GO_SCRIPTS_DIR.resolve().as_posix() + "/"
         inventory = {
-            fp: data for fp, data in inventory.items()
+            fp.replace("\\", "/"): data for fp, data in inventory.items()
             if not fp.replace("\\", "/").startswith(scripts_abs)
             and not Path(fp).resolve().as_posix().startswith(scripts_abs)
         }

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import shutil
+import subprocess
 import textwrap
 from pathlib import Path
 from unittest.mock import patch
@@ -16,10 +17,26 @@ from llm_wiki_cli.extractors.rust_extractor import RustExtractor
 # Skip all tests when Rust toolchain is not available on this machine.
 # ---------------------------------------------------------------------------
 
-CARGO_AVAILABLE = shutil.which("cargo") is not None
+def _command_available(*cmd: str) -> bool:
+    if shutil.which(cmd[0]) is None:
+        return False
+    try:
+        subprocess.run(
+            list(cmd),
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=10,
+        )
+        return True
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
+        return False
+
+
+CARGO_AVAILABLE = _command_available("cargo", "--version")
 skip_no_cargo = pytest.mark.skipif(
     not CARGO_AVAILABLE,
-    reason="Rust toolchain not found — Rust extractor tests skipped",
+    reason="Rust toolchain not available — Rust extractor tests skipped",
 )
 
 # ---------------------------------------------------------------------------
@@ -492,6 +509,61 @@ class TestRustExtractorWithoutCargo:
             RustExtractor().extract(str(tmp_path))
         err = capsys.readouterr().err
         assert "cargo not found" in err
+
+
+class TestRustExtractorWrapper:
+    def test_windows_style_inventory_keys_are_normalized(self, tmp_path):
+        result = subprocess.CompletedProcess(
+            args=["cargo"],
+            returncode=0,
+            stdout='{"pkg\\\\client.rs": {"classes": [], "functions": []}}',
+            stderr="",
+        )
+        with patch("llm_wiki_cli.extractors.rust_extractor.shutil.which", return_value="cargo"):
+            with patch("llm_wiki_cli.extractors.rust_extractor.subprocess.run", return_value=result):
+                inv = RustExtractor().extract(str(tmp_path))
+
+        assert "pkg/client.rs" in inv
+        assert "pkg\\client.rs" not in inv
+        assert inv["pkg/client.rs"]["language"] == "rust"
+
+    def test_malformed_json_returns_empty(self, tmp_path, capsys):
+        result = subprocess.CompletedProcess(
+            args=["cargo"],
+            returncode=0,
+            stdout="{not-json",
+            stderr="",
+        )
+        with patch("llm_wiki_cli.extractors.rust_extractor.shutil.which", return_value="cargo"):
+            with patch("llm_wiki_cli.extractors.rust_extractor.subprocess.run", return_value=result):
+                inv = RustExtractor().extract(str(tmp_path))
+
+        assert inv == {}
+        assert "malformed JSON" in capsys.readouterr().err
+
+    def test_timeout_returns_empty(self, tmp_path, capsys):
+        with patch("llm_wiki_cli.extractors.rust_extractor.shutil.which", return_value="cargo"):
+            with patch(
+                "llm_wiki_cli.extractors.rust_extractor.subprocess.run",
+                side_effect=subprocess.TimeoutExpired(["cargo"], 180),
+            ):
+                inv = RustExtractor().extract(str(tmp_path))
+
+        assert inv == {}
+        assert "timed out" in capsys.readouterr().err
+
+    def test_stderr_forwarded_on_success(self, tmp_path, capsys):
+        result = subprocess.CompletedProcess(
+            args=["cargo"],
+            returncode=0,
+            stdout='{"client.rs": {"classes": [], "functions": []}}',
+            stderr="Warning: skipped bad.rs\n",
+        )
+        with patch("llm_wiki_cli.extractors.rust_extractor.shutil.which", return_value="cargo"):
+            with patch("llm_wiki_cli.extractors.rust_extractor.subprocess.run", return_value=result):
+                RustExtractor().extract(str(tmp_path))
+
+        assert "Warning: skipped bad.rs" in capsys.readouterr().err
 
 
 # ===========================================================================

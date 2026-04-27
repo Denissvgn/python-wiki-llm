@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import shutil
+import subprocess
 import textwrap
 from pathlib import Path
 from unittest.mock import patch
@@ -16,10 +17,26 @@ from llm_wiki_cli.extractors.go_extractor import GoExtractor
 # Skip all tests when Go is not available on this machine.
 # ---------------------------------------------------------------------------
 
-GO_AVAILABLE = shutil.which("go") is not None
+def _command_available(*cmd: str) -> bool:
+    if shutil.which(cmd[0]) is None:
+        return False
+    try:
+        subprocess.run(
+            list(cmd),
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=10,
+        )
+        return True
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
+        return False
+
+
+GO_AVAILABLE = _command_available("go", "version")
 skip_no_go = pytest.mark.skipif(
     not GO_AVAILABLE,
-    reason="Go toolchain not found — Go extractor tests skipped",
+    reason="Go toolchain not available — Go extractor tests skipped",
 )
 
 # ---------------------------------------------------------------------------
@@ -552,6 +569,61 @@ class TestGoExtractorWithoutGo:
             GoExtractor().extract(str(tmp_path))
         err = capsys.readouterr().err
         assert "go not found" in err
+
+
+class TestGoExtractorWrapper:
+    def test_windows_style_inventory_keys_are_normalized(self, tmp_path):
+        result = subprocess.CompletedProcess(
+            args=["go"],
+            returncode=0,
+            stdout='{"pkg\\\\client.go": {"classes": [], "functions": []}}',
+            stderr="",
+        )
+        with patch("llm_wiki_cli.extractors.go_extractor.shutil.which", return_value="go"):
+            with patch("llm_wiki_cli.extractors.go_extractor.subprocess.run", return_value=result):
+                inv = GoExtractor().extract(str(tmp_path))
+
+        assert "pkg/client.go" in inv
+        assert "pkg\\client.go" not in inv
+        assert inv["pkg/client.go"]["language"] == "go"
+
+    def test_malformed_json_returns_empty(self, tmp_path, capsys):
+        result = subprocess.CompletedProcess(
+            args=["go"],
+            returncode=0,
+            stdout="{not-json",
+            stderr="",
+        )
+        with patch("llm_wiki_cli.extractors.go_extractor.shutil.which", return_value="go"):
+            with patch("llm_wiki_cli.extractors.go_extractor.subprocess.run", return_value=result):
+                inv = GoExtractor().extract(str(tmp_path))
+
+        assert inv == {}
+        assert "malformed JSON" in capsys.readouterr().err
+
+    def test_timeout_returns_empty(self, tmp_path, capsys):
+        with patch("llm_wiki_cli.extractors.go_extractor.shutil.which", return_value="go"):
+            with patch(
+                "llm_wiki_cli.extractors.go_extractor.subprocess.run",
+                side_effect=subprocess.TimeoutExpired(["go"], 120),
+            ):
+                inv = GoExtractor().extract(str(tmp_path))
+
+        assert inv == {}
+        assert "timed out" in capsys.readouterr().err
+
+    def test_stderr_forwarded_on_success(self, tmp_path, capsys):
+        result = subprocess.CompletedProcess(
+            args=["go"],
+            returncode=0,
+            stdout='{"client.go": {"classes": [], "functions": []}}',
+            stderr="Warning: skipped bad.go\n",
+        )
+        with patch("llm_wiki_cli.extractors.go_extractor.shutil.which", return_value="go"):
+            with patch("llm_wiki_cli.extractors.go_extractor.subprocess.run", return_value=result):
+                GoExtractor().extract(str(tmp_path))
+
+        assert "Warning: skipped bad.go" in capsys.readouterr().err
 
 
 # ===========================================================================
