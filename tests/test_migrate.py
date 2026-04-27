@@ -78,6 +78,19 @@ class TestMigrateHelpers:
 
         assert parsed.source_path == "web/src/api/client.ts"
 
+    def test_metadata_accepts_location_without_line(self, tmp_path):
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        _write(proj / "pkg" / "session_client.py", "class SessionClient:\n    pass\n")
+        wiki = _make_wiki(proj)
+        page = wiki / "entities" / "SessionClient.md"
+        _write(page, "# SessionClient\n\n**Location:** `pkg/session_client.py`\n")
+
+        parsed = _read_existing_page(page, wiki, str(proj))
+
+        assert parsed.location_path == "pkg/session_client.py"
+        assert parsed.location_line is None
+
     def test_ambiguous_stem_match_returns_none(self):
         targets = [
             TargetPage("modules", "pkg_a_server", "modules/pkg_a_server.md", "", "pkg_a/server.py"),
@@ -171,6 +184,192 @@ class TestMigrateIntegration:
         assert "../modules/workspace_server.md" not in infra
         assert "Legacy Notes" in infra
         assert _has_legacy_archive(wiki, "infrastructure", "docker_Dockerfile_workspace.md")
+
+        lint_cmd.run(_make_args())
+        output = capsys.readouterr().out
+        assert "Lint passed" in output
+
+    def test_path_only_location_maps_ambiguous_entity_and_rewrites_legacy_links(self, tmp_path, capsys):
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        _write(proj / "pkg" / "session_client.py", "class SessionClient:\n    pass\n")
+        _write(proj / "other" / "target.py", "class SessionClient:\n    pass\n")
+        _write(proj / "app_state.py", "class AppState:\n    pass\n")
+        wiki = _make_wiki(proj)
+        _write(
+            wiki / "entities" / "SessionClient.md",
+            """
+            # SessionClient
+
+            **Location:** `pkg/session_client.py`
+
+            Manual session details.
+            """,
+        )
+        _write(
+            wiki / "entities" / "AppState.md",
+            """
+            # AppState
+
+            **Location:** `app_state.py`
+
+            - **uses**: [`SessionClient`](SessionClient.md)
+            """,
+        )
+        _write(
+            wiki / "modules" / "session_client.md",
+            """
+            # session_client Module
+
+            **Path:** `pkg/session_client.py`
+
+            | [`SessionClient`](../entities/SessionClient.md) | struct |
+            """,
+        )
+
+        os.chdir(proj)
+        migrate_cmd.run(_make_args())
+
+        canonical = wiki / "entities" / "session_client_SessionClient.md"
+        assert canonical.exists()
+        assert not (wiki / "entities" / "SessionClient.md").exists()
+        assert "Manual session details" in canonical.read_text(encoding="utf-8")
+        module_content = (wiki / "modules" / "session_client.md").read_text(encoding="utf-8")
+        app_state_content = (wiki / "entities" / "AppState.md").read_text(encoding="utf-8")
+        assert "../entities/session_client_SessionClient.md" in module_content
+        assert "../entities/SessionClient.md" not in module_content
+        assert "(session_client_SessionClient.md)" in app_state_content
+        assert "(SessionClient.md)" not in app_state_content
+
+        lint_cmd.run(_make_args())
+        output = capsys.readouterr().out
+        assert "Lint passed" in output
+
+    def test_unmatched_legacy_page_links_rewrite_to_archive(self, tmp_path, capsys):
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        _write(proj / "models.py", "class User:\n    pass\n")
+        wiki = _make_wiki(proj)
+        _write(
+            wiki / "modules" / "models.md",
+            """
+            # models Module
+
+            **Path:** `models.py`
+
+            See [removed](../entities/Removed.md).
+            """,
+        )
+        _write(
+            wiki / "entities" / "Removed.md",
+            """
+            # Removed
+
+            **Location:** `deleted.py`
+
+            Historical notes.
+            """,
+        )
+
+        os.chdir(proj)
+        migrate_cmd.run(_make_args())
+
+        content = (wiki / "modules" / "models.md").read_text(encoding="utf-8")
+        assert "../legacy/migrate-" in content
+        assert "../entities/Removed.md" not in content
+        assert _has_legacy_archive(wiki, "entities", "Removed.md")
+
+        lint_cmd.run(_make_args())
+        output = capsys.readouterr().out
+        assert "Lint passed" in output
+
+    def test_additional_docs_are_indexed(self, tmp_path, capsys):
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        _write(proj / "models.py", "class User:\n    pass\n")
+        wiki = _make_wiki(proj)
+        _write(wiki / "config_docs" / "prometheus_yml.md", "# Prometheus\n")
+
+        os.chdir(proj)
+        migrate_cmd.run(_make_args())
+
+        index = (wiki / "index.md").read_text(encoding="utf-8")
+        assert "## Additional Docs" in index
+        assert "- [config_docs/prometheus_yml](config_docs/prometheus_yml.md)" in index
+
+        lint_cmd.run(_make_args())
+        output = capsys.readouterr().out
+        assert "Lint passed" in output
+
+    def test_rerun_uses_archived_pages_to_repair_legacy_links(self, tmp_path, capsys):
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        _write(proj / "pkg" / "session_client.py", "class SessionClient:\n    pass\n")
+        _write(proj / "other" / "target.py", "class SessionClient:\n    pass\n")
+        _write(proj / "app_state.py", "class AppState:\n    pass\n")
+        wiki = _make_wiki(proj)
+        _write(
+            wiki / "modules" / "session_client.md",
+            """
+            # session_client Module
+
+            **Path:** `pkg/session_client.py`
+
+            ## Legacy Notes
+
+            <!-- llm-wiki-migrate:legacy-notes -->
+
+            ### From `modules/session_client.md`
+
+            | [`SessionClient`](../entities/SessionClient.md) | struct |
+            """,
+        )
+        _write(
+            wiki / "entities" / "session_client_SessionClient.md",
+            "# SessionClient\n\n**Location:** `pkg/session_client.py:1`\n",
+        )
+        _write(
+            wiki / "entities" / "target_SessionClient.md",
+            "# SessionClient\n\n**Location:** `other/target.py:1`\n",
+        )
+        _write(
+            wiki / "entities" / "AppState.md",
+            """
+            # AppState
+
+            **Location:** `app_state.py:1`
+
+            ## Legacy Notes
+
+            <!-- llm-wiki-migrate:legacy-notes -->
+
+            ### From `entities/AppState.md`
+
+            - **uses**: [`SessionClient`](SessionClient.md)
+            """,
+        )
+        _write(
+            wiki / "legacy" / "migrate-20240101000000" / "entities" / "SessionClient.md",
+            """
+            # SessionClient
+
+            **Location:** `pkg/session_client.py`
+
+            Archived session details.
+            """,
+        )
+
+        os.chdir(proj)
+        migrate_cmd.run(_make_args())
+
+        canonical = (wiki / "entities" / "session_client_SessionClient.md").read_text(encoding="utf-8")
+        module_content = (wiki / "modules" / "session_client.md").read_text(encoding="utf-8")
+        app_state_content = (wiki / "entities" / "AppState.md").read_text(encoding="utf-8")
+        assert "Archived session details" in canonical
+        assert "../entities/session_client_SessionClient.md" in module_content
+        assert "../entities/SessionClient.md" not in module_content
+        assert "(session_client_SessionClient.md)" in app_state_content
+        assert "(SessionClient.md)" not in app_state_content
 
         lint_cmd.run(_make_args())
         output = capsys.readouterr().out

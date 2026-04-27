@@ -33,7 +33,7 @@ LEGACY_MARKER = "<!-- llm-wiki-migrate:legacy-notes -->"
 _MANAGED_DIRS = ("entities", "modules", "infrastructure")
 _LINK_RE = re.compile(r"(\[[^\]]+\]\()([^)]+)(\))")
 _HEADING_RE = re.compile(r"^#\s+(.+?)\s*$", re.MULTILINE)
-_LOCATION_RE = re.compile(r"^\*\*Location:\*\*\s*`?(.+?):(\d+)`?\s*$", re.MULTILINE)
+_LOCATION_RE = re.compile(r"^\*\*Location:\*\*\s*`?(.+?)`?\s*$", re.MULTILINE)
 _PATH_RE = re.compile(r"^\*\*Path:\*\*\s*`?(.+?)`?\s*$", re.MULTILINE)
 
 
@@ -50,6 +50,7 @@ class ExistingPage:
     location_path: str | None = None
     location_line: int | None = None
     source_path: str | None = None
+    archived: bool = False
 
 
 @dataclass(frozen=True)
@@ -103,7 +104,22 @@ def _page_rel(path: Path, wiki_dir: Path) -> str:
         return path.resolve().relative_to(wiki_dir.resolve()).as_posix()
 
 
-def _read_existing_page(path: Path, wiki_dir: Path, src_dir: str) -> ExistingPage:
+def _split_location(value: str) -> tuple[str, int | None]:
+    """Split a legacy Location value into path and optional line number."""
+    location = value.strip()
+    path_part, sep, line_part = location.rpartition(":")
+    if sep and line_part.isdigit():
+        return path_part, int(line_part)
+    return location, None
+
+
+def _read_existing_page(
+    path: Path,
+    wiki_dir: Path,
+    src_dir: str,
+    *,
+    archived: bool = False,
+) -> ExistingPage:
     content = read_md(path)
     rel = _page_rel(path, wiki_dir)
     kind = path.parent.name
@@ -115,8 +131,8 @@ def _read_existing_page(path: Path, wiki_dir: Path, src_dir: str) -> ExistingPag
     location_path: str | None = None
     location_line: int | None = None
     if location_match:
-        location_path = _normalize_source_path(location_match.group(1), src_dir)
-        location_line = int(location_match.group(2))
+        raw_location_path, location_line = _split_location(location_match.group(1))
+        location_path = _normalize_source_path(raw_location_path, src_dir)
 
     source_path = _normalize_source_path(path_match.group(1), src_dir) if path_match else None
 
@@ -130,6 +146,7 @@ def _read_existing_page(path: Path, wiki_dir: Path, src_dir: str) -> ExistingPag
         location_path=location_path,
         location_line=location_line,
         source_path=source_path,
+        archived=archived,
     )
 
 
@@ -143,6 +160,63 @@ def _active_managed_pages(wiki_dir: Path, src_dir: str) -> list[ExistingPage]:
             if path.is_file():
                 pages.append(_read_existing_page(path, wiki_dir, src_dir))
     return pages
+
+
+def _legacy_archive_roots(wiki_dir: Path) -> list[Path]:
+    legacy_dir = wiki_dir / "legacy"
+    if not legacy_dir.exists():
+        return []
+    return sorted(
+        (path for path in legacy_dir.glob("migrate-*") if path.is_dir()),
+        key=lambda path: path.name,
+        reverse=True,
+    )
+
+
+def _archived_managed_pages(wiki_dir: Path, src_dir: str) -> list[ExistingPage]:
+    pages: list[ExistingPage] = []
+    for archive_root in _legacy_archive_roots(wiki_dir):
+        for dirname in _MANAGED_DIRS:
+            directory = archive_root / dirname
+            if not directory.exists():
+                continue
+            for path in sorted(directory.glob("*.md")):
+                if path.is_file():
+                    pages.append(
+                        _read_existing_page(path, archive_root, src_dir, archived=True)
+                    )
+    return pages
+
+
+def _additional_doc_entries(wiki_dir: Path) -> list[str]:
+    ignored_top_level = set(_MANAGED_DIRS) | {"workflows", "legacy"}
+    docs: list[str] = []
+    if not wiki_dir.exists():
+        return docs
+
+    for path in sorted(wiki_dir.rglob("*.md")):
+        if not path.is_file() or _is_legacy_path(path, wiki_dir):
+            continue
+        rel = _page_rel(path, wiki_dir)
+        parts = Path(rel).parts
+        if path.name in {"index.md", "log.md"}:
+            continue
+        if parts and parts[0] in ignored_top_level:
+            continue
+        docs.append(rel)
+    return docs
+
+
+def _append_additional_docs_index(index_content: str, wiki_dir: Path) -> str:
+    docs = _additional_doc_entries(wiki_dir)
+    if not docs:
+        return index_content
+
+    lines = [index_content.rstrip(), "", "## Additional Docs", ""]
+    for rel in docs:
+        label = str(Path(rel).with_suffix("")).replace("\\", "/")
+        lines.append(f"- [{label}]({rel})")
+    return "\n".join(lines)
 
 
 def _build_targets(
@@ -217,7 +291,7 @@ def _build_targets(
         entity_page_map,
         module_page_map,
     )
-    return targets, index_content, manifest
+    return targets, _append_additional_docs_index(index_content, wiki_dir), manifest
 
 
 def _list_workflows(wiki_dir: Path) -> list[dict]:
@@ -268,7 +342,9 @@ def _match_existing_page(page: ExistingPage, lookups: dict[str, dict]) -> Target
     if page.kind == "entities":
         name = page.heading or page.stem.rsplit("_", 1)[-1]
         if page.location_path:
-            exact = _unique(lookups["entities_by_path_name"].get((page.location_path, name), []))
+            exact = _unique(
+                lookups["entities_by_path_name"].get((page.location_path, name), [])
+            )
             if exact:
                 return exact
         return _unique(lookups["entities_by_name"].get(name, []))
@@ -292,7 +368,12 @@ def _match_existing_page(page: ExistingPage, lookups: dict[str, dict]) -> Target
 def _build_migration_plan(wiki_dir: Path, src_dir: str) -> MigrationPlan:
     inventory = get_inventory(src_dir, deep=True)
     docker_inventory = get_docker_inventory(src_dir)
-    targets, index_content, manifest = _build_targets(wiki_dir, src_dir, inventory, docker_inventory)
+    targets, index_content, manifest = _build_targets(
+        wiki_dir,
+        src_dir,
+        inventory,
+        docker_inventory,
+    )
     lookups = _build_match_lookups(targets)
     target_rels = {target.rel for target in targets}
     plan = MigrationPlan(
@@ -302,7 +383,10 @@ def _build_migration_plan(wiki_dir: Path, src_dir: str) -> MigrationPlan:
         manifest=manifest,
     )
 
-    for page in _active_managed_pages(wiki_dir, src_dir):
+    active_pages = _active_managed_pages(wiki_dir, src_dir)
+    active_rels = {page.rel for page in active_pages}
+
+    for page in active_pages:
         target = _match_existing_page(page, lookups)
         if target:
             plan.matches.setdefault(target.rel, []).append(page)
@@ -310,6 +394,19 @@ def _build_migration_plan(wiki_dir: Path, src_dir: str) -> MigrationPlan:
                 plan.link_map[page.rel] = target.rel
         elif page.rel not in target_rels:
             plan.unmatched.append(page)
+            plan.link_map.setdefault(page.rel, f"legacy/{plan.archive_name}/{page.rel}")
+
+    for page in _archived_managed_pages(wiki_dir, src_dir):
+        if page.rel in active_rels:
+            continue
+        target = _match_existing_page(page, lookups)
+        if target:
+            plan.matches.setdefault(target.rel, []).append(page)
+            if page.rel != target.rel:
+                plan.link_map.setdefault(page.rel, target.rel)
+        else:
+            archive_rel = _page_rel(page.path, wiki_dir)
+            plan.link_map.setdefault(page.rel, archive_rel)
 
     return plan
 
@@ -323,16 +420,36 @@ def _existing_legacy_payload(page: ExistingPage, generated_content: str) -> str:
     return content
 
 
+def _split_legacy_sections(payload: str) -> list[str]:
+    payload = payload.strip()
+    if not payload:
+        return []
+    if not payload.startswith("### From "):
+        return [payload]
+    return [
+        section.strip()
+        for section in re.split(r"(?=^### From )", payload, flags=re.MULTILINE)
+        if section.strip()
+    ]
+
+
 def _merge_legacy_notes(target: TargetPage, pages: list[ExistingPage]) -> str:
     sections: list[str] = []
+    seen_sections: set[str] = set()
     for page in pages:
         payload = _existing_legacy_payload(page, target.content)
         if not payload:
             continue
         if payload.startswith("### From "):
-            sections.append(payload)
+            candidates = _split_legacy_sections(payload)
         else:
-            sections.append(f"### From `{page.rel}`\n\n{payload}")
+            candidates = [f"### From `{page.rel}`\n\n{payload}"]
+        for section in candidates:
+            normalized = section.strip()
+            if normalized in seen_sections:
+                continue
+            seen_sections.add(normalized)
+            sections.append(normalized)
 
     if not sections:
         return target.content
@@ -444,6 +561,8 @@ def _apply_plan(wiki_dir: Path, plan: MigrationPlan, dry_run: bool) -> None:
     for target in plan.targets:
         matched_pages = plan.matches.get(target.rel, [])
         for page in matched_pages:
+            if page.archived:
+                continue
             _archive_page(page, wiki_dir, archive_root, dry_run)
             if page.rel != target.rel:
                 _remove_old_page(page, dry_run)
@@ -489,6 +608,7 @@ def run(args) -> None:
     print(
         "\nMigration complete: "
         f"{len(plan.targets)} canonical page(s), "
-        f"{sum(len(v) for v in plan.matches.values())} archived source page(s), "
+        f"{sum(1 for pages in plan.matches.values() for page in pages if not page.archived)} "
+        "archived source page(s), "
         f"{len(plan.unmatched)} unmatched archived page(s)."
     )
