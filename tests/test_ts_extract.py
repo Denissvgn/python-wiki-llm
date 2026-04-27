@@ -490,6 +490,17 @@ class TestTypeScriptExtractorFixes:
         assert len(inv) == 1
         assert list(inv.values())[0]["classes"][0]["name"] == "App"
 
+    def test_inventory_keys_are_relative(self, tmp_path):
+        """Inventory keys must match Python/Go/Rust by being srcDir-relative."""
+        nested = tmp_path / "web" / "src"
+        nested.mkdir(parents=True)
+        _make_ts(nested, "app.ts", "export class App {}")
+
+        inv = TypeScriptExtractor().extract(str(tmp_path))
+
+        assert "web/src/app.ts" in inv
+        assert all(not Path(key).is_absolute() for key in inv)
+
     def test_stderr_forwarded_on_success(self, tmp_path, capsys):
         """Warnings written to Node.js stderr must reach Python sys.stderr."""
         import subprocess

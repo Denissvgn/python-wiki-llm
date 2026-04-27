@@ -58,6 +58,55 @@ class TestGenerateDockerfileMd:
         md = _generate_docker_md("Dockerfile", info, module_stems={"main"})
         assert "[`main.py`](../modules/main.md)" in md
 
+    def test_copy_cross_reference_uses_module_page_map(self):
+        """COPY links must use collision-aware module page names, not file stems."""
+        text = "FROM alpine\nCOPY sidecars/workspace_server.py /app/\n"
+        info = _parse_dockerfile(text)
+        module_links = {
+            "sidecars/workspace_server.py": "sidecars_workspace_server",
+            "sidecars/typescript/src/server.ts": "sidecars_typescript_src_server",
+        }
+
+        md = _generate_docker_md("docker/Dockerfile.workspace", info, module_links=module_links)
+
+        assert "[`sidecars/workspace_server.py`](../modules/sidecars_workspace_server.md)" in md
+        assert "../modules/server.md" not in md
+
+    def test_copy_cross_reference_prefers_nested_docker_context(self):
+        """A Dockerfile under a nested docker/ dir should link within that worktree."""
+        text = "FROM alpine\nCOPY sidecars/workspace_server.py /app/\n"
+        info = _parse_dockerfile(text)
+        module_links = {
+            "sidecars/workspace_server.py": "sidecars_workspace_server",
+            ".claude/worktrees/agent-strict-instructions/sidecars/workspace_server.py":
+                "agent-strict-instructions_sidecars_workspace_server",
+        }
+
+        md = _generate_docker_md(
+            ".claude/worktrees/agent-strict-instructions/docker/Dockerfile.workspace",
+            info,
+            module_links=module_links,
+        )
+
+        assert (
+            "[`sidecars/workspace_server.py`]"
+            "(../modules/agent-strict-instructions_sidecars_workspace_server.md)"
+        ) in md
+
+    def test_copy_cross_reference_leaves_ambiguous_suffix_unlinked(self):
+        """Suffix-only matches should not create a link when multiple pages match."""
+        text = "FROM alpine\nCOPY workspace_server.py /app/\n"
+        info = _parse_dockerfile(text)
+        module_links = {
+            "sidecars/workspace_server.py": "sidecars_workspace_server",
+            "other/workspace_server.py": "other_workspace_server",
+        }
+
+        md = _generate_docker_md("Dockerfile", info, module_links=module_links)
+
+        assert "`workspace_server.py`" in md
+        assert "../modules/" not in md
+
     def test_copy_no_cross_reference(self):
         text = "FROM alpine\nCOPY config.txt /app/\n"
         info = _parse_dockerfile(text)
@@ -170,5 +219,48 @@ class TestBootstrapInfrastructureIntegration:
             assert "## Infrastructure" in index_content
             assert "Dockerfile" in index_content
             assert "docker-compose_yml" in index_content
+        finally:
+            os.chdir(old_cwd)
+
+    def test_bootstrap_lint_passes_with_collision_aware_copy_links(self, tmp_path, capsys):
+        """A freshly bootstrapped wiki must not emit broken Docker COPY links."""
+        proj = tmp_path / "proj"
+        proj.mkdir()
+
+        (proj / "sidecars").mkdir()
+        (proj / "other").mkdir()
+        (proj / "docker").mkdir()
+        (proj / "sidecars" / "workspace_server.py").write_text("class WorkspaceServer:\n    pass\n")
+        (proj / "sidecars" / "server.py").write_text("class Server:\n    pass\n")
+        (proj / "other" / "workspace_server.py").write_text("class OtherWorkspaceServer:\n    pass\n")
+        (proj / "docker" / "Dockerfile.workspace").write_text(
+            "FROM alpine\nCOPY sidecars/workspace_server.py /app/workspace_server.py\n"
+        )
+
+        wiki = proj / "docs" / "llm_wiki"
+
+        old_cwd = os.getcwd()
+        os.chdir(proj)
+        try:
+            from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd
+            import argparse
+            args = argparse.Namespace(
+                src_dir=".",
+                wiki_dir=str(wiki),
+                overwrite=True,
+                depth="shallow",
+                skip_workflows=True,
+            )
+            bootstrap_cmd.run(args)
+
+            infra = (wiki / "infrastructure" / "docker_Dockerfile_workspace.md").read_text(
+                encoding="utf-8"
+            )
+            assert "../modules/sidecars_workspace_server.md" in infra
+            assert "../modules/server.md" not in infra
+
+            lint_cmd.run(argparse.Namespace(wiki_dir=str(wiki), src_dir="."))
+            output = capsys.readouterr().out
+            assert "Lint passed" in output
         finally:
             os.chdir(old_cwd)

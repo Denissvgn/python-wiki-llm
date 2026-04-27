@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+import shlex
 import subprocess
 from collections import defaultdict
+from collections.abc import Mapping
 from datetime import date
 from pathlib import Path
 
@@ -429,14 +431,142 @@ def _generate_workflow_md(name: str, wf: dict) -> str:
     return "\n".join(lines)
 
 
-def _generate_docker_md(filename: str, info: dict, module_stems: set[str] | None = None) -> str:
+_SOURCE_EXTS = (".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs")
+
+
+def _normalize_source_path(path: str) -> str:
+    """Normalize Docker COPY source paths for comparison with inventory keys."""
+    normalized = path.strip().strip('"').strip("'").replace("\\", "/")
+    while normalized.startswith("./"):
+        normalized = normalized[2:]
+    return normalized
+
+
+def _coerce_module_links(module_links: Mapping[str, str] | set[str] | None) -> dict[str, str]:
+    """Return ``{source_path: module_page_stem}`` for Docker COPY linking.
+
+    ``set[str]`` is accepted for backward compatibility with older tests that
+    passed raw module stems.
+    """
+    if not module_links:
+        return {}
+    if isinstance(module_links, Mapping):
+        return {
+            _normalize_source_path(source_path): page_name
+            for source_path, page_name in module_links.items()
+        }
+
+    coerced: dict[str, str] = {}
+    for stem in module_links:
+        for ext in _SOURCE_EXTS:
+            coerced[f"{stem}{ext}"] = stem
+    return coerced
+
+
+def _copy_source_candidates(source: str, docker_filename: str) -> list[str]:
+    """Return likely project-relative source paths for a Docker COPY source."""
+    source = _normalize_source_path(source)
+    if not source:
+        return []
+
+    docker_path = Path(docker_filename.replace("\\", "/"))
+    docker_parent = docker_path.parent
+
+    candidates: list[str] = []
+    if str(docker_parent) not in ("", "."):
+        # Common repo layout: Dockerfiles live in ./docker while the build
+        # context is the project/worktree root one level above that directory.
+        if docker_parent.name == "docker":
+            candidates.append((docker_parent.parent / source).as_posix())
+        candidates.append((docker_parent / source).as_posix())
+    candidates.append(source)
+
+    seen: set[str] = set()
+    result: list[str] = []
+    for candidate in candidates:
+        normalized = _normalize_source_path(candidate)
+        if normalized and normalized not in seen:
+            result.append(normalized)
+            seen.add(normalized)
+    return result
+
+
+def _module_page_for_copy_source(
+    source: str,
+    docker_filename: str,
+    module_links: Mapping[str, str] | set[str] | None,
+) -> str | None:
+    """Resolve a Docker COPY source to a module page stem if unambiguous."""
+    source = _normalize_source_path(source)
+    if not source or "*" in source or source.endswith("/"):
+        return None
+
+    links = _coerce_module_links(module_links)
+    if not links:
+        return None
+
+    for candidate in _copy_source_candidates(source, docker_filename):
+        if candidate in links:
+            return links[candidate]
+
+    suffix_matches = {
+        page_name
+        for source_path, page_name in links.items()
+        if source_path == source or source_path.endswith(f"/{source}")
+    }
+    if len(suffix_matches) == 1:
+        return next(iter(suffix_matches))
+    return None
+
+
+def _split_copy_sources(source: str) -> list[str]:
+    """Split a Docker COPY source field while preserving a safe fallback."""
+    source = source.strip()
+    if not source:
+        return []
+    try:
+        parts = shlex.split(source)
+    except ValueError:
+        return [source]
+    return parts or [source]
+
+
+def _format_copy_source_links(
+    source: str,
+    docker_filename: str,
+    module_links: Mapping[str, str] | set[str] | None,
+) -> str:
+    """Format a Docker COPY source cell with module links where safe."""
+    sources = _split_copy_sources(source)
+    if not sources:
+        return "—"
+
+    formatted: list[str] = []
+    for item in sources:
+        page_name = _module_page_for_copy_source(item, docker_filename, module_links)
+        if page_name:
+            formatted.append(f"[`{item}`](../modules/{page_name}.md)")
+        else:
+            formatted.append(f"`{item}`")
+    return ", ".join(formatted)
+
+
+def _generate_docker_md(
+    filename: str,
+    info: dict,
+    module_links: Mapping[str, str] | set[str] | None = None,
+    *,
+    module_stems: set[str] | None = None,
+) -> str:
     """Generate a wiki page for a Dockerfile or docker-compose file."""
+    if module_links is None and module_stems is not None:
+        module_links = module_stems
     if info["type"] == "dockerfile":
-        return _generate_dockerfile_md(filename, info, module_stems)
-    return _generate_compose_md(filename, info, module_stems)
+        return _generate_dockerfile_md(filename, info, module_links)
+    return _generate_compose_md(filename, info, module_links)
 
 
-def _generate_dockerfile_md(filename: str, info: dict, module_stems: set[str] | None = None) -> str:
+def _generate_dockerfile_md(filename: str, info: dict, module_links: Mapping[str, str] | set[str] | None = None) -> str:
     """Generate markdown for a Dockerfile."""
     stages = info.get("stages", [])
     ports = info.get("ports", [])
@@ -532,14 +662,7 @@ def _generate_dockerfile_md(filename: str, info: dict, module_stems: set[str] | 
         lines.append("|-------------|--------|-------------|------------|")
         for c in copies:
             stage = f"`{c['from_stage']}`" if c.get("from_stage") else "—"
-            src_text = f"`{c['src']}`"
-            # Cross-reference to module page if the copied file is a known source module
-            _SOURCE_EXTS = (".py", ".ts", ".tsx", ".js", ".jsx")
-            if module_stems:
-                for stem in module_stems:
-                    if any(f"{stem}{ext}" in c["src"] for ext in _SOURCE_EXTS):
-                        src_text = f"[`{c['src']}`](../modules/{stem}.md)"
-                        break
+            src_text = _format_copy_source_links(c["src"], filename, module_links)
             lines.append(f"| `{c['instruction']}` | {src_text} | `{c['dest']}` | {stage} |")
         lines.append("")
 
@@ -561,7 +684,7 @@ def _generate_dockerfile_md(filename: str, info: dict, module_stems: set[str] | 
     return "\n".join(lines)
 
 
-def _generate_compose_md(filename: str, info: dict, module_stems: set[str] | None = None) -> str:
+def _generate_compose_md(filename: str, info: dict, module_links: Mapping[str, str] | set[str] | None = None) -> str:
     """Generate markdown for a docker-compose / compose file."""
     services = info.get("services", {})
     networks = info.get("networks", [])
@@ -738,14 +861,13 @@ def run(args):
     infra_entries = []
     infra_created = 0
     docker_inventory = get_docker_inventory(src_dir)
-    module_stems = {_module_name_from_path(fp) for fp in inventory}
     for docker_file, docker_info in docker_inventory.items():
         page_name = docker_file.replace("\\", "/").replace("/", "_").replace(".", "_")
         infra_path = wiki_dir / "infrastructure" / f"{page_name}.md"
         if infra_path.exists() and not args.overwrite:
             print(f"  SKIP infrastructure (exists): {page_name}")
         else:
-            write_md(infra_path, _generate_docker_md(docker_file, docker_info, module_stems))
+            write_md(infra_path, _generate_docker_md(docker_file, docker_info, _module_page_map))
             infra_created += 1
             print(f"  CREATE infrastructure: {page_name}")
         infra_entries.append({"name": page_name, "type": docker_info["type"]})
