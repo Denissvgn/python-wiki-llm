@@ -19,6 +19,7 @@ from llm_wiki_cli.commands.migrate_cmd import (
     _match_existing_page,
     _read_existing_page,
     _rewrite_links_in_content,
+    _split_location,
 )
 from llm_wiki_cli.commands.sync_cmd import MANIFEST_FILENAME
 
@@ -63,6 +64,13 @@ def _has_legacy_archive(wiki: Path, *parts: str) -> bool:
     return any((archive / Path(*parts)).exists() for archive in legacy_root.glob("migrate-*"))
 
 
+def _legacy_archive_names(wiki: Path) -> list[str]:
+    legacy_root = wiki / "legacy"
+    if not legacy_root.exists():
+        return []
+    return sorted(path.name for path in legacy_root.glob("migrate-*") if path.is_dir())
+
+
 class TestMigrateHelpers:
     def test_metadata_normalizes_absolute_paths(self, tmp_path):
         proj = tmp_path / "proj"
@@ -90,6 +98,10 @@ class TestMigrateHelpers:
 
         assert parsed.location_path == "pkg/session_client.py"
         assert parsed.location_line is None
+
+    def test_location_split_preserves_windows_drive_letters(self):
+        assert _split_location(r"C:\repo\pkg\client.py") == (r"C:\repo\pkg\client.py", None)
+        assert _split_location(r"C:\repo\pkg\client.py:42") == (r"C:\repo\pkg\client.py", 42)
 
     def test_ambiguous_stem_match_returns_none(self):
         targets = [
@@ -184,6 +196,39 @@ class TestMigrateIntegration:
         assert "../modules/workspace_server.md" not in infra
         assert "Legacy Notes" in infra
         assert _has_legacy_archive(wiki, "infrastructure", "docker_Dockerfile_workspace.md")
+
+        lint_cmd.run(_make_args())
+        output = capsys.readouterr().out
+        assert "Lint passed" in output
+
+    def test_second_migrate_does_not_create_new_archive_batch(self, tmp_path, capsys):
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        _write(proj / "api" / "server.py", "class Server:\n    pass\n")
+        _write(proj / "worker" / "server.py", "class WorkerServer:\n    pass\n")
+        wiki = _make_wiki(proj)
+        _write(
+            wiki / "modules" / "server.md",
+            "# server\n\n**Path:** `api/server.py`\n\nManual server notes.\n",
+        )
+        _write(
+            wiki / "workflows" / "flow.md",
+            "# flow\n\n- [server](../modules/server.md)\n",
+        )
+
+        os.chdir(proj)
+        migrate_cmd.run(_make_args())
+        first_archives = _legacy_archive_names(wiki)
+        first_content = (wiki / "modules" / "api_server.md").read_text(encoding="utf-8")
+
+        migrate_cmd.run(_make_args())
+        second_archives = _legacy_archive_names(wiki)
+        second_content = (wiki / "modules" / "api_server.md").read_text(encoding="utf-8")
+
+        assert first_archives
+        assert second_archives == first_archives
+        assert second_content == first_content
+        assert second_content.count("### From `modules/server.md`") == 1
 
         lint_cmd.run(_make_args())
         output = capsys.readouterr().out

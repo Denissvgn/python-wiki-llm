@@ -480,10 +480,14 @@ def _remove_old_page(page: ExistingPage, dry_run: bool) -> None:
 
 
 def _write_page(wiki_dir: Path, rel: str, content: str, dry_run: bool) -> None:
+    path = wiki_dir / rel
+    if path.exists() and read_md(path) == content:
+        print(f"  SKIP unchanged {rel}")
+        return
+
     print(f"  WRITE {rel}")
     if dry_run:
         return
-    path = wiki_dir / rel
     path.parent.mkdir(parents=True, exist_ok=True)
     write_md(path, content)
 
@@ -555,13 +559,32 @@ def _rewrite_active_links(wiki_dir: Path, link_map: dict[str, str], dry_run: boo
     return rewritten
 
 
+def _should_archive_matched_page(page: ExistingPage, target: TargetPage) -> bool:
+    if page.archived:
+        return False
+    if page.rel != target.rel:
+        return True
+    if LEGACY_MARKER in page.content:
+        return False
+    return bool(_existing_legacy_payload(page, target.content))
+
+
+def _matched_archive_count(plan: MigrationPlan) -> int:
+    count = 0
+    targets_by_rel = {target.rel: target for target in plan.targets}
+    for target_rel, pages in plan.matches.items():
+        target = targets_by_rel[target_rel]
+        count += sum(1 for page in pages if _should_archive_matched_page(page, target))
+    return count
+
+
 def _apply_plan(wiki_dir: Path, plan: MigrationPlan, dry_run: bool) -> None:
     archive_root = wiki_dir / "legacy" / plan.archive_name
 
     for target in plan.targets:
         matched_pages = plan.matches.get(target.rel, [])
         for page in matched_pages:
-            if page.archived:
+            if not _should_archive_matched_page(page, target):
                 continue
             _archive_page(page, wiki_dir, archive_root, dry_run)
             if page.rel != target.rel:
@@ -608,7 +631,6 @@ def run(args) -> None:
     print(
         "\nMigration complete: "
         f"{len(plan.targets)} canonical page(s), "
-        f"{sum(1 for pages in plan.matches.values() for page in pages if not page.archived)} "
-        "archived source page(s), "
+        f"{_matched_archive_count(plan)} archived source page(s), "
         f"{len(plan.unmatched)} unmatched archived page(s)."
     )
