@@ -4,6 +4,14 @@ from .commands import init_cmd, extract_cmd, lint_cmd, hook_cmd, trigger_cmd, bo
 from .config import AGENT_CHOICES, DEFAULT_WIKI_DIR
 from . import __version__
 
+
+def _positive_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 1:
+        raise argparse.ArgumentTypeError("must be greater than zero")
+    return parsed
+
+
 def main():
     parser = argparse.ArgumentParser(description="LLM Wiki CLI")
     parser.add_argument("--version", action="version", version=f"llm-wiki {__version__}")
@@ -144,6 +152,12 @@ def main():
                                 help="Wiki directory (default: docs/llm_wiki)")
     migrate_parser.add_argument("--dry-run", action="store_true",
                                 help="Preview migration actions without modifying files")
+    migrate_parser.add_argument("--chunk-size", type=_positive_int, metavar="PAGES",
+                                help="Apply at most this many pending page operations in one migration chunk")
+    migrate_parser.add_argument("--chunk", type=_positive_int, metavar="N",
+                                help="Apply chunk N from the current --chunk-size plan (default: 1)")
+    migrate_parser.add_argument("--plan-chunks", action="store_true",
+                                help="Print the current chunk plan and exit without modifying files")
 
     # context command
     context_parser = subparsers.add_parser(

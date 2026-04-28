@@ -16,6 +16,7 @@ from llm_wiki_cli.commands.migrate_cmd import (
     ExistingPage,
     TargetPage,
     _build_match_lookups,
+    _build_chunks,
     _match_existing_page,
     _read_existing_page,
     _rewrite_links_in_content,
@@ -72,6 +73,25 @@ def _legacy_archive_names(wiki: Path) -> list[str]:
 
 
 class TestMigrateHelpers:
+    def test_chunk_plan_splits_pending_page_operations(self, tmp_path):
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+        plan = migrate_cmd.MigrationPlan(
+            archive_name="migrate-test",
+            targets=[
+                TargetPage("modules", "a", "modules/a.md", "# a\n", "a.py"),
+                TargetPage("modules", "b", "modules/b.md", "# b\n", "b.py"),
+                TargetPage("modules", "c", "modules/c.md", "# c\n", "c.py"),
+            ],
+            index_content="# Index\n",
+            manifest=None,
+        )
+
+        chunks = _build_chunks(wiki, plan, 2)
+
+        assert [chunk.page_operations for chunk in chunks] == [2, 1]
+        assert chunks[-1].include_finalizers
+
     def test_metadata_normalizes_absolute_paths(self, tmp_path):
         proj = tmp_path / "proj"
         proj.mkdir()
@@ -475,3 +495,70 @@ class TestMigrateIntegration:
         assert "DRY-RUN" in output
         assert after == before
         assert not (wiki / "legacy").exists()
+
+    def test_cli_plan_chunks_does_not_modify_wiki(self, tmp_path, monkeypatch, capsys):
+        from llm_wiki_cli import cli
+
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        _write(proj / "models.py", "class User:\n    pass\n")
+        wiki = _make_wiki(proj)
+        _write(wiki / "modules" / "models.md", "# models\n\n**Path:** `models.py`\n\nManual.\n")
+        before = {
+            path.relative_to(wiki).as_posix(): path.read_text(encoding="utf-8")
+            for path in wiki.rglob("*")
+            if path.is_file()
+        }
+
+        os.chdir(proj)
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            [
+                "llm-wiki",
+                "migrate",
+                "--src-dir",
+                ".",
+                "--wiki-dir",
+                "docs/llm_wiki",
+                "--chunk-size",
+                "1",
+                "--plan-chunks",
+            ],
+        )
+        cli.main()
+
+        after = {
+            path.relative_to(wiki).as_posix(): path.read_text(encoding="utf-8")
+            for path in wiki.rglob("*")
+            if path.is_file()
+        }
+        output = capsys.readouterr().out
+        assert "Migration chunk plan" in output
+        assert "PLAN: no files modified" in output
+        assert after == before
+        assert not (wiki / "legacy").exists()
+
+    def test_chunked_migrate_applies_next_pending_chunk_until_finalizers(self, tmp_path, capsys):
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        _write(proj / "alpha.py", "def alpha():\n    pass\n")
+        _write(proj / "beta.py", "def beta():\n    pass\n")
+        wiki = _make_wiki(proj)
+        _write(wiki / "modules" / "alpha.md", "# alpha\n\n**Path:** `alpha.py`\n\nManual alpha.\n")
+        _write(wiki / "modules" / "beta.md", "# beta\n\n**Path:** `beta.py`\n\nManual beta.\n")
+
+        os.chdir(proj)
+        migrate_cmd.run(_make_args(chunk_size=1))
+
+        assert not (wiki / MANIFEST_FILENAME).exists()
+        assert (wiki / "index.md").read_text(encoding="utf-8") == "# Old Index\n"
+        first_output = capsys.readouterr().out
+        assert "DEFER index/manifest refresh" in first_output
+
+        migrate_cmd.run(_make_args(chunk_size=1))
+
+        assert (wiki / MANIFEST_FILENAME).exists()
+        assert (wiki / "index.md").read_text(encoding="utf-8") != "# Old Index\n"
+        second_output = capsys.readouterr().out
+        assert "final index/link/manifest refresh" in second_output

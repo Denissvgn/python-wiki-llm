@@ -8,6 +8,7 @@ content is preserved under a Legacy Notes section.
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import sys
@@ -25,7 +26,7 @@ from .bootstrap_cmd import (
     build_module_page_map,
 )
 from .extract_cmd import get_docker_inventory, get_inventory
-from .sync_cmd import SyncManifest
+from .sync_cmd import MANIFEST_FILENAME, MANIFEST_VERSION, SyncManifest
 from ..config import DEFAULT_WIKI_DIR, validate_path
 from ..services.io import read_md, write_md
 
@@ -77,6 +78,21 @@ class MigrationPlan:
     link_map: dict[str, str] = field(default_factory=dict)
     index_content: str = ""
     manifest: SyncManifest | None = None
+
+
+@dataclass(frozen=True)
+class MigrationChunk:
+    """A bounded subset of currently pending migration work."""
+
+    number: int
+    total: int
+    targets: list[TargetPage]
+    unmatched: list[ExistingPage]
+    include_finalizers: bool = False
+
+    @property
+    def page_operations(self) -> int:
+        return len(self.targets) + len(self.unmatched)
 
 
 def _normalize_source_path(value: str | None, src_dir: str) -> str | None:
@@ -578,10 +594,126 @@ def _matched_archive_count(plan: MigrationPlan) -> int:
     return count
 
 
-def _apply_plan(wiki_dir: Path, plan: MigrationPlan, dry_run: bool) -> None:
+def _target_needs_apply(wiki_dir: Path, target: TargetPage, matched_pages: list[ExistingPage]) -> bool:
+    if any(_should_archive_matched_page(page, target) for page in matched_pages):
+        return True
+    if any(not page.archived and page.rel != target.rel and page.path.exists() for page in matched_pages):
+        return True
+
+    path = wiki_dir / target.rel
+    content = _merge_legacy_notes(target, matched_pages)
+    return not path.exists() or read_md(path) != content
+
+
+def _manifest_payload(manifest: SyncManifest) -> str:
+    return json.dumps(
+        {"version": MANIFEST_VERSION, "sources": manifest.sources},
+        indent=2,
+        sort_keys=True,
+    )
+
+
+def _manifest_needs_write(wiki_dir: Path, manifest: SyncManifest | None) -> bool:
+    if manifest is None:
+        return False
+    path = wiki_dir / MANIFEST_FILENAME
+    return not path.exists() or path.read_text(encoding="utf-8") != _manifest_payload(manifest)
+
+
+def _pending_link_rewrite_count(wiki_dir: Path, link_map: dict[str, str]) -> int:
+    if not link_map:
+        return 0
+    count = 0
+    for page in _active_markdown_pages(wiki_dir):
+        content = read_md(page)
+        if _rewrite_links_in_content(content, page, wiki_dir, link_map) != content:
+            count += 1
+    return count
+
+
+def _finalizers_pending(wiki_dir: Path, plan: MigrationPlan) -> bool:
+    index_path = wiki_dir / "index.md"
+    index_pending = not index_path.exists() or read_md(index_path) != plan.index_content
+    return (
+        index_pending
+        or _manifest_needs_write(wiki_dir, plan.manifest)
+        or _pending_link_rewrite_count(wiki_dir, plan.link_map) > 0
+    )
+
+
+def _pending_targets(wiki_dir: Path, plan: MigrationPlan) -> list[TargetPage]:
+    return [
+        target
+        for target in plan.targets
+        if _target_needs_apply(wiki_dir, target, plan.matches.get(target.rel, []))
+    ]
+
+
+def _build_chunks(wiki_dir: Path, plan: MigrationPlan, chunk_size: int) -> list[MigrationChunk]:
+    if chunk_size < 1:
+        raise ValueError("--chunk-size must be greater than zero")
+
+    units: list[tuple[str, TargetPage | ExistingPage]] = [
+        ("target", target) for target in _pending_targets(wiki_dir, plan)
+    ]
+    units.extend(("unmatched", page) for page in plan.unmatched if page.path.exists())
+
+    finalizers_pending = _finalizers_pending(wiki_dir, plan)
+    if not units:
+        if not finalizers_pending:
+            return []
+        return [MigrationChunk(1, 1, [], [], include_finalizers=True)]
+
+    total = (len(units) + chunk_size - 1) // chunk_size
+    chunks: list[MigrationChunk] = []
+    for index in range(total):
+        page_units = units[index * chunk_size:(index + 1) * chunk_size]
+        targets = [unit for kind, unit in page_units if kind == "target"]
+        unmatched = [unit for kind, unit in page_units if kind == "unmatched"]
+        chunks.append(MigrationChunk(
+            number=index + 1,
+            total=total,
+            targets=targets,
+            unmatched=unmatched,
+            include_finalizers=finalizers_pending and index == total - 1,
+        ))
+    return chunks
+
+
+def _chunk_link_map(plan: MigrationPlan, chunk: MigrationChunk) -> dict[str, str]:
+    if chunk.include_finalizers:
+        return plan.link_map
+
+    rels: set[str] = {page.rel for page in chunk.unmatched}
+    for target in chunk.targets:
+        rels.update(page.rel for page in plan.matches.get(target.rel, []))
+    return {
+        old_rel: new_rel
+        for old_rel, new_rel in plan.link_map.items()
+        if old_rel in rels
+    }
+
+
+def _print_chunk_plan(chunks: list[MigrationChunk], chunk_size: int) -> None:
+    print(f"\nMigration chunk plan (max {chunk_size} pending page operation(s) per chunk):")
+    if not chunks:
+        print("  No pending migration changes.")
+        return
+
+    for chunk in chunks:
+        finalizers = " + final index/link/manifest refresh" if chunk.include_finalizers else ""
+        print(
+            f"  {chunk.number}/{chunk.total}: "
+            f"{len(chunk.targets)} canonical page(s), "
+            f"{len(chunk.unmatched)} unmatched archive(s)"
+            f"{finalizers}"
+        )
+
+
+def _apply_chunk(wiki_dir: Path, plan: MigrationPlan, chunk: MigrationChunk, dry_run: bool) -> None:
     archive_root = wiki_dir / "legacy" / plan.archive_name
 
-    for target in plan.targets:
+    for target in chunk.targets:
         matched_pages = plan.matches.get(target.rel, [])
         for page in matched_pages:
             if not _should_archive_matched_page(page, target):
@@ -591,29 +723,52 @@ def _apply_plan(wiki_dir: Path, plan: MigrationPlan, dry_run: bool) -> None:
                 _remove_old_page(page, dry_run)
         _write_page(wiki_dir, target.rel, _merge_legacy_notes(target, matched_pages), dry_run)
 
-    for page in plan.unmatched:
+    for page in chunk.unmatched:
         _archive_page(page, wiki_dir, archive_root, dry_run)
         _remove_old_page(page, dry_run)
         print(f"  UNMATCHED archived: {page.rel}")
 
-    _write_page(wiki_dir, "index.md", plan.index_content, dry_run)
-    rewritten = _rewrite_active_links(wiki_dir, plan.link_map, dry_run)
-    if plan.link_map:
-        print(f"  Link mappings: {len(plan.link_map)} path(s); pages rewritten: {rewritten}")
+    if chunk.include_finalizers:
+        _write_page(wiki_dir, "index.md", plan.index_content, dry_run)
+    else:
+        print("  DEFER index/manifest refresh until the final chunk")
 
-    if not dry_run and plan.manifest is not None:
+    link_map = _chunk_link_map(plan, chunk)
+    rewritten = _rewrite_active_links(wiki_dir, link_map, dry_run)
+    if link_map:
+        print(f"  Link mappings: {len(link_map)} path(s); pages rewritten: {rewritten}")
+
+    if chunk.include_finalizers and not dry_run and plan.manifest is not None:
         plan.manifest.save(wiki_dir)
         print(f"  WRITE {wiki_dir / '.llm-wiki-manifest.json'}")
-    elif dry_run:
+    elif chunk.include_finalizers and dry_run:
         print("  DRY-RUN: manifest refresh skipped")
+
+
+def _apply_plan(wiki_dir: Path, plan: MigrationPlan, dry_run: bool) -> None:
+    chunk = MigrationChunk(
+        number=1,
+        total=1,
+        targets=plan.targets,
+        unmatched=plan.unmatched,
+        include_finalizers=True,
+    )
+    _apply_chunk(wiki_dir, plan, chunk, dry_run)
 
 
 def run(args) -> None:
     src_dir = getattr(args, "src_dir", ".")
     wiki_dir = Path(getattr(args, "wiki_dir", DEFAULT_WIKI_DIR))
     dry_run = getattr(args, "dry_run", False)
+    chunk_size = getattr(args, "chunk_size", None)
+    chunk_number = getattr(args, "chunk", None)
+    plan_chunks = getattr(args, "plan_chunks", False)
     validate_path(src_dir, "--src-dir")
     validate_path(str(wiki_dir), "--wiki-dir")
+
+    if chunk_size is None and (chunk_number is not None or plan_chunks):
+        print("Error: --chunk and --plan-chunks require --chunk-size.", file=sys.stderr)
+        sys.exit(1)
 
     if not wiki_dir.exists():
         print(f"Error: Directory {wiki_dir} does not exist.", file=sys.stderr)
@@ -625,6 +780,37 @@ def run(args) -> None:
     plan = _build_migration_plan(wiki_dir, src_dir)
     if dry_run:
         print("DRY-RUN: no files will be modified.")
+
+    if chunk_size is not None:
+        chunks = _build_chunks(wiki_dir, plan, chunk_size)
+        _print_chunk_plan(chunks, chunk_size)
+
+        if plan_chunks or (dry_run and chunk_number is None):
+            print("PLAN: no files modified.")
+            return
+
+        if not chunks:
+            print("\nNo pending migration changes.")
+            return
+
+        selected_number = chunk_number or 1
+        if selected_number < 1 or selected_number > len(chunks):
+            print(
+                f"Error: --chunk must be between 1 and {len(chunks)} for the current plan.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+        chunk = chunks[selected_number - 1]
+        print(f"\nApplying migration chunk {chunk.number}/{chunk.total}:")
+        _apply_chunk(wiki_dir, plan, chunk, dry_run)
+        print(
+            "\nMigration chunk complete: "
+            f"{chunk.page_operations} page operation(s)."
+        )
+        if not chunk.include_finalizers:
+            print("Run chunked migrate again after reviewing or committing this chunk.")
+        return
 
     _apply_plan(wiki_dir, plan, dry_run)
 

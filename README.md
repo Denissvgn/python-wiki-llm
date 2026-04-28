@@ -284,12 +284,18 @@ collision-aware naming rules without deleting prior content:
 ```bash
 llm-wiki migrate --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki migrate --dry-run                    # preview without writing
+llm-wiki migrate --chunk-size 200 --plan-chunks  # inspect chunk plan
+llm-wiki migrate --chunk-size 200             # apply next pending chunk
 ```
 
 This regenerates active canonical pages, preserves previous page content under
 `## Legacy Notes`, archives old pages under `docs/llm_wiki/legacy/`, rebuilds
 `index.md`, refreshes the sync manifest, and rewrites known active links.
 Archived `legacy/` pages are ignored by `lint`.
+
+For large wikis, use `--chunk-size` to keep each working-tree change small.
+Run the same chunked command repeatedly, reviewing or committing between runs.
+The final chunk refreshes `index.md`, active links, and `.llm-wiki-manifest.json`.
 
 ### 6. Generate Sync Prompt (IDE agents)
 
