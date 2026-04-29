@@ -40,6 +40,17 @@ class TestGetInventory:
         assert len(inventory) == 1
         assert list(inventory.values())[0]["classes"][0]["name"] == "Visible"
 
+    def test_skips_virtualenv_layout_with_custom_name(self, tmp_path):
+        site_packages = (
+            tmp_path / "custom-python" / "lib" / "python3.13" / "site-packages"
+        )
+        site_packages.mkdir(parents=True)
+        (site_packages / "dependency.py").write_text("class Hidden: pass\n")
+        (tmp_path / "real.py").write_text("class Visible: pass\n")
+        inventory = get_inventory(str(tmp_path))
+        assert len(inventory) == 1
+        assert list(inventory.values())[0]["classes"][0]["name"] == "Visible"
+
     def test_skips_syntax_errors(self, tmp_path):
         (tmp_path / "bad.py").write_text("def broken(\n")
         (tmp_path / "good.py").write_text("class OK: pass\n")
@@ -265,6 +276,13 @@ class TestOnlyFiles:
         (tmp_path / "a.py").write_text("class A: pass\n")
         inventory = get_inventory(str(tmp_path), only_files=["readme.md", "a.py"])
         assert len(inventory) == 1
+
+    def test_respects_excluded_dirs(self, tmp_path):
+        hidden = tmp_path / ".venv" / "lib" / "hidden.py"
+        hidden.parent.mkdir(parents=True)
+        hidden.write_text("class Hidden: pass\n")
+        inventory = get_inventory(str(tmp_path), only_files=[".venv/lib/hidden.py"])
+        assert inventory == {}
 
 
 class TestSummarizeInventory:

@@ -24,19 +24,44 @@ import (
 // ── Excluded directories ──────────────────────────────────────────────────────
 
 var excludedDirs = map[string]bool{
-	"vendor":       true,
-	"testdata":     true,
-	".git":         true,
-	"node_modules": true,
-	"__pycache__":  true,
-	"venv":         true,
-	".venv":        true,
-	"env":          true,
-	".env":         true,
-	".tox":         true,
-	".eggs":        true,
-	"build":        true,
-	"dist":         true,
+	".cache":           true,
+	".direnv":          true,
+	".eggs":            true,
+	".env":             true,
+	".git":             true,
+	".mypy_cache":      true,
+	".next":            true,
+	".nox":             true,
+	".npm":             true,
+	".nuxt":            true,
+	".parcel-cache":    true,
+	".pnpm-store":      true,
+	".pyre":            true,
+	".pytest_cache":    true,
+	".ruff_cache":      true,
+	".svelte-kit":      true,
+	".tox":             true,
+	".venv":            true,
+	".virtualenv":      true,
+	".vite":            true,
+	".yarn":            true,
+	"__pycache__":      true,
+	"__pypackages__":   true,
+	"bower_components": true,
+	"build":            true,
+	"coverage":         true,
+	"dist":             true,
+	"env":              true,
+	"htmlcov":          true,
+	"jspm_packages":    true,
+	"node_modules":     true,
+	"out":              true,
+	"site-packages":    true,
+	"target":           true,
+	"testdata":         true,
+	"vendor":           true,
+	"venv":             true,
+	"virtualenv":       true,
 }
 
 // ── Schema types ──────────────────────────────────────────────────────────────
@@ -245,6 +270,26 @@ func collectGoFiles(root string) ([]string, error) {
 		return nil
 	})
 	return files, err
+}
+
+func isOutsideRoot(rel string) bool {
+	return rel == ".." || filepath.IsAbs(rel) || strings.HasPrefix(rel, ".."+string(filepath.Separator))
+}
+
+func hasExcludedDir(relPath string) bool {
+	dir := filepath.Dir(relPath)
+	if dir == "." || dir == "" {
+		return false
+	}
+	for _, part := range strings.Split(filepath.ToSlash(dir), "/") {
+		if part == "" {
+			continue
+		}
+		if excludedDirs[part] || strings.HasPrefix(part, ".") || strings.HasPrefix(part, "_") {
+			return true
+		}
+	}
+	return false
 }
 
 // ── Per-file extraction ───────────────────────────────────────────────────────
@@ -527,6 +572,10 @@ func main() {
 			abs := f
 			if !filepath.IsAbs(f) {
 				abs = filepath.Join(*srcDir, f)
+			}
+			rel, err := filepath.Rel(*srcDir, abs)
+			if err != nil || isOutsideRoot(rel) || hasExcludedDir(rel) {
+				continue
 			}
 			if _, err := os.Stat(abs); err == nil && filepath.Ext(abs) == ".go" && !strings.HasSuffix(filepath.Base(abs), "_test.go") {
 				files = append(files, abs)

@@ -8,11 +8,46 @@ from pathlib import Path
 
 DEFAULT_WIKI_DIR = "docs/llm_wiki"
 
-# Directories excluded from all source-file scans (Python AST and Docker).
+# Directories excluded from source-file scans.  This intentionally covers both
+# conventional environment names (``.venv``) and environment internals
+# (``site-packages``) so renamed virtualenvs still stay out of the wiki.
 EXCLUDED_DIRS: set[str] = {
-    "venv", ".venv", "env", ".env",
-    ".tox", "node_modules", "__pycache__",
-    ".eggs", "build", "dist", ".git",
+    ".cache",
+    ".direnv",
+    ".eggs",
+    ".env",
+    ".git",
+    ".mypy_cache",
+    ".next",
+    ".nox",
+    ".npm",
+    ".nuxt",
+    ".parcel-cache",
+    ".pnpm-store",
+    ".pyre",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".svelte-kit",
+    ".tox",
+    ".venv",
+    ".virtualenv",
+    ".vite",
+    ".yarn",
+    "__pycache__",
+    "__pypackages__",
+    "bower_components",
+    "build",
+    "coverage",
+    "dist",
+    "env",
+    "htmlcov",
+    "jspm_packages",
+    "node_modules",
+    "out",
+    "site-packages",
+    "target",
+    "venv",
+    "virtualenv",
 }
 
 AGENT_CHOICES = ["claude", "cursor", "copilot", "aider", "opencode", "generic"]

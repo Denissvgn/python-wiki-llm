@@ -195,6 +195,17 @@ class TestTypeScriptExtractor:
         assert len(inv) == 1
         assert list(inv.values())[0]["classes"][0]["name"] == "Visible"
 
+    def test_only_files_respects_node_modules(self, tmp_path):
+        nm = tmp_path / "node_modules" / "somelib"
+        nm.mkdir(parents=True)
+        _make_ts(nm, "index.ts", "export class Hidden {}")
+
+        inv = TypeScriptExtractor().extract(
+            str(tmp_path),
+            only_files=["node_modules/somelib/index.ts"],
+        )
+        assert inv == {}
+
     def test_skips_syntax_errors(self, tmp_path):
         (tmp_path / "bad.ts").write_text("export class {{{{", encoding="utf-8")
         _make_ts(tmp_path, "good.ts", "export class OK {}")

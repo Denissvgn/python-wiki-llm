@@ -104,20 +104,44 @@ struct FileEntry {
 fn is_excluded_dir(name: &str) -> bool {
     matches!(
         name,
-        "target"
+        ".cache"
+            | ".direnv"
+            | ".eggs"
+            | ".env"
+            | ".git"
+            | ".mypy_cache"
+            | ".next"
+            | ".nox"
+            | ".npm"
+            | ".nuxt"
+            | ".parcel-cache"
+            | ".pnpm-store"
+            | ".pyre"
+            | ".pytest_cache"
+            | ".ruff_cache"
+            | ".svelte-kit"
+            | ".tox"
+            | ".venv"
+            | ".virtualenv"
+            | ".vite"
+            | ".yarn"
+            | "__pycache__"
+            | "__pypackages__"
+            | "bower_components"
+            | "build"
+            | "coverage"
+            | "dist"
+            | "env"
+            | "htmlcov"
+            | "jspm_packages"
+            | "node_modules"
+            | "out"
+            | "site-packages"
+            | "target"
             | "vendor"
             | "testdata"
-            | ".git"
-            | "node_modules"
-            | "__pycache__"
             | "venv"
-            | ".venv"
-            | "env"
-            | ".env"
-            | ".tox"
-            | ".eggs"
-            | "build"
-            | "dist"
+            | "virtualenv"
     )
 }
 
@@ -262,6 +286,24 @@ fn walk_dir(dir: &Path, out: &mut Vec<PathBuf>) {
             out.push(path);
         }
     }
+}
+
+fn has_excluded_dir(path: &Path) -> bool {
+    let Some(parent) = path.parent() else {
+        return false;
+    };
+    for component in parent.components() {
+        if let std::path::Component::Normal(name) = component {
+            let name_str = name.to_string_lossy();
+            if is_excluded_dir(&name_str)
+                || name_str.starts_with('.')
+                || name_str.starts_with('_')
+            {
+                return true;
+            }
+        }
+    }
+    false
 }
 
 // ── Per-file extraction ───────────────────────────────────────────────────────
@@ -658,6 +700,13 @@ fn main() {
             } else {
                 root.join(f)
             };
+            let rel = match p.strip_prefix(root) {
+                Ok(r) => r,
+                Err(_) => continue,
+            };
+            if has_excluded_dir(rel) {
+                continue;
+            }
             if p.exists() && p.extension().map_or(false, |e| e == "rs") {
                 out.push(p);
             }

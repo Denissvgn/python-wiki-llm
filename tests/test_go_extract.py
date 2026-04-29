@@ -212,6 +212,11 @@ class TestGoExtractor:
         assert len(inv) == 1
         assert any("a.go" in k for k in inv)
 
+    def test_only_files_respects_excluded_dirs(self, tmp_path):
+        _make_go(tmp_path, "vendor/dep/dep.go", "package dep\n\ntype Dep struct{}\n")
+        inv = GoExtractor().extract(str(tmp_path), only_files=["vendor/dep/dep.go"])
+        assert inv == {}
+
     def test_vendor_excluded(self, tmp_path):
         _make_go(tmp_path, "main.go", "package main\n\ntype App struct{}\n")
         _make_go(tmp_path, "vendor/dep/dep.go", "package dep\n\ntype Dep struct{}\n")

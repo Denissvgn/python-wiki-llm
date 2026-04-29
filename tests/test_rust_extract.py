@@ -173,6 +173,14 @@ class TestRustExtractor:
         assert len(inv) == 1
         assert any("a.rs" in k for k in inv)
 
+    def test_only_files_respects_excluded_dirs(self, tmp_path):
+        _make_rs(tmp_path, "target/debug/build/dep.rs", "pub struct Dep;\n")
+        inv = RustExtractor().extract(
+            str(tmp_path),
+            only_files=["target/debug/build/dep.rs"],
+        )
+        assert inv == {}
+
     def test_target_excluded(self, tmp_path):
         _make_rs(tmp_path, "main.rs", "pub struct App;\n")
         _make_rs(

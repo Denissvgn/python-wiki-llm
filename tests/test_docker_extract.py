@@ -487,6 +487,15 @@ class TestRecursiveDiscovery:
         inv = get_docker_inventory(str(tmp_path))
         assert inv == {}
 
+    def test_skips_virtualenv_layout_with_custom_name(self, tmp_path):
+        site_packages = (
+            tmp_path / "custom-python" / "lib" / "python3.13" / "site-packages"
+        )
+        site_packages.mkdir(parents=True)
+        (site_packages / "Dockerfile").write_text("FROM python:3.12\n")
+        inv = get_docker_inventory(str(tmp_path))
+        assert inv == {}
+
     def test_mixed_deep_tree(self, tmp_path):
         # Dockerfile at root
         (tmp_path / "Dockerfile").write_text("FROM python:3.12\n")
