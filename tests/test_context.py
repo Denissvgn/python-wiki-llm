@@ -1,6 +1,7 @@
 """Tests for the ``context`` command — structured context budgeting."""
 from __future__ import annotations
 
+import io
 import json
 import types
 
@@ -18,9 +19,27 @@ def _make_args(**kwargs):
         "budget": 32000,
         "format": "json",
         "focus": "all",
+        "request": None,
     }
     defaults.update(kwargs)
     return types.SimpleNamespace(**defaults)
+
+
+def _write_request(tmp_path, data) -> str:
+    path = tmp_path / "context-request.json"
+    path.write_text(json.dumps(data), encoding="utf-8")
+    return str(path)
+
+
+def _protocol_request(**overrides):
+    data = {
+        "protocol": context_cmd.PROTOCOL_VERSION,
+        "budget_tokens": 32000,
+        "focus": ["all"],
+        "format": "json",
+    }
+    data.update(overrides)
+    return data
 
 
 # ── Token estimation ──────────────────────────────────────────────────
@@ -228,6 +247,154 @@ class TestRenderMarkdown:
         assert "50 / 1000 tokens" in md
 
 
+# ── Protocol helpers ──────────────────────────────────────────────────
+
+
+class TestProtocolValidation:
+    def test_language_filter(self):
+        inventory = {
+            "src/api/users.py": {"language": "python"},
+            "web/api/client.ts": {"language": "typescript"},
+        }
+        result = context_cmd._apply_protocol_filters(inventory, {"language": "python"})
+        assert set(result) == {"src/api/users.py"}
+
+    def test_module_filter_matches_dotted_python_module(self):
+        inventory = {
+            "src/api/users.py": {"language": "python"},
+            "src/db/models.py": {"language": "python"},
+        }
+        result = context_cmd._apply_protocol_filters(inventory, {"module": "api/*"})
+        assert set(result) == {"src/api/users.py"}
+
+    def test_module_filter_matches_path_glob(self):
+        inventory = {
+            "src/api/users.py": {"language": "python"},
+            "web/api/client.ts": {"language": "typescript"},
+        }
+        result = context_cmd._apply_protocol_filters(inventory, {"module": "web/api/*"})
+        assert set(result) == {"web/api/client.ts"}
+
+    def test_validation_defaults(self):
+        result = context_cmd._validate_protocol_request({
+            "protocol": context_cmd.PROTOCOL_VERSION,
+            "budget_tokens": 1000,
+        })
+        assert result["focus"] == ["changed", "neighbors"]
+        assert result["format"] == "json"
+        assert result["filters"] == {}
+
+
+class TestProtocolRun:
+    def test_request_file_json_envelope(self, tmp_project, tmp_path, capsys):
+        request = _write_request(tmp_path, _protocol_request(budget_tokens=100000))
+        context_cmd.run(_make_args(request=request, budget=None))
+
+        data = json.loads(capsys.readouterr().out)
+        assert data["protocol"] == context_cmd.PROTOCOL_VERSION
+        assert data["ok"] is True
+        assert data["budget_tokens"] == 100000
+        assert data["format"] == "json"
+        assert data["focus"] == ["all"]
+        assert "used_tokens" in data
+        assert "files" in data
+        assert "content" not in data
+        assert data["files"]
+
+    def test_request_stdin(self, tmp_project, monkeypatch, capsys):
+        monkeypatch.setattr(
+            "sys.stdin",
+            io.StringIO(json.dumps(_protocol_request(budget_tokens=100000))),
+        )
+        context_cmd.run(_make_args(request="-", budget=None))
+
+        data = json.loads(capsys.readouterr().out)
+        assert data["ok"] is True
+        assert data["files"]
+
+    def test_request_markdown_envelope(self, tmp_project, tmp_path, capsys):
+        request = _write_request(
+            tmp_path,
+            _protocol_request(budget_tokens=100000, format="markdown"),
+        )
+        context_cmd.run(_make_args(request=request, budget=None))
+
+        data = json.loads(capsys.readouterr().out)
+        assert data["ok"] is True
+        assert data["format"] == "markdown"
+        assert "content" in data
+        assert "files" not in data
+        assert "Context Budget" in data["content"]
+
+    def test_request_language_filter_excludes_nonmatching_inventory(self, tmp_path, capsys, monkeypatch):
+        inventory = {
+            "api.py": {"language": "python", "classes": [{"name": "Api"}], "functions": []},
+            "web.ts": {"language": "typescript", "classes": [{"name": "Web"}], "functions": []},
+        }
+        monkeypatch.setattr(context_cmd, "get_inventory", lambda *args, **kwargs: inventory)
+        request = _write_request(
+            tmp_path,
+            _protocol_request(filters={"language": "python"}),
+        )
+
+        context_cmd.run(_make_args(request=request, budget=None))
+
+        data = json.loads(capsys.readouterr().out)
+        assert set(data["files"]) == {"api.py"}
+
+    def test_request_module_filter_matches_path_and_module(self, tmp_path, capsys, monkeypatch):
+        inventory = {
+            "src/api/users.py": {"language": "python", "classes": [{"name": "User"}], "functions": []},
+            "web/api/client.ts": {"language": "typescript", "classes": [{"name": "Client"}], "functions": []},
+            "src/db/models.py": {"language": "python", "classes": [{"name": "Model"}], "functions": []},
+        }
+        monkeypatch.setattr(context_cmd, "get_inventory", lambda *args, **kwargs: inventory)
+
+        request = _write_request(tmp_path, _protocol_request(filters={"module": "api/*"}))
+        context_cmd.run(_make_args(request=request, budget=None))
+        data = json.loads(capsys.readouterr().out)
+        assert set(data["files"]) == {"src/api/users.py"}
+
+        request = _write_request(tmp_path, _protocol_request(filters={"module": "web/api/*"}))
+        context_cmd.run(_make_args(request=request, budget=None))
+        data = json.loads(capsys.readouterr().out)
+        assert set(data["files"]) == {"web/api/client.ts"}
+
+    @pytest.mark.parametrize(
+        ("request_data", "field"),
+        [
+            ({"protocol": "bad", "budget_tokens": 1000}, "protocol"),
+            ({"protocol": context_cmd.PROTOCOL_VERSION}, "budget_tokens"),
+            (_protocol_request(focus=["neighbors"]), "focus"),
+            (_protocol_request(extra=True), "extra"),
+            (_protocol_request(filters={"package": "api"}), "filters.package"),
+        ],
+    )
+    def test_invalid_requests_return_error_envelope(self, tmp_path, capsys, request_data, field):
+        request = _write_request(tmp_path, request_data)
+        with pytest.raises(SystemExit) as exc_info:
+            context_cmd.run(_make_args(request=request, budget=None))
+
+        assert exc_info.value.code == 1
+        data = json.loads(capsys.readouterr().out)
+        assert data["protocol"] == context_cmd.PROTOCOL_VERSION
+        assert data["ok"] is False
+        assert data["error"]["code"] == "invalid_request"
+        assert data["error"]["field"] == field
+
+    def test_invalid_json_returns_error_envelope(self, tmp_path, capsys):
+        request = tmp_path / "bad-request.json"
+        request.write_text("{bad json", encoding="utf-8")
+
+        with pytest.raises(SystemExit) as exc_info:
+            context_cmd.run(_make_args(request=str(request), budget=None))
+
+        assert exc_info.value.code == 1
+        data = json.loads(capsys.readouterr().out)
+        assert data["ok"] is False
+        assert data["error"]["field"] == "request"
+
+
 # ── Integration ───────────────────────────────────────────────────────
 
 
@@ -268,3 +435,10 @@ class TestContextRun:
         context_cmd.run(args)
         captured = capsys.readouterr()
         assert captured.out.strip() == "{}"
+
+    def test_budget_required_without_request(self, tmp_project, capsys):
+        with pytest.raises(SystemExit) as exc_info:
+            context_cmd.run(_make_args(budget=None))
+
+        assert exc_info.value.code == 2
+        assert "--budget is required" in capsys.readouterr().err

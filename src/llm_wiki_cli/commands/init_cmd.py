@@ -95,6 +95,8 @@ def run(args):
         ".git/llm-wiki.lock",
         ".git/llm-wiki-breaker.json",
         ".git/llm-wiki-sync.log",
+        ".git/llm-wiki-metrics.jsonl",
+        ".git/llm-wiki-ci-report.md",
     ]
     gitignore = Path(".gitignore")
     existing = gitignore.read_text(encoding="utf-8") if gitignore.exists() else ""
@@ -109,4 +111,3 @@ def run(args):
         print(f"Added {len(to_add)} entries to .gitignore")
 
     print("LLM Wiki initialized successfully.")
-

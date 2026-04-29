@@ -153,6 +153,7 @@ The agent is read automatically from `.git/.llm-wiki-agent` (written by `init` a
 ```bash
 llm-wiki install-hook --agent aider
 llm-wiki install-hook --wiki-dir .wiki        # custom wiki dir
+llm-wiki install-hook --enable-validation     # opt-in strict pre-commit validation
 ```
 
 ### CLI Agents (Claude, Aider, OpenCode)
@@ -193,6 +194,7 @@ You can also generate the prompt manually at any time (without committing):
 llm-wiki generate-prompt
 llm-wiki generate-prompt --print              # print to stdout
 llm-wiki generate-prompt --wiki-dir .wiki     # custom wiki dir
+llm-wiki generate-prompt --change-type bugfix # override auto-detected prompt focus
 ```
 
 ### Auto Version Bumping (Opt-In)
@@ -244,9 +246,43 @@ llm-wiki extract --src-dir . --paths src/foo.py src/bar.py  # specific files
 Validates wiki consistency — checks for broken links, orphan pages, and cross-references all entity/module/infrastructure pages against the live AST to detect undocumented classes, stale pages, and missing modules:
 ```bash
 llm-wiki lint --wiki-dir docs/llm_wiki --src-dir .
+llm-wiki lint --strict --wiki-dir docs/llm_wiki --src-dir .
 ```
 
 Returns exit code `1` on any issues, making it CI-compatible.
+
+Strict mode includes the normal checks and additionally requires the core wiki
+structure plus a fresh `.llm-wiki-manifest.json` against the current inventory.
+
+For CI pipelines, use:
+```bash
+llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki
+llm-wiki ci-check --format json --report .git/llm-wiki-ci-report.md
+```
+
+`ci-check` always runs strict validation, prints a concise summary, writes a
+markdown report artifact, records a local metrics event, and exits nonzero on
+validation failure.
+
+### 2.5 Quality Metrics and Review
+
+Local-only metrics are stored in `.git/llm-wiki-metrics.jsonl`:
+```bash
+llm-wiki metrics --last 30d
+llm-wiki metrics --last 7d --format json
+```
+
+Review proposed code changes without invoking an LLM:
+```bash
+llm-wiki review                         # current working tree diff
+llm-wiki review --base main --head HEAD  # compare refs
+llm-wiki review --patch change.diff
+git diff | llm-wiki review --patch -
+```
+
+Review findings point to source paths, related wiki pages, reasons, and
+suggested follow-up for missing/stale coverage, new cross-module imports, and
+dependency or infrastructure changes.
 
 ### 3. Incremental Sync (Fast Updates)
 
@@ -276,6 +312,31 @@ llm-wiki context --budget 8000 --focus all       # treat all files equally
 - `--budget TOKENS` (required) — Maximum token count for output
 - `--format markdown|json` — Output format (default: json)
 - `--focus changed|all` — Priority classification (changed files get full detail; default: changed)
+
+#### Wiki-as-Context Protocol
+
+External tools can request context through the stable `llm-wiki-context/v1`
+JSON protocol:
+
+```bash
+llm-wiki context --request request.json --src-dir .
+cat request.json | llm-wiki context --request - --src-dir .
+```
+
+Example request:
+
+```json
+{
+  "protocol": "llm-wiki-context/v1",
+  "budget_tokens": 32000,
+  "focus": ["changed", "neighbors"],
+  "format": "json",
+  "filters": {"language": "python", "module": "api/*"}
+}
+```
+
+See `docs/protocols/llm-wiki-context-v1.md` for the full request and response
+schema.
 
 ### 5. Legacy Wiki Migration
 

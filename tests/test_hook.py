@@ -8,7 +8,7 @@ from llm_wiki_cli.commands import hook_cmd
 
 
 def _make_args(**kwargs):
-    defaults = {"wiki_dir": "docs/llm_wiki", "agent": None}
+    defaults = {"wiki_dir": "docs/llm_wiki", "agent": None, "enable_validation": False}
     defaults.update(kwargs)
     return types.SimpleNamespace(**defaults)
 
@@ -135,3 +135,13 @@ class TestPostCommitAutoCommitGuard:
         hook_cmd.run(args)
         hook_text = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
         assert "LLM_WIKI_AUTO_COMMIT" in hook_text
+
+
+class TestValidationHook:
+    def test_enable_validation_installs_pre_commit_strict_lint(self, tmp_project):
+        _write_agent_config("docs/llm_wiki", "claude")
+        hook_cmd.run(_make_args(enable_validation=True))
+
+        hook_text = Path(".git/hooks/pre-commit").read_text(encoding="utf-8")
+        assert "lint --strict" in hook_text
+        assert "--wiki-dir docs/llm_wiki" in hook_text

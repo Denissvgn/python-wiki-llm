@@ -83,6 +83,26 @@ fi
 """
 
 
+def _build_validation_pre_commit(wiki_dir: str) -> str:
+    return f"""#!/bin/sh
+
+# LLM Wiki Strict Validation Pre-Commit Hook
+# Opt-in guard for teams that want stale wiki coverage to block commits.
+
+if [ -n "$LLM_WIKI_AUTO_COMMIT" ]; then
+    exit 0
+fi
+
+if [ -f ".venv/bin/llm-wiki" ]; then
+    CLI=".venv/bin/llm-wiki"
+else
+    CLI="llm-wiki"
+fi
+
+"$CLI" lint --strict --wiki-dir {wiki_dir} --src-dir .
+"""
+
+
 
 
 def _install_hook(hooks_dir: Path, name: str, content: str) -> None:
@@ -122,6 +142,8 @@ def run(args):
     # IDE-only agent: install the prompt-generation hook instead of the headless sync hook
     if agent in _UI_ONLY_AGENTS:
         _install_hook(hooks_dir, "post-commit", _build_ide_post_commit(wiki_dir))
+        if getattr(args, "enable_validation", False):
+            _install_hook(hooks_dir, "pre-commit", _build_validation_pre_commit(wiki_dir))
         print(f"  Agent: {agent} (IDE mode -- prompt-generation hook)")
         print(
             f"\nIDE sync hook installed. After each commit, a prompt file will be generated at\n"
@@ -135,6 +157,8 @@ def run(args):
 
     # CLI agent: install headless auto-sync hook with agent baked in
     _install_hook(hooks_dir, "post-commit", _build_post_commit(agent))
+    if getattr(args, "enable_validation", False):
+        _install_hook(hooks_dir, "pre-commit", _build_validation_pre_commit(wiki_dir))
     print(f"  Agent: {agent}")
 
     print("\nHook installation complete.")

@@ -1,6 +1,25 @@
 import argparse
 import sys
-from .commands import init_cmd, extract_cmd, lint_cmd, hook_cmd, trigger_cmd, bootstrap_cmd, bump_cmd, uninstall_cmd, generate_prompt_cmd, status_cmd, release_cmd, upgrade_cmd, sync_cmd, context_cmd, migrate_cmd
+from .commands import (
+    bootstrap_cmd,
+    bump_cmd,
+    ci_check_cmd,
+    context_cmd,
+    extract_cmd,
+    generate_prompt_cmd,
+    hook_cmd,
+    init_cmd,
+    lint_cmd,
+    metrics_cmd,
+    migrate_cmd,
+    release_cmd,
+    review_cmd,
+    status_cmd,
+    sync_cmd,
+    trigger_cmd,
+    uninstall_cmd,
+    upgrade_cmd,
+)
 from .config import AGENT_CHOICES, DEFAULT_WIKI_DIR
 from . import __version__
 
@@ -45,6 +64,18 @@ def main():
     lint_parser = subparsers.add_parser("lint", help="Lint LLM Wiki for broken links, orphans, and AST drift")
     lint_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR, help="Wiki directory to lint")
     lint_parser.add_argument("--src-dir", default=".", help="Source directory to cross-reference against")
+    lint_parser.add_argument("--strict", action="store_true",
+                             help="Require core wiki structure and a fresh sync manifest")
+
+    # ci-check command
+    ci_parser = subparsers.add_parser("ci-check", help="Run strict wiki validation and write a CI report")
+    ci_parser.add_argument("--src-dir", default=".", help="Source directory to scan")
+    ci_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                           help="Wiki directory to validate (default: docs/llm_wiki)")
+    ci_parser.add_argument("--format", choices=["text", "json", "markdown"], default="text",
+                           help="Console output format (default: text)")
+    ci_parser.add_argument("--report", default=".git/llm-wiki-ci-report.md",
+                           help="Markdown report path (default: .git/llm-wiki-ci-report.md)")
 
     # hook command
     hook_parser = subparsers.add_parser("install-hook", help="Install git hooks for wiki sync")
@@ -52,6 +83,8 @@ def main():
                              help="Wiki directory to read agent config from (default: docs/llm_wiki)")
     hook_parser.add_argument("--agent", choices=AGENT_CHOICES, default=None,
                              help="Override the agent for the post-commit hook (default: read from wiki config)")
+    hook_parser.add_argument("--enable-validation", action="store_true",
+                             help="Also install a pre-commit hook that runs `llm-wiki lint --strict`")
 
     # trigger command
     trigger_parser = subparsers.add_parser("trigger-agent", help="Trigger subagent to update wiki using diff")
@@ -91,6 +124,30 @@ def main():
     gp_parser.add_argument("--src-dir", default=".", help="Source directory to scan (default: .)")
     gp_parser.add_argument("--output", default=".git/llm-wiki-prompt.txt", help="Output file path (default: .git/llm-wiki-prompt.txt)")
     gp_parser.add_argument("--print", dest="print_prompt", action="store_true", help="Print the prompt to stdout instead of writing to a file")
+    gp_parser.add_argument("--change-type", choices=generate_prompt_cmd.CHANGE_TYPES, default="auto",
+                           help="Prompt guidance profile (default: auto)")
+
+    # metrics command
+    metrics_parser = subparsers.add_parser("metrics", help="Show local llm-wiki quality metrics")
+    metrics_parser.add_argument("--last", default="30d",
+                                help="Time window such as 30d, 12h, or 60m (default: 30d)")
+    metrics_parser.add_argument("--format", choices=["text", "json"], default="text",
+                                help="Output format (default: text)")
+    metrics_parser.add_argument("--src-dir", default=".", help="Source directory to scan for coverage")
+    metrics_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                                help="Wiki directory to scan for coverage")
+
+    # review command
+    review_parser = subparsers.add_parser("review", help="Run a static wiki-aware review of proposed code changes")
+    review_parser.add_argument("--src-dir", default=".", help="Source directory to scan")
+    review_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                               help="Wiki directory to compare against")
+    review_parser.add_argument("--base", help="Base ref for git diff comparison")
+    review_parser.add_argument("--head", help="Head ref for git diff comparison")
+    review_parser.add_argument("--patch", metavar="FILE|-",
+                               help="Read an explicit patch from a file or stdin")
+    review_parser.add_argument("--format", choices=["markdown", "json"], default="markdown",
+                               help="Output format (default: markdown)")
 
     # uninstall command
     uninstall_parser = subparsers.add_parser("uninstall", help="Remove all LLM Wiki artifacts from the project")
@@ -164,14 +221,16 @@ def main():
         "context",
         help="Return priority-ranked, token-budgeted codebase context for LLM agents",
     )
-    context_parser.add_argument("--budget", type=int, required=True,
-                                help="Token budget for the context payload")
+    context_parser.add_argument("--budget", type=int,
+                                help="Token budget for the context payload (required unless --request is used)")
     context_parser.add_argument("--src-dir", default=".",
                                 help="Source directory to scan (default: .)")
     context_parser.add_argument("--format", choices=["json", "markdown"], default="json",
                                 help="Output format (default: json)")
     context_parser.add_argument("--focus", choices=["changed", "all"], default="changed",
                                 help="changed=prioritise git diff files, all=treat every file as high priority (default: changed)")
+    context_parser.add_argument("--request", metavar="FILE|-",
+                                help="Read a Wiki-as-Context protocol JSON request from a file or stdin")
 
     args = parser.parse_args()
 
@@ -182,6 +241,8 @@ def main():
             extract_cmd.run(args)
         elif args.command == "lint":
             lint_cmd.run(args)
+        elif args.command == "ci-check":
+            ci_check_cmd.run(args)
         elif args.command == "install-hook":
             hook_cmd.run(args)
         elif args.command == "trigger-agent":
@@ -192,6 +253,10 @@ def main():
             bump_cmd.run(args)
         elif args.command == "generate-prompt":
             generate_prompt_cmd.run(args)
+        elif args.command == "metrics":
+            metrics_cmd.run(args)
+        elif args.command == "review":
+            review_cmd.run(args)
         elif args.command == "uninstall":
             uninstall_cmd.run(args)
         elif args.command == "status":

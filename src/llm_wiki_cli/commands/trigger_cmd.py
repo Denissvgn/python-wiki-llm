@@ -1,10 +1,12 @@
 import subprocess
 import os
 import sys
+import time
 from pathlib import Path
-from . import extract_cmd
+from .generate_prompt_cmd import _build_prompt
 from ..services.lockfile import WikiLock, LockAcquisitionError
 from ..services import circuit_breaker
+from ..services.metrics import record_event
 from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS
 import json
 
@@ -36,6 +38,20 @@ def _run_sync(args):
     """Core sync logic, executed inside the concurrency lock."""
 
     wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
+    started = time.monotonic()
+
+    def finish(*, exit_code: int | None, breaker_result: str, duration_start: float = started) -> None:
+        record_event(
+            "trigger_finish",
+            {
+                "agent": args.agent,
+                "mode": "CLI",
+                "duration_ms": int((time.monotonic() - duration_start) * 1000),
+                "exit_code": exit_code,
+                "breaker_result": breaker_result,
+                "wiki_dir": wiki_dir,
+            },
+        )
 
     # --- Fuse: Circuit Breaker ---
     if circuit_breaker.check_breaker(GIT_DIR):
@@ -43,6 +59,10 @@ def _run_sync(args):
         print("To re-enable: llm-wiki trigger-agent --reset-breaker")
         return
 
+    record_event(
+        "trigger_start",
+        {"agent": args.agent, "mode": "CLI", "wiki_dir": wiki_dir},
+    )
     print("Triggering auto-sync workflow for LLM Wiki...")
 
     # 1. Get the git diff
@@ -56,14 +76,17 @@ def _run_sync(args):
     except subprocess.TimeoutExpired:
         print("Git diff timed out (30s). Aborting.")
         circuit_breaker.record_failure(GIT_DIR)
+        finish(exit_code=1, breaker_result="failure")
         return
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
         print(f"Git diff failed. Are there commits? {e}")
         circuit_breaker.record_failure(GIT_DIR)
+        finish(exit_code=1, breaker_result="failure")
         return
 
     if not diff_text.strip():
         print("No changes in the last commit. Aborting.")
+        finish(exit_code=0, breaker_result="skipped")
         return
 
     # --- Fuse: Diff Size Guard ---
@@ -73,6 +96,7 @@ def _run_sync(args):
     if diff_lines > max_diff and not force:
         print(f"Diff too large ({diff_lines} lines > {max_diff} limit). Skipping auto-sync.")
         print("Use --force to override, or increase --max-diff-lines.")
+        finish(exit_code=0, breaker_result="skipped")
         return
 
     # 2. Extract context via current AST
@@ -86,48 +110,14 @@ def _run_sync(args):
     graph_json = json.dumps(call_graph, indent=2)
 
     # 3. Create context prompt for the subagent
-    prompt = f"""
-You are a Wiki synchronizer subagent.
-A new commit was just made. Your task is to update the wiki at `{wiki_dir}/`.
-
-## Context
-
-AST structure of the codebase:
-{ast_json}
-
-Cross-module call graph (functions touching 3+ internal modules):
-{graph_json}
-
-Git diff:
-{diff_text}
-
-## Success Criteria
-
-Your work is done when **all** of the following are true:
-
-1. **`llm-wiki lint --wiki-dir {wiki_dir} --src-dir .` exits 0** — no broken links, \
-no orphan pages, no undocumented classes, no stale entities, no missing modules, \
-no broken workflow links, no undocumented infrastructure files.
-2. **Only affected pages changed** — modify wiki pages that correspond to code \
-touched in the diff. Do not edit unrelated pages or reformat existing content.
-3. **`{wiki_dir}/log.md` has a new entry** — one concise line describing what changed, \
-appended at the bottom.
-
-## Loop
-
-After making your changes, run:
-
-```bash
-llm-wiki lint --wiki-dir {wiki_dir} --src-dir .
-```
-
-If lint reports issues, fix them and re-run. **Repeat until lint exits 0.** Then commit:
-
-```bash
-git add {wiki_dir}/
-git commit -m "docs(wiki): auto-update [bot]"
-```
-"""
+    prompt = _build_prompt(
+        wiki_dir,
+        ".",
+        diff_text=diff_text,
+        ast_json=ast_json,
+        graph_json=graph_json,
+        cli_agent=True,
+    )
 
     # 4. Save the prompt to a temp file
     prompt_file = Path(".git/llm-wiki-prompt.txt")
@@ -172,12 +162,16 @@ git commit -m "docs(wiki): auto-update [bot]"
         if result.returncode != 0:
             print(f"Subagent exited with code {result.returncode}.")
             circuit_breaker.record_failure(GIT_DIR)
+            finish(exit_code=result.returncode, breaker_result="failure")
         else:
             circuit_breaker.record_success(GIT_DIR)
+            finish(exit_code=0, breaker_result="success")
 
     except subprocess.TimeoutExpired:
         print(f"Subagent timed out after {timeout}s. Process killed.")
         circuit_breaker.record_failure(GIT_DIR)
+        finish(exit_code=124, breaker_result="failure")
     except Exception as e:
         print(f"Error executing agent {args.agent}: {e}")
         circuit_breaker.record_failure(GIT_DIR)
+        finish(exit_code=1, breaker_result="failure")

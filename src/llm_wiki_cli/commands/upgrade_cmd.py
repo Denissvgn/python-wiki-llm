@@ -36,6 +36,8 @@ _GITIGNORE_ENTRIES = [
     ".git/llm-wiki.lock",
     ".git/llm-wiki-breaker.json",
     ".git/llm-wiki-sync.log",
+    ".git/llm-wiki-metrics.jsonl",
+    ".git/llm-wiki-ci-report.md",
 ]
 
 
