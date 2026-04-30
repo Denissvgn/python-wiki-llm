@@ -9,9 +9,11 @@ from .commands import (
     generate_prompt_cmd,
     hook_cmd,
     init_cmd,
+    install_cmd,
     lint_cmd,
     metrics_cmd,
     migrate_cmd,
+    plugins_cmd,
     release_cmd,
     review_cmd,
     status_cmd,
@@ -86,6 +88,27 @@ def main():
     hook_parser.add_argument("--enable-validation", action="store_true",
                              help="Also install a pre-commit hook that runs `llm-wiki lint --strict`")
 
+    # install command
+    install_parser = subparsers.add_parser("install", help="Install a local llm-wiki plugin")
+    install_parser.add_argument("ref", help="Local plugin path or local catalog name")
+    install_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                                help="Wiki directory used to refresh active agent skills")
+    install_parser.add_argument("--dry-run", action="store_true",
+                                help="Validate and preview the plugin without installing it")
+    install_parser.add_argument("--yes", action="store_true",
+                                help="Install without prompting for confirmation")
+
+    # plugins command
+    plugins_parser = subparsers.add_parser("plugins", help="Manage installed llm-wiki plugins")
+    plugins_sub = plugins_parser.add_subparsers(dest="plugins_action", required=True)
+    plugins_sub.add_parser("list", help="List installed plugins")
+    plugins_remove = plugins_sub.add_parser("remove", help="Remove an installed plugin")
+    plugins_remove.add_argument("plugin_id", help="Plugin id to remove")
+    plugins_remove.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                                help="Wiki directory for path validation")
+    plugins_validate = plugins_sub.add_parser("validate", help="Validate a local plugin manifest")
+    plugins_validate.add_argument("path", help="Plugin directory or llm-wiki-plugin.json path")
+
     # trigger command
     trigger_parser = subparsers.add_parser("trigger-agent", help="Trigger subagent to update wiki using diff")
     trigger_parser.add_argument("--agent", choices=AGENT_CHOICES, default="claude", help="Agent executable to invoke for background sync")
@@ -126,6 +149,8 @@ def main():
     gp_parser.add_argument("--print", dest="print_prompt", action="store_true", help="Print the prompt to stdout instead of writing to a file")
     gp_parser.add_argument("--change-type", choices=generate_prompt_cmd.CHANGE_TYPES, default="auto",
                            help="Prompt guidance profile (default: auto)")
+    gp_parser.add_argument("--template",
+                           help="Installed prompt template id (or plugin_id/template_id)")
 
     # metrics command
     metrics_parser = subparsers.add_parser("metrics", help="Show local llm-wiki quality metrics")
@@ -245,6 +270,10 @@ def main():
             ci_check_cmd.run(args)
         elif args.command == "install-hook":
             hook_cmd.run(args)
+        elif args.command == "install":
+            install_cmd.run(args)
+        elif args.command == "plugins":
+            plugins_cmd.run(args)
         elif args.command == "trigger-agent":
             trigger_cmd.run(args)
         elif args.command == "bootstrap":

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Plugin & Skills Marketplace** — local-only `llm-wiki install` plus `llm-wiki plugins list|remove|validate`; manifest-gated plugins can add extractors, prompt templates, lint rules, and managed agent skill blocks
 - **`llm-wiki upgrade` command** — refreshes all framework-managed artifacts (schema constraint blocks, git hooks, wiki dirs, `.gitignore`) in a single idempotent command; supports agent switching via `--agent`
 - **Context-optimized extract** — `--changed` flag restricts extraction to files modified in the last commit; `--summary` produces compact class/function-name-only output; `--paths FILE...` extracts specific files for drill-down
 - **Chunked `llm-wiki migrate`** — `--chunk-size`, `--chunk`, and `--plan-chunks` split large legacy migrations into bounded page-operation batches

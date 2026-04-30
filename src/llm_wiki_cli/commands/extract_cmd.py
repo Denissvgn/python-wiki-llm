@@ -8,8 +8,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-from ..config import COMPOSE_PATTERNS, DOCKERFILE_PATTERNS, EXCLUDED_DIRS, EXTRACTOR_REGISTRY
+from ..config import COMPOSE_PATTERNS, DOCKERFILE_PATTERNS, EXCLUDED_DIRS
 from ..services.packages import discover_packages, stamp_inventory_packages
+from ..services.plugins import get_extractor_registry
 
 # Re-export ComponentVisitor so existing callers that import it from here
 # continue to work without modification.
@@ -32,7 +33,7 @@ def _load_extractor(entry_point: str):
 def get_inventory(src_dir, deep=False, only_files=None, include_empty=False):
     """Scan source files across all registered languages and return inventory.
 
-    Runs every extractor in :data:`EXTRACTOR_REGISTRY` and merges the
+    Runs every built-in and installed extractor and merges the
     results into a single dict keyed by file path.
 
     If deep=True, returns enriched data (docstrings, attributes, methods, imports).
@@ -44,7 +45,7 @@ def get_inventory(src_dir, deep=False, only_files=None, include_empty=False):
     ``None``) derived from ``pyproject.toml`` / ``setup.py`` markers.
     """
     inventory: dict = {}
-    for _lang, entry_point in EXTRACTOR_REGISTRY.items():
+    for _lang, entry_point in get_extractor_registry().items():
         extractor = _load_extractor(entry_point)
         # Only Python extractor supports include_empty; others ignore it
         try:

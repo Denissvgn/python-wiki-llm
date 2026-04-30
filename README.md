@@ -383,7 +383,39 @@ This updates:
 - Git hooks (if previously installed)
 - `.gitignore` entries
 
-### 8. Project Status
+### 8. Plugin & Skills Marketplace
+
+Install local llm-wiki plugins from a project path or local catalog entry:
+```bash
+llm-wiki install ./plugins/extractor-java --yes
+llm-wiki plugins list
+llm-wiki plugins validate ./plugins/template-django
+llm-wiki plugins remove extractor-java
+```
+
+Plugins are local-only and must include `llm-wiki-plugin.json`. Installed
+plugins are copied into `.llm-wiki/plugins/<plugin_id>/` and tracked in
+`.llm-wiki/plugins.lock.json`.
+
+Supported component types:
+- `extractor` — adds a language extractor entry point.
+- `lint_rule` — adds a custom wiki lint rule.
+- `prompt_template` — adds `generate-prompt --template <id>`.
+- `skill` — injects a managed skill block into the active agent schema file.
+
+Minimal manifest:
+```json
+{
+  "id": "skill-karpathy-guidelines",
+  "version": "0.1.0",
+  "llm_wiki_version": "*",
+  "components": [
+    {"type": "skill", "id": "guidelines", "path": "skills/guidelines/SKILL.md"}
+  ]
+}
+```
+
+### 9. Project Status
 
 Display the current wiki setup and integration status:
 ```bash
@@ -392,7 +424,7 @@ llm-wiki status
 
 Shows: wiki directory, configured agent, installed hooks, circuit breaker state, page counts.
 
-### 9. Version Bump
+### 10. Version Bump
 
 Manually bump the project version:
 ```bash

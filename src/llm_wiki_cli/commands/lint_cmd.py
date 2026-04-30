@@ -9,6 +9,7 @@ from .extract_cmd import get_inventory, get_call_graph, get_docker_inventory
 from .bootstrap_cmd import build_module_page_map, build_entity_page_map
 from ..config import validate_path
 from ..services.io import read_md
+from ..services.plugins import PluginError, iter_components, load_entry_point
 
 # basic regex for [text](url)
 LINK_RE = re.compile(r'\[.+?\]\((.+?)\)')
@@ -121,6 +122,57 @@ def _collect_docker_files(src_dir: str) -> set[str]:
 
 def _add(report: LintReport, category: str, message: str, *, path: str | None = None, target: str | None = None) -> None:
     report.issues.append(LintIssue(category=category, message=message, path=path, target=target))
+
+
+def _coerce_plugin_issue(raw: object, component_ref: str) -> LintIssue:
+    if isinstance(raw, LintIssue):
+        return raw
+    if isinstance(raw, dict):
+        category = str(raw.get("category") or f"plugin:{component_ref}")
+        message = str(raw.get("message") or "Plugin lint rule reported an issue.")
+        severity = str(raw.get("severity") or "error")
+        path = raw.get("path")
+        target = raw.get("target")
+        return LintIssue(
+            category=category,
+            message=message,
+            severity=severity,
+            path=str(path) if path is not None else None,
+            target=str(target) if target is not None else None,
+        )
+    return LintIssue(
+        category=f"plugin:{component_ref}",
+        message=f"Plugin lint rule returned unsupported issue type: {type(raw).__name__}",
+    )
+
+
+def _run_plugin_lint_rules(
+    report: LintReport,
+    wiki_dir: Path,
+    src_dir: str,
+    inventory: dict,
+    pages: list[Path],
+) -> None:
+    for component in iter_components("lint_rule"):
+        component_ref = component["ref"]
+        try:
+            rule = load_entry_point(component["entry_point"])
+            issues = rule(wiki_dir, src_dir, inventory, pages)
+        except (PluginError, Exception) as exc:
+            _add(
+                report,
+                "plugin_lint_rule",
+                f"Plugin lint rule {component_ref} failed: {exc}",
+                target=component_ref,
+            )
+            continue
+
+        if issues is None:
+            continue
+        if not isinstance(issues, list):
+            issues = [issues]
+        for issue in issues:
+            report.issues.append(_coerce_plugin_issue(issue, component_ref))
 
 
 def _inventory_code_classes(inventory: dict) -> set[str]:
@@ -335,6 +387,8 @@ def build_report(wiki_dir: str | Path, src_dir: str = ".", *, strict: bool = Fal
     if strict:
         _check_required_structure(report, wiki_path)
         _check_sync_manifest(report, wiki_path, src_dir)
+
+    _run_plugin_lint_rules(report, wiki_path, src_dir, inventory, pages)
 
     return report
 

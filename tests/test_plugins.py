@@ -1,0 +1,241 @@
+from __future__ import annotations
+
+import json
+import textwrap
+import types
+from pathlib import Path
+
+import pytest
+
+from llm_wiki_cli import cli
+from llm_wiki_cli.commands import extract_cmd, generate_prompt_cmd, init_cmd, lint_cmd, plugins_cmd
+from llm_wiki_cli.services import plugins
+from llm_wiki_cli.services.schema import refresh_skill_blocks
+
+
+def _ns(**kwargs):
+    return types.SimpleNamespace(**kwargs)
+
+
+def _write_plugin(
+    root: Path,
+    *,
+    plugin_id: str = "demo-plugin",
+    components: list[dict] | None = None,
+    extra_files: dict[str, str] | None = None,
+) -> Path:
+    root.mkdir(parents=True, exist_ok=True)
+    if components is None:
+        components = [
+            {"type": "skill", "id": "guidelines", "path": "skills/guidelines/SKILL.md"},
+        ]
+    manifest = {
+        "id": plugin_id,
+        "version": "0.1.0",
+        "llm_wiki_version": "*",
+        "components": components,
+    }
+    (root / plugins.MANIFEST_FILENAME).write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+
+    files = {
+        "skills/guidelines/SKILL.md": "# Demo Skill\n\nKeep wiki edits focused.\n",
+    }
+    files.update(extra_files or {})
+    for rel, content in files.items():
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(textwrap.dedent(content), encoding="utf-8")
+    return root
+
+
+class TestPluginManifestValidation:
+    def test_validates_manifest(self, tmp_project):
+        plugin_dir = _write_plugin(tmp_project / "vendor" / "demo")
+
+        manifest = plugins.validate_plugin(plugin_dir)
+
+        assert manifest["id"] == "demo-plugin"
+        assert manifest["components"][0]["type"] == "skill"
+
+    def test_rejects_component_path_escape(self, tmp_project):
+        plugin_dir = _write_plugin(
+            tmp_project / "vendor" / "escape",
+            components=[{"type": "skill", "id": "bad", "path": "../secret.md"}],
+        )
+
+        with pytest.raises(plugins.PluginError, match="escapes"):
+            plugins.validate_plugin(plugin_dir)
+
+    def test_resolves_project_catalog_name(self, tmp_project):
+        plugin_dir = _write_plugin(tmp_project / ".llm-wiki" / "catalog_sources" / "demo")
+        catalog = tmp_project / ".llm-wiki" / "catalog.json"
+        catalog.parent.mkdir(parents=True, exist_ok=True)
+        catalog.write_text(json.dumps({"plugins": {"demo": "catalog_sources/demo"}}), encoding="utf-8")
+
+        resolved = plugins.resolve_plugin_ref("demo")
+
+        assert resolved == plugin_dir.resolve()
+
+    def test_direct_plugin_path_must_be_project_local(self, tmp_project, tmp_path):
+        plugin_dir = _write_plugin(tmp_path / "outside-plugin")
+
+        with pytest.raises(plugins.PluginError, match="project root"):
+            plugins.resolve_plugin_ref(str(plugin_dir))
+
+
+class TestPluginInstallLifecycle:
+    def test_install_writes_lockfile(self, tmp_project):
+        plugin_dir = _write_plugin(tmp_project / "vendor" / "demo")
+
+        entry = plugins.install_plugin(str(plugin_dir), yes=True)
+
+        assert entry["id"] == "demo-plugin"
+        data = plugins.read_lock()
+        assert "demo-plugin" in data["plugins"]
+        assert (tmp_project / ".llm-wiki" / "plugins" / "demo-plugin").is_dir()
+
+    def test_install_rejects_duplicate_plugin_id(self, tmp_project):
+        plugin_dir = _write_plugin(tmp_project / "vendor" / "demo")
+        plugins.install_plugin(str(plugin_dir), yes=True)
+
+        with pytest.raises(plugins.PluginError, match="already installed"):
+            plugins.install_plugin(str(plugin_dir), yes=True)
+
+    def test_plugins_remove_strips_skill_blocks(self, tmp_project):
+        init_cmd.run(_ns(agent="generic", wiki_dir="docs/llm_wiki", no_quality_hints=False))
+        plugin_dir = _write_plugin(tmp_project / "vendor" / "demo")
+        plugins.install_plugin(str(plugin_dir), yes=True)
+        refresh_skill_blocks("generic", "docs/llm_wiki")
+        assert "LLM Wiki Skill: demo-plugin/guidelines" in Path(".agents.md").read_text(encoding="utf-8")
+
+        plugins_cmd.run(_ns(plugins_action="remove", plugin_id="demo-plugin", wiki_dir="docs/llm_wiki"))
+
+        assert "LLM Wiki Skill: demo-plugin/guidelines" not in Path(".agents.md").read_text(encoding="utf-8")
+        assert "demo-plugin" not in plugins.read_lock()["plugins"]
+
+
+class TestPluginRuntimeIntegration:
+    def test_installed_extractor_is_loaded_without_removing_builtins(self, tmp_project):
+        (tmp_project / "flow.toy").write_text("run\n", encoding="utf-8")
+        plugin_dir = _write_plugin(
+            tmp_project / "vendor" / "extractor",
+            plugin_id="toy-extractor",
+            components=[
+                {
+                    "type": "extractor",
+                    "id": "toy",
+                    "language": "toy",
+                    "entry_point": "toy_plugin:ToyExtractor",
+                }
+            ],
+            extra_files={
+                "toy_plugin.py": """
+                    from pathlib import Path
+
+                    class ToyExtractor:
+                        def extract(self, src_dir, only_files=None, deep=False):
+                            files = [p for p in Path(src_dir).glob("*.toy")]
+                            if only_files is not None:
+                                wanted = set(only_files)
+                                files = [p for p in files if p.name in wanted]
+                            return {
+                                p.name: {
+                                    "language": "toy",
+                                    "classes": [],
+                                    "functions": [{"name": p.stem, "line": 1}],
+                                    "imports": [],
+                                }
+                                for p in files
+                            }
+                """,
+            },
+        )
+        plugins.install_plugin(str(plugin_dir), yes=True)
+
+        inventory = extract_cmd.get_inventory(".")
+
+        assert "models.py" in inventory
+        assert inventory["models.py"]["language"] == "python"
+        assert inventory["flow.toy"]["language"] == "toy"
+
+    def test_installed_lint_rule_adds_issue(self, tmp_project, tmp_wiki):
+        plugin_dir = _write_plugin(
+            tmp_project / "vendor" / "lint",
+            plugin_id="lint-plugin",
+            components=[
+                {
+                    "type": "lint_rule",
+                    "id": "always",
+                    "entry_point": "lint_plugin:check",
+                }
+            ],
+            extra_files={
+                "lint_plugin.py": """
+                    def check(wiki_dir, src_dir, inventory, pages):
+                        return [{
+                            "category": "plugin_rule",
+                            "message": "Plugin rule fired.",
+                            "path": "index.md",
+                        }]
+                """,
+            },
+        )
+        plugins.install_plugin(str(plugin_dir), yes=True)
+
+        report = lint_cmd.build_report(tmp_wiki, ".")
+
+        assert any(issue.category == "plugin_rule" for issue in report.issues)
+
+    def test_prompt_template_renders_known_placeholders(self, tmp_project):
+        plugin_dir = _write_plugin(
+            tmp_project / "vendor" / "templates",
+            plugin_id="template-plugin",
+            components=[
+                {"type": "prompt_template", "id": "compact", "path": "templates/compact.md"}
+            ],
+            extra_files={
+                "templates/compact.md": "Wiki={wiki_dir}\nSource={src_dir}\nType={change_type}\n",
+            },
+        )
+        plugins.install_plugin(str(plugin_dir), yes=True)
+
+        prompt = generate_prompt_cmd._build_prompt(
+            "docs/llm_wiki",
+            ".",
+            change_type="bugfix",
+            template="compact",
+            diff_text="",
+        )
+
+        assert "Wiki=docs/llm_wiki" in prompt
+        assert "Source=." in prompt
+        assert "Type=bugfix" in prompt
+
+    def test_skill_refresh_is_idempotent(self, tmp_project):
+        init_cmd.run(_ns(agent="generic", wiki_dir="docs/llm_wiki", no_quality_hints=False))
+        plugin_dir = _write_plugin(tmp_project / "vendor" / "skills")
+        plugins.install_plugin(str(plugin_dir), yes=True)
+
+        refresh_skill_blocks("generic", "docs/llm_wiki")
+        refresh_skill_blocks("generic", "docs/llm_wiki")
+
+        content = Path(".agents.md").read_text(encoding="utf-8")
+        assert content.count("# --- LLM Wiki Skill: demo-plugin/guidelines ---") == 1
+        assert "Keep wiki edits focused." in content
+
+
+class TestPluginCliSmoke:
+    def test_cli_validate_install_list(self, tmp_project, capsys, monkeypatch):
+        plugin_dir = _write_plugin(tmp_project / "vendor" / "demo")
+
+        monkeypatch.setattr("sys.argv", ["llm-wiki", "plugins", "validate", str(plugin_dir)])
+        cli.main()
+        assert "Plugin valid: demo-plugin" in capsys.readouterr().out
+
+        monkeypatch.setattr("sys.argv", ["llm-wiki", "install", str(plugin_dir), "--yes"])
+        cli.main()
+        assert "Installed plugin: demo-plugin" in capsys.readouterr().out
+
+        monkeypatch.setattr("sys.argv", ["llm-wiki", "plugins", "list"])
+        cli.main()
+        assert "demo-plugin 0.1.0" in capsys.readouterr().out

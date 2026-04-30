@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import re
 import subprocess
+import sys
 from pathlib import Path
 
 from ..config import DEFAULT_WIKI_DIR, validate_path
 from ..services.metrics import record_event, resolve_agent
+from ..services.plugins import PluginError, render_prompt_template
 
 _DEFAULT_PROMPT_FILE = ".git/llm-wiki-prompt.txt"
 CHANGE_TYPES = ("auto", "refactor", "feature", "bugfix", "dependency", "generic")
@@ -133,6 +135,7 @@ def _build_prompt(
     src_dir: str,
     *,
     change_type: str = "auto",
+    template: str | None = None,
     diff_text: str | None = None,
     ast_json: str | None = None,
     graph_json: str | None = None,
@@ -150,6 +153,22 @@ def _build_prompt(
         context_parts.append(f"Git diff:\n{diff_text}")
     rich_context = "\n\n".join(context_parts)
     rich_context_block = f"\n{rich_context}\n" if rich_context else ""
+
+    if template:
+        return render_prompt_template(
+            template,
+            {
+                "wiki_dir": wiki_dir,
+                "src_dir": src_dir,
+                "change_type": effective_type,
+                "context": rich_context,
+                "context_block": rich_context_block,
+                "diff": diff_text,
+                "ast_json": ast_json or "",
+                "graph_json": graph_json or "",
+                "cli_agent": "true" if cli_agent else "false",
+            },
+        )
 
     return f"""\
 You are a Wiki synchronizer{' subagent' if cli_agent else ''} for this project.
@@ -221,8 +240,13 @@ def run(args) -> None:
     output: str = getattr(args, "output", _DEFAULT_PROMPT_FILE)
     print_only: bool = getattr(args, "print_prompt", False)
     change_type: str = getattr(args, "change_type", "auto")
+    template: str | None = getattr(args, "template", None)
 
-    prompt = _build_prompt(wiki_dir, src_dir, change_type=change_type)
+    try:
+        prompt = _build_prompt(wiki_dir, src_dir, change_type=change_type, template=template)
+    except PluginError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        raise SystemExit(1)
     effective_type = resolve_change_type(change_type, _git_diff())
     agent, mode = resolve_agent(None, wiki_dir)
 
@@ -230,7 +254,14 @@ def run(args) -> None:
         print(prompt)
         record_event(
             "prompt_generated",
-            {"agent": agent, "mode": mode, "change_type": effective_type, "wiki_dir": wiki_dir, "src_dir": src_dir},
+            {
+                "agent": agent,
+                "mode": mode,
+                "change_type": effective_type,
+                "template": template,
+                "wiki_dir": wiki_dir,
+                "src_dir": src_dir,
+            },
         )
         return
 
@@ -244,6 +275,7 @@ def run(args) -> None:
             "agent": agent,
             "mode": mode,
             "change_type": effective_type,
+            "template": template,
             "wiki_dir": wiki_dir,
             "src_dir": src_dir,
             "output": str(out_path),
