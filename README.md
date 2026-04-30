@@ -464,7 +464,24 @@ and log pages. HTTP mode uses Streamable HTTP, binds only to loopback addresses,
 and rejects unexpected browser `Origin` headers unless explicitly allowed with
 `--allowed-origin`.
 
-### 11. Project Status
+### 11. Obsidian Integration
+
+Export the canonical wiki into an Obsidian-friendly mirror vault:
+```bash
+llm-wiki obsidian export --src-dir . --wiki-dir docs/llm_wiki --vault-dir /path/to/vault
+llm-wiki obsidian check --wiki-dir docs/llm_wiki --vault-dir /path/to/vault
+llm-wiki obsidian install-plugin --vault-dir /path/to/vault
+```
+
+The mirror is written under `LLM Wiki/` in the vault with Obsidian frontmatter,
+aliases, wikilinks, related links, and sidecar human notes. The canonical
+`docs/llm_wiki` files remain the source of truth for agents and CLI automation.
+The optional desktop Obsidian plugin adds command-palette actions for export,
+sync, lint, context copying, status, and opening source locations.
+
+See `docs/obsidian.md` for setup and plugin development details.
+
+### 12. Project Status
 
 Display the current wiki setup and integration status:
 ```bash
@@ -473,7 +490,7 @@ llm-wiki status
 
 Shows: wiki directory, configured agent, installed hooks, circuit breaker state, page counts.
 
-### 12. Version Bump
+### 13. Version Bump
 
 Manually bump the project version:
 ```bash

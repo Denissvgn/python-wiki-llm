@@ -14,6 +14,7 @@ from .commands import (
     mcp_cmd,
     metrics_cmd,
     migrate_cmd,
+    obsidian_cmd,
     plugins_cmd,
     release_cmd,
     review_cmd,
@@ -228,6 +229,37 @@ def main():
     mcp_parser.add_argument("--allowed-origin", action="append",
                             help="Additional HTTP Origin allowed to call the local MCP endpoint")
 
+    # obsidian command
+    obsidian_parser = subparsers.add_parser(
+        "obsidian",
+        help="Export and check an Obsidian-friendly mirror of the LLM Wiki",
+    )
+    obsidian_sub = obsidian_parser.add_subparsers(dest="obsidian_action", required=True)
+    obs_export = obsidian_sub.add_parser("export", help="Export an Obsidian mirror vault")
+    obs_export.add_argument("--src-dir", default=".", help="Source directory to scan")
+    obs_export.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                            help="Canonical wiki directory (default: docs/llm_wiki)")
+    obs_export.add_argument("--vault-dir", required=True,
+                            help="Obsidian vault directory where the mirror is written")
+    obs_export.add_argument("--notes-dir", default=".llm-wiki/obsidian-notes",
+                            help="Sidecar notes directory, relative to --vault-dir unless absolute")
+    obs_export.add_argument("--dry-run", action="store_true",
+                            help="Preview mirror writes without changing files")
+    obs_export.add_argument("--format", choices=["text", "json"], default="text",
+                            help="Output format (default: text)")
+    obs_check = obsidian_sub.add_parser("check", help="Check an Obsidian mirror for missing pages and broken wikilinks")
+    obs_check.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                           help="Canonical wiki directory (default: docs/llm_wiki)")
+    obs_check.add_argument("--vault-dir", required=True,
+                           help="Obsidian vault directory to check")
+    obs_check.add_argument("--format", choices=["text", "json"], default="text",
+                           help="Output format (default: text)")
+    obs_install = obsidian_sub.add_parser("install-plugin", help="Install the companion Obsidian plugin into a vault")
+    obs_install.add_argument("--vault-dir", required=True,
+                             help="Obsidian vault directory")
+    obs_install.add_argument("--plugin-dir", default="integrations/obsidian/llm-wiki",
+                             help="Source plugin directory (default: integrations/obsidian/llm-wiki)")
+
     # release command
     release_parser = subparsers.add_parser(
         "release",
@@ -336,6 +368,8 @@ def main():
             status_cmd.run(args)
         elif args.command == "mcp":
             mcp_cmd.run(args)
+        elif args.command == "obsidian":
+            obsidian_cmd.run(args)
         elif args.command == "release":
             release_cmd.run(args)
         elif args.command == "upgrade":
