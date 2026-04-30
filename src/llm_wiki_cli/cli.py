@@ -18,6 +18,7 @@ from .commands import (
     review_cmd,
     status_cmd,
     sync_cmd,
+    team_cmd,
     trigger_cmd,
     uninstall_cmd,
     upgrade_cmd,
@@ -108,6 +109,27 @@ def main():
                                 help="Wiki directory for path validation")
     plugins_validate = plugins_sub.add_parser("validate", help="Validate a local plugin manifest")
     plugins_validate.add_argument("path", help="Plugin directory or llm-wiki-plugin.json path")
+
+    # team command
+    team_parser = subparsers.add_parser("team", help="Manage shared llm-wiki team policy")
+    team_sub = team_parser.add_subparsers(dest="team_action", required=True)
+    team_init = team_sub.add_parser("init", help="Create .llm-wiki/team.json")
+    team_init.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                           help="Wiki directory to record in team config")
+    team_check = team_sub.add_parser("check", help="Validate team config and conventions")
+    team_check.add_argument("--src-dir", default=".", help="Source directory to scan")
+    team_check.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                            help="Wiki directory to validate")
+    team_check.add_argument("--format", choices=["text", "json"], default="text",
+                            help="Output format (default: text)")
+    team_resolve = team_sub.add_parser("resolve-conflicts", help="Safely resolve generated wiki conflicts")
+    team_resolve.add_argument("--src-dir", default=".", help="Source directory to scan")
+    team_resolve.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                              help="Wiki directory to scan for conflict markers")
+    team_resolve.add_argument("--write", action="store_true",
+                              help="Apply safe resolutions instead of dry-running")
+    team_resolve.add_argument("--format", choices=["text", "json"], default="text",
+                              help="Output format (default: text)")
 
     # trigger command
     trigger_parser = subparsers.add_parser("trigger-agent", help="Trigger subagent to update wiki using diff")
@@ -274,6 +296,8 @@ def main():
             install_cmd.run(args)
         elif args.command == "plugins":
             plugins_cmd.run(args)
+        elif args.command == "team":
+            team_cmd.run(args)
         elif args.command == "trigger-agent":
             trigger_cmd.run(args)
         elif args.command == "bootstrap":

@@ -7,6 +7,7 @@ from .generate_prompt_cmd import _build_prompt
 from ..services.lockfile import WikiLock, LockAcquisitionError
 from ..services import circuit_breaker
 from ..services.metrics import record_event
+from ..services.team import TeamConfigError, team_prompt_template_default
 from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS
 import json
 
@@ -110,9 +111,17 @@ def _run_sync(args):
     graph_json = json.dumps(call_graph, indent=2)
 
     # 3. Create context prompt for the subagent
+    try:
+        template = team_prompt_template_default()
+    except TeamConfigError as exc:
+        print(f"Invalid team config: {exc}")
+        circuit_breaker.record_failure(GIT_DIR)
+        finish(exit_code=1, breaker_result="failure")
+        return
     prompt = _build_prompt(
         wiki_dir,
         ".",
+        template=template,
         diff_text=diff_text,
         ast_json=ast_json,
         graph_json=graph_json,

@@ -10,6 +10,7 @@ from .bootstrap_cmd import build_module_page_map, build_entity_page_map
 from ..config import validate_path
 from ..services.io import read_md
 from ..services.plugins import PluginError, iter_components, load_entry_point
+from ..services.team import build_team_issues
 
 # basic regex for [text](url)
 LINK_RE = re.compile(r'\[.+?\]\((.+?)\)')
@@ -389,6 +390,8 @@ def build_report(wiki_dir: str | Path, src_dir: str = ".", *, strict: bool = Fal
         _check_sync_manifest(report, wiki_path, src_dir)
 
     _run_plugin_lint_rules(report, wiki_path, src_dir, inventory, pages)
+    for issue in build_team_issues(wiki_path, src_dir, inventory, pages):
+        report.issues.append(_coerce_plugin_issue(issue, "team"))
 
     return report
 
@@ -439,6 +442,11 @@ def render_text(report: LintReport) -> str:
     if report.strict:
         emit_group("wiki_structure", "Required wiki structure present.", "Found {count} wiki structure issue(s).")
         emit_group("sync_manifest", "Sync manifest is fresh.", "Found {count} sync manifest issue(s).")
+
+    emit_group("team_config", "Team config valid or not configured.", "Found {count} team config issue(s).")
+    emit_group("team_plugin_requirement", "Team plugin requirements satisfied.", "Found {count} team plugin requirement issue(s).")
+    emit_group("team_conventions", "Team conventions satisfied.", "Found {count} team convention issue(s).")
+    emit_group("team_canonical_naming", "Team canonical naming satisfied.", "Found {count} team canonical naming issue(s).")
 
     # ── Summary ───────────────────────────────────────────────────────
     if report.passed:

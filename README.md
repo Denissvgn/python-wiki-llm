@@ -415,7 +415,39 @@ Minimal manifest:
 }
 ```
 
-### 9. Project Status
+### 9. Team Features
+
+Create a committed shared team policy file:
+```bash
+llm-wiki team init --wiki-dir docs/llm_wiki
+```
+
+This writes `.llm-wiki/team.json`. The file is intended to be committed and
+can define shared wiki conventions plus team-wide prompt template, lint rule,
+and skill requirements. It does not override each developer's local agent
+choice stored under `.git/.llm-wiki-agent`.
+
+Validate team policy and conventions:
+```bash
+llm-wiki team check --src-dir . --wiki-dir docs/llm_wiki
+llm-wiki team check --format json
+```
+
+When `.llm-wiki/team.json` exists, normal `llm-wiki lint` and `llm-wiki ci-check`
+also enforce team conventions. `llm-wiki generate-prompt` uses the configured
+team prompt template by default unless `--template` is passed explicitly.
+
+Resolve safe generated-wiki merge conflicts:
+```bash
+llm-wiki team resolve-conflicts --src-dir . --wiki-dir docs/llm_wiki
+llm-wiki team resolve-conflicts --write
+```
+
+The resolver only scans files under the wiki directory. It can rebuild generated
+entity, module, infrastructure, index, manifest, and log files; workflow pages
+and ambiguous pages are left for manual resolution.
+
+### 10. Project Status
 
 Display the current wiki setup and integration status:
 ```bash
@@ -424,7 +456,7 @@ llm-wiki status
 
 Shows: wiki directory, configured agent, installed hooks, circuit breaker state, page counts.
 
-### 10. Version Bump
+### 11. Version Bump
 
 Manually bump the project version:
 ```bash

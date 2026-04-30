@@ -8,6 +8,7 @@ from pathlib import Path
 from ..config import DEFAULT_WIKI_DIR, validate_path
 from ..services.metrics import record_event, resolve_agent
 from ..services.plugins import PluginError, render_prompt_template
+from ..services.team import TeamConfigError, team_prompt_template_default
 
 _DEFAULT_PROMPT_FILE = ".git/llm-wiki-prompt.txt"
 CHANGE_TYPES = ("auto", "refactor", "feature", "bugfix", "dependency", "generic")
@@ -241,6 +242,12 @@ def run(args) -> None:
     print_only: bool = getattr(args, "print_prompt", False)
     change_type: str = getattr(args, "change_type", "auto")
     template: str | None = getattr(args, "template", None)
+    if template is None:
+        try:
+            template = team_prompt_template_default()
+        except TeamConfigError as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            raise SystemExit(1)
 
     try:
         prompt = _build_prompt(wiki_dir, src_dir, change_type=change_type, template=template)
