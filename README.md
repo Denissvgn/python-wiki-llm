@@ -447,7 +447,24 @@ The resolver only scans files under the wiki directory. It can rebuild generated
 entity, module, infrastructure, index, manifest, and log files; workflow pages
 and ambiguous pages are left for manual resolution.
 
-### 10. Project Status
+### 10. MCP Server
+
+Expose the wiki to MCP-compatible agents without giving them direct filesystem
+access:
+```bash
+pip install "llm-wiki-cli[mcp]"
+llm-wiki mcp --src-dir . --wiki-dir docs/llm_wiki
+llm-wiki mcp --transport http --host 127.0.0.1 --port 8765 --path /mcp
+```
+
+The MCP server is local and read-only. It exposes tools for `get_entity`,
+`get_module`, `search_wiki`, `get_context`, `check_wiki`, and `get_status`, plus
+`llm-wiki://...` resources for entity, module, workflow, infrastructure, index,
+and log pages. HTTP mode uses Streamable HTTP, binds only to loopback addresses,
+and rejects unexpected browser `Origin` headers unless explicitly allowed with
+`--allowed-origin`.
+
+### 11. Project Status
 
 Display the current wiki setup and integration status:
 ```bash
@@ -456,7 +473,7 @@ llm-wiki status
 
 Shows: wiki directory, configured agent, installed hooks, circuit breaker state, page counts.
 
-### 11. Version Bump
+### 12. Version Bump
 
 Manually bump the project version:
 ```bash

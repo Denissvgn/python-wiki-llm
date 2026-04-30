@@ -11,6 +11,7 @@ from .commands import (
     init_cmd,
     install_cmd,
     lint_cmd,
+    mcp_cmd,
     metrics_cmd,
     migrate_cmd,
     plugins_cmd,
@@ -208,6 +209,25 @@ def main():
     status_parser = subparsers.add_parser("status", help="Show LLM Wiki status (agent, hooks, breaker, pages)")
     status_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR, help="Wiki directory path")
 
+    # mcp command
+    mcp_parser = subparsers.add_parser(
+        "mcp",
+        help="Run a local MCP server exposing read-only LLM Wiki tools and resources",
+    )
+    mcp_parser.add_argument("--src-dir", default=".", help="Source directory to scan (default: .)")
+    mcp_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                            help="Wiki directory to expose (default: docs/llm_wiki)")
+    mcp_parser.add_argument("--transport", choices=["stdio", "http"], default="stdio",
+                            help="MCP transport to serve (default: stdio)")
+    mcp_parser.add_argument("--host", default="127.0.0.1",
+                            help="HTTP host for --transport http (default: 127.0.0.1)")
+    mcp_parser.add_argument("--port", type=int, default=8765,
+                            help="HTTP port for --transport http (default: 8765)")
+    mcp_parser.add_argument("--path", default="/mcp",
+                            help="HTTP MCP endpoint path for --transport http (default: /mcp)")
+    mcp_parser.add_argument("--allowed-origin", action="append",
+                            help="Additional HTTP Origin allowed to call the local MCP endpoint")
+
     # release command
     release_parser = subparsers.add_parser(
         "release",
@@ -314,6 +334,8 @@ def main():
             uninstall_cmd.run(args)
         elif args.command == "status":
             status_cmd.run(args)
+        elif args.command == "mcp":
+            mcp_cmd.run(args)
         elif args.command == "release":
             release_cmd.run(args)
         elif args.command == "upgrade":
