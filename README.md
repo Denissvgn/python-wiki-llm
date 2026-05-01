@@ -43,9 +43,9 @@ The tool supports multiple programming languages via a pluggable extractor archi
 | Language | Extractor | Requirements | Installation |
 |----------|-----------|--------------|--------------|
 | **Python** | AST (stdlib) | Python 3.9+ | Included |
-| **TypeScript** | ts-morph (Node.js) | Node.js 18+, npm | `pip install llm-wiki-cli[typescript]` |
-| **Go** | stdlib `ast` | Go 1.21+ | Included (auto-detects from PATH) |
-| **Rust** | syn + cargo | Rust toolchain | Included (auto-compiles on first use) |
+| **TypeScript/TSX** | ts-morph (Node.js) | Node.js, npm | Included; installs bundled npm deps on first use |
+| **Go** | stdlib `ast` | Go toolchain on PATH | Included; auto-detects from PATH |
+| **Rust** | syn + cargo | Rust toolchain on PATH | Included; builds bundled extractor on first use |
 
 All extractors share the same output format and are automatically invoked by `bootstrap`, `extract`, `lint`, and `sync` commands.
 
@@ -57,26 +57,23 @@ Each language provides:
 
 ## Installation (with Multi-Language Support)
 
-Basic (Python only):
+Install the CLI:
 ```bash
 pip install llm-wiki-cli
 ```
 
-TypeScript/JavaScript support:
-```bash
-pip install llm-wiki-cli[typescript]
-```
-
-All languages:
-```bash
-pip install llm-wiki-cli[typescript,go,rust]
-```
+The package defines optional extras for language groups, but they do not install
+additional Python dependencies. Non-Python extractors depend on runtime
+toolchains instead:
+- TypeScript/TSX: `node` and `npm`
+- Go: `go`
+- Rust: `cargo`
 
 Or from source:
 ```bash
 git clone https://github.com/Denissvgn/python-wiki-llm.git
 cd python-wiki-llm
-pip install -e ".[typescript,go,rust]"
+pip install -e .
 ```
 
 ## Setup & Initialization
@@ -95,7 +92,7 @@ Supported agents: `claude`, `aider`, `opencode`, `copilot`, `cursor`, `generic`.
 - Scaffolds `entities/`, `modules/`, `workflows/`, and `infrastructure/` directories.
 - Writes the agent-specific instruction file (e.g. `CLAUDE.md`, `.github/copilot-instructions.md`) so the agent knows the rules of the system.
 - Saves the chosen agent to `.git/.llm-wiki-agent` (local-only, not committed) so subsequent commands (like `install-hook`) pick it up automatically.
-- Adds llm-wiki temp files to `.gitignore` (`.git/llm-wiki-*.txt`, `.lock`, `.json`, `.log`).
+- Adds llm-wiki runtime temp files to `.gitignore` (`.git/llm-wiki-prompt.txt`, `.git/llm-wiki.lock`, `.git/llm-wiki-breaker.json`, `.git/llm-wiki-sync.log`).
 
 > If you pass a CLI agent (`claude`, `aider`, `opencode`) that is not installed on your `PATH`, `init` will warn you but still create all files.
 
@@ -127,17 +124,18 @@ llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki
 - Creates **module pages** (`modules/<filename>.md`) with import tables, class summaries, and function signatures with decorators.
 - Discovers and documents **Docker/Compose files** as `infrastructure/<name>.md` with build stages, ports, environment variables, volumes, services, and cross-references to source code.
 - Rebuilds `index.md` and appends a summary to `log.md`.
-- Creates a `.llm-wiki-manifest.json` file for incremental syncs (see `llm-wiki sync` below).
+- Creates `<wiki-dir>/.llm-wiki-manifest.json` for incremental syncs (see `llm-wiki sync` below).
 - Cross-references imports to build `used_by` / `imported_by` relationship graphs between entities.
 
 **Flags**:
 - `--overwrite` — Regenerate existing pages instead of skipping them.
 - `--depth shallow|full` — `full` (default) extracts everything; `shallow` produces name-only stubs.
+- `--skip-workflows` — Skip automatic workflow page generation from the call graph.
 
 **Multi-language support:**
 - **Python**: Always available (stdlib `ast`)
-- **TypeScript** (`.ts`, `.tsx`): Install optional dependency: `pip install llm-wiki-cli[typescript]`
-- **Go** (`.go`): Requires Go 1.21+ on PATH
+- **TypeScript/TSX** (`.ts`, `.tsx`): Requires Node.js and npm on PATH; bundled npm dependencies install on first use
+- **Go** (`.go`): Requires Go on PATH
 - **Rust** (`.rs`): Requires Cargo on PATH; compiles on first use
 
 ## Automation Setup (Highly Recommended)
@@ -155,12 +153,16 @@ llm-wiki install-hook --agent aider
 llm-wiki install-hook --wiki-dir .wiki        # custom wiki dir
 ```
 
+> **Note:** `--wiki-dir` is fully respected for IDE prompt-generation hooks.
+> Current CLI-agent hooks invoke `trigger-agent` without a wiki-dir argument, so
+> headless post-commit sync uses the default `docs/llm_wiki` wiki path.
+
 ### CLI Agents (Claude, Aider, OpenCode)
 
 The post-commit hook spawns `llm-wiki trigger-agent` as a detached background process via `nohup`:
 
 1. Calculates `git diff HEAD~1..HEAD`.
-2. Parses the Python project for Class/Function AST models via `llm-wiki extract`.
+2. Extracts current multi-language AST context.
 3. Writes a temporary command payload to `.git/llm-wiki-prompt.txt`.
 4. Spawns the CLI agent (e.g., `claude -p --dangerously-skip-permissions`) and pipes the prompt in.
 5. The agent updates the `docs/llm_wiki/` markdown files and commits the result.
@@ -174,16 +176,16 @@ cat .git/llm-wiki-sync.log
 
 Because IDE agents run inside the editor and have no headless CLI interface, the post-commit hook generates a sync prompt instead:
 
-1. Calculates the diff + AST context.
-2. Writes the ready-to-paste prompt to `.git/llm-wiki-prompt.txt`.
+1. Writes a ready-to-paste prompt to `.git/llm-wiki-prompt.txt`.
+2. The prompt tells the IDE agent how to inspect the last diff, extract changed-file AST context, and run lint.
 3. Prints a reminder in the terminal.
 
 After every commit you'll see:
-```
-╔══════════════════════════════════════════════════════════════╗
-║  LLM Wiki: paste the sync prompt into your IDE agent chat.  ║
-║  File: .git/llm-wiki-prompt.txt                             ║
-╚══════════════════════════════════════════════════════════════╝
+```text
++--------------------------------------------------------------+
+|  LLM Wiki: paste the sync prompt into your IDE agent chat.  |
+|  File: .git/llm-wiki-prompt.txt                             |
++--------------------------------------------------------------+
 ```
 
 Paste the file contents into your agent chat to trigger the wiki update.
@@ -195,29 +197,17 @@ llm-wiki generate-prompt --print              # print to stdout
 llm-wiki generate-prompt --wiki-dir .wiki     # custom wiki dir
 ```
 
-### Auto Version Bumping (Opt-In)
+### Manual Version Bumping
 
-Enable automatic semantic version bumping on commit and push:
-
-```bash
-llm-wiki install-hook --enable-versioning
-```
-
-This installs additional hooks (disabled by default):
-- **pre-commit** → Patch bump on every commit (`0.1.5` → `0.1.6`)
-- **pre-push** → Minor bump on every push (`0.1.6` → `0.2.0`, resets patch)
-
-Supported version files: `pyproject.toml`, `setup.cfg`, `package.json`, `VERSION`.
-
-Recursion guards prevent infinite loops — the push-time commit skips the patch hook, and the re-push skips the pre-push hook.
-
-You can also bump manually at any time:
+You can bump the project version manually at any time:
 
 ```bash
 llm-wiki bump --patch          # 0.1.5 -> 0.1.6
 llm-wiki bump --minor          # 0.1.6 -> 0.2.0
 llm-wiki bump --patch --stage  # bump + git add (for hook use)
 ```
+
+Supported version files: `pyproject.toml`, `setup.cfg`, `package.json`, `VERSION`.
 
 ## Manual Commands
 
@@ -238,6 +228,8 @@ llm-wiki extract --src-dir . --paths src/foo.py src/bar.py  # specific files
 - `--summary` — Compact format with class/function names only (no signatures, docstrings)
 - `--paths FILE...` — Extract specific files for drill-down detail
 - `--deep` — Deep mode (extract nested relationships)
+- `--package NAME` — Only include files belonging to a discovered package
+- `--include-empty` — Include Python files even if they have no extractable components
 
 ### 2. Linting the Wiki
 
@@ -256,7 +248,7 @@ llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki
 ```
 
 This is much faster than `bootstrap` for large projects. It:
-- Creates a `.llm-wiki-manifest.json` file tracking file hashes (local-only, not committed)
+- Uses `docs/llm_wiki/.llm-wiki-manifest.json` to track source file hashes
 - Regenerates entity and module pages only for changed/new files
 - Marks deleted files with a deprecation header in their wiki pages
 - Rebuilds the index automatically
@@ -299,11 +291,12 @@ The final chunk refreshes `index.md`, active links, and `.llm-wiki-manifest.json
 
 ### 6. Generate Sync Prompt (IDE agents)
 
-Builds the diff + AST sync prompt and writes it to a file for pasting into your IDE agent chat:
+Builds an IDE sync prompt and writes it to a file for pasting into your IDE agent chat:
 ```bash
 llm-wiki generate-prompt
 llm-wiki generate-prompt --print              # print to stdout instead
 llm-wiki generate-prompt --output my.txt     # custom output path
+llm-wiki generate-prompt --src-dir . --wiki-dir docs/llm_wiki
 ```
 
 ### 7. Upgrade Framework
@@ -322,7 +315,16 @@ This updates:
 - Git hooks (if previously installed)
 - `.gitignore` entries
 
-### 8. Project Status
+### 8. Release Changelog
+
+Stamp the current project version into the `[Unreleased]` section of the changelog. Empty `[Unreleased]` sections are left unchanged.
+```bash
+llm-wiki release
+llm-wiki release --changelog CHANGELOG.md
+llm-wiki release --stage
+```
+
+### 9. Project Status
 
 Display the current wiki setup and integration status:
 ```bash
@@ -331,7 +333,7 @@ llm-wiki status
 
 Shows: wiki directory, configured agent, installed hooks, circuit breaker state, page counts.
 
-### 9. Version Bump
+### 10. Version Bump
 
 Manually bump the project version:
 ```bash
