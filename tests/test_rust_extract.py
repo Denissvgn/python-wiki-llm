@@ -502,6 +502,7 @@ class TestRustExtractor:
 
 class TestRustExtractorWithoutCargo:
     def test_no_cargo_returns_empty(self, tmp_path):
+        _make_rs(tmp_path, "src/lib.rs", "pub struct App;\n")
         with patch(
             "llm_wiki_cli.extractors.rust_extractor.shutil.which",
             return_value=None,
@@ -510,6 +511,7 @@ class TestRustExtractorWithoutCargo:
         assert inv == {}
 
     def test_no_cargo_stderr_warning(self, tmp_path, capsys):
+        _make_rs(tmp_path, "src/lib.rs", "pub struct App;\n")
         with patch(
             "llm_wiki_cli.extractors.rust_extractor.shutil.which",
             return_value=None,
@@ -518,9 +520,16 @@ class TestRustExtractorWithoutCargo:
         err = capsys.readouterr().err
         assert "cargo not found" in err
 
+    def test_no_rust_files_skips_toolchain_probe(self, tmp_path):
+        with patch("llm_wiki_cli.extractors.rust_extractor.shutil.which") as mock_which:
+            inv = RustExtractor().extract(str(tmp_path))
+        assert inv == {}
+        mock_which.assert_not_called()
+
 
 class TestRustExtractorWrapper:
     def test_windows_style_inventory_keys_are_normalized(self, tmp_path):
+        _make_rs(tmp_path, "pkg/client.rs", "pub struct Client;\n")
         result = subprocess.CompletedProcess(
             args=["cargo"],
             returncode=0,
@@ -536,6 +545,7 @@ class TestRustExtractorWrapper:
         assert inv["pkg/client.rs"]["language"] == "rust"
 
     def test_malformed_json_returns_empty(self, tmp_path, capsys):
+        _make_rs(tmp_path, "client.rs", "pub struct Client;\n")
         result = subprocess.CompletedProcess(
             args=["cargo"],
             returncode=0,
@@ -550,6 +560,7 @@ class TestRustExtractorWrapper:
         assert "malformed JSON" in capsys.readouterr().err
 
     def test_timeout_returns_empty(self, tmp_path, capsys):
+        _make_rs(tmp_path, "client.rs", "pub struct Client;\n")
         with patch("llm_wiki_cli.extractors.rust_extractor.shutil.which", return_value="cargo"):
             with patch(
                 "llm_wiki_cli.extractors.rust_extractor.subprocess.run",
@@ -561,6 +572,7 @@ class TestRustExtractorWrapper:
         assert "timed out" in capsys.readouterr().err
 
     def test_stderr_forwarded_on_success(self, tmp_path, capsys):
+        _make_rs(tmp_path, "client.rs", "pub struct Client;\n")
         result = subprocess.CompletedProcess(
             args=["cargo"],
             returncode=0,

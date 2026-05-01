@@ -11,6 +11,7 @@ from ..config import CLI_AGENTS, DEFAULT_WIKI_DIR, IDE_AGENTS, get_agent_config_
 _CLI_AGENTS = set(CLI_AGENTS)
 # Agents that are IDE-only and cannot run headlessly
 _UI_ONLY_AGENTS = IDE_AGENTS
+HOOK_SIGNATURE = "LLM Wiki"
 
 
 def _read_agent_config(wiki_dir: str) -> str | None:
@@ -38,6 +39,7 @@ echo "Triggering LLM Wiki subagent sync in the background..."
 # Configurable via environment variables (no need to re-install hook)
 LLM_WIKI_TIMEOUT="${{LLM_WIKI_TIMEOUT:-300}}"
 LLM_WIKI_MAX_DIFF="${{LLM_WIKI_MAX_DIFF:-1000}}"
+LLM_WIKI_MAX_PROMPT_BYTES="${{LLM_WIKI_MAX_PROMPT_BYTES:-2000000}}"
 
 # Find the virtual environment if it exists, or run globally
 if [ -f ".venv/bin/llm-wiki" ]; then
@@ -46,7 +48,7 @@ else
     CLI="llm-wiki"
 fi
 
-nohup "$CLI" trigger-agent --agent {agent} --timeout "$LLM_WIKI_TIMEOUT" --max-diff-lines "$LLM_WIKI_MAX_DIFF" > .git/llm-wiki-sync.log 2>&1 &
+nohup "$CLI" trigger-agent --agent {agent} --timeout "$LLM_WIKI_TIMEOUT" --max-diff-lines "$LLM_WIKI_MAX_DIFF" --max-prompt-bytes "$LLM_WIKI_MAX_PROMPT_BYTES" > .git/llm-wiki-sync.log 2>&1 &
 """
 
 
@@ -76,8 +78,8 @@ echo "|  LLM Wiki: paste the sync prompt into your IDE agent chat.  |"
 echo "|  File: .git/llm-wiki-prompt.txt                             |"
 echo "+--------------------------------------------------------------+"
 
-# Auto-open in VS Code if running inside the integrated terminal
-if [ -n "$TERM_PROGRAM" ] && [ "$TERM_PROGRAM" = "vscode" ]; then
+# Auto-open in VS Code only when explicitly enabled
+if [ "${{LLM_WIKI_OPEN_PROMPT:-0}}" = "1" ] && [ "$TERM_PROGRAM" = "vscode" ]; then
     code .git/llm-wiki-prompt.txt 2>/dev/null || true
 fi
 """
@@ -85,9 +87,18 @@ fi
 
 
 
-def _install_hook(hooks_dir: Path, name: str, content: str) -> None:
+def _install_hook(hooks_dir: Path, name: str, content: str, *, force: bool = False) -> None:
     """Write a hook file and make it executable."""
     hook_path = hooks_dir / name
+    if hook_path.exists():
+        existing = hook_path.read_text(encoding="utf-8", errors="replace")
+        if HOOK_SIGNATURE not in existing and not force:
+            print(
+                f"Error: {hook_path} already exists and does not look like an LLM Wiki hook.\n"
+                "Use --force to replace it intentionally.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
     with open(hook_path, "w", encoding="utf-8") as f:
         f.write(content)
     st = os.stat(hook_path)
@@ -121,7 +132,10 @@ def run(args):
 
     # IDE-only agent: install the prompt-generation hook instead of the headless sync hook
     if agent in _UI_ONLY_AGENTS:
-        _install_hook(hooks_dir, "post-commit", _build_ide_post_commit(wiki_dir))
+        _install_hook(
+            hooks_dir, "post-commit", _build_ide_post_commit(wiki_dir),
+            force=getattr(args, "force", False),
+        )
         print(f"  Agent: {agent} (IDE mode -- prompt-generation hook)")
         print(
             f"\nIDE sync hook installed. After each commit, a prompt file will be generated at\n"
@@ -134,7 +148,10 @@ def run(args):
         return
 
     # CLI agent: install headless auto-sync hook with agent baked in
-    _install_hook(hooks_dir, "post-commit", _build_post_commit(agent))
+    _install_hook(
+        hooks_dir, "post-commit", _build_post_commit(agent),
+        force=getattr(args, "force", False),
+    )
     print(f"  Agent: {agent}")
 
     print("\nHook installation complete.")

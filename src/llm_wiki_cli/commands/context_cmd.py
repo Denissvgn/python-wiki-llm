@@ -17,10 +17,11 @@ Usage::
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
-from .extract_cmd import get_inventory, _git_changed_files, _summarize_inventory
-from ..config import EXTRACTOR_REGISTRY, validate_path
+from .extract_cmd import _git_changed_files, get_inventory_result, print_inventory_failures
+from ..config import validate_path
 
 
 # ── Token estimation ──────────────────────────────────────────────────
@@ -313,7 +314,11 @@ def run(args) -> None:
     validate_path(src_dir, "--src-dir")
 
     # 1. Get full deep inventory (imports needed for graph building)
-    inventory = get_inventory(src_dir, deep=True)
+    inventory_result = get_inventory_result(src_dir, deep=True)
+    if inventory_result.failed:
+        print_inventory_failures(inventory_result)
+        sys.exit(1)
+    inventory = inventory_result.inventory
 
     if not inventory:
         print("{}" if fmt == "json" else "No source files found.")

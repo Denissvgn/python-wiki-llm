@@ -38,6 +38,18 @@ def run(args):
     # If --stage is set, git-add the version file so it's included in the current commit
     if getattr(args, "stage", False):
         try:
-            subprocess.run(["git", "add", str(version_file)], check=False)
+            subprocess.run(
+                ["git", "add", str(version_file)],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
         except FileNotFoundError:
-            pass  # git not available; skip staging
+            print("Error: git not found; could not stage version file.", file=sys.stderr)
+            sys.exit(1)
+        except subprocess.CalledProcessError as exc:
+            detail = (exc.stderr or exc.stdout or "").strip()
+            print(f"Error: git add failed for {version_file}.", file=sys.stderr)
+            if detail:
+                print(detail, file=sys.stderr)
+            sys.exit(1)

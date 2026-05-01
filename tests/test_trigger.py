@@ -8,6 +8,7 @@ from unittest.mock import patch, MagicMock
 import pytest
 
 from llm_wiki_cli.commands import trigger_cmd
+from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.services import circuit_breaker
 
 
@@ -17,6 +18,7 @@ def _make_args(**kwargs):
         "reset_breaker": False,
         "timeout": 10,
         "max_diff_lines": 1000,
+        "max_prompt_bytes": None,
         "force": False,
         "wiki_dir": "docs/llm_wiki",
     }
@@ -80,3 +82,59 @@ class TestTriggerGitFailure:
         trigger_cmd.run(_make_args())
         state = circuit_breaker.load_state(git_dir)
         assert state["consecutive_failures"] >= 1
+
+
+class TestTriggerPromptHandling:
+    @patch("llm_wiki_cli.commands.trigger_cmd.subprocess.run")
+    def test_skips_prompt_larger_than_cap(self, mock_run, tmp_project, monkeypatch, capsys):
+        mock_run.return_value = MagicMock(stdout="diff\n", returncode=0)
+        monkeypatch.setattr(
+            "llm_wiki_cli.commands.extract_cmd.get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {
+                    "huge.py": {
+                        "language": "python",
+                        "classes": [{"name": "Huge", "docstring": "x" * 1000}],
+                        "functions": [],
+                    }
+                },
+                {"python": ExtractorStatus("python", "ok", 1)},
+            ),
+        )
+        monkeypatch.setattr("llm_wiki_cli.commands.extract_cmd.get_call_graph", lambda inv: {})
+
+        trigger_cmd.run(_make_args(max_prompt_bytes=100))
+
+        out = capsys.readouterr().out
+        assert "Prompt too large" in out
+        assert mock_run.call_count == 1
+
+    def test_claude_prompt_is_streamed_from_file(self, tmp_project, monkeypatch):
+        monkeypatch.setattr(
+            "llm_wiki_cli.commands.extract_cmd.get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {"a.py": {"language": "python", "classes": [], "functions": []}},
+                {"python": ExtractorStatus("python", "ok", 1)},
+            ),
+        )
+        monkeypatch.setattr("llm_wiki_cli.commands.extract_cmd.get_call_graph", lambda inv: {})
+        agent_kwargs = []
+
+        def fake_run(cmd, *args, **kwargs):
+            if cmd[:2] == ["git", "diff"]:
+                return subprocess.CompletedProcess(cmd, 0, stdout="diff\n", stderr="")
+            if cmd[0] == "claude":
+                agent_kwargs.append({
+                    "keys": set(kwargs),
+                    "stdin_readable": kwargs["stdin"].readable(),
+                })
+                return subprocess.CompletedProcess(cmd, 0)
+            raise AssertionError(f"unexpected command: {cmd}")
+
+        with patch("llm_wiki_cli.commands.trigger_cmd.subprocess.run", side_effect=fake_run):
+            trigger_cmd.run(_make_args(agent="claude"))
+
+        assert len(agent_kwargs) == 1
+        assert "input" not in agent_kwargs[0]["keys"]
+        assert "capture_output" not in agent_kwargs[0]["keys"]
+        assert agent_kwargs[0]["stdin_readable"] is True

@@ -1,5 +1,6 @@
 """Tests for commands/sync_cmd.py — incremental wiki sync."""
 import os
+import json
 import sys
 import textwrap
 import types
@@ -14,6 +15,7 @@ from llm_wiki_cli.commands.sync_cmd import (
     _compute_diff,
     _hash_file,
 )
+from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -235,6 +237,111 @@ class TestSeedManifest:
             assert exc_info.value.code == 1
         finally:
             os.chdir(old_cwd)
+
+    def test_does_not_seed_empty_manifest(self, tmp_path, monkeypatch, capsys):
+        wiki_dir = tmp_path / "docs" / "llm_wiki"
+        wiki_dir.mkdir(parents=True)
+        (wiki_dir / "index.md").write_text("# Index\n", encoding="utf-8")
+        monkeypatch.setattr(
+            sync_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {},
+                {"python": ExtractorStatus("python", "skipped", 0)},
+            ),
+        )
+
+        old_cwd = os.getcwd()
+        os.chdir(tmp_path)
+        try:
+            sync_cmd.run(_make_sync_args(src_dir=str(tmp_path), wiki_dir=str(wiki_dir)))
+        finally:
+            os.chdir(old_cwd)
+
+        assert not (wiki_dir / MANIFEST_FILENAME).exists()
+        assert "manifest not written" in capsys.readouterr().out.lower()
+
+
+class TestManifestLanguage:
+    def test_old_manifest_load_infers_language(self, tmp_path):
+        wiki_dir = tmp_path / "docs" / "llm_wiki"
+        wiki_dir.mkdir(parents=True)
+        (wiki_dir / MANIFEST_FILENAME).write_text(json.dumps({
+            "version": 1,
+            "sources": {
+                "models.py": {"hash": "sha256:x", "entities": [], "module_page": "models"},
+                "web/app.tsx": {"hash": "sha256:y", "entities": [], "module_page": "app"},
+            },
+        }))
+
+        manifest = SyncManifest.load(wiki_dir)
+
+        assert manifest.sources["models.py"]["language"] == "python"
+        assert manifest.sources["web/app.tsx"]["language"] == "typescript"
+
+
+class TestPartialExtractionSafety:
+    def _write_ts_manifest_and_pages(self, wiki_dir: Path) -> None:
+        (wiki_dir / "entities").mkdir(parents=True)
+        (wiki_dir / "modules").mkdir(parents=True)
+        (wiki_dir / "workflows").mkdir(parents=True)
+        (wiki_dir / "infrastructure").mkdir(parents=True)
+        (wiki_dir / "index.md").write_text("# Index\n", encoding="utf-8")
+        (wiki_dir / "entities" / "Widget.md").write_text("# Widget\n", encoding="utf-8")
+        (wiki_dir / "modules" / "app.md").write_text("# app Module\n", encoding="utf-8")
+        SyncManifest(sources={
+            "app.ts": {
+                "hash": "sha256:old",
+                "language": "typescript",
+                "entities": ["Widget"],
+                "module_page": "app",
+            }
+        }).save(wiki_dir)
+
+    def test_extractor_failure_aborts_without_deprecation(self, tmp_path, monkeypatch):
+        wiki_dir = tmp_path / "docs" / "llm_wiki"
+        self._write_ts_manifest_and_pages(wiki_dir)
+        monkeypatch.setattr(
+            sync_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {},
+                {"typescript": ExtractorStatus("typescript", "failed", 1, "node not found")},
+            ),
+        )
+
+        old_cwd = os.getcwd()
+        os.chdir(tmp_path)
+        try:
+            with pytest.raises(SystemExit) as exc_info:
+                sync_cmd.run(_make_sync_args(src_dir=str(tmp_path), wiki_dir=str(wiki_dir)))
+        finally:
+            os.chdir(old_cwd)
+
+        assert exc_info.value.code == 1
+        assert "Stale" not in (wiki_dir / "entities" / "Widget.md").read_text(encoding="utf-8")
+        assert "Stale" not in (wiki_dir / "modules" / "app.md").read_text(encoding="utf-8")
+
+    def test_skipped_language_allows_real_deletion(self, tmp_path, monkeypatch):
+        wiki_dir = tmp_path / "docs" / "llm_wiki"
+        self._write_ts_manifest_and_pages(wiki_dir)
+        monkeypatch.setattr(
+            sync_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {},
+                {"typescript": ExtractorStatus("typescript", "skipped", 0)},
+            ),
+        )
+
+        old_cwd = os.getcwd()
+        os.chdir(tmp_path)
+        try:
+            sync_cmd.run(_make_sync_args(src_dir=str(tmp_path), wiki_dir=str(wiki_dir)))
+        finally:
+            os.chdir(old_cwd)
+
+        assert "Stale" in (wiki_dir / "entities" / "Widget.md").read_text(encoding="utf-8")
 
 
 class TestUnchangedFile:

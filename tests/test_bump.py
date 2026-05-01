@@ -52,3 +52,14 @@ class TestBumpStageFlag:
             capture_output=True, text=True
         )
         assert "pyproject.toml" in result.stdout
+
+    def test_stage_git_add_failure_exits_nonzero(self, tmp_project, monkeypatch):
+        def fake_run(*args, **kwargs):
+            raise subprocess.CalledProcessError(128, args[0], stderr="not a git repo")
+
+        monkeypatch.setattr(bump_cmd.subprocess, "run", fake_run)
+
+        with pytest.raises(SystemExit) as exc_info:
+            bump_cmd.run(_make_args(bump_type="patch", stage=True))
+
+        assert exc_info.value.code == 1

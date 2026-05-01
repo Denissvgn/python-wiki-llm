@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import json
-import sys
+from dataclasses import dataclass
+from fnmatch import fnmatch
 from pathlib import Path
 
 DEFAULT_WIKI_DIR = "docs/llm_wiki"
@@ -80,10 +81,14 @@ COMPOSE_PATTERNS: list[str] = [
 ]
 
 
+class PathValidationError(ValueError):
+    """Raised when a user-provided path escapes the project root."""
+
+
 def validate_path(path: str, label: str = "path") -> Path:
     """Ensure *path* resolves inside the current working directory.
 
-    Raises SystemExit with a clear message if the resolved path escapes the
+    Raises PathValidationError with a clear message if the resolved path escapes the
     repository root (cwd).
     """
     resolved = (Path.cwd() / path).resolve()
@@ -91,12 +96,10 @@ def validate_path(path: str, label: str = "path") -> Path:
     try:
         resolved.relative_to(cwd)
     except ValueError:
-        print(
+        raise PathValidationError(
             f"Error: {label} '{path}' resolves to '{resolved}', "
-            f"which is outside the project root '{cwd}'.",
-            file=sys.stderr,
+            f"which is outside the project root '{cwd}'."
         )
-        sys.exit(1)
     return resolved
 
 
@@ -133,83 +136,146 @@ _DEFAULT_CONFIG: dict[str, object] = {
 }
 
 
-def _parse_gitignore_patterns(gitignore_path: Path) -> list[tuple[str, bool]]:
-    """Parse a .gitignore file and return list of (pattern, is_negation) tuples.
-    
-    Handles basic gitignore syntax:
-    - Lines starting with # are comments
-    - Lines starting with ! are negation (not excluded)
-    - Trailing / means match directories only
-    - Returns list of (pattern, is_negation) tuples
+@dataclass(frozen=True)
+class _GitignoreRule:
+    base: str
+    pattern: str
+    negated: bool
+    directory_only: bool
+    anchored: bool
+
+
+class GitIgnoreMatcher:
+    """Ordered gitignore matcher for repository scans.
+
+    This supports the semantics the extractors need without reparsing the same
+    .gitignore file for every source file: negation, root-anchored patterns,
+    nested .gitignore files, directory-only rules, and common ``**`` patterns.
     """
-    patterns = []
+
+    def __init__(self, rules: list[_GitignoreRule]):
+        self._rules = rules
+
+    def is_ignored(self, rel_path: str) -> bool:
+        rel_path = rel_path.replace("\\", "/").strip("/")
+        ignored = False
+        for rule in self._rules:
+            if _rule_matches(rel_path, rule):
+                ignored = not rule.negated
+        return ignored
+
+
+def _parse_gitignore_file(gitignore_path: Path, base: str = "") -> list[_GitignoreRule]:
+    rules: list[_GitignoreRule] = []
     if not gitignore_path.exists():
-        return patterns
-    
+        return rules
+
     try:
         with open(gitignore_path, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.rstrip("\n\r")
-                # Skip comments and empty lines
+            for raw in f:
+                line = raw.rstrip("\n\r")
                 if not line or line.startswith("#"):
                     continue
-                # Check for negation
-                is_negation = line.startswith("!")
-                if is_negation:
+                negated = line.startswith("!")
+                if negated:
                     line = line[1:]
-                # Strip trailing slash (means dir-only, but we treat as same for simplicity)
+                anchored = line.startswith("/")
+                if anchored:
+                    line = line[1:]
+                directory_only = line.endswith("/")
                 line = line.rstrip("/")
                 if line:
-                    patterns.append((line, is_negation))
+                    rules.append(_GitignoreRule(
+                        base=base.strip("/"),
+                        pattern=line.replace("\\", "/"),
+                        negated=negated,
+                        directory_only=directory_only,
+                        anchored=anchored,
+                    ))
     except OSError:
         pass
-    return patterns
+    return rules
 
 
-def _match_gitignore_pattern(rel_path: str, pattern: str) -> bool:
-    """Check if a relative path matches a gitignore pattern.
-    
-    Supports:
-    - Literal filenames: "*.pyc"
-    - Directory prefixes: "build/", "node_modules/"
-    - Wildcards: "*", "**" (recursive)
-    """
-    from fnmatch import fnmatch
-    
-    # Convert path separators to forward slashes for consistent matching
-    rel_path = rel_path.replace("\\", "/")
-    pattern = pattern.replace("\\", "/")
-    
-    # If pattern ends with **, it matches recursively
+def _match_gitignore_pattern(rel_path: str, pattern: str, *, directory_only: bool = False) -> bool:
+    """Check if a relative path matches a gitignore pattern."""
+    rel_path = rel_path.replace("\\", "/").strip("/")
+    pattern = pattern.replace("\\", "/").strip("/")
+
+    if not rel_path or not pattern:
+        return False
+
+    if directory_only:
+        if "/" in pattern:
+            return rel_path == pattern or rel_path.startswith(pattern + "/") or fnmatch(rel_path, pattern + "/**")
+        parts = rel_path.split("/")
+        return any(fnmatch(part, pattern) for part in parts[:-1])
+
     if pattern.endswith("/**"):
-        pattern = pattern[:-3]  # Remove /**
-        return rel_path.startswith(pattern)
-    
-    # If pattern contains /, match from start
+        prefix = pattern[:-3].rstrip("/")
+        return rel_path == prefix or rel_path.startswith(prefix + "/")
+
     if "/" in pattern:
-        return fnmatch(rel_path, pattern)
-    
-    # Otherwise match against any path component
-    for part in rel_path.split("/"):
-        if fnmatch(part, pattern):
-            return True
-    return False
+        return fnmatch(rel_path, pattern) or fnmatch(rel_path, pattern + "/**")
+
+    return any(fnmatch(part, pattern) for part in rel_path.split("/"))
+
+
+def _rule_matches(rel_path: str, rule: _GitignoreRule) -> bool:
+    if rule.base:
+        if rel_path == rule.base:
+            candidate = ""
+        elif rel_path.startswith(rule.base + "/"):
+            candidate = rel_path[len(rule.base) + 1:]
+        else:
+            return False
+    else:
+        candidate = rel_path
+    if not candidate:
+        return False
+
+    if rule.anchored:
+        pattern = rule.pattern
+        if rule.directory_only:
+            return (
+                candidate == pattern
+                or candidate.startswith(pattern + "/")
+                or fnmatch(candidate, pattern + "/**")
+            )
+        if "/" not in pattern:
+            return "/" not in candidate and fnmatch(candidate, pattern)
+        return fnmatch(candidate, pattern) or fnmatch(candidate, pattern + "/**")
+
+    return _match_gitignore_pattern(
+        candidate,
+        rule.pattern,
+        directory_only=rule.directory_only,
+    )
+
+
+def build_gitignore_matcher(root: "str | Path") -> GitIgnoreMatcher:
+    """Parse root and nested .gitignore files once for a source scan."""
+    root_path = Path(root)
+    rules: list[_GitignoreRule] = []
+    if not root_path.exists():
+        return GitIgnoreMatcher(rules)
+
+    for gitignore in sorted(root_path.rglob(".gitignore")):
+        try:
+            rel_parent = gitignore.parent.relative_to(root_path)
+        except ValueError:
+            continue
+        if not EXCLUDED_DIRS.isdisjoint(rel_parent.parts):
+            continue
+        base = "" if rel_parent == Path(".") else rel_parent.as_posix()
+        rules.extend(_parse_gitignore_file(gitignore, base))
+    return GitIgnoreMatcher(rules)
 
 
 def is_ignored_by_gitignore(rel_path: str, gitignore_path: Path = Path(".gitignore")) -> bool:
-    """Check if a relative path is ignored according to .gitignore.
-    
-    Returns True if the path should be excluded (is ignored).
-    """
-    patterns = _parse_gitignore_patterns(gitignore_path)
-    
-    # Process patterns in order, last matching rule wins
-    is_ignored = False
-    for pattern, is_negation in patterns:
-        if _match_gitignore_pattern(rel_path, pattern):
-            is_ignored = not is_negation
-    
-    return is_ignored
+    """Check if a relative path is ignored according to one .gitignore file."""
+    matcher = GitIgnoreMatcher(_parse_gitignore_file(gitignore_path, ""))
+    return matcher.is_ignored(rel_path)
 
 
 def read_config(wiki_dir: "str | Path") -> dict:

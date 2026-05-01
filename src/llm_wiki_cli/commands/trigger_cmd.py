@@ -1,14 +1,14 @@
-import subprocess
 import os
+import subprocess
 import sys
 from pathlib import Path
-from . import extract_cmd
 from ..services.lockfile import WikiLock, LockAcquisitionError
 from ..services import circuit_breaker
 from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS
 import json
 
 GIT_DIR = Path(".git")
+DEFAULT_MAX_PROMPT_BYTES = 2_000_000
 
 
 def run(args):
@@ -77,8 +77,13 @@ def _run_sync(args):
 
     # 2. Extract context via current AST
     print("Extracting current structure context...")
-    from .extract_cmd import get_inventory, get_call_graph
-    inventory = get_inventory(".", deep=True)
+    from .extract_cmd import get_call_graph, get_inventory_result, print_inventory_failures
+    inventory_result = get_inventory_result(".", deep=True)
+    if inventory_result.failed:
+        print_inventory_failures(inventory_result)
+        circuit_breaker.record_failure(GIT_DIR)
+        return
+    inventory = inventory_result.inventory
     ast_json = json.dumps(inventory, indent=2)
 
     # 2b. Build call graph for workflow awareness
@@ -129,6 +134,16 @@ git commit -m "docs(wiki): auto-update [bot]"
 ```
 """
 
+    max_prompt_bytes = _max_prompt_bytes(args)
+    prompt_bytes = len(prompt.encode("utf-8"))
+    if prompt_bytes > max_prompt_bytes and not force:
+        print(
+            f"Prompt too large ({prompt_bytes} bytes > {max_prompt_bytes} limit). "
+            "Skipping auto-sync."
+        )
+        print("Use --force to override, or increase --max-prompt-bytes.")
+        return
+
     # 4. Save the prompt to a temp file
     prompt_file = Path(".git/llm-wiki-prompt.txt")
     with open(prompt_file, "w", encoding="utf-8") as f:
@@ -152,21 +167,17 @@ git commit -m "docs(wiki): auto-update [bot]"
         print(f"Running command: {' '.join(cmd)}")
 
         if args.agent == "claude":
-            result = subprocess.run(
-                cmd, input=prompt, capture_output=True, text=True,
-                timeout=timeout,
-            )
-        else:
-            with open(os.devnull, 'r') as devnull:
+            with open(prompt_file, "r", encoding="utf-8") as prompt_in:
                 result = subprocess.run(
-                    cmd, stdin=devnull, capture_output=True, text=True,
+                    cmd, stdin=prompt_in,
                     timeout=timeout,
                 )
-
-        print("Subagent Result:")
-        print(result.stdout)
-        if result.stderr:
-            print("stderr:", result.stderr)
+        else:
+            with open(os.devnull, "r") as devnull:
+                result = subprocess.run(
+                    cmd, stdin=devnull,
+                    timeout=timeout,
+                )
 
         # --- Fuse: record success / failure based on exit code ---
         if result.returncode != 0:
@@ -181,3 +192,16 @@ git commit -m "docs(wiki): auto-update [bot]"
     except Exception as e:
         print(f"Error executing agent {args.agent}: {e}")
         circuit_breaker.record_failure(GIT_DIR)
+
+
+def _max_prompt_bytes(args) -> int:
+    value = getattr(args, "max_prompt_bytes", None)
+    if value is not None:
+        return int(value)
+    env_value = os.environ.get("LLM_WIKI_MAX_PROMPT_BYTES")
+    if env_value:
+        try:
+            return int(env_value)
+        except ValueError:
+            pass
+    return DEFAULT_MAX_PROMPT_BYTES

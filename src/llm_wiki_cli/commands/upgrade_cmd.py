@@ -133,7 +133,7 @@ def _upgrade_dirs(wiki_dir: str) -> int:
     return created
 
 
-def _upgrade_hooks(agent: str, wiki_dir: str) -> None:
+def _upgrade_hooks(agent: str, wiki_dir: str, *, force: bool = False) -> None:
     """Reinstall git hooks for the resolved agent."""
     git_dir = Path(".git")
     if not git_dir.exists():
@@ -144,10 +144,10 @@ def _upgrade_hooks(agent: str, wiki_dir: str) -> None:
     hooks_dir.mkdir(exist_ok=True)
 
     if agent in IDE_AGENTS:
-        _install_hook(hooks_dir, "post-commit", _build_ide_post_commit(wiki_dir))
+        _install_hook(hooks_dir, "post-commit", _build_ide_post_commit(wiki_dir), force=force)
         print(f"  Hooks: IDE prompt-generation mode ({agent})")
     else:
-        _install_hook(hooks_dir, "post-commit", _build_post_commit(agent))
+        _install_hook(hooks_dir, "post-commit", _build_post_commit(agent), force=force)
         print(f"  Hooks: CLI auto-sync mode ({agent})")
 
 
@@ -205,7 +205,7 @@ def run(args):
 
     # 3. Git hooks
     print("\n3. Git Hooks:")
-    _upgrade_hooks(agent, wiki_dir)
+    _upgrade_hooks(agent, wiki_dir, force=getattr(args, "force", False))
 
     # 4. .gitignore
     print("\n4. .gitignore:")

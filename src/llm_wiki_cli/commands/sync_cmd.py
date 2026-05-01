@@ -20,7 +20,7 @@ from datetime import date
 from pathlib import Path
 from typing import Optional
 
-from .extract_cmd import get_inventory
+from .extract_cmd import get_inventory_result, infer_language_from_path, print_inventory_failures
 from .bootstrap_cmd import (
     _build_relationships,
     _generate_entity_md,
@@ -38,7 +38,7 @@ from ..services.io import read_md, write_md
 # ── Constants ─────────────────────────────────────────────────────────────────
 
 MANIFEST_FILENAME = ".llm-wiki-manifest.json"
-MANIFEST_VERSION = 1
+MANIFEST_VERSION = 2
 _DEPRECATION_HEADER = (
     "> ⚠️ **Stale:** Source no longer found in codebase. "
     "Run `llm-wiki lint` to audit.\n\n"
@@ -51,13 +51,14 @@ _DEPRECATION_HEADER = (
 class SyncManifest:
     """Persistent record of what the wiki was generated from.
 
-    Schema v1::
+    Schema v2::
 
         {
             "version": 1,
             "sources": {
                 "src/models.py": {
                     "hash": "sha256:<hex>",
+                    "language": "python",
                     "entities": ["User", "Role"],
                     "module_page": "models"
                 }
@@ -76,7 +77,11 @@ class SyncManifest:
         if not manifest_path.exists():
             raise FileNotFoundError(manifest_path)
         data = json.loads(manifest_path.read_text(encoding="utf-8"))
-        return cls(sources=data.get("sources", {}))
+        sources = data.get("sources", {})
+        for filepath, info in sources.items():
+            if "language" not in info:
+                info["language"] = infer_language_from_path(filepath)
+        return cls(sources=sources)
 
     def save(self, wiki_dir: Path) -> None:
         """Write manifest to *wiki_dir* atomically (write + rename)."""
@@ -105,6 +110,7 @@ class SyncManifest:
         for filepath, file_data in inventory.items():
             sources[filepath] = {
                 "hash": _hash_file(Path(src_dir) / filepath),
+                "language": file_data.get("language") or infer_language_from_path(filepath),
                 "entities": [c["name"] for c in file_data.get("classes", [])],
                 "module_page": module_page_map.get(filepath, _module_name_from_path(filepath)),
             }
@@ -355,7 +361,14 @@ def run(args) -> None:
                 f"Existing wiki pages will NOT be modified.\n"
                 f"Future `llm-wiki sync` runs will update incrementally.\n"
             )
-            inventory = get_inventory(src_dir, deep=True)
+            inventory_result = get_inventory_result(src_dir, deep=True)
+            if inventory_result.failed:
+                print_inventory_failures(inventory_result)
+                sys.exit(1)
+            inventory = inventory_result.inventory
+            if not inventory:
+                print("No supported source files found; manifest not written.")
+                return
             colliding_stems, colliding_cls, entity_page_cache = _collision_maps(
                 inventory, src_dir,
             )
@@ -377,10 +390,14 @@ def run(args) -> None:
     print(f"Wiki directory: {wiki_dir}")
 
     # 2. Extract current AST inventory (always deep for full page content)
-    inventory = get_inventory(src_dir, deep=True)
+    inventory_result = get_inventory_result(src_dir, deep=True)
+    if inventory_result.failed:
+        print_inventory_failures(inventory_result)
+        sys.exit(1)
+    inventory = inventory_result.inventory
 
     if not inventory and not manifest.sources:
-        print("No Python files with classes or functions found.")
+        print("No supported source files with classes or functions found.")
         return
 
     # 3. Compute diff

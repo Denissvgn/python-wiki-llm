@@ -17,6 +17,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from .common import discover_source_files, filter_bundled_inventory
+
 _RUST_SCRIPTS_DIR = Path(__file__).parent / "rust_scripts"
 
 
@@ -27,6 +29,8 @@ class RustExtractor:
 
     Each returned file entry includes ``"language": "rust"``.
     """
+
+    last_error: str | None = None
 
     def extract(
         self,
@@ -54,12 +58,13 @@ class RustExtractor:
             ``{filepath: file_entry}`` where each ``file_entry`` contains at
             minimum ``"classes"``, ``"functions"``, and ``"language"``.
         """
+        self.last_error = None
+        if not discover_source_files(src_dir, (".rs",), only_files=only_files, language="rust"):
+            return {}
+
         if not shutil.which("cargo"):
-            print(
-                "llm-wiki Rust extractor: cargo not found. "
-                "Install Rust (https://rustup.rs/) to enable Rust extraction.",
-                file=sys.stderr,
-            )
+            self.last_error = "cargo not found. Install Rust (https://rustup.rs/) to enable Rust extraction."
+            print(f"llm-wiki Rust extractor: {self.last_error}", file=sys.stderr)
             return {}
 
         cmd = [
@@ -81,18 +86,21 @@ class RustExtractor:
                 cwd=str(_RUST_SCRIPTS_DIR),
             )
         except subprocess.CalledProcessError as exc:
+            self.last_error = "extraction failed"
             print(
                 f"llm-wiki Rust extractor: extraction failed.\n{exc.stderr}",
                 file=sys.stderr,
             )
             return {}
         except subprocess.TimeoutExpired:
+            self.last_error = "extraction timed out after 180 s"
             print(
                 "llm-wiki Rust extractor: extraction timed out after 180 s.",
                 file=sys.stderr,
             )
             return {}
         except FileNotFoundError:
+            self.last_error = "cargo executable not found"
             print(
                 "llm-wiki Rust extractor: cargo executable not found.",
                 file=sys.stderr,
@@ -109,6 +117,7 @@ class RustExtractor:
         try:
             inventory: dict = json.loads(result.stdout)
         except json.JSONDecodeError as exc:
+            self.last_error = "malformed JSON output"
             print(
                 f"llm-wiki Rust extractor: malformed JSON output — {exc}",
                 file=sys.stderr,
@@ -118,12 +127,6 @@ class RustExtractor:
         for entry in inventory.values():
             entry["language"] = "rust"
 
-        # Exclude files from the extractor's own bundled scripts directory.
-        scripts_abs = _RUST_SCRIPTS_DIR.resolve().as_posix() + "/"
-        inventory = {
-            fp.replace("\\", "/"): data for fp, data in inventory.items()
-            if not fp.replace("\\", "/").startswith(scripts_abs)
-            and not Path(fp).resolve().as_posix().startswith(scripts_abs)
-        }
+        inventory = filter_bundled_inventory(inventory, _RUST_SCRIPTS_DIR)
 
         return inventory

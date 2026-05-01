@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.commands import lint_cmd
+from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 
 
 def _make_args(**kwargs):
@@ -130,3 +131,40 @@ class TestLintExitCode:
         with pytest.raises(SystemExit) as exc_info:
             lint_cmd.run(args)
         assert exc_info.value.code == 1
+
+
+class TestLintInventoryCaching:
+    def test_inventory_and_docker_scanned_once(self, tmp_project, monkeypatch, capsys):
+        wiki = tmp_project / "wiki"
+        for d in ["entities", "modules", "workflows", "infrastructure"]:
+            (wiki / d).mkdir(parents=True)
+        (wiki / "entities" / "A.md").write_text("# A\n")
+        (wiki / "modules" / "a.md").write_text("# a\n")
+        (wiki / "infrastructure" / "Dockerfile.md").write_text("# Dockerfile\n")
+        (wiki / "index.md").write_text(
+            "# Index\n"
+            "- [A](entities/A.md)\n"
+            "- [a](modules/a.md)\n"
+            "- [Dockerfile](infrastructure/Dockerfile.md)\n"
+        )
+        (wiki / "log.md").write_text("# Log\n")
+
+        calls = {"inventory": 0, "docker": 0}
+
+        def fake_inventory(*args, **kwargs):
+            calls["inventory"] += 1
+            return InventoryResult(
+                {"a.py": {"language": "python", "classes": [{"name": "A"}], "functions": []}},
+                {"python": ExtractorStatus("python", "ok", 1)},
+            )
+
+        def fake_docker(*args, **kwargs):
+            calls["docker"] += 1
+            return {"Dockerfile": {"type": "dockerfile"}}
+
+        monkeypatch.setattr(lint_cmd, "get_inventory_result", fake_inventory)
+        monkeypatch.setattr(lint_cmd, "get_docker_inventory", fake_docker)
+
+        lint_cmd.run(_make_args(wiki_dir=str(wiki), src_dir="."))
+
+        assert calls == {"inventory": 1, "docker": 1}

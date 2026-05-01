@@ -11,7 +11,9 @@ from llm_wiki_cli.config import (
     CLI_AGENTS,
     DEFAULT_WIKI_DIR,
     IDE_AGENTS,
+    build_gitignore_matcher,
     read_config,
+    PathValidationError,
     validate_path,
     write_config,
 )
@@ -43,12 +45,12 @@ class TestValidatePath:
 
     def test_rejects_traversal(self, tmp_path):
         os.chdir(tmp_path)
-        with pytest.raises(SystemExit):
+        with pytest.raises(PathValidationError):
             validate_path("../../etc", "--wiki-dir")
 
     def test_rejects_absolute_outside(self, tmp_path):
         os.chdir(tmp_path)
-        with pytest.raises(SystemExit):
+        with pytest.raises(PathValidationError):
             validate_path("/tmp/outside", "--wiki-dir")
 
     def test_accepts_absolute_inside(self, tmp_path):
@@ -107,3 +109,33 @@ class TestReadWriteConfig:
         result = read_config(str(wiki))
         assert result["agent"] == "generic"
         assert result["quality_hints"] is True
+
+
+class TestGitIgnoreMatcher:
+    def test_supports_root_anchored_negation_and_dir_patterns(self, tmp_path):
+        (tmp_path / ".gitignore").write_text(
+            "/root_only.py\n"
+            "build/\n"
+            "*.pyc\n"
+            "!keep.pyc\n"
+            "**/cache/*.json\n",
+            encoding="utf-8",
+        )
+        matcher = build_gitignore_matcher(tmp_path)
+
+        assert matcher.is_ignored("root_only.py")
+        assert not matcher.is_ignored("pkg/root_only.py")
+        assert matcher.is_ignored("build/out.py")
+        assert matcher.is_ignored("pkg/build/out.py")
+        assert matcher.is_ignored("x.pyc")
+        assert not matcher.is_ignored("keep.pyc")
+        assert matcher.is_ignored("pkg/cache/data.json")
+
+    def test_nested_gitignore_applies_to_subtree(self, tmp_path):
+        nested = tmp_path / "pkg"
+        nested.mkdir()
+        (nested / ".gitignore").write_text("generated/\n", encoding="utf-8")
+        matcher = build_gitignore_matcher(tmp_path)
+
+        assert matcher.is_ignored("pkg/generated/out.py")
+        assert not matcher.is_ignored("generated/out.py")

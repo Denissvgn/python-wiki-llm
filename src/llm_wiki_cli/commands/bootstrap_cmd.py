@@ -3,14 +3,16 @@ from __future__ import annotations
 import json
 import shlex
 import subprocess
+import sys
 from collections import defaultdict
 from collections.abc import Mapping
 from datetime import date
 from pathlib import Path
 
-from .extract_cmd import get_inventory, get_call_graph, get_docker_inventory
+from .extract_cmd import get_call_graph, get_docker_inventory, get_inventory_result, print_inventory_failures
 from ..config import validate_path
 from ..services.io import read_md, write_md
+from ..services.paths import normalize_source_path
 
 
 def _module_name_from_path(filepath: str) -> str:
@@ -118,7 +120,6 @@ def _build_relationships(inventory: dict, module_page_map: dict[str, str] | None
     ``module_page`` so that generated links point to the correct page even when
     the module stem was qualified to resolve a collision.
     """
-    # Collect all known entity (class) names
     entity_to_file = {}
     for filepath, data in inventory.items():
         for cls in data.get("classes", []):
@@ -132,46 +133,41 @@ def _build_relationships(inventory: dict, module_page_map: dict[str, str] | None
         mod_name = _module_name_from_path(filepath)
         mod_page = _mod_page_map.get(filepath, mod_name)
         imports = data.get("imports", [])
-        imported_names = {imp["name"] for imp in imports}
+        imported_names = {
+            imp["name"] for imp in imports
+            if imp.get("name") in entity_to_file and entity_to_file[imp["name"]] != filepath
+        }
 
-        # Check which known entities are imported into this file
-        for entity_name, entity_file in entity_to_file.items():
-            # Skip self-references (class defined in same file)
-            if entity_file == filepath:
-                continue
-            if entity_name in imported_names:
-                # Find which functions reference this entity via type annotations / decorators
-                for fn in data.get("functions", []):
-                    # Check params and return type for entity references
-                    mentions_entity = False
-                    for p in fn.get("params", []):
-                        if entity_name in p.get("type", ""):
-                            mentions_entity = True
-                    if entity_name in fn.get("return_type", ""):
+        for entity_name in imported_names:
+            for fn in data.get("functions", []):
+                mentions_entity = False
+                for p in fn.get("params", []):
+                    if entity_name in p.get("type", ""):
                         mentions_entity = True
-                    # Check decorators for response_model etc.
-                    for dec in fn.get("decorators", []):
-                        if entity_name in dec:
-                            mentions_entity = True
+                if entity_name in fn.get("return_type", ""):
+                    mentions_entity = True
+                for dec in fn.get("decorators", []):
+                    if entity_name in dec:
+                        mentions_entity = True
 
-                    if mentions_entity:
-                        relationships[entity_name].append({
-                            "module": mod_name,
-                            "module_page": mod_page,
-                            "module_path": filepath,
-                            "function": fn["name"],
-                            "rel": "used_by",
-                        })
-
-                # If imported but not found in any specific function, still note the import
-                if not any(r["module"] == mod_name for r in relationships[entity_name]):
+                if mentions_entity:
                     relationships[entity_name].append({
                         "module": mod_name,
                         "module_page": mod_page,
                         "module_path": filepath,
-                        "function": None,
-                        "rel": "imported_by",
+                        "function": fn["name"],
+                        "rel": "used_by",
                     })
+
+            # If imported but not found in any specific function, still note the import
+            if not any(r["module_path"] == filepath for r in relationships[entity_name]):
+                relationships[entity_name].append({
+                    "module": mod_name,
+                    "module_page": mod_page,
+                    "module_path": filepath,
+                    "function": None,
+                    "rel": "imported_by",
+                })
 
     return dict(relationships)
 
@@ -436,10 +432,7 @@ _SOURCE_EXTS = (".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs")
 
 def _normalize_source_path(path: str) -> str:
     """Normalize Docker COPY source paths for comparison with inventory keys."""
-    normalized = path.strip().strip('"').strip("'").replace("\\", "/")
-    while normalized.startswith("./"):
-        normalized = normalized[2:]
-    return normalized
+    return normalize_source_path(path) or ""
 
 
 def _coerce_module_links(module_links: Mapping[str, str] | set[str] | None) -> dict[str, str]:
@@ -784,10 +777,14 @@ def run(args):
         (wiki_dir / subdir).mkdir(parents=True, exist_ok=True)
 
     # 1. Extract full AST inventory
-    inventory = get_inventory(src_dir, deep=deep)
+    inventory_result = get_inventory_result(src_dir, deep=deep)
+    if inventory_result.failed:
+        print_inventory_failures(inventory_result)
+        sys.exit(1)
+    inventory = inventory_result.inventory
 
     if not inventory:
-        print("No Python files with classes or functions found. Nothing to bootstrap.")
+        print("No supported source files with classes or functions found. Nothing to bootstrap.")
         return
 
     all_entity_names = []

@@ -25,10 +25,11 @@ from .bootstrap_cmd import (
     build_entity_page_map,
     build_module_page_map,
 )
-from .extract_cmd import get_docker_inventory, get_inventory
+from .extract_cmd import get_docker_inventory, get_inventory_result, print_inventory_failures
 from .sync_cmd import MANIFEST_FILENAME, MANIFEST_VERSION, SyncManifest
 from ..config import DEFAULT_WIKI_DIR, validate_path
 from ..services.io import read_md, write_md
+from ..services.paths import normalize_source_path
 
 LEGACY_MARKER = "<!-- llm-wiki-migrate:legacy-notes -->"
 _MANAGED_DIRS = ("entities", "modules", "infrastructure")
@@ -97,20 +98,7 @@ class MigrationChunk:
 
 def _normalize_source_path(value: str | None, src_dir: str) -> str | None:
     """Normalize extracted markdown source paths to inventory-relative paths."""
-    if not value:
-        return None
-    normalized = value.strip().strip("`").strip().strip('"').strip("'")
-    normalized = normalized.replace("\\", "/")
-    while normalized.startswith("./"):
-        normalized = normalized[2:]
-
-    candidate = Path(normalized)
-    if candidate.is_absolute():
-        try:
-            return candidate.resolve().relative_to(Path(src_dir).resolve()).as_posix()
-        except ValueError:
-            return candidate.as_posix()
-    return normalized
+    return normalize_source_path(value, src_dir)
 
 
 def _page_rel(path: Path, wiki_dir: Path) -> str:
@@ -382,7 +370,11 @@ def _match_existing_page(page: ExistingPage, lookups: dict[str, dict]) -> Target
 
 
 def _build_migration_plan(wiki_dir: Path, src_dir: str) -> MigrationPlan:
-    inventory = get_inventory(src_dir, deep=True)
+    inventory_result = get_inventory_result(src_dir, deep=True)
+    if inventory_result.failed:
+        print_inventory_failures(inventory_result)
+        sys.exit(1)
+    inventory = inventory_result.inventory
     docker_inventory = get_docker_inventory(src_dir)
     targets, index_content, manifest = _build_targets(
         wiki_dir,

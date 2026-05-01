@@ -226,6 +226,20 @@ class TestReleaseCmdRun:
         )
         assert "CHANGELOG.md" in result.stdout
 
+    def test_stage_git_add_failure_exits_nonzero(self, tmp_project, monkeypatch):
+        from llm_wiki_cli.commands import release_cmd
+        self._write_changelog(_BASE_CHANGELOG)
+
+        def fake_run(*args, **kwargs):
+            raise subprocess.CalledProcessError(128, args[0], stderr="not a git repo")
+
+        monkeypatch.setattr(release_cmd.subprocess, "run", fake_run)
+
+        with pytest.raises(SystemExit) as exc_info:
+            release_cmd.run(_make_args(stage=True))
+
+        assert exc_info.value.code == 1
+
     def test_missing_changelog_exits_1(self, tmp_project):
         from llm_wiki_cli.commands import release_cmd
         args = _make_args(changelog="NONEXISTENT.md")

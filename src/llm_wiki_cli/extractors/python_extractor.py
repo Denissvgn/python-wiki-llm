@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import ast
+import sys
 from pathlib import Path
 
-from ..config import EXCLUDED_DIRS, is_ignored_by_gitignore
+from ..config import build_gitignore_matcher
+from .common import discover_source_files
 
 
 # ── AST helper utilities ──────────────────────────────────────────────
@@ -230,37 +232,31 @@ def _scan_python_files(
     """
     src_path = Path(src_dir).resolve()
     inventory = {}
-
-    if only_files is not None:
-        # Resolve each relative path against src_dir
-        py_files = []
-        for f in only_files:
-            p = src_path / f
-            if p.suffix == ".py" and p.exists():
-                py_files.append(p)
-    else:
-        py_files = list(src_path.rglob("*.py"))
+    matcher = build_gitignore_matcher(src_path)
+    py_files = [
+        src_path / rel
+        for rel in discover_source_files(
+            str(src_path), (".py",), only_files=only_files, language="python", matcher=matcher,
+        )
+    ]
 
     for py_file in py_files:
-        # Use *relative* parts so that parent directories outside src_dir
-        # (e.g. a project living under a folder named "env") don't
-        # trigger false exclusions.
         rel = py_file.relative_to(src_path)
-        if not EXCLUDED_DIRS.isdisjoint(rel.parts):
-            continue
-        
-        # Check .gitignore (respects project's ignore rules)
-        rel_str = str(rel).replace("\\", "/")
-        gitignore_path = src_path / ".gitignore"
-        if is_ignored_by_gitignore(rel_str, gitignore_path):
-            continue
-
-        with open(py_file, "r", encoding="utf-8") as f:
+        try:
+            data = py_file.read_bytes()
             try:
-                source = f.read()
-                tree = ast.parse(source, filename=str(py_file))
-            except SyntaxError:
-                continue
+                source = data.decode("utf-8")
+            except UnicodeDecodeError:
+                source = data.decode("cp1252")
+            tree = ast.parse(source, filename=str(py_file))
+        except UnicodeDecodeError:
+            print(f"llm-wiki Python extractor: skipped undecodable file {rel.as_posix()}", file=sys.stderr)
+            continue
+        except OSError as exc:
+            print(f"llm-wiki Python extractor: failed to read {rel.as_posix()}: {exc}", file=sys.stderr)
+            continue
+        except SyntaxError:
+            continue
 
         visitor = ComponentVisitor(deep=deep)
         visitor.visit(tree)

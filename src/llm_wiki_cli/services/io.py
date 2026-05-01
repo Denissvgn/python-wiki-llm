@@ -8,6 +8,8 @@ normalize output to UTF-8 with Unix line-endings.
 
 from __future__ import annotations
 
+import os
+import tempfile
 from pathlib import Path
 
 
@@ -27,8 +29,19 @@ def read_md(path: Path) -> str:
 def write_md(path: Path, text: str) -> None:
     """Write *text* to *path* as UTF-8 with Unix line-endings.
 
-    Uses ``write_bytes`` so that Windows text-mode doesn't translate
-    ``\\n`` into ``\\r\\n`` behind our back.
+    Writes through a same-directory temporary file and atomically replaces
+    the destination so an interrupted process does not leave a truncated page.
     """
     normalized = text.replace("\r\n", "\n").replace("\r", "\n")
-    path.write_bytes(normalized.encode("utf-8"))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "wb") as f:
+            f.write(normalized.encode("utf-8"))
+        os.replace(tmp, path)
+    except BaseException:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise

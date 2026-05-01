@@ -1,7 +1,8 @@
 import argparse
+import os
 import sys
 from .commands import init_cmd, extract_cmd, lint_cmd, hook_cmd, trigger_cmd, bootstrap_cmd, bump_cmd, uninstall_cmd, generate_prompt_cmd, status_cmd, release_cmd, upgrade_cmd, sync_cmd, context_cmd, migrate_cmd
-from .config import AGENT_CHOICES, DEFAULT_WIKI_DIR
+from .config import AGENT_CHOICES, DEFAULT_WIKI_DIR, PathValidationError
 from . import __version__
 
 
@@ -52,6 +53,8 @@ def main():
                              help="Wiki directory to read agent config from (default: docs/llm_wiki)")
     hook_parser.add_argument("--agent", choices=AGENT_CHOICES, default=None,
                              help="Override the agent for the post-commit hook (default: read from wiki config)")
+    hook_parser.add_argument("--force", action="store_true",
+                             help="Replace an existing unrelated post-commit hook")
 
     # trigger command
     trigger_parser = subparsers.add_parser("trigger-agent", help="Trigger subagent to update wiki using diff")
@@ -62,8 +65,10 @@ def main():
                                 help="Timeout in seconds for the subagent process (default: 300)")
     trigger_parser.add_argument("--max-diff-lines", type=int, default=1000,
                                 help="Skip sync if diff exceeds this many lines (default: 1000)")
+    trigger_parser.add_argument("--max-prompt-bytes", type=_positive_int, default=None,
+                                help=f"Skip sync if generated prompt exceeds this many bytes (default: {trigger_cmd.DEFAULT_MAX_PROMPT_BYTES})")
     trigger_parser.add_argument("--force", action="store_true",
-                                help="Bypass the diff size guard (does not bypass lock or circuit breaker)")
+                                help="Bypass diff and prompt size guards (does not bypass lock or circuit breaker)")
 
     # bootstrap command
     bootstrap_parser = subparsers.add_parser("bootstrap", help="Generate initial wiki for an existing codebase")
@@ -127,6 +132,8 @@ def main():
                                 help="Wiki directory path (default: docs/llm_wiki)")
     upgrade_parser.add_argument("--agent", choices=AGENT_CHOICES, default=None,
                                 help="Switch to a different agent (default: keep current)")
+    upgrade_parser.add_argument("--force", action="store_true",
+                                help="Replace an existing unrelated post-commit hook")
     upgrade_hints = upgrade_parser.add_mutually_exclusive_group()
     upgrade_hints.add_argument("--quality-hints", dest="quality_hints", action="store_true", default=None,
                                help="Include agent quality guidelines in the constraint block")
@@ -209,7 +216,12 @@ def main():
     except KeyboardInterrupt:
         print("\nAborted.")
         sys.exit(130)
+    except PathValidationError as exc:
+        print(str(exc), file=sys.stderr)
+        sys.exit(1)
     except Exception as exc:
+        if os.environ.get("LLM_WIKI_DEBUG"):
+            raise
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(1)
 

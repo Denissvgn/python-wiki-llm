@@ -5,7 +5,7 @@ import re
 import sys
 from pathlib import Path
 
-from .extract_cmd import get_inventory, get_call_graph, get_docker_inventory
+from .extract_cmd import get_call_graph, get_docker_inventory, get_inventory_result, print_inventory_failures
 from .bootstrap_cmd import build_module_page_map, build_entity_page_map
 from ..config import validate_path
 from ..services.io import read_md
@@ -33,13 +33,17 @@ def _collect_documented_entities(wiki_dir: Path) -> set[str]:
     return {p.stem for p in entities_dir.glob("*.md")}
 
 
-def _collect_code_classes(src_dir: str) -> set[str]:
+def _collect_code_classes(inventory_or_src_dir) -> set[str]:
     """Return the set of entity page names found by AST scanning.
 
     Uses collision-aware naming so that duplicate class names across
     different modules are qualified (e.g. ``parser_Parser``).
     """
-    inventory = get_inventory(src_dir)
+    inventory = (
+        inventory_or_src_dir
+        if isinstance(inventory_or_src_dir, dict)
+        else get_inventory_result(inventory_or_src_dir).inventory
+    )
     entity_map = build_entity_page_map(inventory)
     return set(entity_map.values())
 
@@ -52,13 +56,17 @@ def _collect_documented_modules(wiki_dir: Path) -> set[str]:
     return {p.stem for p in modules_dir.glob("*.md")}
 
 
-def _collect_code_modules(src_dir: str) -> set[str]:
+def _collect_code_modules(inventory_or_src_dir) -> set[str]:
     """Return the set of module page names with tracked components.
 
     Uses collision-aware naming so that duplicate file stems across
     different directories are qualified (e.g. ``pkg_a_cli``).
     """
-    inventory = get_inventory(src_dir)
+    inventory = (
+        inventory_or_src_dir
+        if isinstance(inventory_or_src_dir, dict)
+        else get_inventory_result(inventory_or_src_dir).inventory
+    )
     mod_map = build_module_page_map(inventory)
     return set(mod_map.values())
 
@@ -79,9 +87,13 @@ def _collect_documented_infrastructure(wiki_dir: Path) -> set[str]:
     return {p.stem for p in infra_dir.glob("*.md")}
 
 
-def _collect_docker_files(src_dir: str) -> set[str]:
+def _collect_docker_files(docker_inventory_or_src_dir) -> set[str]:
     """Return the set of Docker/Compose file page-names found in source."""
-    docker_inv = get_docker_inventory(src_dir)
+    docker_inv = (
+        docker_inventory_or_src_dir
+        if isinstance(docker_inventory_or_src_dir, dict)
+        else get_docker_inventory(docker_inventory_or_src_dir)
+    )
     return {f.replace("\\", "/").replace("/", "_").replace(".", "_") for f in docker_inv}
 
 
@@ -97,6 +109,13 @@ def run(args):
     if not wiki_dir.exists():
         print(f"Error: Directory {wiki_dir} does not exist.")
         sys.exit(1)
+
+    inventory_result = get_inventory_result(src_dir, deep=True)
+    if inventory_result.failed:
+        print_inventory_failures(inventory_result)
+        sys.exit(1)
+    deep_inventory = inventory_result.inventory
+    docker_inventory = get_docker_inventory(src_dir)
 
     pages = [
         page for page in wiki_dir.rglob("*.md")
@@ -151,7 +170,7 @@ def run(args):
 
     # ── 3. AST ↔ Wiki Cross-Reference (entities) ─────────────────────
     documented_entities = _collect_documented_entities(wiki_dir)
-    code_classes = _collect_code_classes(src_dir)
+    code_classes = _collect_code_classes(deep_inventory)
 
     undocumented = code_classes - documented_entities
     stale = documented_entities - code_classes
@@ -174,7 +193,7 @@ def run(args):
 
     # ── 4. AST ↔ Wiki Cross-Reference (modules) ──────────────────────
     documented_modules = _collect_documented_modules(wiki_dir)
-    code_modules = _collect_code_modules(src_dir)
+    code_modules = _collect_code_modules(deep_inventory)
 
     undoc_mods = code_modules - documented_modules
     stale_mods = documented_modules - code_modules
@@ -220,11 +239,7 @@ def run(args):
         print("  ✅ No broken workflow links.\n")
 
     # 5b. Detect missing workflows (call chains with 3+ modules but no page)
-    try:
-        deep_inventory = get_inventory(src_dir, deep=True)
-        detected_workflows = set(get_call_graph(deep_inventory).keys())
-    except Exception:
-        detected_workflows = set()
+    detected_workflows = set(get_call_graph(deep_inventory).keys())
 
     missing_wf = detected_workflows - documented_workflows
     if missing_wf:
@@ -237,7 +252,7 @@ def run(args):
 
     # ── 6. Infrastructure checks (Docker/Compose) ────────────────────
     documented_infra = _collect_documented_infrastructure(wiki_dir)
-    code_docker = _collect_docker_files(src_dir)
+    code_docker = _collect_docker_files(docker_inventory)
 
     undoc_infra = code_docker - documented_infra
     stale_infra = documented_infra - code_docker
