@@ -1,6 +1,7 @@
 """Tests for commands/generate_prompt_cmd.py"""
 from __future__ import annotations
 
+import os
 import stat
 import types
 from pathlib import Path
@@ -35,7 +36,10 @@ class TestGeneratePromptWritesFile:
         generate_prompt_cmd.run(args)
 
         mode = stat.S_IMODE(Path(".git/llm-wiki-prompt.txt").stat().st_mode)
-        assert mode == 0o600
+        if os.name == "nt":
+            assert Path(".git/llm-wiki-prompt.txt").is_file()
+        else:
+            assert mode == 0o600
 
     def test_prompt_contains_wiki_dir(self, tmp_project):
         args = _make_args(wiki_dir="my_docs/wiki")

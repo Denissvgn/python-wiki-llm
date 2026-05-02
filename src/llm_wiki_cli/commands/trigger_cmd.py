@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 from ..services.lockfile import WikiLock, LockAcquisitionError
 from ..services import circuit_breaker
+from ..services.secure_file import write_private_text
 from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS, validate_path
 import json
 
@@ -144,12 +145,7 @@ LLM_WIKI_AUTO_COMMIT=1 git commit -m "docs(wiki): auto-update [bot]"
 
     # 4. Save the prompt to a temp file
     prompt_file = Path(".git/llm-wiki-prompt.txt")
-    with open(prompt_file, "w", encoding="utf-8") as f:
-        f.write(prompt)
-    try:
-        os.chmod(prompt_file, 0o600)
-    except OSError:
-        pass
+    write_private_text(prompt_file, prompt)
 
     # 5. Delegate to Subagent via CLI
     print(f"Delegating to {args.agent} subagent...")

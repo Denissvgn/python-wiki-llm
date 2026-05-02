@@ -1,5 +1,6 @@
 """Tests for commands/trigger_cmd.py (mock-based, no real LLM agent needed)."""
 import json
+import os
 import stat
 import subprocess
 import types
@@ -143,7 +144,10 @@ class TestTriggerPromptHandling:
         prompt = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
         assert 'LLM_WIKI_AUTO_COMMIT=1 git commit -m "docs(wiki): auto-update [bot]"' in prompt
         mode = stat.S_IMODE(Path(".git/llm-wiki-prompt.txt").stat().st_mode)
-        assert mode == 0o600
+        if os.name == "nt":
+            assert Path(".git/llm-wiki-prompt.txt").is_file()
+        else:
+            assert mode == 0o600
 
     def test_agent_nonzero_records_failure(self, tmp_project, monkeypatch):
         monkeypatch.setattr(

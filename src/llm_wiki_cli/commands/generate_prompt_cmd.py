@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import os
-from pathlib import Path
-
 from ..config import DEFAULT_WIKI_DIR, validate_path
 from ..services.paths import shell_quote
+from ..services.secure_file import write_private_text
 
 _DEFAULT_PROMPT_FILE = ".git/llm-wiki-prompt.txt"
 
@@ -83,13 +81,7 @@ def run(args) -> None:
         print(prompt)
         return
 
-    out_path = Path(output)
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(prompt, encoding="utf-8")
-    try:
-        os.chmod(out_path, 0o600)
-    except OSError:
-        pass
+    out_path = write_private_text(output, prompt)
 
     print(f"Wiki sync prompt written to: {out_path}")
     print()

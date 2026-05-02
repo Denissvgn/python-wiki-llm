@@ -26,4 +26,6 @@ def normalize_source_path(value: str | None, src_dir: str | None = None) -> str 
 
 def shell_quote(value: str | Path) -> str:
     """Quote a value for POSIX shell snippets, including Git Bash on Windows."""
+    if isinstance(value, Path):
+        return shlex.quote(value.as_posix())
     return shlex.quote(str(value))
