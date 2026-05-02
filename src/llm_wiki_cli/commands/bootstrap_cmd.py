@@ -55,11 +55,28 @@ def _disambiguate_paths(fps: list[str], stem: str) -> dict[str, str]:
             candidates[fp] = "_".join(prefix_parts) + "_" + stem
         if len(set(candidates.values())) == len(fps):
             return candidates
-    # Fallback: full path (always unique)
-    return {
-        fp: str(Path(fp).with_suffix("")).replace("/", "_").replace("\\", "_")
-        for fp in fps
-    }
+    # Fallback: full path plus extension, with a final numeric guard.
+    candidates = {fp: _page_name_with_extension(fp) for fp in fps}
+    if len(set(candidates.values())) == len(fps):
+        return candidates
+
+    seen: dict[str, int] = defaultdict(int)
+    unique: dict[str, str] = {}
+    for fp in sorted(fps):
+        name = candidates[fp]
+        seen[name] += 1
+        unique[fp] = name if seen[name] == 1 else f"{name}_{seen[name]}"
+    return unique
+
+
+def _page_name_with_extension(filepath: str) -> str:
+    """Return a page-safe path stem that includes the source extension."""
+    path = Path(filepath)
+    base = path.with_suffix("").as_posix()
+    base = base.replace("/", "_").replace("\\", "_").replace(".", "_")
+    ext = path.suffix.lower().lstrip(".") or "file"
+    ext = ext.replace(".", "_")
+    return f"{base}_{ext}"
 
 
 def build_module_page_map(inventory: dict) -> dict[str, str]:
@@ -124,7 +141,7 @@ def _module_path_candidates(module: str, importer_filepath: str, inventory: dict
     candidate_stems: set[str] = set()
     has_relative_candidate = False
 
-    if normalized.startswith("."):
+    if normalized.startswith(("./", "../")):
         rel = normalized
         while rel.startswith("./"):
             rel = rel[2:]
@@ -133,6 +150,24 @@ def _module_path_candidates(module: str, importer_filepath: str, inventory: dict
                 posixpath.normpath((importer_parent / rel).as_posix()).strip("/")
             )
             has_relative_candidate = True
+    elif normalized.startswith("."):
+        dot_count = len(normalized) - len(normalized.lstrip("."))
+        remainder = normalized[dot_count:]
+        base = importer_parent
+        for _ in range(max(dot_count - 1, 0)):
+            base = base.parent
+        if remainder:
+            candidate_stems.add(
+                posixpath.normpath((base / remainder.replace(".", "/")).as_posix()).strip("/")
+            )
+        else:
+            base_candidate = posixpath.normpath(base.as_posix()).strip("/")
+            if base_candidate:
+                candidate_stems.add(base_candidate)
+                candidate_stems.add(f"{base_candidate}/__init__")
+            else:
+                candidate_stems.add("__init__")
+        has_relative_candidate = True
 
     if not has_relative_candidate:
         module_path = normalized.replace("::", "/").replace(".", "/")

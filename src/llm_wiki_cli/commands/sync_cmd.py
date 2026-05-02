@@ -112,6 +112,10 @@ class SyncManifest:
                 "hash": _hash_file(Path(src_dir) / filepath),
                 "language": file_data.get("language") or infer_language_from_path(filepath),
                 "entities": [c["name"] for c in file_data.get("classes", [])],
+                "entity_pages": {
+                    c["name"]: entity_page_cache.get((c["name"], filepath), c["name"])
+                    for c in file_data.get("classes", [])
+                },
                 "module_page": module_page_map.get(filepath, _module_name_from_path(filepath)),
             }
         return cls(sources=sources)
@@ -298,20 +302,7 @@ def _apply_diff(
         deprecated_count = 0
 
         for cls_name in old_info.get("entities", []):
-            # Resolve the old page name from the manifest's module_page or qualifier
-            old_mod_page = old_info.get("module_page", _module_name_from_path(filepath))
-            # The entity page name cannot always be re-derived exactly (qualifiers depend
-            # on the full inventory at bootstrap time), so we search by class name first,
-            # falling back to unqualified name.
-            entity_page_name: Optional[str] = None
-            candidate = wiki_dir / "entities" / f"{cls_name}.md"
-            if candidate.exists():
-                entity_page_name = cls_name
-            else:
-                # Try qualifier-based names matching this class
-                for p in (wiki_dir / "entities").glob(f"*__{cls_name}.md"):
-                    entity_page_name = p.stem
-                    break
+            entity_page_name = _removed_entity_page_name(wiki_dir, cls_name, filepath, old_info)
 
             if entity_page_name:
                 entity_path = wiki_dir / "entities" / f"{entity_page_name}.md"
@@ -325,11 +316,6 @@ def _apply_diff(
         # Module page deprecation
         old_mod_page = old_info.get("module_page", _module_name_from_path(filepath))
         mod_page_path = wiki_dir / "modules" / f"{old_mod_page}.md"
-        if not mod_page_path.exists():
-            # Try qualifier-based name
-            for p in (wiki_dir / "modules").glob(f"*__{old_mod_page}.md"):
-                mod_page_path = p
-                break
 
         if mod_page_path.exists():
             text = read_md(mod_page_path)
@@ -339,6 +325,35 @@ def _apply_diff(
                 print(f"  DEPRECATE module: {mod_page_path.stem}")
 
     return result
+
+
+def _removed_entity_page_name(
+    wiki_dir: Path,
+    cls_name: str,
+    filepath: str,
+    old_info: dict,
+) -> Optional[str]:
+    """Resolve the existing entity page for a class whose source file was removed."""
+    entity_pages = old_info.get("entity_pages", {})
+    candidates: list[str] = []
+    if isinstance(entity_pages, dict) and entity_pages.get(cls_name):
+        candidates.append(str(entity_pages[cls_name]))
+
+    old_mod_page = old_info.get("module_page", _module_name_from_path(filepath))
+    if old_mod_page:
+        candidates.append(f"{old_mod_page}_{cls_name}")
+    candidates.append(cls_name)
+
+    seen: set[str] = set()
+    for page_name in candidates:
+        if page_name in seen:
+            continue
+        seen.add(page_name)
+        if (wiki_dir / "entities" / f"{page_name}.md").exists():
+            return page_name
+
+    matches = sorted((wiki_dir / "entities").glob(f"*_{cls_name}.md"))
+    return matches[0].stem if matches else None
 
 
 # ── run ───────────────────────────────────────────────────────────────────────

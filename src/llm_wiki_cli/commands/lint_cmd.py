@@ -14,6 +14,16 @@ from ..services.io import read_md
 LINK_RE = re.compile(r'\[.+?\]\((.+?)\)')
 
 
+def _local_link_path(link: str) -> str | None:
+    """Return the file portion of a local markdown link, or None if ignored."""
+    if link.startswith(("http://", "https://", "mailto:", "#")):
+        return None
+    base, _sep, _anchor = link.partition("#")
+    if not base:
+        return None
+    return base
+
+
 def _is_legacy_page(path: Path, wiki_dir: Path) -> bool:
     """Return True for archived migration pages that lint should ignore."""
     try:
@@ -129,9 +139,10 @@ def run(args):
         links = LINK_RE.findall(content)
 
         for link in links:
-            if link.startswith("http://") or link.startswith("https://"):
+            local_path = _local_link_path(link)
+            if local_path is None:
                 continue
-            target = (page.parent / link).resolve()
+            target = (page.parent / local_path).resolve()
             if not target.exists():
                 print(f"  ❌ Broken link in {page.relative_to(wiki_dir)} -> {link}")
                 broken_links += 1
@@ -151,8 +162,9 @@ def run(args):
         index_links = LINK_RE.findall(index_content)
 
         for link in index_links:
-            if not link.startswith("http"):
-                target = (index_path.parent / link).resolve()
+            local_path = _local_link_path(link)
+            if local_path is not None:
+                target = (index_path.parent / local_path).resolve()
                 referenced_files.append(target)
 
         for page in pages:
@@ -225,9 +237,10 @@ def run(args):
             content = read_md(wf_page)
             links = LINK_RE.findall(content)
             for link in links:
-                if link.startswith("http"):
+                local_path = _local_link_path(link)
+                if local_path is None:
                     continue
-                target = (wf_page.parent / link).resolve()
+                target = (wf_page.parent / local_path).resolve()
                 if not target.exists():
                     print(f"  ⚠️  Broken link in workflow {wf_page.stem} -> {link}")
                     stale_wf += 1

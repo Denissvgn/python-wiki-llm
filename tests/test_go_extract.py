@@ -52,6 +52,32 @@ def _make_go(tmp_path: Path, filename: str, content: str) -> Path:
     return p
 
 
+class TestGoWrapperFiltering:
+    def test_full_scan_passes_gitignore_filtered_files_to_subprocess(self, tmp_path, monkeypatch):
+        _make_go(tmp_path, "real.go", "package main\n\ntype Real struct{}\n")
+        _make_go(tmp_path, "ignored.go", "package main\n\ntype Ignored struct{}\n")
+        (tmp_path / ".gitignore").write_text("ignored.go\n", encoding="utf-8")
+        commands = []
+
+        def fake_run(cmd, *args, **kwargs):
+            commands.append(cmd)
+            return subprocess.CompletedProcess(
+                cmd,
+                0,
+                stdout='{"real.go":{"classes":[],"functions":[]}}',
+                stderr="",
+            )
+
+        monkeypatch.setattr("llm_wiki_cli.extractors.go_extractor.shutil.which", lambda _name: "/bin/go")
+        monkeypatch.setattr("llm_wiki_cli.extractors.go_extractor.subprocess.run", fake_run)
+
+        GoExtractor().extract(str(tmp_path))
+
+        cmd = commands[0]
+        only_idx = cmd.index("--only-files") + 1
+        assert cmd[only_idx] == "real.go"
+
+
 # ===========================================================================
 # Unit-level tests (require Go)
 # ===========================================================================

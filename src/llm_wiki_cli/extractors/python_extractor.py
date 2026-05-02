@@ -146,7 +146,7 @@ class ComponentVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def visit_ImportFrom(self, node):
-        module = node.module or ""
+        module = "." * node.level + (node.module or "")
         for alias in node.names:
             self.imports.append({
                 "module": module,

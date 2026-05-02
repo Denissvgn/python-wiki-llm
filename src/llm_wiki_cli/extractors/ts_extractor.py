@@ -114,7 +114,10 @@ class TypeScriptExtractor:
             minimum ``"classes"``, ``"functions"``, and ``"language"``.
         """
         self.last_error = None
-        if not discover_source_files(src_dir, (".ts", ".tsx"), only_files=only_files, language="typescript"):
+        source_files = discover_source_files(
+            src_dir, (".ts", ".tsx"), only_files=only_files, language="typescript",
+        )
+        if not source_files:
             return {}
 
         if not shutil.which("node"):
@@ -134,8 +137,7 @@ class TypeScriptExtractor:
             str(_TS_SCRIPTS_DIR / "extract.js"),
             "--src-dir", str(Path(src_dir).resolve()),
         ]
-        if only_files:
-            cmd += ["--only-files", ",".join(only_files)]
+        cmd += ["--only-files", ",".join(source_files)]
         if deep:
             cmd.append("--deep")
 

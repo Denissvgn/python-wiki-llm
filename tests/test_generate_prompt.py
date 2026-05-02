@@ -127,3 +127,9 @@ class TestGeneratePromptBuildPrompt:
         generate_prompt_cmd.run(args)
         content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
         assert "git diff HEAD~1..HEAD" in content
+
+    def test_prompt_commit_uses_auto_commit_guard(self, tmp_project):
+        args = _make_args()
+        generate_prompt_cmd.run(args)
+        content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
+        assert 'LLM_WIKI_AUTO_COMMIT=1 git commit -m "docs(wiki): auto-update [bot]"' in content

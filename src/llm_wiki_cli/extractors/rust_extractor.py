@@ -59,7 +59,10 @@ class RustExtractor:
             minimum ``"classes"``, ``"functions"``, and ``"language"``.
         """
         self.last_error = None
-        if not discover_source_files(src_dir, (".rs",), only_files=only_files, language="rust"):
+        source_files = discover_source_files(
+            src_dir, (".rs",), only_files=only_files, language="rust",
+        )
+        if not source_files:
             return {}
 
         if not shutil.which("cargo"):
@@ -71,8 +74,7 @@ class RustExtractor:
             "cargo", "run", "--quiet", "--",
             "--src-dir", str(Path(src_dir).resolve()),
         ]
-        if only_files:
-            cmd += ["--only-files", ",".join(only_files)]
+        cmd += ["--only-files", ",".join(source_files)]
         if deep:
             cmd.append("--deep")
 

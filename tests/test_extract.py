@@ -100,6 +100,22 @@ class TestGetInventory:
         assert "Path" in import_names
         assert "os" in import_names
 
+    def test_deep_mode_preserves_relative_import_level(self, tmp_path):
+        pkg = tmp_path / "pkg" / "sub"
+        pkg.mkdir(parents=True)
+        (pkg / "consumer.py").write_text(textwrap.dedent("""\
+            from .models import Local
+            from ..models import Parent
+
+            def run(local: Local, parent: Parent):
+                return local, parent
+        """))
+        inventory = get_inventory(str(tmp_path), deep=True)
+        imports = inventory["pkg/sub/consumer.py"]["imports"]
+        modules = {imp["name"]: imp["module"] for imp in imports}
+        assert modules["Local"] == ".models"
+        assert modules["Parent"] == "..models"
+
     def test_deep_mode_includes_methods(self, tmp_path):
         (tmp_path / "svc.py").write_text(textwrap.dedent("""\
             class Service:

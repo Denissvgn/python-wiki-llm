@@ -16,6 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Shared schema utilities extracted to `services/schema.py` — constraint block markers, `build_schema_content()`, `strip_wiki_block()`, `replace_schema_block()` now centralised; eliminates duplication across `init_cmd`, `uninstall_cmd`, `bootstrap_cmd`
 - Source extraction skips more generated dependency/environment directories, including arbitrary virtualenv `site-packages` layouts, PEP 582 `__pypackages__`, `.nox`, `.direnv`, JS package-manager caches, and Go/Rust `--only-files` paths inside excluded trees
 
+### Fixed
+- Prevent wiki auto-sync bot commits from recursively triggering the post-commit hook.
+- Preserve Python relative import levels in deep extraction and resolve relative import relationships correctly.
+- Avoid wiki page collisions for same-directory multi-language files that share a stem.
+- Apply `.gitignore` filtering consistently before TypeScript, Go, and Rust extractor subprocesses run.
+- Deprecate qualified entity pages correctly during incremental sync after source deletion.
+- Handle local markdown anchors and `mailto:` links correctly during wiki linting.
+
 ## [0.1.5] - 2026-04-11
 
 ### Added

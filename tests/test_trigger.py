@@ -140,6 +140,8 @@ class TestTriggerPromptHandling:
         assert "input" not in agent_kwargs[0]["keys"]
         assert "capture_output" not in agent_kwargs[0]["keys"]
         assert agent_kwargs[0]["stdin_readable"] is True
+        prompt = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
+        assert 'LLM_WIKI_AUTO_COMMIT=1 git commit -m "docs(wiki): auto-update [bot]"' in prompt
         mode = stat.S_IMODE(Path(".git/llm-wiki-prompt.txt").stat().st_mode)
         assert mode == 0o600
 

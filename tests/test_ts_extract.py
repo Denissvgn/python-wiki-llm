@@ -58,6 +58,33 @@ def _make_ts(tmp_path: Path, filename: str, content: str) -> Path:
     return p
 
 
+class TestTypeScriptWrapperFiltering:
+    def test_full_scan_passes_gitignore_filtered_files_to_subprocess(self, tmp_path, monkeypatch):
+        _make_ts(tmp_path, "real.ts", "export class Real {}")
+        _make_ts(tmp_path, "ignored.ts", "export class Ignored {}")
+        (tmp_path / ".gitignore").write_text("ignored.ts\n", encoding="utf-8")
+        commands = []
+
+        def fake_run(cmd, *args, **kwargs):
+            commands.append(cmd)
+            return subprocess.CompletedProcess(
+                cmd,
+                0,
+                stdout='{"real.ts":{"classes":[],"functions":[]}}',
+                stderr="",
+            )
+
+        monkeypatch.setattr("llm_wiki_cli.extractors.ts_extractor.shutil.which", lambda _name: "/bin/tool")
+        monkeypatch.setattr("llm_wiki_cli.extractors.ts_extractor._ensure_npm_deps", lambda: True)
+        monkeypatch.setattr("llm_wiki_cli.extractors.ts_extractor.subprocess.run", fake_run)
+
+        TypeScriptExtractor().extract(str(tmp_path))
+
+        cmd = commands[0]
+        only_idx = cmd.index("--only-files") + 1
+        assert cmd[only_idx] == "real.ts"
+
+
 # ===========================================================================
 # Unit-level tests (require Node.js)
 # ===========================================================================

@@ -52,6 +52,32 @@ def _make_rs(tmp_path: Path, filename: str, content: str) -> Path:
     return p
 
 
+class TestRustWrapperFiltering:
+    def test_full_scan_passes_gitignore_filtered_files_to_subprocess(self, tmp_path, monkeypatch):
+        _make_rs(tmp_path, "real.rs", "pub struct Real;\n")
+        _make_rs(tmp_path, "ignored.rs", "pub struct Ignored;\n")
+        (tmp_path / ".gitignore").write_text("ignored.rs\n", encoding="utf-8")
+        commands = []
+
+        def fake_run(cmd, *args, **kwargs):
+            commands.append(cmd)
+            return subprocess.CompletedProcess(
+                cmd,
+                0,
+                stdout='{"real.rs":{"classes":[],"functions":[]}}',
+                stderr="",
+            )
+
+        monkeypatch.setattr("llm_wiki_cli.extractors.rust_extractor.shutil.which", lambda _name: "/bin/cargo")
+        monkeypatch.setattr("llm_wiki_cli.extractors.rust_extractor.subprocess.run", fake_run)
+
+        RustExtractor().extract(str(tmp_path))
+
+        cmd = commands[0]
+        only_idx = cmd.index("--only-files") + 1
+        assert cmd[only_idx] == "real.rs"
+
+
 # ===========================================================================
 # Unit-level tests (require Rust)
 # ===========================================================================

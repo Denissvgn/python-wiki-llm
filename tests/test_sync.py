@@ -598,6 +598,36 @@ class TestDeletedClass:
         module_content = (wiki_dir / "modules" / "models.md").read_text(encoding="utf-8")
         assert "⚠️" in module_content
 
+    def test_deprecation_header_added_to_qualified_entity_from_legacy_manifest(
+        self, tmp_path, capsys,
+    ):
+        proj = tmp_path / "project"
+        proj.mkdir()
+        (proj / "pkg_a").mkdir()
+        (proj / "pkg_b").mkdir()
+        (proj / "pkg_a" / "models.py").write_text("class User:\n    pass\n")
+        (proj / "pkg_b" / "models.py").write_text("class User:\n    pass\n")
+
+        wiki_dir = proj / "docs" / "llm_wiki"
+        old_cwd = os.getcwd()
+        os.chdir(proj)
+        try:
+            bootstrap_cmd.run(_make_bootstrap_args(src_dir=".", wiki_dir=str(wiki_dir)))
+            manifest_path = wiki_dir / MANIFEST_FILENAME
+            manifest_data = json.loads(manifest_path.read_text(encoding="utf-8"))
+            for info in manifest_data["sources"].values():
+                info.pop("entity_pages", None)
+            manifest_path.write_text(json.dumps(manifest_data), encoding="utf-8")
+
+            (proj / "pkg_a" / "models.py").unlink()
+            sync_cmd.run(_make_sync_args(src_dir=".", wiki_dir=str(wiki_dir)))
+        finally:
+            os.chdir(old_cwd)
+
+        content = (wiki_dir / "entities" / "pkg_a_models_User.md").read_text(encoding="utf-8")
+        assert "⚠️" in content
+        assert "Stale" in content
+
 
 def _write_manifest_from_bootstrap_from_disk(wiki_dir: Path, proj: Path) -> None:
     """Re-seed manifest from whatever pages are on disk (for idempotency test)."""

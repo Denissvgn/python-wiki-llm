@@ -64,7 +64,7 @@ If lint reports issues, fix them and re-run until it exits 0. Then commit:
 
 ```bash
 git add {quoted_wiki_dir_slash} CHANGELOG.md
-git commit -m "docs(wiki): auto-update [bot]"
+LLM_WIKI_AUTO_COMMIT=1 git commit -m "docs(wiki): auto-update [bot]"
 ```
 """
 

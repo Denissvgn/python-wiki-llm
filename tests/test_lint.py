@@ -58,6 +58,31 @@ class TestLintBrokenLink:
         out = capsys.readouterr().out
         assert "Broken link" in out
 
+    def test_ignores_anchors_and_mailto_and_validates_file_part(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+        (wiki / "index.md").write_text("# Index\n- [Notes](notes.md#overview)\n")
+        (wiki / "log.md").write_text("# Log\n")
+        (wiki / "notes.md").write_text(
+            "# Notes\n\n"
+            "## Overview\n"
+            "[Jump](#overview)\n"
+            "[Mail](mailto:user@example.com)\n"
+            "[Index](index.md#top)\n"
+        )
+
+        monkeypatch.setattr(
+            lint_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult({}, {"python": ExtractorStatus("python", "skipped", 0)}),
+        )
+        monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
+
+        lint_cmd.run(_make_args(wiki_dir="wiki", src_dir="."))
+        out = capsys.readouterr().out
+        assert "No broken links" in out
+
 
 class TestLintOrphanPage:
     def test_detects_orphan(self, tmp_project, capsys):

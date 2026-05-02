@@ -59,7 +59,10 @@ class GoExtractor:
             minimum ``"classes"``, ``"functions"``, and ``"language"``.
         """
         self.last_error = None
-        if not discover_source_files(src_dir, (".go",), only_files=only_files, language="go"):
+        source_files = discover_source_files(
+            src_dir, (".go",), only_files=only_files, language="go",
+        )
+        if not source_files:
             return {}
 
         if not shutil.which("go"):
@@ -71,8 +74,7 @@ class GoExtractor:
             "go", "run", ".",
             "--src-dir", str(Path(src_dir).resolve()),
         ]
-        if only_files:
-            cmd += ["--only-files", ",".join(only_files)]
+        cmd += ["--only-files", ",".join(source_files)]
         if deep:
             cmd.append("--deep")
 
