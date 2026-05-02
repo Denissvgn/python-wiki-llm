@@ -280,7 +280,8 @@ llm-wiki migrate --chunk-size 200             # apply next pending chunk
 This regenerates active canonical pages, preserves previous page content under
 `## Legacy Notes`, archives old pages under `docs/llm_wiki/legacy/`, rebuilds
 `index.md`, refreshes the sync manifest, and rewrites known active links.
-Archived `legacy/` pages are ignored by `lint`.
+Archived `legacy/` pages are ignored by `lint`, and migrate adds the archive
+directory to `.gitignore` so migration snapshots do not flood the repository.
 
 For large wikis, use `--chunk-size` to keep each working-tree change small.
 Run the same chunked command repeatedly, reviewing or committing between runs.

@@ -254,6 +254,27 @@ class TestMigrateIntegration:
         output = capsys.readouterr().out
         assert "Lint passed" in output
 
+    def test_migrate_adds_legacy_archive_to_gitignore_once(self, tmp_path, capsys):
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        _write(proj / "models.py", "class User:\n    pass\n")
+        wiki = _make_wiki(proj)
+        _write(proj / ".gitignore", "# user rules\n*.pyc\n")
+        _write(wiki / "modules" / "models.md", "# models\n\n**Path:** `models.py`\n\nManual.\n")
+
+        os.chdir(proj)
+        migrate_cmd.run(_make_args())
+        migrate_cmd.run(_make_args())
+
+        content = (proj / ".gitignore").read_text(encoding="utf-8")
+        assert "# user rules" in content
+        assert "*.pyc" in content
+        assert content.count("docs/llm_wiki/legacy/") == 1
+        assert _has_legacy_archive(wiki, "modules", "models.md")
+
+        output = capsys.readouterr().out
+        assert "GITIGNORE add docs/llm_wiki/legacy/" in output
+
     def test_path_only_location_maps_ambiguous_entity_and_rewrites_legacy_links(self, tmp_path, capsys):
         proj = tmp_path / "proj"
         proj.mkdir()
@@ -495,6 +516,7 @@ class TestMigrateIntegration:
         assert "DRY-RUN" in output
         assert after == before
         assert not (wiki / "legacy").exists()
+        assert not Path(".gitignore").exists()
 
     def test_cli_plan_chunks_does_not_modify_wiki(self, tmp_path, monkeypatch, capsys):
         from llm_wiki_cli import cli
@@ -538,6 +560,7 @@ class TestMigrateIntegration:
         assert "PLAN: no files modified" in output
         assert after == before
         assert not (wiki / "legacy").exists()
+        assert not Path(".gitignore").exists()
 
     def test_chunked_migrate_applies_next_pending_chunk_until_finalizers(self, tmp_path, capsys):
         proj = tmp_path / "proj"
@@ -553,6 +576,7 @@ class TestMigrateIntegration:
 
         assert not (wiki / MANIFEST_FILENAME).exists()
         assert (wiki / "index.md").read_text(encoding="utf-8") == "# Old Index\n"
+        assert "docs/llm_wiki/legacy/" in Path(".gitignore").read_text(encoding="utf-8")
         first_output = capsys.readouterr().out
         assert "DEFER index/manifest refresh" in first_output
 

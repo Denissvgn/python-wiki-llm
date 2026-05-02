@@ -108,6 +108,59 @@ def _page_rel(path: Path, wiki_dir: Path) -> str:
         return path.resolve().relative_to(wiki_dir.resolve()).as_posix()
 
 
+def _legacy_gitignore_pattern(wiki_dir: Path) -> str:
+    """Return the project-root-relative gitignore pattern for legacy archives."""
+    cwd = Path.cwd().resolve()
+    try:
+        rel = wiki_dir.resolve().relative_to(cwd).as_posix()
+    except ValueError:
+        rel = wiki_dir.as_posix()
+    rel = rel.strip("/")
+    return f"{rel}/legacy/" if rel else "legacy/"
+
+
+def _gitignore_has_pattern(content: str, pattern: str) -> bool:
+    wanted = pattern.strip().lstrip("/").rstrip("/")
+    for raw_line in content.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.lstrip("/").rstrip("/") == wanted:
+            return True
+    return False
+
+
+def _legacy_gitignore_needs_write(wiki_dir: Path) -> bool:
+    gitignore = Path(".gitignore")
+    if not gitignore.exists():
+        return True
+    return not _gitignore_has_pattern(read_md(gitignore), _legacy_gitignore_pattern(wiki_dir))
+
+
+def _ensure_legacy_gitignore(wiki_dir: Path, dry_run: bool) -> bool:
+    """Ensure migration archives are ignored by git.
+
+    Returns True when a write was needed, including dry-run previews.
+    """
+    pattern = _legacy_gitignore_pattern(wiki_dir)
+    gitignore = Path(".gitignore")
+    content = read_md(gitignore) if gitignore.exists() else ""
+    if _gitignore_has_pattern(content, pattern):
+        return False
+
+    print(f"  GITIGNORE add {pattern}")
+    if dry_run:
+        return True
+
+    addition = f"# LLM Wiki migration archives\n{pattern}\n"
+    if content.strip():
+        updated = content.rstrip("\n") + "\n\n" + addition
+    else:
+        updated = addition
+    write_md(gitignore, updated)
+    return True
+
+
 def _split_location(value: str) -> tuple[str, int | None]:
     """Split a legacy Location value into path and optional line number."""
     location = value.strip()
@@ -630,6 +683,7 @@ def _finalizers_pending(wiki_dir: Path, plan: MigrationPlan) -> bool:
         index_pending
         or _manifest_needs_write(wiki_dir, plan.manifest)
         or _pending_link_rewrite_count(wiki_dir, plan.link_map) > 0
+        or (_legacy_archive_ignore_applicable(wiki_dir, plan) and _legacy_gitignore_needs_write(wiki_dir))
     )
 
 
@@ -686,6 +740,26 @@ def _chunk_link_map(plan: MigrationPlan, chunk: MigrationChunk) -> dict[str, str
     }
 
 
+def _planned_archive_count(plan: MigrationPlan) -> int:
+    return _matched_archive_count(plan) + len(plan.unmatched)
+
+
+def _legacy_archive_ignore_applicable(wiki_dir: Path, plan: MigrationPlan) -> bool:
+    return bool(_legacy_archive_roots(wiki_dir)) or _planned_archive_count(plan) > 0
+
+
+def _chunk_has_archive_work(plan: MigrationPlan, chunk: MigrationChunk) -> bool:
+    if chunk.unmatched:
+        return True
+    for target in chunk.targets:
+        if any(
+            _should_archive_matched_page(page, target)
+            for page in plan.matches.get(target.rel, [])
+        ):
+            return True
+    return False
+
+
 def _print_chunk_plan(chunks: list[MigrationChunk], chunk_size: int) -> None:
     print(f"\nMigration chunk plan (max {chunk_size} pending page operation(s) per chunk):")
     if not chunks:
@@ -704,6 +778,10 @@ def _print_chunk_plan(chunks: list[MigrationChunk], chunk_size: int) -> None:
 
 def _apply_chunk(wiki_dir: Path, plan: MigrationPlan, chunk: MigrationChunk, dry_run: bool) -> None:
     archive_root = wiki_dir / "legacy" / plan.archive_name
+    if _chunk_has_archive_work(plan, chunk) or (
+        chunk.include_finalizers and _legacy_archive_ignore_applicable(wiki_dir, plan)
+    ):
+        _ensure_legacy_gitignore(wiki_dir, dry_run)
 
     for target in chunk.targets:
         matched_pages = plan.matches.get(target.rel, [])

@@ -627,6 +627,8 @@ class TestTypeScriptExtractorFixes:
         from unittest.mock import patch, MagicMock
         from llm_wiki_cli.extractors import ts_extractor
 
+        _make_ts(tmp_path, "file.ts", "export class File {}")
+
         # Simulate a successful Node.js run that also emits a warning on stderr.
         fake_result = MagicMock()
         fake_result.stdout = '{"file.ts": {"classes": [], "functions": []}}'
