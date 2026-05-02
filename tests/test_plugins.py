@@ -106,12 +106,29 @@ class TestPluginInstallLifecycle:
         plugin_dir = _write_plugin(tmp_project / "vendor" / "demo")
         plugins.install_plugin(str(plugin_dir), yes=True)
         refresh_skill_blocks("generic", "docs/llm_wiki")
-        assert "LLM Wiki Skill: demo-plugin/guidelines" in Path(".agents.md").read_text(encoding="utf-8")
+        assert "LLM Wiki Skill: demo-plugin/guidelines" in Path("AGENTS.md").read_text(encoding="utf-8")
 
         plugins_cmd.run(_ns(plugins_action="remove", plugin_id="demo-plugin", wiki_dir="docs/llm_wiki"))
 
-        assert "LLM Wiki Skill: demo-plugin/guidelines" not in Path(".agents.md").read_text(encoding="utf-8")
+        assert "LLM Wiki Skill: demo-plugin/guidelines" not in Path("AGENTS.md").read_text(encoding="utf-8")
         assert "demo-plugin" not in plugins.read_lock()["plugins"]
+
+    def test_plugins_remove_strips_legacy_agents_md_skill_blocks(self, tmp_project):
+        plugin_dir = _write_plugin(tmp_project / "vendor" / "demo")
+        plugins.install_plugin(str(plugin_dir), yes=True)
+        Path(".agents.md").write_text(
+            "# Legacy Instructions\n\n"
+            "# --- LLM Wiki Skill: demo-plugin/guidelines ---\n"
+            "Keep wiki edits focused.\n"
+            "# --- End LLM Wiki Skill: demo-plugin/guidelines ---\n",
+            encoding="utf-8",
+        )
+
+        plugins_cmd.run(_ns(plugins_action="remove", plugin_id="demo-plugin", wiki_dir="docs/llm_wiki"))
+
+        content = Path(".agents.md").read_text(encoding="utf-8")
+        assert "Legacy Instructions" in content
+        assert "LLM Wiki Skill: demo-plugin/guidelines" not in content
 
 
 class TestPluginRuntimeIntegration:
@@ -219,7 +236,7 @@ class TestPluginRuntimeIntegration:
         refresh_skill_blocks("generic", "docs/llm_wiki")
         refresh_skill_blocks("generic", "docs/llm_wiki")
 
-        content = Path(".agents.md").read_text(encoding="utf-8")
+        content = Path("AGENTS.md").read_text(encoding="utf-8")
         assert content.count("# --- LLM Wiki Skill: demo-plugin/guidelines ---") == 1
         assert "Keep wiki edits focused." in content
 

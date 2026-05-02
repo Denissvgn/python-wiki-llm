@@ -25,7 +25,7 @@ SCHEMA_FILENAMES: dict[str, str] = {
     "copilot": ".github/copilot-instructions.md",
     "aider": ".aider.conf.yml",
     "opencode": ".opencode/instructions.md",
-    "generic": ".agents.md",
+    "generic": "AGENTS.md",
 }
 
 # All possible schema files (superset — includes legacy names for uninstall)

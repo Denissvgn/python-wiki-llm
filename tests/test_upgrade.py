@@ -9,7 +9,7 @@ from types import SimpleNamespace
 import pytest
 
 from llm_wiki_cli.commands import upgrade_cmd
-from llm_wiki_cli.config import read_config
+from llm_wiki_cli.config import read_config, write_config
 from llm_wiki_cli.services.schema import CONSTRAINT_START, CONSTRAINT_END, SCHEMA_FILENAMES
 
 
@@ -76,6 +76,38 @@ class TestUpgradeRefreshesSchema:
 
         content = Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
         assert expected_block.strip() in content
+
+
+class TestUpgradeGenericSchema:
+    """Generic agent upgrades target AGENTS.md without legacy migration."""
+
+    def test_generic_upgrade_uses_agents_md(self, tmp_path):
+        _init_project(tmp_path, agent="generic")
+        os.chdir(tmp_path)
+
+        upgrade_cmd.run(_make_args())
+
+        schema = Path("AGENTS.md")
+        assert schema.exists()
+        assert CONSTRAINT_START in schema.read_text(encoding="utf-8")
+        assert not Path(".agents.md").exists()
+
+    def test_generic_upgrade_does_not_migrate_legacy_agents_md(self, tmp_path):
+        subprocess.run(["git", "init", str(tmp_path)], capture_output=True, check=True)
+        os.chdir(tmp_path)
+        Path("docs/llm_wiki").mkdir(parents=True)
+        write_config("docs/llm_wiki", {"agent": "generic", "quality_hints": True})
+        legacy_content = (
+            "# Legacy Agent Instructions\n\n"
+            f"{CONSTRAINT_START}\nlegacy managed block\n{CONSTRAINT_END}\n"
+        )
+        Path(".agents.md").write_text(legacy_content, encoding="utf-8")
+
+        upgrade_cmd.run(_make_args())
+
+        assert Path("AGENTS.md").exists()
+        assert CONSTRAINT_START in Path("AGENTS.md").read_text(encoding="utf-8")
+        assert Path(".agents.md").read_text(encoding="utf-8") == legacy_content
 
 
 class TestUpgradePreservesUserContent:

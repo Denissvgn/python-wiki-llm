@@ -99,6 +99,23 @@ class TestUninstallStripsConstraints:
         # CLAUDE.md contained only wiki block, should be deleted
         assert not Path("CLAUDE.md").exists()
 
+    def test_strips_legacy_agents_md_wiki_block(self, tmp_project, capsys, monkeypatch):
+        Path(".agents.md").write_text(
+            "# Legacy Agent Rules\n\n"
+            + uninstall_cmd.CONSTRAINT_START
+            + "\nlegacy wiki stuff\n"
+            + uninstall_cmd.CONSTRAINT_END
+            + "\n",
+            encoding="utf-8",
+        )
+        monkeypatch.setattr("builtins.input", lambda _: "y")
+
+        uninstall_cmd.run(_make_args())
+
+        content = Path(".agents.md").read_text(encoding="utf-8")
+        assert "Legacy Agent Rules" in content
+        assert "LLM Wiki Maintainer Constraints" not in content
+
 
 class TestUninstallKeepsWiki:
     def test_wiki_preserved_by_default(self, tmp_project, capsys, monkeypatch):

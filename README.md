@@ -47,7 +47,7 @@ extractor directory on first use if `node_modules` is missing.
 | `opencode` | `.opencode/instructions.md` | headless CLI |
 | `copilot` | `.github/copilot-instructions.md` | IDE prompt |
 | `cursor` | `.cursorrules` | IDE prompt |
-| `generic` | `.agents.md` | IDE prompt |
+| `generic` | `AGENTS.md` | IDE prompt |
 
 Headless sync delegates to the selected CLI agent. For Claude, this currently
 uses `claude -p --dangerously-skip-permissions`, so enable automation only in an

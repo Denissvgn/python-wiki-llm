@@ -59,7 +59,8 @@ class TestInitAgentSchemas:
     def test_generic_agent(self, tmp_project):
         args = _make_args(agent="generic")
         init_cmd.run(args)
-        assert Path(".agents.md").exists()
+        assert Path("AGENTS.md").exists()
+        assert not Path(".agents.md").exists()
 
 
 class TestInitPreservesContent:
