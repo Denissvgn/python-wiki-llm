@@ -358,6 +358,20 @@ The wiki uses collision-aware naming to ensure every page has a unique filename:
 - When multiple files share the same stem in different directories, parent directory components are progressively added (e.g., `pkg_a_cli.md` vs `pkg_b_cli.md`)
 - These rules are automatically enforced by `bootstrap`, `sync`, and validated by `lint`
 
+## Forking and Security
+
+This project does not maintain a formal contribution process. The source is
+published under the MIT License, so you may freely fork it, adapt it, and run
+your own version under the license terms.
+
+Public issues are still useful for reproducible bugs and project discussion.
+Participants are expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md)
+in project spaces.
+
+Do not report security vulnerabilities in public issues. Follow
+[SECURITY.md](SECURITY.md), especially for issues involving headless agent
+execution, generated prompt files, path handling, or extractor subprocesses.
+
 ## Uninstalling from a Project
 
 Remove LLM Wiki integration artifacts (hooks, agent constraint blocks, local runtime artifacts) while **preserving the wiki documentation**:

@@ -1,0 +1,57 @@
+name: Feature request
+description: Suggest a new capability or behavior change for LLM Wiki CLI.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What workflow or limitation should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the CLI behavior, generated output, or docs change you want.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Agent schemas and hooks
+        - Bootstrap or sync
+        - Extractors
+        - Linting
+        - Migration
+        - Context budgeting
+        - Documentation
+        - Packaging or release
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional. Describe workarounds or alternate designs.
+    validations:
+      required: false
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Compatibility considerations
+      description: Note any impact on existing wikis, manifests, hooks, agent schemas, or CI usage.
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues.
+          required: true

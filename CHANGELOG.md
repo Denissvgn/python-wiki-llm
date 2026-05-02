@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`llm-wiki upgrade` command** — refreshes all framework-managed artifacts (schema constraint blocks, git hooks, wiki dirs, `.gitignore`) in a single idempotent command; supports agent switching via `--agent`
 - **Context-optimized extract** — `--changed` flag restricts extraction to files modified in the last commit; `--summary` produces compact class/function-name-only output; `--paths FILE...` extracts specific files for drill-down
 - **Chunked `llm-wiki migrate`** — `--chunk-size`, `--chunk`, and `--plan-chunks` split large legacy migrations into bounded page-operation batches
+- **GitHub community health files** — code of conduct, security policy, and issue templates tailored to the CLI's local-agent workflow
 
 ### Changed
 - Shared schema utilities extracted to `services/schema.py` — constraint block markers, `build_schema_content()`, `strip_wiki_block()`, `replace_schema_block()` now centralised; eliminates duplication across `init_cmd`, `uninstall_cmd`, `bootstrap_cmd`

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/Denissvgn/python-wiki-llm/security
+    about: Please do not report security vulnerabilities in public issues. See SECURITY.md first.
+  - name: Documentation
+    url: https://github.com/Denissvgn/python-wiki-llm#readme
+    about: Check the README for installation, setup, and command examples.

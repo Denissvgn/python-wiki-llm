@@ -1,0 +1,97 @@
+name: Bug report
+description: Report a reproducible problem with LLM Wiki CLI.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please include enough detail to reproduce the behavior locally.
+  - type: input
+    id: version
+    attributes:
+      label: llm-wiki version
+      description: Run `llm-wiki --version` or provide the package version/commit.
+      placeholder: "llm-wiki 0.3.28"
+    validations:
+      required: true
+  - type: dropdown
+    id: command
+    attributes:
+      label: Affected command
+      options:
+        - init
+        - bootstrap
+        - extract
+        - lint
+        - sync
+        - migrate
+        - context
+        - generate-prompt
+        - install-hook
+        - trigger-agent
+        - upgrade
+        - uninstall
+        - bump
+        - release
+        - status
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the actual behavior and why it is wrong.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: Describe what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      description: Include commands, minimal files, and relevant project layout.
+      placeholder: |
+        1. Run `llm-wiki ...`
+        2. Inspect `docs/llm_wiki/...`
+        3. See error
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include OS, Python version, install method, and optional toolchain versions if relevant.
+      placeholder: |
+        OS:
+        Python:
+        Install method:
+        Node/npm:
+        Go:
+        Rust/cargo:
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or output
+      description: Paste relevant output. Remove secrets and private source code.
+      render: shell
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I removed secrets and private data from this report.
+          required: true
+        - label: I searched existing issues.
+          required: true
