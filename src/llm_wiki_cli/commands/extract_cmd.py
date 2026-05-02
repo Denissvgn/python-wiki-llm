@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
-from ..config import COMPOSE_PATTERNS, DOCKERFILE_PATTERNS, EXCLUDED_DIRS, EXTRACTOR_REGISTRY
+from ..config import COMPOSE_PATTERNS, DOCKERFILE_PATTERNS, EXCLUDED_DIRS, EXTRACTOR_REGISTRY, validate_path
 from ..extractors.common import LANGUAGE_EXTENSIONS, discover_source_files
 from ..services.packages import discover_packages, stamp_inventory_packages
 
@@ -182,6 +182,7 @@ def _summarize_inventory(inventory: dict) -> dict:
 
 def run(args):
     src_dir: str = getattr(args, "src_dir", ".")
+    validate_path(src_dir, "--src-dir")
     changed: bool = getattr(args, "changed", False)
     summary: bool = getattr(args, "summary", False)
     deep: bool = getattr(args, "deep", False)

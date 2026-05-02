@@ -91,7 +91,9 @@ def stamp_changelog(changelog_path: Path, version: str, today: str | None = None
 
         # Find previously highest version to build the compare URL for new version
         # Collect all version tags already mentioned in headings
-        heading_versions = re.findall(r"## \[(\d+\.\d+\.\d+)\]", new_text)
+        heading_versions = list(dict.fromkeys(
+            re.findall(r"## \[(\d+\.\d+\.\d+)\]", new_text)
+        ))
 
         links: list[str] = []
         links.append(f"[Unreleased]: {repo_url}/compare/v{version}...HEAD")

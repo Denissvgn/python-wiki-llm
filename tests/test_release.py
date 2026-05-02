@@ -150,6 +150,31 @@ class TestStampChangelogReferenceLinks:
         assert text.count("[0.1.4]:") == 1
         assert text.count("[Unreleased]:") == 1
 
+    def test_duplicate_version_headings_get_one_reference_link(self, tmp_path):
+        cl = tmp_path / "CHANGELOG.md"
+        cl.write_text(textwrap.dedent("""\
+            # Changelog
+
+            ## [Unreleased]
+
+            ### Added
+            - New feature
+
+            ## [0.1.4] - 2026-04-10
+            - Existing release
+
+            ## [0.1.4] - 2026-04-10
+            - Duplicate heading from a previous bad stamp
+
+            [Unreleased]: https://github.com/example/repo/compare/v0.1.4...HEAD
+            [0.1.4]: https://github.com/example/repo/releases/tag/v0.1.4
+        """))
+
+        text, _ = stamp_changelog(cl, "0.1.5", today="2026-04-11")
+
+        assert text.count("[0.1.5]:") == 1
+        assert text.count("[0.1.4]:") == 1
+
 
 class TestStampChangelogMultipleVersions:
     """Stamping with 3 existing versions rebuilds all compare links."""

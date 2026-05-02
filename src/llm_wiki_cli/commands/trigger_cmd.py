@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 from ..services.lockfile import WikiLock, LockAcquisitionError
 from ..services import circuit_breaker
-from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS
+from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS, validate_path
 import json
 
 GIT_DIR = Path(".git")
@@ -36,6 +36,7 @@ def _run_sync(args):
     """Core sync logic, executed inside the concurrency lock."""
 
     wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
+    validate_path(wiki_dir, "--wiki-dir")
 
     # --- Fuse: Circuit Breaker ---
     if circuit_breaker.check_breaker(GIT_DIR):
@@ -55,11 +56,9 @@ def _run_sync(args):
         diff_text = git_diff_result.stdout
     except subprocess.TimeoutExpired:
         print("Git diff timed out (30s). Aborting.")
-        circuit_breaker.record_failure(GIT_DIR)
         return
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
         print(f"Git diff failed. Are there commits? {e}")
-        circuit_breaker.record_failure(GIT_DIR)
         return
 
     if not diff_text.strip():
@@ -81,7 +80,6 @@ def _run_sync(args):
     inventory_result = get_inventory_result(".", deep=True)
     if inventory_result.failed:
         print_inventory_failures(inventory_result)
-        circuit_breaker.record_failure(GIT_DIR)
         return
     inventory = inventory_result.inventory
     ast_json = json.dumps(inventory, indent=2)
@@ -148,6 +146,10 @@ git commit -m "docs(wiki): auto-update [bot]"
     prompt_file = Path(".git/llm-wiki-prompt.txt")
     with open(prompt_file, "w", encoding="utf-8") as f:
         f.write(prompt)
+    try:
+        os.chmod(prompt_file, 0o600)
+    except OSError:
+        pass
 
     # 5. Delegate to Subagent via CLI
     print(f"Delegating to {args.agent} subagent...")

@@ -544,6 +544,22 @@ class TestRustExtractorWrapper:
         assert "pkg\\client.rs" not in inv
         assert inv["pkg/client.rs"]["language"] == "rust"
 
+    def test_absolute_inventory_keys_are_relative_to_src_dir(self, tmp_path):
+        source = tmp_path / "pkg" / "client.rs"
+        _make_rs(tmp_path, "pkg/client.rs", "pub struct Client;\n")
+        result = subprocess.CompletedProcess(
+            args=["cargo"],
+            returncode=0,
+            stdout=f'{{"{source.as_posix()}": {{"classes": [], "functions": []}}}}',
+            stderr="",
+        )
+        with patch("llm_wiki_cli.extractors.rust_extractor.shutil.which", return_value="cargo"):
+            with patch("llm_wiki_cli.extractors.rust_extractor.subprocess.run", return_value=result):
+                inv = RustExtractor().extract(str(tmp_path))
+
+        assert "pkg/client.rs" in inv
+        assert source.as_posix() not in inv
+
     def test_malformed_json_returns_empty(self, tmp_path, capsys):
         _make_rs(tmp_path, "client.rs", "pub struct Client;\n")
         result = subprocess.CompletedProcess(

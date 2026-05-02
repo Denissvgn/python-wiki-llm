@@ -601,6 +601,22 @@ class TestGoExtractorWrapper:
         assert "pkg\\client.go" not in inv
         assert inv["pkg/client.go"]["language"] == "go"
 
+    def test_absolute_inventory_keys_are_relative_to_src_dir(self, tmp_path):
+        source = tmp_path / "pkg" / "client.go"
+        _make_go(tmp_path, "pkg/client.go", "package pkg\n\ntype Client struct{}\n")
+        result = subprocess.CompletedProcess(
+            args=["go"],
+            returncode=0,
+            stdout=f'{{"{source.as_posix()}": {{"classes": [], "functions": []}}}}',
+            stderr="",
+        )
+        with patch("llm_wiki_cli.extractors.go_extractor.shutil.which", return_value="go"):
+            with patch("llm_wiki_cli.extractors.go_extractor.subprocess.run", return_value=result):
+                inv = GoExtractor().extract(str(tmp_path))
+
+        assert "pkg/client.go" in inv
+        assert source.as_posix() not in inv
+
     def test_malformed_json_returns_empty(self, tmp_path, capsys):
         _make_go(tmp_path, "client.go", "package main\n\ntype Client struct{}\n")
         result = subprocess.CompletedProcess(

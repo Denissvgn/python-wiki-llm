@@ -24,7 +24,9 @@ def _read_agent_config(wiki_dir: str) -> str | None:
     return None
 
 
-def _build_post_commit(agent: str) -> str:
+def _build_post_commit(agent: str, wiki_dir: str) -> str:
+    quoted_agent = shell_quote(agent)
+    quoted_wiki_dir = shell_quote(wiki_dir)
     return f"""#!/bin/sh
 
 # LLM Wiki Auto-Sync Post-Commit Hook
@@ -49,7 +51,7 @@ else
     CLI="llm-wiki"
 fi
 
-nohup "$CLI" trigger-agent --agent {agent} --timeout "$LLM_WIKI_TIMEOUT" --max-diff-lines "$LLM_WIKI_MAX_DIFF" --max-prompt-bytes "$LLM_WIKI_MAX_PROMPT_BYTES" > .git/llm-wiki-sync.log 2>&1 &
+nohup "$CLI" trigger-agent --agent {quoted_agent} --wiki-dir {quoted_wiki_dir} --timeout "$LLM_WIKI_TIMEOUT" --max-diff-lines "$LLM_WIKI_MAX_DIFF" --max-prompt-bytes "$LLM_WIKI_MAX_PROMPT_BYTES" > .git/llm-wiki-sync.log 2>&1 &
 """
 
 
@@ -151,7 +153,7 @@ def run(args):
 
     # CLI agent: install headless auto-sync hook with agent baked in
     _install_hook(
-        hooks_dir, "post-commit", _build_post_commit(agent),
+        hooks_dir, "post-commit", _build_post_commit(agent, wiki_dir),
         force=getattr(args, "force", False),
     )
     print(f"  Agent: {agent}")

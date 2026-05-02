@@ -59,6 +59,8 @@ def main():
     # trigger command
     trigger_parser = subparsers.add_parser("trigger-agent", help="Trigger subagent to update wiki using diff")
     trigger_parser.add_argument("--agent", choices=AGENT_CHOICES, default="claude", help="Agent executable to invoke for background sync")
+    trigger_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                                help="Wiki directory to update (default: docs/llm_wiki)")
     trigger_parser.add_argument("--reset-breaker", action="store_true",
                                 help="Reset the circuit breaker after consecutive failures and exit")
     trigger_parser.add_argument("--timeout", type=int, default=300,

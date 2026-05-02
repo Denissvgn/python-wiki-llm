@@ -1,5 +1,6 @@
 """Tests for commands/trigger_cmd.py (mock-based, no real LLM agent needed)."""
 import json
+import stat
 import subprocess
 import types
 from pathlib import Path
@@ -75,13 +76,14 @@ class TestTriggerDiffGuard:
 
 class TestTriggerGitFailure:
     @patch("llm_wiki_cli.commands.trigger_cmd.subprocess.run")
-    def test_records_failure_on_git_error(self, mock_run, tmp_project):
+    def test_does_not_record_failure_on_git_error(self, mock_run, tmp_project):
         mock_run.side_effect = subprocess.CalledProcessError(1, "git diff")
         git_dir = tmp_project / ".git"
 
         trigger_cmd.run(_make_args())
         state = circuit_breaker.load_state(git_dir)
-        assert state["consecutive_failures"] >= 1
+        assert state["consecutive_failures"] == 0
+        assert state["state"] == "closed"
 
 
 class TestTriggerPromptHandling:
@@ -138,3 +140,28 @@ class TestTriggerPromptHandling:
         assert "input" not in agent_kwargs[0]["keys"]
         assert "capture_output" not in agent_kwargs[0]["keys"]
         assert agent_kwargs[0]["stdin_readable"] is True
+        mode = stat.S_IMODE(Path(".git/llm-wiki-prompt.txt").stat().st_mode)
+        assert mode == 0o600
+
+    def test_agent_nonzero_records_failure(self, tmp_project, monkeypatch):
+        monkeypatch.setattr(
+            "llm_wiki_cli.commands.extract_cmd.get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {"a.py": {"language": "python", "classes": [], "functions": []}},
+                {"python": ExtractorStatus("python", "ok", 1)},
+            ),
+        )
+        monkeypatch.setattr("llm_wiki_cli.commands.extract_cmd.get_call_graph", lambda inv: {})
+
+        def fake_run(cmd, *args, **kwargs):
+            if cmd[:2] == ["git", "diff"]:
+                return subprocess.CompletedProcess(cmd, 0, stdout="diff\n", stderr="")
+            if cmd[0] == "aider":
+                return subprocess.CompletedProcess(cmd, 2)
+            raise AssertionError(f"unexpected command: {cmd}")
+
+        with patch("llm_wiki_cli.commands.trigger_cmd.subprocess.run", side_effect=fake_run):
+            trigger_cmd.run(_make_args(agent="aider"))
+
+        state = circuit_breaker.load_state(tmp_project / ".git")
+        assert state["consecutive_failures"] == 1

@@ -92,7 +92,6 @@ Supported agents: `claude`, `aider`, `opencode`, `copilot`, `cursor`, `generic`.
 - Scaffolds `entities/`, `modules/`, `workflows/`, and `infrastructure/` directories.
 - Writes the agent-specific instruction file (e.g. `CLAUDE.md`, `.github/copilot-instructions.md`) so the agent knows the rules of the system.
 - Saves the chosen agent to `.git/.llm-wiki-agent` (local-only, not committed) so subsequent commands (like `install-hook`) pick it up automatically.
-- Adds llm-wiki runtime temp files to `.gitignore` (`.git/llm-wiki-prompt.txt`, `.git/llm-wiki.lock`, `.git/llm-wiki-breaker.json`, `.git/llm-wiki-sync.log`).
 
 > If you pass a CLI agent (`claude`, `aider`, `opencode`) that is not installed on your `PATH`, `init` will warn you but still create all files.
 
@@ -153,10 +152,6 @@ llm-wiki install-hook --agent aider
 llm-wiki install-hook --wiki-dir .wiki        # custom wiki dir
 ```
 
-> **Note:** `--wiki-dir` is fully respected for IDE prompt-generation hooks.
-> Current CLI-agent hooks invoke `trigger-agent` without a wiki-dir argument, so
-> headless post-commit sync uses the default `docs/llm_wiki` wiki path.
-
 ### CLI Agents (Claude, Aider, OpenCode)
 
 The post-commit hook spawns `llm-wiki trigger-agent` as a detached background process via `nohup`:
@@ -165,7 +160,9 @@ The post-commit hook spawns `llm-wiki trigger-agent` as a detached background pr
 2. Extracts current multi-language AST context.
 3. Writes a temporary command payload to `.git/llm-wiki-prompt.txt`.
 4. Spawns the CLI agent (e.g., `claude -p --dangerously-skip-permissions`) and pipes the prompt in.
-5. The agent updates the `docs/llm_wiki/` markdown files and commits the result.
+5. The agent updates the configured wiki markdown files and commits the result.
+
+The prompt file includes the last commit diff and AST context. It is written with owner-only permissions where the platform supports it, but you should still treat it as sensitive if commits may contain secrets.
 
 Inspect the background log at any time:
 ```bash
@@ -313,7 +310,6 @@ This updates:
 - Agent constraint blocks in schema files
 - Wiki directory structure (adds missing directories)
 - Git hooks (if previously installed)
-- `.gitignore` entries
 
 ### 8. Release Changelog
 
@@ -359,7 +355,7 @@ The wiki uses collision-aware naming to ensure every page has a unique filename:
 
 ## Uninstalling from a Project
 
-Remove LLM Wiki integration artifacts (hooks, agent constraint blocks, temp files) while **preserving the wiki documentation**:
+Remove LLM Wiki integration artifacts (hooks, agent constraint blocks, local runtime artifacts) while **preserving the wiki documentation**:
 
 ```bash
 llm-wiki uninstall

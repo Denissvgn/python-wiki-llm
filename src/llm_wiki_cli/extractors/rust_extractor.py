@@ -129,4 +129,13 @@ class RustExtractor:
 
         inventory = filter_bundled_inventory(inventory, _RUST_SCRIPTS_DIR)
 
-        return inventory
+        src_root = Path(src_dir).resolve()
+        normalized_inventory: dict = {}
+        for fp, data in inventory.items():
+            try:
+                rel = Path(fp).resolve().relative_to(src_root).as_posix()
+            except ValueError:
+                rel = fp.replace("\\", "/")
+            normalized_inventory[rel] = data
+
+        return normalized_inventory

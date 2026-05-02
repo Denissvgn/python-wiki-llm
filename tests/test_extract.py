@@ -7,6 +7,7 @@ import pytest
 
 from llm_wiki_cli.commands import extract_cmd
 from llm_wiki_cli.commands.extract_cmd import get_inventory, get_call_graph, _summarize_inventory
+from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.services.packages import discover_packages, stamp_inventory_packages
 
 
@@ -221,6 +222,18 @@ class TestRelativePathKeys:
         inventory = get_inventory(str(tmp_path))
         key = list(inventory.keys())[0]
         assert key == "pkg/sub/deep.py"
+
+
+class TestExtractPathValidation:
+    def test_run_rejects_src_dir_outside_project(self, tmp_project, tmp_path):
+        outside = tmp_path / "outside"
+        outside.mkdir()
+
+        args = types.SimpleNamespace(src_dir=str(outside), changed=False, summary=False,
+                                     deep=False, paths=None, package=None,
+                                     include_empty=False)
+        with pytest.raises(PathValidationError):
+            extract_cmd.run(args)
 
 
 class TestExcludedDirsRelative:
@@ -518,13 +531,15 @@ class TestExtractExitCodes:
         defaults.update(kwargs)
         return types.SimpleNamespace(**defaults)
 
-    def test_changed_and_paths_exits_two(self, tmp_path):
+    def test_changed_and_paths_exits_two(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
         with pytest.raises(SystemExit) as exc_info:
-            extract_cmd.run(self._args(src_dir=str(tmp_path), changed=True, paths=["a.py"]))
+            extract_cmd.run(self._args(src_dir=".", changed=True, paths=["a.py"]))
         assert exc_info.value.code == 2
 
-    def test_unmatched_package_exits_nonzero(self, tmp_path):
+    def test_unmatched_package_exits_nonzero(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
         (tmp_path / "a.py").write_text("class A:\n    pass\n")
         with pytest.raises(SystemExit) as exc_info:
-            extract_cmd.run(self._args(src_dir=str(tmp_path), package="missing"))
+            extract_cmd.run(self._args(src_dir=".", package="missing"))
         assert exc_info.value.code == 1

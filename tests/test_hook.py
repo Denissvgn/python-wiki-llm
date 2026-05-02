@@ -126,6 +126,16 @@ class TestHookReadsCustomWikiDir:
 
         hook_text = (Path(".git/hooks/post-commit")).read_text(encoding="utf-8")
         assert "--agent aider" in hook_text
+        assert "--wiki-dir my_docs/wiki" in hook_text
+
+    def test_cli_hook_quotes_wiki_dir_with_spaces(self, tmp_project):
+        _write_agent_config("my docs/wiki", "aider")
+        args = _make_args(wiki_dir="my docs/wiki")
+        hook_cmd.run(args)
+
+        hook_text = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
+        assert "--agent aider" in hook_text
+        assert "--wiki-dir 'my docs/wiki'" in hook_text
 
 
 class TestPostCommitAutoCommitGuard:

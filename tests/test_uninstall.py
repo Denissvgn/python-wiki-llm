@@ -37,7 +37,10 @@ def _setup_wiki_project(project_dir: Path):
     (hooks_dir / "post-commit").chmod(0o755)
 
     # Temp files
+    (project_dir / ".git" / ".llm-wiki-agent").write_text("claude")
     (project_dir / ".git" / "llm-wiki-prompt.txt").write_text("prompt")
+    (project_dir / ".git" / "llm-wiki.lock").write_text("")
+    (project_dir / ".git" / "llm-wiki-breaker.json").write_text("{}")
     (project_dir / ".git" / "llm-wiki-sync.log").write_text("log")
 
     return wiki
@@ -116,6 +119,34 @@ class TestUninstallKeepsWiki:
         uninstall_cmd.run(args)
 
         assert not wiki.exists()
+
+
+class TestUninstallRuntimeArtifacts:
+    def test_removes_all_runtime_artifacts(self, tmp_project, capsys, monkeypatch):
+        _setup_wiki_project(tmp_project)
+        monkeypatch.setattr("builtins.input", lambda _: "y")
+
+        uninstall_cmd.run(_make_args())
+
+        for name in [
+            ".llm-wiki-agent",
+            "llm-wiki-prompt.txt",
+            "llm-wiki.lock",
+            "llm-wiki-breaker.json",
+            "llm-wiki-sync.log",
+        ]:
+            assert not (tmp_project / ".git" / name).exists()
+
+    def test_dry_run_lists_runtime_artifacts(self, tmp_project, capsys):
+        _setup_wiki_project(tmp_project)
+
+        uninstall_cmd.run(_make_args(dry_run=True))
+
+        out = capsys.readouterr().out
+        assert "Runtime Artifacts" in out
+        assert ".git/.llm-wiki-agent" in out
+        assert ".git/llm-wiki.lock" in out
+        assert ".git/llm-wiki-breaker.json" in out
 
     def test_rejects_absolute_wiki_dir_outside_project(self, tmp_project, tmp_path, monkeypatch):
         outside = tmp_path / "outside_wiki"

@@ -190,6 +190,15 @@ class TestUpgradeReinstallsHooks:
         new_content = hook.read_text(encoding="utf-8")
         assert "trigger-agent" in new_content  # CLI mode
 
+    def test_cli_hook_keeps_custom_wiki_dir(self, tmp_path):
+        _init_project(tmp_path, agent="claude", wiki_dir="my docs/wiki")
+        os.chdir(tmp_path)
+
+        upgrade_cmd.run(_make_args(wiki_dir="my docs/wiki"))
+
+        hook_text = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
+        assert "--wiki-dir 'my docs/wiki'" in hook_text
+
 
 class TestUpgradeCreatesNewDirs:
     """New subdirectories appear on upgrade from an older version."""
@@ -294,22 +303,23 @@ class TestUpgradeQualityHints:
 
 
 class TestUpgradeGitignore:
-    """Missing .gitignore entries are appended."""
+    """Upgrade preserves .gitignore but does not add ineffective .git/ entries."""
 
-    def test_entries_added(self, tmp_path):
+    def test_no_git_dir_entries_added(self, tmp_path):
         _init_project(tmp_path, agent="copilot")
         os.chdir(tmp_path)
 
-        # Remove gitignore entries
         gi = Path(".gitignore")
         gi.write_text("# Other stuff\n*.pyc\n")
 
         upgrade_cmd.run(_make_args())
 
         content = gi.read_text(encoding="utf-8")
-        assert ".git/llm-wiki-prompt.txt" in content
-        assert ".git/llm-wiki.lock" in content
         assert "*.pyc" in content  # user content preserved
+        assert ".git/llm-wiki-prompt.txt" not in content
+        assert ".git/llm-wiki.lock" not in content
+        assert ".git/llm-wiki-breaker.json" not in content
+        assert ".git/llm-wiki-sync.log" not in content
 
 
 class TestUpgradeIdempotent:
@@ -322,16 +332,15 @@ class TestUpgradeIdempotent:
         upgrade_cmd.run(_make_args())
         first = Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
         hook_first = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
-        gi_first = Path(".gitignore").read_text(encoding="utf-8")
+        gi_first = Path(".gitignore").read_text(encoding="utf-8") if Path(".gitignore").exists() else ""
 
         upgrade_cmd.run(_make_args())
         second = Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
         hook_second = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
-        gi_second = Path(".gitignore").read_text(encoding="utf-8")
+        gi_second = Path(".gitignore").read_text(encoding="utf-8") if Path(".gitignore").exists() else ""
 
         assert first == second
         assert hook_first == hook_second
-        # gitignore may have an extra header line on second run if entries
-        # already exist, but the important entries should appear exactly once
-        for entry in [".git/llm-wiki-prompt.txt", ".git/llm-wiki.lock"]:
-            assert gi_second.count(entry) == 1
+        assert gi_first == gi_second
+        assert ".git/llm-wiki-prompt.txt" not in gi_second
+        assert ".git/llm-wiki.lock" not in gi_second

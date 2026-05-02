@@ -5,15 +5,12 @@ command that:
 1. Replaces the agent constraint block with the latest version
 2. Ensures wiki directory structure is complete
 3. Reinstalls git hooks
-4. Updates .gitignore entries
-5. Optionally switches agents
+4. Optionally switches agents
 """
 
 from __future__ import annotations
 
-import os
 import shutil
-import stat
 import sys
 from pathlib import Path
 
@@ -30,13 +27,6 @@ from ..services.schema import (
 
 # Re-use hook builders from hook_cmd to avoid duplication
 from .hook_cmd import _build_ide_post_commit, _build_post_commit, _install_hook
-
-_GITIGNORE_ENTRIES = [
-    ".git/llm-wiki-prompt.txt",
-    ".git/llm-wiki.lock",
-    ".git/llm-wiki-breaker.json",
-    ".git/llm-wiki-sync.log",
-]
 
 
 def _read_agent_config(wiki_dir: str) -> str | None:
@@ -147,23 +137,8 @@ def _upgrade_hooks(agent: str, wiki_dir: str, *, force: bool = False) -> None:
         _install_hook(hooks_dir, "post-commit", _build_ide_post_commit(wiki_dir), force=force)
         print(f"  Hooks: IDE prompt-generation mode ({agent})")
     else:
-        _install_hook(hooks_dir, "post-commit", _build_post_commit(agent), force=force)
+        _install_hook(hooks_dir, "post-commit", _build_post_commit(agent, wiki_dir), force=force)
         print(f"  Hooks: CLI auto-sync mode ({agent})")
-
-
-def _upgrade_gitignore() -> int:
-    """Add any missing llm-wiki temp file entries to .gitignore. Returns count added."""
-    gitignore = Path(".gitignore")
-    existing = gitignore.read_text(encoding="utf-8") if gitignore.exists() else ""
-    to_add = [e for e in _GITIGNORE_ENTRIES if e not in existing]
-    if to_add:
-        with open(gitignore, "a", encoding="utf-8") as f:
-            if existing and not existing.endswith("\n"):
-                f.write("\n")
-            f.write("# LLM Wiki temp files\n")
-            for entry in to_add:
-                f.write(entry + "\n")
-    return len(to_add)
 
 
 def run(args):
@@ -207,15 +182,7 @@ def run(args):
     print("\n3. Git Hooks:")
     _upgrade_hooks(agent, wiki_dir, force=getattr(args, "force", False))
 
-    # 4. .gitignore
-    print("\n4. .gitignore:")
-    added = _upgrade_gitignore()
-    if added:
-        print(f"  Added {added} entries")
-    else:
-        print("  Already up to date")
-
-    # 5. Persist agent config
+    # 4. Persist agent config
     write_config(wiki_dir, {"agent": agent, "quality_hints": quality_hints})
 
     # Warn if CLI agent executable missing
