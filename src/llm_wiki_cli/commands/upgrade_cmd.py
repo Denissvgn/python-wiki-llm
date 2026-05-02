@@ -21,7 +21,9 @@ from ..services.schema import (
     CONSTRAINT_START,
     SCHEMA_FILENAMES,
     build_schema_content,
+    refresh_skill_blocks,
     replace_schema_block,
+    strip_skill_blocks,
     strip_wiki_block,
 )
 
@@ -79,7 +81,7 @@ def _upgrade_schema(agent: str, wiki_dir: str, old_agent: str | None, *, quality
             if old_path.exists():
                 existing = read_md(old_path)
                 if CONSTRAINT_START in existing:
-                    stripped = strip_wiki_block(existing)
+                    stripped = strip_skill_blocks(strip_wiki_block(existing))
                     if stripped:
                         write_md(old_path, stripped)
                         print(f"  Cleaned constraint block from: {old_filename}")
@@ -169,6 +171,9 @@ def run(args):
     print("\n1. Agent Schema:")
     schema_file = _upgrade_schema(agent, wiki_dir, old_agent, quality_hints=quality_hints)
     print(f"  Updated: {schema_file}")
+    refreshed_skills = refresh_skill_blocks(agent, wiki_dir)
+    if refreshed_skills:
+        print(f"  Refreshed {len(refreshed_skills)} plugin skill block(s)")
 
     # 2. Wiki directories
     print("\n2. Wiki Structure:")

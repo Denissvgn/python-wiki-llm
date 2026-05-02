@@ -8,9 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Obsidian Integration** — `llm-wiki obsidian export|check|install-plugin` mirrors the canonical wiki into an Obsidian vault with frontmatter, wikilinks, related links, sidecar human notes, and a desktop companion plugin
+- **MCP Server** — optional `llm-wiki mcp` command exposes read-only wiki tools/resources over stdio or local Streamable HTTP, including wiki search, entity/module fetch, context payloads, lint checks, and status
+- **Plugin & Skills Marketplace** — local-only `llm-wiki install` plus `llm-wiki plugins list|remove|validate`; manifest-gated plugins can add extractors, prompt templates, lint rules, and managed agent skill blocks
+- **Team Features** — shared `.llm-wiki/team.json` policy, `llm-wiki team init|check|resolve-conflicts`, team prompt-template defaults, required plugin checks, team convention linting, and conservative generated-wiki conflict resolution
 - **`llm-wiki upgrade` command** — refreshes all framework-managed artifacts (schema constraint blocks, git hooks, wiki dirs, `.gitignore`) in a single idempotent command; supports agent switching via `--agent`
 - **Context-optimized extract** — `--changed` flag restricts extraction to files modified in the last commit; `--summary` produces compact class/function-name-only output; `--paths FILE...` extracts specific files for drill-down
 - **Chunked `llm-wiki migrate`** — `--chunk-size`, `--chunk`, and `--plan-chunks` split large legacy migrations into bounded page-operation batches
+- **Wiki-as-Context Protocol v1** — `llm-wiki context --request FILE|-` accepts versioned JSON context requests and returns stable success/error envelopes for agents, IDEs, and CI tools
+- **Agent Quality Layer** — strict wiki validation (`lint --strict`), `ci-check` reports, opt-in validation hooks, local metrics, smart prompt change-type guidance, and static `llm-wiki review`
 - **GitHub community health files** — code of conduct, security policy, and issue templates tailored to the CLI's local-agent workflow
 
 ### Changed

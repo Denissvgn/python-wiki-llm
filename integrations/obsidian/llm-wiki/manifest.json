@@ -1,0 +1,10 @@
+{
+  "id": "llm-wiki",
+  "name": "LLM Wiki",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.0",
+  "description": "Run llm-wiki sync, lint, context, and Obsidian mirror export commands from a local vault.",
+  "author": "llm-wiki",
+  "authorUrl": "https://github.com/Denissvgn/python-wiki-llm",
+  "isDesktopOnly": true
+}

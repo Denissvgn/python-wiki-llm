@@ -89,6 +89,27 @@ fi
 """
 
 
+def _build_validation_pre_commit(wiki_dir: str) -> str:
+    quoted_wiki_dir = shell_quote(wiki_dir)
+    return f"""#!/bin/sh
+
+# LLM Wiki Strict Validation Pre-Commit Hook
+# Opt-in guard for teams that want stale wiki coverage to block commits.
+
+if [ -n "$LLM_WIKI_AUTO_COMMIT" ]; then
+    exit 0
+fi
+
+if [ -f ".venv/bin/llm-wiki" ]; then
+    CLI=".venv/bin/llm-wiki"
+else
+    CLI="llm-wiki"
+fi
+
+"$CLI" lint --strict --wiki-dir {quoted_wiki_dir} --src-dir .
+"""
+
+
 
 
 def _install_hook(hooks_dir: Path, name: str, content: str, *, force: bool = False) -> None:
@@ -140,6 +161,11 @@ def run(args):
             hooks_dir, "post-commit", _build_ide_post_commit(wiki_dir),
             force=getattr(args, "force", False),
         )
+        if getattr(args, "enable_validation", False):
+            _install_hook(
+                hooks_dir, "pre-commit", _build_validation_pre_commit(wiki_dir),
+                force=getattr(args, "force", False),
+            )
         print(f"  Agent: {agent} (IDE mode -- prompt-generation hook)")
         print(
             f"\nIDE sync hook installed. After each commit, a prompt file will be generated at\n"
@@ -156,6 +182,11 @@ def run(args):
         hooks_dir, "post-commit", _build_post_commit(agent, wiki_dir),
         force=getattr(args, "force", False),
     )
+    if getattr(args, "enable_validation", False):
+        _install_hook(
+            hooks_dir, "pre-commit", _build_validation_pre_commit(wiki_dir),
+            force=getattr(args, "force", False),
+        )
     print(f"  Agent: {agent}")
 
     print("\nHook installation complete.")

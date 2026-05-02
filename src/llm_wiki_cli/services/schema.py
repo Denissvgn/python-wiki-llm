@@ -15,6 +15,8 @@ from .io import read_md, write_md
 # Marker boundaries used to wrap the entire generated block
 CONSTRAINT_START = "# --- LLM Wiki Maintainer Constraints ---"
 CONSTRAINT_END = "# --- End LLM Wiki Constraints ---"
+SKILL_START_PREFIX = "# --- LLM Wiki Skill:"
+SKILL_END_PREFIX = "# --- End LLM Wiki Skill:"
 
 # Map from agent name to the schema file it uses
 SCHEMA_FILENAMES: dict[str, str] = {
@@ -212,3 +214,94 @@ def replace_schema_block(schema_path: Path, new_content: str) -> None:
     )
     updated = pattern.sub(lambda _m: new_content, existing)
     write_md(schema_path, updated)
+
+
+def skill_start_marker(plugin_id: str, skill_id: str) -> str:
+    return f"{SKILL_START_PREFIX} {plugin_id}/{skill_id} ---"
+
+
+def skill_end_marker(plugin_id: str, skill_id: str) -> str:
+    return f"{SKILL_END_PREFIX} {plugin_id}/{skill_id} ---"
+
+
+def build_skill_block(plugin_id: str, skill_id: str, skill_content: str) -> str:
+    body = skill_content.strip()
+    return f"{skill_start_marker(plugin_id, skill_id)}\n{body}\n{skill_end_marker(plugin_id, skill_id)}\n"
+
+
+def strip_skill_blocks(content: str, *, plugin_id: str | None = None, skill_id: str | None = None) -> str:
+    """Remove managed plugin skill blocks from schema content."""
+    if plugin_id and skill_id:
+        start = re.escape(skill_start_marker(plugin_id, skill_id))
+        end = re.escape(skill_end_marker(plugin_id, skill_id))
+        pattern = re.compile(r"\n*" + start + r".*?" + end + r"\n*", re.DOTALL)
+    elif plugin_id:
+        pattern = re.compile(
+            r"\n*"
+            + re.escape(SKILL_START_PREFIX)
+            + r"\s+"
+            + re.escape(plugin_id)
+            + r"/[A-Za-z0-9_.-]+\s+---.*?"
+            + re.escape(SKILL_END_PREFIX)
+            + r"\s+"
+            + re.escape(plugin_id)
+            + r"/[A-Za-z0-9_.-]+\s+---\n*",
+            re.DOTALL,
+        )
+    else:
+        pattern = re.compile(
+            r"\n*"
+            + re.escape(SKILL_START_PREFIX)
+            + r"\s+[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\s+---.*?"
+            + re.escape(SKILL_END_PREFIX)
+            + r"\s+[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\s+---\n*",
+            re.DOTALL,
+        )
+    cleaned = pattern.sub("\n", content)
+    return cleaned.strip() + "\n" if cleaned.strip() else ""
+
+
+def replace_skill_block(schema_path: Path, plugin_id: str, skill_id: str, skill_content: str) -> None:
+    new_content = build_skill_block(plugin_id, skill_id, skill_content)
+    if not schema_path.exists():
+        schema_path.parent.mkdir(parents=True, exist_ok=True)
+        write_md(schema_path, new_content)
+        return
+
+    existing = read_md(schema_path).replace("\r\n", "\n").replace("\r", "\n")
+    existing = strip_skill_blocks(existing, plugin_id=plugin_id, skill_id=skill_id)
+    sep = "\n\n" if existing and not existing.endswith("\n\n") else ("\n" if existing and not existing.endswith("\n") else "")
+    write_md(schema_path, existing + sep + new_content)
+
+
+def refresh_skill_blocks(agent: str, wiki_dir: str) -> list[str]:
+    """Refresh all installed skill blocks in the active agent schema file."""
+    from .plugins import iter_components, read_component_text
+
+    filename = SCHEMA_FILENAMES.get(agent)
+    if not filename:
+        return []
+
+    schema_path = Path(filename)
+    refreshed: list[str] = []
+    for component in iter_components("skill"):
+        plugin_id = component["plugin_id"]
+        skill_id = component["id"]
+        replace_skill_block(schema_path, plugin_id, skill_id, read_component_text(component))
+        refreshed.append(f"{plugin_id}/{skill_id}")
+    return refreshed
+
+
+def strip_plugin_skill_blocks(plugin_id: str) -> list[str]:
+    """Strip one plugin's skill blocks from every known schema file."""
+    touched: list[str] = []
+    for filename in ALL_SCHEMA_FILES:
+        path = Path(filename)
+        if not path.exists():
+            continue
+        existing = read_md(path)
+        updated = strip_skill_blocks(existing, plugin_id=plugin_id)
+        if updated != existing:
+            write_md(path, updated)
+            touched.append(filename)
+    return touched

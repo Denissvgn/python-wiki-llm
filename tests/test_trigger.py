@@ -77,13 +77,13 @@ class TestTriggerDiffGuard:
 
 class TestTriggerGitFailure:
     @patch("llm_wiki_cli.commands.trigger_cmd.subprocess.run")
-    def test_does_not_record_failure_on_git_error(self, mock_run, tmp_project):
+    def test_records_failure_on_git_error(self, mock_run, tmp_project):
         mock_run.side_effect = subprocess.CalledProcessError(1, "git diff")
         git_dir = tmp_project / ".git"
 
         trigger_cmd.run(_make_args())
         state = circuit_breaker.load_state(git_dir)
-        assert state["consecutive_failures"] == 0
+        assert state["consecutive_failures"] == 1
         assert state["state"] == "closed"
 
 

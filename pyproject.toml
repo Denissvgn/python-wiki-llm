@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agent-wiki-cli"
-version = "0.3.28"
+version = "0.3.39"
 description = "CLI tool to maintain hybrid LLM Wikis for multi-language projects."
 readme = "README.md"
 license = {text = "MIT"}
@@ -34,6 +34,8 @@ typescript = []
 go = []
 # Rust extraction requires the Rust toolchain (cargo) at runtime (no Python deps).
 rust = []
+# MCP server support uses the official Python MCP SDK, which requires Python 3.10+.
+mcp = ["mcp>=1.27,<2; python_version >= '3.10'"]
 
 [project.urls]
 Homepage = "https://github.com/Denissvgn/python-wiki-llm"

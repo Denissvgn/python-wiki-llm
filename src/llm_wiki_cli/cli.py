@@ -1,7 +1,31 @@
 import argparse
 import os
 import sys
-from .commands import init_cmd, extract_cmd, lint_cmd, hook_cmd, trigger_cmd, bootstrap_cmd, bump_cmd, uninstall_cmd, generate_prompt_cmd, status_cmd, release_cmd, upgrade_cmd, sync_cmd, context_cmd, migrate_cmd
+from .commands import (
+    bootstrap_cmd,
+    bump_cmd,
+    ci_check_cmd,
+    context_cmd,
+    extract_cmd,
+    generate_prompt_cmd,
+    hook_cmd,
+    init_cmd,
+    install_cmd,
+    lint_cmd,
+    mcp_cmd,
+    metrics_cmd,
+    migrate_cmd,
+    obsidian_cmd,
+    plugins_cmd,
+    release_cmd,
+    review_cmd,
+    status_cmd,
+    sync_cmd,
+    team_cmd,
+    trigger_cmd,
+    uninstall_cmd,
+    upgrade_cmd,
+)
 from .config import AGENT_CHOICES, DEFAULT_WIKI_DIR, PathValidationError
 from . import __version__
 
@@ -46,6 +70,18 @@ def main():
     lint_parser = subparsers.add_parser("lint", help="Lint LLM Wiki for broken links, orphans, and AST drift")
     lint_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR, help="Wiki directory to lint")
     lint_parser.add_argument("--src-dir", default=".", help="Source directory to cross-reference against")
+    lint_parser.add_argument("--strict", action="store_true",
+                             help="Require core wiki structure and a fresh sync manifest")
+
+    # ci-check command
+    ci_parser = subparsers.add_parser("ci-check", help="Run strict wiki validation and write a CI report")
+    ci_parser.add_argument("--src-dir", default=".", help="Source directory to scan")
+    ci_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                           help="Wiki directory to validate (default: docs/llm_wiki)")
+    ci_parser.add_argument("--format", choices=["text", "json", "markdown"], default="text",
+                           help="Console output format (default: text)")
+    ci_parser.add_argument("--report", default=".git/llm-wiki-ci-report.md",
+                           help="Markdown report path (default: .git/llm-wiki-ci-report.md)")
 
     # hook command
     hook_parser = subparsers.add_parser("install-hook", help="Install git hooks for wiki sync")
@@ -55,6 +91,50 @@ def main():
                              help="Override the agent for the post-commit hook (default: read from wiki config)")
     hook_parser.add_argument("--force", action="store_true",
                              help="Replace an existing unrelated post-commit hook")
+    hook_parser.add_argument("--enable-validation", action="store_true",
+                             help="Also install a pre-commit hook that runs `llm-wiki lint --strict`")
+
+    # install command
+    install_parser = subparsers.add_parser("install", help="Install a local llm-wiki plugin")
+    install_parser.add_argument("ref", help="Local plugin path or local catalog name")
+    install_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                                help="Wiki directory used to refresh active agent skills")
+    install_parser.add_argument("--dry-run", action="store_true",
+                                help="Validate and preview the plugin without installing it")
+    install_parser.add_argument("--yes", action="store_true",
+                                help="Install without prompting for confirmation")
+
+    # plugins command
+    plugins_parser = subparsers.add_parser("plugins", help="Manage installed llm-wiki plugins")
+    plugins_sub = plugins_parser.add_subparsers(dest="plugins_action", required=True)
+    plugins_sub.add_parser("list", help="List installed plugins")
+    plugins_remove = plugins_sub.add_parser("remove", help="Remove an installed plugin")
+    plugins_remove.add_argument("plugin_id", help="Plugin id to remove")
+    plugins_remove.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                                help="Wiki directory for path validation")
+    plugins_validate = plugins_sub.add_parser("validate", help="Validate a local plugin manifest")
+    plugins_validate.add_argument("path", help="Plugin directory or llm-wiki-plugin.json path")
+
+    # team command
+    team_parser = subparsers.add_parser("team", help="Manage shared llm-wiki team policy")
+    team_sub = team_parser.add_subparsers(dest="team_action", required=True)
+    team_init = team_sub.add_parser("init", help="Create .llm-wiki/team.json")
+    team_init.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                           help="Wiki directory to record in team config")
+    team_check = team_sub.add_parser("check", help="Validate team config and conventions")
+    team_check.add_argument("--src-dir", default=".", help="Source directory to scan")
+    team_check.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                            help="Wiki directory to validate")
+    team_check.add_argument("--format", choices=["text", "json"], default="text",
+                            help="Output format (default: text)")
+    team_resolve = team_sub.add_parser("resolve-conflicts", help="Safely resolve generated wiki conflicts")
+    team_resolve.add_argument("--src-dir", default=".", help="Source directory to scan")
+    team_resolve.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                              help="Wiki directory to scan for conflict markers")
+    team_resolve.add_argument("--write", action="store_true",
+                              help="Apply safe resolutions instead of dry-running")
+    team_resolve.add_argument("--format", choices=["text", "json"], default="text",
+                              help="Output format (default: text)")
 
     # trigger command
     trigger_parser = subparsers.add_parser("trigger-agent", help="Trigger subagent to update wiki using diff")
@@ -98,6 +178,32 @@ def main():
     gp_parser.add_argument("--src-dir", default=".", help="Source directory to scan (default: .)")
     gp_parser.add_argument("--output", default=".git/llm-wiki-prompt.txt", help="Output file path (default: .git/llm-wiki-prompt.txt)")
     gp_parser.add_argument("--print", dest="print_prompt", action="store_true", help="Print the prompt to stdout instead of writing to a file")
+    gp_parser.add_argument("--change-type", choices=generate_prompt_cmd.CHANGE_TYPES, default="auto",
+                           help="Prompt guidance profile (default: auto)")
+    gp_parser.add_argument("--template",
+                           help="Installed prompt template id (or plugin_id/template_id)")
+
+    # metrics command
+    metrics_parser = subparsers.add_parser("metrics", help="Show local llm-wiki quality metrics")
+    metrics_parser.add_argument("--last", default="30d",
+                                help="Time window such as 30d, 12h, or 60m (default: 30d)")
+    metrics_parser.add_argument("--format", choices=["text", "json"], default="text",
+                                help="Output format (default: text)")
+    metrics_parser.add_argument("--src-dir", default=".", help="Source directory to scan for coverage")
+    metrics_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                                help="Wiki directory to scan for coverage")
+
+    # review command
+    review_parser = subparsers.add_parser("review", help="Run a static wiki-aware review of proposed code changes")
+    review_parser.add_argument("--src-dir", default=".", help="Source directory to scan")
+    review_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                               help="Wiki directory to compare against")
+    review_parser.add_argument("--base", help="Base ref for git diff comparison")
+    review_parser.add_argument("--head", help="Head ref for git diff comparison")
+    review_parser.add_argument("--patch", metavar="FILE|-",
+                               help="Read an explicit patch from a file or stdin")
+    review_parser.add_argument("--format", choices=["markdown", "json"], default="markdown",
+                               help="Output format (default: markdown)")
 
     # uninstall command
     uninstall_parser = subparsers.add_parser("uninstall", help="Remove all LLM Wiki artifacts from the project")
@@ -110,6 +216,56 @@ def main():
     # status command
     status_parser = subparsers.add_parser("status", help="Show LLM Wiki status (agent, hooks, breaker, pages)")
     status_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR, help="Wiki directory path")
+
+    # mcp command
+    mcp_parser = subparsers.add_parser(
+        "mcp",
+        help="Run a local MCP server exposing read-only LLM Wiki tools and resources",
+    )
+    mcp_parser.add_argument("--src-dir", default=".", help="Source directory to scan (default: .)")
+    mcp_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                            help="Wiki directory to expose (default: docs/llm_wiki)")
+    mcp_parser.add_argument("--transport", choices=["stdio", "http"], default="stdio",
+                            help="MCP transport to serve (default: stdio)")
+    mcp_parser.add_argument("--host", default="127.0.0.1",
+                            help="HTTP host for --transport http (default: 127.0.0.1)")
+    mcp_parser.add_argument("--port", type=int, default=8765,
+                            help="HTTP port for --transport http (default: 8765)")
+    mcp_parser.add_argument("--path", default="/mcp",
+                            help="HTTP MCP endpoint path for --transport http (default: /mcp)")
+    mcp_parser.add_argument("--allowed-origin", action="append",
+                            help="Additional HTTP Origin allowed to call the local MCP endpoint")
+
+    # obsidian command
+    obsidian_parser = subparsers.add_parser(
+        "obsidian",
+        help="Export and check an Obsidian-friendly mirror of the LLM Wiki",
+    )
+    obsidian_sub = obsidian_parser.add_subparsers(dest="obsidian_action", required=True)
+    obs_export = obsidian_sub.add_parser("export", help="Export an Obsidian mirror vault")
+    obs_export.add_argument("--src-dir", default=".", help="Source directory to scan")
+    obs_export.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                            help="Canonical wiki directory (default: docs/llm_wiki)")
+    obs_export.add_argument("--vault-dir", required=True,
+                            help="Obsidian vault directory where the mirror is written")
+    obs_export.add_argument("--notes-dir", default=".llm-wiki/obsidian-notes",
+                            help="Sidecar notes directory, relative to --vault-dir unless absolute")
+    obs_export.add_argument("--dry-run", action="store_true",
+                            help="Preview mirror writes without changing files")
+    obs_export.add_argument("--format", choices=["text", "json"], default="text",
+                            help="Output format (default: text)")
+    obs_check = obsidian_sub.add_parser("check", help="Check an Obsidian mirror for missing pages and broken wikilinks")
+    obs_check.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
+                           help="Canonical wiki directory (default: docs/llm_wiki)")
+    obs_check.add_argument("--vault-dir", required=True,
+                           help="Obsidian vault directory to check")
+    obs_check.add_argument("--format", choices=["text", "json"], default="text",
+                           help="Output format (default: text)")
+    obs_install = obsidian_sub.add_parser("install-plugin", help="Install the companion Obsidian plugin into a vault")
+    obs_install.add_argument("--vault-dir", required=True,
+                             help="Obsidian vault directory")
+    obs_install.add_argument("--plugin-dir", default="integrations/obsidian/llm-wiki",
+                             help="Source plugin directory (default: integrations/obsidian/llm-wiki)")
 
     # release command
     release_parser = subparsers.add_parser(
@@ -173,14 +329,16 @@ def main():
         "context",
         help="Return priority-ranked, token-budgeted codebase context for LLM agents",
     )
-    context_parser.add_argument("--budget", type=_positive_int, required=True,
-                                help="Token budget for the context payload")
+    context_parser.add_argument("--budget", type=int,
+                                help="Token budget for the context payload (required unless --request is used)")
     context_parser.add_argument("--src-dir", default=".",
                                 help="Source directory to scan (default: .)")
     context_parser.add_argument("--format", choices=["json", "markdown"], default="json",
                                 help="Output format (default: json)")
     context_parser.add_argument("--focus", choices=["changed", "all"], default="changed",
                                 help="changed=prioritise git diff files, all=treat every file as high priority (default: changed)")
+    context_parser.add_argument("--request", metavar="FILE|-",
+                                help="Read a Wiki-as-Context protocol JSON request from a file or stdin")
 
     args = parser.parse_args()
 
@@ -191,8 +349,16 @@ def main():
             extract_cmd.run(args)
         elif args.command == "lint":
             lint_cmd.run(args)
+        elif args.command == "ci-check":
+            ci_check_cmd.run(args)
         elif args.command == "install-hook":
             hook_cmd.run(args)
+        elif args.command == "install":
+            install_cmd.run(args)
+        elif args.command == "plugins":
+            plugins_cmd.run(args)
+        elif args.command == "team":
+            team_cmd.run(args)
         elif args.command == "trigger-agent":
             trigger_cmd.run(args)
         elif args.command == "bootstrap":
@@ -201,10 +367,18 @@ def main():
             bump_cmd.run(args)
         elif args.command == "generate-prompt":
             generate_prompt_cmd.run(args)
+        elif args.command == "metrics":
+            metrics_cmd.run(args)
+        elif args.command == "review":
+            review_cmd.run(args)
         elif args.command == "uninstall":
             uninstall_cmd.run(args)
         elif args.command == "status":
             status_cmd.run(args)
+        elif args.command == "mcp":
+            mcp_cmd.run(args)
+        elif args.command == "obsidian":
+            obsidian_cmd.run(args)
         elif args.command == "release":
             release_cmd.run(args)
         elif args.command == "upgrade":

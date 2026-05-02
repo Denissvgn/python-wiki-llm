@@ -16,12 +16,46 @@ Usage::
 
 from __future__ import annotations
 
+from fnmatch import fnmatch
 import json
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
-from .extract_cmd import _git_changed_files, get_inventory_result, print_inventory_failures
+from .extract_cmd import _git_changed_files, get_inventory_result
 from ..config import validate_path
+
+
+PROTOCOL_VERSION = "llm-wiki-context/v1"
+
+_REQUEST_KEYS = {"protocol", "budget_tokens", "focus", "format", "filters"}
+_FILTER_KEYS = {"language", "module"}
+_FOCUS_VALUES = {"changed", "neighbors", "all"}
+_FORMATS = {"json", "markdown"}
+
+
+class ProtocolRequestError(ValueError):
+    """Validation error for Wiki-as-Context protocol requests."""
+
+    def __init__(self, message: str, field: str | None = None):
+        super().__init__(message)
+        self.field = field
+
+
+def _extractor_failure_message(inventory_result) -> str:
+    """Return a compact, structured error message for extractor failures."""
+    details = []
+    for status in inventory_result.failed:
+        detail = f": {status.message}" if status.message else ""
+        details.append(f"{status.language} extraction failed{detail}")
+    return "; ".join(details) or "Source extraction failed."
+
+
+def get_inventory(src_dir: str, *, deep: bool = False) -> dict:
+    """Context-local inventory helper kept patchable for protocol tests."""
+    inventory_result = get_inventory_result(src_dir, deep=deep)
+    if inventory_result.failed:
+        raise ProtocolRequestError(_extractor_failure_message(inventory_result), "src_dir")
+    return inventory_result.inventory
 
 
 # ── Token estimation ──────────────────────────────────────────────────
@@ -113,6 +147,7 @@ def _classify_files(
     changed: list[str] | None,
     import_graph: dict[str, set[str]],
     focus: str,
+    include_neighbors: bool = True,
 ) -> dict[str, str]:
     """Assign a priority tier to every file in the inventory.
 
@@ -130,10 +165,11 @@ def _classify_files(
             classification[fp] = "high"
 
     # Medium: 1-hop neighbors of changed files
-    for fp in changed_set:
-        for neighbor in import_graph.get(fp, set()):
-            if neighbor not in classification:
-                classification[neighbor] = "medium"
+    if include_neighbors:
+        for fp in changed_set:
+            for neighbor in import_graph.get(fp, set()):
+                if neighbor not in classification:
+                    classification[neighbor] = "medium"
 
     # Low: everything else
     for fp in all_files:
@@ -352,52 +388,284 @@ def _render_markdown(payload: dict) -> str:
     return "\n".join(lines)
 
 
+# ── Wiki-as-Context protocol ──────────────────────────────────────────
+
+
+def _read_protocol_request(source: str) -> dict:
+    """Read and validate a Wiki-as-Context protocol request."""
+    try:
+        raw = sys.stdin.read() if source == "-" else Path(source).read_text(encoding="utf-8")
+    except OSError as exc:
+        raise ProtocolRequestError(f"Could not read request: {exc}", "request") from exc
+
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ProtocolRequestError(f"Invalid JSON: {exc.msg}", "request") from exc
+
+    return _validate_protocol_request(data)
+
+
+def _validate_protocol_request(data: object) -> dict:
+    """Return a normalised protocol request or raise ``ProtocolRequestError``."""
+    if not isinstance(data, dict):
+        raise ProtocolRequestError("Request must be a JSON object.", "request")
+
+    unknown = sorted(set(data) - _REQUEST_KEYS)
+    if unknown:
+        raise ProtocolRequestError(f"Unknown request field: {unknown[0]}", unknown[0])
+
+    protocol = data.get("protocol")
+    if protocol != PROTOCOL_VERSION:
+        raise ProtocolRequestError(
+            f"Unsupported protocol: {protocol!r}. Expected {PROTOCOL_VERSION!r}.",
+            "protocol",
+        )
+
+    if "budget_tokens" not in data:
+        raise ProtocolRequestError("Missing required field: budget_tokens", "budget_tokens")
+    budget = data["budget_tokens"]
+    if isinstance(budget, bool) or not isinstance(budget, int) or budget < 1:
+        raise ProtocolRequestError("budget_tokens must be a positive integer.", "budget_tokens")
+
+    fmt = data.get("format", "json")
+    if fmt not in _FORMATS:
+        raise ProtocolRequestError("format must be 'json' or 'markdown'.", "format")
+
+    focus = _normalise_protocol_focus(data.get("focus", ["changed", "neighbors"]))
+    filters = _normalise_protocol_filters(data.get("filters", {}))
+
+    return {
+        "protocol": PROTOCOL_VERSION,
+        "budget_tokens": budget,
+        "focus": focus,
+        "format": fmt,
+        "filters": filters,
+    }
+
+
+def _normalise_protocol_focus(raw_focus: object) -> list[str]:
+    if not isinstance(raw_focus, list) or not raw_focus:
+        raise ProtocolRequestError("focus must be a non-empty list.", "focus")
+
+    if any(not isinstance(item, str) for item in raw_focus):
+        raise ProtocolRequestError("focus values must be strings.", "focus")
+
+    unknown = sorted(set(raw_focus) - _FOCUS_VALUES)
+    if unknown:
+        raise ProtocolRequestError(f"Unknown focus value: {unknown[0]}", "focus")
+
+    if len(set(raw_focus)) != len(raw_focus):
+        raise ProtocolRequestError("focus values must not be duplicated.", "focus")
+
+    focus_set = set(raw_focus)
+    if "all" in focus_set and len(focus_set) > 1:
+        raise ProtocolRequestError("focus 'all' cannot be combined with other values.", "focus")
+
+    if "neighbors" in focus_set and "changed" not in focus_set:
+        raise ProtocolRequestError("focus 'neighbors' requires 'changed'.", "focus")
+
+    if "all" in focus_set:
+        return ["all"]
+
+    ordered = ["changed"] if "changed" in focus_set else []
+    if "neighbors" in focus_set:
+        ordered.append("neighbors")
+    return ordered
+
+
+def _normalise_protocol_filters(raw_filters: object) -> dict:
+    if raw_filters is None:
+        return {}
+    if not isinstance(raw_filters, dict):
+        raise ProtocolRequestError("filters must be a JSON object.", "filters")
+
+    unknown = sorted(set(raw_filters) - _FILTER_KEYS)
+    if unknown:
+        raise ProtocolRequestError(f"Unknown filter field: {unknown[0]}", f"filters.{unknown[0]}")
+
+    filters: dict[str, str] = {}
+    for key in ("language", "module"):
+        if key not in raw_filters:
+            continue
+        value = raw_filters[key]
+        if not isinstance(value, str) or not value:
+            raise ProtocolRequestError(f"filters.{key} must be a non-empty string.", f"filters.{key}")
+        filters[key] = value
+    return filters
+
+
+def _protocol_error_payload(error: ProtocolRequestError) -> dict:
+    payload = {
+        "protocol": PROTOCOL_VERSION,
+        "ok": False,
+        "error": {
+            "code": "invalid_request",
+            "message": str(error),
+        },
+    }
+    if error.field:
+        payload["error"]["field"] = error.field
+    return payload
+
+
+def _emit_protocol_error(error: ProtocolRequestError) -> None:
+    print(json.dumps(_protocol_error_payload(error), indent=2))
+    raise SystemExit(1)
+
+
+def _apply_protocol_filters(inventory: dict, filters: dict) -> dict:
+    """Filter inventory before prioritisation and budgeting."""
+    if not filters:
+        return inventory
+
+    result: dict = {}
+    for filepath, data in inventory.items():
+        if "language" in filters and data.get("language") != filters["language"]:
+            continue
+        if "module" in filters and not _matches_module_filter(filepath, filters["module"]):
+            continue
+        result[filepath] = data
+    return result
+
+
+def _matches_module_filter(filepath: str, pattern: str) -> bool:
+    posix_path = filepath.replace("\\", "/")
+    path_target = PurePosixPath(posix_path).with_suffix("").as_posix()
+    module_target = _filepath_to_module(posix_path)
+    module_pattern = pattern.replace("/", ".")
+
+    return (
+        fnmatch(path_target, pattern)
+        or (module_target is not None and fnmatch(module_target, pattern))
+        or (module_target is not None and fnmatch(module_target, module_pattern))
+    )
+
+
+def _build_context(
+    src_dir: str,
+    budget: int,
+    fmt: str,
+    focus_values: list[str],
+    filters: dict | None = None,
+    *,
+    emit_warnings: bool = True,
+) -> tuple[dict, list[str]]:
+    """Build a context payload and return ``(payload, warnings)``."""
+    validate_path(src_dir, "--src-dir")
+
+    inventory = get_inventory(src_dir, deep=True)
+    inventory = _apply_protocol_filters(inventory, filters or {})
+    warnings: list[str] = []
+
+    if not inventory:
+        return {"budget": budget, "used": 0, "files": {}}, warnings
+
+    changed: list[str] | None = None
+    focus_mode = "all" if "all" in focus_values else "changed"
+    include_neighbors = "neighbors" in focus_values
+
+    if focus_mode == "changed":
+        changed = _git_changed_files(src_dir)
+        if changed is None:
+            warnings.append("Could not get changed files from git. Treating all files as high priority.")
+            focus_mode = "all"
+        elif not changed:
+            warnings.append("No files changed in the last commit. Treating all files as high priority.")
+            focus_mode = "all"
+        else:
+            changed = _normalise_changed_paths(changed, inventory)
+
+    if emit_warnings:
+        for warning in warnings:
+            print(f"Warning: {warning}", file=sys.stderr, flush=True)
+
+    import_graph = _build_import_graph(inventory)
+    classification = _classify_files(
+        list(inventory.keys()),
+        changed,
+        import_graph,
+        focus_mode,
+        include_neighbors=include_neighbors,
+    )
+
+    return _build_context_payload(inventory, classification, budget), warnings
+
+
+def _protocol_success_payload(request: dict, payload: dict, warnings: list[str]) -> dict:
+    response = {
+        "protocol": PROTOCOL_VERSION,
+        "ok": True,
+        "budget_tokens": request["budget_tokens"],
+        "used_tokens": payload["used"],
+        "format": request["format"],
+        "focus": request["focus"],
+        "filters": request["filters"],
+    }
+    if warnings:
+        response["warnings"] = warnings
+
+    if request["format"] == "markdown":
+        response["content"] = _render_markdown(payload)
+    else:
+        response["files"] = payload["files"]
+    return response
+
+
+def _run_protocol(args) -> None:
+    try:
+        request = _read_protocol_request(getattr(args, "request"))
+        payload, warnings = _build_context(
+            getattr(args, "src_dir", "."),
+            request["budget_tokens"],
+            request["format"],
+            request["focus"],
+            request["filters"],
+            emit_warnings=False,
+        )
+    except ProtocolRequestError as exc:
+        _emit_protocol_error(exc)
+
+    print(json.dumps(_protocol_success_payload(request, payload, warnings), indent=2))
+
+
 # ── CLI entry point ───────────────────────────────────────────────────
 
 
 def run(args) -> None:
+    if getattr(args, "request", None):
+        _run_protocol(args)
+        return
+
     src_dir: str = getattr(args, "src_dir", ".")
-    budget: int = getattr(args, "budget", 32000)
+    budget: int | None = getattr(args, "budget", None)
     fmt: str = getattr(args, "format", "json")
     focus: str = getattr(args, "focus", "changed")
 
-    validate_path(src_dir, "--src-dir")
+    if budget is None:
+        print("Error: --budget is required unless --request is used.", file=sys.stderr)
+        raise SystemExit(2)
+    if budget < 1:
+        print("Error: --budget must be greater than zero.", file=sys.stderr)
+        raise SystemExit(2)
 
-    # 1. Get full deep inventory (imports needed for graph building)
-    inventory_result = get_inventory_result(src_dir, deep=True)
-    if inventory_result.failed:
-        print_inventory_failures(inventory_result)
-        sys.exit(1)
-    inventory = inventory_result.inventory
+    focus_values = ["all"] if focus == "all" else ["changed", "neighbors"]
+    try:
+        payload, _warnings = _build_context(
+            src_dir,
+            budget,
+            fmt,
+            focus_values,
+            emit_warnings=True,
+        )
+    except ProtocolRequestError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        raise SystemExit(1)
 
-    if not inventory:
+    if not payload["files"]:
         print("{}" if fmt == "json" else "No source files found.")
         return
 
-    # 2. Determine changed files
-    changed: list[str] | None = None
-    if focus == "changed":
-        changed = _git_changed_files(src_dir)
-        if changed is None:
-            print("Warning: Could not get changed files from git. Treating all files as high priority.",
-                  file=sys.stderr, flush=True)
-            focus = "all"
-        elif not changed:
-            print("Warning: No files changed in the last commit. Treating all files as high priority.",
-                  file=sys.stderr, flush=True)
-            focus = "all"
-        else:
-            # Normalise changed paths to match inventory keys
-            changed = _normalise_changed_paths(changed, inventory)
-
-    # 3. Build import graph and classify files
-    import_graph = _build_import_graph(inventory)
-    classification = _classify_files(list(inventory.keys()), changed, import_graph, focus)
-
-    # 4. Build budgeted payload
-    payload = _build_context_payload(inventory, classification, budget)
-
-    # 5. Output
     if fmt == "markdown":
         print(_render_markdown(payload))
     else:

@@ -10,9 +10,10 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
-from ..config import COMPOSE_PATTERNS, DOCKERFILE_PATTERNS, EXCLUDED_DIRS, EXTRACTOR_REGISTRY, validate_path
+from ..config import COMPOSE_PATTERNS, DOCKERFILE_PATTERNS, EXCLUDED_DIRS, validate_path
 from ..extractors.common import LANGUAGE_EXTENSIONS, discover_source_files
 from ..services.packages import discover_packages, stamp_inventory_packages
+from ..services.plugins import get_extractor_registry
 
 # Re-export ComponentVisitor so existing callers that import it from here
 # continue to work without modification.
@@ -62,7 +63,7 @@ def print_inventory_failures(result: InventoryResult, *, file=None) -> None:
 def get_inventory_result(src_dir, deep=False, only_files=None, include_empty=False) -> InventoryResult:
     """Scan source files across all registered languages and return inventory.
 
-    Runs every extractor in :data:`EXTRACTOR_REGISTRY` and merges the
+    Runs every built-in and installed extractor and merges the
     results into a single dict keyed by file path.
 
     If deep=True, returns enriched data (docstrings, attributes, methods, imports).
@@ -75,14 +76,25 @@ def get_inventory_result(src_dir, deep=False, only_files=None, include_empty=Fal
     """
     inventory: dict = {}
     statuses: dict[str, ExtractorStatus] = {}
-    for language, entry_point in EXTRACTOR_REGISTRY.items():
-        source_files = discover_source_files(
-            src_dir,
-            LANGUAGE_EXTENSIONS.get(language, ()),
-            only_files=only_files,
-            language=language,
-        )
-        if not source_files:
+    for language, entry_point in get_extractor_registry().items():
+        extensions = LANGUAGE_EXTENSIONS.get(language)
+        source_files: list[str] | None = None
+        if extensions is not None:
+            source_files = discover_source_files(
+                src_dir,
+                extensions,
+                only_files=only_files,
+                language=language,
+            )
+            if not source_files:
+                statuses[language] = ExtractorStatus(language, "skipped", 0)
+                continue
+
+        files_found = len(source_files or [])
+        if extensions is None and only_files:
+            files_found = len(only_files)
+
+        if extensions is not None and not source_files:
             statuses[language] = ExtractorStatus(language, "skipped", 0)
             continue
 
@@ -96,14 +108,16 @@ def get_inventory_result(src_dir, deep=False, only_files=None, include_empty=Fal
         try:
             extracted = extractor.extract(**kwargs)
         except Exception as exc:
-            statuses[language] = ExtractorStatus(language, "failed", len(source_files), str(exc))
+            statuses[language] = ExtractorStatus(language, "failed", files_found, str(exc))
             continue
         error = getattr(extractor, "last_error", None)
         if error:
-            statuses[language] = ExtractorStatus(language, "failed", len(source_files), str(error))
+            statuses[language] = ExtractorStatus(language, "failed", files_found, str(error))
             continue
         inventory.update(extracted)
-        statuses[language] = ExtractorStatus(language, "ok", len(source_files))
+        if extensions is None:
+            files_found = len(extracted)
+        statuses[language] = ExtractorStatus(language, "ok", files_found)
 
     # Stamp package ownership
     packages = discover_packages(src_dir)
