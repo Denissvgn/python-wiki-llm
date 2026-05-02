@@ -3,11 +3,15 @@ from __future__ import annotations
 from pathlib import Path
 
 from ..config import DEFAULT_WIKI_DIR, validate_path
+from ..services.paths import shell_quote
 
 _DEFAULT_PROMPT_FILE = ".git/llm-wiki-prompt.txt"
 
 
 def _build_prompt(wiki_dir: str, src_dir: str) -> str:
+    quoted_wiki_dir = shell_quote(wiki_dir)
+    quoted_wiki_dir_slash = shell_quote(f"{wiki_dir}/")
+    quoted_src_dir = shell_quote(src_dir)
     return f"""\
 You are a Wiki synchronizer for this project.
 The project's wiki lives at `{wiki_dir}/`.
@@ -18,18 +22,18 @@ Run these commands to understand what changed:
 
 ```bash
 # Changed files — compact inventory of what was modified in the last commit
-llm-wiki extract --src-dir {src_dir} --changed --summary
+llm-wiki extract --src-dir {quoted_src_dir} --changed --summary
 
 # Full diff of the last commit
 git diff HEAD~1..HEAD
 
 # Current wiki health — shows what's already broken vs. what you need to fix
-llm-wiki lint --wiki-dir {wiki_dir} --src-dir {src_dir}
+llm-wiki lint --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}
 ```
 
 For full detail (methods, params, docstrings) on a specific file:
 ```bash
-llm-wiki extract --src-dir {src_dir} --paths path/to/file.py
+llm-wiki extract --src-dir {quoted_src_dir} --paths path/to/file.py
 ```
 
 ## Success Criteria
@@ -52,13 +56,13 @@ for user-facing changes. Skip for pure refactors, test-only, or doc-only commits
 After making your changes, run:
 
 ```bash
-llm-wiki lint --wiki-dir {wiki_dir} --src-dir {src_dir}
+llm-wiki lint --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}
 ```
 
 If lint reports issues, fix them and re-run until it exits 0. Then commit:
 
 ```bash
-git add {wiki_dir}/ CHANGELOG.md
+git add {quoted_wiki_dir_slash} CHANGELOG.md
 git commit -m "docs(wiki): auto-update [bot]"
 ```
 """
@@ -85,4 +89,4 @@ def run(args) -> None:
     print(f"Wiki sync prompt written to: {out_path}")
     print()
     print("Paste the contents into your IDE agent chat to trigger a wiki sync.")
-    print(f"  cat {out_path}")
+    print(f"  cat {shell_quote(out_path)}")

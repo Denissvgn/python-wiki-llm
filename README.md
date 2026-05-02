@@ -65,9 +65,9 @@ pip install llm-wiki-cli
 The package defines optional extras for language groups, but they do not install
 additional Python dependencies. Non-Python extractors depend on runtime
 toolchains instead:
-- TypeScript/TSX: `node` and `npm`
-- Go: `go`
-- Rust: `cargo`
+- TypeScript/TSX: `node` and `npm`; bundled npm dependencies install on first use.
+- Go: `go`; the bundled extractor runs via the Go toolchain.
+- Rust: `cargo`; the bundled extractor builds on first use using the packaged lockfile.
 
 Or from source:
 ```bash
@@ -379,4 +379,4 @@ llm-wiki uninstall --dry-run
 - **Wiki docs**: kept by default. Pass `--remove-wiki` to opt-in to deletion.
 - **Agent schema files** (e.g. `CLAUDE.md`): only the `# --- LLM Wiki Maintainer Constraints ---` block is stripped. Any user-written content outside that block is preserved. The file is only deleted if it contained nothing else.
 - **Git hooks**: only removed if they contain the `LLM Wiki` signature. Custom user hooks are never touched.
-- The CLI itself is not uninstalled — run `pip uninstall llm_wiki_cli` separately if needed.
+- The CLI itself is not uninstalled — run `pip uninstall llm-wiki-cli` separately if needed.

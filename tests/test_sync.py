@@ -437,6 +437,50 @@ class TestChangedFile:
 
         assert old_hash != new_hash
 
+    def test_relationship_links_keep_qualified_module_pages(self, tmp_path, capsys):
+        """sync must use the same collision-aware module links as bootstrap."""
+        import subprocess
+
+        proj = tmp_path / "project"
+        proj.mkdir()
+        subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
+        subprocess.run(
+            ["git", "-C", str(proj), "config", "user.email", "t@t.com"],
+            capture_output=True, check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(proj), "config", "user.name", "T"],
+            capture_output=True, check=True,
+        )
+
+        (proj / "models.py").write_text("class User:\n    pass\n")
+        (proj / "pkg_a").mkdir()
+        (proj / "pkg_b").mkdir()
+        (proj / "pkg_a" / "service.py").write_text(
+            "from models import User\n\n"
+            "def make_user(user: User) -> User:\n"
+            "    return user\n"
+        )
+        (proj / "pkg_b" / "service.py").write_text("class Other:\n    pass\n")
+
+        wiki_dir = proj / "docs" / "llm_wiki"
+        old_cwd = os.getcwd()
+        os.chdir(proj)
+        try:
+            bootstrap_cmd.run(_make_bootstrap_args(src_dir=".", wiki_dir=str(wiki_dir)))
+            (proj / "models.py").write_text('class User:\n    """Changed."""\n    pass\n')
+            sync_cmd.run(_make_sync_args(src_dir=".", wiki_dir=str(wiki_dir)))
+
+            entity_content = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
+            assert "../modules/pkg_a_service.md" in entity_content
+            assert "../modules/service.md" not in entity_content
+
+            from llm_wiki_cli.commands import lint_cmd
+
+            lint_cmd.run(types.SimpleNamespace(src_dir=".", wiki_dir=str(wiki_dir)))
+        finally:
+            os.chdir(old_cwd)
+
 
 class TestNewFile:
     """When a new source file is added, new pages are created and manifest updated."""

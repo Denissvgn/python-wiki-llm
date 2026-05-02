@@ -242,11 +242,12 @@ def _apply_diff(
     # Full collision maps over the *entire* inventory
     colliding_stems, colliding_cls, entity_page_cache = _collision_maps(inventory, src_dir)
 
-    # Re-build relationships from the full inventory (needed for entity pages)
-    relationships = _build_relationships(inventory)
-
     # Module page map for the manifest builder: filepath → module_page_name
     module_page_map: dict[str, str] = build_module_page_map(inventory)
+
+    # Re-build relationships from the full inventory using the same
+    # collision-aware module page names as bootstrap/migrate.
+    relationships = _build_relationships(inventory, module_page_map)
 
     # ── New + changed files ────────────────────────────────────────────────────
     for filepath in diff.new_files + diff.changed_files:

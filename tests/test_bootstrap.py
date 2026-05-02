@@ -126,6 +126,52 @@ class TestBootstrapCollisions:
         assert (wiki_dir / "entities" / "User.md").exists()
         assert (wiki_dir / "modules" / "models.md").exists()
 
+    def test_relationship_collision_resolves_by_import_module(self, tmp_path, monkeypatch):
+        proj = tmp_path / "project"
+        proj.mkdir()
+        (proj / "pkg_a").mkdir()
+        (proj / "pkg_b").mkdir()
+        (proj / "consumer.py").write_text(
+            "from pkg_a.models import User\n\n"
+            "def consume(user: User) -> User:\n"
+            "    return user\n"
+        )
+        (proj / "pkg_a" / "models.py").write_text("class User:\n    pass\n")
+        (proj / "pkg_b" / "models.py").write_text("class User:\n    pass\n")
+
+        monkeypatch.chdir(proj)
+        wiki_dir = proj / "docs" / "llm_wiki"
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir=str(wiki_dir)))
+
+        a_page = (wiki_dir / "entities" / "pkg_a_models_User.md").read_text(encoding="utf-8")
+        b_page = (wiki_dir / "entities" / "pkg_b_models_User.md").read_text(encoding="utf-8")
+        assert "**used_by**" in a_page
+        assert "../modules/consumer.md" in a_page
+        assert "**used_by**" not in b_page
+        assert "**imported_by**" not in b_page
+
+    def test_ambiguous_duplicate_relationship_is_skipped(self, tmp_path, monkeypatch):
+        proj = tmp_path / "project"
+        proj.mkdir()
+        (proj / "pkg_a").mkdir()
+        (proj / "pkg_b").mkdir()
+        (proj / "consumer.py").write_text(
+            "from shared import User\n\n"
+            "def consume(user: User) -> User:\n"
+            "    return user\n"
+        )
+        (proj / "pkg_a" / "models.py").write_text("class User:\n    pass\n")
+        (proj / "pkg_b" / "models.py").write_text("class User:\n    pass\n")
+
+        monkeypatch.chdir(proj)
+        wiki_dir = proj / "docs" / "llm_wiki"
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir=str(wiki_dir)))
+
+        for page in (wiki_dir / "entities").glob("*User.md"):
+            content = page.read_text(encoding="utf-8")
+            assert "**used_by**" not in content
+            assert "**imported_by**" not in content
+
 
 class TestBootstrapEntityPages:
     def test_creates_entity_per_class(self, tmp_project, capsys):

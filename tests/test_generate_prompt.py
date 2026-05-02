@@ -52,6 +52,22 @@ class TestGeneratePromptWritesFile:
 
         assert Path(out_file).exists()
 
+    def test_prompt_quotes_paths_with_spaces(self, tmp_project):
+        args = _make_args(wiki_dir="my docs/wiki", src_dir="src dir")
+        generate_prompt_cmd.run(args)
+
+        content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
+        assert "llm-wiki extract --src-dir 'src dir' --changed --summary" in content
+        assert "llm-wiki lint --wiki-dir 'my docs/wiki' --src-dir 'src dir'" in content
+        assert "git add 'my docs/wiki/' CHANGELOG.md" in content
+
+    def test_output_message_quotes_output_path_with_spaces(self, tmp_project, capsys):
+        args = _make_args(output=".git/wiki prompt.txt")
+        generate_prompt_cmd.run(args)
+
+        out = capsys.readouterr().out
+        assert "cat '.git/wiki prompt.txt'" in out
+
 
 class TestGeneratePromptPrintMode:
     def test_print_goes_to_stdout(self, tmp_project, capsys):

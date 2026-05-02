@@ -2,6 +2,9 @@
 import types
 from pathlib import Path
 
+import pytest
+
+from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.commands import uninstall_cmd
 
 
@@ -113,6 +116,26 @@ class TestUninstallKeepsWiki:
         uninstall_cmd.run(args)
 
         assert not wiki.exists()
+
+    def test_rejects_absolute_wiki_dir_outside_project(self, tmp_project, tmp_path, monkeypatch):
+        outside = tmp_path / "outside_wiki"
+        outside.mkdir()
+        monkeypatch.setattr("builtins.input", lambda _: "y")
+
+        with pytest.raises(PathValidationError):
+            uninstall_cmd.run(_make_args(wiki_dir=str(outside), remove_wiki=True))
+
+        assert outside.exists()
+
+    def test_rejects_traversal_wiki_dir_outside_project(self, tmp_project, monkeypatch):
+        outside = tmp_project.parent / "outside_wiki"
+        outside.mkdir()
+        monkeypatch.setattr("builtins.input", lambda _: "y")
+
+        with pytest.raises(PathValidationError):
+            uninstall_cmd.run(_make_args(wiki_dir="../outside_wiki", remove_wiki=True))
+
+        assert outside.exists()
 
 
 class TestUninstallDryRun:

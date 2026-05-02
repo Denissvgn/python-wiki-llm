@@ -1,7 +1,7 @@
 import shutil
 from pathlib import Path
 
-from ..config import DEFAULT_WIKI_DIR
+from ..config import DEFAULT_WIKI_DIR, validate_path
 from ..services.io import read_md, write_md
 from ..services.schema import (
     ALL_SCHEMA_FILES as AGENT_SCHEMA_FILES,
@@ -127,7 +127,9 @@ def _remove_temp_files(dry_run: bool = False) -> int:
 
 
 def run(args):
-    wiki_dir = Path(getattr(args, "wiki_dir", DEFAULT_WIKI_DIR))
+    wiki_dir_arg = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
+    validate_path(str(wiki_dir_arg), "--wiki-dir")
+    wiki_dir = Path(wiki_dir_arg)
     remove_wiki = getattr(args, "remove_wiki", False)
     dry_run = getattr(args, "dry_run", False)
 
@@ -213,4 +215,4 @@ def run(args):
     removed_total += r
 
     print(f"\nUninstall complete. {removed_total} item(s) removed.")
-    print("To uninstall the CLI itself: pip uninstall llm_wiki_cli")
+    print("To uninstall the CLI itself: pip uninstall llm-wiki-cli")

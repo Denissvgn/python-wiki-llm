@@ -180,6 +180,29 @@ class TestGetInventory:
         private_fn = [f for f in data["functions"] if f["name"] == "_private"][0]
         assert private_fn.get("private") is True
 
+    def test_nested_functions_are_not_module_functions(self, tmp_path):
+        (tmp_path / "mod.py").write_text(textwrap.dedent("""\
+            def outer():
+                def inner():
+                    pass
+                return inner
+        """))
+        inventory = get_inventory(str(tmp_path), deep=True)
+        functions = list(inventory.values())[0]["functions"]
+        assert [fn["name"] for fn in functions] == ["outer"]
+
+    def test_class_inside_function_is_not_module_entity(self, tmp_path):
+        (tmp_path / "factory.py").write_text(textwrap.dedent("""\
+            def make_model():
+                class LocalModel:
+                    pass
+                return LocalModel
+        """))
+        inventory = get_inventory(str(tmp_path), deep=True)
+        data = list(inventory.values())[0]
+        assert data["classes"] == []
+        assert [fn["name"] for fn in data["functions"]] == ["make_model"]
+
 
 class TestRelativePathKeys:
     """Inventory keys must be relative to src_dir, not absolute."""

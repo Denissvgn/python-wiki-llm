@@ -91,6 +91,14 @@ class TestHookIDEAgentInstallsPromptHook:
         hook_text = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
         assert "my_docs/wiki" in hook_text
 
+    def test_ide_hook_quotes_wiki_dir_with_spaces(self, tmp_project):
+        _write_agent_config("my docs/wiki", "copilot")
+        args = _make_args(wiki_dir="my docs/wiki")
+        hook_cmd.run(args)
+
+        hook_text = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
+        assert "--wiki-dir 'my docs/wiki'" in hook_text
+
     def test_agent_override_bypasses_ui_restriction(self, tmp_project, capsys):
         """Passing --agent claude explicitly still installs the headless hook even if config says copilot."""
         _write_agent_config("docs/llm_wiki", "copilot")

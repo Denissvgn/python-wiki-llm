@@ -133,6 +133,7 @@ class ComponentVisitor(ast.NodeVisitor):
         self.constants = []  # UPPER_CASE module-level assignments
         self.has_all = False  # whether __all__ is defined
         self._class_depth = 0
+        self._function_depth = 0
         self._deep = deep
 
     def visit_Import(self, node):
@@ -156,6 +157,9 @@ class ComponentVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def visit_ClassDef(self, node):
+        if self._class_depth > 0 or self._function_depth > 0:
+            return
+
         bases = [_annotation_to_str(b) for b in node.bases]
         docstring = ast.get_docstring(node) or ""
         decorators = _extract_decorators(node)
@@ -180,28 +184,36 @@ class ComponentVisitor(ast.NodeVisitor):
 
     def visit_FunctionDef(self, node):
         # Only capture top-level functions (not methods inside classes)
-        if self._class_depth == 0:
+        if self._class_depth == 0 and self._function_depth == 0:
             if not node.name.startswith("_"):
                 self.functions.append(_extract_function_info(node))
             elif self._deep:
                 info = _extract_function_info(node)
                 info["private"] = True
                 self.functions.append(info)
-        self.generic_visit(node)
+        self._function_depth += 1
+        try:
+            self.generic_visit(node)
+        finally:
+            self._function_depth -= 1
 
     def visit_AsyncFunctionDef(self, node):
-        if self._class_depth == 0:
+        if self._class_depth == 0 and self._function_depth == 0:
             if not node.name.startswith("_"):
                 self.functions.append(_extract_function_info(node))
             elif self._deep:
                 info = _extract_function_info(node)
                 info["private"] = True
                 self.functions.append(info)
-        self.generic_visit(node)
+        self._function_depth += 1
+        try:
+            self.generic_visit(node)
+        finally:
+            self._function_depth -= 1
 
     def visit_Assign(self, node):
         """Detect module-level UPPER_CASE constants and ``__all__``."""
-        if self._class_depth == 0:
+        if self._class_depth == 0 and self._function_depth == 0:
             for target in node.targets:
                 if isinstance(target, ast.Name):
                     if target.id == "__all__":

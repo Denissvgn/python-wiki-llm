@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 from ..config import CLI_AGENTS, DEFAULT_WIKI_DIR, IDE_AGENTS, get_agent_config_path, read_config, validate_path
+from ..services.paths import shell_quote
 
 # Agents that support headless CLI execution (can be used in post-commit hook)
 _CLI_AGENTS = set(CLI_AGENTS)
@@ -53,6 +54,7 @@ nohup "$CLI" trigger-agent --agent {agent} --timeout "$LLM_WIKI_TIMEOUT" --max-d
 
 
 def _build_ide_post_commit(wiki_dir: str) -> str:
+    quoted_wiki_dir = shell_quote(wiki_dir)
     return f"""#!/bin/sh
 
 # LLM Wiki -- IDE Agent Prompt Helper (Post-Commit Hook)
@@ -70,7 +72,7 @@ else
     CLI="llm-wiki"
 fi
 
-"$CLI" generate-prompt --wiki-dir {wiki_dir} --output .git/llm-wiki-prompt.txt
+"$CLI" generate-prompt --wiki-dir {quoted_wiki_dir} --output .git/llm-wiki-prompt.txt
 
 echo ""
 echo "+--------------------------------------------------------------+"

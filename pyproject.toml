@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "llm-wiki-cli"
 version = "0.3.28"
-description = "CLI tool to maintain hybrid LLM Wikis for Python projects."
+description = "CLI tool to maintain hybrid LLM Wikis for multi-language projects."
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
@@ -53,6 +53,7 @@ where = ["src"]
     "extractors/go_scripts/main.go",
     "extractors/go_scripts/go.mod",
     "extractors/rust_scripts/Cargo.toml",
+    "extractors/rust_scripts/Cargo.lock",
     "extractors/rust_scripts/src/main.rs",
 ]
 

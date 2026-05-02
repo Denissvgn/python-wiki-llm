@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import shlex
 from pathlib import Path
 
 
@@ -21,3 +22,8 @@ def normalize_source_path(value: str | None, src_dir: str | None = None) -> str 
         except ValueError:
             return candidate.as_posix()
     return normalized
+
+
+def shell_quote(value: str | Path) -> str:
+    """Quote a value for POSIX shell snippets, including Git Bash on Windows."""
+    return shlex.quote(str(value))
