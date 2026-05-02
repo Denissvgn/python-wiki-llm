@@ -197,8 +197,10 @@ class TestMcpCli:
     def test_python_version_guard(self, monkeypatch):
         monkeypatch.setattr(mcp_server.sys, "version_info", (3, 9, 0))
 
-        with pytest.raises(mcp_server.MCPDependencyError, match="Python 3.10"):
+        with pytest.raises(mcp_server.MCPDependencyError, match="Python 3.10") as exc:
             mcp_server.ensure_mcp_runtime()
+
+        assert "pip install 'agent-wiki-cli[mcp]'" in str(exc.value)
 
     def test_optional_sdk_registration_when_installed(self, tmp_project):
         if importlib.util.find_spec("mcp") is None:

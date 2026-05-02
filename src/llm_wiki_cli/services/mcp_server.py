@@ -64,7 +64,8 @@ def ensure_mcp_runtime() -> None:
     if sys.version_info < (3, 10):
         raise MCPDependencyError(
             "llm-wiki MCP support requires Python 3.10 or newer because the "
-            "official MCP Python SDK does not support Python 3.9."
+            "official MCP Python SDK does not support Python 3.9. "
+            + MCP_PACKAGE_HINT
         )
     try:
         import mcp  # noqa: F401
@@ -207,7 +208,7 @@ class McpWikiService:
                 "kind": page.kind,
                 "id": page.page_id,
                 "uri": page.uri,
-                "path": str(page.path.relative_to(self.wiki_dir)),
+                "path": _relative_posix(page.path, self.wiki_dir),
                 "title": _markdown_title(content, page.page_id),
                 "snippet": _snippet(content, idx, len(query)),
             })
@@ -249,6 +250,7 @@ class McpWikiService:
             raise McpWikiError("format must be 'json', 'text', or 'markdown'.")
         report = lint_cmd.build_report(self.wiki_dir, self.src_dir, strict=strict)
         payload = lint_cmd.report_to_dict(report)
+        _normalise_report_paths(payload)
         if format == "text":
             payload["content"] = lint_cmd.render_text(report)
         elif format == "markdown":
@@ -259,7 +261,7 @@ class McpWikiService:
     def get_status(self) -> dict:
         wiki = self.wiki_dir
         status: dict[str, object] = {
-            "wiki_dir": str(wiki),
+            "wiki_dir": _posix_string(wiki),
             "wiki_exists": wiki.exists(),
             "pages": {
                 "entities": _count_md(wiki / "entities"),
@@ -379,7 +381,7 @@ class McpWikiService:
             "kind": page.kind,
             "id": page.page_id,
             "uri": page.uri,
-            "path": str(page.path.relative_to(self.wiki_dir)),
+            "path": _relative_posix(page.path, self.wiki_dir),
             "title": _markdown_title(content, page.page_id),
             "content": content,
         }
@@ -561,6 +563,23 @@ def _ensure_inside(root: Path, path: Path) -> None:
         path.resolve().relative_to(root.resolve())
     except ValueError as exc:
         raise McpWikiError(f"Wiki path escapes wiki directory: {path}") from exc
+
+
+def _relative_posix(path: Path, root: Path) -> str:
+    return path.relative_to(root).as_posix()
+
+
+def _posix_string(value: object) -> str:
+    return str(value).replace("\\", "/")
+
+
+def _normalise_report_paths(payload: dict) -> None:
+    for key in ("wiki_dir", "src_dir"):
+        if key in payload:
+            payload[key] = _posix_string(payload[key])
+    for issue in payload.get("issues", []):
+        if isinstance(issue, dict) and issue.get("path") is not None:
+            issue["path"] = _posix_string(issue["path"])
 
 
 def _is_legacy_page(path: Path, wiki_dir: Path) -> bool:
