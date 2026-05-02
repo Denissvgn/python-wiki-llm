@@ -12,17 +12,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **MCP Server** — optional `llm-wiki mcp` command exposes read-only wiki tools/resources over stdio or local Streamable HTTP, including wiki search, entity/module fetch, context payloads, lint checks, and status
 - **Plugin & Skills Marketplace** — local-only `llm-wiki install` plus `llm-wiki plugins list|remove|validate`; manifest-gated plugins can add extractors, prompt templates, lint rules, and managed agent skill blocks
 - **Team Features** — shared `.llm-wiki/team.json` policy, `llm-wiki team init|check|resolve-conflicts`, team prompt-template defaults, required plugin checks, team convention linting, and conservative generated-wiki conflict resolution
+- **Wiki-as-Context Protocol v1** — `llm-wiki context --request FILE|-` accepts versioned JSON context requests and returns stable success/error envelopes for agents, IDEs, and CI tools
+- **Agent Quality Layer** — strict wiki validation (`lint --strict`), `ci-check` reports, opt-in validation hooks, local metrics, smart prompt change-type guidance, and static `llm-wiki review`
+
+### Changed
+- PyPI distribution renamed to `agent-wiki-cli`; the installed `llm-wiki` command and `llm_wiki_cli` import package remain unchanged.
+- Generic agent instructions now use `AGENTS.md` for new installs and upgrades; legacy `.agents.md` files are still supported for cleanup but are not automatically migrated.
+
+### Fixed
+- Restore CI compatibility for Python 3.9 and Windows, including MCP optional-dependency messaging and Windows path normalization in MCP results.
+- Context protocol and MCP callers now receive structured extractor failure errors instead of terminating the process.
+
+## [0.3.28] - 2026-05-02
+
+### Added
 - **`llm-wiki upgrade` command** — refreshes all framework-managed artifacts (schema constraint blocks, git hooks, wiki dirs, `.gitignore`) in a single idempotent command; supports agent switching via `--agent`
 - **Context-optimized extract** — `--changed` flag restricts extraction to files modified in the last commit; `--summary` produces compact class/function-name-only output; `--paths FILE...` extracts specific files for drill-down
 - **Chunked `llm-wiki migrate`** — `--chunk-size`, `--chunk`, and `--plan-chunks` split large legacy migrations into bounded page-operation batches
-- **Wiki-as-Context Protocol v1** — `llm-wiki context --request FILE|-` accepts versioned JSON context requests and returns stable success/error envelopes for agents, IDEs, and CI tools
-- **Agent Quality Layer** — strict wiki validation (`lint --strict`), `ci-check` reports, opt-in validation hooks, local metrics, smart prompt change-type guidance, and static `llm-wiki review`
 - **GitHub community health files** — code of conduct, security policy, and issue templates tailored to the CLI's local-agent workflow
 
 ### Changed
 - Shared schema utilities extracted to `services/schema.py` — constraint block markers, `build_schema_content()`, `strip_wiki_block()`, `replace_schema_block()` now centralised; eliminates duplication across `init_cmd`, `uninstall_cmd`, `bootstrap_cmd`
 - Source extraction skips more generated dependency/environment directories, including arbitrary virtualenv `site-packages` layouts, PEP 582 `__pypackages__`, `.nox`, `.direnv`, JS package-manager caches, and Go/Rust `--only-files` paths inside excluded trees
-- Generic agent instructions now use `AGENTS.md` for new installs and upgrades; legacy `.agents.md` files are still supported for cleanup but are not automatically migrated.
 
 ### Fixed
 - Prevent wiki auto-sync bot commits from recursively triggering the post-commit hook.
@@ -117,7 +128,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Test suite** — 89 unit + integration tests with pytest
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.1.5...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.3.28...HEAD
+[0.3.28]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.1.5...v0.3.28
 [0.1.5]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.1.1...v0.1.5
 [0.1.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Denissvgn/python-wiki-llm/releases/tag/v0.1.0
