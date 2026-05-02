@@ -261,8 +261,12 @@ llm-wiki context --budget 8000 --focus changed   # prioritise changed files
 llm-wiki context --budget 8000 --focus all       # treat all files equally
 ```
 
+The token budget is an estimated maximum for the returned context payload.
+When full detail does not fit, files are downgraded to slimmer summaries; files
+that still do not fit are listed as omitted.
+
 **Flags**:
-- `--budget TOKENS` (required) — Maximum token count for output
+- `--budget TOKENS` (required) — Estimated maximum token count for the context payload
 - `--format markdown|json` — Output format (default: json)
 - `--focus changed|all` — Priority classification (changed files get full detail; default: changed)
 

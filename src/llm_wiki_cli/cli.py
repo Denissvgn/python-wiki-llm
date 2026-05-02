@@ -173,7 +173,7 @@ def main():
         "context",
         help="Return priority-ranked, token-budgeted codebase context for LLM agents",
     )
-    context_parser.add_argument("--budget", type=int, required=True,
+    context_parser.add_argument("--budget", type=_positive_int, required=True,
                                 help="Token budget for the context payload")
     context_parser.add_argument("--src-dir", default=".",
                                 help="Source directory to scan (default: .)")
