@@ -9,6 +9,7 @@ import types
 import pytest
 
 from llm_wiki_cli.commands import context_cmd
+from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 
 
 # ── Helpers ───────────────────────────────────────────────────────────
@@ -467,6 +468,23 @@ class TestProtocolRun:
         assert data["ok"] is False
         assert data["error"]["field"] == "request"
 
+    def test_extractor_failure_returns_error_envelope(self, tmp_path, monkeypatch, capsys):
+        result = InventoryResult(
+            {},
+            {"python": ExtractorStatus("python", "failed", 1, "boom")},
+        )
+        monkeypatch.setattr(context_cmd, "get_inventory_result", lambda *args, **kwargs: result)
+        request = _write_request(tmp_path, _protocol_request())
+
+        with pytest.raises(SystemExit) as exc_info:
+            context_cmd.run(_make_args(request=request, budget=None))
+
+        assert exc_info.value.code == 1
+        data = json.loads(capsys.readouterr().out)
+        assert data["ok"] is False
+        assert data["error"]["field"] == "src_dir"
+        assert "python extraction failed: boom" in data["error"]["message"]
+
 
 # ── Integration ───────────────────────────────────────────────────────
 
@@ -526,6 +544,21 @@ class TestContextRun:
 
         assert exc_info.value.code == 2
         assert "--budget is required" in capsys.readouterr().err
+
+    def test_extractor_failure_exits_at_cli_boundary(self, tmp_project, monkeypatch, capsys):
+        result = InventoryResult(
+            {},
+            {"python": ExtractorStatus("python", "failed", 1, "boom")},
+        )
+        monkeypatch.setattr(context_cmd, "get_inventory_result", lambda *args, **kwargs: result)
+
+        with pytest.raises(SystemExit) as exc_info:
+            context_cmd.run(_make_args(focus="all", budget=1000))
+
+        assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        assert captured.out == ""
+        assert "Error: python extraction failed: boom" in captured.err
 
     @pytest.mark.parametrize("value", ["0", "-1"])
     def test_cli_rejects_non_positive_budget(self, tmp_project, monkeypatch, value):

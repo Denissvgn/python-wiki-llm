@@ -11,7 +11,8 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli import cli
-from llm_wiki_cli.commands import mcp_cmd
+from llm_wiki_cli.commands import context_cmd, mcp_cmd
+from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.services import mcp_server
 
 
@@ -107,6 +108,17 @@ class TestMcpWikiService:
         assert result["protocol"] == "llm-wiki-context/v1"
         assert result["ok"] is True
         assert "models.py" in result["files"]
+
+    def test_get_context_raises_mcp_error_on_extractor_failure(self, tmp_project, monkeypatch):
+        result = InventoryResult(
+            {},
+            {"python": ExtractorStatus("python", "failed", 1, "boom")},
+        )
+        monkeypatch.setattr(context_cmd, "get_inventory_result", lambda *args, **kwargs: result)
+        service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+        with pytest.raises(mcp_server.McpWikiError, match="python extraction failed: boom"):
+            service.get_context(budget_tokens=1000, focus=["all"], format="json")
 
     def test_check_wiki_returns_lint_report(self, tmp_project):
         _write_wiki(tmp_project)

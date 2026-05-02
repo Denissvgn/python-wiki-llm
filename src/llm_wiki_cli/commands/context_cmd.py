@@ -21,7 +21,7 @@ import json
 import sys
 from pathlib import Path, PurePosixPath
 
-from .extract_cmd import _git_changed_files, get_inventory_result, print_inventory_failures
+from .extract_cmd import _git_changed_files, get_inventory_result
 from ..config import validate_path
 
 
@@ -41,12 +41,20 @@ class ProtocolRequestError(ValueError):
         self.field = field
 
 
+def _extractor_failure_message(inventory_result) -> str:
+    """Return a compact, structured error message for extractor failures."""
+    details = []
+    for status in inventory_result.failed:
+        detail = f": {status.message}" if status.message else ""
+        details.append(f"{status.language} extraction failed{detail}")
+    return "; ".join(details) or "Source extraction failed."
+
+
 def get_inventory(src_dir: str, *, deep: bool = False) -> dict:
     """Context-local inventory helper kept patchable for protocol tests."""
     inventory_result = get_inventory_result(src_dir, deep=deep)
     if inventory_result.failed:
-        print_inventory_failures(inventory_result)
-        sys.exit(1)
+        raise ProtocolRequestError(_extractor_failure_message(inventory_result), "src_dir")
     return inventory_result.inventory
 
 
@@ -642,13 +650,17 @@ def run(args) -> None:
         raise SystemExit(2)
 
     focus_values = ["all"] if focus == "all" else ["changed", "neighbors"]
-    payload, _warnings = _build_context(
-        src_dir,
-        budget,
-        fmt,
-        focus_values,
-        emit_warnings=True,
-    )
+    try:
+        payload, _warnings = _build_context(
+            src_dir,
+            budget,
+            fmt,
+            focus_values,
+            emit_warnings=True,
+        )
+    except ProtocolRequestError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        raise SystemExit(1)
 
     if not payload["files"]:
         print("{}" if fmt == "json" else "No source files found.")
