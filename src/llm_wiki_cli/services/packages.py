@@ -10,12 +10,19 @@ from __future__ import annotations
 
 import ast
 import configparser
-import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Sequence
 
 from ..config import EXCLUDED_DIRS
+
+try:  # Python 3.11+
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - exercised on Python 3.9/3.10
+    try:
+        import tomli as tomllib
+    except ModuleNotFoundError:  # pragma: no cover - dependency missing in ad-hoc envs
+        tomllib = None
 
 
 @dataclass(frozen=True)
@@ -29,20 +36,29 @@ class PackageInfo:
 
 
 def _parse_pyproject_toml(text: str) -> dict[str, str]:
-    """Minimal TOML parser for ``[project]`` name and version fields.
-
-    Full TOML parsing requires a third-party library (or Python 3.11+
-    ``tomllib``).  We use a regex-based approach that covers the vast
-    majority of real-world ``pyproject.toml`` files.
-    """
+    """Parse project metadata from PEP 621 first, then Poetry metadata."""
     info: dict[str, str] = {}
+    if tomllib is None:
+        return info
+    try:
+        data = tomllib.loads(text)
+    except Exception:
+        return info
 
-    # Try to grab [project] name and version
-    for key in ("name", "version"):
-        pattern = rf'^\s*{key}\s*=\s*"([^"]+)"'
-        m = re.search(pattern, text, re.MULTILINE)
-        if m:
-            info[key] = m.group(1)
+    project = data.get("project", {})
+    if isinstance(project, dict) and project.get("name"):
+        info["name"] = str(project["name"])
+        if isinstance(project.get("version"), str):
+            info["version"] = str(project["version"])
+        elif "version" in project.get("dynamic", []):
+            info["version"] = "dynamic"
+        return info
+
+    poetry = data.get("tool", {}).get("poetry", {})
+    if isinstance(poetry, dict) and poetry.get("name"):
+        info["name"] = str(poetry["name"])
+        if isinstance(poetry.get("version"), str):
+            info["version"] = str(poetry["version"])
 
     return info
 
@@ -141,6 +157,9 @@ def stamp_inventory_packages(
     sorted_pkgs = sorted(packages, key=lambda p: len(p.root), reverse=True)
 
     for filepath, data in inventory.items():
+        if data.get("language") != "python":
+            data["package"] = None
+            continue
         fp_posix = filepath.replace("\\", "/")
         matched = None
         for pkg in sorted_pkgs:

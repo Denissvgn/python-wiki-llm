@@ -192,7 +192,7 @@ class TestMcpCli:
             mcp_cmd.run(_args())
 
         assert exc.value.code == 1
-        assert "pip install 'llm-wiki-cli[mcp]'" in capsys.readouterr().err
+        assert "pip install 'agent-wiki-cli[mcp]'" in capsys.readouterr().err
 
     def test_python_version_guard(self, monkeypatch):
         monkeypatch.setattr(mcp_server.sys, "version_info", (3, 9, 0))

@@ -6,9 +6,12 @@ import os
 import re
 import subprocess
 import sys
+from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 
-from ..config import COMPOSE_PATTERNS, DOCKERFILE_PATTERNS, EXCLUDED_DIRS
+from ..config import COMPOSE_PATTERNS, DOCKERFILE_PATTERNS, EXCLUDED_DIRS, validate_path
+from ..extractors.common import LANGUAGE_EXTENSIONS, discover_source_files
 from ..services.packages import discover_packages, stamp_inventory_packages
 from ..services.plugins import get_extractor_registry
 
@@ -20,6 +23,7 @@ from ..extractors.python_extractor import ComponentVisitor  # noqa: F401
 # ── Extractor loader ─────────────────────────────────────────────────
 
 
+@lru_cache(maxsize=None)
 def _load_extractor(entry_point: str):
     """Instantiate an extractor from a ``"module.path:ClassName"`` string."""
     module_path, class_name = entry_point.rsplit(":", 1)
@@ -27,10 +31,36 @@ def _load_extractor(entry_point: str):
     return getattr(module, class_name)()
 
 
+@dataclass(frozen=True)
+class ExtractorStatus:
+    language: str
+    state: str  # ok | skipped | failed
+    files_found: int
+    message: str = ""
+
+
+@dataclass(frozen=True)
+class InventoryResult:
+    inventory: dict
+    statuses: dict[str, ExtractorStatus]
+
+    @property
+    def failed(self) -> list[ExtractorStatus]:
+        return [s for s in self.statuses.values() if s.state == "failed"]
+
+
+def print_inventory_failures(result: InventoryResult, *, file=None) -> None:
+    """Print extractor failures in a consistent form."""
+    stream = file or sys.stderr
+    for status in result.failed:
+        detail = f": {status.message}" if status.message else ""
+        print(f"Error: {status.language} extraction failed{detail}", file=stream)
+
+
 # ── Backward-compatible public API ───────────────────────────────────
 
 
-def get_inventory(src_dir, deep=False, only_files=None, include_empty=False):
+def get_inventory_result(src_dir, deep=False, only_files=None, include_empty=False) -> InventoryResult:
     """Scan source files across all registered languages and return inventory.
 
     Runs every built-in and installed extractor and merges the
@@ -45,24 +75,91 @@ def get_inventory(src_dir, deep=False, only_files=None, include_empty=False):
     ``None``) derived from ``pyproject.toml`` / ``setup.py`` markers.
     """
     inventory: dict = {}
-    for _lang, entry_point in get_extractor_registry().items():
+    statuses: dict[str, ExtractorStatus] = {}
+    for language, entry_point in get_extractor_registry().items():
+        extensions = LANGUAGE_EXTENSIONS.get(language)
+        source_files: list[str] | None = None
+        if extensions is not None:
+            source_files = discover_source_files(
+                src_dir,
+                extensions,
+                only_files=only_files,
+                language=language,
+            )
+            if not source_files:
+                statuses[language] = ExtractorStatus(language, "skipped", 0)
+                continue
+
+        files_found = len(source_files or [])
+        if extensions is None and only_files:
+            files_found = len(only_files)
+
+        if extensions is not None and not source_files:
+            statuses[language] = ExtractorStatus(language, "skipped", 0)
+            continue
+
         extractor = _load_extractor(entry_point)
-        # Only Python extractor supports include_empty; others ignore it
+        # Reset cached extractor state from any previous invocation.
+        if hasattr(extractor, "last_error"):
+            extractor.last_error = None
+        kwargs = {"src_dir": src_dir, "only_files": only_files, "deep": deep}
+        if language == "python":
+            kwargs["include_empty"] = include_empty
         try:
-            inventory.update(extractor.extract(
-                src_dir, only_files=only_files, deep=deep,
-                include_empty=include_empty,
-            ))
-        except TypeError:
-            inventory.update(extractor.extract(
-                src_dir, only_files=only_files, deep=deep,
-            ))
+            extracted = extractor.extract(**kwargs)
+        except Exception as exc:
+            statuses[language] = ExtractorStatus(language, "failed", files_found, str(exc))
+            continue
+        error = getattr(extractor, "last_error", None)
+        if error:
+            statuses[language] = ExtractorStatus(language, "failed", files_found, str(error))
+            continue
+        inventory.update(extracted)
+        if extensions is None:
+            files_found = len(extracted)
+        statuses[language] = ExtractorStatus(language, "ok", files_found)
 
     # Stamp package ownership
     packages = discover_packages(src_dir)
     stamp_inventory_packages(inventory, packages)
 
-    return inventory
+    return InventoryResult(inventory=inventory, statuses=statuses)
+
+
+def get_inventory(src_dir, deep=False, only_files=None, include_empty=False):
+    """Backward-compatible inventory API returning only the inventory dict."""
+    return get_inventory_result(
+        src_dir, deep=deep, only_files=only_files, include_empty=include_empty,
+    ).inventory
+
+
+def ensure_complete_inventory(result: InventoryResult) -> bool:
+    """Return True when all extractors that had matching source files succeeded."""
+    return not result.failed
+
+
+def infer_language_from_path(filepath: str) -> str | None:
+    suffix = Path(filepath).suffix
+    for language, extensions in LANGUAGE_EXTENSIONS.items():
+        if suffix in extensions:
+            return language
+    return None
+
+
+def languages_with_source(src_dir: str, only_files: list[str] | None = None) -> set[str]:
+    languages: set[str] = set()
+    for language, extensions in LANGUAGE_EXTENSIONS.items():
+        if discover_source_files(src_dir, extensions, only_files=only_files, language=language):
+            languages.add(language)
+    return languages
+
+
+def _inventory_or_exit(src_dir: str, *, deep: bool = False, only_files=None, include_empty: bool = False) -> dict:
+    result = get_inventory_result(src_dir, deep=deep, only_files=only_files, include_empty=include_empty)
+    if result.failed:
+        print_inventory_failures(result)
+        sys.exit(1)
+    return result.inventory
 
 
 def _git_changed_files(src_dir: str) -> list[str] | None:
@@ -99,6 +196,7 @@ def _summarize_inventory(inventory: dict) -> dict:
 
 def run(args):
     src_dir: str = getattr(args, "src_dir", ".")
+    validate_path(src_dir, "--src-dir")
     changed: bool = getattr(args, "changed", False)
     summary: bool = getattr(args, "summary", False)
     deep: bool = getattr(args, "deep", False)
@@ -110,7 +208,7 @@ def run(args):
 
     if changed and paths:
         print("Error: --changed and --paths are mutually exclusive.", file=sys.stderr)
-        return
+        sys.exit(2)
 
     if changed:
         only_files = _git_changed_files(src_dir)
@@ -127,8 +225,12 @@ def run(args):
     else:
         print(f"Extracting inventory from {src_dir}...", file=sys.stderr)
 
-    inventory = get_inventory(src_dir, deep=deep, only_files=only_files,
-                              include_empty=include_empty)
+    result = get_inventory_result(src_dir, deep=deep, only_files=only_files,
+                                  include_empty=include_empty)
+    if result.failed:
+        print_inventory_failures(result)
+        sys.exit(1)
+    inventory = result.inventory
 
     if package_filter:
         inventory = {
@@ -137,7 +239,7 @@ def run(args):
         }
         if not inventory:
             print(f"No files found for package '{package_filter}'.", file=sys.stderr)
-            return
+            sys.exit(1)
 
     if summary:
         inventory = _summarize_inventory(inventory)
@@ -598,10 +700,11 @@ def get_docker_inventory(src_dir: str) -> dict:
     Returns a dict of relative-path -> parsed data.  Keys always use
     forward slashes regardless of the host OS.
     """
-    from ..config import is_ignored_by_gitignore
+    from ..config import build_gitignore_matcher
     
     src_path = Path(src_dir)
     inventory: dict[str, dict] = {}
+    matcher = build_gitignore_matcher(src_path)
 
     def _rel(path: Path) -> str:
         """Return a forward-slash relative path (consistent across OSes)."""
@@ -613,10 +716,8 @@ def get_docker_inventory(src_dir: str) -> dict:
         # Check hardcoded exclusions
         if not EXCLUDED_DIRS.isdisjoint(rel.parts):
             return True
-        # Check .gitignore
         rel_str = str(rel).replace("\\", "/")
-        gitignore_path = src_path / ".gitignore"
-        if is_ignored_by_gitignore(rel_str, gitignore_path):
+        if matcher.is_ignored(rel_str):
             return True
         return False
 

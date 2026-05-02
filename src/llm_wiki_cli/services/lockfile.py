@@ -22,7 +22,7 @@ class WikiLock:
         self._fd = None
 
     def __enter__(self):
-        self._fd = open(self._lock_path, "w+")
+        self._fd = open(self._lock_path, "a+")
         try:
             if sys.platform == "win32":
                 import msvcrt
@@ -37,6 +37,8 @@ class WikiLock:
                 "Another llm-wiki sync is already running. Skipping."
             )
         # Write PID for diagnostics
+        self._fd.seek(0)
+        self._fd.truncate()
         self._fd.write(str(os.getpid()))
         self._fd.flush()
         return self

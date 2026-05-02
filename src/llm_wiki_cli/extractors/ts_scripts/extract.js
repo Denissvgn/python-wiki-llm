@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// TypeScript AST extractor for llm-wiki-cli.
+// TypeScript AST extractor for agent-wiki-cli.
 // Usage: node extract.js --src-dir <path> [--only-files <f1,f2,...>]
 //                        [--deep] [--extensions <.ts,.tsx>]
 //

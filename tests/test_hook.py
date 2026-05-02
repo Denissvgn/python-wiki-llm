@@ -8,7 +8,12 @@ from llm_wiki_cli.commands import hook_cmd
 
 
 def _make_args(**kwargs):
-    defaults = {"wiki_dir": "docs/llm_wiki", "agent": None, "enable_validation": False}
+    defaults = {
+        "wiki_dir": "docs/llm_wiki",
+        "agent": None,
+        "force": False,
+        "enable_validation": False,
+    }
     defaults.update(kwargs)
     return types.SimpleNamespace(**defaults)
 
@@ -65,6 +70,7 @@ class TestHookIDEAgentInstallsPromptHook:
         hook_text = hook_path.read_text(encoding="utf-8")
         assert "generate-prompt" in hook_text
         assert "trigger-agent" not in hook_text
+        assert 'LLM_WIKI_OPEN_PROMPT:-0' in hook_text
 
     def test_post_commit_installed_for_cursor(self, tmp_project, capsys):
         _write_agent_config("docs/llm_wiki", "cursor")
@@ -89,6 +95,14 @@ class TestHookIDEAgentInstallsPromptHook:
 
         hook_text = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
         assert "my_docs/wiki" in hook_text
+
+    def test_ide_hook_quotes_wiki_dir_with_spaces(self, tmp_project):
+        _write_agent_config("my docs/wiki", "copilot")
+        args = _make_args(wiki_dir="my docs/wiki")
+        hook_cmd.run(args)
+
+        hook_text = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
+        assert "--wiki-dir 'my docs/wiki'" in hook_text
 
     def test_agent_override_bypasses_ui_restriction(self, tmp_project, capsys):
         """Passing --agent claude explicitly still installs the headless hook even if config says copilot."""
@@ -117,6 +131,16 @@ class TestHookReadsCustomWikiDir:
 
         hook_text = (Path(".git/hooks/post-commit")).read_text(encoding="utf-8")
         assert "--agent aider" in hook_text
+        assert "--wiki-dir my_docs/wiki" in hook_text
+
+    def test_cli_hook_quotes_wiki_dir_with_spaces(self, tmp_project):
+        _write_agent_config("my docs/wiki", "aider")
+        args = _make_args(wiki_dir="my docs/wiki")
+        hook_cmd.run(args)
+
+        hook_text = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
+        assert "--agent aider" in hook_text
+        assert "--wiki-dir 'my docs/wiki'" in hook_text
 
 
 class TestPostCommitAutoCommitGuard:
@@ -128,6 +152,40 @@ class TestPostCommitAutoCommitGuard:
         hook_cmd.run(args)
         hook_text = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
         assert "LLM_WIKI_AUTO_COMMIT" in hook_text
+
+
+class TestHookInstallSafety:
+    def test_unrelated_existing_hook_is_preserved(self, tmp_project):
+        hook_path = Path(".git/hooks/post-commit")
+        hook_path.parent.mkdir(parents=True, exist_ok=True)
+        hook_path.write_text("#!/bin/sh\necho custom\n", encoding="utf-8")
+
+        with pytest.raises(SystemExit) as exc_info:
+            hook_cmd.run(_make_args(agent="claude"))
+
+        assert exc_info.value.code == 1
+        assert hook_path.read_text(encoding="utf-8") == "#!/bin/sh\necho custom\n"
+
+    def test_force_replaces_unrelated_existing_hook(self, tmp_project):
+        hook_path = Path(".git/hooks/post-commit")
+        hook_path.parent.mkdir(parents=True, exist_ok=True)
+        hook_path.write_text("#!/bin/sh\necho custom\n", encoding="utf-8")
+
+        hook_cmd.run(_make_args(agent="claude", force=True))
+
+        hook_text = hook_path.read_text(encoding="utf-8")
+        assert "LLM Wiki" in hook_text
+        assert "echo custom" not in hook_text
+
+    def test_managed_existing_hook_is_replaced(self, tmp_project):
+        hook_path = Path(".git/hooks/post-commit")
+        hook_path.parent.mkdir(parents=True, exist_ok=True)
+        hook_path.write_text("#!/bin/sh\n# LLM Wiki old hook\n", encoding="utf-8")
+
+        hook_cmd.run(_make_args(agent="aider"))
+
+        hook_text = hook_path.read_text(encoding="utf-8")
+        assert "--agent aider" in hook_text
 
     def test_ide_post_commit_has_auto_commit_guard(self, tmp_project):
         _write_agent_config("docs/llm_wiki", "copilot")

@@ -212,7 +212,7 @@ def replace_schema_block(schema_path: Path, new_content: str) -> None:
         re.escape(CONSTRAINT_START) + r'.*?' + re.escape(CONSTRAINT_END) + r'\n*',
         re.DOTALL,
     )
-    updated = pattern.sub(new_content, existing)
+    updated = pattern.sub(lambda _m: new_content, existing)
     write_md(schema_path, updated)
 
 

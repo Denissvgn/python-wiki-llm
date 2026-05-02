@@ -1,4 +1,4 @@
-"""TypeScript AST extractor for llm-wiki-cli.
+"""TypeScript AST extractor for agent-wiki-cli.
 
 Implements :class:`~llm_wiki_cli.extractors.ExtractorProtocol` by delegating
 to a bundled Node.js script (``ts_scripts/extract.js``) that uses ``ts-morph``
@@ -17,6 +17,8 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+from .common import discover_source_files, filter_bundled_inventory
 
 _TS_SCRIPTS_DIR = Path(__file__).parent / "ts_scripts"
 
@@ -83,6 +85,8 @@ class TypeScriptExtractor:
     Each returned file entry includes ``"language": "typescript"``.
     """
 
+    last_error: str | None = None
+
     def extract(
         self,
         src_dir: str,
@@ -109,15 +113,23 @@ class TypeScriptExtractor:
             ``{filepath: file_entry}`` where each ``file_entry`` contains at
             minimum ``"classes"``, ``"functions"``, and ``"language"``.
         """
+        self.last_error = None
+        source_files = discover_source_files(
+            src_dir, (".ts", ".tsx"), only_files=only_files, language="typescript",
+        )
+        if not source_files:
+            return {}
+
         if not shutil.which("node"):
-            print(
-                "llm-wiki TypeScript extractor: node not found. "
-                "Install Node.js (https://nodejs.org) to enable TypeScript extraction.",
-                file=sys.stderr,
+            self.last_error = (
+                "node not found. Install Node.js (https://nodejs.org) "
+                "to enable TypeScript extraction."
             )
+            print(f"llm-wiki TypeScript extractor: {self.last_error}", file=sys.stderr)
             return {}
 
         if not _ensure_npm_deps():
+            self.last_error = "npm dependencies unavailable"
             return {}
 
         cmd = [
@@ -125,8 +137,7 @@ class TypeScriptExtractor:
             str(_TS_SCRIPTS_DIR / "extract.js"),
             "--src-dir", str(Path(src_dir).resolve()),
         ]
-        if only_files:
-            cmd += ["--only-files", ",".join(only_files)]
+        cmd += ["--only-files", ",".join(source_files)]
         if deep:
             cmd.append("--deep")
 
@@ -140,18 +151,21 @@ class TypeScriptExtractor:
                 cwd=_TS_SCRIPTS_DIR,
             )
         except subprocess.CalledProcessError as exc:
+            self.last_error = "extraction failed"
             print(
                 f"llm-wiki TypeScript extractor: extraction failed.\n{exc.stderr}",
                 file=sys.stderr,
             )
             return {}
         except subprocess.TimeoutExpired:
+            self.last_error = "extraction timed out after 120 s"
             print(
                 "llm-wiki TypeScript extractor: extraction timed out after 120 s.",
                 file=sys.stderr,
             )
             return {}
         except FileNotFoundError:
+            self.last_error = "node executable not found"
             print(
                 "llm-wiki TypeScript extractor: node executable not found.",
                 file=sys.stderr,
@@ -168,6 +182,7 @@ class TypeScriptExtractor:
         try:
             inventory: dict = json.loads(result.stdout)
         except json.JSONDecodeError as exc:
+            self.last_error = "malformed JSON output"
             print(
                 f"llm-wiki TypeScript extractor: malformed JSON output — {exc}",
                 file=sys.stderr,
@@ -177,14 +192,7 @@ class TypeScriptExtractor:
         for entry in inventory.values():
             entry["language"] = "typescript"
 
-        # Exclude files from the extractor's own bundled scripts directory.
-        # ts-morph returns forward-slash paths even on Windows, so normalise
-        # the comparison path to forward slashes as well.
-        scripts_abs = _TS_SCRIPTS_DIR.resolve().as_posix() + "/"
-        inventory = {
-            fp: data for fp, data in inventory.items()
-            if not fp.replace("\\", "/").startswith(scripts_abs)
-        }
+        inventory = filter_bundled_inventory(inventory, _TS_SCRIPTS_DIR)
 
         src_root = Path(src_dir).resolve()
         normalized_inventory: dict = {}

@@ -1,7 +1,7 @@
 import shutil
 from pathlib import Path
 
-from ..config import DEFAULT_WIKI_DIR
+from ..config import DEFAULT_WIKI_DIR, validate_path
 from ..services.io import read_md, write_md
 from ..services.schema import (
     ALL_SCHEMA_FILES as AGENT_SCHEMA_FILES,
@@ -16,9 +16,12 @@ HOOK_SIGNATURE = "LLM Wiki"
 # Hooks that install-hook may have written
 HOOK_NAMES = ["post-commit", "pre-commit", "pre-push"]
 
-# Temp files created at runtime
-TEMP_FILES = [
+# Local runtime artifacts created by init/hooks/trigger-agent.
+RUNTIME_ARTIFACTS = [
+    ".git/.llm-wiki-agent",
     ".git/llm-wiki-prompt.txt",
+    ".git/llm-wiki.lock",
+    ".git/llm-wiki-breaker.json",
     ".git/llm-wiki-sync.log",
 ]
 
@@ -111,10 +114,10 @@ def _remove_wiki_dir(wiki_dir: Path, dry_run: bool = False) -> bool:
     return True
 
 
-def _remove_temp_files(dry_run: bool = False) -> int:
-    """Remove temporary files created at runtime."""
+def _remove_runtime_artifacts(dry_run: bool = False) -> int:
+    """Remove local runtime artifacts created by llm-wiki."""
     removed = 0
-    for filepath in TEMP_FILES:
+    for filepath in RUNTIME_ARTIFACTS:
         p = Path(filepath)
         if p.exists():
             if dry_run:
@@ -127,7 +130,9 @@ def _remove_temp_files(dry_run: bool = False) -> int:
 
 
 def run(args):
-    wiki_dir = Path(getattr(args, "wiki_dir", DEFAULT_WIKI_DIR))
+    wiki_dir_arg = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
+    validate_path(str(wiki_dir_arg), "--wiki-dir")
+    wiki_dir = Path(wiki_dir_arg)
     remove_wiki = getattr(args, "remove_wiki", False)
     dry_run = getattr(args, "dry_run", False)
 
@@ -169,18 +174,18 @@ def run(args):
     else:
         print("  Not found.")
 
-    # Temp files
-    print("\n4. Temp Files:")
-    temp_count = sum(1 for f in TEMP_FILES if Path(f).exists())
-    if temp_count:
-        for f in TEMP_FILES:
+    # Runtime artifacts
+    print("\n4. Runtime Artifacts:")
+    artifact_count = sum(1 for f in RUNTIME_ARTIFACTS if Path(f).exists())
+    if artifact_count:
+        for f in RUNTIME_ARTIFACTS:
             if Path(f).exists():
                 print(f"  {f}")
     else:
         print("  Nothing to remove.")
 
     wiki_targeted = remove_wiki and wiki_dir.exists()
-    total = hooks_count + schema_count + (1 if wiki_targeted else 0) + temp_count
+    total = hooks_count + schema_count + (1 if wiki_targeted else 0) + artifact_count
     if total == 0:
         print("\nNothing to uninstall. Project is clean.")
         return
@@ -209,8 +214,8 @@ def run(args):
         _remove_wiki_dir(wiki_dir)
         removed_total += 1
 
-    r = _remove_temp_files()
+    r = _remove_runtime_artifacts()
     removed_total += r
 
     print(f"\nUninstall complete. {removed_total} item(s) removed.")
-    print("To uninstall the CLI itself: pip uninstall llm_wiki_cli")
+    print("To uninstall the CLI itself: pip uninstall agent-wiki-cli")

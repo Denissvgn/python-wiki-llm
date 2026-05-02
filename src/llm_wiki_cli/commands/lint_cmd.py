@@ -5,7 +5,7 @@ import sys
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
-from .extract_cmd import get_inventory, get_call_graph, get_docker_inventory
+from .extract_cmd import get_call_graph, get_docker_inventory, get_inventory_result, print_inventory_failures
 from .bootstrap_cmd import build_module_page_map, build_entity_page_map
 from ..config import validate_path
 from ..services.io import read_md
@@ -50,6 +50,16 @@ class LintReport:
         return len(self.by_category().get(category, []))
 
 
+def _local_link_path(link: str) -> str | None:
+    """Return the file portion of a local markdown link, or None if ignored."""
+    if link.startswith(("http://", "https://", "mailto:", "#")):
+        return None
+    base, _sep, _anchor = link.partition("#")
+    if not base:
+        return None
+    return base
+
+
 def _is_legacy_page(path: Path, wiki_dir: Path) -> bool:
     """Return True for archived migration pages that lint should ignore."""
     try:
@@ -69,13 +79,17 @@ def _collect_documented_entities(wiki_dir: Path) -> set[str]:
     return {p.stem for p in entities_dir.glob("*.md")}
 
 
-def _collect_code_classes(src_dir: str) -> set[str]:
+def _collect_code_classes(inventory_or_src_dir) -> set[str]:
     """Return the set of entity page names found by AST scanning.
 
     Uses collision-aware naming so that duplicate class names across
     different modules are qualified (e.g. ``parser_Parser``).
     """
-    inventory = get_inventory(src_dir)
+    inventory = (
+        inventory_or_src_dir
+        if isinstance(inventory_or_src_dir, dict)
+        else get_inventory_result(inventory_or_src_dir).inventory
+    )
     entity_map = build_entity_page_map(inventory)
     return set(entity_map.values())
 
@@ -88,13 +102,17 @@ def _collect_documented_modules(wiki_dir: Path) -> set[str]:
     return {p.stem for p in modules_dir.glob("*.md")}
 
 
-def _collect_code_modules(src_dir: str) -> set[str]:
+def _collect_code_modules(inventory_or_src_dir) -> set[str]:
     """Return the set of module page names with tracked components.
 
     Uses collision-aware naming so that duplicate file stems across
     different directories are qualified (e.g. ``pkg_a_cli``).
     """
-    inventory = get_inventory(src_dir)
+    inventory = (
+        inventory_or_src_dir
+        if isinstance(inventory_or_src_dir, dict)
+        else get_inventory_result(inventory_or_src_dir).inventory
+    )
     mod_map = build_module_page_map(inventory)
     return set(mod_map.values())
 
@@ -115,9 +133,13 @@ def _collect_documented_infrastructure(wiki_dir: Path) -> set[str]:
     return {p.stem for p in infra_dir.glob("*.md")}
 
 
-def _collect_docker_files(src_dir: str) -> set[str]:
+def _collect_docker_files(docker_inventory_or_src_dir) -> set[str]:
     """Return the set of Docker/Compose file page-names found in source."""
-    docker_inv = get_docker_inventory(src_dir)
+    docker_inv = (
+        docker_inventory_or_src_dir
+        if isinstance(docker_inventory_or_src_dir, dict)
+        else get_docker_inventory(docker_inventory_or_src_dir)
+    )
     return {f.replace("\\", "/").replace("/", "_").replace(".", "_") for f in docker_inv}
 
 
@@ -233,8 +255,13 @@ def _check_sync_manifest(report: LintReport, wiki_dir: Path, src_dir: str) -> No
         return
 
     try:
-        inventory = get_inventory(src_dir, deep=True)
-        diff = _compute_diff(manifest, inventory, src_dir)
+        inventory_result = get_inventory_result(src_dir, deep=True)
+        if inventory_result.failed:
+            messages = "; ".join(
+                f"{status.language}: {status.message}" for status in inventory_result.failed
+            )
+            raise RuntimeError(messages)
+        diff = _compute_diff(manifest, inventory_result.inventory, src_dir)
     except Exception as exc:
         _add(
             report,
@@ -268,6 +295,13 @@ def build_report(wiki_dir: str | Path, src_dir: str = ".", *, strict: bool = Fal
         _add(report, "wiki_missing", f"Directory {wiki_path} does not exist.", path=str(wiki_path))
         return report
 
+    inventory_result = get_inventory_result(src_dir, deep=True)
+    if inventory_result.failed:
+        print_inventory_failures(inventory_result)
+        sys.exit(1)
+    deep_inventory = inventory_result.inventory
+    docker_inventory = get_docker_inventory(src_dir)
+
     pages = [
         page for page in wiki_path.rglob("*.md")
         if not _is_legacy_page(page, wiki_path)
@@ -279,9 +313,10 @@ def build_report(wiki_dir: str | Path, src_dir: str = ".", *, strict: bool = Fal
         links = LINK_RE.findall(content)
 
         for link in links:
-            if link.startswith("http://") or link.startswith("https://"):
+            local_path = _local_link_path(link)
+            if local_path is None:
                 continue
-            target = (page.parent / link).resolve()
+            target = (page.parent / local_path).resolve()
             if not target.exists():
                 rel = str(page.relative_to(wiki_path))
                 _add(report, "broken_links", f"Broken link in {rel} -> {link}", path=rel, target=link)
@@ -294,8 +329,9 @@ def build_report(wiki_dir: str | Path, src_dir: str = ".", *, strict: bool = Fal
         index_links = LINK_RE.findall(index_content)
 
         for link in index_links:
-            if not link.startswith("http"):
-                target = (index_path.parent / link).resolve()
+            local_path = _local_link_path(link)
+            if local_path is not None:
+                target = (index_path.parent / local_path).resolve()
                 referenced_files.append(target)
 
         for page in pages:
@@ -306,9 +342,8 @@ def build_report(wiki_dir: str | Path, src_dir: str = ".", *, strict: bool = Fal
                 _add(report, "orphan_pages", f"Orphan page (not in index.md): {rel}", path=rel)
 
     # ── 3. AST ↔ Wiki Cross-Reference (entities) ─────────────────────
-    inventory = get_inventory(src_dir)
     documented_entities = _collect_documented_entities(wiki_path)
-    code_classes = _inventory_code_classes(inventory)
+    code_classes = _inventory_code_classes(deep_inventory)
 
     undocumented = code_classes - documented_entities
     stale = documented_entities - code_classes
@@ -323,7 +358,7 @@ def build_report(wiki_dir: str | Path, src_dir: str = ".", *, strict: bool = Fal
 
     # ── 4. AST ↔ Wiki Cross-Reference (modules) ──────────────────────
     documented_modules = _collect_documented_modules(wiki_path)
-    code_modules = _inventory_code_modules(inventory)
+    code_modules = _inventory_code_modules(deep_inventory)
 
     undoc_mods = code_modules - documented_modules
     stale_mods = documented_modules - code_modules
@@ -346,9 +381,10 @@ def build_report(wiki_dir: str | Path, src_dir: str = ".", *, strict: bool = Fal
             content = read_md(wf_page)
             links = LINK_RE.findall(content)
             for link in links:
-                if link.startswith("http"):
+                local_path = _local_link_path(link)
+                if local_path is None:
                     continue
-                target = (wf_page.parent / link).resolve()
+                target = (wf_page.parent / local_path).resolve()
                 if not target.exists():
                     _add(
                         report,
@@ -359,11 +395,7 @@ def build_report(wiki_dir: str | Path, src_dir: str = ".", *, strict: bool = Fal
                     )
 
     # 5b. Detect missing workflows (call chains with 3+ modules but no page)
-    try:
-        deep_inventory = get_inventory(src_dir, deep=True)
-        detected_workflows = set(get_call_graph(deep_inventory).keys())
-    except Exception:
-        detected_workflows = set()
+    detected_workflows = set(get_call_graph(deep_inventory).keys())
 
     missing_wf = detected_workflows - documented_workflows
     if missing_wf:
@@ -372,7 +404,7 @@ def build_report(wiki_dir: str | Path, src_dir: str = ".", *, strict: bool = Fal
 
     # ── 6. Infrastructure checks (Docker/Compose) ────────────────────
     documented_infra = _collect_documented_infrastructure(wiki_path)
-    code_docker = _collect_docker_files(src_dir)
+    code_docker = _collect_docker_files(docker_inventory)
 
     undoc_infra = code_docker - documented_infra
     stale_infra = documented_infra - code_docker
@@ -389,8 +421,8 @@ def build_report(wiki_dir: str | Path, src_dir: str = ".", *, strict: bool = Fal
         _check_required_structure(report, wiki_path)
         _check_sync_manifest(report, wiki_path, src_dir)
 
-    _run_plugin_lint_rules(report, wiki_path, src_dir, inventory, pages)
-    for issue in build_team_issues(wiki_path, src_dir, inventory, pages):
+    _run_plugin_lint_rules(report, wiki_path, src_dir, deep_inventory, pages)
+    for issue in build_team_issues(wiki_path, src_dir, deep_inventory, pages):
         report.issues.append(_coerce_plugin_issue(issue, "team"))
 
     return report

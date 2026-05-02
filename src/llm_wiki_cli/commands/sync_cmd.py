@@ -20,7 +20,7 @@ from datetime import date
 from pathlib import Path
 from typing import Optional
 
-from .extract_cmd import get_inventory
+from .extract_cmd import get_inventory_result, infer_language_from_path, print_inventory_failures
 from .bootstrap_cmd import (
     _build_relationships,
     _generate_entity_md,
@@ -38,7 +38,7 @@ from ..services.io import read_md, write_md
 # ── Constants ─────────────────────────────────────────────────────────────────
 
 MANIFEST_FILENAME = ".llm-wiki-manifest.json"
-MANIFEST_VERSION = 1
+MANIFEST_VERSION = 2
 _DEPRECATION_HEADER = (
     "> ⚠️ **Stale:** Source no longer found in codebase. "
     "Run `llm-wiki lint` to audit.\n\n"
@@ -51,13 +51,14 @@ _DEPRECATION_HEADER = (
 class SyncManifest:
     """Persistent record of what the wiki was generated from.
 
-    Schema v1::
+    Schema v2::
 
         {
             "version": 1,
             "sources": {
                 "src/models.py": {
                     "hash": "sha256:<hex>",
+                    "language": "python",
                     "entities": ["User", "Role"],
                     "module_page": "models"
                 }
@@ -76,7 +77,11 @@ class SyncManifest:
         if not manifest_path.exists():
             raise FileNotFoundError(manifest_path)
         data = json.loads(manifest_path.read_text(encoding="utf-8"))
-        return cls(sources=data.get("sources", {}))
+        sources = data.get("sources", {})
+        for filepath, info in sources.items():
+            if "language" not in info:
+                info["language"] = infer_language_from_path(filepath)
+        return cls(sources=sources)
 
     def save(self, wiki_dir: Path) -> None:
         """Write manifest to *wiki_dir* atomically (write + rename)."""
@@ -105,7 +110,12 @@ class SyncManifest:
         for filepath, file_data in inventory.items():
             sources[filepath] = {
                 "hash": _hash_file(Path(src_dir) / filepath),
+                "language": file_data.get("language") or infer_language_from_path(filepath),
                 "entities": [c["name"] for c in file_data.get("classes", [])],
+                "entity_pages": {
+                    c["name"]: entity_page_cache.get((c["name"], filepath), c["name"])
+                    for c in file_data.get("classes", [])
+                },
                 "module_page": module_page_map.get(filepath, _module_name_from_path(filepath)),
             }
         return cls(sources=sources)
@@ -236,11 +246,12 @@ def _apply_diff(
     # Full collision maps over the *entire* inventory
     colliding_stems, colliding_cls, entity_page_cache = _collision_maps(inventory, src_dir)
 
-    # Re-build relationships from the full inventory (needed for entity pages)
-    relationships = _build_relationships(inventory)
-
     # Module page map for the manifest builder: filepath → module_page_name
     module_page_map: dict[str, str] = build_module_page_map(inventory)
+
+    # Re-build relationships from the full inventory using the same
+    # collision-aware module page names as bootstrap/migrate.
+    relationships = _build_relationships(inventory, module_page_map)
 
     # ── New + changed files ────────────────────────────────────────────────────
     for filepath in diff.new_files + diff.changed_files:
@@ -291,20 +302,7 @@ def _apply_diff(
         deprecated_count = 0
 
         for cls_name in old_info.get("entities", []):
-            # Resolve the old page name from the manifest's module_page or qualifier
-            old_mod_page = old_info.get("module_page", _module_name_from_path(filepath))
-            # The entity page name cannot always be re-derived exactly (qualifiers depend
-            # on the full inventory at bootstrap time), so we search by class name first,
-            # falling back to unqualified name.
-            entity_page_name: Optional[str] = None
-            candidate = wiki_dir / "entities" / f"{cls_name}.md"
-            if candidate.exists():
-                entity_page_name = cls_name
-            else:
-                # Try qualifier-based names matching this class
-                for p in (wiki_dir / "entities").glob(f"*__{cls_name}.md"):
-                    entity_page_name = p.stem
-                    break
+            entity_page_name = _removed_entity_page_name(wiki_dir, cls_name, filepath, old_info)
 
             if entity_page_name:
                 entity_path = wiki_dir / "entities" / f"{entity_page_name}.md"
@@ -318,11 +316,6 @@ def _apply_diff(
         # Module page deprecation
         old_mod_page = old_info.get("module_page", _module_name_from_path(filepath))
         mod_page_path = wiki_dir / "modules" / f"{old_mod_page}.md"
-        if not mod_page_path.exists():
-            # Try qualifier-based name
-            for p in (wiki_dir / "modules").glob(f"*__{old_mod_page}.md"):
-                mod_page_path = p
-                break
 
         if mod_page_path.exists():
             text = read_md(mod_page_path)
@@ -332,6 +325,35 @@ def _apply_diff(
                 print(f"  DEPRECATE module: {mod_page_path.stem}")
 
     return result
+
+
+def _removed_entity_page_name(
+    wiki_dir: Path,
+    cls_name: str,
+    filepath: str,
+    old_info: dict,
+) -> Optional[str]:
+    """Resolve the existing entity page for a class whose source file was removed."""
+    entity_pages = old_info.get("entity_pages", {})
+    candidates: list[str] = []
+    if isinstance(entity_pages, dict) and entity_pages.get(cls_name):
+        candidates.append(str(entity_pages[cls_name]))
+
+    old_mod_page = old_info.get("module_page", _module_name_from_path(filepath))
+    if old_mod_page:
+        candidates.append(f"{old_mod_page}_{cls_name}")
+    candidates.append(cls_name)
+
+    seen: set[str] = set()
+    for page_name in candidates:
+        if page_name in seen:
+            continue
+        seen.add(page_name)
+        if (wiki_dir / "entities" / f"{page_name}.md").exists():
+            return page_name
+
+    matches = sorted((wiki_dir / "entities").glob(f"*_{cls_name}.md"))
+    return matches[0].stem if matches else None
 
 
 # ── run ───────────────────────────────────────────────────────────────────────
@@ -355,7 +377,14 @@ def run(args) -> None:
                 f"Existing wiki pages will NOT be modified.\n"
                 f"Future `llm-wiki sync` runs will update incrementally.\n"
             )
-            inventory = get_inventory(src_dir, deep=True)
+            inventory_result = get_inventory_result(src_dir, deep=True)
+            if inventory_result.failed:
+                print_inventory_failures(inventory_result)
+                sys.exit(1)
+            inventory = inventory_result.inventory
+            if not inventory:
+                print("No supported source files found; manifest not written.")
+                return
             colliding_stems, colliding_cls, entity_page_cache = _collision_maps(
                 inventory, src_dir,
             )
@@ -377,10 +406,14 @@ def run(args) -> None:
     print(f"Wiki directory: {wiki_dir}")
 
     # 2. Extract current AST inventory (always deep for full page content)
-    inventory = get_inventory(src_dir, deep=True)
+    inventory_result = get_inventory_result(src_dir, deep=True)
+    if inventory_result.failed:
+        print_inventory_failures(inventory_result)
+        sys.exit(1)
+    inventory = inventory_result.inventory
 
     if not inventory and not manifest.sources:
-        print("No Python files with classes or functions found.")
+        print("No supported source files with classes or functions found.")
         return
 
     # 3. Compute diff

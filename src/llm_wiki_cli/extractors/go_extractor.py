@@ -1,4 +1,4 @@
-"""Go AST extractor for llm-wiki-cli.
+"""Go AST extractor for agent-wiki-cli.
 
 Implements :class:`~llm_wiki_cli.extractors.ExtractorProtocol` by delegating
 to a bundled Go script (``go_scripts/main.go``) that uses ``go/ast`` and
@@ -17,6 +17,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from .common import discover_source_files, filter_bundled_inventory
+
 _GO_SCRIPTS_DIR = Path(__file__).parent / "go_scripts"
 
 
@@ -27,6 +29,8 @@ class GoExtractor:
 
     Each returned file entry includes ``"language": "go"``.
     """
+
+    last_error: str | None = None
 
     def extract(
         self,
@@ -54,20 +58,23 @@ class GoExtractor:
             ``{filepath: file_entry}`` where each ``file_entry`` contains at
             minimum ``"classes"``, ``"functions"``, and ``"language"``.
         """
+        self.last_error = None
+        source_files = discover_source_files(
+            src_dir, (".go",), only_files=only_files, language="go",
+        )
+        if not source_files:
+            return {}
+
         if not shutil.which("go"):
-            print(
-                "llm-wiki Go extractor: go not found. "
-                "Install Go (https://go.dev/dl/) to enable Go extraction.",
-                file=sys.stderr,
-            )
+            self.last_error = "go not found. Install Go (https://go.dev/dl/) to enable Go extraction."
+            print(f"llm-wiki Go extractor: {self.last_error}", file=sys.stderr)
             return {}
 
         cmd = [
             "go", "run", ".",
             "--src-dir", str(Path(src_dir).resolve()),
         ]
-        if only_files:
-            cmd += ["--only-files", ",".join(only_files)]
+        cmd += ["--only-files", ",".join(source_files)]
         if deep:
             cmd.append("--deep")
 
@@ -81,18 +88,21 @@ class GoExtractor:
                 cwd=str(_GO_SCRIPTS_DIR),
             )
         except subprocess.CalledProcessError as exc:
+            self.last_error = "extraction failed"
             print(
                 f"llm-wiki Go extractor: extraction failed.\n{exc.stderr}",
                 file=sys.stderr,
             )
             return {}
         except subprocess.TimeoutExpired:
+            self.last_error = "extraction timed out after 120 s"
             print(
                 "llm-wiki Go extractor: extraction timed out after 120 s.",
                 file=sys.stderr,
             )
             return {}
         except FileNotFoundError:
+            self.last_error = "go executable not found"
             print(
                 "llm-wiki Go extractor: go executable not found.",
                 file=sys.stderr,
@@ -109,6 +119,7 @@ class GoExtractor:
         try:
             inventory: dict = json.loads(result.stdout)
         except json.JSONDecodeError as exc:
+            self.last_error = "malformed JSON output"
             print(
                 f"llm-wiki Go extractor: malformed JSON output — {exc}",
                 file=sys.stderr,
@@ -118,12 +129,15 @@ class GoExtractor:
         for entry in inventory.values():
             entry["language"] = "go"
 
-        # Exclude files from the extractor's own bundled scripts directory.
-        scripts_abs = _GO_SCRIPTS_DIR.resolve().as_posix() + "/"
-        inventory = {
-            fp.replace("\\", "/"): data for fp, data in inventory.items()
-            if not fp.replace("\\", "/").startswith(scripts_abs)
-            and not Path(fp).resolve().as_posix().startswith(scripts_abs)
-        }
+        inventory = filter_bundled_inventory(inventory, _GO_SCRIPTS_DIR)
 
-        return inventory
+        src_root = Path(src_dir).resolve()
+        normalized_inventory: dict = {}
+        for fp, data in inventory.items():
+            try:
+                rel = Path(fp).resolve().relative_to(src_root).as_posix()
+            except ValueError:
+                rel = fp.replace("\\", "/")
+            normalized_inventory[rel] = data
+
+        return normalized_inventory

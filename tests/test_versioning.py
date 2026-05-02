@@ -79,6 +79,24 @@ class TestReadWriteVersion:
         p.write_text('[project]\nname = "foo"\nversion = "1.2.3"\n')
         assert read_version(p) == "1.2.3"
 
+    def test_read_pyproject_prefers_project_over_poetry(self, tmp_path):
+        p = tmp_path / "pyproject.toml"
+        p.write_text(
+            '[project]\nname = "foo"\nversion = "1.2.3"\n'
+            '\n[tool.poetry]\nname = "foo"\nversion = "9.9.9"\n'
+        )
+        assert read_version(p) == "1.2.3"
+
+    def test_read_pyproject_poetry_fallback(self, tmp_path):
+        p = tmp_path / "pyproject.toml"
+        p.write_text('[tool.poetry]\nname = "foo"\nversion = "1.2.3"\n')
+        assert read_version(p) == "1.2.3"
+
+    def test_read_pyproject_dynamic_project_version(self, tmp_path):
+        p = tmp_path / "pyproject.toml"
+        p.write_text('[project]\nname = "foo"\ndynamic = ["version"]\n')
+        assert read_version(p) is None
+
     def test_read_setup_cfg(self, tmp_path):
         p = tmp_path / "setup.cfg"
         p.write_text("[metadata]\nname = foo\nversion = 1.2.3\n")
@@ -102,6 +120,23 @@ class TestReadWriteVersion:
         # preserve other content
         assert 'name = "foo"' in p.read_text(encoding="utf-8")
         assert 'description = "bar"' in p.read_text(encoding="utf-8")
+
+    def test_write_pyproject_updates_project_not_poetry(self, tmp_path):
+        p = tmp_path / "pyproject.toml"
+        p.write_text(
+            '[project]\nname = "foo"\nversion = "1.2.3"\n'
+            '\n[tool.poetry]\nname = "foo"\nversion = "9.9.9"\n'
+        )
+        write_version(p, "2.0.0")
+        text = p.read_text(encoding="utf-8")
+        assert '[project]\nname = "foo"\nversion = "2.0.0"' in text
+        assert '[tool.poetry]\nname = "foo"\nversion = "9.9.9"' in text
+
+    def test_write_pyproject_rejects_dynamic_version(self, tmp_path):
+        p = tmp_path / "pyproject.toml"
+        p.write_text('[project]\nname = "foo"\ndynamic = ["version"]\n')
+        with pytest.raises(ValueError):
+            write_version(p, "2.0.0")
 
     def test_write_setup_cfg(self, tmp_path):
         p = tmp_path / "setup.cfg"

@@ -1,6 +1,8 @@
 """Tests for commands/generate_prompt_cmd.py"""
 from __future__ import annotations
 
+import os
+import stat
 import types
 from pathlib import Path
 
@@ -29,6 +31,16 @@ class TestGeneratePromptWritesFile:
         assert out.exists()
         assert out.stat().st_size > 0
 
+    def test_output_file_is_owner_only(self, tmp_project):
+        args = _make_args()
+        generate_prompt_cmd.run(args)
+
+        mode = stat.S_IMODE(Path(".git/llm-wiki-prompt.txt").stat().st_mode)
+        if os.name == "nt":
+            assert Path(".git/llm-wiki-prompt.txt").is_file()
+        else:
+            assert mode == 0o600
+
     def test_prompt_contains_wiki_dir(self, tmp_project):
         args = _make_args(wiki_dir="my_docs/wiki")
         generate_prompt_cmd.run(args)
@@ -51,6 +63,22 @@ class TestGeneratePromptWritesFile:
         generate_prompt_cmd.run(args)
 
         assert Path(out_file).exists()
+
+    def test_prompt_quotes_paths_with_spaces(self, tmp_project):
+        args = _make_args(wiki_dir="my docs/wiki", src_dir="src dir")
+        generate_prompt_cmd.run(args)
+
+        content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
+        assert "llm-wiki extract --src-dir 'src dir' --changed --summary" in content
+        assert "llm-wiki lint --wiki-dir 'my docs/wiki' --src-dir 'src dir'" in content
+        assert "git add 'my docs/wiki/' CHANGELOG.md" in content
+
+    def test_output_message_quotes_output_path_with_spaces(self, tmp_project, capsys):
+        args = _make_args(output=".git/wiki prompt.txt")
+        generate_prompt_cmd.run(args)
+
+        out = capsys.readouterr().out
+        assert "cat '.git/wiki prompt.txt'" in out
 
 
 class TestGeneratePromptPrintMode:
@@ -103,3 +131,9 @@ class TestGeneratePromptBuildPrompt:
         generate_prompt_cmd.run(args)
         content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
         assert "git diff HEAD~1..HEAD" in content
+
+    def test_prompt_commit_uses_auto_commit_guard(self, tmp_project):
+        args = _make_args()
+        generate_prompt_cmd.run(args)
+        content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
+        assert 'LLM_WIKI_AUTO_COMMIT=1 git commit -m "docs(wiki): auto-update [bot]"' in content

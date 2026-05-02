@@ -3,14 +3,14 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "llm-wiki-cli"
-version = "0.3.37"
-description = "CLI tool to maintain hybrid LLM Wikis for Python projects."
+name = "agent-wiki-cli"
+version = "0.3.38"
+description = "CLI tool to maintain hybrid LLM Wikis for multi-language projects."
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
 authors = [
-    {name = "Denis Sivagin", email = "denissvgn@users.noreply.github.com"}
+    {name = "Denis Sivagin", email = "denissvgn@gmail.com"}
 ]
 keywords = ["llm", "wiki", "documentation", "ai", "agents", "code-context"]
 classifiers = [
@@ -21,7 +21,9 @@ classifiers = [
     "Operating System :: OS Independent",
     "Topic :: Software Development :: Documentation",
 ]
-dependencies = []
+dependencies = [
+    "tomli>=2; python_version < '3.11'",
+]
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0", "pytest-cov>=4.0"]
@@ -53,6 +55,7 @@ where = ["src"]
     "extractors/go_scripts/main.go",
     "extractors/go_scripts/go.mod",
     "extractors/rust_scripts/Cargo.toml",
+    "extractors/rust_scripts/Cargo.lock",
     "extractors/rust_scripts/src/main.rs",
 ]
 

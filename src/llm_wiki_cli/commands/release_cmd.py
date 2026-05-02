@@ -91,7 +91,9 @@ def stamp_changelog(changelog_path: Path, version: str, today: str | None = None
 
         # Find previously highest version to build the compare URL for new version
         # Collect all version tags already mentioned in headings
-        heading_versions = re.findall(r"## \[(\d+\.\d+\.\d+)\]", new_text)
+        heading_versions = list(dict.fromkeys(
+            re.findall(r"## \[(\d+\.\d+\.\d+)\]", new_text)
+        ))
 
         links: list[str] = []
         links.append(f"[Unreleased]: {repo_url}/compare/v{version}...HEAD")
@@ -143,7 +145,19 @@ def run(args):
 
     if getattr(args, "stage", False):
         try:
-            subprocess.run(["git", "add", str(changelog_path)], check=False)
-            print(f"Staged: {changelog_path}")
+            subprocess.run(
+                ["git", "add", str(changelog_path)],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
         except FileNotFoundError:
-            pass  # git not available; skip staging
+            print("Error: git not found; could not stage changelog.", file=sys.stderr)
+            sys.exit(1)
+        except subprocess.CalledProcessError as exc:
+            detail = (exc.stderr or exc.stdout or "").strip()
+            print(f"Error: git add failed for {changelog_path}.", file=sys.stderr)
+            if detail:
+                print(detail, file=sys.stderr)
+            sys.exit(1)
+        print(f"Staged: {changelog_path}")

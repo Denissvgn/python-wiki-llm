@@ -190,3 +190,17 @@ class TestInitQualityHints:
         init_cmd.run(args)
         config = read_config("docs/llm_wiki")
         assert config["quality_hints"] is True
+
+
+class TestInitGitignore:
+    def test_does_not_add_ineffective_git_dir_entries(self, tmp_project):
+        Path(".gitignore").write_text("# user rules\n*.pyc\n", encoding="utf-8")
+
+        init_cmd.run(_make_args(agent="claude"))
+
+        content = Path(".gitignore").read_text(encoding="utf-8")
+        assert "*.pyc" in content
+        assert ".git/llm-wiki-prompt.txt" not in content
+        assert ".git/llm-wiki.lock" not in content
+        assert ".git/llm-wiki-breaker.json" not in content
+        assert ".git/llm-wiki-sync.log" not in content

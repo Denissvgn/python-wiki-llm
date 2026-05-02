@@ -23,7 +23,7 @@ from . import circuit_breaker
 from .io import read_md
 
 
-MCP_PACKAGE_HINT = "Install it with: pip install 'llm-wiki-cli[mcp]'"
+MCP_PACKAGE_HINT = "Install it with: pip install 'agent-wiki-cli[mcp]'"
 RESOURCE_SCHEME = "llm-wiki"
 
 _PAGE_ID_RE = re.compile(r"^[A-Za-z0-9_.-]+$")

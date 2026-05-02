@@ -22,8 +22,14 @@ def load_state(git_dir: Path) -> dict:
     path = _state_path(git_dir)
     if not path.exists():
         return dict(_DEFAULT_STATE)
-    with open(path, encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(path, encoding="utf-8") as f:
+            state = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return dict(_DEFAULT_STATE)
+    if not isinstance(state, dict):
+        return dict(_DEFAULT_STATE)
+    return {**_DEFAULT_STATE, **state}
 
 
 def save_state(git_dir: Path, state: dict) -> None:

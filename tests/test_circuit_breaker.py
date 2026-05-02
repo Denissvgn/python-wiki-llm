@@ -27,6 +27,18 @@ class TestLoadState:
         state = load_state(tmp_path)
         assert state["consecutive_failures"] == 2
 
+    def test_corrupt_json_falls_back_to_default(self, tmp_path):
+        (tmp_path / "llm-wiki-breaker.json").write_text("{not json")
+        state = load_state(tmp_path)
+        assert state["consecutive_failures"] == 0
+        assert state["state"] == "closed"
+
+    def test_non_object_json_falls_back_to_default(self, tmp_path):
+        (tmp_path / "llm-wiki-breaker.json").write_text("[]")
+        state = load_state(tmp_path)
+        assert state["consecutive_failures"] == 0
+        assert state["state"] == "closed"
+
 
 class TestCheckBreaker:
     def test_closed_returns_false(self, tmp_path):

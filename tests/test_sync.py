@@ -1,5 +1,6 @@
 """Tests for commands/sync_cmd.py — incremental wiki sync."""
 import os
+import json
 import sys
 import textwrap
 import types
@@ -14,6 +15,7 @@ from llm_wiki_cli.commands.sync_cmd import (
     _compute_diff,
     _hash_file,
 )
+from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -236,6 +238,111 @@ class TestSeedManifest:
         finally:
             os.chdir(old_cwd)
 
+    def test_does_not_seed_empty_manifest(self, tmp_path, monkeypatch, capsys):
+        wiki_dir = tmp_path / "docs" / "llm_wiki"
+        wiki_dir.mkdir(parents=True)
+        (wiki_dir / "index.md").write_text("# Index\n", encoding="utf-8")
+        monkeypatch.setattr(
+            sync_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {},
+                {"python": ExtractorStatus("python", "skipped", 0)},
+            ),
+        )
+
+        old_cwd = os.getcwd()
+        os.chdir(tmp_path)
+        try:
+            sync_cmd.run(_make_sync_args(src_dir=str(tmp_path), wiki_dir=str(wiki_dir)))
+        finally:
+            os.chdir(old_cwd)
+
+        assert not (wiki_dir / MANIFEST_FILENAME).exists()
+        assert "manifest not written" in capsys.readouterr().out.lower()
+
+
+class TestManifestLanguage:
+    def test_old_manifest_load_infers_language(self, tmp_path):
+        wiki_dir = tmp_path / "docs" / "llm_wiki"
+        wiki_dir.mkdir(parents=True)
+        (wiki_dir / MANIFEST_FILENAME).write_text(json.dumps({
+            "version": 1,
+            "sources": {
+                "models.py": {"hash": "sha256:x", "entities": [], "module_page": "models"},
+                "web/app.tsx": {"hash": "sha256:y", "entities": [], "module_page": "app"},
+            },
+        }))
+
+        manifest = SyncManifest.load(wiki_dir)
+
+        assert manifest.sources["models.py"]["language"] == "python"
+        assert manifest.sources["web/app.tsx"]["language"] == "typescript"
+
+
+class TestPartialExtractionSafety:
+    def _write_ts_manifest_and_pages(self, wiki_dir: Path) -> None:
+        (wiki_dir / "entities").mkdir(parents=True)
+        (wiki_dir / "modules").mkdir(parents=True)
+        (wiki_dir / "workflows").mkdir(parents=True)
+        (wiki_dir / "infrastructure").mkdir(parents=True)
+        (wiki_dir / "index.md").write_text("# Index\n", encoding="utf-8")
+        (wiki_dir / "entities" / "Widget.md").write_text("# Widget\n", encoding="utf-8")
+        (wiki_dir / "modules" / "app.md").write_text("# app Module\n", encoding="utf-8")
+        SyncManifest(sources={
+            "app.ts": {
+                "hash": "sha256:old",
+                "language": "typescript",
+                "entities": ["Widget"],
+                "module_page": "app",
+            }
+        }).save(wiki_dir)
+
+    def test_extractor_failure_aborts_without_deprecation(self, tmp_path, monkeypatch):
+        wiki_dir = tmp_path / "docs" / "llm_wiki"
+        self._write_ts_manifest_and_pages(wiki_dir)
+        monkeypatch.setattr(
+            sync_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {},
+                {"typescript": ExtractorStatus("typescript", "failed", 1, "node not found")},
+            ),
+        )
+
+        old_cwd = os.getcwd()
+        os.chdir(tmp_path)
+        try:
+            with pytest.raises(SystemExit) as exc_info:
+                sync_cmd.run(_make_sync_args(src_dir=str(tmp_path), wiki_dir=str(wiki_dir)))
+        finally:
+            os.chdir(old_cwd)
+
+        assert exc_info.value.code == 1
+        assert "Stale" not in (wiki_dir / "entities" / "Widget.md").read_text(encoding="utf-8")
+        assert "Stale" not in (wiki_dir / "modules" / "app.md").read_text(encoding="utf-8")
+
+    def test_skipped_language_allows_real_deletion(self, tmp_path, monkeypatch):
+        wiki_dir = tmp_path / "docs" / "llm_wiki"
+        self._write_ts_manifest_and_pages(wiki_dir)
+        monkeypatch.setattr(
+            sync_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {},
+                {"typescript": ExtractorStatus("typescript", "skipped", 0)},
+            ),
+        )
+
+        old_cwd = os.getcwd()
+        os.chdir(tmp_path)
+        try:
+            sync_cmd.run(_make_sync_args(src_dir=str(tmp_path), wiki_dir=str(wiki_dir)))
+        finally:
+            os.chdir(old_cwd)
+
+        assert "Stale" in (wiki_dir / "entities" / "Widget.md").read_text(encoding="utf-8")
+
 
 class TestUnchangedFile:
     """When nothing changed, sync prints 'up to date' and skips all pages."""
@@ -329,6 +436,50 @@ class TestChangedFile:
         )
 
         assert old_hash != new_hash
+
+    def test_relationship_links_keep_qualified_module_pages(self, tmp_path, capsys):
+        """sync must use the same collision-aware module links as bootstrap."""
+        import subprocess
+
+        proj = tmp_path / "project"
+        proj.mkdir()
+        subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
+        subprocess.run(
+            ["git", "-C", str(proj), "config", "user.email", "t@t.com"],
+            capture_output=True, check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(proj), "config", "user.name", "T"],
+            capture_output=True, check=True,
+        )
+
+        (proj / "models.py").write_text("class User:\n    pass\n")
+        (proj / "pkg_a").mkdir()
+        (proj / "pkg_b").mkdir()
+        (proj / "pkg_a" / "service.py").write_text(
+            "from models import User\n\n"
+            "def make_user(user: User) -> User:\n"
+            "    return user\n"
+        )
+        (proj / "pkg_b" / "service.py").write_text("class Other:\n    pass\n")
+
+        wiki_dir = proj / "docs" / "llm_wiki"
+        old_cwd = os.getcwd()
+        os.chdir(proj)
+        try:
+            bootstrap_cmd.run(_make_bootstrap_args(src_dir=".", wiki_dir=str(wiki_dir)))
+            (proj / "models.py").write_text('class User:\n    """Changed."""\n    pass\n')
+            sync_cmd.run(_make_sync_args(src_dir=".", wiki_dir=str(wiki_dir)))
+
+            entity_content = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
+            assert "../modules/pkg_a_service.md" in entity_content
+            assert "../modules/service.md" not in entity_content
+
+            from llm_wiki_cli.commands import lint_cmd
+
+            lint_cmd.run(types.SimpleNamespace(src_dir=".", wiki_dir=str(wiki_dir)))
+        finally:
+            os.chdir(old_cwd)
 
 
 class TestNewFile:
@@ -446,6 +597,36 @@ class TestDeletedClass:
 
         module_content = (wiki_dir / "modules" / "models.md").read_text(encoding="utf-8")
         assert "⚠️" in module_content
+
+    def test_deprecation_header_added_to_qualified_entity_from_legacy_manifest(
+        self, tmp_path, capsys,
+    ):
+        proj = tmp_path / "project"
+        proj.mkdir()
+        (proj / "pkg_a").mkdir()
+        (proj / "pkg_b").mkdir()
+        (proj / "pkg_a" / "models.py").write_text("class User:\n    pass\n")
+        (proj / "pkg_b" / "models.py").write_text("class User:\n    pass\n")
+
+        wiki_dir = proj / "docs" / "llm_wiki"
+        old_cwd = os.getcwd()
+        os.chdir(proj)
+        try:
+            bootstrap_cmd.run(_make_bootstrap_args(src_dir=".", wiki_dir=str(wiki_dir)))
+            manifest_path = wiki_dir / MANIFEST_FILENAME
+            manifest_data = json.loads(manifest_path.read_text(encoding="utf-8"))
+            for info in manifest_data["sources"].values():
+                info.pop("entity_pages", None)
+            manifest_path.write_text(json.dumps(manifest_data), encoding="utf-8")
+
+            (proj / "pkg_a" / "models.py").unlink()
+            sync_cmd.run(_make_sync_args(src_dir=".", wiki_dir=str(wiki_dir)))
+        finally:
+            os.chdir(old_cwd)
+
+        content = (wiki_dir / "entities" / "pkg_a_models_User.md").read_text(encoding="utf-8")
+        assert "⚠️" in content
+        assert "Stale" in content
 
 
 def _write_manifest_from_bootstrap_from_disk(wiki_dir: Path, proj: Path) -> None:

@@ -21,7 +21,7 @@ import json
 import sys
 from pathlib import Path, PurePosixPath
 
-from .extract_cmd import get_inventory, _git_changed_files
+from .extract_cmd import _git_changed_files, get_inventory_result, print_inventory_failures
 from ..config import validate_path
 
 
@@ -39,6 +39,15 @@ class ProtocolRequestError(ValueError):
     def __init__(self, message: str, field: str | None = None):
         super().__init__(message)
         self.field = field
+
+
+def get_inventory(src_dir: str, *, deep: bool = False) -> dict:
+    """Context-local inventory helper kept patchable for protocol tests."""
+    inventory_result = get_inventory_result(src_dir, deep=deep)
+    if inventory_result.failed:
+        print_inventory_failures(inventory_result)
+        sys.exit(1)
+    return inventory_result.inventory
 
 
 # ── Token estimation ──────────────────────────────────────────────────
@@ -196,10 +205,22 @@ def _summary_entry(file_data: dict) -> dict:
     return entry
 
 
-_SERIALIZERS = {
-    "high": _deep_entry,
-    "medium": _slim_entry,
-    "low": _summary_entry,
+_DETAIL_SERIALIZERS = {
+    "deep": _deep_entry,
+    "slim": _slim_entry,
+    "summary": _summary_entry,
+}
+
+_PREFERRED_DETAILS = {
+    "high": "deep",
+    "medium": "slim",
+    "low": "summary",
+}
+
+_DETAIL_FALLBACKS = {
+    "high": ("deep", "slim", "summary"),
+    "medium": ("slim", "summary"),
+    "low": ("summary",),
 }
 
 
@@ -213,47 +234,77 @@ def _build_context_payload(
 ) -> dict:
     """Build a token-budgeted context payload.
 
-    Greedy allocation: high-priority files first (never dropped even if
-    they exceed remaining budget), then medium, then low — stop when
-    budget is exhausted.
+    Greedy allocation: high-priority files first, then medium, then low.
+    Files are downgraded to smaller detail levels before they are omitted.
 
     Returns::
 
         {
             "budget": <requested>,
             "used": <estimated tokens>,
+            "truncated": <whether files were downgraded or omitted>,
+            "omitted_files": ["path/too_large.py"],
+            "downgraded_files": {"path/file.py": "summary"},
             "files": {
-                "path/file.py": {"priority": "high", ...detail...},
+                "path/file.py": {"priority": "high", "detail": "deep", ...detail...},
                 ...
             }
         }
     """
     files_out: dict[str, dict] = {}
+    omitted_files: list[str] = []
+    downgraded_files: dict[str, str] = {}
     used = 0
 
     # Process tiers in priority order
     for tier in ("high", "medium", "low"):
-        serializer = _SERIALIZERS[tier]
         tier_files = sorted(
             fp for fp, pri in classification.items() if pri == tier
         )
         for fp in tier_files:
             file_data = inventory.get(fp, {})
-            entry = serializer(file_data)
-            entry["priority"] = tier
+            selected_entry: dict | None = None
+            selected_tokens = 0
+            selected_detail = ""
 
-            entry_json = json.dumps({fp: entry})
-            entry_tokens = _estimate_tokens(entry_json)
+            for detail in _DETAIL_FALLBACKS[tier]:
+                entry = _build_entry(file_data, tier, detail)
+                entry_tokens = _entry_tokens(fp, entry)
+                if used + entry_tokens <= budget:
+                    selected_entry = entry
+                    selected_tokens = entry_tokens
+                    selected_detail = detail
+                    break
 
-            # High-priority files are never dropped
-            if tier == "high" or used + entry_tokens <= budget:
-                files_out[fp] = entry
-                used += entry_tokens
-            else:
-                # Budget exceeded — stop adding files in this tier
-                break
+            if selected_entry is None:
+                omitted_files.append(fp)
+                continue
 
-    return {"budget": budget, "used": used, "files": files_out}
+            files_out[fp] = selected_entry
+            used += selected_tokens
+            if selected_detail != _PREFERRED_DETAILS[tier]:
+                downgraded_files[fp] = selected_detail
+
+    return {
+        "budget": budget,
+        "used": used,
+        "truncated": bool(omitted_files or downgraded_files),
+        "omitted_files": omitted_files,
+        "downgraded_files": downgraded_files,
+        "files": files_out,
+    }
+
+
+def _build_entry(file_data: dict, priority: str, detail: str) -> dict:
+    """Serialize one file at a specific detail level."""
+    entry = _DETAIL_SERIALIZERS[detail](file_data)
+    entry["priority"] = priority
+    entry["detail"] = detail
+    return entry
+
+
+def _entry_tokens(filepath: str, entry: dict) -> int:
+    return _estimate_tokens(json.dumps({filepath: entry}))
 
 
 # ── Markdown renderer ─────────────────────────────────────────────────
@@ -317,6 +368,14 @@ def _render_markdown(payload: dict) -> str:
                         lines.append(f"  > {fn['docstring'].splitlines()[0]}")
 
             lines.append("")
+
+    omitted = payload.get("omitted_files", [])
+    if omitted:
+        lines.append("## Omitted Files")
+        lines.append("")
+        for fp in omitted:
+            lines.append(f"- `{fp}`")
+        lines.append("")
 
     return "\n".join(lines)
 
@@ -511,7 +570,7 @@ def _build_context(
 
     if emit_warnings:
         for warning in warnings:
-            print(f"Warning: {warning}", flush=True)
+            print(f"Warning: {warning}", file=sys.stderr, flush=True)
 
     import_graph = _build_import_graph(inventory)
     classification = _classify_files(

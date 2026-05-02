@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import io
 import json
+import sys
 import types
 
 import pytest
@@ -194,28 +195,87 @@ class TestBuildContextPayload:
         assert result["used"] > 0
         assert "a.py" in result["files"]
         assert result["files"]["a.py"]["priority"] == "high"
+        assert result["files"]["a.py"]["detail"] == "deep"
+        assert result["truncated"] is False
+        assert result["omitted_files"] == []
+        assert result["downgraded_files"] == {}
 
-    def test_high_never_dropped(self):
+    def test_high_downgraded_before_omit(self):
         inventory = {
-            "a.py": {"classes": [{"name": "X"}], "functions": []},
+            "a.py": {
+                "classes": [{
+                    "name": "X",
+                    "bases": [],
+                    "line": 1,
+                    "docstring": "D" * 1000,
+                    "methods": [{"name": "run", "params": [], "return_type": None}],
+                }],
+                "functions": [],
+                "imports": [{"module": "huge", "name": "Huge", "type": "from"}],
+            },
         }
         classification = {"a.py": "high"}
-        # Budget of 1 token — high files should still appear
-        result = context_cmd._build_context_payload(inventory, classification, 1)
-        assert "a.py" in result["files"]
+        summary = context_cmd._build_entry(inventory["a.py"], "high", "summary")
+        budget = context_cmd._entry_tokens("a.py", summary)
 
-    def test_low_dropped_on_tight_budget(self):
+        result = context_cmd._build_context_payload(inventory, classification, budget)
+
+        assert "a.py" in result["files"]
+        assert result["files"]["a.py"]["detail"] == "summary"
+        assert result["downgraded_files"] == {"a.py": "summary"}
+        assert result["omitted_files"] == []
+        assert result["used"] <= result["budget"]
+        assert result["truncated"] is True
+
+    def test_high_omitted_when_summary_does_not_fit(self):
         inventory = {
             "a.py": {"classes": [{"name": "X" * 100}], "functions": []},
-            "b.py": {"classes": [{"name": "Y" * 100}], "functions": []},
         }
-        classification = {"a.py": "high", "b.py": "low"}
-        # Give just enough for the high file
-        high_entry = json.dumps({"a.py": context_cmd._deep_entry(inventory["a.py"])})
-        tight_budget = context_cmd._estimate_tokens(high_entry) + 1
-        result = context_cmd._build_context_payload(inventory, classification, tight_budget)
+        classification = {"a.py": "high"}
+
+        result = context_cmd._build_context_payload(inventory, classification, 1)
+
+        assert result["files"] == {}
+        assert result["omitted_files"] == ["a.py"]
+        assert result["downgraded_files"] == {}
+        assert result["used"] == 0
+        assert result["truncated"] is True
+
+    def test_medium_and_low_omitted_on_tight_budget(self):
+        inventory = {
+            "a.py": {"classes": [{"name": "A"}], "functions": []},
+            "b.py": {"classes": [{"name": "B"}], "functions": []},
+            "c.py": {"classes": [{"name": "C"}], "functions": []},
+        }
+        classification = {"a.py": "high", "b.py": "medium", "c.py": "low"}
+        high_entry = context_cmd._build_entry(inventory["a.py"], "high", "deep")
+        budget = context_cmd._entry_tokens("a.py", high_entry)
+
+        result = context_cmd._build_context_payload(inventory, classification, budget)
+
         assert "a.py" in result["files"]
         assert "b.py" not in result["files"]
+        assert "c.py" not in result["files"]
+        assert result["omitted_files"] == ["b.py", "c.py"]
+        assert result["used"] <= result["budget"]
+
+    def test_later_smaller_file_included_after_large_omitted_file(self):
+        inventory = {
+            "a.py": {"classes": [{"name": "X" * 200}], "functions": []},
+            "b.py": {"classes": [{"name": "B"}], "functions": []},
+        }
+        classification = {"a.py": "high", "b.py": "high"}
+        small_summary = context_cmd._build_entry(inventory["b.py"], "high", "summary")
+        budget = context_cmd._entry_tokens("b.py", small_summary)
+
+        result = context_cmd._build_context_payload(inventory, classification, budget)
+
+        assert "a.py" not in result["files"]
+        assert "b.py" in result["files"]
+        assert result["files"]["b.py"]["detail"] == "summary"
+        assert result["omitted_files"] == ["a.py"]
+        assert result["downgraded_files"] == {"b.py": "summary"}
+        assert result["used"] <= result["budget"]
 
     def test_output_has_priority_field(self):
         inventory = {
@@ -226,6 +286,8 @@ class TestBuildContextPayload:
         result = context_cmd._build_context_payload(inventory, classification, 100000)
         assert result["files"]["a.py"]["priority"] == "high"
         assert result["files"]["b.py"]["priority"] == "low"
+        assert result["files"]["a.py"]["detail"] == "deep"
+        assert result["files"]["b.py"]["detail"] == "summary"
 
 
 # ── Markdown rendering ───────────────────────────────────────────────
@@ -245,6 +307,17 @@ class TestRenderMarkdown:
         assert "Changed Files (High Priority)" in md
         assert "Index (Low Priority)" in md
         assert "50 / 1000 tokens" in md
+
+    def test_contains_omitted_files_section(self):
+        payload = {
+            "budget": 10,
+            "used": 0,
+            "files": {},
+            "omitted_files": ["too_big.py"],
+        }
+        md = context_cmd._render_markdown(payload)
+        assert "Omitted Files" in md
+        assert "`too_big.py`" in md
 
 
 # ── Protocol helpers ──────────────────────────────────────────────────
@@ -425,9 +498,20 @@ class TestContextRun:
         context_cmd.run(args)
         captured = capsys.readouterr()
         data = json.loads(captured.out)
-        # With only 50 tokens of budget we should still get files (high never dropped)
-        # but used may exceed budget
         assert data["budget"] == 50
+        assert data["used"] <= 50
+        assert data["truncated"] is True
+        assert data["omitted_files"] or data["downgraded_files"]
+
+    def test_changed_focus_warning_goes_to_stderr_json_stays_parseable(self, tmp_project, capsys):
+        args = _make_args(focus="changed", budget=100000)
+        context_cmd.run(args)
+        captured = capsys.readouterr()
+
+        data = json.loads(captured.out)
+        assert "files" in data
+        assert "Warning:" in captured.err
+        assert "Warning:" not in captured.out
 
     def test_empty_directory(self, tmp_path, capsys, monkeypatch):
         monkeypatch.chdir(tmp_path)
@@ -442,3 +526,12 @@ class TestContextRun:
 
         assert exc_info.value.code == 2
         assert "--budget is required" in capsys.readouterr().err
+
+    @pytest.mark.parametrize("value", ["0", "-1"])
+    def test_cli_rejects_non_positive_budget(self, tmp_project, monkeypatch, value):
+        from llm_wiki_cli import cli
+
+        monkeypatch.setattr(sys, "argv", ["llm-wiki", "context", "--budget", value])
+        with pytest.raises(SystemExit) as exc_info:
+            cli.main()
+        assert exc_info.value.code == 2

@@ -1,4 +1,4 @@
-"""Extractor plugin architecture for llm-wiki-cli."""
+"""Extractor plugin architecture for agent-wiki-cli."""
 
 from __future__ import annotations
 

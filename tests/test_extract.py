@@ -1,8 +1,14 @@
 """Tests for commands/extract_cmd.py"""
 import textwrap
+import types
 from pathlib import Path
 
+import pytest
+
+from llm_wiki_cli.commands import extract_cmd
 from llm_wiki_cli.commands.extract_cmd import get_inventory, get_call_graph, _summarize_inventory
+from llm_wiki_cli.config import PathValidationError
+from llm_wiki_cli.services.packages import discover_packages, stamp_inventory_packages
 
 
 class TestGetInventory:
@@ -20,6 +26,12 @@ class TestGetInventory:
         data = list(inventory.values())[0]
         assert len(data["classes"]) == 1
         assert data["classes"][0]["name"] == "Foo"
+
+    def test_cp1252_python_file_does_not_abort_scan(self, tmp_path):
+        (tmp_path / "legacy.py").write_bytes(b"# legacy \x96 comment\nclass Legacy:\n    pass\n")
+        inventory = get_inventory(str(tmp_path))
+        assert "legacy.py" in inventory
+        assert inventory["legacy.py"]["classes"][0]["name"] == "Legacy"
 
     def test_single_file_with_function(self, tmp_path):
         (tmp_path / "utils.py").write_text(textwrap.dedent("""\
@@ -87,6 +99,22 @@ class TestGetInventory:
         import_names = {imp["name"] for imp in data["imports"]}
         assert "Path" in import_names
         assert "os" in import_names
+
+    def test_deep_mode_preserves_relative_import_level(self, tmp_path):
+        pkg = tmp_path / "pkg" / "sub"
+        pkg.mkdir(parents=True)
+        (pkg / "consumer.py").write_text(textwrap.dedent("""\
+            from .models import Local
+            from ..models import Parent
+
+            def run(local: Local, parent: Parent):
+                return local, parent
+        """))
+        inventory = get_inventory(str(tmp_path), deep=True)
+        imports = inventory["pkg/sub/consumer.py"]["imports"]
+        modules = {imp["name"]: imp["module"] for imp in imports}
+        assert modules["Local"] == ".models"
+        assert modules["Parent"] == "..models"
 
     def test_deep_mode_includes_methods(self, tmp_path):
         (tmp_path / "svc.py").write_text(textwrap.dedent("""\
@@ -169,6 +197,29 @@ class TestGetInventory:
         private_fn = [f for f in data["functions"] if f["name"] == "_private"][0]
         assert private_fn.get("private") is True
 
+    def test_nested_functions_are_not_module_functions(self, tmp_path):
+        (tmp_path / "mod.py").write_text(textwrap.dedent("""\
+            def outer():
+                def inner():
+                    pass
+                return inner
+        """))
+        inventory = get_inventory(str(tmp_path), deep=True)
+        functions = list(inventory.values())[0]["functions"]
+        assert [fn["name"] for fn in functions] == ["outer"]
+
+    def test_class_inside_function_is_not_module_entity(self, tmp_path):
+        (tmp_path / "factory.py").write_text(textwrap.dedent("""\
+            def make_model():
+                class LocalModel:
+                    pass
+                return LocalModel
+        """))
+        inventory = get_inventory(str(tmp_path), deep=True)
+        data = list(inventory.values())[0]
+        assert data["classes"] == []
+        assert [fn["name"] for fn in data["functions"]] == ["make_model"]
+
 
 class TestRelativePathKeys:
     """Inventory keys must be relative to src_dir, not absolute."""
@@ -187,6 +238,18 @@ class TestRelativePathKeys:
         inventory = get_inventory(str(tmp_path))
         key = list(inventory.keys())[0]
         assert key == "pkg/sub/deep.py"
+
+
+class TestExtractPathValidation:
+    def test_run_rejects_src_dir_outside_project(self, tmp_project, tmp_path):
+        outside = tmp_path / "outside"
+        outside.mkdir()
+
+        args = types.SimpleNamespace(src_dir=str(outside), changed=False, summary=False,
+                                     deep=False, paths=None, package=None,
+                                     include_empty=False)
+        with pytest.raises(PathValidationError):
+            extract_cmd.run(args)
 
 
 class TestExcludedDirsRelative:
@@ -320,6 +383,30 @@ class TestPackageDiscovery:
         inv = get_inventory(str(tmp_path))
         assert inv["app.py"]["package"] == "my-pkg"
 
+    def test_poetry_pyproject_toml(self, tmp_path):
+        (tmp_path / "pyproject.toml").write_text(
+            '[tool.poetry]\nname = "poetry-pkg"\nversion = "1.0.0"\n'
+        )
+        packages = discover_packages(str(tmp_path))
+        assert packages[0].name == "poetry-pkg"
+        assert packages[0].version == "1.0.0"
+
+    def test_dynamic_pyproject_version_is_marked(self, tmp_path):
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\nname = "dynamic-pkg"\ndynamic = ["version"]\n'
+        )
+        packages = discover_packages(str(tmp_path))
+        assert packages[0].name == "dynamic-pkg"
+        assert packages[0].version == "dynamic"
+
+    def test_non_python_inventory_keeps_package_none(self, tmp_path):
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\nname = "root"\nversion = "1.0.0"\n'
+        )
+        inventory = {"app.ts": {"language": "typescript"}}
+        stamp_inventory_packages(inventory, discover_packages(str(tmp_path)))
+        assert inventory["app.ts"]["package"] is None
+
     def test_monorepo_multiple_packages(self, tmp_path):
         pkg_a = tmp_path / "pkg_a"
         pkg_a.mkdir()
@@ -444,3 +531,31 @@ class TestSilentDropReduction:
         assert "internal.py" in inv
         fns = inv["internal.py"]["functions"]
         assert all(f.get("private") for f in fns)
+
+
+class TestExtractExitCodes:
+    def _args(self, **kwargs):
+        defaults = {
+            "src_dir": ".",
+            "changed": False,
+            "summary": False,
+            "paths": None,
+            "deep": False,
+            "package": None,
+            "include_empty": False,
+        }
+        defaults.update(kwargs)
+        return types.SimpleNamespace(**defaults)
+
+    def test_changed_and_paths_exits_two(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        with pytest.raises(SystemExit) as exc_info:
+            extract_cmd.run(self._args(src_dir=".", changed=True, paths=["a.py"]))
+        assert exc_info.value.code == 2
+
+    def test_unmatched_package_exits_nonzero(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "a.py").write_text("class A:\n    pass\n")
+        with pytest.raises(SystemExit) as exc_info:
+            extract_cmd.run(self._args(src_dir=".", package="missing"))
+        assert exc_info.value.code == 1

@@ -17,10 +17,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Chunked `llm-wiki migrate`** — `--chunk-size`, `--chunk`, and `--plan-chunks` split large legacy migrations into bounded page-operation batches
 - **Wiki-as-Context Protocol v1** — `llm-wiki context --request FILE|-` accepts versioned JSON context requests and returns stable success/error envelopes for agents, IDEs, and CI tools
 - **Agent Quality Layer** — strict wiki validation (`lint --strict`), `ci-check` reports, opt-in validation hooks, local metrics, smart prompt change-type guidance, and static `llm-wiki review`
+- **GitHub community health files** — code of conduct, security policy, and issue templates tailored to the CLI's local-agent workflow
 
 ### Changed
 - Shared schema utilities extracted to `services/schema.py` — constraint block markers, `build_schema_content()`, `strip_wiki_block()`, `replace_schema_block()` now centralised; eliminates duplication across `init_cmd`, `uninstall_cmd`, `bootstrap_cmd`
 - Source extraction skips more generated dependency/environment directories, including arbitrary virtualenv `site-packages` layouts, PEP 582 `__pypackages__`, `.nox`, `.direnv`, JS package-manager caches, and Go/Rust `--only-files` paths inside excluded trees
+
+### Fixed
+- Prevent wiki auto-sync bot commits from recursively triggering the post-commit hook.
+- Preserve Python relative import levels in deep extraction and resolve relative import relationships correctly.
+- Avoid wiki page collisions for same-directory multi-language files that share a stem.
+- Apply `.gitignore` filtering consistently before TypeScript, Go, and Rust extractor subprocesses run.
+- Deprecate qualified entity pages correctly during incremental sync after source deletion.
+- Handle local markdown anchors and `mailto:` links correctly during wiki linting.
 
 ## [0.1.5] - 2026-04-11
 

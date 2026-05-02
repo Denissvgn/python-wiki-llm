@@ -52,6 +52,32 @@ def _make_go(tmp_path: Path, filename: str, content: str) -> Path:
     return p
 
 
+class TestGoWrapperFiltering:
+    def test_full_scan_passes_gitignore_filtered_files_to_subprocess(self, tmp_path, monkeypatch):
+        _make_go(tmp_path, "real.go", "package main\n\ntype Real struct{}\n")
+        _make_go(tmp_path, "ignored.go", "package main\n\ntype Ignored struct{}\n")
+        (tmp_path / ".gitignore").write_text("ignored.go\n", encoding="utf-8")
+        commands = []
+
+        def fake_run(cmd, *args, **kwargs):
+            commands.append(cmd)
+            return subprocess.CompletedProcess(
+                cmd,
+                0,
+                stdout='{"real.go":{"classes":[],"functions":[]}}',
+                stderr="",
+            )
+
+        monkeypatch.setattr("llm_wiki_cli.extractors.go_extractor.shutil.which", lambda _name: "/bin/go")
+        monkeypatch.setattr("llm_wiki_cli.extractors.go_extractor.subprocess.run", fake_run)
+
+        GoExtractor().extract(str(tmp_path))
+
+        cmd = commands[0]
+        only_idx = cmd.index("--only-files") + 1
+        assert cmd[only_idx] == "real.go"
+
+
 # ===========================================================================
 # Unit-level tests (require Go)
 # ===========================================================================
@@ -565,19 +591,28 @@ class TestGoExtractor:
 
 class TestGoExtractorWithoutGo:
     def test_no_go_returns_empty(self, tmp_path):
+        _make_go(tmp_path, "main.go", "package main\n\ntype App struct{}\n")
         with patch("llm_wiki_cli.extractors.go_extractor.shutil.which", return_value=None):
             inv = GoExtractor().extract(str(tmp_path))
         assert inv == {}
 
     def test_no_go_stderr_warning(self, tmp_path, capsys):
+        _make_go(tmp_path, "main.go", "package main\n\ntype App struct{}\n")
         with patch("llm_wiki_cli.extractors.go_extractor.shutil.which", return_value=None):
             GoExtractor().extract(str(tmp_path))
         err = capsys.readouterr().err
         assert "go not found" in err
 
+    def test_no_go_files_skips_toolchain_probe(self, tmp_path):
+        with patch("llm_wiki_cli.extractors.go_extractor.shutil.which") as mock_which:
+            inv = GoExtractor().extract(str(tmp_path))
+        assert inv == {}
+        mock_which.assert_not_called()
+
 
 class TestGoExtractorWrapper:
     def test_windows_style_inventory_keys_are_normalized(self, tmp_path):
+        _make_go(tmp_path, "pkg/client.go", "package pkg\n\ntype Client struct{}\n")
         result = subprocess.CompletedProcess(
             args=["go"],
             returncode=0,
@@ -592,7 +627,24 @@ class TestGoExtractorWrapper:
         assert "pkg\\client.go" not in inv
         assert inv["pkg/client.go"]["language"] == "go"
 
+    def test_absolute_inventory_keys_are_relative_to_src_dir(self, tmp_path):
+        source = tmp_path / "pkg" / "client.go"
+        _make_go(tmp_path, "pkg/client.go", "package pkg\n\ntype Client struct{}\n")
+        result = subprocess.CompletedProcess(
+            args=["go"],
+            returncode=0,
+            stdout=f'{{"{source.as_posix()}": {{"classes": [], "functions": []}}}}',
+            stderr="",
+        )
+        with patch("llm_wiki_cli.extractors.go_extractor.shutil.which", return_value="go"):
+            with patch("llm_wiki_cli.extractors.go_extractor.subprocess.run", return_value=result):
+                inv = GoExtractor().extract(str(tmp_path))
+
+        assert "pkg/client.go" in inv
+        assert source.as_posix() not in inv
+
     def test_malformed_json_returns_empty(self, tmp_path, capsys):
+        _make_go(tmp_path, "client.go", "package main\n\ntype Client struct{}\n")
         result = subprocess.CompletedProcess(
             args=["go"],
             returncode=0,
@@ -607,6 +659,7 @@ class TestGoExtractorWrapper:
         assert "malformed JSON" in capsys.readouterr().err
 
     def test_timeout_returns_empty(self, tmp_path, capsys):
+        _make_go(tmp_path, "client.go", "package main\n\ntype Client struct{}\n")
         with patch("llm_wiki_cli.extractors.go_extractor.shutil.which", return_value="go"):
             with patch(
                 "llm_wiki_cli.extractors.go_extractor.subprocess.run",
@@ -618,6 +671,7 @@ class TestGoExtractorWrapper:
         assert "timed out" in capsys.readouterr().err
 
     def test_stderr_forwarded_on_success(self, tmp_path, capsys):
+        _make_go(tmp_path, "client.go", "package main\n\ntype Client struct{}\n")
         result = subprocess.CompletedProcess(
             args=["go"],
             returncode=0,

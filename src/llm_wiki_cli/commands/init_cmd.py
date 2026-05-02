@@ -89,25 +89,4 @@ def run(args):
     # 4. Persist the chosen agent so install-hook can read it
     write_config(base_dir, {"agent": args.agent, "quality_hints": quality_hints})
 
-    # 5. Add llm-wiki temp files to .gitignore
-    _GITIGNORE_ENTRIES = [
-        ".git/llm-wiki-prompt.txt",
-        ".git/llm-wiki.lock",
-        ".git/llm-wiki-breaker.json",
-        ".git/llm-wiki-sync.log",
-        ".git/llm-wiki-metrics.jsonl",
-        ".git/llm-wiki-ci-report.md",
-    ]
-    gitignore = Path(".gitignore")
-    existing = gitignore.read_text(encoding="utf-8") if gitignore.exists() else ""
-    to_add = [e for e in _GITIGNORE_ENTRIES if e not in existing]
-    if to_add:
-        with open(gitignore, "a", encoding="utf-8") as f:
-            if existing and not existing.endswith("\n"):
-                f.write("\n")
-            f.write("# LLM Wiki temp files\n")
-            for entry in to_add:
-                f.write(entry + "\n")
-        print(f"Added {len(to_add)} entries to .gitignore")
-
     print("LLM Wiki initialized successfully.")

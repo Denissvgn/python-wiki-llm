@@ -7,7 +7,9 @@ from pathlib import Path
 
 from ..config import DEFAULT_WIKI_DIR, validate_path
 from ..services.metrics import record_event, resolve_agent
+from ..services.paths import shell_quote
 from ..services.plugins import PluginError, render_prompt_template
+from ..services.secure_file import write_private_text
 from ..services.team import TeamConfigError, team_prompt_template_default
 
 _DEFAULT_PROMPT_FILE = ".git/llm-wiki-prompt.txt"
@@ -144,6 +146,9 @@ def _build_prompt(
 ) -> str:
     if diff_text is None:
         diff_text = _git_diff()
+    quoted_wiki_dir = shell_quote(wiki_dir)
+    quoted_wiki_dir_slash = shell_quote(f"{wiki_dir}/")
+    quoted_src_dir = shell_quote(src_dir)
     effective_type = resolve_change_type(change_type, diff_text)
     context_parts = []
     if ast_json is not None:
@@ -182,18 +187,18 @@ Run these commands to understand what changed:
 
 ```bash
 # Changed files — compact inventory of what was modified in the last commit
-llm-wiki extract --src-dir {src_dir} --changed --summary
+llm-wiki extract --src-dir {quoted_src_dir} --changed --summary
 
 # Full diff of the last commit
 git diff HEAD~1..HEAD
 
 # Current wiki health — shows what's already broken vs. what you need to fix
-llm-wiki lint --wiki-dir {wiki_dir} --src-dir {src_dir}
+llm-wiki lint --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}
 ```
 
 For full detail (methods, params, docstrings) on a specific file:
 ```bash
-llm-wiki extract --src-dir {src_dir} --paths path/to/file.py
+llm-wiki extract --src-dir {quoted_src_dir} --paths path/to/file.py
 ```
 
 ## Change-Type Focus
@@ -221,14 +226,14 @@ for user-facing changes. Skip for pure refactors, test-only, or doc-only commits
 After making your changes, run:
 
 ```bash
-llm-wiki lint --wiki-dir {wiki_dir} --src-dir {src_dir}
+llm-wiki lint --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}
 ```
 
 If lint reports issues, fix them and re-run until it exits 0. Then commit:
 
 ```bash
-git add {wiki_dir}/ CHANGELOG.md
-git commit -m "docs(wiki): auto-update [bot]"
+git add {quoted_wiki_dir_slash} CHANGELOG.md
+LLM_WIKI_AUTO_COMMIT=1 git commit -m "docs(wiki): auto-update [bot]"
 ```
 """
 
@@ -272,9 +277,7 @@ def run(args) -> None:
         )
         return
 
-    out_path = Path(output)
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(prompt, encoding="utf-8")
+    out_path = write_private_text(output, prompt)
 
     record_event(
         "prompt_generated",
@@ -292,4 +295,4 @@ def run(args) -> None:
     print(f"Wiki sync prompt written to: {out_path}")
     print()
     print("Paste the contents into your IDE agent chat to trigger a wiki sync.")
-    print(f"  cat {out_path}")
+    print(f"  cat {shell_quote(out_path)}")

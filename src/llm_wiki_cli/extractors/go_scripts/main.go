@@ -1,4 +1,4 @@
-// Go AST extractor for llm-wiki-cli.
+// Go AST extractor for agent-wiki-cli.
 //
 // Usage: go run . --src-dir <path> [--only-files <f1,f2,...>] [--deep]
 //

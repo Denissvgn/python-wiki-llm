@@ -1,4 +1,4 @@
-// Rust AST extractor for llm-wiki-cli.
+// Rust AST extractor for agent-wiki-cli.
 //
 // Usage: cargo run -- --src-dir <path> [--only-files <f1,f2,...>] [--deep]
 //

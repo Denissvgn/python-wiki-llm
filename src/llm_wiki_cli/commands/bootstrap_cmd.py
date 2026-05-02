@@ -1,16 +1,19 @@
 from __future__ import annotations
 
 import json
+import posixpath
 import shlex
 import subprocess
+import sys
 from collections import defaultdict
 from collections.abc import Mapping
 from datetime import date
 from pathlib import Path
 
-from .extract_cmd import get_inventory, get_call_graph, get_docker_inventory
+from .extract_cmd import get_call_graph, get_docker_inventory, get_inventory_result, print_inventory_failures
 from ..config import validate_path
 from ..services.io import read_md, write_md
+from ..services.paths import normalize_source_path
 
 
 def _module_name_from_path(filepath: str) -> str:
@@ -52,11 +55,28 @@ def _disambiguate_paths(fps: list[str], stem: str) -> dict[str, str]:
             candidates[fp] = "_".join(prefix_parts) + "_" + stem
         if len(set(candidates.values())) == len(fps):
             return candidates
-    # Fallback: full path (always unique)
-    return {
-        fp: str(Path(fp).with_suffix("")).replace("/", "_").replace("\\", "_")
-        for fp in fps
-    }
+    # Fallback: full path plus extension, with a final numeric guard.
+    candidates = {fp: _page_name_with_extension(fp) for fp in fps}
+    if len(set(candidates.values())) == len(fps):
+        return candidates
+
+    seen: dict[str, int] = defaultdict(int)
+    unique: dict[str, str] = {}
+    for fp in sorted(fps):
+        name = candidates[fp]
+        seen[name] += 1
+        unique[fp] = name if seen[name] == 1 else f"{name}_{seen[name]}"
+    return unique
+
+
+def _page_name_with_extension(filepath: str) -> str:
+    """Return a page-safe path stem that includes the source extension."""
+    path = Path(filepath)
+    base = path.with_suffix("").as_posix()
+    base = base.replace("/", "_").replace("\\", "_").replace(".", "_")
+    ext = path.suffix.lower().lstrip(".") or "file"
+    ext = ext.replace(".", "_")
+    return f"{base}_{ext}"
 
 
 def build_module_page_map(inventory: dict) -> dict[str, str]:
@@ -108,70 +128,153 @@ def build_entity_page_map(inventory: dict) -> dict[tuple[str, str], str]:
     return page_map
 
 
+def _module_path_candidates(module: str, importer_filepath: str, inventory: dict) -> set[str]:
+    """Resolve an import module string to inventory file paths when possible."""
+    if not module:
+        return set()
+
+    normalized = module.strip().strip('"').strip("'").replace("\\", "/")
+    if not normalized:
+        return set()
+
+    importer_parent = Path(importer_filepath).parent
+    candidate_stems: set[str] = set()
+    has_relative_candidate = False
+
+    if normalized.startswith(("./", "../")):
+        rel = normalized
+        while rel.startswith("./"):
+            rel = rel[2:]
+        if rel.startswith("../") or rel:
+            candidate_stems.add(
+                posixpath.normpath((importer_parent / rel).as_posix()).strip("/")
+            )
+            has_relative_candidate = True
+    elif normalized.startswith("."):
+        dot_count = len(normalized) - len(normalized.lstrip("."))
+        remainder = normalized[dot_count:]
+        base = importer_parent
+        for _ in range(max(dot_count - 1, 0)):
+            base = base.parent
+        if remainder:
+            candidate_stems.add(
+                posixpath.normpath((base / remainder.replace(".", "/")).as_posix()).strip("/")
+            )
+        else:
+            base_candidate = posixpath.normpath(base.as_posix()).strip("/")
+            if base_candidate:
+                candidate_stems.add(base_candidate)
+                candidate_stems.add(f"{base_candidate}/__init__")
+            else:
+                candidate_stems.add("__init__")
+        has_relative_candidate = True
+
+    if not has_relative_candidate:
+        module_path = normalized.replace("::", "/").replace(".", "/")
+        clean_module_path = module_path.strip("/")
+        if clean_module_path:
+            candidate_stems.add(clean_module_path)
+            if "/" not in clean_module_path:
+                candidate_stems.add(Path(clean_module_path).name)
+
+    matches: set[str] = set()
+    for filepath in inventory:
+        path_no_suffix = Path(filepath).with_suffix("").as_posix()
+        path_parts = Path(filepath).parts
+        stripped_src = (
+            "/".join(path_parts[1:])
+            if path_parts and path_parts[0] == "src"
+            else filepath
+        )
+        stripped_src_no_suffix = Path(stripped_src).with_suffix("").as_posix()
+        comparable = {path_no_suffix, stripped_src_no_suffix, Path(filepath).stem}
+        for candidate in candidate_stems:
+            candidate = candidate.strip("/")
+            if not candidate:
+                continue
+            if (
+                candidate in comparable
+                or path_no_suffix.endswith(f"/{candidate}")
+                or stripped_src_no_suffix.endswith(f"/{candidate}")
+            ):
+                matches.add(filepath)
+    return matches
+
+
 def _build_relationships(inventory: dict, module_page_map: dict[str, str] | None = None) -> dict:
-    """Cross-reference imports against known entity names to build a usage graph.
-    
-    Returns a dict mapping entity name -> list of {module, module_page, function, relationship} dicts.
+    """Cross-reference imports against known entity identities to build a usage graph.
+
+    Returns a dict mapping ``(entity_name, defining_filepath)`` to a list of
+    {module, module_page, function, relationship} records. Duplicate entity names
+    are only linked when the import module resolves to exactly one defining file.
 
     *module_page_map*: optional mapping of filepath -> wiki page stem produced by
     ``_page_name_for_module``.  When provided every relationship record carries
     ``module_page`` so that generated links point to the correct page even when
     the module stem was qualified to resolve a collision.
     """
-    # Collect all known entity (class) names
-    entity_to_file = {}
+    entity_to_files: dict[str, set[str]] = defaultdict(set)
     for filepath, data in inventory.items():
         for cls in data.get("classes", []):
-            entity_to_file[cls["name"]] = filepath
+            entity_to_files[cls["name"]].add(filepath)
 
-    # relationship map: entity_name -> [{"module": ..., "function": ..., "rel": ...}]
+    # relationship map: (entity_name, defining_filepath) -> relationship records
     relationships = defaultdict(list)
     _mod_page_map = module_page_map or {}
 
     for filepath, data in inventory.items():
         mod_name = _module_name_from_path(filepath)
         mod_page = _mod_page_map.get(filepath, mod_name)
-        imports = data.get("imports", [])
-        imported_names = {imp["name"] for imp in imports}
-
-        # Check which known entities are imported into this file
-        for entity_name, entity_file in entity_to_file.items():
-            # Skip self-references (class defined in same file)
-            if entity_file == filepath:
+        imported_entities: dict[tuple[str, str], set[str]] = {}
+        for imp in data.get("imports", []):
+            entity_name = imp.get("name")
+            if not entity_name or entity_name not in entity_to_files:
                 continue
-            if entity_name in imported_names:
-                # Find which functions reference this entity via type annotations / decorators
-                for fn in data.get("functions", []):
-                    # Check params and return type for entity references
-                    mentions_entity = False
-                    for p in fn.get("params", []):
-                        if entity_name in p.get("type", ""):
-                            mentions_entity = True
-                    if entity_name in fn.get("return_type", ""):
+            candidates = set(entity_to_files[entity_name])
+            module_candidates = _module_path_candidates(
+                imp.get("module", ""), filepath, inventory
+            )
+            if module_candidates:
+                candidates &= module_candidates
+            candidates.discard(filepath)
+            if len(candidates) != 1:
+                continue
+            defining_filepath = next(iter(candidates))
+            visible_names = {entity_name}
+            if imp.get("alias"):
+                visible_names.add(imp["alias"])
+            imported_entities[(entity_name, defining_filepath)] = visible_names
+
+        for entity_key, visible_names in imported_entities.items():
+            for fn in data.get("functions", []):
+                mentions_entity = False
+                for p in fn.get("params", []):
+                    if any(name in p.get("type", "") for name in visible_names):
                         mentions_entity = True
-                    # Check decorators for response_model etc.
-                    for dec in fn.get("decorators", []):
-                        if entity_name in dec:
-                            mentions_entity = True
+                if any(name in fn.get("return_type", "") for name in visible_names):
+                    mentions_entity = True
+                for dec in fn.get("decorators", []):
+                    if any(name in dec for name in visible_names):
+                        mentions_entity = True
 
-                    if mentions_entity:
-                        relationships[entity_name].append({
-                            "module": mod_name,
-                            "module_page": mod_page,
-                            "module_path": filepath,
-                            "function": fn["name"],
-                            "rel": "used_by",
-                        })
-
-                # If imported but not found in any specific function, still note the import
-                if not any(r["module"] == mod_name for r in relationships[entity_name]):
-                    relationships[entity_name].append({
+                if mentions_entity:
+                    relationships[entity_key].append({
                         "module": mod_name,
                         "module_page": mod_page,
                         "module_path": filepath,
-                        "function": None,
-                        "rel": "imported_by",
+                        "function": fn["name"],
+                        "rel": "used_by",
                     })
+
+            # If imported but not found in any specific function, still note the import
+            if not any(r["module_path"] == filepath for r in relationships[entity_key]):
+                relationships[entity_key].append({
+                    "module": mod_name,
+                    "module_page": mod_page,
+                    "module_path": filepath,
+                    "function": None,
+                    "rel": "imported_by",
+                })
 
     return dict(relationships)
 
@@ -259,7 +362,7 @@ def _generate_entity_md(class_info: dict, filepath: str, relationships: dict, mo
     lines.append("")
 
     # Relationships
-    rels = relationships.get(name, [])
+    rels = relationships.get((name, filepath), relationships.get(name, []))
     lines.append("## Relationships")
     lines.append("")
     if rels:
@@ -436,10 +539,7 @@ _SOURCE_EXTS = (".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs")
 
 def _normalize_source_path(path: str) -> str:
     """Normalize Docker COPY source paths for comparison with inventory keys."""
-    normalized = path.strip().strip('"').strip("'").replace("\\", "/")
-    while normalized.startswith("./"):
-        normalized = normalized[2:]
-    return normalized
+    return normalize_source_path(path) or ""
 
 
 def _coerce_module_links(module_links: Mapping[str, str] | set[str] | None) -> dict[str, str]:
@@ -784,10 +884,14 @@ def run(args):
         (wiki_dir / subdir).mkdir(parents=True, exist_ok=True)
 
     # 1. Extract full AST inventory
-    inventory = get_inventory(src_dir, deep=deep)
+    inventory_result = get_inventory_result(src_dir, deep=deep)
+    if inventory_result.failed:
+        print_inventory_failures(inventory_result)
+        sys.exit(1)
+    inventory = inventory_result.inventory
 
     if not inventory:
-        print("No Python files with classes or functions found. Nothing to bootstrap.")
+        print("No supported source files with classes or functions found. Nothing to bootstrap.")
         return
 
     all_entity_names = []
