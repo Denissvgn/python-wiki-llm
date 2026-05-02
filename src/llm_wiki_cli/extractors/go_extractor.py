@@ -1,4 +1,4 @@
-"""Go AST extractor for llm-wiki-cli.
+"""Go AST extractor for agent-wiki-cli.
 
 Implements :class:`~llm_wiki_cli.extractors.ExtractorProtocol` by delegating
 to a bundled Go script (``go_scripts/main.go``) that uses ``go/ast`` and

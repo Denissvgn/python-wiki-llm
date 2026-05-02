@@ -1,4 +1,4 @@
-"""Rust AST extractor for llm-wiki-cli.
+"""Rust AST extractor for agent-wiki-cli.
 
 Implements :class:`~llm_wiki_cli.extractors.ExtractorProtocol` by delegating
 to a bundled Rust binary (``rust_scripts/src/main.rs``) that uses the ``syn``

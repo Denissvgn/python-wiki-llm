@@ -23,9 +23,16 @@ def test_package_data_includes_rust_lockfile():
     assert "extractors/rust_scripts/Cargo.lock" in package_data
 
 
+def test_project_distribution_name_is_pypi_safe_name():
+    data = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    assert data["project"]["name"] == "agent-wiki-cli"
+
+
 def test_readme_uses_distribution_name_for_uninstall():
     readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
-    assert "pip uninstall llm-wiki-cli" in readme
+    assert "pip uninstall agent-wiki-cli" in readme
+    assert "pip install agent-wiki-cli" in readme
+    assert "pip uninstall llm-wiki-cli" not in readme
     assert "pip uninstall llm_wiki_cli" not in readme
 
 

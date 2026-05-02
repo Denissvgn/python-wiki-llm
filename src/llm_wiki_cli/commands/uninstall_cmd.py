@@ -218,4 +218,4 @@ def run(args):
     removed_total += r
 
     print(f"\nUninstall complete. {removed_total} item(s) removed.")
-    print("To uninstall the CLI itself: pip uninstall llm-wiki-cli")
+    print("To uninstall the CLI itself: pip uninstall agent-wiki-cli")

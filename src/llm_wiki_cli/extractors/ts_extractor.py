@@ -1,4 +1,4 @@
-"""TypeScript AST extractor for llm-wiki-cli.
+"""TypeScript AST extractor for agent-wiki-cli.
 
 Implements :class:`~llm_wiki_cli.extractors.ExtractorProtocol` by delegating
 to a bundled Node.js script (``ts_scripts/extract.js``) that uses ``ts-morph``

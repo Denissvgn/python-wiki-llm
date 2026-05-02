@@ -1,4 +1,4 @@
-"""Shared constants and utilities for llm-wiki-cli."""
+"""Shared constants and utilities for agent-wiki-cli."""
 
 from __future__ import annotations
 

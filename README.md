@@ -59,7 +59,7 @@ Each language provides:
 
 Install the CLI:
 ```bash
-pip install llm-wiki-cli
+pip install agent-wiki-cli
 ```
 
 The package defines optional extras for language groups, but they do not install
@@ -394,4 +394,4 @@ llm-wiki uninstall --dry-run
 - **Wiki docs**: kept by default. Pass `--remove-wiki` to opt-in to deletion.
 - **Agent schema files** (e.g. `CLAUDE.md`): only the `# --- LLM Wiki Maintainer Constraints ---` block is stripped. Any user-written content outside that block is preserved. The file is only deleted if it contained nothing else.
 - **Git hooks**: only removed if they contain the `LLM Wiki` signature. Custom user hooks are never touched.
-- The CLI itself is not uninstalled — run `pip uninstall llm-wiki-cli` separately if needed.
+- The CLI itself is not uninstalled — run `pip uninstall agent-wiki-cli` separately if needed.

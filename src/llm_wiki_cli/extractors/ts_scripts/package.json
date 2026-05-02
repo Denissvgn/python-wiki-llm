@@ -1,7 +1,7 @@
 {
   "name": "llm-wiki-ts-extractor",
   "version": "1.0.0",
-  "description": "TypeScript AST extractor for llm-wiki-cli",
+  "description": "TypeScript AST extractor for agent-wiki-cli",
   "private": true,
   "main": "extract.js",
   "dependencies": {

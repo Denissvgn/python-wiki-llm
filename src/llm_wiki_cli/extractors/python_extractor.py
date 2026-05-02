@@ -1,4 +1,4 @@
-"""Python AST extractor for llm-wiki-cli."""
+"""Python AST extractor for agent-wiki-cli."""
 
 from __future__ import annotations
 

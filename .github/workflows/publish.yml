@@ -6,6 +6,7 @@ on:
   #   tags: ["v*"]
 
 permissions:
+  contents: read
   id-token: write
 
 jobs:
@@ -21,10 +22,10 @@ jobs:
           python-version: "3.12"
 
       - name: Install build tools
-        run: pip install build
+        run: python -m pip install --no-cache-dir build
 
       - name: Build package
         run: python -m build
 
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.14.0
+        uses: pypa/gh-action-pypi-publish@release/v1

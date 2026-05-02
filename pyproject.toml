@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "llm-wiki-cli"
+name = "agent-wiki-cli"
 version = "0.3.28"
 description = "CLI tool to maintain hybrid LLM Wikis for multi-language projects."
 readme = "README.md"
