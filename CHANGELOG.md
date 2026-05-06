@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.41] - 2026-05-07
+
 ### Added
 - **Obsidian Integration** — `llm-wiki obsidian export|check|install-plugin` mirrors the canonical wiki into an Obsidian vault with frontmatter, wikilinks, related links, sidecar human notes, and a desktop companion plugin
 - **MCP Server** — optional `llm-wiki mcp` command exposes read-only wiki tools/resources over stdio or local Streamable HTTP, including wiki search, entity/module fetch, context payloads, lint checks, and status
@@ -20,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Generic agent instructions now use `AGENTS.md` for new installs and upgrades; legacy `.agents.md` files are still supported for cleanup but are not automatically migrated.
 
 ### Fixed
+- Bootstrap workflow pages now link to collision-aware module pages when multiple modules share a stem, such as `models_task.md` and `schemas_task.md`.
+- Migrate now repairs legacy workflow links like `../modules/task.md` per workflow using path-aware call graph metadata.
+- Lint no longer double-counts broken workflow links already reported by the general markdown link pass.
 - Restore CI compatibility for Python 3.9 and Windows, including MCP optional-dependency messaging and Windows path normalization in MCP results.
 - Context protocol and MCP callers now receive structured extractor failure errors instead of terminating the process.
 
@@ -128,7 +133,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Test suite** — 89 unit + integration tests with pytest
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.3.28...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.3.41...HEAD
+[0.3.41]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.3.28...v0.3.41
 [0.3.28]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.1.5...v0.3.28
 [0.1.5]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.1.1...v0.1.5
 [0.1.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.1.0...v0.1.1
