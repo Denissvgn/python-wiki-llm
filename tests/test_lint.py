@@ -83,6 +83,32 @@ class TestLintBrokenLink:
         out = capsys.readouterr().out
         assert "No broken links" in out
 
+    def test_workflow_broken_link_is_not_double_counted(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+        wiki = tmp_path / "wiki"
+        (wiki / "modules").mkdir(parents=True)
+        (wiki / "workflows").mkdir(parents=True)
+        (wiki / "workflows" / "flow.md").write_text(
+            "# flow\n\n- [missing](../modules/missing.md)\n"
+        )
+        (wiki / "index.md").write_text("# Index\n- [flow](workflows/flow.md)\n")
+        (wiki / "log.md").write_text("# Log\n")
+
+        monkeypatch.setattr(
+            lint_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult({}, {"python": ExtractorStatus("python", "skipped", 0)}),
+        )
+        monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
+
+        with pytest.raises(SystemExit):
+            lint_cmd.run(_make_args(wiki_dir="wiki", src_dir="."))
+
+        out = capsys.readouterr().out
+        assert "Found 1 broken link(s)." in out
+        assert "Found 1 broken workflow link(s)." in out
+        assert "Lint found 1 issue(s)." in out
+
 
 class TestLintOrphanPage:
     def test_detects_orphan(self, tmp_project, capsys):

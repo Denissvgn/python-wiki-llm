@@ -245,7 +245,6 @@ def run(args):
                     print(f"  ⚠️  Broken link in workflow {wf_page.stem} -> {link}")
                     stale_wf += 1
 
-    issues += stale_wf
     if stale_wf:
         print(f"  Found {stale_wf} broken workflow link(s).\n")
     else:

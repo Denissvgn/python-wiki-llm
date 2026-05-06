@@ -12,6 +12,7 @@ from pathlib import Path
 
 from ..config import COMPOSE_PATTERNS, DOCKERFILE_PATTERNS, EXCLUDED_DIRS, EXTRACTOR_REGISTRY, validate_path
 from ..extractors.common import LANGUAGE_EXTENSIONS, discover_source_files
+from ..services.imports import module_path_candidates
 from ..services.packages import discover_packages, stamp_inventory_packages
 
 # Re-export ComponentVisitor so existing callers that import it from here
@@ -258,16 +259,13 @@ def get_call_graph(inventory: dict) -> dict:
 
     Returns a dict of workflow_name -> {entry, chain, modules_touched}.
     """
-    # Map of known module stems from inventory
-    known_modules = {_module_name(fp) for fp in inventory}
-    # Map of symbol name -> defining module stem
-    symbol_to_module: dict[str, str] = {}
+    # Map of symbol name -> defining source files.
+    symbol_to_files: dict[str, set[str]] = {}
     for fp, data in inventory.items():
-        mod = _module_name(fp)
         for cls in data.get("classes", []):
-            symbol_to_module[cls["name"]] = mod
+            symbol_to_files.setdefault(cls["name"], set()).add(fp)
         for fn in data.get("functions", []):
-            symbol_to_module[fn["name"]] = mod
+            symbol_to_files.setdefault(fn["name"], set()).add(fp)
 
     workflows: dict[str, dict] = {}
 
@@ -286,18 +284,24 @@ def get_call_graph(inventory: dict) -> dict:
         mod = _module_name(fp)
         imports = data.get("imports", [])
 
-        # Resolve which internal modules this file imports from
-        imported_symbols: dict[str, str] = {}  # symbol_name -> source_module
+        # Resolve visible imported names to exact internal source files.
+        imported_symbols: dict[str, tuple[str, str]] = {}  # visible_name -> (source_path, source_symbol)
         for imp in imports:
-            # Check if the imported name maps to a known symbol
-            name = imp["name"]
-            if name in symbol_to_module and symbol_to_module[name] != mod:
-                imported_symbols[name] = symbol_to_module[name]
-            # Also check if the import's module path contains a known module
-            imp_mod = imp.get("module", "")
-            imp_mod_stem = imp_mod.rsplit(".", 1)[-1] if imp_mod else ""
-            if imp_mod_stem in known_modules and imp_mod_stem != mod:
-                imported_symbols[name] = imp_mod_stem
+            source_name = imp["name"]
+            visible_name = imp.get("alias") or source_name
+            candidates = set(symbol_to_files.get(source_name, set()))
+            module_candidates = module_path_candidates(
+                imp.get("module", ""), fp, inventory
+            )
+
+            if candidates and module_candidates:
+                candidates &= module_candidates
+            elif not candidates and module_candidates:
+                candidates = set(module_candidates)
+
+            candidates.discard(fp)
+            if len(candidates) == 1:
+                imported_symbols[visible_name] = (next(iter(candidates)), source_name)
 
         if not imported_symbols:
             continue
@@ -309,41 +313,44 @@ def get_call_graph(inventory: dict) -> dict:
                 all_functions.append(method)
 
         for fn in all_functions:
-            touched_modules: set[str] = set()
+            touched_module_paths: set[str] = set()
             chain: list[str] = []
 
             # Check params, return types, decorators for references to imported symbols
-            for sym_name, src_mod in imported_symbols.items():
+            for visible_name, (src_path, source_name) in imported_symbols.items():
                 referenced = False
                 for p in fn.get("params", []):
-                    if sym_name in p.get("type", ""):
+                    if visible_name in p.get("type", ""):
                         referenced = True
-                if sym_name in fn.get("return_type", ""):
+                if visible_name in fn.get("return_type", ""):
                     referenced = True
                 for dec in fn.get("decorators", []):
-                    if sym_name in dec:
+                    if visible_name in dec:
                         referenced = True
                 # Check docstring for symbol mentions
-                if sym_name in fn.get("docstring", ""):
+                if visible_name in fn.get("docstring", ""):
                     referenced = True
 
                 if referenced:
-                    touched_modules.add(src_mod)
-                    chain.append(f"{src_mod}.{sym_name}")
+                    touched_module_paths.add(src_path)
+                    chain.append(f"{_module_name(src_path)}.{source_name}")
 
             # Workflow threshold: function touches 3+ other internal modules
-            if len(touched_modules) >= 3:
+            if len(touched_module_paths) >= 3:
                 fn_name = fn["name"]
                 # Clean up workflow name
                 wf_name = fn_name.lstrip("_")
                 if wf_name == "run":
                     wf_name = f"{mod}_flow"
 
+                all_touched_paths = touched_module_paths | {fp}
                 workflows[wf_name] = {
                     "entry": f"{mod}.{fn_name}",
                     "entry_module": mod,
+                    "entry_module_path": fp,
                     "chain": chain,
-                    "modules_touched": sorted(touched_modules | {mod}),
+                    "modules_touched": sorted({_module_name(path) for path in all_touched_paths}),
+                    "modules_touched_paths": sorted(all_touched_paths),
                     "docstring": fn.get("docstring", ""),
                 }
 
