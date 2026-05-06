@@ -189,6 +189,82 @@ class TestMigrateIntegration:
         output = capsys.readouterr().out
         assert "Lint passed" in output
 
+    def test_workflow_raw_stem_links_rewrite_per_workflow_from_call_graph(self, tmp_path, capsys):
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        _write(proj / "models" / "task.py", "class Task:\n    pass\n")
+        _write(proj / "models" / "iteration.py", "class Iteration:\n    pass\n")
+        _write(proj / "schemas" / "task.py", "class TaskCreate:\n    pass\n")
+        _write(proj / "schemas" / "iteration.py", "class IterationSummary:\n    pass\n")
+        _write(proj / "schemas" / "common.py", "class MessageResponse:\n    pass\n")
+        _write(proj / "schemas" / "gantt.py", "class SchedulingDecision:\n    pass\n")
+        _write(proj / "types" / "gantt.py", "class GanttTask:\n    pass\n")
+        _write(proj / "services" / "task_service.py", "class TaskService:\n    pass\n")
+        _write(
+            proj / "routers" / "tasks.py",
+            """
+            from schemas.task import TaskCreate as CreateSchema
+            from schemas.common import MessageResponse
+            from services.task_service import TaskService
+
+            def create_task(data: CreateSchema, service: TaskService) -> MessageResponse:
+                return MessageResponse()
+            """,
+        )
+        _write(
+            proj / "services" / "scheduler_service.py",
+            """
+            from models.task import Task
+            from models.iteration import Iteration
+            from schemas.gantt import SchedulingDecision
+
+            def _schedule_leaf_task(task: Task, iteration: Iteration) -> SchedulingDecision:
+                return SchedulingDecision()
+            """,
+        )
+        wiki = _make_wiki(proj)
+        _write(
+            wiki / "workflows" / "create_task.md",
+            """
+            # create_task
+
+            **Modules involved:** [task](../modules/task.md)
+
+            ## Touches
+
+            - [task](../modules/task.md)
+            """,
+        )
+        _write(
+            wiki / "workflows" / "schedule_leaf_task.md",
+            """
+            # schedule_leaf_task
+
+            ## Touches
+
+            - [task](../modules/task.md)
+            - [iteration](../modules/iteration.md)
+            - [gantt](../modules/gantt.md)
+            """,
+        )
+
+        os.chdir(proj)
+        migrate_cmd.run(_make_args())
+
+        create_task = (wiki / "workflows" / "create_task.md").read_text(encoding="utf-8")
+        schedule_leaf = (wiki / "workflows" / "schedule_leaf_task.md").read_text(encoding="utf-8")
+        assert "../modules/schemas_task.md" in create_task
+        assert "../modules/models_task.md" not in create_task
+        assert "../modules/models_task.md" in schedule_leaf
+        assert "../modules/models_iteration.md" in schedule_leaf
+        assert "../modules/schemas_gantt.md" in schedule_leaf
+        assert "../modules/task.md" not in create_task
+        assert "../modules/task.md" not in schedule_leaf
+
+        lint_cmd.run(_make_args())
+        output = capsys.readouterr().out
+        assert "Lint passed" in output
+
     def test_infrastructure_page_regenerated_and_legacy_content_preserved(self, tmp_path, capsys):
         proj = tmp_path / "proj"
         proj.mkdir()

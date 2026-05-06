@@ -25,7 +25,7 @@ from .bootstrap_cmd import (
     build_entity_page_map,
     build_module_page_map,
 )
-from .extract_cmd import get_docker_inventory, get_inventory_result, print_inventory_failures
+from .extract_cmd import get_call_graph, get_docker_inventory, get_inventory_result, print_inventory_failures
 from .sync_cmd import MANIFEST_FILENAME, MANIFEST_VERSION, SyncManifest
 from ..config import DEFAULT_WIKI_DIR, validate_path
 from ..services.io import read_md, write_md
@@ -77,6 +77,7 @@ class MigrationPlan:
     matches: dict[str, list[ExistingPage]] = field(default_factory=dict)
     unmatched: list[ExistingPage] = field(default_factory=list)
     link_map: dict[str, str] = field(default_factory=dict)
+    page_link_maps: dict[str, dict[str, str]] = field(default_factory=dict)
     index_content: str = ""
     manifest: SyncManifest | None = None
 
@@ -358,6 +359,46 @@ def _list_workflows(wiki_dir: Path) -> list[dict]:
     return [{"name": path.stem, "entry": ""} for path in sorted(workflow_dir.glob("*.md"))]
 
 
+def _build_workflow_link_maps(
+    wiki_dir: Path,
+    inventory: dict,
+    module_page_map: dict[str, str],
+) -> dict[str, dict[str, str]]:
+    """Return per-workflow rewrites for raw module-stem links.
+
+    A raw link like ``../modules/task.md`` can point to different canonical
+    pages in different workflows, so these mappings must stay page-specific.
+    """
+    workflow_dir = wiki_dir / "workflows"
+    if not workflow_dir.exists():
+        return {}
+
+    page_maps: dict[str, dict[str, str]] = {}
+    for wf_name, wf_data in get_call_graph(inventory).items():
+        wf_path = workflow_dir / f"{wf_name}.md"
+        if not wf_path.exists():
+            continue
+
+        stem_targets: dict[str, set[str]] = {}
+        for source_path in wf_data.get("modules_touched_paths", []):
+            page_stem = module_page_map.get(source_path)
+            if not page_stem:
+                continue
+            source_stem = Path(source_path).stem
+            if page_stem != source_stem:
+                stem_targets.setdefault(source_stem, set()).add(page_stem)
+
+        link_map = {
+            f"modules/{source_stem}.md": f"modules/{next(iter(page_stems))}.md"
+            for source_stem, page_stems in stem_targets.items()
+            if len(page_stems) == 1
+        }
+        if link_map:
+            page_maps[_page_rel(wf_path, wiki_dir)] = link_map
+
+    return page_maps
+
+
 def _unique(values: list[TargetPage]) -> TargetPage | None:
     return values[0] if len(values) == 1 else None
 
@@ -429,6 +470,7 @@ def _build_migration_plan(wiki_dir: Path, src_dir: str) -> MigrationPlan:
         sys.exit(1)
     inventory = inventory_result.inventory
     docker_inventory = get_docker_inventory(src_dir)
+    module_page_map = build_module_page_map(inventory)
     targets, index_content, manifest = _build_targets(
         wiki_dir,
         src_dir,
@@ -440,6 +482,7 @@ def _build_migration_plan(wiki_dir: Path, src_dir: str) -> MigrationPlan:
     plan = MigrationPlan(
         archive_name=f"migrate-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}",
         targets=targets,
+        page_link_maps=_build_workflow_link_maps(wiki_dir, inventory, module_page_map),
         index_content=index_content,
         manifest=manifest,
     )
@@ -607,11 +650,33 @@ def _rewrite_links_in_content(content: str, page: Path, wiki_dir: Path, link_map
     return _LINK_RE.sub(replace, content)
 
 
-def _rewrite_active_links(wiki_dir: Path, link_map: dict[str, str], dry_run: bool) -> int:
+def _page_link_map(
+    page: Path,
+    wiki_dir: Path,
+    link_map: dict[str, str],
+    page_link_maps: dict[str, dict[str, str]] | None = None,
+) -> dict[str, str]:
+    page_rel = _page_rel(page, wiki_dir)
+    page_specific = (page_link_maps or {}).get(page_rel)
+    if not page_specific:
+        return link_map
+    return {**link_map, **page_specific}
+
+
+def _rewrite_active_links(
+    wiki_dir: Path,
+    link_map: dict[str, str],
+    dry_run: bool,
+    page_link_maps: dict[str, dict[str, str]] | None = None,
+) -> int:
+    if not link_map and not page_link_maps:
+        return 0
+
     rewritten = 0
     for page in _active_markdown_pages(wiki_dir):
         content = read_md(page)
-        updated = _rewrite_links_in_content(content, page, wiki_dir, link_map)
+        effective_link_map = _page_link_map(page, wiki_dir, link_map, page_link_maps)
+        updated = _rewrite_links_in_content(content, page, wiki_dir, effective_link_map)
         if updated != content:
             rewritten += 1
             print(f"  REWRITE links: {_page_rel(page, wiki_dir)}")
@@ -665,13 +730,18 @@ def _manifest_needs_write(wiki_dir: Path, manifest: SyncManifest | None) -> bool
     return not path.exists() or path.read_text(encoding="utf-8") != _manifest_payload(manifest)
 
 
-def _pending_link_rewrite_count(wiki_dir: Path, link_map: dict[str, str]) -> int:
-    if not link_map:
+def _pending_link_rewrite_count(
+    wiki_dir: Path,
+    link_map: dict[str, str],
+    page_link_maps: dict[str, dict[str, str]] | None = None,
+) -> int:
+    if not link_map and not page_link_maps:
         return 0
     count = 0
     for page in _active_markdown_pages(wiki_dir):
         content = read_md(page)
-        if _rewrite_links_in_content(content, page, wiki_dir, link_map) != content:
+        effective_link_map = _page_link_map(page, wiki_dir, link_map, page_link_maps)
+        if _rewrite_links_in_content(content, page, wiki_dir, effective_link_map) != content:
             count += 1
     return count
 
@@ -682,7 +752,7 @@ def _finalizers_pending(wiki_dir: Path, plan: MigrationPlan) -> bool:
     return (
         index_pending
         or _manifest_needs_write(wiki_dir, plan.manifest)
-        or _pending_link_rewrite_count(wiki_dir, plan.link_map) > 0
+        or _pending_link_rewrite_count(wiki_dir, plan.link_map, plan.page_link_maps) > 0
         or (_legacy_archive_ignore_applicable(wiki_dir, plan) and _legacy_gitignore_needs_write(wiki_dir))
     )
 
@@ -804,9 +874,12 @@ def _apply_chunk(wiki_dir: Path, plan: MigrationPlan, chunk: MigrationChunk, dry
         print("  DEFER index/manifest refresh until the final chunk")
 
     link_map = _chunk_link_map(plan, chunk)
-    rewritten = _rewrite_active_links(wiki_dir, link_map, dry_run)
-    if link_map:
-        print(f"  Link mappings: {len(link_map)} path(s); pages rewritten: {rewritten}")
+    page_link_maps = plan.page_link_maps if chunk.include_finalizers else {}
+    rewritten = _rewrite_active_links(wiki_dir, link_map, dry_run, page_link_maps)
+    page_link_count = sum(len(page_map) for page_map in page_link_maps.values())
+    if link_map or page_link_count:
+        total_link_count = len(link_map) + page_link_count
+        print(f"  Link mappings: {total_link_count} path(s); pages rewritten: {rewritten}")
 
     if chunk.include_finalizers and not dry_run and plan.manifest is not None:
         plan.manifest.save(wiki_dir)

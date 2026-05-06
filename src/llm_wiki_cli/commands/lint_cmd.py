@@ -31,6 +31,7 @@ class LintReport:
     src_dir: str
     strict: bool = False
     issues: list[LintIssue] = field(default_factory=list)
+    diagnostics: list[LintIssue] = field(default_factory=list)
 
     @property
     def issue_count(self) -> int:
@@ -145,6 +146,10 @@ def _collect_docker_files(docker_inventory_or_src_dir) -> set[str]:
 
 def _add(report: LintReport, category: str, message: str, *, path: str | None = None, target: str | None = None) -> None:
     report.issues.append(LintIssue(category=category, message=message, path=path, target=target))
+
+
+def _diagnose(report: LintReport, category: str, message: str, *, path: str | None = None, target: str | None = None) -> None:
+    report.diagnostics.append(LintIssue(category=category, message=message, path=path, target=target))
 
 
 def _coerce_plugin_issue(raw: object, component_ref: str) -> LintIssue:
@@ -386,7 +391,7 @@ def build_report(wiki_dir: str | Path, src_dir: str = ".", *, strict: bool = Fal
                     continue
                 target = (wf_page.parent / local_path).resolve()
                 if not target.exists():
-                    _add(
+                    _diagnose(
                         report,
                         "broken_workflow_links",
                         f"Broken link in workflow {wf_page.stem} -> {link}",
@@ -441,6 +446,9 @@ def report_to_dict(report: LintReport) -> dict:
 
 def render_text(report: LintReport) -> str:
     grouped = report.by_category()
+    diagnostic_groups: dict[str, list[LintIssue]] = {}
+    for diagnostic in report.diagnostics:
+        diagnostic_groups.setdefault(diagnostic.category, []).append(diagnostic)
     lines: list[str] = [f"Linting Wiki at: {report.wiki_dir}"]
 
     if grouped.get("wiki_missing"):
@@ -450,7 +458,7 @@ def render_text(report: LintReport) -> str:
         return "\n".join(lines) + "\n"
 
     def emit_group(category: str, empty: str, found: str, prefix: str = "  ⚠️  ") -> None:
-        issues = grouped.get(category, [])
+        issues = grouped.get(category, []) + diagnostic_groups.get(category, [])
         if issues:
             for issue in issues:
                 lines.append(f"{prefix}{issue.message}")

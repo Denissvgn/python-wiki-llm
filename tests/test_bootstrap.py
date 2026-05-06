@@ -261,6 +261,37 @@ class TestBootstrapCollisions:
             assert "**used_by**" not in content
             assert "**imported_by**" not in content
 
+    def test_workflow_links_use_collision_aware_module_pages(self, tmp_path, monkeypatch, capsys):
+        from llm_wiki_cli.commands import lint_cmd
+
+        proj = tmp_path / "project"
+        proj.mkdir()
+        (proj / "models").mkdir()
+        (proj / "schemas").mkdir()
+        (proj / "routers").mkdir()
+        (proj / "models" / "task.py").write_text("class Task:\n    pass\n")
+        (proj / "schemas" / "task.py").write_text("class TaskCreate:\n    pass\n")
+        (proj / "schemas" / "common.py").write_text("class MessageResponse:\n    pass\n")
+        (proj / "routers" / "tasks.py").write_text(textwrap.dedent("""\
+            from models.task import Task
+            from schemas.task import TaskCreate as CreateSchema
+            from schemas.common import MessageResponse
+
+            def create_task(task: Task, data: CreateSchema) -> MessageResponse:
+                return MessageResponse()
+        """))
+
+        monkeypatch.chdir(proj)
+        wiki_dir = proj / "docs" / "llm_wiki"
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir=str(wiki_dir), skip_workflows=False))
+
+        workflow = (wiki_dir / "workflows" / "create_task.md").read_text(encoding="utf-8")
+        assert "../modules/task.md" not in workflow
+        assert "../modules/models_task.md" in workflow
+        assert "../modules/schemas_task.md" in workflow
+
+        lint_cmd.run(types.SimpleNamespace(src_dir=".", wiki_dir=str(wiki_dir)))
+
 
 class TestBootstrapEntityPages:
     def test_creates_entity_per_class(self, tmp_project, capsys):

@@ -319,6 +319,34 @@ class TestGetCallGraph:
         graph = get_call_graph(inventory)
         assert graph == {}
 
+    def test_workflow_tracks_exact_paths_for_colliding_module_stems(self, tmp_path):
+        (tmp_path / "models").mkdir()
+        (tmp_path / "schemas").mkdir()
+        (tmp_path / "routers").mkdir()
+        (tmp_path / "models" / "task.py").write_text("class Task:\n    pass\n")
+        (tmp_path / "schemas" / "task.py").write_text("class TaskCreate:\n    pass\n")
+        (tmp_path / "schemas" / "common.py").write_text("class MessageResponse:\n    pass\n")
+        (tmp_path / "routers" / "tasks.py").write_text(textwrap.dedent("""\
+            from models.task import Task
+            from schemas.task import TaskCreate as CreateSchema
+            from schemas.common import MessageResponse
+
+            def create_task(task: Task, data: CreateSchema) -> MessageResponse:
+                return MessageResponse()
+        """))
+
+        inventory = get_inventory(str(tmp_path), deep=True)
+        graph = get_call_graph(inventory)
+
+        workflow = graph["create_task"]
+        assert workflow["entry_module_path"] == "routers/tasks.py"
+        assert set(workflow["modules_touched_paths"]) == {
+            "models/task.py",
+            "schemas/common.py",
+            "schemas/task.py",
+            "routers/tasks.py",
+        }
+
 
 class TestOnlyFiles:
     def test_restricts_to_specified_files(self, tmp_path):
