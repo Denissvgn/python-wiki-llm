@@ -205,6 +205,7 @@ def check_team_conventions(
     src_dir: str,
     inventory: dict,
     pages: list[Path],
+    docker_inventory: dict | None = None,
 ) -> list[dict[str, str | None]]:
     from ..commands.bootstrap_cmd import build_entity_page_map, build_module_page_map
     from ..commands.extract_cmd import get_docker_inventory
@@ -273,7 +274,8 @@ def check_team_conventions(
                 target=name,
             ))
 
-        docker_inventory = get_docker_inventory(src_dir)
+        if docker_inventory is None:
+            docker_inventory = get_docker_inventory(src_dir)
         expected_infra = {f.replace("\\", "/").replace("/", "_").replace(".", "_") for f in docker_inventory}
         documented_infra = {p.stem for p in (wiki_path / "infrastructure").glob("*.md")} if (wiki_path / "infrastructure").exists() else set()
         for name in sorted(documented_infra - expected_infra):
@@ -295,6 +297,7 @@ def build_team_issues(
     *,
     require_config: bool = False,
     root: str | Path = ".",
+    docker_inventory: dict | None = None,
 ) -> list[dict[str, str | None]]:
     try:
         config = load_team_config(required=require_config, root=root)
@@ -304,7 +307,14 @@ def build_team_issues(
         return []
     return (
         check_plugin_requirements(config, root=root)
-        + check_team_conventions(config, wiki_dir, src_dir, inventory, pages)
+        + check_team_conventions(
+            config,
+            wiki_dir,
+            src_dir,
+            inventory,
+            pages,
+            docker_inventory=docker_inventory,
+        )
     )
 
 

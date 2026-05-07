@@ -1,12 +1,16 @@
 """Tests for commands/lint_cmd.py"""
+import hashlib
+import json
 import textwrap
 import types
 from pathlib import Path
 
 import pytest
 
+from llm_wiki_cli.commands import extract_cmd
 from llm_wiki_cli.commands import lint_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
+from llm_wiki_cli.services import team
 
 
 def _make_args(**kwargs):
@@ -219,3 +223,193 @@ class TestLintInventoryCaching:
         lint_cmd.run(_make_args(wiki_dir=str(wiki), src_dir="."))
 
         assert calls == {"inventory": 1, "docker": 1}
+
+    def test_strict_lint_reuses_existing_inventory(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "a.py").write_text("class A:\n    pass\n", encoding="utf-8")
+        digest = hashlib.sha256((tmp_path / "a.py").read_bytes()).hexdigest()
+
+        wiki = tmp_path / "wiki"
+        for d in ["entities", "modules", "workflows", "infrastructure"]:
+            (wiki / d).mkdir(parents=True)
+        (wiki / "entities" / "A.md").write_text("# A\n", encoding="utf-8")
+        (wiki / "modules" / "a.md").write_text("# a\n", encoding="utf-8")
+        (wiki / "index.md").write_text(
+            "# Index\n- [A](entities/A.md)\n- [a](modules/a.md)\n",
+            encoding="utf-8",
+        )
+        (wiki / "log.md").write_text("# Log\n", encoding="utf-8")
+        (wiki / ".llm-wiki-manifest.json").write_text(
+            json.dumps({
+                "version": 2,
+                "sources": {
+                    "a.py": {
+                        "hash": f"sha256:{digest}",
+                        "language": "python",
+                        "entities": ["A"],
+                        "entity_pages": {"A": "A"},
+                        "module_page": "a",
+                    }
+                },
+            }),
+            encoding="utf-8",
+        )
+
+        calls = {"inventory": 0}
+
+        def fake_inventory(*args, **kwargs):
+            calls["inventory"] += 1
+            return InventoryResult(
+                {"a.py": {"language": "python", "classes": [{"name": "A"}], "functions": []}},
+                {"python": ExtractorStatus("python", "ok", 1)},
+            )
+
+        monkeypatch.setattr(lint_cmd, "get_inventory_result", fake_inventory)
+        monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
+
+        report = lint_cmd.build_report(wiki, ".", strict=True)
+
+        assert report.passed
+        assert calls == {"inventory": 1}
+
+    def test_team_checks_reuse_lint_docker_inventory(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        wiki = tmp_path / "wiki"
+        for d in ["entities", "modules", "workflows", "infrastructure"]:
+            (wiki / d).mkdir(parents=True)
+        (wiki / "entities" / "A.md").write_text("# A\n", encoding="utf-8")
+        (wiki / "modules" / "a.md").write_text("# a\n", encoding="utf-8")
+        (wiki / "infrastructure" / "Dockerfile.md").write_text("# Dockerfile\n", encoding="utf-8")
+        (wiki / "index.md").write_text(
+            "# Index\n"
+            "- [A](entities/A.md)\n"
+            "- [a](modules/a.md)\n"
+            "- [Dockerfile](infrastructure/Dockerfile.md)\n",
+            encoding="utf-8",
+        )
+        (wiki / "log.md").write_text("# Log\n", encoding="utf-8")
+        team.write_default_team_config(str(wiki))
+
+        monkeypatch.setattr(
+            lint_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {"a.py": {"language": "python", "classes": [{"name": "A"}], "functions": []}},
+                {"python": ExtractorStatus("python", "ok", 1)},
+            ),
+        )
+        docker_calls = {"lint": 0}
+
+        def fake_lint_docker(*args, **kwargs):
+            docker_calls["lint"] += 1
+            return {"Dockerfile": {"type": "dockerfile"}}
+
+        monkeypatch.setattr(lint_cmd, "get_docker_inventory", fake_lint_docker)
+        monkeypatch.setattr(
+            extract_cmd,
+            "get_docker_inventory",
+            lambda *a, **k: pytest.fail("team check should reuse lint docker inventory"),
+        )
+
+        lint_cmd.build_report(wiki, ".", strict=False)
+
+        assert docker_calls == {"lint": 1}
+
+
+class TestLintProfile:
+    def test_profile_outputs_combined_json(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+        wiki = tmp_path / "wiki"
+        for d in ["entities", "modules", "workflows", "infrastructure"]:
+            (wiki / d).mkdir(parents=True)
+        (wiki / "entities" / "A.md").write_text("# A\n", encoding="utf-8")
+        (wiki / "modules" / "a.md").write_text("# a\n", encoding="utf-8")
+        (wiki / "index.md").write_text(
+            "# Index\n- [A](entities/A.md)\n- [a](modules/a.md)\n",
+            encoding="utf-8",
+        )
+        (wiki / "log.md").write_text("# Log\n", encoding="utf-8")
+
+        monkeypatch.setattr(
+            lint_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {"a.py": {"language": "python", "classes": [{"name": "A"}], "functions": []}},
+                {"python": ExtractorStatus("python", "ok", 1)},
+            ),
+        )
+        monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
+
+        lint_cmd.run(_make_args(wiki_dir=str(wiki), src_dir=".", profile=True))
+
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["ok"] is True
+        assert payload["issue_count"] == 0
+        assert payload["diagnostics"] == []
+        assert "profile" in payload
+        assert isinstance(payload["profile"]["total_ms"], int)
+        phase_names = {phase["name"] for phase in payload["profile"]["phases"]}
+        assert {
+            "inventory",
+            "docker_inventory",
+            "page_index",
+            "links",
+            "orphans",
+            "entities",
+            "modules",
+            "workflows",
+            "infrastructure",
+            "strict",
+            "plugins",
+            "team",
+        } <= phase_names
+
+    def test_profile_preserves_nonzero_exit_code(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+        (wiki / "index.md").write_text("# Index\n- [Ghost](missing.md)\n", encoding="utf-8")
+        (wiki / "log.md").write_text("# Log\n", encoding="utf-8")
+
+        monkeypatch.setattr(
+            lint_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {},
+                {"python": ExtractorStatus("python", "skipped", 0)},
+            ),
+        )
+        monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
+
+        with pytest.raises(SystemExit) as exc:
+            lint_cmd.run(_make_args(wiki_dir=str(wiki), src_dir=".", profile=True))
+
+        assert exc.value.code == 1
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["ok"] is False
+        assert payload["issue_count"] == 1
+        assert payload["issues"][0]["category"] == "broken_links"
+
+    def test_default_output_remains_human_readable(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+        (wiki / "index.md").write_text("# Index\n", encoding="utf-8")
+        (wiki / "log.md").write_text("# Log\n", encoding="utf-8")
+
+        monkeypatch.setattr(
+            lint_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {},
+                {"python": ExtractorStatus("python", "skipped", 0)},
+            ),
+        )
+        monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
+
+        lint_cmd.run(_make_args(wiki_dir=str(wiki), src_dir="."))
+        out = capsys.readouterr().out
+
+        assert out.startswith("Linting Wiki at:")
+        with pytest.raises(json.JSONDecodeError):
+            json.loads(out)

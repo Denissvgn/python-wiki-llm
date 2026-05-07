@@ -231,9 +231,12 @@ infrastructure, plugin lint rules, and team policy.
 ```bash
 llm-wiki lint --wiki-dir docs/llm_wiki --src-dir .
 llm-wiki lint --strict --wiki-dir docs/llm_wiki --src-dir .
+llm-wiki lint --profile --wiki-dir docs/llm_wiki --src-dir .
 ```
 
 Strict mode also requires the core wiki structure and a fresh sync manifest.
+`--profile` suppresses the human-readable lint text and prints one JSON object
+to stdout containing the normal lint report, diagnostics, and phase timings.
 
 For CI:
 

@@ -72,6 +72,8 @@ def main():
     lint_parser.add_argument("--src-dir", default=".", help="Source directory to cross-reference against")
     lint_parser.add_argument("--strict", action="store_true",
                              help="Require core wiki structure and a fresh sync manifest")
+    lint_parser.add_argument("--profile", action="store_true",
+                             help="Print combined lint report and phase timings as JSON")
 
     # ci-check command
     ci_parser = subparsers.add_parser("ci-check", help="Run strict wiki validation and write a CI report")
