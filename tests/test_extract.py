@@ -8,6 +8,7 @@ import pytest
 from llm_wiki_cli.commands import extract_cmd
 from llm_wiki_cli.commands.extract_cmd import get_inventory, get_call_graph, _summarize_inventory
 from llm_wiki_cli.config import PathValidationError
+from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
 from llm_wiki_cli.services.packages import discover_packages, stamp_inventory_packages
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
@@ -404,6 +405,151 @@ class TestOnlyFiles:
         hidden.write_text("class Hidden: pass\n")
         inventory = get_inventory(str(tmp_path), only_files=[".venv/lib/hidden.py"])
         assert inventory == {}
+
+
+class TestInventoryCache:
+    def _cache_options(self, tmp_path, *, rebuild=False):
+        return InventoryCacheOptions(
+            enabled=True,
+            rebuild=rebuild,
+            cache_dir=str(tmp_path / "cache"),
+            stats_enabled=True,
+        )
+
+    def test_warm_cache_reuses_python_without_extractor(self, tmp_path, monkeypatch):
+        (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
+        options = self._cache_options(tmp_path)
+
+        first = extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+        assert first.inventory["app.py"]["classes"][0]["name"] == "App"
+
+        def fail_load(_entry_point):
+            raise AssertionError("warm cache should not load the Python extractor")
+
+        monkeypatch.setattr(extract_cmd, "_load_extractor", fail_load)
+        second = extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+
+        assert second.inventory["app.py"]["classes"][0]["name"] == "App"
+        assert second.cache_stats.hits == 1
+        assert second.cache_stats.fresh_extracted == 0
+
+    def test_changed_file_invalidates_only_that_file(self, tmp_path, monkeypatch):
+        (tmp_path / "a.py").write_text("class A: pass\n", encoding="utf-8")
+        (tmp_path / "b.py").write_text("class B: pass\n", encoding="utf-8")
+        options = self._cache_options(tmp_path)
+        extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+        (tmp_path / "b.py").write_text("class B2: pass\n", encoding="utf-8")
+        calls = []
+
+        class FakePythonExtractor:
+            last_error = None
+
+            def extract(self, src_dir, only_files=None, deep=False, include_empty=False, source_files=None):
+                calls.append(list(source_files))
+                return {
+                    "b.py": {
+                        "language": "python",
+                        "classes": [{"name": "B2", "line": 1, "bases": []}],
+                        "functions": [],
+                    }
+                }
+
+        monkeypatch.setattr(extract_cmd, "_load_extractor", lambda _entry_point: FakePythonExtractor())
+        result = extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+
+        assert calls == [["b.py"]]
+        assert result.inventory["a.py"]["classes"][0]["name"] == "A"
+        assert result.inventory["b.py"]["classes"][0]["name"] == "B2"
+        assert result.cache_stats.hits == 1
+        assert result.cache_stats.changed == 1
+
+    def test_deleted_file_disappears_from_merged_inventory(self, tmp_path, monkeypatch):
+        (tmp_path / "a.py").write_text("class A: pass\n", encoding="utf-8")
+        (tmp_path / "b.py").write_text("class B: pass\n", encoding="utf-8")
+        options = self._cache_options(tmp_path)
+        extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+        (tmp_path / "b.py").unlink()
+
+        def fail_load(_entry_point):
+            raise AssertionError("unchanged remaining file should be cached")
+
+        monkeypatch.setattr(extract_cmd, "_load_extractor", fail_load)
+        result = extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+
+        assert sorted(result.inventory) == ["a.py"]
+        assert result.cache_stats.deleted == 1
+
+    def test_package_marker_change_restamps_cached_entry(self, tmp_path, monkeypatch):
+        (tmp_path / "pyproject.toml").write_text('[project]\nname = "old"\n', encoding="utf-8")
+        (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
+        options = self._cache_options(tmp_path)
+        first = extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+        assert first.inventory["app.py"]["package"] == "old"
+        (tmp_path / "pyproject.toml").write_text('[project]\nname = "new"\n', encoding="utf-8")
+
+        def fail_load(_entry_point):
+            raise AssertionError("source file should be served from cache")
+
+        monkeypatch.setattr(extract_cmd, "_load_extractor", fail_load)
+        second = extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+
+        assert second.inventory["app.py"]["package"] == "new"
+
+    def test_corrupt_cache_falls_back_to_full_extraction(self, tmp_path):
+        (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
+        cache_dir = tmp_path / "cache"
+        cache_dir.mkdir()
+        (cache_dir / "llm-wiki-inventory-cache.json").write_text("{bad json", encoding="utf-8")
+
+        result = extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=self._cache_options(tmp_path))
+
+        assert result.inventory["app.py"]["classes"][0]["name"] == "App"
+        assert result.cache_stats.status == "corrupt"
+        assert result.cache_stats.load_error
+
+    def test_extractor_failure_still_surfaces_on_cache_miss(self, tmp_path, monkeypatch):
+        (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
+        options = self._cache_options(tmp_path)
+
+        class FailingPythonExtractor:
+            last_error = None
+
+            def extract(self, **kwargs):
+                raise RuntimeError("boom")
+
+        monkeypatch.setattr(extract_cmd, "_load_extractor", lambda _entry_point: FailingPythonExtractor())
+        result = extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+
+        assert result.failed
+        assert result.failed[0].message == "boom"
+
+    def test_warm_typescript_cache_skips_toolchain_startup(self, tmp_path, monkeypatch):
+        (tmp_path / "app.ts").write_text("export class App {}\n", encoding="utf-8")
+        options = self._cache_options(tmp_path)
+
+        class FakeTypeScriptExtractor:
+            last_error = None
+
+            def extract(self, src_dir, only_files=None, deep=False, source_files=None):
+                return {
+                    "app.ts": {
+                        "language": "typescript",
+                        "classes": [{"name": "App"}],
+                        "functions": [],
+                    }
+                }
+
+        monkeypatch.setattr(extract_cmd, "_load_extractor", lambda _entry_point: FakeTypeScriptExtractor())
+        extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+
+        def fail_load(_entry_point):
+            raise AssertionError("warm TypeScript cache should avoid extractor startup")
+
+        monkeypatch.setattr(extract_cmd, "_load_extractor", fail_load)
+        result = extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+
+        assert result.inventory["app.ts"]["classes"][0]["name"] == "App"
+        assert result.cache_stats.hits == 1
 
 
 class TestSummarizeInventory:

@@ -74,6 +74,14 @@ def main():
                              help="Require core wiki structure and a fresh sync manifest")
     lint_parser.add_argument("--profile", action="store_true",
                              help="Print combined lint report and phase timings as JSON")
+    lint_parser.add_argument("--no-cache", action="store_true",
+                             help="Disable persistent inventory cache for this run")
+    lint_parser.add_argument("--rebuild-cache", action="store_true",
+                             help="Ignore existing inventory cache and rewrite it after extraction")
+    lint_parser.add_argument("--cache-stats", action="store_true",
+                             help="Include inventory cache diagnostics in lint output")
+    lint_parser.add_argument("--cache-dir", default=None, metavar="PATH",
+                             help="Directory for llm-wiki-inventory-cache.json")
 
     # ci-check command
     ci_parser = subparsers.add_parser("ci-check", help="Run strict wiki validation and write a CI report")

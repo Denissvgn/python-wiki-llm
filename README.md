@@ -232,11 +232,20 @@ infrastructure, plugin lint rules, and team policy.
 llm-wiki lint --wiki-dir docs/llm_wiki --src-dir .
 llm-wiki lint --strict --wiki-dir docs/llm_wiki --src-dir .
 llm-wiki lint --profile --wiki-dir docs/llm_wiki --src-dir .
+llm-wiki lint --cache-stats --wiki-dir docs/llm_wiki --src-dir .
 ```
 
 Strict mode also requires the core wiki structure and a fresh sync manifest.
 `--profile` suppresses the human-readable lint text and prints one JSON object
 to stdout containing the normal lint report, diagnostics, and phase timings.
+Lint uses a persistent deep-inventory cache by default when a git directory is
+available, storing `.git/llm-wiki-inventory-cache.json`. Override the cache
+directory with `LLM_WIKI_CACHE_DIR` or `--cache-dir PATH`; the CLI flag wins.
+Use `--no-cache` to disable load/save, `--rebuild-cache` to ignore and rewrite
+the cache, and `--cache-stats` to include cache diagnostics. Cache corruption or
+invalid fingerprints fall back to a full extraction without reducing lint
+coverage. With `--profile --cache-stats`, the JSON payload includes a top-level
+`cache` object.
 
 For CI:
 
@@ -247,7 +256,8 @@ llm-wiki ci-check --format markdown
 ```
 
 `ci-check` always runs strict validation, writes a Markdown report, records a
-local metrics event, and exits nonzero on validation failure.
+local metrics event, uses the same safe inventory cache when available, and
+exits nonzero on validation failure.
 
 ### `context`
 

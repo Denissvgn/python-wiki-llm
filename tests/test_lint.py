@@ -10,6 +10,7 @@ import pytest
 from llm_wiki_cli.commands import extract_cmd
 from llm_wiki_cli.commands import lint_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
+from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME, InventoryCacheStats
 from llm_wiki_cli.services import team
 
 
@@ -413,3 +414,131 @@ class TestLintProfile:
         assert out.startswith("Linting Wiki at:")
         with pytest.raises(json.JSONDecodeError):
             json.loads(out)
+
+    def test_profile_with_cache_stats_includes_cache_object(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+        (wiki / "index.md").write_text("# Index\n", encoding="utf-8")
+        (wiki / "log.md").write_text("# Log\n", encoding="utf-8")
+
+        monkeypatch.setattr(
+            lint_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {},
+                {"python": ExtractorStatus("python", "skipped", 0)},
+                InventoryCacheStats(enabled=True, path="cache.json", status="hit", hits=3),
+            ),
+        )
+        monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
+
+        lint_cmd.run(_make_args(wiki_dir="wiki", src_dir=".", profile=True, cache_stats=True))
+
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["cache"]["status"] == "hit"
+        assert payload["cache"]["hits"] == 3
+
+    def test_cache_stats_adds_human_readable_section(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+        (wiki / "index.md").write_text("# Index\n", encoding="utf-8")
+        (wiki / "log.md").write_text("# Log\n", encoding="utf-8")
+
+        monkeypatch.setattr(
+            lint_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {},
+                {"python": ExtractorStatus("python", "skipped", 0)},
+                InventoryCacheStats(enabled=True, path="cache.json", status="partial", hits=1, misses=2),
+            ),
+        )
+        monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
+
+        lint_cmd.run(_make_args(wiki_dir="wiki", src_dir=".", cache_stats=True))
+        out = capsys.readouterr().out
+
+        assert "Cache:" in out
+        assert "status: partial" in out
+        assert "1 hit(s), 2 miss(es)" in out
+
+    def test_no_cache_flag_disables_cache_options(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+        (wiki / "index.md").write_text("# Index\n", encoding="utf-8")
+        (wiki / "log.md").write_text("# Log\n", encoding="utf-8")
+        seen = {}
+
+        def fake_inventory(*args, **kwargs):
+            seen["cache_options"] = kwargs["cache_options"]
+            return InventoryResult(
+                {},
+                {"python": ExtractorStatus("python", "skipped", 0)},
+                InventoryCacheStats(enabled=False, status="disabled"),
+            )
+
+        monkeypatch.setattr(lint_cmd, "get_inventory_result", fake_inventory)
+        monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
+
+        lint_cmd.run(_make_args(wiki_dir="wiki", src_dir=".", no_cache=True, cache_stats=True))
+
+        assert seen["cache_options"].enabled is False
+
+    def test_rebuild_cache_flag_sets_cache_options(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+        (wiki / "index.md").write_text("# Index\n", encoding="utf-8")
+        (wiki / "log.md").write_text("# Log\n", encoding="utf-8")
+        seen = {}
+
+        def fake_inventory(*args, **kwargs):
+            seen["cache_options"] = kwargs["cache_options"]
+            return InventoryResult(
+                {},
+                {"python": ExtractorStatus("python", "skipped", 0)},
+                InventoryCacheStats(enabled=True, status="rebuild"),
+            )
+
+        monkeypatch.setattr(lint_cmd, "get_inventory_result", fake_inventory)
+        monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
+
+        lint_cmd.run(_make_args(wiki_dir="wiki", src_dir=".", rebuild_cache=True, cache_stats=True))
+
+        assert seen["cache_options"].rebuild is True
+
+    def test_lint_creates_default_git_cache(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / ".git").mkdir()
+        (tmp_path / "app.py").write_text("class A: pass\n", encoding="utf-8")
+        wiki = tmp_path / "wiki"
+        (wiki / "entities").mkdir(parents=True)
+        (wiki / "modules").mkdir()
+        (wiki / "workflows").mkdir()
+        (wiki / "infrastructure").mkdir()
+        (wiki / "entities" / "A.md").write_text("# A\n", encoding="utf-8")
+        (wiki / "modules" / "app.md").write_text("# app\n", encoding="utf-8")
+        (wiki / "index.md").write_text(
+            "# Index\n- [A](entities/A.md)\n- [app](modules/app.md)\n",
+            encoding="utf-8",
+        )
+        (wiki / "log.md").write_text("# Log\n", encoding="utf-8")
+
+        lint_cmd.run(_make_args(wiki_dir="wiki", src_dir="."))
+
+        assert (tmp_path / ".git" / CACHE_FILENAME).exists()
+
+    def test_no_cache_does_not_save_default_git_cache(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / ".git").mkdir()
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+        (wiki / "index.md").write_text("# Index\n", encoding="utf-8")
+        (wiki / "log.md").write_text("# Log\n", encoding="utf-8")
+
+        lint_cmd.run(_make_args(wiki_dir="wiki", src_dir=".", no_cache=True))
+
+        assert not (tmp_path / ".git" / CACHE_FILENAME).exists()

@@ -5,12 +5,22 @@ import json
 import re
 import subprocess
 import sys
+from copy import deepcopy
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
 from ..config import EXTRACTOR_REGISTRY, validate_path
 from ..extractors.common import LANGUAGE_EXTENSIONS
+from ..services.inventory_cache import (
+    InventoryCache,
+    InventoryCacheOptions,
+    InventoryCacheStats,
+    build_inventory_cache_key,
+    hash_source_file,
+    is_valid_cache_entry,
+    make_cache_entry,
+)
 from ..services.imports import module_path_candidates
 from ..services.packages import discover_packages, stamp_inventory_packages
 from ..services.plugins import get_extractor_registry
@@ -44,6 +54,7 @@ class ExtractorStatus:
 class InventoryResult:
     inventory: dict
     statuses: dict[str, ExtractorStatus]
+    cache_stats: InventoryCacheStats | None = None
 
     @property
     def failed(self) -> list[ExtractorStatus]:
@@ -67,6 +78,7 @@ def get_inventory_result(
     only_files=None,
     include_empty=False,
     source_snapshot: SourceSnapshot | None = None,
+    cache_options: InventoryCacheOptions | None = None,
 ) -> InventoryResult:
     """Scan source files across all registered languages and return inventory.
 
@@ -82,9 +94,38 @@ def get_inventory_result(
     ``None``) derived from ``pyproject.toml`` / ``setup.py`` markers.
     """
     source_snapshot = source_snapshot or build_source_snapshot(src_dir, only_files=only_files)
+    registry = get_extractor_registry()
+    cache = InventoryCache(src_dir, cache_options) if cache_options is not None else None
+    cache_files: dict[str, dict] = {}
+    updated_cache_files: dict[str, dict] = {}
+    cache_key: dict | None = None
+
+    source_file_by_path = {
+        source_file.rel_path: source_file
+        for source_files in source_snapshot.files_by_language.values()
+        for source_file in source_files
+    }
+    current_source_paths = set(source_file_by_path)
+    source_hashes: dict[str, str] = {}
+
+    if cache is not None and cache.enabled and only_files is None:
+        cache_key = build_inventory_cache_key(
+            src_dir,
+            source_snapshot,
+            deep=deep,
+            include_empty=include_empty,
+            extractor_registry=registry,
+        )
+        cache_files = cache.load(cache_key)
+        cache.stats.deleted = len(set(cache_files) - current_source_paths)
+        for rel_path, source_file in source_file_by_path.items():
+            file_hash = hash_source_file(source_file)
+            if file_hash is not None:
+                source_hashes[rel_path] = file_hash
+
     inventory: dict = {}
     statuses: dict[str, ExtractorStatus] = {}
-    for language, entry_point in get_extractor_registry().items():
+    for language, entry_point in registry.items():
         extensions = LANGUAGE_EXTENSIONS.get(language)
         source_files: list[str] | None = None
         if extensions is not None:
@@ -101,13 +142,51 @@ def get_inventory_result(
             statuses[language] = ExtractorStatus(language, "skipped", 0)
             continue
 
+        is_builtin = extensions is not None and entry_point == EXTRACTOR_REGISTRY.get(language)
+        fresh_source_files = list(source_files or [])
+        if is_builtin and cache is not None and cache.enabled and cache_key is not None:
+            fresh_source_files = []
+            for rel_path in source_files or []:
+                source_file = source_file_by_path[rel_path]
+                file_hash = source_hashes.get(rel_path)
+                cached_entry = cache_files.get(rel_path)
+                if file_hash is None:
+                    cache.stats.misses += 1
+                    fresh_source_files.append(rel_path)
+                    continue
+                if cached_entry is None:
+                    cache.stats.misses += 1
+                    fresh_source_files.append(rel_path)
+                    continue
+                if is_valid_cache_entry(cached_entry, source_file, file_hash):
+                    cache.stats.hits += 1
+                    raw_inventory = deepcopy(cached_entry.get("inventory", {}))
+                    if raw_inventory:
+                        inventory[rel_path] = raw_inventory
+                    updated_cache_files[rel_path] = make_cache_entry(
+                        source_file,
+                        file_hash,
+                        deepcopy(cached_entry.get("inventory", {})),
+                    )
+                    continue
+                cached_hash = cached_entry.get("hash") if isinstance(cached_entry, dict) else None
+                if cached_hash != file_hash:
+                    cache.stats.changed += 1
+                else:
+                    cache.stats.stale += 1
+                fresh_source_files.append(rel_path)
+
+            if not fresh_source_files:
+                statuses[language] = ExtractorStatus(language, "ok", files_found)
+                continue
+
         extractor = _load_extractor(entry_point)
         # Reset cached extractor state from any previous invocation.
         if hasattr(extractor, "last_error"):
             extractor.last_error = None
         kwargs = {"src_dir": src_dir, "only_files": only_files, "deep": deep}
-        if extensions is not None and entry_point == EXTRACTOR_REGISTRY.get(language):
-            kwargs["source_files"] = source_files
+        if is_builtin:
+            kwargs["source_files"] = fresh_source_files
         if language == "python":
             kwargs["include_empty"] = include_empty
         try:
@@ -120,6 +199,17 @@ def get_inventory_result(
             statuses[language] = ExtractorStatus(language, "failed", files_found, str(error))
             continue
         inventory.update(extracted)
+        if is_builtin and cache is not None and cache.enabled and cache_key is not None:
+            cache.stats.fresh_extracted += len(fresh_source_files)
+            for rel_path in fresh_source_files:
+                source_file = source_file_by_path[rel_path]
+                file_hash = source_hashes.get(rel_path)
+                if file_hash is None:
+                    continue
+                raw_entry = deepcopy(extracted.get(rel_path, {}))
+                if raw_entry:
+                    raw_entry.pop("package", None)
+                updated_cache_files[rel_path] = make_cache_entry(source_file, file_hash, raw_entry)
         if extensions is None:
             files_found = len(extracted)
         statuses[language] = ExtractorStatus(language, "ok", files_found)
@@ -127,8 +217,16 @@ def get_inventory_result(
     # Stamp package ownership
     packages = discover_packages(src_dir, source_snapshot=source_snapshot)
     stamp_inventory_packages(inventory, packages)
+    if cache is not None and cache.enabled:
+        cache.finalize_lookup_status()
+        if cache_key is not None and not any(status.state == "failed" for status in statuses.values()):
+            cache.save(cache_key, updated_cache_files)
 
-    return InventoryResult(inventory=inventory, statuses=statuses)
+    return InventoryResult(
+        inventory=inventory,
+        statuses=statuses,
+        cache_stats=cache.stats if cache is not None else None,
+    )
 
 
 def get_inventory(src_dir, deep=False, only_files=None, include_empty=False):

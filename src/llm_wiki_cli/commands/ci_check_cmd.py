@@ -6,6 +6,7 @@ import time
 from pathlib import Path
 
 from ..config import DEFAULT_WIKI_DIR, validate_path
+from ..services.inventory_cache import InventoryCacheOptions
 from ..services.metrics import record_validation_event
 from .lint_cmd import build_report, render_markdown, render_text, report_to_dict
 
@@ -31,7 +32,12 @@ def run(args) -> None:
     validate_path(str(report_path), "--report")
 
     started = time.monotonic()
-    report = build_report(wiki_dir, src_dir, strict=True)
+    report = build_report(
+        wiki_dir,
+        src_dir,
+        strict=True,
+        cache_options=InventoryCacheOptions(enabled=True),
+    )
     duration_ms = int((time.monotonic() - started) * 1000)
 
     report_path.parent.mkdir(parents=True, exist_ok=True)

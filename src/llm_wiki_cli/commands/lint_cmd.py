@@ -12,6 +12,7 @@ from pathlib import Path
 from .extract_cmd import get_call_graph, get_docker_inventory, get_inventory_result, print_inventory_failures
 from .bootstrap_cmd import build_module_page_map, build_entity_page_map
 from ..config import validate_path
+from ..services.inventory_cache import InventoryCacheOptions, InventoryCacheStats
 from ..services.io import read_md
 from ..services.plugins import PluginError, iter_components, load_entry_point
 from ..services.source_snapshot import build_source_snapshot
@@ -86,6 +87,7 @@ class LintReport:
     strict: bool = False
     issues: list[LintIssue] = field(default_factory=list)
     diagnostics: list[LintIssue] = field(default_factory=list)
+    cache_stats: InventoryCacheStats | None = None
 
     @property
     def issue_count(self) -> int:
@@ -358,6 +360,7 @@ def build_report(
     *,
     strict: bool = False,
     profiler: _LintProfiler | None = None,
+    cache_options: InventoryCacheOptions | None = None,
 ) -> LintReport:
     """Build a structured lint report without rendering or exiting."""
     wiki_path = Path(wiki_dir)
@@ -373,7 +376,10 @@ def build_report(
             src_dir,
             deep=True,
             source_snapshot=source_snapshot,
+            cache_options=cache_options,
         )
+        if cache_options is not None and cache_options.stats_enabled:
+            report.cache_stats = inventory_result.cache_stats
     if inventory_result.failed:
         print_inventory_failures(inventory_result)
         sys.exit(1)
@@ -533,11 +539,36 @@ def report_to_dict(report: LintReport) -> dict:
     }
 
 
-def _profile_report_to_dict(report: LintReport, profiler: _LintProfiler) -> dict:
+def _profile_report_to_dict(report: LintReport, profiler: _LintProfiler, *, include_cache: bool = False) -> dict:
     payload = report_to_dict(report)
     payload["diagnostics"] = [asdict(diagnostic) for diagnostic in report.diagnostics]
     payload["profile"] = profiler.to_dict()
+    if include_cache and report.cache_stats is not None:
+        payload["cache"] = report.cache_stats.to_dict()
     return payload
+
+
+def _format_cache_stats(stats: InventoryCacheStats) -> list[str]:
+    path = stats.path or "(none)"
+    lines = [
+        "",
+        "Cache:",
+        f"  status: {stats.status}",
+        f"  enabled: {str(stats.enabled).lower()}",
+        f"  path: {path}",
+        (
+            "  entries: "
+            f"{stats.hits} hit(s), {stats.misses} miss(es), "
+            f"{stats.changed} changed, {stats.stale} stale, {stats.deleted} deleted"
+        ),
+        (
+            "  extraction: "
+            f"{stats.fresh_extracted} fresh file(s), {stats.saved_entries} saved entries"
+        ),
+    ]
+    if stats.load_error:
+        lines.append(f"  note: {stats.load_error}")
+    return lines
 
 
 def render_text(report: LintReport) -> str:
@@ -589,6 +620,8 @@ def render_text(report: LintReport) -> str:
         lines.append("✅ Lint passed: wiki is fully consistent.")
     else:
         lines.append(f"❌ Lint found {report.issue_count} issue(s).")
+    if report.cache_stats is not None:
+        lines.extend(_format_cache_stats(report.cache_stats))
     return "\n".join(lines) + "\n"
 
 
@@ -621,13 +654,30 @@ def run(args):
     src_dir = getattr(args, "src_dir", ".")
     strict = bool(getattr(args, "strict", False))
     profile = bool(getattr(args, "profile", False))
+    cache_stats = bool(getattr(args, "cache_stats", False))
     validate_path(str(wiki_dir), "--wiki-dir")
     validate_path(src_dir, "--src-dir")
 
     profiler = _LintProfiler() if profile else None
-    report = build_report(wiki_dir, src_dir, strict=strict, profiler=profiler)
+    cache_options = InventoryCacheOptions(
+        enabled=not bool(getattr(args, "no_cache", False)),
+        rebuild=bool(getattr(args, "rebuild_cache", False)),
+        cache_dir=getattr(args, "cache_dir", None),
+        stats_enabled=cache_stats,
+    )
+    report = build_report(
+        wiki_dir,
+        src_dir,
+        strict=strict,
+        profiler=profiler,
+        cache_options=cache_options,
+    )
     if profile and profiler is not None:
-        print(json.dumps(_profile_report_to_dict(report, profiler), indent=2, sort_keys=True))
+        print(json.dumps(
+            _profile_report_to_dict(report, profiler, include_cache=cache_stats),
+            indent=2,
+            sort_keys=True,
+        ))
     else:
         print(render_text(report), end="")
 
