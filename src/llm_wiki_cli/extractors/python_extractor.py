@@ -234,6 +234,7 @@ def _scan_python_files(
     deep: bool = False,
     only_files: list[str] | None = None,
     include_empty: bool = False,
+    source_files: list[str] | None = None,
 ) -> dict:
     """Scan Python files under *src_dir* and return a raw inventory dict.
 
@@ -244,13 +245,12 @@ def _scan_python_files(
     """
     src_path = Path(src_dir).resolve()
     inventory = {}
-    matcher = build_gitignore_matcher(src_path)
-    py_files = [
-        src_path / rel
-        for rel in discover_source_files(
+    if source_files is None:
+        matcher = build_gitignore_matcher(src_path)
+        source_files = discover_source_files(
             str(src_path), (".py",), only_files=only_files, language="python", matcher=matcher,
         )
-    ]
+    py_files = [src_path / rel for rel in source_files]
 
     for py_file in py_files:
         rel = py_file.relative_to(src_path)
@@ -332,6 +332,7 @@ class PythonExtractor:
         only_files: list[str] | None = None,
         deep: bool = False,
         include_empty: bool = False,
+        source_files: list[str] | None = None,
     ) -> dict:
         """Scan *src_dir* for Python files and return an inventory dict.
 
@@ -339,7 +340,7 @@ class PythonExtractor:
         """
         inventory = _scan_python_files(
             src_dir, deep=deep, only_files=only_files,
-            include_empty=include_empty,
+            include_empty=include_empty, source_files=source_files,
         )
         for entry in inventory.values():
             entry["language"] = "python"

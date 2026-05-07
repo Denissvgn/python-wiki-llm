@@ -92,6 +92,7 @@ class TypeScriptExtractor:
         src_dir: str,
         only_files: list[str] | None = None,
         deep: bool = False,
+        source_files: list[str] | None = None,
     ) -> dict:
         """Scan *src_dir* for TypeScript files and return an inventory dict.
 
@@ -114,9 +115,10 @@ class TypeScriptExtractor:
             minimum ``"classes"``, ``"functions"``, and ``"language"``.
         """
         self.last_error = None
-        source_files = discover_source_files(
-            src_dir, (".ts", ".tsx"), only_files=only_files, language="typescript",
-        )
+        if source_files is None:
+            source_files = discover_source_files(
+                src_dir, (".ts", ".tsx"), only_files=only_files, language="typescript",
+            )
         if not source_files:
             return {}
 

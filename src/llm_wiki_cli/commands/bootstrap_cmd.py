@@ -14,6 +14,7 @@ from ..config import validate_path
 from ..services.imports import module_path_candidates
 from ..services.io import read_md, write_md
 from ..services.paths import normalize_source_path
+from ..services.source_snapshot import build_source_snapshot
 
 
 def _module_name_from_path(filepath: str) -> str:
@@ -832,7 +833,12 @@ def run(args):
         (wiki_dir / subdir).mkdir(parents=True, exist_ok=True)
 
     # 1. Extract full AST inventory
-    inventory_result = get_inventory_result(src_dir, deep=deep)
+    source_snapshot = build_source_snapshot(src_dir)
+    inventory_result = get_inventory_result(
+        src_dir,
+        deep=deep,
+        source_snapshot=source_snapshot,
+    )
     if inventory_result.failed:
         print_inventory_failures(inventory_result)
         sys.exit(1)
@@ -912,7 +918,7 @@ def run(args):
     # 4. Generate infrastructure pages (Dockerfile, docker-compose, etc.)
     infra_entries = []
     infra_created = 0
-    docker_inventory = get_docker_inventory(src_dir)
+    docker_inventory = get_docker_inventory(src_dir, source_snapshot=source_snapshot)
     for docker_file, docker_info in docker_inventory.items():
         page_name = docker_file.replace("\\", "/").replace("/", "_").replace(".", "_")
         infra_path = wiki_dir / "infrastructure" / f"{page_name}.md"

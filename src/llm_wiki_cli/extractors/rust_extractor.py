@@ -37,6 +37,7 @@ class RustExtractor:
         src_dir: str,
         only_files: list[str] | None = None,
         deep: bool = False,
+        source_files: list[str] | None = None,
     ) -> dict:
         """Scan *src_dir* for Rust files and return an inventory dict.
 
@@ -59,9 +60,10 @@ class RustExtractor:
             minimum ``"classes"``, ``"functions"``, and ``"language"``.
         """
         self.last_error = None
-        source_files = discover_source_files(
-            src_dir, (".rs",), only_files=only_files, language="rust",
-        )
+        if source_files is None:
+            source_files = discover_source_files(
+                src_dir, (".rs",), only_files=only_files, language="rust",
+            )
         if not source_files:
             return {}
 

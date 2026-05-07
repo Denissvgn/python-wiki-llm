@@ -10,6 +10,7 @@ from llm_wiki_cli.commands.extract_cmd import (
     _looks_like_compose,
     get_docker_inventory,
 )
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
 
 # ── Dockerfile parsing ───────────────────────────────────────────────
@@ -238,6 +239,13 @@ class TestGetDockerInventory:
         assert len(inv) == 2
         assert inv["Dockerfile"]["type"] == "dockerfile"
         assert inv["docker-compose.yml"]["type"] == "compose"
+
+    def test_source_snapshot_matches_standalone_inventory(self, tmp_path):
+        (tmp_path / "Dockerfile").write_text("FROM python:3.12\n")
+        (tmp_path / "infra.yml").write_text("services:\n  api:\n    image: nginx\n")
+        snapshot = build_source_snapshot(tmp_path)
+
+        assert get_docker_inventory(str(tmp_path), source_snapshot=snapshot) == get_docker_inventory(str(tmp_path))
 
 
 # ── Compose deep nesting / env-as-dict ───────────────────────────────

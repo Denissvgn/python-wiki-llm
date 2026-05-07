@@ -30,6 +30,7 @@ from .sync_cmd import MANIFEST_FILENAME, MANIFEST_VERSION, SyncManifest
 from ..config import DEFAULT_WIKI_DIR, validate_path
 from ..services.io import read_md, write_md
 from ..services.paths import normalize_source_path
+from ..services.source_snapshot import build_source_snapshot
 
 LEGACY_MARKER = "<!-- llm-wiki-migrate:legacy-notes -->"
 _MANAGED_DIRS = ("entities", "modules", "infrastructure")
@@ -464,12 +465,17 @@ def _match_existing_page(page: ExistingPage, lookups: dict[str, dict]) -> Target
 
 
 def _build_migration_plan(wiki_dir: Path, src_dir: str) -> MigrationPlan:
-    inventory_result = get_inventory_result(src_dir, deep=True)
+    source_snapshot = build_source_snapshot(src_dir)
+    inventory_result = get_inventory_result(
+        src_dir,
+        deep=True,
+        source_snapshot=source_snapshot,
+    )
     if inventory_result.failed:
         print_inventory_failures(inventory_result)
         sys.exit(1)
     inventory = inventory_result.inventory
-    docker_inventory = get_docker_inventory(src_dir)
+    docker_inventory = get_docker_inventory(src_dir, source_snapshot=source_snapshot)
     module_page_map = build_module_page_map(inventory)
     targets, index_content, manifest = _build_targets(
         wiki_dir,

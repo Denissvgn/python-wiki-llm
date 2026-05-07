@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import importlib
 import json
-import os
 import re
 import subprocess
 import sys
@@ -10,11 +9,12 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
-from ..config import COMPOSE_PATTERNS, DOCKERFILE_PATTERNS, EXCLUDED_DIRS, validate_path
-from ..extractors.common import LANGUAGE_EXTENSIONS, discover_source_files
+from ..config import EXTRACTOR_REGISTRY, validate_path
+from ..extractors.common import LANGUAGE_EXTENSIONS
 from ..services.imports import module_path_candidates
 from ..services.packages import discover_packages, stamp_inventory_packages
 from ..services.plugins import get_extractor_registry
+from ..services.source_snapshot import SourceSnapshot, build_source_snapshot
 
 # Re-export ComponentVisitor so existing callers that import it from here
 # continue to work without modification.
@@ -61,7 +61,13 @@ def print_inventory_failures(result: InventoryResult, *, file=None) -> None:
 # ── Backward-compatible public API ───────────────────────────────────
 
 
-def get_inventory_result(src_dir, deep=False, only_files=None, include_empty=False) -> InventoryResult:
+def get_inventory_result(
+    src_dir,
+    deep=False,
+    only_files=None,
+    include_empty=False,
+    source_snapshot: SourceSnapshot | None = None,
+) -> InventoryResult:
     """Scan source files across all registered languages and return inventory.
 
     Runs every built-in and installed extractor and merges the
@@ -75,18 +81,14 @@ def get_inventory_result(src_dir, deep=False, only_files=None, include_empty=Fal
     Each entry is stamped with a ``"package"`` key (package name or
     ``None``) derived from ``pyproject.toml`` / ``setup.py`` markers.
     """
+    source_snapshot = source_snapshot or build_source_snapshot(src_dir, only_files=only_files)
     inventory: dict = {}
     statuses: dict[str, ExtractorStatus] = {}
     for language, entry_point in get_extractor_registry().items():
         extensions = LANGUAGE_EXTENSIONS.get(language)
         source_files: list[str] | None = None
         if extensions is not None:
-            source_files = discover_source_files(
-                src_dir,
-                extensions,
-                only_files=only_files,
-                language=language,
-            )
+            source_files = source_snapshot.language_paths(language)
             if not source_files:
                 statuses[language] = ExtractorStatus(language, "skipped", 0)
                 continue
@@ -104,6 +106,8 @@ def get_inventory_result(src_dir, deep=False, only_files=None, include_empty=Fal
         if hasattr(extractor, "last_error"):
             extractor.last_error = None
         kwargs = {"src_dir": src_dir, "only_files": only_files, "deep": deep}
+        if extensions is not None and entry_point == EXTRACTOR_REGISTRY.get(language):
+            kwargs["source_files"] = source_files
         if language == "python":
             kwargs["include_empty"] = include_empty
         try:
@@ -121,7 +125,7 @@ def get_inventory_result(src_dir, deep=False, only_files=None, include_empty=Fal
         statuses[language] = ExtractorStatus(language, "ok", files_found)
 
     # Stamp package ownership
-    packages = discover_packages(src_dir)
+    packages = discover_packages(src_dir, source_snapshot=source_snapshot)
     stamp_inventory_packages(inventory, packages)
 
     return InventoryResult(inventory=inventory, statuses=statuses)
@@ -148,11 +152,11 @@ def infer_language_from_path(filepath: str) -> str | None:
 
 
 def languages_with_source(src_dir: str, only_files: list[str] | None = None) -> set[str]:
-    languages: set[str] = set()
-    for language, extensions in LANGUAGE_EXTENSIONS.items():
-        if discover_source_files(src_dir, extensions, only_files=only_files, language=language):
-            languages.add(language)
-    return languages
+    snapshot = build_source_snapshot(src_dir, only_files=only_files)
+    return {
+        language for language, source_files in snapshot.files_by_language.items()
+        if source_files
+    }
 
 
 def _inventory_or_exit(src_dir: str, *, deep: bool = False, only_files=None, include_empty: bool = False) -> dict:
@@ -226,8 +230,14 @@ def run(args):
     else:
         print(f"Extracting inventory from {src_dir}...", file=sys.stderr)
 
-    result = get_inventory_result(src_dir, deep=deep, only_files=only_files,
-                                  include_empty=include_empty)
+    source_snapshot = build_source_snapshot(src_dir, only_files=only_files)
+    result = get_inventory_result(
+        src_dir,
+        deep=deep,
+        only_files=only_files,
+        include_empty=include_empty,
+        source_snapshot=source_snapshot,
+    )
     if result.failed:
         print_inventory_failures(result)
         sys.exit(1)
@@ -245,7 +255,7 @@ def run(args):
     if summary:
         inventory = _summarize_inventory(inventory)
 
-    docker_inv = get_docker_inventory(src_dir)
+    docker_inv = get_docker_inventory(src_dir, source_snapshot=source_snapshot)
 
     output: dict = {"inventory": inventory}
     if docker_inv:
@@ -691,7 +701,7 @@ def _looks_like_compose(text: str) -> bool:
     return False
 
 
-def get_docker_inventory(src_dir: str) -> dict:
+def get_docker_inventory(src_dir: str, *, source_snapshot: SourceSnapshot | None = None) -> dict:
     """Discover and parse Dockerfiles and Compose files in the source tree.
 
     Uses two strategies:
@@ -707,60 +717,25 @@ def get_docker_inventory(src_dir: str) -> dict:
     Returns a dict of relative-path -> parsed data.  Keys always use
     forward slashes regardless of the host OS.
     """
-    from ..config import build_gitignore_matcher
-    
-    src_path = Path(src_dir)
+    source_snapshot = source_snapshot or build_source_snapshot(src_dir)
     inventory: dict[str, dict] = {}
-    matcher = build_gitignore_matcher(src_path)
 
-    def _rel(path: Path) -> str:
-        """Return a forward-slash relative path (consistent across OSes)."""
-        return str(path.relative_to(src_path)).replace(os.sep, "/")
-    
-    def _should_skip(path: Path) -> bool:
-        """Check if a path should be skipped (excluded_dirs or gitignore)."""
-        rel = path.relative_to(src_path)
-        # Check hardcoded exclusions
-        if not EXCLUDED_DIRS.isdisjoint(rel.parts):
-            return True
-        rel_str = str(rel).replace("\\", "/")
-        if matcher.is_ignored(rel_str):
-            return True
-        return False
+    for source_file in source_snapshot.dockerfile_candidates:
+        rel = source_file.rel_path
+        if rel not in inventory:
+            inventory[rel] = _parse_dockerfile(source_file.abs_path.read_text(errors="replace"))
 
-    # Suffixes that should never be treated as Dockerfiles
-    _DOC_SUFFIXES = {".md", ".txt", ".rst", ".html", ".json"}
+    for source_file in source_snapshot.compose_candidates:
+        rel = source_file.rel_path
+        if rel not in inventory:
+            inventory[rel] = _parse_compose(source_file.abs_path.read_text(errors="replace"))
 
-    # Discover Dockerfiles (recursive)
-    for pattern in DOCKERFILE_PATTERNS:
-        for match in src_path.rglob(pattern):
-            if match.suffix.lower() in _DOC_SUFFIXES:
-                continue
-            if match.is_file() and not _should_skip(match):
-                rel = _rel(match)
-                if rel not in inventory:
-                    inventory[rel] = _parse_dockerfile(match.read_text(errors="replace"))
-
-    # Discover Compose files — name-based (recursive)
-    for pattern in COMPOSE_PATTERNS:
-        for match in src_path.rglob(pattern):
-            if match.is_file() and not _should_skip(match):
-                rel = _rel(match)
-                if rel not in inventory:
-                    inventory[rel] = _parse_compose(match.read_text(errors="replace"))
-
-    # Discover Compose files — content-based (recursive, YAML files only)
-    for ext in ("*.yml", "*.yaml"):
-        for match in src_path.rglob(ext):
-            if not match.is_file():
-                continue
-            if _should_skip(match):
-                continue
-            rel = _rel(match)
-            if rel in inventory:
-                continue
-            text = match.read_text(errors="replace")
-            if _looks_like_compose(text):
-                inventory[rel] = _parse_compose(text)
+    for source_file in source_snapshot.yaml_candidates:
+        rel = source_file.rel_path
+        if rel in inventory:
+            continue
+        text = source_file.abs_path.read_text(errors="replace")
+        if _looks_like_compose(text):
+            inventory[rel] = _parse_compose(text)
 
     return inventory

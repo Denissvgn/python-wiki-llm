@@ -9,6 +9,7 @@ from llm_wiki_cli.commands import extract_cmd
 from llm_wiki_cli.commands.extract_cmd import get_inventory, get_call_graph, _summarize_inventory
 from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.services.packages import discover_packages, stamp_inventory_packages
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
 
 class TestGetInventory:
@@ -26,6 +27,35 @@ class TestGetInventory:
         data = list(inventory.values())[0]
         assert len(data["classes"]) == 1
         assert data["classes"][0]["name"] == "Foo"
+
+    def test_get_inventory_result_builds_snapshot_once_and_passes_source_files(self, tmp_path, monkeypatch):
+        (tmp_path / "b.py").write_text("class B: pass\n")
+        (tmp_path / "a.py").write_text("class A: pass\n")
+        real_build_source_snapshot = extract_cmd.build_source_snapshot
+        calls = {"snapshot": 0, "source_files": None}
+
+        def fake_build_source_snapshot(*args, **kwargs):
+            calls["snapshot"] += 1
+            return real_build_source_snapshot(*args, **kwargs)
+
+        class FakePythonExtractor:
+            last_error = None
+
+            def extract(self, src_dir, only_files=None, deep=False, include_empty=False, source_files=None):
+                calls["source_files"] = source_files
+                return {
+                    rel: {"classes": [], "functions": [], "language": "python"}
+                    for rel in source_files
+                }
+
+        monkeypatch.setattr(extract_cmd, "build_source_snapshot", fake_build_source_snapshot)
+        monkeypatch.setattr(extract_cmd, "_load_extractor", lambda _entry_point: FakePythonExtractor())
+
+        result = extract_cmd.get_inventory_result(str(tmp_path))
+
+        assert calls["snapshot"] == 1
+        assert calls["source_files"] == ["a.py", "b.py"]
+        assert sorted(result.inventory) == ["a.py", "b.py"]
 
     def test_cp1252_python_file_does_not_abort_scan(self, tmp_path):
         (tmp_path / "legacy.py").write_bytes(b"# legacy \x96 comment\nclass Legacy:\n    pass\n")
@@ -418,6 +448,16 @@ class TestPackageDiscovery:
         packages = discover_packages(str(tmp_path))
         assert packages[0].name == "poetry-pkg"
         assert packages[0].version == "1.0.0"
+
+    def test_discover_packages_from_source_snapshot_matches_standalone(self, tmp_path):
+        pkg = tmp_path / "pkg"
+        pkg.mkdir()
+        (pkg / "pyproject.toml").write_text(
+            '[project]\nname = "snapshot-pkg"\nversion = "2.0.0"\n'
+        )
+        snapshot = build_source_snapshot(tmp_path)
+
+        assert discover_packages(str(tmp_path), source_snapshot=snapshot) == discover_packages(str(tmp_path))
 
     def test_dynamic_pyproject_version_is_marked(self, tmp_path):
         (tmp_path / "pyproject.toml").write_text(

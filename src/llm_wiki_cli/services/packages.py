@@ -9,12 +9,14 @@ source root).  Each discovered package is represented as a
 from __future__ import annotations
 
 import ast
-import configparser
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Sequence
+from typing import TYPE_CHECKING, Sequence
 
 from ..config import EXCLUDED_DIRS
+
+if TYPE_CHECKING:
+    from .source_snapshot import SourceSnapshot
 
 try:  # Python 3.11+
     import tomllib
@@ -88,7 +90,28 @@ def _parse_setup_py(text: str) -> dict[str, str]:
     return info
 
 
-def discover_packages(src_dir: str) -> list[PackageInfo]:
+def _package_marker_paths(src_path: Path, source_snapshot: SourceSnapshot | None) -> tuple[list[Path], list[Path]]:
+    if source_snapshot is None:
+        return (
+            sorted(src_path.rglob("pyproject.toml")),
+            sorted(src_path.rglob("setup.py")),
+        )
+
+    pyprojects = [
+        marker.abs_path for marker in source_snapshot.package_markers
+        if marker.abs_path.name == "pyproject.toml"
+    ]
+    setup_files = [
+        marker.abs_path for marker in source_snapshot.package_markers
+        if marker.abs_path.name == "setup.py"
+    ]
+    return (
+        sorted(pyprojects, key=lambda path: path.relative_to(src_path).as_posix()),
+        sorted(setup_files, key=lambda path: path.relative_to(src_path).as_posix()),
+    )
+
+
+def discover_packages(src_dir: str, *, source_snapshot: SourceSnapshot | None = None) -> list[PackageInfo]:
     """Return all Python packages found under *src_dir*.
 
     A "package" is a directory containing ``pyproject.toml`` or
@@ -97,8 +120,9 @@ def discover_packages(src_dir: str) -> list[PackageInfo]:
     """
     src_path = Path(src_dir).resolve()
     packages: list[PackageInfo] = []
+    pyproject_paths, setup_paths = _package_marker_paths(src_path, source_snapshot)
 
-    for marker in sorted(src_path.rglob("pyproject.toml")):
+    for marker in pyproject_paths:
         rel = marker.relative_to(src_path)
         if not EXCLUDED_DIRS.isdisjoint(rel.parts):
             continue
@@ -117,7 +141,7 @@ def discover_packages(src_dir: str) -> list[PackageInfo]:
             marker_path=rel.as_posix(),
         ))
 
-    for marker in sorted(src_path.rglob("setup.py")):
+    for marker in setup_paths:
         rel = marker.relative_to(src_path)
         if not EXCLUDED_DIRS.isdisjoint(rel.parts):
             continue

@@ -37,6 +37,7 @@ class GoExtractor:
         src_dir: str,
         only_files: list[str] | None = None,
         deep: bool = False,
+        source_files: list[str] | None = None,
     ) -> dict:
         """Scan *src_dir* for Go files and return an inventory dict.
 
@@ -59,9 +60,10 @@ class GoExtractor:
             minimum ``"classes"``, ``"functions"``, and ``"language"``.
         """
         self.last_error = None
-        source_files = discover_source_files(
-            src_dir, (".go",), only_files=only_files, language="go",
-        )
+        if source_files is None:
+            source_files = discover_source_files(
+                src_dir, (".go",), only_files=only_files, language="go",
+            )
         if not source_files:
             return {}
 

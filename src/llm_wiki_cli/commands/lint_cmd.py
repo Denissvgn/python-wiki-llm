@@ -14,6 +14,7 @@ from .bootstrap_cmd import build_module_page_map, build_entity_page_map
 from ..config import validate_path
 from ..services.io import read_md
 from ..services.plugins import PluginError, iter_components, load_entry_point
+from ..services.source_snapshot import build_source_snapshot
 from ..services.team import build_team_issues
 
 # basic regex for [text](url)
@@ -367,13 +368,18 @@ def build_report(
         return report
 
     with _profile_phase(profiler, "inventory"):
-        inventory_result = get_inventory_result(src_dir, deep=True)
+        source_snapshot = build_source_snapshot(src_dir)
+        inventory_result = get_inventory_result(
+            src_dir,
+            deep=True,
+            source_snapshot=source_snapshot,
+        )
     if inventory_result.failed:
         print_inventory_failures(inventory_result)
         sys.exit(1)
     deep_inventory = inventory_result.inventory
     with _profile_phase(profiler, "docker_inventory"):
-        docker_inventory = get_docker_inventory(src_dir)
+        docker_inventory = get_docker_inventory(src_dir, source_snapshot=source_snapshot)
 
     with _profile_phase(profiler, "page_index"):
         pages = [
