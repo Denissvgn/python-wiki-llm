@@ -38,6 +38,18 @@ def _positive_int(value: str) -> int:
     return parsed
 
 
+def _jobs_value(value: str) -> int:
+    if value == "auto":
+        return max(1, os.cpu_count() or 1)
+    try:
+        parsed = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("must be a positive integer or 'auto'") from exc
+    if parsed < 1:
+        raise argparse.ArgumentTypeError("must be greater than zero")
+    return parsed
+
+
 def main():
     parser = argparse.ArgumentParser(description="LLM Wiki CLI")
     parser.add_argument("--version", action="version", version=f"llm-wiki {__version__}")
@@ -83,6 +95,8 @@ def main():
                              help="Include inventory cache diagnostics in lint output")
     lint_parser.add_argument("--cache-dir", default=None, metavar="PATH",
                              help="Directory for llm-wiki-inventory-cache.json")
+    lint_parser.add_argument("--jobs", type=_jobs_value, default=1, metavar="JOBS",
+                             help="Parallel built-in extractor jobs: positive integer or 'auto' (default: 1)")
 
     # prepare-extractors command
     prepare_parser = subparsers.add_parser(
@@ -108,6 +122,8 @@ def main():
                            help="Console output format (default: text)")
     ci_parser.add_argument("--report", default=".git/llm-wiki-ci-report.md",
                            help="Markdown report path (default: .git/llm-wiki-ci-report.md)")
+    ci_parser.add_argument("--jobs", type=_jobs_value, default=1, metavar="JOBS",
+                           help="Parallel built-in extractor jobs: positive integer or 'auto' (default: 1)")
 
     # hook command
     hook_parser = subparsers.add_parser("install-hook", help="Install git hooks for wiki sync")

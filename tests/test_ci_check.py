@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import types
 
+from llm_wiki_cli import cli
 from llm_wiki_cli.commands import ci_check_cmd
 from llm_wiki_cli.commands.lint_cmd import LintReport
 
@@ -15,6 +16,7 @@ def test_ci_check_uses_inventory_cache_options(tmp_path, monkeypatch, capsys):
 
     def fake_build_report(wiki_dir, src_dir, **kwargs):
         seen["cache_options"] = kwargs["cache_options"]
+        seen["parallel_jobs"] = kwargs["parallel_jobs"]
         return LintReport(wiki_dir=str(wiki_dir), src_dir=src_dir, strict=kwargs["strict"])
 
     monkeypatch.setattr(ci_check_cmd, "build_report", fake_build_report)
@@ -31,3 +33,49 @@ def test_ci_check_uses_inventory_cache_options(tmp_path, monkeypatch, capsys):
     assert payload["ok"] is True
     assert seen["cache_options"].enabled is True
     assert seen["cache_options"].stats_enabled is False
+    assert seen["parallel_jobs"] == 1
+
+
+def test_ci_check_passes_jobs_to_build_report(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "wiki").mkdir()
+    seen = {}
+
+    def fake_build_report(wiki_dir, src_dir, **kwargs):
+        seen["parallel_jobs"] = kwargs["parallel_jobs"]
+        return LintReport(wiki_dir=str(wiki_dir), src_dir=src_dir, strict=kwargs["strict"])
+
+    monkeypatch.setattr(ci_check_cmd, "build_report", fake_build_report)
+    monkeypatch.setattr(ci_check_cmd, "record_validation_event", lambda **kwargs: None)
+
+    ci_check_cmd.run(types.SimpleNamespace(
+        src_dir=".",
+        wiki_dir="wiki",
+        format="json",
+        report=".git/llm-wiki-ci-report.md",
+        jobs=2,
+    ))
+
+    json.loads(capsys.readouterr().out)
+    assert seen["parallel_jobs"] == 2
+
+
+def test_cli_ci_check_jobs_auto_resolves_positive_count(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(cli.os, "cpu_count", lambda: 6)
+    monkeypatch.setattr(cli.ci_check_cmd, "run", lambda args: seen.setdefault("jobs", args.jobs))
+    monkeypatch.setattr("sys.argv", ["llm-wiki", "ci-check", "--jobs", "auto"])
+
+    cli.main()
+
+    assert seen["jobs"] == 6
+
+
+def test_cli_ci_check_jobs_parses_integer(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(cli.ci_check_cmd, "run", lambda args: seen.setdefault("jobs", args.jobs))
+    monkeypatch.setattr("sys.argv", ["llm-wiki", "ci-check", "--jobs", "2"])
+
+    cli.main()
+
+    assert seen["jobs"] == 2

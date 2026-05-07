@@ -5,6 +5,7 @@ import json
 import re
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from dataclasses import dataclass
 from functools import lru_cache
@@ -34,12 +35,17 @@ from ..extractors.python_extractor import ComponentVisitor  # noqa: F401
 # ── Extractor loader ─────────────────────────────────────────────────
 
 
-@lru_cache(maxsize=None)
-def _load_extractor(entry_point: str):
-    """Instantiate an extractor from a ``"module.path:ClassName"`` string."""
+def _instantiate_extractor(entry_point: str):
+    """Instantiate an extractor without using the shared instance cache."""
     module_path, class_name = entry_point.rsplit(":", 1)
     module = importlib.import_module(module_path)
     return getattr(module, class_name)()
+
+
+@lru_cache(maxsize=None)
+def _load_extractor(entry_point: str):
+    """Instantiate an extractor from a ``"module.path:ClassName"`` string."""
+    return _instantiate_extractor(entry_point)
 
 
 @dataclass(frozen=True)
@@ -69,6 +75,64 @@ def print_inventory_failures(result: InventoryResult, *, file=None) -> None:
         print(f"Error: {status.language} extraction failed{detail}", file=stream)
 
 
+@dataclass(frozen=True)
+class _ExtractionPlan:
+    language: str
+    entry_point: str
+    is_builtin: bool
+    source_files: list[str] | None
+    fresh_source_files: list[str]
+    files_found: int
+    kwargs: dict
+
+
+@dataclass(frozen=True)
+class _ExtractionOutcome:
+    language: str
+    state: str
+    files_found: int
+    extracted: dict
+    message: str = ""
+
+
+def _run_extraction_plan(plan: _ExtractionPlan, *, fresh_instance: bool = False) -> _ExtractionOutcome:
+    extractor = (
+        _instantiate_extractor(plan.entry_point)
+        if fresh_instance
+        else _load_extractor(plan.entry_point)
+    )
+    if hasattr(extractor, "last_error"):
+        extractor.last_error = None
+    try:
+        extracted = extractor.extract(**plan.kwargs)
+    except Exception as exc:
+        return _ExtractionOutcome(plan.language, "failed", plan.files_found, {}, str(exc))
+
+    error = getattr(extractor, "last_error", None)
+    if error:
+        return _ExtractionOutcome(plan.language, "failed", plan.files_found, {}, str(error))
+
+    files_found = plan.files_found
+    if plan.source_files is None:
+        files_found = len(extracted)
+    return _ExtractionOutcome(plan.language, "ok", files_found, extracted)
+
+
+def _merge_language_inventory(target: dict, source_order: list[str], *sources: dict) -> None:
+    seen: set[str] = set()
+    for rel_path in source_order:
+        for source in sources:
+            if rel_path in source:
+                target[rel_path] = source[rel_path]
+                seen.add(rel_path)
+                break
+    for source in sources:
+        for rel_path in sorted(source):
+            if rel_path not in seen:
+                target[rel_path] = source[rel_path]
+                seen.add(rel_path)
+
+
 # ── Backward-compatible public API ───────────────────────────────────
 
 
@@ -79,6 +143,7 @@ def get_inventory_result(
     include_empty=False,
     source_snapshot: SourceSnapshot | None = None,
     cache_options: InventoryCacheOptions | None = None,
+    parallel_jobs: int = 1,
 ) -> InventoryResult:
     """Scan source files across all registered languages and return inventory.
 
@@ -99,6 +164,7 @@ def get_inventory_result(
     cache_files: dict[str, dict] = {}
     updated_cache_files: dict[str, dict] = {}
     cache_key: dict | None = None
+    parallel_jobs = max(1, int(parallel_jobs or 1))
 
     source_file_by_path = {
         source_file.rel_path: source_file
@@ -123,15 +189,17 @@ def get_inventory_result(
             if file_hash is not None:
                 source_hashes[rel_path] = file_hash
 
-    inventory: dict = {}
-    statuses: dict[str, ExtractorStatus] = {}
+    status_by_language: dict[str, ExtractorStatus] = {}
+    cached_by_language: dict[str, dict] = {}
+    extracted_by_language: dict[str, dict] = {}
+    plans: list[_ExtractionPlan] = []
     for language, entry_point in registry.items():
         extensions = LANGUAGE_EXTENSIONS.get(language)
         source_files: list[str] | None = None
         if extensions is not None:
             source_files = source_snapshot.language_paths(language)
             if not source_files:
-                statuses[language] = ExtractorStatus(language, "skipped", 0)
+                status_by_language[language] = ExtractorStatus(language, "skipped", 0)
                 continue
 
         files_found = len(source_files or [])
@@ -139,11 +207,12 @@ def get_inventory_result(
             files_found = len(only_files)
 
         if extensions is not None and not source_files:
-            statuses[language] = ExtractorStatus(language, "skipped", 0)
+            status_by_language[language] = ExtractorStatus(language, "skipped", 0)
             continue
 
         is_builtin = extensions is not None and entry_point == EXTRACTOR_REGISTRY.get(language)
         fresh_source_files = list(source_files or [])
+        cached_by_language.setdefault(language, {})
         if is_builtin and cache is not None and cache.enabled and cache_key is not None:
             fresh_source_files = []
             for rel_path in source_files or []:
@@ -162,7 +231,7 @@ def get_inventory_result(
                     cache.stats.hits += 1
                     raw_inventory = deepcopy(cached_entry.get("inventory", {}))
                     if raw_inventory:
-                        inventory[rel_path] = raw_inventory
+                        cached_by_language[language][rel_path] = raw_inventory
                     updated_cache_files[rel_path] = make_cache_entry(
                         source_file,
                         file_hash,
@@ -177,13 +246,9 @@ def get_inventory_result(
                 fresh_source_files.append(rel_path)
 
             if not fresh_source_files:
-                statuses[language] = ExtractorStatus(language, "ok", files_found)
+                status_by_language[language] = ExtractorStatus(language, "ok", files_found)
                 continue
 
-        extractor = _load_extractor(entry_point)
-        # Reset cached extractor state from any previous invocation.
-        if hasattr(extractor, "last_error"):
-            extractor.last_error = None
         kwargs = {"src_dir": src_dir, "only_files": only_files, "deep": deep}
         if is_builtin:
             kwargs["source_files"] = fresh_source_files
@@ -193,19 +258,55 @@ def get_inventory_result(
                 )
         if language == "python":
             kwargs["include_empty"] = include_empty
-        try:
-            extracted = extractor.extract(**kwargs)
-        except Exception as exc:
-            statuses[language] = ExtractorStatus(language, "failed", files_found, str(exc))
+
+        plans.append(_ExtractionPlan(
+            language=language,
+            entry_point=entry_point,
+            is_builtin=is_builtin,
+            source_files=source_files,
+            fresh_source_files=fresh_source_files,
+            files_found=files_found,
+            kwargs=kwargs,
+        ))
+
+    builtin_plans = [plan for plan in plans if plan.is_builtin]
+    plugin_plans = [plan for plan in plans if not plan.is_builtin]
+    outcomes_by_language: dict[str, _ExtractionOutcome] = {}
+
+    if parallel_jobs > 1 and len(builtin_plans) > 1:
+        max_workers = min(parallel_jobs, len(builtin_plans))
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            for outcome in executor.map(
+                lambda plan: _run_extraction_plan(plan, fresh_instance=True),
+                builtin_plans,
+            ):
+                outcomes_by_language[outcome.language] = outcome
+    else:
+        use_fresh_builtin_instances = parallel_jobs > 1
+        for plan in builtin_plans:
+            outcome = _run_extraction_plan(plan, fresh_instance=use_fresh_builtin_instances)
+            outcomes_by_language[outcome.language] = outcome
+
+    for plan in plugin_plans:
+        outcome = _run_extraction_plan(plan, fresh_instance=False)
+        outcomes_by_language[outcome.language] = outcome
+
+    for plan in plans:
+        outcome = outcomes_by_language[plan.language]
+        if outcome.state == "failed":
+            status_by_language[plan.language] = ExtractorStatus(
+                plan.language,
+                "failed",
+                outcome.files_found,
+                outcome.message,
+            )
             continue
-        error = getattr(extractor, "last_error", None)
-        if error:
-            statuses[language] = ExtractorStatus(language, "failed", files_found, str(error))
-            continue
-        inventory.update(extracted)
-        if is_builtin and cache is not None and cache.enabled and cache_key is not None:
-            cache.stats.fresh_extracted += len(fresh_source_files)
-            for rel_path in fresh_source_files:
+
+        extracted = outcome.extracted
+        extracted_by_language[plan.language] = extracted
+        if plan.is_builtin and cache is not None and cache.enabled and cache_key is not None:
+            cache.stats.fresh_extracted += len(plan.fresh_source_files)
+            for rel_path in plan.fresh_source_files:
                 source_file = source_file_by_path[rel_path]
                 file_hash = source_hashes.get(rel_path)
                 if file_hash is None:
@@ -214,13 +315,30 @@ def get_inventory_result(
                 if raw_entry:
                     raw_entry.pop("package", None)
                 updated_cache_files[rel_path] = make_cache_entry(source_file, file_hash, raw_entry)
-        if extensions is None:
-            files_found = len(extracted)
-        statuses[language] = ExtractorStatus(language, "ok", files_found)
+
+        status_by_language[plan.language] = ExtractorStatus(
+            plan.language,
+            "ok",
+            outcome.files_found,
+        )
+
+    inventory: dict = {}
+    for language in registry:
+        _merge_language_inventory(
+            inventory,
+            source_snapshot.language_paths(language),
+            cached_by_language.get(language, {}),
+            extracted_by_language.get(language, {}),
+        )
 
     # Stamp package ownership
     packages = discover_packages(src_dir, source_snapshot=source_snapshot)
     stamp_inventory_packages(inventory, packages)
+    statuses = {
+        language: status_by_language[language]
+        for language in registry
+        if language in status_by_language
+    }
     if cache is not None and cache.enabled:
         cache.finalize_lookup_status()
         if cache_key is not None and not any(status.state == "failed" for status in statuses.values()):

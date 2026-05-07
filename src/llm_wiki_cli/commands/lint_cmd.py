@@ -361,6 +361,7 @@ def build_report(
     strict: bool = False,
     profiler: _LintProfiler | None = None,
     cache_options: InventoryCacheOptions | None = None,
+    parallel_jobs: int = 1,
 ) -> LintReport:
     """Build a structured lint report without rendering or exiting."""
     wiki_path = Path(wiki_dir)
@@ -377,6 +378,7 @@ def build_report(
             deep=True,
             source_snapshot=source_snapshot,
             cache_options=cache_options,
+            parallel_jobs=parallel_jobs,
         )
         if cache_options is not None and cache_options.stats_enabled:
             report.cache_stats = inventory_result.cache_stats
@@ -671,6 +673,7 @@ def run(args):
         strict=strict,
         profiler=profiler,
         cache_options=cache_options,
+        parallel_jobs=getattr(args, "jobs", 1),
     )
     if profile and profiler is not None:
         print(json.dumps(

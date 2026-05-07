@@ -1,4 +1,5 @@
 """Tests for commands/extract_cmd.py"""
+import threading
 import textwrap
 import types
 from pathlib import Path
@@ -57,6 +58,129 @@ class TestGetInventory:
         assert calls["snapshot"] == 1
         assert calls["source_files"] == ["a.py", "b.py"]
         assert sorted(result.inventory) == ["a.py", "b.py"]
+
+    def test_parallel_jobs_run_fresh_builtin_extractors_concurrently(self, tmp_path, monkeypatch):
+        (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
+        (tmp_path / "app.ts").write_text("export class TsApp {}\n", encoding="utf-8")
+
+        registry = {
+            "python": extract_cmd.EXTRACTOR_REGISTRY["python"],
+            "typescript": extract_cmd.EXTRACTOR_REGISTRY["typescript"],
+        }
+        started: set[str] = set()
+        both_started = threading.Event()
+        lock = threading.Lock()
+        created: list[str] = []
+
+        class FakeExtractor:
+            def __init__(self, language):
+                self.language = language
+                self.last_error = None
+
+            def extract(self, **kwargs):
+                with lock:
+                    started.add(self.language)
+                    if len(started) == 2:
+                        both_started.set()
+                if not both_started.wait(timeout=2):
+                    raise AssertionError("built-in extractors did not run concurrently")
+                rel_path = kwargs["source_files"][0]
+                return {
+                    rel_path: {
+                        "language": self.language,
+                        "classes": [{"name": self.language.title()}],
+                        "functions": [],
+                    }
+                }
+
+        def fake_instantiate(entry_point):
+            language = "python" if "python_extractor" in entry_point else "typescript"
+            created.append(language)
+            return FakeExtractor(language)
+
+        monkeypatch.setattr(extract_cmd, "get_extractor_registry", lambda: registry)
+        monkeypatch.setattr(extract_cmd, "_instantiate_extractor", fake_instantiate)
+        monkeypatch.setattr(
+            extract_cmd,
+            "_load_extractor",
+            lambda _entry_point: pytest.fail("parallel built-ins should use fresh instances"),
+        )
+
+        result = extract_cmd.get_inventory_result(str(tmp_path), parallel_jobs=2)
+
+        assert not result.failed
+        assert sorted(created) == ["python", "typescript"]
+        assert sorted(result.inventory) == ["app.py", "app.ts"]
+
+    def test_parallel_jobs_keep_plugins_sequential(self, tmp_path, monkeypatch):
+        (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
+        registry = {
+            "python": extract_cmd.EXTRACTOR_REGISTRY["python"],
+            "custom": "plugin.extractor:CustomExtractor",
+        }
+        calls: list[str] = []
+
+        class BuiltinExtractor:
+            last_error = None
+
+            def extract(self, **kwargs):
+                calls.append("builtin")
+                return {
+                    "app.py": {"language": "python", "classes": [], "functions": []}
+                }
+
+        class PluginExtractor:
+            last_error = None
+
+            def extract(self, **kwargs):
+                calls.append("plugin")
+                return {
+                    "virtual.custom": {"language": "custom", "classes": [], "functions": []}
+                }
+
+        monkeypatch.setattr(extract_cmd, "get_extractor_registry", lambda: registry)
+        monkeypatch.setattr(extract_cmd, "_instantiate_extractor", lambda _entry_point: BuiltinExtractor())
+        monkeypatch.setattr(extract_cmd, "_load_extractor", lambda _entry_point: PluginExtractor())
+
+        result = extract_cmd.get_inventory_result(str(tmp_path), parallel_jobs=2)
+
+        assert calls == ["builtin", "plugin"]
+        assert result.statuses["custom"].files_found == 1
+
+    def test_parallel_inventory_merge_order_is_deterministic(self, tmp_path, monkeypatch):
+        (tmp_path / "b.py").write_text("class B: pass\n", encoding="utf-8")
+        (tmp_path / "a.py").write_text("class A: pass\n", encoding="utf-8")
+        (tmp_path / "z.ts").write_text("export class Z {}\n", encoding="utf-8")
+        registry = {
+            "python": extract_cmd.EXTRACTOR_REGISTRY["python"],
+            "typescript": extract_cmd.EXTRACTOR_REGISTRY["typescript"],
+        }
+
+        class FakeExtractor:
+            def __init__(self, language):
+                self.language = language
+                self.last_error = None
+
+            def extract(self, **kwargs):
+                return {
+                    rel_path: {
+                        "language": self.language,
+                        "classes": [],
+                        "functions": [],
+                    }
+                    for rel_path in reversed(kwargs["source_files"])
+                }
+
+        def fake_instantiate(entry_point):
+            language = "python" if "python_extractor" in entry_point else "typescript"
+            return FakeExtractor(language)
+
+        monkeypatch.setattr(extract_cmd, "get_extractor_registry", lambda: registry)
+        monkeypatch.setattr(extract_cmd, "_instantiate_extractor", fake_instantiate)
+
+        result = extract_cmd.get_inventory_result(str(tmp_path), parallel_jobs=2)
+
+        assert list(result.inventory) == ["a.py", "b.py", "z.ts"]
 
     def test_cp1252_python_file_does_not_abort_scan(self, tmp_path):
         (tmp_path / "legacy.py").write_bytes(b"# legacy \x96 comment\nclass Legacy:\n    pass\n")
@@ -455,7 +579,8 @@ class TestInventoryCache:
                 }
 
         monkeypatch.setattr(extract_cmd, "_load_extractor", lambda _entry_point: FakePythonExtractor())
-        result = extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+        monkeypatch.setattr(extract_cmd, "_instantiate_extractor", lambda _entry_point: FakePythonExtractor())
+        result = extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options, parallel_jobs=2)
 
         assert calls == [["b.py"]]
         assert result.inventory["a.py"]["classes"][0]["name"] == "A"
@@ -510,6 +635,7 @@ class TestInventoryCache:
     def test_extractor_failure_still_surfaces_on_cache_miss(self, tmp_path, monkeypatch):
         (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
         options = self._cache_options(tmp_path)
+        save_calls = []
 
         class FailingPythonExtractor:
             last_error = None
@@ -518,10 +644,12 @@ class TestInventoryCache:
                 raise RuntimeError("boom")
 
         monkeypatch.setattr(extract_cmd, "_load_extractor", lambda _entry_point: FailingPythonExtractor())
+        monkeypatch.setattr(extract_cmd.InventoryCache, "save", lambda *args, **kwargs: save_calls.append(args))
         result = extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
 
         assert result.failed
         assert result.failed[0].message == "boom"
+        assert save_calls == []
 
     def test_warm_typescript_cache_skips_toolchain_startup(self, tmp_path, monkeypatch):
         (tmp_path / "app.ts").write_text("export class App {}\n", encoding="utf-8")
@@ -546,7 +674,17 @@ class TestInventoryCache:
             raise AssertionError("warm TypeScript cache should avoid extractor startup")
 
         monkeypatch.setattr(extract_cmd, "_load_extractor", fail_load)
-        result = extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+        monkeypatch.setattr(
+            extract_cmd,
+            "_instantiate_extractor",
+            lambda _entry_point: pytest.fail("warm cache should avoid fresh extractor startup"),
+        )
+        result = extract_cmd.get_inventory_result(
+            str(tmp_path),
+            deep=True,
+            cache_options=options,
+            parallel_jobs=2,
+        )
 
         assert result.inventory["app.ts"]["classes"][0]["name"] == "App"
         assert result.cache_stats.hits == 1

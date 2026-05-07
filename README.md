@@ -249,6 +249,7 @@ llm-wiki lint --wiki-dir docs/llm_wiki --src-dir .
 llm-wiki lint --strict --wiki-dir docs/llm_wiki --src-dir .
 llm-wiki lint --profile --wiki-dir docs/llm_wiki --src-dir .
 llm-wiki lint --cache-stats --wiki-dir docs/llm_wiki --src-dir .
+llm-wiki lint --jobs auto --wiki-dir docs/llm_wiki --src-dir .
 ```
 
 Strict mode also requires the core wiki structure and a fresh sync manifest.
@@ -261,12 +262,15 @@ Use `--no-cache` to disable load/save, `--rebuild-cache` to ignore and rewrite
 the cache, and `--cache-stats` to include cache diagnostics. Cache corruption or
 invalid fingerprints fall back to a full extraction without reducing lint
 coverage. With `--profile --cache-stats`, the JSON payload includes a top-level
-`cache` object.
+`cache` object. Use `--jobs N` or `--jobs auto` to opt into parallel built-in
+language extraction; the default is `--jobs 1`. Plugin extractors remain
+sequential unless future plugin metadata explicitly marks them parallel-safe.
 
 For CI:
 
 ```bash
 llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki
+llm-wiki ci-check --jobs auto --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki ci-check --format json --report .git/llm-wiki-ci-report.md
 llm-wiki ci-check --format markdown
 ```

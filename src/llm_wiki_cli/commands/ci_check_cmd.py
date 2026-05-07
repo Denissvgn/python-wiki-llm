@@ -37,6 +37,7 @@ def run(args) -> None:
         src_dir,
         strict=True,
         cache_options=InventoryCacheOptions(enabled=True),
+        parallel_jobs=getattr(args, "jobs", 1),
     )
     duration_ms = int((time.monotonic() - started) * 1000)
 

@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from llm_wiki_cli import cli
 from llm_wiki_cli.commands import extract_cmd
 from llm_wiki_cli.commands import lint_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
@@ -341,7 +342,7 @@ class TestLintProfile:
         )
         monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
 
-        lint_cmd.run(_make_args(wiki_dir=str(wiki), src_dir=".", profile=True))
+        lint_cmd.run(_make_args(wiki_dir=str(wiki), src_dir=".", profile=True, jobs=2))
 
         payload = json.loads(capsys.readouterr().out)
         assert payload["ok"] is True
@@ -457,7 +458,7 @@ class TestLintProfile:
         )
         monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
 
-        lint_cmd.run(_make_args(wiki_dir="wiki", src_dir=".", cache_stats=True))
+        lint_cmd.run(_make_args(wiki_dir="wiki", src_dir=".", cache_stats=True, jobs=2))
         out = capsys.readouterr().out
 
         assert "Cache:" in out
@@ -509,6 +510,56 @@ class TestLintProfile:
         lint_cmd.run(_make_args(wiki_dir="wiki", src_dir=".", rebuild_cache=True, cache_stats=True))
 
         assert seen["cache_options"].rebuild is True
+
+    def test_run_passes_jobs_to_build_report(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "wiki").mkdir()
+        seen = {}
+
+        def fake_build_report(wiki_dir, src_dir, **kwargs):
+            seen["parallel_jobs"] = kwargs["parallel_jobs"]
+            return lint_cmd.LintReport(wiki_dir=str(wiki_dir), src_dir=src_dir, strict=kwargs["strict"])
+
+        monkeypatch.setattr(lint_cmd, "build_report", fake_build_report)
+
+        lint_cmd.run(_make_args(wiki_dir="wiki", src_dir=".", jobs=2))
+
+        assert seen["parallel_jobs"] == 2
+
+    def test_run_defaults_jobs_to_one(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "wiki").mkdir()
+        seen = {}
+
+        def fake_build_report(wiki_dir, src_dir, **kwargs):
+            seen["parallel_jobs"] = kwargs["parallel_jobs"]
+            return lint_cmd.LintReport(wiki_dir=str(wiki_dir), src_dir=src_dir, strict=kwargs["strict"])
+
+        monkeypatch.setattr(lint_cmd, "build_report", fake_build_report)
+
+        lint_cmd.run(_make_args(wiki_dir="wiki", src_dir="."))
+
+        assert seen["parallel_jobs"] == 1
+
+    def test_cli_lint_jobs_auto_resolves_positive_count(self, monkeypatch):
+        seen = {}
+        monkeypatch.setattr(cli.os, "cpu_count", lambda: 8)
+        monkeypatch.setattr(cli.lint_cmd, "run", lambda args: seen.setdefault("jobs", args.jobs))
+        monkeypatch.setattr("sys.argv", ["llm-wiki", "lint", "--jobs", "auto"])
+
+        cli.main()
+
+        assert seen["jobs"] == 8
+
+    @pytest.mark.parametrize("value", ["0", "-1", "many"])
+    def test_cli_lint_rejects_invalid_jobs(self, value, monkeypatch):
+        monkeypatch.setattr(cli.lint_cmd, "run", lambda _args: pytest.fail("command should not run"))
+        monkeypatch.setattr("sys.argv", ["llm-wiki", "lint", "--jobs", value])
+
+        with pytest.raises(SystemExit) as exc:
+            cli.main()
+
+        assert exc.value.code == 2
 
     def test_lint_creates_default_git_cache(self, tmp_path, monkeypatch, capsys):
         monkeypatch.chdir(tmp_path)
