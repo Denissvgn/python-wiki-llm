@@ -75,7 +75,7 @@ class TestTypeScriptWrapperFiltering:
             )
 
         monkeypatch.setattr("llm_wiki_cli.extractors.ts_extractor.shutil.which", lambda _name: "/bin/tool")
-        monkeypatch.setattr("llm_wiki_cli.extractors.ts_extractor._ensure_npm_deps", lambda: True)
+        monkeypatch.setattr("llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready", lambda: True)
         monkeypatch.setattr("llm_wiki_cli.extractors.ts_extractor.subprocess.run", fake_run)
 
         TypeScriptExtractor().extract(str(tmp_path))
@@ -437,6 +437,16 @@ class TestTypeScriptExtractorWithoutNode:
 
 
 class TestTypeScriptExtractorWrapper:
+    def test_missing_dependencies_do_not_invoke_npm_install(self, tmp_path):
+        _make_ts(tmp_path, "app.ts", "export class App {}")
+        with patch("llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"):
+            with patch("llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready", return_value=False):
+                with patch("llm_wiki_cli.extractors.ts_extractor.subprocess.run") as mock_run:
+                    inv = TypeScriptExtractor().extract(str(tmp_path))
+
+        assert inv == {}
+        mock_run.assert_not_called()
+
     def test_windows_style_inventory_keys_are_normalized(self, tmp_path):
         _make_ts(tmp_path, "web/src/app.ts", "export class App {}")
         result = subprocess.CompletedProcess(
@@ -446,7 +456,7 @@ class TestTypeScriptExtractorWrapper:
             stderr="",
         )
         with patch("llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"):
-            with patch("llm_wiki_cli.extractors.ts_extractor._ensure_npm_deps", return_value=True):
+            with patch("llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready", return_value=True):
                 with patch("llm_wiki_cli.extractors.ts_extractor.subprocess.run", return_value=result):
                     inv = TypeScriptExtractor().extract(str(tmp_path))
 
@@ -463,7 +473,7 @@ class TestTypeScriptExtractorWrapper:
             stderr="",
         )
         with patch("llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"):
-            with patch("llm_wiki_cli.extractors.ts_extractor._ensure_npm_deps", return_value=True):
+            with patch("llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready", return_value=True):
                 with patch("llm_wiki_cli.extractors.ts_extractor.subprocess.run", return_value=result):
                     inv = TypeScriptExtractor().extract(str(tmp_path))
 
@@ -473,7 +483,7 @@ class TestTypeScriptExtractorWrapper:
     def test_timeout_returns_empty(self, tmp_path, capsys):
         _make_ts(tmp_path, "app.ts", "export class App {}")
         with patch("llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"):
-            with patch("llm_wiki_cli.extractors.ts_extractor._ensure_npm_deps", return_value=True):
+            with patch("llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready", return_value=True):
                 with patch(
                     "llm_wiki_cli.extractors.ts_extractor.subprocess.run",
                     side_effect=subprocess.TimeoutExpired(["node"], 120),

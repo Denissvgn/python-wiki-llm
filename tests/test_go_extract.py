@@ -12,6 +12,7 @@ import pytest
 
 from llm_wiki_cli.config import EXTRACTOR_REGISTRY
 from llm_wiki_cli.extractors.go_extractor import GoExtractor
+from llm_wiki_cli.services.extractor_helpers import get_prepared_binary
 
 # ---------------------------------------------------------------------------
 # Skip all tests when Go is not available on this machine.
@@ -33,10 +34,10 @@ def _command_available(*cmd: str) -> bool:
         return False
 
 
-GO_AVAILABLE = _command_available("go", "version")
+GO_AVAILABLE = get_prepared_binary("go", ".") is not None
 skip_no_go = pytest.mark.skipif(
     not GO_AVAILABLE,
-    reason="Go toolchain not available — Go extractor tests skipped",
+    reason="Prepared Go helper not available — Go extractor integration tests skipped",
 )
 
 # ---------------------------------------------------------------------------
@@ -68,7 +69,7 @@ class TestGoWrapperFiltering:
                 stderr="",
             )
 
-        monkeypatch.setattr("llm_wiki_cli.extractors.go_extractor.shutil.which", lambda _name: "/bin/go")
+        monkeypatch.setattr("llm_wiki_cli.extractors.go_extractor.get_prepared_binary", lambda *a, **k: Path("/tmp/go-helper"))
         monkeypatch.setattr("llm_wiki_cli.extractors.go_extractor.subprocess.run", fake_run)
 
         GoExtractor().extract(str(tmp_path))
@@ -589,25 +590,25 @@ class TestGoExtractor:
 # ===========================================================================
 
 
-class TestGoExtractorWithoutGo:
-    def test_no_go_returns_empty(self, tmp_path):
+class TestGoExtractorWithoutPreparedHelper:
+    def test_missing_helper_returns_empty(self, tmp_path):
         _make_go(tmp_path, "main.go", "package main\n\ntype App struct{}\n")
-        with patch("llm_wiki_cli.extractors.go_extractor.shutil.which", return_value=None):
+        with patch("llm_wiki_cli.extractors.go_extractor.get_prepared_binary", return_value=None):
             inv = GoExtractor().extract(str(tmp_path))
         assert inv == {}
 
-    def test_no_go_stderr_warning(self, tmp_path, capsys):
+    def test_missing_helper_stderr_warning(self, tmp_path, capsys):
         _make_go(tmp_path, "main.go", "package main\n\ntype App struct{}\n")
-        with patch("llm_wiki_cli.extractors.go_extractor.shutil.which", return_value=None):
+        with patch("llm_wiki_cli.extractors.go_extractor.get_prepared_binary", return_value=None):
             GoExtractor().extract(str(tmp_path))
         err = capsys.readouterr().err
-        assert "go not found" in err
+        assert "prepare-extractors" in err
 
-    def test_no_go_files_skips_toolchain_probe(self, tmp_path):
-        with patch("llm_wiki_cli.extractors.go_extractor.shutil.which") as mock_which:
+    def test_no_go_files_skips_helper_probe(self, tmp_path):
+        with patch("llm_wiki_cli.extractors.go_extractor.get_prepared_binary") as mock_prepared:
             inv = GoExtractor().extract(str(tmp_path))
         assert inv == {}
-        mock_which.assert_not_called()
+        mock_prepared.assert_not_called()
 
 
 class TestGoExtractorWrapper:
@@ -619,7 +620,7 @@ class TestGoExtractorWrapper:
             stdout='{"pkg\\\\client.go": {"classes": [], "functions": []}}',
             stderr="",
         )
-        with patch("llm_wiki_cli.extractors.go_extractor.shutil.which", return_value="go"):
+        with patch("llm_wiki_cli.extractors.go_extractor.get_prepared_binary", return_value=Path("/tmp/go-helper")):
             with patch("llm_wiki_cli.extractors.go_extractor.subprocess.run", return_value=result):
                 inv = GoExtractor().extract(str(tmp_path))
 
@@ -636,7 +637,7 @@ class TestGoExtractorWrapper:
             stdout=f'{{"{source.as_posix()}": {{"classes": [], "functions": []}}}}',
             stderr="",
         )
-        with patch("llm_wiki_cli.extractors.go_extractor.shutil.which", return_value="go"):
+        with patch("llm_wiki_cli.extractors.go_extractor.get_prepared_binary", return_value=Path("/tmp/go-helper")):
             with patch("llm_wiki_cli.extractors.go_extractor.subprocess.run", return_value=result):
                 inv = GoExtractor().extract(str(tmp_path))
 
@@ -651,7 +652,7 @@ class TestGoExtractorWrapper:
             stdout="{not-json",
             stderr="",
         )
-        with patch("llm_wiki_cli.extractors.go_extractor.shutil.which", return_value="go"):
+        with patch("llm_wiki_cli.extractors.go_extractor.get_prepared_binary", return_value=Path("/tmp/go-helper")):
             with patch("llm_wiki_cli.extractors.go_extractor.subprocess.run", return_value=result):
                 inv = GoExtractor().extract(str(tmp_path))
 
@@ -660,7 +661,7 @@ class TestGoExtractorWrapper:
 
     def test_timeout_returns_empty(self, tmp_path, capsys):
         _make_go(tmp_path, "client.go", "package main\n\ntype Client struct{}\n")
-        with patch("llm_wiki_cli.extractors.go_extractor.shutil.which", return_value="go"):
+        with patch("llm_wiki_cli.extractors.go_extractor.get_prepared_binary", return_value=Path("/tmp/go-helper")):
             with patch(
                 "llm_wiki_cli.extractors.go_extractor.subprocess.run",
                 side_effect=subprocess.TimeoutExpired(["go"], 120),
@@ -678,7 +679,7 @@ class TestGoExtractorWrapper:
             stdout='{"client.go": {"classes": [], "functions": []}}',
             stderr="Warning: skipped bad.go\n",
         )
-        with patch("llm_wiki_cli.extractors.go_extractor.shutil.which", return_value="go"):
+        with patch("llm_wiki_cli.extractors.go_extractor.get_prepared_binary", return_value=Path("/tmp/go-helper")):
             with patch("llm_wiki_cli.extractors.go_extractor.subprocess.run", return_value=result):
                 GoExtractor().extract(str(tmp_path))
 

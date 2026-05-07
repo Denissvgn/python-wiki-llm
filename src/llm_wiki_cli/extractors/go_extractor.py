@@ -6,24 +6,24 @@ to a bundled Go script (``go_scripts/main.go``) that uses ``go/ast`` and
 
 Requirements
 ------------
-* Go toolchain (``go``) on PATH.
+* Go helper prepared with ``llm-wiki prepare-extractors``.
 """
 
 from __future__ import annotations
 
 import json
-import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 from .common import discover_source_files, filter_bundled_inventory
+from ..services.extractor_helpers import get_prepared_binary, missing_helper_message
 
 _GO_SCRIPTS_DIR = Path(__file__).parent / "go_scripts"
 
 
 class GoExtractor:
-    """Extractor for Go source files using a ``go run`` subprocess.
+    """Extractor for Go source files using a prepared helper binary.
 
     Implements :class:`~llm_wiki_cli.extractors.ExtractorProtocol`.
 
@@ -38,6 +38,7 @@ class GoExtractor:
         only_files: list[str] | None = None,
         deep: bool = False,
         source_files: list[str] | None = None,
+        helper_cache_dir: str | None = None,
     ) -> dict:
         """Scan *src_dir* for Go files and return an inventory dict.
 
@@ -67,13 +68,14 @@ class GoExtractor:
         if not source_files:
             return {}
 
-        if not shutil.which("go"):
-            self.last_error = "go not found. Install Go (https://go.dev/dl/) to enable Go extraction."
+        helper_binary = get_prepared_binary("go", src_dir, helper_cache_dir)
+        if helper_binary is None:
+            self.last_error = missing_helper_message("go", src_dir, helper_cache_dir)
             print(f"llm-wiki Go extractor: {self.last_error}", file=sys.stderr)
             return {}
 
         cmd = [
-            "go", "run", ".",
+            str(helper_binary),
             "--src-dir", str(Path(src_dir).resolve()),
         ]
         cmd += ["--only-files", ",".join(source_files)]
@@ -87,7 +89,7 @@ class GoExtractor:
                 text=True,
                 check=True,
                 timeout=120,
-                cwd=str(_GO_SCRIPTS_DIR),
+                cwd=str(helper_binary.parent),
             )
         except subprocess.CalledProcessError as exc:
             self.last_error = "extraction failed"
@@ -104,9 +106,9 @@ class GoExtractor:
             )
             return {}
         except FileNotFoundError:
-            self.last_error = "go executable not found"
+            self.last_error = "prepared Go helper executable not found"
             print(
-                "llm-wiki Go extractor: go executable not found.",
+                "llm-wiki Go extractor: prepared Go helper executable not found.",
                 file=sys.stderr,
             )
             return {}

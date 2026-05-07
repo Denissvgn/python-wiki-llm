@@ -28,15 +28,16 @@ external tools when they are available on `PATH`.
 | Area | Implementation | Runtime requirement |
 |---|---|---|
 | Python | stdlib `ast` | Python 3.9+ |
-| TypeScript / TSX | bundled Node script using `ts-morph` | Node.js and npm |
-| Go | bundled Go extractor using `go/ast` | Go toolchain |
-| Rust | bundled Rust extractor using `syn` | Cargo / Rust toolchain |
+| TypeScript / TSX | bundled Node script using `ts-morph` | prepared Node.js dependencies |
+| Go | bundled Go extractor using `go/ast` | prepared helper binary |
+| Rust | bundled Rust extractor using `syn` | prepared helper binary |
 | Docker / Compose | built-in parsers | none |
 | MCP server | official Python MCP SDK | `agent-wiki-cli[mcp]`, Python 3.10+ |
 
-TypeScript, Go, and Rust extras are metadata-only; the actual toolchains must be
-installed separately. The TypeScript extractor runs `npm install` in its bundled
-extractor directory on first use if `node_modules` is missing.
+TypeScript, Go, and Rust extras are metadata-only; prepare their helper
+dependencies explicitly with `llm-wiki prepare-extractors`. Lint, CI, and
+extract never run `npm install`, `go build`, `go run`, `cargo build`, or
+`cargo run` automatically.
 
 ## Agent Support
 
@@ -211,7 +212,7 @@ existing wiki is present, run `bootstrap` first.
 ### `extract`
 
 Print source inventory as JSON. All registered extractors run; missing optional
-toolchains are skipped when there are no matching source files.
+prepared helpers are skipped when there are no matching source files.
 
 ```bash
 llm-wiki extract --src-dir .
@@ -222,6 +223,21 @@ llm-wiki extract --src-dir . --paths src/foo.py src/bar.ts
 llm-wiki extract --src-dir . --package llm_wiki_cli
 llm-wiki extract --src-dir . --include-empty
 ```
+
+### `prepare-extractors`
+
+Prepare TypeScript dependencies and cached Go/Rust helper binaries outside the
+lint/extract hot path.
+
+```bash
+llm-wiki prepare-extractors --src-dir .
+llm-wiki prepare-extractors --language typescript --language go
+llm-wiki prepare-extractors --cache-dir .cache/llm-wiki
+```
+
+When `--language` is omitted, only helper languages detected in `--src-dir` are
+prepared. Helper cache resolution follows `--cache-dir`, then
+`LLM_WIKI_CACHE_DIR`, then `.git/llm-wiki-extractors/`.
 
 ### `lint` and `ci-check`
 

@@ -7,7 +7,7 @@ for TypeScript AST traversal.
 Requirements
 ------------
 * Node.js (``node``) on PATH.
-* ``npm`` on PATH (used once to install ts-morph into ``ts_scripts/node_modules``).
+* TypeScript dependencies prepared with ``llm-wiki prepare-extractors``.
 """
 
 from __future__ import annotations
@@ -19,62 +19,9 @@ import sys
 from pathlib import Path
 
 from .common import discover_source_files, filter_bundled_inventory
+from ..services.extractor_helpers import typescript_dependencies_ready
 
 _TS_SCRIPTS_DIR = Path(__file__).parent / "ts_scripts"
-
-
-def _ensure_npm_deps() -> bool:
-    """Install ts-morph if ``node_modules`` is absent.
-
-    Returns True on success, False if npm is unavailable or the install fails.
-    """
-    if (_TS_SCRIPTS_DIR / "node_modules").exists():
-        return True
-
-    if not shutil.which("npm"):
-        print(
-            "llm-wiki TypeScript extractor: npm not found. "
-            "Install Node.js (https://nodejs.org) to enable TypeScript extraction.",
-            file=sys.stderr,
-        )
-        return False
-
-    scripts_dir = str(_TS_SCRIPTS_DIR.resolve())
-    try:
-        if sys.platform == "win32":
-            # npm on Windows is a .cmd batch script — it requires shell=True.
-            # Using subprocess `cwd=` with shell=True can be unreliable
-            # when the Python process CWD has been changed (e.g. by tests),
-            # so we embed an explicit `cd /d` to guarantee the directory.
-            subprocess.run(
-                f'cd /d "{scripts_dir}" && npm install',
-                capture_output=True,
-                check=True,
-                timeout=120,
-                shell=True,
-            )
-        else:
-            subprocess.run(
-                ["npm", "install"],
-                capture_output=True,
-                check=True,
-                timeout=120,
-                cwd=scripts_dir,
-            )
-        return True
-    except subprocess.CalledProcessError as exc:
-        print(
-            f"llm-wiki TypeScript extractor: npm install failed.\n"
-            f"{exc.stderr.decode(errors='replace')}",
-            file=sys.stderr,
-        )
-        return False
-    except (subprocess.TimeoutExpired, FileNotFoundError):
-        print(
-            "llm-wiki TypeScript extractor: npm install timed out or not found.",
-            file=sys.stderr,
-        )
-        return False
 
 
 class TypeScriptExtractor:
@@ -130,8 +77,12 @@ class TypeScriptExtractor:
             print(f"llm-wiki TypeScript extractor: {self.last_error}", file=sys.stderr)
             return {}
 
-        if not _ensure_npm_deps():
-            self.last_error = "npm dependencies unavailable"
+        if not typescript_dependencies_ready():
+            self.last_error = (
+                "TypeScript extractor dependencies are not prepared. "
+                "Run `llm-wiki prepare-extractors --language typescript` before lint/extract."
+            )
+            print(f"llm-wiki TypeScript extractor: {self.last_error}", file=sys.stderr)
             return {}
 
         cmd = [

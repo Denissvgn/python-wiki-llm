@@ -187,6 +187,10 @@ def get_inventory_result(
         kwargs = {"src_dir": src_dir, "only_files": only_files, "deep": deep}
         if is_builtin:
             kwargs["source_files"] = fresh_source_files
+            if language in {"go", "rust"}:
+                kwargs["helper_cache_dir"] = (
+                    cache_options.cache_dir if cache_options is not None else None
+                )
         if language == "python":
             kwargs["include_empty"] = include_empty
         try:

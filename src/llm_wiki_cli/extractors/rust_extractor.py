@@ -6,24 +6,24 @@ crate for Rust AST parsing.
 
 Requirements
 ------------
-* Rust toolchain (``cargo``) on PATH.
+* Rust helper prepared with ``llm-wiki prepare-extractors``.
 """
 
 from __future__ import annotations
 
 import json
-import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 from .common import discover_source_files, filter_bundled_inventory
+from ..services.extractor_helpers import get_prepared_binary, missing_helper_message
 
 _RUST_SCRIPTS_DIR = Path(__file__).parent / "rust_scripts"
 
 
 class RustExtractor:
-    """Extractor for Rust source files using a ``cargo run`` subprocess.
+    """Extractor for Rust source files using a prepared helper binary.
 
     Implements :class:`~llm_wiki_cli.extractors.ExtractorProtocol`.
 
@@ -38,6 +38,7 @@ class RustExtractor:
         only_files: list[str] | None = None,
         deep: bool = False,
         source_files: list[str] | None = None,
+        helper_cache_dir: str | None = None,
     ) -> dict:
         """Scan *src_dir* for Rust files and return an inventory dict.
 
@@ -67,13 +68,14 @@ class RustExtractor:
         if not source_files:
             return {}
 
-        if not shutil.which("cargo"):
-            self.last_error = "cargo not found. Install Rust (https://rustup.rs/) to enable Rust extraction."
+        helper_binary = get_prepared_binary("rust", src_dir, helper_cache_dir)
+        if helper_binary is None:
+            self.last_error = missing_helper_message("rust", src_dir, helper_cache_dir)
             print(f"llm-wiki Rust extractor: {self.last_error}", file=sys.stderr)
             return {}
 
         cmd = [
-            "cargo", "run", "--quiet", "--",
+            str(helper_binary),
             "--src-dir", str(Path(src_dir).resolve()),
         ]
         cmd += ["--only-files", ",".join(source_files)]
@@ -87,7 +89,7 @@ class RustExtractor:
                 text=True,
                 check=True,
                 timeout=180,
-                cwd=str(_RUST_SCRIPTS_DIR),
+                cwd=str(helper_binary.parent),
             )
         except subprocess.CalledProcessError as exc:
             self.last_error = "extraction failed"
@@ -104,9 +106,9 @@ class RustExtractor:
             )
             return {}
         except FileNotFoundError:
-            self.last_error = "cargo executable not found"
+            self.last_error = "prepared Rust helper executable not found"
             print(
-                "llm-wiki Rust extractor: cargo executable not found.",
+                "llm-wiki Rust extractor: prepared Rust helper executable not found.",
                 file=sys.stderr,
             )
             return {}

@@ -12,6 +12,7 @@ import pytest
 
 from llm_wiki_cli.config import EXTRACTOR_REGISTRY
 from llm_wiki_cli.extractors.rust_extractor import RustExtractor
+from llm_wiki_cli.services.extractor_helpers import get_prepared_binary
 
 # ---------------------------------------------------------------------------
 # Skip all tests when Rust toolchain is not available on this machine.
@@ -33,10 +34,10 @@ def _command_available(*cmd: str) -> bool:
         return False
 
 
-CARGO_AVAILABLE = _command_available("cargo", "--version")
+CARGO_AVAILABLE = get_prepared_binary("rust", ".") is not None
 skip_no_cargo = pytest.mark.skipif(
     not CARGO_AVAILABLE,
-    reason="Rust toolchain not available — Rust extractor tests skipped",
+    reason="Prepared Rust helper not available — Rust extractor integration tests skipped",
 )
 
 # ---------------------------------------------------------------------------
@@ -68,7 +69,7 @@ class TestRustWrapperFiltering:
                 stderr="",
             )
 
-        monkeypatch.setattr("llm_wiki_cli.extractors.rust_extractor.shutil.which", lambda _name: "/bin/cargo")
+        monkeypatch.setattr("llm_wiki_cli.extractors.rust_extractor.get_prepared_binary", lambda *a, **k: Path("/tmp/rust-helper"))
         monkeypatch.setattr("llm_wiki_cli.extractors.rust_extractor.subprocess.run", fake_run)
 
         RustExtractor().extract(str(tmp_path))
@@ -526,31 +527,25 @@ class TestRustExtractor:
 # ===========================================================================
 
 
-class TestRustExtractorWithoutCargo:
-    def test_no_cargo_returns_empty(self, tmp_path):
+class TestRustExtractorWithoutPreparedHelper:
+    def test_missing_helper_returns_empty(self, tmp_path):
         _make_rs(tmp_path, "src/lib.rs", "pub struct App;\n")
-        with patch(
-            "llm_wiki_cli.extractors.rust_extractor.shutil.which",
-            return_value=None,
-        ):
+        with patch("llm_wiki_cli.extractors.rust_extractor.get_prepared_binary", return_value=None):
             inv = RustExtractor().extract(str(tmp_path))
         assert inv == {}
 
-    def test_no_cargo_stderr_warning(self, tmp_path, capsys):
+    def test_missing_helper_stderr_warning(self, tmp_path, capsys):
         _make_rs(tmp_path, "src/lib.rs", "pub struct App;\n")
-        with patch(
-            "llm_wiki_cli.extractors.rust_extractor.shutil.which",
-            return_value=None,
-        ):
+        with patch("llm_wiki_cli.extractors.rust_extractor.get_prepared_binary", return_value=None):
             RustExtractor().extract(str(tmp_path))
         err = capsys.readouterr().err
-        assert "cargo not found" in err
+        assert "prepare-extractors" in err
 
-    def test_no_rust_files_skips_toolchain_probe(self, tmp_path):
-        with patch("llm_wiki_cli.extractors.rust_extractor.shutil.which") as mock_which:
+    def test_no_rust_files_skips_helper_probe(self, tmp_path):
+        with patch("llm_wiki_cli.extractors.rust_extractor.get_prepared_binary") as mock_prepared:
             inv = RustExtractor().extract(str(tmp_path))
         assert inv == {}
-        mock_which.assert_not_called()
+        mock_prepared.assert_not_called()
 
 
 class TestRustExtractorWrapper:
@@ -562,7 +557,7 @@ class TestRustExtractorWrapper:
             stdout='{"pkg\\\\client.rs": {"classes": [], "functions": []}}',
             stderr="",
         )
-        with patch("llm_wiki_cli.extractors.rust_extractor.shutil.which", return_value="cargo"):
+        with patch("llm_wiki_cli.extractors.rust_extractor.get_prepared_binary", return_value=Path("/tmp/rust-helper")):
             with patch("llm_wiki_cli.extractors.rust_extractor.subprocess.run", return_value=result):
                 inv = RustExtractor().extract(str(tmp_path))
 
@@ -579,7 +574,7 @@ class TestRustExtractorWrapper:
             stdout=f'{{"{source.as_posix()}": {{"classes": [], "functions": []}}}}',
             stderr="",
         )
-        with patch("llm_wiki_cli.extractors.rust_extractor.shutil.which", return_value="cargo"):
+        with patch("llm_wiki_cli.extractors.rust_extractor.get_prepared_binary", return_value=Path("/tmp/rust-helper")):
             with patch("llm_wiki_cli.extractors.rust_extractor.subprocess.run", return_value=result):
                 inv = RustExtractor().extract(str(tmp_path))
 
@@ -594,7 +589,7 @@ class TestRustExtractorWrapper:
             stdout="{not-json",
             stderr="",
         )
-        with patch("llm_wiki_cli.extractors.rust_extractor.shutil.which", return_value="cargo"):
+        with patch("llm_wiki_cli.extractors.rust_extractor.get_prepared_binary", return_value=Path("/tmp/rust-helper")):
             with patch("llm_wiki_cli.extractors.rust_extractor.subprocess.run", return_value=result):
                 inv = RustExtractor().extract(str(tmp_path))
 
@@ -603,7 +598,7 @@ class TestRustExtractorWrapper:
 
     def test_timeout_returns_empty(self, tmp_path, capsys):
         _make_rs(tmp_path, "client.rs", "pub struct Client;\n")
-        with patch("llm_wiki_cli.extractors.rust_extractor.shutil.which", return_value="cargo"):
+        with patch("llm_wiki_cli.extractors.rust_extractor.get_prepared_binary", return_value=Path("/tmp/rust-helper")):
             with patch(
                 "llm_wiki_cli.extractors.rust_extractor.subprocess.run",
                 side_effect=subprocess.TimeoutExpired(["cargo"], 180),
@@ -621,7 +616,7 @@ class TestRustExtractorWrapper:
             stdout='{"client.rs": {"classes": [], "functions": []}}',
             stderr="Warning: skipped bad.rs\n",
         )
-        with patch("llm_wiki_cli.extractors.rust_extractor.shutil.which", return_value="cargo"):
+        with patch("llm_wiki_cli.extractors.rust_extractor.get_prepared_binary", return_value=Path("/tmp/rust-helper")):
             with patch("llm_wiki_cli.extractors.rust_extractor.subprocess.run", return_value=result):
                 RustExtractor().extract(str(tmp_path))
 

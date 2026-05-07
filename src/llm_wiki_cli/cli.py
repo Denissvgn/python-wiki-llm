@@ -17,6 +17,7 @@ from .commands import (
     migrate_cmd,
     obsidian_cmd,
     plugins_cmd,
+    prepare_extractors_cmd,
     release_cmd,
     review_cmd,
     status_cmd,
@@ -82,6 +83,21 @@ def main():
                              help="Include inventory cache diagnostics in lint output")
     lint_parser.add_argument("--cache-dir", default=None, metavar="PATH",
                              help="Directory for llm-wiki-inventory-cache.json")
+
+    # prepare-extractors command
+    prepare_parser = subparsers.add_parser(
+        "prepare-extractors",
+        help="Prepare TypeScript, Go, and Rust extractor helpers",
+    )
+    prepare_parser.add_argument("--src-dir", default=".", help="Source directory to inspect")
+    prepare_parser.add_argument("--cache-dir", default=None, metavar="PATH",
+                                help="Directory for extractor helper cache")
+    prepare_parser.add_argument(
+        "--language",
+        action="append",
+        choices=["typescript", "go", "rust"],
+        help="Helper language to prepare; may be repeated",
+    )
 
     # ci-check command
     ci_parser = subparsers.add_parser("ci-check", help="Run strict wiki validation and write a CI report")
@@ -359,6 +375,8 @@ def main():
             extract_cmd.run(args)
         elif args.command == "lint":
             lint_cmd.run(args)
+        elif args.command == "prepare-extractors":
+            prepare_extractors_cmd.run(args)
         elif args.command == "ci-check":
             ci_check_cmd.run(args)
         elif args.command == "install-hook":
