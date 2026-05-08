@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-05-09
+
+### Added
+- **Lint and sync performance runtime** — shared source snapshots, persistent built-in inventory caching, cache diagnostics, and opt-in `--jobs` parallel extraction for `lint`, `sync`, and `ci-check`.
+- **Lint profiling** — `llm-wiki lint --profile` emits one JSON object with lint issues, diagnostics, phase timings, and optional cache stats.
+- **Prepared extractor helpers** — new `llm-wiki prepare-extractors` command prepares TypeScript, Go, and Rust helpers ahead of time, with helper cache resolution through `--cache-dir`, `LLM_WIKI_CACHE_DIR`, or `.git/llm-wiki-extractors/`.
+- **Go toolchain override** — `LLM_WIKI_GO` selects the Go executable used for helper preparation, with clearer diagnostics when Go is found but cannot run.
+- **Lint speed analysis report** — added `LINT_SPEED_OPTIMIZATION_REPORT.md` documenting the optimization phases and follow-up performance work.
+
+### Changed
+- `sync` now uses the same deep-inventory cache and `--jobs` execution path as `lint`, while preserving normal manifest and page output behavior.
+- `lint --profile` now remains valid JSON even when source extraction fails; extractor failures are returned as `extractor_failure` issues and still exit nonzero.
+- `ci-check --report` now treats the report path as an explicit output destination, allowing absolute paths and relative paths outside the project root.
+- Built-in TypeScript, Go, and Rust extraction no longer installs dependencies or compiles helpers during lint, CI, sync, bootstrap, migrate, or extract runs.
+- Relationship generation uses an indexed import resolver and small sync diffs build relationships only for affected entities.
+- Generated agent instructions now recommend `sync --jobs auto`, strict lint with jobs, helper preparation, broad-diff handling, and `LLM_WIKI_GO` when needed.
+
+### Fixed
+- `sync` repairs manifests with missing or malformed source hashes without modifying wiki pages.
+- `sync` stops unusually broad source diffs before page writes unless `--force` is provided.
+- `sync` avoids no-op rewrites for unchanged generated pages and summarizes unchanged files instead of printing one line per skipped source.
+- Entity name collisions across modules and languages are handled consistently during incremental sync, including index and module links.
+- Local metrics writes are best-effort and no longer fail validation commands when the metrics file cannot be written.
+- Go helper preparation distinguishes "Go not found" from "Go found but failed to run", uses helper-cache-local `GOCACHE` when needed, and preserves user-provided Go cache settings across platforms.
+- Windows CI compatibility improved for helper cache paths, executable casing, and environment variable casing.
+
 ## [0.3.41] - 2026-05-07
 
 ### Added
@@ -133,7 +159,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Test suite** — 89 unit + integration tests with pytest
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.3.41...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.3.41...v0.5.0
 [0.3.41]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.3.28...v0.3.41
 [0.3.28]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.1.5...v0.3.28
 [0.1.5]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.1.1...v0.1.5
