@@ -319,6 +319,46 @@ class TestLintInventoryCaching:
 
 
 class TestLintProfile:
+    def test_build_report_converts_extractor_failure_to_issue(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+        cache_stats = InventoryCacheStats(
+            enabled=True,
+            path="cache.json",
+            status="partial",
+            hits=1,
+        )
+
+        monkeypatch.setattr(
+            lint_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {},
+                {"rust": ExtractorStatus("rust", "failed", 1, "helper missing")},
+                cache_stats,
+            ),
+        )
+        monkeypatch.setattr(
+            lint_cmd,
+            "get_docker_inventory",
+            lambda *a, **k: pytest.fail("docker inventory should not run after extractor failure"),
+        )
+
+        report = lint_cmd.build_report(
+            "wiki",
+            ".",
+            cache_options=lint_cmd.InventoryCacheOptions(enabled=True, stats_enabled=True),
+        )
+
+        assert report.passed is False
+        assert report.cache_stats is cache_stats
+        assert report.issue_count == 1
+        issue = report.issues[0]
+        assert issue.category == "extractor_failure"
+        assert issue.target == "rust"
+        assert issue.message == "rust extraction failed: helper missing"
+
     def test_profile_outputs_combined_json(self, tmp_path, monkeypatch, capsys):
         monkeypatch.chdir(tmp_path)
         wiki = tmp_path / "wiki"
@@ -391,6 +431,73 @@ class TestLintProfile:
         assert payload["ok"] is False
         assert payload["issue_count"] == 1
         assert payload["issues"][0]["category"] == "broken_links"
+
+    def test_profile_outputs_json_on_extractor_failure(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+
+        monkeypatch.setattr(
+            lint_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {},
+                {"rust": ExtractorStatus("rust", "failed", 1, "helper missing")},
+                InventoryCacheStats(enabled=True, path="cache.json", status="miss", misses=1),
+            ),
+        )
+        monkeypatch.setattr(
+            lint_cmd,
+            "get_docker_inventory",
+            lambda *a, **k: pytest.fail("docker inventory should not run after extractor failure"),
+        )
+
+        with pytest.raises(SystemExit) as exc:
+            lint_cmd.run(_make_args(
+                wiki_dir="wiki",
+                src_dir=".",
+                profile=True,
+                cache_stats=True,
+            ))
+
+        assert exc.value.code == 1
+        captured = capsys.readouterr()
+        assert captured.err == ""
+        payload = json.loads(captured.out)
+        assert payload["ok"] is False
+        assert payload["issue_count"] == 1
+        assert payload["issues"][0]["category"] == "extractor_failure"
+        assert payload["issues"][0]["target"] == "rust"
+        assert payload["profile"]["total_ms"] >= 0
+        assert {phase["name"] for phase in payload["profile"]["phases"]} >= {"inventory"}
+        assert payload["cache"]["status"] == "miss"
+
+    def test_non_profile_extractor_failure_reports_stderr_only(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+
+        monkeypatch.setattr(
+            lint_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {},
+                {"python": ExtractorStatus("python", "failed", 1, "boom")},
+            ),
+        )
+        monkeypatch.setattr(
+            lint_cmd,
+            "get_docker_inventory",
+            lambda *a, **k: pytest.fail("docker inventory should not run after extractor failure"),
+        )
+
+        with pytest.raises(SystemExit) as exc:
+            lint_cmd.run(_make_args(wiki_dir="wiki", src_dir="."))
+
+        assert exc.value.code == 1
+        captured = capsys.readouterr()
+        assert captured.out == ""
+        assert "Error: python extraction failed: boom" in captured.err
 
     def test_default_output_remains_human_readable(self, tmp_path, monkeypatch, capsys):
         monkeypatch.chdir(tmp_path)

@@ -29,7 +29,6 @@ def run(args) -> None:
 
     validate_path(src_dir, "--src-dir")
     validate_path(wiki_dir, "--wiki-dir")
-    validate_path(str(report_path), "--report")
 
     started = time.monotonic()
     report = build_report(

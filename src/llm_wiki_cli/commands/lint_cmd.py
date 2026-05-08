@@ -9,7 +9,7 @@ from dataclasses import asdict, dataclass, field
 from collections.abc import Iterator
 from pathlib import Path
 
-from .extract_cmd import get_call_graph, get_docker_inventory, get_inventory_result, print_inventory_failures
+from .extract_cmd import get_call_graph, get_docker_inventory, get_inventory_result
 from .bootstrap_cmd import build_module_page_map, build_entity_page_map
 from ..config import validate_path
 from ..services.inventory_cache import InventoryCacheOptions, InventoryCacheStats, format_cache_stats
@@ -385,8 +385,8 @@ def build_report(
         if cache_options is not None and cache_options.stats_enabled:
             report.cache_stats = inventory_result.cache_stats
     if inventory_result.failed:
-        print_inventory_failures(inventory_result)
-        sys.exit(1)
+        _add_extractor_failures(report, inventory_result)
+        return report
     deep_inventory = inventory_result.inventory
     with _profile_phase(profiler, "docker_inventory"):
         docker_inventory = get_docker_inventory(src_dir, source_snapshot=source_snapshot)
@@ -552,6 +552,17 @@ def _profile_report_to_dict(report: LintReport, profiler: _LintProfiler, *, incl
     return payload
 
 
+def _add_extractor_failures(report: LintReport, inventory_result) -> None:
+    for status in inventory_result.failed:
+        detail = f": {status.message}" if status.message else ""
+        _add(
+            report,
+            "extractor_failure",
+            f"{status.language} extraction failed{detail}",
+            target=status.language,
+        )
+
+
 def render_text(report: LintReport) -> str:
     grouped = report.by_category()
     diagnostic_groups: dict[str, list[LintIssue]] = {}
@@ -576,6 +587,13 @@ def render_text(report: LintReport) -> str:
             lines.append(f"  ✅ {empty}")
             lines.append("")
 
+    if grouped.get("extractor_failure"):
+        emit_group(
+            "extractor_failure",
+            "Source extraction completed.",
+            "Found {count} source extraction failure(s).",
+            prefix="  ❌ ",
+        )
     emit_group("broken_links", "No broken links.", "Found {count} broken link(s).", prefix="  ❌ ")
     emit_group("orphan_pages", "No orphan pages.", "Found {count} orphan page(s).")
     emit_group("undocumented_classes", "All classes documented.", "Found {count} undocumented class(es).")
@@ -654,6 +672,10 @@ def run(args):
         cache_options=cache_options,
         parallel_jobs=getattr(args, "jobs", 1),
     )
+    if report.count("extractor_failure") and not profile:
+        for issue in report.by_category().get("extractor_failure", []):
+            print(f"Error: {issue.message}", file=sys.stderr)
+        sys.exit(1)
     if profile and profiler is not None:
         print(json.dumps(
             _profile_report_to_dict(report, profiler, include_cache=cache_stats),

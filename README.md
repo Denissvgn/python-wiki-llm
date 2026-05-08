@@ -262,6 +262,8 @@ llm-wiki lint --jobs auto --wiki-dir docs/llm_wiki --src-dir .
 Strict mode also requires the core wiki structure and a fresh sync manifest.
 `--profile` suppresses the human-readable lint text and prints one JSON object
 to stdout containing the normal lint report, diagnostics, and phase timings.
+The JSON contract is preserved for extractor failures as well; lint still exits
+nonzero, but stdout remains machine-readable.
 Lint uses a persistent deep-inventory cache by default when a git directory is
 available, storing `.git/llm-wiki-inventory-cache.json`. Override the cache
 directory with `LLM_WIKI_CACHE_DIR` or `--cache-dir PATH`; the CLI flag wins.
@@ -284,7 +286,8 @@ llm-wiki ci-check --format markdown
 
 `ci-check` always runs strict validation, writes a Markdown report, records a
 local metrics event, uses the same safe inventory cache when available, and
-exits nonzero on validation failure.
+exits nonzero on validation failure. `--report` is an output path, so explicit
+absolute paths and relative artifact paths outside the project root are allowed.
 
 ### `context`
 
