@@ -82,6 +82,22 @@ class TestMetrics:
         assert summary["speed"]["average_successful_sync_ms"] == 1200.0
         assert summary["coverage"]["percent"] == 100.0
 
+    def test_record_event_ignores_metrics_mkdir_oserror(self, tmp_project, monkeypatch):
+        def fail_mkdir(self, *args, **kwargs):
+            raise OSError("read-only")
+
+        monkeypatch.setattr(Path, "mkdir", fail_mkdir)
+
+        metrics.record_event("trigger_start", {"agent": "claude"})
+
+    def test_record_event_ignores_metrics_append_oserror(self, tmp_project, monkeypatch):
+        def fail_open(self, *args, **kwargs):
+            raise OSError("read-only")
+
+        monkeypatch.setattr(Path, "open", fail_open)
+
+        metrics.record_event("trigger_start", {"agent": "claude"})
+
     def test_metrics_command_json_output(self, tmp_project, capsys):
         _bootstrap()
         capsys.readouterr()

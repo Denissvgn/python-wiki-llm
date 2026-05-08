@@ -244,7 +244,9 @@ llm-wiki prepare-extractors --cache-dir .cache/llm-wiki
 
 When `--language` is omitted, only helper languages detected in `--src-dir` are
 prepared. Helper cache resolution follows `--cache-dir`, then
-`LLM_WIKI_CACHE_DIR`, then `.git/llm-wiki-extractors/`.
+`LLM_WIKI_CACHE_DIR`, then `.git/llm-wiki-extractors/`. If Go is installed in a
+nonstandard location or the `go` on `PATH` cannot run, set
+`LLM_WIKI_GO=/path/to/go` before running `prepare-extractors`.
 
 ### `lint` and `ci-check`
 

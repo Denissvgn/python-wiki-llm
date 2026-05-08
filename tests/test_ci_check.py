@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import types
+from pathlib import Path
 
 import pytest
 
@@ -206,3 +207,64 @@ def test_ci_check_json_output_unchanged_and_exits_nonzero(tmp_path, monkeypatch,
         "strict": True,
         "wiki_dir": "wiki",
     }
+
+
+def test_ci_check_metrics_oserror_does_not_fail_passing_report(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "wiki").mkdir()
+
+    monkeypatch.setattr(
+        ci_check_cmd,
+        "build_report",
+        lambda wiki_dir, src_dir, **kwargs: LintReport(
+            wiki_dir=str(wiki_dir),
+            src_dir=src_dir,
+            strict=kwargs["strict"],
+        ),
+    )
+    monkeypatch.setattr(
+        ci_check_cmd,
+        "record_validation_event",
+        lambda **kwargs: (_ for _ in ()).throw(OSError("read-only")),
+    )
+
+    ci_check_cmd.run(types.SimpleNamespace(
+        src_dir=".",
+        wiki_dir="wiki",
+        format="json",
+        report="report.md",
+    ))
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["ok"] is True
+    assert Path("report.md").exists()
+
+
+def test_ci_check_metrics_oserror_preserves_validation_failure(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "wiki").mkdir()
+
+    def fake_build_report(wiki_dir, src_dir, **kwargs):
+        report = LintReport(wiki_dir=str(wiki_dir), src_dir=src_dir, strict=kwargs["strict"])
+        report.issues.append(LintIssue("broken_links", "Broken link"))
+        return report
+
+    monkeypatch.setattr(ci_check_cmd, "build_report", fake_build_report)
+    monkeypatch.setattr(
+        ci_check_cmd,
+        "record_validation_event",
+        lambda **kwargs: (_ for _ in ()).throw(OSError("read-only")),
+    )
+
+    with pytest.raises(SystemExit) as exc:
+        ci_check_cmd.run(types.SimpleNamespace(
+            src_dir=".",
+            wiki_dir="wiki",
+            format="json",
+            report="report.md",
+        ))
+
+    assert exc.value.code == 1
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["ok"] is False
+    assert Path("report.md").exists()

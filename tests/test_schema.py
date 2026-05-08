@@ -33,6 +33,7 @@ def test_agent_schema_mentions_current_sync_and_lint_runtime():
     assert "llm-wiki lint --strict --jobs auto --wiki-dir docs/llm_wiki --src-dir ." in content
     assert "llm-wiki lint --profile --cache-stats --wiki-dir docs/llm_wiki --src-dir ." in content
     assert "llm-wiki prepare-extractors --src-dir ." in content
+    assert "LLM_WIKI_GO=/path/to/go" in content
     assert "persistent inventory cache" in content
     assert "large-diff guard" in content
 
@@ -43,4 +44,5 @@ def test_ide_schema_mentions_incremental_sync_workflow():
     assert "llm-wiki sync --jobs auto" in content
     assert "If sync repairs only the manifest" in content
     assert "llm-wiki prepare-extractors --src-dir ." in content
+    assert "LLM_WIKI_GO=/path/to/go" in content
     assert "llm-wiki lint --strict --jobs auto" in content

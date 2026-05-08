@@ -58,7 +58,8 @@ updated automatically on commit. You are responsible for keeping it current:
    llm-wiki prepare-extractors --src-dir .
    ```
    Then repeat the sync or lint command. Do not run npm/go/cargo helper setup
-   manually; `prepare-extractors` owns that cache.
+   manually; `prepare-extractors` owns that cache. If the Go executable on
+   `PATH` cannot run, set `LLM_WIKI_GO=/path/to/go` and retry.
 3. **To build a full update prompt manually**, run in the terminal:
    ```
    llm-wiki generate-prompt
@@ -175,6 +176,8 @@ Page filenames **must** match the conventions enforced by `llm-wiki lint`:
 - Run `llm-wiki extract --src-dir .` to see the live AST inventory when you need detail.
 - If TypeScript, Go, or Rust extraction reports a missing prepared helper, run
   `llm-wiki prepare-extractors --src-dir .` once and repeat the failed command.
+- If Go is installed but not runnable through `PATH`, set
+  `LLM_WIKI_GO=/path/to/go` before preparing extractors.
 - Never leave the wiki in a state where lint reports errors.
 
 ## Formatting rules

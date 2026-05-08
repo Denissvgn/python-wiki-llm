@@ -157,11 +157,15 @@ def test_prepare_extractors_failed_helper_exits_nonzero(tmp_path, monkeypatch):
 def test_prepare_go_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
     cache_root = tmp_path / "helpers"
     commands = []
+    envs = []
 
-    monkeypatch.setattr(extractor_helpers, "command_output", lambda *a, **k: "go version test")
+    monkeypatch.delenv("GOCACHE", raising=False)
+    monkeypatch.setattr(extractor_helpers, "_resolve_go_executable", lambda: "/usr/bin/go")
+    monkeypatch.setattr(extractor_helpers, "_go_version", lambda go: ("go version test", ""))
 
     def fake_run(cmd, **kwargs):
         commands.append(cmd)
+        envs.append(kwargs["env"])
         output = Path(cmd[cmd.index("-o") + 1])
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text("binary", encoding="utf-8")
@@ -172,9 +176,80 @@ def test_prepare_go_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
     result = prepare_go(cache_root)
 
     assert result.status == "prepared"
-    assert commands[0][:3] == ["go", "build", "-o"]
+    assert commands[0][:4] == ["/usr/bin/go", "build", "-o", result.path]
+    assert envs[0]["GOCACHE"] == str(cache_root / "go-build-cache")
     manifest = json.loads((cache_root / "go" / "current.json").read_text(encoding="utf-8"))
     assert manifest["path"] == result.path
+    assert manifest["go_executable"] == "/usr/bin/go"
+
+
+def test_prepare_go_reports_missing_executable(tmp_path, monkeypatch):
+    monkeypatch.setattr(extractor_helpers, "_resolve_go_executable", lambda: None)
+
+    result = prepare_go(tmp_path / "helpers")
+
+    assert result.status == "failed"
+    assert result.message == "go not found"
+
+
+def test_prepare_go_reports_failing_found_executable(tmp_path, monkeypatch):
+    monkeypatch.setattr(extractor_helpers, "_resolve_go_executable", lambda: "/snap/bin/go")
+    monkeypatch.setattr(
+        extractor_helpers,
+        "_go_version",
+        lambda go: (None, "snap-confine failed"),
+    )
+
+    result = prepare_go(tmp_path / "helpers")
+
+    assert result.status == "failed"
+    assert "go found at /snap/bin/go but failed to run: snap-confine failed" in result.message
+    assert "LLM_WIKI_GO=/path/to/go" in result.message
+
+
+def test_prepare_go_uses_llm_wiki_go_override(tmp_path, monkeypatch):
+    cache_root = tmp_path / "helpers"
+    fake_go = tmp_path / extractor_helpers._binary_name("custom-go")
+    fake_go.write_text("#!/bin/sh\n", encoding="utf-8")
+    fake_go.chmod(fake_go.stat().st_mode | 0o111)
+    version_calls = []
+    commands = []
+
+    monkeypatch.setenv("LLM_WIKI_GO", str(fake_go))
+    monkeypatch.setenv("GOCACHE", str(tmp_path / "existing-go-cache"))
+
+    def fake_version(go):
+        version_calls.append(go)
+        return "go version custom", ""
+
+    def fake_run(cmd, **kwargs):
+        commands.append((cmd, kwargs["env"]))
+        output = Path(cmd[cmd.index("-o") + 1])
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text("binary", encoding="utf-8")
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(extractor_helpers, "_go_version", fake_version)
+    monkeypatch.setattr(extractor_helpers.subprocess, "run", fake_run)
+
+    result = prepare_go(cache_root)
+
+    assert result.status == "prepared"
+    assert version_calls == [str(fake_go)]
+    assert commands[0][0][0] == str(fake_go)
+    assert commands[0][1]["GOCACHE"] == str(tmp_path / "existing-go-cache")
+
+
+def test_resolve_go_executable_uses_path_when_no_override(tmp_path, monkeypatch):
+    fake_go = tmp_path / extractor_helpers._binary_name("go")
+    fake_go.write_text("#!/bin/sh\n", encoding="utf-8")
+    fake_go.chmod(fake_go.stat().st_mode | 0o111)
+
+    resolved = extractor_helpers._resolve_go_executable({
+        "PATH": str(tmp_path),
+    })
+
+    assert resolved == str(fake_go)
 
 
 def test_prepare_rust_builds_cached_binary_and_manifest(tmp_path, monkeypatch):

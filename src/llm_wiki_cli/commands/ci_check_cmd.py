@@ -46,15 +46,18 @@ def run(args) -> None:
     print(_render_console(report, output_format), end="")
     print(f"CI report written to: {report_path}", file=sys.stderr)
 
-    record_validation_event(
-        command="ci-check",
-        passed=report.passed,
-        issue_count=report.issue_count,
-        strict=True,
-        duration_ms=duration_ms,
-        wiki_dir=wiki_dir,
-        src_dir=src_dir,
-    )
+    try:
+        record_validation_event(
+            command="ci-check",
+            passed=report.passed,
+            issue_count=report.issue_count,
+            strict=True,
+            duration_ms=duration_ms,
+            wiki_dir=wiki_dir,
+            src_dir=src_dir,
+        )
+    except OSError:
+        pass
 
     if not report.passed:
         sys.exit(1)

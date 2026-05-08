@@ -15,6 +15,7 @@ from typing import Any
 
 from .inventory_cache import ENV_CACHE_DIR
 
+ENV_GO_BINARY = "LLM_WIKI_GO"
 HELPER_CACHE_DIRNAME = "llm-wiki-extractors"
 HELPER_MANIFEST = "current.json"
 HELPER_MANIFEST_VERSION = 1
@@ -146,6 +147,37 @@ def command_output(cmd: list[str], *, cwd: Path | None = None, timeout: int = 15
     return (result.stdout or result.stderr).strip()
 
 
+def _resolve_go_executable(env: dict[str, str] | None = None) -> str | None:
+    env_map = env if env is not None else os.environ
+    configured = env_map.get(ENV_GO_BINARY)
+    if configured:
+        expanded = str(Path(configured).expanduser())
+        search_path = env_map.get("PATH")
+        resolved = shutil.which(expanded, path=search_path)
+        return resolved
+    return shutil.which("go", path=env_map.get("PATH"))
+
+
+def _go_version(go_executable: str, *, timeout: int = 15) -> tuple[str | None, str]:
+    try:
+        result = subprocess.run(
+            [go_executable, "version"],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+    except FileNotFoundError:
+        return None, "executable not found"
+    except subprocess.TimeoutExpired:
+        return None, f"timed out after {timeout} s"
+
+    output = (result.stdout or result.stderr).strip()
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout).strip() or f"exit code {result.returncode}"
+        return None, detail
+    return output, ""
+
+
 def helper_cache_key(
     language: str,
     *,
@@ -274,9 +306,18 @@ def prepare_typescript(cache_root: Path) -> HelperPrepareResult:
 
 
 def prepare_go(cache_root: Path) -> HelperPrepareResult:
-    toolchain = command_output(["go", "version"])
-    if toolchain is None:
+    go_executable = _resolve_go_executable()
+    if go_executable is None:
         return HelperPrepareResult("go", "failed", "go not found")
+
+    toolchain, version_error = _go_version(go_executable)
+    if toolchain is None:
+        return HelperPrepareResult(
+            "go",
+            "failed",
+            f"go found at {go_executable} but failed to run: {version_error}; "
+            f"set {ENV_GO_BINARY}=/path/to/go or fix the Go installation",
+        )
 
     key = helper_cache_key("go", toolchain_version=toolchain)
     out_dir = cache_root / "go" / key
@@ -286,19 +327,25 @@ def prepare_go(cache_root: Path) -> HelperPrepareResult:
         return HelperPrepareResult("go", "already_current", "Go helper already prepared", str(binary_path))
 
     out_dir.mkdir(parents=True, exist_ok=True)
+    build_env = os.environ.copy()
+    if not build_env.get("GOCACHE"):
+        build_env["GOCACHE"] = str(cache_root / "go-build-cache")
     try:
         subprocess.run(
-            ["go", "build", "-o", str(binary_path), "."],
+            [go_executable, "build", "-o", str(binary_path), "."],
             capture_output=True,
             text=True,
             check=True,
             timeout=120,
             cwd=str(GO_SCRIPTS_DIR),
+            env=build_env,
         )
     except subprocess.CalledProcessError as exc:
         return HelperPrepareResult("go", "failed", f"go build failed: {exc.stderr.strip()}")
-    except (subprocess.TimeoutExpired, FileNotFoundError):
-        return HelperPrepareResult("go", "failed", "go build timed out or go was not found")
+    except subprocess.TimeoutExpired:
+        return HelperPrepareResult("go", "failed", "go build timed out after 120 s")
+    except FileNotFoundError:
+        return HelperPrepareResult("go", "failed", f"go build failed: executable not found at {go_executable}")
     if not binary_path.is_file():
         return HelperPrepareResult("go", "failed", "go build did not produce the expected helper binary")
 
@@ -308,6 +355,7 @@ def prepare_go(cache_root: Path) -> HelperPrepareResult:
         "platform": platform_id(),
         "source_fingerprint": helper_source_fingerprint("go"),
         "toolchain": toolchain,
+        "go_executable": go_executable,
         "key": key,
         "path": str(binary_path),
     }

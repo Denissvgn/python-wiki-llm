@@ -68,12 +68,16 @@ def record_event(event: str, payload: dict[str, Any] | None = None, *, git_dir: 
     if not git_path.exists():
         return
     path = metrics_path(git_path)
-    path.parent.mkdir(parents=True, exist_ok=True)
     data = {"ts": _iso_now(), "event": event}
     if payload:
         data.update(payload)
-    with path.open("a", encoding="utf-8") as fh:
-        fh.write(json.dumps(data, sort_keys=True) + "\n")
+    line = json.dumps(data, sort_keys=True) + "\n"
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a", encoding="utf-8") as fh:
+            fh.write(line)
+    except OSError:
+        return
 
 
 def record_validation_event(
