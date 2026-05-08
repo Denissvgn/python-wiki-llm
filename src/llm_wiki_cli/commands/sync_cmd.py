@@ -224,6 +224,10 @@ class SyncDiff:
     removed_files: list[str] = field(default_factory=list)
     # {class_name: (old_filepath, new_filepath)}
     moved_entities: dict[str, tuple[str, str]] = field(default_factory=dict)
+    # {(class_name, filepath): (old_page_name, new_page_name)}
+    renamed_entity_pages: dict[tuple[str, str], tuple[str, str]] = field(default_factory=dict)
+    # {filepath: (old_page_name, new_page_name)}
+    renamed_module_pages: dict[str, tuple[str, str]] = field(default_factory=dict)
 
     @property
     def has_changes(self) -> bool:
@@ -232,6 +236,8 @@ class SyncDiff:
             or self.changed_files
             or self.removed_files
             or self.moved_entities
+            or self.renamed_entity_pages
+            or self.renamed_module_pages
         )
 
 
@@ -240,6 +246,9 @@ def _affected_source_files(diff: SyncDiff) -> set[str]:
     for old_path, new_path in diff.moved_entities.values():
         affected.add(old_path)
         affected.add(new_path)
+    for _, filepath in diff.renamed_entity_pages:
+        affected.add(filepath)
+    affected.update(diff.renamed_module_pages)
     return affected
 
 
@@ -263,7 +272,14 @@ def _large_diff_message(diff: SyncDiff, manifest: SyncManifest) -> str | None:
     return None
 
 
-def _compute_diff(manifest: SyncManifest, inventory: dict, src_dir: str) -> SyncDiff:
+def _compute_diff(
+    manifest: SyncManifest,
+    inventory: dict,
+    src_dir: str,
+    *,
+    entity_page_cache: dict[tuple[str, str], str] | None = None,
+    module_page_map: dict[str, str] | None = None,
+) -> SyncDiff:
     """Compare *manifest* against the live *inventory*.
 
     Move detection: a class that appears in the manifest under one filepath
@@ -273,22 +289,29 @@ def _compute_diff(manifest: SyncManifest, inventory: dict, src_dir: str) -> Sync
     """
     diff = SyncDiff()
 
-    # Build reverse lookup: class_name → filepath (from old manifest)
-    old_cls_to_file: dict[str, str] = {}
+    # Build reverse lookups. Keep sets so duplicate class names do not collapse
+    # into false moves when a new same-named entity appears.
+    old_cls_to_files: dict[str, set[str]] = {}
     for fp, info in manifest.sources.items():
         for cls_name in info.get("entities", []):
-            old_cls_to_file[cls_name] = fp
+            old_cls_to_files.setdefault(cls_name, set()).add(fp)
 
-    # Build reverse lookup: class_name → filepath (from new inventory)
-    new_cls_to_file: dict[str, str] = {}
+    new_cls_to_files: dict[str, set[str]] = {}
     for fp, file_data in inventory.items():
         for cls in file_data.get("classes", []):
-            new_cls_to_file[cls["name"]] = fp
+            new_cls_to_files.setdefault(cls["name"], set()).add(fp)
 
-    # Detect moves: same class name, different file
-    for cls_name, old_fp in old_cls_to_file.items():
-        new_fp = new_cls_to_file.get(cls_name)
-        if new_fp is not None and new_fp != old_fp:
+    # Detect moves only when the entity name is unambiguous before and after.
+    # If both old and new paths still contain the same class name, this is a
+    # naming collision, not a move.
+    for cls_name, old_files in old_cls_to_files.items():
+        new_files = new_cls_to_files.get(cls_name, set())
+        if len(old_files) == 1 and len(new_files) == 1:
+            old_fp = next(iter(old_files))
+            new_fp = next(iter(new_files))
+        else:
+            continue
+        if old_fp != new_fp:
             diff.moved_entities[cls_name] = (old_fp, new_fp)
 
     # Categorise each file in the new inventory
@@ -307,6 +330,32 @@ def _compute_diff(manifest: SyncManifest, inventory: dict, src_dir: str) -> Sync
     for filepath in manifest.sources:
         if filepath not in inventory:
             diff.removed_files.append(filepath)
+
+    if entity_page_cache is None:
+        entity_page_cache = build_entity_page_map(inventory)
+    if module_page_map is None:
+        module_page_map = build_module_page_map(inventory)
+
+    for filepath, file_data in inventory.items():
+        old_info = manifest.sources.get(filepath)
+        if not old_info:
+            continue
+        old_module_page = str(old_info.get("module_page") or _module_name_from_path(filepath))
+        new_module_page = module_page_map.get(filepath, _page_name_for_module(filepath))
+        if old_module_page != new_module_page:
+            diff.renamed_module_pages[filepath] = (old_module_page, new_module_page)
+
+        entity_pages = old_info.get("entity_pages")
+        for cls in file_data.get("classes", []):
+            cls_name = cls["name"]
+            new_page = entity_page_cache.get((cls_name, filepath), cls_name)
+            old_page = (
+                str(entity_pages[cls_name])
+                if isinstance(entity_pages, dict) and cls_name in entity_pages
+                else cls_name
+            )
+            if old_page != new_page:
+                diff.renamed_entity_pages[(cls_name, filepath)] = (old_page, new_page)
 
     return diff
 
@@ -362,6 +411,11 @@ def _apply_diff(
     for cls_name, (_, new_path) in diff.moved_entities.items():
         if new_path in inventory:
             target_entities.add((cls_name, new_path))
+    target_entities.update(diff.renamed_entity_pages)
+    for filepath in diff.renamed_module_pages:
+        if filepath in inventory:
+            for cls in inventory[filepath].get("classes", []):
+                target_entities.add((cls["name"], filepath))
 
     if target_entities:
         print(f"Building relationships for {len(target_entities)} affected entity target(s)...", flush=True)
@@ -373,9 +427,18 @@ def _apply_diff(
     if target_entities:
         print(f"Built affected relationships: {sum(len(v) for v in relationships.values())}.", flush=True)
 
-    # ── New + changed files ────────────────────────────────────────────────────
+    refresh_files = list(dict.fromkeys(
+        diff.new_files
+        + diff.changed_files
+        + [filepath for _, filepath in diff.renamed_entity_pages]
+        + list(diff.renamed_module_pages)
+    ))
+    current_entity_pages = set(entity_page_cache.values())
+    current_module_pages = set(module_page_map.values())
+
+    # ── New + changed + renamed files ──────────────────────────────────────────
     print("Applying wiki page changes...", flush=True)
-    for filepath in diff.new_files + diff.changed_files:
+    for filepath in refresh_files:
         file_data = inventory[filepath]
         mod_page_name = module_page_map.get(filepath, _page_name_for_module(filepath))
 
@@ -388,6 +451,18 @@ def _apply_diff(
         for cls in file_data.get("classes", []):
             entity_page_name = file_entity_page_map[cls["name"]]
             entity_path = wiki_dir / "entities" / f"{entity_page_name}.md"
+            rename = diff.renamed_entity_pages.get((cls["name"], filepath))
+            if rename:
+                old_page_name, new_page_name = rename
+                old_entity_path = wiki_dir / "entities" / f"{old_page_name}.md"
+                new_entity_path = wiki_dir / "entities" / f"{new_page_name}.md"
+                if old_entity_path != new_entity_path and old_entity_path.exists():
+                    if not new_entity_path.exists():
+                        old_entity_path.replace(new_entity_path)
+                        print(f"  RENAME entity: {old_page_name} -> {new_page_name}")
+                    elif old_page_name not in current_entity_pages:
+                        old_entity_path.unlink()
+                        print(f"  REMOVE stale entity page: {old_page_name}")
             content = _generate_entity_md(cls, filepath, relationships, mod_page_name)
             write_state = _write_md_if_changed(entity_path, content)
             if write_state == "created":
@@ -402,6 +477,18 @@ def _apply_diff(
 
         # Module page
         module_path = wiki_dir / "modules" / f"{mod_page_name}.md"
+        module_rename = diff.renamed_module_pages.get(filepath)
+        if module_rename:
+            old_page_name, new_page_name = module_rename
+            old_module_path = wiki_dir / "modules" / f"{old_page_name}.md"
+            new_module_path = wiki_dir / "modules" / f"{new_page_name}.md"
+            if old_module_path != new_module_path and old_module_path.exists():
+                if not new_module_path.exists():
+                    old_module_path.replace(new_module_path)
+                    print(f"  RENAME module: {old_page_name} -> {new_page_name}")
+                elif old_page_name not in current_module_pages:
+                    old_module_path.unlink()
+                    print(f"  REMOVE stale module page: {old_page_name}")
         content = _generate_module_md(filepath, file_data, file_entity_page_map)
         write_state = _write_md_if_changed(module_path, content)
         if write_state == "created":
@@ -415,15 +502,20 @@ def _apply_diff(
             print(f"  SKIP module (unchanged): {mod_page_name}")
 
     # ── Unchanged files ────────────────────────────────────────────────────────
+    refresh_file_set = set(refresh_files)
+    unchanged_files = [
+        filepath for filepath in diff.unchanged_files
+        if filepath not in refresh_file_set
+    ]
     unchanged_pages = sum(
         1 + len(inventory[filepath].get("classes", []))
-        for filepath in diff.unchanged_files
+        for filepath in unchanged_files
         if filepath in inventory
     )
     result.skipped += unchanged_pages
-    if diff.unchanged_files:
+    if unchanged_files:
         print(
-            f"  SKIP unchanged source files: {len(diff.unchanged_files)} "
+            f"  SKIP unchanged source files: {len(unchanged_files)} "
             f"file(s), {unchanged_pages} generated page(s)"
         )
 
@@ -577,8 +669,19 @@ def run(args) -> None:
         _print_cache_stats(inventory_result.cache_stats, enabled=cache_stats_enabled)
         return
 
+    print("Preparing sync page maps...", flush=True)
+    module_page_map = build_module_page_map(inventory)
+    entity_page_cache = build_entity_page_map(inventory)
+    print("Prepared sync page maps.", flush=True)
+
     # 3. Compute diff
-    diff = _compute_diff(manifest, inventory, src_dir)
+    diff = _compute_diff(
+        manifest,
+        inventory,
+        src_dir,
+        entity_page_cache=entity_page_cache,
+        module_page_map=module_page_map,
+    )
 
     if not diff.has_changes:
         print("Wiki is up to date.")
@@ -595,11 +698,6 @@ def run(args) -> None:
         )
         _print_cache_stats(inventory_result.cache_stats, enabled=cache_stats_enabled)
         sys.exit(1)
-
-    print("Preparing sync page maps...", flush=True)
-    module_page_map = build_module_page_map(inventory)
-    entity_page_cache = build_entity_page_map(inventory)
-    print("Prepared sync page maps.", flush=True)
 
     # 4. Apply changes
     result = _apply_diff(

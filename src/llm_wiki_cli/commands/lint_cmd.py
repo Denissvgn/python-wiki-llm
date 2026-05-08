@@ -345,6 +345,8 @@ def _check_sync_manifest(
             f"{len(diff.changed_files)} changed",
             f"{len(diff.removed_files)} removed",
             f"{len(diff.moved_entities)} moved",
+            f"{len(diff.renamed_entity_pages)} renamed entity pages",
+            f"{len(diff.renamed_module_pages)} renamed module pages",
         ]
         _add(
             report,

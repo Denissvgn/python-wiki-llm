@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli import cli
-from llm_wiki_cli.commands import bootstrap_cmd, sync_cmd
+from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd, sync_cmd
 from llm_wiki_cli.commands.sync_cmd import (
     MANIFEST_FILENAME,
     SyncManifest,
@@ -924,6 +924,71 @@ class TestNewFile:
 
         manifest = SyncManifest.load(wiki_dir)
         assert any(k.endswith("auth.py") for k in manifest.sources)
+
+    def test_new_entity_name_collision_renames_existing_pages(self, tmp_path, capsys):
+        proj = tmp_path / "project"
+        proj.mkdir()
+        (proj / "backend" / "app" / "schemas").mkdir(parents=True)
+        (proj / "backend" / "app" / "schemas" / "gantt.py").write_text(
+            "class GanttResponse:\n    pass\n",
+            encoding="utf-8",
+        )
+        (proj / "backend" / "app" / "schemas" / "task.py").write_text(
+            "class SuggestedSubtask:\n    pass\n",
+            encoding="utf-8",
+        )
+
+        wiki_dir = proj / "docs" / "llm_wiki"
+        old_cwd = os.getcwd()
+        os.chdir(proj)
+        try:
+            bootstrap_cmd.run(_make_bootstrap_args(src_dir=".", wiki_dir=str(wiki_dir)))
+
+            assert (wiki_dir / "entities" / "GanttResponse.md").exists()
+            assert (wiki_dir / "entities" / "SuggestedSubtask.md").exists()
+            assert (wiki_dir / "modules" / "gantt.md").exists()
+            assert (wiki_dir / "modules" / "task.md").exists()
+
+            (proj / "frontend" / "src" / "types").mkdir(parents=True)
+            (proj / "frontend" / "src" / "types" / "gantt.py").write_text(
+                "class GanttResponse:\n    pass\n",
+                encoding="utf-8",
+            )
+            (proj / "frontend" / "src" / "types" / "task.py").write_text(
+                "class SuggestedSubtask:\n    pass\n",
+                encoding="utf-8",
+            )
+
+            sync_cmd.run(_make_sync_args(src_dir=".", wiki_dir=str(wiki_dir)))
+            out = capsys.readouterr().out
+
+            assert "Moved entities detected" not in out
+            assert (wiki_dir / "entities" / "schemas_gantt_GanttResponse.md").exists()
+            assert (wiki_dir / "entities" / "types_gantt_GanttResponse.md").exists()
+            assert (wiki_dir / "entities" / "schemas_task_SuggestedSubtask.md").exists()
+            assert (wiki_dir / "entities" / "types_task_SuggestedSubtask.md").exists()
+            assert not (wiki_dir / "entities" / "GanttResponse.md").exists()
+            assert not (wiki_dir / "entities" / "SuggestedSubtask.md").exists()
+
+            assert (wiki_dir / "modules" / "schemas_gantt.md").exists()
+            assert (wiki_dir / "modules" / "types_gantt.md").exists()
+            assert (wiki_dir / "modules" / "schemas_task.md").exists()
+            assert (wiki_dir / "modules" / "types_task.md").exists()
+            assert not (wiki_dir / "modules" / "gantt.md").exists()
+            assert not (wiki_dir / "modules" / "task.md").exists()
+
+            backend_module = (wiki_dir / "modules" / "schemas_gantt.md").read_text(encoding="utf-8")
+            assert "../entities/schemas_gantt_GanttResponse.md" in backend_module
+            index = (wiki_dir / "index.md").read_text(encoding="utf-8")
+            assert "entities/schemas_gantt_GanttResponse.md" in index
+            assert "entities/types_gantt_GanttResponse.md" in index
+            assert "modules/schemas_gantt.md" in index
+            assert "modules/types_gantt.md" in index
+
+            report = lint_cmd.build_report(wiki_dir, ".", strict=True)
+            assert report.passed, report.by_category()
+        finally:
+            os.chdir(old_cwd)
 
 
 class TestMovedClass:
