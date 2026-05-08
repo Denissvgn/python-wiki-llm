@@ -178,6 +178,21 @@ def _go_version(go_executable: str, *, timeout: int = 15) -> tuple[str | None, s
     return output, ""
 
 
+def _env_has_value(env: dict[str, str], name: str) -> bool:
+    """Return True when *env* contains a non-empty variable named *name*.
+
+    Windows environment variables are case-insensitive.  Treating only the
+    exact spelling as present can override a user-provided ``GoCache`` or
+    ``gocache`` value when building helper binaries.
+    """
+    if env.get(name):
+        return True
+    if os.name == "nt":
+        wanted = name.upper()
+        return any(key.upper() == wanted and bool(value) for key, value in env.items())
+    return False
+
+
 def helper_cache_key(
     language: str,
     *,
@@ -328,7 +343,7 @@ def prepare_go(cache_root: Path) -> HelperPrepareResult:
 
     out_dir.mkdir(parents=True, exist_ok=True)
     build_env = os.environ.copy()
-    if not build_env.get("GOCACHE"):
+    if not _env_has_value(build_env, "GOCACHE"):
         build_env["GOCACHE"] = str(cache_root / "go-build-cache")
     try:
         subprocess.run(

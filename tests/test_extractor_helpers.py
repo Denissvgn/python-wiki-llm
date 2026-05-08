@@ -157,18 +157,18 @@ def test_prepare_extractors_failed_helper_exits_nonzero(tmp_path, monkeypatch):
 
 def test_prepare_go_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
     cache_root = tmp_path / "helpers"
-    commands = []
-    envs = []
+    calls = []
 
-    monkeypatch.delenv("GOCACHE", raising=False)
+    for key in list(os.environ):
+        if key.upper() == "GOCACHE":
+            monkeypatch.delenv(key, raising=False)
     monkeypatch.setattr(extractor_helpers, "_resolve_go_executable", lambda: "/usr/bin/go")
     monkeypatch.setattr(extractor_helpers, "_go_version", lambda go: ("go version test", ""))
 
     def fake_run(cmd, **kwargs):
         if len(cmd) >= 2 and cmd[1] == "version":
             return subprocess.CompletedProcess(cmd, 0, stdout="go version test", stderr="")
-        commands.append(cmd)
-        envs.append(kwargs.get("env", {}))
+        calls.append((cmd, kwargs.get("env", {})))
         output = Path(cmd[cmd.index("-o") + 1])
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text("binary", encoding="utf-8")
@@ -179,9 +179,9 @@ def test_prepare_go_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
     result = prepare_go(cache_root)
 
     assert result.status == "prepared"
-    build_cmd = next(cmd for cmd in commands if len(cmd) >= 2 and cmd[1] == "build")
+    build_cmd, build_env = next((cmd, env) for cmd, env in calls if len(cmd) >= 2 and cmd[1] == "build")
     assert build_cmd[:4] == ["/usr/bin/go", "build", "-o", result.path]
-    assert envs[0]["GOCACHE"] == str(cache_root / "go-build-cache")
+    assert build_env["GOCACHE"] == str(cache_root / "go-build-cache")
     manifest = json.loads((cache_root / "go" / "current.json").read_text(encoding="utf-8"))
     assert manifest["path"] == result.path
     assert manifest["go_executable"] == "/usr/bin/go"
