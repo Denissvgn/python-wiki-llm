@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import types
 from pathlib import Path
@@ -164,8 +165,10 @@ def test_prepare_go_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
     monkeypatch.setattr(extractor_helpers, "_go_version", lambda go: ("go version test", ""))
 
     def fake_run(cmd, **kwargs):
+        if len(cmd) >= 2 and cmd[1] == "version":
+            return subprocess.CompletedProcess(cmd, 0, stdout="go version test", stderr="")
         commands.append(cmd)
-        envs.append(kwargs["env"])
+        envs.append(kwargs.get("env", {}))
         output = Path(cmd[cmd.index("-o") + 1])
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text("binary", encoding="utf-8")
@@ -176,7 +179,8 @@ def test_prepare_go_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
     result = prepare_go(cache_root)
 
     assert result.status == "prepared"
-    assert commands[0][:4] == ["/usr/bin/go", "build", "-o", result.path]
+    build_cmd = next(cmd for cmd in commands if len(cmd) >= 2 and cmd[1] == "build")
+    assert build_cmd[:4] == ["/usr/bin/go", "build", "-o", result.path]
     assert envs[0]["GOCACHE"] == str(cache_root / "go-build-cache")
     manifest = json.loads((cache_root / "go" / "current.json").read_text(encoding="utf-8"))
     assert manifest["path"] == result.path
@@ -223,7 +227,9 @@ def test_prepare_go_uses_llm_wiki_go_override(tmp_path, monkeypatch):
         return "go version custom", ""
 
     def fake_run(cmd, **kwargs):
-        commands.append((cmd, kwargs["env"]))
+        if len(cmd) >= 2 and cmd[1] == "version":
+            return subprocess.CompletedProcess(cmd, 0, stdout="go version custom", stderr="")
+        commands.append((cmd, kwargs.get("env", {})))
         output = Path(cmd[cmd.index("-o") + 1])
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text("binary", encoding="utf-8")
@@ -249,7 +255,9 @@ def test_resolve_go_executable_uses_path_when_no_override(tmp_path, monkeypatch)
         "PATH": str(tmp_path),
     })
 
-    assert resolved == str(fake_go)
+    assert os.path.normcase(os.path.normpath(str(resolved))) == os.path.normcase(
+        os.path.normpath(str(fake_go))
+    )
 
 
 def test_prepare_rust_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
@@ -259,6 +267,8 @@ def test_prepare_rust_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
     monkeypatch.setattr(extractor_helpers, "command_output", lambda *a, **k: "cargo 1.0")
 
     def fake_run(cmd, **kwargs):
+        if "--target-dir" not in cmd:
+            return subprocess.CompletedProcess(cmd, 0, stdout="cargo 1.0", stderr="")
         commands.append(cmd)
         target = Path(cmd[cmd.index("--target-dir") + 1])
         output = target / "release" / extractor_helpers._binary_name("llm-wiki-rust-extractor")
@@ -271,6 +281,7 @@ def test_prepare_rust_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
     result = prepare_rust(cache_root)
 
     assert result.status == "prepared"
-    assert commands[0][:3] == ["cargo", "build", "--release"]
+    build_cmd = next(cmd for cmd in commands if cmd[:3] == ["cargo", "build", "--release"])
+    assert build_cmd[:3] == ["cargo", "build", "--release"]
     manifest = json.loads((cache_root / "rust" / "current.json").read_text(encoding="utf-8"))
     assert manifest["path"] == result.path

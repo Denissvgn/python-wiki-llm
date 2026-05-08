@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd, migrate_cmd
+from llm_wiki_cli.services.extractor_helpers import prepare_helper, resolve_helper_cache_root
 
 
 PROJECT_ROOT = Path(__file__).parents[1]
@@ -83,6 +84,15 @@ def _make_wiki(proj: Path) -> Path:
     return wiki
 
 
+def _prepare_helpers_or_fail(proj: Path, languages: list[str]) -> None:
+    (proj / ".git").mkdir(exist_ok=True)
+    cache_root = resolve_helper_cache_root(proj)
+    assert cache_root is not None
+    for language in languages:
+        result = prepare_helper(language, cache_root)
+        assert result.status in {"prepared", "already_current"}, result.message
+
+
 @skip_no_ts_go_rust
 def test_bootstrap_multilanguage_collision_pages_lint_passes(tmp_path, monkeypatch, capsys):
     proj = tmp_path / "proj"
@@ -90,6 +100,7 @@ def test_bootstrap_multilanguage_collision_pages_lint_passes(tmp_path, monkeypat
     _write(proj / "web" / "client.ts", "export class Client {}\n")
     _write(proj / "go" / "api" / "client.go", "package api\n\ntype Client struct{}\n")
     _write(proj / "rust" / "native" / "client.rs", "pub struct Client;\n")
+    _prepare_helpers_or_fail(proj, ["typescript", "go", "rust"])
 
     monkeypatch.chdir(proj)
     bootstrap_cmd.run(_make_args())
@@ -111,6 +122,7 @@ def test_migrate_reconciles_legacy_go_page_with_rust_name_collision(tmp_path, mo
     proj.mkdir()
     _write(proj / "go" / "api" / "client.go", "package api\n\ntype Client struct{}\n")
     _write(proj / "rust" / "native" / "client.rs", "pub struct Client;\n")
+    _prepare_helpers_or_fail(proj, ["go", "rust"])
     wiki = _make_wiki(proj)
     _write(
         wiki / "entities" / "Client.md",
