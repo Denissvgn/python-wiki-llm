@@ -72,6 +72,18 @@ def test_respects_root_and_nested_gitignore(tmp_path):
     snapshot = build_source_snapshot(tmp_path)
 
     assert _paths(snapshot, "python") == ["pkg/visible.py"]
+    assert snapshot.gitignore_fingerprint.startswith("sha256:")
+
+
+def test_gitignore_fingerprint_changes_with_discovered_gitignore(tmp_path):
+    (tmp_path / ".gitignore").write_text("ignored.py\n", encoding="utf-8")
+    (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
+    first = build_source_snapshot(tmp_path)
+
+    (tmp_path / ".gitignore").write_text("ignored.py\nother.py\n", encoding="utf-8")
+    second = build_source_snapshot(tmp_path)
+
+    assert second.gitignore_fingerprint != first.gitignore_fingerprint
 
 
 def test_records_docker_yaml_and_package_candidates_deterministically(tmp_path):

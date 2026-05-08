@@ -22,7 +22,7 @@ from ..services.inventory_cache import (
     is_valid_cache_entry,
     make_cache_entry,
 )
-from ..services.imports import module_path_candidates
+from ..services.imports import build_module_path_resolver
 from ..services.packages import discover_packages, stamp_inventory_packages
 from ..services.plugins import get_extractor_registry
 from ..services.source_snapshot import SourceSnapshot, build_source_snapshot
@@ -229,14 +229,10 @@ def get_inventory_result(
                     continue
                 if is_valid_cache_entry(cached_entry, source_file, file_hash):
                     cache.stats.hits += 1
-                    raw_inventory = deepcopy(cached_entry.get("inventory", {}))
+                    raw_inventory = cached_entry.get("inventory", {})
                     if raw_inventory:
-                        cached_by_language[language][rel_path] = raw_inventory
-                    updated_cache_files[rel_path] = make_cache_entry(
-                        source_file,
-                        file_hash,
-                        deepcopy(cached_entry.get("inventory", {})),
-                    )
+                        cached_by_language[language][rel_path] = deepcopy(raw_inventory)
+                    updated_cache_files[rel_path] = cached_entry
                     continue
                 cached_hash = cached_entry.get("hash") if isinstance(cached_entry, dict) else None
                 if cached_hash != file_hash:
@@ -342,7 +338,16 @@ def get_inventory_result(
     if cache is not None and cache.enabled:
         cache.finalize_lookup_status()
         if cache_key is not None and not any(status.state == "failed" for status in statuses.values()):
-            cache.save(cache_key, updated_cache_files)
+            should_save_cache = (
+                cache.options.rebuild
+                or bool(cache.stats.misses)
+                or bool(cache.stats.changed)
+                or bool(cache.stats.stale)
+                or bool(cache.stats.deleted)
+                or bool(cache.stats.fresh_extracted)
+            )
+            if should_save_cache:
+                cache.save(cache_key, updated_cache_files)
 
     return InventoryResult(
         inventory=inventory,
@@ -512,6 +517,7 @@ def get_call_graph(inventory: dict) -> dict:
             symbol_to_files.setdefault(fn["name"], set()).add(fp)
 
     workflows: dict[str, dict] = {}
+    module_resolver = build_module_path_resolver(inventory)
 
     # Determine which paths are test files — skip them for workflow detection
     _TEST_STEMS = {"conftest"}
@@ -534,9 +540,7 @@ def get_call_graph(inventory: dict) -> dict:
             source_name = imp["name"]
             visible_name = imp.get("alias") or source_name
             candidates = set(symbol_to_files.get(source_name, set()))
-            module_candidates = module_path_candidates(
-                imp.get("module", ""), fp, inventory
-            )
+            module_candidates = module_resolver.candidates(imp.get("module", ""), fp)
 
             if candidates and module_candidates:
                 candidates &= module_candidates

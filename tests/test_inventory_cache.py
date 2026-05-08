@@ -14,6 +14,7 @@ from llm_wiki_cli.services.inventory_cache import (
     resolve_inventory_cache_path,
 )
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
+from llm_wiki_cli.commands.extract_cmd import get_inventory_result
 
 
 def test_resolves_normal_git_dir(tmp_path):
@@ -113,6 +114,7 @@ def test_cache_key_changes_for_gitignore_plugin_and_filter_inputs(tmp_path, monk
 
     base = key()
     (src / ".gitignore").write_text("ignored.py\n", encoding="utf-8")
+    snapshot = build_source_snapshot(src)
     assert key()["gitignore_fingerprint"] != base["gitignore_fingerprint"]
 
     plugin_home = tmp_path / ".llm-wiki"
@@ -125,3 +127,42 @@ def test_cache_key_changes_for_gitignore_plugin_and_filter_inputs(tmp_path, monk
 
     monkeypatch.setattr(inventory_cache, "_implementation_fingerprint", lambda: "changed")
     assert key()["extractor_fingerprint"] == "changed"
+
+
+def test_cache_key_uses_snapshot_gitignore_fingerprint_without_rescan(tmp_path, monkeypatch):
+    src = tmp_path / "src"
+    src.mkdir()
+    (src / ".gitignore").write_text("ignored.py\n", encoding="utf-8")
+    (src / "app.py").write_text("class App: pass\n", encoding="utf-8")
+    snapshot = build_source_snapshot(src)
+    monkeypatch.setattr(
+        inventory_cache,
+        "_gitignore_fingerprint",
+        lambda root: (_ for _ in ()).throw(AssertionError("should not rescan")),
+    )
+
+    cache_key = build_inventory_cache_key(
+        src,
+        snapshot,
+        deep=True,
+        include_empty=False,
+        extractor_registry={"python": "builtin"},
+    )
+
+    assert cache_key["gitignore_fingerprint"] == snapshot.gitignore_fingerprint
+
+
+def test_pure_warm_cache_hit_does_not_rewrite_cache(tmp_path):
+    cache_dir = tmp_path / "cache"
+    (tmp_path / "app.py").write_text("class App:\n    pass\n", encoding="utf-8")
+    options = InventoryCacheOptions(enabled=True, cache_dir=str(cache_dir), stats_enabled=True)
+
+    first = get_inventory_result(tmp_path, deep=True, cache_options=options)
+    assert first.cache_stats is not None
+    assert first.cache_stats.saved_entries == 1
+
+    second = get_inventory_result(tmp_path, deep=True, cache_options=options)
+    assert second.cache_stats is not None
+    assert second.cache_stats.status == "hit"
+    assert second.cache_stats.hits == 1
+    assert second.cache_stats.saved_entries == 0

@@ -80,9 +80,17 @@ def _invalid_manifest_hash_paths(manifest: "SyncManifest") -> list[str]:
     ]
 
 
-def _build_manifest_from_inventory(inventory: dict, src_dir: str) -> "SyncManifest":
-    colliding_stems, colliding_cls, entity_page_cache = _collision_maps(inventory, src_dir)
-    module_page_map = build_module_page_map(inventory)
+def _build_manifest_from_inventory(
+    inventory: dict,
+    src_dir: str,
+    *,
+    entity_page_cache: dict[tuple[str, str], str] | None = None,
+    module_page_map: dict[str, str] | None = None,
+) -> "SyncManifest":
+    if entity_page_cache is None:
+        _, _, entity_page_cache = _collision_maps(inventory, src_dir)
+    if module_page_map is None:
+        module_page_map = build_module_page_map(inventory)
     return SyncManifest.build_from_inventory(
         inventory,
         src_dir,
@@ -333,21 +341,40 @@ def _apply_diff(
     inventory: dict,
     src_dir: str,
     manifest: SyncManifest,
+    *,
+    entity_page_cache: dict[tuple[str, str], str] | None = None,
+    module_page_map: dict[str, str] | None = None,
 ) -> SyncResult:
     """Regenerate pages for new/changed files, deprecate pages for removed files."""
     result = SyncResult()
 
-    # Full collision maps over the *entire* inventory
-    colliding_stems, colliding_cls, entity_page_cache = _collision_maps(inventory, src_dir)
+    if entity_page_cache is None:
+        _, _, entity_page_cache = _collision_maps(inventory, src_dir)
+    if module_page_map is None:
+        module_page_map = build_module_page_map(inventory)
 
-    # Module page map for the manifest builder: filepath → module_page_name
-    module_page_map: dict[str, str] = build_module_page_map(inventory)
+    target_entities = {
+        (cls["name"], filepath)
+        for filepath in diff.new_files + diff.changed_files
+        if filepath in inventory
+        for cls in inventory[filepath].get("classes", [])
+    }
+    for cls_name, (_, new_path) in diff.moved_entities.items():
+        if new_path in inventory:
+            target_entities.add((cls_name, new_path))
 
-    # Re-build relationships from the full inventory using the same
-    # collision-aware module page names as bootstrap/migrate.
-    relationships = _build_relationships(inventory, module_page_map)
+    if target_entities:
+        print(f"Building relationships for {len(target_entities)} affected entity target(s)...", flush=True)
+    relationships = (
+        _build_relationships(inventory, module_page_map, target_entities=target_entities)
+        if target_entities
+        else {}
+    )
+    if target_entities:
+        print(f"Built affected relationships: {sum(len(v) for v in relationships.values())}.", flush=True)
 
     # ── New + changed files ────────────────────────────────────────────────────
+    print("Applying wiki page changes...", flush=True)
     for filepath in diff.new_files + diff.changed_files:
         file_data = inventory[filepath]
         mod_page_name = module_page_map.get(filepath, _page_name_for_module(filepath))
@@ -388,11 +415,17 @@ def _apply_diff(
             print(f"  SKIP module (unchanged): {mod_page_name}")
 
     # ── Unchanged files ────────────────────────────────────────────────────────
-    for filepath in diff.unchanged_files:
-        mod_page_name = module_page_map.get(filepath, _page_name_for_module(filepath))
-        entity_count = len(inventory[filepath].get("classes", []))
-        result.skipped += 1 + entity_count  # 1 module page + N entity pages
-        print(f"  SKIP (unchanged): {_module_name_from_path(filepath)}")
+    unchanged_pages = sum(
+        1 + len(inventory[filepath].get("classes", []))
+        for filepath in diff.unchanged_files
+        if filepath in inventory
+    )
+    result.skipped += unchanged_pages
+    if diff.unchanged_files:
+        print(
+            f"  SKIP unchanged source files: {len(diff.unchanged_files)} "
+            f"file(s), {unchanged_pages} generated page(s)"
+        )
 
     # ── Removed files ──────────────────────────────────────────────────────────
     for filepath in diff.removed_files:
@@ -424,6 +457,7 @@ def _apply_diff(
                     result.deprecated += 1
                     print(f"  DEPRECATE module: {mod_page_path.stem}")
 
+    print("Applied wiki page changes.", flush=True)
     return result
 
 
@@ -562,18 +596,44 @@ def run(args) -> None:
         _print_cache_stats(inventory_result.cache_stats, enabled=cache_stats_enabled)
         sys.exit(1)
 
+    print("Preparing sync page maps...", flush=True)
+    module_page_map = build_module_page_map(inventory)
+    entity_page_cache = build_entity_page_map(inventory)
+    print("Prepared sync page maps.", flush=True)
+
     # 4. Apply changes
-    result = _apply_diff(diff, wiki_dir, inventory, src_dir, manifest)
+    result = _apply_diff(
+        diff,
+        wiki_dir,
+        inventory,
+        src_dir,
+        manifest,
+        entity_page_cache=entity_page_cache,
+        module_page_map=module_page_map,
+    )
 
     # 5. Rebuild index.md
-    _rebuild_index(wiki_dir, inventory, src_dir)
+    _rebuild_index(
+        wiki_dir,
+        inventory,
+        src_dir,
+        entity_page_cache=entity_page_cache,
+        module_page_map=module_page_map,
+    )
 
     # 6. Append log entry
     _append_log(wiki_dir, src_dir, diff, result)
 
     # 7. Compute collision maps + module page map for manifest, then save
-    updated_manifest = _build_manifest_from_inventory(inventory, src_dir)
+    print("Writing sync manifest...", flush=True)
+    updated_manifest = _build_manifest_from_inventory(
+        inventory,
+        src_dir,
+        entity_page_cache=entity_page_cache,
+        module_page_map=module_page_map,
+    )
     updated_manifest.save(wiki_dir)
+    print(f"Manifest written to {wiki_dir / MANIFEST_FILENAME}", flush=True)
 
     print(
         f"\nSync complete: {result.created} created, {result.updated} updated, "
@@ -588,10 +648,18 @@ def run(args) -> None:
 # ── Index + log helpers ───────────────────────────────────────────────────────
 
 
-def _rebuild_index(wiki_dir: Path, inventory: dict, src_dir: str) -> None:
+def _rebuild_index(
+    wiki_dir: Path,
+    inventory: dict,
+    src_dir: str,
+    *,
+    entity_page_cache: dict[tuple[str, str], str] | None = None,
+    module_page_map: dict[str, str] | None = None,
+) -> None:
     """Regenerate index.md from the live inventory."""
-    colliding_stems, colliding_cls, entity_page_cache = _collision_maps(inventory, src_dir)
-    mod_page_map = build_module_page_map(inventory)
+    if entity_page_cache is None:
+        _, _, entity_page_cache = _collision_maps(inventory, src_dir)
+    mod_page_map = module_page_map or build_module_page_map(inventory)
 
     all_entity_names: list[str] = []
     seen: set[str] = set()

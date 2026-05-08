@@ -200,7 +200,7 @@ def build_inventory_cache_key(
         "extractor_registry": dict(sorted(extractor_registry.items())),
         "extractor_fingerprint": _implementation_fingerprint(),
         "filter_fingerprint": _filter_fingerprint(),
-        "gitignore_fingerprint": _gitignore_fingerprint(source_snapshot.root),
+        "gitignore_fingerprint": source_snapshot.gitignore_fingerprint,
         "plugin_lock_fingerprint": _plugin_fingerprint(project_root),
     }
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import hashlib
 from dataclasses import dataclass
 from fnmatch import fnmatch
 from pathlib import Path
@@ -12,7 +13,8 @@ from ..config import (
     COMPOSE_PATTERNS,
     DOCKERFILE_PATTERNS,
     EXCLUDED_DIRS,
-    build_gitignore_matcher,
+    GitIgnoreMatcher,
+    _parse_gitignore_file,
 )
 from ..extractors.common import LANGUAGE_EXTENSIONS
 
@@ -43,6 +45,7 @@ class SourceSnapshot:
     yaml_candidates: tuple[SourceFile, ...]
     package_markers: tuple[SourceFile, ...]
     all_source_paths: tuple[str, ...]
+    gitignore_fingerprint: str
 
     def language_paths(self, language: str) -> list[str]:
         """Return deterministic relative paths for a language."""
@@ -107,6 +110,27 @@ def _append_sorted(target: list[SourceFile], source_file: SourceFile | None) -> 
         target.append(source_file)
 
 
+def _sha256_labeled_files(paths: list[tuple[str, Path]]) -> str:
+    hasher = hashlib.sha256()
+    for label, path in sorted(paths, key=lambda item: item[0]):
+        hasher.update(label.replace("\\", "/").encode("utf-8"))
+        hasher.update(b"\0")
+        try:
+            hasher.update(path.read_bytes())
+        except OSError:
+            hasher.update(b"<unreadable>")
+        hasher.update(b"\0")
+    return "sha256:" + hasher.hexdigest()
+
+
+def _directory_ignored(matcher: GitIgnoreMatcher, rel_path: str) -> bool:
+    """Return whether a directory path is ignored by the current matcher."""
+    rel_path = rel_path.strip("/")
+    if not rel_path:
+        return False
+    return matcher.is_ignored(rel_path) or matcher.is_ignored(f"{rel_path}/__llm_wiki_dir__")
+
+
 def build_source_snapshot(src_dir: str | Path, only_files: Iterable[str] | None = None) -> SourceSnapshot:
     """Build a deterministic source-tree snapshot rooted at *src_dir*.
 
@@ -116,7 +140,6 @@ def build_source_snapshot(src_dir: str | Path, only_files: Iterable[str] | None 
     existing infrastructure and package behavior.
     """
     root = Path(src_dir).resolve()
-    matcher = build_gitignore_matcher(root)
     only_set = _normalize_only_files(root, only_files)
 
     files_by_language: dict[str, list[SourceFile]] = {
@@ -126,6 +149,8 @@ def build_source_snapshot(src_dir: str | Path, only_files: Iterable[str] | None 
     compose_candidates: list[SourceFile] = []
     yaml_candidates: list[SourceFile] = []
     package_markers: list[SourceFile] = []
+    gitignore_paths: list[tuple[str, Path]] = []
+    gitignore_rules = []
 
     if not root.exists():
         return SourceSnapshot(
@@ -136,10 +161,10 @@ def build_source_snapshot(src_dir: str | Path, only_files: Iterable[str] | None 
             yaml_candidates=(),
             package_markers=(),
             all_source_paths=(),
+            gitignore_fingerprint=_sha256_labeled_files([]),
         )
 
     for dirpath, dirnames, filenames in os.walk(root, topdown=True, followlinks=False):
-        dirnames[:] = [name for name in dirnames if name not in EXCLUDED_DIRS]
         current_dir = Path(dirpath)
         try:
             rel_dir = current_dir.resolve().relative_to(root)
@@ -149,6 +174,23 @@ def build_source_snapshot(src_dir: str | Path, only_files: Iterable[str] | None 
         if rel_dir != Path(".") and not EXCLUDED_DIRS.isdisjoint(rel_dir.parts):
             dirnames[:] = []
             continue
+
+        gitignore = current_dir / ".gitignore"
+        if gitignore.is_file():
+            base = "" if rel_dir == Path(".") else rel_dir.as_posix()
+            gitignore_paths.append((gitignore.relative_to(root).as_posix(), gitignore))
+            gitignore_rules.extend(_parse_gitignore_file(gitignore, base))
+
+        matcher = GitIgnoreMatcher(gitignore_rules)
+        kept_dirnames = []
+        for name in dirnames:
+            if name in EXCLUDED_DIRS:
+                continue
+            child_rel = name if rel_dir == Path(".") else (rel_dir / name).as_posix()
+            if _directory_ignored(matcher, child_rel):
+                continue
+            kept_dirnames.append(name)
+        dirnames[:] = kept_dirnames
 
         for filename in filenames:
             path = current_dir / filename
@@ -202,4 +244,5 @@ def build_source_snapshot(src_dir: str | Path, only_files: Iterable[str] | None 
         yaml_candidates=tuple(sorted(yaml_candidates, key=lambda item: item.rel_path)),
         package_markers=tuple(sorted(package_markers, key=lambda item: item.rel_path)),
         all_source_paths=all_source_paths,
+        gitignore_fingerprint=_sha256_labeled_files(gitignore_paths),
     )

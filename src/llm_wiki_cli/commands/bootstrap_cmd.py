@@ -11,7 +11,7 @@ from pathlib import Path
 
 from .extract_cmd import get_call_graph, get_docker_inventory, get_inventory_result, print_inventory_failures
 from ..config import validate_path
-from ..services.imports import module_path_candidates
+from ..services.imports import ModulePathResolver, build_module_path_resolver
 from ..services.io import read_md, write_md
 from ..services.paths import normalize_source_path
 from ..services.source_snapshot import build_source_snapshot
@@ -129,7 +129,13 @@ def build_entity_page_map(inventory: dict) -> dict[tuple[str, str], str]:
     return page_map
 
 
-def _build_relationships(inventory: dict, module_page_map: dict[str, str] | None = None) -> dict:
+def _build_relationships(
+    inventory: dict,
+    module_page_map: dict[str, str] | None = None,
+    *,
+    target_entities: set[tuple[str, str]] | None = None,
+    resolver: ModulePathResolver | None = None,
+) -> dict:
     """Cross-reference imports against known entity identities to build a usage graph.
 
     Returns a dict mapping ``(entity_name, defining_filepath)`` to a list of
@@ -149,6 +155,7 @@ def _build_relationships(inventory: dict, module_page_map: dict[str, str] | None
     # relationship map: (entity_name, defining_filepath) -> relationship records
     relationships = defaultdict(list)
     _mod_page_map = module_page_map or {}
+    module_resolver = resolver or build_module_path_resolver(inventory)
 
     for filepath, data in inventory.items():
         mod_name = _module_name_from_path(filepath)
@@ -159,19 +166,20 @@ def _build_relationships(inventory: dict, module_page_map: dict[str, str] | None
             if not entity_name or entity_name not in entity_to_files:
                 continue
             candidates = set(entity_to_files[entity_name])
-            module_candidates = module_path_candidates(
-                imp.get("module", ""), filepath, inventory
-            )
+            module_candidates = module_resolver.candidates(imp.get("module", ""), filepath)
             if module_candidates:
                 candidates &= module_candidates
             candidates.discard(filepath)
             if len(candidates) != 1:
                 continue
             defining_filepath = next(iter(candidates))
+            entity_key = (entity_name, defining_filepath)
+            if target_entities is not None and entity_key not in target_entities:
+                continue
             visible_names = {entity_name}
             if imp.get("alias"):
                 visible_names.add(imp["alias"])
-            imported_entities[(entity_name, defining_filepath)] = visible_names
+            imported_entities[entity_key] = visible_names
 
         for entity_key, visible_names in imported_entities.items():
             for fn in data.get("functions", []):
@@ -825,14 +833,15 @@ def run(args):
     deep = depth == "full"
     skip_workflows = getattr(args, "skip_workflows", False)
 
-    print(f"Bootstrapping wiki from source: {src_dir} (depth={depth})")
-    print(f"Wiki output directory: {wiki_dir}")
+    print(f"Bootstrapping wiki from source: {src_dir} (depth={depth})", flush=True)
+    print(f"Wiki output directory: {wiki_dir}", flush=True)
 
     # Ensure wiki structure exists
     for subdir in ["entities", "modules", "workflows", "infrastructure"]:
         (wiki_dir / subdir).mkdir(parents=True, exist_ok=True)
 
     # 1. Extract full AST inventory
+    print("Extracting source inventory...", flush=True)
     source_snapshot = build_source_snapshot(src_dir)
     inventory_result = get_inventory_result(
         src_dir,
@@ -843,6 +852,7 @@ def run(args):
         print_inventory_failures(inventory_result)
         sys.exit(1)
     inventory = inventory_result.inventory
+    print(f"Extracted source inventory: {len(inventory)} file(s).", flush=True)
 
     if not inventory:
         print("No supported source files with classes or functions found. Nothing to bootstrap.")
@@ -861,8 +871,13 @@ def run(args):
     _entity_page_name_cache: dict = build_entity_page_map(inventory)
 
     # 2. Build cross-reference relationships (only meaningful in deep mode)
+    if deep:
+        print("Building cross-reference relationships...", flush=True)
     relationships = _build_relationships(inventory, _module_page_map) if deep else {}
+    if deep:
+        print(f"Built cross-reference relationships: {sum(len(v) for v in relationships.values())}.", flush=True)
 
+    print("Generating entity and module pages...", flush=True)
     for filepath, file_data in inventory.items():
         mod_page_name = _module_page_map[filepath]
         # Map cls_name -> page_stem for classes in this file (used by module page links)
@@ -899,6 +914,10 @@ def run(args):
             "path": filepath,
             "docstring": file_data.get("module_docstring", ""),
         })
+    print(
+        f"Generated entity/module pages: {entities_created} entities, {modules_created} modules.",
+        flush=True,
+    )
 
     # 3. Generate workflow pages from call graph (deep mode only)
     workflow_entries = []
@@ -918,6 +937,7 @@ def run(args):
     # 4. Generate infrastructure pages (Dockerfile, docker-compose, etc.)
     infra_entries = []
     infra_created = 0
+    print("Generating infrastructure pages...", flush=True)
     docker_inventory = get_docker_inventory(src_dir, source_snapshot=source_snapshot)
     for docker_file, docker_info in docker_inventory.items():
         page_name = docker_file.replace("\\", "/").replace("/", "_").replace(".", "_")
@@ -929,6 +949,7 @@ def run(args):
             infra_created += 1
             print(f"  CREATE infrastructure: {page_name}")
         infra_entries.append({"name": page_name, "type": docker_info["type"]})
+    print(f"Generated infrastructure pages: {infra_created}.", flush=True)
 
     # 5. Rebuild index.md
     index_path = wiki_dir / "index.md"
@@ -975,6 +996,7 @@ def run(args):
     manifest = SyncManifest.build_from_inventory(
         inventory, src_dir, _entity_page_name_cache, _module_page_map,
     )
+    print("Writing sync manifest...", flush=True)
     manifest.save(wiki_dir)
     print(f"  WRITE {wiki_dir / '.llm-wiki-manifest.json'}")
 

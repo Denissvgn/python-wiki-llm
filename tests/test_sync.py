@@ -645,6 +645,31 @@ class TestSyncSafetyGuards:
         assert index_path not in writes
         assert wiki_dir / "log.md" in writes
 
+    def test_small_diff_relationships_are_target_scoped(self, bootstrapped_project, monkeypatch):
+        proj, wiki_dir = bootstrapped_project
+        (proj / "extra.py").write_text("class Extra:\n    pass\n", encoding="utf-8")
+        seen = {}
+
+        def fake_build_relationships(inventory, module_page_map=None, *, target_entities=None, **kwargs):
+            seen["target_entities"] = target_entities
+            return {}
+
+        monkeypatch.setattr(sync_cmd, "_build_relationships", fake_build_relationships)
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
+        assert seen["target_entities"] == {("Extra", "extra.py")}
+
+    def test_changed_sync_summarizes_unchanged_files(self, bootstrapped_project, capsys):
+        proj, wiki_dir = bootstrapped_project
+        (proj / "extra.py").write_text("class Extra:\n    pass\n", encoding="utf-8")
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
+        out = capsys.readouterr().out
+        assert "SKIP unchanged source files:" in out
+        assert "SKIP (unchanged):" not in out
+
     def test_already_deprecated_pages_are_not_rewritten(self, bootstrapped_project, monkeypatch):
         proj, wiki_dir = bootstrapped_project
         (proj / "models.py").unlink()

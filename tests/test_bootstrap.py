@@ -66,6 +66,18 @@ def tmp_collision_project(tmp_path):
 
 
 class TestBootstrapCollisions:
+    def test_bootstrap_prints_long_phase_progress(self, tmp_collision_project, capsys):
+        wiki_dir = tmp_collision_project / "docs" / "llm_wiki"
+        args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
+
+        bootstrap_cmd.run(args)
+
+        out = capsys.readouterr().out
+        assert "Extracting source inventory..." in out
+        assert "Building cross-reference relationships..." in out
+        assert "Generating entity and module pages..." in out
+        assert "Writing sync manifest..." in out
+
     def test_entity_collision_uses_simple_name(self, tmp_collision_project, capsys):
         """When two files define the same class name, both get qualified pages."""
         wiki_dir = tmp_collision_project / "docs" / "llm_wiki"

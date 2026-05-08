@@ -1,11 +1,62 @@
 from __future__ import annotations
 
 import posixpath
+from dataclasses import dataclass
+from collections import defaultdict
 from pathlib import Path
 
 
-def module_path_candidates(module: str, importer_filepath: str, inventory: dict) -> set[str]:
-    """Resolve an import module string to inventory file paths when possible."""
+@dataclass(frozen=True)
+class ModulePathResolver:
+    """Indexed module import resolver for a fixed inventory."""
+
+    inventory: dict
+    lookup: dict[str, frozenset[str]]
+
+    @classmethod
+    def build(cls, inventory: dict) -> "ModulePathResolver":
+        lookup: defaultdict[str, set[str]] = defaultdict(set)
+        for filepath in inventory:
+            path = Path(filepath)
+            path_no_suffix = path.with_suffix("").as_posix()
+            path_parts = path.parts
+            stripped_src = (
+                "/".join(path_parts[1:])
+                if path_parts and path_parts[0] == "src"
+                else filepath
+            )
+            stripped_src_no_suffix = Path(stripped_src).with_suffix("").as_posix()
+            comparable = {path_no_suffix, stripped_src_no_suffix, path.stem}
+
+            for key in comparable:
+                if key:
+                    lookup[key].add(filepath)
+            for key in _suffix_candidates(path_no_suffix):
+                lookup[key].add(filepath)
+            for key in _suffix_candidates(stripped_src_no_suffix):
+                lookup[key].add(filepath)
+
+        return cls(
+            inventory=inventory,
+            lookup={key: frozenset(value) for key, value in lookup.items()},
+        )
+
+    def candidates(self, module: str, importer_filepath: str) -> set[str]:
+        candidate_stems = _candidate_stems(module, importer_filepath)
+        matches: set[str] = set()
+        for candidate in candidate_stems:
+            candidate = candidate.strip("/")
+            if candidate:
+                matches.update(self.lookup.get(candidate, ()))
+        return matches
+
+
+def _suffix_candidates(path_no_suffix: str) -> set[str]:
+    parts = tuple(part for part in path_no_suffix.split("/") if part)
+    return {"/".join(parts[index:]) for index in range(1, len(parts))}
+
+
+def _candidate_stems(module: str, importer_filepath: str) -> set[str]:
     if not module:
         return set()
 
@@ -53,25 +104,14 @@ def module_path_candidates(module: str, importer_filepath: str, inventory: dict)
             if "/" not in clean_module_path:
                 candidate_stems.add(Path(clean_module_path).name)
 
-    matches: set[str] = set()
-    for filepath in inventory:
-        path_no_suffix = Path(filepath).with_suffix("").as_posix()
-        path_parts = Path(filepath).parts
-        stripped_src = (
-            "/".join(path_parts[1:])
-            if path_parts and path_parts[0] == "src"
-            else filepath
-        )
-        stripped_src_no_suffix = Path(stripped_src).with_suffix("").as_posix()
-        comparable = {path_no_suffix, stripped_src_no_suffix, Path(filepath).stem}
-        for candidate in candidate_stems:
-            candidate = candidate.strip("/")
-            if not candidate:
-                continue
-            if (
-                candidate in comparable
-                or path_no_suffix.endswith(f"/{candidate}")
-                or stripped_src_no_suffix.endswith(f"/{candidate}")
-            ):
-                matches.add(filepath)
-    return matches
+    return candidate_stems
+
+
+def build_module_path_resolver(inventory: dict) -> ModulePathResolver:
+    """Build an indexed import resolver for repeated lookups."""
+    return ModulePathResolver.build(inventory)
+
+
+def module_path_candidates(module: str, importer_filepath: str, inventory: dict) -> set[str]:
+    """Resolve an import module string to inventory file paths when possible."""
+    return build_module_path_resolver(inventory).candidates(module, importer_filepath)
