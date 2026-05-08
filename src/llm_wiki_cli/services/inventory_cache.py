@@ -50,6 +50,30 @@ class InventoryCacheStats:
         return asdict(self)
 
 
+def format_cache_stats(stats: InventoryCacheStats) -> list[str]:
+    """Return human-readable inventory cache diagnostics."""
+    path = stats.path or "(none)"
+    lines = [
+        "",
+        "Cache:",
+        f"  status: {stats.status}",
+        f"  enabled: {str(stats.enabled).lower()}",
+        f"  path: {path}",
+        (
+            "  entries: "
+            f"{stats.hits} hit(s), {stats.misses} miss(es), "
+            f"{stats.changed} changed, {stats.stale} stale, {stats.deleted} deleted"
+        ),
+        (
+            "  extraction: "
+            f"{stats.fresh_extracted} fresh file(s), {stats.saved_entries} saved entries"
+        ),
+    ]
+    if stats.load_error:
+        lines.append(f"  note: {stats.load_error}")
+    return lines
+
+
 def _sha256_bytes(data: bytes) -> str:
     return "sha256:" + hashlib.sha256(data).hexdigest()
 

@@ -12,7 +12,7 @@ from pathlib import Path
 from .extract_cmd import get_call_graph, get_docker_inventory, get_inventory_result, print_inventory_failures
 from .bootstrap_cmd import build_module_page_map, build_entity_page_map
 from ..config import validate_path
-from ..services.inventory_cache import InventoryCacheOptions, InventoryCacheStats
+from ..services.inventory_cache import InventoryCacheOptions, InventoryCacheStats, format_cache_stats
 from ..services.io import read_md
 from ..services.plugins import PluginError, iter_components, load_entry_point
 from ..services.source_snapshot import build_source_snapshot
@@ -550,29 +550,6 @@ def _profile_report_to_dict(report: LintReport, profiler: _LintProfiler, *, incl
     return payload
 
 
-def _format_cache_stats(stats: InventoryCacheStats) -> list[str]:
-    path = stats.path or "(none)"
-    lines = [
-        "",
-        "Cache:",
-        f"  status: {stats.status}",
-        f"  enabled: {str(stats.enabled).lower()}",
-        f"  path: {path}",
-        (
-            "  entries: "
-            f"{stats.hits} hit(s), {stats.misses} miss(es), "
-            f"{stats.changed} changed, {stats.stale} stale, {stats.deleted} deleted"
-        ),
-        (
-            "  extraction: "
-            f"{stats.fresh_extracted} fresh file(s), {stats.saved_entries} saved entries"
-        ),
-    ]
-    if stats.load_error:
-        lines.append(f"  note: {stats.load_error}")
-    return lines
-
-
 def render_text(report: LintReport) -> str:
     grouped = report.by_category()
     diagnostic_groups: dict[str, list[LintIssue]] = {}
@@ -623,7 +600,7 @@ def render_text(report: LintReport) -> str:
     else:
         lines.append(f"❌ Lint found {report.issue_count} issue(s).")
     if report.cache_stats is not None:
-        lines.extend(_format_cache_stats(report.cache_stats))
+        lines.extend(format_cache_stats(report.cache_stats))
     return "\n".join(lines) + "\n"
 
 

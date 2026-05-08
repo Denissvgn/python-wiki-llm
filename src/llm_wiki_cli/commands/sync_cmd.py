@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sys
 from dataclasses import dataclass, field
 from datetime import date
@@ -33,16 +34,81 @@ from .bootstrap_cmd import (
     build_module_page_map,
 )
 from ..config import validate_path
+from ..services.inventory_cache import InventoryCacheOptions, InventoryCacheStats, format_cache_stats
 from ..services.io import read_md, write_md
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
 MANIFEST_FILENAME = ".llm-wiki-manifest.json"
 MANIFEST_VERSION = 2
+MAX_SYNC_AFFECTED_FILES = 50
+MAX_SYNC_AFFECTED_RATIO = 0.30
+MIN_SOURCES_FOR_RATIO_GUARD = 10
+_HASH_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 _DEPRECATION_HEADER = (
     "> ⚠️ **Stale:** Source no longer found in codebase. "
     "Run `llm-wiki lint` to audit.\n\n"
 )
+
+
+def _cache_options_from_args(args) -> InventoryCacheOptions:
+    cache_stats = bool(getattr(args, "cache_stats", False))
+    return InventoryCacheOptions(
+        enabled=not bool(getattr(args, "no_cache", False)),
+        rebuild=bool(getattr(args, "rebuild_cache", False)),
+        cache_dir=getattr(args, "cache_dir", None),
+        stats_enabled=cache_stats,
+    )
+
+
+def _print_cache_stats(stats: InventoryCacheStats | None, *, enabled: bool) -> None:
+    if not enabled or stats is None:
+        return
+    for line in format_cache_stats(stats):
+        print(line)
+
+
+def _is_valid_manifest_hash(value: object) -> bool:
+    return isinstance(value, str) and bool(_HASH_RE.match(value))
+
+
+def _invalid_manifest_hash_paths(manifest: "SyncManifest") -> list[str]:
+    return [
+        filepath
+        for filepath, info in manifest.sources.items()
+        if not _is_valid_manifest_hash(info.get("hash"))
+    ]
+
+
+def _build_manifest_from_inventory(inventory: dict, src_dir: str) -> "SyncManifest":
+    colliding_stems, colliding_cls, entity_page_cache = _collision_maps(inventory, src_dir)
+    module_page_map = build_module_page_map(inventory)
+    return SyncManifest.build_from_inventory(
+        inventory,
+        src_dir,
+        entity_page_cache,
+        module_page_map,
+    )
+
+
+def _normalize_md(text: str) -> str:
+    return text.replace("\r\n", "\n").replace("\r", "\n")
+
+
+def _write_md_if_changed(path: Path, text: str) -> str:
+    """Write markdown only when content changes.
+
+    Returns ``created``, ``updated``, or ``unchanged``.
+    """
+    normalized = _normalize_md(text)
+    if path.exists():
+        existing = _normalize_md(read_md(path))
+        if existing == normalized:
+            return "unchanged"
+        write_md(path, normalized)
+        return "updated"
+    write_md(path, normalized)
+    return "created"
 
 # ── Manifest ──────────────────────────────────────────────────────────────────
 
@@ -161,6 +227,34 @@ class SyncDiff:
         )
 
 
+def _affected_source_files(diff: SyncDiff) -> set[str]:
+    affected = set(diff.new_files) | set(diff.changed_files) | set(diff.removed_files)
+    for old_path, new_path in diff.moved_entities.values():
+        affected.add(old_path)
+        affected.add(new_path)
+    return affected
+
+
+def _large_diff_message(diff: SyncDiff, manifest: SyncManifest) -> str | None:
+    affected_count = len(_affected_source_files(diff))
+    manifest_count = len(manifest.sources)
+    if affected_count > MAX_SYNC_AFFECTED_FILES:
+        return (
+            f"sync would affect {affected_count} source file(s), "
+            f"which exceeds the safety limit of {MAX_SYNC_AFFECTED_FILES}."
+        )
+    if manifest_count >= MIN_SOURCES_FOR_RATIO_GUARD:
+        affected_ratio = affected_count / manifest_count
+        if affected_ratio > MAX_SYNC_AFFECTED_RATIO:
+            percent = int(affected_ratio * 100)
+            limit_percent = int(MAX_SYNC_AFFECTED_RATIO * 100)
+            return (
+                f"sync would affect {affected_count} of {manifest_count} manifest source file(s) "
+                f"({percent}%), which exceeds the {limit_percent}% safety limit."
+            )
+    return None
+
+
 def _compute_diff(manifest: SyncManifest, inventory: dict, src_dir: str) -> SyncDiff:
     """Compare *manifest* against the live *inventory*.
 
@@ -268,26 +362,30 @@ def _apply_diff(
             entity_page_name = file_entity_page_map[cls["name"]]
             entity_path = wiki_dir / "entities" / f"{entity_page_name}.md"
             content = _generate_entity_md(cls, filepath, relationships, mod_page_name)
-            is_new = not entity_path.exists()
-            write_md(entity_path, content)
-            if is_new:
+            write_state = _write_md_if_changed(entity_path, content)
+            if write_state == "created":
                 result.created += 1
                 print(f"  CREATE entity: {entity_page_name}")
-            else:
+            elif write_state == "updated":
                 result.updated += 1
                 print(f"  UPDATE entity: {entity_page_name}")
+            else:
+                result.skipped += 1
+                print(f"  SKIP entity (unchanged): {entity_page_name}")
 
         # Module page
         module_path = wiki_dir / "modules" / f"{mod_page_name}.md"
         content = _generate_module_md(filepath, file_data, file_entity_page_map)
-        is_new = not module_path.exists()
-        write_md(module_path, content)
-        if is_new:
+        write_state = _write_md_if_changed(module_path, content)
+        if write_state == "created":
             result.created += 1
             print(f"  CREATE module: {mod_page_name}")
-        else:
+        elif write_state == "updated":
             result.updated += 1
             print(f"  UPDATE module: {mod_page_name}")
+        else:
+            result.skipped += 1
+            print(f"  SKIP module (unchanged): {mod_page_name}")
 
     # ── Unchanged files ────────────────────────────────────────────────────────
     for filepath in diff.unchanged_files:
@@ -308,10 +406,11 @@ def _apply_diff(
                 entity_path = wiki_dir / "entities" / f"{entity_page_name}.md"
                 text = read_md(entity_path)
                 if _DEPRECATION_HEADER not in text:
-                    write_md(entity_path, _DEPRECATION_HEADER + text)
-                    deprecated_count += 1
-                    result.deprecated += 1
-                    print(f"  DEPRECATE entity: {entity_page_name}")
+                    write_state = _write_md_if_changed(entity_path, _DEPRECATION_HEADER + text)
+                    if write_state != "unchanged":
+                        deprecated_count += 1
+                        result.deprecated += 1
+                        print(f"  DEPRECATE entity: {entity_page_name}")
 
         # Module page deprecation
         old_mod_page = old_info.get("module_page", _module_name_from_path(filepath))
@@ -320,9 +419,10 @@ def _apply_diff(
         if mod_page_path.exists():
             text = read_md(mod_page_path)
             if _DEPRECATION_HEADER not in text:
-                write_md(mod_page_path, _DEPRECATION_HEADER + text)
-                result.deprecated += 1
-                print(f"  DEPRECATE module: {mod_page_path.stem}")
+                write_state = _write_md_if_changed(mod_page_path, _DEPRECATION_HEADER + text)
+                if write_state != "unchanged":
+                    result.deprecated += 1
+                    print(f"  DEPRECATE module: {mod_page_path.stem}")
 
     return result
 
@@ -362,6 +462,10 @@ def _removed_entity_page_name(
 def run(args) -> None:
     src_dir: str = getattr(args, "src_dir", ".")
     wiki_dir = Path(getattr(args, "wiki_dir", "docs/llm_wiki"))
+    cache_options = _cache_options_from_args(args)
+    cache_stats_enabled = bool(getattr(args, "cache_stats", False))
+    parallel_jobs = getattr(args, "jobs", 1)
+    force = bool(getattr(args, "force", False))
     validate_path(src_dir, "--src-dir")
     validate_path(str(wiki_dir), "--wiki-dir")
 
@@ -377,23 +481,26 @@ def run(args) -> None:
                 f"Existing wiki pages will NOT be modified.\n"
                 f"Future `llm-wiki sync` runs will update incrementally.\n"
             )
-            inventory_result = get_inventory_result(src_dir, deep=True)
+            print("Extracting current source inventory...")
+            inventory_result = get_inventory_result(
+                src_dir,
+                deep=True,
+                cache_options=cache_options,
+                parallel_jobs=parallel_jobs,
+            )
             if inventory_result.failed:
                 print_inventory_failures(inventory_result)
                 sys.exit(1)
             inventory = inventory_result.inventory
+            print(f"Extracted current source inventory: {len(inventory)} file(s).")
             if not inventory:
                 print("No supported source files found; manifest not written.")
+                _print_cache_stats(inventory_result.cache_stats, enabled=cache_stats_enabled)
                 return
-            colliding_stems, colliding_cls, entity_page_cache = _collision_maps(
-                inventory, src_dir,
-            )
-            module_page_map = build_module_page_map(inventory)
-            seed = SyncManifest.build_from_inventory(
-                inventory, src_dir, entity_page_cache, module_page_map,
-            )
+            seed = _build_manifest_from_inventory(inventory, src_dir)
             seed.save(wiki_dir)
             print(f"Manifest written to {wiki_dir / MANIFEST_FILENAME}")
+            _print_cache_stats(inventory_result.cache_stats, enabled=cache_stats_enabled)
             return
         print(
             f"Error: no sync manifest found at {wiki_dir / MANIFEST_FILENAME}.\n"
@@ -406,14 +513,34 @@ def run(args) -> None:
     print(f"Wiki directory: {wiki_dir}")
 
     # 2. Extract current AST inventory (always deep for full page content)
-    inventory_result = get_inventory_result(src_dir, deep=True)
+    print("Extracting current source inventory...")
+    inventory_result = get_inventory_result(
+        src_dir,
+        deep=True,
+        cache_options=cache_options,
+        parallel_jobs=parallel_jobs,
+    )
     if inventory_result.failed:
         print_inventory_failures(inventory_result)
         sys.exit(1)
     inventory = inventory_result.inventory
+    print(f"Extracted current source inventory: {len(inventory)} file(s).")
 
     if not inventory and not manifest.sources:
         print("No supported source files with classes or functions found.")
+        _print_cache_stats(inventory_result.cache_stats, enabled=cache_stats_enabled)
+        return
+
+    invalid_hash_paths = _invalid_manifest_hash_paths(manifest)
+    if invalid_hash_paths:
+        repaired = _build_manifest_from_inventory(inventory, src_dir)
+        repaired.save(wiki_dir)
+        print(
+            f"Sync manifest repaired: {len(invalid_hash_paths)} source entr"
+            f"{'y has' if len(invalid_hash_paths) == 1 else 'ies have'} invalid or missing hashes."
+        )
+        print("Wiki pages were not modified. Run `llm-wiki sync` again to apply source changes.")
+        _print_cache_stats(inventory_result.cache_stats, enabled=cache_stats_enabled)
         return
 
     # 3. Compute diff
@@ -421,7 +548,19 @@ def run(args) -> None:
 
     if not diff.has_changes:
         print("Wiki is up to date.")
+        _print_cache_stats(inventory_result.cache_stats, enabled=cache_stats_enabled)
         return
+
+    large_diff_message = _large_diff_message(diff, manifest)
+    if large_diff_message and not force:
+        print(f"Error: {large_diff_message}", file=sys.stderr)
+        print(
+            "This sync is broad enough to risk unintended wiki churn. "
+            "Re-run with `llm-wiki sync --force` if this update is intentional.",
+            file=sys.stderr,
+        )
+        _print_cache_stats(inventory_result.cache_stats, enabled=cache_stats_enabled)
+        sys.exit(1)
 
     # 4. Apply changes
     result = _apply_diff(diff, wiki_dir, inventory, src_dir, manifest)
@@ -433,11 +572,7 @@ def run(args) -> None:
     _append_log(wiki_dir, src_dir, diff, result)
 
     # 7. Compute collision maps + module page map for manifest, then save
-    colliding_stems, colliding_cls, entity_page_cache = _collision_maps(inventory, src_dir)
-    module_page_map = build_module_page_map(inventory)
-    updated_manifest = SyncManifest.build_from_inventory(
-        inventory, src_dir, entity_page_cache, module_page_map
-    )
+    updated_manifest = _build_manifest_from_inventory(inventory, src_dir)
     updated_manifest.save(wiki_dir)
 
     print(
@@ -447,6 +582,7 @@ def run(args) -> None:
     if diff.moved_entities:
         names = ", ".join(diff.moved_entities.keys())
         print(f"Moved entities detected (pages updated in-place): {names}")
+    _print_cache_stats(inventory_result.cache_stats, enabled=cache_stats_enabled)
 
 
 # ── Index + log helpers ───────────────────────────────────────────────────────
@@ -479,10 +615,14 @@ def _rebuild_index(wiki_dir: Path, inventory: dict, src_dir: str) -> None:
     infra_entries = _list_existing_pages(wiki_dir / "infrastructure", "type")
 
     index_path = wiki_dir / "index.md"
-    write_md(index_path,
-        _generate_index_md(all_entity_names, module_entries, workflow_entries or None, infra_entries or None)
+    write_state = _write_md_if_changed(
+        index_path,
+        _generate_index_md(all_entity_names, module_entries, workflow_entries or None, infra_entries or None),
     )
-    print("  WRITE index.md")
+    if write_state == "unchanged":
+        print("  SKIP index.md (unchanged)")
+    else:
+        print("  WRITE index.md")
 
 
 def _list_existing_pages(directory: Path, extra_key: str) -> list[dict]:

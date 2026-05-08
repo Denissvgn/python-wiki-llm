@@ -203,11 +203,18 @@ manifest.
 
 ```bash
 llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki
+llm-wiki sync --jobs auto --cache-stats --src-dir . --wiki-dir docs/llm_wiki
 ```
 
 If an older wiki has `index.md` but no manifest, `sync` seeds
 `.llm-wiki-manifest.json` without modifying pages. If neither a manifest nor an
-existing wiki is present, run `bootstrap` first.
+existing wiki is present, run `bootstrap` first. Sync uses the same safe
+persistent inventory cache as lint when a git directory is available. Use
+`--no-cache`, `--rebuild-cache`, `--cache-dir PATH`, and `--cache-stats` to
+control or inspect cache behavior. Use `--jobs N` or `--jobs auto` to opt into
+parallel built-in language extraction. Sync repairs manifests with invalid
+source hashes without touching pages, and stops unusually broad diffs unless
+`--force` is used.
 
 ### `extract`
 

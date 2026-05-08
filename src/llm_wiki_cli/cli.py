@@ -348,6 +348,18 @@ def main():
     sync_parser.add_argument("--src-dir", default=".", help="Source directory to scan (default: .)")
     sync_parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR,
                              help="Wiki directory (default: docs/llm_wiki)")
+    sync_parser.add_argument("--no-cache", action="store_true",
+                             help="Disable persistent inventory cache for this run")
+    sync_parser.add_argument("--rebuild-cache", action="store_true",
+                             help="Ignore existing inventory cache and rewrite it after extraction")
+    sync_parser.add_argument("--cache-stats", action="store_true",
+                             help="Include inventory cache diagnostics in sync output")
+    sync_parser.add_argument("--cache-dir", default=None, metavar="PATH",
+                             help="Directory for llm-wiki-inventory-cache.json")
+    sync_parser.add_argument("--jobs", type=_jobs_value, default=1, metavar="JOBS",
+                             help="Parallel built-in extractor jobs: positive integer or 'auto' (default: 1)")
+    sync_parser.add_argument("--force", action="store_true",
+                             help="Allow sync to apply unusually broad source diffs")
 
     # migrate command
     migrate_parser = subparsers.add_parser(

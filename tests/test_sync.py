@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+from llm_wiki_cli import cli
 from llm_wiki_cli.commands import bootstrap_cmd, sync_cmd
 from llm_wiki_cli.commands.sync_cmd import (
     MANIFEST_FILENAME,
@@ -16,6 +17,7 @@ from llm_wiki_cli.commands.sync_cmd import (
     _hash_file,
 )
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
+from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME, InventoryCacheStats
 
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -280,6 +282,389 @@ class TestManifestLanguage:
         assert manifest.sources["web/app.tsx"]["language"] == "typescript"
 
 
+class TestSyncInventoryRuntime:
+    def _write_empty_manifest(self, wiki_dir: Path) -> None:
+        wiki_dir.mkdir(parents=True, exist_ok=True)
+        SyncManifest().save(wiki_dir)
+
+    def test_passes_cache_options_and_jobs(self, tmp_path, monkeypatch, capsys):
+        wiki_dir = tmp_path / "docs" / "llm_wiki"
+        self._write_empty_manifest(wiki_dir)
+        seen = {}
+
+        def fake_inventory(*args, **kwargs):
+            seen["cache_options"] = kwargs["cache_options"]
+            seen["parallel_jobs"] = kwargs["parallel_jobs"]
+            return InventoryResult(
+                {},
+                {"python": ExtractorStatus("python", "skipped", 0)},
+                InventoryCacheStats(enabled=False, status="disabled"),
+            )
+
+        monkeypatch.setattr(sync_cmd, "get_inventory_result", fake_inventory)
+        old_cwd = os.getcwd()
+        os.chdir(tmp_path)
+        try:
+            sync_cmd.run(_make_sync_args(
+                src_dir=str(tmp_path),
+                wiki_dir=str(wiki_dir),
+                no_cache=True,
+                rebuild_cache=True,
+                cache_stats=True,
+                cache_dir=str(tmp_path / "cache"),
+                jobs=2,
+            ))
+        finally:
+            os.chdir(old_cwd)
+
+        assert seen["parallel_jobs"] == 2
+        assert seen["cache_options"].enabled is False
+        assert seen["cache_options"].rebuild is True
+        assert seen["cache_options"].stats_enabled is True
+        assert seen["cache_options"].cache_dir == str(tmp_path / "cache")
+
+    def test_cli_sync_jobs_auto_resolves_positive_count(self, monkeypatch):
+        seen = {}
+        monkeypatch.setattr(cli.os, "cpu_count", lambda: 4)
+        monkeypatch.setattr(cli.sync_cmd, "run", lambda args: seen.setdefault("jobs", args.jobs))
+        monkeypatch.setattr("sys.argv", ["llm-wiki", "sync", "--jobs", "auto"])
+
+        cli.main()
+
+        assert seen["jobs"] == 4
+
+    def test_cli_sync_force_parses(self, monkeypatch):
+        seen = {}
+        monkeypatch.setattr(cli.sync_cmd, "run", lambda args: seen.setdefault("force", args.force))
+        monkeypatch.setattr("sys.argv", ["llm-wiki", "sync", "--force"])
+
+        cli.main()
+
+        assert seen["force"] is True
+
+    @pytest.mark.parametrize("value", ["0", "-1", "many"])
+    def test_cli_sync_rejects_invalid_jobs(self, value, monkeypatch):
+        monkeypatch.setattr(cli.sync_cmd, "run", lambda _args: pytest.fail("command should not run"))
+        monkeypatch.setattr("sys.argv", ["llm-wiki", "sync", "--jobs", value])
+
+        with pytest.raises(SystemExit) as exc:
+            cli.main()
+
+        assert exc.value.code == 2
+
+    def test_default_sync_creates_git_cache(self, bootstrapped_project, capsys):
+        proj, wiki_dir = bootstrapped_project
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
+        assert (proj / ".git" / CACHE_FILENAME).exists()
+
+    def test_no_cache_does_not_create_git_cache(self, bootstrapped_project, capsys):
+        proj, wiki_dir = bootstrapped_project
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir), no_cache=True))
+
+        assert not (proj / ".git" / CACHE_FILENAME).exists()
+
+    def test_cache_dir_routes_cache_file(self, bootstrapped_project, tmp_path, capsys):
+        proj, wiki_dir = bootstrapped_project
+        cache_dir = tmp_path / "sync-cache"
+
+        sync_cmd.run(_make_sync_args(
+            src_dir=str(proj),
+            wiki_dir=str(wiki_dir),
+            cache_dir=str(cache_dir),
+        ))
+
+        assert (cache_dir / CACHE_FILENAME).exists()
+        assert not (proj / ".git" / CACHE_FILENAME).exists()
+
+    def test_cache_stats_prints_for_seed_manifest_not_written(self, tmp_path, monkeypatch, capsys):
+        wiki_dir = tmp_path / "docs" / "llm_wiki"
+        wiki_dir.mkdir(parents=True)
+        (wiki_dir / "index.md").write_text("# Index\n", encoding="utf-8")
+        monkeypatch.setattr(
+            sync_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {},
+                {"python": ExtractorStatus("python", "skipped", 0)},
+                InventoryCacheStats(enabled=True, path="cache.json", status="miss", misses=1),
+            ),
+        )
+
+        old_cwd = os.getcwd()
+        os.chdir(tmp_path)
+        try:
+            sync_cmd.run(_make_sync_args(src_dir=str(tmp_path), wiki_dir=str(wiki_dir), cache_stats=True))
+        finally:
+            os.chdir(old_cwd)
+
+        out = capsys.readouterr().out
+        assert "manifest not written" in out.lower()
+        assert "Cache:" in out
+        assert "status: miss" in out
+
+    def test_cache_stats_prints_for_up_to_date_sync(self, bootstrapped_project, capsys):
+        proj, wiki_dir = bootstrapped_project
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir), cache_stats=True))
+
+        out = capsys.readouterr().out
+        assert "Wiki is up to date." in out
+        assert "Cache:" in out
+
+    def test_cache_stats_prints_for_changed_sync(self, bootstrapped_project, capsys):
+        proj, wiki_dir = bootstrapped_project
+        (proj / "models.py").write_text("class User:\n    changed: str = ''\n", encoding="utf-8")
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir), cache_stats=True))
+
+        out = capsys.readouterr().out
+        assert "Sync complete:" in out
+        assert "Cache:" in out
+
+
+class TestSyncSafetyGuards:
+    def _poison_manifest_hashes(self, wiki_dir: Path, value=None) -> None:
+        manifest_path = wiki_dir / MANIFEST_FILENAME
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        for info in payload["sources"].values():
+            if value is None:
+                info.pop("hash", None)
+            else:
+                info["hash"] = value
+        manifest_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+    def test_missing_manifest_hash_repairs_without_touching_pages(
+        self, bootstrapped_project, monkeypatch, capsys,
+    ):
+        proj, wiki_dir = bootstrapped_project
+        (proj / "models.py").write_text("class User:\n    changed: str = ''\n", encoding="utf-8")
+        entity_path = wiki_dir / "entities" / "User.md"
+        before = entity_path.read_text(encoding="utf-8")
+        self._poison_manifest_hashes(wiki_dir)
+        writes = []
+
+        def fail_page_write(path, text):
+            writes.append(Path(path))
+            raise AssertionError("manifest repair must not rewrite wiki pages")
+
+        monkeypatch.setattr(sync_cmd, "write_md", fail_page_write)
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
+        out = capsys.readouterr().out
+        assert "manifest repaired" in out.lower()
+        assert "wiki pages were not modified" in out.lower()
+        assert writes == []
+        assert entity_path.read_text(encoding="utf-8") == before
+        repaired = SyncManifest.load(wiki_dir)
+        info = next(iter(repaired.sources.values()))
+        assert info["hash"].startswith("sha256:")
+        assert len(info["hash"]) == len("sha256:") + 64
+        assert info["language"] == "python"
+        assert info["entity_pages"]["User"] == "User"
+        assert info["module_page"] == "models"
+
+    def test_malformed_manifest_hash_repairs_without_touching_pages(
+        self, bootstrapped_project, monkeypatch, capsys,
+    ):
+        proj, wiki_dir = bootstrapped_project
+        self._poison_manifest_hashes(wiki_dir, "sha256:not-valid")
+        monkeypatch.setattr(
+            sync_cmd,
+            "write_md",
+            lambda *args, **kwargs: pytest.fail("manifest repair must not rewrite wiki pages"),
+        )
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir), cache_stats=True))
+
+        out = capsys.readouterr().out
+        assert "manifest repaired" in out.lower()
+        assert "Cache:" in out
+        repaired = SyncManifest.load(wiki_dir)
+        assert all(info["hash"].startswith("sha256:") for info in repaired.sources.values())
+
+    def test_large_diff_count_guard_aborts_before_page_writes(self, tmp_path, monkeypatch, capsys):
+        wiki_dir = tmp_path / "docs" / "llm_wiki"
+        wiki_dir.mkdir(parents=True)
+        sources = {
+            f"f{i}.py": {
+                "hash": "sha256:" + "0" * 64,
+                "language": "python",
+                "entities": [],
+                "module_page": f"f{i}",
+            }
+            for i in range(51)
+        }
+        SyncManifest(sources=sources).save(wiki_dir)
+        inventory = {
+            path: {"language": "python", "classes": [], "functions": []}
+            for path in sources
+        }
+        monkeypatch.setattr(
+            sync_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(inventory, {"python": ExtractorStatus("python", "ok", 51)}),
+        )
+        monkeypatch.setattr(
+            sync_cmd,
+            "write_md",
+            lambda *args, **kwargs: pytest.fail("large diff guard should abort before page writes"),
+        )
+
+        old_cwd = os.getcwd()
+        os.chdir(tmp_path)
+        try:
+            with pytest.raises(SystemExit) as exc:
+                sync_cmd.run(_make_sync_args(src_dir=str(tmp_path), wiki_dir=str(wiki_dir)))
+        finally:
+            os.chdir(old_cwd)
+
+        assert exc.value.code == 1
+        err = capsys.readouterr().err
+        assert "exceeds the safety limit" in err
+        assert "--force" in err
+
+    def test_large_diff_percent_guard_aborts_before_page_writes(self, tmp_path, monkeypatch, capsys):
+        wiki_dir = tmp_path / "docs" / "llm_wiki"
+        wiki_dir.mkdir(parents=True)
+        inventory = {}
+        sources = {}
+        for i in range(10):
+            path = f"f{i}.py"
+            source_path = tmp_path / path
+            source_path.write_text(f"class C{i}: pass\n", encoding="utf-8")
+            current_hash = _hash_file(source_path)
+            sources[path] = {
+                "hash": "sha256:" + "0" * 64 if i < 4 else current_hash,
+                "language": "python",
+                "entities": [f"C{i}"],
+                "module_page": f"f{i}",
+            }
+            inventory[path] = {
+                "language": "python",
+                "classes": [{"name": f"C{i}", "line": 1, "bases": []}],
+                "functions": [],
+            }
+        SyncManifest(sources=sources).save(wiki_dir)
+        monkeypatch.setattr(
+            sync_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(inventory, {"python": ExtractorStatus("python", "ok", 10)}),
+        )
+        monkeypatch.setattr(
+            sync_cmd,
+            "write_md",
+            lambda *args, **kwargs: pytest.fail("large diff guard should abort before page writes"),
+        )
+
+        old_cwd = os.getcwd()
+        os.chdir(tmp_path)
+        try:
+            with pytest.raises(SystemExit) as exc:
+                sync_cmd.run(_make_sync_args(src_dir=str(tmp_path), wiki_dir=str(wiki_dir)))
+        finally:
+            os.chdir(old_cwd)
+
+        assert exc.value.code == 1
+        err = capsys.readouterr().err
+        assert "30% safety limit" in err
+
+    def test_force_allows_large_diff(self, tmp_path, monkeypatch, capsys):
+        wiki_dir = tmp_path / "docs" / "llm_wiki"
+        wiki_dir.mkdir(parents=True)
+        sources = {
+            f"f{i}.py": {
+                "hash": "sha256:" + "0" * 64,
+                "language": "python",
+                "entities": [],
+                "module_page": f"f{i}",
+            }
+            for i in range(51)
+        }
+        inventory = {
+            path: {"language": "python", "classes": [], "functions": []}
+            for path in sources
+        }
+        SyncManifest(sources=sources).save(wiki_dir)
+        monkeypatch.setattr(
+            sync_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(inventory, {"python": ExtractorStatus("python", "ok", 51)}),
+        )
+        calls = {"apply": 0}
+
+        def fake_apply(*args, **kwargs):
+            calls["apply"] += 1
+            return sync_cmd.SyncResult()
+
+        monkeypatch.setattr(sync_cmd, "_apply_diff", fake_apply)
+        monkeypatch.setattr(sync_cmd, "_rebuild_index", lambda *args, **kwargs: None)
+        monkeypatch.setattr(sync_cmd, "_append_log", lambda *args, **kwargs: None)
+
+        old_cwd = os.getcwd()
+        os.chdir(tmp_path)
+        try:
+            sync_cmd.run(_make_sync_args(src_dir=str(tmp_path), wiki_dir=str(wiki_dir), force=True))
+        finally:
+            os.chdir(old_cwd)
+
+        assert calls["apply"] == 1
+        assert "Sync complete:" in capsys.readouterr().out
+
+    def test_content_equal_pages_are_not_rewritten(self, bootstrapped_project, monkeypatch, capsys):
+        proj, wiki_dir = bootstrapped_project
+        manifest_path = wiki_dir / MANIFEST_FILENAME
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        for info in payload["sources"].values():
+            info["hash"] = "sha256:" + "0" * 64
+        manifest_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        entity_path = wiki_dir / "entities" / "User.md"
+        module_path = wiki_dir / "modules" / "models.md"
+        index_path = wiki_dir / "index.md"
+        writes = []
+        real_write_md = sync_cmd.write_md
+
+        def recording_write(path, text):
+            writes.append(Path(path))
+            real_write_md(path, text)
+
+        monkeypatch.setattr(sync_cmd, "write_md", recording_write)
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
+        out = capsys.readouterr().out
+        assert "SKIP entity (unchanged): User" in out
+        assert "SKIP module (unchanged): models" in out
+        assert "SKIP index.md (unchanged)" in out
+        assert "0 updated" in out
+        assert entity_path not in writes
+        assert module_path not in writes
+        assert index_path not in writes
+        assert wiki_dir / "log.md" in writes
+
+    def test_already_deprecated_pages_are_not_rewritten(self, bootstrapped_project, monkeypatch):
+        proj, wiki_dir = bootstrapped_project
+        (proj / "models.py").unlink()
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+        _write_manifest_from_bootstrap_from_disk(wiki_dir, proj)
+        writes = []
+        real_write_md = sync_cmd.write_md
+
+        def recording_write(path, text):
+            writes.append(Path(path))
+            real_write_md(path, text)
+
+        monkeypatch.setattr(sync_cmd, "write_md", recording_write)
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
+        assert wiki_dir / "entities" / "User.md" not in writes
+        assert wiki_dir / "modules" / "models.md" not in writes
+
+
 class TestPartialExtractionSafety:
     def _write_ts_manifest_and_pages(self, wiki_dir: Path) -> None:
         (wiki_dir / "entities").mkdir(parents=True)
@@ -291,7 +676,7 @@ class TestPartialExtractionSafety:
         (wiki_dir / "modules" / "app.md").write_text("# app Module\n", encoding="utf-8")
         SyncManifest(sources={
             "app.ts": {
-                "hash": "sha256:old",
+                "hash": "sha256:" + "0" * 64,
                 "language": "typescript",
                 "entities": ["Widget"],
                 "module_page": "app",
@@ -355,6 +740,8 @@ class TestUnchangedFile:
         sync_cmd.run(args)
 
         captured = capsys.readouterr()
+        assert "Extracting current source inventory..." in captured.out
+        assert "Extracted current source inventory:" in captured.out
         assert "up to date" in captured.out.lower()
 
     def test_entity_page_not_rewritten(self, bootstrapped_project, capsys):
