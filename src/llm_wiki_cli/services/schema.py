@@ -47,33 +47,49 @@ updated automatically on commit. You are responsible for keeping it current:
 
 1. **After every code change in this session** that adds, removes, or modifies a
    class, function, module, or cross-module flow:
-   - Update the affected `entities/`, `modules/`, `workflows/`, and `infrastructure/` pages.
-   - Append a one-line summary to `log.md`.
-   - Run `llm-wiki lint` to verify your changes. Fix any issues until it exits 0.
-2. **To do a full re-sync manually**, run in the terminal:
+   - Run `llm-wiki sync --jobs auto` from the project root.
+   - If sync repairs only the manifest, run the same sync command again.
+   - If sync stops on a large diff, inspect the changed files first. Re-run with
+     `--force` only when the broad wiki update is intentional.
+   - Run `llm-wiki lint --strict --jobs auto` to verify consistency. Fix any
+     issues until it exits 0.
+2. **When extractor helpers are missing** for TypeScript, Go, or Rust projects:
+   ```
+   llm-wiki prepare-extractors --src-dir .
+   ```
+   Then repeat the sync or lint command. Do not run npm/go/cargo helper setup
+   manually; `prepare-extractors` owns that cache.
+3. **To build a full update prompt manually**, run in the terminal:
    ```
    llm-wiki generate-prompt
    ```
    This builds a diff + AST prompt in `.git/llm-wiki-prompt.txt`. Open that file
-   and paste its contents into this chat to trigger a full wiki update.
-3. **Never skip the update** — a stale wiki defeats the purpose of the system.
+   and paste its contents into this chat when automated sync is not enough.
+4. **Never skip the update** — a stale wiki defeats the purpose of the system.
 
 ## Using `llm-wiki sync` for incremental updates
 `sync` compares source file hashes against a stored manifest and regenerates only
 the wiki pages whose source has changed. Use it instead of a full re-bootstrap:
 
 ```
-llm-wiki sync
+llm-wiki sync --jobs auto
 ```
 
 - **When to use:** after pulling new code, after a rebase, or whenever you suspect
   the wiki is stale but don't want to regenerate everything.
 - Sync creates/updates entity and module pages for new or changed files, marks
   removed files with a ⚠️ Stale header, and rebuilds `index.md`.
+- Sync uses the same persistent inventory cache as lint when available. Use
+  `--cache-stats` when you need to see cache behavior.
 - If no manifest exists yet (project bootstrapped by an older version), sync will
   **seed a baseline manifest** from the current source state without modifying
   pages. Subsequent runs then work incrementally.
-- After sync finishes, always run `llm-wiki lint` to verify consistency.
+- If the stored manifest has invalid hashes, sync repairs the manifest without
+  modifying pages. Re-run sync afterwards to apply source changes.
+- Sync has a large-diff guard to prevent accidental mass rewrites. Use
+  `llm-wiki sync --force` only after confirming the broad update is expected.
+- After sync finishes, always run `llm-wiki lint --strict --jobs auto` to verify
+  consistency.
 
 ## Using `llm-wiki context` for large codebases
 `context` produces a token-budgeted, priority-ranked snapshot of the codebase —
@@ -112,11 +128,18 @@ def _wiki_instructions(wiki_dir: str) -> str:
 - Consult relevant entity and module pages to understand existing patterns before writing new code.
 
 ## When you change code
-- UPDATE entity pages in `{wiki_dir}/entities/` when you add, modify, or remove a class.
-- UPDATE module pages in `{wiki_dir}/modules/` when you add, modify, or remove a module.
-- UPDATE `{wiki_dir}/workflows/<name>.md` when a cross-module flow changes.
-- UPDATE infrastructure pages in `{wiki_dir}/infrastructure/` when a Dockerfile or docker-compose file changes.
-- LOG a concise summary of your changes in `{wiki_dir}/log.md` (append-only, newest at bottom).
+- Prefer `llm-wiki sync --jobs auto --wiki-dir {wiki_dir} --src-dir .` after
+  code changes. Sync uses the manifest, persistent inventory cache, and
+  collision-aware page naming to update only affected wiki pages.
+- If sync reports that it repaired only the manifest, run the same sync command
+  again before linting.
+- If sync stops on a large diff, inspect the affected files. Use
+  `llm-wiki sync --force --jobs auto --wiki-dir {wiki_dir} --src-dir .` only when
+  the broad update is intentional.
+- If you update pages manually, keep edits surgical: update entity pages in
+  `{wiki_dir}/entities/`, module pages in `{wiki_dir}/modules/`, workflow pages
+  in `{wiki_dir}/workflows/`, infrastructure pages in `{wiki_dir}/infrastructure/`,
+  and append one concise summary to `{wiki_dir}/log.md`.
 
 ## Wiki file naming rules
 Page filenames **must** match the conventions enforced by `llm-wiki lint`:
@@ -145,9 +168,13 @@ Page filenames **must** match the conventions enforced by `llm-wiki lint`:
 - **Workflow pages** (`workflows/`): Free-form descriptive names.
 
 ## Quality checks
-- Your wiki changes are **complete** when `llm-wiki lint --wiki-dir {wiki_dir} --src-dir .` exits 0.
+- Your wiki changes are **complete** when `llm-wiki lint --strict --jobs auto --wiki-dir {wiki_dir} --src-dir .` exits 0.
 - Run lint after every wiki update. If it reports issues, fix them and re-run until it passes.
+- Run `llm-wiki lint --profile --cache-stats --wiki-dir {wiki_dir} --src-dir .`
+  when lint is slow or extractor failures need machine-readable diagnostics.
 - Run `llm-wiki extract --src-dir .` to see the live AST inventory when you need detail.
+- If TypeScript, Go, or Rust extraction reports a missing prepared helper, run
+  `llm-wiki prepare-extractors --src-dir .` once and repeat the failed command.
 - Never leave the wiki in a state where lint reports errors.
 
 ## Formatting rules
