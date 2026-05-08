@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
 import shutil
 import subprocess
+import tempfile
 import textwrap
 import types
 from pathlib import Path
@@ -84,8 +86,14 @@ def _make_wiki(proj: Path) -> Path:
     return wiki
 
 
-def _prepare_helpers_or_fail(proj: Path, languages: list[str]) -> None:
+def _short_cache_base(tmp_path: Path) -> Path:
+    digest = hashlib.sha1(str(tmp_path).encode("utf-8")).hexdigest()[:8]
+    return Path(tempfile.gettempdir()) / f"lww{digest}"
+
+
+def _prepare_helpers_or_fail(proj: Path, languages: list[str], cache_base: Path, monkeypatch) -> None:
     (proj / ".git").mkdir(exist_ok=True)
+    monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(cache_base))
     cache_root = resolve_helper_cache_root(proj)
     assert cache_root is not None
     for language in languages:
@@ -100,7 +108,12 @@ def test_bootstrap_multilanguage_collision_pages_lint_passes(tmp_path, monkeypat
     _write(proj / "web" / "client.ts", "export class Client {}\n")
     _write(proj / "go" / "api" / "client.go", "package api\n\ntype Client struct{}\n")
     _write(proj / "rust" / "native" / "client.rs", "pub struct Client;\n")
-    _prepare_helpers_or_fail(proj, ["typescript", "go", "rust"])
+    _prepare_helpers_or_fail(
+        proj,
+        ["typescript", "go", "rust"],
+        _short_cache_base(tmp_path),
+        monkeypatch,
+    )
 
     monkeypatch.chdir(proj)
     bootstrap_cmd.run(_make_args())
@@ -122,7 +135,12 @@ def test_migrate_reconciles_legacy_go_page_with_rust_name_collision(tmp_path, mo
     proj.mkdir()
     _write(proj / "go" / "api" / "client.go", "package api\n\ntype Client struct{}\n")
     _write(proj / "rust" / "native" / "client.rs", "pub struct Client;\n")
-    _prepare_helpers_or_fail(proj, ["go", "rust"])
+    _prepare_helpers_or_fail(
+        proj,
+        ["go", "rust"],
+        _short_cache_base(tmp_path),
+        monkeypatch,
+    )
     wiki = _make_wiki(proj)
     _write(
         wiki / "entities" / "Client.md",
