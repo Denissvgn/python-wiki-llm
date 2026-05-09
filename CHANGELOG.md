@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Codebase source-adapter support** — `extract` now emits stable
+  `llm-wiki-extract/v1` JSON, `extract` and `context` support explicit
+  `--output`, `--read-only`, and `--allow-external-src`, bootstrap supports
+  `--format json` summaries and `--source-adapter`, and `llm_wiki_cli.api`
+  exposes supported extraction/context calls for library consumers.
+
 ## [0.5.1] - 2026-05-09
 
 ### Changed

@@ -2,6 +2,7 @@
 import threading
 import textwrap
 import types
+import json
 from pathlib import Path
 
 import pytest
@@ -405,6 +406,53 @@ class TestExtractPathValidation:
                                      include_empty=False)
         with pytest.raises(PathValidationError):
             extract_cmd.run(args)
+
+    def test_run_allows_external_src_with_explicit_flag(self, tmp_project, tmp_path, capsys):
+        outside = tmp_path / "outside"
+        outside.mkdir()
+        (outside / "external.py").write_text("class External: pass\n", encoding="utf-8")
+
+        args = types.SimpleNamespace(
+            src_dir=str(outside), changed=False, summary=False,
+            deep=False, paths=None, package=None, include_empty=False,
+            output=None, read_only=True, allow_external_src=True,
+        )
+
+        extract_cmd.run(args)
+
+        data = json.loads(capsys.readouterr().out)
+        assert data["schema_version"] == "llm-wiki-extract/v1"
+        assert set(data["inventory"]) == {"external.py"}
+
+    def test_run_writes_output_path_without_stdout(self, tmp_project, tmp_path, capsys):
+        out_path = tmp_path / "records" / "extract.json"
+        args = types.SimpleNamespace(
+            src_dir=".", changed=False, summary=True,
+            deep=False, paths=None, package=None, include_empty=False,
+            output=str(out_path), read_only=True, allow_external_src=False,
+        )
+
+        extract_cmd.run(args)
+
+        captured = capsys.readouterr()
+        assert captured.out == ""
+        data = json.loads(out_path.read_text(encoding="utf-8"))
+        assert data["schema_version"] == "llm-wiki-extract/v1"
+        assert data["inventory"]
+        first = next(iter(data["inventory"].values()))
+        assert "language" in first
+
+    def test_read_only_extract_does_not_create_wiki_artifacts(self, tmp_project, capsys):
+        args = types.SimpleNamespace(
+            src_dir=".", changed=False, summary=False,
+            deep=False, paths=None, package=None, include_empty=False,
+            output=None, read_only=True, allow_external_src=False,
+        )
+
+        extract_cmd.run(args)
+
+        assert not Path("docs").exists()
+        assert not Path(".llm-wiki").exists()
 
 
 class TestExcludedDirsRelative:

@@ -5,6 +5,7 @@ import io
 import json
 import sys
 import types
+from pathlib import Path
 
 import pytest
 
@@ -520,6 +521,48 @@ class TestContextRun:
         assert data["used"] <= 50
         assert data["truncated"] is True
         assert data["omitted_files"] or data["downgraded_files"]
+
+    def test_json_output_file_suppresses_stdout(self, tmp_project, tmp_path, capsys):
+        out_path = tmp_path / "context.json"
+        args = _make_args(focus="all", budget=100000, output=str(out_path), read_only=True)
+
+        context_cmd.run(args)
+
+        captured = capsys.readouterr()
+        assert captured.out == ""
+        data = json.loads(out_path.read_text(encoding="utf-8"))
+        assert data["files"]
+
+    def test_markdown_output_file_suppresses_stdout(self, tmp_project, tmp_path, capsys):
+        out_path = tmp_path / "context.md"
+        args = _make_args(focus="all", budget=100000, format="markdown", output=str(out_path))
+
+        context_cmd.run(args)
+
+        captured = capsys.readouterr()
+        assert captured.out == ""
+        assert "Context Budget" in out_path.read_text(encoding="utf-8")
+
+    def test_run_allows_external_src_with_explicit_flag(self, tmp_project, tmp_path, capsys):
+        outside = tmp_path / "outside"
+        outside.mkdir()
+        (outside / "external.py").write_text("class External: pass\n", encoding="utf-8")
+        args = _make_args(
+            src_dir=str(outside),
+            focus="all",
+            budget=100000,
+            allow_external_src=True,
+        )
+
+        context_cmd.run(args)
+
+        data = json.loads(capsys.readouterr().out)
+        assert set(data["files"]) == {"external.py"}
+
+    def test_read_only_context_does_not_create_wiki_artifacts(self, tmp_project, capsys):
+        context_cmd.run(_make_args(focus="all", budget=100000, read_only=True))
+
+        assert not Path("docs").exists()
 
     def test_changed_focus_warning_goes_to_stderr_json_stays_parseable(self, tmp_project, capsys):
         args = _make_args(focus="changed", budget=100000)

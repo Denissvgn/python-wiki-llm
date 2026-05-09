@@ -22,7 +22,8 @@ import sys
 from pathlib import Path, PurePosixPath
 
 from .extract_cmd import _git_changed_files, get_inventory_result
-from ..config import validate_path
+from ..config import validate_source_root
+from ..services.io import write_text_output
 
 
 PROTOCOL_VERSION = "llm-wiki-context/v1"
@@ -550,11 +551,15 @@ def _build_context(
     filters: dict | None = None,
     *,
     emit_warnings: bool = True,
+    allow_external_src: bool = False,
+    read_only: bool = False,
 ) -> tuple[dict, list[str]]:
     """Build a context payload and return ``(payload, warnings)``."""
-    validate_path(src_dir, "--src-dir")
+    src_root = validate_source_root(
+        src_dir, "--src-dir", allow_external=allow_external_src,
+    )
 
-    inventory = get_inventory(src_dir, deep=True)
+    inventory = get_inventory(str(src_root), deep=True)
     inventory = _apply_protocol_filters(inventory, filters or {})
     warnings: list[str] = []
 
@@ -566,7 +571,7 @@ def _build_context(
     include_neighbors = "neighbors" in focus_values
 
     if focus_mode == "changed":
-        changed = _git_changed_files(src_dir)
+        changed = _git_changed_files(str(src_root))
         if changed is None:
             warnings.append("Could not get changed files from git. Treating all files as high priority.")
             focus_mode = "all"
@@ -613,6 +618,7 @@ def _protocol_success_payload(request: dict, payload: dict, warnings: list[str])
 
 
 def _run_protocol(args) -> None:
+    output_path: str | None = getattr(args, "output", None)
     try:
         request = _read_protocol_request(getattr(args, "request"))
         payload, warnings = _build_context(
@@ -622,11 +628,18 @@ def _run_protocol(args) -> None:
             request["focus"],
             request["filters"],
             emit_warnings=False,
+            allow_external_src=getattr(args, "allow_external_src", False),
+            read_only=getattr(args, "read_only", False),
         )
     except ProtocolRequestError as exc:
         _emit_protocol_error(exc)
 
-    print(json.dumps(_protocol_success_payload(request, payload, warnings), indent=2))
+    rendered = json.dumps(_protocol_success_payload(request, payload, warnings), indent=2)
+    if output_path:
+        write_text_output(output_path, rendered + "\n")
+        print(f"Context output written to: {output_path}", file=sys.stderr)
+    else:
+        print(rendered)
 
 
 # ── CLI entry point ───────────────────────────────────────────────────
@@ -641,6 +654,9 @@ def run(args) -> None:
     budget: int | None = getattr(args, "budget", None)
     fmt: str = getattr(args, "format", "json")
     focus: str = getattr(args, "focus", "changed")
+    output_path: str | None = getattr(args, "output", None)
+    allow_external_src: bool = getattr(args, "allow_external_src", False)
+    read_only: bool = getattr(args, "read_only", False)
 
     if budget is None:
         print("Error: --budget is required unless --request is used.", file=sys.stderr)
@@ -657,19 +673,31 @@ def run(args) -> None:
             fmt,
             focus_values,
             emit_warnings=True,
+            allow_external_src=allow_external_src,
+            read_only=read_only,
         )
     except ProtocolRequestError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         raise SystemExit(1)
 
     if not payload["files"]:
-        print("{}" if fmt == "json" else "No source files found.")
+        rendered = "{}" if fmt == "json" else "No source files found."
+        if output_path:
+            write_text_output(output_path, rendered + "\n")
+            print(f"Context output written to: {output_path}", file=sys.stderr)
+        else:
+            print(rendered)
         return
 
     if fmt == "markdown":
-        print(_render_markdown(payload))
+        rendered = _render_markdown(payload)
     else:
-        print(json.dumps(payload, indent=2))
+        rendered = json.dumps(payload, indent=2)
+    if output_path:
+        write_text_output(output_path, rendered + "\n")
+        print(f"Context output written to: {output_path}", file=sys.stderr)
+    else:
+        print(rendered)
 
 
 def _normalise_changed_paths(

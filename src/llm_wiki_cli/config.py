@@ -103,6 +103,59 @@ def validate_path(path: str, label: str = "path") -> Path:
     return resolved
 
 
+def validate_source_root(
+    path: str,
+    label: str = "--src-dir",
+    *,
+    allow_external: bool = False,
+) -> Path:
+    """Validate a source root according to the CLI source-read policy.
+
+    By default this preserves :func:`validate_path` behaviour and rejects paths
+    outside the current working directory.  When ``allow_external`` is true, the
+    path may live outside cwd but must resolve to an existing directory.
+    """
+    if not allow_external:
+        return validate_path(path, label)
+
+    candidate = Path(path).expanduser()
+    if not candidate.is_absolute():
+        candidate = Path.cwd() / candidate
+    resolved = candidate.resolve()
+    if not resolved.is_dir():
+        raise PathValidationError(
+            f"Error: {label} '{path}' resolves to '{resolved}', "
+            "which is not an existing directory."
+        )
+    return resolved
+
+
+def validate_source_paths(
+    src_dir: str | Path,
+    paths: list[str] | tuple[str, ...] | None,
+    label: str = "--paths",
+) -> None:
+    """Ensure requested source file paths stay inside *src_dir*.
+
+    The extract CLI accepts paths relative to ``--src-dir``.  Absolute paths are
+    tolerated only when they still resolve inside the source root.
+    """
+    if not paths:
+        return
+
+    root = Path(src_dir).resolve()
+    for raw_path in paths:
+        candidate = Path(raw_path).expanduser()
+        if not candidate.is_absolute():
+            candidate = root / candidate
+        try:
+            candidate.resolve().relative_to(root)
+        except (OSError, ValueError):
+            raise PathValidationError(
+                f"Error: {label} '{raw_path}' resolves outside source root '{root}'."
+            )
+
+
 # Registry mapping language name → extractor entry point.
 # Format: "module.path:ClassName"
 # New extractors (TypeScript, Go, Rust, …) are registered here.

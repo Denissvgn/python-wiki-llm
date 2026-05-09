@@ -45,3 +45,15 @@ def write_md(path: Path, text: str) -> None:
         except OSError:
             pass
         raise
+
+
+def write_text_output(path: str | Path, text: str) -> Path:
+    """Write an explicit CLI/API output artifact as UTF-8 text.
+
+    Unlike wiki paths, output paths are caller-controlled artifacts and may be
+    absolute or outside the project root.
+    """
+    target = Path(path).expanduser()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(text, encoding="utf-8", newline="\n")
+    return target

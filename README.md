@@ -189,12 +189,16 @@ llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki bootstrap --overwrite
 llm-wiki bootstrap --depth shallow
 llm-wiki bootstrap --skip-workflows
+llm-wiki bootstrap --format json --source-adapter
 ```
 
 `bootstrap` writes entity, module, workflow, infrastructure, index, log, and
 manifest files. `--depth full` is the default and includes docstrings, imports,
 attributes, method signatures, and relationship data where extractors provide
-it.
+it. Use `--source-adapter` when callers need bootstrap to write only under
+`--wiki-dir`; this skips agent constraint-file updates outside the generated
+wiki directory. Use `--format json` to emit a machine-readable summary with
+created, updated, and skipped files plus source counts and the manifest path.
 
 ### `sync`
 
@@ -235,7 +239,14 @@ llm-wiki extract --src-dir . --deep
 llm-wiki extract --src-dir . --paths src/foo.py src/bar.ts
 llm-wiki extract --src-dir . --package llm_wiki_cli
 llm-wiki extract --src-dir . --include-empty
+llm-wiki extract --src-dir . --summary --output sources/code.json --read-only
+llm-wiki extract --src-dir /path/to/repo --allow-external-src --summary
 ```
+
+The JSON output includes `schema_version: "llm-wiki-extract/v1"` plus
+`inventory` and optional `docker` objects. Inventory keys are POSIX paths
+relative to `--src-dir`, never absolute paths. The v1 contract permits additive
+fields; incompatible shape changes require a new schema version.
 
 ### `prepare-extractors`
 
@@ -306,6 +317,7 @@ llm-wiki context --budget 8000 --src-dir . --format json
 llm-wiki context --budget 8000 --src-dir . --format markdown
 llm-wiki context --budget 8000 --focus changed
 llm-wiki context --budget 8000 --focus all
+llm-wiki context --budget 12000 --format json --focus all --output context.json --read-only
 ```
 
 `--focus changed` is the default. Changed files get full detail, one-hop import
@@ -329,6 +341,85 @@ Example request:
   "filters": {
     "language": "python"
   }
+}
+```
+
+`--output PATH` writes the generated JSON or Markdown directly instead of
+printing it to stdout. `--read-only` documents source-adapter intent: the command
+does not write wiki files, hooks, manifests, local config, or helper/cache state,
+except for an explicit `--output` artifact.
+
+### Codebase source integration
+
+For research or indexing systems that need codebase evidence without adopting
+the maintained wiki format, prefer the read-only source-adapter commands:
+
+```bash
+llm-wiki extract --src-dir <repo> --summary --read-only
+llm-wiki context --src-dir <repo> --budget 12000 --format json --focus all --read-only
+llm-wiki bootstrap --src-dir <repo> --wiki-dir sources/code_wikis/<source_id> --format json --source-adapter
+```
+
+By default, `--src-dir` must resolve inside the current working directory. For a
+trusted source tree outside cwd, pass `--allow-external-src`; explicit
+`--paths` are still constrained to the chosen source root. Explicit output paths
+such as `--output` may be absolute or outside the project root because they are
+caller-selected artifacts.
+
+Example `extract --summary` payload:
+
+```json
+{
+  "schema_version": "llm-wiki-extract/v1",
+  "inventory": {
+    "models.py": {
+      "language": "python",
+      "package": "sample",
+      "classes": ["User"],
+      "functions": ["load_user"]
+    }
+  }
+}
+```
+
+Example `context --format json` payload:
+
+```json
+{
+  "budget": 12000,
+  "used": 320,
+  "truncated": false,
+  "omitted_files": [],
+  "downgraded_files": {},
+  "files": {
+    "models.py": {
+      "priority": "high",
+      "detail": "deep",
+      "classes": [{"name": "User"}],
+      "functions": []
+    }
+  }
+}
+```
+
+Example `bootstrap --format json --source-adapter` summary:
+
+```json
+{
+  "schema_version": "llm-wiki-bootstrap-summary/v1",
+  "src_dir": "/path/to/repo",
+  "generated_wiki_path": "sources/code_wikis/repo",
+  "depth": "full",
+  "source_files": 12,
+  "classes": 8,
+  "functions": 31,
+  "docker_files": 1,
+  "workflows": 2,
+  "cross_references": 14,
+  "created_files": ["sources/code_wikis/repo/index.md"],
+  "updated_files": [],
+  "skipped_files": [],
+  "manifest_path": "sources/code_wikis/repo/.llm-wiki-manifest.json"
 }
 ```
 

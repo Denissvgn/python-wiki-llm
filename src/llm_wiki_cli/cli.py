@@ -78,6 +78,12 @@ def main():
                                 help="Only include files belonging to the named package")
     extract_parser.add_argument("--include-empty", action="store_true",
                                 help="Include all .py files even if they have no extractable components")
+    extract_parser.add_argument("--output", metavar="PATH",
+                                help="Write JSON output to a file instead of stdout")
+    extract_parser.add_argument("--read-only", action="store_true",
+                                help="Guarantee source-adapter mode writes no llm-wiki files except explicit --output")
+    extract_parser.add_argument("--allow-external-src", action="store_true",
+                                help="Allow --src-dir to point outside the current working directory")
 
     # lint command
     lint_parser = subparsers.add_parser("lint", help="Lint LLM Wiki for broken links, orphans, and AST drift")
@@ -203,6 +209,12 @@ def main():
                                   help="shallow=names only, full=docstrings/attrs/methods/imports/relationships (default: full)")
     bootstrap_parser.add_argument("--skip-workflows", action="store_true",
                                   help="Skip automatic workflow page generation from call graph")
+    bootstrap_parser.add_argument("--format", choices=["text", "json"], default="text",
+                                  help="Console output format (default: text)")
+    bootstrap_parser.add_argument("--source-adapter", action="store_true",
+                                  help="Write only under --wiki-dir and skip agent constraint updates")
+    bootstrap_parser.add_argument("--allow-external-src", action="store_true",
+                                  help="Allow --src-dir to point outside the current working directory")
 
     # bump command
     bump_parser = subparsers.add_parser("bump", help="Bump project version (patch or minor)")
@@ -393,6 +405,12 @@ def main():
                                 help="changed=prioritise git diff files, all=treat every file as high priority (default: changed)")
     context_parser.add_argument("--request", metavar="FILE|-",
                                 help="Read a Wiki-as-Context protocol JSON request from a file or stdin")
+    context_parser.add_argument("--output", metavar="PATH",
+                                help="Write generated context to a file instead of stdout")
+    context_parser.add_argument("--read-only", action="store_true",
+                                help="Guarantee source-adapter mode writes no llm-wiki files except explicit --output")
+    context_parser.add_argument("--allow-external-src", action="store_true",
+                                help="Allow --src-dir to point outside the current working directory")
 
     args = parser.parse_args()
 

@@ -10,7 +10,8 @@ from datetime import date
 from pathlib import Path
 
 from .extract_cmd import get_call_graph, get_docker_inventory, get_inventory_result, print_inventory_failures
-from ..config import validate_path
+from ..config import validate_path, validate_source_root
+from ..services.contracts import BOOTSTRAP_SUMMARY_SCHEMA_VERSION
 from ..services.imports import ModulePathResolver, build_module_path_resolver
 from ..services.io import read_md, write_md
 from ..services.paths import normalize_source_path
@@ -828,34 +829,78 @@ def run(args):
     src_dir = args.src_dir
     wiki_dir = Path(args.wiki_dir)
     validate_path(str(wiki_dir), "--wiki-dir")
-    validate_path(src_dir, "--src-dir")
+    src_root = validate_source_root(
+        src_dir,
+        "--src-dir",
+        allow_external=getattr(args, "allow_external_src", False),
+    )
+    src_dir_for_scan = str(src_root)
     depth = getattr(args, "depth", "full")
     deep = depth == "full"
     skip_workflows = getattr(args, "skip_workflows", False)
+    output_format = getattr(args, "format", "text")
+    json_mode = output_format == "json"
+    source_adapter = getattr(args, "source_adapter", False)
+    progress_stream = sys.stderr if json_mode else sys.stdout
+    created_files: list[str] = []
+    updated_files: list[str] = []
+    skipped_files: list[str] = []
 
-    print(f"Bootstrapping wiki from source: {src_dir} (depth={depth})", flush=True)
-    print(f"Wiki output directory: {wiki_dir}", flush=True)
+    def emit(message: str = "", *, flush: bool = False) -> None:
+        print(message, file=progress_stream, flush=flush)
+
+    def path_text(path: Path) -> str:
+        return str(path).replace("\\", "/")
+
+    def record_write(path: Path, existed: bool) -> None:
+        target = updated_files if existed else created_files
+        target.append(path_text(path))
+
+    def write_tracked(path: Path, text: str) -> None:
+        existed = path.exists()
+        write_md(path, text)
+        record_write(path, existed)
+
+    emit(f"Bootstrapping wiki from source: {src_dir_for_scan} (depth={depth})", flush=True)
+    emit(f"Wiki output directory: {wiki_dir}", flush=True)
 
     # Ensure wiki structure exists
     for subdir in ["entities", "modules", "workflows", "infrastructure"]:
         (wiki_dir / subdir).mkdir(parents=True, exist_ok=True)
 
     # 1. Extract full AST inventory
-    print("Extracting source inventory...", flush=True)
-    source_snapshot = build_source_snapshot(src_dir)
+    emit("Extracting source inventory...", flush=True)
+    source_snapshot = build_source_snapshot(src_dir_for_scan)
     inventory_result = get_inventory_result(
-        src_dir,
+        src_dir_for_scan,
         deep=deep,
         source_snapshot=source_snapshot,
     )
     if inventory_result.failed:
-        print_inventory_failures(inventory_result)
+        print_inventory_failures(inventory_result, file=progress_stream)
         sys.exit(1)
     inventory = inventory_result.inventory
-    print(f"Extracted source inventory: {len(inventory)} file(s).", flush=True)
+    emit(f"Extracted source inventory: {len(inventory)} file(s).", flush=True)
 
     if not inventory:
-        print("No supported source files with classes or functions found. Nothing to bootstrap.")
+        emit("No supported source files with classes or functions found. Nothing to bootstrap.")
+        if json_mode:
+            print(json.dumps({
+                "schema_version": BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
+                "src_dir": src_dir_for_scan,
+                "generated_wiki_path": path_text(wiki_dir),
+                "depth": depth,
+                "source_files": len(source_snapshot.all_source_paths),
+                "classes": 0,
+                "functions": 0,
+                "docker_files": 0,
+                "workflows": 0,
+                "cross_references": 0,
+                "created_files": created_files,
+                "updated_files": updated_files,
+                "skipped_files": skipped_files,
+                "manifest_path": None,
+            }, indent=2))
         return
 
     all_entity_names = []
@@ -872,12 +917,13 @@ def run(args):
 
     # 2. Build cross-reference relationships (only meaningful in deep mode)
     if deep:
-        print("Building cross-reference relationships...", flush=True)
+        emit("Building cross-reference relationships...", flush=True)
     relationships = _build_relationships(inventory, _module_page_map) if deep else {}
+    cross_reference_count = sum(len(v) for v in relationships.values())
     if deep:
-        print(f"Built cross-reference relationships: {sum(len(v) for v in relationships.values())}.", flush=True)
+        emit(f"Built cross-reference relationships: {cross_reference_count}.", flush=True)
 
-    print("Generating entity and module pages...", flush=True)
+    emit("Generating entity and module pages...", flush=True)
     for filepath, file_data in inventory.items():
         mod_page_name = _module_page_map[filepath]
         # Map cls_name -> page_stem for classes in this file (used by module page links)
@@ -891,11 +937,12 @@ def run(args):
             entity_page_name = file_entity_page_map[cls["name"]]
             entity_path = wiki_dir / "entities" / f"{entity_page_name}.md"
             if entity_path.exists() and not args.overwrite:
-                print(f"  SKIP entity (exists): {entity_page_name}")
+                skipped_files.append(path_text(entity_path))
+                emit(f"  SKIP entity (exists): {entity_page_name}")
             else:
-                write_md(entity_path, _generate_entity_md(cls, filepath, relationships, mod_page_name))
+                write_tracked(entity_path, _generate_entity_md(cls, filepath, relationships, mod_page_name))
                 entities_created += 1
-                print(f"  CREATE entity: {entity_page_name}")
+                emit(f"  CREATE entity: {entity_page_name}")
             if entity_page_name not in _seen_entity_pages:
                 all_entity_names.append(entity_page_name)
                 _seen_entity_pages.add(entity_page_name)
@@ -903,18 +950,19 @@ def run(args):
         # Generate module page
         module_path = wiki_dir / "modules" / f"{mod_page_name}.md"
         if module_path.exists() and not args.overwrite:
-            print(f"  SKIP module (exists): {mod_page_name}")
+            skipped_files.append(path_text(module_path))
+            emit(f"  SKIP module (exists): {mod_page_name}")
         else:
-            write_md(module_path, _generate_module_md(filepath, file_data, file_entity_page_map))
+            write_tracked(module_path, _generate_module_md(filepath, file_data, file_entity_page_map))
             modules_created += 1
-            print(f"  CREATE module: {mod_page_name}")
+            emit(f"  CREATE module: {mod_page_name}")
 
         module_entries.append({
             "name": mod_page_name,
             "path": filepath,
             "docstring": file_data.get("module_docstring", ""),
         })
-    print(
+    emit(
         f"Generated entity/module pages: {entities_created} entities, {modules_created} modules.",
         flush=True,
     )
@@ -927,34 +975,36 @@ def run(args):
         for wf_name, wf_data in call_graph.items():
             wf_path = wiki_dir / "workflows" / f"{wf_name}.md"
             if wf_path.exists() and not args.overwrite:
-                print(f"  SKIP workflow (exists): {wf_name}")
+                skipped_files.append(path_text(wf_path))
+                emit(f"  SKIP workflow (exists): {wf_name}")
             else:
-                write_md(wf_path, _generate_workflow_md(wf_name, wf_data, _module_page_map))
+                write_tracked(wf_path, _generate_workflow_md(wf_name, wf_data, _module_page_map))
                 workflows_created += 1
-                print(f"  CREATE workflow: {wf_name}")
+                emit(f"  CREATE workflow: {wf_name}")
             workflow_entries.append({"name": wf_name, "entry": wf_data["entry"]})
 
     # 4. Generate infrastructure pages (Dockerfile, docker-compose, etc.)
     infra_entries = []
     infra_created = 0
-    print("Generating infrastructure pages...", flush=True)
-    docker_inventory = get_docker_inventory(src_dir, source_snapshot=source_snapshot)
+    emit("Generating infrastructure pages...", flush=True)
+    docker_inventory = get_docker_inventory(src_dir_for_scan, source_snapshot=source_snapshot)
     for docker_file, docker_info in docker_inventory.items():
         page_name = docker_file.replace("\\", "/").replace("/", "_").replace(".", "_")
         infra_path = wiki_dir / "infrastructure" / f"{page_name}.md"
         if infra_path.exists() and not args.overwrite:
-            print(f"  SKIP infrastructure (exists): {page_name}")
+            skipped_files.append(path_text(infra_path))
+            emit(f"  SKIP infrastructure (exists): {page_name}")
         else:
-            write_md(infra_path, _generate_docker_md(docker_file, docker_info, _module_page_map))
+            write_tracked(infra_path, _generate_docker_md(docker_file, docker_info, _module_page_map))
             infra_created += 1
-            print(f"  CREATE infrastructure: {page_name}")
+            emit(f"  CREATE infrastructure: {page_name}")
         infra_entries.append({"name": page_name, "type": docker_info["type"]})
-    print(f"Generated infrastructure pages: {infra_created}.", flush=True)
+    emit(f"Generated infrastructure pages: {infra_created}.", flush=True)
 
     # 5. Rebuild index.md
     index_path = wiki_dir / "index.md"
-    write_md(index_path, _generate_index_md(all_entity_names, module_entries, workflow_entries or None, infra_entries or None))
-    print(f"  WRITE index.md")
+    write_tracked(index_path, _generate_index_md(all_entity_names, module_entries, workflow_entries or None, infra_entries or None))
+    emit("  WRITE index.md")
 
     # 6. Append log entry
     log_path = wiki_dir / "log.md"
@@ -962,7 +1012,7 @@ def run(args):
     log_entry = (
         f"\n## {today}\n\n"
         f"### feat: bootstrap wiki from existing codebase\n"
-        f"- Source: `{src_dir}`\n"
+        f"- Source: `{src_dir_for_scan}`\n"
         f"- Depth: `{depth}`\n"
         f"- Entities created: {entities_created}\n"
         f"- Modules created: {modules_created}\n"
@@ -971,34 +1021,56 @@ def run(args):
         f"- Total classes tracked: {len(all_entity_names)}\n"
         f"- Total files scanned: {len(inventory)}\n"
         f"- Docker/Compose files: {len(docker_inventory)}\n"
-        f"- Cross-references resolved: {sum(len(v) for v in relationships.values())}\n"
+        f"- Cross-references resolved: {cross_reference_count}\n"
     )
     if log_path.exists():
         existing_log = read_md(log_path)
-        write_md(log_path, existing_log + log_entry)
+        write_tracked(log_path, existing_log + log_entry)
     else:
-        write_md(log_path, "# Architectural Log\n\nAppend-only chronological log.\n" + log_entry)
+        write_tracked(log_path, "# Architectural Log\n\nAppend-only chronological log.\n" + log_entry)
 
-    print(
+    emit(
         f"\nBootstrap complete: {entities_created} entities, "
         f"{modules_created} modules, {workflows_created} workflows, "
         f"{infra_created} infrastructure "
         f"created from {len(inventory)} source files "
-        f"({sum(len(v) for v in relationships.values())} cross-references)."
+        f"({cross_reference_count} cross-references)."
     )
 
     # 7. Update agent constraint files if wiki-dir differs from default
-    _update_agent_constraints(str(wiki_dir))
+    if not source_adapter:
+        _update_agent_constraints(str(wiki_dir), file=progress_stream)
 
     # 8. Save sync manifest so `llm-wiki sync` can run incrementally
     from .sync_cmd import SyncManifest  # local import to avoid circular dep
 
     manifest = SyncManifest.build_from_inventory(
-        inventory, src_dir, _entity_page_name_cache, _module_page_map,
+        inventory, src_dir_for_scan, _entity_page_name_cache, _module_page_map,
     )
-    print("Writing sync manifest...", flush=True)
+    emit("Writing sync manifest...", flush=True)
+    manifest_path = wiki_dir / ".llm-wiki-manifest.json"
+    manifest_existed = manifest_path.exists()
     manifest.save(wiki_dir)
-    print(f"  WRITE {wiki_dir / '.llm-wiki-manifest.json'}")
+    record_write(manifest_path, manifest_existed)
+    emit(f"  WRITE {manifest_path}")
+
+    if json_mode:
+        print(json.dumps({
+            "schema_version": BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
+            "src_dir": src_dir_for_scan,
+            "generated_wiki_path": path_text(wiki_dir),
+            "depth": depth,
+            "source_files": len(source_snapshot.all_source_paths),
+            "classes": sum(len(data.get("classes", [])) for data in inventory.values()),
+            "functions": sum(len(data.get("functions", [])) for data in inventory.values()),
+            "docker_files": len(docker_inventory),
+            "workflows": len(workflow_entries),
+            "cross_references": cross_reference_count,
+            "created_files": created_files,
+            "updated_files": updated_files,
+            "skipped_files": skipped_files,
+            "manifest_path": path_text(manifest_path),
+        }, indent=2))
 
 
 from ..config import DEFAULT_WIKI_DIR as _DEFAULT_WIKI_DIR
@@ -1009,9 +1081,10 @@ from ..services.schema import (
 )
 
 
-def _update_agent_constraints(wiki_dir: str) -> None:
+def _update_agent_constraints(wiki_dir: str, *, file=None) -> None:
     """Replace docs/llm_wiki path references inside the constraint block
     in any existing agent schema files to match the actual wiki_dir."""
+    stream = file or sys.stdout
     # Normalize: treat both as Path to allow absolute/relative comparison
     wiki_path = Path(wiki_dir)
     default_path = Path(_DEFAULT_WIKI_DIR)
@@ -1045,4 +1118,4 @@ def _update_agent_constraints(wiki_dir: str) -> None:
             updated.append(filename)
 
     if updated:
-        print(f"\nUpdated wiki path to `{wiki_dir}` in: {', '.join(updated)}")
+        print(f"\nUpdated wiki path to `{wiki_dir}` in: {', '.join(updated)}", file=stream)

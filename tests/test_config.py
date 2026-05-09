@@ -15,6 +15,8 @@ from llm_wiki_cli.config import (
     read_config,
     PathValidationError,
     validate_path,
+    validate_source_paths,
+    validate_source_root,
     write_config,
 )
 
@@ -59,6 +61,31 @@ class TestValidatePath:
         sub.mkdir()
         result = validate_path(str(sub), "--wiki-dir")
         assert result == sub
+
+    def test_source_root_preserves_default_cwd_guard(self, tmp_path):
+        project = tmp_path / "project"
+        outside = tmp_path / "outside"
+        project.mkdir()
+        outside.mkdir()
+        os.chdir(project)
+
+        with pytest.raises(PathValidationError):
+            validate_source_root(str(outside), "--src-dir")
+
+    def test_source_root_allows_external_existing_directory(self, tmp_path):
+        project = tmp_path / "project"
+        outside = tmp_path / "outside"
+        project.mkdir()
+        outside.mkdir()
+        os.chdir(project)
+
+        assert validate_source_root(str(outside), "--src-dir", allow_external=True) == outside
+
+    def test_source_paths_reject_escape_from_source_root(self, tmp_path):
+        source = tmp_path / "source"
+        source.mkdir()
+        with pytest.raises(PathValidationError):
+            validate_source_paths(source, ["../outside.py"])
 
 
 class TestReadWriteConfig:

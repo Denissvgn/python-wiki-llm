@@ -1,4 +1,5 @@
 """Tests for commands/bootstrap_cmd.py"""
+import json
 import os
 import shutil
 import subprocess
@@ -21,6 +22,9 @@ def _make_args(**kwargs):
         "overwrite": False,
         "depth": "full",
         "skip_workflows": True,
+        "format": "text",
+        "source_adapter": False,
+        "allow_external_src": False,
     }
     defaults.update(kwargs)
     return types.SimpleNamespace(**defaults)
@@ -66,6 +70,22 @@ def tmp_collision_project(tmp_path):
 
 
 class TestBootstrapCollisions:
+    def test_bootstrap_json_summary_is_parseable_stdout(self, tmp_project, capsys):
+        wiki_dir = tmp_project / "docs" / "llm_wiki"
+        args = _make_args(src_dir=".", wiki_dir=str(wiki_dir), format="json", source_adapter=True)
+
+        bootstrap_cmd.run(args)
+
+        captured = capsys.readouterr()
+        data = json.loads(captured.out)
+        assert data["schema_version"] == "llm-wiki-bootstrap-summary/v1"
+        assert data["generated_wiki_path"] == str(wiki_dir).replace("\\", "/")
+        assert data["source_files"] >= 3
+        assert data["classes"] >= 2
+        assert data["manifest_path"].endswith(".llm-wiki-manifest.json")
+        assert data["created_files"]
+        assert "Bootstrapping wiki" in captured.err
+
     def test_bootstrap_prints_long_phase_progress(self, tmp_collision_project, capsys):
         wiki_dir = tmp_collision_project / "docs" / "llm_wiki"
         args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
@@ -415,6 +435,22 @@ class TestBootstrapSkipWorkflows:
 
 
 class TestBootstrapUpdatesAgentConstraints:
+    def test_source_adapter_skips_agent_constraint_update(self, tmp_project, capsys):
+        from llm_wiki_cli.commands import init_cmd
+        import types
+
+        init_cmd.run(types.SimpleNamespace(agent="claude", wiki_dir="docs/llm_wiki"))
+        wiki_dir = tmp_project / "adapter_wiki"
+
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir=str(wiki_dir), source_adapter=True))
+
+        content = Path("CLAUDE.md").read_text(encoding="utf-8")
+        start = content.index("# --- LLM Wiki Maintainer Constraints ---")
+        end = content.index("# --- End LLM Wiki Constraints ---") + len("# --- End LLM Wiki Constraints ---")
+        block = content[start:end]
+        assert "docs/llm_wiki" in block
+        assert str(wiki_dir) not in block
+
     def test_updates_path_in_constraint_block(self, tmp_project, capsys):
         from llm_wiki_cli.commands import init_cmd
         import types
@@ -489,3 +525,25 @@ class TestBootstrapCreatesManifest:
         )
         # Should not raise SystemExit
         sync_cmd.run(sync_args)
+
+
+class TestBootstrapExternalSource:
+    def test_allows_external_src_with_explicit_flag(self, tmp_path, monkeypatch, capsys):
+        workspace = tmp_path / "workspace"
+        source = tmp_path / "source"
+        workspace.mkdir()
+        source.mkdir()
+        (source / "app.py").write_text("class ExternalApp:\n    pass\n", encoding="utf-8")
+
+        monkeypatch.chdir(workspace)
+        bootstrap_cmd.run(_make_args(
+            src_dir=str(source),
+            wiki_dir="docs/llm_wiki",
+            format="json",
+            source_adapter=True,
+            allow_external_src=True,
+        ))
+
+        data = json.loads(capsys.readouterr().out)
+        assert data["src_dir"] == str(source)
+        assert (workspace / "docs" / "llm_wiki" / "modules" / "app.md").exists()

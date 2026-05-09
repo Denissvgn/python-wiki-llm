@@ -11,8 +11,14 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
-from ..config import EXTRACTOR_REGISTRY, validate_path
+from ..config import (
+    EXTRACTOR_REGISTRY,
+    PathValidationError,
+    validate_source_paths,
+    validate_source_root,
+)
 from ..extractors.common import LANGUAGE_EXTENSIONS
+from ..services.contracts import EXTRACT_SCHEMA_VERSION
 from ..services.inventory_cache import (
     InventoryCache,
     InventoryCacheOptions,
@@ -25,6 +31,7 @@ from ..services.inventory_cache import (
 from ..services.imports import build_module_path_resolver
 from ..services.packages import discover_packages, stamp_inventory_packages
 from ..services.plugins import get_extractor_registry
+from ..services.io import write_text_output
 from ..services.source_snapshot import SourceSnapshot, build_source_snapshot
 
 # Re-export ComponentVisitor so existing callers that import it from here
@@ -65,6 +72,31 @@ class InventoryResult:
     @property
     def failed(self) -> list[ExtractorStatus]:
         return [s for s in self.statuses.values() if s.state == "failed"]
+
+
+@dataclass(frozen=True)
+class ExtractPayloadResult:
+    payload: dict
+    inventory_count: int
+    docker_count: int
+    changed_file_count: int | None = None
+    no_changed_files: bool = False
+
+
+class ExtractorFailureError(RuntimeError):
+    """Raised when one or more extractors fail during payload construction."""
+
+    def __init__(self, result: InventoryResult):
+        self.result = result
+        super().__init__(_extractor_failure_message(result))
+
+
+def _extractor_failure_message(result: InventoryResult) -> str:
+    details = []
+    for status in result.failed:
+        detail = f": {status.message}" if status.message else ""
+        details.append(f"{status.language} extraction failed{detail}")
+    return "; ".join(details) or "Source extraction failed."
 
 
 def print_inventory_failures(result: InventoryResult, *, file=None) -> None:
@@ -413,6 +445,10 @@ def _summarize_inventory(inventory: dict) -> dict:
     summary: dict[str, dict] = {}
     for fp, data in inventory.items():
         entry: dict[str, list] = {}
+        if data.get("language"):
+            entry["language"] = data["language"]
+        if data.get("package"):
+            entry["package"] = data["package"]
         cls_names = [c["name"] for c in data.get("classes", [])]
         fn_names = [f["name"] for f in data.get("functions", [])]
         if cls_names:
@@ -424,48 +460,60 @@ def _summarize_inventory(inventory: dict) -> dict:
     return summary
 
 
-def run(args):
-    src_dir: str = getattr(args, "src_dir", ".")
-    validate_path(src_dir, "--src-dir")
-    changed: bool = getattr(args, "changed", False)
-    summary: bool = getattr(args, "summary", False)
-    deep: bool = getattr(args, "deep", False)
-    paths: list[str] | None = getattr(args, "paths", None)
-    package_filter: str | None = getattr(args, "package", None)
-    include_empty: bool = getattr(args, "include_empty", False)
-
-    only_files = None
+def build_extract_payload(
+    src_dir: str = ".",
+    *,
+    changed: bool = False,
+    summary: bool = False,
+    deep: bool = False,
+    paths: list[str] | None = None,
+    package_filter: str | None = None,
+    include_empty: bool = False,
+    allow_external_src: bool = False,
+    read_only: bool = False,
+) -> ExtractPayloadResult:
+    """Build the stable extract JSON payload without printing or exiting."""
+    src_root = validate_source_root(
+        src_dir, "--src-dir", allow_external=allow_external_src,
+    )
+    if paths:
+        validate_source_paths(src_root, paths, "--paths")
 
     if changed and paths:
-        print("Error: --changed and --paths are mutually exclusive.", file=sys.stderr)
-        sys.exit(2)
+        raise ValueError("--changed and --paths are mutually exclusive.")
+
+    only_files = None
+    changed_file_count: int | None = None
+    no_changed_files = False
 
     if changed:
-        only_files = _git_changed_files(src_dir)
-        if only_files is None:
-            print("Warning: Could not get changed files from git. Falling back to full scan.", file=sys.stderr)
-        elif not only_files:
-            print("No files changed in the last commit.", file=sys.stderr)
-            return
-        else:
-            print(f"Extracting {len(only_files)} changed file(s)...", file=sys.stderr)
+        only_files = _git_changed_files(str(src_root))
+        if only_files is not None:
+            changed_file_count = len(only_files)
+        if only_files == []:
+            no_changed_files = True
     elif paths:
         only_files = paths
-        print(f"Extracting {len(only_files)} specified path(s)...", file=sys.stderr)
-    else:
-        print(f"Extracting inventory from {src_dir}...", file=sys.stderr)
 
-    source_snapshot = build_source_snapshot(src_dir, only_files=only_files)
+    if no_changed_files:
+        return ExtractPayloadResult(
+            {"schema_version": EXTRACT_SCHEMA_VERSION, "inventory": {}},
+            inventory_count=0,
+            docker_count=0,
+            changed_file_count=0,
+            no_changed_files=True,
+        )
+
+    source_snapshot = build_source_snapshot(str(src_root), only_files=only_files)
     result = get_inventory_result(
-        src_dir,
+        str(src_root),
         deep=deep,
         only_files=only_files,
         include_empty=include_empty,
         source_snapshot=source_snapshot,
     )
     if result.failed:
-        print_inventory_failures(result)
-        sys.exit(1)
+        raise ExtractorFailureError(result)
     inventory = result.inventory
 
     if package_filter:
@@ -474,22 +522,97 @@ def run(args):
             if data.get("package") == package_filter
         }
         if not inventory:
-            print(f"No files found for package '{package_filter}'.", file=sys.stderr)
-            sys.exit(1)
+            raise ValueError(f"No files found for package '{package_filter}'.")
 
     if summary:
         inventory = _summarize_inventory(inventory)
 
-    docker_inv = get_docker_inventory(src_dir, source_snapshot=source_snapshot)
+    docker_inv = get_docker_inventory(str(src_root), source_snapshot=source_snapshot)
 
-    output: dict = {"inventory": inventory}
+    output: dict = {
+        "schema_version": EXTRACT_SCHEMA_VERSION,
+        "inventory": inventory,
+    }
     if docker_inv:
         output["docker"] = docker_inv
 
-    print(json.dumps(output, indent=2))
-    print(f"Extracted {len(inventory)} files with tracked components.", file=sys.stderr)
-    if docker_inv:
-        print(f"Docker inventory: {len(docker_inv)} file(s).", file=sys.stderr)
+    return ExtractPayloadResult(
+        output,
+        inventory_count=len(inventory),
+        docker_count=len(docker_inv),
+        changed_file_count=changed_file_count,
+        no_changed_files=False,
+    )
+
+
+def run(args):
+    src_dir: str = getattr(args, "src_dir", ".")
+    changed: bool = getattr(args, "changed", False)
+    summary: bool = getattr(args, "summary", False)
+    deep: bool = getattr(args, "deep", False)
+    paths: list[str] | None = getattr(args, "paths", None)
+    package_filter: str | None = getattr(args, "package", None)
+    include_empty: bool = getattr(args, "include_empty", False)
+    output_path: str | None = getattr(args, "output", None)
+    read_only: bool = getattr(args, "read_only", False)
+    allow_external_src: bool = getattr(args, "allow_external_src", False)
+
+    if changed and paths:
+        print("Error: --changed and --paths are mutually exclusive.", file=sys.stderr)
+        sys.exit(2)
+
+    if changed:
+        print("Extracting changed file(s)...", file=sys.stderr)
+    elif paths:
+        print(f"Extracting {len(paths)} specified path(s)...", file=sys.stderr)
+    else:
+        print(f"Extracting inventory from {src_dir}...", file=sys.stderr)
+
+    try:
+        result = build_extract_payload(
+            src_dir,
+            changed=changed,
+            summary=summary,
+            deep=deep,
+            paths=paths,
+            package_filter=package_filter,
+            include_empty=include_empty,
+            allow_external_src=allow_external_src,
+            read_only=read_only,
+        )
+    except ExtractorFailureError as exc:
+        print_inventory_failures(exc.result)
+        sys.exit(1)
+    except PathValidationError:
+        raise
+    except ValueError as exc:
+        message = str(exc)
+        if message.startswith("No files found for package"):
+            print(message, file=sys.stderr)
+            sys.exit(1)
+        print(f"Error: {message}", file=sys.stderr)
+        sys.exit(2)
+
+    if changed:
+        if result.no_changed_files:
+            print("No files changed in the last commit.", file=sys.stderr)
+            if not output_path:
+                return
+        elif result.changed_file_count is None:
+            print("Warning: Could not get changed files from git. Falling back to full scan.", file=sys.stderr)
+        else:
+            print(f"Extracting {result.changed_file_count} changed file(s)...", file=sys.stderr)
+
+    rendered = json.dumps(result.payload, indent=2)
+    if output_path:
+        write_text_output(output_path, rendered + "\n")
+        print(f"Extract output written to: {output_path}", file=sys.stderr)
+    else:
+        print(rendered)
+
+    print(f"Extracted {result.inventory_count} files with tracked components.", file=sys.stderr)
+    if result.docker_count:
+        print(f"Docker inventory: {result.docker_count} file(s).", file=sys.stderr)
     else:
         print("No Docker/Compose files found.", file=sys.stderr)
 
