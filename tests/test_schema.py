@@ -36,6 +36,9 @@ def test_agent_schema_mentions_current_sync_and_lint_runtime():
     assert "LLM_WIKI_GO=/path/to/go" in content
     assert "persistent inventory cache" in content
     assert "large-diff guard" in content
+    assert "semantic pass" in content
+    assert "Lint passing is not enough" in content
+    assert "_Auto-generated from ..._" in content
 
 
 def test_ide_schema_mentions_incremental_sync_workflow():
@@ -43,6 +46,9 @@ def test_ide_schema_mentions_incremental_sync_workflow():
 
     assert "llm-wiki sync --jobs auto" in content
     assert "If sync repairs only the manifest" in content
+    assert "Sync output is a deterministic AST/docstring skeleton" in content
+    assert "Passing lint is not enough" in content
+    assert "_Auto-generated from ..._" in content
     assert "llm-wiki prepare-extractors --src-dir ." in content
     assert "LLM_WIKI_GO=/path/to/go" in content
     assert "llm-wiki lint --strict --jobs auto" in content

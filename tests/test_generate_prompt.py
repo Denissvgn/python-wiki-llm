@@ -125,6 +125,17 @@ class TestGeneratePromptBuildPrompt:
         content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
         assert "Only affected pages" in content
 
+    def test_prompt_runs_sync_before_semantic_pass(self, tmp_project):
+        """Prompt should run deterministic sync, then require semantic enrichment."""
+        args = _make_args()
+        generate_prompt_cmd.run(args)
+        content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
+        assert "llm-wiki sync --jobs auto --wiki-dir docs/llm_wiki --src-dir ." in content
+        assert "## Semantic Pass" in content
+        assert "Semantic pass complete" in content
+        assert "_Auto-generated from ..._" in content
+        assert "generated AST/docstring skeletons" in content
+
     def test_prompt_contains_git_diff_command(self, tmp_project):
         """Prompt should instruct the agent to run git diff."""
         args = _make_args()

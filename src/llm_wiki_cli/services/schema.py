@@ -51,6 +51,9 @@ updated automatically on commit. You are responsible for keeping it current:
    - If sync repairs only the manifest, run the same sync command again.
    - If sync stops on a large diff, inspect the changed files first. Re-run with
      `--force` only when the broad wiki update is intentional.
+   - Inspect pages that sync created or updated. Replace generated placeholders,
+     copied-docstring-only descriptions, and knowable `—` table descriptions
+     with semantic notes from the diff and source.
    - Run `llm-wiki lint --strict --jobs auto` to verify consistency. Fix any
      issues until it exits 0.
 2. **When extractor helpers are missing** for TypeScript, Go, or Rust projects:
@@ -80,6 +83,9 @@ llm-wiki sync --jobs auto
   the wiki is stale but don't want to regenerate everything.
 - Sync creates/updates entity and module pages for new or changed files, marks
   removed files with a ⚠️ Stale header, and rebuilds `index.md`.
+- Sync output is a deterministic AST/docstring skeleton. After it runs, agents
+  must fill affected pages with project-specific semantics: responsibility,
+  system role, collaborators, important behavior, and usage or constraints.
 - Sync uses the same persistent inventory cache as lint when available. Use
   `--cache-stats` when you need to see cache behavior.
 - If no manifest exists yet (project bootstrapped by an older version), sync will
@@ -90,7 +96,8 @@ llm-wiki sync --jobs auto
 - Sync has a large-diff guard to prevent accidental mass rewrites. Use
   `llm-wiki sync --force` only after confirming the broad update is expected.
 - After sync finishes, always run `llm-wiki lint --strict --jobs auto` to verify
-  consistency.
+  structure. Passing lint is not enough if affected pages still contain generic
+  `_Auto-generated from ..._` text or unexplained placeholders.
 
 ## Using `llm-wiki context` for large codebases
 `context` produces a token-budgeted, priority-ranked snapshot of the codebase —
@@ -129,7 +136,7 @@ def _wiki_instructions(wiki_dir: str) -> str:
 - Consult relevant entity and module pages to understand existing patterns before writing new code.
 
 ## When you change code
-- Prefer `llm-wiki sync --jobs auto --wiki-dir {wiki_dir} --src-dir .` after
+- First run `llm-wiki sync --jobs auto --wiki-dir {wiki_dir} --src-dir .` after
   code changes. Sync uses the manifest, persistent inventory cache, and
   collision-aware page naming to update only affected wiki pages.
 - If sync reports that it repaired only the manifest, run the same sync command
@@ -137,7 +144,15 @@ def _wiki_instructions(wiki_dir: str) -> str:
 - If sync stops on a large diff, inspect the affected files. Use
   `llm-wiki sync --force --jobs auto --wiki-dir {wiki_dir} --src-dir .` only when
   the broad update is intentional.
-- If you update pages manually, keep edits surgical: update entity pages in
+- Then inspect the pages sync created or updated. Sync produces deterministic
+  AST/docstring skeletons; you are responsible for the semantic pass.
+- Enrich new or generic affected pages whose descriptions are `_Auto-generated
+  from ..._`, copied docstrings only, or table cells with `—` where semantic
+  context is knowable from the diff or source.
+- Semantic content should explain responsibility, role in the system, main
+  collaborators, important behavior, and usage or constraints.
+- Keep semantic edits surgical: preserve generated structure, links, tables, and
+  canonical filenames. Update only affected entity pages in
   `{wiki_dir}/entities/`, module pages in `{wiki_dir}/modules/`, workflow pages
   in `{wiki_dir}/workflows/`, infrastructure pages in `{wiki_dir}/infrastructure/`,
   and append one concise summary to `{wiki_dir}/log.md`.
@@ -169,7 +184,9 @@ Page filenames **must** match the conventions enforced by `llm-wiki lint`:
 - **Workflow pages** (`workflows/`): Free-form descriptive names.
 
 ## Quality checks
-- Your wiki changes are **complete** when `llm-wiki lint --strict --jobs auto --wiki-dir {wiki_dir} --src-dir .` exits 0.
+- Your wiki changes are **structurally valid** when `llm-wiki lint --strict --jobs auto --wiki-dir {wiki_dir} --src-dir .` exits 0.
+- Lint passing is not enough: affected pages must also have semantic
+  explanations, not only generated skeletons or copied docstrings.
 - Run lint after every wiki update. If it reports issues, fix them and re-run until it passes.
 - Run `llm-wiki lint --profile --cache-stats --wiki-dir {wiki_dir} --src-dir .`
   when lint is slow or extractor failures need machine-readable diagnostics.

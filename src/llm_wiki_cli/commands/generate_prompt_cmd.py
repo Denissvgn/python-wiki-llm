@@ -183,9 +183,12 @@ The project's wiki lives at `{wiki_dir}/`.
 ## Context
 {rich_context_block}
 
-Run these commands to understand what changed:
+Run these commands to update the deterministic wiki skeleton and understand what changed:
 
 ```bash
+# First update generated pages from the current source inventory
+llm-wiki sync --jobs auto --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}
+
 # Changed files — compact inventory of what was modified in the last commit
 llm-wiki extract --src-dir {quoted_src_dir} --changed --summary
 
@@ -201,6 +204,17 @@ For full detail (methods, params, docstrings) on a specific file:
 llm-wiki extract --src-dir {quoted_src_dir} --paths path/to/file.py
 ```
 
+## Semantic Pass
+
+Use the sync output plus `git diff` and `extract --changed --summary` to identify
+pages that were created or updated. Inspect those affected entity/module pages
+and enrich any generated skeletons before you stop.
+
+Replace `_Auto-generated from ..._`, copied-docstring-only descriptions, and
+table `—` placeholders where semantic context is knowable from the diff or
+source. Semantic content should explain responsibility, role in the system, main
+collaborators, important behavior, and usage or constraints.
+
 ## Change-Type Focus
 
 Change type: `{effective_type}`.
@@ -213,11 +227,14 @@ Your work is done when **all** of the following are true:
 1. **`llm-wiki lint` exits 0** — no broken links, no orphan pages, no undocumented \
 classes, no stale entities, no missing modules, no broken workflow links, \
 no undocumented infrastructure files.
-2. **Only affected pages changed** — modify wiki pages that correspond to code \
+2. **Semantic pass complete** — affected entity/module pages contain \
+project-specific explanations, not just generated AST/docstring skeletons, \
+copied docstrings, `_Auto-generated from ..._`, or knowable `—` placeholders.
+3. **Only affected pages changed** — modify wiki pages that correspond to code \
 touched in the diff. Do not edit unrelated pages or reformat existing content.
-3. **`{wiki_dir}/log.md` has a new entry** — one concise line describing what changed, \
+4. **`{wiki_dir}/log.md` has a new entry** — one concise line describing what changed, \
 appended at the bottom.
-4. **`CHANGELOG.md` updated** (if applicable) — add an entry under `## [Unreleased]` \
+5. **`CHANGELOG.md` updated** (if applicable) — add an entry under `## [Unreleased]` \
 for user-facing changes. Skip for pure refactors, test-only, or doc-only commits. \
 *(Not verified by lint.)*
 

@@ -216,6 +216,12 @@ parallel built-in language extraction. Sync repairs manifests with invalid
 source hashes without touching pages, and stops unusually broad diffs unless
 `--force` is used.
 
+`sync` is deterministic: it updates AST/docstring-based page skeletons and does
+not call an LLM. In agent workflows, treat sync as the first step, then inspect
+created or updated pages and replace generic `_Auto-generated from ..._`,
+copied-docstring-only, or knowable `—` placeholders with project-specific
+semantic explanations.
+
 ### `extract`
 
 Print source inventory as JSON. All registered extractors run; missing optional
@@ -338,7 +344,9 @@ llm-wiki generate-prompt --template compact
 ```
 
 The generated prompt includes change-type guidance. Installed prompt templates
-can override the default prompt body.
+can override the default prompt body. The default prompt asks agents to run
+`sync` first, then perform a semantic pass on affected pages before accepting a
+lint-clean wiki as complete.
 
 ### `mcp`
 

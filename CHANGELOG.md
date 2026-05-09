@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-05-09
+
+### Changed
+- Generated agent instructions and default sync prompts now require a semantic
+  enrichment pass after deterministic `sync`, so new or generic wiki pages are
+  not considered complete just because structural lint passes.
+
 ## [0.5.0] - 2026-05-09
 
 ### Added
@@ -159,7 +166,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Test suite** — 89 unit + integration tests with pytest
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.3.41...v0.5.0
 [0.3.41]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.3.28...v0.3.41
 [0.3.28]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.1.5...v0.3.28
