@@ -32,6 +32,11 @@ def write_md(path: Path, text: str) -> None:
     Writes through a same-directory temporary file and atomically replaces
     the destination so an interrupted process does not leave a truncated page.
     """
+    _write_utf8_text(path, text)
+
+
+def _write_utf8_text(path: Path, text: str) -> None:
+    """Atomically write UTF-8 text with Unix line endings."""
     normalized = text.replace("\r\n", "\n").replace("\r", "\n")
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
@@ -54,6 +59,5 @@ def write_text_output(path: str | Path, text: str) -> Path:
     absolute or outside the project root.
     """
     target = Path(path).expanduser()
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(text, encoding="utf-8", newline="\n")
+    _write_utf8_text(target, text)
     return target
