@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-05-10
+
 ### Added
 - **Codebase source-adapter support** — `extract` now emits stable
   `llm-wiki-extract/v1` JSON, `extract` and `context` support explicit
@@ -173,7 +175,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Test suite** — 89 unit + integration tests with pytest
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.3.41...v0.5.0
 [0.3.41]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.3.28...v0.3.41
