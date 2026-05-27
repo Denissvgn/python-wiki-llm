@@ -372,6 +372,8 @@ def main():
                              help="Parallel built-in extractor jobs: positive integer or 'auto' (default: 1)")
     sync_parser.add_argument("--force", action="store_true",
                              help="Allow sync to apply unusually broad source diffs")
+    sync_parser.add_argument("--no-preserve-semantic", action="store_true",
+                             help="Disable preservation of existing semantic wiki descriptions")
 
     # migrate command
     migrate_parser = subparsers.add_parser(

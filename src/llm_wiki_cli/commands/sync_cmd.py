@@ -40,11 +40,13 @@ from ..services.io import read_md, write_md
 # ── Constants ─────────────────────────────────────────────────────────────────
 
 MANIFEST_FILENAME = ".llm-wiki-manifest.json"
-MANIFEST_VERSION = 2
+MANIFEST_VERSION = 3
 MAX_SYNC_AFFECTED_FILES = 50
 MAX_SYNC_AFFECTED_RATIO = 0.30
 MIN_SOURCES_FOR_RATIO_GUARD = 10
 _HASH_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
+_AUTO_GENERATED_RE = re.compile(r"^_Auto-generated from `.+`(?: in `.+`)?\._$")
+_HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 _DEPRECATION_HEADER = (
     "> ⚠️ **Stale:** Source no longer found in codebase. "
     "Run `llm-wiki lint` to audit.\n\n"
@@ -118,6 +120,329 @@ def _write_md_if_changed(path: Path, text: str) -> str:
     write_md(path, normalized)
     return "created"
 
+
+def _without_line_metadata(value):
+    """Return inventory data with line-only metadata removed."""
+    if isinstance(value, dict):
+        return {
+            key: _without_line_metadata(item)
+            for key, item in sorted(value.items())
+            if key != "line"
+        }
+    if isinstance(value, list):
+        return [_without_line_metadata(item) for item in value]
+    return value
+
+
+def _semantic_hash_for_file(file_data: dict) -> str:
+    """Fingerprint extracted source semantics while ignoring line shifts."""
+    payload = _without_line_metadata(file_data)
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    digest = hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+    return f"sha256:{digest}"
+
+
+def _first_doc_line(info: dict) -> str:
+    docstring = info.get("docstring", "")
+    return docstring.split("\n")[0] if docstring else "—"
+
+
+def _generated_semantics_for_file(filepath: str, file_data: dict) -> dict:
+    """Return the generated description fields that sync may later preserve over."""
+    module_docstring = file_data.get("module_docstring", "")
+    module_description = module_docstring or f"_Auto-generated from `{filepath}`._"
+    return {
+        "module": {
+            "description": module_description,
+            "classes": {
+                cls["name"]: _first_doc_line(cls)
+                for cls in file_data.get("classes", [])
+            },
+            "functions": {
+                fn["name"]: _first_doc_line(fn)
+                for fn in file_data.get("functions", [])
+            },
+        },
+        "entities": {
+            cls["name"]: {
+                "description": cls.get("docstring", "")
+                or f"_Auto-generated from `{cls['name']}` in `{filepath}`._",
+                "attributes": {
+                    attr["name"]: "—"
+                    for attr in cls.get("attributes", [])
+                },
+                "methods": {
+                    method["name"]: _first_doc_line(method)
+                    for method in cls.get("methods", [])
+                },
+            }
+            for cls in file_data.get("classes", [])
+        },
+    }
+
+
+def _section_bounds(lines: list[str], heading: str) -> tuple[int, int, int] | None:
+    """Return ``(heading_index, body_start, body_end)`` for a level-2 heading."""
+    target = heading.casefold()
+    for i, line in enumerate(lines):
+        match = _HEADING_RE.match(line.strip())
+        if not match:
+            continue
+        level = len(match.group(1))
+        title = match.group(2).strip().casefold()
+        if level != 2 or title != target:
+            continue
+        end = len(lines)
+        for j in range(i + 1, len(lines)):
+            next_match = _HEADING_RE.match(lines[j].strip())
+            if next_match and len(next_match.group(1)) <= level:
+                end = j
+                break
+        return i, i + 1, end
+    return None
+
+
+def _trim_blank_lines(lines: list[str]) -> list[str]:
+    start = 0
+    end = len(lines)
+    while start < end and lines[start].strip() == "":
+        start += 1
+    while end > start and lines[end - 1].strip() == "":
+        end -= 1
+    return lines[start:end]
+
+
+def _section_body(markdown: str, heading: str) -> str | None:
+    lines = _normalize_md(markdown).splitlines()
+    bounds = _section_bounds(lines, heading)
+    if not bounds:
+        return None
+    _, start, end = bounds
+    body_lines = _trim_blank_lines(lines[start:end])
+    return "\n".join(body_lines).strip()
+
+
+def _replace_section_body(markdown: str, heading: str, body: str) -> str:
+    lines = _normalize_md(markdown).splitlines()
+    bounds = _section_bounds(lines, heading)
+    if not bounds:
+        return markdown
+    heading_idx, _, end = bounds
+    replacement = [""] + body.splitlines() + [""]
+    return "\n".join(lines[: heading_idx + 1] + replacement + lines[end:])
+
+
+def _is_placeholder_description(value: str | None) -> bool:
+    if value is None:
+        return True
+    stripped = value.strip()
+    if not stripped or stripped in {"—", "-"}:
+        return True
+    if _AUTO_GENERATED_RE.match(stripped):
+        return True
+    return False
+
+
+def _should_preserve_semantic_value(
+    existing: str | None,
+    generated: str | None,
+    old_generated: str | None,
+) -> bool:
+    if _is_placeholder_description(existing):
+        return False
+    existing_stripped = (existing or "").strip()
+    generated_stripped = (generated or "").strip()
+    if old_generated is None:
+        return existing_stripped != generated_stripped
+    old_stripped = old_generated.strip()
+    if existing_stripped == old_stripped:
+        return False
+    return existing_stripped != generated_stripped
+
+
+def _split_table_row(line: str) -> list[str]:
+    stripped = line.strip()
+    if not stripped.startswith("|") or not stripped.endswith("|"):
+        return []
+    return [cell.strip() for cell in stripped.strip("|").split("|")]
+
+
+def _format_table_row(cells: list[str]) -> str:
+    return "| " + " | ".join(cells) + " |"
+
+
+def _is_table_separator(cells: list[str]) -> bool:
+    if not cells:
+        return False
+    return all(re.fullmatch(r":?-{3,}:?", cell.replace(" ", "")) for cell in cells)
+
+
+def _semantic_table_key(cell: str) -> str:
+    key = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", cell)
+    key = key.replace("`", "").replace("*", "")
+    return key.strip()
+
+
+def _table_description_cells(markdown: str, heading: str) -> dict[str, str]:
+    lines = _normalize_md(markdown).splitlines()
+    bounds = _section_bounds(lines, heading)
+    if not bounds:
+        return {}
+    _, start, end = bounds
+
+    for i in range(start, end):
+        headers = _split_table_row(lines[i])
+        if not headers or "Description" not in headers:
+            continue
+        desc_idx = headers.index("Description")
+        row_start = i + 1
+        if row_start < end and _is_table_separator(_split_table_row(lines[row_start])):
+            row_start += 1
+
+        descriptions: dict[str, str] = {}
+        for row_idx in range(row_start, end):
+            row = _split_table_row(lines[row_idx])
+            if not row:
+                break
+            if len(row) <= desc_idx:
+                continue
+            key = _semantic_table_key(row[0])
+            description = row[desc_idx].strip()
+            if key and not _is_placeholder_description(description):
+                descriptions[key] = description
+        return descriptions
+    return {}
+
+
+def _preserve_table_description_cells(
+    markdown: str,
+    heading: str,
+    descriptions: dict[str, str],
+    old_descriptions: dict[str, str] | None = None,
+) -> tuple[str, int]:
+    if not descriptions:
+        return markdown, 0
+
+    lines = _normalize_md(markdown).splitlines()
+    bounds = _section_bounds(lines, heading)
+    if not bounds:
+        return markdown, 0
+    _, start, end = bounds
+
+    preserved = 0
+    for i in range(start, end):
+        headers = _split_table_row(lines[i])
+        if not headers or "Description" not in headers:
+            continue
+        desc_idx = headers.index("Description")
+        row_start = i + 1
+        if row_start < end and _is_table_separator(_split_table_row(lines[row_start])):
+            row_start += 1
+
+        for row_idx in range(row_start, end):
+            row = _split_table_row(lines[row_idx])
+            if not row:
+                break
+            if len(row) <= desc_idx:
+                continue
+            key = _semantic_table_key(row[0])
+            existing_description = descriptions.get(key)
+            old_description = (old_descriptions or {}).get(key)
+            if not _should_preserve_semantic_value(
+                existing_description,
+                row[desc_idx],
+                old_description,
+            ):
+                continue
+            row[desc_idx] = existing_description
+            lines[row_idx] = _format_table_row(row)
+            preserved += 1
+        break
+
+    if preserved == 0:
+        return markdown, 0
+    updated = "\n".join(lines)
+    if markdown.endswith("\n"):
+        updated += "\n"
+    return updated, preserved
+
+
+@dataclass
+class SemanticMergeResult:
+    text: str
+    preserved: int = 0
+
+
+def _merge_semantic_markdown(
+    existing: str,
+    generated: str,
+    table_headings: tuple[str, ...],
+    *,
+    old_description: str | None = None,
+    old_table_descriptions: dict[str, dict[str, str]] | None = None,
+) -> SemanticMergeResult:
+    """Preserve human-written semantic fields in regenerated wiki markdown."""
+    merged = _normalize_md(generated)
+    preserved = 0
+
+    existing_description = _section_body(existing, "Description")
+    generated_description = _section_body(generated, "Description")
+    if _should_preserve_semantic_value(
+        existing_description,
+        generated_description,
+        old_description,
+    ):
+        merged = _replace_section_body(merged, "Description", existing_description)
+        preserved += 1
+
+    for heading in table_headings:
+        descriptions = _table_description_cells(existing, heading)
+        merged, table_preserved = _preserve_table_description_cells(
+            merged,
+            heading,
+            descriptions,
+            (old_table_descriptions or {}).get(heading),
+        )
+        preserved += table_preserved
+
+    return SemanticMergeResult(merged, preserved)
+
+
+def _merge_entity_semantics(
+    existing: str,
+    generated: str,
+    old_semantics: dict | None = None,
+) -> SemanticMergeResult:
+    old_semantics = old_semantics or {}
+    return _merge_semantic_markdown(
+        existing,
+        generated,
+        ("Attributes", "Methods"),
+        old_description=old_semantics.get("description"),
+        old_table_descriptions={
+            "Attributes": old_semantics.get("attributes", {}),
+            "Methods": old_semantics.get("methods", {}),
+        },
+    )
+
+
+def _merge_module_semantics(
+    existing: str,
+    generated: str,
+    old_semantics: dict | None = None,
+) -> SemanticMergeResult:
+    old_semantics = old_semantics or {}
+    return _merge_semantic_markdown(
+        existing,
+        generated,
+        ("Classes", "Functions"),
+        old_description=old_semantics.get("description"),
+        old_table_descriptions={
+            "Classes": old_semantics.get("classes", {}),
+            "Functions": old_semantics.get("functions", {}),
+        },
+    )
+
 # ── Manifest ──────────────────────────────────────────────────────────────────
 
 
@@ -184,6 +509,8 @@ class SyncManifest:
         for filepath, file_data in inventory.items():
             sources[filepath] = {
                 "hash": _hash_file(Path(src_dir) / filepath),
+                "semantic_hash": _semantic_hash_for_file(file_data),
+                "generated_semantics": _generated_semantics_for_file(filepath, file_data),
                 "language": file_data.get("language") or infer_language_from_path(filepath),
                 "entities": [c["name"] for c in file_data.get("classes", [])],
                 "entity_pages": {
@@ -220,6 +547,7 @@ class SyncDiff:
 
     new_files: list[str] = field(default_factory=list)
     changed_files: list[str] = field(default_factory=list)
+    metadata_only_files: list[str] = field(default_factory=list)
     unchanged_files: list[str] = field(default_factory=list)
     removed_files: list[str] = field(default_factory=list)
     # {class_name: (old_filepath, new_filepath)}
@@ -234,6 +562,7 @@ class SyncDiff:
         return bool(
             self.new_files
             or self.changed_files
+            or self.metadata_only_files
             or self.removed_files
             or self.moved_entities
             or self.renamed_entity_pages
@@ -242,7 +571,12 @@ class SyncDiff:
 
 
 def _affected_source_files(diff: SyncDiff) -> set[str]:
-    affected = set(diff.new_files) | set(diff.changed_files) | set(diff.removed_files)
+    affected = (
+        set(diff.new_files)
+        | set(diff.changed_files)
+        | set(diff.metadata_only_files)
+        | set(diff.removed_files)
+    )
     for old_path, new_path in diff.moved_entities.values():
         affected.add(old_path)
         affected.add(new_path)
@@ -322,7 +656,11 @@ def _compute_diff(
             # Re-hash to detect content changes
             current_hash = _hash_file(Path(src_dir) / filepath)
             if current_hash != manifest.sources[filepath].get("hash", ""):
-                diff.changed_files.append(filepath)
+                current_semantic_hash = _semantic_hash_for_file(file_data)
+                if current_semantic_hash == manifest.sources[filepath].get("semantic_hash"):
+                    diff.metadata_only_files.append(filepath)
+                else:
+                    diff.changed_files.append(filepath)
             else:
                 diff.unchanged_files.append(filepath)
 
@@ -367,8 +705,10 @@ def _compute_diff(
 class SyncResult:
     created: int = 0
     updated: int = 0
+    metadata_only: int = 0
     skipped: int = 0
     deprecated: int = 0
+    preserved_semantic: int = 0
 
 
 def _collision_maps(
@@ -393,6 +733,7 @@ def _apply_diff(
     *,
     entity_page_cache: dict[tuple[str, str], str] | None = None,
     module_page_map: dict[str, str] | None = None,
+    preserve_semantic: bool = True,
 ) -> SyncResult:
     """Regenerate pages for new/changed files, deprecate pages for removed files."""
     result = SyncResult()
@@ -404,7 +745,7 @@ def _apply_diff(
 
     target_entities = {
         (cls["name"], filepath)
-        for filepath in diff.new_files + diff.changed_files
+        for filepath in diff.new_files + diff.changed_files + diff.metadata_only_files
         if filepath in inventory
         for cls in inventory[filepath].get("classes", [])
     }
@@ -430,9 +771,11 @@ def _apply_diff(
     refresh_files = list(dict.fromkeys(
         diff.new_files
         + diff.changed_files
+        + diff.metadata_only_files
         + [filepath for _, filepath in diff.renamed_entity_pages]
         + list(diff.renamed_module_pages)
     ))
+    metadata_only_files = set(diff.metadata_only_files)
     current_entity_pages = set(entity_page_cache.values())
     current_module_pages = set(module_page_map.values())
 
@@ -441,6 +784,7 @@ def _apply_diff(
     for filepath in refresh_files:
         file_data = inventory[filepath]
         mod_page_name = module_page_map.get(filepath, _page_name_for_module(filepath))
+        old_generated_semantics = manifest.sources.get(filepath, {}).get("generated_semantics", {})
 
         file_entity_page_map = {
             cls["name"]: entity_page_cache[(cls["name"], filepath)]
@@ -463,14 +807,32 @@ def _apply_diff(
                     elif old_page_name not in current_entity_pages:
                         old_entity_path.unlink()
                         print(f"  REMOVE stale entity page: {old_page_name}")
-            content = _generate_entity_md(cls, filepath, relationships, mod_page_name)
+            generated = _generate_entity_md(cls, filepath, relationships, mod_page_name)
+            merge_result = SemanticMergeResult(generated)
+            if preserve_semantic and entity_path.exists():
+                old_entity_semantics = (
+                    old_generated_semantics.get("entities", {}).get(cls["name"])
+                    if isinstance(old_generated_semantics, dict)
+                    else None
+                )
+                merge_result = _merge_entity_semantics(
+                    read_md(entity_path),
+                    generated,
+                    old_entity_semantics,
+                )
+                result.preserved_semantic += merge_result.preserved
+            content = merge_result.text
             write_state = _write_md_if_changed(entity_path, content)
             if write_state == "created":
                 result.created += 1
                 print(f"  CREATE entity: {entity_page_name}")
             elif write_state == "updated":
-                result.updated += 1
-                print(f"  UPDATE entity: {entity_page_name}")
+                if filepath in metadata_only_files:
+                    result.metadata_only += 1
+                    print(f"  METADATA entity: {entity_page_name}")
+                else:
+                    result.updated += 1
+                    print(f"  UPDATE entity: {entity_page_name}")
             else:
                 result.skipped += 1
                 print(f"  SKIP entity (unchanged): {entity_page_name}")
@@ -489,14 +851,32 @@ def _apply_diff(
                 elif old_page_name not in current_module_pages:
                     old_module_path.unlink()
                     print(f"  REMOVE stale module page: {old_page_name}")
-        content = _generate_module_md(filepath, file_data, file_entity_page_map)
+        generated = _generate_module_md(filepath, file_data, file_entity_page_map)
+        merge_result = SemanticMergeResult(generated)
+        if preserve_semantic and module_path.exists():
+            old_module_semantics = (
+                old_generated_semantics.get("module")
+                if isinstance(old_generated_semantics, dict)
+                else None
+            )
+            merge_result = _merge_module_semantics(
+                read_md(module_path),
+                generated,
+                old_module_semantics,
+            )
+            result.preserved_semantic += merge_result.preserved
+        content = merge_result.text
         write_state = _write_md_if_changed(module_path, content)
         if write_state == "created":
             result.created += 1
             print(f"  CREATE module: {mod_page_name}")
         elif write_state == "updated":
-            result.updated += 1
-            print(f"  UPDATE module: {mod_page_name}")
+            if filepath in metadata_only_files:
+                result.metadata_only += 1
+                print(f"  METADATA module: {mod_page_name}")
+            else:
+                result.updated += 1
+                print(f"  UPDATE module: {mod_page_name}")
         else:
             result.skipped += 1
             print(f"  SKIP module (unchanged): {mod_page_name}")
@@ -592,6 +972,7 @@ def run(args) -> None:
     cache_stats_enabled = bool(getattr(args, "cache_stats", False))
     parallel_jobs = getattr(args, "jobs", 1)
     force = bool(getattr(args, "force", False))
+    preserve_semantic = not bool(getattr(args, "no_preserve_semantic", False))
     validate_path(src_dir, "--src-dir")
     validate_path(str(wiki_dir), "--wiki-dir")
 
@@ -708,6 +1089,7 @@ def run(args) -> None:
         manifest,
         entity_page_cache=entity_page_cache,
         module_page_map=module_page_map,
+        preserve_semantic=preserve_semantic,
     )
 
     # 5. Rebuild index.md
@@ -735,8 +1117,11 @@ def run(args) -> None:
 
     print(
         f"\nSync complete: {result.created} created, {result.updated} updated, "
-        f"{result.skipped} skipped, {result.deprecated} deprecated."
+        f"{result.metadata_only} metadata-only, {result.skipped} skipped, "
+        f"{result.deprecated} deprecated."
     )
+    if result.preserved_semantic:
+        print(f"Preserved semantic fields: {result.preserved_semantic}")
     if diff.moved_entities:
         names = ", ".join(diff.moved_entities.keys())
         print(f"Moved entities detected (pages updated in-place): {names}")
@@ -815,8 +1200,10 @@ def _append_log(wiki_dir: Path, src_dir: str, diff: SyncDiff, result: SyncResult
         f"- Source: `{src_dir}`\n"
         f"- Pages created: {result.created}\n"
         f"- Pages updated: {result.updated}\n"
+        f"- Pages metadata-only: {result.metadata_only}\n"
         f"- Pages skipped (unchanged): {result.skipped}\n"
         f"- Pages deprecated: {result.deprecated}\n"
+        f"- Semantic fields preserved: {result.preserved_semantic}\n"
         f"- Moved entities: {moved_str}\n"
     )
     if log_path.exists():
