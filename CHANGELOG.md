@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-05-30
+
+### Added
+- Add `--no-preserve-semantic` option to `sync` command to allow explicitly disabling preservation of user-authored semantic fields when extracting metadata. Tests updated accordingly.
+
 ## [0.5.2] - 2026-05-10
 
 ### Added
@@ -175,7 +180,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Test suite** — 89 unit + integration tests with pytest
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.5.2...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.5.2...v0.6.0
 [0.5.2]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.3.41...v0.5.0
