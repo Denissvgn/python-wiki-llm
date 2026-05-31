@@ -110,8 +110,3 @@ def _candidate_stems(module: str, importer_filepath: str) -> set[str]:
 def build_module_path_resolver(inventory: dict) -> ModulePathResolver:
     """Build an indexed import resolver for repeated lookups."""
     return ModulePathResolver.build(inventory)
-
-
-def module_path_candidates(module: str, importer_filepath: str, inventory: dict) -> set[str]:
-    """Resolve an import module string to inventory file paths when possible."""
-    return build_module_path_resolver(inventory).candidates(module, importer_filepath)
