@@ -1045,6 +1045,48 @@ class TestSemanticPreservation:
         assert "Human-curated display name." in entity_content
         assert "| `role` | `str` | `'viewer'` |" in entity_content
 
+    def test_no_preserve_semantic_disables_entity_merge(self, bootstrapped_project, capsys):
+        proj, wiki_dir = bootstrapped_project
+        entity_path = wiki_dir / "entities" / "User.md"
+        content = entity_path.read_text(encoding="utf-8")
+        content = self._replace_section_body(
+            content,
+            "Description",
+            "Human-written semantic description.",
+        )
+        content = self._replace_table_description(
+            content,
+            "`name`",
+            "Human-curated display name.",
+        )
+        entity_path.write_text(content, encoding="utf-8")
+
+        (proj / "models.py").write_text(
+            textwrap.dedent("""\
+                # inserted comment shifts class line numbers
+                class User:
+                    \"\"\"A system user.\"\"\"
+                    name: str = ""
+                    email: str = ""
+            """),
+            encoding="utf-8",
+        )
+
+        sync_cmd.run(_make_sync_args(
+            src_dir=str(proj),
+            wiki_dir=str(wiki_dir),
+            no_preserve_semantic=True,
+        ))
+
+        out = capsys.readouterr().out
+        entity_content = entity_path.read_text(encoding="utf-8")
+        assert "METADATA entity: User" in out
+        assert "**Location:** `models.py:2`" in entity_content
+        assert "A system user." in entity_content
+        assert "| `name` | `str` | `''` | — |" in entity_content
+        assert "Human-written semantic description." not in entity_content
+        assert "Human-curated display name." not in entity_content
+
 
 class TestNewFile:
     """When a new source file is added, new pages are created and manifest updated."""

@@ -453,12 +453,28 @@ class SyncManifest:
     Schema v2::
 
         {
-            "version": 1,
+            "version": 2,
             "sources": {
                 "src/models.py": {
                     "hash": "sha256:<hex>",
+                    "semantic_hash": "sha256:<hex>",
+                    "generated_semantics": {
+                        "module": {
+                            "description": "...",
+                            "classes": {"User": "..."},
+                            "functions": {}
+                        },
+                        "entities": {
+                            "User": {
+                                "description": "...",
+                                "attributes": {"name": "—"},
+                                "methods": {}
+                            }
+                        }
+                    },
                     "language": "python",
                     "entities": ["User", "Role"],
+                    "entity_pages": {"User": "User", "Role": "Role"},
                     "module_page": "models"
                 }
             }

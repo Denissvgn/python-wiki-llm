@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.6.0] - 2026-05-30
 
 ### Added
-- Add `--no-preserve-semantic` option to `sync` command to allow explicitly disabling preservation of user-authored semantic fields when extracting metadata. Tests updated accordingly.
+- Preserve user-authored semantic fields during `sync` by default, including metadata-only line-number updates, and add `--no-preserve-semantic` to explicitly disable that preservation. The sync manifest now records semantic hashes and generated semantic snapshots for this merge behavior.
 
 ## [0.5.2] - 2026-05-10
 
