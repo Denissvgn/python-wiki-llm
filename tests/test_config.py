@@ -87,6 +87,40 @@ class TestValidatePath:
         with pytest.raises(PathValidationError):
             validate_source_paths(source, ["../outside.py"])
 
+    def test_source_paths_accept_relative_and_absolute_inside_root(self, tmp_path):
+        source = tmp_path / "source"
+        package = source / "package"
+        package.mkdir(parents=True)
+        module = package / "module.py"
+        module.write_text("VALUE = 1\n", encoding="utf-8")
+
+        assert validate_source_paths(
+            source,
+            ["package/module.py", str(module)],
+        ) is None
+
+    def test_source_paths_accept_nonexistent_relative_inside_root(self, tmp_path):
+        source = tmp_path / "source"
+        source.mkdir()
+
+        assert validate_source_paths(source, ["generated/future.py"]) is None
+
+    def test_source_paths_ignore_empty_inputs(self, tmp_path):
+        source = tmp_path / "source"
+        source.mkdir()
+
+        assert validate_source_paths(source, None) is None
+        assert validate_source_paths(source, [""]) is None
+
+    def test_source_paths_reject_absolute_outside_root(self, tmp_path):
+        source = tmp_path / "source"
+        outside = tmp_path / "outside.py"
+        source.mkdir()
+        outside.write_text("VALUE = 1\n", encoding="utf-8")
+
+        with pytest.raises(PathValidationError):
+            validate_source_paths(source, [str(outside)])
+
 
 class TestReadWriteConfig:
     """Round-trip JSON config and backward compatibility."""

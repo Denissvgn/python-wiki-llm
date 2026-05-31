@@ -251,6 +251,23 @@ class TestReleaseCmdRun:
         )
         assert "CHANGELOG.md" in result.stdout
 
+    def test_stage_git_add_uses_explicit_no_shell(self, tmp_project, monkeypatch):
+        from llm_wiki_cli.commands import release_cmd
+        self._write_changelog(_BASE_CHANGELOG)
+        seen = {}
+
+        def fake_run(cmd, **kwargs):
+            seen["cmd"] = cmd
+            seen["kwargs"] = kwargs
+            return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+        monkeypatch.setattr(release_cmd.subprocess, "run", fake_run)
+
+        release_cmd.run(_make_args(stage=True))
+
+        assert seen["cmd"] == ["git", "add", "CHANGELOG.md"]
+        assert seen["kwargs"]["shell"] is False
+
     def test_stage_git_add_failure_exits_nonzero(self, tmp_project, monkeypatch):
         from llm_wiki_cli.commands import release_cmd
         self._write_changelog(_BASE_CHANGELOG)

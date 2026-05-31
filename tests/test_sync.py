@@ -342,6 +342,19 @@ class TestSyncInventoryRuntime:
 
         assert seen["force"] is True
 
+    def test_cli_sync_no_preserve_semantic_parses(self, monkeypatch):
+        seen = {}
+        monkeypatch.setattr(
+            cli.sync_cmd,
+            "run",
+            lambda args: seen.setdefault("no_preserve_semantic", args.no_preserve_semantic),
+        )
+        monkeypatch.setattr("sys.argv", ["llm-wiki", "sync", "--no-preserve-semantic"])
+
+        cli.main()
+
+        assert seen["no_preserve_semantic"] is True
+
     @pytest.mark.parametrize("value", ["0", "-1", "many"])
     def test_cli_sync_rejects_invalid_jobs(self, value, monkeypatch):
         monkeypatch.setattr(cli.sync_cmd, "run", lambda _args: pytest.fail("command should not run"))
@@ -892,6 +905,187 @@ class TestChangedFile:
             lint_cmd.run(types.SimpleNamespace(src_dir=".", wiki_dir=str(wiki_dir)))
         finally:
             os.chdir(old_cwd)
+
+
+class TestSemanticPreservation:
+    """sync preserves manually enriched descriptions while refreshing metadata."""
+
+    @staticmethod
+    def _replace_section_body(content: str, heading: str, body: str) -> str:
+        lines = content.splitlines()
+        target = f"## {heading}"
+        for i, line in enumerate(lines):
+            if line.strip() != target:
+                continue
+            start = i + 1
+            while start < len(lines) and lines[start] == "":
+                start += 1
+            end = start
+            while end < len(lines) and not lines[end].startswith("## "):
+                end += 1
+            return "\n".join(lines[: i + 1] + ["", body, ""] + lines[end:])
+        raise AssertionError(f"missing section: {heading}")
+
+    @staticmethod
+    def _replace_table_description(content: str, row_key: str, description: str) -> str:
+        updated = []
+        for line in content.splitlines():
+            stripped = line.strip()
+            if not stripped.startswith("|") or row_key not in stripped:
+                updated.append(line)
+                continue
+            cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+            if len(cells) >= 4:
+                cells[-1] = description
+                updated.append("| " + " | ".join(cells) + " |")
+            else:
+                updated.append(line)
+        return "\n".join(updated)
+
+    def test_line_number_shift_preserves_entity_semantics(self, bootstrapped_project, capsys):
+        proj, wiki_dir = bootstrapped_project
+        entity_path = wiki_dir / "entities" / "User.md"
+        content = entity_path.read_text(encoding="utf-8")
+        content = self._replace_section_body(
+            content,
+            "Description",
+            "Human-written semantic description.",
+        )
+        content = self._replace_table_description(
+            content,
+            "`name`",
+            "Human-curated display name.",
+        )
+        entity_path.write_text(content, encoding="utf-8")
+
+        (proj / "models.py").write_text(
+            textwrap.dedent("""\
+                # inserted comment shifts class line numbers
+                class User:
+                    \"\"\"A system user.\"\"\"
+                    name: str = ""
+                    email: str = ""
+            """),
+            encoding="utf-8",
+        )
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
+        out = capsys.readouterr().out
+        entity_content = entity_path.read_text(encoding="utf-8")
+        assert "METADATA entity: User" in out
+        assert "**Location:** `models.py:2`" in entity_content
+        assert "Human-written semantic description." in entity_content
+        assert "Human-curated display name." in entity_content
+
+    def test_line_number_shift_preserves_module_semantics(self, bootstrapped_project, capsys):
+        proj, wiki_dir = bootstrapped_project
+        module_path = wiki_dir / "modules" / "models.md"
+        content = module_path.read_text(encoding="utf-8")
+        content = self._replace_section_body(
+            content,
+            "Description",
+            "Human-written module overview.",
+        )
+        content = self._replace_table_description(
+            content,
+            "[User](../entities/User.md)",
+            "Human-curated user summary.",
+        )
+        module_path.write_text(content, encoding="utf-8")
+
+        (proj / "models.py").write_text(
+            textwrap.dedent("""\
+                # inserted comment shifts class line numbers
+                class User:
+                    \"\"\"A system user.\"\"\"
+                    name: str = ""
+                    email: str = ""
+            """),
+            encoding="utf-8",
+        )
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
+        out = capsys.readouterr().out
+        module_content = module_path.read_text(encoding="utf-8")
+        assert "METADATA module: models" in out
+        assert "| [User](../entities/User.md) | 2 |" in module_content
+        assert "Human-written module overview." in module_content
+        assert "Human-curated user summary." in module_content
+
+    def test_structural_change_preserves_existing_table_descriptions(
+        self, bootstrapped_project, capsys,
+    ):
+        proj, wiki_dir = bootstrapped_project
+        entity_path = wiki_dir / "entities" / "User.md"
+        content = entity_path.read_text(encoding="utf-8")
+        content = self._replace_table_description(
+            content,
+            "`name`",
+            "Human-curated display name.",
+        )
+        entity_path.write_text(content, encoding="utf-8")
+
+        (proj / "models.py").write_text(
+            textwrap.dedent("""\
+                class User:
+                    \"\"\"A system user.\"\"\"
+                    name: str = ""
+                    email: str = ""
+                    role: str = "viewer"
+            """),
+            encoding="utf-8",
+        )
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
+        entity_content = entity_path.read_text(encoding="utf-8")
+        assert "UPDATE entity: User" in capsys.readouterr().out
+        assert "Human-curated display name." in entity_content
+        assert "| `role` | `str` | `'viewer'` |" in entity_content
+
+    def test_no_preserve_semantic_disables_entity_merge(self, bootstrapped_project, capsys):
+        proj, wiki_dir = bootstrapped_project
+        entity_path = wiki_dir / "entities" / "User.md"
+        content = entity_path.read_text(encoding="utf-8")
+        content = self._replace_section_body(
+            content,
+            "Description",
+            "Human-written semantic description.",
+        )
+        content = self._replace_table_description(
+            content,
+            "`name`",
+            "Human-curated display name.",
+        )
+        entity_path.write_text(content, encoding="utf-8")
+
+        (proj / "models.py").write_text(
+            textwrap.dedent("""\
+                # inserted comment shifts class line numbers
+                class User:
+                    \"\"\"A system user.\"\"\"
+                    name: str = ""
+                    email: str = ""
+            """),
+            encoding="utf-8",
+        )
+
+        sync_cmd.run(_make_sync_args(
+            src_dir=str(proj),
+            wiki_dir=str(wiki_dir),
+            no_preserve_semantic=True,
+        ))
+
+        out = capsys.readouterr().out
+        entity_content = entity_path.read_text(encoding="utf-8")
+        assert "METADATA entity: User" in out
+        assert "**Location:** `models.py:2`" in entity_content
+        assert "A system user." in entity_content
+        assert "| `name` | `str` | `''` | — |" in entity_content
+        assert "Human-written semantic description." not in entity_content
+        assert "Human-curated display name." not in entity_content
 
 
 class TestNewFile:

@@ -149,6 +149,7 @@ def run(args):
                 ["git", "add", str(changelog_path)],
                 check=True,
                 capture_output=True,
+                shell=False,
                 text=True,
             )
         except FileNotFoundError:
