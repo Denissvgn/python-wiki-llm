@@ -124,6 +124,17 @@ def _workflow_pages(wiki_dir: Path) -> dict[str, str]:
     return result
 
 
+def _workflow_symbol_index(workflows: dict[str, str], symbols: set[str]) -> dict[str, set[str]]:
+    index: dict[str, set[str]] = {symbol: set() for symbol in symbols}
+    if not workflows or not symbols:
+        return index
+    for page, content in workflows.items():
+        for symbol in symbols:
+            if symbol in content:
+                index[symbol].add(page)
+    return index
+
+
 def _related_pages_for_source(
     path: str,
     inventory: dict,
@@ -154,6 +165,7 @@ def build_findings(diff_text: str, *, src_dir: str = ".", wiki_dir: str = DEFAUL
     workflows = _workflow_pages(wiki_path)
     imports_by_file = _added_imports_by_file(diff_text)
     known_modules = {Path(path).stem: path for path in inventory}
+    workflow_pages = sorted(workflows.keys())
 
     findings: list[ReviewFinding] = []
 
@@ -195,21 +207,34 @@ def build_findings(diff_text: str, *, src_dir: str = ".", wiki_dir: str = DEFAUL
                 suggested_follow_up="Confirm these pages are still accurate or update them with the code change.",
             ))
 
+    imports_to_review: list[tuple[str, str, list[str]]] = []
+    workflow_symbols: set[str] = set()
     for path, imported_modules in imports_by_file.items():
         normalized = path.replace("\\", "/")
         if normalized.startswith(f"{wiki_path.as_posix()}/") or not normalized.endswith(_SOURCE_EXTS):
             continue
         source_stem = Path(normalized).stem
+        review_imports: list[str] = []
         for imported in sorted(set(imported_modules)):
             imported_path = known_modules.get(imported)
             if not imported_path or Path(imported_path).stem == source_stem:
                 continue
-            represented = any(source_stem in content and imported in content for content in workflows.values())
+            review_imports.append(imported)
+        if review_imports:
+            imports_to_review.append((normalized, source_stem, review_imports))
+            workflow_symbols.add(source_stem)
+            workflow_symbols.update(review_imports)
+
+    workflow_symbol_index = _workflow_symbol_index(workflows, workflow_symbols)
+    for normalized, source_stem, imported_modules in imports_to_review:
+        source_workflows = workflow_symbol_index[source_stem]
+        for imported in imported_modules:
+            represented = not source_workflows.isdisjoint(workflow_symbol_index[imported])
             if not represented:
                 findings.append(ReviewFinding(
                     severity="info",
                     source_path=normalized,
-                    wiki_pages=sorted(workflows.keys()),
+                    wiki_pages=workflow_pages,
                     reason=f"New cross-module import `{imported}` is not represented by a workflow page.",
                     suggested_follow_up="Add or update a workflow page if this import creates a meaningful cross-module flow.",
                 ))
