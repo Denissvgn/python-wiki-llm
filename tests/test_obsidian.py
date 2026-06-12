@@ -115,6 +115,31 @@ class TestObsidianMirror:
         assert "![[.llm-wiki/obsidian-notes/entity/User]]" in content
         assert note.read_text(encoding="utf-8") == "# Existing Notes\n\nKeep this.\n"
 
+    def test_export_reads_each_wiki_page_once(self, tmp_project, monkeypatch):
+        wiki = _write_wiki(tmp_project)
+        vault = tmp_project / "vault"
+        canonical_paths = {page.canonical_path.resolve() for page in obsidian.collect_wiki_pages(wiki)}
+        reads: dict[Path, int] = {}
+        original_read_md = obsidian.read_md
+
+        def counting_read_md(path: Path) -> str:
+            resolved = path.resolve()
+            if resolved in canonical_paths:
+                reads[resolved] = reads.get(resolved, 0) + 1
+            return original_read_md(path)
+
+        monkeypatch.setattr(obsidian, "read_md", counting_read_md)
+
+        report = obsidian.export_obsidian_vault(
+            src_dir=".",
+            wiki_dir=wiki,
+            vault_dir=vault,
+        )
+
+        assert report.page_count == len(canonical_paths)
+        assert set(reads) == canonical_paths
+        assert sum(reads.values()) == len(canonical_paths)
+
     def test_export_dry_run_does_not_write(self, tmp_project):
         wiki = _write_wiki(tmp_project)
         vault = tmp_project / "vault"
