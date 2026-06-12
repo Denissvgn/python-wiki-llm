@@ -66,6 +66,21 @@ class TestPluginManifestValidation:
         with pytest.raises(plugins.PluginError, match="escapes"):
             plugins.validate_plugin(plugin_dir)
 
+    def test_rejects_entry_point_outside_plugin_directory(self, tmp_project):
+        plugin_dir = _write_plugin(
+            tmp_project / "vendor" / "outside-entry",
+            components=[
+                {
+                    "type": "lint_rule",
+                    "id": "bad",
+                    "entry_point": "pathlib:Path",
+                }
+            ],
+        )
+
+        with pytest.raises(plugins.PluginError, match="plugin directory"):
+            plugins.validate_plugin(plugin_dir)
+
     def test_resolves_project_catalog_name(self, tmp_project):
         plugin_dir = _write_plugin(tmp_project / ".llm-wiki" / "catalog_sources" / "demo")
         catalog = tmp_project / ".llm-wiki" / "catalog.json"
@@ -202,6 +217,80 @@ class TestPluginRuntimeIntegration:
         report = lint_cmd.build_report(tmp_wiki, ".")
 
         assert any(issue.category == "plugin_rule" for issue in report.issues)
+
+    def test_load_entry_point_rejects_lockfile_entry_point_outside_plugin(self, tmp_project):
+        plugin_dir = _write_plugin(
+            tmp_project / "vendor" / "lint",
+            plugin_id="lint-plugin",
+            components=[
+                {
+                    "type": "lint_rule",
+                    "id": "always",
+                    "entry_point": "lint_plugin:check",
+                }
+            ],
+            extra_files={
+                "lint_plugin.py": """
+                    def check(wiki_dir, src_dir, inventory, pages):
+                        return []
+                """,
+            },
+        )
+        plugins.install_plugin(str(plugin_dir), yes=True)
+        lock = plugins.read_lock()
+        lock["plugins"]["lint-plugin"]["components"][0]["entry_point"] = "pathlib:Path"
+        plugins.write_lock(lock)
+
+        with pytest.raises(plugins.PluginError, match="installed plugin"):
+            plugins.load_entry_point("pathlib:Path")
+
+    def test_plugin_extractor_entry_point_cannot_import_project_module(self, tmp_project):
+        (tmp_project / "flow.toy").write_text("run\n", encoding="utf-8")
+        plugin_dir = _write_plugin(
+            tmp_project / "vendor" / "extractor",
+            plugin_id="toy-extractor",
+            components=[
+                {
+                    "type": "extractor",
+                    "id": "toy",
+                    "language": "toy",
+                    "entry_point": "toy_plugin:ToyExtractor",
+                }
+            ],
+            extra_files={
+                "toy_plugin.py": """
+                    class ToyExtractor:
+                        def extract(self, src_dir, only_files=None, deep=False):
+                            return {}
+                """,
+            },
+        )
+        plugins.install_plugin(str(plugin_dir), yes=True)
+        evil_plugin_dir = _write_plugin(
+            tmp_project / "vendor" / "evil",
+            plugin_id="evil-plugin",
+            extra_files={
+                "evil_module.py": """
+                    from pathlib import Path
+
+                    Path("entry-point-executed.txt").write_text("bad", encoding="utf-8")
+
+                    class Extractor:
+                        def extract(self, src_dir, only_files=None, deep=False):
+                            return {}
+                """,
+            },
+        )
+        plugins.install_plugin(str(evil_plugin_dir), yes=True)
+        lock = plugins.read_lock()
+        lock["plugins"]["toy-extractor"]["components"][0]["entry_point"] = "evil_module:Extractor"
+        plugins.write_lock(lock)
+
+        result = extract_cmd.get_inventory_result(".")
+
+        assert not (tmp_project / "entry-point-executed.txt").exists()
+        assert result.statuses["toy"].state == "failed"
+        assert "installed plugin" in result.statuses["toy"].message
 
     def test_prompt_template_renders_known_placeholders(self, tmp_project):
         plugin_dir = _write_plugin(

@@ -30,7 +30,7 @@ from ..services.inventory_cache import (
 )
 from ..services.imports import build_module_path_resolver
 from ..services.packages import discover_packages, stamp_inventory_packages
-from ..services.plugins import get_extractor_registry
+from ..services.plugins import get_extractor_registry, load_entry_point
 from ..services.io import write_text_output
 from ..services.source_snapshot import SourceSnapshot, build_source_snapshot
 
@@ -45,6 +45,8 @@ from ..extractors.python_extractor import ComponentVisitor  # noqa: F401
 def _instantiate_extractor(entry_point: str):
     """Instantiate an extractor without using the shared instance cache."""
     module_path, class_name = entry_point.rsplit(":", 1)
+    if entry_point not in EXTRACTOR_REGISTRY.values():
+        return load_entry_point(entry_point)()
     module = importlib.import_module(module_path)
     return getattr(module, class_name)()
 
@@ -128,11 +130,14 @@ class _ExtractionOutcome:
 
 
 def _run_extraction_plan(plan: _ExtractionPlan, *, fresh_instance: bool = False) -> _ExtractionOutcome:
-    extractor = (
-        _instantiate_extractor(plan.entry_point)
-        if fresh_instance
-        else _load_extractor(plan.entry_point)
-    )
+    try:
+        extractor = (
+            _instantiate_extractor(plan.entry_point)
+            if fresh_instance
+            else _load_extractor(plan.entry_point)
+        )
+    except Exception as exc:
+        return _ExtractionOutcome(plan.language, "failed", plan.files_found, {}, str(exc))
     if hasattr(extractor, "last_error"):
         extractor.last_error = None
     try:
