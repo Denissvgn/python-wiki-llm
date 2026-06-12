@@ -136,6 +136,63 @@ class TestSmartPromptTemplates:
 
 
 class TestReviewMode:
+    def test_cross_module_workflow_lookup_scales_with_unique_symbols(self, tmp_project, monkeypatch):
+        source_count = 5
+        import_count = 12
+        workflow_count = 8
+        source_paths = [f"source_{index}.py" for index in range(source_count)]
+        imported_modules = [f"dep_{index}" for index in range(import_count)]
+        imported_paths = [f"{module}.py" for module in imported_modules]
+        inventory = {path: {"classes": []} for path in source_paths + imported_paths}
+        module_page_map = {path: Path(path).stem for path in inventory}
+        wiki_dir = tmp_project / "docs" / "llm_wiki"
+        (wiki_dir / "modules").mkdir(parents=True, exist_ok=True)
+        for path in source_paths:
+            (wiki_dir / "modules" / f"{Path(path).stem}.md").write_text("# module\n", encoding="utf-8")
+
+        checks = {"count": 0}
+
+        class CountingWorkflowText:
+            def __init__(self, text: str):
+                self.text = text
+
+            def __contains__(self, needle: object) -> bool:
+                checks["count"] += 1
+                return str(needle) in self.text
+
+        workflow_text = " ".join(Path(path).stem for path in source_paths)
+        workflows = {
+            f"workflows/flow_{index}.md": CountingWorkflowText(workflow_text)
+            for index in range(workflow_count)
+        }
+
+        def diff_for(path: str) -> str:
+            lines = [
+                f"diff --git a/{path} b/{path}",
+                f"--- a/{path}",
+                f"+++ b/{path}",
+                "@@",
+            ]
+            lines.extend(f"+import {module}" for module in imported_modules)
+            return "\n".join(lines)
+
+        monkeypatch.setattr(review_cmd, "get_inventory", lambda src_dir, deep=True: inventory)
+        monkeypatch.setattr(review_cmd, "build_module_page_map", lambda current_inventory: module_page_map)
+        monkeypatch.setattr(review_cmd, "build_entity_page_map", lambda current_inventory: {})
+        monkeypatch.setattr(review_cmd, "_workflow_pages", lambda current_wiki_dir: workflows)
+
+        findings = review_cmd.build_findings(
+            "\n".join(diff_for(path) for path in source_paths),
+            src_dir=".",
+            wiki_dir=str(wiki_dir),
+        )
+
+        cross_module_findings = [
+            finding for finding in findings if "cross-module import" in finding.reason
+        ]
+        assert len(cross_module_findings) == source_count * import_count
+        assert checks["count"] <= (source_count + import_count) * workflow_count
+
     def test_review_flags_documented_source_without_wiki_changes(self, tmp_project):
         _bootstrap()
         diff = """diff --git a/models.py b/models.py
