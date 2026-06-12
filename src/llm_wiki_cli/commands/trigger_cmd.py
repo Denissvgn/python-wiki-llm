@@ -157,7 +157,7 @@ def _run_sync(args):
     # 5. Delegate to Subagent via CLI
     print(f"Delegating to {args.agent} subagent...")
     if args.agent == "claude":
-        cmd = ["claude", "-p", "--dangerously-skip-permissions"]
+        cmd = ["claude", "-p"]
     elif args.agent == "aider":
         cmd = ["aider", "--message-file", str(prompt_file), "--no-auto-commits"]
     elif args.agent == "opencode":

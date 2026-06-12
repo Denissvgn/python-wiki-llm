@@ -50,9 +50,10 @@ extract never run `npm install`, `go build`, `go run`, `cargo build`, or
 | `cursor` | `.cursorrules` | IDE prompt |
 | `generic` | `AGENTS.md` | IDE prompt |
 
-Headless sync delegates to the selected CLI agent. For Claude, this currently
-uses `claude -p --dangerously-skip-permissions`, so enable automation only in an
-environment where that is acceptable.
+Headless sync delegates to the selected CLI agent. For Claude, this uses
+`claude -p` and leaves permission decisions to Claude's normal permission
+model. Enable automation only in repositories and execution environments you
+trust.
 
 ## Installation
 
