@@ -61,6 +61,10 @@ class TestCiCheck:
 
 
 class TestMetrics:
+    def test_parse_window_rejects_invalid_integer_string(self):
+        with pytest.raises(ValueError, match="integer number of days"):
+            metrics.parse_window("not-a-number")
+
     def test_records_and_summarizes_local_events(self, tmp_project):
         _bootstrap()
         metrics.record_event("trigger_start", {"agent": "claude", "mode": "CLI"})
