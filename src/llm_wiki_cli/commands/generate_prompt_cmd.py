@@ -133,23 +133,13 @@ def resolve_change_type(change_type: str, diff_text: str) -> str:
     return detect_change_type(diff_text)
 
 
-def _build_prompt(
-    wiki_dir: str,
-    src_dir: str,
+def _rich_prompt_context(
     *,
-    change_type: str = "auto",
-    template: str | None = None,
-    diff_text: str | None = None,
-    ast_json: str | None = None,
-    graph_json: str | None = None,
-    cli_agent: bool = False,
-) -> str:
-    if diff_text is None:
-        diff_text = _git_diff()
-    quoted_wiki_dir = shell_quote(wiki_dir)
-    quoted_wiki_dir_slash = shell_quote(f"{wiki_dir}/")
-    quoted_src_dir = shell_quote(src_dir)
-    effective_type = resolve_change_type(change_type, diff_text)
+    diff_text: str,
+    ast_json: str | None,
+    graph_json: str | None,
+    cli_agent: bool,
+) -> tuple[str, str]:
     context_parts = []
     if ast_json is not None:
         context_parts.append(f"AST structure of the codebase:\n{ast_json}")
@@ -157,27 +147,39 @@ def _build_prompt(
         context_parts.append(f"Cross-module call graph (functions touching 3+ internal modules):\n{graph_json}")
     if diff_text and cli_agent:
         context_parts.append(f"Git diff:\n{diff_text}")
+
     rich_context = "\n\n".join(context_parts)
     rich_context_block = f"\n{rich_context}\n" if rich_context else ""
+    return rich_context, rich_context_block
 
-    if template:
-        return render_prompt_template(
-            template,
-            {
-                "wiki_dir": wiki_dir,
-                "src_dir": src_dir,
-                "change_type": effective_type,
-                "context": rich_context,
-                "context_block": rich_context_block,
-                "diff": diff_text,
-                "ast_json": ast_json or "",
-                "graph_json": graph_json or "",
-                "cli_agent": "true" if cli_agent else "false",
-            },
-        )
 
-    return f"""\
-You are a Wiki synchronizer{' subagent' if cli_agent else ''} for this project.
+def _template_values(
+    *,
+    wiki_dir: str,
+    src_dir: str,
+    change_type: str,
+    rich_context: str,
+    rich_context_block: str,
+    diff_text: str,
+    ast_json: str | None,
+    graph_json: str | None,
+    cli_agent: bool,
+) -> dict[str, str]:
+    return {
+        "wiki_dir": wiki_dir,
+        "src_dir": src_dir,
+        "change_type": change_type,
+        "context": rich_context,
+        "context_block": rich_context_block,
+        "diff": diff_text,
+        "ast_json": ast_json or "",
+        "graph_json": graph_json or "",
+        "cli_agent": "true" if cli_agent else "false",
+    }
+
+
+_DEFAULT_PROMPT_TEMPLATE = """\
+You are a Wiki synchronizer{subagent_suffix} for this project.
 The project's wiki lives at `{wiki_dir}/`.
 
 ## Context
@@ -217,8 +219,8 @@ collaborators, important behavior, and usage or constraints.
 
 ## Change-Type Focus
 
-Change type: `{effective_type}`.
-{_change_type_guidance(effective_type)}
+Change type: `{change_type}`.
+{change_type_guidance}
 
 ## Success Criteria
 
@@ -253,6 +255,72 @@ git add {quoted_wiki_dir_slash} CHANGELOG.md
 LLM_WIKI_AUTO_COMMIT=1 git commit -m "docs(wiki): auto-update [bot]"
 ```
 """
+
+
+def _render_default_prompt(
+    *,
+    wiki_dir: str,
+    src_dir: str,
+    change_type: str,
+    rich_context_block: str,
+    cli_agent: bool,
+) -> str:
+    return _DEFAULT_PROMPT_TEMPLATE.format(
+        subagent_suffix=" subagent" if cli_agent else "",
+        wiki_dir=wiki_dir,
+        quoted_wiki_dir=shell_quote(wiki_dir),
+        quoted_wiki_dir_slash=shell_quote(f"{wiki_dir}/"),
+        quoted_src_dir=shell_quote(src_dir),
+        rich_context_block=rich_context_block,
+        change_type=change_type,
+        change_type_guidance=_change_type_guidance(change_type),
+    )
+
+
+def _build_prompt(
+    wiki_dir: str,
+    src_dir: str,
+    *,
+    change_type: str = "auto",
+    template: str | None = None,
+    diff_text: str | None = None,
+    ast_json: str | None = None,
+    graph_json: str | None = None,
+    cli_agent: bool = False,
+) -> str:
+    if diff_text is None:
+        diff_text = _git_diff()
+    effective_type = resolve_change_type(change_type, diff_text)
+    rich_context, rich_context_block = _rich_prompt_context(
+        diff_text=diff_text,
+        ast_json=ast_json,
+        graph_json=graph_json,
+        cli_agent=cli_agent,
+    )
+
+    if template:
+        return render_prompt_template(
+            template,
+            _template_values(
+                wiki_dir=wiki_dir,
+                src_dir=src_dir,
+                change_type=effective_type,
+                rich_context=rich_context,
+                rich_context_block=rich_context_block,
+                diff_text=diff_text,
+                ast_json=ast_json,
+                graph_json=graph_json,
+                cli_agent=cli_agent,
+            ),
+        )
+
+    return _render_default_prompt(
+        wiki_dir=wiki_dir,
+        src_dir=src_dir,
+        change_type=effective_type,
+        rich_context_block=rich_context_block,
+        cli_agent=cli_agent,
+    )
 
 
 def run(args) -> None:

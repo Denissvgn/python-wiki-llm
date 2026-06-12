@@ -1,8 +1,11 @@
 """Tests for commands/generate_prompt_cmd.py"""
 from __future__ import annotations
 
+import ast
+import inspect
 import os
 import stat
+import textwrap
 import types
 from pathlib import Path
 
@@ -20,6 +23,15 @@ def _make_args(**kwargs):
     }
     defaults.update(kwargs)
     return types.SimpleNamespace(**defaults)
+
+
+def _body_line_count(function) -> int:
+    source = textwrap.dedent(inspect.getsource(function))
+    function_node = ast.parse(source).body[0]
+    body = list(function_node.body)
+    first_body_line = min(stmt.lineno for stmt in body)
+    last_body_line = max(stmt.end_lineno for stmt in body)
+    return last_body_line - first_body_line + 1
 
 
 class TestGeneratePromptWritesFile:
@@ -93,6 +105,9 @@ class TestGeneratePromptPrintMode:
 
 
 class TestGeneratePromptBuildPrompt:
+    def test_build_prompt_stays_decomposed(self):
+        assert _body_line_count(generate_prompt_cmd._build_prompt) <= 40
+
     def test_prompt_contains_section_headings(self, tmp_project):
         """Prompt should have the goal-driven section headings."""
         args = _make_args()
