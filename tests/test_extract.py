@@ -10,6 +10,7 @@ import pytest
 from llm_wiki_cli.commands import extract_cmd
 from llm_wiki_cli.commands.extract_cmd import get_inventory, get_call_graph, _summarize_inventory
 from llm_wiki_cli.config import PathValidationError
+from llm_wiki_cli.extractors.python_extractor import PythonExtractor
 from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
 from llm_wiki_cli.services.packages import discover_packages, stamp_inventory_packages
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
@@ -918,6 +919,19 @@ class TestSilentDropReduction:
         (tmp_path / "empty.py").write_text("# just a comment\n")
         inv = get_inventory(str(tmp_path), include_empty=True)
         assert "empty.py" in inv
+
+    def test_zero_byte_python_file_included_when_requested(self, tmp_path):
+        (tmp_path / "empty.py").write_text("", encoding="utf-8")
+
+        inv = PythonExtractor().extract(str(tmp_path), include_empty=True)
+
+        assert inv == {
+            "empty.py": {
+                "classes": [],
+                "functions": [],
+                "language": "python",
+            }
+        }
 
     def test_empty_file_excluded_by_default(self, tmp_path):
         (tmp_path / "empty.py").write_text("# just a comment\n")

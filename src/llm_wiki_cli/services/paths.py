@@ -11,6 +11,8 @@ def normalize_source_path(value: str | None, src_dir: str | None = None) -> str 
     if not value:
         return None
     normalized = value.strip().strip("`").strip().strip('"').strip("'")
+    if not normalized:
+        return None
     normalized = normalized.replace("\\", "/")
     while normalized.startswith("./"):
         normalized = normalized[2:]
