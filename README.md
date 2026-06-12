@@ -467,7 +467,9 @@ llm-wiki plugins remove my-plugin
 
 Plugin manifests can register extractors, prompt templates, lint rules, and
 agent skill blocks. Plugin references are resolved from project-local paths or
-`.llm-wiki/catalog.json`.
+`.llm-wiki/catalog.json`. Extractor and lint-rule entry points must resolve to
+Python files inside the plugin directory; installed entry points are checked
+again before runtime import.
 
 ### `team`
 

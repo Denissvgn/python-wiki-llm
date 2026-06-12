@@ -177,12 +177,49 @@ def _version_satisfies(current: str, requirement: str) -> bool:
     return _parse_version(current) == _parse_version(requirement)
 
 
-def _ensure_entry_point(value: Any, field: str) -> str:
+def _is_relative_to(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+    except ValueError:
+        return False
+    return True
+
+
+def _entry_point_module_source(plugin_dir: Path, module: str) -> Path | None:
+    root = plugin_dir.resolve()
+    parts = module.split(".")
+
+    for index in range(1, len(parts)):
+        package_init = root.joinpath(*parts[:index], "__init__.py")
+        try:
+            package_init = package_init.resolve(strict=True)
+        except FileNotFoundError:
+            return None
+        if not _is_relative_to(package_init, root) or not package_init.is_file():
+            return None
+
+    module_path = root.joinpath(*parts)
+    candidates = [module_path.with_suffix(".py"), module_path / "__init__.py"]
+    for candidate in candidates:
+        try:
+            resolved = candidate.resolve(strict=True)
+        except FileNotFoundError:
+            continue
+        if _is_relative_to(resolved, root) and resolved.is_file():
+            return resolved
+    return None
+
+
+def _ensure_entry_point(value: Any, field: str, *, plugin_dir: Path | None = None) -> str:
     if not isinstance(value, str) or ":" not in value:
         raise PluginError(f"{field} must use 'module:attribute' format.")
     module, attr = value.split(":", 1)
     if not _MODULE_RE.match(module) or not _ATTR_RE.match(attr):
         raise PluginError(f"{field} must use a valid Python module and attribute.")
+    if plugin_dir is not None and _entry_point_module_source(plugin_dir, module) is None:
+        raise PluginError(
+            f"{field} module must resolve to a Python file inside the plugin directory: {module}"
+        )
     return value
 
 
@@ -219,9 +256,17 @@ def _normalize_component(plugin_dir: Path, raw: Any) -> dict[str, Any]:
 
     if component_type == "extractor":
         component["language"] = _ensure_id(raw.get("language"), "extractor.language")
-        component["entry_point"] = _ensure_entry_point(raw.get("entry_point"), "extractor.entry_point")
+        component["entry_point"] = _ensure_entry_point(
+            raw.get("entry_point"),
+            "extractor.entry_point",
+            plugin_dir=plugin_dir,
+        )
     elif component_type == "lint_rule":
-        component["entry_point"] = _ensure_entry_point(raw.get("entry_point"), "lint_rule.entry_point")
+        component["entry_point"] = _ensure_entry_point(
+            raw.get("entry_point"),
+            "lint_rule.entry_point",
+            plugin_dir=plugin_dir,
+        )
     elif component_type == "prompt_template":
         component["path"] = _safe_component_path(plugin_dir, raw.get("path"), "prompt_template.path")
     elif component_type == "skill":
@@ -381,18 +426,77 @@ def iter_components(component_type: str | None = None, *, root: str | Path = "."
 _ACTIVATED_PATHS: set[str] = set()
 
 
+def _activate_plugin_path(path: Path) -> None:
+    resolved = str(path.resolve())
+    if resolved not in _ACTIVATED_PATHS:
+        sys.path.insert(0, resolved)
+        _ACTIVATED_PATHS.add(resolved)
+
+
 def activate_plugin_paths(root: str | Path = ".") -> None:
     for plugin in list_plugins(root):
-        path = str((plugin_store(root) / plugin["id"]).resolve())
-        if path not in _ACTIVATED_PATHS:
-            sys.path.insert(0, path)
-            _ACTIVATED_PATHS.add(path)
+        _activate_plugin_path(plugin_store(root) / plugin["id"])
+
+
+def _entry_point_components(entry_point: str, *, root: str | Path = ".") -> list[dict[str, Any]]:
+    return [
+        component
+        for component in iter_components(root=root)
+        if component.get("entry_point") == entry_point
+    ]
+
+
+def _installed_entry_point_plugin_dir(entry_point: str, *, root: str | Path = ".") -> Path:
+    components = _entry_point_components(entry_point, root=root)
+    if not components:
+        raise PluginError(f"Entry point {entry_point!r} is not registered by an installed plugin.")
+
+    plugin_dirs = {Path(component["plugin_dir"]).resolve() for component in components}
+    if len(plugin_dirs) > 1:
+        refs = ", ".join(sorted(str(component["ref"]) for component in components))
+        raise PluginError(f"Entry point {entry_point!r} is ambiguous across installed plugins: {refs}")
+    return next(iter(plugin_dirs))
+
+
+def _module_loaded_from_plugin(module: Any, plugin_dir: Path) -> bool:
+    root = plugin_dir.resolve()
+    module_file = getattr(module, "__file__", None)
+    if module_file:
+        return _is_relative_to(Path(module_file).resolve(), root)
+    module_paths = getattr(module, "__path__", None)
+    if module_paths:
+        return all(_is_relative_to(Path(path).resolve(), root) for path in module_paths)
+    return False
+
+
+def _ensure_loaded_module_not_shadowed(module_name: str, plugin_dir: Path) -> None:
+    parts = module_name.split(".")
+    for index in range(1, len(parts) + 1):
+        prefix = ".".join(parts[:index])
+        loaded = sys.modules.get(prefix)
+        if loaded is not None and not _module_loaded_from_plugin(loaded, plugin_dir):
+            raise PluginError(
+                f"Entry point {module_name!r} resolves outside its installed plugin directory."
+            )
 
 
 def load_entry_point(entry_point: str, *, root: str | Path = "."):
-    activate_plugin_paths(root)
+    entry_point = _ensure_entry_point(entry_point, "entry_point")
     module_name, attr_path = entry_point.split(":", 1)
+    plugin_dir = _installed_entry_point_plugin_dir(entry_point, root=root)
+    if _entry_point_module_source(plugin_dir, module_name) is None:
+        raise PluginError(
+            f"Entry point {entry_point!r} for an installed plugin must resolve to "
+            "a Python file inside the plugin directory."
+        )
+    _ensure_loaded_module_not_shadowed(module_name, plugin_dir)
+    _activate_plugin_path(plugin_dir)
+    importlib.invalidate_caches()
     obj = importlib.import_module(module_name)
+    if not _module_loaded_from_plugin(obj, plugin_dir):
+        raise PluginError(
+            f"Entry point {entry_point!r} resolved outside its installed plugin directory."
+        )
     for attr in attr_path.split("."):
         obj = getattr(obj, attr)
     return obj
@@ -400,7 +504,6 @@ def load_entry_point(entry_point: str, *, root: str | Path = "."):
 
 def get_extractor_registry(root: str | Path = ".") -> dict[str, str]:
     registry = dict(EXTRACTOR_REGISTRY)
-    activate_plugin_paths(root)
     for component in iter_components("extractor", root=root):
         language = component["language"]
         if language not in registry:
