@@ -1,6 +1,8 @@
 """Tests for Docker infrastructure page generation in bootstrap_cmd."""
 from __future__ import annotations
 
+import ast
+import inspect
 import os
 import textwrap
 from pathlib import Path
@@ -9,11 +11,30 @@ import pytest
 
 from llm_wiki_cli.commands.bootstrap_cmd import (
     _generate_docker_md,
+    _generate_dockerfile_md,
 )
 from llm_wiki_cli.commands.extract_cmd import _parse_dockerfile, _parse_compose
 
 
 class TestGenerateDockerfileMd:
+    def test_dockerfile_renderer_stays_decomposed(self):
+        source = textwrap.dedent(inspect.getsource(_generate_dockerfile_md))
+        function_node = ast.parse(source).body[0]
+        body = list(function_node.body)
+        if (
+            body
+            and isinstance(body[0], ast.Expr)
+            and isinstance(body[0].value, ast.Constant)
+            and isinstance(body[0].value.value, str)
+        ):
+            body = body[1:]
+
+        first_body_line = min(stmt.lineno for stmt in body)
+        last_body_line = max(stmt.end_lineno for stmt in body)
+        body_lines = last_body_line - first_body_line + 1
+
+        assert body_lines <= 25
+
     def test_single_stage(self):
         info = _parse_dockerfile("FROM python:3.12-slim\nEXPOSE 8000\nCMD python main.py\n")
         md = _generate_docker_md("Dockerfile", info)

@@ -624,121 +624,137 @@ def _generate_docker_md(
     return _generate_compose_md(filename, info, module_links)
 
 
+def _dockerfile_base_images(stages: list[dict]) -> list[str]:
+    return [s["image"] for s in stages] if stages else ["unknown"]
+
+
+def _append_dockerfile_build_stages(lines: list[str], stages: list[dict]) -> None:
+    if not (len(stages) > 1 or (stages and stages[0].get("alias"))):
+        return
+
+    lines.append("## Build Stages")
+    lines.append("")
+    lines.append("| Stage | Base Image |")
+    lines.append("|-------|-----------|")
+    for s in stages:
+        alias = f"`{s['alias']}`" if s.get("alias") else "*(final)*"
+        lines.append(f"| {alias} | `{s['image']}` |")
+    lines.append("")
+
+
+def _append_dockerfile_list_section(lines: list[str], title: str, values: list[str]) -> None:
+    if not values:
+        return
+
+    lines.append(f"## {title}")
+    lines.append("")
+    for value in values:
+        lines.append(f"- `{value}`")
+    lines.append("")
+
+
+def _append_dockerfile_default_table(
+    lines: list[str],
+    title: str,
+    first_column: str,
+    rows: list[dict],
+) -> None:
+    if not rows:
+        return
+
+    lines.append(f"## {title}")
+    lines.append("")
+    lines.append(f"| {first_column} | Default |")
+    lines.append("|----------|---------|")
+    for row in rows:
+        default = f"`{row['default']}`" if row["default"] else "—"
+        lines.append(f"| `{row['name']}` | {default} |")
+    lines.append("")
+
+
+def _append_dockerfile_workdir(lines: list[str], workdir: str) -> None:
+    if not workdir:
+        return
+
+    lines.append(f"**Working Directory:** `{workdir}`")
+    lines.append("")
+
+
+def _append_dockerfile_entrypoint(lines: list[str], entrypoint: str, cmd: str) -> None:
+    if not (entrypoint or cmd):
+        return
+
+    lines.append("## Entry Point")
+    lines.append("")
+    if entrypoint:
+        lines.append(f"**ENTRYPOINT:** `{entrypoint}`")
+    if cmd:
+        lines.append(f"**CMD:** `{cmd}`")
+    lines.append("")
+
+
+def _append_dockerfile_copies(
+    lines: list[str],
+    copies: list[dict],
+    filename: str,
+    module_links: Mapping[str, str] | set[str] | None,
+) -> None:
+    if not copies:
+        return
+
+    lines.append("## File Copies")
+    lines.append("")
+    lines.append("| Instruction | Source | Destination | From Stage |")
+    lines.append("|-------------|--------|-------------|------------|")
+    for copy_info in copies:
+        stage = f"`{copy_info['from_stage']}`" if copy_info.get("from_stage") else "—"
+        src_text = _format_copy_source_links(copy_info["src"], filename, module_links)
+        lines.append(f"| `{copy_info['instruction']}` | {src_text} | `{copy_info['dest']}` | {stage} |")
+    lines.append("")
+
+
+def _append_dockerfile_labels(lines: list[str], labels: dict[str, str]) -> None:
+    if not labels:
+        return
+
+    lines.append("## Labels")
+    lines.append("")
+    lines.append("| Key | Value |")
+    lines.append("|-----|-------|")
+    for key, value in labels.items():
+        lines.append(f"| `{key}` | `{value}` |")
+    lines.append("")
+
+
+def _append_dockerfile_healthcheck(lines: list[str], healthcheck: str) -> None:
+    if not healthcheck:
+        return
+
+    lines.append(f"**Healthcheck:** `{healthcheck}`")
+    lines.append("")
+
+
 def _generate_dockerfile_md(filename: str, info: dict, module_links: Mapping[str, str] | set[str] | None = None) -> str:
     """Generate markdown for a Dockerfile."""
     stages = info.get("stages", [])
-    ports = info.get("ports", [])
-    env_vars = info.get("env_vars", [])
-    volumes = info.get("volumes", [])
-    copies = info.get("copies", [])
-    build_args = info.get("build_args", [])
-    labels = info.get("labels", {})
-    entrypoint = info.get("entrypoint", "")
-    cmd = info.get("cmd", "")
-    workdir = info.get("workdir", "")
-    healthcheck = info.get("healthcheck", "")
-
-    base_images = [s["image"] for s in stages] if stages else ["unknown"]
-
     lines = [
         f"# {filename}",
         "",
         f"**Path:** `{filename}`",
-        f"**Base Image(s):** {', '.join(f'`{img}`' for img in base_images)}",
+        f"**Base Image(s):** {', '.join(f'`{img}`' for img in _dockerfile_base_images(stages))}",
         "",
     ]
 
-    # Build stages
-    if len(stages) > 1 or (stages and stages[0].get("alias")):
-        lines.append("## Build Stages")
-        lines.append("")
-        lines.append("| Stage | Base Image |")
-        lines.append("|-------|-----------|")
-        for s in stages:
-            alias = f"`{s['alias']}`" if s.get("alias") else "*(final)*"
-            lines.append(f"| {alias} | `{s['image']}` |")
-        lines.append("")
-
-    # Exposed ports
-    if ports:
-        lines.append("## Exposed Ports")
-        lines.append("")
-        for p in ports:
-            lines.append(f"- `{p}`")
-        lines.append("")
-
-    # Build args
-    if build_args:
-        lines.append("## Build Arguments")
-        lines.append("")
-        lines.append("| Argument | Default |")
-        lines.append("|----------|---------|")
-        for a in build_args:
-            default = f"`{a['default']}`" if a["default"] else "—"
-            lines.append(f"| `{a['name']}` | {default} |")
-        lines.append("")
-
-    # Environment variables
-    if env_vars:
-        lines.append("## Environment Variables")
-        lines.append("")
-        lines.append("| Variable | Default |")
-        lines.append("|----------|---------|")
-        for e in env_vars:
-            default = f"`{e['default']}`" if e["default"] else "—"
-            lines.append(f"| `{e['name']}` | {default} |")
-        lines.append("")
-
-    # Volumes
-    if volumes:
-        lines.append("## Volumes")
-        lines.append("")
-        for v in volumes:
-            lines.append(f"- `{v}`")
-        lines.append("")
-
-    # Working directory
-    if workdir:
-        lines.append(f"**Working Directory:** `{workdir}`")
-        lines.append("")
-
-    # Entry point / CMD
-    if entrypoint or cmd:
-        lines.append("## Entry Point")
-        lines.append("")
-        if entrypoint:
-            lines.append(f"**ENTRYPOINT:** `{entrypoint}`")
-        if cmd:
-            lines.append(f"**CMD:** `{cmd}`")
-        lines.append("")
-
-    # File copies
-    if copies:
-        lines.append("## File Copies")
-        lines.append("")
-        lines.append("| Instruction | Source | Destination | From Stage |")
-        lines.append("|-------------|--------|-------------|------------|")
-        for c in copies:
-            stage = f"`{c['from_stage']}`" if c.get("from_stage") else "—"
-            src_text = _format_copy_source_links(c["src"], filename, module_links)
-            lines.append(f"| `{c['instruction']}` | {src_text} | `{c['dest']}` | {stage} |")
-        lines.append("")
-
-    # Labels
-    if labels:
-        lines.append("## Labels")
-        lines.append("")
-        lines.append("| Key | Value |")
-        lines.append("|-----|-------|")
-        for k, v in labels.items():
-            lines.append(f"| `{k}` | `{v}` |")
-        lines.append("")
-
-    # Healthcheck
-    if healthcheck:
-        lines.append(f"**Healthcheck:** `{healthcheck}`")
-        lines.append("")
-
+    _append_dockerfile_build_stages(lines, stages)
+    _append_dockerfile_list_section(lines, "Exposed Ports", info.get("ports", []))
+    _append_dockerfile_default_table(lines, "Build Arguments", "Argument", info.get("build_args", []))
+    _append_dockerfile_default_table(lines, "Environment Variables", "Variable", info.get("env_vars", []))
+    _append_dockerfile_list_section(lines, "Volumes", info.get("volumes", []))
+    _append_dockerfile_workdir(lines, info.get("workdir", ""))
+    _append_dockerfile_entrypoint(lines, info.get("entrypoint", ""), info.get("cmd", ""))
+    _append_dockerfile_copies(lines, info.get("copies", []), filename, module_links)
+    _append_dockerfile_labels(lines, info.get("labels", {}))
+    _append_dockerfile_healthcheck(lines, info.get("healthcheck", ""))
     return "\n".join(lines)
 
 
