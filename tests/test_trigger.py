@@ -128,6 +128,7 @@ class TestTriggerPromptHandling:
                 return subprocess.CompletedProcess(cmd, 0, stdout="diff\n", stderr="")
             if cmd[0] == "claude":
                 agent_kwargs.append({
+                    "cmd": list(cmd),
                     "keys": set(kwargs),
                     "stdin_readable": kwargs["stdin"].readable(),
                 })
@@ -138,6 +139,8 @@ class TestTriggerPromptHandling:
             trigger_cmd.run(_make_args(agent="claude"))
 
         assert len(agent_kwargs) == 1
+        assert agent_kwargs[0]["cmd"] == ["claude", "-p"]
+        assert "--dangerously-skip-permissions" not in agent_kwargs[0]["cmd"]
         assert "input" not in agent_kwargs[0]["keys"]
         assert "capture_output" not in agent_kwargs[0]["keys"]
         assert agent_kwargs[0]["stdin_readable"] is True
