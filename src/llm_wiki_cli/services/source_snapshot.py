@@ -14,6 +14,7 @@ from ..config import (
     DOCKERFILE_PATTERNS,
     EXCLUDED_DIRS,
     GitIgnoreMatcher,
+    _GitignoreRule,
     _parse_gitignore_file,
 )
 from ..extractors.common import LANGUAGE_EXTENSIONS
@@ -50,6 +51,29 @@ class SourceSnapshot:
     def language_paths(self, language: str) -> list[str]:
         """Return deterministic relative paths for a language."""
         return [source_file.rel_path for source_file in self.files_by_language.get(language, ())]
+
+
+@dataclass
+class _SnapshotBuckets:
+    files_by_language: dict[str, list[SourceFile]]
+    dockerfile_candidates: list[SourceFile]
+    compose_candidates: list[SourceFile]
+    yaml_candidates: list[SourceFile]
+    package_markers: list[SourceFile]
+    gitignore_paths: list[tuple[str, Path]]
+    gitignore_rules: list[_GitignoreRule]
+
+
+def _new_snapshot_buckets() -> _SnapshotBuckets:
+    return _SnapshotBuckets(
+        files_by_language={language: [] for language in LANGUAGE_EXTENSIONS},
+        dockerfile_candidates=[],
+        compose_candidates=[],
+        yaml_candidates=[],
+        package_markers=[],
+        gitignore_paths=[],
+        gitignore_rules=[],
+    )
 
 
 def _normalize_only_files(root: Path, only_files: Iterable[str] | None) -> set[str] | None:
@@ -131,6 +155,164 @@ def _directory_ignored(matcher: GitIgnoreMatcher, rel_path: str) -> bool:
     return matcher.is_ignored(rel_path) or matcher.is_ignored(f"{rel_path}/__llm_wiki_dir__")
 
 
+def _empty_source_snapshot(root: Path) -> SourceSnapshot:
+    return SourceSnapshot(
+        root=root,
+        files_by_language={language: () for language in LANGUAGE_EXTENSIONS},
+        dockerfile_candidates=(),
+        compose_candidates=(),
+        yaml_candidates=(),
+        package_markers=(),
+        all_source_paths=(),
+        gitignore_fingerprint=_sha256_labeled_files([]),
+    )
+
+
+def _relative_to_root(path: Path, root: Path) -> Path | None:
+    try:
+        return path.resolve().relative_to(root)
+    except (OSError, ValueError):
+        return None
+
+
+def _is_excluded_walk_directory(rel_dir: Path) -> bool:
+    return rel_dir != Path(".") and not EXCLUDED_DIRS.isdisjoint(rel_dir.parts)
+
+
+def _record_gitignore_rules(
+    root: Path,
+    current_dir: Path,
+    rel_dir: Path,
+    buckets: _SnapshotBuckets,
+) -> None:
+    gitignore = current_dir / ".gitignore"
+    if not gitignore.is_file():
+        return
+
+    base = "" if rel_dir == Path(".") else rel_dir.as_posix()
+    buckets.gitignore_paths.append((gitignore.relative_to(root).as_posix(), gitignore))
+    buckets.gitignore_rules.extend(_parse_gitignore_file(gitignore, base))
+
+
+def _prune_dirnames(dirnames: list[str], rel_dir: Path, matcher: GitIgnoreMatcher) -> None:
+    kept_dirnames = []
+    for name in dirnames:
+        if name in EXCLUDED_DIRS:
+            continue
+        child_rel = name if rel_dir == Path(".") else (rel_dir / name).as_posix()
+        if _directory_ignored(matcher, child_rel):
+            continue
+        kept_dirnames.append(name)
+    dirnames[:] = kept_dirnames
+
+
+def _record_infrastructure_candidates(
+    resolved: Path,
+    source_file: SourceFile | None,
+    buckets: _SnapshotBuckets,
+) -> None:
+    if _is_dockerfile_candidate(resolved):
+        _append_sorted(buckets.dockerfile_candidates, source_file)
+    if _is_compose_candidate(resolved):
+        _append_sorted(buckets.compose_candidates, source_file)
+    if resolved.suffix.lower() in {".yml", ".yaml"}:
+        _append_sorted(buckets.yaml_candidates, source_file)
+
+
+def _record_language_candidate(
+    root: Path,
+    resolved: Path,
+    rel: Path,
+    only_set: set[str] | None,
+    buckets: _SnapshotBuckets,
+) -> None:
+    language = _language_for_path(resolved)
+    if language is None:
+        return
+
+    rel_posix = rel.as_posix()
+    if only_set is not None and rel_posix not in only_set:
+        return
+
+    source_file = _make_source_file(root, resolved, rel, language)
+    _append_sorted(buckets.files_by_language[language], source_file)
+
+
+def _record_source_file(
+    root: Path,
+    current_dir: Path,
+    filename: str,
+    matcher: GitIgnoreMatcher,
+    only_set: set[str] | None,
+    buckets: _SnapshotBuckets,
+) -> None:
+    path = current_dir / filename
+    rel = _relative_to_root(path, root)
+    if rel is None:
+        return
+
+    resolved = path.resolve()
+    if not resolved.is_file() or not EXCLUDED_DIRS.isdisjoint(rel.parts):
+        return
+
+    package_source_file = _make_source_file(root, resolved, rel, None)
+    if filename in _PACKAGE_MARKERS:
+        _append_sorted(buckets.package_markers, package_source_file)
+
+    if matcher.is_ignored(rel.as_posix()):
+        return
+
+    _record_infrastructure_candidates(resolved, package_source_file, buckets)
+    _record_language_candidate(root, resolved, rel, only_set, buckets)
+
+
+def _collect_source_tree(root: Path, only_set: set[str] | None, buckets: _SnapshotBuckets) -> None:
+    for dirpath, dirnames, filenames in os.walk(root, topdown=True, followlinks=False):
+        current_dir = Path(dirpath)
+        rel_dir = _relative_to_root(current_dir, root)
+        if rel_dir is None or _is_excluded_walk_directory(rel_dir):
+            dirnames[:] = []
+            continue
+
+        _record_gitignore_rules(root, current_dir, rel_dir, buckets)
+        matcher = GitIgnoreMatcher(buckets.gitignore_rules)
+        _prune_dirnames(dirnames, rel_dir, matcher)
+
+        for filename in filenames:
+            _record_source_file(root, current_dir, filename, matcher, only_set, buckets)
+
+
+def _build_source_snapshot(root: Path, buckets: _SnapshotBuckets) -> SourceSnapshot:
+    sorted_languages = {
+        language: tuple(sorted(source_files, key=lambda item: item.rel_path))
+        for language, source_files in buckets.files_by_language.items()
+    }
+    all_source_paths = tuple(sorted(
+        source_file.rel_path
+        for source_files in sorted_languages.values()
+        for source_file in source_files
+    ))
+
+    return SourceSnapshot(
+        root=root,
+        files_by_language=sorted_languages,
+        dockerfile_candidates=tuple(
+            sorted(buckets.dockerfile_candidates, key=lambda item: item.rel_path)
+        ),
+        compose_candidates=tuple(
+            sorted(buckets.compose_candidates, key=lambda item: item.rel_path)
+        ),
+        yaml_candidates=tuple(
+            sorted(buckets.yaml_candidates, key=lambda item: item.rel_path)
+        ),
+        package_markers=tuple(
+            sorted(buckets.package_markers, key=lambda item: item.rel_path)
+        ),
+        all_source_paths=all_source_paths,
+        gitignore_fingerprint=_sha256_labeled_files(buckets.gitignore_paths),
+    )
+
+
 def build_source_snapshot(src_dir: str | Path, only_files: Iterable[str] | None = None) -> SourceSnapshot:
     """Build a deterministic source-tree snapshot rooted at *src_dir*.
 
@@ -142,107 +324,9 @@ def build_source_snapshot(src_dir: str | Path, only_files: Iterable[str] | None 
     root = Path(src_dir).resolve()
     only_set = _normalize_only_files(root, only_files)
 
-    files_by_language: dict[str, list[SourceFile]] = {
-        language: [] for language in LANGUAGE_EXTENSIONS
-    }
-    dockerfile_candidates: list[SourceFile] = []
-    compose_candidates: list[SourceFile] = []
-    yaml_candidates: list[SourceFile] = []
-    package_markers: list[SourceFile] = []
-    gitignore_paths: list[tuple[str, Path]] = []
-    gitignore_rules = []
-
     if not root.exists():
-        return SourceSnapshot(
-            root=root,
-            files_by_language={language: () for language in LANGUAGE_EXTENSIONS},
-            dockerfile_candidates=(),
-            compose_candidates=(),
-            yaml_candidates=(),
-            package_markers=(),
-            all_source_paths=(),
-            gitignore_fingerprint=_sha256_labeled_files([]),
-        )
+        return _empty_source_snapshot(root)
 
-    for dirpath, dirnames, filenames in os.walk(root, topdown=True, followlinks=False):
-        current_dir = Path(dirpath)
-        try:
-            rel_dir = current_dir.resolve().relative_to(root)
-        except (OSError, ValueError):
-            dirnames[:] = []
-            continue
-        if rel_dir != Path(".") and not EXCLUDED_DIRS.isdisjoint(rel_dir.parts):
-            dirnames[:] = []
-            continue
-
-        gitignore = current_dir / ".gitignore"
-        if gitignore.is_file():
-            base = "" if rel_dir == Path(".") else rel_dir.as_posix()
-            gitignore_paths.append((gitignore.relative_to(root).as_posix(), gitignore))
-            gitignore_rules.extend(_parse_gitignore_file(gitignore, base))
-
-        matcher = GitIgnoreMatcher(gitignore_rules)
-        kept_dirnames = []
-        for name in dirnames:
-            if name in EXCLUDED_DIRS:
-                continue
-            child_rel = name if rel_dir == Path(".") else (rel_dir / name).as_posix()
-            if _directory_ignored(matcher, child_rel):
-                continue
-            kept_dirnames.append(name)
-        dirnames[:] = kept_dirnames
-
-        for filename in filenames:
-            path = current_dir / filename
-            try:
-                resolved = path.resolve()
-                rel = resolved.relative_to(root)
-            except (OSError, ValueError):
-                continue
-            if not resolved.is_file() or not EXCLUDED_DIRS.isdisjoint(rel.parts):
-                continue
-
-            rel_posix = rel.as_posix()
-            package_source_file = _make_source_file(root, resolved, rel, None)
-            if filename in _PACKAGE_MARKERS:
-                _append_sorted(package_markers, package_source_file)
-
-            if matcher.is_ignored(rel_posix):
-                continue
-
-            docker_source_file = package_source_file
-            if _is_dockerfile_candidate(resolved):
-                _append_sorted(dockerfile_candidates, docker_source_file)
-            if _is_compose_candidate(resolved):
-                _append_sorted(compose_candidates, docker_source_file)
-            if resolved.suffix.lower() in {".yml", ".yaml"}:
-                _append_sorted(yaml_candidates, docker_source_file)
-
-            language = _language_for_path(resolved)
-            if language is None:
-                continue
-            if only_set is not None and rel_posix not in only_set:
-                continue
-            source_file = _make_source_file(root, resolved, rel, language)
-            _append_sorted(files_by_language[language], source_file)
-
-    sorted_languages = {
-        language: tuple(sorted(source_files, key=lambda item: item.rel_path))
-        for language, source_files in files_by_language.items()
-    }
-    all_source_paths = tuple(sorted(
-        source_file.rel_path
-        for source_files in sorted_languages.values()
-        for source_file in source_files
-    ))
-
-    return SourceSnapshot(
-        root=root,
-        files_by_language=sorted_languages,
-        dockerfile_candidates=tuple(sorted(dockerfile_candidates, key=lambda item: item.rel_path)),
-        compose_candidates=tuple(sorted(compose_candidates, key=lambda item: item.rel_path)),
-        yaml_candidates=tuple(sorted(yaml_candidates, key=lambda item: item.rel_path)),
-        package_markers=tuple(sorted(package_markers, key=lambda item: item.rel_path)),
-        all_source_paths=all_source_paths,
-        gitignore_fingerprint=_sha256_labeled_files(gitignore_paths),
-    )
+    buckets = _new_snapshot_buckets()
+    _collect_source_tree(root, only_set, buckets)
+    return _build_source_snapshot(root, buckets)
