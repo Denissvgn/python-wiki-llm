@@ -112,9 +112,10 @@ def export_obsidian_vault(
     _ensure_safe_base(vault)
     _ensure_safe_base(notes)
 
-    pages = collect_wiki_pages(wiki)
+    page_content: dict[str, str] = {}
+    pages = collect_wiki_pages(wiki, content_cache=page_content)
     canonical_map = {page.canonical_rel: page for page in pages}
-    outgoing = _collect_outgoing_links(pages, canonical_map, wiki)
+    outgoing = _collect_outgoing_links(pages, canonical_map, wiki, page_content)
     related = _build_related_links(pages, outgoing)
     _merge_inventory_relationships(related, pages, src_dir)
 
@@ -132,7 +133,7 @@ def export_obsidian_vault(
 
         content = build_mirror_page(
             page,
-            read_md(page.canonical_path),
+            page_content[page.canonical_rel],
             outgoing=outgoing.get(page.canonical_rel, set()),
             related=related.get(page.canonical_rel, set()),
             canonical_map=canonical_map,
@@ -222,7 +223,11 @@ def install_obsidian_plugin(
     return report
 
 
-def collect_wiki_pages(wiki_dir: str | Path) -> list[WikiPage]:
+def collect_wiki_pages(
+    wiki_dir: str | Path,
+    *,
+    content_cache: dict[str, str] | None = None,
+) -> list[WikiPage]:
     """Collect active canonical wiki pages in deterministic order."""
     wiki = Path(wiki_dir)
     pages: list[WikiPage] = []
@@ -231,6 +236,8 @@ def collect_wiki_pages(wiki_dir: str | Path) -> list[WikiPage]:
         path = wiki / filename
         if path.exists():
             content = read_md(path)
+            if content_cache is not None:
+                content_cache[filename] = content
             pages.append(WikiPage(
                 kind=kind,
                 page_id=page_id,
@@ -250,6 +257,9 @@ def collect_wiki_pages(wiki_dir: str | Path) -> list[WikiPage]:
             if _is_legacy_page(path, wiki):
                 continue
             content = read_md(path)
+            canonical_rel = path.relative_to(wiki).as_posix()
+            if content_cache is not None:
+                content_cache[canonical_rel] = content
             source_path, source_line = _source_location(content)
             page_id = path.stem
             mirror_rel = (Path(MIRROR_ROOT) / KIND_DIRS[kind] / f"{page_id}.md").as_posix()
@@ -258,7 +268,7 @@ def collect_wiki_pages(wiki_dir: str | Path) -> list[WikiPage]:
                 page_id=page_id,
                 title=_markdown_title(content, page_id),
                 canonical_path=path,
-                canonical_rel=path.relative_to(wiki).as_posix(),
+                canonical_rel=canonical_rel,
                 mirror_rel=mirror_rel,
                 source_path=source_path,
                 source_line=source_line,
@@ -373,11 +383,12 @@ def _collect_outgoing_links(
     pages: list[WikiPage],
     canonical_map: dict[str, WikiPage],
     wiki_dir: Path,
+    page_content: dict[str, str],
 ) -> dict[str, set[str]]:
     outgoing: dict[str, set[str]] = {}
     for page in pages:
         links: set[str] = set()
-        for match in MARKDOWN_LINK_RE.finditer(read_md(page.canonical_path)):
+        for match in MARKDOWN_LINK_RE.finditer(page_content[page.canonical_rel]):
             if match.group(1):
                 continue
             target = _resolve_markdown_target(page, match.group(3), canonical_map, wiki_dir)
