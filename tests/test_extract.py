@@ -834,6 +834,11 @@ class TestPackageDiscovery:
         inv = get_inventory(str(tmp_path))
         assert inv["lib.py"]["package"] == "legacy"
 
+    def test_invalid_setup_py_is_ignored(self, tmp_path):
+        (tmp_path / "setup.py").write_text("from setuptools import setup\nsetup(\n")
+
+        assert discover_packages(str(tmp_path)) == []
+
     def test_no_package_marker(self, tmp_path):
         (tmp_path / "script.py").write_text("class Stuff: pass\n")
         inv = get_inventory(str(tmp_path))
