@@ -1,11 +1,17 @@
 """Tests for shared source-tree discovery snapshots."""
 from __future__ import annotations
 
+import inspect
+
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
 
 def _paths(snapshot, language: str) -> list[str]:
     return snapshot.language_paths(language)
+
+
+def test_build_source_snapshot_stays_decomposed():
+    assert len(inspect.getsource(build_source_snapshot).splitlines()) <= 60
 
 
 def test_groups_builtin_language_files(tmp_path):
