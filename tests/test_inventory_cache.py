@@ -96,6 +96,29 @@ def test_save_writes_schema_and_prunes_to_given_files(tmp_path):
     assert payload["files"]["app.py"]["hash"] == "sha256:test"
 
 
+def test_save_handles_atomic_replace_oserror(tmp_path, monkeypatch):
+    cache_dir = tmp_path / "cache"
+    cache_dir.mkdir()
+    cache_file = cache_dir / CACHE_FILENAME
+    original_payload = '{"files": {"old.py": {}}}\n'
+    cache_file.write_text(original_payload, encoding="utf-8")
+    cache = InventoryCache(tmp_path, InventoryCacheOptions(enabled=True, cache_dir=str(cache_dir)))
+    assert cache.path is not None
+
+    def fail_replace(self, target):
+        raise OSError("replace denied")
+
+    monkeypatch.setattr(type(cache.path), "replace", fail_replace)
+
+    cache.save({"version": 1}, {"app.py": {"hash": "sha256:new"}})
+
+    assert cache_file.read_text(encoding="utf-8") == original_payload
+    assert not list(cache_dir.glob(f".{CACHE_FILENAME}.*.tmp"))
+    assert cache.stats.status == "save_failed"
+    assert cache.stats.saved_entries == 0
+    assert "replace denied" in cache.stats.load_error
+
+
 def test_cache_key_changes_for_gitignore_plugin_and_filter_inputs(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     src = tmp_path / "src"
