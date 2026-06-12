@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import ast
+import inspect
 import shutil
 import subprocess
 import textwrap
@@ -437,6 +439,24 @@ class TestTypeScriptExtractorWithoutNode:
 
 
 class TestTypeScriptExtractorWrapper:
+    def test_extract_remains_short_orchestrator(self):
+        source = textwrap.dedent(inspect.getsource(TypeScriptExtractor.extract))
+        function_node = ast.parse(source).body[0]
+        body = list(function_node.body)
+        if (
+            body
+            and isinstance(body[0], ast.Expr)
+            and isinstance(body[0].value, ast.Constant)
+            and isinstance(body[0].value.value, str)
+        ):
+            body = body[1:]
+
+        first_body_line = min(stmt.lineno for stmt in body)
+        last_body_line = max(stmt.end_lineno for stmt in body)
+        body_lines = last_body_line - first_body_line + 1
+
+        assert body_lines <= 35
+
     def test_missing_dependencies_do_not_invoke_npm_install(self, tmp_path):
         _make_ts(tmp_path, "app.ts", "export class App {}")
         with patch("llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"):

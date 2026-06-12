@@ -62,20 +62,44 @@ class TypeScriptExtractor:
             minimum ``"classes"``, ``"functions"``, and ``"language"``.
         """
         self.last_error = None
-        if source_files is None:
-            source_files = discover_source_files(
-                src_dir, (".ts", ".tsx"), only_files=only_files, language="typescript",
-            )
+        source_files = self._resolve_source_files(src_dir, only_files, source_files)
         if not source_files:
             return {}
 
+        if not self._toolchain_ready():
+            return {}
+
+        cmd = self._build_command(src_dir, source_files, deep)
+        result = self._run_node_extractor(cmd)
+        if result is None:
+            return {}
+
+        inventory = self._load_inventory(result)
+        if not inventory:
+            return {}
+
+        return self._normalize_inventory(src_dir, inventory)
+
+    def _resolve_source_files(
+        self,
+        src_dir: str,
+        only_files: list[str] | None,
+        source_files: list[str] | None,
+    ) -> list[str]:
+        if source_files is None:
+            return discover_source_files(
+                src_dir, (".ts", ".tsx"), only_files=only_files, language="typescript",
+            )
+        return source_files
+
+    def _toolchain_ready(self) -> bool:
         if not shutil.which("node"):
             self.last_error = (
                 "node not found. Install Node.js (https://nodejs.org) "
                 "to enable TypeScript extraction."
             )
             print(f"llm-wiki TypeScript extractor: {self.last_error}", file=sys.stderr)
-            return {}
+            return False
 
         if not typescript_dependencies_ready():
             self.last_error = (
@@ -83,8 +107,11 @@ class TypeScriptExtractor:
                 "Run `llm-wiki prepare-extractors --language typescript` before lint/extract."
             )
             print(f"llm-wiki TypeScript extractor: {self.last_error}", file=sys.stderr)
-            return {}
+            return False
 
+        return True
+
+    def _build_command(self, src_dir: str, source_files: list[str], deep: bool) -> list[str]:
         cmd = [
             "node",
             str(_TS_SCRIPTS_DIR / "extract.js"),
@@ -94,8 +121,11 @@ class TypeScriptExtractor:
         if deep:
             cmd.append("--deep")
 
+        return cmd
+
+    def _run_node_extractor(self, cmd: list[str]) -> subprocess.CompletedProcess | None:
         try:
-            result = subprocess.run(
+            return subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
@@ -109,22 +139,23 @@ class TypeScriptExtractor:
                 f"llm-wiki TypeScript extractor: extraction failed.\n{exc.stderr}",
                 file=sys.stderr,
             )
-            return {}
+            return None
         except subprocess.TimeoutExpired:
             self.last_error = "extraction timed out after 120 s"
             print(
                 "llm-wiki TypeScript extractor: extraction timed out after 120 s.",
                 file=sys.stderr,
             )
-            return {}
+            return None
         except FileNotFoundError:
             self.last_error = "node executable not found"
             print(
                 "llm-wiki TypeScript extractor: node executable not found.",
                 file=sys.stderr,
             )
-            return {}
+            return None
 
+    def _load_inventory(self, result: subprocess.CompletedProcess) -> dict | None:
         # Forward any warnings the Node.js script wrote to stderr (e.g. skipped files).
         if result.stderr.strip():
             sys.stderr.write(result.stderr)
@@ -146,7 +177,9 @@ class TypeScriptExtractor:
             entry["language"] = "typescript"
 
         inventory = filter_bundled_inventory(inventory, _TS_SCRIPTS_DIR)
+        return inventory
 
+    def _normalize_inventory(self, src_dir: str, inventory: dict) -> dict:
         src_root = Path(src_dir).resolve()
         normalized_inventory: dict = {}
         for fp, data in inventory.items():
