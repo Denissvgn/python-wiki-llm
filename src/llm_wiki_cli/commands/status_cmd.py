@@ -7,6 +7,12 @@ from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS, read_config, get_agent_config
 from ..services import circuit_breaker
 
 
+def _count_markdown_files(directory: Path) -> int:
+    if not directory.exists():
+        return 0
+    return sum(1 for _ in directory.glob("*.md"))
+
+
 def run(args) -> None:
     wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     wiki_path = Path(wiki_dir)
@@ -17,9 +23,9 @@ def run(args) -> None:
 
     # Wiki directory
     if wiki_path.exists():
-        entity_count = len(list((wiki_path / "entities").glob("*.md"))) if (wiki_path / "entities").exists() else 0
-        module_count = len(list((wiki_path / "modules").glob("*.md"))) if (wiki_path / "modules").exists() else 0
-        workflow_count = len(list((wiki_path / "workflows").glob("*.md"))) if (wiki_path / "workflows").exists() else 0
+        entity_count = _count_markdown_files(wiki_path / "entities")
+        module_count = _count_markdown_files(wiki_path / "modules")
+        workflow_count = _count_markdown_files(wiki_path / "workflows")
         print(f"Wiki directory:  {wiki_dir} (exists)")
         print(f"  Entities:      {entity_count}")
         print(f"  Modules:       {module_count}")
