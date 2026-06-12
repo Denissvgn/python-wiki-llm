@@ -26,6 +26,26 @@ class TestStatusWiki:
         assert "Entities:      1" in out
         assert "Modules:       1" in out
 
+    def test_counts_wiki_pages_without_materializing_globs(self, tmp_project, capsys, monkeypatch):
+        wiki = tmp_project / "docs" / "llm_wiki"
+        for d in ["entities", "modules", "workflows"]:
+            (wiki / d).mkdir(parents=True)
+        (wiki / "entities" / "User.md").write_text("# User\n")
+        (wiki / "modules" / "main.md").write_text("# main\n")
+        (wiki / "workflows" / "signup.md").write_text("# signup\n")
+
+        def fail_if_materialized(*_args, **_kwargs):
+            raise AssertionError("status should count glob results without list allocation")
+
+        monkeypatch.setattr(status_cmd, "list", fail_if_materialized, raising=False)
+
+        status_cmd.run(_make_args(wiki_dir=str(wiki)))
+        out = capsys.readouterr().out
+
+        assert "Entities:      1" in out
+        assert "Modules:       1" in out
+        assert "Workflows:     1" in out
+
     def test_shows_wiki_missing(self, tmp_project, capsys):
         status_cmd.run(_make_args(wiki_dir="nonexistent"))
         out = capsys.readouterr().out
