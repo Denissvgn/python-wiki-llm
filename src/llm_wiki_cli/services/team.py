@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import re
 from copy import deepcopy
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -52,6 +53,21 @@ _AGENT_KEYS = {"prompt_template", "required_lint_rules", "required_skills"}
 
 class TeamConfigError(ValueError):
     """Raised when `.llm-wiki/team.json` is invalid."""
+
+
+@dataclass(frozen=True)
+class TeamConventionRequest:
+    """Inputs needed to check wiki files against team conventions."""
+
+    config: dict[str, Any]
+    wiki_dir: str | Path
+    src_dir: str
+    inventory: dict[str, Any]
+    docker_inventory: dict[str, Any] | None = None
+
+    @property
+    def wiki_path(self) -> Path:
+        return Path(self.wiki_dir)
 
 
 def default_team_config(wiki_dir: str = DEFAULT_WIKI_DIR) -> dict[str, Any]:
@@ -199,19 +215,12 @@ def check_plugin_requirements(config: dict[str, Any], *, root: str | Path = ".")
     return issues
 
 
-def check_team_conventions(
-    config: dict[str, Any],
-    wiki_dir: str | Path,
-    src_dir: str,
-    inventory: dict,
-    pages: list[Path],
-    docker_inventory: dict | None = None,
-) -> list[dict[str, str | None]]:
+def check_team_conventions(request: TeamConventionRequest) -> list[dict[str, str | None]]:
     from ..commands.bootstrap_cmd import build_entity_page_map, build_module_page_map
     from ..commands.extract_cmd import get_docker_inventory
 
-    wiki_path = Path(wiki_dir)
-    conventions = config["conventions"]
+    wiki_path = request.wiki_path
+    conventions = request.config["conventions"]
     issues: list[dict[str, str | None]] = []
 
     for rel in conventions["required_files"]:
@@ -254,7 +263,7 @@ def check_team_conventions(
                 ))
 
     if conventions["canonical_naming"]:
-        expected_entities = set(build_entity_page_map(inventory).values())
+        expected_entities = set(build_entity_page_map(request.inventory).values())
         documented_entities = {p.stem for p in (wiki_path / "entities").glob("*.md")} if (wiki_path / "entities").exists() else set()
         for name in sorted(documented_entities - expected_entities):
             issues.append(_issue(
@@ -264,7 +273,7 @@ def check_team_conventions(
                 target=name,
             ))
 
-        expected_modules = set(build_module_page_map(inventory).values())
+        expected_modules = set(build_module_page_map(request.inventory).values())
         documented_modules = {p.stem for p in (wiki_path / "modules").glob("*.md")} if (wiki_path / "modules").exists() else set()
         for name in sorted(documented_modules - expected_modules):
             issues.append(_issue(
@@ -274,8 +283,9 @@ def check_team_conventions(
                 target=name,
             ))
 
+        docker_inventory = request.docker_inventory
         if docker_inventory is None:
-            docker_inventory = get_docker_inventory(src_dir)
+            docker_inventory = get_docker_inventory(request.src_dir)
         expected_infra = {f.replace("\\", "/").replace("/", "_").replace(".", "_") for f in docker_inventory}
         documented_infra = {p.stem for p in (wiki_path / "infrastructure").glob("*.md")} if (wiki_path / "infrastructure").exists() else set()
         for name in sorted(documented_infra - expected_infra):
@@ -308,12 +318,13 @@ def build_team_issues(
     return (
         check_plugin_requirements(config, root=root)
         + check_team_conventions(
-            config,
-            wiki_dir,
-            src_dir,
-            inventory,
-            pages,
-            docker_inventory=docker_inventory,
+            TeamConventionRequest(
+                config=config,
+                wiki_dir=wiki_dir,
+                src_dir=src_dir,
+                inventory=inventory,
+                docker_inventory=docker_inventory,
+            )
         )
     )
 
