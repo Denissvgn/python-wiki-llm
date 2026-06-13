@@ -19,6 +19,7 @@ from ..config import (
 )
 from ..extractors.common import LANGUAGE_EXTENSIONS
 from ..extractors.go_extractor import GoExtractionRequest
+from ..extractors.rust_extractor import RustExtractionRequest
 from ..services.contracts import EXTRACT_SCHEMA_VERSION
 from ..services.inventory_cache import (
     InventoryCache,
@@ -297,12 +298,20 @@ def get_inventory_result(
                         ),
                     ),
                 }
+            elif language == "rust":
+                kwargs = {
+                    "src_dir": RustExtractionRequest(
+                        src_dir=src_dir,
+                        only_files=only_files,
+                        deep=deep,
+                        source_files=fresh_source_files,
+                        helper_cache_dir=(
+                            cache_options.cache_dir if cache_options is not None else None
+                        ),
+                    ),
+                }
             else:
                 kwargs["source_files"] = fresh_source_files
-            if language == "rust":
-                kwargs["helper_cache_dir"] = (
-                    cache_options.cache_dir if cache_options is not None else None
-                )
         if language == "python":
             kwargs["include_empty"] = include_empty
 
