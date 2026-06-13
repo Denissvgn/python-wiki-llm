@@ -628,6 +628,145 @@ def _module_name(filepath: str) -> str:
     return Path(filepath).stem
 
 
+_TEST_FILE_STEMS = {"conftest"}
+_TEST_DIRS = {"tests", "test", "__tests__"}
+_WORKFLOW_MODULE_THRESHOLD = 3
+
+
+def _build_symbol_file_index(inventory: dict) -> dict[str, set[str]]:
+    symbol_to_files: dict[str, set[str]] = {}
+    for filepath, data in inventory.items():
+        for cls in data.get("classes", []):
+            symbol_to_files.setdefault(cls["name"], set()).add(filepath)
+        for fn in data.get("functions", []):
+            symbol_to_files.setdefault(fn["name"], set()).add(filepath)
+    return symbol_to_files
+
+
+def _is_test_file(filepath: str) -> bool:
+    fp_path = Path(filepath)
+    if fp_path.stem.startswith("test_") or fp_path.stem in _TEST_FILE_STEMS:
+        return True
+    return bool(_TEST_DIRS & set(fp_path.parts))
+
+
+def _resolve_import_candidates(
+    imp: dict,
+    filepath: str,
+    symbol_to_files: dict[str, set[str]],
+    module_resolver,
+) -> set[str]:
+    source_name = imp["name"]
+    candidates = set(symbol_to_files.get(source_name, set()))
+    module_candidates = module_resolver.candidates(imp.get("module", ""), filepath)
+
+    if candidates and module_candidates:
+        candidates &= module_candidates
+    elif not candidates and module_candidates:
+        candidates = set(module_candidates)
+
+    candidates.discard(filepath)
+    return candidates
+
+
+def _resolve_imported_symbols(
+    filepath: str,
+    imports: list[dict],
+    symbol_to_files: dict[str, set[str]],
+    module_resolver,
+) -> dict[str, tuple[str, str]]:
+    imported_symbols: dict[str, tuple[str, str]] = {}
+    for imp in imports:
+        source_name = imp["name"]
+        visible_name = imp.get("alias") or source_name
+        candidates = _resolve_import_candidates(imp, filepath, symbol_to_files, module_resolver)
+        if len(candidates) == 1:
+            imported_symbols[visible_name] = (next(iter(candidates)), source_name)
+    return imported_symbols
+
+
+def _iter_callable_components(data: dict):
+    yield from data.get("functions", [])
+    for cls in data.get("classes", []):
+        yield from cls.get("methods", [])
+
+
+def _function_references_symbol(fn: dict, visible_name: str) -> bool:
+    referenced = False
+    for param in fn.get("params", []):
+        if visible_name in param.get("type", ""):
+            referenced = True
+    if visible_name in fn.get("return_type", ""):
+        referenced = True
+    for decorator in fn.get("decorators", []):
+        if visible_name in decorator:
+            referenced = True
+    if visible_name in fn.get("docstring", ""):
+        referenced = True
+    return referenced
+
+
+def _referenced_import_chain(
+    fn: dict,
+    imported_symbols: dict[str, tuple[str, str]],
+) -> tuple[set[str], list[str]]:
+    touched_module_paths: set[str] = set()
+    chain: list[str] = []
+    for visible_name, (src_path, source_name) in imported_symbols.items():
+        if _function_references_symbol(fn, visible_name):
+            touched_module_paths.add(src_path)
+            chain.append(f"{_module_name(src_path)}.{source_name}")
+    return touched_module_paths, chain
+
+
+def _workflow_name(fn_name: str, module_name: str) -> str:
+    workflow_name = fn_name.lstrip("_")
+    if workflow_name == "run":
+        return f"{module_name}_flow"
+    return workflow_name
+
+
+def _workflow_entry(
+    filepath: str,
+    module_name: str,
+    fn: dict,
+    touched_module_paths: set[str],
+    chain: list[str],
+) -> tuple[str, dict]:
+    fn_name = fn["name"]
+    all_touched_paths = touched_module_paths | {filepath}
+    return _workflow_name(fn_name, module_name), {
+        "entry": f"{module_name}.{fn_name}",
+        "entry_module": module_name,
+        "entry_module_path": filepath,
+        "chain": chain,
+        "modules_touched": sorted({_module_name(path) for path in all_touched_paths}),
+        "modules_touched_paths": sorted(all_touched_paths),
+        "docstring": fn.get("docstring", ""),
+    }
+
+
+def _workflow_entries_for_file(
+    filepath: str,
+    data: dict,
+    imported_symbols: dict[str, tuple[str, str]],
+) -> dict[str, dict]:
+    module_name = _module_name(filepath)
+    workflows: dict[str, dict] = {}
+    for fn in _iter_callable_components(data):
+        touched_module_paths, chain = _referenced_import_chain(fn, imported_symbols)
+        if len(touched_module_paths) >= _WORKFLOW_MODULE_THRESHOLD:
+            workflow_name, workflow = _workflow_entry(
+                filepath,
+                module_name,
+                fn,
+                touched_module_paths,
+                chain,
+            )
+            workflows[workflow_name] = workflow
+    return workflows
+
+
 def get_call_graph(inventory: dict) -> dict:
     """Build cross-module call chains from a deep inventory.
 
@@ -636,99 +775,21 @@ def get_call_graph(inventory: dict) -> dict:
 
     Returns a dict of workflow_name -> {entry, chain, modules_touched}.
     """
-    # Map of symbol name -> defining source files.
-    symbol_to_files: dict[str, set[str]] = {}
-    for fp, data in inventory.items():
-        for cls in data.get("classes", []):
-            symbol_to_files.setdefault(cls["name"], set()).add(fp)
-        for fn in data.get("functions", []):
-            symbol_to_files.setdefault(fn["name"], set()).add(fp)
-
-    workflows: dict[str, dict] = {}
+    symbol_to_files = _build_symbol_file_index(inventory)
     module_resolver = build_module_path_resolver(inventory)
+    workflows: dict[str, dict] = {}
 
-    # Determine which paths are test files — skip them for workflow detection
-    _TEST_STEMS = {"conftest"}
-    _TEST_DIRS = {"tests", "test", "__tests__"}
-
-    for fp, data in inventory.items():
-        fp_path = Path(fp)
-        # Skip test files: file stem starts with 'test_' or lives under a tests dir
-        if fp_path.stem.startswith("test_") or fp_path.stem in _TEST_STEMS:
+    for filepath, data in inventory.items():
+        if _is_test_file(filepath):
             continue
-        if _TEST_DIRS & set(fp_path.parts):
-            continue
-
-        mod = _module_name(fp)
-        imports = data.get("imports", [])
-
-        # Resolve visible imported names to exact internal source files.
-        imported_symbols: dict[str, tuple[str, str]] = {}  # visible_name -> (source_path, source_symbol)
-        for imp in imports:
-            source_name = imp["name"]
-            visible_name = imp.get("alias") or source_name
-            candidates = set(symbol_to_files.get(source_name, set()))
-            module_candidates = module_resolver.candidates(imp.get("module", ""), fp)
-
-            if candidates and module_candidates:
-                candidates &= module_candidates
-            elif not candidates and module_candidates:
-                candidates = set(module_candidates)
-
-            candidates.discard(fp)
-            if len(candidates) == 1:
-                imported_symbols[visible_name] = (next(iter(candidates)), source_name)
-
-        if not imported_symbols:
-            continue
-
-        # For each function in this module, find which imported symbols it references
-        all_functions = list(data.get("functions", []))
-        for cls in data.get("classes", []):
-            for method in cls.get("methods", []):
-                all_functions.append(method)
-
-        for fn in all_functions:
-            touched_module_paths: set[str] = set()
-            chain: list[str] = []
-
-            # Check params, return types, decorators for references to imported symbols
-            for visible_name, (src_path, source_name) in imported_symbols.items():
-                referenced = False
-                for p in fn.get("params", []):
-                    if visible_name in p.get("type", ""):
-                        referenced = True
-                if visible_name in fn.get("return_type", ""):
-                    referenced = True
-                for dec in fn.get("decorators", []):
-                    if visible_name in dec:
-                        referenced = True
-                # Check docstring for symbol mentions
-                if visible_name in fn.get("docstring", ""):
-                    referenced = True
-
-                if referenced:
-                    touched_module_paths.add(src_path)
-                    chain.append(f"{_module_name(src_path)}.{source_name}")
-
-            # Workflow threshold: function touches 3+ other internal modules
-            if len(touched_module_paths) >= 3:
-                fn_name = fn["name"]
-                # Clean up workflow name
-                wf_name = fn_name.lstrip("_")
-                if wf_name == "run":
-                    wf_name = f"{mod}_flow"
-
-                all_touched_paths = touched_module_paths | {fp}
-                workflows[wf_name] = {
-                    "entry": f"{mod}.{fn_name}",
-                    "entry_module": mod,
-                    "entry_module_path": fp,
-                    "chain": chain,
-                    "modules_touched": sorted({_module_name(path) for path in all_touched_paths}),
-                    "modules_touched_paths": sorted(all_touched_paths),
-                    "docstring": fn.get("docstring", ""),
-                }
+        imported_symbols = _resolve_imported_symbols(
+            filepath,
+            data.get("imports", []),
+            symbol_to_files,
+            module_resolver,
+        )
+        if imported_symbols:
+            workflows.update(_workflow_entries_for_file(filepath, data, imported_symbols))
 
     return workflows
 
