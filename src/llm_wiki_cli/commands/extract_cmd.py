@@ -68,6 +68,17 @@ class ExtractorStatus:
 
 
 @dataclass(frozen=True)
+class InventoryRequest:
+    src_dir: str | Path
+    deep: bool = False
+    only_files: list[str] | None = None
+    include_empty: bool = False
+    source_snapshot: SourceSnapshot | None = None
+    cache_options: InventoryCacheOptions | None = None
+    parallel_jobs: int = 1
+
+
+@dataclass(frozen=True)
 class InventoryResult:
     inventory: dict
     statuses: dict[str, ExtractorStatus]
@@ -175,14 +186,61 @@ def _merge_language_inventory(target: dict, source_order: list[str], *sources: d
 # ── Backward-compatible public API ───────────────────────────────────
 
 
+_MISSING_INVENTORY_REQUEST = object()
+_LEGACY_INVENTORY_REQUEST_FIELDS = (
+    "deep",
+    "only_files",
+    "include_empty",
+    "source_snapshot",
+    "cache_options",
+    "parallel_jobs",
+)
+
+
+def _coerce_inventory_request(
+    request,
+    legacy_args: tuple,
+    legacy_kwargs: dict,
+) -> InventoryRequest:
+    if request is _MISSING_INVENTORY_REQUEST:
+        if "src_dir" not in legacy_kwargs:
+            raise TypeError(
+                "get_inventory_result() missing required argument: 'src_dir'"
+            )
+        request = legacy_kwargs.pop("src_dir")
+
+    if isinstance(request, InventoryRequest):
+        if legacy_args or legacy_kwargs:
+            raise TypeError("InventoryRequest cannot be combined with legacy options.")
+        return request
+
+    if len(legacy_args) > len(_LEGACY_INVENTORY_REQUEST_FIELDS):
+        raise TypeError(
+            "get_inventory_result() takes at most 7 positional arguments "
+            f"({len(legacy_args) + 1} given)"
+        )
+
+    values = dict(zip(_LEGACY_INVENTORY_REQUEST_FIELDS, legacy_args))
+    duplicates = sorted(set(values) & set(legacy_kwargs))
+    if duplicates:
+        raise TypeError(
+            f"get_inventory_result() got multiple values for argument '{duplicates[0]}'"
+        )
+
+    unexpected = sorted(set(legacy_kwargs) - set(_LEGACY_INVENTORY_REQUEST_FIELDS))
+    if unexpected:
+        raise TypeError(
+            f"get_inventory_result() got an unexpected keyword argument '{unexpected[0]}'"
+        )
+
+    values.update(legacy_kwargs)
+    return InventoryRequest(src_dir=request, **values)
+
+
 def get_inventory_result(
-    src_dir,
-    deep=False,
-    only_files=None,
-    include_empty=False,
-    source_snapshot: SourceSnapshot | None = None,
-    cache_options: InventoryCacheOptions | None = None,
-    parallel_jobs: int = 1,
+    request=_MISSING_INVENTORY_REQUEST,
+    *legacy_args,
+    **legacy_kwargs,
 ) -> InventoryResult:
     """Scan source files across all registered languages and return inventory.
 
@@ -197,6 +255,20 @@ def get_inventory_result(
     Each entry is stamped with a ``"package"`` key (package name or
     ``None``) derived from ``pyproject.toml`` / ``setup.py`` markers.
     """
+    return _build_inventory_result(
+        _coerce_inventory_request(request, legacy_args, legacy_kwargs)
+    )
+
+
+def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
+    src_dir = request.src_dir
+    deep = request.deep
+    only_files = request.only_files
+    include_empty = request.include_empty
+    cache_options = request.cache_options
+    parallel_jobs = request.parallel_jobs
+    source_snapshot = request.source_snapshot
+
     source_snapshot = source_snapshot or build_source_snapshot(src_dir, only_files=only_files)
     registry = get_extractor_registry()
     cache = InventoryCache(src_dir, cache_options) if cache_options is not None else None
@@ -419,7 +491,12 @@ def get_inventory_result(
 def get_inventory(src_dir, deep=False, only_files=None, include_empty=False):
     """Backward-compatible inventory API returning only the inventory dict."""
     return get_inventory_result(
-        src_dir, deep=deep, only_files=only_files, include_empty=include_empty,
+        InventoryRequest(
+            src_dir=src_dir,
+            deep=deep,
+            only_files=only_files,
+            include_empty=include_empty,
+        )
     ).inventory
 
 
@@ -444,8 +521,21 @@ def languages_with_source(src_dir: str, only_files: list[str] | None = None) -> 
     }
 
 
-def _inventory_or_exit(src_dir: str, *, deep: bool = False, only_files=None, include_empty: bool = False) -> dict:
-    result = get_inventory_result(src_dir, deep=deep, only_files=only_files, include_empty=include_empty)
+def _inventory_or_exit(
+    src_dir: str,
+    *,
+    deep: bool = False,
+    only_files=None,
+    include_empty: bool = False,
+) -> dict:
+    result = get_inventory_result(
+        InventoryRequest(
+            src_dir=src_dir,
+            deep=deep,
+            only_files=only_files,
+            include_empty=include_empty,
+        )
+    )
     if result.failed:
         print_inventory_failures(result)
         sys.exit(1)
@@ -534,11 +624,13 @@ def build_extract_payload(
 
     source_snapshot = build_source_snapshot(str(src_root), only_files=only_files)
     result = get_inventory_result(
-        str(src_root),
-        deep=deep,
-        only_files=only_files,
-        include_empty=include_empty,
-        source_snapshot=source_snapshot,
+        InventoryRequest(
+            src_dir=str(src_root),
+            deep=deep,
+            only_files=only_files,
+            include_empty=include_empty,
+            source_snapshot=source_snapshot,
+        )
     )
     if result.failed:
         raise ExtractorFailureError(result)
@@ -822,7 +914,6 @@ def get_call_graph(inventory: dict) -> dict:
 def _parse_dockerfile(text: str) -> dict:
     """Parse a Dockerfile into a structured dict (line-based, no external deps)."""
     stages: list[dict] = []
-    current_stage: str | None = None
     ports: list[str] = []
     env_vars: list[dict] = []
     volumes: list[str] = []
@@ -863,7 +954,6 @@ def _parse_dockerfile(text: str) -> dict:
                 alias = parts[3]
             stage = {"image": image, "alias": alias}
             stages.append(stage)
-            current_stage = alias or image
 
         elif upper == "EXPOSE":
             for token in trimmed.split()[1:]:
@@ -1117,14 +1207,12 @@ def _looks_like_compose(text: str) -> bool:
         "environment:", "volumes:", "command:", "healthcheck:", "restart:",
         "networks:", "deploy:", "profiles:",
     }
-    has_services = False
     in_services = False
     for line in text.splitlines():
         stripped = line.strip()
         if not stripped or stripped.startswith("#"):
             continue
         if line.startswith("services:") or line.startswith("services :"):
-            has_services = True
             in_services = True
             continue
         # Another top-level key ends the services block
