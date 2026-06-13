@@ -1,8 +1,10 @@
 """Tests for commands/extract_cmd.py"""
+import ast
+import inspect
+import json
 import threading
 import textwrap
 import types
-import json
 from pathlib import Path
 
 import pytest
@@ -14,6 +16,15 @@ from llm_wiki_cli.extractors.python_extractor import PythonExtractor
 from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
 from llm_wiki_cli.services.packages import discover_packages, stamp_inventory_packages
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
+
+
+def _body_line_count(function) -> int:
+    source = textwrap.dedent(inspect.getsource(function))
+    function_node = ast.parse(source).body[0]
+    body = function_node.body
+    first_body_line = min(stmt.lineno for stmt in body)
+    last_body_line = max(stmt.end_lineno for stmt in body)
+    return last_body_line - first_body_line + 1
 
 
 class TestGetInventory:
@@ -504,6 +515,9 @@ class TestExcludedDirsRelative:
 
 
 class TestGetCallGraph:
+    def test_get_call_graph_stays_decomposed(self):
+        assert _body_line_count(get_call_graph) <= 35
+
     def test_no_workflows_single_module(self, tmp_path):
         (tmp_path / "simple.py").write_text("class Foo: pass\n")
         inventory = get_inventory(str(tmp_path), deep=True)
