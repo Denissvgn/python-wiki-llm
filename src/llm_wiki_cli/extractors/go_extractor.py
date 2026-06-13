@@ -14,12 +14,24 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 from .common import discover_source_files, filter_bundled_inventory
 from ..services.extractor_helpers import get_prepared_binary, missing_helper_message
 
 _GO_SCRIPTS_DIR = Path(__file__).parent / "go_scripts"
+
+
+@dataclass(frozen=True)
+class GoExtractionRequest:
+    """Internal request object for Go extraction orchestration."""
+
+    src_dir: str
+    only_files: list[str] | None = None
+    deep: bool = False
+    source_files: list[str] | None = None
+    helper_cache_dir: str | None = None
 
 
 class GoExtractor:
@@ -34,11 +46,9 @@ class GoExtractor:
 
     def extract(
         self,
-        src_dir: str,
+        src_dir: str | GoExtractionRequest,
         only_files: list[str] | None = None,
         deep: bool = False,
-        source_files: list[str] | None = None,
-        helper_cache_dir: str | None = None,
     ) -> dict:
         """Scan *src_dir* for Go files and return an inventory dict.
 
@@ -61,29 +71,77 @@ class GoExtractor:
             minimum ``"classes"``, ``"functions"``, and ``"language"``.
         """
         self.last_error = None
-        if source_files is None:
-            source_files = discover_source_files(
-                src_dir, (".go",), only_files=only_files, language="go",
-            )
+        request = self._coerce_request(src_dir, only_files, deep)
+        source_files = self._resolve_source_files(request)
         if not source_files:
             return {}
 
-        helper_binary = get_prepared_binary("go", src_dir, helper_cache_dir)
+        helper_binary = self._prepared_helper(request)
         if helper_binary is None:
-            self.last_error = missing_helper_message("go", src_dir, helper_cache_dir)
-            print(f"llm-wiki Go extractor: {self.last_error}", file=sys.stderr)
             return {}
 
+        cmd = self._build_command(request, source_files, helper_binary)
+        result = self._run_helper(cmd, helper_binary)
+        if result is None:
+            return {}
+
+        inventory = self._load_inventory(result)
+        if not inventory:
+            return {}
+
+        return self._normalize_inventory(request.src_dir, inventory)
+
+    def _coerce_request(
+        self,
+        src_dir: str | GoExtractionRequest,
+        only_files: list[str] | None,
+        deep: bool,
+    ) -> GoExtractionRequest:
+        if isinstance(src_dir, GoExtractionRequest):
+            return src_dir
+        return GoExtractionRequest(src_dir=src_dir, only_files=only_files, deep=deep)
+
+    def _resolve_source_files(self, request: GoExtractionRequest) -> list[str]:
+        if request.source_files is not None:
+            return request.source_files
+        return discover_source_files(
+            request.src_dir,
+            (".go",),
+            only_files=request.only_files,
+            language="go",
+        )
+
+    def _prepared_helper(self, request: GoExtractionRequest) -> Path | None:
+        helper_binary = get_prepared_binary("go", request.src_dir, request.helper_cache_dir)
+        if helper_binary is None:
+            self.last_error = missing_helper_message(
+                "go", request.src_dir, request.helper_cache_dir,
+            )
+            print(f"llm-wiki Go extractor: {self.last_error}", file=sys.stderr)
+        return helper_binary
+
+    def _build_command(
+        self,
+        request: GoExtractionRequest,
+        source_files: list[str],
+        helper_binary: Path,
+    ) -> list[str]:
         cmd = [
             str(helper_binary),
-            "--src-dir", str(Path(src_dir).resolve()),
+            "--src-dir", str(Path(request.src_dir).resolve()),
         ]
         cmd += ["--only-files", ",".join(source_files)]
-        if deep:
+        if request.deep:
             cmd.append("--deep")
+        return cmd
 
+    def _run_helper(
+        self,
+        cmd: list[str],
+        helper_binary: Path,
+    ) -> subprocess.CompletedProcess | None:
         try:
-            result = subprocess.run(
+            return subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
@@ -97,22 +155,23 @@ class GoExtractor:
                 f"llm-wiki Go extractor: extraction failed.\n{exc.stderr}",
                 file=sys.stderr,
             )
-            return {}
+            return None
         except subprocess.TimeoutExpired:
             self.last_error = "extraction timed out after 120 s"
             print(
                 "llm-wiki Go extractor: extraction timed out after 120 s.",
                 file=sys.stderr,
             )
-            return {}
+            return None
         except FileNotFoundError:
             self.last_error = "prepared Go helper executable not found"
             print(
                 "llm-wiki Go extractor: prepared Go helper executable not found.",
                 file=sys.stderr,
             )
-            return {}
+            return None
 
+    def _load_inventory(self, result: subprocess.CompletedProcess) -> dict | None:
         # Forward any warnings the Go script wrote to stderr.
         if result.stderr.strip():
             sys.stderr.write(result.stderr)
@@ -134,7 +193,9 @@ class GoExtractor:
             entry["language"] = "go"
 
         inventory = filter_bundled_inventory(inventory, _GO_SCRIPTS_DIR)
+        return inventory
 
+    def _normalize_inventory(self, src_dir: str, inventory: dict) -> dict:
         src_root = Path(src_dir).resolve()
         normalized_inventory: dict = {}
         for fp, data in inventory.items():
