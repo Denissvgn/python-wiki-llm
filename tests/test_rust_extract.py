@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import inspect
 import shutil
 import subprocess
 import textwrap
@@ -11,7 +12,7 @@ from unittest.mock import patch
 import pytest
 
 from llm_wiki_cli.config import EXTRACTOR_REGISTRY
-from llm_wiki_cli.extractors.rust_extractor import RustExtractor
+from llm_wiki_cli.extractors.rust_extractor import RustExtractionRequest, RustExtractor
 from llm_wiki_cli.services.extractor_helpers import get_prepared_binary
 
 # ---------------------------------------------------------------------------
@@ -549,6 +550,53 @@ class TestRustExtractorWithoutPreparedHelper:
 
 
 class TestRustExtractorWrapper:
+    def test_extract_signature_uses_protocol_arguments(self):
+        params = list(inspect.signature(RustExtractor.extract).parameters)
+
+        assert params == ["self", "src_dir", "only_files", "deep"]
+
+    def test_request_object_passes_cached_source_files_to_helper(
+        self, tmp_path, monkeypatch
+    ):
+        _make_rs(tmp_path, "src/lib.rs", "pub struct App;\n")
+        helper_calls = []
+        commands = []
+
+        def fake_get_prepared_binary(language, src_dir, helper_cache_dir):
+            helper_calls.append((language, src_dir, helper_cache_dir))
+            return Path("/tmp/rust-helper")
+
+        def fake_run(cmd, *args, **kwargs):
+            commands.append(cmd)
+            return subprocess.CompletedProcess(
+                cmd,
+                0,
+                stdout='{"src/lib.rs":{"classes":[],"functions":[]}}',
+                stderr="",
+            )
+
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.rust_extractor.get_prepared_binary",
+            fake_get_prepared_binary,
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.rust_extractor.subprocess.run", fake_run
+        )
+
+        inv = RustExtractor().extract(
+            RustExtractionRequest(
+                src_dir=str(tmp_path),
+                deep=True,
+                source_files=["src/lib.rs"],
+                helper_cache_dir="cache-dir",
+            )
+        )
+
+        assert list(inv) == ["src/lib.rs"]
+        assert helper_calls == [("rust", str(tmp_path), "cache-dir")]
+        assert commands[0][commands[0].index("--only-files") + 1] == "src/lib.rs"
+        assert "--deep" in commands[0]
+
     def test_windows_style_inventory_keys_are_normalized(self, tmp_path):
         _make_rs(tmp_path, "pkg/client.rs", "pub struct Client;\n")
         result = subprocess.CompletedProcess(

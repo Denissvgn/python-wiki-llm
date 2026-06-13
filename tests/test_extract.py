@@ -110,6 +110,48 @@ class TestGetInventory:
         assert calls["deep"] is False
         assert sorted(result.inventory) == ["main.go"]
 
+    def test_builtin_rust_extractor_receives_request_object(self, tmp_path, monkeypatch):
+        (tmp_path / "lib.rs").write_text("pub struct App;\n", encoding="utf-8")
+        calls = {"request": None, "only_files": "unset", "deep": "unset"}
+
+        class FakeRustExtractor:
+            last_error = None
+
+            def extract(self, src_dir, only_files=None, deep=False):
+                calls["request"] = src_dir
+                calls["only_files"] = only_files
+                calls["deep"] = deep
+                return {
+                    "lib.rs": {
+                        "classes": [],
+                        "functions": [],
+                        "language": "rust",
+                    }
+                }
+
+        monkeypatch.setattr(
+            extract_cmd,
+            "get_extractor_registry",
+            lambda: {"rust": extract_cmd.EXTRACTOR_REGISTRY["rust"]},
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_load_extractor",
+            lambda _entry_point: FakeRustExtractor(),
+        )
+
+        result = extract_cmd.get_inventory_result(str(tmp_path), deep=True)
+
+        request = calls["request"]
+        assert isinstance(request, extract_cmd.RustExtractionRequest)
+        assert request.src_dir == str(tmp_path)
+        assert request.deep is True
+        assert request.source_files == ["lib.rs"]
+        assert request.helper_cache_dir is None
+        assert calls["only_files"] is None
+        assert calls["deep"] is False
+        assert sorted(result.inventory) == ["lib.rs"]
+
     def test_parallel_jobs_run_fresh_builtin_extractors_concurrently(self, tmp_path, monkeypatch):
         (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
         (tmp_path / "app.ts").write_text("export class TsApp {}\n", encoding="utf-8")
