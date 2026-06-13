@@ -1,6 +1,9 @@
 """Tests for Docker/Compose extraction in extract_cmd."""
+
 from __future__ import annotations
 
+import ast
+import inspect
 import textwrap
 
 from llm_wiki_cli.commands.extract_cmd import (
@@ -13,7 +16,25 @@ from llm_wiki_cli.commands.extract_cmd import (
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
 
+def _body_line_count(function) -> int:
+    source = textwrap.dedent(inspect.getsource(function))
+    function_node = ast.parse(source).body[0]
+    body = list(function_node.body)
+    if (
+        body
+        and isinstance(body[0], ast.Expr)
+        and isinstance(body[0].value, ast.Constant)
+        and isinstance(body[0].value.value, str)
+    ):
+        body = body[1:]
+
+    first_body_line = min(stmt.lineno for stmt in body)
+    last_body_line = max(stmt.end_lineno for stmt in body)
+    return last_body_line - first_body_line + 1
+
+
 # ── Dockerfile parsing ───────────────────────────────────────────────
+
 
 class TestParseDockerfileBasic:
     def test_single_stage(self):
@@ -126,7 +147,11 @@ class TestParseDockerfileEmpty:
 
 # ── docker-compose parsing ───────────────────────────────────────────
 
+
 class TestParseCompose:
+    def test_parse_compose_stays_decomposed(self):
+        assert _body_line_count(_parse_compose) <= 35
+
     def test_basic_services(self):
         text = textwrap.dedent("""\
             version: "3.8"
@@ -205,6 +230,7 @@ class TestParseCompose:
 
 # ── get_docker_inventory ─────────────────────────────────────────────
 
+
 class TestGetDockerInventory:
     def test_discovers_dockerfile(self, tmp_path):
         (tmp_path / "Dockerfile").write_text("FROM python:3.12\nEXPOSE 8000\n")
@@ -213,7 +239,9 @@ class TestGetDockerInventory:
         assert inv["Dockerfile"]["type"] == "dockerfile"
 
     def test_discovers_compose(self, tmp_path):
-        (tmp_path / "docker-compose.yml").write_text("services:\n  web:\n    image: nginx\n")
+        (tmp_path / "docker-compose.yml").write_text(
+            "services:\n  web:\n    image: nginx\n"
+        )
         inv = get_docker_inventory(str(tmp_path))
         assert "docker-compose.yml" in inv
         assert inv["docker-compose.yml"]["type"] == "compose"
@@ -234,7 +262,9 @@ class TestGetDockerInventory:
 
     def test_both_dockerfile_and_compose(self, tmp_path):
         (tmp_path / "Dockerfile").write_text("FROM python:3.12\n")
-        (tmp_path / "docker-compose.yml").write_text("services:\n  web:\n    build: .\n")
+        (tmp_path / "docker-compose.yml").write_text(
+            "services:\n  web:\n    build: .\n"
+        )
         inv = get_docker_inventory(str(tmp_path))
         assert len(inv) == 2
         assert inv["Dockerfile"]["type"] == "dockerfile"
@@ -245,10 +275,13 @@ class TestGetDockerInventory:
         (tmp_path / "infra.yml").write_text("services:\n  api:\n    image: nginx\n")
         snapshot = build_source_snapshot(tmp_path)
 
-        assert get_docker_inventory(str(tmp_path), source_snapshot=snapshot) == get_docker_inventory(str(tmp_path))
+        assert get_docker_inventory(
+            str(tmp_path), source_snapshot=snapshot
+        ) == get_docker_inventory(str(tmp_path))
 
 
 # ── Compose deep nesting / env-as-dict ───────────────────────────────
+
 
 class TestParseComposeDeepNesting:
     def test_environment_as_dict(self):
@@ -393,6 +426,7 @@ class TestParseComposeDeepNesting:
 
 # ── Inline YAML lists ────────────────────────────────────────────────
 
+
 class TestParseInlineYamlList:
     def test_basic_list(self):
         assert _parse_inline_yaml_list('["a", "b", "c"]') == ["a", "b", "c"]
@@ -431,11 +465,15 @@ class TestParseInlineYamlList:
         """)
         result = _parse_compose(text)
         assert result["services"]["web"]["healthcheck"]["test"] == [
-            "CMD", "wget", "--spider", "http://localhost/"
+            "CMD",
+            "wget",
+            "--spider",
+            "http://localhost/",
         ]
 
 
 # ── _looks_like_compose ──────────────────────────────────────────────
+
 
 class TestLooksLikeCompose:
     def test_real_compose(self):
@@ -460,6 +498,7 @@ class TestLooksLikeCompose:
 
 # ── Recursive discovery ──────────────────────────────────────────────
 
+
 class TestRecursiveDiscovery:
     def test_finds_dockerfile_in_subdirectory(self, tmp_path):
         sub = tmp_path / "services" / "web"
@@ -478,13 +517,17 @@ class TestRecursiveDiscovery:
     def test_content_based_compose_detection(self, tmp_path):
         sub = tmp_path / "compose"
         sub.mkdir()
-        (sub / "core.yml").write_text("services:\n  web:\n    image: nginx\n    ports:\n      - 8000:8000\n")
+        (sub / "core.yml").write_text(
+            "services:\n  web:\n    image: nginx\n    ports:\n      - 8000:8000\n"
+        )
         inv = get_docker_inventory(str(tmp_path))
         assert "compose/core.yml" in inv
         assert inv["compose/core.yml"]["type"] == "compose"
 
     def test_skips_non_compose_yaml(self, tmp_path):
-        (tmp_path / "config.yml").write_text("database:\n  host: localhost\n  port: 5432\n")
+        (tmp_path / "config.yml").write_text(
+            "database:\n  host: localhost\n  port: 5432\n"
+        )
         inv = get_docker_inventory(str(tmp_path))
         assert "config.yml" not in inv
 
@@ -514,9 +557,13 @@ class TestRecursiveDiscovery:
         # Non-standard compose
         compose = tmp_path / "compose"
         compose.mkdir()
-        (compose / "infra.yml").write_text("services:\n  db:\n    image: postgres\n    ports:\n      - 5432:5432\n")
+        (compose / "infra.yml").write_text(
+            "services:\n  db:\n    image: postgres\n    ports:\n      - 5432:5432\n"
+        )
         # Standard compose at root
-        (tmp_path / "docker-compose.yml").write_text("services:\n  web:\n    build: .\n")
+        (tmp_path / "docker-compose.yml").write_text(
+            "services:\n  web:\n    build: .\n"
+        )
         inv = get_docker_inventory(str(tmp_path))
         assert len(inv) == 4
         assert inv["Dockerfile"]["type"] == "dockerfile"

@@ -7,7 +7,7 @@ import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
 
@@ -39,7 +39,6 @@ from ..services.source_snapshot import SourceSnapshot, build_source_snapshot
 # Re-export ComponentVisitor so existing callers that import it from here
 # continue to work without modification.
 from ..extractors.python_extractor import ComponentVisitor  # noqa: F401
-
 
 # ── Extractor loader ─────────────────────────────────────────────────
 
@@ -142,7 +141,9 @@ class _ExtractionOutcome:
     message: str = ""
 
 
-def _run_extraction_plan(plan: _ExtractionPlan, *, fresh_instance: bool = False) -> _ExtractionOutcome:
+def _run_extraction_plan(
+    plan: _ExtractionPlan, *, fresh_instance: bool = False
+) -> _ExtractionOutcome:
     try:
         extractor = (
             _instantiate_extractor(plan.entry_point)
@@ -150,17 +151,23 @@ def _run_extraction_plan(plan: _ExtractionPlan, *, fresh_instance: bool = False)
             else _load_extractor(plan.entry_point)
         )
     except Exception as exc:
-        return _ExtractionOutcome(plan.language, "failed", plan.files_found, {}, str(exc))
+        return _ExtractionOutcome(
+            plan.language, "failed", plan.files_found, {}, str(exc)
+        )
     if hasattr(extractor, "last_error"):
         extractor.last_error = None
     try:
         extracted = extractor.extract(**plan.kwargs)
     except Exception as exc:
-        return _ExtractionOutcome(plan.language, "failed", plan.files_found, {}, str(exc))
+        return _ExtractionOutcome(
+            plan.language, "failed", plan.files_found, {}, str(exc)
+        )
 
     error = getattr(extractor, "last_error", None)
     if error:
-        return _ExtractionOutcome(plan.language, "failed", plan.files_found, {}, str(error))
+        return _ExtractionOutcome(
+            plan.language, "failed", plan.files_found, {}, str(error)
+        )
 
     files_found = plan.files_found
     if plan.source_files is None:
@@ -168,7 +175,9 @@ def _run_extraction_plan(plan: _ExtractionPlan, *, fresh_instance: bool = False)
     return _ExtractionOutcome(plan.language, "ok", files_found, extracted)
 
 
-def _merge_language_inventory(target: dict, source_order: list[str], *sources: dict) -> None:
+def _merge_language_inventory(
+    target: dict, source_order: list[str], *sources: dict
+) -> None:
     seen: set[str] = set()
     for rel_path in source_order:
         for source in sources:
@@ -269,9 +278,13 @@ def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
     parallel_jobs = request.parallel_jobs
     source_snapshot = request.source_snapshot
 
-    source_snapshot = source_snapshot or build_source_snapshot(src_dir, only_files=only_files)
+    source_snapshot = source_snapshot or build_source_snapshot(
+        src_dir, only_files=only_files
+    )
     registry = get_extractor_registry()
-    cache = InventoryCache(src_dir, cache_options) if cache_options is not None else None
+    cache = (
+        InventoryCache(src_dir, cache_options) if cache_options is not None else None
+    )
     cache_files: dict[str, dict] = {}
     updated_cache_files: dict[str, dict] = {}
     cache_key: dict | None = None
@@ -321,7 +334,9 @@ def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
             status_by_language[language] = ExtractorStatus(language, "skipped", 0)
             continue
 
-        is_builtin = extensions is not None and entry_point == EXTRACTOR_REGISTRY.get(language)
+        is_builtin = extensions is not None and entry_point == EXTRACTOR_REGISTRY.get(
+            language
+        )
         fresh_source_files = list(source_files or [])
         cached_by_language.setdefault(language, {})
         if is_builtin and cache is not None and cache.enabled and cache_key is not None:
@@ -345,7 +360,9 @@ def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
                         cached_by_language[language][rel_path] = deepcopy(raw_inventory)
                     updated_cache_files[rel_path] = cached_entry
                     continue
-                cached_hash = cached_entry.get("hash") if isinstance(cached_entry, dict) else None
+                cached_hash = (
+                    cached_entry.get("hash") if isinstance(cached_entry, dict) else None
+                )
                 if cached_hash != file_hash:
                     cache.stats.changed += 1
                 else:
@@ -353,7 +370,9 @@ def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
                 fresh_source_files.append(rel_path)
 
             if not fresh_source_files:
-                status_by_language[language] = ExtractorStatus(language, "ok", files_found)
+                status_by_language[language] = ExtractorStatus(
+                    language, "ok", files_found
+                )
                 continue
 
         kwargs = {"src_dir": src_dir, "only_files": only_files, "deep": deep}
@@ -366,7 +385,9 @@ def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
                         deep=deep,
                         source_files=fresh_source_files,
                         helper_cache_dir=(
-                            cache_options.cache_dir if cache_options is not None else None
+                            cache_options.cache_dir
+                            if cache_options is not None
+                            else None
                         ),
                     ),
                 }
@@ -378,7 +399,9 @@ def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
                         deep=deep,
                         source_files=fresh_source_files,
                         helper_cache_dir=(
-                            cache_options.cache_dir if cache_options is not None else None
+                            cache_options.cache_dir
+                            if cache_options is not None
+                            else None
                         ),
                     ),
                 }
@@ -387,15 +410,17 @@ def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
         if language == "python":
             kwargs["include_empty"] = include_empty
 
-        plans.append(_ExtractionPlan(
-            language=language,
-            entry_point=entry_point,
-            is_builtin=is_builtin,
-            source_files=source_files,
-            fresh_source_files=fresh_source_files,
-            files_found=files_found,
-            kwargs=kwargs,
-        ))
+        plans.append(
+            _ExtractionPlan(
+                language=language,
+                entry_point=entry_point,
+                is_builtin=is_builtin,
+                source_files=source_files,
+                fresh_source_files=fresh_source_files,
+                files_found=files_found,
+                kwargs=kwargs,
+            )
+        )
 
     builtin_plans = [plan for plan in plans if plan.is_builtin]
     plugin_plans = [plan for plan in plans if not plan.is_builtin]
@@ -412,7 +437,9 @@ def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
     else:
         use_fresh_builtin_instances = parallel_jobs > 1
         for plan in builtin_plans:
-            outcome = _run_extraction_plan(plan, fresh_instance=use_fresh_builtin_instances)
+            outcome = _run_extraction_plan(
+                plan, fresh_instance=use_fresh_builtin_instances
+            )
             outcomes_by_language[outcome.language] = outcome
 
     for plan in plugin_plans:
@@ -432,7 +459,12 @@ def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
 
         extracted = outcome.extracted
         extracted_by_language[plan.language] = extracted
-        if plan.is_builtin and cache is not None and cache.enabled and cache_key is not None:
+        if (
+            plan.is_builtin
+            and cache is not None
+            and cache.enabled
+            and cache_key is not None
+        ):
             cache.stats.fresh_extracted += len(plan.fresh_source_files)
             for rel_path in plan.fresh_source_files:
                 source_file = source_file_by_path[rel_path]
@@ -442,7 +474,9 @@ def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
                 raw_entry = deepcopy(extracted.get(rel_path, {}))
                 if raw_entry:
                     raw_entry.pop("package", None)
-                updated_cache_files[rel_path] = make_cache_entry(source_file, file_hash, raw_entry)
+                updated_cache_files[rel_path] = make_cache_entry(
+                    source_file, file_hash, raw_entry
+                )
 
         status_by_language[plan.language] = ExtractorStatus(
             plan.language,
@@ -469,7 +503,9 @@ def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
     }
     if cache is not None and cache.enabled:
         cache.finalize_lookup_status()
-        if cache_key is not None and not any(status.state == "failed" for status in statuses.values()):
+        if cache_key is not None and not any(
+            status.state == "failed" for status in statuses.values()
+        ):
             should_save_cache = (
                 cache.options.rebuild
                 or bool(cache.stats.misses)
@@ -513,10 +549,13 @@ def infer_language_from_path(filepath: str) -> str | None:
     return None
 
 
-def languages_with_source(src_dir: str, only_files: list[str] | None = None) -> set[str]:
+def languages_with_source(
+    src_dir: str, only_files: list[str] | None = None
+) -> set[str]:
     snapshot = build_source_snapshot(src_dir, only_files=only_files)
     return {
-        language for language, source_files in snapshot.files_by_language.items()
+        language
+        for language, source_files in snapshot.files_by_language.items()
         if source_files
     }
 
@@ -550,11 +589,18 @@ def _git_changed_files(src_dir: str) -> list[str] | None:
     try:
         result = subprocess.run(
             ["git", "diff", "--name-only", "HEAD~1..HEAD"],
-            capture_output=True, text=True, check=True, timeout=15,
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=15,
             cwd=src_dir,
         )
         return [line for line in result.stdout.splitlines() if line.strip()]
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
+    except (
+        subprocess.CalledProcessError,
+        subprocess.TimeoutExpired,
+        FileNotFoundError,
+    ):
         return None
 
 
@@ -592,7 +638,9 @@ def build_extract_payload(
 ) -> ExtractPayloadResult:
     """Build the stable extract JSON payload without printing or exiting."""
     src_root = validate_source_root(
-        src_dir, "--src-dir", allow_external=allow_external_src,
+        src_dir,
+        "--src-dir",
+        allow_external=allow_external_src,
     )
     if paths:
         validate_source_paths(src_root, paths, "--paths")
@@ -638,7 +686,8 @@ def build_extract_payload(
 
     if package_filter:
         inventory = {
-            fp: data for fp, data in inventory.items()
+            fp: data
+            for fp, data in inventory.items()
             if data.get("package") == package_filter
         }
         if not inventory:
@@ -719,9 +768,15 @@ def run(args):
             if not output_path:
                 return
         elif result.changed_file_count is None:
-            print("Warning: Could not get changed files from git. Falling back to full scan.", file=sys.stderr)
+            print(
+                "Warning: Could not get changed files from git. Falling back to full scan.",
+                file=sys.stderr,
+            )
         else:
-            print(f"Extracting {result.changed_file_count} changed file(s)...", file=sys.stderr)
+            print(
+                f"Extracting {result.changed_file_count} changed file(s)...",
+                file=sys.stderr,
+            )
 
     rendered = json.dumps(result.payload, indent=2)
     if output_path:
@@ -730,7 +785,10 @@ def run(args):
     else:
         print(rendered)
 
-    print(f"Extracted {result.inventory_count} files with tracked components.", file=sys.stderr)
+    print(
+        f"Extracted {result.inventory_count} files with tracked components.",
+        file=sys.stderr,
+    )
     if result.docker_count:
         print(f"Docker inventory: {result.docker_count} file(s).", file=sys.stderr)
     else:
@@ -738,6 +796,7 @@ def run(args):
 
 
 # ── Call-graph extraction for workflow detection ──────────────────────
+
 
 def _module_name(filepath: str) -> str:
     return Path(filepath).stem
@@ -794,7 +853,9 @@ def _resolve_imported_symbols(
     for imp in imports:
         source_name = imp["name"]
         visible_name = imp.get("alias") or source_name
-        candidates = _resolve_import_candidates(imp, filepath, symbol_to_files, module_resolver)
+        candidates = _resolve_import_candidates(
+            imp, filepath, symbol_to_files, module_resolver
+        )
         if len(candidates) == 1:
             imported_symbols[visible_name] = (next(iter(candidates)), source_name)
     return imported_symbols
@@ -904,12 +965,15 @@ def get_call_graph(inventory: dict) -> dict:
             module_resolver,
         )
         if imported_symbols:
-            workflows.update(_workflow_entries_for_file(filepath, data, imported_symbols))
+            workflows.update(
+                _workflow_entries_for_file(filepath, data, imported_symbols)
+            )
 
     return workflows
 
 
 # ── Docker / Compose extraction ──────────────────────────────────────
+
 
 def _parse_dockerfile(text: str) -> dict:
     """Parse a Dockerfile into a structured dict (line-based, no external deps)."""
@@ -989,7 +1053,14 @@ def _parse_dockerfile(text: str) -> dict:
             for f in flags:
                 if f.startswith("--from="):
                     from_stage = f.split("=", 1)[1]
-            copies.append({"src": src, "dest": dest, "from_stage": from_stage, "instruction": upper})
+            copies.append(
+                {
+                    "src": src,
+                    "dest": dest,
+                    "from_stage": from_stage,
+                    "instruction": upper,
+                }
+            )
 
         elif upper == "WORKDIR":
             workdir = trimmed.split(None, 1)[1] if len(trimmed.split()) > 1 else ""
@@ -1050,6 +1121,148 @@ def _parse_inline_yaml_list(value: str) -> list[str] | None:
     return None
 
 
+@dataclass
+class _ComposeParserState:
+    services: dict[str, dict] = field(default_factory=dict)
+    networks: list[str] = field(default_factory=list)
+    named_volumes: list[str] = field(default_factory=list)
+    current_top: str = ""
+    current_service: str = ""
+    key_stack: list[str] = field(default_factory=list)
+
+
+def _strip_yaml_quotes(value: str) -> str:
+    """Remove surrounding YAML quotes from a value."""
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
+        return value[1:-1]
+    return value
+
+
+def _compose_path_parent(
+    state: _ComposeParserState,
+    path: list[str],
+    *,
+    create: bool = False,
+):
+    """Return ``(parent_dict, final_key)`` for a nested service path."""
+    if not state.current_service or not path:
+        return None, None
+
+    target = state.services[state.current_service]
+    for part in path[:-1]:
+        if part not in target:
+            if create:
+                target[part] = {}
+            else:
+                return None, None
+
+        child = target[part]
+        if isinstance(child, list) and not child:
+            target[part] = {}
+            child = target[part]
+        if not isinstance(child, dict):
+            return None, None
+        target = child
+
+    return target, path[-1]
+
+
+def _start_compose_top_level_section(
+    state: _ComposeParserState,
+    stripped: str,
+    indent: int,
+) -> bool:
+    if indent != 0 or ":" not in stripped:
+        return False
+    state.current_top = stripped.split(":", 1)[0].strip()
+    state.current_service = ""
+    state.key_stack = []
+    return True
+
+
+def _start_compose_service(
+    state: _ComposeParserState,
+    stripped: str,
+    indent: int,
+) -> bool:
+    if indent != 2 or ":" not in stripped or stripped.startswith("-"):
+        return False
+    state.current_service = stripped.split(":", 1)[0].strip()
+    state.services.setdefault(state.current_service, {})
+    state.key_stack = []
+    return True
+
+
+def _compose_service_depth(indent: int) -> int:
+    return (indent - 4) // 2
+
+
+def _append_compose_list_item(state: _ComposeParserState, stripped: str) -> None:
+    if not state.key_stack:
+        return
+
+    parent, final_key = _compose_path_parent(state, state.key_stack)
+    if parent is None or final_key is None:
+        return
+
+    existing = parent.get(final_key)
+    if isinstance(existing, list):
+        existing.append(_strip_yaml_quotes(stripped[2:].strip()))
+
+
+def _assign_compose_value(parent: dict, final_key: str, value: str) -> None:
+    if value:
+        inline = _parse_inline_yaml_list(value)
+        parent[final_key] = inline if inline is not None else _strip_yaml_quotes(value)
+    elif final_key not in parent:
+        parent[final_key] = []
+
+
+def _set_compose_service_key(
+    state: _ComposeParserState,
+    stripped: str,
+    depth: int,
+) -> None:
+    if ":" not in stripped:
+        return
+
+    key, _, value = stripped.partition(":")
+    key = key.strip()
+    value = value.strip()
+    state.key_stack = state.key_stack[:depth] + [key]
+
+    parent, final_key = _compose_path_parent(state, list(state.key_stack), create=True)
+    if parent is not None and final_key is not None:
+        _assign_compose_value(parent, final_key, value)
+
+
+def _parse_compose_service_line(
+    state: _ComposeParserState,
+    stripped: str,
+    indent: int,
+) -> None:
+    if _start_compose_service(state, stripped, indent):
+        return
+
+    if not state.current_service:
+        return
+
+    depth = _compose_service_depth(indent)
+    if depth < 0:
+        return
+
+    state.key_stack = state.key_stack[:depth]
+    if stripped.startswith("- "):
+        _append_compose_list_item(state, stripped)
+    else:
+        _set_compose_service_key(state, stripped, depth)
+
+
+def _collect_compose_section_name(names: list[str], stripped: str, indent: int) -> None:
+    if indent == 2 and ":" in stripped:
+        names.append(stripped.split(":", 1)[0].strip())
+
+
 def _parse_compose(text: str) -> dict:
     """Parse a docker-compose YAML file using line-based parsing (no PyYAML).
 
@@ -1058,46 +1271,7 @@ def _parse_compose(text: str) -> dict:
     deploy, healthcheck, depends_on) at arbitrary depth.  Complex YAML
     features (anchors, merge keys, multi-line block scalars) are best-effort.
     """
-    services: dict[str, dict] = {}
-    networks: list[str] = []
-    named_volumes: list[str] = []
-
-    current_top: str = ""       # "services" | "networks" | "volumes" | ""
-    current_service: str = ""
-    # Stack of keys at each nesting depth (relative to service, depth 0 = indent 4)
-    key_stack: list[str] = []
-
-    def _strip_yaml_quotes(value: str) -> str:
-        """Remove surrounding YAML quotes from a value."""
-        if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
-            return value[1:-1]
-        return value
-
-    def _navigate(path: list[str], create: bool = False):
-        """Navigate to the parent for path, returning (parent_dict, final_key).
-
-        When *create* is True, intermediate dicts are created.  If an
-        intermediate value is an empty list it is promoted to a dict (the
-        initial ``[]`` was a provisional guess — now we know it's a mapping).
-        """
-        if not current_service or not path:
-            return None, None
-        target = services[current_service]
-        for part in path[:-1]:
-            if part not in target:
-                if create:
-                    target[part] = {}
-                else:
-                    return None, None
-            child = target[part]
-            # Promote empty list to dict — we guessed list, but it's a mapping
-            if isinstance(child, list) and not child:
-                target[part] = {}
-                child = target[part]
-            if not isinstance(child, dict):
-                return None, None
-            target = child
-        return target, path[-1]
+    state = _ComposeParserState()
 
     for raw_line in text.splitlines():
         stripped = raw_line.strip()
@@ -1106,90 +1280,26 @@ def _parse_compose(text: str) -> dict:
 
         indent = len(raw_line) - len(raw_line.lstrip())
 
-        # ── top-level key (indent 0) ──
-        if indent == 0 and ":" in stripped:
-            key = stripped.split(":")[0].strip()
-            current_top = key
-            current_service = ""
-            key_stack = []
+        if _start_compose_top_level_section(state, stripped, indent):
             continue
 
-        # ── under "services" ──
-        if current_top == "services":
-            # service name (indent 2)
-            if indent == 2 and ":" in stripped and not stripped.startswith("-"):
-                current_service = stripped.split(":")[0].strip()
-                services.setdefault(current_service, {})
-                key_stack = []
-                continue
-
-            if not current_service:
-                continue
-
-            # depth relative to service body (indent 4 → depth 0)
-            depth = (indent - 4) // 2
-            if depth < 0:
-                continue
-
-            # Trim key_stack to current depth
-            key_stack = key_stack[:depth]
-
-            # ── list item (- ...) ──
-            if stripped.startswith("- "):
-                item_value = _strip_yaml_quotes(stripped[2:].strip())
-                if key_stack:
-                    parent, final_key = _navigate(key_stack)
-                    if parent is not None and final_key is not None:
-                        existing = parent.get(final_key)
-                        if isinstance(existing, list):
-                            existing.append(item_value)
-                continue
-
-            # ── key:value or key: (mapping start) ──
-            if ":" in stripped:
-                key, _, value = stripped.partition(":")
-                key = key.strip()
-                value = value.strip()
-
-                key_stack = key_stack[:depth] + [key]
-                path = list(key_stack)
-
-                parent, final_key = _navigate(path, create=True)
-                if parent is None or final_key is None:
-                    continue
-
-                if value:
-                    # Check for inline YAML list: [item1, item2, ...]
-                    inline = _parse_inline_yaml_list(value)
-                    if inline is not None:
-                        parent[final_key] = inline
-                    else:
-                        parent[final_key] = _strip_yaml_quotes(value)
-                else:
-                    # Start of a sub-block — initialise as empty list.
-                    # If nested key:value lines follow, _navigate will
-                    # promote it to a dict automatically.
-                    if final_key not in parent:
-                        parent[final_key] = []
-                continue
-
-        # ── under "networks" — collect names at indent 2 ──
-        if current_top == "networks":
-            if indent == 2 and ":" in stripped:
-                networks.append(stripped.split(":")[0].strip())
+        if state.current_top == "services":
+            _parse_compose_service_line(state, stripped, indent)
             continue
 
-        # ── under "volumes" — collect names at indent 2 ──
-        if current_top == "volumes":
-            if indent == 2 and ":" in stripped:
-                named_volumes.append(stripped.split(":")[0].strip())
+        if state.current_top == "networks":
+            _collect_compose_section_name(state.networks, stripped, indent)
+            continue
+
+        if state.current_top == "volumes":
+            _collect_compose_section_name(state.named_volumes, stripped, indent)
             continue
 
     return {
         "type": "compose",
-        "services": services,
-        "networks": networks,
-        "volumes": named_volumes,
+        "services": state.services,
+        "networks": state.networks,
+        "volumes": state.named_volumes,
     }
 
 
@@ -1203,9 +1313,19 @@ def _looks_like_compose(text: str) -> bool:
     from non-compose YAML files that happen to have a ``services:`` key.
     """
     _COMPOSE_SERVICE_KEYS = {
-        "image:", "build:", "ports:", "depends_on:", "container_name:",
-        "environment:", "volumes:", "command:", "healthcheck:", "restart:",
-        "networks:", "deploy:", "profiles:",
+        "image:",
+        "build:",
+        "ports:",
+        "depends_on:",
+        "container_name:",
+        "environment:",
+        "volumes:",
+        "command:",
+        "healthcheck:",
+        "restart:",
+        "networks:",
+        "deploy:",
+        "profiles:",
     }
     in_services = False
     for line in text.splitlines():
@@ -1225,7 +1345,9 @@ def _looks_like_compose(text: str) -> bool:
     return False
 
 
-def get_docker_inventory(src_dir: str, *, source_snapshot: SourceSnapshot | None = None) -> dict:
+def get_docker_inventory(
+    src_dir: str, *, source_snapshot: SourceSnapshot | None = None
+) -> dict:
     """Discover and parse Dockerfiles and Compose files in the source tree.
 
     Uses two strategies:
@@ -1247,12 +1369,16 @@ def get_docker_inventory(src_dir: str, *, source_snapshot: SourceSnapshot | None
     for source_file in source_snapshot.dockerfile_candidates:
         rel = source_file.rel_path
         if rel not in inventory:
-            inventory[rel] = _parse_dockerfile(source_file.abs_path.read_text(errors="replace"))
+            inventory[rel] = _parse_dockerfile(
+                source_file.abs_path.read_text(errors="replace")
+            )
 
     for source_file in source_snapshot.compose_candidates:
         rel = source_file.rel_path
         if rel not in inventory:
-            inventory[rel] = _parse_compose(source_file.abs_path.read_text(errors="replace"))
+            inventory[rel] = _parse_compose(
+                source_file.abs_path.read_text(errors="replace")
+            )
 
     for source_file in source_snapshot.yaml_candidates:
         rel = source_file.rel_path
