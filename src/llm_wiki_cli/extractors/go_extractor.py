@@ -50,26 +50,7 @@ class GoExtractor:
         only_files: list[str] | None = None,
         deep: bool = False,
     ) -> dict:
-        """Scan *src_dir* for Go files and return an inventory dict.
-
-        Parameters
-        ----------
-        src_dir:
-            Root directory to scan.
-        only_files:
-            Optional list of paths (relative to *src_dir*) to restrict
-            extraction to.  When ``None``, all ``.go`` files found under
-            *src_dir* are scanned (excluding ``_test.go``, ``vendor/``, etc.).
-        deep:
-            When ``True``, include enriched data (doc comments, struct fields,
-            method details, imports).  When ``False``, return a slim format.
-
-        Returns
-        -------
-        dict
-            ``{filepath: file_entry}`` where each ``file_entry`` contains at
-            minimum ``"classes"``, ``"functions"``, and ``"language"``.
-        """
+        """Scan Go files and return an inventory dict."""
         self.last_error = None
         request = self._coerce_request(src_dir, only_files, deep)
         source_files = self._resolve_source_files(request)
