@@ -1,9 +1,11 @@
 """Tests for commands/lint_cmd.py"""
+
+import ast
 import hashlib
+import inspect
 import json
 import textwrap
 import types
-from pathlib import Path
 
 import pytest
 
@@ -18,6 +20,28 @@ from llm_wiki_cli.services import team
 def _make_args(**kwargs):
     """Create a simple namespace mimicking argparse output."""
     return types.SimpleNamespace(**kwargs)
+
+
+def _body_line_count(function) -> int:
+    source = textwrap.dedent(inspect.getsource(function))
+    function_node = ast.parse(source).body[0]
+    body = [
+        stmt
+        for stmt in function_node.body
+        if not (
+            isinstance(stmt, ast.Expr)
+            and isinstance(stmt.value, ast.Constant)
+            and isinstance(stmt.value.value, str)
+        )
+    ]
+    first_body_line = min(stmt.lineno for stmt in body)
+    last_body_line = max(stmt.end_lineno for stmt in body)
+    return last_body_line - first_body_line + 1
+
+
+class TestLintBuildReportStructure:
+    def test_build_report_stays_decomposed(self):
+        assert _body_line_count(lint_cmd.build_report) <= 45
 
 
 class TestLintCleanWiki:
@@ -64,7 +88,9 @@ class TestLintBrokenLink:
         out = capsys.readouterr().out
         assert "Broken link" in out
 
-    def test_ignores_anchors_and_mailto_and_validates_file_part(self, tmp_path, monkeypatch, capsys):
+    def test_ignores_anchors_and_mailto_and_validates_file_part(
+        self, tmp_path, monkeypatch, capsys
+    ):
         monkeypatch.chdir(tmp_path)
         wiki = tmp_path / "wiki"
         wiki.mkdir()
@@ -81,7 +107,9 @@ class TestLintBrokenLink:
         monkeypatch.setattr(
             lint_cmd,
             "get_inventory_result",
-            lambda *a, **k: InventoryResult({}, {"python": ExtractorStatus("python", "skipped", 0)}),
+            lambda *a, **k: InventoryResult(
+                {}, {"python": ExtractorStatus("python", "skipped", 0)}
+            ),
         )
         monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
 
@@ -89,7 +117,9 @@ class TestLintBrokenLink:
         out = capsys.readouterr().out
         assert "No broken links" in out
 
-    def test_workflow_broken_link_is_not_double_counted(self, tmp_path, monkeypatch, capsys):
+    def test_workflow_broken_link_is_not_double_counted(
+        self, tmp_path, monkeypatch, capsys
+    ):
         monkeypatch.chdir(tmp_path)
         wiki = tmp_path / "wiki"
         (wiki / "modules").mkdir(parents=True)
@@ -103,7 +133,9 @@ class TestLintBrokenLink:
         monkeypatch.setattr(
             lint_cmd,
             "get_inventory_result",
-            lambda *a, **k: InventoryResult({}, {"python": ExtractorStatus("python", "skipped", 0)}),
+            lambda *a, **k: InventoryResult(
+                {}, {"python": ExtractorStatus("python", "skipped", 0)}
+            ),
         )
         monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
 
@@ -184,7 +216,6 @@ class TestLintExitCode:
         (wiki / "log.md").write_text("# Log\n")
 
         args = _make_args(wiki_dir=str(wiki), src_dir=".")
-        import sys
         with pytest.raises(SystemExit) as exc_info:
             lint_cmd.run(args)
         assert exc_info.value.code == 1
@@ -211,7 +242,13 @@ class TestLintInventoryCaching:
         def fake_inventory(*args, **kwargs):
             calls["inventory"] += 1
             return InventoryResult(
-                {"a.py": {"language": "python", "classes": [{"name": "A"}], "functions": []}},
+                {
+                    "a.py": {
+                        "language": "python",
+                        "classes": [{"name": "A"}],
+                        "functions": [],
+                    }
+                },
                 {"python": ExtractorStatus("python", "ok", 1)},
             )
 
@@ -242,18 +279,20 @@ class TestLintInventoryCaching:
         )
         (wiki / "log.md").write_text("# Log\n", encoding="utf-8")
         (wiki / ".llm-wiki-manifest.json").write_text(
-            json.dumps({
-                "version": 2,
-                "sources": {
-                    "a.py": {
-                        "hash": f"sha256:{digest}",
-                        "language": "python",
-                        "entities": ["A"],
-                        "entity_pages": {"A": "A"},
-                        "module_page": "a",
-                    }
-                },
-            }),
+            json.dumps(
+                {
+                    "version": 2,
+                    "sources": {
+                        "a.py": {
+                            "hash": f"sha256:{digest}",
+                            "language": "python",
+                            "entities": ["A"],
+                            "entity_pages": {"A": "A"},
+                            "module_page": "a",
+                        }
+                    },
+                }
+            ),
             encoding="utf-8",
         )
 
@@ -262,7 +301,13 @@ class TestLintInventoryCaching:
         def fake_inventory(*args, **kwargs):
             calls["inventory"] += 1
             return InventoryResult(
-                {"a.py": {"language": "python", "classes": [{"name": "A"}], "functions": []}},
+                {
+                    "a.py": {
+                        "language": "python",
+                        "classes": [{"name": "A"}],
+                        "functions": [],
+                    }
+                },
                 {"python": ExtractorStatus("python", "ok", 1)},
             )
 
@@ -281,7 +326,9 @@ class TestLintInventoryCaching:
             (wiki / d).mkdir(parents=True)
         (wiki / "entities" / "A.md").write_text("# A\n", encoding="utf-8")
         (wiki / "modules" / "a.md").write_text("# a\n", encoding="utf-8")
-        (wiki / "infrastructure" / "Dockerfile.md").write_text("# Dockerfile\n", encoding="utf-8")
+        (wiki / "infrastructure" / "Dockerfile.md").write_text(
+            "# Dockerfile\n", encoding="utf-8"
+        )
         (wiki / "index.md").write_text(
             "# Index\n"
             "- [A](entities/A.md)\n"
@@ -296,7 +343,13 @@ class TestLintInventoryCaching:
             lint_cmd,
             "get_inventory_result",
             lambda *a, **k: InventoryResult(
-                {"a.py": {"language": "python", "classes": [{"name": "A"}], "functions": []}},
+                {
+                    "a.py": {
+                        "language": "python",
+                        "classes": [{"name": "A"}],
+                        "functions": [],
+                    }
+                },
                 {"python": ExtractorStatus("python", "ok", 1)},
             ),
         )
@@ -310,7 +363,9 @@ class TestLintInventoryCaching:
         monkeypatch.setattr(
             extract_cmd,
             "get_docker_inventory",
-            lambda *a, **k: pytest.fail("team check should reuse lint docker inventory"),
+            lambda *a, **k: pytest.fail(
+                "team check should reuse lint docker inventory"
+            ),
         )
 
         lint_cmd.build_report(wiki, ".", strict=False)
@@ -319,7 +374,9 @@ class TestLintInventoryCaching:
 
 
 class TestLintProfile:
-    def test_build_report_converts_extractor_failure_to_issue(self, tmp_path, monkeypatch):
+    def test_build_report_converts_extractor_failure_to_issue(
+        self, tmp_path, monkeypatch
+    ):
         monkeypatch.chdir(tmp_path)
         wiki = tmp_path / "wiki"
         wiki.mkdir()
@@ -342,13 +399,17 @@ class TestLintProfile:
         monkeypatch.setattr(
             lint_cmd,
             "get_docker_inventory",
-            lambda *a, **k: pytest.fail("docker inventory should not run after extractor failure"),
+            lambda *a, **k: pytest.fail(
+                "docker inventory should not run after extractor failure"
+            ),
         )
 
         report = lint_cmd.build_report(
             "wiki",
             ".",
-            cache_options=lint_cmd.InventoryCacheOptions(enabled=True, stats_enabled=True),
+            cache_options=lint_cmd.InventoryCacheOptions(
+                enabled=True, stats_enabled=True
+            ),
         )
 
         assert report.passed is False
@@ -376,7 +437,13 @@ class TestLintProfile:
             lint_cmd,
             "get_inventory_result",
             lambda *a, **k: InventoryResult(
-                {"a.py": {"language": "python", "classes": [{"name": "A"}], "functions": []}},
+                {
+                    "a.py": {
+                        "language": "python",
+                        "classes": [{"name": "A"}],
+                        "functions": [],
+                    }
+                },
                 {"python": ExtractorStatus("python", "ok", 1)},
             ),
         )
@@ -410,7 +477,9 @@ class TestLintProfile:
         monkeypatch.chdir(tmp_path)
         wiki = tmp_path / "wiki"
         wiki.mkdir()
-        (wiki / "index.md").write_text("# Index\n- [Ghost](missing.md)\n", encoding="utf-8")
+        (wiki / "index.md").write_text(
+            "# Index\n- [Ghost](missing.md)\n", encoding="utf-8"
+        )
         (wiki / "log.md").write_text("# Log\n", encoding="utf-8")
 
         monkeypatch.setattr(
@@ -432,7 +501,9 @@ class TestLintProfile:
         assert payload["issue_count"] == 1
         assert payload["issues"][0]["category"] == "broken_links"
 
-    def test_profile_outputs_json_on_extractor_failure(self, tmp_path, monkeypatch, capsys):
+    def test_profile_outputs_json_on_extractor_failure(
+        self, tmp_path, monkeypatch, capsys
+    ):
         monkeypatch.chdir(tmp_path)
         wiki = tmp_path / "wiki"
         wiki.mkdir()
@@ -443,22 +514,28 @@ class TestLintProfile:
             lambda *a, **k: InventoryResult(
                 {},
                 {"rust": ExtractorStatus("rust", "failed", 1, "helper missing")},
-                InventoryCacheStats(enabled=True, path="cache.json", status="miss", misses=1),
+                InventoryCacheStats(
+                    enabled=True, path="cache.json", status="miss", misses=1
+                ),
             ),
         )
         monkeypatch.setattr(
             lint_cmd,
             "get_docker_inventory",
-            lambda *a, **k: pytest.fail("docker inventory should not run after extractor failure"),
+            lambda *a, **k: pytest.fail(
+                "docker inventory should not run after extractor failure"
+            ),
         )
 
         with pytest.raises(SystemExit) as exc:
-            lint_cmd.run(_make_args(
-                wiki_dir="wiki",
-                src_dir=".",
-                profile=True,
-                cache_stats=True,
-            ))
+            lint_cmd.run(
+                _make_args(
+                    wiki_dir="wiki",
+                    src_dir=".",
+                    profile=True,
+                    cache_stats=True,
+                )
+            )
 
         assert exc.value.code == 1
         captured = capsys.readouterr()
@@ -469,10 +546,14 @@ class TestLintProfile:
         assert payload["issues"][0]["category"] == "extractor_failure"
         assert payload["issues"][0]["target"] == "rust"
         assert payload["profile"]["total_ms"] >= 0
-        assert {phase["name"] for phase in payload["profile"]["phases"]} >= {"inventory"}
+        assert {phase["name"] for phase in payload["profile"]["phases"]} >= {
+            "inventory"
+        }
         assert payload["cache"]["status"] == "miss"
 
-    def test_non_profile_extractor_failure_reports_stderr_only(self, tmp_path, monkeypatch, capsys):
+    def test_non_profile_extractor_failure_reports_stderr_only(
+        self, tmp_path, monkeypatch, capsys
+    ):
         monkeypatch.chdir(tmp_path)
         wiki = tmp_path / "wiki"
         wiki.mkdir()
@@ -488,7 +569,9 @@ class TestLintProfile:
         monkeypatch.setattr(
             lint_cmd,
             "get_docker_inventory",
-            lambda *a, **k: pytest.fail("docker inventory should not run after extractor failure"),
+            lambda *a, **k: pytest.fail(
+                "docker inventory should not run after extractor failure"
+            ),
         )
 
         with pytest.raises(SystemExit) as exc:
@@ -523,7 +606,9 @@ class TestLintProfile:
         with pytest.raises(json.JSONDecodeError):
             json.loads(out)
 
-    def test_profile_with_cache_stats_includes_cache_object(self, tmp_path, monkeypatch, capsys):
+    def test_profile_with_cache_stats_includes_cache_object(
+        self, tmp_path, monkeypatch, capsys
+    ):
         monkeypatch.chdir(tmp_path)
         wiki = tmp_path / "wiki"
         wiki.mkdir()
@@ -536,18 +621,24 @@ class TestLintProfile:
             lambda *a, **k: InventoryResult(
                 {},
                 {"python": ExtractorStatus("python", "skipped", 0)},
-                InventoryCacheStats(enabled=True, path="cache.json", status="hit", hits=3),
+                InventoryCacheStats(
+                    enabled=True, path="cache.json", status="hit", hits=3
+                ),
             ),
         )
         monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
 
-        lint_cmd.run(_make_args(wiki_dir="wiki", src_dir=".", profile=True, cache_stats=True))
+        lint_cmd.run(
+            _make_args(wiki_dir="wiki", src_dir=".", profile=True, cache_stats=True)
+        )
 
         payload = json.loads(capsys.readouterr().out)
         assert payload["cache"]["status"] == "hit"
         assert payload["cache"]["hits"] == 3
 
-    def test_cache_stats_adds_human_readable_section(self, tmp_path, monkeypatch, capsys):
+    def test_cache_stats_adds_human_readable_section(
+        self, tmp_path, monkeypatch, capsys
+    ):
         monkeypatch.chdir(tmp_path)
         wiki = tmp_path / "wiki"
         wiki.mkdir()
@@ -560,7 +651,9 @@ class TestLintProfile:
             lambda *a, **k: InventoryResult(
                 {},
                 {"python": ExtractorStatus("python", "skipped", 0)},
-                InventoryCacheStats(enabled=True, path="cache.json", status="partial", hits=1, misses=2),
+                InventoryCacheStats(
+                    enabled=True, path="cache.json", status="partial", hits=1, misses=2
+                ),
             ),
         )
         monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
@@ -591,7 +684,9 @@ class TestLintProfile:
         monkeypatch.setattr(lint_cmd, "get_inventory_result", fake_inventory)
         monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
 
-        lint_cmd.run(_make_args(wiki_dir="wiki", src_dir=".", no_cache=True, cache_stats=True))
+        lint_cmd.run(
+            _make_args(wiki_dir="wiki", src_dir=".", no_cache=True, cache_stats=True)
+        )
 
         assert seen["cache_options"].enabled is False
 
@@ -614,7 +709,11 @@ class TestLintProfile:
         monkeypatch.setattr(lint_cmd, "get_inventory_result", fake_inventory)
         monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
 
-        lint_cmd.run(_make_args(wiki_dir="wiki", src_dir=".", rebuild_cache=True, cache_stats=True))
+        lint_cmd.run(
+            _make_args(
+                wiki_dir="wiki", src_dir=".", rebuild_cache=True, cache_stats=True
+            )
+        )
 
         assert seen["cache_options"].rebuild is True
 
@@ -625,7 +724,9 @@ class TestLintProfile:
 
         def fake_build_report(wiki_dir, src_dir, **kwargs):
             seen["parallel_jobs"] = kwargs["parallel_jobs"]
-            return lint_cmd.LintReport(wiki_dir=str(wiki_dir), src_dir=src_dir, strict=kwargs["strict"])
+            return lint_cmd.LintReport(
+                wiki_dir=str(wiki_dir), src_dir=src_dir, strict=kwargs["strict"]
+            )
 
         monkeypatch.setattr(lint_cmd, "build_report", fake_build_report)
 
@@ -640,7 +741,9 @@ class TestLintProfile:
 
         def fake_build_report(wiki_dir, src_dir, **kwargs):
             seen["parallel_jobs"] = kwargs["parallel_jobs"]
-            return lint_cmd.LintReport(wiki_dir=str(wiki_dir), src_dir=src_dir, strict=kwargs["strict"])
+            return lint_cmd.LintReport(
+                wiki_dir=str(wiki_dir), src_dir=src_dir, strict=kwargs["strict"]
+            )
 
         monkeypatch.setattr(lint_cmd, "build_report", fake_build_report)
 
@@ -651,7 +754,9 @@ class TestLintProfile:
     def test_cli_lint_jobs_auto_resolves_positive_count(self, monkeypatch):
         seen = {}
         monkeypatch.setattr(cli.os, "cpu_count", lambda: 8)
-        monkeypatch.setattr(cli.lint_cmd, "run", lambda args: seen.setdefault("jobs", args.jobs))
+        monkeypatch.setattr(
+            cli.lint_cmd, "run", lambda args: seen.setdefault("jobs", args.jobs)
+        )
         monkeypatch.setattr("sys.argv", ["llm-wiki", "lint", "--jobs", "auto"])
 
         cli.main()
@@ -660,7 +765,9 @@ class TestLintProfile:
 
     @pytest.mark.parametrize("value", ["0", "-1", "many"])
     def test_cli_lint_rejects_invalid_jobs(self, value, monkeypatch):
-        monkeypatch.setattr(cli.lint_cmd, "run", lambda _args: pytest.fail("command should not run"))
+        monkeypatch.setattr(
+            cli.lint_cmd, "run", lambda _args: pytest.fail("command should not run")
+        )
         monkeypatch.setattr("sys.argv", ["llm-wiki", "lint", "--jobs", value])
 
         with pytest.raises(SystemExit) as exc:
@@ -689,7 +796,9 @@ class TestLintProfile:
 
         assert (tmp_path / ".git" / CACHE_FILENAME).exists()
 
-    def test_no_cache_does_not_save_default_git_cache(self, tmp_path, monkeypatch, capsys):
+    def test_no_cache_does_not_save_default_git_cache(
+        self, tmp_path, monkeypatch, capsys
+    ):
         monkeypatch.chdir(tmp_path)
         (tmp_path / ".git").mkdir()
         wiki = tmp_path / "wiki"
