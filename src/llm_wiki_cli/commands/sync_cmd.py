@@ -21,7 +21,12 @@ from datetime import date
 from pathlib import Path
 from typing import Optional
 
-from .extract_cmd import get_inventory_result, infer_language_from_path, print_inventory_failures
+from .extract_cmd import (
+    InventoryResult,
+    get_inventory_result,
+    infer_language_from_path,
+    print_inventory_failures,
+)
 from .bootstrap_cmd import (
     _build_relationships,
     _generate_entity_md,
@@ -981,7 +986,24 @@ def _removed_entity_page_name(
 # ── run ───────────────────────────────────────────────────────────────────────
 
 
-def run(args) -> None:
+@dataclass(frozen=True)
+class _SyncRunOptions:
+    src_dir: str
+    wiki_dir: Path
+    cache_options: InventoryCacheOptions
+    cache_stats_enabled: bool
+    parallel_jobs: int
+    force: bool
+    preserve_semantic: bool
+
+
+@dataclass(frozen=True)
+class _SyncPageMaps:
+    module_page_map: dict[str, str]
+    entity_page_cache: dict[tuple[str, str], str]
+
+
+def _sync_run_options_from_args(args) -> _SyncRunOptions:
     src_dir: str = getattr(args, "src_dir", ".")
     wiki_dir = Path(getattr(args, "wiki_dir", "docs/llm_wiki"))
     cache_options = _cache_options_from_args(args)
@@ -992,145 +1014,204 @@ def run(args) -> None:
     validate_path(src_dir, "--src-dir")
     validate_path(str(wiki_dir), "--wiki-dir")
 
-    # 1. Load manifest — seed one if the wiki exists but the manifest doesn't
-    #    (migration path for projects bootstrapped by older llm-wiki versions)
+    return _SyncRunOptions(
+        src_dir=src_dir,
+        wiki_dir=wiki_dir,
+        cache_options=cache_options,
+        cache_stats_enabled=cache_stats_enabled,
+        parallel_jobs=parallel_jobs,
+        force=force,
+        preserve_semantic=preserve_semantic,
+    )
+
+
+def _load_or_seed_manifest(options: _SyncRunOptions) -> Optional["SyncManifest"]:
     try:
-        manifest = SyncManifest.load(wiki_dir)
+        return SyncManifest.load(options.wiki_dir)
     except FileNotFoundError:
-        if (wiki_dir / "index.md").exists():
-            # Wiki was bootstrapped before manifests existed → seed baseline
-            print(
-                f"No sync manifest found — seeding from current source state.\n"
-                f"Existing wiki pages will NOT be modified.\n"
-                f"Future `llm-wiki sync` runs will update incrementally.\n"
-            )
-            print("Extracting current source inventory...")
-            inventory_result = get_inventory_result(
-                src_dir,
-                deep=True,
-                cache_options=cache_options,
-                parallel_jobs=parallel_jobs,
-            )
-            if inventory_result.failed:
-                print_inventory_failures(inventory_result)
-                sys.exit(1)
-            inventory = inventory_result.inventory
-            print(f"Extracted current source inventory: {len(inventory)} file(s).")
-            if not inventory:
-                print("No supported source files found; manifest not written.")
-                _print_cache_stats(inventory_result.cache_stats, enabled=cache_stats_enabled)
-                return
-            seed = _build_manifest_from_inventory(inventory, src_dir)
-            seed.save(wiki_dir)
-            print(f"Manifest written to {wiki_dir / MANIFEST_FILENAME}")
-            _print_cache_stats(inventory_result.cache_stats, enabled=cache_stats_enabled)
-            return
+        if (options.wiki_dir / "index.md").exists():
+            _seed_manifest_from_existing_wiki(options)
+            return None
         print(
-            f"Error: no sync manifest found at {wiki_dir / MANIFEST_FILENAME}.\n"
+            f"Error: no sync manifest found at {options.wiki_dir / MANIFEST_FILENAME}.\n"
             "Run `llm-wiki bootstrap` first to create the initial wiki and manifest.",
             file=sys.stderr,
         )
         sys.exit(1)
 
-    print(f"Syncing wiki from source: {src_dir}")
-    print(f"Wiki directory: {wiki_dir}")
 
-    # 2. Extract current AST inventory (always deep for full page content)
+def _seed_manifest_from_existing_wiki(options: _SyncRunOptions) -> None:
+    print(
+        f"No sync manifest found — seeding from current source state.\n"
+        f"Existing wiki pages will NOT be modified.\n"
+        f"Future `llm-wiki sync` runs will update incrementally.\n"
+    )
+    inventory_result = _extract_current_inventory(options)
+    inventory = inventory_result.inventory
+
+    if not inventory:
+        print("No supported source files found; manifest not written.")
+        _print_cache_stats(inventory_result.cache_stats, enabled=options.cache_stats_enabled)
+        return
+
+    seed = _build_manifest_from_inventory(inventory, options.src_dir)
+    seed.save(options.wiki_dir)
+    print(f"Manifest written to {options.wiki_dir / MANIFEST_FILENAME}")
+    _print_cache_stats(inventory_result.cache_stats, enabled=options.cache_stats_enabled)
+
+
+def _extract_current_inventory(options: _SyncRunOptions) -> InventoryResult:
     print("Extracting current source inventory...")
     inventory_result = get_inventory_result(
-        src_dir,
+        options.src_dir,
         deep=True,
-        cache_options=cache_options,
-        parallel_jobs=parallel_jobs,
+        cache_options=options.cache_options,
+        parallel_jobs=options.parallel_jobs,
     )
     if inventory_result.failed:
         print_inventory_failures(inventory_result)
         sys.exit(1)
-    inventory = inventory_result.inventory
-    print(f"Extracted current source inventory: {len(inventory)} file(s).")
+    print(f"Extracted current source inventory: {len(inventory_result.inventory)} file(s).")
+    return inventory_result
 
-    if not inventory and not manifest.sources:
-        print("No supported source files with classes or functions found.")
-        _print_cache_stats(inventory_result.cache_stats, enabled=cache_stats_enabled)
-        return
 
+def _finish_if_empty_inventory(
+    options: _SyncRunOptions,
+    manifest: "SyncManifest",
+    inventory_result: InventoryResult,
+) -> bool:
+    if inventory_result.inventory or manifest.sources:
+        return False
+    print("No supported source files with classes or functions found.")
+    _print_cache_stats(inventory_result.cache_stats, enabled=options.cache_stats_enabled)
+    return True
+
+
+def _repair_manifest_if_needed(
+    options: _SyncRunOptions,
+    manifest: "SyncManifest",
+    inventory: dict,
+    inventory_result: InventoryResult,
+) -> bool:
     invalid_hash_paths = _invalid_manifest_hash_paths(manifest)
-    if invalid_hash_paths:
-        repaired = _build_manifest_from_inventory(inventory, src_dir)
-        repaired.save(wiki_dir)
-        print(
-            f"Sync manifest repaired: {len(invalid_hash_paths)} source entr"
-            f"{'y has' if len(invalid_hash_paths) == 1 else 'ies have'} invalid or missing hashes."
-        )
-        print("Wiki pages were not modified. Run `llm-wiki sync` again to apply source changes.")
-        _print_cache_stats(inventory_result.cache_stats, enabled=cache_stats_enabled)
-        return
+    if not invalid_hash_paths:
+        return False
 
+    repaired = _build_manifest_from_inventory(inventory, options.src_dir)
+    repaired.save(options.wiki_dir)
+    print(
+        f"Sync manifest repaired: {len(invalid_hash_paths)} source entr"
+        f"{'y has' if len(invalid_hash_paths) == 1 else 'ies have'} invalid or missing hashes."
+    )
+    print("Wiki pages were not modified. Run `llm-wiki sync` again to apply source changes.")
+    _print_cache_stats(inventory_result.cache_stats, enabled=options.cache_stats_enabled)
+    return True
+
+
+def _prepare_sync_page_maps(inventory: dict) -> _SyncPageMaps:
     print("Preparing sync page maps...", flush=True)
-    module_page_map = build_module_page_map(inventory)
-    entity_page_cache = build_entity_page_map(inventory)
+    page_maps = _SyncPageMaps(
+        module_page_map=build_module_page_map(inventory),
+        entity_page_cache=build_entity_page_map(inventory),
+    )
     print("Prepared sync page maps.", flush=True)
+    return page_maps
 
-    # 3. Compute diff
-    diff = _compute_diff(
+
+def _compute_sync_diff(
+    manifest: "SyncManifest",
+    inventory: dict,
+    options: _SyncRunOptions,
+    page_maps: _SyncPageMaps,
+) -> "SyncDiff":
+    return _compute_diff(
         manifest,
         inventory,
-        src_dir,
-        entity_page_cache=entity_page_cache,
-        module_page_map=module_page_map,
+        options.src_dir,
+        entity_page_cache=page_maps.entity_page_cache,
+        module_page_map=page_maps.module_page_map,
     )
 
-    if not diff.has_changes:
-        print("Wiki is up to date.")
-        _print_cache_stats(inventory_result.cache_stats, enabled=cache_stats_enabled)
+
+def _finish_if_no_changes(
+    options: _SyncRunOptions,
+    diff: "SyncDiff",
+    inventory_result: InventoryResult,
+) -> bool:
+    if diff.has_changes:
+        return False
+    print("Wiki is up to date.")
+    _print_cache_stats(inventory_result.cache_stats, enabled=options.cache_stats_enabled)
+    return True
+
+
+def _exit_if_large_unforced_diff(
+    options: _SyncRunOptions,
+    diff: "SyncDiff",
+    manifest: "SyncManifest",
+    inventory_result: InventoryResult,
+) -> None:
+    large_diff_message = _large_diff_message(diff, manifest)
+    if not large_diff_message or options.force:
         return
 
-    large_diff_message = _large_diff_message(diff, manifest)
-    if large_diff_message and not force:
-        print(f"Error: {large_diff_message}", file=sys.stderr)
-        print(
-            "This sync is broad enough to risk unintended wiki churn. "
-            "Re-run with `llm-wiki sync --force` if this update is intentional.",
-            file=sys.stderr,
-        )
-        _print_cache_stats(inventory_result.cache_stats, enabled=cache_stats_enabled)
-        sys.exit(1)
+    print(f"Error: {large_diff_message}", file=sys.stderr)
+    print(
+        "This sync is broad enough to risk unintended wiki churn. "
+        "Re-run with `llm-wiki sync --force` if this update is intentional.",
+        file=sys.stderr,
+    )
+    _print_cache_stats(inventory_result.cache_stats, enabled=options.cache_stats_enabled)
+    sys.exit(1)
 
-    # 4. Apply changes
+
+def _apply_sync_changes(
+    options: _SyncRunOptions,
+    manifest: "SyncManifest",
+    inventory: dict,
+    diff: "SyncDiff",
+    page_maps: _SyncPageMaps,
+) -> "SyncResult":
     result = _apply_diff(
         diff,
-        wiki_dir,
+        options.wiki_dir,
         inventory,
-        src_dir,
+        options.src_dir,
         manifest,
-        entity_page_cache=entity_page_cache,
-        module_page_map=module_page_map,
-        preserve_semantic=preserve_semantic,
+        entity_page_cache=page_maps.entity_page_cache,
+        module_page_map=page_maps.module_page_map,
+        preserve_semantic=options.preserve_semantic,
     )
 
-    # 5. Rebuild index.md
     _rebuild_index(
-        wiki_dir,
+        options.wiki_dir,
         inventory,
-        src_dir,
-        entity_page_cache=entity_page_cache,
-        module_page_map=module_page_map,
+        options.src_dir,
+        entity_page_cache=page_maps.entity_page_cache,
+        module_page_map=page_maps.module_page_map,
     )
 
-    # 6. Append log entry
-    _append_log(wiki_dir, src_dir, diff, result)
+    _append_log(options.wiki_dir, options.src_dir, diff, result)
+    return result
 
-    # 7. Compute collision maps + module page map for manifest, then save
+
+def _write_updated_manifest(
+    options: _SyncRunOptions,
+    inventory: dict,
+    page_maps: _SyncPageMaps,
+) -> None:
     print("Writing sync manifest...", flush=True)
     updated_manifest = _build_manifest_from_inventory(
         inventory,
-        src_dir,
-        entity_page_cache=entity_page_cache,
-        module_page_map=module_page_map,
+        options.src_dir,
+        entity_page_cache=page_maps.entity_page_cache,
+        module_page_map=page_maps.module_page_map,
     )
-    updated_manifest.save(wiki_dir)
-    print(f"Manifest written to {wiki_dir / MANIFEST_FILENAME}", flush=True)
+    updated_manifest.save(options.wiki_dir)
+    print(f"Manifest written to {options.wiki_dir / MANIFEST_FILENAME}", flush=True)
 
+
+def _print_sync_summary(result: "SyncResult", diff: "SyncDiff") -> None:
     print(
         f"\nSync complete: {result.created} created, {result.updated} updated, "
         f"{result.metadata_only} metadata-only, {result.skipped} skipped, "
@@ -1141,7 +1222,38 @@ def run(args) -> None:
     if diff.moved_entities:
         names = ", ".join(diff.moved_entities.keys())
         print(f"Moved entities detected (pages updated in-place): {names}")
-    _print_cache_stats(inventory_result.cache_stats, enabled=cache_stats_enabled)
+
+
+def run(args) -> None:
+    options = _sync_run_options_from_args(args)
+    manifest = _load_or_seed_manifest(options)
+    if manifest is None:
+        return
+
+    print(f"Syncing wiki from source: {options.src_dir}")
+    print(f"Wiki directory: {options.wiki_dir}")
+
+    inventory_result = _extract_current_inventory(options)
+    inventory = inventory_result.inventory
+
+    if _finish_if_empty_inventory(options, manifest, inventory_result):
+        return
+
+    if _repair_manifest_if_needed(options, manifest, inventory, inventory_result):
+        return
+
+    page_maps = _prepare_sync_page_maps(inventory)
+    diff = _compute_sync_diff(manifest, inventory, options, page_maps)
+
+    if _finish_if_no_changes(options, diff, inventory_result):
+        return
+
+    _exit_if_large_unforced_diff(options, diff, manifest, inventory_result)
+
+    result = _apply_sync_changes(options, manifest, inventory, diff, page_maps)
+    _write_updated_manifest(options, inventory, page_maps)
+    _print_sync_summary(result, diff)
+    _print_cache_stats(inventory_result.cache_stats, enabled=options.cache_stats_enabled)
 
 
 # ── Index + log helpers ───────────────────────────────────────────────────────
