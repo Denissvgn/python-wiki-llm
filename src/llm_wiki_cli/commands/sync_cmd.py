@@ -33,13 +33,16 @@ from .bootstrap_cmd import (
     _generate_index_md,
     _generate_module_md,
     _module_name_from_path,
-    _page_name_for_entity,
     _page_name_for_module,
     build_entity_page_map,
     build_module_page_map,
 )
 from ..config import validate_path
-from ..services.inventory_cache import InventoryCacheOptions, InventoryCacheStats, format_cache_stats
+from ..services.inventory_cache import (
+    InventoryCacheOptions,
+    InventoryCacheStats,
+    format_cache_stats,
+)
 from ..services.io import read_md, write_md
 
 # ── Constants ─────────────────────────────────────────────────────────────────
@@ -164,18 +167,14 @@ def _generated_semantics_for_file(filepath: str, file_data: dict) -> dict:
                 for cls in file_data.get("classes", [])
             },
             "functions": {
-                fn["name"]: _first_doc_line(fn)
-                for fn in file_data.get("functions", [])
+                fn["name"]: _first_doc_line(fn) for fn in file_data.get("functions", [])
             },
         },
         "entities": {
             cls["name"]: {
                 "description": cls.get("docstring", "")
                 or f"_Auto-generated from `{cls['name']}` in `{filepath}`._",
-                "attributes": {
-                    attr["name"]: "—"
-                    for attr in cls.get("attributes", [])
-                },
+                "attributes": {attr["name"]: "—" for attr in cls.get("attributes", [])},
                 "methods": {
                     method["name"]: _first_doc_line(method)
                     for method in cls.get("methods", [])
@@ -448,6 +447,7 @@ def _merge_module_semantics(
         },
     )
 
+
 # ── Manifest ──────────────────────────────────────────────────────────────────
 
 
@@ -531,14 +531,19 @@ class SyncManifest:
             sources[filepath] = {
                 "hash": _hash_file(Path(src_dir) / filepath),
                 "semantic_hash": _semantic_hash_for_file(file_data),
-                "generated_semantics": _generated_semantics_for_file(filepath, file_data),
-                "language": file_data.get("language") or infer_language_from_path(filepath),
+                "generated_semantics": _generated_semantics_for_file(
+                    filepath, file_data
+                ),
+                "language": file_data.get("language")
+                or infer_language_from_path(filepath),
                 "entities": [c["name"] for c in file_data.get("classes", [])],
                 "entity_pages": {
                     c["name"]: entity_page_cache.get((c["name"], filepath), c["name"])
                     for c in file_data.get("classes", [])
                 },
-                "module_page": module_page_map.get(filepath, _module_name_from_path(filepath)),
+                "module_page": module_page_map.get(
+                    filepath, _module_name_from_path(filepath)
+                ),
             }
         return cls(sources=sources)
 
@@ -574,7 +579,9 @@ class SyncDiff:
     # {class_name: (old_filepath, new_filepath)}
     moved_entities: dict[str, tuple[str, str]] = field(default_factory=dict)
     # {(class_name, filepath): (old_page_name, new_page_name)}
-    renamed_entity_pages: dict[tuple[str, str], tuple[str, str]] = field(default_factory=dict)
+    renamed_entity_pages: dict[tuple[str, str], tuple[str, str]] = field(
+        default_factory=dict
+    )
     # {filepath: (old_page_name, new_page_name)}
     renamed_module_pages: dict[str, tuple[str, str]] = field(default_factory=dict)
 
@@ -678,7 +685,9 @@ def _compute_diff(
             current_hash = _hash_file(Path(src_dir) / filepath)
             if current_hash != manifest.sources[filepath].get("hash", ""):
                 current_semantic_hash = _semantic_hash_for_file(file_data)
-                if current_semantic_hash == manifest.sources[filepath].get("semantic_hash"):
+                if current_semantic_hash == manifest.sources[filepath].get(
+                    "semantic_hash"
+                ):
                     diff.metadata_only_files.append(filepath)
                 else:
                     diff.changed_files.append(filepath)
@@ -699,7 +708,9 @@ def _compute_diff(
         old_info = manifest.sources.get(filepath)
         if not old_info:
             continue
-        old_module_page = str(old_info.get("module_page") or _module_name_from_path(filepath))
+        old_module_page = str(
+            old_info.get("module_page") or _module_name_from_path(filepath)
+        )
         new_module_page = module_page_map.get(filepath, _page_name_for_module(filepath))
         if old_module_page != new_module_page:
             diff.renamed_module_pages[filepath] = (old_module_page, new_module_page)
@@ -745,25 +756,21 @@ def _collision_maps(
     return set(), set(), entity_page_cache
 
 
-def _apply_diff(
-    diff: SyncDiff,
-    wiki_dir: Path,
-    inventory: dict,
-    src_dir: str,
-    manifest: SyncManifest,
-    *,
-    entity_page_cache: dict[tuple[str, str], str] | None = None,
-    module_page_map: dict[str, str] | None = None,
-    preserve_semantic: bool = True,
-) -> SyncResult:
-    """Regenerate pages for new/changed files, deprecate pages for removed files."""
-    result = SyncResult()
+@dataclass(frozen=True)
+class _ApplyDiffContext:
+    wiki_dir: Path
+    inventory: dict
+    manifest: SyncManifest
+    entity_page_cache: dict[tuple[str, str], str]
+    module_page_map: dict[str, str]
+    relationships: dict
+    metadata_only_files: set[str]
+    current_entity_pages: set[str]
+    current_module_pages: set[str]
+    preserve_semantic: bool
 
-    if entity_page_cache is None:
-        _, _, entity_page_cache = _collision_maps(inventory, src_dir)
-    if module_page_map is None:
-        module_page_map = build_module_page_map(inventory)
 
+def _target_entities_for_diff(diff: SyncDiff, inventory: dict) -> set[tuple[str, str]]:
     target_entities = {
         (cls["name"], filepath)
         for filepath in diff.new_files + diff.changed_files + diff.metadata_only_files
@@ -778,140 +785,287 @@ def _apply_diff(
         if filepath in inventory:
             for cls in inventory[filepath].get("classes", []):
                 target_entities.add((cls["name"], filepath))
+    return target_entities
 
-    if target_entities:
-        print(f"Building relationships for {len(target_entities)} affected entity target(s)...", flush=True)
-    relationships = (
-        _build_relationships(inventory, module_page_map, target_entities=target_entities)
-        if target_entities
-        else {}
+
+def _relationships_for_targets(
+    inventory: dict,
+    module_page_map: dict[str, str],
+    target_entities: set[tuple[str, str]],
+) -> dict:
+    if not target_entities:
+        return {}
+    print(
+        f"Building relationships for {len(target_entities)} affected entity target(s)...",
+        flush=True,
     )
-    if target_entities:
-        print(f"Built affected relationships: {sum(len(v) for v in relationships.values())}.", flush=True)
+    relationships = _build_relationships(
+        inventory,
+        module_page_map,
+        target_entities=target_entities,
+    )
+    print(
+        f"Built affected relationships: {sum(len(v) for v in relationships.values())}.",
+        flush=True,
+    )
+    return relationships
 
-    refresh_files = list(dict.fromkeys(
-        diff.new_files
-        + diff.changed_files
-        + diff.metadata_only_files
-        + [filepath for _, filepath in diff.renamed_entity_pages]
-        + list(diff.renamed_module_pages)
-    ))
-    metadata_only_files = set(diff.metadata_only_files)
-    current_entity_pages = set(entity_page_cache.values())
-    current_module_pages = set(module_page_map.values())
 
-    # ── New + changed + renamed files ──────────────────────────────────────────
-    print("Applying wiki page changes...", flush=True)
-    for filepath in refresh_files:
-        file_data = inventory[filepath]
-        mod_page_name = module_page_map.get(filepath, _page_name_for_module(filepath))
-        old_generated_semantics = manifest.sources.get(filepath, {}).get("generated_semantics", {})
+def _refresh_files_for_diff(diff: SyncDiff) -> list[str]:
+    return list(
+        dict.fromkeys(
+            diff.new_files
+            + diff.changed_files
+            + diff.metadata_only_files
+            + [filepath for _, filepath in diff.renamed_entity_pages]
+            + list(diff.renamed_module_pages)
+        )
+    )
 
-        file_entity_page_map = {
-            cls["name"]: entity_page_cache[(cls["name"], filepath)]
-            for cls in file_data.get("classes", [])
-        }
 
-        # Entity pages
-        for cls in file_data.get("classes", []):
-            entity_page_name = file_entity_page_map[cls["name"]]
-            entity_path = wiki_dir / "entities" / f"{entity_page_name}.md"
-            rename = diff.renamed_entity_pages.get((cls["name"], filepath))
-            if rename:
-                old_page_name, new_page_name = rename
-                old_entity_path = wiki_dir / "entities" / f"{old_page_name}.md"
-                new_entity_path = wiki_dir / "entities" / f"{new_page_name}.md"
-                if old_entity_path != new_entity_path and old_entity_path.exists():
-                    if not new_entity_path.exists():
-                        old_entity_path.replace(new_entity_path)
-                        print(f"  RENAME entity: {old_page_name} -> {new_page_name}")
-                    elif old_page_name not in current_entity_pages:
-                        old_entity_path.unlink()
-                        print(f"  REMOVE stale entity page: {old_page_name}")
-            generated = _generate_entity_md(cls, filepath, relationships, mod_page_name)
-            merge_result = SemanticMergeResult(generated)
-            if preserve_semantic and entity_path.exists():
-                old_entity_semantics = (
-                    old_generated_semantics.get("entities", {}).get(cls["name"])
-                    if isinstance(old_generated_semantics, dict)
-                    else None
-                )
-                merge_result = _merge_entity_semantics(
-                    read_md(entity_path),
-                    generated,
-                    old_entity_semantics,
-                )
-                result.preserved_semantic += merge_result.preserved
-            content = merge_result.text
-            write_state = _write_md_if_changed(entity_path, content)
-            if write_state == "created":
-                result.created += 1
-                print(f"  CREATE entity: {entity_page_name}")
-            elif write_state == "updated":
-                if filepath in metadata_only_files:
-                    result.metadata_only += 1
-                    print(f"  METADATA entity: {entity_page_name}")
-                else:
-                    result.updated += 1
-                    print(f"  UPDATE entity: {entity_page_name}")
-            else:
-                result.skipped += 1
-                print(f"  SKIP entity (unchanged): {entity_page_name}")
+def _file_entity_page_map(
+    filepath: str,
+    file_data: dict,
+    entity_page_cache: dict[tuple[str, str], str],
+) -> dict[str, str]:
+    return {
+        cls["name"]: entity_page_cache[(cls["name"], filepath)]
+        for cls in file_data.get("classes", [])
+    }
 
-        # Module page
-        module_path = wiki_dir / "modules" / f"{mod_page_name}.md"
-        module_rename = diff.renamed_module_pages.get(filepath)
-        if module_rename:
-            old_page_name, new_page_name = module_rename
-            old_module_path = wiki_dir / "modules" / f"{old_page_name}.md"
-            new_module_path = wiki_dir / "modules" / f"{new_page_name}.md"
-            if old_module_path != new_module_path and old_module_path.exists():
-                if not new_module_path.exists():
-                    old_module_path.replace(new_module_path)
-                    print(f"  RENAME module: {old_page_name} -> {new_page_name}")
-                elif old_page_name not in current_module_pages:
-                    old_module_path.unlink()
-                    print(f"  REMOVE stale module page: {old_page_name}")
-        generated = _generate_module_md(filepath, file_data, file_entity_page_map)
-        merge_result = SemanticMergeResult(generated)
-        if preserve_semantic and module_path.exists():
-            old_module_semantics = (
-                old_generated_semantics.get("module")
-                if isinstance(old_generated_semantics, dict)
-                else None
-            )
-            merge_result = _merge_module_semantics(
-                read_md(module_path),
-                generated,
-                old_module_semantics,
-            )
-            result.preserved_semantic += merge_result.preserved
-        content = merge_result.text
-        write_state = _write_md_if_changed(module_path, content)
-        if write_state == "created":
-            result.created += 1
-            print(f"  CREATE module: {mod_page_name}")
-        elif write_state == "updated":
-            if filepath in metadata_only_files:
-                result.metadata_only += 1
-                print(f"  METADATA module: {mod_page_name}")
-            else:
-                result.updated += 1
-                print(f"  UPDATE module: {mod_page_name}")
+
+def _move_renamed_entity_page(
+    wiki_dir: Path,
+    rename: tuple[str, str] | None,
+    current_entity_pages: set[str],
+) -> None:
+    if not rename:
+        return
+    old_page_name, new_page_name = rename
+    old_entity_path = wiki_dir / "entities" / f"{old_page_name}.md"
+    new_entity_path = wiki_dir / "entities" / f"{new_page_name}.md"
+    if old_entity_path == new_entity_path or not old_entity_path.exists():
+        return
+    if not new_entity_path.exists():
+        old_entity_path.replace(new_entity_path)
+        print(f"  RENAME entity: {old_page_name} -> {new_page_name}")
+    elif old_page_name not in current_entity_pages:
+        old_entity_path.unlink()
+        print(f"  REMOVE stale entity page: {old_page_name}")
+
+
+def _move_renamed_module_page(
+    wiki_dir: Path,
+    rename: tuple[str, str] | None,
+    current_module_pages: set[str],
+) -> None:
+    if not rename:
+        return
+    old_page_name, new_page_name = rename
+    old_module_path = wiki_dir / "modules" / f"{old_page_name}.md"
+    new_module_path = wiki_dir / "modules" / f"{new_page_name}.md"
+    if old_module_path == new_module_path or not old_module_path.exists():
+        return
+    if not new_module_path.exists():
+        old_module_path.replace(new_module_path)
+        print(f"  RENAME module: {old_page_name} -> {new_page_name}")
+    elif old_page_name not in current_module_pages:
+        old_module_path.unlink()
+        print(f"  REMOVE stale module page: {old_page_name}")
+
+
+def _record_page_write(
+    result: SyncResult,
+    page_kind: str,
+    page_name: str,
+    write_state: str,
+    *,
+    metadata_only: bool,
+) -> None:
+    if write_state == "created":
+        result.created += 1
+        print(f"  CREATE {page_kind}: {page_name}")
+    elif write_state == "updated":
+        if metadata_only:
+            result.metadata_only += 1
+            print(f"  METADATA {page_kind}: {page_name}")
         else:
-            result.skipped += 1
-            print(f"  SKIP module (unchanged): {mod_page_name}")
+            result.updated += 1
+            print(f"  UPDATE {page_kind}: {page_name}")
+    else:
+        result.skipped += 1
+        print(f"  SKIP {page_kind} (unchanged): {page_name}")
 
-    # ── Unchanged files ────────────────────────────────────────────────────────
+
+def _merge_entity_page(
+    ctx: _ApplyDiffContext,
+    entity_path: Path,
+    generated: str,
+    old_generated_semantics: dict,
+    cls_name: str,
+    result: SyncResult,
+) -> SemanticMergeResult:
+    merge_result = SemanticMergeResult(generated)
+    if ctx.preserve_semantic and entity_path.exists():
+        old_entity_semantics = (
+            old_generated_semantics.get("entities", {}).get(cls_name)
+            if isinstance(old_generated_semantics, dict)
+            else None
+        )
+        merge_result = _merge_entity_semantics(
+            read_md(entity_path),
+            generated,
+            old_entity_semantics,
+        )
+        result.preserved_semantic += merge_result.preserved
+    return merge_result
+
+
+def _merge_module_page(
+    ctx: _ApplyDiffContext,
+    module_path: Path,
+    generated: str,
+    old_generated_semantics: dict,
+    result: SyncResult,
+) -> SemanticMergeResult:
+    merge_result = SemanticMergeResult(generated)
+    if ctx.preserve_semantic and module_path.exists():
+        old_module_semantics = (
+            old_generated_semantics.get("module")
+            if isinstance(old_generated_semantics, dict)
+            else None
+        )
+        merge_result = _merge_module_semantics(
+            read_md(module_path),
+            generated,
+            old_module_semantics,
+        )
+        result.preserved_semantic += merge_result.preserved
+    return merge_result
+
+
+def _apply_entity_page(
+    ctx: _ApplyDiffContext,
+    diff: SyncDiff,
+    result: SyncResult,
+    filepath: str,
+    cls: dict,
+    mod_page_name: str,
+    old_generated_semantics: dict,
+    file_entity_page_map: dict[str, str],
+) -> None:
+    entity_page_name = file_entity_page_map[cls["name"]]
+    entity_path = ctx.wiki_dir / "entities" / f"{entity_page_name}.md"
+    rename = diff.renamed_entity_pages.get((cls["name"], filepath))
+    _move_renamed_entity_page(ctx.wiki_dir, rename, ctx.current_entity_pages)
+
+    generated = _generate_entity_md(cls, filepath, ctx.relationships, mod_page_name)
+    merge_result = _merge_entity_page(
+        ctx,
+        entity_path,
+        generated,
+        old_generated_semantics,
+        cls["name"],
+        result,
+    )
+    write_state = _write_md_if_changed(entity_path, merge_result.text)
+    _record_page_write(
+        result,
+        "entity",
+        entity_page_name,
+        write_state,
+        metadata_only=filepath in ctx.metadata_only_files,
+    )
+
+
+def _apply_module_page(
+    ctx: _ApplyDiffContext,
+    diff: SyncDiff,
+    result: SyncResult,
+    filepath: str,
+    file_data: dict,
+    mod_page_name: str,
+    old_generated_semantics: dict,
+    file_entity_page_map: dict[str, str],
+) -> None:
+    module_path = ctx.wiki_dir / "modules" / f"{mod_page_name}.md"
+    _move_renamed_module_page(
+        ctx.wiki_dir,
+        diff.renamed_module_pages.get(filepath),
+        ctx.current_module_pages,
+    )
+
+    generated = _generate_module_md(filepath, file_data, file_entity_page_map)
+    merge_result = _merge_module_page(
+        ctx, module_path, generated, old_generated_semantics, result
+    )
+    write_state = _write_md_if_changed(module_path, merge_result.text)
+    _record_page_write(
+        result,
+        "module",
+        mod_page_name,
+        write_state,
+        metadata_only=filepath in ctx.metadata_only_files,
+    )
+
+
+def _apply_refreshed_file_pages(
+    ctx: _ApplyDiffContext,
+    diff: SyncDiff,
+    result: SyncResult,
+    refresh_files: list[str],
+) -> None:
+    for filepath in refresh_files:
+        file_data = ctx.inventory[filepath]
+        mod_page_name = ctx.module_page_map.get(
+            filepath, _page_name_for_module(filepath)
+        )
+        old_generated_semantics = ctx.manifest.sources.get(filepath, {}).get(
+            "generated_semantics", {}
+        )
+        file_entity_page_map = _file_entity_page_map(
+            filepath, file_data, ctx.entity_page_cache
+        )
+
+        for cls in file_data.get("classes", []):
+            _apply_entity_page(
+                ctx,
+                diff,
+                result,
+                filepath,
+                cls,
+                mod_page_name,
+                old_generated_semantics,
+                file_entity_page_map,
+            )
+        _apply_module_page(
+            ctx,
+            diff,
+            result,
+            filepath,
+            file_data,
+            mod_page_name,
+            old_generated_semantics,
+            file_entity_page_map,
+        )
+
+
+def _record_unchanged_file_skips(
+    ctx: _ApplyDiffContext,
+    diff: SyncDiff,
+    result: SyncResult,
+    refresh_files: list[str],
+) -> None:
     refresh_file_set = set(refresh_files)
     unchanged_files = [
-        filepath for filepath in diff.unchanged_files
+        filepath
+        for filepath in diff.unchanged_files
         if filepath not in refresh_file_set
     ]
     unchanged_pages = sum(
-        1 + len(inventory[filepath].get("classes", []))
+        1 + len(ctx.inventory[filepath].get("classes", []))
         for filepath in unchanged_files
-        if filepath in inventory
+        if filepath in ctx.inventory
     )
     result.skipped += unchanged_pages
     if unchanged_files:
@@ -920,35 +1074,106 @@ def _apply_diff(
             f"file(s), {unchanged_pages} generated page(s)"
         )
 
-    # ── Removed files ──────────────────────────────────────────────────────────
+
+def _deprecate_existing_page(
+    path: Path,
+    result: SyncResult,
+    page_kind: str,
+    page_name: str,
+) -> None:
+    if not path.exists():
+        return
+    text = read_md(path)
+    if _DEPRECATION_HEADER in text:
+        return
+    write_state = _write_md_if_changed(path, _DEPRECATION_HEADER + text)
+    if write_state != "unchanged":
+        result.deprecated += 1
+        print(f"  DEPRECATE {page_kind}: {page_name}")
+
+
+def _deprecate_removed_entities(
+    wiki_dir: Path,
+    filepath: str,
+    old_info: dict,
+    result: SyncResult,
+) -> None:
+    for cls_name in old_info.get("entities", []):
+        entity_page_name = _removed_entity_page_name(
+            wiki_dir, cls_name, filepath, old_info
+        )
+        if entity_page_name:
+            entity_path = wiki_dir / "entities" / f"{entity_page_name}.md"
+            _deprecate_existing_page(entity_path, result, "entity", entity_page_name)
+
+
+def _deprecate_removed_module(
+    wiki_dir: Path,
+    filepath: str,
+    old_info: dict,
+    result: SyncResult,
+) -> None:
+    old_mod_page = old_info.get("module_page", _module_name_from_path(filepath))
+    mod_page_path = wiki_dir / "modules" / f"{old_mod_page}.md"
+    _deprecate_existing_page(mod_page_path, result, "module", mod_page_path.stem)
+
+
+def _deprecate_removed_files(
+    ctx: _ApplyDiffContext,
+    diff: SyncDiff,
+    result: SyncResult,
+) -> None:
     for filepath in diff.removed_files:
-        old_info = manifest.sources[filepath]
-        deprecated_count = 0
+        old_info = ctx.manifest.sources[filepath]
+        _deprecate_removed_entities(ctx.wiki_dir, filepath, old_info, result)
+        _deprecate_removed_module(ctx.wiki_dir, filepath, old_info, result)
 
-        for cls_name in old_info.get("entities", []):
-            entity_page_name = _removed_entity_page_name(wiki_dir, cls_name, filepath, old_info)
 
-            if entity_page_name:
-                entity_path = wiki_dir / "entities" / f"{entity_page_name}.md"
-                text = read_md(entity_path)
-                if _DEPRECATION_HEADER not in text:
-                    write_state = _write_md_if_changed(entity_path, _DEPRECATION_HEADER + text)
-                    if write_state != "unchanged":
-                        deprecated_count += 1
-                        result.deprecated += 1
-                        print(f"  DEPRECATE entity: {entity_page_name}")
+def _apply_diff(
+    diff: SyncDiff,
+    wiki_dir: Path,
+    inventory: dict,
+    src_dir: str,
+    manifest: SyncManifest,
+    *,
+    entity_page_cache: dict[tuple[str, str], str] | None = None,
+    module_page_map: dict[str, str] | None = None,
+    preserve_semantic: bool = True,
+) -> SyncResult:
+    """Regenerate pages for new/changed files, deprecate pages for removed files."""
+    if entity_page_cache is None:
+        _, _, entity_page_cache = _collision_maps(inventory, src_dir)
+    if module_page_map is None:
+        module_page_map = build_module_page_map(inventory)
 
-        # Module page deprecation
-        old_mod_page = old_info.get("module_page", _module_name_from_path(filepath))
-        mod_page_path = wiki_dir / "modules" / f"{old_mod_page}.md"
+    target_entities = _target_entities_for_diff(diff, inventory)
+    relationships = _relationships_for_targets(
+        inventory, module_page_map, target_entities
+    )
+    refresh_files = _refresh_files_for_diff(diff)
+    result = SyncResult()
+    ctx = _ApplyDiffContext(
+        wiki_dir=wiki_dir,
+        inventory=inventory,
+        manifest=manifest,
+        entity_page_cache=entity_page_cache,
+        module_page_map=module_page_map,
+        relationships=relationships,
+        metadata_only_files=set(diff.metadata_only_files),
+        current_entity_pages=set(entity_page_cache.values()),
+        current_module_pages=set(module_page_map.values()),
+        preserve_semantic=preserve_semantic,
+    )
 
-        if mod_page_path.exists():
-            text = read_md(mod_page_path)
-            if _DEPRECATION_HEADER not in text:
-                write_state = _write_md_if_changed(mod_page_path, _DEPRECATION_HEADER + text)
-                if write_state != "unchanged":
-                    result.deprecated += 1
-                    print(f"  DEPRECATE module: {mod_page_path.stem}")
+    # ── New + changed + renamed files ──────────────────────────────────────────
+    print("Applying wiki page changes...", flush=True)
+    _apply_refreshed_file_pages(ctx, diff, result, refresh_files)
+
+    # ── Unchanged files ────────────────────────────────────────────────────────
+    _record_unchanged_file_skips(ctx, diff, result, refresh_files)
+
+    # ── Removed files ──────────────────────────────────────────────────────────
+    _deprecate_removed_files(ctx, diff, result)
 
     print("Applied wiki page changes.", flush=True)
     return result
@@ -1042,22 +1267,26 @@ def _load_or_seed_manifest(options: _SyncRunOptions) -> Optional["SyncManifest"]
 
 def _seed_manifest_from_existing_wiki(options: _SyncRunOptions) -> None:
     print(
-        f"No sync manifest found — seeding from current source state.\n"
-        f"Existing wiki pages will NOT be modified.\n"
-        f"Future `llm-wiki sync` runs will update incrementally.\n"
+        "No sync manifest found — seeding from current source state.\n"
+        "Existing wiki pages will NOT be modified.\n"
+        "Future `llm-wiki sync` runs will update incrementally.\n"
     )
     inventory_result = _extract_current_inventory(options)
     inventory = inventory_result.inventory
 
     if not inventory:
         print("No supported source files found; manifest not written.")
-        _print_cache_stats(inventory_result.cache_stats, enabled=options.cache_stats_enabled)
+        _print_cache_stats(
+            inventory_result.cache_stats, enabled=options.cache_stats_enabled
+        )
         return
 
     seed = _build_manifest_from_inventory(inventory, options.src_dir)
     seed.save(options.wiki_dir)
     print(f"Manifest written to {options.wiki_dir / MANIFEST_FILENAME}")
-    _print_cache_stats(inventory_result.cache_stats, enabled=options.cache_stats_enabled)
+    _print_cache_stats(
+        inventory_result.cache_stats, enabled=options.cache_stats_enabled
+    )
 
 
 def _extract_current_inventory(options: _SyncRunOptions) -> InventoryResult:
@@ -1071,7 +1300,9 @@ def _extract_current_inventory(options: _SyncRunOptions) -> InventoryResult:
     if inventory_result.failed:
         print_inventory_failures(inventory_result)
         sys.exit(1)
-    print(f"Extracted current source inventory: {len(inventory_result.inventory)} file(s).")
+    print(
+        f"Extracted current source inventory: {len(inventory_result.inventory)} file(s)."
+    )
     return inventory_result
 
 
@@ -1083,7 +1314,9 @@ def _finish_if_empty_inventory(
     if inventory_result.inventory or manifest.sources:
         return False
     print("No supported source files with classes or functions found.")
-    _print_cache_stats(inventory_result.cache_stats, enabled=options.cache_stats_enabled)
+    _print_cache_stats(
+        inventory_result.cache_stats, enabled=options.cache_stats_enabled
+    )
     return True
 
 
@@ -1103,8 +1336,12 @@ def _repair_manifest_if_needed(
         f"Sync manifest repaired: {len(invalid_hash_paths)} source entr"
         f"{'y has' if len(invalid_hash_paths) == 1 else 'ies have'} invalid or missing hashes."
     )
-    print("Wiki pages were not modified. Run `llm-wiki sync` again to apply source changes.")
-    _print_cache_stats(inventory_result.cache_stats, enabled=options.cache_stats_enabled)
+    print(
+        "Wiki pages were not modified. Run `llm-wiki sync` again to apply source changes."
+    )
+    _print_cache_stats(
+        inventory_result.cache_stats, enabled=options.cache_stats_enabled
+    )
     return True
 
 
@@ -1141,7 +1378,9 @@ def _finish_if_no_changes(
     if diff.has_changes:
         return False
     print("Wiki is up to date.")
-    _print_cache_stats(inventory_result.cache_stats, enabled=options.cache_stats_enabled)
+    _print_cache_stats(
+        inventory_result.cache_stats, enabled=options.cache_stats_enabled
+    )
     return True
 
 
@@ -1161,7 +1400,9 @@ def _exit_if_large_unforced_diff(
         "Re-run with `llm-wiki sync --force` if this update is intentional.",
         file=sys.stderr,
     )
-    _print_cache_stats(inventory_result.cache_stats, enabled=options.cache_stats_enabled)
+    _print_cache_stats(
+        inventory_result.cache_stats, enabled=options.cache_stats_enabled
+    )
     sys.exit(1)
 
 
@@ -1253,7 +1494,9 @@ def run(args) -> None:
     result = _apply_sync_changes(options, manifest, inventory, diff, page_maps)
     _write_updated_manifest(options, inventory, page_maps)
     _print_sync_summary(result, diff)
-    _print_cache_stats(inventory_result.cache_stats, enabled=options.cache_stats_enabled)
+    _print_cache_stats(
+        inventory_result.cache_stats, enabled=options.cache_stats_enabled
+    )
 
 
 # ── Index + log helpers ───────────────────────────────────────────────────────
@@ -1278,11 +1521,13 @@ def _rebuild_index(
 
     for filepath, file_data in inventory.items():
         mod_page_name = mod_page_map.get(filepath, _page_name_for_module(filepath))
-        module_entries.append({
-            "name": mod_page_name,
-            "path": filepath,
-            "docstring": file_data.get("module_docstring", ""),
-        })
+        module_entries.append(
+            {
+                "name": mod_page_name,
+                "path": filepath,
+                "docstring": file_data.get("module_docstring", ""),
+            }
+        )
         for cls in file_data.get("classes", []):
             page_name = entity_page_cache[(cls["name"], filepath)]
             if page_name not in seen:
@@ -1296,7 +1541,12 @@ def _rebuild_index(
     index_path = wiki_dir / "index.md"
     write_state = _write_md_if_changed(
         index_path,
-        _generate_index_md(all_entity_names, module_entries, workflow_entries or None, infra_entries or None),
+        _generate_index_md(
+            all_entity_names,
+            module_entries,
+            workflow_entries or None,
+            infra_entries or None,
+        ),
     )
     if write_state == "unchanged":
         print("  SKIP index.md (unchanged)")
@@ -1311,7 +1561,9 @@ def _list_existing_pages(directory: Path, extra_key: str) -> list[dict]:
     return [{"name": p.stem, extra_key: ""} for p in sorted(directory.glob("*.md"))]
 
 
-def _append_log(wiki_dir: Path, src_dir: str, diff: SyncDiff, result: SyncResult) -> None:
+def _append_log(
+    wiki_dir: Path, src_dir: str, diff: SyncDiff, result: SyncResult
+) -> None:
     log_path = wiki_dir / "log.md"
     today = date.today().isoformat()
     moved_str = (
@@ -1338,5 +1590,7 @@ def _append_log(wiki_dir: Path, src_dir: str, diff: SyncDiff, result: SyncResult
         existing_log = read_md(log_path)
         write_md(log_path, existing_log + entry)
     else:
-        write_md(log_path, "# Architectural Log\n\nAppend-only chronological log.\n" + entry)
+        write_md(
+            log_path, "# Architectural Log\n\nAppend-only chronological log.\n" + entry
+        )
     print("  APPEND log.md")
