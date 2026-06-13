@@ -28,6 +28,28 @@ def _body_line_count(function) -> int:
 
 
 class TestGetInventory:
+    def test_get_inventory_result_uses_request_object(self):
+        signature = inspect.signature(extract_cmd.get_inventory_result)
+
+        assert len(signature.parameters) <= 3
+        assert not {
+            "deep",
+            "only_files",
+            "include_empty",
+            "source_snapshot",
+            "cache_options",
+            "parallel_jobs",
+        } & set(signature.parameters)
+
+    def test_get_inventory_result_accepts_request_object(self, tmp_path):
+        (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
+
+        result = extract_cmd.get_inventory_result(
+            extract_cmd.InventoryRequest(src_dir=str(tmp_path), deep=True)
+        )
+
+        assert sorted(result.inventory) == ["app.py"]
+
     def test_empty_dir(self, tmp_path):
         inventory = get_inventory(str(tmp_path))
         assert inventory == {}
