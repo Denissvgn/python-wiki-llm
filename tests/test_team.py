@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import ast
+import inspect
 import json
 import textwrap
 import types
@@ -88,6 +90,15 @@ class TestTeamConfig:
 
 
 class TestTeamLintAndCheck:
+    def test_check_team_conventions_uses_request_object(self):
+        source = textwrap.dedent(inspect.getsource(team.check_team_conventions))
+        function_node = ast.parse(source).body[0]
+
+        assert [arg.arg for arg in function_node.args.args] == ["request"]
+        assert function_node.args.kwonlyargs == []
+        assert function_node.args.vararg is None
+        assert function_node.args.kwarg is None
+
     def test_lint_includes_team_convention_issues(self, tmp_project):
         _bootstrap()
         team.write_default_team_config("docs/llm_wiki")
