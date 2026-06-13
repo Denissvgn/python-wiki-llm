@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import inspect
 import shutil
 import subprocess
 import textwrap
@@ -612,6 +613,16 @@ class TestGoExtractorWithoutPreparedHelper:
 
 
 class TestGoExtractorWrapper:
+    def test_extract_signature_stays_protocol_sized(self):
+        signature = inspect.signature(GoExtractor.extract)
+        public_parameters = [
+            param.name
+            for param in signature.parameters.values()
+            if param.name != "self"
+        ]
+
+        assert public_parameters == ["src_dir", "only_files", "deep"]
+
     def test_windows_style_inventory_keys_are_normalized(self, tmp_path):
         _make_go(tmp_path, "pkg/client.go", "package pkg\n\ntype Client struct{}\n")
         result = subprocess.CompletedProcess(
