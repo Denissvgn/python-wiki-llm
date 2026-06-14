@@ -33,7 +33,10 @@ def test_write_private_text_uses_requested_encoding(tmp_path, monkeypatch):
 
 
 def test_write_private_text_ignores_chmod_oserror(tmp_path, monkeypatch):
-    def fail_chmod(_path, _mode):
+    chmod_calls = []
+
+    def fail_chmod(path, mode):
+        chmod_calls.append((Path(path), mode))
         raise OSError("chmod unsupported")
 
     monkeypatch.setattr(secure_file.os, "chmod", fail_chmod)
@@ -44,3 +47,4 @@ def test_write_private_text_ignores_chmod_oserror(tmp_path, monkeypatch):
 
     assert result == path
     assert path.read_text(encoding="utf-8") == "prompt"
+    assert chmod_calls == [(path, 0o600)]
