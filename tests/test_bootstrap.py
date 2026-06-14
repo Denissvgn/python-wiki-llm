@@ -1,4 +1,7 @@
 """Tests for commands/bootstrap_cmd.py"""
+
+import ast
+import inspect
 import json
 import os
 import shutil
@@ -30,38 +33,72 @@ def _make_args(**kwargs):
     return types.SimpleNamespace(**defaults)
 
 
+def _body_line_count(function) -> int:
+    source = textwrap.dedent(inspect.getsource(function))
+    function_node = ast.parse(source).body[0]
+    body = [
+        stmt
+        for stmt in function_node.body
+        if not (
+            isinstance(stmt, ast.Expr)
+            and isinstance(stmt.value, ast.Constant)
+            and isinstance(stmt.value.value, str)
+        )
+    ]
+    first_body_line = min(stmt.lineno for stmt in body)
+    last_body_line = max(stmt.end_lineno for stmt in body)
+    return last_body_line - first_body_line + 1
+
+
+def test_bootstrap_run_stays_a_short_coordinator():
+    assert _body_line_count(bootstrap_cmd.run) <= 40
+
+
 @pytest.fixture
 def tmp_collision_project(tmp_path):
     """Project with the same class/module name in two different service directories."""
     proj = tmp_path / "project"
     proj.mkdir()
 
-    import subprocess
     if _GIT_AVAILABLE:
         subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
-        subprocess.run(["git", "-C", str(proj), "config", "user.email", "t@t.com"], capture_output=True, check=True)
-        subprocess.run(["git", "-C", str(proj), "config", "user.name", "T"], capture_output=True, check=True)
+        subprocess.run(
+            ["git", "-C", str(proj), "config", "user.email", "t@t.com"],
+            capture_output=True,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(proj), "config", "user.name", "T"],
+            capture_output=True,
+            check=True,
+        )
     else:
         (proj / ".git").mkdir(exist_ok=True)
 
-    (proj / "pyproject.toml").write_text('[project]\nname = "sample"\nversion = "0.1.0"\n')
+    (proj / "pyproject.toml").write_text(
+        '[project]\nname = "sample"\nversion = "0.1.0"\n'
+    )
 
     # Two services each with a config.py that defines a Config class
     svc_a = proj / "services" / "auth-service" / "src"
     svc_a.mkdir(parents=True)
-    (svc_a / "config.py").write_text(textwrap.dedent("""\
+    (svc_a / "config.py").write_text(
+        textwrap.dedent("""\
         class Config:
             \"\"\"Auth service config.\"\"\"
             secret: str = "s3cr3t"
-    """))
+    """)
+    )
 
     svc_b = proj / "services" / "order-service" / "src"
     svc_b.mkdir(parents=True)
-    (svc_b / "config.py").write_text(textwrap.dedent("""\
+    (svc_b / "config.py").write_text(
+        textwrap.dedent("""\
         class Config:
             \"\"\"Order service config.\"\"\"
             db_url: str = "sqlite://"
-    """))
+    """)
+    )
 
     old_cwd = os.getcwd()
     os.chdir(proj)
@@ -72,7 +109,9 @@ def tmp_collision_project(tmp_path):
 class TestBootstrapCollisions:
     def test_bootstrap_json_summary_is_parseable_stdout(self, tmp_project, capsys):
         wiki_dir = tmp_project / "docs" / "llm_wiki"
-        args = _make_args(src_dir=".", wiki_dir=str(wiki_dir), format="json", source_adapter=True)
+        args = _make_args(
+            src_dir=".", wiki_dir=str(wiki_dir), format="json", source_adapter=True
+        )
 
         bootstrap_cmd.run(args)
 
@@ -144,7 +183,7 @@ class TestBootstrapCollisions:
         bootstrap_cmd.run(args)
 
         lines = (wiki_dir / "index.md").read_text(encoding="utf-8").splitlines()
-        link_lines = [l for l in lines if l.startswith("- [")]
+        link_lines = [line for line in lines if line.startswith("- [")]
         seen = set()
         for line in link_lines:
             assert line not in seen, f"Duplicate index entry: {line}"
@@ -160,27 +199,44 @@ class TestBootstrapCollisions:
         assert (wiki_dir / "modules" / "models.md").exists()
 
     def test_same_directory_multilanguage_stem_collision_gets_extension_suffixes(
-        self, tmp_path, monkeypatch, capsys,
+        self,
+        tmp_path,
+        monkeypatch,
+        capsys,
     ):
         from llm_wiki_cli.commands import lint_cmd
 
         inventory = {
             "foo.py": {
                 "language": "python",
-                "classes": [{
-                    "name": "Thing", "bases": [], "line": 1, "docstring": "",
-                    "decorators": [], "attributes": [], "methods": [],
-                }],
+                "classes": [
+                    {
+                        "name": "Thing",
+                        "bases": [],
+                        "line": 1,
+                        "docstring": "",
+                        "decorators": [],
+                        "attributes": [],
+                        "methods": [],
+                    }
+                ],
                 "functions": [],
                 "imports": [],
                 "module_docstring": "",
             },
             "foo.ts": {
                 "language": "typescript",
-                "classes": [{
-                    "name": "Thing", "bases": [], "line": 1, "docstring": "",
-                    "decorators": [], "attributes": [], "methods": [],
-                }],
+                "classes": [
+                    {
+                        "name": "Thing",
+                        "bases": [],
+                        "line": 1,
+                        "docstring": "",
+                        "decorators": [],
+                        "attributes": [],
+                        "methods": [],
+                    }
+                ],
                 "functions": [],
                 "imports": [],
                 "module_docstring": "",
@@ -193,7 +249,9 @@ class TestBootstrapCollisions:
                 "typescript": ExtractorStatus("typescript", "ok", 1),
             },
         )
-        monkeypatch.setattr(bootstrap_cmd, "get_inventory_result", lambda *a, **k: result)
+        monkeypatch.setattr(
+            bootstrap_cmd, "get_inventory_result", lambda *a, **k: result
+        )
         monkeypatch.setattr(bootstrap_cmd, "get_docker_inventory", lambda *a, **k: {})
         monkeypatch.setattr(lint_cmd, "get_inventory_result", lambda *a, **k: result)
         monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
@@ -209,7 +267,9 @@ class TestBootstrapCollisions:
 
         lint_cmd.run(types.SimpleNamespace(src_dir=".", wiki_dir="docs/llm_wiki"))
 
-    def test_relationship_collision_resolves_by_import_module(self, tmp_path, monkeypatch):
+    def test_relationship_collision_resolves_by_import_module(
+        self, tmp_path, monkeypatch
+    ):
         proj = tmp_path / "project"
         proj.mkdir()
         (proj / "pkg_a").mkdir()
@@ -226,14 +286,20 @@ class TestBootstrapCollisions:
         wiki_dir = proj / "docs" / "llm_wiki"
         bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir=str(wiki_dir)))
 
-        a_page = (wiki_dir / "entities" / "pkg_a_models_User.md").read_text(encoding="utf-8")
-        b_page = (wiki_dir / "entities" / "pkg_b_models_User.md").read_text(encoding="utf-8")
+        a_page = (wiki_dir / "entities" / "pkg_a_models_User.md").read_text(
+            encoding="utf-8"
+        )
+        b_page = (wiki_dir / "entities" / "pkg_b_models_User.md").read_text(
+            encoding="utf-8"
+        )
         assert "**used_by**" in a_page
         assert "../modules/consumer.md" in a_page
         assert "**used_by**" not in b_page
         assert "**imported_by**" not in b_page
 
-    def test_relationship_resolves_current_package_relative_import(self, tmp_path, monkeypatch):
+    def test_relationship_resolves_current_package_relative_import(
+        self, tmp_path, monkeypatch
+    ):
         proj = tmp_path / "project"
         proj.mkdir()
         (proj / "pkg").mkdir()
@@ -252,7 +318,9 @@ class TestBootstrapCollisions:
         assert "**used_by**" in page
         assert "../modules/service.md" in page
 
-    def test_relationship_resolves_parent_package_relative_import(self, tmp_path, monkeypatch):
+    def test_relationship_resolves_parent_package_relative_import(
+        self, tmp_path, monkeypatch
+    ):
         proj = tmp_path / "project"
         proj.mkdir()
         (proj / "pkg" / "sub").mkdir(parents=True)
@@ -293,7 +361,9 @@ class TestBootstrapCollisions:
             assert "**used_by**" not in content
             assert "**imported_by**" not in content
 
-    def test_workflow_links_use_collision_aware_module_pages(self, tmp_path, monkeypatch, capsys):
+    def test_workflow_links_use_collision_aware_module_pages(
+        self, tmp_path, monkeypatch, capsys
+    ):
         from llm_wiki_cli.commands import lint_cmd
 
         proj = tmp_path / "project"
@@ -303,21 +373,29 @@ class TestBootstrapCollisions:
         (proj / "routers").mkdir()
         (proj / "models" / "task.py").write_text("class Task:\n    pass\n")
         (proj / "schemas" / "task.py").write_text("class TaskCreate:\n    pass\n")
-        (proj / "schemas" / "common.py").write_text("class MessageResponse:\n    pass\n")
-        (proj / "routers" / "tasks.py").write_text(textwrap.dedent("""\
+        (proj / "schemas" / "common.py").write_text(
+            "class MessageResponse:\n    pass\n"
+        )
+        (proj / "routers" / "tasks.py").write_text(
+            textwrap.dedent("""\
             from models.task import Task
             from schemas.task import TaskCreate as CreateSchema
             from schemas.common import MessageResponse
 
             def create_task(task: Task, data: CreateSchema) -> MessageResponse:
                 return MessageResponse()
-        """))
+        """)
+        )
 
         monkeypatch.chdir(proj)
         wiki_dir = proj / "docs" / "llm_wiki"
-        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir=str(wiki_dir), skip_workflows=False))
+        bootstrap_cmd.run(
+            _make_args(src_dir=".", wiki_dir=str(wiki_dir), skip_workflows=False)
+        )
 
-        workflow = (wiki_dir / "workflows" / "create_task.md").read_text(encoding="utf-8")
+        workflow = (wiki_dir / "workflows" / "create_task.md").read_text(
+            encoding="utf-8"
+        )
         assert "../modules/task.md" not in workflow
         assert "../modules/models_task.md" in workflow
         assert "../modules/schemas_task.md" in workflow
@@ -442,11 +520,15 @@ class TestBootstrapUpdatesAgentConstraints:
         init_cmd.run(types.SimpleNamespace(agent="claude", wiki_dir="docs/llm_wiki"))
         wiki_dir = tmp_project / "adapter_wiki"
 
-        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir=str(wiki_dir), source_adapter=True))
+        bootstrap_cmd.run(
+            _make_args(src_dir=".", wiki_dir=str(wiki_dir), source_adapter=True)
+        )
 
         content = Path("CLAUDE.md").read_text(encoding="utf-8")
         start = content.index("# --- LLM Wiki Maintainer Constraints ---")
-        end = content.index("# --- End LLM Wiki Constraints ---") + len("# --- End LLM Wiki Constraints ---")
+        end = content.index("# --- End LLM Wiki Constraints ---") + len(
+            "# --- End LLM Wiki Constraints ---"
+        )
         block = content[start:end]
         assert "docs/llm_wiki" in block
         assert str(wiki_dir) not in block
@@ -466,7 +548,9 @@ class TestBootstrapUpdatesAgentConstraints:
         content = Path("CLAUDE.md").read_text(encoding="utf-8")
         # Verify the constraint block was updated (preamble outside the block is unchanged)
         start = content.index("# --- LLM Wiki Maintainer Constraints ---")
-        end = content.index("# --- End LLM Wiki Constraints ---") + len("# --- End LLM Wiki Constraints ---")
+        end = content.index("# --- End LLM Wiki Constraints ---") + len(
+            "# --- End LLM Wiki Constraints ---"
+        )
         block = content[start:end]
         assert str(wiki_dir) in block
         assert "docs/llm_wiki" not in block
@@ -503,7 +587,9 @@ class TestBootstrapCreatesManifest:
         args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
         bootstrap_cmd.run(args)
 
-        data = json.loads((wiki_dir / ".llm-wiki-manifest.json").read_text(encoding="utf-8"))
+        data = json.loads(
+            (wiki_dir / ".llm-wiki-manifest.json").read_text(encoding="utf-8")
+        )
         assert "sources" in data
         assert len(data["sources"]) > 0
         # Every source entry should have a hash and entities list
@@ -521,28 +607,35 @@ class TestBootstrapCreatesManifest:
         bootstrap_cmd.run(args)
 
         sync_args = types.SimpleNamespace(
-            src_dir=".", wiki_dir=str(wiki_dir),
+            src_dir=".",
+            wiki_dir=str(wiki_dir),
         )
         # Should not raise SystemExit
         sync_cmd.run(sync_args)
 
 
 class TestBootstrapExternalSource:
-    def test_allows_external_src_with_explicit_flag(self, tmp_path, monkeypatch, capsys):
+    def test_allows_external_src_with_explicit_flag(
+        self, tmp_path, monkeypatch, capsys
+    ):
         workspace = tmp_path / "workspace"
         source = tmp_path / "source"
         workspace.mkdir()
         source.mkdir()
-        (source / "app.py").write_text("class ExternalApp:\n    pass\n", encoding="utf-8")
+        (source / "app.py").write_text(
+            "class ExternalApp:\n    pass\n", encoding="utf-8"
+        )
 
         monkeypatch.chdir(workspace)
-        bootstrap_cmd.run(_make_args(
-            src_dir=str(source),
-            wiki_dir="docs/llm_wiki",
-            format="json",
-            source_adapter=True,
-            allow_external_src=True,
-        ))
+        bootstrap_cmd.run(
+            _make_args(
+                src_dir=str(source),
+                wiki_dir="docs/llm_wiki",
+                format="json",
+                source_adapter=True,
+                allow_external_src=True,
+            )
+        )
 
         data = json.loads(capsys.readouterr().out)
         assert data["src_dir"] == str(source)

@@ -2,19 +2,34 @@ from __future__ import annotations
 
 import json
 import shlex
-import subprocess
 import sys
 from collections import defaultdict
 from collections.abc import Mapping
+from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
+from typing import Any, TextIO
 
-from .extract_cmd import get_call_graph, get_docker_inventory, get_inventory_result, print_inventory_failures
-from ..config import validate_path, validate_source_root
+from .extract_cmd import (
+    get_call_graph,
+    get_docker_inventory,
+    get_inventory_result,
+    print_inventory_failures,
+)
+from ..config import (
+    DEFAULT_WIKI_DIR as _DEFAULT_WIKI_DIR,
+    validate_path,
+    validate_source_root,
+)
 from ..services.contracts import BOOTSTRAP_SUMMARY_SCHEMA_VERSION
 from ..services.imports import ModulePathResolver, build_module_path_resolver
 from ..services.io import read_md, write_md
 from ..services.paths import normalize_source_path
+from ..services.schema import (
+    ALL_SCHEMA_FILES as _AGENT_SCHEMA_FILES,
+    CONSTRAINT_END as _CONSTRAINT_END,
+    CONSTRAINT_START as _CONSTRAINT_START,
+)
 from ..services.source_snapshot import build_source_snapshot
 
 
@@ -167,7 +182,9 @@ def _build_relationships(
             if not entity_name or entity_name not in entity_to_files:
                 continue
             candidates = set(entity_to_files[entity_name])
-            module_candidates = module_resolver.candidates(imp.get("module", ""), filepath)
+            module_candidates = module_resolver.candidates(
+                imp.get("module", ""), filepath
+            )
             if module_candidates:
                 candidates &= module_candidates
             candidates.discard(filepath)
@@ -195,23 +212,27 @@ def _build_relationships(
                         mentions_entity = True
 
                 if mentions_entity:
-                    relationships[entity_key].append({
-                        "module": mod_name,
-                        "module_page": mod_page,
-                        "module_path": filepath,
-                        "function": fn["name"],
-                        "rel": "used_by",
-                    })
+                    relationships[entity_key].append(
+                        {
+                            "module": mod_name,
+                            "module_page": mod_page,
+                            "module_path": filepath,
+                            "function": fn["name"],
+                            "rel": "used_by",
+                        }
+                    )
 
             # If imported but not found in any specific function, still note the import
             if not any(r["module_path"] == filepath for r in relationships[entity_key]):
-                relationships[entity_key].append({
-                    "module": mod_name,
-                    "module_page": mod_page,
-                    "module_path": filepath,
-                    "function": None,
-                    "rel": "imported_by",
-                })
+                relationships[entity_key].append(
+                    {
+                        "module": mod_name,
+                        "module_page": mod_page,
+                        "module_path": filepath,
+                        "function": None,
+                        "rel": "imported_by",
+                    }
+                )
 
     return dict(relationships)
 
@@ -234,7 +255,12 @@ def _format_signature(fn: dict) -> str:
     return sig
 
 
-def _generate_entity_md(class_info: dict, filepath: str, relationships: dict, mod_page_name: str | None = None) -> str:
+def _generate_entity_md(
+    class_info: dict,
+    filepath: str,
+    relationships: dict,
+    mod_page_name: str | None = None,
+) -> str:
     """Generate comprehensive markdown for a class entity."""
     name = class_info["name"]
     bases = class_info.get("bases", [])
@@ -243,7 +269,9 @@ def _generate_entity_md(class_info: dict, filepath: str, relationships: dict, mo
     decorators = class_info.get("decorators", [])
     attributes = class_info.get("attributes", [])
     methods = class_info.get("methods", [])
-    mod_name = mod_page_name if mod_page_name is not None else _module_name_from_path(filepath)
+    mod_name = (
+        mod_page_name if mod_page_name is not None else _module_name_from_path(filepath)
+    )
 
     bases_str = ", ".join(f"`{b}`" for b in bases) if bases else "—"
 
@@ -277,7 +305,9 @@ def _generate_entity_md(class_info: dict, filepath: str, relationships: dict, mo
         lines.append("|------|------|---------|-------------|")
         for attr in attributes:
             default = f"`{attr['default']}`" if attr.get("default") else "*required*"
-            lines.append(f"| `{attr['name']}` | `{attr.get('type', '—')}` | {default} | — |")
+            lines.append(
+                f"| `{attr['name']}` | `{attr.get('type', '—')}` | {default} | — |"
+            )
     else:
         lines.append("*No annotated attributes found.*")
     lines.append("")
@@ -317,7 +347,9 @@ def _generate_entity_md(class_info: dict, filepath: str, relationships: dict, mo
     return "\n".join(lines)
 
 
-def _generate_module_md(filepath: str, file_data: dict, entity_page_map: dict | None = None) -> str:
+def _generate_module_md(
+    filepath: str, file_data: dict, entity_page_map: dict | None = None
+) -> str:
     """Generate comprehensive markdown for a module page."""
     mod_name = _module_name_from_path(filepath)
     classes = file_data.get("classes", [])
@@ -387,7 +419,12 @@ def _generate_module_md(filepath: str, file_data: dict, entity_page_map: dict | 
     return "\n".join(lines)
 
 
-def _generate_index_md(entity_names: list[str], module_entries: list[dict], workflow_entries: list[dict] | None = None, infra_entries: list[dict] | None = None) -> str:
+def _generate_index_md(
+    entity_names: list[str],
+    module_entries: list[dict],
+    workflow_entries: list[dict] | None = None,
+    infra_entries: list[dict] | None = None,
+) -> str:
     """Generate the full index.md content."""
     lines = [
         "# LLM Wiki Index",
@@ -417,7 +454,9 @@ def _generate_index_md(entity_names: list[str], module_entries: list[dict], work
     if workflow_entries:
         for wf in sorted(workflow_entries, key=lambda w: w["name"]):
             entry_point = wf.get("entry", "")
-            lines.append(f"- [{wf['name']}](workflows/{wf['name']}.md) - entry: `{entry_point}`")
+            lines.append(
+                f"- [{wf['name']}](workflows/{wf['name']}.md) - entry: `{entry_point}`"
+            )
         lines.append("")
 
     lines.append("## Infrastructure")
@@ -427,7 +466,9 @@ def _generate_index_md(entity_names: list[str], module_entries: list[dict], work
         for entry in sorted(infra_entries, key=lambda e: e["name"]):
             desc = entry.get("type", "")
             suffix = f" - {desc}" if desc else ""
-            lines.append(f"- [{entry['name']}](infrastructure/{entry['name']}.md){suffix}")
+            lines.append(
+                f"- [{entry['name']}](infrastructure/{entry['name']}.md){suffix}"
+            )
         lines.append("")
 
     return "\n".join(lines)
@@ -475,7 +516,9 @@ def _generate_workflow_md(
 
     lines.append("## Sequence")
     lines.append("")
-    lines.append("<!-- Auto-detected call chain. Refine order and conditions after review. -->")
+    lines.append(
+        "<!-- Auto-detected call chain. Refine order and conditions after review. -->"
+    )
     if chain:
         for i, step in enumerate(chain, 1):
             lines.append(f"{i}. `{step}`")
@@ -500,7 +543,9 @@ def _normalize_source_path(path: str) -> str:
     return normalize_source_path(path) or ""
 
 
-def _coerce_module_links(module_links: Mapping[str, str] | set[str] | None) -> dict[str, str]:
+def _coerce_module_links(
+    module_links: Mapping[str, str] | set[str] | None,
+) -> dict[str, str]:
     """Return ``{source_path: module_page_stem}`` for Docker COPY linking.
 
     ``set[str]`` is accepted for backward compatibility with older tests that
@@ -628,6 +673,16 @@ def _dockerfile_base_images(stages: list[dict]) -> list[str]:
     return [s["image"] for s in stages] if stages else ["unknown"]
 
 
+def _dockerfile_header_lines(filename: str, stages: list[dict]) -> list[str]:
+    return [
+        f"# {filename}",
+        "",
+        f"**Path:** `{filename}`",
+        f"**Base Image(s):** {', '.join(f'`{img}`' for img in _dockerfile_base_images(stages))}",
+        "",
+    ]
+
+
 def _append_dockerfile_build_stages(lines: list[str], stages: list[dict]) -> None:
     if not (len(stages) > 1 or (stages and stages[0].get("alias"))):
         return
@@ -642,7 +697,9 @@ def _append_dockerfile_build_stages(lines: list[str], stages: list[dict]) -> Non
     lines.append("")
 
 
-def _append_dockerfile_list_section(lines: list[str], title: str, values: list[str]) -> None:
+def _append_dockerfile_list_section(
+    lines: list[str], title: str, values: list[str]
+) -> None:
     if not values:
         return
 
@@ -709,7 +766,9 @@ def _append_dockerfile_copies(
     for copy_info in copies:
         stage = f"`{copy_info['from_stage']}`" if copy_info.get("from_stage") else "—"
         src_text = _format_copy_source_links(copy_info["src"], filename, module_links)
-        lines.append(f"| `{copy_info['instruction']}` | {src_text} | `{copy_info['dest']}` | {stage} |")
+        lines.append(
+            f"| `{copy_info['instruction']}` | {src_text} | `{copy_info['dest']}` | {stage} |"
+        )
     lines.append("")
 
 
@@ -734,31 +793,35 @@ def _append_dockerfile_healthcheck(lines: list[str], healthcheck: str) -> None:
     lines.append("")
 
 
-def _generate_dockerfile_md(filename: str, info: dict, module_links: Mapping[str, str] | set[str] | None = None) -> str:
+def _generate_dockerfile_md(
+    filename: str, info: dict, module_links: Mapping[str, str] | set[str] | None = None
+) -> str:
     """Generate markdown for a Dockerfile."""
     stages = info.get("stages", [])
-    lines = [
-        f"# {filename}",
-        "",
-        f"**Path:** `{filename}`",
-        f"**Base Image(s):** {', '.join(f'`{img}`' for img in _dockerfile_base_images(stages))}",
-        "",
-    ]
+    lines = _dockerfile_header_lines(filename, stages)
 
     _append_dockerfile_build_stages(lines, stages)
     _append_dockerfile_list_section(lines, "Exposed Ports", info.get("ports", []))
-    _append_dockerfile_default_table(lines, "Build Arguments", "Argument", info.get("build_args", []))
-    _append_dockerfile_default_table(lines, "Environment Variables", "Variable", info.get("env_vars", []))
+    _append_dockerfile_default_table(
+        lines, "Build Arguments", "Argument", info.get("build_args", [])
+    )
+    _append_dockerfile_default_table(
+        lines, "Environment Variables", "Variable", info.get("env_vars", [])
+    )
     _append_dockerfile_list_section(lines, "Volumes", info.get("volumes", []))
     _append_dockerfile_workdir(lines, info.get("workdir", ""))
-    _append_dockerfile_entrypoint(lines, info.get("entrypoint", ""), info.get("cmd", ""))
+    _append_dockerfile_entrypoint(
+        lines, info.get("entrypoint", ""), info.get("cmd", "")
+    )
     _append_dockerfile_copies(lines, info.get("copies", []), filename, module_links)
     _append_dockerfile_labels(lines, info.get("labels", {}))
     _append_dockerfile_healthcheck(lines, info.get("healthcheck", ""))
     return "\n".join(lines)
 
 
-def _generate_compose_md(filename: str, info: dict, module_links: Mapping[str, str] | set[str] | None = None) -> str:
+def _generate_compose_md(
+    filename: str, info: dict, module_links: Mapping[str, str] | set[str] | None = None
+) -> str:
     """Generate markdown for a docker-compose / compose file."""
     services = info.get("services", {})
     networks = info.get("networks", [])
@@ -784,9 +847,17 @@ def _generate_compose_md(filename: str, info: dict, module_links: Mapping[str, s
                 build = build.get("context", ".")
             img_str = f"build: `{build}`" if build else (f"`{image}`" if image else "—")
             ports = svc.get("ports", [])
-            ports_str = ", ".join(f"`{p}`" for p in ports) if isinstance(ports, list) else (f"`{ports}`" if ports else "—")
+            ports_str = (
+                ", ".join(f"`{p}`" for p in ports)
+                if isinstance(ports, list)
+                else (f"`{ports}`" if ports else "—")
+            )
             depends = svc.get("depends_on", [])
-            deps_str = ", ".join(f"`{d}`" for d in depends) if isinstance(depends, list) else (f"`{depends}`" if depends else "—")
+            deps_str = (
+                ", ".join(f"`{d}`" for d in depends)
+                if isinstance(depends, list)
+                else (f"`{depends}`" if depends else "—")
+            )
             lines.append(f"| `{name}` | {img_str} | {ports_str} | {deps_str} |")
         lines.append("")
 
@@ -812,11 +883,15 @@ def _generate_compose_md(filename: str, info: dict, module_links: Mapping[str, s
             env = svc.get("environment", [])
             if env:
                 env_list = env if isinstance(env, list) else [env]
-                lines.append(f"- **Environment:** {', '.join(f'`{e}`' for e in env_list)}")
+                lines.append(
+                    f"- **Environment:** {', '.join(f'`{e}`' for e in env_list)}"
+                )
             depends = svc.get("depends_on", [])
             if depends:
                 deps_list = depends if isinstance(depends, list) else [depends]
-                lines.append(f"- **Depends on:** {', '.join(f'`{d}`' for d in deps_list)}")
+                lines.append(
+                    f"- **Depends on:** {', '.join(f'`{d}`' for d in deps_list)}"
+                )
             command = svc.get("command", "")
             if command:
                 lines.append(f"- **Command:** `{command}`")
@@ -841,7 +916,65 @@ def _generate_compose_md(filename: str, info: dict, module_links: Mapping[str, s
     return "\n".join(lines)
 
 
-def run(args):
+@dataclass(frozen=True)
+class _BootstrapRunOptions:
+    src_dir: str
+    wiki_dir: Path
+    src_dir_for_scan: str
+    depth: str
+    deep: bool
+    skip_workflows: bool
+    overwrite: bool
+    json_mode: bool
+    source_adapter: bool
+    progress_stream: TextIO
+
+
+@dataclass
+class _BootstrapRunState:
+    options: _BootstrapRunOptions
+    source_snapshot: Any = None
+    created_files: list[str] = field(default_factory=list)
+    updated_files: list[str] = field(default_factory=list)
+    skipped_files: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class _BootstrapPageMaps:
+    module_page_map: dict[str, str]
+    entity_page_name_cache: dict[tuple[str, str], str]
+
+
+@dataclass(frozen=True)
+class _EntityModuleResult:
+    all_entity_names: list[str]
+    module_entries: list[dict]
+    entities_created: int
+    modules_created: int
+
+
+@dataclass(frozen=True)
+class _WorkflowResult:
+    entries: list[dict]
+    created: int
+
+
+@dataclass(frozen=True)
+class _InfrastructureResult:
+    entries: list[dict]
+    created: int
+    docker_inventory: dict
+
+
+@dataclass(frozen=True)
+class _BootstrapGenerationResult:
+    entity: _EntityModuleResult
+    workflow: _WorkflowResult
+    infrastructure: _InfrastructureResult
+    cross_reference_count: int
+
+
+def _bootstrap_run_options_from_args(args) -> _BootstrapRunOptions:
     src_dir = args.src_dir
     wiki_dir = Path(args.wiki_dir)
     validate_path(str(wiki_dir), "--wiki-dir")
@@ -850,251 +983,521 @@ def run(args):
         "--src-dir",
         allow_external=getattr(args, "allow_external_src", False),
     )
-    src_dir_for_scan = str(src_root)
     depth = getattr(args, "depth", "full")
-    deep = depth == "full"
-    skip_workflows = getattr(args, "skip_workflows", False)
-    output_format = getattr(args, "format", "text")
-    json_mode = output_format == "json"
-    source_adapter = getattr(args, "source_adapter", False)
-    progress_stream = sys.stderr if json_mode else sys.stdout
-    created_files: list[str] = []
-    updated_files: list[str] = []
-    skipped_files: list[str] = []
+    json_mode = getattr(args, "format", "text") == "json"
+    return _BootstrapRunOptions(
+        src_dir=src_dir,
+        wiki_dir=wiki_dir,
+        src_dir_for_scan=str(src_root),
+        depth=depth,
+        deep=depth == "full",
+        skip_workflows=getattr(args, "skip_workflows", False),
+        overwrite=args.overwrite,
+        json_mode=json_mode,
+        source_adapter=getattr(args, "source_adapter", False),
+        progress_stream=sys.stderr if json_mode else sys.stdout,
+    )
 
-    def emit(message: str = "", *, flush: bool = False) -> None:
-        print(message, file=progress_stream, flush=flush)
 
-    def path_text(path: Path) -> str:
-        return str(path).replace("\\", "/")
+def _path_text(path: Path) -> str:
+    return str(path).replace("\\", "/")
 
-    def record_write(path: Path, existed: bool) -> None:
-        target = updated_files if existed else created_files
-        target.append(path_text(path))
 
-    def write_tracked(path: Path, text: str) -> None:
-        existed = path.exists()
-        write_md(path, text)
-        record_write(path, existed)
+def _emit_bootstrap(
+    state: _BootstrapRunState, message: str = "", *, flush: bool = False
+) -> None:
+    print(message, file=state.options.progress_stream, flush=flush)
 
-    emit(f"Bootstrapping wiki from source: {src_dir_for_scan} (depth={depth})", flush=True)
-    emit(f"Wiki output directory: {wiki_dir}", flush=True)
 
-    # Ensure wiki structure exists
+def _record_bootstrap_write(
+    state: _BootstrapRunState, path: Path, existed: bool
+) -> None:
+    target = state.updated_files if existed else state.created_files
+    target.append(_path_text(path))
+
+
+def _write_bootstrap_file(state: _BootstrapRunState, path: Path, text: str) -> None:
+    existed = path.exists()
+    write_md(path, text)
+    _record_bootstrap_write(state, path, existed)
+
+
+def _start_bootstrap(state: _BootstrapRunState) -> None:
+    options = state.options
+    _emit_bootstrap(
+        state,
+        f"Bootstrapping wiki from source: {options.src_dir_for_scan} (depth={options.depth})",
+        flush=True,
+    )
+    _emit_bootstrap(state, f"Wiki output directory: {options.wiki_dir}", flush=True)
     for subdir in ["entities", "modules", "workflows", "infrastructure"]:
-        (wiki_dir / subdir).mkdir(parents=True, exist_ok=True)
+        (options.wiki_dir / subdir).mkdir(parents=True, exist_ok=True)
 
-    # 1. Extract full AST inventory
-    emit("Extracting source inventory...", flush=True)
-    source_snapshot = build_source_snapshot(src_dir_for_scan)
+
+def _extract_bootstrap_inventory(state: _BootstrapRunState):
+    options = state.options
+    _emit_bootstrap(state, "Extracting source inventory...", flush=True)
+    state.source_snapshot = build_source_snapshot(options.src_dir_for_scan)
     inventory_result = get_inventory_result(
-        src_dir_for_scan,
-        deep=deep,
-        source_snapshot=source_snapshot,
+        options.src_dir_for_scan,
+        deep=options.deep,
+        source_snapshot=state.source_snapshot,
     )
     if inventory_result.failed:
-        print_inventory_failures(inventory_result, file=progress_stream)
+        print_inventory_failures(inventory_result, file=options.progress_stream)
         sys.exit(1)
-    inventory = inventory_result.inventory
-    emit(f"Extracted source inventory: {len(inventory)} file(s).", flush=True)
+    _emit_bootstrap(
+        state,
+        f"Extracted source inventory: {len(inventory_result.inventory)} file(s).",
+        flush=True,
+    )
+    return inventory_result
 
-    if not inventory:
-        emit("No supported source files with classes or functions found. Nothing to bootstrap.")
-        if json_mode:
-            print(json.dumps({
-                "schema_version": BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
-                "src_dir": src_dir_for_scan,
-                "generated_wiki_path": path_text(wiki_dir),
-                "depth": depth,
-                "source_files": len(source_snapshot.all_source_paths),
-                "classes": 0,
-                "functions": 0,
-                "docker_files": 0,
-                "workflows": 0,
-                "cross_references": 0,
-                "created_files": created_files,
-                "updated_files": updated_files,
-                "skipped_files": skipped_files,
-                "manifest_path": None,
-            }, indent=2))
-        return
 
-    all_entity_names = []
-    module_entries = []
+def _finish_if_empty_bootstrap_inventory(
+    state: _BootstrapRunState, inventory: dict
+) -> bool:
+    if inventory:
+        return False
+
+    options = state.options
+    _emit_bootstrap(
+        state,
+        "No supported source files with classes or functions found. Nothing to bootstrap.",
+    )
+    if options.json_mode:
+        print(
+            json.dumps(
+                {
+                    "schema_version": BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
+                    "src_dir": options.src_dir_for_scan,
+                    "generated_wiki_path": _path_text(options.wiki_dir),
+                    "depth": options.depth,
+                    "source_files": len(state.source_snapshot.all_source_paths),
+                    "classes": 0,
+                    "functions": 0,
+                    "docker_files": 0,
+                    "workflows": 0,
+                    "cross_references": 0,
+                    "created_files": state.created_files,
+                    "updated_files": state.updated_files,
+                    "skipped_files": state.skipped_files,
+                    "manifest_path": None,
+                },
+                indent=2,
+            )
+        )
+    return True
+
+
+def _prepare_bootstrap_page_maps(inventory: dict) -> _BootstrapPageMaps:
+    return _BootstrapPageMaps(
+        module_page_map=build_module_page_map(inventory),
+        entity_page_name_cache=build_entity_page_map(inventory),
+    )
+
+
+def _build_bootstrap_relationships(
+    state: _BootstrapRunState,
+    inventory: dict,
+    module_page_map: dict[str, str],
+) -> tuple[dict, int]:
+    if state.options.deep:
+        _emit_bootstrap(state, "Building cross-reference relationships...", flush=True)
+    relationships = (
+        _build_relationships(inventory, module_page_map) if state.options.deep else {}
+    )
+    cross_reference_count = sum(len(v) for v in relationships.values())
+    if state.options.deep:
+        _emit_bootstrap(
+            state,
+            f"Built cross-reference relationships: {cross_reference_count}.",
+            flush=True,
+        )
+    return relationships, cross_reference_count
+
+
+def _write_bootstrap_entity_pages(
+    state: _BootstrapRunState,
+    filepath: str,
+    file_data: dict,
+    relationships: dict,
+    mod_page_name: str,
+    file_entity_page_map: dict[str, str],
+    seen_entity_pages: set[str],
+    all_entity_names: list[str],
+) -> int:
+    entities_created = 0
+    for cls in file_data.get("classes", []):
+        entity_page_name = file_entity_page_map[cls["name"]]
+        entity_path = state.options.wiki_dir / "entities" / f"{entity_page_name}.md"
+        if entity_path.exists() and not state.options.overwrite:
+            state.skipped_files.append(_path_text(entity_path))
+            _emit_bootstrap(state, f"  SKIP entity (exists): {entity_page_name}")
+        else:
+            _write_bootstrap_file(
+                state,
+                entity_path,
+                _generate_entity_md(cls, filepath, relationships, mod_page_name),
+            )
+            entities_created += 1
+            _emit_bootstrap(state, f"  CREATE entity: {entity_page_name}")
+        if entity_page_name not in seen_entity_pages:
+            all_entity_names.append(entity_page_name)
+            seen_entity_pages.add(entity_page_name)
+    return entities_created
+
+
+def _write_bootstrap_module_page(
+    state: _BootstrapRunState,
+    filepath: str,
+    file_data: dict,
+    mod_page_name: str,
+    file_entity_page_map: dict[str, str],
+) -> bool:
+    module_path = state.options.wiki_dir / "modules" / f"{mod_page_name}.md"
+    if module_path.exists() and not state.options.overwrite:
+        state.skipped_files.append(_path_text(module_path))
+        _emit_bootstrap(state, f"  SKIP module (exists): {mod_page_name}")
+        return False
+
+    _write_bootstrap_file(
+        state,
+        module_path,
+        _generate_module_md(filepath, file_data, file_entity_page_map),
+    )
+    _emit_bootstrap(state, f"  CREATE module: {mod_page_name}")
+    return True
+
+
+def _write_entity_and_module_pages(
+    state: _BootstrapRunState,
+    inventory: dict,
+    page_maps: _BootstrapPageMaps,
+    relationships: dict,
+) -> _EntityModuleResult:
+    all_entity_names: list[str] = []
+    module_entries: list[dict] = []
+    seen_entity_pages: set[str] = set()
     entities_created = 0
     modules_created = 0
-    _seen_entity_pages: set[str] = set()  # dedup index entries
 
-    # Precompute module page name map: filepath -> page_stem
-    _module_page_map: dict[str, str] = build_module_page_map(inventory)
-
-    # Precompute per-file entity page names: (cls_name, filepath) -> page_stem
-    _entity_page_name_cache: dict = build_entity_page_map(inventory)
-
-    # 2. Build cross-reference relationships (only meaningful in deep mode)
-    if deep:
-        emit("Building cross-reference relationships...", flush=True)
-    relationships = _build_relationships(inventory, _module_page_map) if deep else {}
-    cross_reference_count = sum(len(v) for v in relationships.values())
-    if deep:
-        emit(f"Built cross-reference relationships: {cross_reference_count}.", flush=True)
-
-    emit("Generating entity and module pages...", flush=True)
+    _emit_bootstrap(state, "Generating entity and module pages...", flush=True)
     for filepath, file_data in inventory.items():
-        mod_page_name = _module_page_map[filepath]
-        # Map cls_name -> page_stem for classes in this file (used by module page links)
+        mod_page_name = page_maps.module_page_map[filepath]
         file_entity_page_map = {
-            cls["name"]: _entity_page_name_cache[(cls["name"], filepath)]
+            cls["name"]: page_maps.entity_page_name_cache[(cls["name"], filepath)]
             for cls in file_data.get("classes", [])
         }
-
-        # Generate entity pages for each class
-        for cls in file_data.get("classes", []):
-            entity_page_name = file_entity_page_map[cls["name"]]
-            entity_path = wiki_dir / "entities" / f"{entity_page_name}.md"
-            if entity_path.exists() and not args.overwrite:
-                skipped_files.append(path_text(entity_path))
-                emit(f"  SKIP entity (exists): {entity_page_name}")
-            else:
-                write_tracked(entity_path, _generate_entity_md(cls, filepath, relationships, mod_page_name))
-                entities_created += 1
-                emit(f"  CREATE entity: {entity_page_name}")
-            if entity_page_name not in _seen_entity_pages:
-                all_entity_names.append(entity_page_name)
-                _seen_entity_pages.add(entity_page_name)
-
-        # Generate module page
-        module_path = wiki_dir / "modules" / f"{mod_page_name}.md"
-        if module_path.exists() and not args.overwrite:
-            skipped_files.append(path_text(module_path))
-            emit(f"  SKIP module (exists): {mod_page_name}")
-        else:
-            write_tracked(module_path, _generate_module_md(filepath, file_data, file_entity_page_map))
+        entities_created += _write_bootstrap_entity_pages(
+            state,
+            filepath,
+            file_data,
+            relationships,
+            mod_page_name,
+            file_entity_page_map,
+            seen_entity_pages,
+            all_entity_names,
+        )
+        if _write_bootstrap_module_page(
+            state, filepath, file_data, mod_page_name, file_entity_page_map
+        ):
             modules_created += 1
-            emit(f"  CREATE module: {mod_page_name}")
+        module_entries.append(
+            {
+                "name": mod_page_name,
+                "path": filepath,
+                "docstring": file_data.get("module_docstring", ""),
+            }
+        )
 
-        module_entries.append({
-            "name": mod_page_name,
-            "path": filepath,
-            "docstring": file_data.get("module_docstring", ""),
-        })
-    emit(
+    _emit_bootstrap(
+        state,
         f"Generated entity/module pages: {entities_created} entities, {modules_created} modules.",
         flush=True,
     )
+    return _EntityModuleResult(
+        all_entity_names=all_entity_names,
+        module_entries=module_entries,
+        entities_created=entities_created,
+        modules_created=modules_created,
+    )
 
-    # 3. Generate workflow pages from call graph (deep mode only)
-    workflow_entries = []
+
+def _write_bootstrap_workflow_pages(
+    state: _BootstrapRunState,
+    inventory: dict,
+    module_page_map: dict[str, str],
+) -> _WorkflowResult:
+    workflow_entries: list[dict] = []
     workflows_created = 0
-    if deep and not skip_workflows:
-        call_graph = get_call_graph(inventory)
-        for wf_name, wf_data in call_graph.items():
-            wf_path = wiki_dir / "workflows" / f"{wf_name}.md"
-            if wf_path.exists() and not args.overwrite:
-                skipped_files.append(path_text(wf_path))
-                emit(f"  SKIP workflow (exists): {wf_name}")
-            else:
-                write_tracked(wf_path, _generate_workflow_md(wf_name, wf_data, _module_page_map))
-                workflows_created += 1
-                emit(f"  CREATE workflow: {wf_name}")
-            workflow_entries.append({"name": wf_name, "entry": wf_data["entry"]})
+    if not state.options.deep or state.options.skip_workflows:
+        return _WorkflowResult(workflow_entries, workflows_created)
 
-    # 4. Generate infrastructure pages (Dockerfile, docker-compose, etc.)
-    infra_entries = []
+    call_graph = get_call_graph(inventory)
+    for wf_name, wf_data in call_graph.items():
+        wf_path = state.options.wiki_dir / "workflows" / f"{wf_name}.md"
+        if wf_path.exists() and not state.options.overwrite:
+            state.skipped_files.append(_path_text(wf_path))
+            _emit_bootstrap(state, f"  SKIP workflow (exists): {wf_name}")
+        else:
+            _write_bootstrap_file(
+                state,
+                wf_path,
+                _generate_workflow_md(wf_name, wf_data, module_page_map),
+            )
+            workflows_created += 1
+            _emit_bootstrap(state, f"  CREATE workflow: {wf_name}")
+        workflow_entries.append({"name": wf_name, "entry": wf_data["entry"]})
+    return _WorkflowResult(workflow_entries, workflows_created)
+
+
+def _write_bootstrap_infrastructure_pages(
+    state: _BootstrapRunState,
+    module_page_map: dict[str, str],
+) -> _InfrastructureResult:
+    infra_entries: list[dict] = []
     infra_created = 0
-    emit("Generating infrastructure pages...", flush=True)
-    docker_inventory = get_docker_inventory(src_dir_for_scan, source_snapshot=source_snapshot)
+    _emit_bootstrap(state, "Generating infrastructure pages...", flush=True)
+    docker_inventory = get_docker_inventory(
+        state.options.src_dir_for_scan,
+        source_snapshot=state.source_snapshot,
+    )
     for docker_file, docker_info in docker_inventory.items():
         page_name = docker_file.replace("\\", "/").replace("/", "_").replace(".", "_")
-        infra_path = wiki_dir / "infrastructure" / f"{page_name}.md"
-        if infra_path.exists() and not args.overwrite:
-            skipped_files.append(path_text(infra_path))
-            emit(f"  SKIP infrastructure (exists): {page_name}")
+        infra_path = state.options.wiki_dir / "infrastructure" / f"{page_name}.md"
+        if infra_path.exists() and not state.options.overwrite:
+            state.skipped_files.append(_path_text(infra_path))
+            _emit_bootstrap(state, f"  SKIP infrastructure (exists): {page_name}")
         else:
-            write_tracked(infra_path, _generate_docker_md(docker_file, docker_info, _module_page_map))
+            _write_bootstrap_file(
+                state,
+                infra_path,
+                _generate_docker_md(docker_file, docker_info, module_page_map),
+            )
             infra_created += 1
-            emit(f"  CREATE infrastructure: {page_name}")
+            _emit_bootstrap(state, f"  CREATE infrastructure: {page_name}")
         infra_entries.append({"name": page_name, "type": docker_info["type"]})
-    emit(f"Generated infrastructure pages: {infra_created}.", flush=True)
+    _emit_bootstrap(
+        state, f"Generated infrastructure pages: {infra_created}.", flush=True
+    )
+    return _InfrastructureResult(infra_entries, infra_created, docker_inventory)
 
-    # 5. Rebuild index.md
-    index_path = wiki_dir / "index.md"
-    write_tracked(index_path, _generate_index_md(all_entity_names, module_entries, workflow_entries or None, infra_entries or None))
-    emit("  WRITE index.md")
 
-    # 6. Append log entry
-    log_path = wiki_dir / "log.md"
-    today = date.today().isoformat()
+def _write_bootstrap_index(
+    state: _BootstrapRunState,
+    entity_result: _EntityModuleResult,
+    workflow_result: _WorkflowResult,
+    infrastructure_result: _InfrastructureResult,
+) -> None:
+    index_path = state.options.wiki_dir / "index.md"
+    _write_bootstrap_file(
+        state,
+        index_path,
+        _generate_index_md(
+            entity_result.all_entity_names,
+            entity_result.module_entries,
+            workflow_result.entries or None,
+            infrastructure_result.entries or None,
+        ),
+    )
+    _emit_bootstrap(state, "  WRITE index.md")
+
+
+def _append_bootstrap_log(
+    state: _BootstrapRunState,
+    inventory: dict,
+    entity_result: _EntityModuleResult,
+    workflow_result: _WorkflowResult,
+    infrastructure_result: _InfrastructureResult,
+    cross_reference_count: int,
+) -> None:
+    log_path = state.options.wiki_dir / "log.md"
     log_entry = (
-        f"\n## {today}\n\n"
+        f"\n## {date.today().isoformat()}\n\n"
         f"### feat: bootstrap wiki from existing codebase\n"
-        f"- Source: `{src_dir_for_scan}`\n"
-        f"- Depth: `{depth}`\n"
-        f"- Entities created: {entities_created}\n"
-        f"- Modules created: {modules_created}\n"
-        f"- Workflows created: {workflows_created}\n"
-        f"- Infrastructure created: {infra_created}\n"
-        f"- Total classes tracked: {len(all_entity_names)}\n"
+        f"- Source: `{state.options.src_dir_for_scan}`\n"
+        f"- Depth: `{state.options.depth}`\n"
+        f"- Entities created: {entity_result.entities_created}\n"
+        f"- Modules created: {entity_result.modules_created}\n"
+        f"- Workflows created: {workflow_result.created}\n"
+        f"- Infrastructure created: {infrastructure_result.created}\n"
+        f"- Total classes tracked: {len(entity_result.all_entity_names)}\n"
         f"- Total files scanned: {len(inventory)}\n"
-        f"- Docker/Compose files: {len(docker_inventory)}\n"
+        f"- Docker/Compose files: {len(infrastructure_result.docker_inventory)}\n"
         f"- Cross-references resolved: {cross_reference_count}\n"
     )
     if log_path.exists():
         existing_log = read_md(log_path)
-        write_tracked(log_path, existing_log + log_entry)
+        _write_bootstrap_file(state, log_path, existing_log + log_entry)
     else:
-        write_tracked(log_path, "# Architectural Log\n\nAppend-only chronological log.\n" + log_entry)
+        _write_bootstrap_file(
+            state,
+            log_path,
+            "# Architectural Log\n\nAppend-only chronological log.\n" + log_entry,
+        )
 
-    emit(
-        f"\nBootstrap complete: {entities_created} entities, "
-        f"{modules_created} modules, {workflows_created} workflows, "
-        f"{infra_created} infrastructure "
+
+def _emit_bootstrap_complete(
+    state: _BootstrapRunState,
+    inventory: dict,
+    entity_result: _EntityModuleResult,
+    workflow_result: _WorkflowResult,
+    infrastructure_result: _InfrastructureResult,
+    cross_reference_count: int,
+) -> None:
+    _emit_bootstrap(
+        state,
+        f"\nBootstrap complete: {entity_result.entities_created} entities, "
+        f"{entity_result.modules_created} modules, {workflow_result.created} workflows, "
+        f"{infrastructure_result.created} infrastructure "
         f"created from {len(inventory)} source files "
-        f"({cross_reference_count} cross-references)."
+        f"({cross_reference_count} cross-references).",
     )
 
-    # 7. Update agent constraint files if wiki-dir differs from default
-    if not source_adapter:
-        _update_agent_constraints(str(wiki_dir), file=progress_stream)
 
-    # 8. Save sync manifest so `llm-wiki sync` can run incrementally
+def _update_bootstrap_agent_constraints(state: _BootstrapRunState) -> None:
+    if not state.options.source_adapter:
+        _update_agent_constraints(
+            str(state.options.wiki_dir), file=state.options.progress_stream
+        )
+
+
+def _write_bootstrap_manifest(
+    state: _BootstrapRunState,
+    inventory: dict,
+    page_maps: _BootstrapPageMaps,
+) -> Path:
     from .sync_cmd import SyncManifest  # local import to avoid circular dep
 
     manifest = SyncManifest.build_from_inventory(
-        inventory, src_dir_for_scan, _entity_page_name_cache, _module_page_map,
+        inventory,
+        state.options.src_dir_for_scan,
+        page_maps.entity_page_name_cache,
+        page_maps.module_page_map,
     )
-    emit("Writing sync manifest...", flush=True)
-    manifest_path = wiki_dir / ".llm-wiki-manifest.json"
+    _emit_bootstrap(state, "Writing sync manifest...", flush=True)
+    manifest_path = state.options.wiki_dir / ".llm-wiki-manifest.json"
     manifest_existed = manifest_path.exists()
-    manifest.save(wiki_dir)
-    record_write(manifest_path, manifest_existed)
-    emit(f"  WRITE {manifest_path}")
-
-    if json_mode:
-        print(json.dumps({
-            "schema_version": BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
-            "src_dir": src_dir_for_scan,
-            "generated_wiki_path": path_text(wiki_dir),
-            "depth": depth,
-            "source_files": len(source_snapshot.all_source_paths),
-            "classes": sum(len(data.get("classes", [])) for data in inventory.values()),
-            "functions": sum(len(data.get("functions", [])) for data in inventory.values()),
-            "docker_files": len(docker_inventory),
-            "workflows": len(workflow_entries),
-            "cross_references": cross_reference_count,
-            "created_files": created_files,
-            "updated_files": updated_files,
-            "skipped_files": skipped_files,
-            "manifest_path": path_text(manifest_path),
-        }, indent=2))
+    manifest.save(state.options.wiki_dir)
+    _record_bootstrap_write(state, manifest_path, manifest_existed)
+    _emit_bootstrap(state, f"  WRITE {manifest_path}")
+    return manifest_path
 
 
-from ..config import DEFAULT_WIKI_DIR as _DEFAULT_WIKI_DIR
-from ..services.schema import (
-    ALL_SCHEMA_FILES as _AGENT_SCHEMA_FILES,
-    CONSTRAINT_START as _CONSTRAINT_START,
-    CONSTRAINT_END as _CONSTRAINT_END,
-)
+def _emit_bootstrap_json_summary(
+    state: _BootstrapRunState,
+    inventory: dict,
+    workflow_result: _WorkflowResult,
+    infrastructure_result: _InfrastructureResult,
+    cross_reference_count: int,
+    manifest_path: Path,
+) -> None:
+    if not state.options.json_mode:
+        return
+
+    print(
+        json.dumps(
+            {
+                "schema_version": BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
+                "src_dir": state.options.src_dir_for_scan,
+                "generated_wiki_path": _path_text(state.options.wiki_dir),
+                "depth": state.options.depth,
+                "source_files": len(state.source_snapshot.all_source_paths),
+                "classes": sum(
+                    len(data.get("classes", [])) for data in inventory.values()
+                ),
+                "functions": sum(
+                    len(data.get("functions", [])) for data in inventory.values()
+                ),
+                "docker_files": len(infrastructure_result.docker_inventory),
+                "workflows": len(workflow_result.entries),
+                "cross_references": cross_reference_count,
+                "created_files": state.created_files,
+                "updated_files": state.updated_files,
+                "skipped_files": state.skipped_files,
+                "manifest_path": _path_text(manifest_path),
+            },
+            indent=2,
+        )
+    )
+
+
+def _generate_bootstrap_content(
+    state: _BootstrapRunState,
+    inventory: dict,
+    page_maps: _BootstrapPageMaps,
+) -> _BootstrapGenerationResult:
+    relationships, cross_reference_count = _build_bootstrap_relationships(
+        state,
+        inventory,
+        page_maps.module_page_map,
+    )
+    entity_result = _write_entity_and_module_pages(
+        state, inventory, page_maps, relationships
+    )
+    workflow_result = _write_bootstrap_workflow_pages(
+        state, inventory, page_maps.module_page_map
+    )
+    infrastructure_result = _write_bootstrap_infrastructure_pages(
+        state, page_maps.module_page_map
+    )
+    return _BootstrapGenerationResult(
+        entity_result,
+        workflow_result,
+        infrastructure_result,
+        cross_reference_count,
+    )
+
+
+def _finalize_bootstrap(
+    state: _BootstrapRunState,
+    inventory: dict,
+    page_maps: _BootstrapPageMaps,
+    result: _BootstrapGenerationResult,
+) -> None:
+    _write_bootstrap_index(state, result.entity, result.workflow, result.infrastructure)
+    _append_bootstrap_log(
+        state,
+        inventory,
+        result.entity,
+        result.workflow,
+        result.infrastructure,
+        result.cross_reference_count,
+    )
+    _emit_bootstrap_complete(
+        state,
+        inventory,
+        result.entity,
+        result.workflow,
+        result.infrastructure,
+        result.cross_reference_count,
+    )
+    _update_bootstrap_agent_constraints(state)
+    manifest_path = _write_bootstrap_manifest(state, inventory, page_maps)
+    _emit_bootstrap_json_summary(
+        state,
+        inventory,
+        result.workflow,
+        result.infrastructure,
+        result.cross_reference_count,
+        manifest_path,
+    )
+
+
+def run(args):
+    options = _bootstrap_run_options_from_args(args)
+    state = _BootstrapRunState(options)
+    _start_bootstrap(state)
+
+    inventory_result = _extract_bootstrap_inventory(state)
+    inventory = inventory_result.inventory
+    if _finish_if_empty_bootstrap_inventory(state, inventory):
+        return
+
+    page_maps = _prepare_bootstrap_page_maps(inventory)
+    result = _generate_bootstrap_content(state, inventory, page_maps)
+    _finalize_bootstrap(state, inventory, page_maps, result)
 
 
 def _update_agent_constraints(wiki_dir: str, *, file=None) -> None:
@@ -1134,4 +1537,6 @@ def _update_agent_constraints(wiki_dir: str, *, file=None) -> None:
             updated.append(filename)
 
     if updated:
-        print(f"\nUpdated wiki path to `{wiki_dir}` in: {', '.join(updated)}", file=stream)
+        print(
+            f"\nUpdated wiki path to `{wiki_dir}` in: {', '.join(updated)}", file=stream
+        )

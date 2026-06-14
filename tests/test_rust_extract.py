@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import inspect
 import shutil
 import subprocess
@@ -19,6 +20,7 @@ from llm_wiki_cli.services.extractor_helpers import get_prepared_binary
 # Skip all tests when Rust toolchain is not available on this machine.
 # ---------------------------------------------------------------------------
 
+
 def _command_available(*cmd: str) -> bool:
     if shutil.which(cmd[0]) is None:
         return False
@@ -31,7 +33,11 @@ def _command_available(*cmd: str) -> bool:
             timeout=10,
         )
         return True
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
+    except (
+        subprocess.CalledProcessError,
+        subprocess.TimeoutExpired,
+        FileNotFoundError,
+    ):
         return False
 
 
@@ -46,6 +52,26 @@ skip_no_cargo = pytest.mark.skipif(
 # ---------------------------------------------------------------------------
 
 
+def _body_line_count(function) -> int:
+    source = textwrap.dedent(inspect.getsource(function))
+    function_node = ast.parse(source).body[0]
+    if not isinstance(function_node, ast.FunctionDef):
+        raise AssertionError("expected function source")
+
+    body = [
+        stmt
+        for stmt in function_node.body
+        if not (
+            isinstance(stmt, ast.Expr)
+            and isinstance(stmt.value, ast.Constant)
+            and isinstance(stmt.value.value, str)
+        )
+    ]
+    first_body_line = min(stmt.lineno for stmt in body)
+    last_body_line = max(stmt.end_lineno for stmt in body)
+    return last_body_line - first_body_line + 1
+
+
 def _make_rs(tmp_path: Path, filename: str, content: str) -> Path:
     """Write a Rust source file under *tmp_path* and return its path."""
     p = tmp_path / filename
@@ -55,7 +81,9 @@ def _make_rs(tmp_path: Path, filename: str, content: str) -> Path:
 
 
 class TestRustWrapperFiltering:
-    def test_full_scan_passes_gitignore_filtered_files_to_subprocess(self, tmp_path, monkeypatch):
+    def test_full_scan_passes_gitignore_filtered_files_to_subprocess(
+        self, tmp_path, monkeypatch
+    ):
         _make_rs(tmp_path, "real.rs", "pub struct Real;\n")
         _make_rs(tmp_path, "ignored.rs", "pub struct Ignored;\n")
         (tmp_path / ".gitignore").write_text("ignored.rs\n", encoding="utf-8")
@@ -70,8 +98,13 @@ class TestRustWrapperFiltering:
                 stderr="",
             )
 
-        monkeypatch.setattr("llm_wiki_cli.extractors.rust_extractor.get_prepared_binary", lambda *a, **k: Path("/tmp/rust-helper"))
-        monkeypatch.setattr("llm_wiki_cli.extractors.rust_extractor.subprocess.run", fake_run)
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.rust_extractor.get_prepared_binary",
+            lambda *a, **k: Path("/tmp/rust-helper"),
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.rust_extractor.subprocess.run", fake_run
+        )
 
         RustExtractor().extract(str(tmp_path))
 
@@ -159,8 +192,7 @@ class TestRustExtractor:
         inv = RustExtractor().extract(str(tmp_path))
         data = list(inv.values())[0]
         assert any(
-            c["name"] == "UserId" and c["kind"] == "type_alias"
-            for c in data["classes"]
+            c["name"] == "UserId" and c["kind"] == "type_alias" for c in data["classes"]
         )
 
     def test_exported_function(self, tmp_path):
@@ -531,25 +563,39 @@ class TestRustExtractor:
 class TestRustExtractorWithoutPreparedHelper:
     def test_missing_helper_returns_empty(self, tmp_path):
         _make_rs(tmp_path, "src/lib.rs", "pub struct App;\n")
-        with patch("llm_wiki_cli.extractors.rust_extractor.get_prepared_binary", return_value=None):
+        with patch(
+            "llm_wiki_cli.extractors.rust_extractor.get_prepared_binary",
+            return_value=None,
+        ):
             inv = RustExtractor().extract(str(tmp_path))
         assert inv == {}
 
     def test_missing_helper_stderr_warning(self, tmp_path, capsys):
         _make_rs(tmp_path, "src/lib.rs", "pub struct App;\n")
-        with patch("llm_wiki_cli.extractors.rust_extractor.get_prepared_binary", return_value=None):
+        with patch(
+            "llm_wiki_cli.extractors.rust_extractor.get_prepared_binary",
+            return_value=None,
+        ):
             RustExtractor().extract(str(tmp_path))
         err = capsys.readouterr().err
         assert "prepare-extractors" in err
 
     def test_no_rust_files_skips_helper_probe(self, tmp_path):
-        with patch("llm_wiki_cli.extractors.rust_extractor.get_prepared_binary") as mock_prepared:
+        with patch(
+            "llm_wiki_cli.extractors.rust_extractor.get_prepared_binary"
+        ) as mock_prepared:
             inv = RustExtractor().extract(str(tmp_path))
         assert inv == {}
         mock_prepared.assert_not_called()
 
 
 class TestRustExtractorWrapper:
+    def test_extract_remains_short_orchestrator(self):
+        source = textwrap.dedent(inspect.getsource(RustExtractor.extract))
+
+        assert len(source.splitlines()) <= 30
+        assert _body_line_count(RustExtractor.extract) <= 25
+
     def test_extract_signature_uses_protocol_arguments(self):
         params = list(inspect.signature(RustExtractor.extract).parameters)
 
@@ -605,8 +651,14 @@ class TestRustExtractorWrapper:
             stdout='{"pkg\\\\client.rs": {"classes": [], "functions": []}}',
             stderr="",
         )
-        with patch("llm_wiki_cli.extractors.rust_extractor.get_prepared_binary", return_value=Path("/tmp/rust-helper")):
-            with patch("llm_wiki_cli.extractors.rust_extractor.subprocess.run", return_value=result):
+        with patch(
+            "llm_wiki_cli.extractors.rust_extractor.get_prepared_binary",
+            return_value=Path("/tmp/rust-helper"),
+        ):
+            with patch(
+                "llm_wiki_cli.extractors.rust_extractor.subprocess.run",
+                return_value=result,
+            ):
                 inv = RustExtractor().extract(str(tmp_path))
 
         assert "pkg/client.rs" in inv
@@ -622,8 +674,14 @@ class TestRustExtractorWrapper:
             stdout=f'{{"{source.as_posix()}": {{"classes": [], "functions": []}}}}',
             stderr="",
         )
-        with patch("llm_wiki_cli.extractors.rust_extractor.get_prepared_binary", return_value=Path("/tmp/rust-helper")):
-            with patch("llm_wiki_cli.extractors.rust_extractor.subprocess.run", return_value=result):
+        with patch(
+            "llm_wiki_cli.extractors.rust_extractor.get_prepared_binary",
+            return_value=Path("/tmp/rust-helper"),
+        ):
+            with patch(
+                "llm_wiki_cli.extractors.rust_extractor.subprocess.run",
+                return_value=result,
+            ):
                 inv = RustExtractor().extract(str(tmp_path))
 
         assert "pkg/client.rs" in inv
@@ -637,8 +695,14 @@ class TestRustExtractorWrapper:
             stdout="{not-json",
             stderr="",
         )
-        with patch("llm_wiki_cli.extractors.rust_extractor.get_prepared_binary", return_value=Path("/tmp/rust-helper")):
-            with patch("llm_wiki_cli.extractors.rust_extractor.subprocess.run", return_value=result):
+        with patch(
+            "llm_wiki_cli.extractors.rust_extractor.get_prepared_binary",
+            return_value=Path("/tmp/rust-helper"),
+        ):
+            with patch(
+                "llm_wiki_cli.extractors.rust_extractor.subprocess.run",
+                return_value=result,
+            ):
                 inv = RustExtractor().extract(str(tmp_path))
 
         assert inv == {}
@@ -646,7 +710,10 @@ class TestRustExtractorWrapper:
 
     def test_timeout_returns_empty(self, tmp_path, capsys):
         _make_rs(tmp_path, "client.rs", "pub struct Client;\n")
-        with patch("llm_wiki_cli.extractors.rust_extractor.get_prepared_binary", return_value=Path("/tmp/rust-helper")):
+        with patch(
+            "llm_wiki_cli.extractors.rust_extractor.get_prepared_binary",
+            return_value=Path("/tmp/rust-helper"),
+        ):
             with patch(
                 "llm_wiki_cli.extractors.rust_extractor.subprocess.run",
                 side_effect=subprocess.TimeoutExpired(["cargo"], 180),
@@ -664,8 +731,14 @@ class TestRustExtractorWrapper:
             stdout='{"client.rs": {"classes": [], "functions": []}}',
             stderr="Warning: skipped bad.rs\n",
         )
-        with patch("llm_wiki_cli.extractors.rust_extractor.get_prepared_binary", return_value=Path("/tmp/rust-helper")):
-            with patch("llm_wiki_cli.extractors.rust_extractor.subprocess.run", return_value=result):
+        with patch(
+            "llm_wiki_cli.extractors.rust_extractor.get_prepared_binary",
+            return_value=Path("/tmp/rust-helper"),
+        ):
+            with patch(
+                "llm_wiki_cli.extractors.rust_extractor.subprocess.run",
+                return_value=result,
+            ):
                 RustExtractor().extract(str(tmp_path))
 
         assert "Warning: skipped bad.rs" in capsys.readouterr().err
