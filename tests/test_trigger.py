@@ -1,8 +1,12 @@
 """Tests for commands/trigger_cmd.py (mock-based, no real LLM agent needed)."""
+
+import ast
+import inspect
 import json
 import os
 import stat
 import subprocess
+import textwrap
 import types
 from pathlib import Path
 from unittest.mock import patch, MagicMock
@@ -26,6 +30,28 @@ def _make_args(**kwargs):
     }
     defaults.update(kwargs)
     return types.SimpleNamespace(**defaults)
+
+
+def _body_line_count(function) -> int:
+    source = textwrap.dedent(inspect.getsource(function))
+    function_node = ast.parse(source).body[0]
+    body = [
+        stmt
+        for stmt in function_node.body
+        if not (
+            isinstance(stmt, ast.Expr)
+            and isinstance(stmt.value, ast.Constant)
+            and isinstance(stmt.value.value, str)
+        )
+    ]
+    first_body_line = min(stmt.lineno for stmt in body)
+    last_body_line = max(stmt.end_lineno for stmt in body)
+    return last_body_line - first_body_line + 1
+
+
+class TestTriggerRunStructure:
+    def test_run_sync_stays_a_small_coordinator(self):
+        assert _body_line_count(trigger_cmd._run_sync) <= 40
 
 
 class TestTriggerUIAgent:
@@ -89,7 +115,9 @@ class TestTriggerGitFailure:
 
 class TestTriggerPromptHandling:
     @patch("llm_wiki_cli.commands.trigger_cmd.subprocess.run")
-    def test_skips_prompt_larger_than_cap(self, mock_run, tmp_project, monkeypatch, capsys):
+    def test_skips_prompt_larger_than_cap(
+        self, mock_run, tmp_project, monkeypatch, capsys
+    ):
         mock_run.return_value = MagicMock(stdout="diff\n", returncode=0)
         monkeypatch.setattr(
             "llm_wiki_cli.commands.extract_cmd.get_inventory_result",
@@ -104,7 +132,9 @@ class TestTriggerPromptHandling:
                 {"python": ExtractorStatus("python", "ok", 1)},
             ),
         )
-        monkeypatch.setattr("llm_wiki_cli.commands.extract_cmd.get_call_graph", lambda inv: {})
+        monkeypatch.setattr(
+            "llm_wiki_cli.commands.extract_cmd.get_call_graph", lambda inv: {}
+        )
 
         trigger_cmd.run(_make_args(max_prompt_bytes=100))
 
@@ -120,22 +150,28 @@ class TestTriggerPromptHandling:
                 {"python": ExtractorStatus("python", "ok", 1)},
             ),
         )
-        monkeypatch.setattr("llm_wiki_cli.commands.extract_cmd.get_call_graph", lambda inv: {})
+        monkeypatch.setattr(
+            "llm_wiki_cli.commands.extract_cmd.get_call_graph", lambda inv: {}
+        )
         agent_kwargs = []
 
         def fake_run(cmd, *args, **kwargs):
             if cmd[:2] == ["git", "diff"]:
                 return subprocess.CompletedProcess(cmd, 0, stdout="diff\n", stderr="")
             if cmd[0] == "claude":
-                agent_kwargs.append({
-                    "cmd": list(cmd),
-                    "keys": set(kwargs),
-                    "stdin_readable": kwargs["stdin"].readable(),
-                })
+                agent_kwargs.append(
+                    {
+                        "cmd": list(cmd),
+                        "keys": set(kwargs),
+                        "stdin_readable": kwargs["stdin"].readable(),
+                    }
+                )
                 return subprocess.CompletedProcess(cmd, 0)
             raise AssertionError(f"unexpected command: {cmd}")
 
-        with patch("llm_wiki_cli.commands.trigger_cmd.subprocess.run", side_effect=fake_run):
+        with patch(
+            "llm_wiki_cli.commands.trigger_cmd.subprocess.run", side_effect=fake_run
+        ):
             trigger_cmd.run(_make_args(agent="claude"))
 
         assert len(agent_kwargs) == 1
@@ -145,7 +181,10 @@ class TestTriggerPromptHandling:
         assert "capture_output" not in agent_kwargs[0]["keys"]
         assert agent_kwargs[0]["stdin_readable"] is True
         prompt = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
-        assert 'LLM_WIKI_AUTO_COMMIT=1 git commit -m "docs(wiki): auto-update [bot]"' in prompt
+        assert (
+            'LLM_WIKI_AUTO_COMMIT=1 git commit -m "docs(wiki): auto-update [bot]"'
+            in prompt
+        )
         mode = stat.S_IMODE(Path(".git/llm-wiki-prompt.txt").stat().st_mode)
         if os.name == "nt":
             assert Path(".git/llm-wiki-prompt.txt").is_file()
@@ -160,7 +199,9 @@ class TestTriggerPromptHandling:
                 {"python": ExtractorStatus("python", "ok", 1)},
             ),
         )
-        monkeypatch.setattr("llm_wiki_cli.commands.extract_cmd.get_call_graph", lambda inv: {})
+        monkeypatch.setattr(
+            "llm_wiki_cli.commands.extract_cmd.get_call_graph", lambda inv: {}
+        )
 
         def fake_run(cmd, *args, **kwargs):
             if cmd[:2] == ["git", "diff"]:
@@ -169,7 +210,9 @@ class TestTriggerPromptHandling:
                 return subprocess.CompletedProcess(cmd, 2)
             raise AssertionError(f"unexpected command: {cmd}")
 
-        with patch("llm_wiki_cli.commands.trigger_cmd.subprocess.run", side_effect=fake_run):
+        with patch(
+            "llm_wiki_cli.commands.trigger_cmd.subprocess.run", side_effect=fake_run
+        ):
             trigger_cmd.run(_make_args(agent="aider"))
 
         state = circuit_breaker.load_state(tmp_project / ".git")
