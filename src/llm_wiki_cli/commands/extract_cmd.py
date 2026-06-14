@@ -34,7 +34,7 @@ from ..services.imports import build_module_path_resolver
 from ..services.packages import discover_packages, stamp_inventory_packages
 from ..services.plugins import get_extractor_registry, load_entry_point
 from ..services.io import write_text_output
-from ..services.source_snapshot import SourceSnapshot, build_source_snapshot
+from ..services.source_snapshot import SourceFile, SourceSnapshot, build_source_snapshot
 
 # Re-export ComponentVisitor so existing callers that import it from here
 # continue to work without modification.
@@ -139,6 +139,27 @@ class _ExtractionOutcome:
     files_found: int
     extracted: dict
     message: str = ""
+
+
+@dataclass
+class _InventoryBuildContext:
+    request: InventoryRequest
+    source_snapshot: SourceSnapshot
+    registry: dict[str, str]
+    parallel_jobs: int
+    cache: InventoryCache | None
+    cache_key: dict | None
+    cache_files: dict[str, dict]
+    updated_cache_files: dict[str, dict]
+    source_file_by_path: dict[str, SourceFile]
+    source_hashes: dict[str, str]
+
+
+@dataclass
+class _InventoryPlanningResult:
+    plans: list[_ExtractionPlan]
+    status_by_language: dict[str, ExtractorStatus]
+    cached_by_language: dict[str, dict]
 
 
 def _run_extraction_plan(
@@ -270,162 +291,294 @@ def get_inventory_result(
 
 
 def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
-    src_dir = request.src_dir
-    deep = request.deep
-    only_files = request.only_files
-    include_empty = request.include_empty
-    cache_options = request.cache_options
-    parallel_jobs = request.parallel_jobs
-    source_snapshot = request.source_snapshot
+    context = _prepare_inventory_build_context(request)
+    planning = _plan_inventory_extractions(context)
+    outcomes_by_language = _run_inventory_plans(planning.plans, context.parallel_jobs)
+    extracted_by_language = _collect_inventory_outcomes(
+        context, planning, outcomes_by_language
+    )
+    inventory = _merge_inventory_results(
+        context, planning.cached_by_language, extracted_by_language
+    )
+    statuses = _ordered_inventory_statuses(
+        context.registry, planning.status_by_language
+    )
+    _save_inventory_cache(context, statuses)
+    return InventoryResult(
+        inventory=inventory,
+        statuses=statuses,
+        cache_stats=context.cache.stats if context.cache is not None else None,
+    )
 
-    source_snapshot = source_snapshot or build_source_snapshot(
-        src_dir, only_files=only_files
+
+def _prepare_inventory_build_context(
+    request: InventoryRequest,
+) -> _InventoryBuildContext:
+    source_snapshot = request.source_snapshot or build_source_snapshot(
+        request.src_dir, only_files=request.only_files
     )
     registry = get_extractor_registry()
     cache = (
-        InventoryCache(src_dir, cache_options) if cache_options is not None else None
+        InventoryCache(request.src_dir, request.cache_options)
+        if request.cache_options is not None
+        else None
     )
-    cache_files: dict[str, dict] = {}
-    updated_cache_files: dict[str, dict] = {}
-    cache_key: dict | None = None
-    parallel_jobs = max(1, int(parallel_jobs or 1))
+    source_file_by_path = _source_files_by_path(source_snapshot)
+    cache_key, cache_files, source_hashes = _load_inventory_cache_state(
+        request, source_snapshot, registry, cache, source_file_by_path
+    )
+    return _InventoryBuildContext(
+        request=request,
+        source_snapshot=source_snapshot,
+        registry=registry,
+        parallel_jobs=max(1, int(request.parallel_jobs or 1)),
+        cache=cache,
+        cache_key=cache_key,
+        cache_files=cache_files,
+        updated_cache_files={},
+        source_file_by_path=source_file_by_path,
+        source_hashes=source_hashes,
+    )
 
-    source_file_by_path = {
+
+def _source_files_by_path(source_snapshot: SourceSnapshot) -> dict[str, SourceFile]:
+    return {
         source_file.rel_path: source_file
         for source_files in source_snapshot.files_by_language.values()
         for source_file in source_files
     }
-    current_source_paths = set(source_file_by_path)
-    source_hashes: dict[str, str] = {}
 
-    if cache is not None and cache.enabled and only_files is None:
-        cache_key = build_inventory_cache_key(
-            src_dir,
-            source_snapshot,
-            deep=deep,
-            include_empty=include_empty,
-            extractor_registry=registry,
-        )
-        cache_files = cache.load(cache_key)
-        cache.stats.deleted = len(set(cache_files) - current_source_paths)
-        for rel_path, source_file in source_file_by_path.items():
-            file_hash = hash_source_file(source_file)
-            if file_hash is not None:
-                source_hashes[rel_path] = file_hash
 
+def _load_inventory_cache_state(
+    request: InventoryRequest,
+    source_snapshot: SourceSnapshot,
+    registry: dict[str, str],
+    cache: InventoryCache | None,
+    source_file_by_path: dict[str, SourceFile],
+) -> tuple[dict | None, dict[str, dict], dict[str, str]]:
+    if cache is None or not cache.enabled or request.only_files is not None:
+        return None, {}, {}
+
+    cache_key = build_inventory_cache_key(
+        request.src_dir,
+        source_snapshot,
+        deep=request.deep,
+        include_empty=request.include_empty,
+        extractor_registry=registry,
+    )
+    cache_files = cache.load(cache_key)
+    cache.stats.deleted = len(set(cache_files) - set(source_file_by_path))
+    source_hashes = {
+        rel_path: file_hash
+        for rel_path, source_file in source_file_by_path.items()
+        if (file_hash := hash_source_file(source_file)) is not None
+    }
+    return cache_key, cache_files, source_hashes
+
+
+def _plan_inventory_extractions(
+    context: _InventoryBuildContext,
+) -> _InventoryPlanningResult:
     status_by_language: dict[str, ExtractorStatus] = {}
     cached_by_language: dict[str, dict] = {}
-    extracted_by_language: dict[str, dict] = {}
     plans: list[_ExtractionPlan] = []
-    for language, entry_point in registry.items():
-        extensions = LANGUAGE_EXTENSIONS.get(language)
-        source_files: list[str] | None = None
-        if extensions is not None:
-            source_files = source_snapshot.language_paths(language)
-            if not source_files:
-                status_by_language[language] = ExtractorStatus(language, "skipped", 0)
-                continue
 
-        files_found = len(source_files or [])
-        if extensions is None and only_files:
-            files_found = len(only_files)
+    for language, entry_point in context.registry.items():
+        plan = _plan_language_extraction(
+            context, language, entry_point, status_by_language, cached_by_language
+        )
+        if plan is not None:
+            plans.append(plan)
 
-        if extensions is not None and not source_files:
-            status_by_language[language] = ExtractorStatus(language, "skipped", 0)
+    return _InventoryPlanningResult(plans, status_by_language, cached_by_language)
+
+
+def _plan_language_extraction(
+    context: _InventoryBuildContext,
+    language: str,
+    entry_point: str,
+    status_by_language: dict[str, ExtractorStatus],
+    cached_by_language: dict[str, dict],
+) -> _ExtractionPlan | None:
+    extensions = LANGUAGE_EXTENSIONS.get(language)
+    source_files = (
+        context.source_snapshot.language_paths(language)
+        if extensions is not None
+        else None
+    )
+    if extensions is not None and not source_files:
+        status_by_language[language] = ExtractorStatus(language, "skipped", 0)
+        return None
+
+    files_found = len(source_files or [])
+    if extensions is None and context.request.only_files:
+        files_found = len(context.request.only_files)
+
+    is_builtin = extensions is not None and entry_point == EXTRACTOR_REGISTRY.get(
+        language
+    )
+    cached_by_language.setdefault(language, {})
+    fresh_source_files = (
+        _fresh_inventory_source_files(
+            context, language, source_files, cached_by_language
+        )
+        if _can_use_inventory_cache(context, is_builtin)
+        else list(source_files or [])
+    )
+    if _can_use_inventory_cache(context, is_builtin) and not fresh_source_files:
+        status_by_language[language] = ExtractorStatus(language, "ok", files_found)
+        return None
+
+    return _ExtractionPlan(
+        language=language,
+        entry_point=entry_point,
+        is_builtin=is_builtin,
+        source_files=source_files,
+        fresh_source_files=fresh_source_files,
+        files_found=files_found,
+        kwargs=_build_extraction_kwargs(
+            context, language, is_builtin, fresh_source_files
+        ),
+    )
+
+
+def _can_use_inventory_cache(context: _InventoryBuildContext, is_builtin: bool) -> bool:
+    return (
+        is_builtin
+        and context.cache is not None
+        and context.cache.enabled
+        and context.cache_key is not None
+    )
+
+
+def _fresh_inventory_source_files(
+    context: _InventoryBuildContext,
+    language: str,
+    source_files: list[str] | None,
+    cached_by_language: dict[str, dict],
+) -> list[str]:
+    fresh_source_files: list[str] = []
+    cache = context.cache
+    if cache is None:
+        return list(source_files or [])
+
+    for rel_path in source_files or []:
+        source_file = context.source_file_by_path[rel_path]
+        file_hash = context.source_hashes.get(rel_path)
+        cached_entry = context.cache_files.get(rel_path)
+        if file_hash is None or cached_entry is None:
+            cache.stats.misses += 1
+            fresh_source_files.append(rel_path)
             continue
-
-        is_builtin = extensions is not None and entry_point == EXTRACTOR_REGISTRY.get(
-            language
-        )
-        fresh_source_files = list(source_files or [])
-        cached_by_language.setdefault(language, {})
-        if is_builtin and cache is not None and cache.enabled and cache_key is not None:
-            fresh_source_files = []
-            for rel_path in source_files or []:
-                source_file = source_file_by_path[rel_path]
-                file_hash = source_hashes.get(rel_path)
-                cached_entry = cache_files.get(rel_path)
-                if file_hash is None:
-                    cache.stats.misses += 1
-                    fresh_source_files.append(rel_path)
-                    continue
-                if cached_entry is None:
-                    cache.stats.misses += 1
-                    fresh_source_files.append(rel_path)
-                    continue
-                if is_valid_cache_entry(cached_entry, source_file, file_hash):
-                    cache.stats.hits += 1
-                    raw_inventory = cached_entry.get("inventory", {})
-                    if raw_inventory:
-                        cached_by_language[language][rel_path] = deepcopy(raw_inventory)
-                    updated_cache_files[rel_path] = cached_entry
-                    continue
-                cached_hash = (
-                    cached_entry.get("hash") if isinstance(cached_entry, dict) else None
-                )
-                if cached_hash != file_hash:
-                    cache.stats.changed += 1
-                else:
-                    cache.stats.stale += 1
-                fresh_source_files.append(rel_path)
-
-            if not fresh_source_files:
-                status_by_language[language] = ExtractorStatus(
-                    language, "ok", files_found
-                )
-                continue
-
-        kwargs = {"src_dir": src_dir, "only_files": only_files, "deep": deep}
-        if is_builtin:
-            if language == "go":
-                kwargs = {
-                    "src_dir": GoExtractionRequest(
-                        src_dir=src_dir,
-                        only_files=only_files,
-                        deep=deep,
-                        source_files=fresh_source_files,
-                        helper_cache_dir=(
-                            cache_options.cache_dir
-                            if cache_options is not None
-                            else None
-                        ),
-                    ),
-                }
-            elif language == "rust":
-                kwargs = {
-                    "src_dir": RustExtractionRequest(
-                        src_dir=src_dir,
-                        only_files=only_files,
-                        deep=deep,
-                        source_files=fresh_source_files,
-                        helper_cache_dir=(
-                            cache_options.cache_dir
-                            if cache_options is not None
-                            else None
-                        ),
-                    ),
-                }
-            else:
-                kwargs["source_files"] = fresh_source_files
-        if language == "python":
-            kwargs["include_empty"] = include_empty
-
-        plans.append(
-            _ExtractionPlan(
-                language=language,
-                entry_point=entry_point,
-                is_builtin=is_builtin,
-                source_files=source_files,
-                fresh_source_files=fresh_source_files,
-                files_found=files_found,
-                kwargs=kwargs,
+        if is_valid_cache_entry(cached_entry, source_file, file_hash):
+            cache.stats.hits += 1
+            _record_cached_inventory_entry(
+                context, cached_by_language, language, rel_path, cached_entry
             )
-        )
+            continue
+        _record_stale_cache_entry(cache, cached_entry, file_hash)
+        fresh_source_files.append(rel_path)
 
+    return fresh_source_files
+
+
+def _record_cached_inventory_entry(
+    context: _InventoryBuildContext,
+    cached_by_language: dict[str, dict],
+    language: str,
+    rel_path: str,
+    cached_entry: dict,
+) -> None:
+    raw_inventory = cached_entry.get("inventory", {})
+    if raw_inventory:
+        cached_by_language[language][rel_path] = deepcopy(raw_inventory)
+    context.updated_cache_files[rel_path] = cached_entry
+
+
+def _record_stale_cache_entry(
+    cache: InventoryCache, cached_entry: dict, file_hash: str
+) -> None:
+    cached_hash = cached_entry.get("hash") if isinstance(cached_entry, dict) else None
+    if cached_hash != file_hash:
+        cache.stats.changed += 1
+    else:
+        cache.stats.stale += 1
+
+
+def _build_extraction_kwargs(
+    context: _InventoryBuildContext,
+    language: str,
+    is_builtin: bool,
+    fresh_source_files: list[str],
+) -> dict:
+    kwargs = {
+        "src_dir": context.request.src_dir,
+        "only_files": context.request.only_files,
+        "deep": context.request.deep,
+    }
+    if is_builtin:
+        kwargs = _build_builtin_extraction_kwargs(context, language, fresh_source_files)
+    if language == "python":
+        kwargs["include_empty"] = context.request.include_empty
+    return kwargs
+
+
+def _build_builtin_extraction_kwargs(
+    context: _InventoryBuildContext, language: str, fresh_source_files: list[str]
+) -> dict:
+    if language == "go":
+        return {
+            "src_dir": GoExtractionRequest(
+                src_dir=context.request.src_dir,
+                only_files=context.request.only_files,
+                deep=context.request.deep,
+                source_files=fresh_source_files,
+                helper_cache_dir=_inventory_helper_cache_dir(context.request),
+            ),
+        }
+    if language == "rust":
+        return {
+            "src_dir": RustExtractionRequest(
+                src_dir=context.request.src_dir,
+                only_files=context.request.only_files,
+                deep=context.request.deep,
+                source_files=fresh_source_files,
+                helper_cache_dir=_inventory_helper_cache_dir(context.request),
+            ),
+        }
+    return {
+        "src_dir": context.request.src_dir,
+        "only_files": context.request.only_files,
+        "deep": context.request.deep,
+        "source_files": fresh_source_files,
+    }
+
+
+def _inventory_helper_cache_dir(request: InventoryRequest) -> str | None:
+    return (
+        request.cache_options.cache_dir if request.cache_options is not None else None
+    )
+
+
+def _run_inventory_plans(
+    plans: list[_ExtractionPlan], parallel_jobs: int
+) -> dict[str, _ExtractionOutcome]:
     builtin_plans = [plan for plan in plans if plan.is_builtin]
     plugin_plans = [plan for plan in plans if not plan.is_builtin]
     outcomes_by_language: dict[str, _ExtractionOutcome] = {}
 
+    _run_builtin_inventory_plans(builtin_plans, parallel_jobs, outcomes_by_language)
+    for plan in plugin_plans:
+        outcome = _run_extraction_plan(plan, fresh_instance=False)
+        outcomes_by_language[outcome.language] = outcome
+    return outcomes_by_language
+
+
+def _run_builtin_inventory_plans(
+    builtin_plans: list[_ExtractionPlan],
+    parallel_jobs: int,
+    outcomes_by_language: dict[str, _ExtractionOutcome],
+) -> None:
     if parallel_jobs > 1 and len(builtin_plans) > 1:
         max_workers = min(parallel_jobs, len(builtin_plans))
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -434,93 +587,111 @@ def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
                 builtin_plans,
             ):
                 outcomes_by_language[outcome.language] = outcome
-    else:
-        use_fresh_builtin_instances = parallel_jobs > 1
-        for plan in builtin_plans:
-            outcome = _run_extraction_plan(
-                plan, fresh_instance=use_fresh_builtin_instances
-            )
-            outcomes_by_language[outcome.language] = outcome
+        return
 
-    for plan in plugin_plans:
-        outcome = _run_extraction_plan(plan, fresh_instance=False)
+    use_fresh_builtin_instances = parallel_jobs > 1
+    for plan in builtin_plans:
+        outcome = _run_extraction_plan(plan, fresh_instance=use_fresh_builtin_instances)
         outcomes_by_language[outcome.language] = outcome
 
-    for plan in plans:
+
+def _collect_inventory_outcomes(
+    context: _InventoryBuildContext,
+    planning: _InventoryPlanningResult,
+    outcomes_by_language: dict[str, _ExtractionOutcome],
+) -> dict[str, dict]:
+    extracted_by_language: dict[str, dict] = {}
+    for plan in planning.plans:
         outcome = outcomes_by_language[plan.language]
         if outcome.state == "failed":
-            status_by_language[plan.language] = ExtractorStatus(
-                plan.language,
-                "failed",
-                outcome.files_found,
-                outcome.message,
+            planning.status_by_language[plan.language] = ExtractorStatus(
+                plan.language, "failed", outcome.files_found, outcome.message
             )
             continue
+        extracted_by_language[plan.language] = outcome.extracted
+        _update_inventory_cache_entries(context, plan, outcome.extracted)
+        planning.status_by_language[plan.language] = ExtractorStatus(
+            plan.language, "ok", outcome.files_found
+        )
+    return extracted_by_language
 
-        extracted = outcome.extracted
-        extracted_by_language[plan.language] = extracted
-        if (
-            plan.is_builtin
-            and cache is not None
-            and cache.enabled
-            and cache_key is not None
-        ):
-            cache.stats.fresh_extracted += len(plan.fresh_source_files)
-            for rel_path in plan.fresh_source_files:
-                source_file = source_file_by_path[rel_path]
-                file_hash = source_hashes.get(rel_path)
-                if file_hash is None:
-                    continue
-                raw_entry = deepcopy(extracted.get(rel_path, {}))
-                if raw_entry:
-                    raw_entry.pop("package", None)
-                updated_cache_files[rel_path] = make_cache_entry(
-                    source_file, file_hash, raw_entry
-                )
 
-        status_by_language[plan.language] = ExtractorStatus(
-            plan.language,
-            "ok",
-            outcome.files_found,
+def _update_inventory_cache_entries(
+    context: _InventoryBuildContext, plan: _ExtractionPlan, extracted: dict
+) -> None:
+    if not _can_use_inventory_cache(context, plan.is_builtin):
+        return
+    cache = context.cache
+    if cache is None:
+        return
+    cache.stats.fresh_extracted += len(plan.fresh_source_files)
+    for rel_path in plan.fresh_source_files:
+        source_file = context.source_file_by_path[rel_path]
+        file_hash = context.source_hashes.get(rel_path)
+        if file_hash is None:
+            continue
+        raw_entry = deepcopy(extracted.get(rel_path, {}))
+        if raw_entry:
+            raw_entry.pop("package", None)
+        context.updated_cache_files[rel_path] = make_cache_entry(
+            source_file, file_hash, raw_entry
         )
 
+
+def _merge_inventory_results(
+    context: _InventoryBuildContext,
+    cached_by_language: dict[str, dict],
+    extracted_by_language: dict[str, dict],
+) -> dict:
     inventory: dict = {}
-    for language in registry:
+    for language in context.registry:
         _merge_language_inventory(
             inventory,
-            source_snapshot.language_paths(language),
+            context.source_snapshot.language_paths(language),
             cached_by_language.get(language, {}),
             extracted_by_language.get(language, {}),
         )
-
-    # Stamp package ownership
-    packages = discover_packages(src_dir, source_snapshot=source_snapshot)
+    packages = discover_packages(
+        context.request.src_dir, source_snapshot=context.source_snapshot
+    )
     stamp_inventory_packages(inventory, packages)
-    statuses = {
+    return inventory
+
+
+def _ordered_inventory_statuses(
+    registry: dict[str, str], status_by_language: dict[str, ExtractorStatus]
+) -> dict[str, ExtractorStatus]:
+    return {
         language: status_by_language[language]
         for language in registry
         if language in status_by_language
     }
-    if cache is not None and cache.enabled:
-        cache.finalize_lookup_status()
-        if cache_key is not None and not any(
-            status.state == "failed" for status in statuses.values()
-        ):
-            should_save_cache = (
-                cache.options.rebuild
-                or bool(cache.stats.misses)
-                or bool(cache.stats.changed)
-                or bool(cache.stats.stale)
-                or bool(cache.stats.deleted)
-                or bool(cache.stats.fresh_extracted)
-            )
-            if should_save_cache:
-                cache.save(cache_key, updated_cache_files)
 
-    return InventoryResult(
-        inventory=inventory,
-        statuses=statuses,
-        cache_stats=cache.stats if cache is not None else None,
+
+def _save_inventory_cache(
+    context: _InventoryBuildContext, statuses: dict[str, ExtractorStatus]
+) -> None:
+    cache = context.cache
+    if cache is None or not cache.enabled:
+        return
+
+    cache.finalize_lookup_status()
+    if context.cache_key is None or any(
+        status.state == "failed" for status in statuses.values()
+    ):
+        return
+    if _should_save_inventory_cache(cache):
+        cache.save(context.cache_key, context.updated_cache_files)
+
+
+def _should_save_inventory_cache(cache: InventoryCache) -> bool:
+    return (
+        cache.options.rebuild
+        or bool(cache.stats.misses)
+        or bool(cache.stats.changed)
+        or bool(cache.stats.stale)
+        or bool(cache.stats.deleted)
+        or bool(cache.stats.fresh_extracted)
     )
 
 

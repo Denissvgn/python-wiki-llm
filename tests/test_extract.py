@@ -41,6 +41,10 @@ class TestGetInventory:
             "parallel_jobs",
         } & set(signature.parameters)
 
+    def test_inventory_result_builder_stays_small(self):
+        assert _body_line_count(extract_cmd.get_inventory_result) <= 20
+        assert _body_line_count(extract_cmd._build_inventory_result) <= 45
+
     def test_get_inventory_result_accepts_request_object(self, tmp_path):
         (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
 
