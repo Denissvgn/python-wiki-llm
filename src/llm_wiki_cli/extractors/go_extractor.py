@@ -152,7 +152,7 @@ class GoExtractor:
             )
             return None
 
-    def _load_inventory(self, result: subprocess.CompletedProcess) -> dict | None:
+    def _load_inventory(self, result: subprocess.CompletedProcess) -> dict:
         # Forward any warnings the Go script wrote to stderr.
         if result.stderr.strip():
             sys.stderr.write(result.stderr)

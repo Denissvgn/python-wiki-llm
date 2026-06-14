@@ -155,7 +155,7 @@ class TypeScriptExtractor:
             )
             return None
 
-    def _load_inventory(self, result: subprocess.CompletedProcess) -> dict | None:
+    def _load_inventory(self, result: subprocess.CompletedProcess) -> dict:
         # Forward any warnings the Node.js script wrote to stderr (e.g. skipped files).
         if result.stderr.strip():
             sys.stderr.write(result.stderr)
