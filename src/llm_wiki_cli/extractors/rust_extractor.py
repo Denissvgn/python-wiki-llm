@@ -157,7 +157,7 @@ class RustExtractor:
             )
             return None
 
-    def _load_inventory(self, result: subprocess.CompletedProcess) -> dict | None:
+    def _load_inventory(self, result: subprocess.CompletedProcess) -> dict:
         # Forward any warnings the Rust script wrote to stderr.
         if result.stderr.strip():
             sys.stderr.write(result.stderr)
