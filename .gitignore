@@ -12,3 +12,5 @@ build/
 .git/llm-wiki.lock
 .git/llm-wiki-breaker.json
 .git/llm-wiki-sync.log
+DOC_GENERATOR_ROADMAP.md
+BACKLOG_M1_FLOW_FOUNDATIONS.md
