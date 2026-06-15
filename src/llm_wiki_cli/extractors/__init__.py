@@ -37,6 +37,12 @@ class ExtractorProtocol(Protocol):
             method details, imports).  When ``False``, return a slim
             name-only summary suitable for quick index generation.
 
+            In deep mode a function/method entry **may** also carry an
+            optional ``"calls"`` list of in-body call targets
+            (``{"name", "attr"?, "line"}``) used for call-edge resolution.
+            The field is additive: it is omitted when empty, and consumers
+            must tolerate its absence for extractors that do not emit it.
+
         Returns
         -------
         dict

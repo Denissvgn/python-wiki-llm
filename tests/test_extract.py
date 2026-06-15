@@ -10,7 +10,12 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.commands import extract_cmd
-from llm_wiki_cli.commands.extract_cmd import get_inventory, get_call_graph, _summarize_inventory
+from llm_wiki_cli.commands.extract_cmd import (
+    get_inventory,
+    get_call_graph,
+    resolve_call_edges,
+    _summarize_inventory,
+)
 from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.extractors.python_extractor import PythonExtractor
 from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
@@ -495,6 +500,95 @@ class TestGetInventory:
         assert [fn["name"] for fn in data["functions"]] == ["make_model"]
 
 
+class TestCallCapture:
+    def test_deep_mode_captures_body_calls(self, tmp_path):
+        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+            def helper():
+                return 1
+
+            def run():
+                value = helper()
+                return value
+        """))
+        inventory = get_inventory(str(tmp_path), deep=True)
+        functions = {fn["name"]: fn for fn in inventory["m.py"]["functions"]}
+        assert "helper" in {c["name"] for c in functions["run"]["calls"]}
+        # Field is omitted for a body that makes no nameable calls.
+        assert "calls" not in functions["helper"]
+
+    def test_attribute_call_records_dotted_path(self, tmp_path):
+        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+            import os
+
+            def run():
+                return os.getcwd()
+        """))
+        inventory = get_inventory(str(tmp_path), deep=True)
+        call = inventory["m.py"]["functions"][0]["calls"][0]
+        assert call["name"] == "getcwd"
+        assert call["attr"] == "os.getcwd"
+
+    def test_comprehension_and_lambda_calls_are_kept(self, tmp_path):
+        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+            def transform(xs):
+                doubled = [scale(x) for x in xs]
+                fn = lambda y: clamp(y)
+                return doubled, fn
+        """))
+        inventory = get_inventory(str(tmp_path), deep=True)
+        names = {c["name"] for c in inventory["m.py"]["functions"][0]["calls"]}
+        assert {"scale", "clamp"} <= names
+
+    def test_nested_definition_calls_do_not_leak(self, tmp_path):
+        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+            def outer():
+                setup()
+                def inner():
+                    leaked()
+                return inner
+        """))
+        inventory = get_inventory(str(tmp_path), deep=True)
+        outer = next(fn for fn in inventory["m.py"]["functions"] if fn["name"] == "outer")
+        names = {c["name"] for c in outer["calls"]}
+        assert "setup" in names
+        assert "leaked" not in names
+
+    def test_calls_are_deduplicated_in_source_order(self, tmp_path):
+        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+            def run():
+                first()
+                second()
+                first()
+        """))
+        inventory = get_inventory(str(tmp_path), deep=True)
+        run = inventory["m.py"]["functions"][0]
+        assert [c["name"] for c in run["calls"]] == ["first", "second"]
+
+    def test_slim_mode_omits_calls(self, tmp_path):
+        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+            def run():
+                helper()
+
+            def helper():
+                pass
+        """))
+        inventory = get_inventory(str(tmp_path), deep=False)
+        assert all("calls" not in fn for fn in inventory["m.py"]["functions"])
+
+    def test_method_bodies_capture_calls(self, tmp_path):
+        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+            class Svc:
+                def run(self):
+                    return self.helper()
+
+                def helper(self):
+                    return 1
+        """))
+        inventory = get_inventory(str(tmp_path), deep=True)
+        method = inventory["m.py"]["classes"][0]["methods"][0]
+        assert method["calls"][0] == {"name": "helper", "attr": "self.helper", "line": 3}
+
+
 class TestRelativePathKeys:
     """Inventory keys must be relative to src_dir, not absolute."""
 
@@ -670,6 +764,77 @@ class TestGetCallGraph:
             "schemas/task.py",
             "routers/tasks.py",
         }
+
+
+class TestResolveCallEdges:
+    def test_resolver_stays_decomposed(self):
+        assert _body_line_count(resolve_call_edges) <= 35
+
+    def test_tolerates_inventory_without_calls(self):
+        inventory = {"m.py": {"functions": [{"name": "f", "line": 1}], "classes": []}}
+        assert resolve_call_edges(inventory) == []
+
+    def test_resolves_imported_project_symbol(self, tmp_path):
+        (tmp_path / "a.py").write_text("def helper():\n    return 1\n")
+        (tmp_path / "b.py").write_text(textwrap.dedent("""\
+            from a import helper
+
+            def run():
+                return helper()
+        """))
+        inventory = get_inventory(str(tmp_path), deep=True)
+        edge = next(e for e in resolve_call_edges(inventory) if e["from"]["symbol"] == "run")
+        assert edge["to"] == {"file": "a.py", "symbol": "helper"}
+        assert edge["kind"] == "internal"
+
+    def test_resolves_self_method_call(self, tmp_path):
+        (tmp_path / "svc.py").write_text(textwrap.dedent("""\
+            class Svc:
+                def run(self):
+                    return self.helper()
+
+                def helper(self):
+                    return 1
+        """))
+        inventory = get_inventory(str(tmp_path), deep=True)
+        edge = next(e for e in resolve_call_edges(inventory) if e["from"]["symbol"] == "Svc.run")
+        assert edge["to"] == {"file": "svc.py", "symbol": "Svc.helper"}
+        assert edge["kind"] == "internal"
+
+    def test_resolves_same_file_symbol(self, tmp_path):
+        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+            def run():
+                return helper()
+
+            def helper():
+                return 1
+        """))
+        inventory = get_inventory(str(tmp_path), deep=True)
+        edge = next(e for e in resolve_call_edges(inventory) if e["from"]["symbol"] == "run")
+        assert edge["to"] == {"file": "m.py", "symbol": "helper"}
+        assert edge["kind"] == "internal"
+
+    def test_tags_external_import_call(self, tmp_path):
+        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+            import os
+
+            def run():
+                return os.getcwd()
+        """))
+        inventory = get_inventory(str(tmp_path), deep=True)
+        edge = next(e for e in resolve_call_edges(inventory) if e["name"] == "os.getcwd")
+        assert edge["kind"] == "external"
+        assert edge["to"]["file"] is None
+
+    def test_tags_unresolved_call(self, tmp_path):
+        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+            def run():
+                return mystery()
+        """))
+        inventory = get_inventory(str(tmp_path), deep=True)
+        edge = next(e for e in resolve_call_edges(inventory) if e["name"] == "mystery")
+        assert edge["kind"] == "unresolved"
+        assert edge["to"]["file"] is None
 
 
 class TestOnlyFiles:

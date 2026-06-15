@@ -1143,6 +1143,140 @@ def get_call_graph(inventory: dict) -> dict:
     return workflows
 
 
+# ── Call-edge resolution for flow detection ───────────────────────────
+
+
+def _file_local_symbols(data: dict) -> set[str]:
+    """Names of functions and classes defined in a single file entry."""
+    names = {fn["name"] for fn in data.get("functions", [])}
+    names |= {cls["name"] for cls in data.get("classes", [])}
+    return names
+
+
+def _caller_components(data: dict):
+    """Yield ``(caller_symbol, fn, class_name)`` for every callable in a file.
+
+    ``caller_symbol`` is the bare name for module-level functions and
+    ``Class.method`` for methods; ``class_name`` is ``None`` for functions.
+    """
+    for fn in data.get("functions", []):
+        yield fn["name"], fn, None
+    for cls in data.get("classes", []):
+        for method in cls.get("methods", []):
+            yield f"{cls['name']}.{method['name']}", method, cls["name"]
+
+
+def _attr_root(attr: str) -> str:
+    return attr.split(".", 1)[0] if attr else ""
+
+
+def _self_method_target(
+    call: dict, class_name: str | None, data: dict, filepath: str
+) -> tuple[str, str] | None:
+    """Resolve a ``self.x`` / ``cls.x`` call to a method of the same class."""
+    if class_name is None or _attr_root(call.get("attr", "")) not in ("self", "cls"):
+        return None
+    for cls in data.get("classes", []):
+        if cls["name"] != class_name:
+            continue
+        for method in cls.get("methods", []):
+            if method["name"] == call["name"]:
+                return filepath, f"{class_name}.{call['name']}"
+    return None
+
+
+def _call_uses_import(name: str, attr: str, imported_names: set[str]) -> bool:
+    return name in imported_names or _attr_root(attr) in imported_names
+
+
+def _resolve_call(
+    call: dict,
+    filepath: str,
+    class_name: str | None,
+    data: dict,
+    imported_internal: dict[str, tuple[str, str]],
+    imported_names: set[str],
+    local_symbols: set[str],
+    symbol_to_files: dict[str, set[str]],
+) -> tuple[str | None, str, str]:
+    """Return ``(to_file, to_symbol, kind)`` for a single call record."""
+    name = call["name"]
+    attr = call.get("attr", "")
+
+    target = _self_method_target(call, class_name, data, filepath)
+    if target is not None:
+        return target[0], target[1], "internal"
+    if not attr and name in imported_internal:
+        to_file, source_name = imported_internal[name]
+        return to_file, source_name, "internal"
+    if not attr and name in local_symbols:
+        return filepath, name, "internal"
+    if not attr:
+        candidates = symbol_to_files.get(name, set())
+        if len(candidates) == 1:
+            return next(iter(candidates)), name, "internal"
+    if _call_uses_import(name, attr, imported_names):
+        return None, name, "external"
+    return None, name, "unresolved"
+
+
+def _edges_for_file(
+    filepath: str,
+    data: dict,
+    symbol_to_files: dict[str, set[str]],
+    module_resolver,
+) -> list[dict]:
+    """Resolve the call edges that originate in a single file entry."""
+    imports = data.get("imports", [])
+    imported_internal = _resolve_imported_symbols(
+        filepath, imports, symbol_to_files, module_resolver
+    )
+    imported_names = {imp.get("alias") or imp["name"] for imp in imports}
+    local_symbols = _file_local_symbols(data)
+
+    edges: list[dict] = []
+    for caller_symbol, fn, class_name in _caller_components(data):
+        for call in fn.get("calls", []):
+            to_file, to_symbol, kind = _resolve_call(
+                call, filepath, class_name, data,
+                imported_internal, imported_names, local_symbols, symbol_to_files,
+            )
+            edges.append(
+                {
+                    "from": {"file": filepath, "symbol": caller_symbol},
+                    "to": {"file": to_file, "symbol": to_symbol},
+                    "name": call.get("attr") or call["name"],
+                    "kind": kind,
+                    "line": call.get("line", 0),
+                }
+            )
+    return edges
+
+
+def resolve_call_edges(inventory: dict) -> list[dict]:
+    """Resolve captured ``calls`` records into caller→callee edges.
+
+    Reuses the symbol index and module resolver used for workflow detection.
+    Each edge is ``{"from", "to", "name", "kind", "line"}`` where ``kind`` is:
+
+    - ``"internal"`` — resolved to a project ``(file, symbol)``;
+    - ``"external"`` — the callee comes from an imported (likely third-party or
+      stdlib) name that is not a project symbol;
+    - ``"unresolved"`` — could not be tied to a known symbol.
+
+    External and unresolved calls are kept (``to.file`` is ``None``), never
+    dropped, so downstream flow assembly can still show boundary crossings.
+    """
+    symbol_to_files = _build_symbol_file_index(inventory)
+    module_resolver = build_module_path_resolver(inventory)
+    edges: list[dict] = []
+    for filepath, data in inventory.items():
+        edges.extend(
+            _edges_for_file(filepath, data, symbol_to_files, module_resolver)
+        )
+    return edges
+
+
 # ── Docker / Compose extraction ──────────────────────────────────────
 
 

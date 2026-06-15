@@ -71,8 +71,63 @@ def _extract_decorators(node) -> list[str]:
     return decorators
 
 
-def _extract_function_info(node) -> dict:
-    """Extract full function/method info from a FunctionDef or AsyncFunctionDef."""
+# Nodes that open a new scope; calls inside them belong to that inner scope,
+# not the enclosing function, so the walk does not descend into them.
+_SCOPE_BOUNDARIES = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
+
+
+def _call_record(node: ast.Call) -> dict | None:
+    """Build a call record from an ``ast.Call`` node.
+
+    Returns ``None`` for call targets we cannot name simply (e.g. calls on a
+    subscript or on the result of another call). Callers still descend into the
+    arguments so nested calls are not lost.
+    """
+    func = node.func
+    if isinstance(func, ast.Name):
+        return {"name": func.id, "line": node.lineno}
+    if isinstance(func, ast.Attribute):
+        return {"name": func.attr, "attr": _annotation_to_str(func), "line": node.lineno}
+    return None
+
+
+def _extract_calls(node) -> list[dict]:
+    """Collect direct call targets within a function/method body.
+
+    Walks the body but does not descend into nested function or class
+    definitions, so their calls are attributed to the inner scope. Calls inside
+    comprehensions and lambdas are kept (same scope). Records are de-duplicated
+    by ``(name, attr)`` and returned in source order.
+    """
+    calls: list[dict] = []
+    seen: set[tuple[str, str]] = set()
+
+    def _walk(current) -> None:
+        for child in ast.iter_child_nodes(current):
+            if isinstance(child, _SCOPE_BOUNDARIES):
+                continue
+            if isinstance(child, ast.Call):
+                record = _call_record(child)
+                if record is not None:
+                    key = (record["name"], record.get("attr", ""))
+                    if key not in seen:
+                        seen.add(key)
+                        calls.append(record)
+            _walk(child)
+
+    for statement in node.body:
+        if isinstance(statement, _SCOPE_BOUNDARIES):
+            continue
+        _walk(statement)
+    return calls
+
+
+def _extract_function_info(node, deep: bool = False) -> dict:
+    """Extract full function/method info from a FunctionDef or AsyncFunctionDef.
+
+    When *deep* is true, a ``"calls"`` list of in-body call targets is added
+    (omitted when the body makes no nameable calls).
+    """
     info = {
         "name": node.name,
         "line": node.lineno,
@@ -104,6 +159,11 @@ def _extract_function_info(node) -> dict:
 
     info["params"] = params
     info["return_type"] = _annotation_to_str(node.returns)
+
+    if deep:
+        calls = _extract_calls(node)
+        if calls:
+            info["calls"] = calls
 
     return info
 
@@ -169,7 +229,7 @@ class ComponentVisitor(ast.NodeVisitor):
         methods = []
         for child in node.body:
             if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                methods.append(_extract_function_info(child))
+                methods.append(_extract_function_info(child, deep=self._deep))
 
         self.classes.append({
             "name": node.name,
@@ -186,9 +246,9 @@ class ComponentVisitor(ast.NodeVisitor):
         # Only capture top-level functions (not methods inside classes)
         if self._class_depth == 0 and self._function_depth == 0:
             if not node.name.startswith("_"):
-                self.functions.append(_extract_function_info(node))
+                self.functions.append(_extract_function_info(node, deep=self._deep))
             elif self._deep:
-                info = _extract_function_info(node)
+                info = _extract_function_info(node, deep=self._deep)
                 info["private"] = True
                 self.functions.append(info)
         self._function_depth += 1
@@ -200,9 +260,9 @@ class ComponentVisitor(ast.NodeVisitor):
     def visit_AsyncFunctionDef(self, node):
         if self._class_depth == 0 and self._function_depth == 0:
             if not node.name.startswith("_"):
-                self.functions.append(_extract_function_info(node))
+                self.functions.append(_extract_function_info(node, deep=self._deep))
             elif self._deep:
-                info = _extract_function_info(node)
+                info = _extract_function_info(node, deep=self._deep)
                 info["private"] = True
                 self.functions.append(info)
         self._function_depth += 1

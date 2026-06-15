@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Deep extraction now records an optional per-function `calls` list of in-body
+  call targets (additive under `llm-wiki-extract/v1`; omitted when empty and
+  absent in slim mode). A new internal `resolve_call_edges` resolver maps those
+  calls to project symbols, tagging each caller→callee edge `internal`,
+  `external`, or `unresolved`. This is the call-edge foundation for upcoming
+  user-flow documentation (Milestone 1 — Flow Foundations).
+
 ## [0.6.1] - 2026-06-14
 
 ### Fixed
