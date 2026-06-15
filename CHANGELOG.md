@@ -14,6 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   calls to project symbols, tagging each caller→callee edge `internal`,
   `external`, or `unresolved`. This is the call-edge foundation for upcoming
   user-flow documentation (Milestone 1 — Flow Foundations).
+- Deep extraction now records optional `all_exports` (names listed in `__all__`)
+  and `main_block` (presence of an `if __name__ == "__main__"` guard) file-level
+  fields (additive under `llm-wiki-extract/v1`; omitted when absent or in slim
+  mode). A new internal `entrypoints` service detects user-reachable entry points
+  (public API, framework-decorated CLI/HTTP/MCP handlers, and `__main__` /
+  console-script processes) and assembles bounded, de-cycled user-flow call paths
+  from the resolved call edges.
 
 ## [0.6.1] - 2026-06-14
 

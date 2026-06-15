@@ -589,6 +589,54 @@ class TestCallCapture:
         assert method["calls"][0] == {"name": "helper", "attr": "self.helper", "line": 3}
 
 
+class TestEntryPointSignals:
+    def test_deep_captures_all_exports(self, tmp_path):
+        (tmp_path / "api.py").write_text(textwrap.dedent("""\
+            __all__ = ["run", "Service"]
+
+            def run():
+                pass
+
+            class Service:
+                pass
+        """))
+        data = get_inventory(str(tmp_path), deep=True)["api.py"]
+        assert data["all_exports"] == ["run", "Service"]
+        assert data["has_all"] is True
+
+    def test_all_exports_omitted_without_dunder_all(self, tmp_path):
+        (tmp_path / "m.py").write_text("def run():\n    pass\n")
+        assert "all_exports" not in get_inventory(str(tmp_path), deep=True)["m.py"]
+
+    def test_deep_captures_main_block(self, tmp_path):
+        (tmp_path / "cli.py").write_text(textwrap.dedent("""\
+            def main():
+                pass
+
+            if __name__ == "__main__":
+                main()
+        """))
+        assert get_inventory(str(tmp_path), deep=True)["cli.py"]["main_block"] is True
+
+    def test_main_block_omitted_when_absent(self, tmp_path):
+        (tmp_path / "m.py").write_text("def main():\n    pass\n")
+        assert "main_block" not in get_inventory(str(tmp_path), deep=True)["m.py"]
+
+    def test_slim_mode_omits_entry_signals(self, tmp_path):
+        (tmp_path / "api.py").write_text(textwrap.dedent("""\
+            __all__ = ["run"]
+
+            def run():
+                pass
+
+            if __name__ == "__main__":
+                run()
+        """))
+        data = get_inventory(str(tmp_path), deep=False)["api.py"]
+        assert "all_exports" not in data
+        assert "main_block" not in data
+
+
 class TestRelativePathKeys:
     """Inventory keys must be relative to src_dir, not absolute."""
 

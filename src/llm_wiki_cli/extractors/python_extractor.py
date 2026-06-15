@@ -182,6 +182,29 @@ def _extract_class_attributes(node) -> list[dict]:
     return attrs
 
 
+def _string_list(node) -> list[str]:
+    """Return the string constants of a ``List``/``Tuple`` literal (else empty)."""
+    if not isinstance(node, (ast.List, ast.Tuple)):
+        return []
+    return [
+        elt.value
+        for elt in node.elts
+        if isinstance(elt, ast.Constant) and isinstance(elt.value, str)
+    ]
+
+
+def _is_main_guard(test) -> bool:
+    """Detect an ``if __name__ == "__main__"`` test node."""
+    return (
+        isinstance(test, ast.Compare)
+        and isinstance(test.left, ast.Name)
+        and test.left.id == "__name__"
+        and len(test.comparators) == 1
+        and isinstance(test.comparators[0], ast.Constant)
+        and test.comparators[0].value == "__main__"
+    )
+
+
 # ── AST visitor ───────────────────────────────────────────────────────
 
 
@@ -192,6 +215,8 @@ class ComponentVisitor(ast.NodeVisitor):
         self.imports = []
         self.constants = []  # UPPER_CASE module-level assignments
         self.has_all = False  # whether __all__ is defined
+        self.all_exports = []  # names listed in __all__ (when statically known)
+        self.has_main = False  # whether an `if __name__ == "__main__"` guard exists
         self._class_depth = 0
         self._function_depth = 0
         self._deep = deep
@@ -278,11 +303,18 @@ class ComponentVisitor(ast.NodeVisitor):
                 if isinstance(target, ast.Name):
                     if target.id == "__all__":
                         self.has_all = True
+                        self.all_exports = _string_list(node.value)
                     elif target.id == target.id.upper() and target.id.replace("_", "").isalnum() and not target.id[0].isdigit():
                         self.constants.append({
                             "name": target.id,
                             "line": node.lineno,
                         })
+        self.generic_visit(node)
+
+    def visit_If(self, node):
+        """Detect a module-level ``if __name__ == "__main__"`` entry guard."""
+        if self._class_depth == 0 and self._function_depth == 0 and _is_main_guard(node.test):
+            self.has_main = True
         self.generic_visit(node)
 
 
@@ -356,6 +388,10 @@ def _scan_python_files(
             if deep:
                 file_entry["imports"] = visitor.imports
                 file_entry["module_docstring"] = ast.get_docstring(tree) or ""
+                if visitor.all_exports:
+                    file_entry["all_exports"] = visitor.all_exports
+                if visitor.has_main:
+                    file_entry["main_block"] = True
             else:
                 # Slim format: strip rich fields for backward compat
                 file_entry["classes"] = [
