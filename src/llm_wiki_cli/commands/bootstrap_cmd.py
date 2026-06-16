@@ -15,6 +15,7 @@ from .extract_cmd import (
     get_docker_inventory,
     get_inventory_result,
     print_inventory_failures,
+    resolve_call_edges,
 )
 from ..config import (
     DEFAULT_WIKI_DIR as _DEFAULT_WIKI_DIR,
@@ -22,6 +23,8 @@ from ..config import (
     validate_source_root,
 )
 from ..services.contracts import BOOTSTRAP_SUMMARY_SCHEMA_VERSION
+from ..services.diagrams import sequence_diagram
+from ..services.entrypoints import build_flow, get_entry_points, read_console_scripts
 from ..services.imports import ModulePathResolver, build_module_path_resolver
 from ..services.io import read_md, write_md
 from ..services.paths import normalize_source_path
@@ -419,11 +422,31 @@ def _generate_module_md(
     return "\n".join(lines)
 
 
+def _append_index_user_flows(lines: list[str], flow_entries: list[dict] | None) -> None:
+    """Append the grouped "User Flows" section to *lines* (in place)."""
+    lines.append("## User Flows")
+    lines.append("")
+    if not flow_entries:
+        return
+    for category in sorted({f["category"] for f in flow_entries}):
+        lines.append(f"**{category}**")
+        lines.append("")
+        for flow in sorted(
+            (f for f in flow_entries if f["category"] == category),
+            key=lambda f: f["id"],
+        ):
+            lines.append(
+                f"- [{flow['id']}](flows/{flow['id']}.md) - entry: `{flow['entry']}`"
+            )
+        lines.append("")
+
+
 def _generate_index_md(
     entity_names: list[str],
     module_entries: list[dict],
     workflow_entries: list[dict] | None = None,
     infra_entries: list[dict] | None = None,
+    flow_entries: list[dict] | None = None,
 ) -> str:
     """Generate the full index.md content."""
     lines = [
@@ -458,6 +481,8 @@ def _generate_index_md(
                 f"- [{wf['name']}](workflows/{wf['name']}.md) - entry: `{entry_point}`"
             )
         lines.append("")
+
+    _append_index_user_flows(lines, flow_entries)
 
     lines.append("## Infrastructure")
     lines.append("")
@@ -530,6 +555,97 @@ def _generate_workflow_md(
     lines.append("")
     for label, page in modules:
         lines.append(f"- [{label}](../modules/{page}.md)")
+    lines.append("")
+
+    return "\n".join(lines)
+
+
+def _flow_module_refs(
+    flow: dict,
+    module_page_map: Mapping[str, str] | None = None,
+) -> list[tuple[str, str]]:
+    """Return sorted ``(label, page_stem)`` pairs for a flow's touched modules."""
+    page_map = module_page_map or {}
+    refs = [
+        (page_map.get(path, _module_name_from_path(path)),) * 2
+        for path in flow.get("modules_touched", [])
+    ]
+    return sorted(set(refs), key=lambda item: item[0])
+
+
+def _flow_interactions(flow: dict) -> list[dict]:
+    """Convert depth-tagged flow steps into caller→callee sequence interactions.
+
+    Reconstructs each step's caller from the most recent shallower step so the
+    nested call tree renders as an ordered sequence. External and unresolved
+    calls are marked ``dashed``.
+    """
+    interactions: list[dict] = []
+    stack: dict[int, str] = {}
+    for step in flow.get("steps", []):
+        depth = step["depth"]
+        symbol = step["symbol"]
+        if depth == 0:
+            stack = {0: symbol}
+            continue
+        interactions.append(
+            {
+                "from": stack.get(depth - 1, "?"),
+                "to": symbol,
+                "label": symbol,
+                "dashed": step["kind"] in ("external", "unresolved"),
+            }
+        )
+        stack[depth] = symbol
+        for deeper in [d for d in stack if d > depth]:
+            del stack[deeper]
+    return interactions
+
+
+def _generate_flow_md(
+    flow: dict,
+    module_page_map: Mapping[str, str] | None = None,
+) -> str:
+    """Generate a user-flow page with a Mermaid sequence diagram from *flow*."""
+    entry = flow["entry"]
+    page_map = module_page_map or {}
+    interactions = _flow_interactions(flow)
+    modules = _flow_module_refs(flow, page_map)
+
+    lines = [
+        f"# {entry['label']}",
+        "",
+        f"**Entry point:** `{entry['symbol']}` (`{entry['category']}`)",
+    ]
+    if entry.get("file"):
+        stem = page_map.get(entry["file"], _module_name_from_path(entry["file"]))
+        lines.append(f"**Source:** [{stem}](../modules/{stem}.md)")
+    if modules:
+        joined = ", ".join(f"[{label}](../modules/{page}.md)" for label, page in modules)
+        lines.append(f"**Modules touched:** {joined}")
+    lines.append("")
+
+    lines.append("## Call sequence")
+    lines.append("")
+    lines.append(
+        "<!-- Auto-generated from static call edges. Dashed arrows are external "
+        "or unresolved calls. Refine order and conditions after review. -->"
+    )
+    if interactions:
+        lines.append(sequence_diagram(interactions))
+    else:
+        lines.append("*No outbound calls detected — describe the behavior manually.*")
+    if flow.get("truncated"):
+        lines.append("")
+        lines.append("> Trace truncated at the depth limit; deeper calls are omitted.")
+    lines.append("")
+
+    lines.append("## Behavior")
+    lines.append("")
+    lines.append(
+        "_Describe what this flow does, when it is triggered, and its key side "
+        "effects or outputs. Replace this placeholder._"
+    )
     lines.append("")
 
     return "\n".join(lines)
@@ -924,6 +1040,7 @@ class _BootstrapRunOptions:
     depth: str
     deep: bool
     skip_workflows: bool
+    skip_flows: bool
     overwrite: bool
     json_mode: bool
     source_adapter: bool
@@ -960,6 +1077,12 @@ class _WorkflowResult:
 
 
 @dataclass(frozen=True)
+class _FlowResult:
+    entries: list[dict]
+    created: int
+
+
+@dataclass(frozen=True)
 class _InfrastructureResult:
     entries: list[dict]
     created: int
@@ -970,6 +1093,7 @@ class _InfrastructureResult:
 class _BootstrapGenerationResult:
     entity: _EntityModuleResult
     workflow: _WorkflowResult
+    flow: _FlowResult
     infrastructure: _InfrastructureResult
     cross_reference_count: int
 
@@ -992,6 +1116,7 @@ def _bootstrap_run_options_from_args(args) -> _BootstrapRunOptions:
         depth=depth,
         deep=depth == "full",
         skip_workflows=getattr(args, "skip_workflows", False),
+        skip_flows=getattr(args, "skip_flows", False),
         overwrite=args.overwrite,
         json_mode=json_mode,
         source_adapter=getattr(args, "source_adapter", False),
@@ -1030,7 +1155,7 @@ def _start_bootstrap(state: _BootstrapRunState) -> None:
         flush=True,
     )
     _emit_bootstrap(state, f"Wiki output directory: {options.wiki_dir}", flush=True)
-    for subdir in ["entities", "modules", "workflows", "infrastructure"]:
+    for subdir in ["entities", "modules", "workflows", "infrastructure", "flows"]:
         (options.wiki_dir / subdir).mkdir(parents=True, exist_ok=True)
 
 
@@ -1078,6 +1203,7 @@ def _finish_if_empty_bootstrap_inventory(
                     "functions": 0,
                     "docker_files": 0,
                     "workflows": 0,
+                    "flows": 0,
                     "cross_references": 0,
                     "created_files": state.created_files,
                     "updated_files": state.updated_files,
@@ -1252,6 +1378,42 @@ def _write_bootstrap_workflow_pages(
     return _WorkflowResult(workflow_entries, workflows_created)
 
 
+def _write_bootstrap_flow_pages(
+    state: _BootstrapRunState,
+    inventory: dict,
+    module_page_map: dict[str, str],
+) -> _FlowResult:
+    flow_entries: list[dict] = []
+    flows_created = 0
+    if not state.options.deep or state.options.skip_flows:
+        return _FlowResult(flow_entries, flows_created)
+
+    _emit_bootstrap(state, "Generating user-flow pages...", flush=True)
+    edges = resolve_call_edges(inventory)
+    console_scripts = read_console_scripts(state.options.src_dir_for_scan)
+    for entry_point in get_entry_points(inventory, console_scripts=console_scripts):
+        flow = build_flow(entry_point, edges)
+        flow_path = state.options.wiki_dir / "flows" / f"{entry_point['id']}.md"
+        if flow_path.exists() and not state.options.overwrite:
+            state.skipped_files.append(_path_text(flow_path))
+            _emit_bootstrap(state, f"  SKIP flow (exists): {entry_point['id']}")
+        else:
+            _write_bootstrap_file(
+                state, flow_path, _generate_flow_md(flow, module_page_map)
+            )
+            flows_created += 1
+            _emit_bootstrap(state, f"  CREATE flow: {entry_point['id']}")
+        flow_entries.append(
+            {
+                "id": entry_point["id"],
+                "category": entry_point["category"],
+                "entry": entry_point["symbol"],
+            }
+        )
+    _emit_bootstrap(state, f"Generated user-flow pages: {flows_created}.", flush=True)
+    return _FlowResult(flow_entries, flows_created)
+
+
 def _write_bootstrap_infrastructure_pages(
     state: _BootstrapRunState,
     module_page_map: dict[str, str],
@@ -1288,6 +1450,7 @@ def _write_bootstrap_index(
     state: _BootstrapRunState,
     entity_result: _EntityModuleResult,
     workflow_result: _WorkflowResult,
+    flow_result: _FlowResult,
     infrastructure_result: _InfrastructureResult,
 ) -> None:
     index_path = state.options.wiki_dir / "index.md"
@@ -1299,6 +1462,7 @@ def _write_bootstrap_index(
             entity_result.module_entries,
             workflow_result.entries or None,
             infrastructure_result.entries or None,
+            flow_result.entries or None,
         ),
     )
     _emit_bootstrap(state, "  WRITE index.md")
@@ -1309,6 +1473,7 @@ def _append_bootstrap_log(
     inventory: dict,
     entity_result: _EntityModuleResult,
     workflow_result: _WorkflowResult,
+    flow_result: _FlowResult,
     infrastructure_result: _InfrastructureResult,
     cross_reference_count: int,
 ) -> None:
@@ -1321,6 +1486,7 @@ def _append_bootstrap_log(
         f"- Entities created: {entity_result.entities_created}\n"
         f"- Modules created: {entity_result.modules_created}\n"
         f"- Workflows created: {workflow_result.created}\n"
+        f"- User flows created: {flow_result.created}\n"
         f"- Infrastructure created: {infrastructure_result.created}\n"
         f"- Total classes tracked: {len(entity_result.all_entity_names)}\n"
         f"- Total files scanned: {len(inventory)}\n"
@@ -1343,6 +1509,7 @@ def _emit_bootstrap_complete(
     inventory: dict,
     entity_result: _EntityModuleResult,
     workflow_result: _WorkflowResult,
+    flow_result: _FlowResult,
     infrastructure_result: _InfrastructureResult,
     cross_reference_count: int,
 ) -> None:
@@ -1350,6 +1517,7 @@ def _emit_bootstrap_complete(
         state,
         f"\nBootstrap complete: {entity_result.entities_created} entities, "
         f"{entity_result.modules_created} modules, {workflow_result.created} workflows, "
+        f"{flow_result.created} flows, "
         f"{infrastructure_result.created} infrastructure "
         f"created from {len(inventory)} source files "
         f"({cross_reference_count} cross-references).",
@@ -1389,6 +1557,7 @@ def _emit_bootstrap_json_summary(
     state: _BootstrapRunState,
     inventory: dict,
     workflow_result: _WorkflowResult,
+    flow_result: _FlowResult,
     infrastructure_result: _InfrastructureResult,
     cross_reference_count: int,
     manifest_path: Path,
@@ -1412,6 +1581,7 @@ def _emit_bootstrap_json_summary(
                 ),
                 "docker_files": len(infrastructure_result.docker_inventory),
                 "workflows": len(workflow_result.entries),
+                "flows": len(flow_result.entries),
                 "cross_references": cross_reference_count,
                 "created_files": state.created_files,
                 "updated_files": state.updated_files,
@@ -1439,12 +1609,16 @@ def _generate_bootstrap_content(
     workflow_result = _write_bootstrap_workflow_pages(
         state, inventory, page_maps.module_page_map
     )
+    flow_result = _write_bootstrap_flow_pages(
+        state, inventory, page_maps.module_page_map
+    )
     infrastructure_result = _write_bootstrap_infrastructure_pages(
         state, page_maps.module_page_map
     )
     return _BootstrapGenerationResult(
         entity_result,
         workflow_result,
+        flow_result,
         infrastructure_result,
         cross_reference_count,
     )
@@ -1456,12 +1630,15 @@ def _finalize_bootstrap(
     page_maps: _BootstrapPageMaps,
     result: _BootstrapGenerationResult,
 ) -> None:
-    _write_bootstrap_index(state, result.entity, result.workflow, result.infrastructure)
+    _write_bootstrap_index(
+        state, result.entity, result.workflow, result.flow, result.infrastructure
+    )
     _append_bootstrap_log(
         state,
         inventory,
         result.entity,
         result.workflow,
+        result.flow,
         result.infrastructure,
         result.cross_reference_count,
     )
@@ -1470,6 +1647,7 @@ def _finalize_bootstrap(
         inventory,
         result.entity,
         result.workflow,
+        result.flow,
         result.infrastructure,
         result.cross_reference_count,
     )
@@ -1479,6 +1657,7 @@ def _finalize_bootstrap(
         state,
         inventory,
         result.workflow,
+        result.flow,
         result.infrastructure,
         result.cross_reference_count,
         manifest_path,

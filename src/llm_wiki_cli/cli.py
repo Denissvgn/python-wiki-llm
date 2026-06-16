@@ -482,6 +482,11 @@ def _add_bootstrap_command(subparsers):
         help="Skip automatic workflow page generation from call graph",
     )
     bootstrap_parser.add_argument(
+        "--skip-flows",
+        action="store_true",
+        help="Skip automatic user-flow page generation from entry points",
+    )
+    bootstrap_parser.add_argument(
         "--format",
         choices=["text", "json"],
         default="text",

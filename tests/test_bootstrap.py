@@ -640,3 +640,87 @@ class TestBootstrapExternalSource:
         data = json.loads(capsys.readouterr().out)
         assert data["src_dir"] == str(source)
         assert (workspace / "docs" / "llm_wiki" / "modules" / "app.md").exists()
+
+
+class TestGenerateFlowMd:
+    def test_renders_entry_modules_and_diagram(self):
+        flow = {
+            "entry": {"id": "api-run", "category": "api", "file": "pkg/api.py", "symbol": "run", "label": "run"},
+            "steps": [
+                {"depth": 0, "file": "pkg/api.py", "symbol": "run", "kind": "entry"},
+                {"depth": 1, "file": "pkg/helper.py", "symbol": "work", "kind": "internal"},
+                {"depth": 1, "file": None, "symbol": "getcwd", "kind": "external"},
+            ],
+            "modules_touched": ["pkg/api.py", "pkg/helper.py"],
+            "truncated": True,
+        }
+        md = bootstrap_cmd._generate_flow_md(
+            flow, {"pkg/api.py": "api", "pkg/helper.py": "helper"}
+        )
+        assert md.startswith("# run")
+        assert "**Entry point:** `run` (`api`)" in md
+        assert "[api](../modules/api.md)" in md
+        assert "[helper](../modules/helper.md)" in md
+        assert "sequenceDiagram" in md
+        assert "-->>" in md  # external call rendered as a dashed arrow
+        assert "truncated" in md
+        assert "## Behavior" in md
+
+    def test_no_calls_uses_placeholder(self):
+        flow = {
+            "entry": {"id": "api-x", "category": "api", "file": "m.py", "symbol": "x", "label": "x"},
+            "steps": [{"depth": 0, "file": "m.py", "symbol": "x", "kind": "entry"}],
+            "modules_touched": ["m.py"],
+            "truncated": False,
+        }
+        md = bootstrap_cmd._generate_flow_md(flow, {"m.py": "m"})
+        assert "No outbound calls detected" in md
+        assert "sequenceDiagram" not in md
+
+
+class TestBootstrapFlows:
+    def _write_project(self, tmp_path):
+        (tmp_path / "api.py").write_text(textwrap.dedent('''\
+            __all__ = ["run"]
+
+            def run():
+                return _helper()
+
+            def _helper():
+                return 1
+        '''))
+
+    def test_generates_flow_page_with_sequence_diagram(self, tmp_path, monkeypatch, capsys):
+        self._write_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
+        flow_page = tmp_path / "wiki" / "flows" / "api-run.md"
+        assert flow_page.exists()
+        text = flow_page.read_text(encoding="utf-8")
+        assert "```mermaid" in text
+        assert "sequenceDiagram" in text
+        assert "_helper" in text
+        assert "## Behavior" in text
+
+    def test_index_lists_user_flows(self, tmp_path, monkeypatch, capsys):
+        self._write_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
+        index = (tmp_path / "wiki" / "index.md").read_text(encoding="utf-8")
+        assert "## User Flows" in index
+        assert "[api-run](flows/api-run.md)" in index
+
+    def test_skip_flows_writes_no_flow_pages(self, tmp_path, monkeypatch, capsys):
+        self._write_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki", skip_flows=True))
+        assert list((tmp_path / "wiki" / "flows").glob("*.md")) == []
+
+    def test_json_summary_counts_flows(self, tmp_path, monkeypatch, capsys):
+        self._write_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        bootstrap_cmd.run(
+            _make_args(src_dir=".", wiki_dir="wiki", format="json", source_adapter=True)
+        )
+        data = json.loads(capsys.readouterr().out)
+        assert data["flows"] == 1

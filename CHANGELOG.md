@@ -21,6 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (public API, framework-decorated CLI/HTTP/MCP handlers, and `__main__` /
   console-script processes) and assembles bounded, de-cycled user-flow call paths
   from the resolved call edges.
+- `bootstrap` now generates `flows/` pages — one per detected entry point — each
+  rendering a Mermaid `sequenceDiagram` of the resolved call path (dashed arrows
+  mark external/unresolved calls) plus a semantic `Behavior` placeholder for the
+  agent to fill in. `index.md` gains a grouped "User Flows" section, the JSON
+  summary reports a `flows` count, and `--skip-flows` opts out. New pure
+  `services/diagrams.py` provides reusable Mermaid `sequence_diagram` and
+  `flowchart` renderers.
 
 ## [0.6.1] - 2026-06-14
 
