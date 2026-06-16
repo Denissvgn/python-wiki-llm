@@ -12,6 +12,7 @@ from pathlib import Path
 from .extract_cmd import get_call_graph, get_docker_inventory, get_inventory_result
 from .bootstrap_cmd import build_module_page_map, build_entity_page_map
 from ..config import validate_path
+from ..services.entrypoints import get_entry_points, read_console_scripts
 from ..services.inventory_cache import (
     InventoryCacheOptions,
     InventoryCacheStats,
@@ -34,6 +35,7 @@ _PROFILE_PHASES = [
     "entities",
     "modules",
     "workflows",
+    "flows",
     "infrastructure",
     "strict",
     "plugins",
@@ -202,6 +204,14 @@ def _collect_documented_workflows(wiki_dir: Path) -> set[str]:
     if not workflows_dir.exists():
         return set()
     return {p.stem for p in workflows_dir.glob("*.md")}
+
+
+def _collect_documented_flows(wiki_dir: Path) -> set[str]:
+    """Return the set of user-flow page stems (entry-point ids)."""
+    flows_dir = wiki_dir / "flows"
+    if not flows_dir.exists():
+        return set()
+    return {p.stem for p in flows_dir.glob("*.md")}
 
 
 def _collect_documented_infrastructure(wiki_dir: Path) -> set[str]:
@@ -590,6 +600,36 @@ def _check_workflow_coverage(
             )
 
 
+def _check_flow_coverage(
+    report: LintReport,
+    wiki_path: Path,
+    deep_inventory: dict,
+    src_dir: str,
+) -> None:
+    """Flag user-flow pages whose entry point no longer exists in the code.
+
+    Only stale pages are reported (missing flows are not, since flow generation
+    is opt-out via ``--skip-flows``). Broken links and orphan pages in ``flows/``
+    are already covered by the global link and orphan checks.
+    """
+    documented_flows = _collect_documented_flows(wiki_path)
+    if not documented_flows:
+        return
+    detected_flows = {
+        ep["id"]
+        for ep in get_entry_points(
+            deep_inventory, console_scripts=read_console_scripts(src_dir)
+        )
+    }
+    for name in sorted(documented_flows - detected_flows):
+        _add(
+            report,
+            "stale_flows",
+            f"Stale user-flow page (entry point removed): {name}",
+            target=name,
+        )
+
+
 def _check_infrastructure_coverage(
     report: LintReport,
     wiki_path: Path,
@@ -656,6 +696,8 @@ def _run_report_checks(
         _check_workflow_coverage(
             report, wiki_path, inputs.deep_inventory, inputs.page_index
         )
+    with _profile_phase(profiler, "flows"):
+        _check_flow_coverage(report, wiki_path, inputs.deep_inventory, src_dir)
     with _profile_phase(profiler, "infrastructure"):
         _check_infrastructure_coverage(report, wiki_path, inputs.docker_inventory)
     with _profile_phase(profiler, "strict"):

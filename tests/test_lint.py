@@ -809,3 +809,50 @@ class TestLintProfile:
         lint_cmd.run(_make_args(wiki_dir="wiki", src_dir=".", no_cache=True))
 
         assert not (tmp_path / ".git" / CACHE_FILENAME).exists()
+
+
+class TestLintFlowCoverage:
+    def _project_with_flows(self, tmp_path, flow_stems):
+        (tmp_path / "api.py").write_text(textwrap.dedent('''\
+            __all__ = ["run"]
+
+            def run():
+                return 1
+        '''))
+        wiki = tmp_path / "wiki"
+        for d in ["entities", "modules", "workflows", "flows"]:
+            (wiki / d).mkdir(parents=True)
+        (wiki / "modules" / "api.md").write_text("# api\n")
+        index = ["# Index", "- [api](modules/api.md)"]
+        for stem in flow_stems:
+            (wiki / "flows" / f"{stem}.md").write_text(f"# {stem}\n")
+            index.append(f"- [{stem}](flows/{stem}.md)")
+        (wiki / "index.md").write_text("\n".join(index) + "\n")
+        (wiki / "log.md").write_text("# Log\n")
+        return wiki
+
+    def test_valid_flow_is_not_stale(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        wiki = self._project_with_flows(tmp_path, ["api-run"])
+        report = lint_cmd.build_report(str(wiki), ".")
+        assert report.count("stale_flows") == 0
+
+    def test_stale_flow_is_flagged(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        wiki = self._project_with_flows(tmp_path, ["api-run", "api-ghost"])
+        report = lint_cmd.build_report(str(wiki), ".")
+        stale = report.by_category().get("stale_flows", [])
+        assert [issue.target for issue in stale] == ["api-ghost"]
+        assert not report.passed
+
+    def test_absent_flows_dir_is_clean(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "api.py").write_text("def run():\n    return 1\n")
+        wiki = tmp_path / "wiki"
+        for d in ["entities", "modules", "workflows"]:
+            (wiki / d).mkdir(parents=True)
+        (wiki / "modules" / "api.md").write_text("# api\n")
+        (wiki / "index.md").write_text("# Index\n- [api](modules/api.md)\n")
+        (wiki / "log.md").write_text("# Log\n")
+        report = lint_cmd.build_report(str(wiki), ".")
+        assert report.count("stale_flows") == 0

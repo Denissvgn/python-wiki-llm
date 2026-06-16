@@ -28,6 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   summary reports a `flows` count, and `--skip-flows` opts out. New pure
   `services/diagrams.py` provides reusable Mermaid `sequence_diagram` and
   `flowchart` renderers.
+- `lint` (and `ci-check`) now validate `flows/`: a user-flow page whose entry
+  point no longer exists is reported as `stale_flows` (existing broken-link and
+  orphan checks already cover flow pages). `sync` re-indexes existing flow pages
+  into the "User Flows" section without rewriting them. `extract --deep` now
+  emits an optional top-level `entrypoints` array. README and generated agent
+  instructions document the `flows/` page type.
 
 ## [0.6.1] - 2026-06-14
 

@@ -1534,8 +1534,9 @@ def _rebuild_index(
                 all_entity_names.append(page_name)
                 seen.add(page_name)
 
-    # Collect any existing workflow + infrastructure entries from disk
+    # Collect any existing workflow + flow + infrastructure entries from disk
     workflow_entries = _list_existing_pages(wiki_dir / "workflows", "entry")
+    flow_entries = _list_existing_flow_pages(wiki_dir / "flows")
     infra_entries = _list_existing_pages(wiki_dir / "infrastructure", "type")
 
     index_path = wiki_dir / "index.md"
@@ -1546,6 +1547,7 @@ def _rebuild_index(
             module_entries,
             workflow_entries or None,
             infra_entries or None,
+            flow_entries or None,
         ),
     )
     if write_state == "unchanged":
@@ -1559,6 +1561,20 @@ def _list_existing_pages(directory: Path, extra_key: str) -> list[dict]:
     if not directory.exists():
         return []
     return [{"name": p.stem, extra_key: ""} for p in sorted(directory.glob("*.md"))]
+
+
+def _list_existing_flow_pages(directory: Path) -> list[dict]:
+    """Return ``{"id", "category"}`` dicts for existing flow pages.
+
+    ``category`` is derived from the entry-point id prefix so the index can be
+    regrouped without re-running entry-point detection.
+    """
+    if not directory.exists():
+        return []
+    return [
+        {"id": p.stem, "category": p.stem.split("-", 1)[0]}
+        for p in sorted(directory.glob("*.md"))
+    ]
 
 
 def _append_log(

@@ -174,3 +174,60 @@ class TestE2ELifecycle:
         # CLAUDE.md may still exist (preamble content) but wiki block should be gone
         if Path("CLAUDE.md").exists():
             assert "LLM Wiki Maintainer Constraints" not in Path("CLAUDE.md").read_text(encoding="utf-8")
+
+
+class TestE2EFlows:
+    def test_bootstrap_then_strict_lint_is_clean_with_flows(self, tmp_path, monkeypatch):
+        proj = tmp_path / "flowapp"
+        proj.mkdir()
+        subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
+        (proj / "pyproject.toml").write_text(textwrap.dedent('''\
+            [project]
+            name = "flowapp"
+            version = "0.1.0"
+
+            [project.scripts]
+            flowapp = "service:main"
+        '''))
+        (proj / "service.py").write_text(textwrap.dedent('''\
+            __all__ = ["process"]
+
+
+            def process(payload):
+                return _normalize(payload)
+
+
+            def _normalize(payload):
+                return payload
+
+
+            def main():
+                return process({})
+
+
+            if __name__ == "__main__":
+                main()
+        '''))
+        monkeypatch.chdir(proj)
+
+        bootstrap_cmd.run(_ns(
+            src_dir=".", wiki_dir="docs/llm_wiki",
+            overwrite=False, depth="full", skip_workflows=True,
+        ))
+
+        flows_dir = proj / "docs" / "llm_wiki" / "flows"
+        flow_pages = {p.stem for p in flows_dir.glob("*.md")}
+        assert "api-process" in flow_pages
+        assert "process-flowapp" in flow_pages
+
+        api_flow = (flows_dir / "api-process.md").read_text(encoding="utf-8")
+        assert "```mermaid" in api_flow
+        assert "_normalize" in api_flow  # resolved internal call appears in the diagram
+
+        index = (proj / "docs" / "llm_wiki" / "index.md").read_text(encoding="utf-8")
+        assert "## User Flows" in index
+        assert "[api-process](flows/api-process.md)" in index
+
+        # Strict lint on the freshly bootstrapped wiki passes with zero issues.
+        report = lint_cmd.build_report("docs/llm_wiki", ".", strict=True)
+        assert report.passed, [issue.message for issue in report.issues]

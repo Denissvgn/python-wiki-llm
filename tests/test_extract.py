@@ -637,6 +637,21 @@ class TestEntryPointSignals:
         assert "main_block" not in data
 
 
+class TestExtractEntryPoints:
+    def test_deep_payload_includes_entrypoints(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "api.py").write_text('__all__ = ["run"]\n\n\ndef run():\n    return 1\n')
+        result = extract_cmd.build_extract_payload(".", deep=True)
+        ids = {e["id"] for e in result.payload["entrypoints"]}
+        assert "api-run" in ids
+
+    def test_non_deep_payload_omits_entrypoints(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "api.py").write_text('__all__ = ["run"]\n\n\ndef run():\n    return 1\n')
+        result = extract_cmd.build_extract_payload(".", deep=False)
+        assert "entrypoints" not in result.payload
+
+
 class TestRelativePathKeys:
     """Inventory keys must be relative to src_dir, not absolute."""
 

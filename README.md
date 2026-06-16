@@ -17,6 +17,9 @@ The default wiki lives at `docs/llm_wiki/` and contains:
 - `entities/`: class, struct, interface, and type pages.
 - `modules/`: source-file pages.
 - `workflows/`: detected or manually maintained cross-module flow pages.
+- `flows/`: user-flow pages, one per detected entry point (public API,
+  framework-decorated CLI/HTTP/MCP handlers, `__main__`/console scripts), each
+  with a Mermaid sequence diagram of the resolved call path.
 - `infrastructure/`: Dockerfile and Compose pages.
 - `.llm-wiki-manifest.json`: source hash manifest used by incremental sync and strict linting.
 
@@ -190,11 +193,14 @@ llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki bootstrap --overwrite
 llm-wiki bootstrap --depth shallow
 llm-wiki bootstrap --skip-workflows
+llm-wiki bootstrap --skip-flows
 llm-wiki bootstrap --format json --source-adapter
 ```
 
-`bootstrap` writes entity, module, workflow, infrastructure, index, log, and
-manifest files. `--depth full` is the default and includes docstrings, imports,
+`bootstrap` writes entity, module, workflow, flow, infrastructure, index, log,
+and manifest files. User-flow pages under `flows/` are generated from detected
+entry points; use `--skip-flows` to omit them. `--depth full` is the default and
+includes docstrings, imports,
 attributes, method signatures, and relationship data where extractors provide
 it. Use `--source-adapter` when callers need bootstrap to write only under
 `--wiki-dir`; this skips agent constraint-file updates outside the generated
@@ -245,9 +251,12 @@ llm-wiki extract --src-dir /path/to/repo --allow-external-src --summary
 ```
 
 The JSON output includes `schema_version: "llm-wiki-extract/v1"` plus
-`inventory` and optional `docker` objects. Inventory keys are POSIX paths
-relative to `--src-dir`, never absolute paths. The v1 contract permits additive
-fields; incompatible shape changes require a new schema version.
+`inventory` and optional `docker` objects. With `--deep`, deep function entries
+may carry an optional `calls` list (in-body call targets) and the payload gains
+an optional top-level `entrypoints` array (detected user-reachable entry points:
+`{id, category, file, symbol, label}`). Inventory keys are POSIX paths relative
+to `--src-dir`, never absolute paths. The v1 contract permits additive fields;
+incompatible shape changes require a new schema version.
 
 ### `prepare-extractors`
 

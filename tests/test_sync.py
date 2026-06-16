@@ -1495,3 +1495,40 @@ class TestDiffOutput:
         log_after = (wiki_dir / "log.md").read_text(encoding="utf-8")
         assert len(log_after) > len(log_before)
         assert "incremental sync" in log_after
+
+
+class TestSyncFlowReindex:
+    def _inventory(self):
+        return {
+            "api.py": {
+                "language": "python",
+                "classes": [],
+                "functions": [{"name": "run", "line": 1}],
+            }
+        }
+
+    def test_rebuild_index_includes_existing_flow_pages(self, tmp_path):
+        wiki = tmp_path / "wiki"
+        (wiki / "flows").mkdir(parents=True)
+        (wiki / "flows" / "api-run.md").write_text("# run\n")
+        (wiki / "flows" / "process-cli.md").write_text("# cli\n")
+
+        sync_cmd._rebuild_index(wiki, self._inventory(), str(tmp_path))
+
+        index = (wiki / "index.md").read_text(encoding="utf-8")
+        assert "## User Flows" in index
+        assert "**api**" in index
+        assert "**process**" in index
+        assert "[api-run](flows/api-run.md)" in index
+        assert "[process-cli](flows/process-cli.md)" in index
+
+    def test_rebuild_index_leaves_flow_pages_untouched(self, tmp_path):
+        wiki = tmp_path / "wiki"
+        (wiki / "flows").mkdir(parents=True)
+        page = wiki / "flows" / "api-run.md"
+        original = "# run\n\nHand-written semantic behavior notes.\n"
+        page.write_text(original)
+
+        sync_cmd._rebuild_index(wiki, self._inventory(), str(tmp_path))
+
+        assert page.read_text(encoding="utf-8") == original

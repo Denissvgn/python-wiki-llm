@@ -154,7 +154,8 @@ def _wiki_instructions(wiki_dir: str) -> str:
 - Keep semantic edits surgical: preserve generated structure, links, tables, and
   canonical filenames. Update only affected entity pages in
   `{wiki_dir}/entities/`, module pages in `{wiki_dir}/modules/`, workflow pages
-  in `{wiki_dir}/workflows/`, infrastructure pages in `{wiki_dir}/infrastructure/`,
+  in `{wiki_dir}/workflows/`, user-flow pages in `{wiki_dir}/flows/`,
+  infrastructure pages in `{wiki_dir}/infrastructure/`,
   and append one concise summary to `{wiki_dir}/log.md`.
 
 ## Wiki file naming rules
@@ -182,6 +183,8 @@ Page filenames **must** match the conventions enforced by `llm-wiki lint`:
   module page stem from `index.md`; if a COPY/ADD source is ambiguous, leave it
   as code text instead of creating a guessed link.
 - **Workflow pages** (`workflows/`): Free-form descriptive names.
+- **User-flow pages** (`flows/`): Named by entry-point id (`<category>-<symbol>`,
+  e.g. `api-extract_source.md`, `process-llm-wiki.md`). Do not rename them.
 
 ## Quality checks
 - Your wiki changes are **structurally valid** when `llm-wiki lint --strict --jobs auto --wiki-dir {wiki_dir} --src-dir .` exits 0.
@@ -200,6 +203,9 @@ Page filenames **must** match the conventions enforced by `llm-wiki lint`:
 ## Formatting rules
 - Entity pages must have: Location, Bases, Module link, Attributes table, Methods table, Relationships.
 - Module pages must have: Path, Imports table, Classes summary, Functions table.
+- User-flow pages have a generated Mermaid call-sequence diagram; fill in the
+  `## Behavior` section with what the flow does, its triggers, and side effects.
+  Do not edit the generated diagram by hand.
 - Infrastructure pages must have: Path, type-specific sections (stages, services, ports, env vars, etc.).
 - Use relative markdown links between pages (e.g., `../entities/User.md`).
 """

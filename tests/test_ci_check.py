@@ -169,6 +169,32 @@ def test_ci_check_still_validates_src_and_wiki_paths(tmp_path, monkeypatch):
         ))
 
 
+def test_ci_check_fails_on_stale_flow(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "api.py").write_text('__all__ = ["run"]\n\n\ndef run():\n    return 1\n')
+    wiki = tmp_path / "wiki"
+    for d in ["entities", "modules", "workflows", "flows"]:
+        (wiki / d).mkdir(parents=True)
+    (wiki / "modules" / "api.md").write_text("# api\n")
+    (wiki / "flows" / "api-ghost.md").write_text("# api-ghost\n")
+    (wiki / "index.md").write_text(
+        "# Index\n- [api](modules/api.md)\n- [api-ghost](flows/api-ghost.md)\n"
+    )
+    (wiki / "log.md").write_text("# Log\n")
+
+    with pytest.raises(SystemExit) as exc:
+        ci_check_cmd.run(types.SimpleNamespace(
+            src_dir=".",
+            wiki_dir="wiki",
+            format="markdown",
+            report="ci-report.md",
+        ))
+
+    assert exc.value.code == 1
+    report_text = (tmp_path / "ci-report.md").read_text(encoding="utf-8")
+    assert "api-ghost" in report_text
+
+
 def test_ci_check_json_output_unchanged_and_exits_nonzero(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
     (tmp_path / "wiki").mkdir()

@@ -422,22 +422,31 @@ def _generate_module_md(
     return "\n".join(lines)
 
 
+def _flow_index_category(flow: dict) -> str:
+    """Category for a flow index entry, derived from the id prefix when absent."""
+    return flow.get("category") or flow["id"].split("-", 1)[0]
+
+
 def _append_index_user_flows(lines: list[str], flow_entries: list[dict] | None) -> None:
-    """Append the grouped "User Flows" section to *lines* (in place)."""
+    """Append the grouped "User Flows" section to *lines* (in place).
+
+    Tolerates minimal entries (``{"id"}``) so ``sync`` can re-index existing flow
+    pages without re-running entry-point detection.
+    """
     lines.append("## User Flows")
     lines.append("")
     if not flow_entries:
         return
-    for category in sorted({f["category"] for f in flow_entries}):
+    for category in sorted({_flow_index_category(f) for f in flow_entries}):
         lines.append(f"**{category}**")
         lines.append("")
         for flow in sorted(
-            (f for f in flow_entries if f["category"] == category),
+            (f for f in flow_entries if _flow_index_category(f) == category),
             key=lambda f: f["id"],
         ):
-            lines.append(
-                f"- [{flow['id']}](flows/{flow['id']}.md) - entry: `{flow['entry']}`"
-            )
+            entry = flow.get("entry", "")
+            suffix = f" - entry: `{entry}`" if entry else ""
+            lines.append(f"- [{flow['id']}](flows/{flow['id']}.md){suffix}")
         lines.append("")
 
 

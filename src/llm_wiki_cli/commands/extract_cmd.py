@@ -21,6 +21,7 @@ from ..extractors.common import LANGUAGE_EXTENSIONS
 from ..extractors.go_extractor import GoExtractionRequest
 from ..extractors.rust_extractor import RustExtractionRequest
 from ..services.contracts import EXTRACT_SCHEMA_VERSION
+from ..services.entrypoints import get_entry_points, read_console_scripts
 from ..services.inventory_cache import (
     InventoryCache,
     InventoryCacheOptions,
@@ -864,6 +865,14 @@ def build_extract_payload(
         if not inventory:
             raise ValueError(f"No files found for package '{package_filter}'.")
 
+    # Entry points need the deep fields (decorators, __all__, __main__); detect
+    # before any summary collapse.
+    entrypoints = (
+        get_entry_points(inventory, console_scripts=read_console_scripts(str(src_root)))
+        if deep
+        else []
+    )
+
     if summary:
         inventory = _summarize_inventory(inventory)
 
@@ -875,6 +884,8 @@ def build_extract_payload(
     }
     if docker_inv:
         output["docker"] = docker_inv
+    if entrypoints:
+        output["entrypoints"] = entrypoints
 
     return ExtractPayloadResult(
         output,
