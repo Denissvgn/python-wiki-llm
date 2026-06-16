@@ -622,6 +622,37 @@ class TestEntryPointSignals:
         (tmp_path / "m.py").write_text("def main():\n    pass\n")
         assert "main_block" not in get_inventory(str(tmp_path), deep=True)["m.py"]
 
+    def test_deep_captures_decorated_nested_functions(self, tmp_path):
+        (tmp_path / "factory.py").write_text(textwrap.dedent('''\
+            def create_server():
+                server = make()
+
+                @server.tool()
+                def get_entity(entity_id):
+                    return service.get(entity_id)
+
+                def _helper():
+                    return 1
+
+                return server
+        '''))
+        data = get_inventory(str(tmp_path), deep=True)["factory.py"]
+        nested = {fn["name"] for fn in data.get("nested_functions", [])}
+        assert "get_entity" in nested  # decorated -> captured
+        assert "_helper" not in nested  # undecorated nested -> not captured
+        # nested functions are not surfaced as module-level functions
+        assert "get_entity" not in {fn["name"] for fn in data["functions"]}
+
+    def test_nested_functions_omitted_when_undecorated_or_slim(self, tmp_path):
+        (tmp_path / "m.py").write_text(
+            "def run():\n    def inner():\n        pass\n    return inner\n"
+        )
+        assert "nested_functions" not in get_inventory(str(tmp_path), deep=True)["m.py"]
+        (tmp_path / "d.py").write_text(
+            "def f():\n    @x.tool()\n    def g():\n        pass\n    return g\n"
+        )
+        assert "nested_functions" not in get_inventory(str(tmp_path), deep=False)["d.py"]
+
     def test_slim_mode_omits_entry_signals(self, tmp_path):
         (tmp_path / "api.py").write_text(textwrap.dedent("""\
             __all__ = ["run"]

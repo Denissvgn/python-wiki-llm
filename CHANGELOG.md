@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Deep extraction now captures decorated functions defined inside other
+  functions (e.g. factory-registered `@app.route`/`@server.tool` handlers) in an
+  optional `nested_functions` field, so framework entry points registered inside
+  a factory are detected. This surfaces MCP tool/resource handlers and similar
+  nested handlers as user-flow entry points.
 - Deep extraction now records an optional per-function `calls` list of in-body
   call targets (additive under `llm-wiki-extract/v1`; omitted when empty and
   absent in slim mode). A new internal `resolve_call_edges` resolver maps those

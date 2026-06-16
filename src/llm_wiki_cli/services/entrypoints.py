@@ -52,13 +52,16 @@ def _local_symbols(data: dict) -> set[str]:
 
 
 def _iter_callables(inventory: dict):
-    """Yield ``(filepath, symbol, fn)`` for every function and method."""
+    """Yield ``(filepath, symbol, fn)`` for every function, method, and decorated
+    nested function (e.g. factory-registered ``@app.route``/``@server.tool``)."""
     for filepath, data in inventory.items():
         for fn in data.get("functions", []):
             yield filepath, fn["name"], fn
         for cls in data.get("classes", []):
             for method in cls.get("methods", []):
                 yield filepath, f"{cls['name']}.{method['name']}", method
+        for fn in data.get("nested_functions", []):
+            yield filepath, fn["name"], fn
 
 
 # ── Detectors ─────────────────────────────────────────────────────────

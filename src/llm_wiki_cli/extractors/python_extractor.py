@@ -217,6 +217,7 @@ class ComponentVisitor(ast.NodeVisitor):
         self.has_all = False  # whether __all__ is defined
         self.all_exports = []  # names listed in __all__ (when statically known)
         self.has_main = False  # whether an `if __name__ == "__main__"` guard exists
+        self.nested_functions = []  # decorated functions defined inside other defs
         self._class_depth = 0
         self._function_depth = 0
         self._deep = deep
@@ -276,6 +277,11 @@ class ComponentVisitor(ast.NodeVisitor):
                 info = _extract_function_info(node, deep=self._deep)
                 info["private"] = True
                 self.functions.append(info)
+        elif self._deep and node.decorator_list:
+            # Decorated functions nested inside a factory (e.g. @app.route,
+            # @server.tool) are framework entry points even though they are not
+            # module-level. Capture them separately from regular functions.
+            self.nested_functions.append(_extract_function_info(node, deep=True))
         self._function_depth += 1
         try:
             self.generic_visit(node)
@@ -290,6 +296,11 @@ class ComponentVisitor(ast.NodeVisitor):
                 info = _extract_function_info(node, deep=self._deep)
                 info["private"] = True
                 self.functions.append(info)
+        elif self._deep and node.decorator_list:
+            # Decorated functions nested inside a factory (e.g. @app.route,
+            # @server.tool) are framework entry points even though they are not
+            # module-level. Capture them separately from regular functions.
+            self.nested_functions.append(_extract_function_info(node, deep=True))
         self._function_depth += 1
         try:
             self.generic_visit(node)
@@ -392,6 +403,8 @@ def _scan_python_files(
                     file_entry["all_exports"] = visitor.all_exports
                 if visitor.has_main:
                     file_entry["main_block"] = True
+                if visitor.nested_functions:
+                    file_entry["nested_functions"] = visitor.nested_functions
             else:
                 # Slim format: strip rich fields for backward compat
                 file_entry["classes"] = [

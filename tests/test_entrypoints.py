@@ -61,6 +61,18 @@ class TestGetEntryPoints:
         assert by_cat["http"] == "list_users"
         assert by_cat["mcp"] == "search"
 
+    def test_detects_decorated_nested_handlers(self, tmp_path):
+        (tmp_path / "factory.py").write_text(textwrap.dedent('''\
+            def create_server():
+                @server.tool()
+                def search(query):
+                    return run(query)
+                return server
+        '''))
+        inventory = get_inventory(str(tmp_path), deep=True)
+        mcp = [e for e in get_entry_points(inventory) if e["category"] == "mcp"]
+        assert [e["symbol"] for e in mcp] == ["search"]
+
     def test_bare_http_decorator_is_ignored(self, tmp_path):
         (tmp_path / "m.py").write_text("@get\ndef fetch():\n    pass\n")
         inventory = get_inventory(str(tmp_path), deep=True)

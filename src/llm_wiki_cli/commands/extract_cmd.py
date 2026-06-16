@@ -1175,6 +1175,8 @@ def _caller_components(data: dict):
     for cls in data.get("classes", []):
         for method in cls.get("methods", []):
             yield f"{cls['name']}.{method['name']}", method, cls["name"]
+    for fn in data.get("nested_functions", []):
+        yield fn["name"], fn, None
 
 
 def _attr_root(attr: str) -> str:
