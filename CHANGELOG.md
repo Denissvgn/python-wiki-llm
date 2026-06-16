@@ -39,6 +39,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   into the "User Flows" section without rewriting them. `extract --deep` now
   emits an optional top-level `entrypoints` array. README and generated agent
   instructions document the `flows/` page type.
+- `sync` now regenerates flow-page diagrams from the current code when a wiki
+  already contains flow pages, preserving any human-edited `## Behavior` section
+  (subject to `--no-preserve-semantic`) and only rewriting pages whose generated
+  content changed. Projects bootstrapped with `--skip-flows` are left untouched.
 
 ## [0.6.1] - 2026-06-14
 

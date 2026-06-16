@@ -26,10 +26,12 @@ from .extract_cmd import (
     get_inventory_result,
     infer_language_from_path,
     print_inventory_failures,
+    resolve_call_edges,
 )
 from .bootstrap_cmd import (
     _build_relationships,
     _generate_entity_md,
+    _generate_flow_md,
     _generate_index_md,
     _generate_module_md,
     _module_name_from_path,
@@ -38,6 +40,7 @@ from .bootstrap_cmd import (
     build_module_page_map,
 )
 from ..config import validate_path
+from ..services.entrypoints import build_flow, get_entry_points, read_console_scripts
 from ..services.inventory_cache import (
     InventoryCacheOptions,
     InventoryCacheStats,
@@ -1424,6 +1427,8 @@ def _apply_sync_changes(
         preserve_semantic=options.preserve_semantic,
     )
 
+    _regenerate_flow_pages(options, inventory, page_maps.module_page_map)
+
     _rebuild_index(
         options.wiki_dir,
         inventory,
@@ -1575,6 +1580,49 @@ def _list_existing_flow_pages(directory: Path) -> list[dict]:
         {"id": p.stem, "category": p.stem.split("-", 1)[0]}
         for p in sorted(directory.glob("*.md"))
     ]
+
+
+def _preserve_flow_behavior(old_md: str, new_md: str) -> str:
+    """Carry a human-edited ``## Behavior`` section into regenerated flow md."""
+    old_body = _section_body(old_md, "Behavior")
+    if not old_body or old_body == _section_body(new_md, "Behavior"):
+        return new_md
+    return _replace_section_body(new_md, "Behavior", old_body)
+
+
+def _regenerate_flow_pages(
+    options: _SyncRunOptions,
+    inventory: dict,
+    module_page_map: dict[str, str],
+) -> int:
+    """Regenerate flow pages from the current inventory, preserving Behavior.
+
+    Runs only when the wiki already has flow pages, so projects that opted out
+    of flows (``bootstrap --skip-flows``) are left untouched. Detection and the
+    Mermaid diagrams are recomputed from the full inventory; only pages whose
+    generated content actually changed are rewritten, and a human-edited
+    ``## Behavior`` section is carried over when ``preserve_semantic`` is on.
+    """
+    flows_dir = options.wiki_dir / "flows"
+    if not flows_dir.exists() or not any(flows_dir.glob("*.md")):
+        return 0
+
+    edges = resolve_call_edges(inventory)
+    console_scripts = read_console_scripts(options.src_dir)
+    regenerated = 0
+    for entry_point in get_entry_points(inventory, console_scripts=console_scripts):
+        flow = build_flow(entry_point, edges)
+        new_md = _generate_flow_md(flow, module_page_map)
+        flow_path = flows_dir / f"{entry_point['id']}.md"
+        if options.preserve_semantic and flow_path.exists():
+            new_md = _preserve_flow_behavior(read_md(flow_path), new_md)
+        state = _write_md_if_changed(flow_path, new_md)
+        if state != "unchanged":
+            print(f"  {state.upper()} flow: {entry_point['id']}")
+            regenerated += 1
+    if regenerated:
+        print(f"Regenerated {regenerated} flow page(s).")
+    return regenerated
 
 
 def _append_log(

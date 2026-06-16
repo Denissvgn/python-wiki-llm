@@ -1532,3 +1532,68 @@ class TestSyncFlowReindex:
         sync_cmd._rebuild_index(wiki, self._inventory(), str(tmp_path))
 
         assert page.read_text(encoding="utf-8") == original
+
+
+class TestSyncFlowRegeneration:
+    def _write_svc(self, proj, callee):
+        (proj / "svc.py").write_text(textwrap.dedent(f'''\
+            __all__ = ["run"]
+
+
+            def run():
+                return {callee}()
+
+
+            def helper_a():
+                return 1
+
+
+            def helper_b():
+                return 2
+        '''))
+
+    def _new_project(self, tmp_path, callee):
+        import subprocess
+
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
+        (proj / "pyproject.toml").write_text('[project]\nname = "p"\nversion = "0.1.0"\n')
+        self._write_svc(proj, callee)
+        return proj, proj / "docs" / "llm_wiki"
+
+    def test_regenerates_changed_flow_and_preserves_behavior(self, tmp_path, monkeypatch, capsys):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        flow_page = wiki / "flows" / "api-run.md"
+        original = flow_page.read_text(encoding="utf-8")
+        assert "helper_a" in original
+        # Human edits the Behavior section.
+        flow_page.write_text(
+            sync_cmd._replace_section_body(original, "Behavior", "Runs the primary path."),
+            encoding="utf-8",
+        )
+
+        # Change the code so the diagram changes, then sync.
+        self._write_svc(proj, "helper_b")
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        updated = flow_page.read_text(encoding="utf-8")
+        assert "helper_b" in updated          # diagram regenerated
+        assert "helper_a" not in updated       # old call removed
+        assert "Runs the primary path." in updated  # human Behavior preserved
+
+    def test_does_not_create_flows_when_opted_out(self, tmp_path, monkeypatch, capsys):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(
+            _make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki), skip_flows=True)
+        )
+        assert not list((wiki / "flows").glob("*.md"))
+
+        self._write_svc(proj, "helper_b")
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        assert not list((wiki / "flows").glob("*.md"))
