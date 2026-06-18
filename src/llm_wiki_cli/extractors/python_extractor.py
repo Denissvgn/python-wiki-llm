@@ -122,6 +122,63 @@ def _extract_calls(node) -> list[dict]:
     return calls
 
 
+def _assign_target_name(targets) -> str:
+    """First simple ``Name`` target of an assignment (e.g. ``app`` in
+    ``app = Flask(...)``); empty for tuple/attribute/subscript targets."""
+    for target in targets:
+        if isinstance(target, ast.Name):
+            return target.id
+    return ""
+
+
+def _module_call_record(call: ast.Call, target: str = "") -> dict | None:
+    """Build a module-level side-effect record, optionally with its bound name.
+
+    Returns ``None`` for call targets we cannot name simply (same rule as
+    :func:`_call_record`). ``target`` is the assigned variable, kept before
+    ``line`` for a tidy ``{name, attr?, target?, line}`` shape.
+    """
+    record = _call_record(call)
+    if record is None:
+        return None
+    if not target:
+        return record
+    ordered = {"name": record["name"]}
+    if "attr" in record:
+        ordered["attr"] = record["attr"]
+    ordered["target"] = target
+    ordered["line"] = record["line"]
+    return ordered
+
+
+def _extract_module_calls(tree: ast.Module) -> list[dict]:
+    """Collect module-scope executable calls (import-time side effects).
+
+    Scans only the module's top-level statements — ``Expr`` calls
+    (``logging.basicConfig(...)``, ``register()``) and ``Assign``/``AnnAssign``
+    whose value is a call (``app = Flask(__name__)``) — in source order. Does not
+    descend into ``def``/``class`` bodies (covered by per-function ``calls``) or
+    into guarded blocks such as ``if __name__ == "__main__":`` (not import-time).
+    """
+    calls: list[dict] = []
+    for statement in tree.body:
+        if isinstance(statement, ast.Expr) and isinstance(statement.value, ast.Call):
+            record = _module_call_record(statement.value)
+        elif isinstance(statement, ast.Assign) and isinstance(statement.value, ast.Call):
+            record = _module_call_record(statement.value, _assign_target_name(statement.targets))
+        elif (
+            isinstance(statement, ast.AnnAssign)
+            and isinstance(statement.value, ast.Call)
+            and isinstance(statement.target, ast.Name)
+        ):
+            record = _module_call_record(statement.value, statement.target.id)
+        else:
+            continue
+        if record is not None:
+            calls.append(record)
+    return calls
+
+
 def _extract_function_info(node, deep: bool = False) -> dict:
     """Extract full function/method info from a FunctionDef or AsyncFunctionDef.
 
@@ -376,13 +433,19 @@ def _scan_python_files(
         visitor = ComponentVisitor(deep=deep)
         visitor.visit(tree)
 
+        # Module-level side effects (deep only) make an otherwise-defless module
+        # (e.g. a config module that only calls ``logging.basicConfig(...)``)
+        # meaningful content for load-order analysis.
+        module_calls = _extract_module_calls(tree) if deep else []
+
         # Include the file if it has classes, public functions, constants,
-        # __all__, or (in deep mode) private functions.
+        # __all__, (in deep mode) private functions or module-level side effects.
         has_content = (
             visitor.classes
             or visitor.functions
             or visitor.constants
             or visitor.has_all
+            or module_calls
             or include_empty
         )
         if has_content:
@@ -405,6 +468,8 @@ def _scan_python_files(
                     file_entry["main_block"] = True
                 if visitor.nested_functions:
                     file_entry["nested_functions"] = visitor.nested_functions
+                if module_calls:
+                    file_entry["module_calls"] = module_calls
             else:
                 # Slim format: strip rich fields for backward compat
                 file_entry["classes"] = [

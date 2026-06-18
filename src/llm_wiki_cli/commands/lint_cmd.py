@@ -12,6 +12,7 @@ from pathlib import Path
 from .extract_cmd import get_call_graph, get_docker_inventory, get_inventory_result
 from .bootstrap_cmd import build_module_page_map, build_entity_page_map
 from ..config import validate_path
+from ..services.dependencies import analyze_dependencies
 from ..services.entrypoints import get_entry_points, read_console_scripts
 from ..services.inventory_cache import (
     InventoryCacheOptions,
@@ -36,6 +37,7 @@ _PROFILE_PHASES = [
     "modules",
     "workflows",
     "flows",
+    "dependencies",
     "infrastructure",
     "strict",
     "plugins",
@@ -254,9 +256,16 @@ def _diagnose(
     *,
     path: str | None = None,
     target: str | None = None,
+    severity: str = "warning",
 ) -> None:
     report.diagnostics.append(
-        LintIssue(category=category, message=message, path=path, target=target)
+        LintIssue(
+            category=category,
+            message=message,
+            severity=severity,
+            path=path,
+            target=target,
+        )
     )
 
 
@@ -630,6 +639,65 @@ def _check_flow_coverage(
         )
 
 
+def _check_dependency_coverage(
+    report: LintReport,
+    wiki_path: Path,
+    deep_inventory: dict,
+    src_dir: str,
+) -> None:
+    """Re-run dependency analysis for the architecture pages and warn on drift.
+
+    Only runs when ``dependencies.md`` / ``load-order.md`` exist (projects that
+    opted out via ``bootstrap --skip-dependencies`` are left untouched). Import
+    cycles and undeclared / unused external dependencies surface as non-failing
+    **diagnostics** so they never break ``ci-check`` on their own; a page that
+    exists but whose analysis found no modules is flagged **stale** as a hard
+    issue. Reuses the already-built deep inventory, so no extra extraction pass
+    runs (DL-010).
+    """
+    pages = [
+        p
+        for p in (wiki_path / "dependencies.md", wiki_path / "load-order.md")
+        if p.exists()
+    ]
+    if not pages:
+        return
+
+    analysis = analyze_dependencies(deep_inventory, src_dir)
+    if not analysis["graph"]["nodes"]:
+        for page in pages:
+            _add(
+                report,
+                "stale_dependencies",
+                f"Stale architecture page (no modules detected in source): {page.stem}",
+                path=page.name,
+                target=page.stem,
+            )
+        return
+
+    for cycle in analysis["cycles"]:
+        _diagnose(
+            report,
+            "dependency_cycles",
+            "Import cycle: " + " ⇄ ".join(cycle),
+        )
+    for language, data in sorted(analysis["reconciliation"]["languages"].items()):
+        for package in data["undeclared"]:
+            _diagnose(
+                report,
+                "undeclared_dependencies",
+                f"Undeclared {language} dependency (imported, not declared): {package}",
+                target=package,
+            )
+        for package in data["unused"]:
+            _diagnose(
+                report,
+                "unused_dependencies",
+                f"Unused {language} dependency (declared, not imported): {package}",
+                target=package,
+            )
+
+
 def _check_infrastructure_coverage(
     report: LintReport,
     wiki_path: Path,
@@ -698,6 +766,8 @@ def _run_report_checks(
         )
     with _profile_phase(profiler, "flows"):
         _check_flow_coverage(report, wiki_path, inputs.deep_inventory, src_dir)
+    with _profile_phase(profiler, "dependencies"):
+        _check_dependency_coverage(report, wiki_path, inputs.deep_inventory, src_dir)
     with _profile_phase(profiler, "infrastructure"):
         _check_infrastructure_coverage(report, wiki_path, inputs.docker_inventory)
     with _profile_phase(profiler, "strict"):
@@ -797,7 +867,12 @@ def render_text(report: LintReport) -> str:
         return "\n".join(lines) + "\n"
 
     def emit_group(
-        category: str, empty: str, found: str, prefix: str = "  ⚠️  "
+        category: str,
+        empty: str,
+        found: str,
+        prefix: str = "  ⚠️  ",
+        *,
+        only_if_present: bool = False,
     ) -> None:
         issues = grouped.get(category, []) + diagnostic_groups.get(category, [])
         if issues:
@@ -805,7 +880,7 @@ def render_text(report: LintReport) -> str:
                 lines.append(f"{prefix}{issue.message}")
             lines.append(f"  {found.format(count=len(issues))}")
             lines.append("")
-        else:
+        elif not only_if_present:
             lines.append(f"  ✅ {empty}")
             lines.append("")
 
@@ -862,6 +937,35 @@ def render_text(report: LintReport) -> str:
         "Found {count} stale infrastructure page(s).",
     )
 
+    # Architecture-page checks are only meaningful when the pages exist, so they
+    # stay quiet (no all-clear line) otherwise. Cycles / undeclared / unused are
+    # warnings; stale architecture pages are hard issues.
+    emit_group(
+        "stale_dependencies",
+        "No stale architecture pages.",
+        "Found {count} stale architecture page(s).",
+        prefix="  ❌ ",
+        only_if_present=True,
+    )
+    emit_group(
+        "dependency_cycles",
+        "No import cycles.",
+        "Found {count} import cycle(s).",
+        only_if_present=True,
+    )
+    emit_group(
+        "undeclared_dependencies",
+        "No undeclared dependencies.",
+        "Found {count} undeclared dependency(ies).",
+        only_if_present=True,
+    )
+    emit_group(
+        "unused_dependencies",
+        "No unused dependencies.",
+        "Found {count} unused dependency(ies).",
+        only_if_present=True,
+    )
+
     if report.strict:
         emit_group(
             "wiki_structure",
@@ -915,17 +1019,34 @@ def render_markdown(report: LintReport) -> str:
         f"- Mode: `{'strict' if report.strict else 'normal'}`",
         f"- Result: **{status}**",
         f"- Issues: {report.issue_count}",
+        f"- Diagnostics: {len(report.diagnostics)}",
         "",
     ]
-    if not report.issues:
+    if not report.issues and not report.diagnostics:
         lines.append("No issues found.")
         return "\n".join(lines) + "\n"
 
-    lines.append("## Issues")
-    lines.append("")
-    for issue in report.issues:
-        location = f" (`{issue.path}`)" if issue.path else ""
-        lines.append(f"- **{issue.category}**{location}: {issue.message}")
+    if report.issues:
+        lines.append("## Issues")
+        lines.append("")
+        for issue in report.issues:
+            location = f" (`{issue.path}`)" if issue.path else ""
+            lines.append(f"- **{issue.category}**{location}: {issue.message}")
+        lines.append("")
+    else:
+        lines.append("No issues found.")
+        lines.append("")
+
+    if report.diagnostics:
+        lines.append("## Diagnostics")
+        lines.append("")
+        for diagnostic in report.diagnostics:
+            location = f" (`{diagnostic.path}`)" if diagnostic.path else ""
+            severity = diagnostic.severity or "warning"
+            lines.append(
+                f"- **{diagnostic.category}**{location} [{severity}]: "
+                f"{diagnostic.message}"
+            )
     return "\n".join(lines) + "\n"
 
 

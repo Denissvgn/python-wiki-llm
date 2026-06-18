@@ -55,3 +55,34 @@ class TestFlowchart:
 
     def test_custom_direction(self):
         assert "flowchart LR" in flowchart(["a"], [], direction="LR")
+
+    def test_node_links_emit_click_directives(self):
+        out = flowchart(
+            ["a/b.py", "c.py"],
+            [("a/b.py", "c.py")],
+            links={"a/b.py": "modules/b.md", "c.py": "modules/c.md"},
+        )
+        assert '    click n0 "modules/b.md"' in out
+        assert '    click n1 "modules/c.md"' in out
+
+    def test_links_to_unknown_nodes_are_ignored(self):
+        out = flowchart(["a"], [], links={"a": "modules/a.md", "ghost": "x.md"})
+        assert out.count("click") == 1
+
+    def test_highlight_edges_use_thick_arrow(self):
+        out = flowchart(
+            ["a", "b", "c"],
+            [("a", "b"), ("b", "c")],
+            highlight_edges={("a", "b")},
+        )
+        assert "    n0 ==> n1" in out  # highlighted (cyclic)
+        assert "    n1 --> n2" in out  # normal
+
+    def test_href_quotes_are_stripped(self):
+        out = flowchart(["a"], [], links={"a": 'modules/"a".md'})
+        assert '    click n0 "modules/a.md"' in out
+
+    def test_extra_params_default_to_prior_behavior(self):
+        assert flowchart(["a", "b"], [("a", "b")]) == flowchart(
+            ["a", "b"], [("a", "b")], links=None, highlight_edges=None
+        )

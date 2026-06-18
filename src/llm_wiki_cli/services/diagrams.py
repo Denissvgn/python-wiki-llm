@@ -13,6 +13,7 @@ from typing import Iterable, Mapping
 
 _FENCE = "```mermaid"
 _LABEL_SAFE = re.compile(r"[^A-Za-z0-9 _.\-/]+")
+_HREF_SAFE = re.compile(r'[\s"`]+')
 
 
 def _sanitize(text: str) -> str:
@@ -20,6 +21,11 @@ def _sanitize(text: str) -> str:
     cleaned = _LABEL_SAFE.sub(" ", str(text)).strip()
     cleaned = re.sub(r"\s+", " ", cleaned)
     return cleaned or "unknown"
+
+
+def _sanitize_href(href: str) -> str:
+    """Strip whitespace/quotes that would break a Mermaid ``click`` directive."""
+    return _HREF_SAFE.sub("", str(href))
 
 
 def _ordered_participants(interactions: list[Mapping]) -> dict[str, str]:
@@ -54,12 +60,25 @@ def sequence_diagram(interactions: Iterable[Mapping]) -> str:
     return "\n".join(lines)
 
 
-def flowchart(nodes: Iterable[str], edges: Iterable[tuple[str, str]], *, direction: str = "TD") -> str:
+def flowchart(
+    nodes: Iterable[str],
+    edges: Iterable[tuple[str, str]],
+    *,
+    direction: str = "TD",
+    links: Mapping[str, str] | None = None,
+    highlight_edges: Iterable[tuple[str, str]] | None = None,
+) -> str:
     """Render a Mermaid ``flowchart`` from *nodes* and directed *edges*.
 
     Nodes are de-duplicated preserving order; edges referencing unknown nodes
-    are dropped. Provided for dependency/load-order diagrams in later milestones.
+    are dropped. *links* maps a node to a relative href; each gets a Mermaid
+    ``click`` directive so the node hyperlinks to its page (links to unknown
+    nodes are ignored, emitted in node order for determinism). *highlight_edges*
+    are drawn with a thick ``==>`` arrow instead of ``-->`` — used to mark the
+    edges inside an import cycle. Used for dependency / load-order diagrams.
     """
+    link_map = dict(links or {})
+    highlight = set(highlight_edges or ())
     alias: dict[str, str] = {}
     lines = [_FENCE, f"flowchart {direction}"]
     for node in dict.fromkeys(nodes):
@@ -67,6 +86,11 @@ def flowchart(nodes: Iterable[str], edges: Iterable[tuple[str, str]], *, directi
         lines.append(f'    {alias[node]}["{_sanitize(node)}"]')
     for src, dst in edges:
         if src in alias and dst in alias:
-            lines.append(f"    {alias[src]} --> {alias[dst]}")
+            arrow = "==>" if (src, dst) in highlight else "-->"
+            lines.append(f"    {alias[src]} {arrow} {alias[dst]}")
+    for node in alias:
+        href = link_map.get(node)
+        if href:
+            lines.append(f'    click {alias[node]} "{_sanitize_href(href)}"')
     lines.append("```")
     return "\n".join(lines)

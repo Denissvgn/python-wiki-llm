@@ -487,6 +487,20 @@ def _add_bootstrap_command(subparsers):
         help="Skip automatic user-flow page generation from entry points",
     )
     bootstrap_parser.add_argument(
+        "--skip-dependencies",
+        action="store_true",
+        help="Skip dependency / load-order architecture page generation",
+    )
+    bootstrap_parser.add_argument(
+        "--dependency-graph-detail",
+        choices=["module", "package", "auto"],
+        default="auto",
+        help=(
+            "Dependency graph granularity: full module graph, top-level "
+            "packages, or auto-collapse large graphs (default: auto)"
+        ),
+    )
+    bootstrap_parser.add_argument(
         "--format",
         choices=["text", "json"],
         default="text",

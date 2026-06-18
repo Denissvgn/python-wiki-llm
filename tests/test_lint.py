@@ -813,12 +813,14 @@ class TestLintProfile:
 
 class TestLintFlowCoverage:
     def _project_with_flows(self, tmp_path, flow_stems):
-        (tmp_path / "api.py").write_text(textwrap.dedent('''\
+        (tmp_path / "api.py").write_text(
+            textwrap.dedent("""\
             __all__ = ["run"]
 
             def run():
                 return 1
-        '''))
+        """)
+        )
         wiki = tmp_path / "wiki"
         for d in ["entities", "modules", "workflows", "flows"]:
             (wiki / d).mkdir(parents=True)
@@ -856,3 +858,116 @@ class TestLintFlowCoverage:
         (wiki / "log.md").write_text("# Log\n")
         report = lint_cmd.build_report(str(wiki), ".")
         assert report.count("stale_flows") == 0
+
+
+class TestLintDependencyCoverage:
+    """DL-501: architecture-page cycle / reconciliation warnings + staleness."""
+
+    def test_no_architecture_pages_produces_no_findings(self, tmp_project):
+        wiki = tmp_project / "wiki"
+        wiki.mkdir()
+        report = lint_cmd.LintReport(wiki_dir=str(wiki), src_dir=".")
+        inventory = extract_cmd.get_inventory(".", deep=True)
+        lint_cmd._check_dependency_coverage(report, wiki, inventory, ".")
+        assert report.diagnostics == []
+        assert report.issues == []
+
+    def test_undeclared_dependency_is_warning_not_failure(self, tmp_project):
+        # models.py imports pydantic, which pyproject.toml does not declare.
+        wiki = tmp_project / "wiki"
+        wiki.mkdir()
+        (wiki / "dependencies.md").write_text("# Dependencies\n")
+        report = lint_cmd.LintReport(wiki_dir=str(wiki), src_dir=".")
+        inventory = extract_cmd.get_inventory(".", deep=True)
+        lint_cmd._check_dependency_coverage(report, wiki, inventory, ".")
+
+        undeclared = {
+            d.target
+            for d in report.diagnostics
+            if d.category == "undeclared_dependencies"
+        }
+        assert "pydantic" in undeclared
+        # Reconciliation gaps are warnings only — they never fail lint.
+        assert report.issues == []
+        assert report.passed
+        assert {d.severity for d in report.diagnostics} == {"warning"}
+
+    def test_unused_dependency_is_warning_not_failure(self, tmp_path):
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+        (wiki / "dependencies.md").write_text("# Dependencies\n")
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\ndependencies = ["requests"]\n', encoding="utf-8"
+        )
+        inventory = {
+            "app.py": {"language": "python", "imports": []},
+        }
+        report = lint_cmd.LintReport(wiki_dir=str(wiki), src_dir=str(tmp_path))
+        lint_cmd._check_dependency_coverage(report, wiki, inventory, str(tmp_path))
+
+        unused = [d for d in report.diagnostics if d.category == "unused_dependencies"]
+        assert [d.target for d in unused] == ["requests"]
+        assert [d.severity for d in unused] == ["warning"]
+        assert report.issues == []
+        assert report.passed
+
+    def test_import_cycle_is_warning_not_failure(self, tmp_path):
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+        (wiki / "load-order.md").write_text("# Load order\n")
+        inventory = {
+            "a.py": {"language": "python", "imports": [{"module": "b", "name": "b"}]},
+            "b.py": {"language": "python", "imports": [{"module": "a", "name": "a"}]},
+        }
+        report = lint_cmd.LintReport(wiki_dir=str(wiki), src_dir=str(tmp_path))
+        lint_cmd._check_dependency_coverage(report, wiki, inventory, str(tmp_path))
+
+        cycles = [d for d in report.diagnostics if d.category == "dependency_cycles"]
+        assert len(cycles) == 1
+        assert "a.py" in cycles[0].message and "b.py" in cycles[0].message
+        assert cycles[0].severity == "warning"
+        assert report.issues == []
+        assert report.passed
+
+    def test_architecture_page_links_are_checked_by_global_link_pass(self, tmp_path):
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+        deps_page = wiki / "dependencies.md"
+        deps_page.write_text("# Dependencies\n\n[Missing](modules/missing.md)\n")
+        report = lint_cmd.LintReport(wiki_dir=str(wiki), src_dir=str(tmp_path))
+
+        lint_cmd._check_broken_links(report, wiki, lint_cmd._build_page_index(wiki))
+
+        assert [(i.category, i.path, i.target) for i in report.issues] == [
+            ("broken_links", "dependencies.md", "modules/missing.md")
+        ]
+
+    def test_page_present_but_no_modules_is_stale_issue(self, tmp_path):
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+        (wiki / "dependencies.md").write_text("# Dependencies\n")
+        (wiki / "load-order.md").write_text("# Load order\n")
+        report = lint_cmd.LintReport(wiki_dir=str(wiki), src_dir=str(tmp_path))
+        # No source modules at all -> the pages document nothing.
+        lint_cmd._check_dependency_coverage(report, wiki, {}, str(tmp_path))
+
+        stale = {i.target for i in report.issues if i.category == "stale_dependencies"}
+        assert stale == {"dependencies", "load-order"}
+        assert not report.passed
+
+    def test_dependencies_phase_present_in_profile(self):
+        assert "dependencies" in lint_cmd._PROFILE_PHASES
+
+    def test_cycle_warning_renders_in_text_output(self):
+        report = lint_cmd.LintReport(wiki_dir="wiki", src_dir=".")
+        lint_cmd._diagnose(report, "dependency_cycles", "Import cycle: a.py ⇄ b.py")
+        text = lint_cmd.render_text(report)
+        assert "Import cycle: a.py ⇄ b.py" in text
+        assert report.diagnostics[0].severity == "warning"
+
+    def test_clean_run_omits_dependency_allclear_lines(self):
+        report = lint_cmd.LintReport(wiki_dir="wiki", src_dir=".")
+        text = lint_cmd.render_text(report)
+        # Optional architecture checks stay silent when they found nothing.
+        assert "import cycle" not in text.lower()
+        assert "undeclared dependency" not in text.lower()

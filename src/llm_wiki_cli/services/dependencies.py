@@ -28,6 +28,7 @@ name mapping is best-effort per ecosystem, so undeclared/unused are advisory.
 
 from __future__ import annotations
 
+import heapq
 import json
 import re
 import sys
@@ -262,6 +263,128 @@ def dependency_metrics(graph: dict) -> dict:
     }
     most_depended_on = sorted(modules, key=lambda m: (-fan_in[m], m))
     return {"metrics": metrics, "most_depended_on": most_depended_on}
+
+
+# ══ Load / startup order (Epic 2.3) ═══════════════════════════════════════
+
+
+def _condense(graph: dict) -> tuple[dict[str, str], dict[str, list[str]], list[list[str]]]:
+    """Condense the graph's strongly-connected components into super-nodes.
+
+    Returns ``(node_to_component, components, cycle_groups)`` where every node
+    maps to a component representative (the smallest member), ``components``
+    lists each representative's sorted members, and ``cycle_groups`` are the
+    multi-module SCCs whose internal load order is indeterminate.
+    """
+    nodes: set[str] = set(graph.get("nodes", []))
+    for source, target in graph.get("edges", []):
+        nodes.add(source)
+        nodes.add(target)
+
+    node_to_component: dict[str, str] = {}
+    components: dict[str, list[str]] = {}
+    for cycle in detect_cycles(graph):  # SCCs (size > 1) and explicit self-loops
+        representative = cycle[0]  # cycles are sorted, so this is the smallest
+        components[representative] = list(cycle)
+        for node in cycle:
+            node_to_component[node] = representative
+    for node in nodes:
+        if node not in node_to_component:
+            node_to_component[node] = node
+            components[node] = [node]
+
+    cycle_groups = [members for members in components.values() if len(members) > 1]
+    cycle_groups.sort()
+    return node_to_component, components, cycle_groups
+
+
+def topological_order(graph: dict) -> dict:
+    """Order modules so each loads after the internal modules it imports.
+
+    Strongly-connected components (import cycles) are condensed into single
+    nodes, the resulting DAG is Kahn-sorted with an alphabetical tie-break for
+    determinism, then each component is expanded in sorted order. An edge
+    ``(importer, imported)`` places ``imported`` before ``importer`` — the
+    dependency loads first. Returns ``{"order": [files...], "cycle_groups":
+    [[files...]]}`` where each cyclic group is surfaced (its members listed
+    sorted and adjacent) rather than silently dropped, since their relative load
+    order is indeterminate. Deterministic; isolated modules still appear.
+    """
+    node_to_component, components, cycle_groups = _condense(graph)
+
+    # Condensed dependency edges: for importer→imported, the imported
+    # component must load before the importer component.
+    adjacency: defaultdict[str, set[str]] = defaultdict(set)
+    for importer, imported in graph.get("edges", []):
+        src, dst = node_to_component[imported], node_to_component[importer]
+        if src != dst:
+            adjacency[src].add(dst)
+
+    indegree: dict[str, int] = {component: 0 for component in components}
+    for dependents in adjacency.values():
+        for dependent in dependents:
+            indegree[dependent] += 1
+
+    ready = [component for component in components if indegree[component] == 0]
+    heapq.heapify(ready)
+    order: list[str] = []
+    while ready:
+        component = heapq.heappop(ready)
+        order.extend(sorted(components[component]))
+        for dependent in sorted(adjacency.get(component, ())):
+            indegree[dependent] -= 1
+            if indegree[dependent] == 0:
+                heapq.heappush(ready, dependent)
+
+    return {"order": order, "cycle_groups": cycle_groups}
+
+
+# Heuristic factory / dependency-wiring function names. ``create_*`` builds an
+# app/server object; the rest configure or register wiring at import or setup
+# time. Matching is best-effort (names only), tagged as such by the caller.
+_FACTORY_PREFIXES: tuple[str, ...] = ("create_",)
+_WIRING_NAMES: frozenset[str] = frozenset({"configure", "setup", "wire"})
+_WIRING_PREFIXES: tuple[str, ...] = ("register_", "configure_", "setup_", "wire_")
+
+
+def _factory_kind(name: str) -> str:
+    """Classify a function name as a ``"factory"``, ``"wiring"`` helper, or ``""``."""
+    if name.startswith(_FACTORY_PREFIXES):
+        return "factory"
+    if name in _WIRING_NAMES or name.startswith(_WIRING_PREFIXES):
+        return "wiring"
+    return ""
+
+
+def detect_side_effects(inventory: dict) -> dict:
+    """List import-time side effects and factory/wiring functions per module.
+
+    Reads the deep extractor's ``module_calls`` (DL-301) to report each module's
+    top-level side effects, and flags top-level functions whose names match the
+    app-factory / dependency-wiring heuristics (``create_app``, ``configure``,
+    ``setup``, ``wire``, ``register_*``, …). Returns ``{"side_effects":
+    [{file, calls}], "factories": [{file, symbol, kind}], "best_effort": True}``,
+    both lists deterministically ordered. The detection is name-based and
+    therefore advisory, hence ``best_effort``. A module with no module-level
+    calls contributes no side-effect entry; absence of optional fields never
+    raises.
+    """
+    side_effects: list[dict] = []
+    factories: list[dict] = []
+    for filepath in sorted(inventory):
+        data = inventory[filepath]
+        if not isinstance(data, dict):
+            continue
+        calls = data.get("module_calls") or []
+        if calls:
+            side_effects.append({"file": filepath, "calls": calls})
+        for fn in data.get("functions", []):
+            kind = _factory_kind(fn.get("name", ""))
+            if kind:
+                factories.append({"file": filepath, "symbol": fn["name"], "kind": kind})
+
+    factories.sort(key=lambda f: (f["file"], f["symbol"]))
+    return {"side_effects": side_effects, "factories": factories, "best_effort": True}
 
 
 # ══ External dependency reconciliation (Epic 2.2) ═════════════════════════
@@ -741,3 +864,59 @@ def reconcile_dependencies(
         "unused_count": sum(len(lang["unused"]) for lang in languages.values()),
     }
     return {"languages": languages, "summary": summary}
+
+
+# ══ Aggregation + scale guard (Epic 2.4) ══════════════════════════════════
+
+
+def analyze_dependencies(inventory: dict, project_root: str = ".") -> dict:
+    """Run the full dependency analysis once, sharing the internal graph.
+
+    Builds the internal module-dependency graph a single time and threads it
+    through cycle detection, fan-in/fan-out metrics, topological load order, and
+    external reconciliation, then pairs it with module-level side effects. The
+    page generators, ``sync`` regeneration, and the ``extract`` block all consume
+    this one bundle so the graph is never rebuilt per consumer. Returns
+    ``{"graph", "cycles", "metrics", "load_order", "side_effects",
+    "reconciliation"}``; deterministic and never raises on slim inventories.
+    """
+    graph = build_dependency_graph(inventory)
+    return {
+        "graph": graph,
+        "cycles": detect_cycles(graph),
+        "metrics": dependency_metrics(graph),
+        "load_order": topological_order(graph),
+        "side_effects": detect_side_effects(inventory),
+        "reconciliation": reconcile_dependencies(inventory, project_root, graph=graph),
+    }
+
+
+def top_level_package(filepath: str) -> str:
+    """Return the top-level package of *filepath* (its first path component).
+
+    A file at the project root (no directory) is its own package, keyed by stem,
+    so the collapsed graph never invents an empty bucket.
+    """
+    path = Path(filepath)
+    parts = path.parts
+    return parts[0] if len(parts) > 1 else path.stem
+
+
+def package_dependency_graph(graph: dict) -> dict:
+    """Collapse a module graph to a top-level-package graph.
+
+    Every module node maps to its :func:`top_level_package`; intra-package edges
+    are dropped and parallel inter-package edges de-duplicated, bounding the
+    diagram for large repositories (DL-404). Returns the same
+    ``{"nodes", "edges"}`` shape as :func:`build_dependency_graph` (minus
+    ``unresolved``), stably sorted.
+    """
+    nodes = {top_level_package(node) for node in graph.get("nodes", [])}
+    edges: set[tuple[str, str]] = set()
+    for source, target in graph.get("edges", []):
+        src, dst = top_level_package(source), top_level_package(target)
+        nodes.add(src)
+        nodes.add(dst)
+        if src != dst:
+            edges.add((src, dst))
+    return {"nodes": sorted(nodes), "edges": sorted(edges)}

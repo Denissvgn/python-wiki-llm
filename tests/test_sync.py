@@ -90,12 +90,14 @@ def bootstrapped_project(tmp_path):
     (proj / "pyproject.toml").write_text(
         '[project]\nname = "sample"\nversion = "0.1.0"\n'
     )
-    (proj / "models.py").write_text(textwrap.dedent("""\
+    (proj / "models.py").write_text(
+        textwrap.dedent("""\
             class User:
                 \"\"\"A system user.\"\"\"
                 name: str = ""
                 email: str = ""
-        """))
+        """)
+    )
 
     wiki_dir = proj / "docs" / "llm_wiki"
     old_cwd = os.getcwd()
@@ -937,13 +939,15 @@ class TestChangedFile:
         models_py = proj / "models.py"
 
         # Modify source
-        models_py.write_text(textwrap.dedent("""\
+        models_py.write_text(
+            textwrap.dedent("""\
                 class User:
                     \"\"\"An updated user with role.\"\"\"
                     name: str = ""
                     email: str = ""
                     role: str = "viewer"
-            """))
+            """)
+        )
 
         args = _make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir))
         sync_cmd.run(args)
@@ -957,11 +961,13 @@ class TestChangedFile:
 
     def test_module_page_updated(self, bootstrapped_project, capsys):
         proj, wiki_dir = bootstrapped_project
-        (proj / "models.py").write_text(textwrap.dedent("""\
+        (proj / "models.py").write_text(
+            textwrap.dedent("""\
                 class User:
                     \"\"\"An updated user.\"\"\"
                     name: str = ""
-            """))
+            """)
+        )
 
         args = _make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir))
         sync_cmd.run(args)
@@ -971,10 +977,12 @@ class TestChangedFile:
 
     def test_manifest_updated_after_sync(self, bootstrapped_project):
         proj, wiki_dir = bootstrapped_project
-        (proj / "models.py").write_text(textwrap.dedent("""\
+        (proj / "models.py").write_text(
+            textwrap.dedent("""\
                 class User:
                     \"\"\"Changed.\"\"\"
-            """))
+            """)
+        )
 
         old_manifest = SyncManifest.load(wiki_dir)
         old_hash = next(
@@ -1245,11 +1253,13 @@ class TestNewFile:
 
     def test_new_pages_created(self, bootstrapped_project, capsys):
         proj, wiki_dir = bootstrapped_project
-        (proj / "auth.py").write_text(textwrap.dedent("""\
+        (proj / "auth.py").write_text(
+            textwrap.dedent("""\
                 class AuthService:
                     \"\"\"Handles authentication.\"\"\"
                     secret: str = ""
-            """))
+            """)
+        )
 
         args = _make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir))
         sync_cmd.run(args)
@@ -1345,11 +1355,13 @@ class TestMovedClass:
 
         # Remove User from models.py, add it to users.py
         (proj / "models.py").write_text("# empty\n")
-        (proj / "users.py").write_text(textwrap.dedent("""\
+        (proj / "users.py").write_text(
+            textwrap.dedent("""\
                 class User:
                     \"\"\"A moved user.\"\"\"
                     name: str = ""
-            """))
+            """)
+        )
 
         args = _make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir))
         sync_cmd.run(args)
@@ -1536,7 +1548,8 @@ class TestSyncFlowReindex:
 
 class TestSyncFlowRegeneration:
     def _write_svc(self, proj, callee):
-        (proj / "svc.py").write_text(textwrap.dedent(f'''\
+        (proj / "svc.py").write_text(
+            textwrap.dedent(f"""\
             __all__ = ["run"]
 
 
@@ -1550,7 +1563,8 @@ class TestSyncFlowRegeneration:
 
             def helper_b():
                 return 2
-        '''))
+        """)
+        )
 
     def _new_project(self, tmp_path, callee):
         import subprocess
@@ -1558,11 +1572,15 @@ class TestSyncFlowRegeneration:
         proj = tmp_path / "proj"
         proj.mkdir()
         subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
-        (proj / "pyproject.toml").write_text('[project]\nname = "p"\nversion = "0.1.0"\n')
+        (proj / "pyproject.toml").write_text(
+            '[project]\nname = "p"\nversion = "0.1.0"\n'
+        )
         self._write_svc(proj, callee)
         return proj, proj / "docs" / "llm_wiki"
 
-    def test_regenerates_changed_flow_and_preserves_behavior(self, tmp_path, monkeypatch, capsys):
+    def test_regenerates_changed_flow_and_preserves_behavior(
+        self, tmp_path, monkeypatch, capsys
+    ):
         proj, wiki = self._new_project(tmp_path, "helper_a")
         monkeypatch.chdir(proj)
         bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
@@ -1572,7 +1590,9 @@ class TestSyncFlowRegeneration:
         assert "helper_a" in original
         # Human edits the Behavior section.
         flow_page.write_text(
-            sync_cmd._replace_section_body(original, "Behavior", "Runs the primary path."),
+            sync_cmd._replace_section_body(
+                original, "Behavior", "Runs the primary path."
+            ),
             encoding="utf-8",
         )
 
@@ -1581,8 +1601,8 @@ class TestSyncFlowRegeneration:
         sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
 
         updated = flow_page.read_text(encoding="utf-8")
-        assert "helper_b" in updated          # diagram regenerated
-        assert "helper_a" not in updated       # old call removed
+        assert "helper_b" in updated  # diagram regenerated
+        assert "helper_a" not in updated  # old call removed
         assert "Runs the primary path." in updated  # human Behavior preserved
 
     def test_does_not_create_flows_when_opted_out(self, tmp_path, monkeypatch, capsys):
@@ -1597,3 +1617,108 @@ class TestSyncFlowRegeneration:
         sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
 
         assert not list((wiki / "flows").glob("*.md"))
+
+
+class TestSyncDependencyRegeneration:
+    def _write_modules(self, proj, app_body):
+        (proj / "core.py").write_text("def core():\n    return 1\n")
+        (proj / "app.py").write_text(app_body)
+
+    def _new_project(self, tmp_path):
+        import subprocess
+
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
+        (proj / "pyproject.toml").write_text(
+            '[project]\nname = "p"\nversion = "0.1.0"\n'
+        )
+        return proj, proj / "docs" / "llm_wiki"
+
+    def test_regenerates_graph_and_preserves_notes(self, tmp_path, monkeypatch, capsys):
+        proj, wiki = self._new_project(tmp_path)
+        self._write_modules(proj, "def go():\n    return 1\n")  # no internal import yet
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        deps_page = wiki / "dependencies.md"
+        load_page = wiki / "load-order.md"
+        original_deps = deps_page.read_text(encoding="utf-8")
+        original_load = load_page.read_text(encoding="utf-8")
+        deps_page.write_text(
+            sync_cmd._replace_section_body(
+                original_deps, "Notes", "Reviewed; no dependency concerns."
+            ),
+            encoding="utf-8",
+        )
+        load_page.write_text(
+            sync_cmd._replace_section_body(
+                original_load, "Notes", "Core must load before app."
+            ),
+            encoding="utf-8",
+        )
+
+        # app.py now imports core → a new internal edge appears.
+        self._write_modules(
+            proj, "import core\n\n\ndef go():\n    return core.core()\n"
+        )
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        updated_deps = deps_page.read_text(encoding="utf-8")
+        assert "| [core](modules/core.md) | 1 | 0 |" in updated_deps
+        assert "Reviewed; no dependency concerns." in updated_deps
+
+        updated_load = load_page.read_text(encoding="utf-8")
+        assert "1. [core](modules/core.md)" in updated_load
+        assert "2. [app](modules/app.md)" in updated_load
+        assert "Core must load before app." in updated_load
+
+        # Architecture pages stay linked from the index (not orphaned).
+        index = (wiki / "index.md").read_text(encoding="utf-8")
+        assert "## Architecture" in index
+        assert "[Dependencies](dependencies.md)" in index
+
+    def test_unrelated_source_edit_does_not_rewrite_architecture_pages(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path)
+        self._write_modules(
+            proj, "import core\n\n\ndef go():\n    return core.core()\n"
+        )
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        architecture_writes = []
+        original_write_md = sync_cmd.write_md
+
+        def record_architecture_writes(path, text):
+            if path.name in {"dependencies.md", "load-order.md"}:
+                architecture_writes.append(path.name)
+            original_write_md(path, text)
+
+        monkeypatch.setattr(sync_cmd, "write_md", record_architecture_writes)
+
+        self._write_modules(
+            proj, "import core\n\n\ndef go():\n    return core.core() + 1\n"
+        )
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        assert architecture_writes == []
+
+    def test_opted_out_project_stays_untouched(self, tmp_path, monkeypatch, capsys):
+        proj, wiki = self._new_project(tmp_path)
+        self._write_modules(proj, "def go():\n    return 1\n")
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(
+            _make_bootstrap_args(
+                src_dir=str(proj), wiki_dir=str(wiki), skip_dependencies=True
+            )
+        )
+        assert not (wiki / "dependencies.md").exists()
+
+        self._write_modules(
+            proj, "import core\n\n\ndef go():\n    return core.core()\n"
+        )
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        assert not (wiki / "dependencies.md").exists()
+        assert not (wiki / "load-order.md").exists()

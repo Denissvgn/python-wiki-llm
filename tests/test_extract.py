@@ -589,6 +589,88 @@ class TestCallCapture:
         assert method["calls"][0] == {"name": "helper", "attr": "self.helper", "line": 3}
 
 
+class TestModuleCalls:
+    def test_assignment_call_records_target(self, tmp_path):
+        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+            from flask import Flask
+
+            app = Flask(__name__)
+        """))
+        data = get_inventory(str(tmp_path), deep=True)["m.py"]
+        assert data["module_calls"] == [
+            {"name": "Flask", "target": "app", "line": 3}
+        ]
+
+    def test_bare_expression_call_recorded(self, tmp_path):
+        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+            import logging
+
+            configure()
+            logging.basicConfig(level=logging.INFO)
+        """))
+        calls = get_inventory(str(tmp_path), deep=True)["m.py"]["module_calls"]
+        assert calls == [
+            {"name": "configure", "line": 3},
+            {"name": "basicConfig", "attr": "logging.basicConfig", "line": 4},
+        ]
+
+    def test_annotated_assignment_call_records_target(self, tmp_path):
+        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+            from flask import Flask
+
+            app: Flask = Flask(__name__)
+        """))
+        calls = get_inventory(str(tmp_path), deep=True)["m.py"]["module_calls"]
+        assert calls == [{"name": "Flask", "target": "app", "line": 3}]
+
+    def test_pure_constants_imports_and_defs_are_not_side_effects(self, tmp_path):
+        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+            import os
+
+            MAX_RETRIES = 3
+            NAME = "x"
+
+            def run():
+                return helper()
+
+            class Service:
+                started = build()
+        """))
+        assert "module_calls" not in get_inventory(str(tmp_path), deep=True)["m.py"]
+
+    def test_calls_inside_def_and_main_guard_are_not_module_calls(self, tmp_path):
+        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+            def main():
+                leaked()
+
+            if __name__ == "__main__":
+                main()
+        """))
+        assert "module_calls" not in get_inventory(str(tmp_path), deep=True)["m.py"]
+
+    def test_module_calls_omitted_in_slim_mode(self, tmp_path):
+        (tmp_path / "m.py").write_text("app = Flask(__name__)\n\n\ndef run():\n    pass\n")
+        assert "module_calls" not in get_inventory(str(tmp_path), deep=False)["m.py"]
+
+    def test_side_effect_only_module_is_included_in_deep_mode(self, tmp_path):
+        # A defless module that only wires up at import time is still content.
+        (tmp_path / "wiring.py").write_text("import logging\n\nlogging.basicConfig()\n")
+        deep = get_inventory(str(tmp_path), deep=True)
+        assert "wiring.py" in deep
+        assert deep["wiring.py"]["module_calls"][0]["name"] == "basicConfig"
+        # ...but a slim scan keeps dropping defless modules.
+        assert "wiring.py" not in get_inventory(str(tmp_path), deep=False)
+
+    def test_module_calls_preserve_source_order(self, tmp_path):
+        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+            register()
+            app = create_app()
+            wire()
+        """))
+        names = [c["name"] for c in get_inventory(str(tmp_path), deep=True)["m.py"]["module_calls"]]
+        assert names == ["register", "create_app", "wire"]
+
+
 class TestEntryPointSignals:
     def test_deep_captures_all_exports(self, tmp_path):
         (tmp_path / "api.py").write_text(textwrap.dedent("""\

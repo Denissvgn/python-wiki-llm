@@ -23,7 +23,11 @@ from ..config import (
     validate_source_root,
 )
 from ..services.contracts import BOOTSTRAP_SUMMARY_SCHEMA_VERSION
-from ..services.diagrams import sequence_diagram
+from ..services.dependencies import (
+    analyze_dependencies,
+    package_dependency_graph,
+)
+from ..services.diagrams import flowchart, sequence_diagram
 from ..services.entrypoints import build_flow, get_entry_points, read_console_scripts
 from ..services.imports import ModulePathResolver, build_module_path_resolver
 from ..services.io import read_md, write_md
@@ -450,12 +454,30 @@ def _append_index_user_flows(lines: list[str], flow_entries: list[dict] | None) 
         lines.append("")
 
 
+def _append_index_architecture(
+    lines: list[str], architecture_entries: list[dict] | None
+) -> None:
+    """Append the "Architecture" section linking the top-level analysis pages.
+
+    Keeps ``dependencies.md`` / ``load-order.md`` linked from the index so lint
+    does not flag them as orphans. Omitted entirely when no such pages exist.
+    """
+    if not architecture_entries:
+        return
+    lines.append("## Architecture")
+    lines.append("")
+    for entry in sorted(architecture_entries, key=lambda e: e["page"]):
+        lines.append(f"- [{entry['name']}]({entry['page']}.md)")
+    lines.append("")
+
+
 def _generate_index_md(
     entity_names: list[str],
     module_entries: list[dict],
     workflow_entries: list[dict] | None = None,
     infra_entries: list[dict] | None = None,
     flow_entries: list[dict] | None = None,
+    architecture_entries: list[dict] | None = None,
 ) -> str:
     """Generate the full index.md content."""
     lines = [
@@ -480,6 +502,7 @@ def _generate_index_md(
         lines.append(f"- [{entry['name']}](modules/{entry['name']}.md){suffix}")
 
     lines.append("")
+    _append_index_architecture(lines, architecture_entries)
     lines.append("## Workflows")
     lines.append("")
 
@@ -657,6 +680,278 @@ def _generate_flow_md(
     )
     lines.append("")
 
+    return "\n".join(lines)
+
+
+# ── Architecture pages: dependencies + load order (Epic 2.4) ──────────
+
+# Above this many module nodes, the ``auto`` graph detail collapses the
+# flowchart to top-level packages so large repos stay readable (DL-404).
+_DEPENDENCY_GRAPH_NODE_LIMIT = 40
+
+
+def _dependency_module_link(filepath: str, module_page_map: Mapping[str, str]) -> str:
+    """Markdown link from an architecture page (wiki root) to a module page."""
+    stem = module_page_map.get(filepath, _module_name_from_path(filepath))
+    return f"[{stem}](modules/{stem}.md)"
+
+
+def _cyclic_edges(
+    edges: list[tuple[str, str]], cycles: list[list[str]]
+) -> set[tuple[str, str]]:
+    """Return the edges whose endpoints sit in the same import cycle."""
+    group_of: dict[str, int] = {}
+    for index, cycle in enumerate(cycles):
+        for node in cycle:
+            group_of[node] = index
+    return {
+        (src, dst)
+        for src, dst in edges
+        if src in group_of and group_of[src] == group_of.get(dst)
+    }
+
+
+def _render_dependency_graph(
+    analysis: dict, module_page_map: Mapping[str, str], detail: str
+) -> tuple[str | None, str]:
+    """Render the dependency flowchart, choosing module vs package detail.
+
+    Returns ``(diagram_or_None, rendered_detail)``. ``auto`` collapses to a
+    package-level graph past :data:`_DEPENDENCY_GRAPH_NODE_LIMIT`; ``package``
+    always collapses; ``module`` keeps the full graph with per-module links and
+    cyclic edges highlighted. ``None`` when there is nothing to draw.
+    """
+    graph = analysis["graph"]
+    nodes = graph["nodes"]
+    use_package = detail == "package" or (
+        detail == "auto" and len(nodes) > _DEPENDENCY_GRAPH_NODE_LIMIT
+    )
+    if use_package:
+        collapsed = package_dependency_graph(graph)
+        if not collapsed["nodes"]:
+            return None, "package"
+        return flowchart(collapsed["nodes"], collapsed["edges"]), "package"
+    if not nodes:
+        return None, "module"
+    links = {
+        node: f"modules/{module_page_map.get(node, _module_name_from_path(node))}.md"
+        for node in nodes
+    }
+    highlight = _cyclic_edges(graph["edges"], analysis["cycles"])
+    return (
+        flowchart(nodes, graph["edges"], links=links, highlight_edges=highlight),
+        "module",
+    )
+
+
+def _format_package_list(packages: list[str]) -> str:
+    return ", ".join(f"`{pkg}`" for pkg in packages) if packages else "—"
+
+
+def _append_external_dependencies(lines: list[str], reconciliation: dict) -> None:
+    """Append the per-language external-dependency section (DL-205) to *lines*."""
+    lines.append("## External dependencies")
+    lines.append("")
+    languages = reconciliation.get("languages", {})
+    emitted = False
+    for language in sorted(languages):
+        lang = languages[language]
+        if not (lang["used"] or lang["undeclared"] or lang["unused"]):
+            continue
+        emitted = True
+        lines.append(f"### {language}")
+        lines.append("")
+        lines.append(f"- **Used:** {_format_package_list(sorted(lang['used']))}")
+        if lang["undeclared"]:
+            lines.append(
+                f"- ⚠️ **Undeclared:** {_format_package_list(lang['undeclared'])}"
+            )
+        if lang["unused"]:
+            lines.append(
+                f"- **Unused (declared, not imported):** "
+                f"{_format_package_list(lang['unused'])}"
+            )
+        lines.append("")
+    if not emitted:
+        lines.append("*No external dependencies detected.*")
+        lines.append("")
+
+
+def _generate_dependencies_md(
+    analysis: dict,
+    module_page_map: Mapping[str, str] | None = None,
+    *,
+    detail: str = "auto",
+) -> str:
+    """Render ``dependencies.md`` from a :func:`analyze_dependencies` bundle.
+
+    Sections: a linked internal-module Mermaid ``flowchart`` (cyclic edges
+    thickened), import **Cycles**, a **Fan-in / Fan-out** table, **External
+    dependencies** grouped by language, and a ``## Notes`` semantic placeholder.
+    Deterministic; degrades cleanly with no cycles or no external deps.
+    """
+    page_map = module_page_map or {}
+    cycles = analysis["cycles"]
+    metrics = analysis["metrics"]
+
+    lines = [
+        "# Dependencies",
+        "",
+        "Internal module dependency graph and external package reconciliation.",
+        "",
+        "## Module graph",
+        "",
+    ]
+    diagram, rendered_detail = _render_dependency_graph(analysis, page_map, detail)
+    if diagram and rendered_detail == "package":
+        lines.append(
+            "<!-- Collapsed to top-level packages; the full module list is in the "
+            "Fan-in / Fan-out table below. -->"
+        )
+        lines.append(diagram)
+    elif diagram:
+        lines.append("<!-- Thick arrows (==>) mark edges inside an import cycle. -->")
+        lines.append(diagram)
+    else:
+        lines.append("*No internal module dependencies detected.*")
+    lines.append("")
+
+    lines.append("## Cycles")
+    lines.append("")
+    if cycles:
+        lines.append(
+            "> Import cycles are legal but complicate load order — review the "
+            "modules below."
+        )
+        lines.append("")
+        for cycle in cycles:
+            joined = " ⇄ ".join(_dependency_module_link(fp, page_map) for fp in cycle)
+            lines.append(f"- {joined}")
+    else:
+        lines.append("*No import cycles detected.*")
+    lines.append("")
+
+    lines.append("## Fan-in / Fan-out")
+    lines.append("")
+    ranking = metrics.get("most_depended_on", [])
+    if ranking:
+        lines.append("| Module | Fan-in | Fan-out |")
+        lines.append("|--------|--------|---------|")
+        for module in ranking:
+            counts = metrics["metrics"][module]
+            link = _dependency_module_link(module, page_map)
+            lines.append(f"| {link} | {counts['fan_in']} | {counts['fan_out']} |")
+    else:
+        lines.append("*No internal modules detected.*")
+    lines.append("")
+
+    _append_external_dependencies(lines, analysis["reconciliation"])
+
+    lines.append("## Notes")
+    lines.append("")
+    lines.append(
+        "_Document dynamic or conditional imports, intentional cycles, and the "
+        "rationale behind notable dependencies. Replace this placeholder._"
+    )
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _format_side_effect_call(call: dict) -> str:
+    """Render a ``module_calls`` record as ``target = label`` or ``label``."""
+    label = call.get("attr") or call.get("name", "")
+    target = call.get("target")
+    return f"{target} = {label}" if target else label
+
+
+def _generate_load_order_md(
+    analysis: dict,
+    module_page_map: Mapping[str, str] | None = None,
+) -> str:
+    """Render ``load-order.md`` from a :func:`analyze_dependencies` bundle.
+
+    Sections: the topological **Load order** (numbered, dependency-first),
+    **Module-level side effects**, a heuristic **Factory / wiring** table,
+    **Indeterminate (cyclic) groups** whose order cannot be resolved, and a
+    ``## Notes`` placeholder. Deterministic; degrades cleanly when empty.
+    """
+    page_map = module_page_map or {}
+    load_order = analysis["load_order"]
+    side_effects = analysis["side_effects"]
+    order = load_order.get("order", [])
+    cycle_groups = load_order.get("cycle_groups", [])
+
+    lines = [
+        "# Load order",
+        "",
+        "Topological module load / startup order and import-time side effects.",
+        "",
+        "## Load order",
+        "",
+        "<!-- Dependency-first order: each module loads after the internal "
+        "modules it imports. -->",
+    ]
+    if order:
+        for index, filepath in enumerate(order, 1):
+            lines.append(f"{index}. {_dependency_module_link(filepath, page_map)}")
+    else:
+        lines.append("*No modules detected.*")
+    lines.append("")
+
+    lines.append("## Module-level side effects")
+    lines.append("")
+    effects = side_effects.get("side_effects", [])
+    if effects:
+        lines.append("| Module | Import-time calls |")
+        lines.append("|--------|-------------------|")
+        for entry in effects:
+            calls = ", ".join(
+                f"`{_format_side_effect_call(call)}`" for call in entry["calls"]
+            )
+            link = _dependency_module_link(entry["file"], page_map)
+            lines.append(f"| {link} | {calls} |")
+    else:
+        lines.append("*No import-time side effects detected.*")
+    lines.append("")
+
+    lines.append("## Factory / wiring")
+    lines.append("")
+    factories = side_effects.get("factories", [])
+    if factories:
+        lines.append(
+            "<!-- Heuristic, name-based detection of app-factory / wiring "
+            "functions. -->"
+        )
+        lines.append("")
+        lines.append("| Function | Kind | Module |")
+        lines.append("|----------|------|--------|")
+        for factory in factories:
+            link = _dependency_module_link(factory["file"], page_map)
+            lines.append(f"| `{factory['symbol']}` | {factory['kind']} | {link} |")
+    else:
+        lines.append("*No factory or wiring functions detected.*")
+    lines.append("")
+
+    if cycle_groups:
+        lines.append("## Indeterminate (cyclic) groups")
+        lines.append("")
+        lines.append(
+            "> These modules form import cycles, so their relative load order is "
+            "indeterminate."
+        )
+        lines.append("")
+        for group in cycle_groups:
+            joined = " ⇄ ".join(_dependency_module_link(fp, page_map) for fp in group)
+            lines.append(f"- {joined}")
+        lines.append("")
+
+    lines.append("## Notes")
+    lines.append("")
+    lines.append(
+        "_Document required initialization order, lazy imports, and side effects "
+        "that must run before others. Replace this placeholder._"
+    )
+    lines.append("")
     return "\n".join(lines)
 
 
@@ -1050,6 +1345,8 @@ class _BootstrapRunOptions:
     deep: bool
     skip_workflows: bool
     skip_flows: bool
+    skip_dependencies: bool
+    dependency_graph_detail: str
     overwrite: bool
     json_mode: bool
     source_adapter: bool
@@ -1099,11 +1396,19 @@ class _InfrastructureResult:
 
 
 @dataclass(frozen=True)
+class _DependencyResult:
+    architecture_entries: list[dict]
+    created: int
+    summary: dict
+
+
+@dataclass(frozen=True)
 class _BootstrapGenerationResult:
     entity: _EntityModuleResult
     workflow: _WorkflowResult
     flow: _FlowResult
     infrastructure: _InfrastructureResult
+    dependency: _DependencyResult
     cross_reference_count: int
 
 
@@ -1126,6 +1431,8 @@ def _bootstrap_run_options_from_args(args) -> _BootstrapRunOptions:
         deep=depth == "full",
         skip_workflows=getattr(args, "skip_workflows", False),
         skip_flows=getattr(args, "skip_flows", False),
+        skip_dependencies=getattr(args, "skip_dependencies", False),
+        dependency_graph_detail=getattr(args, "dependency_graph_detail", "auto"),
         overwrite=args.overwrite,
         json_mode=json_mode,
         source_adapter=getattr(args, "source_adapter", False),
@@ -1213,6 +1520,7 @@ def _finish_if_empty_bootstrap_inventory(
                     "docker_files": 0,
                     "workflows": 0,
                     "flows": 0,
+                    "dependencies": {"generated": False},
                     "cross_references": 0,
                     "created_files": state.created_files,
                     "updated_files": state.updated_files,
@@ -1455,12 +1763,70 @@ def _write_bootstrap_infrastructure_pages(
     return _InfrastructureResult(infra_entries, infra_created, docker_inventory)
 
 
+def _dependency_counts(analysis: dict) -> dict:
+    """Scalar counts about *analysis* for the bootstrap JSON summary."""
+    graph = analysis["graph"]
+    recon_summary = analysis["reconciliation"]["summary"]
+    return {
+        "modules": len(graph["nodes"]),
+        "edges": len(graph["edges"]),
+        "cycles": len(analysis["cycles"]),
+        "external": recon_summary["external_count"],
+        "undeclared": recon_summary["undeclared_count"],
+        "unused": recon_summary["unused_count"],
+    }
+
+
+def _write_bootstrap_dependency_pages(
+    state: _BootstrapRunState,
+    inventory: dict,
+    module_page_map: dict[str, str],
+) -> _DependencyResult:
+    if not state.options.deep or state.options.skip_dependencies:
+        return _DependencyResult([], 0, {"generated": False})
+
+    _emit_bootstrap(state, "Generating architecture pages...", flush=True)
+    analysis = analyze_dependencies(inventory, state.options.src_dir_for_scan)
+    pages = (
+        (
+            "dependencies",
+            "Dependencies",
+            _generate_dependencies_md(
+                analysis,
+                module_page_map,
+                detail=state.options.dependency_graph_detail,
+            ),
+        ),
+        ("load-order", "Load order", _generate_load_order_md(analysis, module_page_map)),
+    )
+
+    architecture_entries: list[dict] = []
+    created = 0
+    for stem, label, content in pages:
+        page_path = state.options.wiki_dir / f"{stem}.md"
+        if page_path.exists() and not state.options.overwrite:
+            state.skipped_files.append(_path_text(page_path))
+            _emit_bootstrap(state, f"  SKIP architecture (exists): {stem}")
+        else:
+            _write_bootstrap_file(state, page_path, content)
+            created += 1
+            _emit_bootstrap(state, f"  CREATE architecture: {stem}")
+        # Linked from the index regardless of skip so existing pages are not
+        # orphaned by lint.
+        architecture_entries.append({"name": label, "page": stem})
+
+    _emit_bootstrap(state, f"Generated architecture pages: {created}.", flush=True)
+    summary = {"generated": True, "pages_created": created, **_dependency_counts(analysis)}
+    return _DependencyResult(architecture_entries, created, summary)
+
+
 def _write_bootstrap_index(
     state: _BootstrapRunState,
     entity_result: _EntityModuleResult,
     workflow_result: _WorkflowResult,
     flow_result: _FlowResult,
     infrastructure_result: _InfrastructureResult,
+    dependency_result: _DependencyResult,
 ) -> None:
     index_path = state.options.wiki_dir / "index.md"
     _write_bootstrap_file(
@@ -1472,6 +1838,7 @@ def _write_bootstrap_index(
             workflow_result.entries or None,
             infrastructure_result.entries or None,
             flow_result.entries or None,
+            dependency_result.architecture_entries or None,
         ),
     )
     _emit_bootstrap(state, "  WRITE index.md")
@@ -1484,6 +1851,7 @@ def _append_bootstrap_log(
     workflow_result: _WorkflowResult,
     flow_result: _FlowResult,
     infrastructure_result: _InfrastructureResult,
+    dependency_result: _DependencyResult,
     cross_reference_count: int,
 ) -> None:
     log_path = state.options.wiki_dir / "log.md"
@@ -1497,6 +1865,7 @@ def _append_bootstrap_log(
         f"- Workflows created: {workflow_result.created}\n"
         f"- User flows created: {flow_result.created}\n"
         f"- Infrastructure created: {infrastructure_result.created}\n"
+        f"- Architecture pages created: {dependency_result.created}\n"
         f"- Total classes tracked: {len(entity_result.all_entity_names)}\n"
         f"- Total files scanned: {len(inventory)}\n"
         f"- Docker/Compose files: {len(infrastructure_result.docker_inventory)}\n"
@@ -1520,6 +1889,7 @@ def _emit_bootstrap_complete(
     workflow_result: _WorkflowResult,
     flow_result: _FlowResult,
     infrastructure_result: _InfrastructureResult,
+    dependency_result: _DependencyResult,
     cross_reference_count: int,
 ) -> None:
     _emit_bootstrap(
@@ -1527,7 +1897,8 @@ def _emit_bootstrap_complete(
         f"\nBootstrap complete: {entity_result.entities_created} entities, "
         f"{entity_result.modules_created} modules, {workflow_result.created} workflows, "
         f"{flow_result.created} flows, "
-        f"{infrastructure_result.created} infrastructure "
+        f"{infrastructure_result.created} infrastructure, "
+        f"{dependency_result.created} architecture "
         f"created from {len(inventory)} source files "
         f"({cross_reference_count} cross-references).",
     )
@@ -1568,6 +1939,7 @@ def _emit_bootstrap_json_summary(
     workflow_result: _WorkflowResult,
     flow_result: _FlowResult,
     infrastructure_result: _InfrastructureResult,
+    dependency_result: _DependencyResult,
     cross_reference_count: int,
     manifest_path: Path,
 ) -> None:
@@ -1591,6 +1963,7 @@ def _emit_bootstrap_json_summary(
                 "docker_files": len(infrastructure_result.docker_inventory),
                 "workflows": len(workflow_result.entries),
                 "flows": len(flow_result.entries),
+                "dependencies": dependency_result.summary,
                 "cross_references": cross_reference_count,
                 "created_files": state.created_files,
                 "updated_files": state.updated_files,
@@ -1624,11 +1997,15 @@ def _generate_bootstrap_content(
     infrastructure_result = _write_bootstrap_infrastructure_pages(
         state, page_maps.module_page_map
     )
+    dependency_result = _write_bootstrap_dependency_pages(
+        state, inventory, page_maps.module_page_map
+    )
     return _BootstrapGenerationResult(
         entity_result,
         workflow_result,
         flow_result,
         infrastructure_result,
+        dependency_result,
         cross_reference_count,
     )
 
@@ -1640,7 +2017,12 @@ def _finalize_bootstrap(
     result: _BootstrapGenerationResult,
 ) -> None:
     _write_bootstrap_index(
-        state, result.entity, result.workflow, result.flow, result.infrastructure
+        state,
+        result.entity,
+        result.workflow,
+        result.flow,
+        result.infrastructure,
+        result.dependency,
     )
     _append_bootstrap_log(
         state,
@@ -1649,6 +2031,7 @@ def _finalize_bootstrap(
         result.workflow,
         result.flow,
         result.infrastructure,
+        result.dependency,
         result.cross_reference_count,
     )
     _emit_bootstrap_complete(
@@ -1658,6 +2041,7 @@ def _finalize_bootstrap(
         result.workflow,
         result.flow,
         result.infrastructure,
+        result.dependency,
         result.cross_reference_count,
     )
     _update_bootstrap_agent_constraints(state)
@@ -1668,6 +2052,7 @@ def _finalize_bootstrap(
         result.workflow,
         result.flow,
         result.infrastructure,
+        result.dependency,
         result.cross_reference_count,
         manifest_path,
     )

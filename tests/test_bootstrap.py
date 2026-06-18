@@ -13,6 +13,7 @@ from pathlib import Path
 import pytest
 from llm_wiki_cli.commands import bootstrap_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
+from llm_wiki_cli.services.dependencies import analyze_dependencies
 
 # True when git is on PATH; used to guard git-dependent fixture steps.
 _GIT_AVAILABLE = shutil.which("git") is not None
@@ -724,3 +725,174 @@ class TestBootstrapFlows:
         )
         data = json.loads(capsys.readouterr().out)
         assert data["flows"] == 1
+
+
+def _pymod(*imports, functions=None, module_calls=None):
+    """A minimal deep-inventory Python entry for dependency analysis."""
+    entry = {
+        "language": "python",
+        "imports": [{"module": m, "name": n} for m, n in imports],
+        "classes": [],
+        "functions": [{"name": f} for f in (functions or [])],
+    }
+    if module_calls:
+        entry["module_calls"] = module_calls
+    return entry
+
+
+class TestGenerateDependenciesMd:
+    def _analysis(self, tmp_path):
+        inventory = {
+            "pkg/a.py": _pymod(("pkg.b", "B"), ("requests", "get")),
+            "pkg/b.py": _pymod(("pkg.a", "A")),
+        }
+        analysis = analyze_dependencies(inventory, str(tmp_path))
+        return analysis, {"pkg/a.py": "a", "pkg/b.py": "b"}
+
+    def test_renders_graph_cycles_metrics_and_external(self, tmp_path):
+        analysis, page_map = self._analysis(tmp_path)
+        md = bootstrap_cmd._generate_dependencies_md(analysis, page_map)
+        assert md.startswith("# Dependencies")
+        assert "```mermaid" in md and "flowchart TD" in md
+        assert 'click n0 "modules/a.md"' in md  # node hyperlinks to its page
+        assert "==>" in md  # the a⇄b cycle edges are highlighted
+        assert "## Cycles" in md
+        assert "[a](modules/a.md) ⇄ [b](modules/b.md)" in md
+        assert "## Fan-in / Fan-out" in md
+        assert "| [a](modules/a.md) |" in md
+        assert "### python" in md
+        assert "⚠️ **Undeclared:** `requests`" in md
+        assert md.rstrip().endswith("Replace this placeholder._")
+        assert "## Notes" in md
+
+    def test_degrades_cleanly_without_cycles_or_external(self, tmp_path):
+        inventory = {"solo.py": _pymod()}
+        analysis = analyze_dependencies(inventory, str(tmp_path))
+        md = bootstrap_cmd._generate_dependencies_md(analysis, {"solo.py": "solo"})
+        assert "*No import cycles detected.*" in md
+        assert "*No external dependencies detected.*" in md
+
+    def test_package_detail_collapses_and_drops_links(self, tmp_path):
+        analysis, page_map = self._analysis(tmp_path)
+        md = bootstrap_cmd._generate_dependencies_md(analysis, page_map, detail="package")
+        assert "Collapsed to top-level packages" in md
+        assert 'n0["pkg"]' in md
+        assert "click" not in md  # package nodes are not per-module links
+
+    def test_is_deterministic(self, tmp_path):
+        analysis, page_map = self._analysis(tmp_path)
+        assert bootstrap_cmd._generate_dependencies_md(
+            analysis, page_map
+        ) == bootstrap_cmd._generate_dependencies_md(analysis, page_map)
+
+
+class TestGenerateLoadOrderMd:
+    def test_renders_order_side_effects_and_factories(self, tmp_path):
+        inventory = {
+            "pkg/a.py": _pymod(
+                ("pkg.b", "B"),
+                functions=["create_app"],
+                module_calls=[{"name": "Flask", "target": "app", "line": 1}],
+            ),
+            "pkg/b.py": _pymod(),
+        }
+        analysis = analyze_dependencies(inventory, str(tmp_path))
+        md = bootstrap_cmd._generate_load_order_md(
+            analysis, {"pkg/a.py": "a", "pkg/b.py": "b"}
+        )
+        assert md.startswith("# Load order")
+        # b loads before a because a imports b
+        assert md.index("[b](modules/b.md)") < md.index("[a](modules/a.md)")
+        assert "## Module-level side effects" in md
+        assert "`app = Flask`" in md
+        assert "## Factory / wiring" in md
+        assert "`create_app`" in md
+        assert "## Notes" in md
+
+    def test_cyclic_group_marked_indeterminate(self, tmp_path):
+        inventory = {"a.py": _pymod(("b", "x")), "b.py": _pymod(("a", "y"))}
+        analysis = analyze_dependencies(inventory, str(tmp_path))
+        md = bootstrap_cmd._generate_load_order_md(analysis, {"a.py": "a", "b.py": "b"})
+        assert "Indeterminate (cyclic) groups" in md
+        assert "[a](modules/a.md) ⇄ [b](modules/b.md)" in md
+
+    def test_empty_sections_use_placeholders(self, tmp_path):
+        analysis = analyze_dependencies({"solo.py": _pymod()}, str(tmp_path))
+        md = bootstrap_cmd._generate_load_order_md(analysis, {"solo.py": "solo"})
+        assert "*No import-time side effects detected.*" in md
+        assert "*No factory or wiring functions detected.*" in md
+        assert "Indeterminate (cyclic) groups" not in md
+
+
+class TestBootstrapArchitecturePages:
+    def _write_project(self, tmp_path):
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\nname = "s"\nversion = "0.1.0"\ndependencies = ["requests"]\n'
+        )
+        pkg = tmp_path / "pkg"
+        pkg.mkdir()
+        (pkg / "__init__.py").write_text("")
+        (pkg / "a.py").write_text(
+            "from pkg.b import work\nimport requests\n\n\ndef run():\n"
+            "    return work()\n"
+        )
+        (pkg / "b.py").write_text("app = object()\n\n\ndef work():\n    return 1\n")
+
+    def test_creates_both_pages_with_valid_mermaid(self, tmp_path, monkeypatch, capsys):
+        self._write_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
+        deps = (tmp_path / "wiki" / "dependencies.md").read_text(encoding="utf-8")
+        load = (tmp_path / "wiki" / "load-order.md").read_text(encoding="utf-8")
+        assert "```mermaid" in deps
+        assert "## Load order" in load
+
+    def test_index_has_architecture_section(self, tmp_path, monkeypatch, capsys):
+        self._write_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
+        index = (tmp_path / "wiki" / "index.md").read_text(encoding="utf-8")
+        assert "## Architecture" in index
+        assert "[Dependencies](dependencies.md)" in index
+        assert "[Load order](load-order.md)" in index
+
+    def test_skip_dependencies_omits_pages_and_section(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        self._write_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki", skip_dependencies=True))
+        assert not (tmp_path / "wiki" / "dependencies.md").exists()
+        assert not (tmp_path / "wiki" / "load-order.md").exists()
+        index = (tmp_path / "wiki" / "index.md").read_text(encoding="utf-8")
+        assert "## Architecture" not in index
+
+    def test_shallow_depth_skips_pages(self, tmp_path, monkeypatch, capsys):
+        self._write_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki", depth="shallow"))
+        assert not (tmp_path / "wiki" / "dependencies.md").exists()
+
+    def test_json_summary_reports_dependencies(self, tmp_path, monkeypatch, capsys):
+        self._write_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        bootstrap_cmd.run(
+            _make_args(
+                src_dir=".", wiki_dir="wiki", format="json", source_adapter=True
+            )
+        )
+        data = json.loads(capsys.readouterr().out)
+        assert data["dependencies"]["generated"] is True
+        assert data["dependencies"]["modules"] >= 2
+        assert data["dependencies"]["undeclared"] == 0  # requests is declared
+
+    def test_dependency_graph_detail_package_collapses(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        self._write_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        bootstrap_cmd.run(
+            _make_args(src_dir=".", wiki_dir="wiki", dependency_graph_detail="package")
+        )
+        deps = (tmp_path / "wiki" / "dependencies.md").read_text(encoding="utf-8")
+        assert "Collapsed to top-level packages" in deps

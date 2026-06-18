@@ -30,9 +30,11 @@ from .extract_cmd import (
 )
 from .bootstrap_cmd import (
     _build_relationships,
+    _generate_dependencies_md,
     _generate_entity_md,
     _generate_flow_md,
     _generate_index_md,
+    _generate_load_order_md,
     _generate_module_md,
     _module_name_from_path,
     _page_name_for_module,
@@ -40,6 +42,7 @@ from .bootstrap_cmd import (
     build_module_page_map,
 )
 from ..config import validate_path
+from ..services.dependencies import analyze_dependencies
 from ..services.entrypoints import build_flow, get_entry_points, read_console_scripts
 from ..services.inventory_cache import (
     InventoryCacheOptions,
@@ -1428,6 +1431,7 @@ def _apply_sync_changes(
     )
 
     _regenerate_flow_pages(options, inventory, page_maps.module_page_map)
+    _regenerate_dependency_pages(options, inventory, page_maps.module_page_map)
 
     _rebuild_index(
         options.wiki_dir,
@@ -1543,6 +1547,7 @@ def _rebuild_index(
     workflow_entries = _list_existing_pages(wiki_dir / "workflows", "entry")
     flow_entries = _list_existing_flow_pages(wiki_dir / "flows")
     infra_entries = _list_existing_pages(wiki_dir / "infrastructure", "type")
+    architecture_entries = _list_existing_architecture_pages(wiki_dir)
 
     index_path = wiki_dir / "index.md"
     write_state = _write_md_if_changed(
@@ -1553,6 +1558,7 @@ def _rebuild_index(
             workflow_entries or None,
             infra_entries or None,
             flow_entries or None,
+            architecture_entries or None,
         ),
     )
     if write_state == "unchanged":
@@ -1566,6 +1572,23 @@ def _list_existing_pages(directory: Path, extra_key: str) -> list[dict]:
     if not directory.exists():
         return []
     return [{"name": p.stem, extra_key: ""} for p in sorted(directory.glob("*.md"))]
+
+
+# Top-level architecture pages (stem → index label), regenerated and re-linked
+# on sync so they neither go stale nor get orphaned (DL-502).
+_ARCHITECTURE_PAGES: tuple[tuple[str, str], ...] = (
+    ("dependencies", "Dependencies"),
+    ("load-order", "Load order"),
+)
+
+
+def _list_existing_architecture_pages(wiki_dir: Path) -> list[dict]:
+    """Return ``{"name", "page"}`` entries for architecture pages present on disk."""
+    return [
+        {"name": label, "page": stem}
+        for stem, label in _ARCHITECTURE_PAGES
+        if (wiki_dir / f"{stem}.md").exists()
+    ]
 
 
 def _list_existing_flow_pages(directory: Path) -> list[dict]:
@@ -1622,6 +1645,52 @@ def _regenerate_flow_pages(
             regenerated += 1
     if regenerated:
         print(f"Regenerated {regenerated} flow page(s).")
+    return regenerated
+
+
+def _preserve_notes(old_md: str, new_md: str) -> str:
+    """Carry a human-edited ``## Notes`` section into regenerated architecture md."""
+    old_body = _section_body(old_md, "Notes")
+    if not old_body or old_body == _section_body(new_md, "Notes"):
+        return new_md
+    return _replace_section_body(new_md, "Notes", old_body)
+
+
+def _regenerate_dependency_pages(
+    options: _SyncRunOptions,
+    inventory: dict,
+    module_page_map: dict[str, str],
+) -> int:
+    """Regenerate dependencies.md / load-order.md, preserving ``## Notes``.
+
+    Runs only when a page already exists, so projects that opted out
+    (``bootstrap --skip-dependencies``) are left untouched. The graph, cycles,
+    reconciliation, and load order are recomputed once from the current
+    inventory; only pages whose generated content changed are rewritten, and a
+    human-edited ``## Notes`` section is carried over under ``preserve_semantic``.
+    """
+    deps_path = options.wiki_dir / "dependencies.md"
+    load_path = options.wiki_dir / "load-order.md"
+    if not deps_path.exists() and not load_path.exists():
+        return 0
+
+    analysis = analyze_dependencies(inventory, options.src_dir)
+    pages = (
+        (deps_path, _generate_dependencies_md(analysis, module_page_map)),
+        (load_path, _generate_load_order_md(analysis, module_page_map)),
+    )
+    regenerated = 0
+    for path, new_md in pages:
+        if not path.exists():
+            continue
+        if options.preserve_semantic:
+            new_md = _preserve_notes(read_md(path), new_md)
+        state = _write_md_if_changed(path, new_md)
+        if state != "unchanged":
+            print(f"  {state.upper()} {path.name}")
+            regenerated += 1
+    if regenerated:
+        print(f"Regenerated {regenerated} architecture page(s).")
     return regenerated
 
 
