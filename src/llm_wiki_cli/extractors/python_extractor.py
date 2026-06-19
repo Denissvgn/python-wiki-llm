@@ -52,6 +52,48 @@ def _default_to_str(node) -> str:
     return "..."
 
 
+def _simple_reference_to_str(node) -> str:
+    """Return a dotted reference for simple name/attribute expressions."""
+    if isinstance(node, ast.Name):
+        return node.id
+    if isinstance(node, ast.Attribute):
+        value = _simple_reference_to_str(node.value)
+        if value:
+            return f"{value}.{node.attr}"
+    return ""
+
+
+def _is_simple_subscript_slice(node) -> bool:
+    return isinstance(node, ast.Constant) or bool(_simple_reference_to_str(node))
+
+
+def _summarize_expression(node) -> dict[str, str]:
+    """Summarize an AST expression without retaining arbitrary source text."""
+    if isinstance(node, ast.Name):
+        return {"kind": "name", "value": node.id}
+    if isinstance(node, ast.Attribute):
+        value = _simple_reference_to_str(node)
+        if value:
+            return {"kind": "attribute", "value": value}
+    if isinstance(node, ast.Constant):
+        return {"kind": "literal", "value": repr(node.value)}
+    if isinstance(node, ast.Subscript):
+        value = _simple_reference_to_str(node.value)
+        if value and _is_simple_subscript_slice(node.slice):
+            return {"kind": "subscript", "value": f"{value}[...]"}
+    if isinstance(node, ast.Call):
+        value = _simple_reference_to_str(node.func)
+        if value:
+            return {"kind": "call", "value": f"{value}(...)"}
+    if isinstance(node, ast.List):
+        return {"kind": "literal", "value": "[...]"}
+    if isinstance(node, ast.Tuple):
+        return {"kind": "literal", "value": "(...)"}
+    if isinstance(node, (ast.Set, ast.Dict)):
+        return {"kind": "literal", "value": "{...}"}
+    return {"kind": "expression", "value": "..."}
+
+
 def _extract_decorators(node) -> list[str]:
     """Extract decorator names from a node."""
     decorators = []
@@ -76,7 +118,26 @@ def _extract_decorators(node) -> list[str]:
 _SCOPE_BOUNDARIES = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
 
 
-def _call_record(node: ast.Call) -> dict | None:
+def _call_arguments(node: ast.Call) -> dict:
+    details: dict[str, list[dict[str, str]]] = {}
+    args = [_summarize_expression(arg) for arg in node.args]
+    if args:
+        details["args"] = args
+
+    kwargs = []
+    for keyword in node.keywords:
+        kwargs.append(
+            {
+                "name": keyword.arg if keyword.arg is not None else "**",
+                **_summarize_expression(keyword.value),
+            }
+        )
+    if kwargs:
+        details["kwargs"] = kwargs
+    return details
+
+
+def _call_record(node: ast.Call, *, include_arguments: bool = False) -> dict | None:
     """Build a call record from an ``ast.Call`` node.
 
     Returns ``None`` for call targets we cannot name simply (e.g. calls on a
@@ -85,10 +146,18 @@ def _call_record(node: ast.Call) -> dict | None:
     """
     func = node.func
     if isinstance(func, ast.Name):
-        return {"name": func.id, "line": node.lineno}
-    if isinstance(func, ast.Attribute):
-        return {"name": func.attr, "attr": _annotation_to_str(func), "line": node.lineno}
-    return None
+        record = {"name": func.id, "line": node.lineno}
+    elif isinstance(func, ast.Attribute):
+        record = {
+            "name": func.attr,
+            "attr": _annotation_to_str(func),
+            "line": node.lineno,
+        }
+    else:
+        return None
+    if include_arguments:
+        record.update(_call_arguments(node))
+    return record
 
 
 def _extract_calls(node) -> list[dict]:
@@ -107,7 +176,7 @@ def _extract_calls(node) -> list[dict]:
             if isinstance(child, _SCOPE_BOUNDARIES):
                 continue
             if isinstance(child, ast.Call):
-                record = _call_record(child)
+                record = _call_record(child, include_arguments=True)
                 if record is not None:
                     key = (record["name"], record.get("attr", ""))
                     if key not in seen:
@@ -164,8 +233,12 @@ def _extract_module_calls(tree: ast.Module) -> list[dict]:
     for statement in tree.body:
         if isinstance(statement, ast.Expr) and isinstance(statement.value, ast.Call):
             record = _module_call_record(statement.value)
-        elif isinstance(statement, ast.Assign) and isinstance(statement.value, ast.Call):
-            record = _module_call_record(statement.value, _assign_target_name(statement.targets))
+        elif isinstance(statement, ast.Assign) and isinstance(
+            statement.value, ast.Call
+        ):
+            record = _module_call_record(
+                statement.value, _assign_target_name(statement.targets)
+            )
         elif (
             isinstance(statement, ast.AnnAssign)
             and isinstance(statement.value, ast.Call)
@@ -281,22 +354,26 @@ class ComponentVisitor(ast.NodeVisitor):
 
     def visit_Import(self, node):
         for alias in node.names:
-            self.imports.append({
-                "module": alias.name,
-                "name": alias.asname or alias.name,
-                "type": "import",
-            })
+            self.imports.append(
+                {
+                    "module": alias.name,
+                    "name": alias.asname or alias.name,
+                    "type": "import",
+                }
+            )
         self.generic_visit(node)
 
     def visit_ImportFrom(self, node):
         module = "." * node.level + (node.module or "")
         for alias in node.names:
-            self.imports.append({
-                "module": module,
-                "name": alias.name,
-                "alias": alias.asname,
-                "type": "from",
-            })
+            self.imports.append(
+                {
+                    "module": module,
+                    "name": alias.name,
+                    "alias": alias.asname,
+                    "type": "from",
+                }
+            )
         self.generic_visit(node)
 
     def visit_ClassDef(self, node):
@@ -314,15 +391,17 @@ class ComponentVisitor(ast.NodeVisitor):
             if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 methods.append(_extract_function_info(child, deep=self._deep))
 
-        self.classes.append({
-            "name": node.name,
-            "bases": bases,
-            "line": node.lineno,
-            "docstring": docstring,
-            "decorators": decorators,
-            "attributes": attributes,
-            "methods": methods,
-        })
+        self.classes.append(
+            {
+                "name": node.name,
+                "bases": bases,
+                "line": node.lineno,
+                "docstring": docstring,
+                "decorators": decorators,
+                "attributes": attributes,
+                "methods": methods,
+            }
+        )
         # Don't generic_visit — we already walked class body for methods/attrs
 
     def visit_FunctionDef(self, node):
@@ -372,16 +451,26 @@ class ComponentVisitor(ast.NodeVisitor):
                     if target.id == "__all__":
                         self.has_all = True
                         self.all_exports = _string_list(node.value)
-                    elif target.id == target.id.upper() and target.id.replace("_", "").isalnum() and not target.id[0].isdigit():
-                        self.constants.append({
-                            "name": target.id,
-                            "line": node.lineno,
-                        })
+                    elif (
+                        target.id == target.id.upper()
+                        and target.id.replace("_", "").isalnum()
+                        and not target.id[0].isdigit()
+                    ):
+                        self.constants.append(
+                            {
+                                "name": target.id,
+                                "line": node.lineno,
+                            }
+                        )
         self.generic_visit(node)
 
     def visit_If(self, node):
         """Detect a module-level ``if __name__ == "__main__"`` entry guard."""
-        if self._class_depth == 0 and self._function_depth == 0 and _is_main_guard(node.test):
+        if (
+            self._class_depth == 0
+            and self._function_depth == 0
+            and _is_main_guard(node.test)
+        ):
             self.has_main = True
         self.generic_visit(node)
 
@@ -408,7 +497,11 @@ def _scan_python_files(
     if source_files is None:
         matcher = build_gitignore_matcher(src_path)
         source_files = discover_source_files(
-            str(src_path), (".py",), only_files=only_files, language="python", matcher=matcher,
+            str(src_path),
+            (".py",),
+            only_files=only_files,
+            language="python",
+            matcher=matcher,
         )
     py_files = [src_path / rel for rel in source_files]
 
@@ -422,10 +515,16 @@ def _scan_python_files(
                 source = data.decode("cp1252")
             tree = ast.parse(source, filename=str(py_file))
         except UnicodeDecodeError:
-            print(f"llm-wiki Python extractor: skipped undecodable file {rel.as_posix()}", file=sys.stderr)
+            print(
+                f"llm-wiki Python extractor: skipped undecodable file {rel.as_posix()}",
+                file=sys.stderr,
+            )
             continue
         except OSError as exc:
-            print(f"llm-wiki Python extractor: failed to read {rel.as_posix()}: {exc}", file=sys.stderr)
+            print(
+                f"llm-wiki Python extractor: failed to read {rel.as_posix()}: {exc}",
+                file=sys.stderr,
+            )
             continue
         except SyntaxError:
             continue
@@ -513,8 +612,11 @@ class PythonExtractor:
         Each file entry includes ``"language": "python"``.
         """
         inventory = _scan_python_files(
-            src_dir, deep=deep, only_files=only_files,
-            include_empty=include_empty, source_files=source_files,
+            src_dir,
+            deep=deep,
+            only_files=only_files,
+            include_empty=include_empty,
+            source_files=source_files,
         )
         for entry in inventory.values():
             entry["language"] = "python"

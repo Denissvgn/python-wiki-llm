@@ -25,12 +25,17 @@ def test_deep_calls_field_is_additive_and_optional(tmp_path):
     from llm_wiki_cli.commands.extract_cmd import get_inventory
 
     (tmp_path / "m.py").write_text(
-        "def caller():\n    return helper()\n\n\ndef helper():\n    return 1\n"
+        "def caller(value):\n    return helper(value, mode='fast')\n\n\ndef helper(value, mode='slow'):\n    return value\n"
     )
 
     deep = get_inventory(str(tmp_path), deep=True)["m.py"]["functions"]
     by_name = {fn["name"]: fn for fn in deep}
-    assert by_name["caller"].get("calls")  # additive: present when calls exist
+    calls = by_name["caller"].get("calls")
+    assert calls  # additive: present when calls exist
+    assert calls[0]["args"] == [{"kind": "name", "value": "value"}]
+    assert calls[0]["kwargs"] == [
+        {"name": "mode", "kind": "literal", "value": "'fast'"}
+    ]
     assert "calls" not in by_name["helper"]  # optional: omitted when empty
 
     slim = get_inventory(str(tmp_path), deep=False)["m.py"]["functions"]
@@ -42,7 +47,9 @@ def test_deep_module_calls_field_is_additive_and_optional(tmp_path):
     module has top-level side-effect calls, absent otherwise and in slim mode."""
     from llm_wiki_cli.commands.extract_cmd import get_inventory
 
-    (tmp_path / "wired.py").write_text("app = Flask(__name__)\n\n\ndef run():\n    return app\n")
+    (tmp_path / "wired.py").write_text(
+        "app = Flask(__name__)\n\n\ndef run():\n    return app\n"
+    )
     (tmp_path / "pure.py").write_text("VALUE = 1\n\n\ndef run():\n    return 1\n")
 
     deep = get_inventory(str(tmp_path), deep=True)
@@ -65,3 +72,45 @@ def test_resolver_tolerates_extractor_inventory_without_calls():
         }
     }
     assert resolve_call_edges(inventory) == []
+
+
+def test_resolver_tolerates_enriched_call_records():
+    """Call args are additive metadata and do not alter edge resolution."""
+    from llm_wiki_cli.commands.extract_cmd import resolve_call_edges
+
+    inventory = {
+        "m.py": {
+            "language": "python",
+            "classes": [],
+            "functions": [
+                {
+                    "name": "caller",
+                    "calls": [
+                        {
+                            "name": "helper",
+                            "line": 2,
+                            "args": [{"kind": "name", "value": "value"}],
+                            "kwargs": [
+                                {
+                                    "name": "mode",
+                                    "kind": "literal",
+                                    "value": "'fast'",
+                                }
+                            ],
+                        }
+                    ],
+                },
+                {"name": "helper"},
+            ],
+        }
+    }
+
+    assert resolve_call_edges(inventory) == [
+        {
+            "from": {"file": "m.py", "symbol": "caller"},
+            "to": {"file": "m.py", "symbol": "helper"},
+            "name": "helper",
+            "kind": "internal",
+            "line": 2,
+        }
+    ]

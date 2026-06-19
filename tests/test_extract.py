@@ -19,7 +19,10 @@ from llm_wiki_cli.commands.extract_cmd import (
     _summarize_inventory,
 )
 from llm_wiki_cli.config import PathValidationError
-from llm_wiki_cli.extractors.python_extractor import PythonExtractor
+from llm_wiki_cli.extractors.python_extractor import (
+    PythonExtractor,
+    _summarize_expression,
+)
 from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
 from llm_wiki_cli.services.packages import discover_packages, stamp_inventory_packages
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
@@ -32,6 +35,87 @@ def _body_line_count(function) -> int:
     first_body_line = min(stmt.lineno for stmt in body)
     last_body_line = max(stmt.end_lineno for stmt in body)
     return last_body_line - first_body_line + 1
+
+
+def _expression_node(source: str) -> ast.expr:
+    return ast.parse(source, mode="eval").body
+
+
+class TestExpressionSummarizer:
+    def test_summarizes_name(self):
+        assert _summarize_expression(_expression_node("src_dir")) == {
+            "kind": "name",
+            "value": "src_dir",
+        }
+
+    def test_summarizes_attribute(self):
+        assert _summarize_expression(_expression_node("options.wiki_dir")) == {
+            "kind": "attribute",
+            "value": "options.wiki_dir",
+        }
+
+    @pytest.mark.parametrize(
+        ("source", "value"),
+        [
+            ('"utf-8"', "'utf-8'"),
+            ("42", "42"),
+            ("True", "True"),
+            ("None", "None"),
+        ],
+    )
+    def test_summarizes_constants_as_literals(self, source, value):
+        assert _summarize_expression(_expression_node(source)) == {
+            "kind": "literal",
+            "value": value,
+        }
+
+    def test_summarizes_subscript_with_simple_base(self):
+        assert _summarize_expression(_expression_node('payload["inventory"]')) == {
+            "kind": "subscript",
+            "value": "payload[...]",
+        }
+
+    @pytest.mark.parametrize(
+        ("source", "value"),
+        [
+            ("Path.cwd()", "Path.cwd(...)"),
+            ("build_payload(src_dir)", "build_payload(...)"),
+        ],
+    )
+    def test_summarizes_simple_calls(self, source, value):
+        assert _summarize_expression(_expression_node(source)) == {
+            "kind": "call",
+            "value": value,
+        }
+
+    @pytest.mark.parametrize(
+        ("source", "value"),
+        [
+            ("[src_dir, options.wiki_dir]", "[...]"),
+            ("(src_dir, options.wiki_dir)", "(...)"),
+            ("{src_dir, options.wiki_dir}", "{...}"),
+            ('{"path": src_dir}', "{...}"),
+        ],
+    )
+    def test_summarizes_container_literals_with_bounded_values(self, source, value):
+        assert _summarize_expression(_expression_node(source)) == {
+            "kind": "literal",
+            "value": value,
+        }
+
+    @pytest.mark.parametrize(
+        "source",
+        [
+            "src_dir / name",
+            "factory().value",
+            "payload[get_key()]",
+        ],
+    )
+    def test_complex_expressions_degrade_to_bounded_placeholder(self, source):
+        assert _summarize_expression(_expression_node(source)) == {
+            "kind": "expression",
+            "value": "...",
+        }
 
 
 class TestGetInventory:
@@ -661,6 +745,26 @@ class TestCallCapture:
         assert call["name"] == "getcwd"
         assert call["attr"] == "os.getcwd"
 
+    def test_call_records_include_compact_args_and_kwargs(self, tmp_path):
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
+            def run(path, content, extra):
+                path.write_text(content, encoding="utf-8", **extra)
+        """)
+        )
+        inventory = get_inventory(str(tmp_path), deep=True)
+        call = inventory["m.py"]["functions"][0]["calls"][0]
+        assert call == {
+            "name": "write_text",
+            "attr": "path.write_text",
+            "line": 2,
+            "args": [{"kind": "name", "value": "content"}],
+            "kwargs": [
+                {"name": "encoding", "kind": "literal", "value": "'utf-8'"},
+                {"name": "**", "kind": "name", "value": "extra"},
+            ],
+        }
+
     def test_comprehension_and_lambda_calls_are_kept(self, tmp_path):
         (tmp_path / "m.py").write_text(
             textwrap.dedent("""\
@@ -696,14 +800,15 @@ class TestCallCapture:
         (tmp_path / "m.py").write_text(
             textwrap.dedent("""\
             def run():
-                first()
+                first("initial")
                 second()
-                first()
+                first("ignored")
         """)
         )
         inventory = get_inventory(str(tmp_path), deep=True)
         run = inventory["m.py"]["functions"][0]
         assert [c["name"] for c in run["calls"]] == ["first", "second"]
+        assert run["calls"][0]["args"] == [{"kind": "literal", "value": "'initial'"}]
 
     def test_slim_mode_omits_calls(self, tmp_path):
         (tmp_path / "m.py").write_text(

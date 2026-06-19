@@ -267,8 +267,9 @@ llm-wiki extract --src-dir /path/to/repo --allow-external-src --summary
 
 The JSON output includes `schema_version: "llm-wiki-extract/v1"` plus
 `inventory` and optional `docker` objects. With `--deep`, deep function entries
-may carry an optional `calls` list (in-body call targets) and the payload gains
-an optional top-level `entrypoints` array (detected user-reachable entry points:
+may carry an optional `calls` list (in-body call targets, optionally with compact
+`args` and `kwargs` expression summaries) and the payload gains an optional
+top-level `entrypoints` array (detected user-reachable entry points:
 `{id, category, file, symbol, label}`) plus a top-level `dependencies` object
 with internal `edges`, `cycles`, per-language external dependency reconciliation,
 and `load_order`. When `--deep` is combined with `--changed`, `--paths`,

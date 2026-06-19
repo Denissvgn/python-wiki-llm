@@ -39,9 +39,11 @@ class ExtractorProtocol(Protocol):
 
             In deep mode a function/method entry **may** also carry an
             optional ``"calls"`` list of in-body call targets
-            (``{"name", "attr"?, "line"}``) used for call-edge resolution.
-            The field is additive: it is omitted when empty, and consumers
-            must tolerate its absence for extractors that do not emit it.
+            (``{"name", "attr"?, "line", "args"?, "kwargs"?}``) used for
+            call-edge resolution. ``args`` and ``kwargs`` contain compact
+            expression summaries when emitted. The field is additive: it is
+            omitted when empty, and consumers must tolerate its absence for
+            extractors that do not emit it.
 
         Returns
         -------
