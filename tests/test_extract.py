@@ -3,6 +3,7 @@
 import ast
 import inspect
 import json
+import subprocess
 import threading
 import textwrap
 import types
@@ -940,6 +941,122 @@ class TestExtractEntryPoints:
         )
         result = extract_cmd.build_extract_payload(".", deep=False)
         assert "entrypoints" not in result.payload
+
+
+class TestExtractDependencies:
+    def _write_dependency_project(self, tmp_path):
+        pkg = tmp_path / "pkg"
+        pkg.mkdir()
+        (pkg / "__init__.py").write_text("", encoding="utf-8")
+        (pkg / "a.py").write_text(
+            textwrap.dedent("""\
+            from pkg.b import work
+            import click
+            import requests
+
+
+            def run():
+                return work()
+            """),
+            encoding="utf-8",
+        )
+        (pkg / "b.py").write_text(
+            "def work():\n    return 1\n",
+            encoding="utf-8",
+        )
+        (tmp_path / "pyproject.toml").write_text(
+            textwrap.dedent("""\
+            [project]
+            name = "sample"
+            version = "0.1.0"
+            dependencies = ["requests", "tomli"]
+            """),
+            encoding="utf-8",
+        )
+
+    def test_deep_payload_includes_dependencies(self, tmp_path, monkeypatch):
+        self._write_dependency_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+
+        result = extract_cmd.build_extract_payload(".", deep=True)
+
+        dependencies = result.payload["dependencies"]
+        assert ["pkg/a.py", "pkg/b.py"] in dependencies["edges"]
+        assert dependencies["cycles"] == []
+        assert dependencies["load_order"]["order"] == ["pkg/b.py", "pkg/a.py"]
+        assert "python" in dependencies["external"]
+
+    def test_non_deep_payload_omits_dependencies(self, tmp_path, monkeypatch):
+        self._write_dependency_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+
+        result = extract_cmd.build_extract_payload(".", deep=False)
+
+        assert "dependencies" not in result.payload
+
+    def test_summary_payload_dependencies_use_full_deep_inventory_before_collapse(
+        self, tmp_path, monkeypatch
+    ):
+        self._write_dependency_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+
+        result = extract_cmd.build_extract_payload(".", deep=True, summary=True)
+
+        assert "imports" not in result.payload["inventory"]["pkg/a.py"]
+        dependencies = result.payload["dependencies"]
+        assert ["pkg/a.py", "pkg/b.py"] in dependencies["edges"]
+        assert dependencies["external"]["python"]["used"]["requests"] == ["pkg/a.py"]
+
+    def test_external_dependencies_are_keyed_by_language(self, tmp_path, monkeypatch):
+        self._write_dependency_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+
+        result = extract_cmd.build_extract_payload(".", deep=True)
+
+        python_external = result.payload["dependencies"]["external"]["python"]
+        assert set(python_external) == {"used", "undeclared", "unused"}
+        assert python_external["used"] == {
+            "click": ["pkg/a.py"],
+            "requests": ["pkg/a.py"],
+        }
+        assert python_external["undeclared"] == ["click"]
+        assert python_external["unused"] == ["tomli"]
+
+    def test_deep_payload_includes_dependencies_for_empty_changed_inventory(
+        self, tmp_path, monkeypatch
+    ):
+        self._write_dependency_project(tmp_path)
+        subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+        subprocess.run(
+            ["git", "config", "user.email", "test@example.com"],
+            cwd=tmp_path,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "user.name", "Test"],
+            cwd=tmp_path,
+            check=True,
+        )
+        subprocess.run(["git", "add", "."], cwd=tmp_path, check=True)
+        subprocess.run(
+            ["git", "commit", "-m", "initial"],
+            cwd=tmp_path,
+            check=True,
+            capture_output=True,
+        )
+        subprocess.run(
+            ["git", "commit", "--allow-empty", "-m", "empty"],
+            cwd=tmp_path,
+            check=True,
+            capture_output=True,
+        )
+        monkeypatch.chdir(tmp_path)
+
+        result = extract_cmd.build_extract_payload(".", changed=True, deep=True)
+
+        assert result.payload["inventory"] == {}
+        assert result.payload["dependencies"]["edges"] == []
+        assert "python" in result.payload["dependencies"]["external"]
 
 
 class TestRelativePathKeys:

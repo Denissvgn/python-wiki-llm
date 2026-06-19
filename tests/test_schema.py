@@ -45,6 +45,20 @@ def test_agent_schema_mentions_current_sync_and_lint_runtime():
     assert "_Auto-generated from ..._" in content
 
 
+def test_agent_schema_mentions_dependency_architecture_responsibilities():
+    content = build_schema_content("generic", "docs/llm_wiki")
+
+    assert "dependencies.md" in content
+    assert "load-order.md" in content
+    assert "--skip-dependencies" in content
+    assert "## Notes" in content
+    assert "agent-owned" in content
+    assert "Import cycles" in content
+    assert "undeclared" in content
+    assert "unused" in content
+    assert "warning diagnostics" in content
+
+
 def test_ide_schema_mentions_incremental_sync_workflow():
     content = build_schema_content("copilot", "docs/llm_wiki")
 

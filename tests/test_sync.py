@@ -1722,3 +1722,33 @@ class TestSyncDependencyRegeneration:
         sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
         assert not (wiki / "dependencies.md").exists()
         assert not (wiki / "load-order.md").exists()
+
+    def test_dependency_regeneration_reuses_single_sync_inventory_extraction(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path)
+        self._write_modules(proj, "def go():\n    return 1\n")
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        calls = 0
+        real_get_inventory_result = sync_cmd.get_inventory_result
+
+        def counted_get_inventory_result(*args, **kwargs):
+            nonlocal calls
+            calls += 1
+            return real_get_inventory_result(*args, **kwargs)
+
+        monkeypatch.setattr(
+            sync_cmd, "get_inventory_result", counted_get_inventory_result
+        )
+
+        self._write_modules(
+            proj, "import core\n\n\ndef go():\n    return core.core()\n"
+        )
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        assert calls == 1
+        assert "| [core](modules/core.md) | 1 | 0 |" in (
+            wiki / "dependencies.md"
+        ).read_text(encoding="utf-8")

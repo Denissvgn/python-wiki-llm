@@ -971,3 +971,34 @@ class TestLintDependencyCoverage:
         # Optional architecture checks stay silent when they found nothing.
         assert "import cycle" not in text.lower()
         assert "undeclared dependency" not in text.lower()
+
+    def test_dependency_checks_reuse_single_lint_inventory_extraction(
+        self, tmp_project, monkeypatch
+    ):
+        wiki = tmp_project / "wiki"
+        for dirname in ["entities", "modules", "workflows", "infrastructure"]:
+            (wiki / dirname).mkdir(parents=True)
+        (wiki / "dependencies.md").write_text("# Dependencies\n", encoding="utf-8")
+        (wiki / "load-order.md").write_text("# Load order\n", encoding="utf-8")
+        (wiki / "index.md").write_text("# Index\n", encoding="utf-8")
+        (wiki / "log.md").write_text("# Log\n", encoding="utf-8")
+
+        calls = 0
+        real_get_inventory_result = lint_cmd.get_inventory_result
+
+        def counted_get_inventory_result(*args, **kwargs):
+            nonlocal calls
+            calls += 1
+            return real_get_inventory_result(*args, **kwargs)
+
+        monkeypatch.setattr(
+            lint_cmd, "get_inventory_result", counted_get_inventory_result
+        )
+
+        report = lint_cmd.build_report(str(wiki), ".", strict=False)
+
+        assert calls == 1
+        assert any(
+            diagnostic.category == "undeclared_dependencies"
+            for diagnostic in report.diagnostics
+        )

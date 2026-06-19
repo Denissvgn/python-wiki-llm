@@ -3,6 +3,7 @@
 Covers: init → bootstrap → lint → extract → bump → uninstall
 Does NOT test trigger-agent (requires a real LLM agent).
 """
+
 import os
 import subprocess
 import textwrap
@@ -32,10 +33,19 @@ def e2e_project(tmp_path):
     proj.mkdir()
 
     subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
-    subprocess.run(["git", "-C", str(proj), "config", "user.email", "e2e@test.com"], capture_output=True, check=True)
-    subprocess.run(["git", "-C", str(proj), "config", "user.name", "E2E"], capture_output=True, check=True)
+    subprocess.run(
+        ["git", "-C", str(proj), "config", "user.email", "e2e@test.com"],
+        capture_output=True,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "-C", str(proj), "config", "user.name", "E2E"],
+        capture_output=True,
+        check=True,
+    )
 
-    (proj / "models.py").write_text(textwrap.dedent("""\
+    (proj / "models.py").write_text(
+        textwrap.dedent("""\
         from pydantic import BaseModel
 
         class User(BaseModel):
@@ -48,9 +58,11 @@ def e2e_project(tmp_path):
             \"\"\"A group of users.\"\"\"
             name: str
             members: list[User] = []
-    """))
+    """)
+    )
 
-    (proj / "api.py").write_text(textwrap.dedent("""\
+    (proj / "api.py").write_text(
+        textwrap.dedent("""\
         from models import User, Team
 
         def get_user(user_id: int) -> User:
@@ -60,13 +72,16 @@ def e2e_project(tmp_path):
         def create_team(name: str, owner: User) -> Team:
             \"\"\"Create a new team.\"\"\"
             return Team(name=name, members=[owner])
-    """))
+    """)
+    )
 
-    (proj / "pyproject.toml").write_text(textwrap.dedent("""\
+    (proj / "pyproject.toml").write_text(
+        textwrap.dedent("""\
         [project]
         name = "myapp"
         version = "0.1.0"
-    """))
+    """)
+    )
 
     old_cwd = os.getcwd()
     os.chdir(proj)
@@ -91,10 +106,15 @@ class TestE2ELifecycle:
         assert "LLM Wiki" in Path("CLAUDE.md").read_text(encoding="utf-8")
 
         # ── 2. Bootstrap ─────────────────────────────────────────────
-        bootstrap_cmd.run(_ns(
-            src_dir=".", wiki_dir=wiki_dir,
-            overwrite=False, depth="full", skip_workflows=True,
-        ))
+        bootstrap_cmd.run(
+            _ns(
+                src_dir=".",
+                wiki_dir=wiki_dir,
+                overwrite=False,
+                depth="full",
+                skip_workflows=True,
+            )
+        )
 
         assert Path(f"{wiki_dir}/entities/User.md").exists()
         assert Path(f"{wiki_dir}/entities/Team.md").exists()
@@ -126,13 +146,18 @@ class TestE2ELifecycle:
         assert "User" in class_names
         assert "Team" in class_names
 
+        extract_payload = extract_cmd.build_extract_payload(".", deep=True).payload
+        assert "python" in extract_payload["dependencies"]["external"]
+
         # ── 5. Add new code, detect drift ────────────────────────────
-        Path("billing.py").write_text(textwrap.dedent("""\
+        Path("billing.py").write_text(
+            textwrap.dedent("""\
             class Invoice:
                 \"\"\"A billing invoice.\"\"\"
                 amount: float
                 paid: bool = False
-        """))
+        """)
+        )
 
         # Lint should now detect undocumented class + module
         with pytest.raises(SystemExit) as exc_info:
@@ -155,9 +180,13 @@ class TestE2ELifecycle:
         assert "0.1.1 -> 0.2.0" in out
 
         # ── 7. Uninstall (dry run) ───────────────────────────────────
-        uninstall_cmd.run(_ns(
-            wiki_dir=wiki_dir, remove_wiki=False, dry_run=True,
-        ))
+        uninstall_cmd.run(
+            _ns(
+                wiki_dir=wiki_dir,
+                remove_wiki=False,
+                dry_run=True,
+            )
+        )
         out = capsys.readouterr().out
         assert "DRY RUN" in out
         # Everything still exists
@@ -166,30 +195,41 @@ class TestE2ELifecycle:
 
         # ── 8. Uninstall (real) ──────────────────────────────────────
         monkeypatch.setattr("builtins.input", lambda _: "y")
-        uninstall_cmd.run(_ns(
-            wiki_dir=wiki_dir, remove_wiki=True, dry_run=False,
-        ))
+        uninstall_cmd.run(
+            _ns(
+                wiki_dir=wiki_dir,
+                remove_wiki=True,
+                dry_run=False,
+            )
+        )
 
         assert not Path(wiki_dir).exists()
         # CLAUDE.md may still exist (preamble content) but wiki block should be gone
         if Path("CLAUDE.md").exists():
-            assert "LLM Wiki Maintainer Constraints" not in Path("CLAUDE.md").read_text(encoding="utf-8")
+            assert "LLM Wiki Maintainer Constraints" not in Path("CLAUDE.md").read_text(
+                encoding="utf-8"
+            )
 
 
 class TestE2EFlows:
-    def test_bootstrap_then_strict_lint_is_clean_with_flows(self, tmp_path, monkeypatch):
+    def test_bootstrap_then_strict_lint_is_clean_with_flows(
+        self, tmp_path, monkeypatch
+    ):
         proj = tmp_path / "flowapp"
         proj.mkdir()
         subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
-        (proj / "pyproject.toml").write_text(textwrap.dedent('''\
+        (proj / "pyproject.toml").write_text(
+            textwrap.dedent("""\
             [project]
             name = "flowapp"
             version = "0.1.0"
 
             [project.scripts]
             flowapp = "service:main"
-        '''))
-        (proj / "service.py").write_text(textwrap.dedent('''\
+        """)
+        )
+        (proj / "service.py").write_text(
+            textwrap.dedent("""\
             __all__ = ["process"]
 
 
@@ -207,13 +247,19 @@ class TestE2EFlows:
 
             if __name__ == "__main__":
                 main()
-        '''))
+        """)
+        )
         monkeypatch.chdir(proj)
 
-        bootstrap_cmd.run(_ns(
-            src_dir=".", wiki_dir="docs/llm_wiki",
-            overwrite=False, depth="full", skip_workflows=True,
-        ))
+        bootstrap_cmd.run(
+            _ns(
+                src_dir=".",
+                wiki_dir="docs/llm_wiki",
+                overwrite=False,
+                depth="full",
+                skip_workflows=True,
+            )
+        )
 
         flows_dir = proj / "docs" / "llm_wiki" / "flows"
         flow_pages = {p.stem for p in flows_dir.glob("*.md")}
@@ -231,3 +277,101 @@ class TestE2EFlows:
         # Strict lint on the freshly bootstrapped wiki passes with zero issues.
         report = lint_cmd.build_report("docs/llm_wiki", ".", strict=True)
         assert report.passed, [issue.message for issue in report.issues]
+
+
+class TestE2EDependencyArchitecture:
+    def test_bootstrap_lint_and_extract_cover_dependency_architecture(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj = tmp_path / "dependencyapp"
+        proj.mkdir()
+        (proj / "pyproject.toml").write_text(
+            textwrap.dedent("""\
+            [project]
+            name = "dependencyapp"
+            version = "0.1.0"
+            """),
+            encoding="utf-8",
+        )
+        (proj / "alpha.py").write_text(
+            textwrap.dedent("""\
+            import beta
+            import httpx
+
+
+            def create_app():
+                return {"client": httpx.Client, "worker": beta.run}
+
+
+            app = create_app()
+            """),
+            encoding="utf-8",
+        )
+        (proj / "beta.py").write_text(
+            textwrap.dedent("""\
+            from alpha import app
+
+
+            def run():
+                return app
+            """),
+            encoding="utf-8",
+        )
+        monkeypatch.chdir(proj)
+
+        wiki_dir = "docs/llm_wiki"
+        bootstrap_cmd.run(
+            _ns(
+                src_dir=".",
+                wiki_dir=wiki_dir,
+                overwrite=False,
+                depth="full",
+                skip_workflows=True,
+            )
+        )
+
+        deps = Path(f"{wiki_dir}/dependencies.md").read_text(encoding="utf-8")
+        load_order = Path(f"{wiki_dir}/load-order.md").read_text(encoding="utf-8")
+        index = Path(f"{wiki_dir}/index.md").read_text(encoding="utf-8")
+
+        assert "```mermaid" in deps
+        assert "flowchart TD" in deps
+        assert "[alpha](modules/alpha.md) ⇄ [beta](modules/beta.md)" in deps
+        assert "⚠️ **Undeclared:** `httpx`" in deps
+
+        assert "## Module-level side effects" in load_order
+        assert "`app = create_app`" in load_order
+        assert "## Indeterminate (cyclic) groups" in load_order
+        assert "[alpha](modules/alpha.md) ⇄ [beta](modules/beta.md)" in load_order
+
+        assert "## Architecture" in index
+        assert "[Dependencies](dependencies.md)" in index
+        assert "[Load order](load-order.md)" in index
+
+        report = lint_cmd.build_report(wiki_dir, ".", strict=True)
+        assert report.passed, [issue.message for issue in report.issues]
+        assert report.issues == []
+        dependency_diagnostics = {
+            diagnostic.category: diagnostic for diagnostic in report.diagnostics
+        }
+        assert "dependency_cycles" in dependency_diagnostics
+        assert "undeclared_dependencies" in dependency_diagnostics
+        assert dependency_diagnostics["undeclared_dependencies"].target == "httpx"
+        assert all(
+            diagnostic.severity == "warning"
+            for diagnostic in report.diagnostics
+            if diagnostic.category
+            in {"dependency_cycles", "undeclared_dependencies", "unused_dependencies"}
+        )
+
+        lint_cmd.run(_ns(wiki_dir=wiki_dir, src_dir=".", strict=True))
+        out = capsys.readouterr().out
+        assert "Import cycle: alpha.py ⇄ beta.py" in out
+        assert "Undeclared python dependency (imported, not declared): httpx" in out
+        assert "✅ Lint passed: wiki is fully consistent." in out
+
+        extract_payload = extract_cmd.build_extract_payload(".", deep=True).payload
+        python_external = extract_payload["dependencies"]["external"]["python"]
+        assert set(python_external) == {"used", "undeclared", "unused"}
+        assert python_external["used"]["httpx"] == ["alpha.py"]
+        assert python_external["undeclared"] == ["httpx"]

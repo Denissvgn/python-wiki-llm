@@ -21,6 +21,7 @@ from ..extractors.common import LANGUAGE_EXTENSIONS
 from ..extractors.go_extractor import GoExtractionRequest
 from ..extractors.rust_extractor import RustExtractionRequest
 from ..services.contracts import EXTRACT_SCHEMA_VERSION
+from ..services.dependencies import analyze_dependencies
 from ..services.entrypoints import get_entry_points, read_console_scripts
 from ..services.inventory_cache import (
     InventoryCache,
@@ -808,6 +809,36 @@ def _summarize_inventory(inventory: dict) -> dict:
     return summary
 
 
+def _dependency_extract_block(analysis: dict) -> dict:
+    """Project dependency analysis into the public ``extract --deep`` shape."""
+    graph = analysis.get("graph", {})
+    load_order = analysis.get("load_order", {})
+    reconciliation = analysis.get("reconciliation", {})
+    languages = reconciliation.get("languages", {})
+    external = {
+        language: {
+            "used": {
+                package: list(files)
+                for package, files in sorted(report.get("used", {}).items())
+            },
+            "undeclared": list(report.get("undeclared", [])),
+            "unused": list(report.get("unused", [])),
+        }
+        for language, report in sorted(languages.items())
+    }
+    return {
+        "edges": [list(edge) for edge in graph.get("edges", [])],
+        "cycles": [list(cycle) for cycle in analysis.get("cycles", [])],
+        "external": external,
+        "load_order": {
+            "order": list(load_order.get("order", [])),
+            "cycle_groups": [
+                list(group) for group in load_order.get("cycle_groups", [])
+            ],
+        },
+    }
+
+
 def build_extract_payload(
     src_dir: str = ".",
     *,
@@ -846,8 +877,13 @@ def build_extract_payload(
         only_files = paths
 
     if no_changed_files:
+        output = {"schema_version": EXTRACT_SCHEMA_VERSION, "inventory": {}}
+        if deep:
+            output["dependencies"] = _dependency_extract_block(
+                analyze_dependencies({}, str(src_root))
+            )
         return ExtractPayloadResult(
-            {"schema_version": EXTRACT_SCHEMA_VERSION, "inventory": {}},
+            output,
             inventory_count=0,
             docker_count=0,
             changed_file_count=0,
@@ -884,6 +920,11 @@ def build_extract_payload(
         if deep
         else []
     )
+    dependencies = (
+        _dependency_extract_block(analyze_dependencies(inventory, str(src_root)))
+        if deep
+        else None
+    )
 
     if summary:
         inventory = _summarize_inventory(inventory)
@@ -898,6 +939,8 @@ def build_extract_payload(
         output["docker"] = docker_inv
     if entrypoints:
         output["entrypoints"] = entrypoints
+    if dependencies is not None:
+        output["dependencies"] = dependencies
 
     return ExtractPayloadResult(
         output,

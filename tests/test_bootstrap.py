@@ -646,10 +646,21 @@ class TestBootstrapExternalSource:
 class TestGenerateFlowMd:
     def test_renders_entry_modules_and_diagram(self):
         flow = {
-            "entry": {"id": "api-run", "category": "api", "file": "pkg/api.py", "symbol": "run", "label": "run"},
+            "entry": {
+                "id": "api-run",
+                "category": "api",
+                "file": "pkg/api.py",
+                "symbol": "run",
+                "label": "run",
+            },
             "steps": [
                 {"depth": 0, "file": "pkg/api.py", "symbol": "run", "kind": "entry"},
-                {"depth": 1, "file": "pkg/helper.py", "symbol": "work", "kind": "internal"},
+                {
+                    "depth": 1,
+                    "file": "pkg/helper.py",
+                    "symbol": "work",
+                    "kind": "internal",
+                },
                 {"depth": 1, "file": None, "symbol": "getcwd", "kind": "external"},
             ],
             "modules_touched": ["pkg/api.py", "pkg/helper.py"],
@@ -669,7 +680,13 @@ class TestGenerateFlowMd:
 
     def test_no_calls_uses_placeholder(self):
         flow = {
-            "entry": {"id": "api-x", "category": "api", "file": "m.py", "symbol": "x", "label": "x"},
+            "entry": {
+                "id": "api-x",
+                "category": "api",
+                "file": "m.py",
+                "symbol": "x",
+                "label": "x",
+            },
             "steps": [{"depth": 0, "file": "m.py", "symbol": "x", "kind": "entry"}],
             "modules_touched": ["m.py"],
             "truncated": False,
@@ -681,7 +698,8 @@ class TestGenerateFlowMd:
 
 class TestBootstrapFlows:
     def _write_project(self, tmp_path):
-        (tmp_path / "api.py").write_text(textwrap.dedent('''\
+        (tmp_path / "api.py").write_text(
+            textwrap.dedent("""\
             __all__ = ["run"]
 
             def run():
@@ -689,9 +707,12 @@ class TestBootstrapFlows:
 
             def _helper():
                 return 1
-        '''))
+        """)
+        )
 
-    def test_generates_flow_page_with_sequence_diagram(self, tmp_path, monkeypatch, capsys):
+    def test_generates_flow_page_with_sequence_diagram(
+        self, tmp_path, monkeypatch, capsys
+    ):
         self._write_project(tmp_path)
         monkeypatch.chdir(tmp_path)
         bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
@@ -774,7 +795,9 @@ class TestGenerateDependenciesMd:
 
     def test_package_detail_collapses_and_drops_links(self, tmp_path):
         analysis, page_map = self._analysis(tmp_path)
-        md = bootstrap_cmd._generate_dependencies_md(analysis, page_map, detail="package")
+        md = bootstrap_cmd._generate_dependencies_md(
+            analysis, page_map, detail="package"
+        )
         assert "Collapsed to top-level packages" in md
         assert 'n0["pkg"]' in md
         assert "click" not in md  # package nodes are not per-module links
@@ -861,7 +884,9 @@ class TestBootstrapArchitecturePages:
     ):
         self._write_project(tmp_path)
         monkeypatch.chdir(tmp_path)
-        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki", skip_dependencies=True))
+        bootstrap_cmd.run(
+            _make_args(src_dir=".", wiki_dir="wiki", skip_dependencies=True)
+        )
         assert not (tmp_path / "wiki" / "dependencies.md").exists()
         assert not (tmp_path / "wiki" / "load-order.md").exists()
         index = (tmp_path / "wiki" / "index.md").read_text(encoding="utf-8")
@@ -877,9 +902,7 @@ class TestBootstrapArchitecturePages:
         self._write_project(tmp_path)
         monkeypatch.chdir(tmp_path)
         bootstrap_cmd.run(
-            _make_args(
-                src_dir=".", wiki_dir="wiki", format="json", source_adapter=True
-            )
+            _make_args(src_dir=".", wiki_dir="wiki", format="json", source_adapter=True)
         )
         data = json.loads(capsys.readouterr().out)
         assert data["dependencies"]["generated"] is True
@@ -896,3 +919,54 @@ class TestBootstrapArchitecturePages:
         )
         deps = (tmp_path / "wiki" / "dependencies.md").read_text(encoding="utf-8")
         assert "Collapsed to top-level packages" in deps
+
+    def test_auto_dependency_graph_detail_collapses_large_inventory(self, tmp_path):
+        inventory = {
+            f"pkg{pkg}/mod{index}.py": _pymod(
+                (f"pkg{(pkg + 1) % 5}.mod{index}", "work")
+            )
+            for pkg in range(5)
+            for index in range(40)
+        }
+        analysis = analyze_dependencies(inventory, str(tmp_path))
+        page_map = {
+            path: path.replace("/", "_").removesuffix(".py") for path in inventory
+        }
+
+        md = bootstrap_cmd._generate_dependencies_md(analysis, page_map, detail="auto")
+        repeat = bootstrap_cmd._generate_dependencies_md(
+            analysis, page_map, detail="auto"
+        )
+
+        assert md == repeat
+        assert "Collapsed to top-level packages" in md
+        assert "```mermaid" in md
+        assert "pkg0" in md
+        assert "pkg4" in md
+        assert "click " not in md
+        assert "| [pkg0_mod0](modules/pkg0_mod0.md) |" in md
+        assert "| [pkg4_mod39](modules/pkg4_mod39.md) |" in md
+        assert md.count("    ") < 30
+
+    def test_dependency_pages_reuse_single_bootstrap_inventory_extraction(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        self._write_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        calls = 0
+        real_get_inventory_result = bootstrap_cmd.get_inventory_result
+
+        def counted_get_inventory_result(*args, **kwargs):
+            nonlocal calls
+            calls += 1
+            return real_get_inventory_result(*args, **kwargs)
+
+        monkeypatch.setattr(
+            bootstrap_cmd, "get_inventory_result", counted_get_inventory_result
+        )
+
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
+
+        assert calls == 1
+        assert (tmp_path / "wiki" / "dependencies.md").exists()
+        assert (tmp_path / "wiki" / "load-order.md").exists()

@@ -21,6 +21,9 @@ The default wiki lives at `docs/llm_wiki/` and contains:
   framework-decorated CLI/HTTP/MCP handlers, `__main__`/console scripts), each
   with a Mermaid sequence diagram of the resolved call path.
 - `infrastructure/`: Dockerfile and Compose pages.
+- `dependencies.md` and `load-order.md`: optional architecture pages for the
+  internal dependency graph, import cycles, external dependency reconciliation,
+  and load-order caveats.
 - `.llm-wiki-manifest.json`: source hash manifest used by incremental sync and strict linting.
 
 The package has no required Python runtime dependencies. Optional features use
@@ -194,18 +197,22 @@ llm-wiki bootstrap --overwrite
 llm-wiki bootstrap --depth shallow
 llm-wiki bootstrap --skip-workflows
 llm-wiki bootstrap --skip-flows
+llm-wiki bootstrap --skip-dependencies
 llm-wiki bootstrap --format json --source-adapter
 ```
 
 `bootstrap` writes entity, module, workflow, flow, infrastructure, index, log,
-and manifest files. User-flow pages under `flows/` are generated from detected
-entry points; use `--skip-flows` to omit them. `--depth full` is the default and
-includes docstrings, imports,
-attributes, method signatures, and relationship data where extractors provide
-it. Use `--source-adapter` when callers need bootstrap to write only under
-`--wiki-dir`; this skips agent constraint-file updates outside the generated
-wiki directory. Use `--format json` to emit a machine-readable summary with
-created, updated, and skipped files plus source counts and the manifest path.
+dependency architecture, and manifest files. User-flow pages under `flows/` are
+generated from detected entry points; use `--skip-flows` to omit them.
+Dependency architecture pages are generated as `dependencies.md` and
+`load-order.md`; use `--skip-dependencies` for projects that do not want those
+pages or lint diagnostics. `--depth full` is the default and includes
+docstrings, imports, attributes, method signatures, and relationship data where
+extractors provide it. Use `--source-adapter` when callers need bootstrap to
+write only under `--wiki-dir`; this skips agent constraint-file updates outside
+the generated wiki directory. Use `--format json` to emit a machine-readable
+summary with created, updated, and skipped files plus source counts and the
+manifest path.
 
 ### `sync`
 
@@ -233,6 +240,14 @@ created or updated pages and replace generic `_Auto-generated from ..._`,
 copied-docstring-only, or knowable `—` placeholders with project-specific
 semantic explanations.
 
+When `dependencies.md` or `load-order.md` already exists, `sync` also
+regenerates those architecture pages from the current dependency inventory and
+keeps their human-authored `## Notes` sections unless `--no-preserve-semantic`
+is set. Those notes are the agent's responsibility: document intentional cycles,
+dynamic imports, side effects, and notable dependency rationale. Projects
+bootstrapped with `--skip-dependencies`, or older wikis without those pages,
+stay untouched.
+
 ### `extract`
 
 Print source inventory as JSON. All registered extractors run; missing optional
@@ -254,9 +269,13 @@ The JSON output includes `schema_version: "llm-wiki-extract/v1"` plus
 `inventory` and optional `docker` objects. With `--deep`, deep function entries
 may carry an optional `calls` list (in-body call targets) and the payload gains
 an optional top-level `entrypoints` array (detected user-reachable entry points:
-`{id, category, file, symbol, label}`). Inventory keys are POSIX paths relative
-to `--src-dir`, never absolute paths. The v1 contract permits additive fields;
-incompatible shape changes require a new schema version.
+`{id, category, file, symbol, label}`) plus a top-level `dependencies` object
+with internal `edges`, `cycles`, per-language external dependency reconciliation,
+and `load_order`. When `--deep` is combined with `--changed`, `--paths`,
+`--package`, or `--summary`, `dependencies` describes the emitted inventory
+before summary collapse. Inventory keys are POSIX paths relative to `--src-dir`,
+never absolute paths. The v1 contract permits additive fields; incompatible
+shape changes require a new schema version.
 
 ### `prepare-extractors`
 
@@ -304,6 +323,13 @@ coverage. With `--profile --cache-stats`, the JSON payload includes a top-level
 for built-in languages and plugin extractors whose manifests set
 `"parallel_safe": true`; the default is `--jobs 1`. Plugin extractors without
 that opt-in remain sequential.
+
+When dependency architecture pages exist, lint reruns dependency analysis and
+surfaces import cycles, undeclared dependencies, and unused declared
+dependencies as warning diagnostics. These warnings are visible in human output
+and profile JSON but do not make `lint`, `lint --strict`, or `ci-check` fail by
+themselves. Stale architecture pages with no current source modules remain hard
+issues.
 
 For CI:
 

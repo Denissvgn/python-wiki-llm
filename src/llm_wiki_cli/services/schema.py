@@ -53,8 +53,14 @@ agent automatically on commit. You are responsible for keeping the wiki current:
    - Inspect pages that sync created or updated. Replace generated placeholders,
      copied-docstring-only descriptions, and knowable `—` table descriptions
      with semantic notes from the diff and source.
+   - If `dependencies.md` or `load-order.md` exists, inspect regenerated
+     architecture pages too. Their `## Notes` sections are agent-owned: document
+     intentional cycles, dynamic imports, side effects, and notable dependency
+     rationale from the current change.
    - Run `llm-wiki lint --strict --jobs auto` to verify consistency. Fix any
      issues until it exits 0.
+   - Treat Import cycles, undeclared dependencies, and unused dependencies as
+     warning diagnostics that require review even when lint exits 0.
 2. **When extractor helpers are missing** for TypeScript, Go, or Rust projects:
    ```
    llm-wiki prepare-extractors --src-dir .
@@ -82,6 +88,10 @@ llm-wiki sync --jobs auto
   the wiki is stale but don't want to regenerate everything.
 - Sync creates/updates entity and module pages for new or changed files, marks
   removed files with a ⚠️ Stale header, and rebuilds `index.md`.
+- When `dependencies.md` or `load-order.md` exists, sync also refreshes those
+  dependency architecture pages and preserves their agent-owned `## Notes`
+  sections by default. Projects bootstrapped with `--skip-dependencies`, or
+  older wikis without those pages, stay untouched.
 - Sync output is a deterministic AST/docstring skeleton. After it runs, agents
   must fill affected pages with project-specific semantics: responsibility,
   system role, collaborators, important behavior, and usage or constraints.
@@ -97,6 +107,9 @@ llm-wiki sync --jobs auto
 - After sync finishes, always run `llm-wiki lint --strict --jobs auto` to verify
   structure. Passing lint is not enough if affected pages still contain generic
   `_Auto-generated from ..._` text or unexplained placeholders.
+- Lint reports Import cycles, undeclared dependencies, and unused dependencies
+  as warning diagnostics for dependency architecture pages. Review and document
+  intentional findings in the relevant `## Notes` section.
 
 ## Using `llm-wiki context` for large codebases
 `context` produces a token-budgeted, priority-ranked snapshot of the codebase —
@@ -145,6 +158,11 @@ def _wiki_instructions(wiki_dir: str) -> str:
   the broad update is intentional.
 - Then inspect the pages sync created or updated. Sync produces deterministic
   AST/docstring skeletons; you are responsible for the semantic pass.
+- If `{wiki_dir}/dependencies.md` or `{wiki_dir}/load-order.md` exists, inspect
+  those regenerated architecture pages too. Their `## Notes` sections are
+  agent-owned: document intentional cycles, dynamic imports, side effects, and
+  notable dependency rationale. Projects bootstrapped with
+  `--skip-dependencies`, or older wikis without those pages, stay untouched.
 - Enrich new or generic affected pages whose descriptions are `_Auto-generated
   from ..._`, copied docstrings only, or table cells with `—` where semantic
   context is knowable from the diff or source.
@@ -192,6 +210,8 @@ Page filenames **must** match the conventions enforced by `llm-wiki lint`:
 - Run lint after every wiki update. If it reports issues, fix them and re-run until it passes.
 - Run `llm-wiki lint --profile --cache-stats --wiki-dir {wiki_dir} --src-dir .`
   when lint is slow or extractor failures need machine-readable diagnostics.
+- Treat Import cycles, undeclared dependencies, and unused dependencies as
+  warning diagnostics that require review even when lint exits 0.
 - Run `llm-wiki extract --src-dir .` to see the live AST inventory when you need detail.
 - If TypeScript, Go, or Rust extraction reports a missing prepared helper, run
   `llm-wiki prepare-extractors --src-dir .` once and repeat the failed command.
@@ -206,6 +226,9 @@ Page filenames **must** match the conventions enforced by `llm-wiki lint`:
   `## Behavior` section with what the flow does, its triggers, and side effects.
   Do not edit the generated diagram by hand.
 - Infrastructure pages must have: Path, type-specific sections (stages, services, ports, env vars, etc.).
+- Dependency architecture pages must keep any human-authored `## Notes` section
+  aligned with current cycles, external dependency reconciliation, load-order
+  caveats, and dynamic behavior that static extraction cannot prove.
 - Use relative markdown links between pages (e.g., `../entities/User.md`).
 """
 
