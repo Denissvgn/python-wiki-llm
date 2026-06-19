@@ -22,13 +22,13 @@ def run(args):
     # Handle --reset-breaker early (no lock needed)
     if getattr(args, "reset_breaker", False):
         circuit_breaker.reset_breaker(GIT_DIR)
-        print("Circuit breaker reset. Wiki auto-sync is re-enabled.")
+        print("Circuit breaker reset. Manual trigger-agent sync is re-enabled.")
         return
 
     if args.agent in IDE_AGENTS:
         print(f"Error: Agent '{args.agent}' is a UI-based assistant for IDEs.")
         print(
-            "To use background auto-sync, you must specify a CLI-native agent like 'claude' or 'aider'."
+            "To use trigger-agent, you must specify a CLI-native agent like 'claude' or 'aider'."
         )
         print("Example: llm-wiki trigger-agent --agent claude")
         sys.exit(1)
@@ -68,7 +68,7 @@ def _record_trigger_start(args, wiki_dir) -> None:
         "trigger_start",
         {"agent": args.agent, "mode": "CLI", "wiki_dir": wiki_dir},
     )
-    print("Triggering auto-sync workflow for LLM Wiki...")
+    print("Triggering manual sync workflow for LLM Wiki...")
 
 
 def _record_trigger_finish(
@@ -107,7 +107,7 @@ def _is_breaker_open() -> bool:
     if not circuit_breaker.check_breaker(GIT_DIR):
         return False
     print(
-        "Circuit breaker is OPEN — wiki auto-sync is disabled after repeated failures."
+        "Circuit breaker is OPEN — manual trigger-agent sync is disabled after repeated failures."
     )
     print("To re-enable: llm-wiki trigger-agent --reset-breaker")
     return True
@@ -148,7 +148,7 @@ def _skip_large_diff(args, wiki_dir, started: float, diff_text: str) -> bool:
     if diff_lines <= max_diff or getattr(args, "force", False):
         return False
     print(
-        f"Diff too large ({diff_lines} lines > {max_diff} limit). Skipping auto-sync."
+        f"Diff too large ({diff_lines} lines > {max_diff} limit). Skipping trigger-agent sync."
     )
     print("Use --force to override, or increase --max-diff-lines.")
     _record_trigger_finish(
@@ -200,7 +200,7 @@ def _skip_large_prompt(args, wiki_dir, started: float, prompt: str) -> bool:
         return False
     print(
         f"Prompt too large ({prompt_bytes} bytes > {max_prompt_bytes} limit). "
-        "Skipping auto-sync."
+        "Skipping trigger-agent sync."
     )
     print("Use --force to override, or increase --max-prompt-bytes.")
     _record_trigger_finish(

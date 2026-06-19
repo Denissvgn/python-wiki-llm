@@ -8,7 +8,13 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli import cli
-from llm_wiki_cli.commands import extract_cmd, generate_prompt_cmd, init_cmd, lint_cmd, plugins_cmd
+from llm_wiki_cli.commands import (
+    extract_cmd,
+    generate_prompt_cmd,
+    init_cmd,
+    lint_cmd,
+    plugins_cmd,
+)
 from llm_wiki_cli.services import plugins
 from llm_wiki_cli.services.schema import refresh_skill_blocks
 
@@ -35,7 +41,9 @@ def _write_plugin(
         "llm_wiki_version": "*",
         "components": components,
     }
-    (root / plugins.MANIFEST_FILENAME).write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    (root / plugins.MANIFEST_FILENAME).write_text(
+        json.dumps(manifest, indent=2), encoding="utf-8"
+    )
 
     files = {
         "skills/guidelines/SKILL.md": "# Demo Skill\n\nKeep wiki edits focused.\n",
@@ -81,11 +89,93 @@ class TestPluginManifestValidation:
         with pytest.raises(plugins.PluginError, match="plugin directory"):
             plugins.validate_plugin(plugin_dir)
 
+    def test_extractor_parallel_safe_defaults_false(self, tmp_project):
+        plugin_dir = _write_plugin(
+            tmp_project / "vendor" / "extractor",
+            components=[
+                {
+                    "type": "extractor",
+                    "id": "toy",
+                    "language": "toy",
+                    "entry_point": "toy_plugin:ToyExtractor",
+                }
+            ],
+            extra_files={
+                "toy_plugin.py": """
+                    class ToyExtractor:
+                        def extract(self, src_dir, only_files=None, deep=False):
+                            return {}
+                """,
+            },
+        )
+
+        manifest = plugins.validate_plugin(plugin_dir)
+
+        assert manifest["components"][0]["parallel_safe"] is False
+
+    def test_extractor_parallel_safe_accepts_boolean(self, tmp_project):
+        plugin_dir = _write_plugin(
+            tmp_project / "vendor" / "extractor",
+            components=[
+                {
+                    "type": "extractor",
+                    "id": "toy",
+                    "language": "toy",
+                    "entry_point": "toy_plugin:ToyExtractor",
+                    "parallel_safe": True,
+                }
+            ],
+            extra_files={
+                "toy_plugin.py": """
+                    class ToyExtractor:
+                        def extract(self, src_dir, only_files=None, deep=False):
+                            return {}
+                """,
+            },
+        )
+
+        plugins.install_plugin(str(plugin_dir), yes=True)
+
+        lock = plugins.read_lock()
+        component = lock["plugins"]["demo-plugin"]["components"][0]
+        assert component["parallel_safe"] is True
+        assert plugins.parallel_safe_extractor_entry_points() == {
+            "toy_plugin:ToyExtractor"
+        }
+
+    def test_extractor_parallel_safe_rejects_non_boolean(self, tmp_project):
+        plugin_dir = _write_plugin(
+            tmp_project / "vendor" / "extractor",
+            components=[
+                {
+                    "type": "extractor",
+                    "id": "toy",
+                    "language": "toy",
+                    "entry_point": "toy_plugin:ToyExtractor",
+                    "parallel_safe": "yes",
+                }
+            ],
+            extra_files={
+                "toy_plugin.py": """
+                    class ToyExtractor:
+                        def extract(self, src_dir, only_files=None, deep=False):
+                            return {}
+                """,
+            },
+        )
+
+        with pytest.raises(plugins.PluginError, match="parallel_safe"):
+            plugins.validate_plugin(plugin_dir)
+
     def test_resolves_project_catalog_name(self, tmp_project):
-        plugin_dir = _write_plugin(tmp_project / ".llm-wiki" / "catalog_sources" / "demo")
+        plugin_dir = _write_plugin(
+            tmp_project / ".llm-wiki" / "catalog_sources" / "demo"
+        )
         catalog = tmp_project / ".llm-wiki" / "catalog.json"
         catalog.parent.mkdir(parents=True, exist_ok=True)
-        catalog.write_text(json.dumps({"plugins": {"demo": "catalog_sources/demo"}}), encoding="utf-8")
+        catalog.write_text(
+            json.dumps({"plugins": {"demo": "catalog_sources/demo"}}), encoding="utf-8"
+        )
 
         resolved = plugins.resolve_plugin_ref("demo")
 
@@ -117,15 +207,27 @@ class TestPluginInstallLifecycle:
             plugins.install_plugin(str(plugin_dir), yes=True)
 
     def test_plugins_remove_strips_skill_blocks(self, tmp_project):
-        init_cmd.run(_ns(agent="generic", wiki_dir="docs/llm_wiki", no_quality_hints=False))
+        init_cmd.run(
+            _ns(agent="generic", wiki_dir="docs/llm_wiki", no_quality_hints=False)
+        )
         plugin_dir = _write_plugin(tmp_project / "vendor" / "demo")
         plugins.install_plugin(str(plugin_dir), yes=True)
         refresh_skill_blocks("generic", "docs/llm_wiki")
-        assert "LLM Wiki Skill: demo-plugin/guidelines" in Path("AGENTS.md").read_text(encoding="utf-8")
+        assert "LLM Wiki Skill: demo-plugin/guidelines" in Path("AGENTS.md").read_text(
+            encoding="utf-8"
+        )
 
-        plugins_cmd.run(_ns(plugins_action="remove", plugin_id="demo-plugin", wiki_dir="docs/llm_wiki"))
+        plugins_cmd.run(
+            _ns(
+                plugins_action="remove",
+                plugin_id="demo-plugin",
+                wiki_dir="docs/llm_wiki",
+            )
+        )
 
-        assert "LLM Wiki Skill: demo-plugin/guidelines" not in Path("AGENTS.md").read_text(encoding="utf-8")
+        assert "LLM Wiki Skill: demo-plugin/guidelines" not in Path(
+            "AGENTS.md"
+        ).read_text(encoding="utf-8")
         assert "demo-plugin" not in plugins.read_lock()["plugins"]
 
     def test_plugins_remove_strips_legacy_agents_md_skill_blocks(self, tmp_project):
@@ -139,7 +241,13 @@ class TestPluginInstallLifecycle:
             encoding="utf-8",
         )
 
-        plugins_cmd.run(_ns(plugins_action="remove", plugin_id="demo-plugin", wiki_dir="docs/llm_wiki"))
+        plugins_cmd.run(
+            _ns(
+                plugins_action="remove",
+                plugin_id="demo-plugin",
+                wiki_dir="docs/llm_wiki",
+            )
+        )
 
         content = Path(".agents.md").read_text(encoding="utf-8")
         assert "Legacy Instructions" in content
@@ -218,7 +326,9 @@ class TestPluginRuntimeIntegration:
 
         assert any(issue.category == "plugin_rule" for issue in report.issues)
 
-    def test_load_entry_point_rejects_lockfile_entry_point_outside_plugin(self, tmp_project):
+    def test_load_entry_point_rejects_lockfile_entry_point_outside_plugin(
+        self, tmp_project
+    ):
         plugin_dir = _write_plugin(
             tmp_project / "vendor" / "lint",
             plugin_id="lint-plugin",
@@ -244,7 +354,9 @@ class TestPluginRuntimeIntegration:
         with pytest.raises(plugins.PluginError, match="installed plugin"):
             plugins.load_entry_point("pathlib:Path")
 
-    def test_plugin_extractor_entry_point_cannot_import_project_module(self, tmp_project):
+    def test_plugin_extractor_entry_point_cannot_import_project_module(
+        self, tmp_project
+    ):
         (tmp_project / "flow.toy").write_text("run\n", encoding="utf-8")
         plugin_dir = _write_plugin(
             tmp_project / "vendor" / "extractor",
@@ -283,7 +395,9 @@ class TestPluginRuntimeIntegration:
         )
         plugins.install_plugin(str(evil_plugin_dir), yes=True)
         lock = plugins.read_lock()
-        lock["plugins"]["toy-extractor"]["components"][0]["entry_point"] = "evil_module:Extractor"
+        lock["plugins"]["toy-extractor"]["components"][0]["entry_point"] = (
+            "evil_module:Extractor"
+        )
         plugins.write_lock(lock)
 
         result = extract_cmd.get_inventory_result(".")
@@ -297,7 +411,11 @@ class TestPluginRuntimeIntegration:
             tmp_project / "vendor" / "templates",
             plugin_id="template-plugin",
             components=[
-                {"type": "prompt_template", "id": "compact", "path": "templates/compact.md"}
+                {
+                    "type": "prompt_template",
+                    "id": "compact",
+                    "path": "templates/compact.md",
+                }
             ],
             extra_files={
                 "templates/compact.md": "Wiki={wiki_dir}\nSource={src_dir}\nType={change_type}\n",
@@ -318,7 +436,9 @@ class TestPluginRuntimeIntegration:
         assert "Type=bugfix" in prompt
 
     def test_skill_refresh_is_idempotent(self, tmp_project):
-        init_cmd.run(_ns(agent="generic", wiki_dir="docs/llm_wiki", no_quality_hints=False))
+        init_cmd.run(
+            _ns(agent="generic", wiki_dir="docs/llm_wiki", no_quality_hints=False)
+        )
         plugin_dir = _write_plugin(tmp_project / "vendor" / "skills")
         plugins.install_plugin(str(plugin_dir), yes=True)
 
@@ -334,11 +454,15 @@ class TestPluginCliSmoke:
     def test_cli_validate_install_list(self, tmp_project, capsys, monkeypatch):
         plugin_dir = _write_plugin(tmp_project / "vendor" / "demo")
 
-        monkeypatch.setattr("sys.argv", ["llm-wiki", "plugins", "validate", str(plugin_dir)])
+        monkeypatch.setattr(
+            "sys.argv", ["llm-wiki", "plugins", "validate", str(plugin_dir)]
+        )
         cli.main()
         assert "Plugin valid: demo-plugin" in capsys.readouterr().out
 
-        monkeypatch.setattr("sys.argv", ["llm-wiki", "install", str(plugin_dir), "--yes"])
+        monkeypatch.setattr(
+            "sys.argv", ["llm-wiki", "install", str(plugin_dir), "--yes"]
+        )
         cli.main()
         assert "Installed plugin: demo-plugin" in capsys.readouterr().out
 

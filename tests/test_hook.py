@@ -1,4 +1,5 @@
 """Tests for commands/hook_cmd.py"""
+
 import types
 from pathlib import Path
 
@@ -25,40 +26,43 @@ def _write_agent_config(wiki_dir: str, agent: str):
 
 
 class TestHookReadsAgentConfig:
-    def test_hook_bakes_agent_from_config(self, tmp_project):
-        """post-commit hook contains --agent from .llm-wiki-agent."""
+    def test_hook_from_cli_agent_config_generates_prompt(self, tmp_project):
+        """CLI-agent config still installs a prompt hook, not headless sync."""
         _write_agent_config("docs/llm_wiki", "aider")
         args = _make_args()
         hook_cmd.run(args)
 
-
         hook_text = (Path(".git/hooks/post-commit")).read_text(encoding="utf-8")
-        assert "--agent aider" in hook_text
+        assert "generate-prompt" in hook_text
+        assert "trigger-agent" not in hook_text
+        assert "--agent aider" not in hook_text
 
-    def test_hook_bakes_agent_from_cli_override(self, tmp_project):
-        """--agent CLI flag takes precedence over config file."""
+    def test_hook_agent_override_still_generates_prompt(self, tmp_project):
+        """--agent CLI flag does not opt into headless hook execution."""
         _write_agent_config("docs/llm_wiki", "aider")
         args = _make_args(agent="opencode")
         hook_cmd.run(args)
 
         hook_text = (Path(".git/hooks/post-commit")).read_text(encoding="utf-8")
-        assert "--agent opencode" in hook_text
-        assert "--agent aider" not in hook_text
+        assert "generate-prompt" in hook_text
+        assert "trigger-agent" not in hook_text
+        assert "--agent opencode" not in hook_text
 
-    def test_hook_defaults_to_claude_when_no_config(self, tmp_project, capsys):
-        """Falls back to 'claude' with a warning when no config file exists."""
+    def test_hook_without_config_generates_prompt(self, tmp_project, capsys):
+        """No config is needed because installed hooks are prompt-only."""
         args = _make_args()  # no config file, no --agent
         hook_cmd.run(args)
 
         out = capsys.readouterr().out
-        assert "warning" in out.lower() or "Warning" in out
+        assert "warning" not in out.lower()
 
         hook_text = (Path(".git/hooks/post-commit")).read_text(encoding="utf-8")
-        assert "--agent claude" in hook_text
+        assert "generate-prompt" in hook_text
+        assert "trigger-agent" not in hook_text
 
 
-class TestHookIDEAgentInstallsPromptHook:
-    """IDE agents get a prompt-generation hook, not a headless sync hook."""
+class TestHookInstallsPromptHook:
+    """All agents get a prompt-generation hook, not a headless sync hook."""
 
     def test_post_commit_installed_for_copilot(self, tmp_project, capsys):
         _write_agent_config("docs/llm_wiki", "copilot")
@@ -70,7 +74,7 @@ class TestHookIDEAgentInstallsPromptHook:
         hook_text = hook_path.read_text(encoding="utf-8")
         assert "generate-prompt" in hook_text
         assert "trigger-agent" not in hook_text
-        assert 'LLM_WIKI_OPEN_PROMPT:-0' in hook_text
+        assert "LLM_WIKI_OPEN_PROMPT:-0" in hook_text
 
     def test_post_commit_installed_for_cursor(self, tmp_project, capsys):
         _write_agent_config("docs/llm_wiki", "cursor")
@@ -104,15 +108,16 @@ class TestHookIDEAgentInstallsPromptHook:
         hook_text = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
         assert "--wiki-dir 'my docs/wiki'" in hook_text
 
-    def test_agent_override_bypasses_ui_restriction(self, tmp_project, capsys):
-        """Passing --agent claude explicitly still installs the headless hook even if config says copilot."""
+    def test_agent_override_does_not_enable_headless_hook(self, tmp_project, capsys):
+        """Passing --agent claude still installs the prompt-generation hook."""
         _write_agent_config("docs/llm_wiki", "copilot")
         args = _make_args(agent="claude")
         hook_cmd.run(args)
 
         hook_text = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
-        assert "--agent claude" in hook_text
-        assert "generate-prompt" not in hook_text
+        assert "generate-prompt" in hook_text
+        assert "trigger-agent" not in hook_text
+        assert "--agent claude" not in hook_text
 
     def test_ide_output_message_mentions_paste(self, tmp_project, capsys):
         _write_agent_config("docs/llm_wiki", "copilot")
@@ -130,23 +135,25 @@ class TestHookReadsCustomWikiDir:
         hook_cmd.run(args)
 
         hook_text = (Path(".git/hooks/post-commit")).read_text(encoding="utf-8")
-        assert "--agent aider" in hook_text
+        assert "generate-prompt" in hook_text
+        assert "trigger-agent" not in hook_text
         assert "--wiki-dir my_docs/wiki" in hook_text
 
-    def test_cli_hook_quotes_wiki_dir_with_spaces(self, tmp_project):
+    def test_prompt_hook_quotes_wiki_dir_with_spaces(self, tmp_project):
         _write_agent_config("my docs/wiki", "aider")
         args = _make_args(wiki_dir="my docs/wiki")
         hook_cmd.run(args)
 
         hook_text = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
-        assert "--agent aider" in hook_text
+        assert "generate-prompt" in hook_text
+        assert "trigger-agent" not in hook_text
         assert "--wiki-dir 'my docs/wiki'" in hook_text
 
 
 class TestPostCommitAutoCommitGuard:
     """post-commit hooks must skip when LLM_WIKI_AUTO_COMMIT is set."""
 
-    def test_cli_post_commit_has_auto_commit_guard(self, tmp_project):
+    def test_prompt_post_commit_has_auto_commit_guard(self, tmp_project):
         _write_agent_config("docs/llm_wiki", "claude")
         args = _make_args()
         hook_cmd.run(args)
@@ -185,7 +192,8 @@ class TestHookInstallSafety:
         hook_cmd.run(_make_args(agent="aider"))
 
         hook_text = hook_path.read_text(encoding="utf-8")
-        assert "--agent aider" in hook_text
+        assert "generate-prompt" in hook_text
+        assert "trigger-agent" not in hook_text
 
     def test_ide_post_commit_has_auto_commit_guard(self, tmp_project):
         _write_agent_config("docs/llm_wiki", "copilot")

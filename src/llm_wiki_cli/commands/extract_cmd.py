@@ -33,7 +33,11 @@ from ..services.inventory_cache import (
 )
 from ..services.imports import build_module_path_resolver
 from ..services.packages import discover_packages, stamp_inventory_packages
-from ..services.plugins import get_extractor_registry, load_entry_point
+from ..services.plugins import (
+    get_extractor_registry,
+    load_entry_point,
+    parallel_safe_extractor_entry_points,
+)
 from ..services.io import write_text_output
 from ..services.source_snapshot import SourceFile, SourceSnapshot, build_source_snapshot
 
@@ -127,6 +131,7 @@ class _ExtractionPlan:
     language: str
     entry_point: str
     is_builtin: bool
+    parallel_safe: bool
     source_files: list[str] | None
     fresh_source_files: list[str]
     files_found: int
@@ -154,6 +159,7 @@ class _InventoryBuildContext:
     updated_cache_files: dict[str, dict]
     source_file_by_path: dict[str, SourceFile]
     source_hashes: dict[str, str]
+    parallel_safe_plugin_entry_points: set[str]
 
 
 @dataclass
@@ -339,6 +345,7 @@ def _prepare_inventory_build_context(
         updated_cache_files={},
         source_file_by_path=source_file_by_path,
         source_hashes=source_hashes,
+        parallel_safe_plugin_entry_points=parallel_safe_extractor_entry_points(),
     )
 
 
@@ -434,6 +441,9 @@ def _plan_language_extraction(
         language=language,
         entry_point=entry_point,
         is_builtin=is_builtin,
+        parallel_safe=(
+            is_builtin or entry_point in context.parallel_safe_plugin_entry_points
+        ),
         source_files=source_files,
         fresh_source_files=fresh_source_files,
         files_found=files_found,
@@ -564,35 +574,37 @@ def _inventory_helper_cache_dir(request: InventoryRequest) -> str | None:
 def _run_inventory_plans(
     plans: list[_ExtractionPlan], parallel_jobs: int
 ) -> dict[str, _ExtractionOutcome]:
-    builtin_plans = [plan for plan in plans if plan.is_builtin]
-    plugin_plans = [plan for plan in plans if not plan.is_builtin]
+    parallel_safe_plans = [plan for plan in plans if plan.parallel_safe]
+    sequential_plans = [plan for plan in plans if not plan.parallel_safe]
     outcomes_by_language: dict[str, _ExtractionOutcome] = {}
 
-    _run_builtin_inventory_plans(builtin_plans, parallel_jobs, outcomes_by_language)
-    for plan in plugin_plans:
+    _run_parallel_safe_inventory_plans(
+        parallel_safe_plans, parallel_jobs, outcomes_by_language
+    )
+    for plan in sequential_plans:
         outcome = _run_extraction_plan(plan, fresh_instance=False)
         outcomes_by_language[outcome.language] = outcome
     return outcomes_by_language
 
 
-def _run_builtin_inventory_plans(
-    builtin_plans: list[_ExtractionPlan],
+def _run_parallel_safe_inventory_plans(
+    parallel_safe_plans: list[_ExtractionPlan],
     parallel_jobs: int,
     outcomes_by_language: dict[str, _ExtractionOutcome],
 ) -> None:
-    if parallel_jobs > 1 and len(builtin_plans) > 1:
-        max_workers = min(parallel_jobs, len(builtin_plans))
+    if parallel_jobs > 1 and len(parallel_safe_plans) > 1:
+        max_workers = min(parallel_jobs, len(parallel_safe_plans))
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             for outcome in executor.map(
                 lambda plan: _run_extraction_plan(plan, fresh_instance=True),
-                builtin_plans,
+                parallel_safe_plans,
             ):
                 outcomes_by_language[outcome.language] = outcome
         return
 
-    use_fresh_builtin_instances = parallel_jobs > 1
-    for plan in builtin_plans:
-        outcome = _run_extraction_plan(plan, fresh_instance=use_fresh_builtin_instances)
+    use_fresh_instances = parallel_jobs > 1
+    for plan in parallel_safe_plans:
+        outcome = _run_extraction_plan(plan, fresh_instance=use_fresh_instances)
         outcomes_by_language[outcome.language] = outcome
 
 
@@ -1251,8 +1263,14 @@ def _edges_for_file(
     for caller_symbol, fn, class_name in _caller_components(data):
         for call in fn.get("calls", []):
             to_file, to_symbol, kind = _resolve_call(
-                call, filepath, class_name, data,
-                imported_internal, imported_names, local_symbols, symbol_to_files,
+                call,
+                filepath,
+                class_name,
+                data,
+                imported_internal,
+                imported_names,
+                local_symbols,
+                symbol_to_files,
             )
             edges.append(
                 {
@@ -1284,9 +1302,7 @@ def resolve_call_edges(inventory: dict) -> list[dict]:
     module_resolver = build_module_path_resolver(inventory)
     edges: list[dict] = []
     for filepath, data in inventory.items():
-        edges.extend(
-            _edges_for_file(filepath, data, symbol_to_files, module_resolver)
-        )
+        edges.extend(_edges_for_file(filepath, data, symbol_to_files, module_resolver))
     return edges
 
 

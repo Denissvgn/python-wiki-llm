@@ -1,6 +1,5 @@
 """Tests for commands/init_cmd.py"""
-import json
-import os
+
 import types
 from pathlib import Path
 
@@ -117,13 +116,15 @@ class TestInitAgentInstallCheck:
             assert "not installed" not in out
 
     def test_warning_when_cli_agent_missing(self, tmp_project, capsys, monkeypatch):
-        """If 'claude' binary is absent, user sees a clear warning."""
+        """If 'claude' binary is absent, manual trigger-agent warning is clear."""
         monkeypatch.setattr("shutil.which", lambda _: None)
         args = _make_args(agent="claude")
         init_cmd.run(args)
         out = capsys.readouterr().out
         assert "not installed" in out
         assert "claude" in out
+        assert "background auto-sync" not in out
+        assert "trigger-agent" in out
         # Schema file is still created despite the warning
         assert Path("CLAUDE.md").exists()
 

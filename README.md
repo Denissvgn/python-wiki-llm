@@ -46,16 +46,17 @@ extract never run `npm install`, `go build`, `go run`, `cargo build`, or
 
 | Agent | Schema file | Sync mode |
 |---|---|---|
-| `claude` | `CLAUDE.md` | headless CLI |
-| `aider` | `.aider.conf.yml` | headless CLI |
-| `opencode` | `.opencode/instructions.md` | headless CLI |
+| `claude` | `CLAUDE.md` | prompt hook; optional manual CLI trigger |
+| `aider` | `.aider.conf.yml` | prompt hook; optional manual CLI trigger |
+| `opencode` | `.opencode/instructions.md` | prompt hook; optional manual CLI trigger |
 | `copilot` | `.github/copilot-instructions.md` | IDE prompt |
 | `cursor` | `.cursorrules` | IDE prompt |
 | `generic` | `AGENTS.md` | IDE prompt |
 
-Headless sync delegates to the selected CLI agent. For Claude, this uses
-`claude -p` and leaves permission decisions to Claude's normal permission
-model. Enable automation only in repositories and execution environments you
+Installed hooks generate a reviewed prompt file for all agents. The explicit
+`trigger-agent` command can still delegate to a CLI agent; for Claude, this uses
+`claude -p` and leaves permission decisions to Claude's normal permission model.
+Run manual CLI triggers only in repositories and execution environments you
 trust.
 
 ## Installation
@@ -125,10 +126,13 @@ back to `<wiki-dir>/.llm-wiki-agent`.
 
 ## Automation
 
-`llm-wiki install-hook` installs a `post-commit` hook. The hook mode depends on
-the configured agent.
+`llm-wiki install-hook` installs a `post-commit` hook that generates
+`.git/llm-wiki-prompt.txt` with `llm-wiki generate-prompt` and prints a reminder
+to paste that prompt into your agent chat. Generated hooks never launch CLI
+agents automatically.
 
-For CLI agents (`claude`, `aider`, `opencode`), the hook starts:
+For advanced trusted workflows, `trigger-agent` remains available as an explicit
+manual command:
 
 ```bash
 llm-wiki trigger-agent --agent <agent>
@@ -152,10 +156,6 @@ llm-wiki trigger-agent --agent claude --max-prompt-bytes 2000000
 llm-wiki trigger-agent --agent claude --force
 llm-wiki trigger-agent --reset-breaker
 ```
-
-For IDE agents (`copilot`, `cursor`, `generic`), the hook generates
-`.git/llm-wiki-prompt.txt` with `llm-wiki generate-prompt` and prints a reminder
-to paste that prompt into the IDE chat.
 
 Optional strict pre-commit validation:
 
@@ -223,9 +223,9 @@ existing wiki is present, run `bootstrap` first. Sync uses the same safe
 persistent inventory cache as lint when a git directory is available. Use
 `--no-cache`, `--rebuild-cache`, `--cache-dir PATH`, and `--cache-stats` to
 control or inspect cache behavior. Use `--jobs N` or `--jobs auto` to opt into
-parallel built-in language extraction. Sync repairs manifests with invalid
-source hashes without touching pages, and stops unusually broad diffs unless
-`--force` is used.
+parallel extraction for built-in languages and plugin extractors whose manifests
+set `"parallel_safe": true`. Sync repairs manifests with invalid source hashes
+without touching pages, and stops unusually broad diffs unless `--force` is used.
 
 `sync` is deterministic: it updates AST/docstring-based page skeletons and does
 not call an LLM. In agent workflows, treat sync as the first step, then inspect
@@ -300,9 +300,10 @@ Use `--no-cache` to disable load/save, `--rebuild-cache` to ignore and rewrite
 the cache, and `--cache-stats` to include cache diagnostics. Cache corruption or
 invalid fingerprints fall back to a full extraction without reducing lint
 coverage. With `--profile --cache-stats`, the JSON payload includes a top-level
-`cache` object. Use `--jobs N` or `--jobs auto` to opt into parallel built-in
-language extraction; the default is `--jobs 1`. Plugin extractors remain
-sequential unless future plugin metadata explicitly marks them parallel-safe.
+`cache` object. Use `--jobs N` or `--jobs auto` to opt into parallel extraction
+for built-in languages and plugin extractors whose manifests set
+`"parallel_safe": true`; the default is `--jobs 1`. Plugin extractors without
+that opt-in remain sequential.
 
 For CI:
 
@@ -478,7 +479,9 @@ Plugin manifests can register extractors, prompt templates, lint rules, and
 agent skill blocks. Plugin references are resolved from project-local paths or
 `.llm-wiki/catalog.json`. Extractor and lint-rule entry points must resolve to
 Python files inside the plugin directory; installed entry points are checked
-again before runtime import.
+again before runtime import. Extractor components may set
+`"parallel_safe": true` to opt into `--jobs` parallel execution; omit it unless
+the extractor is safe to run concurrently in a fresh instance.
 
 ### `team`
 
@@ -575,9 +578,9 @@ diffs, source structure, and architectural context. Prompt files are written
 inside `.git/` by default and use owner-only permissions where the platform
 supports that mode.
 
-Headless CLI agents can edit files and run commands according to their own
-permission model. Review generated wiki diffs before trusting unattended
-automation in a shared repository.
+Manual CLI triggers can edit files and run commands according to the selected
+agent's own permission model. Review generated prompt files and wiki diffs
+before trusting agent-produced changes in a shared repository.
 
 The repository includes community health files:
 

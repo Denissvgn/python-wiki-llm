@@ -9,7 +9,6 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from ..config import IDE_AGENTS
 from .io import read_md, write_md
 
 # Marker boundaries used to wrap the entire generated block
@@ -39,11 +38,11 @@ ALL_SCHEMA_FILES: list[str] = [
     ".opencode/instructions.md",
 ]
 
-_IDE_SYNC_INSTRUCTIONS = """\
+_SYNC_INSTRUCTIONS = """\
 
-## How to sync the wiki in this IDE session
-Because you run inside the IDE (not as a background CLI process), the wiki is NOT
-updated automatically on commit. You are responsible for keeping it current:
+## How to sync the wiki in this agent session
+Generated hooks create a prompt file for human review instead of starting an
+agent automatically on commit. You are responsible for keeping the wiki current:
 
 1. **After every code change in this session** that adds, removes, or modifies a
    class, function, module, or cross-module flow:
@@ -68,7 +67,7 @@ updated automatically on commit. You are responsible for keeping it current:
    llm-wiki generate-prompt
    ```
    This builds a diff + AST prompt in `.git/llm-wiki-prompt.txt`. Open that file
-   and paste its contents into this chat when automated sync is not enough.
+   and paste its contents into this chat when a reviewed prompt is useful.
 4. **Never skip the update** — a stale wiki defeats the purpose of the system.
 
 ## Using `llm-wiki sync` for incremental updates
@@ -211,7 +210,9 @@ Page filenames **must** match the conventions enforced by `llm-wiki lint`:
 """
 
 
-def build_schema_content(agent: str, wiki_dir: str, *, quality_hints: bool = True) -> str:
+def build_schema_content(
+    agent: str, wiki_dir: str, *, quality_hints: bool = True
+) -> str:
     """Build the full constraint block for the given agent and wiki directory."""
     instructions = _wiki_instructions(wiki_dir)
     preambles = {
@@ -219,9 +220,12 @@ def build_schema_content(agent: str, wiki_dir: str, *, quality_hints: bool = Tru
         "cursor": f"# Cursor Rules — LLM Wiki Project\n\nThis project maintains a living wiki at `{wiki_dir}/`.\nAlways consult it before making changes.\n\n",
         "copilot": f"# Copilot Instructions — LLM Wiki Project\n\nThis project uses `{wiki_dir}/` as persistent documentation.\nConsult the wiki before suggesting changes.\n\n",
     }
-    preamble = preambles.get(agent, f"# Agent Instructions — LLM Wiki Project\n\nThis project uses `{wiki_dir}/` for architectural memory.\n\n")
+    preamble = preambles.get(
+        agent,
+        f"# Agent Instructions — LLM Wiki Project\n\nThis project uses `{wiki_dir}/` for architectural memory.\n\n",
+    )
     hints = _QUALITY_HINTS if quality_hints else ""
-    extra = _IDE_SYNC_INSTRUCTIONS if agent in IDE_AGENTS else ""
+    extra = _SYNC_INSTRUCTIONS
     body = preamble + instructions + hints + extra
     return f"{CONSTRAINT_START}\n{body.strip()}\n{CONSTRAINT_END}\n"
 
@@ -233,11 +237,15 @@ def strip_wiki_block(content: str) -> str:
     stays clean after removal.
     """
     pattern = re.compile(
-        r'\n*' + re.escape(CONSTRAINT_START) + r'.*?' + re.escape(CONSTRAINT_END) + r'\n*',
+        r"\n*"
+        + re.escape(CONSTRAINT_START)
+        + r".*?"
+        + re.escape(CONSTRAINT_END)
+        + r"\n*",
         re.DOTALL,
     )
-    cleaned = pattern.sub('\n', content)
-    return cleaned.strip() + '\n' if cleaned.strip() else ''
+    cleaned = pattern.sub("\n", content)
+    return cleaned.strip() + "\n" if cleaned.strip() else ""
 
 
 def replace_schema_block(schema_path: Path, new_content: str) -> None:
@@ -255,14 +263,18 @@ def replace_schema_block(schema_path: Path, new_content: str) -> None:
     existing = existing.replace("\r\n", "\n").replace("\r", "\n")
     if CONSTRAINT_START not in existing:
         # No existing block — append
-        sep = "\n\n" if existing and not existing.endswith("\n\n") else ("\n" if existing and not existing.endswith("\n") else "")
+        sep = (
+            "\n\n"
+            if existing and not existing.endswith("\n\n")
+            else ("\n" if existing and not existing.endswith("\n") else "")
+        )
         write_md(schema_path, existing + sep + new_content)
         return
 
     # Replace existing block (consume any trailing whitespace after CONSTRAINT_END
     # so repeated runs don't accumulate blank lines)
     pattern = re.compile(
-        re.escape(CONSTRAINT_START) + r'.*?' + re.escape(CONSTRAINT_END) + r'\n*',
+        re.escape(CONSTRAINT_START) + r".*?" + re.escape(CONSTRAINT_END) + r"\n*",
         re.DOTALL,
     )
     updated = pattern.sub(lambda _m: new_content, existing)
@@ -282,7 +294,9 @@ def build_skill_block(plugin_id: str, skill_id: str, skill_content: str) -> str:
     return f"{skill_start_marker(plugin_id, skill_id)}\n{body}\n{skill_end_marker(plugin_id, skill_id)}\n"
 
 
-def strip_skill_blocks(content: str, *, plugin_id: str | None = None, skill_id: str | None = None) -> str:
+def strip_skill_blocks(
+    content: str, *, plugin_id: str | None = None, skill_id: str | None = None
+) -> str:
     """Remove managed plugin skill blocks from schema content."""
     if plugin_id and skill_id:
         start = re.escape(skill_start_marker(plugin_id, skill_id))
@@ -314,7 +328,9 @@ def strip_skill_blocks(content: str, *, plugin_id: str | None = None, skill_id: 
     return cleaned.strip() + "\n" if cleaned.strip() else ""
 
 
-def replace_skill_block(schema_path: Path, plugin_id: str, skill_id: str, skill_content: str) -> None:
+def replace_skill_block(
+    schema_path: Path, plugin_id: str, skill_id: str, skill_content: str
+) -> None:
     new_content = build_skill_block(plugin_id, skill_id, skill_content)
     if not schema_path.exists():
         schema_path.parent.mkdir(parents=True, exist_ok=True)
@@ -323,7 +339,11 @@ def replace_skill_block(schema_path: Path, plugin_id: str, skill_id: str, skill_
 
     existing = read_md(schema_path).replace("\r\n", "\n").replace("\r", "\n")
     existing = strip_skill_blocks(existing, plugin_id=plugin_id, skill_id=skill_id)
-    sep = "\n\n" if existing and not existing.endswith("\n\n") else ("\n" if existing and not existing.endswith("\n") else "")
+    sep = (
+        "\n\n"
+        if existing and not existing.endswith("\n\n")
+        else ("\n" if existing and not existing.endswith("\n") else "")
+    )
     write_md(schema_path, existing + sep + new_content)
 
 
@@ -340,7 +360,9 @@ def refresh_skill_blocks(agent: str, wiki_dir: str) -> list[str]:
     for component in iter_components("skill"):
         plugin_id = component["plugin_id"]
         skill_id = component["id"]
-        replace_skill_block(schema_path, plugin_id, skill_id, read_component_text(component))
+        replace_skill_block(
+            schema_path, plugin_id, skill_id, read_component_text(component)
+        )
         refreshed.append(f"{plugin_id}/{skill_id}")
     return refreshed
 

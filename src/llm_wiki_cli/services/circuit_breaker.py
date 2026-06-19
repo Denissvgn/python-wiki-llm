@@ -70,7 +70,7 @@ def record_failure(git_dir: Path) -> None:
         print(
             f"Circuit breaker OPEN after {state['consecutive_failures']} consecutive failures."
         )
-        print("Wiki auto-sync is now disabled.")
+        print("Manual trigger-agent sync is now disabled.")
         print("To re-enable: llm-wiki trigger-agent --reset-breaker")
     save_state(git_dir, state)
 

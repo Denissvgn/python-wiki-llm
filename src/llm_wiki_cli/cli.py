@@ -240,7 +240,7 @@ def _add_lint_command(subparsers):
         type=_jobs_value,
         default=1,
         metavar="JOBS",
-        help="Parallel built-in extractor jobs: positive integer or 'auto' (default: 1)",
+        help="Parallel extractor jobs for built-ins and opted-in plugins: positive integer or 'auto' (default: 1)",
     )
 
 
@@ -292,13 +292,13 @@ def _add_ci_check_command(subparsers):
         type=_jobs_value,
         default=1,
         metavar="JOBS",
-        help="Parallel built-in extractor jobs: positive integer or 'auto' (default: 1)",
+        help="Parallel extractor jobs for built-ins and opted-in plugins: positive integer or 'auto' (default: 1)",
     )
 
 
 def _add_install_hook_command(subparsers):
     hook_parser = subparsers.add_parser(
-        "install-hook", help="Install git hooks for wiki sync"
+        "install-hook", help="Install prompt-generation git hooks for wiki sync"
     )
     hook_parser.add_argument(
         "--wiki-dir",
@@ -309,7 +309,7 @@ def _add_install_hook_command(subparsers):
         "--agent",
         choices=AGENT_CHOICES,
         default=None,
-        help="Override the agent for the post-commit hook (default: read from wiki config)",
+        help="Agent preference to display after installing the prompt hook",
     )
     hook_parser.add_argument(
         "--force",
@@ -412,13 +412,13 @@ def _add_team_command(subparsers):
 
 def _add_trigger_agent_command(subparsers):
     trigger_parser = subparsers.add_parser(
-        "trigger-agent", help="Trigger subagent to update wiki using diff"
+        "trigger-agent", help="Manually trigger a CLI agent to update wiki using diff"
     )
     trigger_parser.add_argument(
         "--agent",
         choices=AGENT_CHOICES,
         default="claude",
-        help="Agent executable to invoke for background sync",
+        help="Agent executable to invoke for manual trigger-agent sync",
     )
     trigger_parser.add_argument(
         "--wiki-dir",
@@ -856,7 +856,7 @@ def _add_sync_command(subparsers):
         type=_jobs_value,
         default=1,
         metavar="JOBS",
-        help="Parallel built-in extractor jobs: positive integer or 'auto' (default: 1)",
+        help="Parallel extractor jobs for built-ins and opted-in plugins: positive integer or 'auto' (default: 1)",
     )
     sync_parser.add_argument(
         "--force",

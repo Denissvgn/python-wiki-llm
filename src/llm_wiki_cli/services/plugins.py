@@ -92,7 +92,9 @@ def _load_catalog(path: Path) -> dict[str, str]:
         elif isinstance(value, dict) and isinstance(value.get("path"), str):
             result[str(name)] = value["path"]
         else:
-            raise PluginError(f"Invalid catalog entry {name!r} in {path}: expected a path.")
+            raise PluginError(
+                f"Invalid catalog entry {name!r} in {path}: expected a path."
+            )
     return result
 
 
@@ -122,10 +124,14 @@ def resolve_plugin_ref(ref: str, root: str | Path = ".") -> Path:
         if not configured.is_absolute():
             configured = base_dir / configured
         if not configured.exists():
-            raise PluginError(f"Catalog entry {ref!r} points to missing path: {configured}")
+            raise PluginError(
+                f"Catalog entry {ref!r} points to missing path: {configured}"
+            )
         return configured.resolve()
 
-    raise PluginError(f"Plugin {ref!r} is not a local path or configured catalog entry.")
+    raise PluginError(
+        f"Plugin {ref!r} is not a local path or configured catalog entry."
+    )
 
 
 def _manifest_root(ref: str | Path) -> tuple[Path, Path]:
@@ -162,7 +168,11 @@ def _current_llm_wiki_version() -> str:
     pyproject = Path(__file__).resolve().parents[3] / "pyproject.toml"
     if not pyproject.exists():
         return __version__
-    match = re.search(r'^\s*version\s*=\s*"([^"]+)"', pyproject.read_text(encoding="utf-8"), re.MULTILINE)
+    match = re.search(
+        r'^\s*version\s*=\s*"([^"]+)"',
+        pyproject.read_text(encoding="utf-8"),
+        re.MULTILINE,
+    )
     return match.group(1) if match else __version__
 
 
@@ -210,13 +220,18 @@ def _entry_point_module_source(plugin_dir: Path, module: str) -> Path | None:
     return None
 
 
-def _ensure_entry_point(value: Any, field: str, *, plugin_dir: Path | None = None) -> str:
+def _ensure_entry_point(
+    value: Any, field: str, *, plugin_dir: Path | None = None
+) -> str:
     if not isinstance(value, str) or ":" not in value:
         raise PluginError(f"{field} must use 'module:attribute' format.")
     module, attr = value.split(":", 1)
     if not _MODULE_RE.match(module) or not _ATTR_RE.match(attr):
         raise PluginError(f"{field} must use a valid Python module and attribute.")
-    if plugin_dir is not None and _entry_point_module_source(plugin_dir, module) is None:
+    if (
+        plugin_dir is not None
+        and _entry_point_module_source(plugin_dir, module) is None
+    ):
         raise PluginError(
             f"{field} module must resolve to a Python file inside the plugin directory: {module}"
         )
@@ -261,6 +276,10 @@ def _normalize_component(plugin_dir: Path, raw: Any) -> dict[str, Any]:
             "extractor.entry_point",
             plugin_dir=plugin_dir,
         )
+        parallel_safe = raw.get("parallel_safe", False)
+        if not isinstance(parallel_safe, bool):
+            raise PluginError("extractor.parallel_safe must be a boolean.")
+        component["parallel_safe"] = parallel_safe
     elif component_type == "lint_rule":
         component["entry_point"] = _ensure_entry_point(
             raw.get("entry_point"),
@@ -268,9 +287,13 @@ def _normalize_component(plugin_dir: Path, raw: Any) -> dict[str, Any]:
             plugin_dir=plugin_dir,
         )
     elif component_type == "prompt_template":
-        component["path"] = _safe_component_path(plugin_dir, raw.get("path"), "prompt_template.path")
+        component["path"] = _safe_component_path(
+            plugin_dir, raw.get("path"), "prompt_template.path"
+        )
     elif component_type == "skill":
-        component["path"] = _safe_component_path(plugin_dir, raw.get("path"), "skill.path")
+        component["path"] = _safe_component_path(
+            plugin_dir, raw.get("path"), "skill.path"
+        )
 
     return component
 
@@ -303,19 +326,25 @@ def validate_plugin(ref: str | Path) -> dict[str, Any]:
     if not isinstance(components, list) or not components:
         raise PluginError("components must be a non-empty list.")
 
-    normalized_components = [_normalize_component(plugin_dir, item) for item in components]
+    normalized_components = [
+        _normalize_component(plugin_dir, item) for item in components
+    ]
     seen_refs: set[tuple[str, str]] = set()
     for component in normalized_components:
         ref_key = (component["type"], component["id"])
         if ref_key in seen_refs:
-            raise PluginError(f"Duplicate component id for type {component['type']}: {component['id']}")
+            raise PluginError(
+                f"Duplicate component id for type {component['type']}: {component['id']}"
+            )
         seen_refs.add(ref_key)
 
     return {
         "id": plugin_id,
         "version": version,
         "llm_wiki_version": llm_wiki_version,
-        "description": raw.get("description", "") if isinstance(raw.get("description"), str) else "",
+        "description": raw.get("description", "")
+        if isinstance(raw.get("description"), str)
+        else "",
         "components": normalized_components,
         "_source_dir": str(plugin_dir),
     }
@@ -325,7 +354,9 @@ def _installed_extractor_languages(lock: dict[str, Any]) -> set[str]:
     languages: set[str] = set()
     for plugin in lock.get("plugins", {}).values():
         for component in plugin.get("components", []):
-            if component.get("type") == "extractor" and isinstance(component.get("language"), str):
+            if component.get("type") == "extractor" and isinstance(
+                component.get("language"), str
+            ):
                 languages.add(component["language"])
     return languages
 
@@ -337,8 +368,13 @@ def _check_install_collisions(manifest: dict[str, Any], lock: dict[str, Any]) ->
 
     existing_languages = set(EXTRACTOR_REGISTRY) | _installed_extractor_languages(lock)
     for component in manifest["components"]:
-        if component.get("type") == "extractor" and component.get("language") in existing_languages:
-            raise PluginError(f"Extractor language {component['language']!r} is already registered.")
+        if (
+            component.get("type") == "extractor"
+            and component.get("language") in existing_languages
+        ):
+            raise PluginError(
+                f"Extractor language {component['language']!r} is already registered."
+            )
 
 
 def _copy_ignore(_dir: str, names: list[str]) -> set[str]:
@@ -359,7 +395,9 @@ def install_plugin(
     _check_install_collisions(manifest, lock)
 
     if not yes and not dry_run:
-        response = input(f"Install llm-wiki plugin {manifest['id']} {manifest['version']}? [y/N] ")
+        response = input(
+            f"Install llm-wiki plugin {manifest['id']} {manifest['version']}? [y/N] "
+        )
         if response.strip().lower() not in {"y", "yes"}:
             raise PluginError("Installation cancelled.")
 
@@ -406,7 +444,9 @@ def list_plugins(root: str | Path = ".") -> list[dict[str, Any]]:
     return [dict(plugin) for plugin in lock.get("plugins", {}).values()]
 
 
-def iter_components(component_type: str | None = None, *, root: str | Path = ".") -> list[dict[str, Any]]:
+def iter_components(
+    component_type: str | None = None, *, root: str | Path = "."
+) -> list[dict[str, Any]]:
     lock = read_lock(root)
     components: list[dict[str, Any]] = []
     for plugin_id, plugin in lock.get("plugins", {}).items():
@@ -438,7 +478,9 @@ def activate_plugin_paths(root: str | Path = ".") -> None:
         _activate_plugin_path(plugin_store(root) / plugin["id"])
 
 
-def _entry_point_components(entry_point: str, *, root: str | Path = ".") -> list[dict[str, Any]]:
+def _entry_point_components(
+    entry_point: str, *, root: str | Path = "."
+) -> list[dict[str, Any]]:
     return [
         component
         for component in iter_components(root=root)
@@ -446,15 +488,21 @@ def _entry_point_components(entry_point: str, *, root: str | Path = ".") -> list
     ]
 
 
-def _installed_entry_point_plugin_dir(entry_point: str, *, root: str | Path = ".") -> Path:
+def _installed_entry_point_plugin_dir(
+    entry_point: str, *, root: str | Path = "."
+) -> Path:
     components = _entry_point_components(entry_point, root=root)
     if not components:
-        raise PluginError(f"Entry point {entry_point!r} is not registered by an installed plugin.")
+        raise PluginError(
+            f"Entry point {entry_point!r} is not registered by an installed plugin."
+        )
 
     plugin_dirs = {Path(component["plugin_dir"]).resolve() for component in components}
     if len(plugin_dirs) > 1:
         refs = ", ".join(sorted(str(component["ref"]) for component in components))
-        raise PluginError(f"Entry point {entry_point!r} is ambiguous across installed plugins: {refs}")
+        raise PluginError(
+            f"Entry point {entry_point!r} is ambiguous across installed plugins: {refs}"
+        )
     return next(iter(plugin_dirs))
 
 
@@ -511,6 +559,14 @@ def get_extractor_registry(root: str | Path = ".") -> dict[str, str]:
     return registry
 
 
+def parallel_safe_extractor_entry_points(root: str | Path = ".") -> set[str]:
+    return {
+        component["entry_point"]
+        for component in iter_components("extractor", root=root)
+        if component.get("parallel_safe") is True
+    }
+
+
 def read_component_text(component: dict[str, Any]) -> str:
     path = Path(component["plugin_dir"]) / component["path"]
     return path.read_text(encoding="utf-8")
@@ -525,7 +581,9 @@ def find_prompt_template(template_id: str, *, root: str | Path = ".") -> dict[st
     if not matches:
         raise PluginError(f"Prompt template {template_id!r} is not installed.")
     if len(matches) > 1:
-        raise PluginError(f"Prompt template {template_id!r} is ambiguous; use plugin_id/template_id.")
+        raise PluginError(
+            f"Prompt template {template_id!r} is ambiguous; use plugin_id/template_id."
+        )
     return matches[0]
 
 
@@ -534,7 +592,13 @@ class _SafeFormat(dict):
         return "{" + key + "}"
 
 
-def render_prompt_template(template_id: str, values: dict[str, Any], *, root: str | Path = ".") -> str:
+def render_prompt_template(
+    template_id: str, values: dict[str, Any], *, root: str | Path = "."
+) -> str:
     component = find_prompt_template(template_id, root=root)
     template = read_component_text(component)
-    return template.format_map(_SafeFormat({key: "" if value is None else str(value) for key, value in values.items()}))
+    return template.format_map(
+        _SafeFormat(
+            {key: "" if value is None else str(value) for key, value in values.items()}
+        )
+    )

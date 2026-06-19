@@ -1,4 +1,5 @@
 """Tests for commands/extract_cmd.py"""
+
 import ast
 import inspect
 import json
@@ -64,17 +65,21 @@ class TestGetInventory:
         assert inventory == {}
 
     def test_single_file_with_class(self, tmp_path):
-        (tmp_path / "models.py").write_text(textwrap.dedent("""\
+        (tmp_path / "models.py").write_text(
+            textwrap.dedent("""\
             class Foo:
                 pass
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path))
         assert len(inventory) == 1
         data = list(inventory.values())[0]
         assert len(data["classes"]) == 1
         assert data["classes"][0]["name"] == "Foo"
 
-    def test_get_inventory_result_builds_snapshot_once_and_passes_source_files(self, tmp_path, monkeypatch):
+    def test_get_inventory_result_builds_snapshot_once_and_passes_source_files(
+        self, tmp_path, monkeypatch
+    ):
         (tmp_path / "b.py").write_text("class B: pass\n")
         (tmp_path / "a.py").write_text("class A: pass\n")
         real_build_source_snapshot = extract_cmd.build_source_snapshot
@@ -87,15 +92,26 @@ class TestGetInventory:
         class FakePythonExtractor:
             last_error = None
 
-            def extract(self, src_dir, only_files=None, deep=False, include_empty=False, source_files=None):
+            def extract(
+                self,
+                src_dir,
+                only_files=None,
+                deep=False,
+                include_empty=False,
+                source_files=None,
+            ):
                 calls["source_files"] = source_files
                 return {
                     rel: {"classes": [], "functions": [], "language": "python"}
                     for rel in source_files
                 }
 
-        monkeypatch.setattr(extract_cmd, "build_source_snapshot", fake_build_source_snapshot)
-        monkeypatch.setattr(extract_cmd, "_load_extractor", lambda _entry_point: FakePythonExtractor())
+        monkeypatch.setattr(
+            extract_cmd, "build_source_snapshot", fake_build_source_snapshot
+        )
+        monkeypatch.setattr(
+            extract_cmd, "_load_extractor", lambda _entry_point: FakePythonExtractor()
+        )
 
         result = extract_cmd.get_inventory_result(str(tmp_path))
 
@@ -127,7 +143,9 @@ class TestGetInventory:
             "get_extractor_registry",
             lambda: {"go": extract_cmd.EXTRACTOR_REGISTRY["go"]},
         )
-        monkeypatch.setattr(extract_cmd, "_load_extractor", lambda _entry_point: FakeGoExtractor())
+        monkeypatch.setattr(
+            extract_cmd, "_load_extractor", lambda _entry_point: FakeGoExtractor()
+        )
 
         result = extract_cmd.get_inventory_result(str(tmp_path), deep=True)
 
@@ -141,7 +159,9 @@ class TestGetInventory:
         assert calls["deep"] is False
         assert sorted(result.inventory) == ["main.go"]
 
-    def test_builtin_rust_extractor_receives_request_object(self, tmp_path, monkeypatch):
+    def test_builtin_rust_extractor_receives_request_object(
+        self, tmp_path, monkeypatch
+    ):
         (tmp_path / "lib.rs").write_text("pub struct App;\n", encoding="utf-8")
         calls = {"request": None, "only_files": "unset", "deep": "unset"}
 
@@ -183,7 +203,9 @@ class TestGetInventory:
         assert calls["deep"] is False
         assert sorted(result.inventory) == ["lib.rs"]
 
-    def test_parallel_jobs_run_fresh_builtin_extractors_concurrently(self, tmp_path, monkeypatch):
+    def test_parallel_jobs_run_fresh_builtin_extractors_concurrently(
+        self, tmp_path, monkeypatch
+    ):
         (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
         (tmp_path / "app.ts").write_text("export class TsApp {}\n", encoding="utf-8")
 
@@ -227,7 +249,9 @@ class TestGetInventory:
         monkeypatch.setattr(
             extract_cmd,
             "_load_extractor",
-            lambda _entry_point: pytest.fail("parallel built-ins should use fresh instances"),
+            lambda _entry_point: pytest.fail(
+                "parallel built-ins should use fresh instances"
+            ),
         )
 
         result = extract_cmd.get_inventory_result(str(tmp_path), parallel_jobs=2)
@@ -259,19 +283,101 @@ class TestGetInventory:
             def extract(self, **kwargs):
                 calls.append("plugin")
                 return {
-                    "virtual.custom": {"language": "custom", "classes": [], "functions": []}
+                    "virtual.custom": {
+                        "language": "custom",
+                        "classes": [],
+                        "functions": [],
+                    }
                 }
 
         monkeypatch.setattr(extract_cmd, "get_extractor_registry", lambda: registry)
-        monkeypatch.setattr(extract_cmd, "_instantiate_extractor", lambda _entry_point: BuiltinExtractor())
-        monkeypatch.setattr(extract_cmd, "_load_extractor", lambda _entry_point: PluginExtractor())
+        monkeypatch.setattr(
+            extract_cmd,
+            "_instantiate_extractor",
+            lambda _entry_point: BuiltinExtractor(),
+        )
+        monkeypatch.setattr(
+            extract_cmd, "_load_extractor", lambda _entry_point: PluginExtractor()
+        )
 
         result = extract_cmd.get_inventory_result(str(tmp_path), parallel_jobs=2)
 
         assert calls == ["builtin", "plugin"]
         assert result.statuses["custom"].files_found == 1
 
-    def test_parallel_inventory_merge_order_is_deterministic(self, tmp_path, monkeypatch):
+    def test_parallel_jobs_run_parallel_safe_plugin_extractors_concurrently(
+        self, tmp_path, monkeypatch
+    ):
+        (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
+        registry = {
+            "python": extract_cmd.EXTRACTOR_REGISTRY["python"],
+            "custom": "plugin.extractor:CustomExtractor",
+        }
+        started: set[str] = set()
+        both_started = threading.Event()
+        lock = threading.Lock()
+        created: list[str] = []
+
+        class FakeExtractor:
+            def __init__(self, language):
+                self.language = language
+                self.last_error = None
+
+            def extract(self, **kwargs):
+                with lock:
+                    started.add(self.language)
+                    if len(started) == 2:
+                        both_started.set()
+                if not both_started.wait(timeout=2):
+                    raise AssertionError(
+                        "parallel-safe plugin did not run concurrently"
+                    )
+                if self.language == "python":
+                    return {
+                        "app.py": {
+                            "language": "python",
+                            "classes": [],
+                            "functions": [],
+                        }
+                    }
+                return {
+                    "virtual.custom": {
+                        "language": "custom",
+                        "classes": [],
+                        "functions": [],
+                    }
+                }
+
+        def fake_instantiate(entry_point):
+            language = "custom" if entry_point.startswith("plugin.") else "python"
+            created.append(language)
+            return FakeExtractor(language)
+
+        monkeypatch.setattr(extract_cmd, "get_extractor_registry", lambda: registry)
+        monkeypatch.setattr(
+            extract_cmd,
+            "parallel_safe_extractor_entry_points",
+            lambda: {"plugin.extractor:CustomExtractor"},
+            raising=False,
+        )
+        monkeypatch.setattr(extract_cmd, "_instantiate_extractor", fake_instantiate)
+        monkeypatch.setattr(
+            extract_cmd,
+            "_load_extractor",
+            lambda _entry_point: pytest.fail(
+                "parallel-safe plugins should use fresh instances"
+            ),
+        )
+
+        result = extract_cmd.get_inventory_result(str(tmp_path), parallel_jobs=2)
+
+        assert not result.failed
+        assert sorted(created) == ["custom", "python"]
+        assert sorted(result.inventory) == ["app.py", "virtual.custom"]
+
+    def test_parallel_inventory_merge_order_is_deterministic(
+        self, tmp_path, monkeypatch
+    ):
         (tmp_path / "b.py").write_text("class B: pass\n", encoding="utf-8")
         (tmp_path / "a.py").write_text("class A: pass\n", encoding="utf-8")
         (tmp_path / "z.ts").write_text("export class Z {}\n", encoding="utf-8")
@@ -307,16 +413,20 @@ class TestGetInventory:
         assert list(result.inventory) == ["a.py", "b.py", "z.ts"]
 
     def test_cp1252_python_file_does_not_abort_scan(self, tmp_path):
-        (tmp_path / "legacy.py").write_bytes(b"# legacy \x96 comment\nclass Legacy:\n    pass\n")
+        (tmp_path / "legacy.py").write_bytes(
+            b"# legacy \x96 comment\nclass Legacy:\n    pass\n"
+        )
         inventory = get_inventory(str(tmp_path))
         assert "legacy.py" in inventory
         assert inventory["legacy.py"]["classes"][0]["name"] == "Legacy"
 
     def test_single_file_with_function(self, tmp_path):
-        (tmp_path / "utils.py").write_text(textwrap.dedent("""\
+        (tmp_path / "utils.py").write_text(
+            textwrap.dedent("""\
             def hello():
                 pass
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path))
         data = list(inventory.values())[0]
         assert len(data["functions"]) == 1
@@ -349,12 +459,14 @@ class TestGetInventory:
         assert len(inventory) == 1
 
     def test_deep_mode_includes_docstrings(self, tmp_path):
-        (tmp_path / "models.py").write_text(textwrap.dedent("""\
+        (tmp_path / "models.py").write_text(
+            textwrap.dedent("""\
             class Foo:
                 \"\"\"A foo class.\"\"\"
                 name: str
                 value: int = 42
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
         data = list(inventory.values())[0]
         cls = data["classes"][0]
@@ -365,13 +477,15 @@ class TestGetInventory:
         assert cls["attributes"][1]["default"] == "42"
 
     def test_deep_mode_includes_imports(self, tmp_path):
-        (tmp_path / "main.py").write_text(textwrap.dedent("""\
+        (tmp_path / "main.py").write_text(
+            textwrap.dedent("""\
             from pathlib import Path
             import os
 
             def run():
                 pass
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
         data = list(inventory.values())[0]
         assert "imports" in data
@@ -382,13 +496,15 @@ class TestGetInventory:
     def test_deep_mode_preserves_relative_import_level(self, tmp_path):
         pkg = tmp_path / "pkg" / "sub"
         pkg.mkdir(parents=True)
-        (pkg / "consumer.py").write_text(textwrap.dedent("""\
+        (pkg / "consumer.py").write_text(
+            textwrap.dedent("""\
             from .models import Local
             from ..models import Parent
 
             def run(local: Local, parent: Parent):
                 return local, parent
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
         imports = inventory["pkg/sub/consumer.py"]["imports"]
         modules = {imp["name"]: imp["module"] for imp in imports}
@@ -396,7 +512,8 @@ class TestGetInventory:
         assert modules["Parent"] == "..models"
 
     def test_deep_mode_includes_methods(self, tmp_path):
-        (tmp_path / "svc.py").write_text(textwrap.dedent("""\
+        (tmp_path / "svc.py").write_text(
+            textwrap.dedent("""\
             class Service:
                 def start(self, port: int) -> bool:
                     \"\"\"Start the service.\"\"\"
@@ -404,7 +521,8 @@ class TestGetInventory:
 
                 async def stop(self):
                     pass
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
         cls = list(inventory.values())[0]["classes"][0]
         assert len(cls["methods"]) == 2
@@ -420,14 +538,16 @@ class TestGetInventory:
         assert stop["is_async"] is True
 
     def test_shallow_mode_slim_format(self, tmp_path):
-        (tmp_path / "models.py").write_text(textwrap.dedent("""\
+        (tmp_path / "models.py").write_text(
+            textwrap.dedent("""\
             class Foo:
                 \"\"\"A foo class.\"\"\"
                 name: str
 
             def helper():
                 pass
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=False)
         data = list(inventory.values())[0]
         cls = data["classes"][0]
@@ -439,7 +559,8 @@ class TestGetInventory:
         assert "line" in cls
 
     def test_decorators_extracted(self, tmp_path):
-        (tmp_path / "api.py").write_text(textwrap.dedent("""\
+        (tmp_path / "api.py").write_text(
+            textwrap.dedent("""\
             def app_get(path):
                 def decorator(fn):
                     return fn
@@ -449,7 +570,8 @@ class TestGetInventory:
                 @app_get("/users")
                 def list_users(self):
                     pass
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
         cls = list(inventory.values())[0]["classes"][0]
         method = cls["methods"][0]
@@ -457,7 +579,8 @@ class TestGetInventory:
         assert "app_get" in method["decorators"][0]
 
     def test_private_functions_excluded(self, tmp_path):
-        (tmp_path / "mod.py").write_text(textwrap.dedent("""\
+        (tmp_path / "mod.py").write_text(
+            textwrap.dedent("""\
             def public():
                 pass
 
@@ -466,7 +589,8 @@ class TestGetInventory:
 
             class C:
                 pass
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
         data = list(inventory.values())[0]
         fn_names = [f["name"] for f in data["functions"]]
@@ -477,23 +601,27 @@ class TestGetInventory:
         assert private_fn.get("private") is True
 
     def test_nested_functions_are_not_module_functions(self, tmp_path):
-        (tmp_path / "mod.py").write_text(textwrap.dedent("""\
+        (tmp_path / "mod.py").write_text(
+            textwrap.dedent("""\
             def outer():
                 def inner():
                     pass
                 return inner
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
         functions = list(inventory.values())[0]["functions"]
         assert [fn["name"] for fn in functions] == ["outer"]
 
     def test_class_inside_function_is_not_module_entity(self, tmp_path):
-        (tmp_path / "factory.py").write_text(textwrap.dedent("""\
+        (tmp_path / "factory.py").write_text(
+            textwrap.dedent("""\
             def make_model():
                 class LocalModel:
                     pass
                 return LocalModel
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
         data = list(inventory.values())[0]
         assert data["classes"] == []
@@ -502,14 +630,16 @@ class TestGetInventory:
 
 class TestCallCapture:
     def test_deep_mode_captures_body_calls(self, tmp_path):
-        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
             def helper():
                 return 1
 
             def run():
                 value = helper()
                 return value
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
         functions = {fn["name"]: fn for fn in inventory["m.py"]["functions"]}
         assert "helper" in {c["name"] for c in functions["run"]["calls"]}
@@ -517,97 +647,117 @@ class TestCallCapture:
         assert "calls" not in functions["helper"]
 
     def test_attribute_call_records_dotted_path(self, tmp_path):
-        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
             import os
 
             def run():
                 return os.getcwd()
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
         call = inventory["m.py"]["functions"][0]["calls"][0]
         assert call["name"] == "getcwd"
         assert call["attr"] == "os.getcwd"
 
     def test_comprehension_and_lambda_calls_are_kept(self, tmp_path):
-        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
             def transform(xs):
                 doubled = [scale(x) for x in xs]
                 fn = lambda y: clamp(y)
                 return doubled, fn
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
         names = {c["name"] for c in inventory["m.py"]["functions"][0]["calls"]}
         assert {"scale", "clamp"} <= names
 
     def test_nested_definition_calls_do_not_leak(self, tmp_path):
-        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
             def outer():
                 setup()
                 def inner():
                     leaked()
                 return inner
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
-        outer = next(fn for fn in inventory["m.py"]["functions"] if fn["name"] == "outer")
+        outer = next(
+            fn for fn in inventory["m.py"]["functions"] if fn["name"] == "outer"
+        )
         names = {c["name"] for c in outer["calls"]}
         assert "setup" in names
         assert "leaked" not in names
 
     def test_calls_are_deduplicated_in_source_order(self, tmp_path):
-        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
             def run():
                 first()
                 second()
                 first()
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
         run = inventory["m.py"]["functions"][0]
         assert [c["name"] for c in run["calls"]] == ["first", "second"]
 
     def test_slim_mode_omits_calls(self, tmp_path):
-        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
             def run():
                 helper()
 
             def helper():
                 pass
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=False)
         assert all("calls" not in fn for fn in inventory["m.py"]["functions"])
 
     def test_method_bodies_capture_calls(self, tmp_path):
-        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
             class Svc:
                 def run(self):
                     return self.helper()
 
                 def helper(self):
                     return 1
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
         method = inventory["m.py"]["classes"][0]["methods"][0]
-        assert method["calls"][0] == {"name": "helper", "attr": "self.helper", "line": 3}
+        assert method["calls"][0] == {
+            "name": "helper",
+            "attr": "self.helper",
+            "line": 3,
+        }
 
 
 class TestModuleCalls:
     def test_assignment_call_records_target(self, tmp_path):
-        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
             from flask import Flask
 
             app = Flask(__name__)
-        """))
+        """)
+        )
         data = get_inventory(str(tmp_path), deep=True)["m.py"]
-        assert data["module_calls"] == [
-            {"name": "Flask", "target": "app", "line": 3}
-        ]
+        assert data["module_calls"] == [{"name": "Flask", "target": "app", "line": 3}]
 
     def test_bare_expression_call_recorded(self, tmp_path):
-        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
             import logging
 
             configure()
             logging.basicConfig(level=logging.INFO)
-        """))
+        """)
+        )
         calls = get_inventory(str(tmp_path), deep=True)["m.py"]["module_calls"]
         assert calls == [
             {"name": "configure", "line": 3},
@@ -615,16 +765,19 @@ class TestModuleCalls:
         ]
 
     def test_annotated_assignment_call_records_target(self, tmp_path):
-        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
             from flask import Flask
 
             app: Flask = Flask(__name__)
-        """))
+        """)
+        )
         calls = get_inventory(str(tmp_path), deep=True)["m.py"]["module_calls"]
         assert calls == [{"name": "Flask", "target": "app", "line": 3}]
 
     def test_pure_constants_imports_and_defs_are_not_side_effects(self, tmp_path):
-        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
             import os
 
             MAX_RETRIES = 3
@@ -635,21 +788,26 @@ class TestModuleCalls:
 
             class Service:
                 started = build()
-        """))
+        """)
+        )
         assert "module_calls" not in get_inventory(str(tmp_path), deep=True)["m.py"]
 
     def test_calls_inside_def_and_main_guard_are_not_module_calls(self, tmp_path):
-        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
             def main():
                 leaked()
 
             if __name__ == "__main__":
                 main()
-        """))
+        """)
+        )
         assert "module_calls" not in get_inventory(str(tmp_path), deep=True)["m.py"]
 
     def test_module_calls_omitted_in_slim_mode(self, tmp_path):
-        (tmp_path / "m.py").write_text("app = Flask(__name__)\n\n\ndef run():\n    pass\n")
+        (tmp_path / "m.py").write_text(
+            "app = Flask(__name__)\n\n\ndef run():\n    pass\n"
+        )
         assert "module_calls" not in get_inventory(str(tmp_path), deep=False)["m.py"]
 
     def test_side_effect_only_module_is_included_in_deep_mode(self, tmp_path):
@@ -662,18 +820,24 @@ class TestModuleCalls:
         assert "wiring.py" not in get_inventory(str(tmp_path), deep=False)
 
     def test_module_calls_preserve_source_order(self, tmp_path):
-        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
             register()
             app = create_app()
             wire()
-        """))
-        names = [c["name"] for c in get_inventory(str(tmp_path), deep=True)["m.py"]["module_calls"]]
+        """)
+        )
+        names = [
+            c["name"]
+            for c in get_inventory(str(tmp_path), deep=True)["m.py"]["module_calls"]
+        ]
         assert names == ["register", "create_app", "wire"]
 
 
 class TestEntryPointSignals:
     def test_deep_captures_all_exports(self, tmp_path):
-        (tmp_path / "api.py").write_text(textwrap.dedent("""\
+        (tmp_path / "api.py").write_text(
+            textwrap.dedent("""\
             __all__ = ["run", "Service"]
 
             def run():
@@ -681,7 +845,8 @@ class TestEntryPointSignals:
 
             class Service:
                 pass
-        """))
+        """)
+        )
         data = get_inventory(str(tmp_path), deep=True)["api.py"]
         assert data["all_exports"] == ["run", "Service"]
         assert data["has_all"] is True
@@ -691,13 +856,15 @@ class TestEntryPointSignals:
         assert "all_exports" not in get_inventory(str(tmp_path), deep=True)["m.py"]
 
     def test_deep_captures_main_block(self, tmp_path):
-        (tmp_path / "cli.py").write_text(textwrap.dedent("""\
+        (tmp_path / "cli.py").write_text(
+            textwrap.dedent("""\
             def main():
                 pass
 
             if __name__ == "__main__":
                 main()
-        """))
+        """)
+        )
         assert get_inventory(str(tmp_path), deep=True)["cli.py"]["main_block"] is True
 
     def test_main_block_omitted_when_absent(self, tmp_path):
@@ -705,7 +872,8 @@ class TestEntryPointSignals:
         assert "main_block" not in get_inventory(str(tmp_path), deep=True)["m.py"]
 
     def test_deep_captures_decorated_nested_functions(self, tmp_path):
-        (tmp_path / "factory.py").write_text(textwrap.dedent('''\
+        (tmp_path / "factory.py").write_text(
+            textwrap.dedent("""\
             def create_server():
                 server = make()
 
@@ -717,7 +885,8 @@ class TestEntryPointSignals:
                     return 1
 
                 return server
-        '''))
+        """)
+        )
         data = get_inventory(str(tmp_path), deep=True)["factory.py"]
         nested = {fn["name"] for fn in data.get("nested_functions", [])}
         assert "get_entity" in nested  # decorated -> captured
@@ -733,10 +902,13 @@ class TestEntryPointSignals:
         (tmp_path / "d.py").write_text(
             "def f():\n    @x.tool()\n    def g():\n        pass\n    return g\n"
         )
-        assert "nested_functions" not in get_inventory(str(tmp_path), deep=False)["d.py"]
+        assert (
+            "nested_functions" not in get_inventory(str(tmp_path), deep=False)["d.py"]
+        )
 
     def test_slim_mode_omits_entry_signals(self, tmp_path):
-        (tmp_path / "api.py").write_text(textwrap.dedent("""\
+        (tmp_path / "api.py").write_text(
+            textwrap.dedent("""\
             __all__ = ["run"]
 
             def run():
@@ -744,7 +916,8 @@ class TestEntryPointSignals:
 
             if __name__ == "__main__":
                 run()
-        """))
+        """)
+        )
         data = get_inventory(str(tmp_path), deep=False)["api.py"]
         assert "all_exports" not in data
         assert "main_block" not in data
@@ -753,14 +926,18 @@ class TestEntryPointSignals:
 class TestExtractEntryPoints:
     def test_deep_payload_includes_entrypoints(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "api.py").write_text('__all__ = ["run"]\n\n\ndef run():\n    return 1\n')
+        (tmp_path / "api.py").write_text(
+            '__all__ = ["run"]\n\n\ndef run():\n    return 1\n'
+        )
         result = extract_cmd.build_extract_payload(".", deep=True)
         ids = {e["id"] for e in result.payload["entrypoints"]}
         assert "api-run" in ids
 
     def test_non_deep_payload_omits_entrypoints(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "api.py").write_text('__all__ = ["run"]\n\n\ndef run():\n    return 1\n')
+        (tmp_path / "api.py").write_text(
+            '__all__ = ["run"]\n\n\ndef run():\n    return 1\n'
+        )
         result = extract_cmd.build_extract_payload(".", deep=False)
         assert "entrypoints" not in result.payload
 
@@ -789,21 +966,36 @@ class TestExtractPathValidation:
         outside = tmp_path / "outside"
         outside.mkdir()
 
-        args = types.SimpleNamespace(src_dir=str(outside), changed=False, summary=False,
-                                     deep=False, paths=None, package=None,
-                                     include_empty=False)
+        args = types.SimpleNamespace(
+            src_dir=str(outside),
+            changed=False,
+            summary=False,
+            deep=False,
+            paths=None,
+            package=None,
+            include_empty=False,
+        )
         with pytest.raises(PathValidationError):
             extract_cmd.run(args)
 
-    def test_run_allows_external_src_with_explicit_flag(self, tmp_project, tmp_path, capsys):
+    def test_run_allows_external_src_with_explicit_flag(
+        self, tmp_project, tmp_path, capsys
+    ):
         outside = tmp_path / "outside"
         outside.mkdir()
         (outside / "external.py").write_text("class External: pass\n", encoding="utf-8")
 
         args = types.SimpleNamespace(
-            src_dir=str(outside), changed=False, summary=False,
-            deep=False, paths=None, package=None, include_empty=False,
-            output=None, read_only=True, allow_external_src=True,
+            src_dir=str(outside),
+            changed=False,
+            summary=False,
+            deep=False,
+            paths=None,
+            package=None,
+            include_empty=False,
+            output=None,
+            read_only=True,
+            allow_external_src=True,
         )
 
         extract_cmd.run(args)
@@ -815,9 +1007,16 @@ class TestExtractPathValidation:
     def test_run_writes_output_path_without_stdout(self, tmp_project, tmp_path, capsys):
         out_path = tmp_path / "records" / "extract.json"
         args = types.SimpleNamespace(
-            src_dir=".", changed=False, summary=True,
-            deep=False, paths=None, package=None, include_empty=False,
-            output=str(out_path), read_only=True, allow_external_src=False,
+            src_dir=".",
+            changed=False,
+            summary=True,
+            deep=False,
+            paths=None,
+            package=None,
+            include_empty=False,
+            output=str(out_path),
+            read_only=True,
+            allow_external_src=False,
         )
 
         extract_cmd.run(args)
@@ -830,11 +1029,20 @@ class TestExtractPathValidation:
         first = next(iter(data["inventory"].values()))
         assert "language" in first
 
-    def test_read_only_extract_does_not_create_wiki_artifacts(self, tmp_project, capsys):
+    def test_read_only_extract_does_not_create_wiki_artifacts(
+        self, tmp_project, capsys
+    ):
         args = types.SimpleNamespace(
-            src_dir=".", changed=False, summary=False,
-            deep=False, paths=None, package=None, include_empty=False,
-            output=None, read_only=True, allow_external_src=False,
+            src_dir=".",
+            changed=False,
+            summary=False,
+            deep=False,
+            paths=None,
+            package=None,
+            include_empty=False,
+            output=None,
+            read_only=True,
+            allow_external_src=False,
         )
 
         extract_cmd.run(args)
@@ -903,12 +1111,14 @@ class TestGetCallGraph:
     def test_no_workflows_below_threshold(self, tmp_path):
         """Two modules don't meet the 3-module threshold."""
         (tmp_path / "a.py").write_text("class A: pass\n")
-        (tmp_path / "b.py").write_text(textwrap.dedent("""\
+        (tmp_path / "b.py").write_text(
+            textwrap.dedent("""\
             from a import A
 
             def use_a(x: A) -> A:
                 return x
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
         graph = get_call_graph(inventory)
         assert graph == {}
@@ -919,15 +1129,19 @@ class TestGetCallGraph:
         (tmp_path / "routers").mkdir()
         (tmp_path / "models" / "task.py").write_text("class Task:\n    pass\n")
         (tmp_path / "schemas" / "task.py").write_text("class TaskCreate:\n    pass\n")
-        (tmp_path / "schemas" / "common.py").write_text("class MessageResponse:\n    pass\n")
-        (tmp_path / "routers" / "tasks.py").write_text(textwrap.dedent("""\
+        (tmp_path / "schemas" / "common.py").write_text(
+            "class MessageResponse:\n    pass\n"
+        )
+        (tmp_path / "routers" / "tasks.py").write_text(
+            textwrap.dedent("""\
             from models.task import Task
             from schemas.task import TaskCreate as CreateSchema
             from schemas.common import MessageResponse
 
             def create_task(task: Task, data: CreateSchema) -> MessageResponse:
                 return MessageResponse()
-        """))
+        """)
+        )
 
         inventory = get_inventory(str(tmp_path), deep=True)
         graph = get_call_graph(inventory)
@@ -952,61 +1166,79 @@ class TestResolveCallEdges:
 
     def test_resolves_imported_project_symbol(self, tmp_path):
         (tmp_path / "a.py").write_text("def helper():\n    return 1\n")
-        (tmp_path / "b.py").write_text(textwrap.dedent("""\
+        (tmp_path / "b.py").write_text(
+            textwrap.dedent("""\
             from a import helper
 
             def run():
                 return helper()
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
-        edge = next(e for e in resolve_call_edges(inventory) if e["from"]["symbol"] == "run")
+        edge = next(
+            e for e in resolve_call_edges(inventory) if e["from"]["symbol"] == "run"
+        )
         assert edge["to"] == {"file": "a.py", "symbol": "helper"}
         assert edge["kind"] == "internal"
 
     def test_resolves_self_method_call(self, tmp_path):
-        (tmp_path / "svc.py").write_text(textwrap.dedent("""\
+        (tmp_path / "svc.py").write_text(
+            textwrap.dedent("""\
             class Svc:
                 def run(self):
                     return self.helper()
 
                 def helper(self):
                     return 1
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
-        edge = next(e for e in resolve_call_edges(inventory) if e["from"]["symbol"] == "Svc.run")
+        edge = next(
+            e for e in resolve_call_edges(inventory) if e["from"]["symbol"] == "Svc.run"
+        )
         assert edge["to"] == {"file": "svc.py", "symbol": "Svc.helper"}
         assert edge["kind"] == "internal"
 
     def test_resolves_same_file_symbol(self, tmp_path):
-        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
             def run():
                 return helper()
 
             def helper():
                 return 1
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
-        edge = next(e for e in resolve_call_edges(inventory) if e["from"]["symbol"] == "run")
+        edge = next(
+            e for e in resolve_call_edges(inventory) if e["from"]["symbol"] == "run"
+        )
         assert edge["to"] == {"file": "m.py", "symbol": "helper"}
         assert edge["kind"] == "internal"
 
     def test_tags_external_import_call(self, tmp_path):
-        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
             import os
 
             def run():
                 return os.getcwd()
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
-        edge = next(e for e in resolve_call_edges(inventory) if e["name"] == "os.getcwd")
+        edge = next(
+            e for e in resolve_call_edges(inventory) if e["name"] == "os.getcwd"
+        )
         assert edge["kind"] == "external"
         assert edge["to"]["file"] is None
 
     def test_tags_unresolved_call(self, tmp_path):
-        (tmp_path / "m.py").write_text(textwrap.dedent("""\
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
             def run():
                 return mystery()
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
         edge = next(e for e in resolve_call_edges(inventory) if e["name"] == "mystery")
         assert edge["kind"] == "unresolved"
@@ -1054,14 +1286,18 @@ class TestInventoryCache:
         (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
         options = self._cache_options(tmp_path)
 
-        first = extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+        first = extract_cmd.get_inventory_result(
+            str(tmp_path), deep=True, cache_options=options
+        )
         assert first.inventory["app.py"]["classes"][0]["name"] == "App"
 
         def fail_load(_entry_point):
             raise AssertionError("warm cache should not load the Python extractor")
 
         monkeypatch.setattr(extract_cmd, "_load_extractor", fail_load)
-        second = extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+        second = extract_cmd.get_inventory_result(
+            str(tmp_path), deep=True, cache_options=options
+        )
 
         assert second.inventory["app.py"]["classes"][0]["name"] == "App"
         assert second.cache_stats.hits == 1
@@ -1071,14 +1307,23 @@ class TestInventoryCache:
         (tmp_path / "a.py").write_text("class A: pass\n", encoding="utf-8")
         (tmp_path / "b.py").write_text("class B: pass\n", encoding="utf-8")
         options = self._cache_options(tmp_path)
-        extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+        extract_cmd.get_inventory_result(
+            str(tmp_path), deep=True, cache_options=options
+        )
         (tmp_path / "b.py").write_text("class B2: pass\n", encoding="utf-8")
         calls = []
 
         class FakePythonExtractor:
             last_error = None
 
-            def extract(self, src_dir, only_files=None, deep=False, include_empty=False, source_files=None):
+            def extract(
+                self,
+                src_dir,
+                only_files=None,
+                deep=False,
+                include_empty=False,
+                source_files=None,
+            ):
                 calls.append(list(source_files))
                 return {
                     "b.py": {
@@ -1088,9 +1333,17 @@ class TestInventoryCache:
                     }
                 }
 
-        monkeypatch.setattr(extract_cmd, "_load_extractor", lambda _entry_point: FakePythonExtractor())
-        monkeypatch.setattr(extract_cmd, "_instantiate_extractor", lambda _entry_point: FakePythonExtractor())
-        result = extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options, parallel_jobs=2)
+        monkeypatch.setattr(
+            extract_cmd, "_load_extractor", lambda _entry_point: FakePythonExtractor()
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_instantiate_extractor",
+            lambda _entry_point: FakePythonExtractor(),
+        )
+        result = extract_cmd.get_inventory_result(
+            str(tmp_path), deep=True, cache_options=options, parallel_jobs=2
+        )
 
         assert calls == [["b.py"]]
         assert result.inventory["a.py"]["classes"][0]["name"] == "A"
@@ -1102,31 +1355,43 @@ class TestInventoryCache:
         (tmp_path / "a.py").write_text("class A: pass\n", encoding="utf-8")
         (tmp_path / "b.py").write_text("class B: pass\n", encoding="utf-8")
         options = self._cache_options(tmp_path)
-        extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+        extract_cmd.get_inventory_result(
+            str(tmp_path), deep=True, cache_options=options
+        )
         (tmp_path / "b.py").unlink()
 
         def fail_load(_entry_point):
             raise AssertionError("unchanged remaining file should be cached")
 
         monkeypatch.setattr(extract_cmd, "_load_extractor", fail_load)
-        result = extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+        result = extract_cmd.get_inventory_result(
+            str(tmp_path), deep=True, cache_options=options
+        )
 
         assert sorted(result.inventory) == ["a.py"]
         assert result.cache_stats.deleted == 1
 
     def test_package_marker_change_restamps_cached_entry(self, tmp_path, monkeypatch):
-        (tmp_path / "pyproject.toml").write_text('[project]\nname = "old"\n', encoding="utf-8")
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\nname = "old"\n', encoding="utf-8"
+        )
         (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
         options = self._cache_options(tmp_path)
-        first = extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+        first = extract_cmd.get_inventory_result(
+            str(tmp_path), deep=True, cache_options=options
+        )
         assert first.inventory["app.py"]["package"] == "old"
-        (tmp_path / "pyproject.toml").write_text('[project]\nname = "new"\n', encoding="utf-8")
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\nname = "new"\n', encoding="utf-8"
+        )
 
         def fail_load(_entry_point):
             raise AssertionError("source file should be served from cache")
 
         monkeypatch.setattr(extract_cmd, "_load_extractor", fail_load)
-        second = extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+        second = extract_cmd.get_inventory_result(
+            str(tmp_path), deep=True, cache_options=options
+        )
 
         assert second.inventory["app.py"]["package"] == "new"
 
@@ -1134,15 +1399,21 @@ class TestInventoryCache:
         (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
         cache_dir = tmp_path / "cache"
         cache_dir.mkdir()
-        (cache_dir / "llm-wiki-inventory-cache.json").write_text("{bad json", encoding="utf-8")
+        (cache_dir / "llm-wiki-inventory-cache.json").write_text(
+            "{bad json", encoding="utf-8"
+        )
 
-        result = extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=self._cache_options(tmp_path))
+        result = extract_cmd.get_inventory_result(
+            str(tmp_path), deep=True, cache_options=self._cache_options(tmp_path)
+        )
 
         assert result.inventory["app.py"]["classes"][0]["name"] == "App"
         assert result.cache_stats.status == "corrupt"
         assert result.cache_stats.load_error
 
-    def test_extractor_failure_still_surfaces_on_cache_miss(self, tmp_path, monkeypatch):
+    def test_extractor_failure_still_surfaces_on_cache_miss(
+        self, tmp_path, monkeypatch
+    ):
         (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
         options = self._cache_options(tmp_path)
         save_calls = []
@@ -1153,9 +1424,19 @@ class TestInventoryCache:
             def extract(self, **kwargs):
                 raise RuntimeError("boom")
 
-        monkeypatch.setattr(extract_cmd, "_load_extractor", lambda _entry_point: FailingPythonExtractor())
-        monkeypatch.setattr(extract_cmd.InventoryCache, "save", lambda *args, **kwargs: save_calls.append(args))
-        result = extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+        monkeypatch.setattr(
+            extract_cmd,
+            "_load_extractor",
+            lambda _entry_point: FailingPythonExtractor(),
+        )
+        monkeypatch.setattr(
+            extract_cmd.InventoryCache,
+            "save",
+            lambda *args, **kwargs: save_calls.append(args),
+        )
+        result = extract_cmd.get_inventory_result(
+            str(tmp_path), deep=True, cache_options=options
+        )
 
         assert result.failed
         assert result.failed[0].message == "boom"
@@ -1177,8 +1458,14 @@ class TestInventoryCache:
                     }
                 }
 
-        monkeypatch.setattr(extract_cmd, "_load_extractor", lambda _entry_point: FakeTypeScriptExtractor())
-        extract_cmd.get_inventory_result(str(tmp_path), deep=True, cache_options=options)
+        monkeypatch.setattr(
+            extract_cmd,
+            "_load_extractor",
+            lambda _entry_point: FakeTypeScriptExtractor(),
+        )
+        extract_cmd.get_inventory_result(
+            str(tmp_path), deep=True, cache_options=options
+        )
 
         def fail_load(_entry_point):
             raise AssertionError("warm TypeScript cache should avoid extractor startup")
@@ -1187,7 +1474,9 @@ class TestInventoryCache:
         monkeypatch.setattr(
             extract_cmd,
             "_instantiate_extractor",
-            lambda _entry_point: pytest.fail("warm cache should avoid fresh extractor startup"),
+            lambda _entry_point: pytest.fail(
+                "warm cache should avoid fresh extractor startup"
+            ),
         )
         result = extract_cmd.get_inventory_result(
             str(tmp_path),
@@ -1202,7 +1491,8 @@ class TestInventoryCache:
 
 class TestSummarizeInventory:
     def test_collapses_to_names(self, tmp_path):
-        (tmp_path / "models.py").write_text(textwrap.dedent("""\
+        (tmp_path / "models.py").write_text(
+            textwrap.dedent("""\
             class Foo:
                 pass
 
@@ -1211,7 +1501,8 @@ class TestSummarizeInventory:
 
             def helper():
                 pass
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path))
         summary = _summarize_inventory(inventory)
         data = list(summary.values())[0]
@@ -1251,7 +1542,9 @@ class TestPackageDiscovery:
         )
         snapshot = build_source_snapshot(tmp_path)
 
-        assert discover_packages(str(tmp_path), source_snapshot=snapshot) == discover_packages(str(tmp_path))
+        assert discover_packages(
+            str(tmp_path), source_snapshot=snapshot
+        ) == discover_packages(str(tmp_path))
 
     def test_dynamic_pyproject_version_is_marked(self, tmp_path):
         (tmp_path / "pyproject.toml").write_text(
@@ -1328,30 +1621,36 @@ class TestSilentDropReduction:
     """Test that files with only constants, __all__, or private functions are included."""
 
     def test_constants_only_file_included(self, tmp_path):
-        (tmp_path / "settings.py").write_text(textwrap.dedent("""\
+        (tmp_path / "settings.py").write_text(
+            textwrap.dedent("""\
             MAX_RETRIES = 3
             DEFAULT_TIMEOUT = 30
-        """))
+        """)
+        )
         inv = get_inventory(str(tmp_path))
         assert "settings.py" in inv
         assert len(inv["settings.py"]["constants"]) == 2
 
     def test_all_only_file_included(self, tmp_path):
-        (tmp_path / "__init__.py").write_text(textwrap.dedent("""\
+        (tmp_path / "__init__.py").write_text(
+            textwrap.dedent("""\
             __all__ = ["Foo", "Bar"]
-        """))
+        """)
+        )
         inv = get_inventory(str(tmp_path))
         assert "__init__.py" in inv
         assert inv["__init__.py"].get("has_all") is True
 
     def test_private_functions_in_deep_mode(self, tmp_path):
-        (tmp_path / "helpers.py").write_text(textwrap.dedent("""\
+        (tmp_path / "helpers.py").write_text(
+            textwrap.dedent("""\
             def _internal_helper():
                 pass
 
             def public_func():
                 pass
-        """))
+        """)
+        )
         inv = get_inventory(str(tmp_path), deep=True)
         assert "helpers.py" in inv
         fns = inv["helpers.py"]["functions"]
@@ -1362,13 +1661,15 @@ class TestSilentDropReduction:
         assert private.get("private") is True
 
     def test_private_functions_excluded_in_shallow_mode(self, tmp_path):
-        (tmp_path / "helpers.py").write_text(textwrap.dedent("""\
+        (tmp_path / "helpers.py").write_text(
+            textwrap.dedent("""\
             def _internal_helper():
                 pass
 
             def public_func():
                 pass
-        """))
+        """)
+        )
         inv = get_inventory(str(tmp_path), deep=False)
         assert "helpers.py" in inv
         fns = inv["helpers.py"]["functions"]
@@ -1400,13 +1701,15 @@ class TestSilentDropReduction:
         assert "empty.py" not in inv
 
     def test_private_only_file_included_in_deep_mode(self, tmp_path):
-        (tmp_path / "internal.py").write_text(textwrap.dedent("""\
+        (tmp_path / "internal.py").write_text(
+            textwrap.dedent("""\
             def _setup():
                 pass
 
             def _teardown():
                 pass
-        """))
+        """)
+        )
         inv = get_inventory(str(tmp_path), deep=True)
         assert "internal.py" in inv
         fns = inv["internal.py"]["functions"]

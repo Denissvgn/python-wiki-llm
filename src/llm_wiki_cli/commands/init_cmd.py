@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-import os
 import shutil
 import sys
 from pathlib import Path
 
-from ..config import CLI_AGENTS, DEFAULT_WIKI_DIR, get_agent_config_path, validate_path, write_config
+from ..config import CLI_AGENTS, DEFAULT_WIKI_DIR, validate_path, write_config
 from ..services.io import read_md, write_md
 from ..services.schema import (
     CONSTRAINT_START as _CONSTRAINT_START,
@@ -14,7 +13,7 @@ from ..services.schema import (
 )
 
 
-# Agents that have a real CLI executable (used by trigger-agent / install-hook)
+# Agents that have a real CLI executable for explicit trigger-agent use.
 _CLI_AGENTS = CLI_AGENTS
 
 
@@ -28,12 +27,11 @@ def run(args):
     if executable and not shutil.which(executable):
         print(
             f"\nWarning: '{executable}' is not installed or not on PATH.\n"
-            f"The schema file will be created, but background auto-sync\n"
+            f"The schema file will be created, but manual agent execution\n"
             f"(`llm-wiki trigger-agent --agent {args.agent}`) will not work\n"
             f"until '{executable}' is installed.\n"
         )
 
-    
     # 1. Create directory structure
     base_dir = Path(wiki_dir)
     directories = [
@@ -43,7 +41,7 @@ def run(args):
         base_dir / "workflows",
         base_dir / "infrastructure",
     ]
-    
+
     try:
         for d in directories:
             d.mkdir(parents=True, exist_ok=True)
@@ -52,14 +50,17 @@ def run(args):
     except OSError as exc:
         print(f"Error creating wiki directories: {exc}")
         sys.exit(1)
-        
+
     print(f"Created wiki directories in {base_dir}/")
-    
+
     # 2. Create core files if they don't exist
     index_path = base_dir / "index.md"
     if not index_path.exists():
-        write_md(index_path, "# LLM Wiki Index\n\nCatalog of project modules and entities.\n\n## Entities\n\n## Modules\n\n## Workflows\n\n## Infrastructure\n")
-            
+        write_md(
+            index_path,
+            "# LLM Wiki Index\n\nCatalog of project modules and entities.\n\n## Entities\n\n## Modules\n\n## Workflows\n\n## Infrastructure\n",
+        )
+
     log_path = base_dir / "log.md"
     if not log_path.exists():
         write_md(log_path, "# Architectural Log\n\nAppend-only chronological log.\n\n")
@@ -71,21 +72,25 @@ def run(args):
         schema_path = Path(filename)
         # ensure parent exists (e.g. for .github/)
         schema_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        content_to_add = _build_schema_content(args.agent, wiki_dir, quality_hints=quality_hints)
-        
+
+        content_to_add = _build_schema_content(
+            args.agent, wiki_dir, quality_hints=quality_hints
+        )
+
         if schema_path.exists():
             existing_content = read_md(schema_path)
-                
+
             if _CONSTRAINT_START not in existing_content:
                 write_md(schema_path, existing_content + "\n\n" + content_to_add)
                 print(f"Appended agent constraints to existing file: {schema_path}")
             else:
-                print(f"Agent constraints already exist in {schema_path}, skipping append.")
+                print(
+                    f"Agent constraints already exist in {schema_path}, skipping append."
+                )
         else:
             write_md(schema_path, content_to_add)
             print(f"Created agent schema file: {schema_path}")
-    
+
     # 4. Persist the chosen agent so install-hook can read it
     write_config(base_dir, {"agent": args.agent, "quality_hints": quality_hints})
 
