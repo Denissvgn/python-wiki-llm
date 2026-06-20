@@ -197,6 +197,7 @@ llm-wiki bootstrap --overwrite
 llm-wiki bootstrap --depth shallow
 llm-wiki bootstrap --skip-workflows
 llm-wiki bootstrap --skip-flows
+llm-wiki bootstrap --skip-data-flow
 llm-wiki bootstrap --skip-dependencies
 llm-wiki bootstrap --format json --source-adapter
 ```
@@ -205,7 +206,8 @@ llm-wiki bootstrap --format json --source-adapter
 dependency architecture, and manifest files. User-flow pages under `flows/` are
 generated from detected entry points with a call sequence, generated static
 `## Data flow` section, boundary-effects table, and editable `## Behavior`; use
-`--skip-flows` to omit them.
+`--skip-flows` to omit them or `--skip-data-flow` to keep flow pages without the
+generated data-flow section.
 Dependency architecture pages are generated as `dependencies.md` and
 `load-order.md`; use `--skip-dependencies` for projects that do not want those
 pages or lint diagnostics. `--depth full` is the default and includes
@@ -285,7 +287,8 @@ reconciliation, and `load_order`. When `--deep` is combined with `--changed`,
 `--paths`, `--package`, or `--summary`, `data_flows` and `dependencies` describe
 the emitted inventory before summary collapse. Inventory keys are POSIX paths relative to `--src-dir`,
 never absolute paths. The v1 contract permits additive fields; incompatible
-shape changes require a new schema version.
+shape changes require a new schema version. The M3 data-flow fields are
+therefore optional additions under `llm-wiki-extract/v1`, not a schema bump.
 
 ### `prepare-extractors`
 

@@ -28,6 +28,7 @@ from .commands import (
     upgrade_cmd,
 )
 from .config import AGENT_CHOICES, DEFAULT_WIKI_DIR, PathValidationError
+from .services.contracts import BOOTSTRAP_SKIP_DATA_FLOW_FLAG
 from . import __version__
 
 
@@ -485,6 +486,11 @@ def _add_bootstrap_command(subparsers):
         "--skip-flows",
         action="store_true",
         help="Skip automatic user-flow page generation from entry points",
+    )
+    bootstrap_parser.add_argument(
+        BOOTSTRAP_SKIP_DATA_FLOW_FLAG,
+        action="store_true",
+        help="Generate user-flow pages without the generated data-flow section",
     )
     bootstrap_parser.add_argument(
         "--skip-dependencies",

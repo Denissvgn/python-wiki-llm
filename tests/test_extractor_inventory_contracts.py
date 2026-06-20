@@ -7,6 +7,17 @@ import pytest
 from llm_wiki_cli.extractors.go_extractor import GoExtractor
 from llm_wiki_cli.extractors.rust_extractor import RustExtractor
 from llm_wiki_cli.extractors.ts_extractor import TypeScriptExtractor
+from llm_wiki_cli.services import contracts
+
+
+def test_extract_v1_data_flow_fields_are_additive_contract():
+    assert contracts.EXTRACT_SCHEMA_VERSION == "llm-wiki-extract/v1"
+    assert getattr(contracts, "EXTRACT_ADDITIVE_FIELDS", None) == {
+        "calls[].args",
+        "calls[].kwargs",
+        "data_effects",
+        "data_flows",
+    }
 
 
 @pytest.mark.parametrize(

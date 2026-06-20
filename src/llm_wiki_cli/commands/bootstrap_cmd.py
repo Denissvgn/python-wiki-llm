@@ -1492,6 +1492,7 @@ class _BootstrapRunOptions:
     deep: bool
     skip_workflows: bool
     skip_flows: bool
+    skip_data_flow: bool
     skip_dependencies: bool
     dependency_graph_detail: str
     overwrite: bool
@@ -1533,6 +1534,7 @@ class _WorkflowResult:
 class _FlowResult:
     entries: list[dict]
     created: int
+    data_flow_summary: dict
 
 
 @dataclass(frozen=True)
@@ -1559,6 +1561,17 @@ class _BootstrapGenerationResult:
     cross_reference_count: int
 
 
+def _data_flow_summary(
+    *, generated: bool, analyzed: int = 0, boundary_effects: int = 0, gaps: int = 0
+) -> dict:
+    return {
+        "generated": generated,
+        "analyzed": analyzed,
+        "boundary_effects": boundary_effects,
+        "gaps": gaps,
+    }
+
+
 def _bootstrap_run_options_from_args(args) -> _BootstrapRunOptions:
     src_dir = args.src_dir
     wiki_dir = Path(args.wiki_dir)
@@ -1578,6 +1591,7 @@ def _bootstrap_run_options_from_args(args) -> _BootstrapRunOptions:
         deep=depth == "full",
         skip_workflows=getattr(args, "skip_workflows", False),
         skip_flows=getattr(args, "skip_flows", False),
+        skip_data_flow=getattr(args, "skip_data_flow", False),
         skip_dependencies=getattr(args, "skip_dependencies", False),
         dependency_graph_detail=getattr(args, "dependency_graph_detail", "auto"),
         overwrite=args.overwrite,
@@ -1849,15 +1863,27 @@ def _write_bootstrap_flow_pages(
 ) -> _FlowResult:
     flow_entries: list[dict] = []
     flows_created = 0
+    data_flow_summary = _data_flow_summary(generated=False)
     if not state.options.deep or state.options.skip_flows:
-        return _FlowResult(flow_entries, flows_created)
+        return _FlowResult(flow_entries, flows_created, data_flow_summary)
 
     _emit_bootstrap(state, "Generating user-flow pages...", flush=True)
     edges = resolve_call_edges(inventory)
     console_scripts = read_console_scripts(state.options.src_dir_for_scan)
+    data_flow_enabled = not state.options.skip_data_flow
+    if not data_flow_enabled:
+        _emit_bootstrap(state, "  SKIP data flow (--skip-data-flow)")
+    analyzed = 0
+    boundary_effects = 0
+    gaps = 0
     for entry_point in get_entry_points(inventory, console_scripts=console_scripts):
         flow = build_flow(entry_point, edges)
-        data_flow = analyze_data_flow(inventory, flow, edges)
+        data_flow = None
+        if data_flow_enabled:
+            data_flow = analyze_data_flow(inventory, flow, edges)
+            analyzed += 1
+            boundary_effects += len(data_flow.get("boundaries", []))
+            gaps += len(data_flow.get("gaps", []))
         flow_path = state.options.wiki_dir / "flows" / f"{entry_point['id']}.md"
         if flow_path.exists() and not state.options.overwrite:
             state.skipped_files.append(_path_text(flow_path))
@@ -1878,7 +1904,13 @@ def _write_bootstrap_flow_pages(
             }
         )
     _emit_bootstrap(state, f"Generated user-flow pages: {flows_created}.", flush=True)
-    return _FlowResult(flow_entries, flows_created)
+    data_flow_summary = _data_flow_summary(
+        generated=data_flow_enabled,
+        analyzed=analyzed,
+        boundary_effects=boundary_effects,
+        gaps=gaps,
+    )
+    return _FlowResult(flow_entries, flows_created, data_flow_summary)
 
 
 def _write_bootstrap_infrastructure_pages(
@@ -2121,6 +2153,7 @@ def _emit_bootstrap_json_summary(
                 "docker_files": len(infrastructure_result.docker_inventory),
                 "workflows": len(workflow_result.entries),
                 "flows": len(flow_result.entries),
+                "data_flows": flow_result.data_flow_summary,
                 "dependencies": dependency_result.summary,
                 "cross_references": cross_reference_count,
                 "created_files": state.created_files,

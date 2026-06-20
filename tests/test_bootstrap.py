@@ -11,6 +11,7 @@ import types
 from pathlib import Path
 
 import pytest
+from llm_wiki_cli import cli
 from llm_wiki_cli.commands import bootstrap_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.services.dependencies import analyze_dependencies
@@ -26,6 +27,7 @@ def _make_args(**kwargs):
         "overwrite": False,
         "depth": "full",
         "skip_workflows": True,
+        "skip_data_flow": False,
         "format": "text",
         "source_adapter": False,
         "allow_external_src": False,
@@ -53,6 +55,14 @@ def _body_line_count(function) -> int:
 
 def test_bootstrap_run_stays_a_short_coordinator():
     assert _body_line_count(bootstrap_cmd.run) <= 40
+
+
+def test_bootstrap_parser_accepts_skip_data_flow_flag():
+    parser = cli._build_parser()
+
+    args = parser.parse_args(["bootstrap", "--skip-data-flow"])
+
+    assert args.skip_data_flow is True
 
 
 @pytest.fixture
@@ -764,6 +774,19 @@ class TestBootstrapFlows:
         assert "_helper" in text
         assert "## Behavior" in text
 
+    def test_generates_flow_page_without_data_flow_when_skipped(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        self._write_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki", skip_data_flow=True))
+        flow_page = tmp_path / "wiki" / "flows" / "api-run.md"
+        assert flow_page.exists()
+        text = flow_page.read_text(encoding="utf-8")
+        assert "## Call sequence" in text
+        assert "## Data flow" not in text
+        assert "## Behavior" in text
+
     def test_index_lists_user_flows(self, tmp_path, monkeypatch, capsys):
         self._write_project(tmp_path)
         monkeypatch.chdir(tmp_path)
@@ -778,6 +801,21 @@ class TestBootstrapFlows:
         bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki", skip_flows=True))
         assert list((tmp_path / "wiki" / "flows").glob("*.md")) == []
 
+    def test_skip_flows_takes_precedence_over_skip_data_flow(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        self._write_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        bootstrap_cmd.run(
+            _make_args(
+                src_dir=".",
+                wiki_dir="wiki",
+                skip_flows=True,
+                skip_data_flow=True,
+            )
+        )
+        assert list((tmp_path / "wiki" / "flows").glob("*.md")) == []
+
     def test_json_summary_counts_flows(self, tmp_path, monkeypatch, capsys):
         self._write_project(tmp_path)
         monkeypatch.chdir(tmp_path)
@@ -786,6 +824,43 @@ class TestBootstrapFlows:
         )
         data = json.loads(capsys.readouterr().out)
         assert data["flows"] == 1
+
+    def test_json_summary_reports_data_flow_counts(self, tmp_path, monkeypatch, capsys):
+        self._write_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        bootstrap_cmd.run(
+            _make_args(src_dir=".", wiki_dir="wiki", format="json", source_adapter=True)
+        )
+        data = json.loads(capsys.readouterr().out)
+        assert data["data_flows"] == {
+            "generated": True,
+            "analyzed": 1,
+            "boundary_effects": 0,
+            "gaps": 0,
+        }
+
+    def test_json_summary_reports_skipped_data_flow(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        self._write_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        bootstrap_cmd.run(
+            _make_args(
+                src_dir=".",
+                wiki_dir="wiki",
+                format="json",
+                source_adapter=True,
+                skip_data_flow=True,
+            )
+        )
+        data = json.loads(capsys.readouterr().out)
+        assert data["flows"] == 1
+        assert data["data_flows"] == {
+            "generated": False,
+            "analyzed": 0,
+            "boundary_effects": 0,
+            "gaps": 0,
+        }
 
 
 def _pymod(*imports, functions=None, module_calls=None):
