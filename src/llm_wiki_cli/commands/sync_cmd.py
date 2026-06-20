@@ -29,6 +29,7 @@ from .extract_cmd import (
     resolve_call_edges,
 )
 from .bootstrap_cmd import (
+    _build_entity_relationship_summary_map,
     _build_relationships,
     _generate_dependencies_md,
     _generate_entity_md,
@@ -51,6 +52,7 @@ from ..services.inventory_cache import (
     format_cache_stats,
 )
 from ..services.io import read_md, write_md
+from ..services.module_maps import build_module_dependency_maps
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -771,10 +773,53 @@ class _ApplyDiffContext:
     entity_page_cache: dict[tuple[str, str], str]
     module_page_map: dict[str, str]
     relationships: dict
+    generated_sections: "_GeneratedSectionContext"
     metadata_only_files: set[str]
     current_entity_pages: set[str]
     current_module_pages: set[str]
     preserve_semantic: bool
+
+
+@dataclass(frozen=True)
+class _GeneratedSectionContext:
+    entity_relationship_summaries: dict[tuple[str, str], dict]
+    module_dependency_maps: dict[str, dict] | None = None
+    dependency_analysis: dict | None = None
+
+
+def _empty_generated_section_context() -> "_GeneratedSectionContext":
+    return _GeneratedSectionContext(entity_relationship_summaries={})
+
+
+def _has_existing_module_dependency_sections(wiki_dir: Path) -> bool:
+    modules_dir = wiki_dir / "modules"
+    if not modules_dir.exists():
+        return False
+    for path in sorted(modules_dir.glob("*.md")):
+        if _section_body(read_md(path), "Local dependency map") is not None:
+            return True
+    return False
+
+
+def _build_generated_section_context(
+    options: "_SyncRunOptions",
+    inventory: dict,
+) -> "_GeneratedSectionContext":
+    call_edges = resolve_call_edges(inventory)
+    entity_relationship_summaries = _build_entity_relationship_summary_map(
+        inventory,
+        call_edges,
+    )
+    dependency_analysis = None
+    module_dependency_maps = None
+    if _has_existing_module_dependency_sections(options.wiki_dir):
+        dependency_analysis = analyze_dependencies(inventory, options.src_dir)
+        module_dependency_maps = build_module_dependency_maps(dependency_analysis)
+    return _GeneratedSectionContext(
+        entity_relationship_summaries=entity_relationship_summaries,
+        module_dependency_maps=module_dependency_maps,
+        dependency_analysis=dependency_analysis,
+    )
 
 
 def _target_entities_for_diff(diff: SyncDiff, inventory: dict) -> set[tuple[str, str]]:
@@ -966,7 +1011,18 @@ def _apply_entity_page(
     rename = diff.renamed_entity_pages.get((cls["name"], filepath))
     _move_renamed_entity_page(ctx.wiki_dir, rename, ctx.current_entity_pages)
 
-    generated = _generate_entity_md(cls, filepath, ctx.relationships, mod_page_name)
+    relationship_summary = ctx.generated_sections.entity_relationship_summaries.get(
+        (cls["name"], filepath),
+        {},
+    )
+    generated = _generate_entity_md(
+        cls,
+        filepath,
+        ctx.relationships,
+        mod_page_name,
+        relationship_summary=relationship_summary,
+        module_page_map=ctx.module_page_map,
+    )
     merge_result = _merge_entity_page(
         ctx,
         entity_path,
@@ -1002,7 +1058,18 @@ def _apply_module_page(
         ctx.current_module_pages,
     )
 
-    generated = _generate_module_md(filepath, file_data, file_entity_page_map)
+    module_dependency_map = None
+    if ctx.generated_sections.module_dependency_maps is not None:
+        module_dependency_map = (
+            ctx.generated_sections.module_dependency_maps.get(filepath) or {}
+        )
+    generated = _generate_module_md(
+        filepath,
+        file_data,
+        file_entity_page_map,
+        module_dependency_map=module_dependency_map,
+        module_page_map=ctx.module_page_map,
+    )
     merge_result = _merge_module_page(
         ctx, module_path, generated, old_generated_semantics, result
     )
@@ -1136,6 +1203,120 @@ def _deprecate_removed_files(
         _deprecate_removed_module(ctx.wiki_dir, filepath, old_info, result)
 
 
+def _replace_generated_section(existing: str, generated: str, heading: str) -> str:
+    if _section_body(existing, heading) is None:
+        return existing
+    generated_body = _section_body(generated, heading)
+    if generated_body is None:
+        return existing
+    updated = _replace_section_body(existing, heading, generated_body)
+    if existing.endswith("\n") and not updated.endswith("\n"):
+        updated += "\n"
+    return updated
+
+
+def _record_generated_section_write(
+    result: SyncResult,
+    diff: SyncDiff,
+    filepath: str,
+    page_kind: str,
+    section_label: str,
+    page_name: str,
+) -> None:
+    result.updated += 1
+    if filepath in diff.unchanged_files and result.skipped > 0:
+        result.skipped -= 1
+    print(f"  UPDATE {page_kind} {section_label}: {page_name}")
+
+
+def _refresh_entity_relationship_sections(
+    ctx: _ApplyDiffContext,
+    diff: SyncDiff,
+    result: SyncResult,
+) -> None:
+    for filepath, file_data in ctx.inventory.items():
+        mod_page_name = ctx.module_page_map.get(
+            filepath, _page_name_for_module(filepath)
+        )
+        for cls in file_data.get("classes", []):
+            page_name = ctx.entity_page_cache[(cls["name"], filepath)]
+            entity_path = ctx.wiki_dir / "entities" / f"{page_name}.md"
+            if not entity_path.exists():
+                continue
+            generated = _generate_entity_md(
+                cls,
+                filepath,
+                ctx.relationships,
+                mod_page_name,
+                relationship_summary=ctx.generated_sections.entity_relationship_summaries.get(
+                    (cls["name"], filepath),
+                    {},
+                ),
+                module_page_map=ctx.module_page_map,
+            )
+            refreshed = _replace_generated_section(
+                read_md(entity_path),
+                generated,
+                "Relationships",
+            )
+            if _write_md_if_changed(entity_path, refreshed) == "updated":
+                _record_generated_section_write(
+                    result,
+                    diff,
+                    filepath,
+                    "entity",
+                    "relationships",
+                    page_name,
+                )
+
+
+def _refresh_module_dependency_sections(
+    ctx: _ApplyDiffContext,
+    diff: SyncDiff,
+    result: SyncResult,
+) -> None:
+    module_dependency_maps = ctx.generated_sections.module_dependency_maps
+    if module_dependency_maps is None:
+        return
+    for filepath, file_data in ctx.inventory.items():
+        mod_page_name = ctx.module_page_map.get(
+            filepath, _page_name_for_module(filepath)
+        )
+        module_path = ctx.wiki_dir / "modules" / f"{mod_page_name}.md"
+        if not module_path.exists():
+            continue
+        generated = _generate_module_md(
+            filepath,
+            file_data,
+            _file_entity_page_map(filepath, file_data, ctx.entity_page_cache),
+            module_dependency_map=module_dependency_maps.get(filepath) or {},
+            module_page_map=ctx.module_page_map,
+        )
+        refreshed = _replace_generated_section(
+            read_md(module_path),
+            generated,
+            "Local dependency map",
+        )
+        if _write_md_if_changed(module_path, refreshed) == "updated":
+            _record_generated_section_write(
+                result,
+                diff,
+                filepath,
+                "module",
+                "local dependency map",
+                mod_page_name,
+            )
+
+
+def _refresh_generated_sections(
+    ctx: _ApplyDiffContext,
+    diff: SyncDiff,
+    result: SyncResult,
+) -> None:
+    _refresh_entity_relationship_sections(ctx, diff, result)
+    _refresh_module_dependency_sections(ctx, diff, result)
+
+
 def _apply_diff(
     diff: SyncDiff,
     wiki_dir: Path,
@@ -1145,6 +1326,7 @@ def _apply_diff(
     *,
     entity_page_cache: dict[tuple[str, str], str] | None = None,
     module_page_map: dict[str, str] | None = None,
+    generated_sections: _GeneratedSectionContext | None = None,
     preserve_semantic: bool = True,
 ) -> SyncResult:
     """Regenerate pages for new/changed files, deprecate pages for removed files."""
@@ -1166,6 +1348,7 @@ def _apply_diff(
         entity_page_cache=entity_page_cache,
         module_page_map=module_page_map,
         relationships=relationships,
+        generated_sections=generated_sections or _empty_generated_section_context(),
         metadata_only_files=set(diff.metadata_only_files),
         current_entity_pages=set(entity_page_cache.values()),
         current_module_pages=set(module_page_map.values()),
@@ -1178,6 +1361,7 @@ def _apply_diff(
 
     # ── Unchanged files ────────────────────────────────────────────────────────
     _record_unchanged_file_skips(ctx, diff, result, refresh_files)
+    _refresh_generated_sections(ctx, diff, result)
 
     # ── Removed files ──────────────────────────────────────────────────────────
     _deprecate_removed_files(ctx, diff, result)
@@ -1420,6 +1604,7 @@ def _apply_sync_changes(
     diff: "SyncDiff",
     page_maps: _SyncPageMaps,
 ) -> "SyncResult":
+    generated_sections = _build_generated_section_context(options, inventory)
     result = _apply_diff(
         diff,
         options.wiki_dir,
@@ -1428,11 +1613,17 @@ def _apply_sync_changes(
         manifest,
         entity_page_cache=page_maps.entity_page_cache,
         module_page_map=page_maps.module_page_map,
+        generated_sections=generated_sections,
         preserve_semantic=options.preserve_semantic,
     )
 
     _regenerate_flow_pages(options, inventory, page_maps.module_page_map)
-    _regenerate_dependency_pages(options, inventory, page_maps.module_page_map)
+    _regenerate_dependency_pages(
+        options,
+        inventory,
+        page_maps.module_page_map,
+        dependency_analysis=generated_sections.dependency_analysis,
+    )
 
     _rebuild_index(
         options.wiki_dir,
@@ -1666,6 +1857,8 @@ def _regenerate_dependency_pages(
     options: _SyncRunOptions,
     inventory: dict,
     module_page_map: dict[str, str],
+    *,
+    dependency_analysis: dict | None = None,
 ) -> int:
     """Regenerate dependencies.md / load-order.md, preserving ``## Notes``.
 
@@ -1680,7 +1873,7 @@ def _regenerate_dependency_pages(
     if not deps_path.exists() and not load_path.exists():
         return 0
 
-    analysis = analyze_dependencies(inventory, options.src_dir)
+    analysis = dependency_analysis or analyze_dependencies(inventory, options.src_dir)
     pages = (
         (deps_path, _generate_dependencies_md(analysis, module_page_map)),
         (load_path, _generate_load_order_md(analysis, module_page_map)),

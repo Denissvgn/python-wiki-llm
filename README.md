@@ -267,6 +267,13 @@ created or updated pages and replace generic `_Auto-generated from ..._`,
 copied-docstring-only, or knowable `—` placeholders with project-specific
 semantic explanations.
 
+For entity and module pages, `sync` also keeps generated `## Relationships` and
+`## Local dependency map` sections current when another changed source file
+alters relationship or dependency data. Those generated sections are replaced
+without rewriting human-authored semantic descriptions or table descriptions.
+Older module pages that do not already have a local dependency map are left in
+their existing shape.
+
 When `dependencies.md` or `load-order.md` already exists, `sync` also
 regenerates those architecture pages from the current dependency inventory and
 keeps their human-authored `## Notes` sections unless `--no-preserve-semantic`

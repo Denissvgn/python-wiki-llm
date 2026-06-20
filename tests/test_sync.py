@@ -1818,3 +1818,168 @@ class TestSyncDependencyRegeneration:
         assert "| [core](modules/core.md) | 1 | 0 |" in (
             wiki / "dependencies.md"
         ).read_text(encoding="utf-8")
+
+
+class TestSyncGeneratedRelationshipSections:
+    def _new_project(self, tmp_path):
+        import subprocess
+
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
+        (proj / "pyproject.toml").write_text(
+            '[project]\nname = "p"\nversion = "0.1.0"\n',
+            encoding="utf-8",
+        )
+        return proj, proj / "docs" / "llm_wiki"
+
+    def _write_relationship_project(self, proj: Path, service_body: str) -> None:
+        (proj / "models.py").write_text(
+            textwrap.dedent("""\
+                class User:
+                    \"\"\"A system user.\"\"\"
+                    name: str = ""
+            """),
+            encoding="utf-8",
+        )
+        (proj / "service.py").write_text(service_body, encoding="utf-8")
+
+    def test_changed_reference_updates_unchanged_entity_relationship_section(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path)
+        self._write_relationship_project(
+            proj,
+            textwrap.dedent("""\
+                from models import User
+
+                def make_user(user: User) -> User:
+                    return user
+            """),
+        )
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        entity_path = wiki / "entities" / "User.md"
+        original = entity_path.read_text(encoding="utf-8")
+        entity_path.write_text(
+            sync_cmd._replace_section_body(
+                original, "Description", "Human-reviewed user entity."
+            ),
+            encoding="utf-8",
+        )
+
+        self._write_relationship_project(
+            proj,
+            textwrap.dedent("""\
+                def make_value() -> int:
+                    return 1
+            """),
+        )
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        out = capsys.readouterr().out
+        updated = entity_path.read_text(encoding="utf-8")
+        relationships = updated.split("## Relationships", 1)[1]
+        assert "Human-reviewed user entity." in updated
+        assert "service.py" not in relationships
+        assert "No generated relationships detected" in relationships
+        assert "UPDATE entity relationships: User" in out
+
+    def test_changed_import_graph_updates_unchanged_module_local_maps(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path)
+        (proj / "core.py").write_text("def core():\n    return 1\n", encoding="utf-8")
+        (proj / "app.py").write_text(
+            "import core\n\n\ndef go():\n    return core.core()\n",
+            encoding="utf-8",
+        )
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        core_module = wiki / "modules" / "core.md"
+        assert "[app](../modules/app.md)" in core_module.read_text(encoding="utf-8")
+
+        (proj / "app.py").write_text("def go():\n    return 1\n", encoding="utf-8")
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        out = capsys.readouterr().out
+        updated_core = core_module.read_text(encoding="utf-8")
+        local_map = updated_core.split("## Local dependency map", 1)[1]
+        assert "[app](app.md)" not in local_map
+        assert "No internal module dependencies detected" in local_map
+        assert "UPDATE module local dependency map: core" in out
+
+    def test_no_preserve_semantic_keeps_generated_relationships_current(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path)
+        self._write_relationship_project(
+            proj,
+            textwrap.dedent("""\
+                from models import User
+
+                def make_user(user: User) -> User:
+                    return user
+            """),
+        )
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        entity_path = wiki / "entities" / "User.md"
+        original = entity_path.read_text(encoding="utf-8")
+        entity_path.write_text(
+            sync_cmd._replace_section_body(
+                original, "Description", "Human-reviewed user entity."
+            ),
+            encoding="utf-8",
+        )
+        (proj / "models.py").write_text(
+            textwrap.dedent("""\
+                class User:
+                    \"\"\"Current generated user entity.\"\"\"
+                    name: str = ""
+            """),
+            encoding="utf-8",
+        )
+
+        sync_cmd.run(
+            _make_sync_args(
+                src_dir=str(proj),
+                wiki_dir=str(wiki),
+                no_preserve_semantic=True,
+            )
+        )
+
+        updated = entity_path.read_text(encoding="utf-8")
+        assert "Human-reviewed user entity." not in updated
+        assert "Current generated user entity." in updated
+        assert "service.py" in updated
+
+    def test_module_maps_are_not_added_to_old_pages_without_existing_section(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path)
+        (proj / "core.py").write_text("def core():\n    return 1\n", encoding="utf-8")
+        (proj / "app.py").write_text(
+            "import core\n\n\ndef go():\n    return core.core()\n",
+            encoding="utf-8",
+        )
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(
+            _make_bootstrap_args(
+                src_dir=str(proj), wiki_dir=str(wiki), skip_dependencies=True
+            )
+        )
+        module_path = wiki / "modules" / "app.md"
+        assert "## Local dependency map" not in module_path.read_text(encoding="utf-8")
+
+        (proj / "app.py").write_text(
+            "import core\n\n\ndef go():\n    return core.core() + 1\n",
+            encoding="utf-8",
+        )
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        updated = module_path.read_text(encoding="utf-8")
+        assert "## Local dependency map" not in updated
