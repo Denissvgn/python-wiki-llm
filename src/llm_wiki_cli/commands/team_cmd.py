@@ -34,7 +34,9 @@ def _render_conflicts_text(result: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
-def _print_payload(payload: dict, output_format: str, *, conflict: bool = False) -> None:
+def _print_payload(
+    payload: dict, output_format: str, *, conflict: bool = False
+) -> None:
     if output_format == "json":
         print(json.dumps(payload, indent=2, sort_keys=True))
     elif conflict:
@@ -64,7 +66,9 @@ def _run_check(args) -> None:
     wiki_path = Path(wiki_dir)
     pages = list(wiki_path.rglob("*.md")) if wiki_path.exists() else []
     inventory = get_inventory(src_dir)
-    issues = team.build_team_issues(wiki_dir, src_dir, inventory, pages, require_config=True)
+    issues = team.build_team_issues(
+        wiki_dir, src_dir, inventory, pages, require_config=True
+    )
     payload = {
         "ok": not issues,
         "wiki_dir": wiki_dir,

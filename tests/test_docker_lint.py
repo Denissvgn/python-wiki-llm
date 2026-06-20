@@ -1,10 +1,8 @@
 """Tests for Docker infrastructure lint checks in lint_cmd."""
+
 from __future__ import annotations
 
 import os
-import textwrap
-from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 
@@ -21,7 +19,9 @@ class TestCollectDockerFiles:
         assert "Dockerfile" in result
 
     def test_finds_compose(self, tmp_path):
-        (tmp_path / "docker-compose.yml").write_text("services:\n  web:\n    image: nginx\n")
+        (tmp_path / "docker-compose.yml").write_text(
+            "services:\n  web:\n    image: nginx\n"
+        )
         result = _collect_docker_files(str(tmp_path))
         assert "docker-compose_yml" in result
 
@@ -69,6 +69,7 @@ class TestLintInfrastructureIntegration:
         try:
             import argparse
             from llm_wiki_cli.commands import lint_cmd
+
             args = argparse.Namespace(wiki_dir=str(wiki), src_dir=".")
             with pytest.raises(SystemExit, match="1"):
                 lint_cmd.run(args)
@@ -96,6 +97,7 @@ class TestLintInfrastructureIntegration:
         try:
             import argparse
             from llm_wiki_cli.commands import lint_cmd
+
             args = argparse.Namespace(wiki_dir=str(wiki), src_dir=".")
             with pytest.raises(SystemExit, match="1"):
                 lint_cmd.run(args)
@@ -114,7 +116,9 @@ class TestLintInfrastructureIntegration:
         wiki = proj / "docs" / "llm_wiki"
         for d in ["entities", "modules", "workflows", "infrastructure"]:
             (wiki / d).mkdir(parents=True)
-        (wiki / "index.md").write_text("# Index\n\n- [Dockerfile](infrastructure/Dockerfile.md)\n")
+        (wiki / "index.md").write_text(
+            "# Index\n\n- [Dockerfile](infrastructure/Dockerfile.md)\n"
+        )
         (wiki / "log.md").write_text("# Log\n")
         (wiki / "infrastructure" / "Dockerfile.md").write_text("# Dockerfile\n")
 
@@ -123,6 +127,7 @@ class TestLintInfrastructureIntegration:
         try:
             import argparse
             from llm_wiki_cli.commands import lint_cmd
+
             args = argparse.Namespace(wiki_dir=str(wiki), src_dir=".")
             # May still exit(1) due to other checks (undocumented modules, etc.)
             # but the Docker checks specifically should pass

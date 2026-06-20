@@ -85,7 +85,9 @@ def _candidate_stems(module: str, importer_filepath: str) -> set[str]:
             base = base.parent
         if remainder:
             candidate_stems.add(
-                posixpath.normpath((base / remainder.replace(".", "/")).as_posix()).strip("/")
+                posixpath.normpath(
+                    (base / remainder.replace(".", "/")).as_posix()
+                ).strip("/")
             )
         else:
             base_candidate = posixpath.normpath(base.as_posix()).strip("/")

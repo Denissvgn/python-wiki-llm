@@ -1,6 +1,6 @@
 """Tests for services/versioning.py"""
+
 import pytest
-from pathlib import Path
 
 from llm_wiki_cli.services.versioning import (
     bump_patch,
@@ -12,6 +12,7 @@ from llm_wiki_cli.services.versioning import (
 
 
 # ── bump_patch / bump_minor ──────────────────────────────────────────
+
 
 class TestBumpPatch:
     def test_normal(self):
@@ -45,6 +46,7 @@ class TestBumpMinor:
 
 # ── find_version_file ────────────────────────────────────────────────
 
+
 class TestFindVersionFile:
     def test_pyproject(self, tmp_path):
         (tmp_path / "pyproject.toml").write_text('[project]\nversion = "1.0.0"\n')
@@ -72,6 +74,7 @@ class TestFindVersionFile:
 
 
 # ── read_version / write_version ─────────────────────────────────────
+
 
 class TestReadWriteVersion:
     def test_read_pyproject(self, tmp_path):
@@ -114,7 +117,9 @@ class TestReadWriteVersion:
 
     def test_write_pyproject(self, tmp_path):
         p = tmp_path / "pyproject.toml"
-        p.write_text('[project]\nname = "foo"\nversion = "1.2.3"\ndescription = "bar"\n')
+        p.write_text(
+            '[project]\nname = "foo"\nversion = "1.2.3"\ndescription = "bar"\n'
+        )
         write_version(p, "2.0.0")
         assert read_version(p) == "2.0.0"
         # preserve other content

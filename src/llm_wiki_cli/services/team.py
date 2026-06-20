@@ -25,7 +25,12 @@ DEFAULT_TEAM_CONFIG: dict[str, Any] = {
         "required_dirs": ["entities", "modules", "workflows", "infrastructure"],
         "require_log": True,
         "canonical_naming": True,
-        "required_entity_sections": ["Description", "Attributes", "Methods", "Relationships"],
+        "required_entity_sections": [
+            "Description",
+            "Attributes",
+            "Methods",
+            "Relationships",
+        ],
         "required_module_sections": ["Description"],
         "required_infrastructure_sections": [],
         "workflow_filename_pattern": r"^[A-Za-z0-9_.-]+$",
@@ -80,10 +85,15 @@ def team_config_path(root: str | Path = ".") -> Path:
     return Path(root) / TEAM_CONFIG_PATH
 
 
-def write_default_team_config(wiki_dir: str = DEFAULT_WIKI_DIR, *, root: str | Path = ".") -> Path:
+def write_default_team_config(
+    wiki_dir: str = DEFAULT_WIKI_DIR, *, root: str | Path = "."
+) -> Path:
     path = team_config_path(root)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(default_team_config(wiki_dir), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(default_team_config(wiki_dir), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     return path
 
 
@@ -113,7 +123,13 @@ def validate_team_config(data: Any) -> dict[str, Any]:
     if not isinstance(conventions, dict):
         raise TeamConfigError("conventions must be an object.")
     _reject_unknown_keys(conventions, _CONVENTION_KEYS, "conventions")
-    for key in ("required_files", "required_dirs", "required_entity_sections", "required_module_sections", "required_infrastructure_sections"):
+    for key in (
+        "required_files",
+        "required_dirs",
+        "required_entity_sections",
+        "required_module_sections",
+        "required_infrastructure_sections",
+    ):
         _ensure_string_list(conventions.get(key), f"conventions.{key}")
     if not isinstance(conventions.get("require_log"), bool):
         raise TeamConfigError("conventions.require_log must be a boolean.")
@@ -122,11 +138,15 @@ def validate_team_config(data: Any) -> dict[str, Any]:
     pattern = conventions.get("workflow_filename_pattern")
     if pattern is not None:
         if not isinstance(pattern, str):
-            raise TeamConfigError("conventions.workflow_filename_pattern must be a string or null.")
+            raise TeamConfigError(
+                "conventions.workflow_filename_pattern must be a string or null."
+            )
         try:
             re.compile(pattern)
         except re.error as exc:
-            raise TeamConfigError(f"conventions.workflow_filename_pattern is invalid: {exc}") from exc
+            raise TeamConfigError(
+                f"conventions.workflow_filename_pattern is invalid: {exc}"
+            ) from exc
 
     agent = data.get("agent")
     if not isinstance(agent, dict):
@@ -140,7 +160,9 @@ def validate_team_config(data: Any) -> dict[str, Any]:
     return data
 
 
-def load_team_config(*, required: bool = False, root: str | Path = ".") -> dict[str, Any] | None:
+def load_team_config(
+    *, required: bool = False, root: str | Path = "."
+) -> dict[str, Any] | None:
     path = team_config_path(root)
     if not path.exists():
         if required:
@@ -160,7 +182,9 @@ def team_prompt_template_default(root: str | Path = ".") -> str | None:
     return config["agent"].get("prompt_template")
 
 
-def _issue(category: str, message: str, *, path: str | None = None, target: str | None = None) -> dict[str, str | None]:
+def _issue(
+    category: str, message: str, *, path: str | None = None, target: str | None = None
+) -> dict[str, str | None]:
     return {
         "category": category,
         "message": message,
@@ -171,11 +195,17 @@ def _issue(category: str, message: str, *, path: str | None = None, target: str 
 
 
 def _has_section(content: str, section: str) -> bool:
-    return re.search(rf"^##\s+{re.escape(section)}\s*$", content, re.MULTILINE) is not None
+    return (
+        re.search(rf"^##\s+{re.escape(section)}\s*$", content, re.MULTILINE) is not None
+    )
 
 
 def _plugin_refs_by_type(root: str | Path = ".") -> dict[str, set[str]]:
-    refs: dict[str, set[str]] = {"lint_rule": set(), "skill": set(), "prompt_template": set()}
+    refs: dict[str, set[str]] = {
+        "lint_rule": set(),
+        "skill": set(),
+        "prompt_template": set(),
+    }
     for component_type in refs:
         for component in iter_components(component_type, root=root):
             refs[component_type].add(component["ref"])
@@ -183,39 +213,54 @@ def _plugin_refs_by_type(root: str | Path = ".") -> dict[str, set[str]]:
     return refs
 
 
-def check_plugin_requirements(config: dict[str, Any], *, root: str | Path = ".") -> list[dict[str, str | None]]:
+def check_plugin_requirements(
+    config: dict[str, Any], *, root: str | Path = "."
+) -> list[dict[str, str | None]]:
     issues: list[dict[str, str | None]] = []
     try:
         refs = _plugin_refs_by_type(root)
     except PluginError as exc:
-        return [_issue("team_plugin_requirement", f"Could not read installed plugin lockfile: {exc}")]
+        return [
+            _issue(
+                "team_plugin_requirement",
+                f"Could not read installed plugin lockfile: {exc}",
+            )
+        ]
 
     agent = config["agent"]
     prompt_template = agent.get("prompt_template")
     if prompt_template and prompt_template not in refs["prompt_template"]:
-        issues.append(_issue(
-            "team_plugin_requirement",
-            f"Required prompt template is not installed: {prompt_template}",
-            target=prompt_template,
-        ))
+        issues.append(
+            _issue(
+                "team_plugin_requirement",
+                f"Required prompt template is not installed: {prompt_template}",
+                target=prompt_template,
+            )
+        )
     for rule in agent.get("required_lint_rules", []):
         if rule not in refs["lint_rule"]:
-            issues.append(_issue(
-                "team_plugin_requirement",
-                f"Required lint rule is not installed: {rule}",
-                target=rule,
-            ))
+            issues.append(
+                _issue(
+                    "team_plugin_requirement",
+                    f"Required lint rule is not installed: {rule}",
+                    target=rule,
+                )
+            )
     for skill in agent.get("required_skills", []):
         if skill not in refs["skill"]:
-            issues.append(_issue(
-                "team_plugin_requirement",
-                f"Required skill is not installed: {skill}",
-                target=skill,
-            ))
+            issues.append(
+                _issue(
+                    "team_plugin_requirement",
+                    f"Required skill is not installed: {skill}",
+                    target=skill,
+                )
+            )
     return issues
 
 
-def check_team_conventions(request: TeamConventionRequest) -> list[dict[str, str | None]]:
+def check_team_conventions(
+    request: TeamConventionRequest,
+) -> list[dict[str, str | None]]:
     from ..commands.bootstrap_cmd import build_entity_page_map, build_module_page_map
     from ..commands.extract_cmd import get_docker_inventory
 
@@ -225,12 +270,30 @@ def check_team_conventions(request: TeamConventionRequest) -> list[dict[str, str
 
     for rel in conventions["required_files"]:
         if not (wiki_path / rel).is_file():
-            issues.append(_issue("team_conventions", f"Missing required team wiki file: {rel}", path=rel))
+            issues.append(
+                _issue(
+                    "team_conventions",
+                    f"Missing required team wiki file: {rel}",
+                    path=rel,
+                )
+            )
     for rel in conventions["required_dirs"]:
         if not (wiki_path / rel).is_dir():
-            issues.append(_issue("team_conventions", f"Missing required team wiki directory: {rel}/", path=rel))
+            issues.append(
+                _issue(
+                    "team_conventions",
+                    f"Missing required team wiki directory: {rel}/",
+                    path=rel,
+                )
+            )
     if conventions["require_log"] and not (wiki_path / "log.md").is_file():
-        issues.append(_issue("team_conventions", "Missing required architectural log: log.md", path="log.md"))
+        issues.append(
+            _issue(
+                "team_conventions",
+                "Missing required architectural log: log.md",
+                path="log.md",
+            )
+        )
 
     section_checks = [
         ("entities", "required_entity_sections"),
@@ -238,17 +301,23 @@ def check_team_conventions(request: TeamConventionRequest) -> list[dict[str, str
         ("infrastructure", "required_infrastructure_sections"),
     ]
     for dirname, key in section_checks:
-        for page in sorted((wiki_path / dirname).glob("*.md")) if (wiki_path / dirname).exists() else []:
+        for page in (
+            sorted((wiki_path / dirname).glob("*.md"))
+            if (wiki_path / dirname).exists()
+            else []
+        ):
             rel = page.relative_to(wiki_path).as_posix()
             content = read_md(page)
             for section in conventions[key]:
                 if not _has_section(content, section):
-                    issues.append(_issue(
-                        "team_conventions",
-                        f"{rel} is missing required section: {section}",
-                        path=rel,
-                        target=section,
-                    ))
+                    issues.append(
+                        _issue(
+                            "team_conventions",
+                            f"{rel} is missing required section: {section}",
+                            path=rel,
+                            target=section,
+                        )
+                    )
 
     pattern = conventions.get("workflow_filename_pattern")
     if pattern and (wiki_path / "workflows").exists():
@@ -256,45 +325,68 @@ def check_team_conventions(request: TeamConventionRequest) -> list[dict[str, str
         for page in sorted((wiki_path / "workflows").glob("*.md")):
             if not workflow_re.match(page.stem):
                 rel = page.relative_to(wiki_path).as_posix()
-                issues.append(_issue(
-                    "team_conventions",
-                    f"Workflow page name does not match team pattern {pattern}: {page.name}",
-                    path=rel,
-                ))
+                issues.append(
+                    _issue(
+                        "team_conventions",
+                        f"Workflow page name does not match team pattern {pattern}: {page.name}",
+                        path=rel,
+                    )
+                )
 
     if conventions["canonical_naming"]:
         expected_entities = set(build_entity_page_map(request.inventory).values())
-        documented_entities = {p.stem for p in (wiki_path / "entities").glob("*.md")} if (wiki_path / "entities").exists() else set()
+        documented_entities = (
+            {p.stem for p in (wiki_path / "entities").glob("*.md")}
+            if (wiki_path / "entities").exists()
+            else set()
+        )
         for name in sorted(documented_entities - expected_entities):
-            issues.append(_issue(
-                "team_canonical_naming",
-                f"Entity page does not match canonical generated naming: {name}.md",
-                path=f"entities/{name}.md",
-                target=name,
-            ))
+            issues.append(
+                _issue(
+                    "team_canonical_naming",
+                    f"Entity page does not match canonical generated naming: {name}.md",
+                    path=f"entities/{name}.md",
+                    target=name,
+                )
+            )
 
         expected_modules = set(build_module_page_map(request.inventory).values())
-        documented_modules = {p.stem for p in (wiki_path / "modules").glob("*.md")} if (wiki_path / "modules").exists() else set()
+        documented_modules = (
+            {p.stem for p in (wiki_path / "modules").glob("*.md")}
+            if (wiki_path / "modules").exists()
+            else set()
+        )
         for name in sorted(documented_modules - expected_modules):
-            issues.append(_issue(
-                "team_canonical_naming",
-                f"Module page does not match canonical generated naming: {name}.md",
-                path=f"modules/{name}.md",
-                target=name,
-            ))
+            issues.append(
+                _issue(
+                    "team_canonical_naming",
+                    f"Module page does not match canonical generated naming: {name}.md",
+                    path=f"modules/{name}.md",
+                    target=name,
+                )
+            )
 
         docker_inventory = request.docker_inventory
         if docker_inventory is None:
             docker_inventory = get_docker_inventory(request.src_dir)
-        expected_infra = {f.replace("\\", "/").replace("/", "_").replace(".", "_") for f in docker_inventory}
-        documented_infra = {p.stem for p in (wiki_path / "infrastructure").glob("*.md")} if (wiki_path / "infrastructure").exists() else set()
+        expected_infra = {
+            f.replace("\\", "/").replace("/", "_").replace(".", "_")
+            for f in docker_inventory
+        }
+        documented_infra = (
+            {p.stem for p in (wiki_path / "infrastructure").glob("*.md")}
+            if (wiki_path / "infrastructure").exists()
+            else set()
+        )
         for name in sorted(documented_infra - expected_infra):
-            issues.append(_issue(
-                "team_canonical_naming",
-                f"Infrastructure page does not match canonical generated naming: {name}.md",
-                path=f"infrastructure/{name}.md",
-                target=name,
-            ))
+            issues.append(
+                _issue(
+                    "team_canonical_naming",
+                    f"Infrastructure page does not match canonical generated naming: {name}.md",
+                    path=f"infrastructure/{name}.md",
+                    target=name,
+                )
+            )
 
     return issues
 
@@ -315,16 +407,13 @@ def build_team_issues(
         return [_issue("team_config", str(exc), path=str(team_config_path(root)))]
     if not config:
         return []
-    return (
-        check_plugin_requirements(config, root=root)
-        + check_team_conventions(
-            TeamConventionRequest(
-                config=config,
-                wiki_dir=wiki_dir,
-                src_dir=src_dir,
-                inventory=inventory,
-                docker_inventory=docker_inventory,
-            )
+    return check_plugin_requirements(config, root=root) + check_team_conventions(
+        TeamConventionRequest(
+            config=config,
+            wiki_dir=wiki_dir,
+            src_dir=src_dir,
+            inventory=inventory,
+            docker_inventory=docker_inventory,
         )
     )
 
@@ -340,7 +429,11 @@ def _existing_page_entries(directory: Path, extra_key: str) -> list[dict[str, st
 
 
 def _index_content(wiki_dir: Path, inventory: dict) -> str:
-    from ..commands.bootstrap_cmd import _generate_index_md, build_entity_page_map, build_module_page_map
+    from ..commands.bootstrap_cmd import (
+        _generate_index_md,
+        build_entity_page_map,
+        build_module_page_map,
+    )
 
     entity_page_map = build_entity_page_map(inventory)
     module_page_map = build_module_page_map(inventory)
@@ -348,11 +441,13 @@ def _index_content(wiki_dir: Path, inventory: dict) -> str:
     seen: set[str] = set()
     module_entries: list[dict[str, str]] = []
     for filepath, file_data in inventory.items():
-        module_entries.append({
-            "name": module_page_map[filepath],
-            "path": filepath,
-            "docstring": file_data.get("module_docstring", ""),
-        })
+        module_entries.append(
+            {
+                "name": module_page_map[filepath],
+                "path": filepath,
+                "docstring": file_data.get("module_docstring", ""),
+            }
+        )
         for cls in file_data.get("classes", []):
             name = entity_page_map[(cls["name"], filepath)]
             if name not in seen:
@@ -376,14 +471,24 @@ def _manifest_content(inventory: dict, src_dir: str) -> str:
         build_entity_page_map(inventory),
         build_module_page_map(inventory),
     )
-    return json.dumps({"version": MANIFEST_VERSION, "sources": manifest.sources}, indent=2, sort_keys=True)
+    return json.dumps(
+        {"version": MANIFEST_VERSION, "sources": manifest.sources},
+        indent=2,
+        sort_keys=True,
+    )
 
 
 def _module_content(page_stem: str, inventory: dict) -> tuple[str | None, str]:
-    from ..commands.bootstrap_cmd import _generate_module_md, build_entity_page_map, build_module_page_map
+    from ..commands.bootstrap_cmd import (
+        _generate_module_md,
+        build_entity_page_map,
+        build_module_page_map,
+    )
 
     module_page_map = build_module_page_map(inventory)
-    matches = [filepath for filepath, stem in module_page_map.items() if stem == page_stem]
+    matches = [
+        filepath for filepath, stem in module_page_map.items() if stem == page_stem
+    ]
     if len(matches) != 1:
         return None, "module page does not map unambiguously to a live source file"
     filepath = matches[0]
@@ -392,29 +497,48 @@ def _module_content(page_stem: str, inventory: dict) -> tuple[str | None, str]:
         cls["name"]: entity_page_map[(cls["name"], filepath)]
         for cls in inventory[filepath].get("classes", [])
     }
-    return _generate_module_md(filepath, inventory[filepath], file_entity_page_map), "regenerated module page"
+    return _generate_module_md(
+        filepath, inventory[filepath], file_entity_page_map
+    ), "regenerated module page"
 
 
 def _entity_content(page_stem: str, inventory: dict) -> tuple[str | None, str]:
-    from ..commands.bootstrap_cmd import _build_relationships, _generate_entity_md, build_entity_page_map, build_module_page_map
+    from ..commands.bootstrap_cmd import (
+        _build_relationships,
+        _generate_entity_md,
+        build_entity_page_map,
+        build_module_page_map,
+    )
 
     entity_page_map = build_entity_page_map(inventory)
-    matches = [(cls_name, filepath) for (cls_name, filepath), stem in entity_page_map.items() if stem == page_stem]
+    matches = [
+        (cls_name, filepath)
+        for (cls_name, filepath), stem in entity_page_map.items()
+        if stem == page_stem
+    ]
     if len(matches) != 1:
         return None, "entity page does not map unambiguously to a live source entity"
     cls_name, filepath = matches[0]
     class_info = next(
-        (cls for cls in inventory[filepath].get("classes", []) if cls["name"] == cls_name),
+        (
+            cls
+            for cls in inventory[filepath].get("classes", [])
+            if cls["name"] == cls_name
+        ),
         None,
     )
     if class_info is None:
         return None, "entity page maps to a missing class"
     module_page_map = build_module_page_map(inventory)
     relationships = _build_relationships(inventory, module_page_map)
-    return _generate_entity_md(class_info, filepath, relationships, module_page_map[filepath]), "regenerated entity page"
+    return _generate_entity_md(
+        class_info, filepath, relationships, module_page_map[filepath]
+    ), "regenerated entity page"
 
 
-def _infrastructure_content(page_stem: str, inventory: dict, src_dir: str) -> tuple[str | None, str]:
+def _infrastructure_content(
+    page_stem: str, inventory: dict, src_dir: str
+) -> tuple[str | None, str]:
     from ..commands.bootstrap_cmd import _generate_docker_md, build_module_page_map
     from ..commands.extract_cmd import get_docker_inventory
 
@@ -422,12 +546,18 @@ def _infrastructure_content(page_stem: str, inventory: dict, src_dir: str) -> tu
     matches = [
         (docker_file, docker_info)
         for docker_file, docker_info in docker_inventory.items()
-        if docker_file.replace("\\", "/").replace("/", "_").replace(".", "_") == page_stem
+        if docker_file.replace("\\", "/").replace("/", "_").replace(".", "_")
+        == page_stem
     ]
     if len(matches) != 1:
-        return None, "infrastructure page does not map unambiguously to a live Docker/Compose file"
+        return (
+            None,
+            "infrastructure page does not map unambiguously to a live Docker/Compose file",
+        )
     docker_file, docker_info = matches[0]
-    return _generate_docker_md(docker_file, docker_info, build_module_page_map(inventory)), "regenerated infrastructure page"
+    return _generate_docker_md(
+        docker_file, docker_info, build_module_page_map(inventory)
+    ), "regenerated infrastructure page"
 
 
 def _merge_conflicted_log(text: str) -> str:
@@ -475,13 +605,21 @@ def _merge_conflicted_log(text: str) -> str:
     return "\n".join(output).rstrip() + "\n"
 
 
-def _resolution_for_path(rel_path: str, path: Path, wiki_dir: Path, inventory: dict, src_dir: str) -> tuple[str | None, str]:
+def _resolution_for_path(
+    rel_path: str, path: Path, wiki_dir: Path, inventory: dict, src_dir: str
+) -> tuple[str | None, str]:
     if rel_path == "index.md":
-        return _index_content(wiki_dir, inventory), "rebuilt index from current inventory"
+        return _index_content(
+            wiki_dir, inventory
+        ), "rebuilt index from current inventory"
     if rel_path == ".llm-wiki-manifest.json":
-        return _manifest_content(inventory, src_dir), "rebuilt sync manifest from current inventory"
+        return _manifest_content(
+            inventory, src_dir
+        ), "rebuilt sync manifest from current inventory"
     if rel_path == "log.md":
-        return _merge_conflicted_log(read_md(path)), "merged unique log lines from both sides"
+        return _merge_conflicted_log(
+            read_md(path)
+        ), "merged unique log lines from both sides"
     if rel_path.startswith("modules/") and path.suffix == ".md":
         return _module_content(path.stem, inventory)
     if rel_path.startswith("entities/") and path.suffix == ".md":
@@ -514,7 +652,9 @@ def resolve_conflicts(
         if not has_conflict_markers(text):
             continue
         rel_path = path.relative_to(wiki_path).as_posix()
-        new_content, reason = _resolution_for_path(rel_path, path, wiki_path, inventory, src_dir)
+        new_content, reason = _resolution_for_path(
+            rel_path, path, wiki_path, inventory, src_dir
+        )
         if new_content is None:
             unresolved.append({"path": rel_path, "reason": reason})
             continue

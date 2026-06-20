@@ -1,8 +1,8 @@
 """Tests for persistent inventory cache helpers."""
+
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 from llm_wiki_cli.services import inventory_cache
 from llm_wiki_cli.services.inventory_cache import (
@@ -39,20 +39,26 @@ def test_cache_dir_flag_wins_over_env(tmp_path):
     explicit = tmp_path / "explicit"
     env_dir = tmp_path / "env"
 
-    assert resolve_inventory_cache_path(
-        tmp_path,
-        str(explicit),
-        env={"LLM_WIKI_CACHE_DIR": str(env_dir)},
-    ) == explicit / CACHE_FILENAME
+    assert (
+        resolve_inventory_cache_path(
+            tmp_path,
+            str(explicit),
+            env={"LLM_WIKI_CACHE_DIR": str(env_dir)},
+        )
+        == explicit / CACHE_FILENAME
+    )
 
 
 def test_env_cache_dir_is_used_without_git(tmp_path):
     env_dir = tmp_path / "env-cache"
 
-    assert resolve_inventory_cache_path(
-        tmp_path,
-        env={"LLM_WIKI_CACHE_DIR": str(env_dir)},
-    ) == env_dir / CACHE_FILENAME
+    assert (
+        resolve_inventory_cache_path(
+            tmp_path,
+            env={"LLM_WIKI_CACHE_DIR": str(env_dir)},
+        )
+        == env_dir / CACHE_FILENAME
+    )
 
 
 def test_corrupt_cache_loads_as_empty(tmp_path):
@@ -61,7 +67,9 @@ def test_corrupt_cache_loads_as_empty(tmp_path):
     cache_file = cache_dir / CACHE_FILENAME
     cache_file.write_text("{not json", encoding="utf-8")
 
-    cache = InventoryCache(tmp_path, InventoryCacheOptions(enabled=True, cache_dir=str(cache_dir)))
+    cache = InventoryCache(
+        tmp_path, InventoryCacheOptions(enabled=True, cache_dir=str(cache_dir))
+    )
 
     assert cache.load({"version": 1}) == {}
     assert cache.stats.status == "corrupt"
@@ -81,14 +89,19 @@ def test_save_writes_schema_and_prunes_to_given_files(tmp_path):
         include_empty=False,
         extractor_registry={"python": "builtin"},
     )
-    cache = InventoryCache(tmp_path, InventoryCacheOptions(enabled=True, cache_dir=str(cache_dir)))
-    cache.save(cache_key, {
-        "app.py": make_cache_entry(
-            source_file,
-            "sha256:test",
-            {"language": "python", "classes": [], "functions": []},
-        ),
-    })
+    cache = InventoryCache(
+        tmp_path, InventoryCacheOptions(enabled=True, cache_dir=str(cache_dir))
+    )
+    cache.save(
+        cache_key,
+        {
+            "app.py": make_cache_entry(
+                source_file,
+                "sha256:test",
+                {"language": "python", "classes": [], "functions": []},
+            ),
+        },
+    )
 
     payload = json.loads((cache_dir / CACHE_FILENAME).read_text(encoding="utf-8"))
     assert payload["schema"] == "inventory-v1"
@@ -102,7 +115,9 @@ def test_save_handles_atomic_replace_oserror(tmp_path, monkeypatch):
     cache_file = cache_dir / CACHE_FILENAME
     original_payload = '{"files": {"old.py": {}}}\n'
     cache_file.write_text(original_payload, encoding="utf-8")
-    cache = InventoryCache(tmp_path, InventoryCacheOptions(enabled=True, cache_dir=str(cache_dir)))
+    cache = InventoryCache(
+        tmp_path, InventoryCacheOptions(enabled=True, cache_dir=str(cache_dir))
+    )
     assert cache.path is not None
 
     def fail_replace(self, target):
@@ -119,7 +134,9 @@ def test_save_handles_atomic_replace_oserror(tmp_path, monkeypatch):
     assert "replace denied" in cache.stats.load_error
 
 
-def test_cache_key_changes_for_gitignore_plugin_and_filter_inputs(tmp_path, monkeypatch):
+def test_cache_key_changes_for_gitignore_plugin_and_filter_inputs(
+    tmp_path, monkeypatch
+):
     monkeypatch.chdir(tmp_path)
     src = tmp_path / "src"
     src.mkdir()
@@ -142,17 +159,25 @@ def test_cache_key_changes_for_gitignore_plugin_and_filter_inputs(tmp_path, monk
 
     plugin_home = tmp_path / ".llm-wiki"
     plugin_home.mkdir()
-    (plugin_home / "plugins.lock.json").write_text('{"plugins": {}}\n', encoding="utf-8")
+    (plugin_home / "plugins.lock.json").write_text(
+        '{"plugins": {}}\n', encoding="utf-8"
+    )
     assert key()["plugin_lock_fingerprint"] != base["plugin_lock_fingerprint"]
 
-    monkeypatch.setattr(inventory_cache, "LANGUAGE_EXTENSIONS", {"python": (".py", ".pyw")})
+    monkeypatch.setattr(
+        inventory_cache, "LANGUAGE_EXTENSIONS", {"python": (".py", ".pyw")}
+    )
     assert key()["filter_fingerprint"] != base["filter_fingerprint"]
 
-    monkeypatch.setattr(inventory_cache, "_implementation_fingerprint", lambda: "changed")
+    monkeypatch.setattr(
+        inventory_cache, "_implementation_fingerprint", lambda: "changed"
+    )
     assert key()["extractor_fingerprint"] == "changed"
 
 
-def test_cache_key_uses_snapshot_gitignore_fingerprint_without_rescan(tmp_path, monkeypatch):
+def test_cache_key_uses_snapshot_gitignore_fingerprint_without_rescan(
+    tmp_path, monkeypatch
+):
     src = tmp_path / "src"
     src.mkdir()
     (src / ".gitignore").write_text("ignored.py\n", encoding="utf-8")
@@ -178,7 +203,9 @@ def test_cache_key_uses_snapshot_gitignore_fingerprint_without_rescan(tmp_path, 
 def test_pure_warm_cache_hit_does_not_rewrite_cache(tmp_path):
     cache_dir = tmp_path / "cache"
     (tmp_path / "app.py").write_text("class App:\n    pass\n", encoding="utf-8")
-    options = InventoryCacheOptions(enabled=True, cache_dir=str(cache_dir), stats_enabled=True)
+    options = InventoryCacheOptions(
+        enabled=True, cache_dir=str(cache_dir), stats_enabled=True
+    )
 
     first = get_inventory_result(tmp_path, deep=True, cache_options=options)
     assert first.cache_stats is not None

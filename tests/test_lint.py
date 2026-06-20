@@ -901,9 +901,7 @@ class TestLintGeneratedDiagrams:
         assert [
             (diagnostic.path, diagnostic.target, diagnostic.severity)
             for diagnostic in diagnostics
-        ] == [
-            ("modules/app.md", "Local dependency map", "warning")
-        ]
+        ] == [("modules/app.md", "Local dependency map", "warning")]
         assert "node declarations" in diagnostics[0].message
         assert "41" in diagnostics[0].message
         assert "rerun `llm-wiki sync`" in diagnostics[0].message

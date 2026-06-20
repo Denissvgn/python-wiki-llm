@@ -1,4 +1,5 @@
 """Tests for services/dependencies.py — external reconciliation (Epic 2.2)."""
+
 from __future__ import annotations
 
 from llm_wiki_cli.services.dependencies import (
@@ -56,7 +57,12 @@ class TestClassifyImportsDispatcher:
 class TestPythonClassification:
     def test_stdlib_and_relative_excluded(self):
         inventory = {
-            "a.py": _file("python", _imp("os"), _imp("xml.etree", "ElementTree"), _imp(".sibling", "x")),
+            "a.py": _file(
+                "python",
+                _imp("os"),
+                _imp("xml.etree", "ElementTree"),
+                _imp(".sibling", "x"),
+            ),
         }
         assert classify_imports(inventory) == {}
 
@@ -66,21 +72,23 @@ class TestPythonClassification:
 
     def test_builtin_alias_table(self):
         inventory = {
-            "a.py": _file("python", _imp("yaml"), _imp("PIL.Image", "Image"), _imp("cv2")),
+            "a.py": _file(
+                "python", _imp("yaml"), _imp("PIL.Image", "Image"), _imp("cv2")
+            ),
         }
         used = classify_imports(inventory)["python"]
         assert set(used) == {"pyyaml", "pillow", "opencv-python"}
 
     def test_single_and_multiline_dependency_arrays_parse(self, tmp_path):
         (tmp_path / "pyproject.toml").write_text(
-            '[project]\n'
+            "[project]\n"
             'name = "x"\n'
             'dependencies = ["requests>=2.0"]\n'
-            '[project.optional-dependencies]\n'
-            'dev = [\n'
+            "[project.optional-dependencies]\n"
+            "dev = [\n"
             '  "pytest",   # test runner\n'
             '  "PyYAML",\n'
-            ']\n',
+            "]\n",
             encoding="utf-8",
         )
         declared = parse_declared_dependencies(str(tmp_path))
@@ -89,23 +97,29 @@ class TestPythonClassification:
 
     def test_pep508_specifiers_markers_and_extras_stripped(self, tmp_path):
         (tmp_path / "pyproject.toml").write_text(
-            '[project]\n'
+            "[project]\n"
             'name = "x"\n'
-            'dependencies = [\n'
+            "dependencies = [\n"
             '  "requests[security] >= 2.0",\n'
-            '  "tomli ; python_version < \'3.11\'",\n'
+            "  \"tomli ; python_version < '3.11'\",\n"
             '  "Flask_SQLAlchemy",\n'
-            ']\n',
+            "]\n",
             encoding="utf-8",
         )
         declared = parse_declared_dependencies(str(tmp_path))
-        assert declared["python"]["required"] == ["flask-sqlalchemy", "requests", "tomli"]
+        assert declared["python"]["required"] == [
+            "flask-sqlalchemy",
+            "requests",
+            "tomli",
+        ]
 
     def test_missing_pyproject_is_omitted_not_raised(self, tmp_path):
         assert parse_declared_dependencies(str(tmp_path)) == {}
 
     def test_pyproject_without_dependencies_section_is_empty_not_absent(self, tmp_path):
-        (tmp_path / "pyproject.toml").write_text('[project]\nname = "x"\n', encoding="utf-8")
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\nname = "x"\n', encoding="utf-8"
+        )
         assert parse_declared_dependencies(str(tmp_path))["python"] == {
             "required": [],
             "optional": [],
@@ -113,10 +127,10 @@ class TestPythonClassification:
 
     def test_tool_override_alias_applies(self, tmp_path):
         (tmp_path / "pyproject.toml").write_text(
-            '[project]\n'
+            "[project]\n"
             'name = "x"\n'
             'dependencies = ["my-dist"]\n'
-            '[tool.llm-wiki.dependency-aliases]\n'
+            "[tool.llm-wiki.dependency-aliases]\n"
             'weirdimport = "my-dist"\n',
             encoding="utf-8",
         )
@@ -177,7 +191,9 @@ class TestTypeScriptClassification:
             encoding="utf-8",
         )
         inventory = {"a.test.ts": _file("typescript", _imp("jest"), _imp("react"))}
-        report = reconcile_dependencies(inventory, str(tmp_path))["languages"]["typescript"]
+        report = reconcile_dependencies(inventory, str(tmp_path))["languages"][
+            "typescript"
+        ]
         assert report["undeclared"] == []  # jest is a known devDependency
         assert report["unused"] == []  # react (required) is imported
 
@@ -224,9 +240,7 @@ class TestGoClassification:
 
     def test_no_manifest_falls_back_to_host_org_repo(self):
         inventory = {"a.go": _file("go", _imp("github.com/foo/bar/baz/qux", "qux"))}
-        assert classify_imports(inventory) == {
-            "go": {"github.com/foo/bar": ["a.go"]}
-        }
+        assert classify_imports(inventory) == {"go": {"github.com/foo/bar": ["a.go"]}}
 
 
 # ── DL-204: Rust ──────────────────────────────────────────────────────
@@ -258,7 +272,9 @@ class TestRustClassification:
             'criterion = "0.5"\n',
             encoding="utf-8",
         )
-        inventory = {"a.rs": _file("rust", _imp("proc_macro2::TokenStream", "TokenStream"))}
+        inventory = {
+            "a.rs": _file("rust", _imp("proc_macro2::TokenStream", "TokenStream"))
+        }
         report = reconcile_dependencies(inventory, str(tmp_path))["languages"]["rust"]
         assert report["used"] == {"proc_macro2": ["a.rs"]}
         assert report["undeclared"] == []
@@ -272,10 +288,10 @@ class TestRustClassification:
 class TestReconcileDependencies:
     def test_undeclared_unused_and_extras(self, tmp_path):
         (tmp_path / "pyproject.toml").write_text(
-            '[project]\n'
+            "[project]\n"
             'name = "x"\n'
             'dependencies = ["requests", "PyYAML"]\n'
-            '[project.optional-dependencies]\n'
+            "[project.optional-dependencies]\n"
             'dev = ["pytest"]\n',
             encoding="utf-8",
         )
@@ -310,10 +326,10 @@ class TestReconcileDependencies:
 
     def test_extra_dependency_satisfies_import(self, tmp_path):
         (tmp_path / "pyproject.toml").write_text(
-            '[project]\n'
+            "[project]\n"
             'name = "x"\n'
-            'dependencies = []\n'
-            '[project.optional-dependencies]\n'
+            "dependencies = []\n"
+            "[project.optional-dependencies]\n"
             'extra = ["rich"]\n',
             encoding="utf-8",
         )

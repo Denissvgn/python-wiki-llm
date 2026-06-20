@@ -88,7 +88,10 @@ class TypeScriptExtractor:
     ) -> list[str]:
         if source_files is None:
             return discover_source_files(
-                src_dir, (".ts", ".tsx"), only_files=only_files, language="typescript",
+                src_dir,
+                (".ts", ".tsx"),
+                only_files=only_files,
+                language="typescript",
             )
         return source_files
 
@@ -111,11 +114,14 @@ class TypeScriptExtractor:
 
         return True
 
-    def _build_command(self, src_dir: str, source_files: list[str], deep: bool) -> list[str]:
+    def _build_command(
+        self, src_dir: str, source_files: list[str], deep: bool
+    ) -> list[str]:
         cmd = [
             "node",
             str(_TS_SCRIPTS_DIR / "extract.js"),
-            "--src-dir", str(Path(src_dir).resolve()),
+            "--src-dir",
+            str(Path(src_dir).resolve()),
         ]
         cmd += ["--only-files", ",".join(source_files)]
         if deep:

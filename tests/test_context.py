@@ -1,4 +1,5 @@
 """Tests for the ``context`` command — structured context budgeting."""
+
 from __future__ import annotations
 
 import io
@@ -68,13 +69,22 @@ class TestFilepathToModule:
         assert context_cmd._filepath_to_module("config.py") == "config"
 
     def test_nested(self):
-        assert context_cmd._filepath_to_module("llm_wiki_cli/config.py") == "llm_wiki_cli.config"
+        assert (
+            context_cmd._filepath_to_module("llm_wiki_cli/config.py")
+            == "llm_wiki_cli.config"
+        )
 
     def test_src_prefix(self):
-        assert context_cmd._filepath_to_module("src/llm_wiki_cli/config.py") == "llm_wiki_cli.config"
+        assert (
+            context_cmd._filepath_to_module("src/llm_wiki_cli/config.py")
+            == "llm_wiki_cli.config"
+        )
 
     def test_init(self):
-        assert context_cmd._filepath_to_module("src/llm_wiki_cli/__init__.py") == "llm_wiki_cli"
+        assert (
+            context_cmd._filepath_to_module("src/llm_wiki_cli/__init__.py")
+            == "llm_wiki_cli"
+        )
 
     def test_non_python(self):
         assert context_cmd._filepath_to_module("README.md") is None
@@ -96,7 +106,8 @@ class TestBuildImportGraph:
     def test_one_import(self):
         inventory = {
             "a.py": {
-                "classes": [], "functions": [],
+                "classes": [],
+                "functions": [],
                 "imports": [{"module": "b", "name": "foo", "type": "from"}],
             },
             "b.py": {"classes": [], "functions": [], "imports": []},
@@ -108,7 +119,8 @@ class TestBuildImportGraph:
     def test_external_import_skipped(self):
         inventory = {
             "a.py": {
-                "classes": [], "functions": [],
+                "classes": [],
+                "functions": [],
                 "imports": [{"module": "json", "name": "json", "type": "import"}],
             },
         }
@@ -118,7 +130,8 @@ class TestBuildImportGraph:
     def test_nested_module_match(self):
         inventory = {
             "src/pkg/mod.py": {
-                "classes": [], "functions": [],
+                "classes": [],
+                "functions": [],
                 "imports": [{"module": "pkg.utils", "name": "helper", "type": "from"}],
             },
             "src/pkg/utils.py": {"classes": [], "functions": [], "imports": []},
@@ -205,13 +218,15 @@ class TestBuildContextPayload:
     def test_high_downgraded_before_omit(self):
         inventory = {
             "a.py": {
-                "classes": [{
-                    "name": "X",
-                    "bases": [],
-                    "line": 1,
-                    "docstring": "D" * 1000,
-                    "methods": [{"name": "run", "params": [], "return_type": None}],
-                }],
+                "classes": [
+                    {
+                        "name": "X",
+                        "bases": [],
+                        "line": 1,
+                        "docstring": "D" * 1000,
+                        "methods": [{"name": "run", "params": [], "return_type": None}],
+                    }
+                ],
                 "functions": [],
                 "imports": [{"module": "huge", "name": "Huge", "type": "from"}],
             },
@@ -301,7 +316,11 @@ class TestRenderMarkdown:
             "budget": 1000,
             "used": 50,
             "files": {
-                "a.py": {"priority": "high", "classes": [{"name": "X", "bases": []}], "functions": []},
+                "a.py": {
+                    "priority": "high",
+                    "classes": [{"name": "X", "bases": []}],
+                    "functions": [],
+                },
                 "b.py": {"priority": "low", "classes": [], "functions": ["f"]},
             },
         }
@@ -351,10 +370,12 @@ class TestProtocolValidation:
         assert set(result) == {"web/api/client.ts"}
 
     def test_validation_defaults(self):
-        result = context_cmd._validate_protocol_request({
-            "protocol": context_cmd.PROTOCOL_VERSION,
-            "budget_tokens": 1000,
-        })
+        result = context_cmd._validate_protocol_request(
+            {
+                "protocol": context_cmd.PROTOCOL_VERSION,
+                "budget_tokens": 1000,
+            }
+        )
         assert result["focus"] == ["changed", "neighbors"]
         assert result["format"] == "json"
         assert result["filters"] == {}
@@ -401,12 +422,24 @@ class TestProtocolRun:
         assert "files" not in data
         assert "Context Budget" in data["content"]
 
-    def test_request_language_filter_excludes_nonmatching_inventory(self, tmp_path, capsys, monkeypatch):
+    def test_request_language_filter_excludes_nonmatching_inventory(
+        self, tmp_path, capsys, monkeypatch
+    ):
         inventory = {
-            "api.py": {"language": "python", "classes": [{"name": "Api"}], "functions": []},
-            "web.ts": {"language": "typescript", "classes": [{"name": "Web"}], "functions": []},
+            "api.py": {
+                "language": "python",
+                "classes": [{"name": "Api"}],
+                "functions": [],
+            },
+            "web.ts": {
+                "language": "typescript",
+                "classes": [{"name": "Web"}],
+                "functions": [],
+            },
         }
-        monkeypatch.setattr(context_cmd, "get_inventory", lambda *args, **kwargs: inventory)
+        monkeypatch.setattr(
+            context_cmd, "get_inventory", lambda *args, **kwargs: inventory
+        )
         request = _write_request(
             tmp_path,
             _protocol_request(filters={"language": "python"}),
@@ -417,20 +450,40 @@ class TestProtocolRun:
         data = json.loads(capsys.readouterr().out)
         assert set(data["files"]) == {"api.py"}
 
-    def test_request_module_filter_matches_path_and_module(self, tmp_path, capsys, monkeypatch):
+    def test_request_module_filter_matches_path_and_module(
+        self, tmp_path, capsys, monkeypatch
+    ):
         inventory = {
-            "src/api/users.py": {"language": "python", "classes": [{"name": "User"}], "functions": []},
-            "web/api/client.ts": {"language": "typescript", "classes": [{"name": "Client"}], "functions": []},
-            "src/db/models.py": {"language": "python", "classes": [{"name": "Model"}], "functions": []},
+            "src/api/users.py": {
+                "language": "python",
+                "classes": [{"name": "User"}],
+                "functions": [],
+            },
+            "web/api/client.ts": {
+                "language": "typescript",
+                "classes": [{"name": "Client"}],
+                "functions": [],
+            },
+            "src/db/models.py": {
+                "language": "python",
+                "classes": [{"name": "Model"}],
+                "functions": [],
+            },
         }
-        monkeypatch.setattr(context_cmd, "get_inventory", lambda *args, **kwargs: inventory)
+        monkeypatch.setattr(
+            context_cmd, "get_inventory", lambda *args, **kwargs: inventory
+        )
 
-        request = _write_request(tmp_path, _protocol_request(filters={"module": "api/*"}))
+        request = _write_request(
+            tmp_path, _protocol_request(filters={"module": "api/*"})
+        )
         context_cmd.run(_make_args(request=request, budget=None))
         data = json.loads(capsys.readouterr().out)
         assert set(data["files"]) == {"src/api/users.py"}
 
-        request = _write_request(tmp_path, _protocol_request(filters={"module": "web/api/*"}))
+        request = _write_request(
+            tmp_path, _protocol_request(filters={"module": "web/api/*"})
+        )
         context_cmd.run(_make_args(request=request, budget=None))
         data = json.loads(capsys.readouterr().out)
         assert set(data["files"]) == {"web/api/client.ts"}
@@ -445,7 +498,9 @@ class TestProtocolRun:
             (_protocol_request(filters={"package": "api"}), "filters.package"),
         ],
     )
-    def test_invalid_requests_return_error_envelope(self, tmp_path, capsys, request_data, field):
+    def test_invalid_requests_return_error_envelope(
+        self, tmp_path, capsys, request_data, field
+    ):
         request = _write_request(tmp_path, request_data)
         with pytest.raises(SystemExit) as exc_info:
             context_cmd.run(_make_args(request=request, budget=None))
@@ -469,12 +524,16 @@ class TestProtocolRun:
         assert data["ok"] is False
         assert data["error"]["field"] == "request"
 
-    def test_extractor_failure_returns_error_envelope(self, tmp_path, monkeypatch, capsys):
+    def test_extractor_failure_returns_error_envelope(
+        self, tmp_path, monkeypatch, capsys
+    ):
         result = InventoryResult(
             {},
             {"python": ExtractorStatus("python", "failed", 1, "boom")},
         )
-        monkeypatch.setattr(context_cmd, "get_inventory_result", lambda *args, **kwargs: result)
+        monkeypatch.setattr(
+            context_cmd, "get_inventory_result", lambda *args, **kwargs: result
+        )
         request = _write_request(tmp_path, _protocol_request())
 
         with pytest.raises(SystemExit) as exc_info:
@@ -524,7 +583,9 @@ class TestContextRun:
 
     def test_json_output_file_suppresses_stdout(self, tmp_project, tmp_path, capsys):
         out_path = tmp_path / "context.json"
-        args = _make_args(focus="all", budget=100000, output=str(out_path), read_only=True)
+        args = _make_args(
+            focus="all", budget=100000, output=str(out_path), read_only=True
+        )
 
         context_cmd.run(args)
 
@@ -533,9 +594,13 @@ class TestContextRun:
         data = json.loads(out_path.read_text(encoding="utf-8"))
         assert data["files"]
 
-    def test_markdown_output_file_suppresses_stdout(self, tmp_project, tmp_path, capsys):
+    def test_markdown_output_file_suppresses_stdout(
+        self, tmp_project, tmp_path, capsys
+    ):
         out_path = tmp_path / "context.md"
-        args = _make_args(focus="all", budget=100000, format="markdown", output=str(out_path))
+        args = _make_args(
+            focus="all", budget=100000, format="markdown", output=str(out_path)
+        )
 
         context_cmd.run(args)
 
@@ -543,7 +608,9 @@ class TestContextRun:
         assert captured.out == ""
         assert "Context Budget" in out_path.read_text(encoding="utf-8")
 
-    def test_run_allows_external_src_with_explicit_flag(self, tmp_project, tmp_path, capsys):
+    def test_run_allows_external_src_with_explicit_flag(
+        self, tmp_project, tmp_path, capsys
+    ):
         outside = tmp_path / "outside"
         outside.mkdir()
         (outside / "external.py").write_text("class External: pass\n", encoding="utf-8")
@@ -559,12 +626,16 @@ class TestContextRun:
         data = json.loads(capsys.readouterr().out)
         assert set(data["files"]) == {"external.py"}
 
-    def test_read_only_context_does_not_create_wiki_artifacts(self, tmp_project, capsys):
+    def test_read_only_context_does_not_create_wiki_artifacts(
+        self, tmp_project, capsys
+    ):
         context_cmd.run(_make_args(focus="all", budget=100000, read_only=True))
 
         assert not Path("docs").exists()
 
-    def test_changed_focus_warning_goes_to_stderr_json_stays_parseable(self, tmp_project, capsys):
+    def test_changed_focus_warning_goes_to_stderr_json_stays_parseable(
+        self, tmp_project, capsys
+    ):
         args = _make_args(focus="changed", budget=100000)
         context_cmd.run(args)
         captured = capsys.readouterr()
@@ -588,12 +659,16 @@ class TestContextRun:
         assert exc_info.value.code == 2
         assert "--budget is required" in capsys.readouterr().err
 
-    def test_extractor_failure_exits_at_cli_boundary(self, tmp_project, monkeypatch, capsys):
+    def test_extractor_failure_exits_at_cli_boundary(
+        self, tmp_project, monkeypatch, capsys
+    ):
         result = InventoryResult(
             {},
             {"python": ExtractorStatus("python", "failed", 1, "boom")},
         )
-        monkeypatch.setattr(context_cmd, "get_inventory_result", lambda *args, **kwargs: result)
+        monkeypatch.setattr(
+            context_cmd, "get_inventory_result", lambda *args, **kwargs: result
+        )
 
         with pytest.raises(SystemExit) as exc_info:
             context_cmd.run(_make_args(focus="all", budget=1000))

@@ -1,4 +1,5 @@
 """Tests for commands/uninstall_cmd.py"""
+
 import types
 from pathlib import Path
 
@@ -28,12 +29,19 @@ def _setup_wiki_project(project_dir: Path):
     (wiki / "log.md").write_text("# Log\n")
 
     # Agent schema
-    Path("CLAUDE.md").write_text(uninstall_cmd.CONSTRAINT_START + "\nstuff\n" + uninstall_cmd.CONSTRAINT_END + "\n")
+    Path("CLAUDE.md").write_text(
+        uninstall_cmd.CONSTRAINT_START
+        + "\nstuff\n"
+        + uninstall_cmd.CONSTRAINT_END
+        + "\n"
+    )
 
     # Git hooks
     hooks_dir = project_dir / ".git" / "hooks"
     hooks_dir.mkdir(parents=True, exist_ok=True)
-    (hooks_dir / "post-commit").write_text("#!/bin/sh\n# LLM Wiki sync\nnohup llm-wiki trigger-agent &\n")
+    (hooks_dir / "post-commit").write_text(
+        "#!/bin/sh\n# LLM Wiki sync\nnohup llm-wiki trigger-agent &\n"
+    )
     (hooks_dir / "post-commit").chmod(0o755)
 
     # Temp files
@@ -53,7 +61,7 @@ class TestUninstallRemovesHooks:
 
         args = _make_args()
         uninstall_cmd.run(args)
-        out = capsys.readouterr().out
+        capsys.readouterr()
 
         hook = tmp_project / ".git" / "hooks" / "post-commit"
         assert not hook.exists()
@@ -165,7 +173,9 @@ class TestUninstallRuntimeArtifacts:
         assert ".git/llm-wiki.lock" in out
         assert ".git/llm-wiki-breaker.json" in out
 
-    def test_rejects_absolute_wiki_dir_outside_project(self, tmp_project, tmp_path, monkeypatch):
+    def test_rejects_absolute_wiki_dir_outside_project(
+        self, tmp_project, tmp_path, monkeypatch
+    ):
         outside = tmp_path / "outside_wiki"
         outside.mkdir()
         monkeypatch.setattr("builtins.input", lambda _: "y")

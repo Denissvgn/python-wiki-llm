@@ -78,9 +78,8 @@ def _parse_setup_py(text: str) -> dict[str, str]:
             continue
         func = node.func
         # match setup(...) or setuptools.setup(...)
-        is_setup = (
-            (isinstance(func, ast.Name) and func.id == "setup")
-            or (isinstance(func, ast.Attribute) and func.attr == "setup")
+        is_setup = (isinstance(func, ast.Name) and func.id == "setup") or (
+            isinstance(func, ast.Attribute) and func.attr == "setup"
         )
         if not is_setup:
             continue
@@ -90,7 +89,9 @@ def _parse_setup_py(text: str) -> dict[str, str]:
     return info
 
 
-def _package_marker_paths(src_path: Path, source_snapshot: SourceSnapshot | None) -> tuple[list[Path], list[Path]]:
+def _package_marker_paths(
+    src_path: Path, source_snapshot: SourceSnapshot | None
+) -> tuple[list[Path], list[Path]]:
     if source_snapshot is None:
         return (
             sorted(src_path.rglob("pyproject.toml")),
@@ -98,11 +99,13 @@ def _package_marker_paths(src_path: Path, source_snapshot: SourceSnapshot | None
         )
 
     pyprojects = [
-        marker.abs_path for marker in source_snapshot.package_markers
+        marker.abs_path
+        for marker in source_snapshot.package_markers
         if marker.abs_path.name == "pyproject.toml"
     ]
     setup_files = [
-        marker.abs_path for marker in source_snapshot.package_markers
+        marker.abs_path
+        for marker in source_snapshot.package_markers
         if marker.abs_path.name == "setup.py"
     ]
     return (
@@ -111,7 +114,9 @@ def _package_marker_paths(src_path: Path, source_snapshot: SourceSnapshot | None
     )
 
 
-def discover_packages(src_dir: str, *, source_snapshot: SourceSnapshot | None = None) -> list[PackageInfo]:
+def discover_packages(
+    src_dir: str, *, source_snapshot: SourceSnapshot | None = None
+) -> list[PackageInfo]:
     """Return all Python packages found under *src_dir*.
 
     A "package" is a directory containing ``pyproject.toml`` or
@@ -134,12 +139,14 @@ def discover_packages(src_dir: str, *, source_snapshot: SourceSnapshot | None = 
         name = info.get("name", "")
         if not name:
             continue
-        packages.append(PackageInfo(
-            name=name,
-            root=rel.parent.as_posix() if rel.parent != Path(".") else ".",
-            version=info.get("version", "0.0.0"),
-            marker_path=rel.as_posix(),
-        ))
+        packages.append(
+            PackageInfo(
+                name=name,
+                root=rel.parent.as_posix() if rel.parent != Path(".") else ".",
+                version=info.get("version", "0.0.0"),
+                marker_path=rel.as_posix(),
+            )
+        )
 
     for marker in setup_paths:
         rel = marker.relative_to(src_path)
@@ -157,12 +164,14 @@ def discover_packages(src_dir: str, *, source_snapshot: SourceSnapshot | None = 
         name = info.get("name", "")
         if not name:
             continue
-        packages.append(PackageInfo(
-            name=name,
-            root=rel.parent.as_posix() if rel.parent != Path(".") else ".",
-            version=info.get("version", "0.0.0"),
-            marker_path=rel.as_posix(),
-        ))
+        packages.append(
+            PackageInfo(
+                name=name,
+                root=rel.parent.as_posix() if rel.parent != Path(".") else ".",
+                version=info.get("version", "0.0.0"),
+                marker_path=rel.as_posix(),
+            )
+        )
 
     return packages
 

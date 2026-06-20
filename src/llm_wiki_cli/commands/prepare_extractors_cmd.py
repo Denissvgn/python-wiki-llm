@@ -28,7 +28,8 @@ def _dedupe_languages(values: list[str] | None) -> list[str]:
 def _languages_from_snapshot(src_dir: str) -> list[str]:
     snapshot = build_source_snapshot(src_dir)
     return [
-        language for language in SUPPORTED_HELPERS
+        language
+        for language in SUPPORTED_HELPERS
         if snapshot.files_by_language.get(language)
     ]
 

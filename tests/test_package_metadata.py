@@ -1,4 +1,5 @@
 """Tests for package/readme metadata consistency."""
+
 from __future__ import annotations
 
 from pathlib import Path

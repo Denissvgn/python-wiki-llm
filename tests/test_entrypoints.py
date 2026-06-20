@@ -1,4 +1,5 @@
 """Tests for services/entrypoints.py — entry-point detection and flow assembly."""
+
 from __future__ import annotations
 
 import ast
@@ -21,7 +22,13 @@ def _body_line_count(function) -> int:
 
 
 def _entry(file, symbol):
-    return {"id": "x", "category": "api", "file": file, "symbol": symbol, "label": symbol}
+    return {
+        "id": "x",
+        "category": "api",
+        "file": file,
+        "symbol": symbol,
+        "label": symbol,
+    }
 
 
 class TestGetEntryPoints:
@@ -29,12 +36,14 @@ class TestGetEntryPoints:
         assert _body_line_count(get_entry_points) <= 35
 
     def test_detects_api_exports(self, tmp_path):
-        (tmp_path / "api.py").write_text(textwrap.dedent("""\
+        (tmp_path / "api.py").write_text(
+            textwrap.dedent("""\
             __all__ = ["extract_source", "MISSING"]
 
             def extract_source():
                 pass
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
         api = [e for e in get_entry_points(inventory) if e["category"] == "api"]
         assert len(api) == 1
@@ -42,7 +51,8 @@ class TestGetEntryPoints:
         assert api[0]["id"] == "api-extract_source"
 
     def test_detects_decorated_cli_http_mcp(self, tmp_path):
-        (tmp_path / "app.py").write_text(textwrap.dedent("""\
+        (tmp_path / "app.py").write_text(
+            textwrap.dedent("""\
             @cli.command
             def build():
                 pass
@@ -54,7 +64,8 @@ class TestGetEntryPoints:
             @server.tool()
             def search():
                 pass
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
         by_cat = {e["category"]: e["symbol"] for e in get_entry_points(inventory)}
         assert by_cat["cli"] == "build"
@@ -62,13 +73,15 @@ class TestGetEntryPoints:
         assert by_cat["mcp"] == "search"
 
     def test_detects_decorated_nested_handlers(self, tmp_path):
-        (tmp_path / "factory.py").write_text(textwrap.dedent('''\
+        (tmp_path / "factory.py").write_text(
+            textwrap.dedent("""\
             def create_server():
                 @server.tool()
                 def search(query):
                     return run(query)
                 return server
-        '''))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
         mcp = [e for e in get_entry_points(inventory) if e["category"] == "mcp"]
         assert [e["symbol"] for e in mcp] == ["search"]
@@ -79,13 +92,15 @@ class TestGetEntryPoints:
         assert [e for e in get_entry_points(inventory) if e["category"] == "http"] == []
 
     def test_detects_main_block_process(self, tmp_path):
-        (tmp_path / "cli.py").write_text(textwrap.dedent("""\
+        (tmp_path / "cli.py").write_text(
+            textwrap.dedent("""\
             def main():
                 pass
 
             if __name__ == "__main__":
                 main()
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
         proc = [e for e in get_entry_points(inventory) if e["category"] == "process"]
         assert proc[0]["symbol"] == "main"
@@ -96,23 +111,35 @@ class TestGetEntryPoints:
         (tmp_path / "pkg" / "cli.py").write_text("def main():\n    pass\n")
         inventory = get_inventory(str(tmp_path), deep=True)
         scripts = [{"name": "tool", "module": "pkg.cli", "attr": "main"}]
-        proc = [e for e in get_entry_points(inventory, console_scripts=scripts) if e["label"] == "tool"]
+        proc = [
+            e
+            for e in get_entry_points(inventory, console_scripts=scripts)
+            if e["label"] == "tool"
+        ]
         assert proc[0]["file"] == "pkg/cli.py"
         assert proc[0]["symbol"] == "main"
 
     def test_main_block_and_console_script_collapse_to_one(self, tmp_path):
-        (tmp_path / "cli.py").write_text(textwrap.dedent("""\
+        (tmp_path / "cli.py").write_text(
+            textwrap.dedent("""\
             def main():
                 pass
 
             if __name__ == "__main__":
                 main()
-        """))
+        """)
+        )
         inventory = get_inventory(str(tmp_path), deep=True)
         scripts = [{"name": "mytool", "module": "cli", "attr": "main"}]
-        proc = [e for e in get_entry_points(inventory, console_scripts=scripts) if e["category"] == "process"]
+        proc = [
+            e
+            for e in get_entry_points(inventory, console_scripts=scripts)
+            if e["category"] == "process"
+        ]
         assert len(proc) == 1
-        assert proc[0]["label"] == "mytool"  # the specific script name wins over the stem
+        assert (
+            proc[0]["label"] == "mytool"
+        )  # the specific script name wins over the stem
 
     def test_ids_are_unique_and_deterministic(self, tmp_path):
         (tmp_path / "a.py").write_text('__all__ = ["run"]\n\ndef run():\n    pass\n')
@@ -135,7 +162,10 @@ class TestBuildFlow:
         return resolve_call_edges(inventory)
 
     def test_traces_internal_call_path(self, tmp_path):
-        edges = self._edges(tmp_path, "m.py", """\
+        edges = self._edges(
+            tmp_path,
+            "m.py",
+            """\
             def entry():
                 step_one()
 
@@ -144,38 +174,52 @@ class TestBuildFlow:
 
             def step_two():
                 pass
-        """)
+        """,
+        )
         flow = build_flow(_entry("m.py", "entry"), edges)
         assert [(s["symbol"], s["depth"]) for s in flow["steps"]] == [
-            ("entry", 0), ("step_one", 1), ("step_two", 2),
+            ("entry", 0),
+            ("step_one", 1),
+            ("step_two", 2),
         ]
         assert flow["truncated"] is False
         assert flow["modules_touched"] == ["m.py"]
 
     def test_external_calls_are_leaf_steps(self, tmp_path):
-        edges = self._edges(tmp_path, "m.py", """\
+        edges = self._edges(
+            tmp_path,
+            "m.py",
+            """\
             import os
 
             def entry():
                 return os.getcwd()
-        """)
+        """,
+        )
         flow = build_flow(_entry("m.py", "entry"), edges)
         external = [s for s in flow["steps"] if s["kind"] == "external"]
         assert external[0]["symbol"] == "getcwd"
 
     def test_cycles_terminate(self, tmp_path):
-        edges = self._edges(tmp_path, "m.py", """\
+        edges = self._edges(
+            tmp_path,
+            "m.py",
+            """\
             def ping():
                 pong()
 
             def pong():
                 ping()
-        """)
+        """,
+        )
         flow = build_flow(_entry("m.py", "ping"), edges)
         assert [s["symbol"] for s in flow["steps"]] == ["ping", "pong", "ping"]
 
     def test_depth_bound_marks_truncation(self, tmp_path):
-        edges = self._edges(tmp_path, "m.py", """\
+        edges = self._edges(
+            tmp_path,
+            "m.py",
+            """\
             def a():
                 b()
             def b():
@@ -184,7 +228,8 @@ class TestBuildFlow:
                 d()
             def d():
                 pass
-        """)
+        """,
+        )
         flow = build_flow(_entry("m.py", "a"), edges, max_depth=2)
         assert max(s["depth"] for s in flow["steps"]) == 2
         assert flow["truncated"] is True
@@ -192,7 +237,7 @@ class TestBuildFlow:
 
 class TestConsoleScripts:
     def test_parses_project_scripts_section(self):
-        text = textwrap.dedent('''\
+        text = textwrap.dedent("""\
             [project]
             name = "x"
 
@@ -202,7 +247,7 @@ class TestConsoleScripts:
 
             [tool.foo]
             bar = "baz"
-        ''')
+        """)
         assert _parse_scripts_section(text) == [
             {"name": "llm-wiki", "module": "llm_wiki_cli.cli", "attr": "main"},
             {"name": "other", "module": "pkg.mod", "attr": "run"},
@@ -212,7 +257,9 @@ class TestConsoleScripts:
         assert read_console_scripts(str(tmp_path)) == []
 
     def test_read_console_scripts_from_pyproject(self, tmp_path):
-        (tmp_path / "pyproject.toml").write_text('[project.scripts]\ntool = "pkg.cli:main"\n')
+        (tmp_path / "pyproject.toml").write_text(
+            '[project.scripts]\ntool = "pkg.cli:main"\n'
+        )
         assert read_console_scripts(str(tmp_path)) == [
             {"name": "tool", "module": "pkg.cli", "attr": "main"}
         ]

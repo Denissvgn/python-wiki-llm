@@ -15,7 +15,9 @@ LANGUAGE_EXTENSIONS: dict[str, tuple[str, ...]] = {
 }
 
 
-def should_skip_source_path(path: Path, src_path: Path, matcher: GitIgnoreMatcher | None = None) -> bool:
+def should_skip_source_path(
+    path: Path, src_path: Path, matcher: GitIgnoreMatcher | None = None
+) -> bool:
     """Return True when *path* should be skipped for source extraction."""
     rel = path.relative_to(src_path)
     if not EXCLUDED_DIRS.isdisjoint(rel.parts):

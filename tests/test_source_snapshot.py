@@ -1,4 +1,5 @@
 """Tests for shared source-tree discovery snapshots."""
+
 from __future__ import annotations
 
 import inspect
@@ -27,7 +28,13 @@ def test_groups_builtin_language_files(tmp_path):
     assert _paths(snapshot, "typescript") == ["ui.ts", "view.tsx"]
     assert _paths(snapshot, "go") == ["main.go"]
     assert _paths(snapshot, "rust") == ["lib.rs"]
-    assert snapshot.all_source_paths == ("app.py", "lib.rs", "main.go", "ui.ts", "view.tsx")
+    assert snapshot.all_source_paths == (
+        "app.py",
+        "lib.rs",
+        "main.go",
+        "ui.ts",
+        "view.tsx",
+    )
 
 
 def test_only_files_and_filtering_rules(tmp_path):
@@ -96,13 +103,19 @@ def test_records_docker_yaml_and_package_candidates_deterministically(tmp_path):
     (tmp_path / "z.py").write_text("class Z: pass\n")
     (tmp_path / "Dockerfile").write_text("FROM python:3.12\n")
     (tmp_path / "Dockerfile.dev").write_text("FROM alpine\n")
-    (tmp_path / "docker-compose.yml").write_text("services:\n  web:\n    image: nginx\n")
-    (tmp_path / "compose.dev.yaml").write_text("services:\n  worker:\n    image: alpine\n")
+    (tmp_path / "docker-compose.yml").write_text(
+        "services:\n  web:\n    image: nginx\n"
+    )
+    (tmp_path / "compose.dev.yaml").write_text(
+        "services:\n  worker:\n    image: alpine\n"
+    )
     (tmp_path / "infra.yaml").write_text("services:\n  api:\n    image: nginx\n")
     pkg = tmp_path / "pkg"
     pkg.mkdir()
     (pkg / "pyproject.toml").write_text('[project]\nname = "pkg"\n')
-    (tmp_path / "setup.py").write_text('from setuptools import setup\nsetup(name="root")\n')
+    (tmp_path / "setup.py").write_text(
+        'from setuptools import setup\nsetup(name="root")\n'
+    )
 
     snapshot = build_source_snapshot(tmp_path)
 

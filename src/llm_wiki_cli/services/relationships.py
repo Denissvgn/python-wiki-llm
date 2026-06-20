@@ -203,12 +203,16 @@ def _iter_callable_records(inventory: Mapping) -> Iterable[tuple[str, str, dict]
         for fn in data.get("functions", []) or []:
             name = fn.get("name")
             if name:
-                yield filepath, str(name), {
-                    "record": fn,
-                    "name": str(name),
-                    "kind": "function",
-                    "owner_class": None,
-                }
+                yield (
+                    filepath,
+                    str(name),
+                    {
+                        "record": fn,
+                        "name": str(name),
+                        "kind": "function",
+                        "owner_class": None,
+                    },
+                )
         for cls in data.get("classes", []) or []:
             owner = cls.get("name")
             if not owner:
@@ -216,21 +220,29 @@ def _iter_callable_records(inventory: Mapping) -> Iterable[tuple[str, str, dict]
             for method in cls.get("methods", []) or []:
                 name = method.get("name")
                 if name:
-                    yield filepath, f"{owner}.{name}", {
-                        "record": method,
-                        "name": str(name),
-                        "kind": "method",
-                        "owner_class": str(owner),
-                    }
+                    yield (
+                        filepath,
+                        f"{owner}.{name}",
+                        {
+                            "record": method,
+                            "name": str(name),
+                            "kind": "method",
+                            "owner_class": str(owner),
+                        },
+                    )
         for fn in data.get("nested_functions", []) or []:
             name = fn.get("name")
             if name:
-                yield filepath, str(name), {
-                    "record": fn,
-                    "name": str(name),
-                    "kind": "nested_function",
-                    "owner_class": None,
-                }
+                yield (
+                    filepath,
+                    str(name),
+                    {
+                        "record": fn,
+                        "name": str(name),
+                        "kind": "nested_function",
+                        "owner_class": None,
+                    },
+                )
 
 
 def _callable_index(inventory: Mapping) -> dict[tuple[str, str], dict]:
@@ -405,7 +417,9 @@ def _flow_memberships(
             key = (step.get("file"), step.get("symbol"))
             if key not in callables:
                 continue
-            role = "entry" if key == entry_key or step.get("kind") == "entry" else "step"
+            role = (
+                "entry" if key == entry_key or step.get("kind") == "entry" else "step"
+            )
             memberships[key].append(
                 {
                     "id": _flow_id(flow),

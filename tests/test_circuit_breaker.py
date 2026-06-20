@@ -1,10 +1,8 @@
 """Tests for services/circuit_breaker.py"""
-from pathlib import Path
 
 from llm_wiki_cli.services.circuit_breaker import (
     MAX_CONSECUTIVE_FAILURES,
     load_state,
-    save_state,
     check_breaker,
     record_success,
     record_failure,
@@ -21,8 +19,11 @@ class TestLoadState:
 
     def test_loads_existing(self, tmp_path):
         import json
+
         (tmp_path / "llm-wiki-breaker.json").write_text(
-            json.dumps({"consecutive_failures": 2, "state": "closed", "last_failure_ts": None})
+            json.dumps(
+                {"consecutive_failures": 2, "state": "closed", "last_failure_ts": None}
+            )
         )
         state = load_state(tmp_path)
         assert state["consecutive_failures"] == 2
@@ -46,8 +47,11 @@ class TestCheckBreaker:
 
     def test_open_returns_true(self, tmp_path):
         import json
+
         (tmp_path / "llm-wiki-breaker.json").write_text(
-            json.dumps({"consecutive_failures": 3, "state": "open", "last_failure_ts": None})
+            json.dumps(
+                {"consecutive_failures": 3, "state": "open", "last_failure_ts": None}
+            )
         )
         assert check_breaker(tmp_path) is True
 
@@ -104,6 +108,7 @@ class TestResetBreaker:
 class TestAtomicWrite:
     def test_state_file_valid_json(self, tmp_path):
         import json
+
         record_failure(tmp_path)
         path = tmp_path / "llm-wiki-breaker.json"
         assert path.exists()

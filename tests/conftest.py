@@ -1,9 +1,9 @@
 """Shared fixtures for llm_wiki_cli tests."""
+
 import os
 import shutil
 import subprocess
 import textwrap
-from pathlib import Path
 
 import pytest
 
@@ -29,13 +29,22 @@ def tmp_project(tmp_path):
     # tests relying on the path (e.g. circuit breaker state files) still work.
     if _GIT_AVAILABLE:
         subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
-        subprocess.run(["git", "-C", str(proj), "config", "user.email", "test@test.com"], capture_output=True, check=True)
-        subprocess.run(["git", "-C", str(proj), "config", "user.name", "Test"], capture_output=True, check=True)
+        subprocess.run(
+            ["git", "-C", str(proj), "config", "user.email", "test@test.com"],
+            capture_output=True,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(proj), "config", "user.name", "Test"],
+            capture_output=True,
+            check=True,
+        )
     else:
         (proj / ".git").mkdir(exist_ok=True)
 
     # sample Python files
-    (proj / "models.py").write_text(textwrap.dedent("""\
+    (proj / "models.py").write_text(
+        textwrap.dedent("""\
         from pydantic import BaseModel
 
         class User(BaseModel):
@@ -49,9 +58,11 @@ def tmp_project(tmp_path):
             title: str
             owner: User
             price: float = 0.0
-    """))
+    """)
+    )
 
-    (proj / "main.py").write_text(textwrap.dedent("""\
+    (proj / "main.py").write_text(
+        textwrap.dedent("""\
         from models import User, Item
 
         def create_user(name: str, email: str) -> User:
@@ -61,22 +72,27 @@ def tmp_project(tmp_path):
         def list_items(user: User) -> list[Item]:
             \"\"\"List items for a user.\"\"\"
             return []
-    """))
+    """)
+    )
 
-    (proj / "utils.py").write_text(textwrap.dedent("""\
+    (proj / "utils.py").write_text(
+        textwrap.dedent("""\
         import os
         from pathlib import Path
 
         def get_data_dir() -> Path:
             return Path(os.environ.get("DATA_DIR", "."))
-    """))
+    """)
+    )
 
     # pyproject.toml for version tests
-    (proj / "pyproject.toml").write_text(textwrap.dedent("""\
+    (proj / "pyproject.toml").write_text(
+        textwrap.dedent("""\
         [project]
         name = "sample"
         version = "0.1.0"
-    """))
+    """)
+    )
 
     old_cwd = os.getcwd()
     os.chdir(proj)
@@ -91,7 +107,8 @@ def tmp_wiki(tmp_path):
     for subdir in ["entities", "modules", "workflows"]:
         (wiki / subdir).mkdir(parents=True)
 
-    (wiki / "index.md").write_text(textwrap.dedent("""\
+    (wiki / "index.md").write_text(
+        textwrap.dedent("""\
         # LLM Wiki Index
 
         ## Entities
@@ -105,13 +122,20 @@ def tmp_wiki(tmp_path):
         - [main](modules/main.md)
 
         ## Workflows
-    """))
+    """)
+    )
 
     (wiki / "log.md").write_text("# Architectural Log\n\n")
 
-    (wiki / "entities" / "User.md").write_text("# User\n\n**Location:** `models.py:3`\n")
-    (wiki / "entities" / "Item.md").write_text("# Item\n\n**Location:** `models.py:9`\n")
-    (wiki / "modules" / "models.md").write_text("# models Module\n\n**Path:** `models.py`\n")
+    (wiki / "entities" / "User.md").write_text(
+        "# User\n\n**Location:** `models.py:3`\n"
+    )
+    (wiki / "entities" / "Item.md").write_text(
+        "# Item\n\n**Location:** `models.py:9`\n"
+    )
+    (wiki / "modules" / "models.md").write_text(
+        "# models Module\n\n**Path:** `models.py`\n"
+    )
     (wiki / "modules" / "main.md").write_text("# main Module\n\n**Path:** `main.py`\n")
 
     return wiki

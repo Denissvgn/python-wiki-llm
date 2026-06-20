@@ -18,6 +18,7 @@ from llm_wiki_cli.extractors.ts_extractor import TypeScriptExtractor
 # Skip all tests when Node.js is not available on this machine.
 # ---------------------------------------------------------------------------
 
+
 def _command_available(*cmd: str) -> bool:
     if shutil.which(cmd[0]) is None:
         return False
@@ -30,7 +31,11 @@ def _command_available(*cmd: str) -> bool:
             timeout=10,
         )
         return True
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
+    except (
+        subprocess.CalledProcessError,
+        subprocess.TimeoutExpired,
+        FileNotFoundError,
+    ):
         return False
 
 
@@ -42,7 +47,9 @@ TS_NODE_MODULES = (
     / "ts_scripts"
     / "node_modules"
 )
-NODE_AVAILABLE = _command_available("node", "--version") and (TS_NODE_MODULES / "ts-morph").exists()
+NODE_AVAILABLE = (
+    _command_available("node", "--version") and (TS_NODE_MODULES / "ts-morph").exists()
+)
 skip_no_node = pytest.mark.skipif(
     not NODE_AVAILABLE,
     reason="Node.js/ts-morph dependencies not installed — TypeScript extractor tests skipped",
@@ -61,7 +68,9 @@ def _make_ts(tmp_path: Path, filename: str, content: str) -> Path:
 
 
 class TestTypeScriptWrapperFiltering:
-    def test_full_scan_passes_gitignore_filtered_files_to_subprocess(self, tmp_path, monkeypatch):
+    def test_full_scan_passes_gitignore_filtered_files_to_subprocess(
+        self, tmp_path, monkeypatch
+    ):
         _make_ts(tmp_path, "real.ts", "export class Real {}")
         _make_ts(tmp_path, "ignored.ts", "export class Ignored {}")
         (tmp_path / ".gitignore").write_text("ignored.ts\n", encoding="utf-8")
@@ -76,9 +85,17 @@ class TestTypeScriptWrapperFiltering:
                 stderr="",
             )
 
-        monkeypatch.setattr("llm_wiki_cli.extractors.ts_extractor.shutil.which", lambda _name: "/bin/tool")
-        monkeypatch.setattr("llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready", lambda: True)
-        monkeypatch.setattr("llm_wiki_cli.extractors.ts_extractor.subprocess.run", fake_run)
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.ts_extractor.shutil.which",
+            lambda _name: "/bin/tool",
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready",
+            lambda: True,
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.ts_extractor.subprocess.run", fake_run
+        )
 
         TypeScriptExtractor().extract(str(tmp_path))
 
@@ -288,7 +305,10 @@ class TestTypeScriptExtractor:
         cls = list(inv.values())[0]["classes"][0]
         assert "service" in cls["docstring"].lower() or "things" in cls["docstring"]
         method = cls["methods"][0]
-        assert "run" in method["docstring"].lower() or "service" in method["docstring"].lower()
+        assert (
+            "run" in method["docstring"].lower()
+            or "service" in method["docstring"].lower()
+        )
 
     def test_deep_mode_includes_imports(self, tmp_path):
         _make_ts(
@@ -429,7 +449,9 @@ class TestTypeScriptExtractorWithoutNode:
         with patch("shutil.which", return_value=None):
             TypeScriptExtractor().extract(str(tmp_path))
         err = capsys.readouterr().err
-        assert "node" in err.lower() or "nodejs" in err.lower() or "node.js" in err.lower()
+        assert (
+            "node" in err.lower() or "nodejs" in err.lower() or "node.js" in err.lower()
+        )
 
     def test_no_ts_files_skips_toolchain_probe(self, tmp_path):
         with patch("llm_wiki_cli.extractors.ts_extractor.shutil.which") as mock_which:
@@ -459,9 +481,16 @@ class TestTypeScriptExtractorWrapper:
 
     def test_missing_dependencies_do_not_invoke_npm_install(self, tmp_path):
         _make_ts(tmp_path, "app.ts", "export class App {}")
-        with patch("llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"):
-            with patch("llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready", return_value=False):
-                with patch("llm_wiki_cli.extractors.ts_extractor.subprocess.run") as mock_run:
+        with patch(
+            "llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"
+        ):
+            with patch(
+                "llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready",
+                return_value=False,
+            ):
+                with patch(
+                    "llm_wiki_cli.extractors.ts_extractor.subprocess.run"
+                ) as mock_run:
                     inv = TypeScriptExtractor().extract(str(tmp_path))
 
         assert inv == {}
@@ -475,9 +504,17 @@ class TestTypeScriptExtractorWrapper:
             stdout='{"web\\\\src\\\\app.ts": {"classes": [], "functions": []}}',
             stderr="",
         )
-        with patch("llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"):
-            with patch("llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready", return_value=True):
-                with patch("llm_wiki_cli.extractors.ts_extractor.subprocess.run", return_value=result):
+        with patch(
+            "llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"
+        ):
+            with patch(
+                "llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready",
+                return_value=True,
+            ):
+                with patch(
+                    "llm_wiki_cli.extractors.ts_extractor.subprocess.run",
+                    return_value=result,
+                ):
                     inv = TypeScriptExtractor().extract(str(tmp_path))
 
         assert "web/src/app.ts" in inv
@@ -492,9 +529,17 @@ class TestTypeScriptExtractorWrapper:
             stdout="{not-json",
             stderr="",
         )
-        with patch("llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"):
-            with patch("llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready", return_value=True):
-                with patch("llm_wiki_cli.extractors.ts_extractor.subprocess.run", return_value=result):
+        with patch(
+            "llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"
+        ):
+            with patch(
+                "llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready",
+                return_value=True,
+            ):
+                with patch(
+                    "llm_wiki_cli.extractors.ts_extractor.subprocess.run",
+                    return_value=result,
+                ):
                     inv = TypeScriptExtractor().extract(str(tmp_path))
 
         assert inv == {}
@@ -502,8 +547,13 @@ class TestTypeScriptExtractorWrapper:
 
     def test_timeout_returns_empty(self, tmp_path, capsys):
         _make_ts(tmp_path, "app.ts", "export class App {}")
-        with patch("llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"):
-            with patch("llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready", return_value=True):
+        with patch(
+            "llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"
+        ):
+            with patch(
+                "llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready",
+                return_value=True,
+            ):
                 with patch(
                     "llm_wiki_cli.extractors.ts_extractor.subprocess.run",
                     side_effect=subprocess.TimeoutExpired(["node"], 120),
@@ -590,7 +640,10 @@ class TestTypeScriptExtractorFixes:
         inv = TypeScriptExtractor().extract(str(tmp_path), deep=True)
         data = list(inv.values())[0]
         assert "module_docstring" in data
-        assert "utils" in data["module_docstring"].lower() or "utility" in data["module_docstring"].lower()
+        assert (
+            "utils" in data["module_docstring"].lower()
+            or "utility" in data["module_docstring"].lower()
+        )
 
     def test_anonymous_class_disambiguated(self, tmp_path):
         """An anonymous class (export default class {}) gets a line-disambiguated name
@@ -611,7 +664,9 @@ class TestTypeScriptExtractorFixes:
         name = classes[0]["name"]
         # Must not be the bare '<anonymous>' that caused collisions;
         # must contain the line number for disambiguation.
-        assert name.startswith("<anonymous_L"), f"Expected disambiguated name, got: {name!r}"
+        assert name.startswith("<anonymous_L"), (
+            f"Expected disambiguated name, got: {name!r}"
+        )
 
     def test_dts_files_excluded(self, tmp_path):
         """Declaration files (.d.ts) must not appear in the inventory."""
@@ -629,9 +684,8 @@ class TestTypeScriptExtractorFixes:
         # Write a minimal tsconfig at the parent level.
         tsconfig = {"compilerOptions": {"strict": True}}
         import json as _json
-        (tmp_path / "tsconfig.json").write_bytes(
-            _json.dumps(tsconfig).encode("utf-8")
-        )
+
+        (tmp_path / "tsconfig.json").write_bytes(_json.dumps(tsconfig).encode("utf-8"))
         src = tmp_path / "src"
         src.mkdir()
         _make_ts(src, "app.ts", "export class App {}")
@@ -653,9 +707,7 @@ class TestTypeScriptExtractorFixes:
 
     def test_stderr_forwarded_on_success(self, tmp_path, capsys):
         """Warnings written to Node.js stderr must reach Python sys.stderr."""
-        import subprocess
         from unittest.mock import patch, MagicMock
-        from llm_wiki_cli.extractors import ts_extractor
 
         _make_ts(tmp_path, "file.ts", "export class File {}")
 

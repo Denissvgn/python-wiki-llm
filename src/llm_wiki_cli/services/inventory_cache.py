@@ -79,7 +79,9 @@ def _sha256_bytes(data: bytes) -> str:
 
 
 def _hash_json(value: Any) -> str:
-    return _sha256_bytes(json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8"))
+    return _sha256_bytes(
+        json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    )
 
 
 def _hash_file(path: Path) -> str | None:
@@ -145,11 +147,13 @@ def _implementation_fingerprint() -> str:
         "extractors/rust_scripts/Cargo.lock",
         "extractors/rust_scripts/src/main.rs",
     ]
-    return _hash_labeled_files([
-        (rel_path, package_root / rel_path)
-        for rel_path in rel_paths
-        if (package_root / rel_path).exists()
-    ])
+    return _hash_labeled_files(
+        [
+            (rel_path, package_root / rel_path)
+            for rel_path in rel_paths
+            if (package_root / rel_path).exists()
+        ]
+    )
 
 
 def _plugin_fingerprint(root: Path) -> str:
@@ -171,12 +175,14 @@ def _plugin_fingerprint(root: Path) -> str:
 
 
 def _filter_fingerprint() -> str:
-    return _hash_json({
-        "excluded_dirs": sorted(EXCLUDED_DIRS),
-        "language_extensions": LANGUAGE_EXTENSIONS,
-        "dockerfile_patterns": DOCKERFILE_PATTERNS,
-        "compose_patterns": COMPOSE_PATTERNS,
-    })
+    return _hash_json(
+        {
+            "excluded_dirs": sorted(EXCLUDED_DIRS),
+            "language_extensions": LANGUAGE_EXTENSIONS,
+            "dockerfile_patterns": DOCKERFILE_PATTERNS,
+            "compose_patterns": COMPOSE_PATTERNS,
+        }
+    )
 
 
 def build_inventory_cache_key(
@@ -213,7 +219,7 @@ def _resolve_gitdir_file(git_file: Path) -> Path | None:
     prefix = "gitdir:"
     if not text.lower().startswith(prefix):
         return None
-    raw_path = text[len(prefix):].strip()
+    raw_path = text[len(prefix) :].strip()
     gitdir = Path(raw_path)
     if not gitdir.is_absolute():
         gitdir = git_file.parent / gitdir
@@ -265,7 +271,9 @@ class InventoryCache:
         self.stats = InventoryCacheStats(
             enabled=enabled,
             path=str(path) if path is not None else None,
-            status="rebuild" if enabled and options.rebuild else ("miss" if enabled else "disabled"),
+            status="rebuild"
+            if enabled and options.rebuild
+            else ("miss" if enabled else "disabled"),
         )
 
     @property
@@ -310,7 +318,9 @@ class InventoryCache:
             return
         if self.stats.status in {"corrupt", "invalid"}:
             return
-        if self.stats.hits and not (self.stats.misses or self.stats.changed or self.stats.stale):
+        if self.stats.hits and not (
+            self.stats.misses or self.stats.changed or self.stats.stale
+        ):
             self.stats.status = "hit"
         elif self.stats.hits:
             self.stats.status = "partial"
@@ -325,7 +335,9 @@ class InventoryCache:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         tmp_path = self.path.with_name(f".{self.path.name}.{os.getpid()}.tmp")
         try:
-            tmp_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            tmp_path.write_text(
+                json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+            )
             tmp_path.replace(self.path)
             self.stats.saved_entries = len(files)
         except OSError as exc:
@@ -347,7 +359,9 @@ def is_valid_cache_entry(entry: Any, source_file: SourceFile, file_hash: str) ->
     return isinstance(entry.get("inventory"), dict)
 
 
-def make_cache_entry(source_file: SourceFile, file_hash: str, inventory_entry: dict) -> dict:
+def make_cache_entry(
+    source_file: SourceFile, file_hash: str, inventory_entry: dict
+) -> dict:
     return {
         "language": source_file.language,
         "size": source_file.size,

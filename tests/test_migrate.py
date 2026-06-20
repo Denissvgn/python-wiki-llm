@@ -62,7 +62,9 @@ def _make_wiki(proj: Path) -> Path:
 
 def _has_legacy_archive(wiki: Path, *parts: str) -> bool:
     legacy_root = wiki / "legacy"
-    return any((archive / Path(*parts)).exists() for archive in legacy_root.glob("migrate-*"))
+    return any(
+        (archive / Path(*parts)).exists() for archive in legacy_root.glob("migrate-*")
+    )
 
 
 def _legacy_archive_names(wiki: Path) -> list[str]:
@@ -120,13 +122,31 @@ class TestMigrateHelpers:
         assert parsed.location_line is None
 
     def test_location_split_preserves_windows_drive_letters(self):
-        assert _split_location(r"C:\repo\pkg\client.py") == (r"C:\repo\pkg\client.py", None)
-        assert _split_location(r"C:\repo\pkg\client.py:42") == (r"C:\repo\pkg\client.py", 42)
+        assert _split_location(r"C:\repo\pkg\client.py") == (
+            r"C:\repo\pkg\client.py",
+            None,
+        )
+        assert _split_location(r"C:\repo\pkg\client.py:42") == (
+            r"C:\repo\pkg\client.py",
+            42,
+        )
 
     def test_ambiguous_stem_match_returns_none(self):
         targets = [
-            TargetPage("modules", "pkg_a_server", "modules/pkg_a_server.md", "", "pkg_a/server.py"),
-            TargetPage("modules", "pkg_b_server", "modules/pkg_b_server.md", "", "pkg_b/server.py"),
+            TargetPage(
+                "modules",
+                "pkg_a_server",
+                "modules/pkg_a_server.md",
+                "",
+                "pkg_a/server.py",
+            ),
+            TargetPage(
+                "modules",
+                "pkg_b_server",
+                "modules/pkg_b_server.md",
+                "",
+                "pkg_b/server.py",
+            ),
         ]
         page = ExistingPage(
             kind="modules",
@@ -156,21 +176,35 @@ class TestMigrateHelpers:
 
 
 class TestMigrateIntegration:
-    def test_collision_aware_pages_archive_old_pages_and_lint_passes(self, tmp_path, capsys):
+    def test_collision_aware_pages_archive_old_pages_and_lint_passes(
+        self, tmp_path, capsys
+    ):
         proj = tmp_path / "proj"
         proj.mkdir()
         _write(proj / "api" / "server.py", "class Server:\n    pass\n")
         _write(proj / "worker" / "server.py", "class WorkerServer:\n    pass\n")
-        _write(proj / "sidecars" / "workspace_server.py", "class WorkspaceServer:\n    pass\n")
-        _write(proj / "other" / "workspace_server.py", "class OtherWorkspaceServer:\n    pass\n")
+        _write(
+            proj / "sidecars" / "workspace_server.py",
+            "class WorkspaceServer:\n    pass\n",
+        )
+        _write(
+            proj / "other" / "workspace_server.py",
+            "class OtherWorkspaceServer:\n    pass\n",
+        )
         wiki = _make_wiki(proj)
-        _write(wiki / "modules" / "server.md", "# server\n\n**Path:** `api/server.py`\n\nManual server notes.\n")
+        _write(
+            wiki / "modules" / "server.md",
+            "# server\n\n**Path:** `api/server.py`\n\nManual server notes.\n",
+        )
         _write(
             wiki / "modules" / "workspace_server.md",
             "# workspace_server\n\n**Path:** `sidecars/workspace_server.py`\n\nManual workspace notes.\n",
         )
         _write(wiki / "modules" / "orphan.md", "# orphan\n\nUnmatched notes.\n")
-        _write(wiki / "workflows" / "flow.md", "# flow\n\n- [server](../modules/server.md)\n")
+        _write(
+            wiki / "workflows" / "flow.md",
+            "# flow\n\n- [server](../modules/server.md)\n",
+        )
 
         os.chdir(proj)
         migrate_cmd.run(_make_args())
@@ -178,8 +212,12 @@ class TestMigrateIntegration:
         assert not (wiki / "modules" / "workspace_server.md").exists()
         assert (wiki / "modules" / "api_server.md").exists()
         assert (wiki / "modules" / "sidecars_workspace_server.md").exists()
-        assert "Manual workspace notes" in (wiki / "modules" / "sidecars_workspace_server.md").read_text(encoding="utf-8")
-        assert "../modules/api_server.md" in (wiki / "workflows" / "flow.md").read_text(encoding="utf-8")
+        assert "Manual workspace notes" in (
+            wiki / "modules" / "sidecars_workspace_server.md"
+        ).read_text(encoding="utf-8")
+        assert "../modules/api_server.md" in (wiki / "workflows" / "flow.md").read_text(
+            encoding="utf-8"
+        )
         assert _has_legacy_archive(wiki, "modules", "server.md")
         assert _has_legacy_archive(wiki, "modules", "workspace_server.md")
         assert _has_legacy_archive(wiki, "modules", "orphan.md")
@@ -189,7 +227,9 @@ class TestMigrateIntegration:
         output = capsys.readouterr().out
         assert "Lint passed" in output
 
-    def test_workflow_raw_stem_links_rewrite_per_workflow_from_call_graph(self, tmp_path, capsys):
+    def test_workflow_raw_stem_links_rewrite_per_workflow_from_call_graph(
+        self, tmp_path, capsys
+    ):
         proj = tmp_path / "proj"
         proj.mkdir()
         _write(proj / "models" / "task.py", "class Task:\n    pass\n")
@@ -251,8 +291,12 @@ class TestMigrateIntegration:
         os.chdir(proj)
         migrate_cmd.run(_make_args())
 
-        create_task = (wiki / "workflows" / "create_task.md").read_text(encoding="utf-8")
-        schedule_leaf = (wiki / "workflows" / "schedule_leaf_task.md").read_text(encoding="utf-8")
+        create_task = (wiki / "workflows" / "create_task.md").read_text(
+            encoding="utf-8"
+        )
+        schedule_leaf = (wiki / "workflows" / "schedule_leaf_task.md").read_text(
+            encoding="utf-8"
+        )
         assert "../modules/schemas_task.md" in create_task
         assert "../modules/models_task.md" not in create_task
         assert "../modules/models_task.md" in schedule_leaf
@@ -265,14 +309,27 @@ class TestMigrateIntegration:
         output = capsys.readouterr().out
         assert "Lint passed" in output
 
-    def test_infrastructure_page_regenerated_and_legacy_content_preserved(self, tmp_path, capsys):
+    def test_infrastructure_page_regenerated_and_legacy_content_preserved(
+        self, tmp_path, capsys
+    ):
         proj = tmp_path / "proj"
         proj.mkdir()
-        _write(proj / "app" / "workspace_server.py", "class WorkspaceServer:\n    pass\n")
-        _write(proj / "other" / "workspace_server.py", "class OtherWorkspaceServer:\n    pass\n")
-        _write(proj / "docker" / "Dockerfile.workspace", "FROM alpine\nCOPY app/workspace_server.py /app/\n")
+        _write(
+            proj / "app" / "workspace_server.py", "class WorkspaceServer:\n    pass\n"
+        )
+        _write(
+            proj / "other" / "workspace_server.py",
+            "class OtherWorkspaceServer:\n    pass\n",
+        )
+        _write(
+            proj / "docker" / "Dockerfile.workspace",
+            "FROM alpine\nCOPY app/workspace_server.py /app/\n",
+        )
         wiki = _make_wiki(proj)
-        _write(wiki / "modules" / "workspace_server.md", "# workspace\n\n**Path:** `app/workspace_server.py`\n")
+        _write(
+            wiki / "modules" / "workspace_server.md",
+            "# workspace\n\n**Path:** `app/workspace_server.py`\n",
+        )
         _write(
             wiki / "infrastructure" / "docker_Dockerfile_workspace.md",
             """
@@ -287,11 +344,15 @@ class TestMigrateIntegration:
         os.chdir(proj)
         migrate_cmd.run(_make_args())
 
-        infra = (wiki / "infrastructure" / "docker_Dockerfile_workspace.md").read_text(encoding="utf-8")
+        infra = (wiki / "infrastructure" / "docker_Dockerfile_workspace.md").read_text(
+            encoding="utf-8"
+        )
         assert "../modules/app_workspace_server.md" in infra
         assert "../modules/workspace_server.md" not in infra
         assert "Legacy Notes" in infra
-        assert _has_legacy_archive(wiki, "infrastructure", "docker_Dockerfile_workspace.md")
+        assert _has_legacy_archive(
+            wiki, "infrastructure", "docker_Dockerfile_workspace.md"
+        )
 
         lint_cmd.run(_make_args())
         output = capsys.readouterr().out
@@ -319,7 +380,9 @@ class TestMigrateIntegration:
 
         migrate_cmd.run(_make_args())
         second_archives = _legacy_archive_names(wiki)
-        second_content = (wiki / "modules" / "api_server.md").read_text(encoding="utf-8")
+        second_content = (wiki / "modules" / "api_server.md").read_text(
+            encoding="utf-8"
+        )
 
         assert first_archives
         assert second_archives == first_archives
@@ -336,7 +399,10 @@ class TestMigrateIntegration:
         _write(proj / "models.py", "class User:\n    pass\n")
         wiki = _make_wiki(proj)
         _write(proj / ".gitignore", "# user rules\n*.pyc\n")
-        _write(wiki / "modules" / "models.md", "# models\n\n**Path:** `models.py`\n\nManual.\n")
+        _write(
+            wiki / "modules" / "models.md",
+            "# models\n\n**Path:** `models.py`\n\nManual.\n",
+        )
 
         os.chdir(proj)
         migrate_cmd.run(_make_args())
@@ -351,7 +417,9 @@ class TestMigrateIntegration:
         output = capsys.readouterr().out
         assert "GITIGNORE add docs/llm_wiki/legacy/" in output
 
-    def test_path_only_location_maps_ambiguous_entity_and_rewrites_legacy_links(self, tmp_path, capsys):
+    def test_path_only_location_maps_ambiguous_entity_and_rewrites_legacy_links(
+        self, tmp_path, capsys
+    ):
         proj = tmp_path / "proj"
         proj.mkdir()
         _write(proj / "pkg" / "session_client.py", "class SessionClient:\n    pass\n")
@@ -396,8 +464,12 @@ class TestMigrateIntegration:
         assert canonical.exists()
         assert not (wiki / "entities" / "SessionClient.md").exists()
         assert "Manual session details" in canonical.read_text(encoding="utf-8")
-        module_content = (wiki / "modules" / "session_client.md").read_text(encoding="utf-8")
-        app_state_content = (wiki / "entities" / "AppState.md").read_text(encoding="utf-8")
+        module_content = (wiki / "modules" / "session_client.md").read_text(
+            encoding="utf-8"
+        )
+        app_state_content = (wiki / "entities" / "AppState.md").read_text(
+            encoding="utf-8"
+        )
         assert "../entities/session_client_SessionClient.md" in module_content
         assert "../entities/SessionClient.md" not in module_content
         assert "(session_client_SessionClient.md)" in app_state_content
@@ -511,7 +583,11 @@ class TestMigrateIntegration:
             """,
         )
         _write(
-            wiki / "legacy" / "migrate-20240101000000" / "entities" / "SessionClient.md",
+            wiki
+            / "legacy"
+            / "migrate-20240101000000"
+            / "entities"
+            / "SessionClient.md",
             """
             # SessionClient
 
@@ -524,9 +600,15 @@ class TestMigrateIntegration:
         os.chdir(proj)
         migrate_cmd.run(_make_args())
 
-        canonical = (wiki / "entities" / "session_client_SessionClient.md").read_text(encoding="utf-8")
-        module_content = (wiki / "modules" / "session_client.md").read_text(encoding="utf-8")
-        app_state_content = (wiki / "entities" / "AppState.md").read_text(encoding="utf-8")
+        canonical = (wiki / "entities" / "session_client_SessionClient.md").read_text(
+            encoding="utf-8"
+        )
+        module_content = (wiki / "modules" / "session_client.md").read_text(
+            encoding="utf-8"
+        )
+        app_state_content = (wiki / "entities" / "AppState.md").read_text(
+            encoding="utf-8"
+        )
         assert "Archived session details" in canonical
         assert "../entities/session_client_SessionClient.md" in module_content
         assert "../entities/SessionClient.md" not in module_content
@@ -538,7 +620,9 @@ class TestMigrateIntegration:
         assert "Lint passed" in output
 
     @skip_no_ts
-    def test_typescript_absolute_page_names_migrate_to_relative_names(self, tmp_path, capsys):
+    def test_typescript_absolute_page_names_migrate_to_relative_names(
+        self, tmp_path, capsys
+    ):
         proj = tmp_path / "proj"
         proj.mkdir()
         src_file = proj / "web" / "src" / "api" / "client.ts"
@@ -546,8 +630,14 @@ class TestMigrateIntegration:
         wiki = _make_wiki(proj)
         old_module = "proj_web_src_api_client"
         old_entity = "proj_web_src_api_client_Project"
-        _write(wiki / "modules" / f"{old_module}.md", f"# client\n\n**Path:** `{src_file}`\n")
-        _write(wiki / "entities" / f"{old_entity}.md", f"# Project\n\n**Location:** `{src_file}:1`\n")
+        _write(
+            wiki / "modules" / f"{old_module}.md",
+            f"# client\n\n**Path:** `{src_file}`\n",
+        )
+        _write(
+            wiki / "entities" / f"{old_entity}.md",
+            f"# Project\n\n**Location:** `{src_file}:1`\n",
+        )
 
         os.chdir(proj)
         migrate_cmd.run(_make_args())
@@ -568,7 +658,10 @@ class TestMigrateIntegration:
         proj.mkdir()
         _write(proj / "models.py", "class User:\n    pass\n")
         wiki = _make_wiki(proj)
-        _write(wiki / "modules" / "models.md", "# models\n\n**Path:** `models.py`\n\nManual.\n")
+        _write(
+            wiki / "modules" / "models.md",
+            "# models\n\n**Path:** `models.py`\n\nManual.\n",
+        )
         before = {
             path.relative_to(wiki).as_posix(): path.read_text(encoding="utf-8")
             for path in wiki.rglob("*")
@@ -579,7 +672,15 @@ class TestMigrateIntegration:
         monkeypatch.setattr(
             sys,
             "argv",
-            ["llm-wiki", "migrate", "--src-dir", ".", "--wiki-dir", "docs/llm_wiki", "--dry-run"],
+            [
+                "llm-wiki",
+                "migrate",
+                "--src-dir",
+                ".",
+                "--wiki-dir",
+                "docs/llm_wiki",
+                "--dry-run",
+            ],
         )
         cli.main()
 
@@ -601,7 +702,10 @@ class TestMigrateIntegration:
         proj.mkdir()
         _write(proj / "models.py", "class User:\n    pass\n")
         wiki = _make_wiki(proj)
-        _write(wiki / "modules" / "models.md", "# models\n\n**Path:** `models.py`\n\nManual.\n")
+        _write(
+            wiki / "modules" / "models.md",
+            "# models\n\n**Path:** `models.py`\n\nManual.\n",
+        )
         before = {
             path.relative_to(wiki).as_posix(): path.read_text(encoding="utf-8")
             for path in wiki.rglob("*")
@@ -638,14 +742,22 @@ class TestMigrateIntegration:
         assert not (wiki / "legacy").exists()
         assert not Path(".gitignore").exists()
 
-    def test_chunked_migrate_applies_next_pending_chunk_until_finalizers(self, tmp_path, capsys):
+    def test_chunked_migrate_applies_next_pending_chunk_until_finalizers(
+        self, tmp_path, capsys
+    ):
         proj = tmp_path / "proj"
         proj.mkdir()
         _write(proj / "alpha.py", "def alpha():\n    pass\n")
         _write(proj / "beta.py", "def beta():\n    pass\n")
         wiki = _make_wiki(proj)
-        _write(wiki / "modules" / "alpha.md", "# alpha\n\n**Path:** `alpha.py`\n\nManual alpha.\n")
-        _write(wiki / "modules" / "beta.md", "# beta\n\n**Path:** `beta.py`\n\nManual beta.\n")
+        _write(
+            wiki / "modules" / "alpha.md",
+            "# alpha\n\n**Path:** `alpha.py`\n\nManual alpha.\n",
+        )
+        _write(
+            wiki / "modules" / "beta.md",
+            "# beta\n\n**Path:** `beta.py`\n\nManual beta.\n",
+        )
 
         os.chdir(proj)
         migrate_cmd.run(_make_args(chunk_size=1))

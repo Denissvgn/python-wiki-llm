@@ -80,7 +80,9 @@ def _resolve_target_module(module: str, name: str) -> str:
     return module
 
 
-def _resolve_internal_targets(imp: dict, filepath: str, resolver, symbol_index) -> set[str]:
+def _resolve_internal_targets(
+    imp: dict, filepath: str, resolver, symbol_index
+) -> set[str]:
     """Return the internal files *imp* (from *filepath*) resolves to.
 
     Empty only when the import is stdlib/third-party/unresolvable; a module that
@@ -268,7 +270,9 @@ def dependency_metrics(graph: dict) -> dict:
 # ══ Load / startup order (Epic 2.3) ═══════════════════════════════════════
 
 
-def _condense(graph: dict) -> tuple[dict[str, str], dict[str, list[str]], list[list[str]]]:
+def _condense(
+    graph: dict,
+) -> tuple[dict[str, str], dict[str, list[str]], list[list[str]]]:
     """Condense the graph's strongly-connected components into super-nodes.
 
     Returns ``(node_to_component, components, cycle_groups)`` where every node
@@ -455,41 +459,223 @@ _PYTHON_ALIASES: dict[str, str] = {
 # Bundled fallback for ``sys.stdlib_module_names`` (added in 3.10). Top-level
 # standard-library module names for Python 3.9; used only on 3.9 so a stdlib
 # import is never misreported as an undeclared external dependency.
-_PYTHON_STDLIB_FALLBACK: frozenset[str] = frozenset({
-    "__future__", "_thread", "abc", "aifc", "argparse", "array", "ast",
-    "asynchat", "asyncio", "asyncore", "atexit", "audioop", "base64", "bdb",
-    "binascii", "bisect", "builtins", "bz2", "cProfile", "calendar", "cgi",
-    "cgitb", "chunk", "cmath", "cmd", "code", "codecs", "codeop", "collections",
-    "colorsys", "compileall", "concurrent", "configparser", "contextlib",
-    "contextvars", "copy", "copyreg", "crypt", "csv", "ctypes", "curses",
-    "dataclasses", "datetime", "dbm", "decimal", "difflib", "dis",
-    "distutils", "doctest", "email", "encodings", "ensurepip", "enum", "errno",
-    "faulthandler", "fcntl", "filecmp", "fileinput", "fnmatch", "fractions",
-    "ftplib", "functools", "gc", "genericpath", "getopt", "getpass", "gettext",
-    "glob", "graphlib", "grp", "gzip", "hashlib", "heapq", "hmac", "html",
-    "http", "idlelib", "imaplib", "imghdr", "imp", "importlib", "inspect",
-    "io", "ipaddress",
-    "itertools", "json", "keyword", "lib2to3", "linecache", "locale", "logging",
-    "lzma", "mailbox", "mailcap", "marshal", "math", "mimetypes", "mmap",
-    "modulefinder", "msilib", "msvcrt", "multiprocessing", "netrc", "nis",
-    "nntplib", "nt", "ntpath", "nturl2path", "numbers", "opcode", "operator",
-    "optparse", "os", "ossaudiodev", "pathlib", "pdb", "pickle", "pickletools",
-    "pipes", "pkgutil", "platform", "plistlib", "poplib", "posix", "posixpath",
-    "pprint", "profile", "pstats", "pty", "pwd", "py_compile", "pyclbr",
-    "pydoc", "pyexpat", "queue", "quopri", "random", "re", "readline",
-    "reprlib", "resource", "rlcompleter", "runpy", "sched", "secrets",
-    "select", "selectors", "shelve", "shlex", "shutil", "signal",
-    "site", "smtpd", "smtplib", "sndhdr", "socket", "socketserver", "spwd",
-    "sqlite3", "ssl", "stat", "statistics", "string", "stringprep", "struct",
-    "subprocess", "sunau", "symtable", "sys", "sysconfig", "syslog", "tabnanny",
-    "tarfile", "telnetlib", "tempfile", "termios", "test", "textwrap",
-    "threading", "time", "timeit", "tkinter", "token", "tokenize", "trace",
-    "traceback", "tracemalloc", "tty", "turtle", "turtledemo", "types",
-    "typing", "unicodedata", "unittest", "urllib", "uu", "uuid", "venv",
-    "warnings", "wave", "weakref", "webbrowser", "winreg", "winsound",
-    "wsgiref", "xdrlib", "xml", "xmlrpc", "zipapp", "zipfile", "zipimport",
-    "zlib", "zoneinfo",
-})
+_PYTHON_STDLIB_FALLBACK: frozenset[str] = frozenset(
+    {
+        "__future__",
+        "_thread",
+        "abc",
+        "aifc",
+        "argparse",
+        "array",
+        "ast",
+        "asynchat",
+        "asyncio",
+        "asyncore",
+        "atexit",
+        "audioop",
+        "base64",
+        "bdb",
+        "binascii",
+        "bisect",
+        "builtins",
+        "bz2",
+        "cProfile",
+        "calendar",
+        "cgi",
+        "cgitb",
+        "chunk",
+        "cmath",
+        "cmd",
+        "code",
+        "codecs",
+        "codeop",
+        "collections",
+        "colorsys",
+        "compileall",
+        "concurrent",
+        "configparser",
+        "contextlib",
+        "contextvars",
+        "copy",
+        "copyreg",
+        "crypt",
+        "csv",
+        "ctypes",
+        "curses",
+        "dataclasses",
+        "datetime",
+        "dbm",
+        "decimal",
+        "difflib",
+        "dis",
+        "distutils",
+        "doctest",
+        "email",
+        "encodings",
+        "ensurepip",
+        "enum",
+        "errno",
+        "faulthandler",
+        "fcntl",
+        "filecmp",
+        "fileinput",
+        "fnmatch",
+        "fractions",
+        "ftplib",
+        "functools",
+        "gc",
+        "genericpath",
+        "getopt",
+        "getpass",
+        "gettext",
+        "glob",
+        "graphlib",
+        "grp",
+        "gzip",
+        "hashlib",
+        "heapq",
+        "hmac",
+        "html",
+        "http",
+        "idlelib",
+        "imaplib",
+        "imghdr",
+        "imp",
+        "importlib",
+        "inspect",
+        "io",
+        "ipaddress",
+        "itertools",
+        "json",
+        "keyword",
+        "lib2to3",
+        "linecache",
+        "locale",
+        "logging",
+        "lzma",
+        "mailbox",
+        "mailcap",
+        "marshal",
+        "math",
+        "mimetypes",
+        "mmap",
+        "modulefinder",
+        "msilib",
+        "msvcrt",
+        "multiprocessing",
+        "netrc",
+        "nis",
+        "nntplib",
+        "nt",
+        "ntpath",
+        "nturl2path",
+        "numbers",
+        "opcode",
+        "operator",
+        "optparse",
+        "os",
+        "ossaudiodev",
+        "pathlib",
+        "pdb",
+        "pickle",
+        "pickletools",
+        "pipes",
+        "pkgutil",
+        "platform",
+        "plistlib",
+        "poplib",
+        "posix",
+        "posixpath",
+        "pprint",
+        "profile",
+        "pstats",
+        "pty",
+        "pwd",
+        "py_compile",
+        "pyclbr",
+        "pydoc",
+        "pyexpat",
+        "queue",
+        "quopri",
+        "random",
+        "re",
+        "readline",
+        "reprlib",
+        "resource",
+        "rlcompleter",
+        "runpy",
+        "sched",
+        "secrets",
+        "select",
+        "selectors",
+        "shelve",
+        "shlex",
+        "shutil",
+        "signal",
+        "site",
+        "smtpd",
+        "smtplib",
+        "sndhdr",
+        "socket",
+        "socketserver",
+        "spwd",
+        "sqlite3",
+        "ssl",
+        "stat",
+        "statistics",
+        "string",
+        "stringprep",
+        "struct",
+        "subprocess",
+        "sunau",
+        "symtable",
+        "sys",
+        "sysconfig",
+        "syslog",
+        "tabnanny",
+        "tarfile",
+        "telnetlib",
+        "tempfile",
+        "termios",
+        "test",
+        "textwrap",
+        "threading",
+        "time",
+        "timeit",
+        "tkinter",
+        "token",
+        "tokenize",
+        "trace",
+        "traceback",
+        "tracemalloc",
+        "tty",
+        "turtle",
+        "turtledemo",
+        "types",
+        "typing",
+        "unicodedata",
+        "unittest",
+        "urllib",
+        "uu",
+        "uuid",
+        "venv",
+        "warnings",
+        "wave",
+        "weakref",
+        "webbrowser",
+        "winreg",
+        "winsound",
+        "wsgiref",
+        "xdrlib",
+        "xml",
+        "xmlrpc",
+        "zipapp",
+        "zipfile",
+        "zipimport",
+        "zlib",
+        "zoneinfo",
+    }
+)
 
 
 def _python_stdlib() -> frozenset[str]:
@@ -517,7 +703,8 @@ def _parse_python_manifest(project_root: Path) -> Optional[_Manifest]:
     project = project if isinstance(project, dict) else {}
 
     required = {
-        n for dep in project.get("dependencies", []) or []
+        n
+        for dep in project.get("dependencies", []) or []
         if isinstance(dep, str) and (n := _normalize_python(_pep508_name(dep)))
     }
     optional: set[str] = set()
@@ -525,42 +712,90 @@ def _parse_python_manifest(project_root: Path) -> Optional[_Manifest]:
     if isinstance(extras, dict):
         for group in extras.values():
             optional |= {
-                n for dep in group or []
+                n
+                for dep in group or []
                 if isinstance(dep, str) and (n := _normalize_python(_pep508_name(dep)))
             }
 
     aliases = dict(_PYTHON_ALIASES)
     tool = data.get("tool", {})
-    override = tool.get("llm-wiki", {}).get("dependency-aliases", {}) if isinstance(tool, dict) else {}
+    override = (
+        tool.get("llm-wiki", {}).get("dependency-aliases", {})
+        if isinstance(tool, dict)
+        else {}
+    )
     if isinstance(override, dict):
         aliases.update({str(k): str(v) for k, v in override.items()})
 
     return _Manifest(frozenset(required), frozenset(optional), aliases=aliases)
 
 
-def _classify_python(module: str, name: str, manifest: Optional[_Manifest]) -> Optional[str]:
+def _classify_python(
+    module: str, name: str, manifest: Optional[_Manifest]
+) -> Optional[str]:
     module = module or ""
     if not module or module.startswith("."):
         return None  # relative / unresolved-relative import
     top = module.split(".", 1)[0]
     if not top or top in _python_stdlib():
         return None
-    aliases = manifest.aliases if manifest and manifest.aliases is not None else _PYTHON_ALIASES
+    aliases = (
+        manifest.aliases
+        if manifest and manifest.aliases is not None
+        else _PYTHON_ALIASES
+    )
     return _normalize_python(aliases.get(top, top))
 
 
 # ── TypeScript / JavaScript (DL-202) ──────────────────────────────────
 
 
-_NODE_BUILTINS: frozenset[str] = frozenset({
-    "assert", "async_hooks", "buffer", "child_process", "cluster", "console",
-    "constants", "crypto", "dgram", "diagnostics_channel", "dns", "domain",
-    "events", "fs", "http", "http2", "https", "inspector", "module", "net",
-    "os", "path", "perf_hooks", "process", "punycode", "querystring",
-    "readline", "repl", "stream", "string_decoder", "sys", "timers", "tls",
-    "trace_events", "tty", "url", "util", "v8", "vm", "wasi", "worker_threads",
-    "zlib",
-})
+_NODE_BUILTINS: frozenset[str] = frozenset(
+    {
+        "assert",
+        "async_hooks",
+        "buffer",
+        "child_process",
+        "cluster",
+        "console",
+        "constants",
+        "crypto",
+        "dgram",
+        "diagnostics_channel",
+        "dns",
+        "domain",
+        "events",
+        "fs",
+        "http",
+        "http2",
+        "https",
+        "inspector",
+        "module",
+        "net",
+        "os",
+        "path",
+        "perf_hooks",
+        "process",
+        "punycode",
+        "querystring",
+        "readline",
+        "repl",
+        "stream",
+        "string_decoder",
+        "sys",
+        "timers",
+        "tls",
+        "trace_events",
+        "tty",
+        "url",
+        "util",
+        "v8",
+        "vm",
+        "wasi",
+        "worker_threads",
+        "zlib",
+    }
+)
 
 
 def _parse_ts_manifest(project_root: Path) -> Optional[_Manifest]:
@@ -581,7 +816,9 @@ def _parse_ts_manifest(project_root: Path) -> Optional[_Manifest]:
     return _Manifest(frozenset(required), frozenset(optional))
 
 
-def _classify_ts(module: str, name: str, manifest: Optional[_Manifest]) -> Optional[str]:
+def _classify_ts(
+    module: str, name: str, manifest: Optional[_Manifest]
+) -> Optional[str]:
     spec = (module or "").strip()
     if not spec or spec.startswith((".", "/")):
         return None  # relative
@@ -618,7 +855,7 @@ def _parse_go_manifest(project_root: Path) -> Optional[_Manifest]:
         if in_require_block:
             if line.startswith(")"):
                 in_require_block = False
-            elif (path := _go_require_path(line)):
+            elif path := _go_require_path(line):
                 required.add(path)
             continue
         if line.startswith("module "):
@@ -628,15 +865,20 @@ def _parse_go_manifest(project_root: Path) -> Optional[_Manifest]:
             if old and _is_local_path(target):
                 replaced_to_local.add(old)
         elif line.startswith("require"):
-            rest = line[len("require"):].strip()
+            rest = line[len("require") :].strip()
             if rest.startswith("("):
                 in_require_block = True
-            elif (path := _go_require_path(rest)):
+            elif path := _go_require_path(rest):
                 required.add(path)
 
     internal = replaced_to_local & required
     required -= internal
-    return _Manifest(frozenset(required), frozenset(), own_module=own_module, internal_modules=frozenset(internal))
+    return _Manifest(
+        frozenset(required),
+        frozenset(),
+        own_module=own_module,
+        internal_modules=frozenset(internal),
+    )
 
 
 def _go_require_path(line: str) -> str:
@@ -646,11 +888,13 @@ def _go_require_path(line: str) -> str:
 
 
 def _parse_go_replace(line: str) -> tuple[str, str]:
-    body = line[len("replace"):].strip().lstrip("(").strip()
+    body = line[len("replace") :].strip().lstrip("(").strip()
     if "=>" not in body:
         return "", ""
     left, _, right = body.partition("=>")
-    return left.split()[0] if left.split() else "", right.strip().split()[0] if right.strip().split() else ""
+    return left.split()[0] if left.split() else "", right.strip().split()[
+        0
+    ] if right.strip().split() else ""
 
 
 def _is_local_path(target: str) -> bool:
@@ -663,7 +907,9 @@ def _go_default_module(path: str) -> str:
     return "/".join(segments[:3]) if len(segments) >= 3 else path
 
 
-def _classify_go(module: str, name: str, manifest: Optional[_Manifest]) -> Optional[str]:
+def _classify_go(
+    module: str, name: str, manifest: Optional[_Manifest]
+) -> Optional[str]:
     path = (module or "").strip().strip('"')
     if not path:
         return None
@@ -690,7 +936,9 @@ def _path_under(path: str, prefix: str) -> bool:
 # ── Rust (DL-204) ─────────────────────────────────────────────────────
 
 
-_RUST_INTERNAL_ROOTS: frozenset[str] = frozenset({"crate", "self", "super", "std", "core", "alloc"})
+_RUST_INTERNAL_ROOTS: frozenset[str] = frozenset(
+    {"crate", "self", "super", "std", "core", "alloc"}
+)
 
 
 def _normalize_rust(name: str) -> str:
@@ -714,7 +962,9 @@ def _parse_rust_manifest(project_root: Path) -> Optional[_Manifest]:
     return _Manifest(frozenset(required), frozenset(optional))
 
 
-def _classify_rust(module: str, name: str, manifest: Optional[_Manifest]) -> Optional[str]:
+def _classify_rust(
+    module: str, name: str, manifest: Optional[_Manifest]
+) -> Optional[str]:
     path = (module or "").strip()
     if not path:
         return None
@@ -747,7 +997,9 @@ def _load_toml(path: Path) -> Optional[dict]:
 
 _PLUGINS: tuple[_LanguagePlugin, ...] = (
     _LanguagePlugin("python", ("python",), _parse_python_manifest, _classify_python),
-    _LanguagePlugin("typescript", ("typescript", "javascript"), _parse_ts_manifest, _classify_ts),
+    _LanguagePlugin(
+        "typescript", ("typescript", "javascript"), _parse_ts_manifest, _classify_ts
+    ),
     _LanguagePlugin("go", ("go",), _parse_go_manifest, _classify_go),
     _LanguagePlugin("rust", ("rust",), _parse_rust_manifest, _classify_rust),
 )
@@ -768,7 +1020,10 @@ def parse_declared_dependencies(project_root: str = ".") -> dict:
     manifest is skipped rather than raised.
     """
     return {
-        key: {"required": sorted(manifest.required), "optional": sorted(manifest.optional)}
+        key: {
+            "required": sorted(manifest.required),
+            "optional": sorted(manifest.optional),
+        }
         for key, manifest in _parse_manifests(Path(project_root)).items()
     }
 
@@ -804,14 +1059,18 @@ def classify_imports(
         graph = build_dependency_graph(inventory)
     manifests = manifests or {}
 
-    grouped: defaultdict[str, defaultdict[str, set[str]]] = defaultdict(lambda: defaultdict(set))
+    grouped: defaultdict[str, defaultdict[str, set[str]]] = defaultdict(
+        lambda: defaultdict(set)
+    )
     for item in graph.get("unresolved", []):
         data = inventory.get(item["file"])
         language = data.get("language") if isinstance(data, dict) else None
         plugin = _PLUGIN_BY_LANGUAGE.get(language)
         if plugin is None:
             continue
-        package = plugin.classify(item["module"], item["name"], manifests.get(plugin.key))
+        package = plugin.classify(
+            item["module"], item["name"], manifests.get(plugin.key)
+        )
         if package:
             grouped[plugin.key][package].add(item["file"])
 

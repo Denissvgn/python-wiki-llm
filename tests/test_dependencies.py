@@ -1,4 +1,5 @@
 """Tests for services/dependencies.py — internal dependency graph (Epic 2.1)."""
+
 from __future__ import annotations
 
 from llm_wiki_cli.services.dependencies import (
@@ -368,7 +369,9 @@ class TestDetectSideEffects:
             },
         }
         factories = detect_side_effects(inventory)["factories"]
-        assert factories == [{"file": "factory.py", "symbol": "create_app", "kind": "factory"}]
+        assert factories == [
+            {"file": "factory.py", "symbol": "create_app", "kind": "factory"}
+        ]
 
     def test_wiring_names_detected_as_wiring(self):
         inventory = {
@@ -399,7 +402,9 @@ class TestDetectSideEffects:
             "z.py": _calls({"name": "init", "line": 1}),
             "a.py": _calls({"name": "boot", "line": 1}),
         }
-        files = [entry["file"] for entry in detect_side_effects(inventory)["side_effects"]]
+        files = [
+            entry["file"] for entry in detect_side_effects(inventory)["side_effects"]
+        ]
         assert files == ["a.py", "z.py"]
 
     def test_tolerates_non_dict_and_missing_fields(self):
@@ -417,7 +422,12 @@ class TestDetectSideEffects:
 
 
 def _pymod(*imports):
-    return {"language": "python", "imports": list(imports), "classes": [], "functions": []}
+    return {
+        "language": "python",
+        "imports": list(imports),
+        "classes": [],
+        "functions": [],
+    }
 
 
 class TestAnalyzeDependencies:

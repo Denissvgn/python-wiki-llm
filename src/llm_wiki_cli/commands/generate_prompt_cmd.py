@@ -46,7 +46,11 @@ def _git_diff() -> str:
             timeout=30,
         )
         return result.stdout
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
+    except (
+        subprocess.CalledProcessError,
+        subprocess.TimeoutExpired,
+        FileNotFoundError,
+    ):
         return ""
 
 
@@ -79,27 +83,49 @@ def _is_dependency_path(path: str) -> bool:
 def detect_change_type(diff_text: str) -> str:
     paths = _changed_paths(diff_text)
     lowered = diff_text.lower()
-    added_lines = [line for line in diff_text.splitlines() if line.startswith("+") and not line.startswith("+++")]
-    removed_lines = [line for line in diff_text.splitlines() if line.startswith("-") and not line.startswith("---")]
+    added_lines = [
+        line
+        for line in diff_text.splitlines()
+        if line.startswith("+") and not line.startswith("+++")
+    ]
+    removed_lines = [
+        line
+        for line in diff_text.splitlines()
+        if line.startswith("-") and not line.startswith("---")
+    ]
 
     if paths and any(_is_dependency_path(path) for path in paths):
         return "dependency"
 
-    has_tests = any("/test" in path or Path(path).name.startswith("test_") or Path(path).name.endswith("_test.py") for path in paths)
-    has_fix_terms = any(term in lowered for term in ("fix", "bug", "error", "exception", "failure", "regression"))
+    has_tests = any(
+        "/test" in path
+        or Path(path).name.startswith("test_")
+        or Path(path).name.endswith("_test.py")
+        for path in paths
+    )
+    has_fix_terms = any(
+        term in lowered
+        for term in ("fix", "bug", "error", "exception", "failure", "regression")
+    )
     if has_tests and has_fix_terms:
         return "bugfix"
 
-    added_source = "new file mode" in diff_text and any(path.endswith(_SOURCE_EXTS) for path in paths)
+    added_source = "new file mode" in diff_text and any(
+        path.endswith(_SOURCE_EXTS) for path in paths
+    )
     added_public_symbol = any(
-        re.match(r"\+\s*(class|def|async def|export function|export class|func)\s+\w+", line)
+        re.match(
+            r"\+\s*(class|def|async def|export function|export class|func)\s+\w+", line
+        )
         for line in added_lines
     )
     if added_source or added_public_symbol:
         return "feature"
 
     renames = "rename from " in diff_text or "rename to " in diff_text
-    broad_change = len(paths) >= 5 and abs(len(added_lines) - len(removed_lines)) <= max(10, len(paths) * 3)
+    broad_change = len(paths) >= 5 and abs(
+        len(added_lines) - len(removed_lines)
+    ) <= max(10, len(paths) * 3)
     if renames or broad_change:
         return "refactor"
 
@@ -144,7 +170,9 @@ def _rich_prompt_context(
     if ast_json is not None:
         context_parts.append(f"AST structure of the codebase:\n{ast_json}")
     if graph_json is not None:
-        context_parts.append(f"Cross-module call graph (functions touching 3+ internal modules):\n{graph_json}")
+        context_parts.append(
+            f"Cross-module call graph (functions touching 3+ internal modules):\n{graph_json}"
+        )
     if diff_text and cli_agent:
         context_parts.append(f"Git diff:\n{diff_text}")
 
@@ -340,7 +368,9 @@ def run(args) -> None:
             raise SystemExit(1)
 
     try:
-        prompt = _build_prompt(wiki_dir, src_dir, change_type=change_type, template=template)
+        prompt = _build_prompt(
+            wiki_dir, src_dir, change_type=change_type, template=template
+        )
     except PluginError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         raise SystemExit(1)

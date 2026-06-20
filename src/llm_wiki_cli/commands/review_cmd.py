@@ -50,16 +50,24 @@ def _read_patch(args) -> str:
     head = getattr(args, "head", None)
     if base or head:
         if not base or not head:
-            print("Error: --base and --head must be provided together.", file=sys.stderr)
+            print(
+                "Error: --base and --head must be provided together.", file=sys.stderr
+            )
             sys.exit(1)
         cmd = ["git", "diff", f"{base}..{head}"]
     else:
         cmd = ["git", "diff"]
 
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True, timeout=30)
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, check=True, timeout=30
+        )
         return result.stdout
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError) as exc:
+    except (
+        subprocess.CalledProcessError,
+        subprocess.TimeoutExpired,
+        FileNotFoundError,
+    ) as exc:
         print(f"Error: failed to read git diff: {exc}", file=sys.stderr)
         sys.exit(1)
 
@@ -124,7 +132,9 @@ def _workflow_pages(wiki_dir: Path) -> dict[str, str]:
     return result
 
 
-def _workflow_symbol_index(workflows: dict[str, str], symbols: set[str]) -> dict[str, set[str]]:
+def _workflow_symbol_index(
+    workflows: dict[str, str], symbols: set[str]
+) -> dict[str, set[str]]:
     index: dict[str, set[str]] = {symbol: set() for symbol in symbols}
     if not workflows or not symbols:
         return index
@@ -149,12 +159,14 @@ def _related_pages_for_source(
     return pages
 
 
-def build_findings(diff_text: str, *, src_dir: str = ".", wiki_dir: str = DEFAULT_WIKI_DIR) -> list[ReviewFinding]:
+def build_findings(
+    diff_text: str, *, src_dir: str = ".", wiki_dir: str = DEFAULT_WIKI_DIR
+) -> list[ReviewFinding]:
     wiki_path = Path(wiki_dir)
     changed = _changed_paths(diff_text)
     changed_set = {path.replace("\\", "/") for path in changed}
     wiki_changed = {
-        path[len(f"{wiki_path.as_posix()}/"):]
+        path[len(f"{wiki_path.as_posix()}/") :]
         for path in changed_set
         if path.startswith(f"{wiki_path.as_posix()}/")
     }
@@ -176,42 +188,56 @@ def build_findings(diff_text: str, *, src_dir: str = ".", wiki_dir: str = DEFAUL
         if not normalized.endswith(_SOURCE_EXTS):
             continue
 
-        pages = _related_pages_for_source(normalized, inventory, module_page_map, entity_page_map)
+        pages = _related_pages_for_source(
+            normalized, inventory, module_page_map, entity_page_map
+        )
         if not pages:
-            findings.append(ReviewFinding(
-                severity="warning",
-                source_path=normalized,
-                wiki_pages=[],
-                reason="Changed source file has no module or entity wiki coverage.",
-                suggested_follow_up="Run `llm-wiki sync` or add the missing module/entity page before relying on the wiki.",
-            ))
+            findings.append(
+                ReviewFinding(
+                    severity="warning",
+                    source_path=normalized,
+                    wiki_pages=[],
+                    reason="Changed source file has no module or entity wiki coverage.",
+                    suggested_follow_up="Run `llm-wiki sync` or add the missing module/entity page before relying on the wiki.",
+                )
+            )
             continue
 
         missing_pages = [page for page in pages if not (wiki_path / page).exists()]
         if missing_pages:
-            findings.append(ReviewFinding(
-                severity="warning",
-                source_path=normalized,
-                wiki_pages=missing_pages,
-                reason="Changed source file maps to missing wiki page(s).",
-                suggested_follow_up="Generate or restore the listed wiki page(s).",
-            ))
+            findings.append(
+                ReviewFinding(
+                    severity="warning",
+                    source_path=normalized,
+                    wiki_pages=missing_pages,
+                    reason="Changed source file maps to missing wiki page(s).",
+                    suggested_follow_up="Generate or restore the listed wiki page(s).",
+                )
+            )
 
-        unchanged_pages = [page for page in pages if (wiki_path / page).exists() and page not in wiki_changed]
+        unchanged_pages = [
+            page
+            for page in pages
+            if (wiki_path / page).exists() and page not in wiki_changed
+        ]
         if unchanged_pages:
-            findings.append(ReviewFinding(
-                severity="info",
-                source_path=normalized,
-                wiki_pages=unchanged_pages,
-                reason="Documented source changed, but related wiki page(s) were not changed in this patch.",
-                suggested_follow_up="Confirm these pages are still accurate or update them with the code change.",
-            ))
+            findings.append(
+                ReviewFinding(
+                    severity="info",
+                    source_path=normalized,
+                    wiki_pages=unchanged_pages,
+                    reason="Documented source changed, but related wiki page(s) were not changed in this patch.",
+                    suggested_follow_up="Confirm these pages are still accurate or update them with the code change.",
+                )
+            )
 
     imports_to_review: list[tuple[str, str, list[str]]] = []
     workflow_symbols: set[str] = set()
     for path, imported_modules in imports_by_file.items():
         normalized = path.replace("\\", "/")
-        if normalized.startswith(f"{wiki_path.as_posix()}/") or not normalized.endswith(_SOURCE_EXTS):
+        if normalized.startswith(f"{wiki_path.as_posix()}/") or not normalized.endswith(
+            _SOURCE_EXTS
+        ):
             continue
         source_stem = Path(normalized).stem
         review_imports: list[str] = []
@@ -229,27 +255,35 @@ def build_findings(diff_text: str, *, src_dir: str = ".", wiki_dir: str = DEFAUL
     for normalized, source_stem, imported_modules in imports_to_review:
         source_workflows = workflow_symbol_index[source_stem]
         for imported in imported_modules:
-            represented = not source_workflows.isdisjoint(workflow_symbol_index[imported])
+            represented = not source_workflows.isdisjoint(
+                workflow_symbol_index[imported]
+            )
             if not represented:
-                findings.append(ReviewFinding(
-                    severity="info",
-                    source_path=normalized,
-                    wiki_pages=workflow_pages,
-                    reason=f"New cross-module import `{imported}` is not represented by a workflow page.",
-                    suggested_follow_up="Add or update a workflow page if this import creates a meaningful cross-module flow.",
-                ))
+                findings.append(
+                    ReviewFinding(
+                        severity="info",
+                        source_path=normalized,
+                        wiki_pages=workflow_pages,
+                        reason=f"New cross-module import `{imported}` is not represented by a workflow page.",
+                        suggested_follow_up="Add or update a workflow page if this import creates a meaningful cross-module flow.",
+                    )
+                )
 
     infra_changed = [path for path in changed if _is_dependency_path(path)]
-    infra_wiki_changed = any(path.startswith("infrastructure/") for path in wiki_changed)
+    infra_wiki_changed = any(
+        path.startswith("infrastructure/") for path in wiki_changed
+    )
     if infra_changed and not infra_wiki_changed:
         for path in infra_changed:
-            findings.append(ReviewFinding(
-                severity="warning",
-                source_path=path,
-                wiki_pages=["infrastructure/"],
-                reason="Dependency or infrastructure file changed without infrastructure wiki updates.",
-                suggested_follow_up="Update infrastructure notes for compatibility, dependency, or runtime changes.",
-            ))
+            findings.append(
+                ReviewFinding(
+                    severity="warning",
+                    source_path=path,
+                    wiki_pages=["infrastructure/"],
+                    reason="Dependency or infrastructure file changed without infrastructure wiki updates.",
+                    suggested_follow_up="Update infrastructure notes for compatibility, dependency, or runtime changes.",
+                )
+            )
 
     return findings
 
@@ -261,19 +295,28 @@ def render_markdown(findings: list[ReviewFinding]) -> str:
         return "\n".join(lines) + "\n"
     for finding in findings:
         pages = ", ".join(f"`{page}`" for page in finding.wiki_pages) or "none"
-        lines.extend([
-            f"## {finding.severity.upper()}: {finding.source_path}",
-            "",
-            f"- Related wiki pages: {pages}",
-            f"- Reason: {finding.reason}",
-            f"- Suggested follow-up: {finding.suggested_follow_up}",
-            "",
-        ])
+        lines.extend(
+            [
+                f"## {finding.severity.upper()}: {finding.source_path}",
+                "",
+                f"- Related wiki pages: {pages}",
+                f"- Reason: {finding.reason}",
+                f"- Suggested follow-up: {finding.suggested_follow_up}",
+                "",
+            ]
+        )
     return "\n".join(lines).rstrip() + "\n"
 
 
 def render_json(findings: list[ReviewFinding]) -> str:
-    return json.dumps({"ok": True, "findings": [asdict(finding) for finding in findings]}, indent=2, sort_keys=True) + "\n"
+    return (
+        json.dumps(
+            {"ok": True, "findings": [asdict(finding) for finding in findings]},
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n"
+    )
 
 
 def run(args) -> None:

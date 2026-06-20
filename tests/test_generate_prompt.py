@@ -1,4 +1,5 @@
 """Tests for commands/generate_prompt_cmd.py"""
+
 from __future__ import annotations
 
 import ast
@@ -9,7 +10,6 @@ import textwrap
 import types
 from pathlib import Path
 
-import pytest
 
 from llm_wiki_cli.commands import generate_prompt_cmd
 
@@ -145,7 +145,9 @@ class TestGeneratePromptBuildPrompt:
         args = _make_args()
         generate_prompt_cmd.run(args)
         content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
-        assert "llm-wiki sync --jobs auto --wiki-dir docs/llm_wiki --src-dir ." in content
+        assert (
+            "llm-wiki sync --jobs auto --wiki-dir docs/llm_wiki --src-dir ." in content
+        )
         assert "## Semantic Pass" in content
         assert "Semantic pass complete" in content
         assert "_Auto-generated from ..._" in content
@@ -162,4 +164,7 @@ class TestGeneratePromptBuildPrompt:
         args = _make_args()
         generate_prompt_cmd.run(args)
         content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
-        assert 'LLM_WIKI_AUTO_COMMIT=1 git commit -m "docs(wiki): auto-update [bot]"' in content
+        assert (
+            'LLM_WIKI_AUTO_COMMIT=1 git commit -m "docs(wiki): auto-update [bot]"'
+            in content
+        )

@@ -1,13 +1,12 @@
 """Tests for Docker infrastructure page generation in bootstrap_cmd."""
+
 from __future__ import annotations
 
 import ast
 import inspect
 import os
 import textwrap
-from pathlib import Path
 
-import pytest
 
 from llm_wiki_cli.commands.bootstrap_cmd import (
     _generate_docker_md,
@@ -36,7 +35,9 @@ class TestGenerateDockerfileMd:
         assert body_lines <= 25
 
     def test_single_stage(self):
-        info = _parse_dockerfile("FROM python:3.12-slim\nEXPOSE 8000\nCMD python main.py\n")
+        info = _parse_dockerfile(
+            "FROM python:3.12-slim\nEXPOSE 8000\nCMD python main.py\n"
+        )
         md = _generate_docker_md("Dockerfile", info)
         assert "# Dockerfile" in md
         assert "`python:3.12-slim`" in md
@@ -88,9 +89,14 @@ class TestGenerateDockerfileMd:
             "sidecars/typescript/src/server.ts": "sidecars_typescript_src_server",
         }
 
-        md = _generate_docker_md("docker/Dockerfile.workspace", info, module_links=module_links)
+        md = _generate_docker_md(
+            "docker/Dockerfile.workspace", info, module_links=module_links
+        )
 
-        assert "[`sidecars/workspace_server.py`](../modules/sidecars_workspace_server.md)" in md
+        assert (
+            "[`sidecars/workspace_server.py`](../modules/sidecars_workspace_server.md)"
+            in md
+        )
         assert "../modules/server.md" not in md
 
     def test_copy_cross_reference_prefers_nested_docker_context(self):
@@ -99,8 +105,7 @@ class TestGenerateDockerfileMd:
         info = _parse_dockerfile(text)
         module_links = {
             "sidecars/workspace_server.py": "sidecars_workspace_server",
-            ".claude/worktrees/agent-strict-instructions/sidecars/workspace_server.py":
-                "agent-strict-instructions_sidecars_workspace_server",
+            ".claude/worktrees/agent-strict-instructions/sidecars/workspace_server.py": "agent-strict-instructions_sidecars_workspace_server",
         }
 
         md = _generate_docker_md(
@@ -205,7 +210,7 @@ class TestBootstrapInfrastructureIntegration:
         # Create Docker files
         (proj / "Dockerfile").write_text("FROM python:3.12\nEXPOSE 8000\n")
         (proj / "docker-compose.yml").write_text(
-            "services:\n  web:\n    build: .\n    ports:\n      - \"8000:8000\"\n"
+            'services:\n  web:\n    build: .\n    ports:\n      - "8000:8000"\n'
         )
 
         # Set up wiki dir inside the project (validate_path needs it inside cwd)
@@ -219,6 +224,7 @@ class TestBootstrapInfrastructureIntegration:
         try:
             from llm_wiki_cli.commands import bootstrap_cmd
             import argparse
+
             args = argparse.Namespace(
                 src_dir=".",
                 wiki_dir=str(wiki),
@@ -243,7 +249,9 @@ class TestBootstrapInfrastructureIntegration:
         finally:
             os.chdir(old_cwd)
 
-    def test_bootstrap_lint_passes_with_collision_aware_copy_links(self, tmp_path, capsys):
+    def test_bootstrap_lint_passes_with_collision_aware_copy_links(
+        self, tmp_path, capsys
+    ):
         """A freshly bootstrapped wiki must not emit broken Docker COPY links."""
         proj = tmp_path / "proj"
         proj.mkdir()
@@ -251,9 +259,13 @@ class TestBootstrapInfrastructureIntegration:
         (proj / "sidecars").mkdir()
         (proj / "other").mkdir()
         (proj / "docker").mkdir()
-        (proj / "sidecars" / "workspace_server.py").write_text("class WorkspaceServer:\n    pass\n")
+        (proj / "sidecars" / "workspace_server.py").write_text(
+            "class WorkspaceServer:\n    pass\n"
+        )
         (proj / "sidecars" / "server.py").write_text("class Server:\n    pass\n")
-        (proj / "other" / "workspace_server.py").write_text("class OtherWorkspaceServer:\n    pass\n")
+        (proj / "other" / "workspace_server.py").write_text(
+            "class OtherWorkspaceServer:\n    pass\n"
+        )
         (proj / "docker" / "Dockerfile.workspace").write_text(
             "FROM alpine\nCOPY sidecars/workspace_server.py /app/workspace_server.py\n"
         )
@@ -265,6 +277,7 @@ class TestBootstrapInfrastructureIntegration:
         try:
             from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd
             import argparse
+
             args = argparse.Namespace(
                 src_dir=".",
                 wiki_dir=str(wiki),
@@ -274,9 +287,9 @@ class TestBootstrapInfrastructureIntegration:
             )
             bootstrap_cmd.run(args)
 
-            infra = (wiki / "infrastructure" / "docker_Dockerfile_workspace.md").read_text(
-                encoding="utf-8"
-            )
+            infra = (
+                wiki / "infrastructure" / "docker_Dockerfile_workspace.md"
+            ).read_text(encoding="utf-8")
             assert "../modules/sidecars_workspace_server.md" in infra
             assert "../modules/server.md" not in infra
 

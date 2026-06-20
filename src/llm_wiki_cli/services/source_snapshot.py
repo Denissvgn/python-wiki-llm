@@ -50,7 +50,10 @@ class SourceSnapshot:
 
     def language_paths(self, language: str) -> list[str]:
         """Return deterministic relative paths for a language."""
-        return [source_file.rel_path for source_file in self.files_by_language.get(language, ())]
+        return [
+            source_file.rel_path
+            for source_file in self.files_by_language.get(language, ())
+        ]
 
 
 @dataclass
@@ -76,7 +79,9 @@ def _new_snapshot_buckets() -> _SnapshotBuckets:
     )
 
 
-def _normalize_only_files(root: Path, only_files: Iterable[str] | None) -> set[str] | None:
+def _normalize_only_files(
+    root: Path, only_files: Iterable[str] | None
+) -> set[str] | None:
     if only_files is None:
         return None
 
@@ -114,7 +119,9 @@ def _is_compose_candidate(path: Path) -> bool:
     return any(fnmatch(path.name, pattern) for pattern in COMPOSE_PATTERNS)
 
 
-def _make_source_file(root: Path, path: Path, rel: Path, language: str | None) -> SourceFile | None:
+def _make_source_file(
+    root: Path, path: Path, rel: Path, language: str | None
+) -> SourceFile | None:
     try:
         stat = path.stat()
     except OSError:
@@ -152,7 +159,9 @@ def _directory_ignored(matcher: GitIgnoreMatcher, rel_path: str) -> bool:
     rel_path = rel_path.strip("/")
     if not rel_path:
         return False
-    return matcher.is_ignored(rel_path) or matcher.is_ignored(f"{rel_path}/__llm_wiki_dir__")
+    return matcher.is_ignored(rel_path) or matcher.is_ignored(
+        f"{rel_path}/__llm_wiki_dir__"
+    )
 
 
 def _empty_source_snapshot(root: Path) -> SourceSnapshot:
@@ -194,7 +203,9 @@ def _record_gitignore_rules(
     buckets.gitignore_rules.extend(_parse_gitignore_file(gitignore, base))
 
 
-def _prune_dirnames(dirnames: list[str], rel_dir: Path, matcher: GitIgnoreMatcher) -> None:
+def _prune_dirnames(
+    dirnames: list[str], rel_dir: Path, matcher: GitIgnoreMatcher
+) -> None:
     kept_dirnames = []
     for name in dirnames:
         if name in EXCLUDED_DIRS:
@@ -266,7 +277,9 @@ def _record_source_file(
     _record_language_candidate(root, resolved, rel, only_set, buckets)
 
 
-def _collect_source_tree(root: Path, only_set: set[str] | None, buckets: _SnapshotBuckets) -> None:
+def _collect_source_tree(
+    root: Path, only_set: set[str] | None, buckets: _SnapshotBuckets
+) -> None:
     for dirpath, dirnames, filenames in os.walk(root, topdown=True, followlinks=False):
         current_dir = Path(dirpath)
         rel_dir = _relative_to_root(current_dir, root)
@@ -287,11 +300,13 @@ def _build_source_snapshot(root: Path, buckets: _SnapshotBuckets) -> SourceSnaps
         language: tuple(sorted(source_files, key=lambda item: item.rel_path))
         for language, source_files in buckets.files_by_language.items()
     }
-    all_source_paths = tuple(sorted(
-        source_file.rel_path
-        for source_files in sorted_languages.values()
-        for source_file in source_files
-    ))
+    all_source_paths = tuple(
+        sorted(
+            source_file.rel_path
+            for source_files in sorted_languages.values()
+            for source_file in source_files
+        )
+    )
 
     return SourceSnapshot(
         root=root,
@@ -313,7 +328,9 @@ def _build_source_snapshot(root: Path, buckets: _SnapshotBuckets) -> SourceSnaps
     )
 
 
-def build_source_snapshot(src_dir: str | Path, only_files: Iterable[str] | None = None) -> SourceSnapshot:
+def build_source_snapshot(
+    src_dir: str | Path, only_files: Iterable[str] | None = None
+) -> SourceSnapshot:
     """Build a deterministic source-tree snapshot rooted at *src_dir*.
 
     Source language files respect ``only_files`` when supplied. Docker,

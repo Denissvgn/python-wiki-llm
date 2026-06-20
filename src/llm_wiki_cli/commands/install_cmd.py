@@ -31,7 +31,9 @@ def run(args) -> None:
         sys.exit(1)
 
     if getattr(args, "dry_run", False):
-        print(f"Plugin valid: {plugin['id']} {plugin['version']} ({_component_summary(plugin)})")
+        print(
+            f"Plugin valid: {plugin['id']} {plugin['version']} ({_component_summary(plugin)})"
+        )
         print("Dry run: no files were changed.")
         return
 

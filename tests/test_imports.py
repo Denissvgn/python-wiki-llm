@@ -1,4 +1,5 @@
 """Tests for import-module resolution helpers."""
+
 from __future__ import annotations
 
 from llm_wiki_cli.commands.bootstrap_cmd import _build_relationships
@@ -15,8 +16,12 @@ def test_indexed_resolver_handles_common_import_shapes():
     }
     resolver = build_module_path_resolver(inventory)
 
-    assert resolver.candidates("pkg.service", "pkg/feature/use.py") == {"src/pkg/service.py"}
-    assert resolver.candidates(".local", "pkg/feature/use.py") == {"pkg/feature/local.py"}
+    assert resolver.candidates("pkg.service", "pkg/feature/use.py") == {
+        "src/pkg/service.py"
+    }
+    assert resolver.candidates(".local", "pkg/feature/use.py") == {
+        "pkg/feature/local.py"
+    }
     assert resolver.candidates("../shared", "pkg/feature/use.py") == {"pkg/shared.py"}
     assert resolver.candidates("settings", "pkg/feature/use.py") == {
         "pkg/a/settings.py",

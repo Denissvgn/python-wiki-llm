@@ -20,6 +20,7 @@ Into::
 
 And updates the reference links at the bottom of the file.
 """
+
 from __future__ import annotations
 
 import re
@@ -61,7 +62,9 @@ def _detect_repo_url(changelog_text: str) -> str | None:
     return None
 
 
-def stamp_changelog(changelog_path: Path, version: str, today: str | None = None) -> tuple[str, bool]:
+def stamp_changelog(
+    changelog_path: Path, version: str, today: str | None = None
+) -> tuple[str, bool]:
     """Stamp the [Unreleased] section with *version* and return ``(new_text, stamped)``.
 
     *stamped* is ``False`` (and the original text is returned unchanged) when the
@@ -91,9 +94,9 @@ def stamp_changelog(changelog_path: Path, version: str, today: str | None = None
 
         # Find previously highest version to build the compare URL for new version
         # Collect all version tags already mentioned in headings
-        heading_versions = list(dict.fromkeys(
-            re.findall(r"## \[(\d+\.\d+\.\d+)\]", new_text)
-        ))
+        heading_versions = list(
+            dict.fromkeys(re.findall(r"## \[(\d+\.\d+\.\d+)\]", new_text))
+        )
 
         links: list[str] = []
         links.append(f"[Unreleased]: {repo_url}/compare/v{version}...HEAD")
@@ -122,7 +125,9 @@ def run(args):
     # Read version from project file
     version_file = find_version_file(root)
     if version_file is None:
-        print("Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION).")
+        print(
+            "Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION)."
+        )
         sys.exit(1)
 
     version = read_version(version_file)
@@ -137,7 +142,9 @@ def run(args):
         sys.exit(1)
 
     if not stamped:
-        print("CHANGELOG.md: [Unreleased] is empty — nothing to stamp (run after the agent adds entries).")
+        print(
+            "CHANGELOG.md: [Unreleased] is empty — nothing to stamp (run after the agent adds entries)."
+        )
         return
 
     changelog_path.write_bytes(new_text.encode("utf-8"))

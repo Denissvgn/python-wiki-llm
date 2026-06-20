@@ -25,7 +25,12 @@ from .bootstrap_cmd import (
     build_entity_page_map,
     build_module_page_map,
 )
-from .extract_cmd import get_call_graph, get_docker_inventory, get_inventory_result, print_inventory_failures
+from .extract_cmd import (
+    get_call_graph,
+    get_docker_inventory,
+    get_inventory_result,
+    print_inventory_failures,
+)
 from .sync_cmd import MANIFEST_FILENAME, MANIFEST_VERSION, SyncManifest
 from ..config import DEFAULT_WIKI_DIR, validate_path
 from ..services.io import read_md, write_md
@@ -136,7 +141,9 @@ def _legacy_gitignore_needs_write(wiki_dir: Path) -> bool:
     gitignore = Path(".gitignore")
     if not gitignore.exists():
         return True
-    return not _gitignore_has_pattern(read_md(gitignore), _legacy_gitignore_pattern(wiki_dir))
+    return not _gitignore_has_pattern(
+        read_md(gitignore), _legacy_gitignore_pattern(wiki_dir)
+    )
 
 
 def _ensure_legacy_gitignore(wiki_dir: Path, dry_run: bool) -> bool:
@@ -193,7 +200,9 @@ def _read_existing_page(
         raw_location_path, location_line = _split_location(location_match.group(1))
         location_path = _normalize_source_path(raw_location_path, src_dir)
 
-    source_path = _normalize_source_path(path_match.group(1), src_dir) if path_match else None
+    source_path = (
+        _normalize_source_path(path_match.group(1), src_dir) if path_match else None
+    )
 
     return ExistingPage(
         kind=kind,
@@ -300,42 +309,52 @@ def _build_targets(
             for cls in file_data.get("classes", [])
         }
 
-        module_entries.append({
-            "name": module_page,
-            "path": filepath,
-            "docstring": file_data.get("module_docstring", ""),
-        })
-        targets.append(TargetPage(
-            kind="modules",
-            stem=module_page,
-            rel=f"modules/{module_page}.md",
-            content=_generate_module_md(filepath, file_data, file_entity_map),
-            source_path=filepath,
-        ))
+        module_entries.append(
+            {
+                "name": module_page,
+                "path": filepath,
+                "docstring": file_data.get("module_docstring", ""),
+            }
+        )
+        targets.append(
+            TargetPage(
+                kind="modules",
+                stem=module_page,
+                rel=f"modules/{module_page}.md",
+                content=_generate_module_md(filepath, file_data, file_entity_map),
+                source_path=filepath,
+            )
+        )
 
         for cls in file_data.get("classes", []):
             entity_page = entity_page_map[(cls["name"], filepath)]
             entity_names.append(entity_page)
-            targets.append(TargetPage(
-                kind="entities",
-                stem=entity_page,
-                rel=f"entities/{entity_page}.md",
-                content=_generate_entity_md(cls, filepath, relationships, module_page),
-                source_path=filepath,
-                entity_name=cls["name"],
-                line=cls.get("line"),
-            ))
+            targets.append(
+                TargetPage(
+                    kind="entities",
+                    stem=entity_page,
+                    rel=f"entities/{entity_page}.md",
+                    content=_generate_entity_md(
+                        cls, filepath, relationships, module_page
+                    ),
+                    source_path=filepath,
+                    entity_name=cls["name"],
+                    line=cls.get("line"),
+                )
+            )
 
     for docker_file, docker_info in docker_inventory.items():
         page_name = docker_file.replace("\\", "/").replace("/", "_").replace(".", "_")
         infra_entries.append({"name": page_name, "type": docker_info.get("type", "")})
-        targets.append(TargetPage(
-            kind="infrastructure",
-            stem=page_name,
-            rel=f"infrastructure/{page_name}.md",
-            content=_generate_docker_md(docker_file, docker_info, module_page_map),
-            source_path=docker_file,
-        ))
+        targets.append(
+            TargetPage(
+                kind="infrastructure",
+                stem=page_name,
+                rel=f"infrastructure/{page_name}.md",
+                content=_generate_docker_md(docker_file, docker_info, module_page_map),
+                source_path=docker_file,
+            )
+        )
 
     workflow_entries = _list_workflows(wiki_dir)
     index_content = _generate_index_md(
@@ -357,7 +376,9 @@ def _list_workflows(wiki_dir: Path) -> list[dict]:
     workflow_dir = wiki_dir / "workflows"
     if not workflow_dir.exists():
         return []
-    return [{"name": path.stem, "entry": ""} for path in sorted(workflow_dir.glob("*.md"))]
+    return [
+        {"name": path.stem, "entry": ""} for path in sorted(workflow_dir.glob("*.md"))
+    ]
 
 
 def _build_workflow_link_maps(
@@ -421,7 +442,9 @@ def _build_match_lookups(targets: list[TargetPage]) -> dict[str, dict]:
             lookups["entities_by_path_name"].setdefault(
                 (target.source_path, target.entity_name), []
             ).append(target)
-            lookups["entities_by_name"].setdefault(target.entity_name, []).append(target)
+            lookups["entities_by_name"].setdefault(target.entity_name, []).append(
+                target
+            )
         elif target.kind == "modules":
             lookups["modules_by_source"][target.source_path] = target
             lookups["modules_by_source_stem"].setdefault(
@@ -434,7 +457,9 @@ def _build_match_lookups(targets: list[TargetPage]) -> dict[str, dict]:
     return lookups
 
 
-def _match_existing_page(page: ExistingPage, lookups: dict[str, dict]) -> TargetPage | None:
+def _match_existing_page(
+    page: ExistingPage, lookups: dict[str, dict]
+) -> TargetPage | None:
     if page.rel in lookups["by_rel"]:
         return lookups["by_rel"][page.rel]
 
@@ -574,7 +599,9 @@ def _merge_legacy_notes(target: TargetPage, pages: list[ExistingPage]) -> str:
     )
 
 
-def _archive_page(page: ExistingPage, wiki_dir: Path, archive_root: Path, dry_run: bool) -> None:
+def _archive_page(
+    page: ExistingPage, wiki_dir: Path, archive_root: Path, dry_run: bool
+) -> None:
     dest = archive_root / page.rel
     print(f"  ARCHIVE {page.rel} -> {_page_rel(dest, wiki_dir)}")
     if dry_run:
@@ -607,7 +634,9 @@ def _is_legacy_path(path: Path, wiki_dir: Path) -> bool:
         return path.relative_to(wiki_dir).parts[:1] == ("legacy",)
     except ValueError:
         try:
-            return path.resolve().relative_to(wiki_dir.resolve()).parts[:1] == ("legacy",)
+            return path.resolve().relative_to(wiki_dir.resolve()).parts[:1] == (
+                "legacy",
+            )
         except ValueError:
             return False
 
@@ -616,12 +645,15 @@ def _active_markdown_pages(wiki_dir: Path) -> list[Path]:
     if not wiki_dir.exists():
         return []
     return [
-        path for path in sorted(wiki_dir.rglob("*.md"))
+        path
+        for path in sorted(wiki_dir.rglob("*.md"))
         if path.is_file() and not _is_legacy_path(path, wiki_dir)
     ]
 
 
-def _rewrite_links_in_content(content: str, page: Path, wiki_dir: Path, link_map: dict[str, str]) -> str:
+def _rewrite_links_in_content(
+    content: str, page: Path, wiki_dir: Path, link_map: dict[str, str]
+) -> str:
     if not link_map:
         return content
     wiki_root = wiki_dir.resolve()
@@ -646,7 +678,9 @@ def _rewrite_links_in_content(content: str, page: Path, wiki_dir: Path, link_map
             return match.group(0)
 
         try:
-            relative = os.path.relpath(wiki_dir / new_rel, start=page.parent).replace(os.sep, "/")
+            relative = os.path.relpath(wiki_dir / new_rel, start=page.parent).replace(
+                os.sep, "/"
+            )
         except ValueError:
             return match.group(0)
         if sep:
@@ -710,10 +744,15 @@ def _matched_archive_count(plan: MigrationPlan) -> int:
     return count
 
 
-def _target_needs_apply(wiki_dir: Path, target: TargetPage, matched_pages: list[ExistingPage]) -> bool:
+def _target_needs_apply(
+    wiki_dir: Path, target: TargetPage, matched_pages: list[ExistingPage]
+) -> bool:
     if any(_should_archive_matched_page(page, target) for page in matched_pages):
         return True
-    if any(not page.archived and page.rel != target.rel and page.path.exists() for page in matched_pages):
+    if any(
+        not page.archived and page.rel != target.rel and page.path.exists()
+        for page in matched_pages
+    ):
         return True
 
     path = wiki_dir / target.rel
@@ -733,7 +772,9 @@ def _manifest_needs_write(wiki_dir: Path, manifest: SyncManifest | None) -> bool
     if manifest is None:
         return False
     path = wiki_dir / MANIFEST_FILENAME
-    return not path.exists() or path.read_text(encoding="utf-8") != _manifest_payload(manifest)
+    return not path.exists() or path.read_text(encoding="utf-8") != _manifest_payload(
+        manifest
+    )
 
 
 def _pending_link_rewrite_count(
@@ -747,7 +788,10 @@ def _pending_link_rewrite_count(
     for page in _active_markdown_pages(wiki_dir):
         content = read_md(page)
         effective_link_map = _page_link_map(page, wiki_dir, link_map, page_link_maps)
-        if _rewrite_links_in_content(content, page, wiki_dir, effective_link_map) != content:
+        if (
+            _rewrite_links_in_content(content, page, wiki_dir, effective_link_map)
+            != content
+        ):
             count += 1
     return count
 
@@ -759,7 +803,10 @@ def _finalizers_pending(wiki_dir: Path, plan: MigrationPlan) -> bool:
         index_pending
         or _manifest_needs_write(wiki_dir, plan.manifest)
         or _pending_link_rewrite_count(wiki_dir, plan.link_map, plan.page_link_maps) > 0
-        or (_legacy_archive_ignore_applicable(wiki_dir, plan) and _legacy_gitignore_needs_write(wiki_dir))
+        or (
+            _legacy_archive_ignore_applicable(wiki_dir, plan)
+            and _legacy_gitignore_needs_write(wiki_dir)
+        )
     )
 
 
@@ -771,7 +818,9 @@ def _pending_targets(wiki_dir: Path, plan: MigrationPlan) -> list[TargetPage]:
     ]
 
 
-def _build_chunks(wiki_dir: Path, plan: MigrationPlan, chunk_size: int) -> list[MigrationChunk]:
+def _build_chunks(
+    wiki_dir: Path, plan: MigrationPlan, chunk_size: int
+) -> list[MigrationChunk]:
     if chunk_size < 1:
         raise ValueError("--chunk-size must be greater than zero")
 
@@ -789,16 +838,18 @@ def _build_chunks(wiki_dir: Path, plan: MigrationPlan, chunk_size: int) -> list[
     total = (len(units) + chunk_size - 1) // chunk_size
     chunks: list[MigrationChunk] = []
     for index in range(total):
-        page_units = units[index * chunk_size:(index + 1) * chunk_size]
+        page_units = units[index * chunk_size : (index + 1) * chunk_size]
         targets = [unit for kind, unit in page_units if kind == "target"]
         unmatched = [unit for kind, unit in page_units if kind == "unmatched"]
-        chunks.append(MigrationChunk(
-            number=index + 1,
-            total=total,
-            targets=targets,
-            unmatched=unmatched,
-            include_finalizers=finalizers_pending and index == total - 1,
-        ))
+        chunks.append(
+            MigrationChunk(
+                number=index + 1,
+                total=total,
+                targets=targets,
+                unmatched=unmatched,
+                include_finalizers=finalizers_pending and index == total - 1,
+            )
+        )
     return chunks
 
 
@@ -837,13 +888,17 @@ def _chunk_has_archive_work(plan: MigrationPlan, chunk: MigrationChunk) -> bool:
 
 
 def _print_chunk_plan(chunks: list[MigrationChunk], chunk_size: int) -> None:
-    print(f"\nMigration chunk plan (max {chunk_size} pending page operation(s) per chunk):")
+    print(
+        f"\nMigration chunk plan (max {chunk_size} pending page operation(s) per chunk):"
+    )
     if not chunks:
         print("  No pending migration changes.")
         return
 
     for chunk in chunks:
-        finalizers = " + final index/link/manifest refresh" if chunk.include_finalizers else ""
+        finalizers = (
+            " + final index/link/manifest refresh" if chunk.include_finalizers else ""
+        )
         print(
             f"  {chunk.number}/{chunk.total}: "
             f"{len(chunk.targets)} canonical page(s), "
@@ -852,7 +907,9 @@ def _print_chunk_plan(chunks: list[MigrationChunk], chunk_size: int) -> None:
         )
 
 
-def _apply_chunk(wiki_dir: Path, plan: MigrationPlan, chunk: MigrationChunk, dry_run: bool) -> None:
+def _apply_chunk(
+    wiki_dir: Path, plan: MigrationPlan, chunk: MigrationChunk, dry_run: bool
+) -> None:
     archive_root = wiki_dir / "legacy" / plan.archive_name
     if _chunk_has_archive_work(plan, chunk) or (
         chunk.include_finalizers and _legacy_archive_ignore_applicable(wiki_dir, plan)
@@ -867,7 +924,9 @@ def _apply_chunk(wiki_dir: Path, plan: MigrationPlan, chunk: MigrationChunk, dry
             _archive_page(page, wiki_dir, archive_root, dry_run)
             if page.rel != target.rel:
                 _remove_old_page(page, dry_run)
-        _write_page(wiki_dir, target.rel, _merge_legacy_notes(target, matched_pages), dry_run)
+        _write_page(
+            wiki_dir, target.rel, _merge_legacy_notes(target, matched_pages), dry_run
+        )
 
     for page in chunk.unmatched:
         _archive_page(page, wiki_dir, archive_root, dry_run)
@@ -885,7 +944,9 @@ def _apply_chunk(wiki_dir: Path, plan: MigrationPlan, chunk: MigrationChunk, dry
     page_link_count = sum(len(page_map) for page_map in page_link_maps.values())
     if link_map or page_link_count:
         total_link_count = len(link_map) + page_link_count
-        print(f"  Link mappings: {total_link_count} path(s); pages rewritten: {rewritten}")
+        print(
+            f"  Link mappings: {total_link_count} path(s); pages rewritten: {rewritten}"
+        )
 
     if chunk.include_finalizers and not dry_run and plan.manifest is not None:
         plan.manifest.save(wiki_dir)
@@ -953,10 +1014,7 @@ def run(args) -> None:
         chunk = chunks[selected_number - 1]
         print(f"\nApplying migration chunk {chunk.number}/{chunk.total}:")
         _apply_chunk(wiki_dir, plan, chunk, dry_run)
-        print(
-            "\nMigration chunk complete: "
-            f"{chunk.page_operations} page operation(s)."
-        )
+        print(f"\nMigration chunk complete: {chunk.page_operations} page operation(s).")
         if not chunk.include_finalizers:
             print("Run chunked migrate again after reviewing or committing this chunk.")
         return

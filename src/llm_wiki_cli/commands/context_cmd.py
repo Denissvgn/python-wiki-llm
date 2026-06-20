@@ -55,7 +55,9 @@ def get_inventory(src_dir: str, *, deep: bool = False) -> dict:
     """Context-local inventory helper kept patchable for protocol tests."""
     inventory_result = get_inventory_result(src_dir, deep=deep)
     if inventory_result.failed:
-        raise ProtocolRequestError(_extractor_failure_message(inventory_result), "src_dir")
+        raise ProtocolRequestError(
+            _extractor_failure_message(inventory_result), "src_dir"
+        )
     return inventory_result.inventory
 
 
@@ -267,9 +269,7 @@ def _build_context_payload(
 
     # Process tiers in priority order
     for tier in ("high", "medium", "low"):
-        tier_files = sorted(
-            fp for fp, pri in classification.items() if pri == tier
-        )
+        tier_files = sorted(fp for fp, pri in classification.items() if pri == tier)
         for fp in tier_files:
             file_data = inventory.get(fp, {})
             selected_entry: dict | None = None
@@ -333,7 +333,8 @@ def _render_markdown(payload: dict) -> str:
 
     for tier in ("high", "medium", "low"):
         tier_files = {
-            fp: data for fp, data in payload["files"].items()
+            fp: data
+            for fp, data in payload["files"].items()
             if data.get("priority") == tier
         }
         if not tier_files:
@@ -359,17 +360,21 @@ def _render_markdown(payload: dict) -> str:
                         params = ", ".join(
                             p.get("name", "") for p in method.get("params", [])
                         )
-                        ret = f" → {method['return_type']}" if method.get("return_type") else ""
+                        ret = (
+                            f" → {method['return_type']}"
+                            if method.get("return_type")
+                            else ""
+                        )
                         async_prefix = "async " if method.get("is_async") else ""
-                        lines.append(f"  - {async_prefix}`{method['name']}({params})`{ret}")
+                        lines.append(
+                            f"  - {async_prefix}`{method['name']}({params})`{ret}"
+                        )
 
             for fn in data.get("functions", []):
                 if isinstance(fn, str):
                     lines.append(f"- def **{fn}**()")
                 else:
-                    params = ", ".join(
-                        p.get("name", "") for p in fn.get("params", [])
-                    )
+                    params = ", ".join(p.get("name", "") for p in fn.get("params", []))
                     ret = f" → {fn['return_type']}" if fn.get("return_type") else ""
                     async_prefix = "async " if fn.get("is_async") else ""
                     lines.append(f"- {async_prefix}def **{fn['name']}**({params}){ret}")
@@ -395,7 +400,11 @@ def _render_markdown(payload: dict) -> str:
 def _read_protocol_request(source: str) -> dict:
     """Read and validate a Wiki-as-Context protocol request."""
     try:
-        raw = sys.stdin.read() if source == "-" else Path(source).read_text(encoding="utf-8")
+        raw = (
+            sys.stdin.read()
+            if source == "-"
+            else Path(source).read_text(encoding="utf-8")
+        )
     except OSError as exc:
         raise ProtocolRequestError(f"Could not read request: {exc}", "request") from exc
 
@@ -424,10 +433,14 @@ def _validate_protocol_request(data: object) -> dict:
         )
 
     if "budget_tokens" not in data:
-        raise ProtocolRequestError("Missing required field: budget_tokens", "budget_tokens")
+        raise ProtocolRequestError(
+            "Missing required field: budget_tokens", "budget_tokens"
+        )
     budget = data["budget_tokens"]
     if isinstance(budget, bool) or not isinstance(budget, int) or budget < 1:
-        raise ProtocolRequestError("budget_tokens must be a positive integer.", "budget_tokens")
+        raise ProtocolRequestError(
+            "budget_tokens must be a positive integer.", "budget_tokens"
+        )
 
     fmt = data.get("format", "json")
     if fmt not in _FORMATS:
@@ -461,7 +474,9 @@ def _normalise_protocol_focus(raw_focus: object) -> list[str]:
 
     focus_set = set(raw_focus)
     if "all" in focus_set and len(focus_set) > 1:
-        raise ProtocolRequestError("focus 'all' cannot be combined with other values.", "focus")
+        raise ProtocolRequestError(
+            "focus 'all' cannot be combined with other values.", "focus"
+        )
 
     if "neighbors" in focus_set and "changed" not in focus_set:
         raise ProtocolRequestError("focus 'neighbors' requires 'changed'.", "focus")
@@ -483,7 +498,9 @@ def _normalise_protocol_filters(raw_filters: object) -> dict:
 
     unknown = sorted(set(raw_filters) - _FILTER_KEYS)
     if unknown:
-        raise ProtocolRequestError(f"Unknown filter field: {unknown[0]}", f"filters.{unknown[0]}")
+        raise ProtocolRequestError(
+            f"Unknown filter field: {unknown[0]}", f"filters.{unknown[0]}"
+        )
 
     filters: dict[str, str] = {}
     for key in ("language", "module"):
@@ -491,7 +508,9 @@ def _normalise_protocol_filters(raw_filters: object) -> dict:
             continue
         value = raw_filters[key]
         if not isinstance(value, str) or not value:
-            raise ProtocolRequestError(f"filters.{key} must be a non-empty string.", f"filters.{key}")
+            raise ProtocolRequestError(
+                f"filters.{key} must be a non-empty string.", f"filters.{key}"
+            )
         filters[key] = value
     return filters
 
@@ -524,7 +543,9 @@ def _apply_protocol_filters(inventory: dict, filters: dict) -> dict:
     for filepath, data in inventory.items():
         if "language" in filters and data.get("language") != filters["language"]:
             continue
-        if "module" in filters and not _matches_module_filter(filepath, filters["module"]):
+        if "module" in filters and not _matches_module_filter(
+            filepath, filters["module"]
+        ):
             continue
         result[filepath] = data
     return result
@@ -556,7 +577,9 @@ def _build_context(
 ) -> tuple[dict, list[str]]:
     """Build a context payload and return ``(payload, warnings)``."""
     src_root = validate_source_root(
-        src_dir, "--src-dir", allow_external=allow_external_src,
+        src_dir,
+        "--src-dir",
+        allow_external=allow_external_src,
     )
 
     inventory = get_inventory(str(src_root), deep=True)
@@ -573,10 +596,14 @@ def _build_context(
     if focus_mode == "changed":
         changed = _git_changed_files(str(src_root))
         if changed is None:
-            warnings.append("Could not get changed files from git. Treating all files as high priority.")
+            warnings.append(
+                "Could not get changed files from git. Treating all files as high priority."
+            )
             focus_mode = "all"
         elif not changed:
-            warnings.append("No files changed in the last commit. Treating all files as high priority.")
+            warnings.append(
+                "No files changed in the last commit. Treating all files as high priority."
+            )
             focus_mode = "all"
         else:
             changed = _normalise_changed_paths(changed, inventory)
@@ -597,7 +624,9 @@ def _build_context(
     return _build_context_payload(inventory, classification, budget), warnings
 
 
-def _protocol_success_payload(request: dict, payload: dict, warnings: list[str]) -> dict:
+def _protocol_success_payload(
+    request: dict, payload: dict, warnings: list[str]
+) -> dict:
     response = {
         "protocol": PROTOCOL_VERSION,
         "ok": True,
@@ -634,7 +663,9 @@ def _run_protocol(args) -> None:
     except ProtocolRequestError as exc:
         _emit_protocol_error(exc)
 
-    rendered = json.dumps(_protocol_success_payload(request, payload, warnings), indent=2)
+    rendered = json.dumps(
+        _protocol_success_payload(request, payload, warnings), indent=2
+    )
     if output_path:
         write_text_output(output_path, rendered + "\n")
         print(f"Context output written to: {output_path}", file=sys.stderr)
@@ -700,9 +731,7 @@ def run(args) -> None:
         print(rendered)
 
 
-def _normalise_changed_paths(
-    changed: list[str], inventory: dict
-) -> list[str]:
+def _normalise_changed_paths(changed: list[str], inventory: dict) -> list[str]:
     """Match git-reported changed paths to inventory keys.
 
     Git paths are relative to the repo root; inventory keys may include

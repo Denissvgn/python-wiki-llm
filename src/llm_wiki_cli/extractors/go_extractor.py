@@ -93,10 +93,14 @@ class GoExtractor:
         )
 
     def _prepared_helper(self, request: GoExtractionRequest) -> Path | None:
-        helper_binary = get_prepared_binary("go", request.src_dir, request.helper_cache_dir)
+        helper_binary = get_prepared_binary(
+            "go", request.src_dir, request.helper_cache_dir
+        )
         if helper_binary is None:
             self.last_error = missing_helper_message(
-                "go", request.src_dir, request.helper_cache_dir,
+                "go",
+                request.src_dir,
+                request.helper_cache_dir,
             )
             print(f"llm-wiki Go extractor: {self.last_error}", file=sys.stderr)
         return helper_binary
@@ -109,7 +113,8 @@ class GoExtractor:
     ) -> list[str]:
         cmd = [
             str(helper_binary),
-            "--src-dir", str(Path(request.src_dir).resolve()),
+            "--src-dir",
+            str(Path(request.src_dir).resolve()),
         ]
         cmd += ["--only-files", ",".join(source_files)]
         if request.deep:

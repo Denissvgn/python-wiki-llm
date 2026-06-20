@@ -51,7 +51,7 @@ def _resolve_gitdir_file(git_file: Path) -> Path | None:
     prefix = "gitdir:"
     if not text.lower().startswith(prefix):
         return None
-    raw_path = text[len(prefix):].strip()
+    raw_path = text[len(prefix) :].strip()
     gitdir = Path(raw_path)
     if not gitdir.is_absolute():
         gitdir = git_file.parent / gitdir
@@ -121,18 +121,16 @@ def helper_source_files(language: str) -> list[tuple[str, Path]]:
         names = _RUST_FILES
     else:
         raise ValueError(f"Unsupported helper language: {language}")
-    return [
-        (name, root / name)
-        for name in names
-        if (root / name).exists()
-    ]
+    return [(name, root / name) for name in names if (root / name).exists()]
 
 
 def helper_source_fingerprint(language: str) -> str:
     return _hash_labeled_files(helper_source_files(language))
 
 
-def command_output(cmd: list[str], *, cwd: Path | None = None, timeout: int = 15) -> str | None:
+def command_output(
+    cmd: list[str], *, cwd: Path | None = None, timeout: int = 15
+) -> str | None:
     try:
         result = subprocess.run(
             cmd,
@@ -142,7 +140,11 @@ def command_output(cmd: list[str], *, cwd: Path | None = None, timeout: int = 15
             timeout=timeout,
             cwd=str(cwd) if cwd is not None else None,
         )
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
+    except (
+        subprocess.CalledProcessError,
+        subprocess.TimeoutExpired,
+        FileNotFoundError,
+    ):
         return None
     return (result.stdout or result.stderr).strip()
 
@@ -173,7 +175,9 @@ def _go_version(go_executable: str, *, timeout: int = 15) -> tuple[str | None, s
 
     output = (result.stdout or result.stderr).strip()
     if result.returncode != 0:
-        detail = (result.stderr or result.stdout).strip() or f"exit code {result.returncode}"
+        detail = (
+            result.stderr or result.stdout
+        ).strip() or f"exit code {result.returncode}"
         return None, detail
     return output, ""
 
@@ -226,7 +230,9 @@ def _write_manifest(cache_root: Path, language: str, data: dict[str, Any]) -> No
     path = _manifest_path(cache_root, language)
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = path.with_name(f".{path.name}.{os.getpid()}.tmp")
-    tmp_path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    tmp_path.write_text(
+        json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     tmp_path.replace(path)
 
 
@@ -256,7 +262,9 @@ def _prepared_message(language: str) -> str:
     )
 
 
-def get_prepared_binary(language: str, src_dir: str | Path = ".", cache_dir: str | None = None) -> Path | None:
+def get_prepared_binary(
+    language: str, src_dir: str | Path = ".", cache_dir: str | None = None
+) -> Path | None:
     cache_root = resolve_helper_cache_root(src_dir, cache_dir)
     if cache_root is None:
         return None
@@ -270,7 +278,9 @@ def get_prepared_binary(language: str, src_dir: str | Path = ".", cache_dir: str
     return path if path.is_file() else None
 
 
-def missing_helper_message(language: str, src_dir: str | Path = ".", cache_dir: str | None = None) -> str:
+def missing_helper_message(
+    language: str, src_dir: str | Path = ".", cache_dir: str | None = None
+) -> str:
     cache_root = resolve_helper_cache_root(src_dir, cache_dir)
     if cache_root is None:
         return (
@@ -288,7 +298,9 @@ def prepare_typescript(cache_root: Path) -> HelperPrepareResult:
     if shutil.which("node") is None:
         return HelperPrepareResult("typescript", "failed", "node not found")
     if typescript_dependencies_ready():
-        return HelperPrepareResult("typescript", "already_current", "TypeScript dependencies already installed")
+        return HelperPrepareResult(
+            "typescript", "already_current", "TypeScript dependencies already installed"
+        )
     if shutil.which("npm") is None:
         return HelperPrepareResult("typescript", "failed", "npm not found")
 
@@ -302,12 +314,18 @@ def prepare_typescript(cache_root: Path) -> HelperPrepareResult:
             text=True,
         )
     except subprocess.CalledProcessError as exc:
-        return HelperPrepareResult("typescript", "failed", f"npm install failed: {exc.stderr.strip()}")
+        return HelperPrepareResult(
+            "typescript", "failed", f"npm install failed: {exc.stderr.strip()}"
+        )
     except (subprocess.TimeoutExpired, FileNotFoundError):
-        return HelperPrepareResult("typescript", "failed", "npm install timed out or was not found")
+        return HelperPrepareResult(
+            "typescript", "failed", "npm install timed out or was not found"
+        )
 
     if not typescript_dependencies_ready():
-        return HelperPrepareResult("typescript", "failed", "ts-morph dependency missing after npm install")
+        return HelperPrepareResult(
+            "typescript", "failed", "ts-morph dependency missing after npm install"
+        )
 
     data = {
         "version": HELPER_MANIFEST_VERSION,
@@ -317,7 +335,9 @@ def prepare_typescript(cache_root: Path) -> HelperPrepareResult:
         "path": str(TS_SCRIPTS_DIR / "node_modules" / "ts-morph"),
     }
     _write_manifest(cache_root, "typescript", data)
-    return HelperPrepareResult("typescript", "prepared", "TypeScript dependencies installed", data["path"])
+    return HelperPrepareResult(
+        "typescript", "prepared", "TypeScript dependencies installed", data["path"]
+    )
 
 
 def prepare_go(cache_root: Path) -> HelperPrepareResult:
@@ -339,7 +359,9 @@ def prepare_go(cache_root: Path) -> HelperPrepareResult:
     binary_path = out_dir / _binary_name("llm-wiki-go-extractor")
     current = _manifest_current(cache_root, "go")
     if current and Path(str(current["path"])) == binary_path and binary_path.is_file():
-        return HelperPrepareResult("go", "already_current", "Go helper already prepared", str(binary_path))
+        return HelperPrepareResult(
+            "go", "already_current", "Go helper already prepared", str(binary_path)
+        )
 
     out_dir.mkdir(parents=True, exist_ok=True)
     build_env = os.environ.copy()
@@ -356,13 +378,19 @@ def prepare_go(cache_root: Path) -> HelperPrepareResult:
             env=build_env,
         )
     except subprocess.CalledProcessError as exc:
-        return HelperPrepareResult("go", "failed", f"go build failed: {exc.stderr.strip()}")
+        return HelperPrepareResult(
+            "go", "failed", f"go build failed: {exc.stderr.strip()}"
+        )
     except subprocess.TimeoutExpired:
         return HelperPrepareResult("go", "failed", "go build timed out after 120 s")
     except FileNotFoundError:
-        return HelperPrepareResult("go", "failed", f"go build failed: executable not found at {go_executable}")
+        return HelperPrepareResult(
+            "go", "failed", f"go build failed: executable not found at {go_executable}"
+        )
     if not binary_path.is_file():
-        return HelperPrepareResult("go", "failed", "go build did not produce the expected helper binary")
+        return HelperPrepareResult(
+            "go", "failed", "go build did not produce the expected helper binary"
+        )
 
     data = {
         "version": HELPER_MANIFEST_VERSION,
@@ -389,7 +417,9 @@ def prepare_rust(cache_root: Path) -> HelperPrepareResult:
     binary_path = target_dir / "release" / _binary_name("llm-wiki-rust-extractor")
     current = _manifest_current(cache_root, "rust")
     if current and Path(str(current["path"])) == binary_path and binary_path.is_file():
-        return HelperPrepareResult("rust", "already_current", "Rust helper already prepared", str(binary_path))
+        return HelperPrepareResult(
+            "rust", "already_current", "Rust helper already prepared", str(binary_path)
+        )
 
     build_root.mkdir(parents=True, exist_ok=True)
     try:
@@ -402,11 +432,17 @@ def prepare_rust(cache_root: Path) -> HelperPrepareResult:
             cwd=str(RUST_SCRIPTS_DIR),
         )
     except subprocess.CalledProcessError as exc:
-        return HelperPrepareResult("rust", "failed", f"cargo build failed: {exc.stderr.strip()}")
+        return HelperPrepareResult(
+            "rust", "failed", f"cargo build failed: {exc.stderr.strip()}"
+        )
     except (subprocess.TimeoutExpired, FileNotFoundError):
-        return HelperPrepareResult("rust", "failed", "cargo build timed out or cargo was not found")
+        return HelperPrepareResult(
+            "rust", "failed", "cargo build timed out or cargo was not found"
+        )
     if not binary_path.is_file():
-        return HelperPrepareResult("rust", "failed", "cargo build did not produce the expected helper binary")
+        return HelperPrepareResult(
+            "rust", "failed", "cargo build did not produce the expected helper binary"
+        )
 
     data = {
         "version": HELPER_MANIFEST_VERSION,
@@ -418,7 +454,9 @@ def prepare_rust(cache_root: Path) -> HelperPrepareResult:
         "path": str(binary_path),
     }
     _write_manifest(cache_root, "rust", data)
-    return HelperPrepareResult("rust", "prepared", "Rust helper built", str(binary_path))
+    return HelperPrepareResult(
+        "rust", "prepared", "Rust helper built", str(binary_path)
+    )
 
 
 def prepare_helper(language: str, cache_root: Path) -> HelperPrepareResult:
@@ -428,4 +466,6 @@ def prepare_helper(language: str, cache_root: Path) -> HelperPrepareResult:
         return prepare_go(cache_root)
     if language == "rust":
         return prepare_rust(cache_root)
-    return HelperPrepareResult(language, "failed", f"Unsupported helper language: {language}")
+    return HelperPrepareResult(
+        language, "failed", f"Unsupported helper language: {language}"
+    )

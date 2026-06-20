@@ -238,19 +238,23 @@ def _parse_gitignore_file(gitignore_path: Path, base: str = "") -> list[_Gitigno
                 directory_only = line.endswith("/")
                 line = line.rstrip("/")
                 if line:
-                    rules.append(_GitignoreRule(
-                        base=base.strip("/"),
-                        pattern=line.replace("\\", "/"),
-                        negated=negated,
-                        directory_only=directory_only,
-                        anchored=anchored,
-                    ))
+                    rules.append(
+                        _GitignoreRule(
+                            base=base.strip("/"),
+                            pattern=line.replace("\\", "/"),
+                            negated=negated,
+                            directory_only=directory_only,
+                            anchored=anchored,
+                        )
+                    )
     except OSError:
         pass
     return rules
 
 
-def _match_gitignore_pattern(rel_path: str, pattern: str, *, directory_only: bool = False) -> bool:
+def _match_gitignore_pattern(
+    rel_path: str, pattern: str, *, directory_only: bool = False
+) -> bool:
     """Check if a relative path matches a gitignore pattern."""
     rel_path = rel_path.replace("\\", "/").strip("/")
     pattern = pattern.replace("\\", "/").strip("/")
@@ -260,7 +264,11 @@ def _match_gitignore_pattern(rel_path: str, pattern: str, *, directory_only: boo
 
     if directory_only:
         if "/" in pattern:
-            return rel_path == pattern or rel_path.startswith(pattern + "/") or fnmatch(rel_path, pattern + "/**")
+            return (
+                rel_path == pattern
+                or rel_path.startswith(pattern + "/")
+                or fnmatch(rel_path, pattern + "/**")
+            )
         parts = rel_path.split("/")
         return any(fnmatch(part, pattern) for part in parts[:-1])
 
@@ -279,7 +287,7 @@ def _rule_matches(rel_path: str, rule: _GitignoreRule) -> bool:
         if rel_path == rule.base:
             candidate = ""
         elif rel_path.startswith(rule.base + "/"):
-            candidate = rel_path[len(rule.base) + 1:]
+            candidate = rel_path[len(rule.base) + 1 :]
         else:
             return False
     else:
@@ -325,7 +333,9 @@ def build_gitignore_matcher(root: "str | Path") -> GitIgnoreMatcher:
     return GitIgnoreMatcher(rules)
 
 
-def is_ignored_by_gitignore(rel_path: str, gitignore_path: Path = Path(".gitignore")) -> bool:
+def is_ignored_by_gitignore(
+    rel_path: str, gitignore_path: Path = Path(".gitignore")
+) -> bool:
     """Check if a relative path is ignored according to one .gitignore file."""
     matcher = GitIgnoreMatcher(_parse_gitignore_file(gitignore_path, ""))
     return matcher.is_ignored(rel_path)
