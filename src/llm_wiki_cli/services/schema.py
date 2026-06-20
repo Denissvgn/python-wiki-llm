@@ -163,11 +163,14 @@ The canonical wiki surfaces are:
 - `{wiki_dir}/infrastructure/`: mixed Docker and Compose pages.
 - `{wiki_dir}/dependencies.md`: mixed dependency architecture page when present.
 - `{wiki_dir}/load-order.md`: mixed load-order architecture page when present.
+- `{wiki_dir}/.llm-wiki-surface.json`: generated machine-readable surface index
+  with page metadata, source mappings, flow metadata, dependency-page presence,
+  counts, and outgoing internal links.
 
 Do not edit generated Mermaid diagrams by hand. Treat generated diagrams,
-tables, links, headings, and canonical filenames as CLI-owned structure. Keep
-semantic sections such as descriptions, `## Behavior`, `## Notes`, and log
-summaries aligned with the current source.
+tables, links, headings, canonical filenames, and machine-readable artifacts as
+CLI-owned structure. Keep semantic sections such as descriptions, `## Behavior`,
+`## Notes`, and log summaries aligned with the current source.
 
 ## When you change code
 - First run `llm-wiki sync --jobs auto --wiki-dir {wiki_dir} --src-dir .` after

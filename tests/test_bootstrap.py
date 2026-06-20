@@ -15,6 +15,7 @@ from llm_wiki_cli import cli
 from llm_wiki_cli.commands import bootstrap_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.services.dependencies import analyze_dependencies
+from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 # True when git is on PATH; used to guard git-dependent fixture steps.
 _GIT_AVAILABLE = shutil.which("git") is not None
@@ -707,6 +708,8 @@ class TestBootstrapCreatesManifest:
 
         manifest_path = wiki_dir / ".llm-wiki-manifest.json"
         assert manifest_path.exists(), "bootstrap should create the sync manifest"
+        surface_path = wiki_dir / SURFACE_INDEX_FILENAME
+        assert surface_path.exists(), "bootstrap should create the surface index"
 
     def test_manifest_contains_sources(self, tmp_project, capsys):
         import json
@@ -724,6 +727,23 @@ class TestBootstrapCreatesManifest:
         for filepath, entry in data["sources"].items():
             assert "hash" in entry
             assert "entities" in entry
+
+    def test_surface_index_contains_pages_and_counts(self, tmp_project, capsys):
+        wiki_dir = tmp_project / "docs" / "llm_wiki"
+        args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
+        bootstrap_cmd.run(args)
+
+        data = json.loads(
+            (wiki_dir / SURFACE_INDEX_FILENAME).read_text(encoding="utf-8")
+        )
+        assert data["schema_version"] == "llm-wiki-surface-index/v1"
+        assert data["counts"]["by_kind"]["entities"] == 2
+        assert data["counts"]["by_kind"]["modules"] == 3
+        assert data["counts"]["dependency_architecture"] == 2
+        assert any(page["canonical_path"] == "index.md" for page in data["pages"])
+        assert all(
+            not Path(page["source_path"] or "").is_absolute() for page in data["pages"]
+        )
 
     def test_sync_succeeds_after_bootstrap(self, tmp_project, capsys):
         """After bootstrap, running sync should not fail with 'no manifest'."""
@@ -924,6 +944,30 @@ class TestBootstrapFlows:
         index = (tmp_path / "wiki" / "index.md").read_text(encoding="utf-8")
         assert "## User Flows" in index
         assert "[api-run](flows/api-run.md)" in index
+
+    def test_surface_index_counts_user_flows_and_dependencies(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        self._write_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
+
+        data = json.loads(
+            (tmp_path / "wiki" / SURFACE_INDEX_FILENAME).read_text(encoding="utf-8")
+        )
+        assert data["counts"]["by_kind"]["flows"] == 1
+        assert data["counts"]["dependency_architecture"] == 2
+        assert data["flows"] == [
+            {
+                "id": "api-run",
+                "category": "api",
+                "entry_point": {
+                    "symbol": "run",
+                    "source_path": "api.py",
+                    "label": "run",
+                },
+            }
+        ]
 
     def test_flow_generation_reuses_single_data_flow_context(
         self, tmp_path, monkeypatch, capsys

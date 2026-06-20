@@ -54,6 +54,7 @@ from ..services.inventory_cache import (
 from ..services.io import read_md, write_md
 from ..services.module_maps import build_module_dependency_maps
 from ..services.wiki_surface import PageKind
+from ..services.wiki_surface_index import write_surface_index
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -1566,9 +1567,12 @@ def _finish_if_no_changes(
     options: _SyncRunOptions,
     diff: "SyncDiff",
     inventory_result: InventoryResult,
+    inventory: dict,
+    page_maps: _SyncPageMaps,
 ) -> bool:
     if diff.has_changes:
         return False
+    _write_sync_surface_index(options, inventory, page_maps)
     print("Wiki is up to date.")
     _print_cache_stats(
         inventory_result.cache_stats, enabled=options.cache_stats_enabled
@@ -1655,6 +1659,28 @@ def _write_updated_manifest(
     print(f"Manifest written to {options.wiki_dir / MANIFEST_FILENAME}", flush=True)
 
 
+def _surface_index_entry_points(inventory: dict, src_dir: str) -> list[dict]:
+    console_scripts = read_console_scripts(src_dir)
+    return get_entry_points(inventory, console_scripts=console_scripts)
+
+
+def _write_sync_surface_index(
+    options: _SyncRunOptions,
+    inventory: dict,
+    page_maps: _SyncPageMaps,
+) -> None:
+    surface_path, write_state = write_surface_index(
+        options.wiki_dir,
+        inventory,
+        src_dir=options.src_dir,
+        entity_page_cache=page_maps.entity_page_cache,
+        module_page_map=page_maps.module_page_map,
+        entry_points=_surface_index_entry_points(inventory, options.src_dir),
+    )
+    if write_state != "unchanged":
+        print(f"Surface index written to {surface_path}", flush=True)
+
+
 def _print_sync_summary(result: "SyncResult", diff: "SyncDiff") -> None:
     print(
         f"\nSync complete: {result.created} created, {result.updated} updated, "
@@ -1689,12 +1715,13 @@ def run(args) -> None:
     page_maps = _prepare_sync_page_maps(inventory)
     diff = _compute_sync_diff(manifest, inventory, options, page_maps)
 
-    if _finish_if_no_changes(options, diff, inventory_result):
+    if _finish_if_no_changes(options, diff, inventory_result, inventory, page_maps):
         return
 
     _exit_if_large_unforced_diff(options, diff, manifest, inventory_result)
 
     result = _apply_sync_changes(options, manifest, inventory, diff, page_maps)
+    _write_sync_surface_index(options, inventory, page_maps)
     _write_updated_manifest(options, inventory, page_maps)
     _print_sync_summary(result, diff)
     _print_cache_stats(

@@ -20,6 +20,7 @@ from llm_wiki_cli.commands.sync_cmd import (
 )
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME, InventoryCacheStats
+from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -154,6 +155,23 @@ class TestNoManifest:
         captured = capsys.readouterr()
         assert "bootstrap" in captured.err.lower()
         assert MANIFEST_FILENAME in captured.err
+
+
+class TestSyncSurfaceIndex:
+    def test_sync_regenerates_missing_surface_index_without_source_changes(
+        self, bootstrapped_project, capsys
+    ):
+        proj, wiki_dir = bootstrapped_project
+        surface_path = wiki_dir / SURFACE_INDEX_FILENAME
+        surface_path.unlink()
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
+        assert surface_path.exists()
+        data = json.loads(surface_path.read_text(encoding="utf-8"))
+        assert data["schema_version"] == "llm-wiki-surface-index/v1"
+        assert data["counts"]["by_kind"]["entities"] == 1
+        assert "Wiki is up to date." in capsys.readouterr().out
 
 
 class TestSeedManifest:

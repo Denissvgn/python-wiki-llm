@@ -42,6 +42,7 @@ from ..services.schema import (
 )
 from ..services.source_snapshot import build_source_snapshot
 from ..services.wiki_surface import PageKind, canonical_path, iter_page_kinds
+from ..services.wiki_surface_index import write_surface_index
 
 
 _SURFACE_LABELS = {entry.kind: entry.label for entry in iter_page_kinds()}
@@ -2370,6 +2371,8 @@ def _write_bootstrap_flow_pages(
                 "id": entry_point["id"],
                 "category": entry_point["category"],
                 "entry": entry_point["symbol"],
+                "file": entry_point.get("file"),
+                "label": entry_point.get("label"),
             }
         )
     _emit_bootstrap(state, f"Generated user-flow pages: {flows_created}.", flush=True)
@@ -2596,6 +2599,28 @@ def _write_bootstrap_manifest(
     return manifest_path
 
 
+def _write_bootstrap_surface_index(
+    state: _BootstrapRunState,
+    inventory: dict,
+    page_maps: _BootstrapPageMaps,
+    flow_result: _FlowResult,
+) -> None:
+    _emit_bootstrap(state, "Writing wiki surface index...", flush=True)
+    surface_path, write_state = write_surface_index(
+        state.options.wiki_dir,
+        inventory,
+        src_dir=state.options.src_dir_for_scan,
+        entity_page_cache=page_maps.entity_page_name_cache,
+        module_page_map=page_maps.module_page_map,
+        entry_points=flow_result.entries,
+    )
+    if write_state != "unchanged":
+        _record_bootstrap_write(state, surface_path, write_state == "updated")
+        _emit_bootstrap(state, f"  WRITE {surface_path}")
+    else:
+        _emit_bootstrap(state, f"  SKIP {surface_path} (unchanged)")
+
+
 def _emit_bootstrap_json_summary(
     state: _BootstrapRunState,
     inventory: dict,
@@ -2718,6 +2743,7 @@ def _finalize_bootstrap(
         result.dependency,
         result.cross_reference_count,
     )
+    _write_bootstrap_surface_index(state, inventory, page_maps, result.flow)
     _emit_bootstrap_complete(
         state,
         inventory,
