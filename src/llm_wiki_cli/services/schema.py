@@ -147,6 +147,24 @@ def _wiki_instructions(wiki_dir: str) -> str:
 - ALWAYS read `{wiki_dir}/index.md` before planning a new feature or making architectural changes.
 - Consult relevant entity and module pages to understand existing patterns before writing new code.
 
+## Canonical wiki surfaces
+The canonical wiki surfaces are:
+
+- `{wiki_dir}/index.md`: mixed generated table of contents and navigational context.
+- `{wiki_dir}/log.md`: generated or agent-appended architectural change log.
+- `{wiki_dir}/entities/`: semantic entity pages with generated structure.
+- `{wiki_dir}/modules/`: semantic source-module pages with generated structure.
+- `{wiki_dir}/workflows/`: mixed cross-module workflow pages.
+- `{wiki_dir}/flows/`: mixed user-flow pages generated from entry points.
+- `{wiki_dir}/infrastructure/`: mixed Docker and Compose pages.
+- `{wiki_dir}/dependencies.md`: mixed dependency architecture page when present.
+- `{wiki_dir}/load-order.md`: mixed load-order architecture page when present.
+
+Do not edit generated Mermaid diagrams by hand. Treat generated diagrams,
+tables, links, headings, and canonical filenames as CLI-owned structure. Keep
+semantic sections such as descriptions, `## Behavior`, `## Notes`, and log
+summaries aligned with the current source.
+
 ## When you change code
 - First run `llm-wiki sync --jobs auto --wiki-dir {wiki_dir} --src-dir .` after
   code changes. Sync uses the manifest, persistent inventory cache, and
@@ -163,6 +181,10 @@ def _wiki_instructions(wiki_dir: str) -> str:
   agent-owned: document intentional cycles, dynamic imports, side effects, and
   notable dependency rationale. Projects bootstrapped with
   `--skip-dependencies`, or older wikis without those pages, stay untouched.
+- If `{wiki_dir}/flows/` exists, inspect regenerated user-flow pages too. Treat
+  generated `## Data flow` sections, boundary effects, and static-analysis gaps
+  as review inputs, then keep the human-authored `## Behavior` section aligned
+  with observed side effects and outputs.
 - Enrich new or generic affected pages whose descriptions are `_Auto-generated
   from ..._`, copied docstrings only, or table cells with `—` where semantic
   context is knowable from the diff or source.
@@ -222,9 +244,10 @@ Page filenames **must** match the conventions enforced by `llm-wiki lint`:
 ## Formatting rules
 - Entity pages must have: Location, Bases, Module link, Attributes table, Methods table, Relationships.
 - Module pages must have: Path, Imports table, Classes summary, Functions table.
-- User-flow pages have a generated Mermaid call-sequence diagram; fill in the
-  `## Behavior` section with what the flow does, its triggers, and side effects.
-  Do not edit the generated diagram by hand.
+- User-flow pages have generated Mermaid call-sequence and `## Data flow`
+  diagrams. Review static-analysis gaps and boundary effects, then fill in the
+  `## Behavior` section with what the flow does, its triggers, observed side
+  effects, and outputs. Do not edit generated diagrams by hand.
 - Infrastructure pages must have: Path, type-specific sections (stages, services, ports, env vars, etc.).
 - Dependency architecture pages must keep any human-authored `## Notes` section
   aligned with current cycles, external dependency reconciliation, load-order

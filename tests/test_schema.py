@@ -59,6 +59,35 @@ def test_agent_schema_mentions_dependency_architecture_responsibilities():
     assert "warning diagnostics" in content
 
 
+def test_agent_schema_mentions_data_flow_review_responsibilities():
+    content = build_schema_content("generic", "docs/llm_wiki")
+
+    assert "## Data flow" in content
+    assert "static-analysis gaps" in content
+    assert "## Behavior" in content
+    assert "observed side effects" in content
+
+
+def test_agent_schema_mentions_canonical_surfaces_and_generated_ownership():
+    content = build_schema_content("generic", "docs/llm_wiki")
+
+    assert "canonical wiki surfaces" in content
+    for path in [
+        "docs/llm_wiki/index.md",
+        "docs/llm_wiki/log.md",
+        "docs/llm_wiki/entities/",
+        "docs/llm_wiki/modules/",
+        "docs/llm_wiki/workflows/",
+        "docs/llm_wiki/flows/",
+        "docs/llm_wiki/infrastructure/",
+        "docs/llm_wiki/dependencies.md",
+        "docs/llm_wiki/load-order.md",
+    ]:
+        assert path in content
+    assert "Do not edit generated Mermaid diagrams by hand" in content
+    assert "semantic sections" in content
+
+
 def test_ide_schema_mentions_incremental_sync_workflow():
     content = build_schema_content("copilot", "docs/llm_wiki")
 
