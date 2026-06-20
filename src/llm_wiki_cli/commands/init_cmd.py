@@ -11,6 +11,7 @@ from ..services.schema import (
     SCHEMA_FILENAMES,
     build_schema_content as _build_schema_content,
 )
+from ..services.wiki_surface import iter_directory_kinds
 
 
 # Agents that have a real CLI executable for explicit trigger-agent use.
@@ -34,13 +35,12 @@ def run(args):
 
     # 1. Create directory structure
     base_dir = Path(wiki_dir)
-    directories = [
-        base_dir,
-        base_dir / "entities",
-        base_dir / "modules",
-        base_dir / "workflows",
-        base_dir / "infrastructure",
-    ]
+    directories = [base_dir]
+    directories.extend(
+        base_dir / entry.directory
+        for entry in iter_directory_kinds()
+        if entry.directory is not None
+    )
 
     try:
         for d in directories:

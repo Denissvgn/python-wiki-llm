@@ -267,6 +267,25 @@ class TestUpgradeCreatesNewDirs:
         assert infra.exists()
         assert (infra / ".gitkeep").exists()
 
+    def test_registry_dirs_created_without_architecture_placeholders(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+
+        flows = Path("docs/llm_wiki/flows")
+        if flows.exists():
+            import shutil
+
+            shutil.rmtree(flows)
+        Path("docs/llm_wiki/dependencies.md").unlink(missing_ok=True)
+        Path("docs/llm_wiki/load-order.md").unlink(missing_ok=True)
+
+        upgrade_cmd.run(_make_args())
+
+        assert flows.exists()
+        assert (flows / ".gitkeep").exists()
+        assert not Path("docs/llm_wiki/dependencies.md").exists()
+        assert not Path("docs/llm_wiki/load-order.md").exists()
+
 
 class TestUpgradeNoAgentConfig:
     """Errors helpfully if no agent is resolvable."""

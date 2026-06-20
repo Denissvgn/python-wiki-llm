@@ -32,16 +32,47 @@ def _args(**overrides):
 
 def _write_wiki(root: Path) -> Path:
     wiki = root / "docs" / "llm_wiki"
+    for subdir in ["entities", "modules", "workflows", "flows", "infrastructure"]:
+        (wiki / subdir).mkdir(parents=True, exist_ok=True)
+    (wiki / "index.md").write_text(
+        "# Index\n\n- [User](entities/User.md)\n", encoding="utf-8"
+    )
+    (wiki / "log.md").write_text("# Log\n\n- Created wiki\n", encoding="utf-8")
+    (wiki / "dependencies.md").write_text(
+        "# Dependencies\n\nDependency graph.\n", encoding="utf-8"
+    )
+    (wiki / "load-order.md").write_text(
+        "# Load Order\n\nInitialization sequence.\n", encoding="utf-8"
+    )
+    (wiki / "entities" / "User.md").write_text(
+        "# User\n\nPrimary account entity.\n", encoding="utf-8"
+    )
+    (wiki / "modules" / "models.md").write_text(
+        "# models Module\n\n**Path:** `models.py`\n", encoding="utf-8"
+    )
+    (wiki / "workflows" / "signup.md").write_text(
+        "# Signup\n\nUser signup flow.\n", encoding="utf-8"
+    )
+    (wiki / "flows" / "checkout.md").write_text(
+        "# Checkout\n\nCheckout user flow.\n", encoding="utf-8"
+    )
+    (wiki / "infrastructure" / "Dockerfile.md").write_text(
+        "# Dockerfile\n\nContainer docs.\n", encoding="utf-8"
+    )
+    (wiki / "legacy").mkdir()
+    (wiki / "legacy" / "old.md").write_text(
+        "# Old\n\nPrimary account entity.\n", encoding="utf-8"
+    )
+    return wiki
+
+
+def _write_legacy_wiki(root: Path) -> Path:
+    wiki = root / "docs" / "llm_wiki"
     for subdir in ["entities", "modules", "workflows", "infrastructure"]:
         (wiki / subdir).mkdir(parents=True, exist_ok=True)
-    (wiki / "index.md").write_text("# Index\n\n- [User](entities/User.md)\n", encoding="utf-8")
-    (wiki / "log.md").write_text("# Log\n\n- Created wiki\n", encoding="utf-8")
-    (wiki / "entities" / "User.md").write_text("# User\n\nPrimary account entity.\n", encoding="utf-8")
-    (wiki / "modules" / "models.md").write_text("# models Module\n\n**Path:** `models.py`\n", encoding="utf-8")
-    (wiki / "workflows" / "signup.md").write_text("# Signup\n\nUser signup flow.\n", encoding="utf-8")
-    (wiki / "infrastructure" / "Dockerfile.md").write_text("# Dockerfile\n\nContainer docs.\n", encoding="utf-8")
-    (wiki / "legacy").mkdir()
-    (wiki / "legacy" / "old.md").write_text("# Old\n\nPrimary account entity.\n", encoding="utf-8")
+    (wiki / "index.md").write_text("# Index\n\n", encoding="utf-8")
+    (wiki / "log.md").write_text("# Log\n\n", encoding="utf-8")
+    (wiki / "entities" / "User.md").write_text("# User\n\n", encoding="utf-8")
     return wiki
 
 
@@ -71,10 +102,17 @@ class TestMcpWikiService:
 
         index = service.read_resource("llm-wiki://index")
         entity = service.read_resource("llm-wiki://entities/User")
+        flow = service.read_resource("llm-wiki://flows/checkout")
+        dependencies = service.read_resource("llm-wiki://dependencies")
+        load_order = service.read_resource("llm-wiki://load-order")
 
         assert index["mimeType"] == "text/markdown"
         assert entity["metadata"]["kind"] == "entities"
         assert "Primary account entity" in entity["text"]
+        assert flow["metadata"]["path"] == "flows/checkout.md"
+        assert dependencies["metadata"]["kind"] == "dependencies"
+        assert "Dependency graph" in dependencies["text"]
+        assert load_order["metadata"]["path"] == "load-order.md"
 
     def test_rejects_path_escape_resource(self, tmp_project):
         _write_wiki(tmp_project)
@@ -100,6 +138,40 @@ class TestMcpWikiService:
         assert result["results"][0]["uri"] == "llm-wiki://entities/User"
         assert "Primary account" in result["results"][0]["snippet"]
 
+    def test_search_wiki_includes_registry_surface_kinds(self, tmp_project):
+        _write_wiki(tmp_project)
+        service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+        result = service.search_wiki(
+            "Dependency graph", kinds=["dependencies"], limit=10
+        )
+
+        assert result["count"] == 1
+        assert result["results"][0]["kind"] == "dependencies"
+        assert result["results"][0]["uri"] == "llm-wiki://dependencies"
+
+    def test_list_resources_includes_registry_pages(self, tmp_project):
+        _write_wiki(tmp_project)
+        service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+        uris = {resource["uri"] for resource in service.list_resources()}
+
+        assert "llm-wiki://flows/checkout" in uris
+        assert "llm-wiki://dependencies" in uris
+        assert "llm-wiki://load-order" in uris
+
+    def test_legacy_layout_omits_absent_optional_resources(self, tmp_project):
+        _write_legacy_wiki(tmp_project)
+        service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+        uris = {resource["uri"] for resource in service.list_resources()}
+        status = service.get_status()
+
+        assert "llm-wiki://flows/checkout" not in uris
+        assert "llm-wiki://dependencies" not in uris
+        assert status["pages"]["flows"] == 0
+        assert status["pages"]["architecture_pages"] == 0
+
     def test_get_context_uses_existing_context_builder(self, tmp_project):
         service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
 
@@ -109,15 +181,21 @@ class TestMcpWikiService:
         assert result["ok"] is True
         assert "models.py" in result["files"]
 
-    def test_get_context_raises_mcp_error_on_extractor_failure(self, tmp_project, monkeypatch):
+    def test_get_context_raises_mcp_error_on_extractor_failure(
+        self, tmp_project, monkeypatch
+    ):
         result = InventoryResult(
             {},
             {"python": ExtractorStatus("python", "failed", 1, "boom")},
         )
-        monkeypatch.setattr(context_cmd, "get_inventory_result", lambda *args, **kwargs: result)
+        monkeypatch.setattr(
+            context_cmd, "get_inventory_result", lambda *args, **kwargs: result
+        )
         service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
 
-        with pytest.raises(mcp_server.McpWikiError, match="python extraction failed: boom"):
+        with pytest.raises(
+            mcp_server.McpWikiError, match="python extraction failed: boom"
+        ):
             service.get_context(budget_tokens=1000, focus=["all"], format="json")
 
     def test_check_wiki_returns_lint_report(self, tmp_project):
@@ -141,6 +219,10 @@ class TestMcpWikiService:
 
         assert result["wiki_exists"] is True
         assert result["pages"]["entities"] == 1
+        assert result["pages"]["flows"] == 1
+        assert result["pages"]["dependencies"] == 1
+        assert result["pages"]["load-order"] == 1
+        assert result["pages"]["architecture_pages"] == 2
         assert result["hooks"] == ["post-commit"]
 
 
@@ -153,10 +235,18 @@ class TestOriginSafety:
             mcp_server.validate_loopback_host("0.0.0.0")
 
     def test_origin_allows_loopback_configured_port(self):
-        assert mcp_server.is_origin_allowed("http://127.0.0.1:8765", port=8765, allowed_origins=[])
-        assert mcp_server.is_origin_allowed("http://localhost:8765", port=8765, allowed_origins=[])
-        assert not mcp_server.is_origin_allowed("http://localhost:9000", port=8765, allowed_origins=[])
-        assert not mcp_server.is_origin_allowed("https://example.com", port=8765, allowed_origins=[])
+        assert mcp_server.is_origin_allowed(
+            "http://127.0.0.1:8765", port=8765, allowed_origins=[]
+        )
+        assert mcp_server.is_origin_allowed(
+            "http://localhost:8765", port=8765, allowed_origins=[]
+        )
+        assert not mcp_server.is_origin_allowed(
+            "http://localhost:9000", port=8765, allowed_origins=[]
+        )
+        assert not mcp_server.is_origin_allowed(
+            "https://example.com", port=8765, allowed_origins=[]
+        )
 
     def test_origin_allows_explicit_origin(self):
         assert mcp_server.is_origin_allowed(

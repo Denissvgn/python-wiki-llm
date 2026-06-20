@@ -33,6 +33,7 @@ from ..services.schema import (
     strip_skill_blocks,
     strip_wiki_block,
 )
+from ..services.wiki_surface import iter_directory_kinds
 
 # Re-use hook builders from hook_cmd to avoid duplication
 from .hook_cmd import _build_ide_post_commit, _install_hook
@@ -111,7 +112,11 @@ def _upgrade_schema(
 def _upgrade_dirs(wiki_dir: str) -> int:
     """Ensure all standard wiki subdirectories exist. Returns count of newly created dirs."""
     base = Path(wiki_dir)
-    subdirs = ["entities", "modules", "workflows", "infrastructure"]
+    subdirs = [
+        entry.directory
+        for entry in iter_directory_kinds()
+        if entry.directory is not None
+    ]
     created = 0
     for name in ["."] + subdirs:
         d = base if name == "." else base / name

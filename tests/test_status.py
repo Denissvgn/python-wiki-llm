@@ -1,9 +1,8 @@
 """Tests for commands/status_cmd.py"""
+
 import json
 import types
-from pathlib import Path
 
-import pytest
 
 from llm_wiki_cli.commands import status_cmd
 
@@ -15,27 +14,40 @@ def _make_args(**kwargs):
 class TestStatusWiki:
     def test_shows_wiki_exists(self, tmp_project, capsys):
         wiki = tmp_project / "docs" / "llm_wiki"
-        for d in ["entities", "modules", "workflows"]:
+        for d in ["entities", "modules", "workflows", "flows", "infrastructure"]:
             (wiki / d).mkdir(parents=True)
         (wiki / "entities" / "User.md").write_text("# User\n")
         (wiki / "modules" / "main.md").write_text("# main\n")
+        (wiki / "flows" / "checkout.md").write_text("# checkout\n")
+        (wiki / "infrastructure" / "Dockerfile.md").write_text("# Dockerfile\n")
+        (wiki / "dependencies.md").write_text("# Dependencies\n")
+        (wiki / "load-order.md").write_text("# Load Order\n")
 
         status_cmd.run(_make_args(wiki_dir=str(wiki)))
         out = capsys.readouterr().out
         assert "exists" in out
         assert "Entities:      1" in out
         assert "Modules:       1" in out
+        assert "Flows:         1" in out
+        assert "Infrastructure:1" in out
+        assert "Architecture pages:2" in out
 
-    def test_counts_wiki_pages_without_materializing_globs(self, tmp_project, capsys, monkeypatch):
+    def test_counts_wiki_pages_without_materializing_globs(
+        self, tmp_project, capsys, monkeypatch
+    ):
         wiki = tmp_project / "docs" / "llm_wiki"
-        for d in ["entities", "modules", "workflows"]:
+        for d in ["entities", "modules", "workflows", "flows", "infrastructure"]:
             (wiki / d).mkdir(parents=True)
         (wiki / "entities" / "User.md").write_text("# User\n")
         (wiki / "modules" / "main.md").write_text("# main\n")
         (wiki / "workflows" / "signup.md").write_text("# signup\n")
+        (wiki / "flows" / "checkout.md").write_text("# checkout\n")
+        (wiki / "infrastructure" / "Dockerfile.md").write_text("# Dockerfile\n")
 
         def fail_if_materialized(*_args, **_kwargs):
-            raise AssertionError("status should count glob results without list allocation")
+            raise AssertionError(
+                "status should count glob results without list allocation"
+            )
 
         monkeypatch.setattr(status_cmd, "list", fail_if_materialized, raising=False)
 
@@ -45,6 +57,24 @@ class TestStatusWiki:
         assert "Entities:      1" in out
         assert "Modules:       1" in out
         assert "Workflows:     1" in out
+        assert "Flows:         1" in out
+        assert "Infrastructure:1" in out
+
+    def test_missing_optional_registry_surfaces_count_as_zero(
+        self, tmp_project, capsys
+    ):
+        wiki = tmp_project / "docs" / "llm_wiki"
+        for d in ["entities", "modules", "workflows"]:
+            (wiki / d).mkdir(parents=True)
+        (wiki / "entities" / "User.md").write_text("# User\n")
+
+        status_cmd.run(_make_args(wiki_dir=str(wiki)))
+        out = capsys.readouterr().out
+
+        assert "Entities:      1" in out
+        assert "Flows:         0" in out
+        assert "Infrastructure:0" in out
+        assert "Architecture pages:0" in out
 
     def test_shows_wiki_missing(self, tmp_project, capsys):
         status_cmd.run(_make_args(wiki_dir="nonexistent"))

@@ -23,6 +23,11 @@ class TestInitCreatesStructure:
         assert (base / "entities").exists()
         assert (base / "modules").exists()
         assert (base / "workflows").exists()
+        assert (base / "flows").exists()
+        assert (base / "flows" / ".gitkeep").exists()
+        assert (base / "infrastructure").exists()
+        assert not (base / "dependencies.md").exists()
+        assert not (base / "load-order.md").exists()
 
     def test_core_files_created(self, tmp_project):
         args = _make_args()
