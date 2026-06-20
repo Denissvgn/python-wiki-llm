@@ -53,6 +53,7 @@ from ..services.inventory_cache import (
 )
 from ..services.io import read_md, write_md
 from ..services.module_maps import build_module_dependency_maps
+from ..services.wiki_surface import PageKind
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -1631,6 +1632,7 @@ def _apply_sync_changes(
         options.src_dir,
         entity_page_cache=page_maps.entity_page_cache,
         module_page_map=page_maps.module_page_map,
+        preserve_semantic=options.preserve_semantic,
     )
 
     _append_log(options.wiki_dir, options.src_dir, diff, result)
@@ -1703,6 +1705,113 @@ def run(args) -> None:
 # ── Index + log helpers ───────────────────────────────────────────────────────
 
 
+_INDEX_GENERATED_HEADINGS = frozenset(
+    heading.casefold()
+    for heading in (
+        "Surface Overview",
+        "Entities",
+        "Modules",
+        "Workflows",
+        "User Flows",
+        "Infrastructure",
+        "Architecture",
+        "Dependency Architecture",
+        "Log",
+    )
+)
+_INDEX_GENERATED_INTROS = {
+    ("Catalog of project modules and entities.",),
+    ("Use this landing page to choose the right wiki surface.",),
+}
+
+
+def _heading_title(line: str) -> str | None:
+    match = _HEADING_RE.match(line.strip())
+    if not match:
+        return None
+    return match.group(2).strip()
+
+
+def _iter_level_two_sections(
+    lines: list[str],
+) -> list[tuple[str, list[str]]]:
+    sections: list[tuple[str, list[str]]] = []
+    for i, line in enumerate(lines):
+        match = _HEADING_RE.match(line.strip())
+        if not match or len(match.group(1)) != 2:
+            continue
+        end = len(lines)
+        for j in range(i + 1, len(lines)):
+            next_match = _HEADING_RE.match(lines[j].strip())
+            if next_match and len(next_match.group(1)) <= 2:
+                end = j
+                break
+        sections.append((line.strip(), _trim_blank_lines(lines[i + 1 : end])))
+    return sections
+
+
+def _index_intro_lines(lines: list[str]) -> list[str]:
+    start = 0
+    if lines and lines[0].startswith("# "):
+        start = 1
+    first_section = len(lines)
+    for i, line in enumerate(lines[start:], start=start):
+        match = _HEADING_RE.match(line.strip())
+        if match and len(match.group(1)) == 2:
+            first_section = i
+            break
+    return _trim_blank_lines(lines[start:first_section])
+
+
+def _merge_intro_into_notes(
+    sections: list[tuple[str, list[str]]], intro: list[str]
+) -> list[tuple[str, list[str]]]:
+    if not intro:
+        return sections
+    merged: list[tuple[str, list[str]]] = []
+    inserted = False
+    for heading, body in sections:
+        title = _heading_title(heading)
+        if title and title.casefold() == "notes" and not inserted:
+            new_body = intro + ([""] if body else []) + body
+            merged.append((heading, new_body))
+            inserted = True
+        else:
+            merged.append((heading, body))
+    if not inserted:
+        merged.insert(0, ("## Notes", intro))
+    return merged
+
+
+def _preserved_index_sections(old_md: str) -> list[tuple[str, list[str]]]:
+    lines = _normalize_md(old_md).splitlines()
+    custom_sections = [
+        (heading, body)
+        for heading, body in _iter_level_two_sections(lines)
+        if (_heading_title(heading) or "").casefold() not in _INDEX_GENERATED_HEADINGS
+    ]
+    intro = _index_intro_lines(lines)
+    if tuple(intro) in _INDEX_GENERATED_INTROS:
+        intro = []
+    return _merge_intro_into_notes(custom_sections, intro)
+
+
+def _preserve_index_custom_sections(old_md: str, new_md: str) -> str:
+    preserved = _preserved_index_sections(old_md)
+    if not preserved:
+        return new_md
+    lines = _normalize_md(new_md).splitlines()
+    while lines and lines[-1].strip() == "":
+        lines.pop()
+    lines.append("")
+    for heading, body in preserved:
+        lines.append(heading)
+        lines.append("")
+        lines.extend(body)
+        lines.append("")
+    return "\n".join(lines)
+
+
 def _rebuild_index(
     wiki_dir: Path,
     inventory: dict,
@@ -1710,6 +1819,7 @@ def _rebuild_index(
     *,
     entity_page_cache: dict[tuple[str, str], str] | None = None,
     module_page_map: dict[str, str] | None = None,
+    preserve_semantic: bool = True,
 ) -> None:
     """Regenerate index.md from the live inventory."""
     if entity_page_cache is None:
@@ -1742,16 +1852,19 @@ def _rebuild_index(
     architecture_entries = _list_existing_architecture_pages(wiki_dir)
 
     index_path = wiki_dir / "index.md"
+    new_index = _generate_index_md(
+        all_entity_names,
+        module_entries,
+        workflow_entries or None,
+        infra_entries or None,
+        flow_entries or None,
+        architecture_entries or None,
+    )
+    if preserve_semantic and index_path.exists():
+        new_index = _preserve_index_custom_sections(read_md(index_path), new_index)
     write_state = _write_md_if_changed(
         index_path,
-        _generate_index_md(
-            all_entity_names,
-            module_entries,
-            workflow_entries or None,
-            infra_entries or None,
-            flow_entries or None,
-            architecture_entries or None,
-        ),
+        new_index,
     )
     if write_state == "unchanged":
         print("  SKIP index.md (unchanged)")
@@ -1769,8 +1882,8 @@ def _list_existing_pages(directory: Path, extra_key: str) -> list[dict]:
 # Top-level architecture pages (stem → index label), regenerated and re-linked
 # on sync so they neither go stale nor get orphaned (DL-502).
 _ARCHITECTURE_PAGES: tuple[tuple[str, str], ...] = (
-    ("dependencies", "Dependencies"),
-    ("load-order", "Load order"),
+    (PageKind.DEPENDENCIES.value, "Dependencies"),
+    (PageKind.LOAD_ORDER.value, "Load order"),
 )
 
 

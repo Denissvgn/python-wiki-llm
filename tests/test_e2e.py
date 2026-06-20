@@ -358,7 +358,7 @@ class TestE2EDependencyArchitecture:
         assert "## Indeterminate (cyclic) groups" in load_order
         assert "[alpha](modules/alpha.md) ⇄ [beta](modules/beta.md)" in load_order
 
-        assert "## Architecture" in index
+        assert "## Dependency Architecture" in index
         assert "[Dependencies](dependencies.md)" in index
         assert "[Load order](load-order.md)" in index
 

@@ -41,6 +41,10 @@ from ..services.schema import (
     CONSTRAINT_START as _CONSTRAINT_START,
 )
 from ..services.source_snapshot import build_source_snapshot
+from ..services.wiki_surface import PageKind, canonical_path, iter_page_kinds
+
+
+_SURFACE_LABELS = {entry.kind: entry.label for entry in iter_page_kinds()}
 
 
 def _module_name_from_path(filepath: str) -> str:
@@ -722,16 +726,125 @@ def _flow_index_category(flow: dict) -> str:
     return flow.get("category") or flow["id"].split("-", 1)[0]
 
 
+def _overview_target(count: int, heading: str) -> str:
+    if count <= 0:
+        return "No pages"
+    anchor = heading.casefold().replace(" ", "-")
+    return f"[Open section](#{anchor})"
+
+
+def _overview_row(label: str, count: int, target: str) -> str:
+    return f"| {label} | {count} | {target} |"
+
+
+def _append_surface_overview(
+    lines: list[str],
+    *,
+    entity_count: int,
+    module_count: int,
+    workflow_count: int,
+    flow_count: int,
+    infrastructure_count: int,
+    architecture_count: int,
+    log_present: bool,
+) -> None:
+    lines.extend(
+        [
+            "## Surface Overview",
+            "",
+            "| Surface | Count | Start here |",
+            "|---|---:|---|",
+            _overview_row(
+                _SURFACE_LABELS[PageKind.ENTITIES],
+                entity_count,
+                _overview_target(entity_count, _SURFACE_LABELS[PageKind.ENTITIES]),
+            ),
+            _overview_row(
+                _SURFACE_LABELS[PageKind.MODULES],
+                module_count,
+                _overview_target(module_count, _SURFACE_LABELS[PageKind.MODULES]),
+            ),
+            _overview_row(
+                _SURFACE_LABELS[PageKind.WORKFLOWS],
+                workflow_count,
+                _overview_target(workflow_count, _SURFACE_LABELS[PageKind.WORKFLOWS]),
+            ),
+            _overview_row(
+                _SURFACE_LABELS[PageKind.FLOWS],
+                flow_count,
+                _overview_target(flow_count, _SURFACE_LABELS[PageKind.FLOWS]),
+            ),
+            _overview_row(
+                _SURFACE_LABELS[PageKind.INFRASTRUCTURE],
+                infrastructure_count,
+                _overview_target(
+                    infrastructure_count, _SURFACE_LABELS[PageKind.INFRASTRUCTURE]
+                ),
+            ),
+            _overview_row(
+                "Dependency architecture",
+                architecture_count,
+                _overview_target(architecture_count, "Dependency Architecture"),
+            ),
+            _overview_row(
+                _SURFACE_LABELS[PageKind.LOG],
+                1 if log_present else 0,
+                f"[Open log]({canonical_path(PageKind.LOG)})"
+                if log_present
+                else "No pages",
+            ),
+            "",
+        ]
+    )
+
+
+def _append_index_entities(lines: list[str], entity_names: list[str]) -> None:
+    if not entity_names:
+        return
+    lines.append(f"## {_SURFACE_LABELS[PageKind.ENTITIES]}")
+    lines.append("")
+    for name in sorted(entity_names):
+        lines.append(f"- [{name}]({canonical_path(PageKind.ENTITIES, name)})")
+    lines.append("")
+
+
+def _append_index_modules(lines: list[str], module_entries: list[dict]) -> None:
+    if not module_entries:
+        return
+    lines.append(f"## {_SURFACE_LABELS[PageKind.MODULES]}")
+    lines.append("")
+    for entry in sorted(module_entries, key=lambda e: e["name"]):
+        desc = entry.get("docstring", "")
+        suffix = f" - {desc}" if desc else f" - `{entry['path']}`"
+        path = canonical_path(PageKind.MODULES, entry["name"])
+        lines.append(f"- [{entry['name']}]({path}){suffix}")
+    lines.append("")
+
+
+def _append_index_workflows(
+    lines: list[str], workflow_entries: list[dict] | None
+) -> None:
+    if not workflow_entries:
+        return
+    lines.append(f"## {_SURFACE_LABELS[PageKind.WORKFLOWS]}")
+    lines.append("")
+    for wf in sorted(workflow_entries, key=lambda w: w["name"]):
+        entry_point = wf.get("entry", "")
+        path = canonical_path(PageKind.WORKFLOWS, wf["name"])
+        lines.append(f"- [{wf['name']}]({path}) - entry: `{entry_point}`")
+    lines.append("")
+
+
 def _append_index_user_flows(lines: list[str], flow_entries: list[dict] | None) -> None:
     """Append the grouped "User Flows" section to *lines* (in place).
 
     Tolerates minimal entries (``{"id"}``) so ``sync`` can re-index existing flow
     pages without re-running entry-point detection.
     """
-    lines.append("## User Flows")
-    lines.append("")
     if not flow_entries:
         return
+    lines.append("## User Flows")
+    lines.append("")
     for category in sorted({_flow_index_category(f) for f in flow_entries}):
         lines.append(f"**{category}**")
         lines.append("")
@@ -741,24 +854,68 @@ def _append_index_user_flows(lines: list[str], flow_entries: list[dict] | None) 
         ):
             entry = flow.get("entry", "")
             suffix = f" - entry: `{entry}`" if entry else ""
-            lines.append(f"- [{flow['id']}](flows/{flow['id']}.md){suffix}")
+            path = canonical_path(PageKind.FLOWS, flow["id"])
+            lines.append(f"- [{flow['id']}]({path}){suffix}")
         lines.append("")
+
+
+def _append_index_infrastructure(
+    lines: list[str], infra_entries: list[dict] | None
+) -> None:
+    if not infra_entries:
+        return
+    lines.append(f"## {_SURFACE_LABELS[PageKind.INFRASTRUCTURE]}")
+    lines.append("")
+    for entry in sorted(infra_entries, key=lambda e: e["name"]):
+        desc = entry.get("type", "")
+        suffix = f" - {desc}" if desc else ""
+        path = canonical_path(PageKind.INFRASTRUCTURE, entry["name"])
+        lines.append(f"- [{entry['name']}]({path}){suffix}")
+    lines.append("")
+
+
+def _architecture_path(page: str) -> str:
+    if page == PageKind.DEPENDENCIES.value:
+        return canonical_path(PageKind.DEPENDENCIES)
+    if page == PageKind.LOAD_ORDER.value:
+        return canonical_path(PageKind.LOAD_ORDER)
+    return f"{page}.md"
+
+
+def _architecture_order(entry: dict) -> int:
+    order = {
+        PageKind.DEPENDENCIES.value: 0,
+        PageKind.LOAD_ORDER.value: 1,
+    }
+    return order.get(entry.get("page", ""), 99)
 
 
 def _append_index_architecture(
     lines: list[str], architecture_entries: list[dict] | None
 ) -> None:
-    """Append the "Architecture" section linking the top-level analysis pages.
+    """Append the dependency architecture section linking top-level analysis pages.
 
     Keeps ``dependencies.md`` / ``load-order.md`` linked from the index so lint
     does not flag them as orphans. Omitted entirely when no such pages exist.
     """
     if not architecture_entries:
         return
-    lines.append("## Architecture")
+    lines.append("## Dependency Architecture")
     lines.append("")
-    for entry in sorted(architecture_entries, key=lambda e: e["page"]):
-        lines.append(f"- [{entry['name']}]({entry['page']}.md)")
+    for entry in sorted(
+        architecture_entries,
+        key=lambda e: (_architecture_order(e), e["page"]),
+    ):
+        lines.append(f"- [{entry['name']}]({_architecture_path(entry['page'])})")
+    lines.append("")
+
+
+def _append_index_log(lines: list[str], *, log_present: bool) -> None:
+    if not log_present:
+        return
+    lines.append(f"## {_SURFACE_LABELS[PageKind.LOG]}")
+    lines.append("")
+    lines.append(f"- [Architectural log]({canonical_path(PageKind.LOG)})")
     lines.append("")
 
 
@@ -769,55 +926,38 @@ def _generate_index_md(
     infra_entries: list[dict] | None = None,
     flow_entries: list[dict] | None = None,
     architecture_entries: list[dict] | None = None,
+    *,
+    log_present: bool = True,
 ) -> str:
     """Generate the full index.md content."""
+    workflow_entries = workflow_entries or []
+    infra_entries = infra_entries or []
+    flow_entries = flow_entries or []
+    architecture_entries = architecture_entries or []
     lines = [
         "# LLM Wiki Index",
         "",
-        "Catalog of project modules and entities.",
-        "",
-        "## Entities",
+        "Use this landing page to choose the right wiki surface.",
         "",
     ]
 
-    for name in sorted(entity_names):
-        lines.append(f"- [{name}](entities/{name}.md)")
-
-    lines.append("")
-    lines.append("## Modules")
-    lines.append("")
-
-    for entry in sorted(module_entries, key=lambda e: e["name"]):
-        desc = entry.get("docstring", "")
-        suffix = f" - {desc}" if desc else f" - `{entry['path']}`"
-        lines.append(f"- [{entry['name']}](modules/{entry['name']}.md){suffix}")
-
-    lines.append("")
-    _append_index_architecture(lines, architecture_entries)
-    lines.append("## Workflows")
-    lines.append("")
-
-    if workflow_entries:
-        for wf in sorted(workflow_entries, key=lambda w: w["name"]):
-            entry_point = wf.get("entry", "")
-            lines.append(
-                f"- [{wf['name']}](workflows/{wf['name']}.md) - entry: `{entry_point}`"
-            )
-        lines.append("")
-
+    _append_surface_overview(
+        lines,
+        entity_count=len(entity_names),
+        module_count=len(module_entries),
+        workflow_count=len(workflow_entries),
+        flow_count=len(flow_entries),
+        infrastructure_count=len(infra_entries),
+        architecture_count=len(architecture_entries),
+        log_present=log_present,
+    )
+    _append_index_entities(lines, entity_names)
+    _append_index_modules(lines, module_entries)
+    _append_index_workflows(lines, workflow_entries)
     _append_index_user_flows(lines, flow_entries)
-
-    lines.append("## Infrastructure")
-    lines.append("")
-
-    if infra_entries:
-        for entry in sorted(infra_entries, key=lambda e: e["name"]):
-            desc = entry.get("type", "")
-            suffix = f" - {desc}" if desc else ""
-            lines.append(
-                f"- [{entry['name']}](infrastructure/{entry['name']}.md){suffix}"
-            )
-        lines.append("")
+    _append_index_infrastructure(lines, infra_entries)
+    _append_index_architecture(lines, architecture_entries)
+    _append_index_log(lines, log_present=log_present)
 
     return "\n".join(lines)
 

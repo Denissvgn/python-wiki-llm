@@ -50,6 +50,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `lint` now validates generated entity/module Mermaid `click` links as hard
   broken-link issues and emits warning diagnostics for over-large generated
   diagrams without failing old wikis that do not have those sections yet.
+- Generated `index.md` is now a registry-backed landing page with a surface
+  overview table, counts for every page kind, grouped user-flow links,
+  dependency architecture links only when those pages exist, and a log link.
+  `sync` preserves custom top-level index sections by default while
+  regenerating the landing-page structure.
 
 ## [0.6.1] - 2026-06-14
 

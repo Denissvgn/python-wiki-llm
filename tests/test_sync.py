@@ -1524,15 +1524,35 @@ class TestSyncFlowReindex:
         (wiki / "flows").mkdir(parents=True)
         (wiki / "flows" / "api-run.md").write_text("# run\n")
         (wiki / "flows" / "process-cli.md").write_text("# cli\n")
+        (wiki / "log.md").write_text("# Architectural Log\n")
 
         sync_cmd._rebuild_index(wiki, self._inventory(), str(tmp_path))
 
         index = (wiki / "index.md").read_text(encoding="utf-8")
+        assert "## Surface Overview" in index
+        assert "| User flows | 2 |" in index
+        assert "| Dependency architecture | 0 |" in index
+        assert "| Log | 1 | [Open log](log.md) |" in index
         assert "## User Flows" in index
         assert "**api**" in index
         assert "**process**" in index
         assert "[api-run](flows/api-run.md)" in index
         assert "[process-cli](flows/process-cli.md)" in index
+        assert "## Dependency Architecture" not in index
+
+    def test_rebuild_index_links_existing_architecture_pages(self, tmp_path):
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+        (wiki / "dependencies.md").write_text("# Dependencies\n")
+        (wiki / "load-order.md").write_text("# Load order\n")
+
+        sync_cmd._rebuild_index(wiki, self._inventory(), str(tmp_path))
+
+        index = (wiki / "index.md").read_text(encoding="utf-8")
+        assert "| Dependency architecture | 2 |" in index
+        assert "## Dependency Architecture" in index
+        assert "[Dependencies](dependencies.md)" in index
+        assert "[Load order](load-order.md)" in index
 
     def test_rebuild_index_leaves_flow_pages_untouched(self, tmp_path):
         wiki = tmp_path / "wiki"
@@ -1544,6 +1564,59 @@ class TestSyncFlowReindex:
         sync_cmd._rebuild_index(wiki, self._inventory(), str(tmp_path))
 
         assert page.read_text(encoding="utf-8") == original
+
+    def test_rebuild_index_preserves_custom_index_sections(self, tmp_path):
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+        (wiki / "index.md").write_text(
+            textwrap.dedent("""\
+                # Old Index
+
+                Remember the deployment checklist.
+
+                ## Custom Notes
+
+                Keep the payment flow review link here.
+            """),
+            encoding="utf-8",
+        )
+
+        sync_cmd._rebuild_index(
+            wiki, self._inventory(), str(tmp_path), preserve_semantic=True
+        )
+
+        index = (wiki / "index.md").read_text(encoding="utf-8")
+        assert "## Notes" in index
+        assert "Remember the deployment checklist." in index
+        assert "## Custom Notes" in index
+        assert "Keep the payment flow review link here." in index
+
+    def test_rebuild_index_no_preserve_semantic_drops_custom_index_sections(
+        self, tmp_path
+    ):
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+        (wiki / "index.md").write_text(
+            textwrap.dedent("""\
+                # Old Index
+
+                Remember the deployment checklist.
+
+                ## Custom Notes
+
+                Keep the payment flow review link here.
+            """),
+            encoding="utf-8",
+        )
+
+        sync_cmd._rebuild_index(
+            wiki, self._inventory(), str(tmp_path), preserve_semantic=False
+        )
+
+        index = (wiki / "index.md").read_text(encoding="utf-8")
+        assert "Remember the deployment checklist." not in index
+        assert "## Custom Notes" not in index
+        assert "Keep the payment flow review link here." not in index
 
 
 class TestSyncFlowRegeneration:
@@ -1741,7 +1814,7 @@ class TestSyncDependencyRegeneration:
 
         # Architecture pages stay linked from the index (not orphaned).
         index = (wiki / "index.md").read_text(encoding="utf-8")
-        assert "## Architecture" in index
+        assert "## Dependency Architecture" in index
         assert "[Dependencies](dependencies.md)" in index
 
     def test_unrelated_source_edit_does_not_rewrite_architecture_pages(

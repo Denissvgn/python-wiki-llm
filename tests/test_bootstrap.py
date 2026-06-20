@@ -560,9 +560,25 @@ class TestBootstrapIndex:
         bootstrap_cmd.run(args)
 
         index = (wiki_dir / "index.md").read_text(encoding="utf-8")
+        assert "## Surface Overview" in index
+        assert "| Entities | 2 |" in index
+        assert "| Modules | 3 |" in index
+        assert "| Workflows | 0 |" in index
+        assert "| Dependency architecture | 2 |" in index
+        assert "| Log | 1 | [Open log](log.md) |" in index
         assert "User" in index
         assert "Item" in index
         assert "models" in index
+
+    def test_index_uses_landing_page_sections(self, tmp_project, capsys):
+        wiki_dir = tmp_project / "docs" / "llm_wiki"
+        args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
+        bootstrap_cmd.run(args)
+
+        index = (wiki_dir / "index.md").read_text(encoding="utf-8")
+        assert "Use this landing page to choose the right wiki surface." in index
+        assert "## Log" in index
+        assert "- [Architectural log](log.md)" in index
 
 
 class TestBootstrapLog:
@@ -936,6 +952,9 @@ class TestBootstrapFlows:
         monkeypatch.chdir(tmp_path)
         bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki", skip_flows=True))
         assert list((tmp_path / "wiki" / "flows").glob("*.md")) == []
+        index = (tmp_path / "wiki" / "index.md").read_text(encoding="utf-8")
+        assert "| User flows | 0 |" in index
+        assert "[api-run](flows/api-run.md)" not in index
 
     def test_skip_flows_takes_precedence_over_skip_data_flow(
         self, tmp_path, monkeypatch, capsys
@@ -1126,7 +1145,8 @@ class TestBootstrapArchitecturePages:
         monkeypatch.chdir(tmp_path)
         bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
         index = (tmp_path / "wiki" / "index.md").read_text(encoding="utf-8")
-        assert "## Architecture" in index
+        assert "| Dependency architecture | 2 |" in index
+        assert "## Dependency Architecture" in index
         assert "[Dependencies](dependencies.md)" in index
         assert "[Load order](load-order.md)" in index
 
@@ -1143,7 +1163,8 @@ class TestBootstrapArchitecturePages:
         module = (tmp_path / "wiki" / "modules" / "a.md").read_text(encoding="utf-8")
         assert "## Local dependency map" not in module
         index = (tmp_path / "wiki" / "index.md").read_text(encoding="utf-8")
-        assert "## Architecture" not in index
+        assert "| Dependency architecture | 0 |" in index
+        assert "## Dependency Architecture" not in index
 
     def test_shallow_depth_skips_pages(self, tmp_path, monkeypatch, capsys):
         self._write_project(tmp_path)
