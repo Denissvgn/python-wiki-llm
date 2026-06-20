@@ -28,12 +28,28 @@ from ..services.team import build_team_issues
 
 # basic regex for [text](url)
 LINK_RE = re.compile(r"\[.+?\]\((.+?)\)")
+MERMAID_CLICK_RE = re.compile(r'^\s*click\s+\S+\s+"([^"]+)"', re.MULTILINE)
+MERMAID_NODE_RE = re.compile(r'^\s*[A-Za-z][A-Za-z0-9_]*\s*\["')
+MERMAID_FENCE = "```mermaid"
+FENCE_END = "```"
+GENERATED_DIAGRAM_NODE_LIMIT = 40
+GENERATED_DIAGRAM_LINE_LIMIT = 80
+GENERATED_DIAGRAM_CHAR_LIMIT = 6000
+GENERATED_DIAGRAM_SECTIONS = {
+    "Relationships": (
+        "<!-- Auto-generated relationship summary. Do not edit by hand. -->"
+    ),
+    "Local dependency map": (
+        "<!-- Auto-generated local dependency summary. Do not edit by hand. -->"
+    ),
+}
 
 _PROFILE_PHASES = [
     "inventory",
     "docker_inventory",
     "page_index",
     "links",
+    "generated_diagrams",
     "orphans",
     "entities",
     "modules",
@@ -125,6 +141,7 @@ class LintReport:
 class _WikiPageIndex:
     pages: list[Path]
     links_by_page: dict[Path, list[str]]
+    content_by_page: dict[Path, str]
 
 
 @dataclass(frozen=True)
@@ -465,7 +482,7 @@ def _build_page_index(wiki_path: Path) -> _WikiPageIndex:
     links_by_page = {
         page: LINK_RE.findall(content) for page, content in page_content.items()
     }
-    return _WikiPageIndex(pages, links_by_page)
+    return _WikiPageIndex(pages, links_by_page, page_content)
 
 
 def _check_broken_links(
@@ -488,6 +505,116 @@ def _check_broken_links(
                     path=rel,
                     target=link,
                 )
+
+
+def _section_body(markdown: str, heading: str) -> str | None:
+    lines = markdown.splitlines()
+    start = None
+    for idx, line in enumerate(lines):
+        if line.strip() == f"## {heading}":
+            start = idx + 1
+            break
+    if start is None:
+        return None
+
+    end = len(lines)
+    for idx in range(start, len(lines)):
+        if lines[idx].startswith("## "):
+            end = idx
+            break
+    return "\n".join(lines[start:end]).strip()
+
+
+def _iter_mermaid_blocks(section_body: str) -> Iterator[list[str]]:
+    lines = section_body.splitlines()
+    idx = 0
+    while idx < len(lines):
+        if lines[idx].strip() != MERMAID_FENCE:
+            idx += 1
+            continue
+        idx += 1
+        block: list[str] = []
+        while idx < len(lines) and lines[idx].strip() != FENCE_END:
+            block.append(lines[idx])
+            idx += 1
+        yield block
+        if idx < len(lines):
+            idx += 1
+
+
+def _generated_diagram_sections(markdown: str) -> Iterator[tuple[str, str]]:
+    for heading, marker in GENERATED_DIAGRAM_SECTIONS.items():
+        body = _section_body(markdown, heading)
+        if body and marker in body:
+            yield heading, body
+
+
+def _check_generated_diagram_links(
+    report: LintReport,
+    page: Path,
+    rel: str,
+    heading: str,
+    block: list[str],
+) -> None:
+    diagram = "\n".join(block)
+    for link in MERMAID_CLICK_RE.findall(diagram):
+        local_path = _local_link_path(link)
+        if local_path is None:
+            continue
+        target = (page.parent / local_path).resolve()
+        if not target.exists():
+            _add(
+                report,
+                "broken_links",
+                f"Broken generated diagram link in {rel} ## {heading} -> {link}",
+                path=rel,
+                target=link,
+            )
+
+
+def _diagnose_generated_diagram_bloat(
+    report: LintReport,
+    rel: str,
+    heading: str,
+    block: list[str],
+) -> None:
+    measurements = [
+        (
+            "node declarations",
+            sum(1 for line in block if MERMAID_NODE_RE.match(line)),
+            GENERATED_DIAGRAM_NODE_LIMIT,
+        ),
+        ("body lines", len(block), GENERATED_DIAGRAM_LINE_LIMIT),
+        ("characters", len("\n".join(block)), GENERATED_DIAGRAM_CHAR_LIMIT),
+    ]
+    for label, value, cap in measurements:
+        if value <= cap:
+            continue
+        _diagnose(
+            report,
+            "generated_diagram_bloat",
+            (
+                f"Generated diagram bloat in {rel} ## {heading}: {label} "
+                f"{value} exceeds cap {cap}. rerun `llm-wiki sync` and reduce "
+                "relationship/dependency fan-out if this persists."
+            ),
+            path=rel,
+            target=heading,
+        )
+
+
+def _check_generated_diagrams(
+    report: LintReport,
+    wiki_path: Path,
+    page_index: _WikiPageIndex,
+) -> None:
+    for page in page_index.pages:
+        markdown = page_index.content_by_page.get(page, "")
+        rel = str(page.relative_to(wiki_path))
+        for heading, body in _generated_diagram_sections(markdown):
+            for block in _iter_mermaid_blocks(body):
+                _check_generated_diagram_links(report, page, rel, heading, block)
+                _diagnose_generated_diagram_bloat(report, rel, heading, block)
 
 
 def _check_orphan_pages(
@@ -790,6 +917,8 @@ def _run_report_checks(
 ) -> None:
     with _profile_phase(profiler, "links"):
         _check_broken_links(report, wiki_path, inputs.page_index)
+    with _profile_phase(profiler, "generated_diagrams"):
+        _check_generated_diagrams(report, wiki_path, inputs.page_index)
     with _profile_phase(profiler, "orphans"):
         _check_orphan_pages(report, wiki_path, inputs.page_index)
     with _profile_phase(profiler, "entities"):
@@ -1001,6 +1130,12 @@ def render_text(report: LintReport) -> str:
         "unused_dependencies",
         "No unused dependencies.",
         "Found {count} unused dependency(ies).",
+        only_if_present=True,
+    )
+    emit_group(
+        "generated_diagram_bloat",
+        "No generated diagram bloat.",
+        "Found {count} generated diagram warning(s).",
         only_if_present=True,
     )
 

@@ -811,6 +811,162 @@ class TestLintProfile:
         assert not (tmp_path / ".git" / CACHE_FILENAME).exists()
 
 
+class TestLintGeneratedDiagrams:
+    def _write_wiki(self, tmp_path, entity_body: str, module_body: str) -> None:
+        wiki = tmp_path / "wiki"
+        (wiki / "entities").mkdir(parents=True)
+        (wiki / "modules").mkdir()
+        (wiki / "workflows").mkdir()
+        (wiki / "infrastructure").mkdir()
+        (wiki / "entities" / "User.md").write_text(entity_body, encoding="utf-8")
+        (wiki / "modules" / "app.md").write_text(module_body, encoding="utf-8")
+        (wiki / "index.md").write_text(
+            "# Index\n- [User](entities/User.md)\n- [app](modules/app.md)\n",
+            encoding="utf-8",
+        )
+        (wiki / "log.md").write_text("# Log\n", encoding="utf-8")
+
+    def _mock_inventory(self, monkeypatch) -> None:
+        monkeypatch.setattr(
+            lint_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {
+                    "app.py": {
+                        "language": "python",
+                        "classes": [{"name": "User"}],
+                        "functions": [],
+                    }
+                },
+                {"python": ExtractorStatus("python", "ok", 1)},
+            ),
+        )
+        monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
+
+    def test_generated_diagram_click_link_is_hard_broken_link(
+        self, tmp_path, monkeypatch
+    ):
+        monkeypatch.chdir(tmp_path)
+        self._mock_inventory(monkeypatch)
+        self._write_wiki(
+            tmp_path,
+            "# User\n\n"
+            "## Relationships\n\n"
+            "<!-- Auto-generated relationship summary. Do not edit by hand. -->\n"
+            "```mermaid\n"
+            "flowchart LR\n"
+            '    n0["User"]\n'
+            '    n1["Missing"]\n'
+            "    n1 --> n0\n"
+            '    click n1 "../modules/missing.md"\n'
+            "```\n",
+            "# app\n",
+        )
+
+        report = lint_cmd.build_report("wiki", ".")
+
+        broken = [issue for issue in report.issues if issue.category == "broken_links"]
+        assert [(issue.path, issue.target) for issue in broken] == [
+            ("entities/User.md", "../modules/missing.md")
+        ]
+        assert "generated diagram" in broken[0].message
+        assert report.passed is False
+
+    def test_generated_diagram_bloat_is_warning_not_failure(
+        self, tmp_path, monkeypatch
+    ):
+        monkeypatch.chdir(tmp_path)
+        self._mock_inventory(monkeypatch)
+        nodes = "\n".join(f'    n{i}["Node {i}"]' for i in range(41))
+        self._write_wiki(
+            tmp_path,
+            "# User\n",
+            "# app\n\n"
+            "## Local dependency map\n\n"
+            "<!-- Auto-generated local dependency summary. Do not edit by hand. -->\n"
+            "```mermaid\n"
+            "flowchart LR\n"
+            f"{nodes}\n"
+            "```\n",
+        )
+
+        report = lint_cmd.build_report("wiki", ".")
+
+        diagnostics = [
+            diagnostic
+            for diagnostic in report.diagnostics
+            if diagnostic.category == "generated_diagram_bloat"
+        ]
+        assert report.passed is True
+        assert [
+            (diagnostic.path, diagnostic.target, diagnostic.severity)
+            for diagnostic in diagnostics
+        ] == [
+            ("modules/app.md", "Local dependency map", "warning")
+        ]
+        assert "node declarations" in diagnostics[0].message
+        assert "41" in diagnostics[0].message
+        assert "rerun `llm-wiki sync`" in diagnostics[0].message
+
+    def test_missing_generated_sections_are_clean_for_old_wikis(
+        self, tmp_path, monkeypatch
+    ):
+        monkeypatch.chdir(tmp_path)
+        self._mock_inventory(monkeypatch)
+        self._write_wiki(tmp_path, "# User\n", "# app\n")
+
+        report = lint_cmd.build_report("wiki", ".")
+
+        assert report.passed is True
+        assert report.count("broken_links") == 0
+        assert [
+            diagnostic
+            for diagnostic in report.diagnostics
+            if diagnostic.category == "generated_diagram_bloat"
+        ] == []
+
+    def test_profile_includes_generated_diagram_phase_and_diagnostics(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        monkeypatch.chdir(tmp_path)
+        self._mock_inventory(monkeypatch)
+        nodes = "\n".join(f'    n{i}["Node {i}"]' for i in range(41))
+        self._write_wiki(
+            tmp_path,
+            "# User\n",
+            "# app\n\n"
+            "## Local dependency map\n\n"
+            "<!-- Auto-generated local dependency summary. Do not edit by hand. -->\n"
+            "```mermaid\n"
+            "flowchart LR\n"
+            f"{nodes}\n"
+            "```\n",
+        )
+
+        lint_cmd.run(_make_args(wiki_dir="wiki", src_dir=".", profile=True))
+
+        payload = json.loads(capsys.readouterr().out)
+        phase_names = {phase["name"] for phase in payload["profile"]["phases"]}
+        assert "generated_diagrams" in phase_names
+        assert payload["diagnostics"][0]["category"] == "generated_diagram_bloat"
+        assert payload["diagnostics"][0]["path"] == "modules/app.md"
+
+    def test_generated_diagram_bloat_renders_in_text_output(self):
+        report = lint_cmd.LintReport(wiki_dir="wiki", src_dir=".")
+        lint_cmd._diagnose(
+            report,
+            "generated_diagram_bloat",
+            "Generated diagram bloat in modules/app.md ## Local dependency map",
+            path="modules/app.md",
+            target="Local dependency map",
+        )
+
+        text = lint_cmd.render_text(report)
+
+        assert "Generated diagram bloat in modules/app.md" in text
+        assert "Found 1 generated diagram warning(s)." in text
+
+
 class TestLintFlowCoverage:
     def _project_with_flows(self, tmp_path, flow_stems):
         (tmp_path / "api.py").write_text(

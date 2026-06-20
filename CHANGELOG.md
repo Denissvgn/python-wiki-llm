@@ -47,6 +47,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   module `## Local dependency map` sections with bounded Mermaid diagrams,
   compact tables, sanitized links, cycle highlighting, external package counts,
   and concise empty-state notes.
+- `lint` now validates generated entity/module Mermaid `click` links as hard
+  broken-link issues and emits warning diagnostics for over-large generated
+  diagrams without failing old wikis that do not have those sections yet.
 
 ## [0.6.1] - 2026-06-14
 

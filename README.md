@@ -373,6 +373,9 @@ dependencies as warning diagnostics. These warnings are visible in human output
 and profile JSON but do not make `lint`, `lint --strict`, or `ci-check` fail by
 themselves. Stale architecture pages with no current source modules remain hard
 issues.
+When generated entity/module diagram sections exist, lint validates Mermaid
+`click` links as hard broken-link issues and reports over-large generated
+diagrams as warning diagnostics with page and section targets.
 When flow pages exist, lint also reports generated data-flow gaps, such as
 unresolved calls that static analysis cannot classify, as warning diagnostics.
 
