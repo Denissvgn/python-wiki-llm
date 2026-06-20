@@ -152,8 +152,12 @@ The canonical wiki surfaces are:
 
 - `{wiki_dir}/index.md`: mixed generated table of contents and navigational context.
 - `{wiki_dir}/log.md`: generated or agent-appended architectural change log.
-- `{wiki_dir}/entities/`: semantic entity pages with generated structure.
-- `{wiki_dir}/modules/`: semantic source-module pages with generated structure.
+- `{wiki_dir}/entities/`: semantic entity pages with generated structure and
+  generated `## Relationships` diagrams/tables when relationship metadata
+  exists.
+- `{wiki_dir}/modules/`: semantic source-module pages with generated structure
+  and generated `## Local dependency map` sections when dependency analysis is
+  enabled.
 - `{wiki_dir}/workflows/`: mixed cross-module workflow pages.
 - `{wiki_dir}/flows/`: mixed user-flow pages generated from entry points.
 - `{wiki_dir}/infrastructure/`: mixed Docker and Compose pages.

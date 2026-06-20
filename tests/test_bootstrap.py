@@ -303,10 +303,13 @@ class TestBootstrapCollisions:
         b_page = (wiki_dir / "entities" / "pkg_b_models_User.md").read_text(
             encoding="utf-8"
         )
-        assert "**used_by**" in a_page
+        assert (
+            "| `consume` | type_reference | [consumer](../modules/consumer.md) |"
+            in a_page
+        )
         assert "../modules/consumer.md" in a_page
-        assert "**used_by**" not in b_page
-        assert "**imported_by**" not in b_page
+        assert "type_reference" not in b_page
+        assert "../modules/consumer.md" not in b_page
 
     def test_relationship_resolves_current_package_relative_import(
         self, tmp_path, monkeypatch
@@ -326,7 +329,9 @@ class TestBootstrapCollisions:
         bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir=str(wiki_dir)))
 
         page = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
-        assert "**used_by**" in page
+        assert (
+            "| `consume` | type_reference | [service](../modules/service.md) |" in page
+        )
         assert "../modules/service.md" in page
 
     def test_relationship_resolves_parent_package_relative_import(
@@ -347,7 +352,9 @@ class TestBootstrapCollisions:
         bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir=str(wiki_dir)))
 
         page = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
-        assert "**used_by**" in page
+        assert (
+            "| `consume` | type_reference | [service](../modules/service.md) |" in page
+        )
         assert "../modules/service.md" in page
 
     def test_ambiguous_duplicate_relationship_is_skipped(self, tmp_path, monkeypatch):
@@ -433,6 +440,56 @@ class TestBootstrapEntityPages:
         assert "name" in content
         assert "email" in content
 
+    def test_entity_relationship_section_renders_diagram_links_and_tables(
+        self, tmp_project, capsys
+    ):
+        wiki_dir = tmp_project / "docs" / "llm_wiki"
+        args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
+        bootstrap_cmd.run(args)
+
+        content = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
+
+        assert "## Relationships" in content
+        assert "Auto-generated relationship summary" in content
+        assert "```mermaid\nflowchart LR" in content
+        assert 'click n0 "../modules/models.md"' in content
+        assert '"../modules/main.md"' in content
+        assert "| Reference | Kind | Source |" in content
+        assert (
+            "| `create_user` | type_reference | [main](../modules/main.md) |" in content
+        )
+        assert (
+            "| `list_items` | type_reference | [main](../modules/main.md) |" in content
+        )
+
+    def test_entity_relationship_section_uses_note_without_blank_diagram(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        (tmp_path / "models.py").write_text("class Lonely:\n    pass\n")
+        monkeypatch.chdir(tmp_path)
+
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
+
+        content = (tmp_path / "wiki" / "entities" / "Lonely.md").read_text(
+            encoding="utf-8"
+        )
+        relationships = content.split("## Relationships", 1)[1]
+        assert "No generated relationships detected" in relationships
+        assert "```mermaid" not in relationships
+
+    def test_entity_relationship_section_is_deterministic(self, tmp_project, capsys):
+        wiki_dir = tmp_project / "docs" / "llm_wiki"
+        args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
+        bootstrap_cmd.run(args)
+        first = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
+
+        bootstrap_cmd.run(
+            _make_args(src_dir=".", wiki_dir=str(wiki_dir), overwrite=True)
+        )
+        second = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
+
+        assert first == second
+
 
 class TestBootstrapModulePages:
     def test_creates_module_per_file(self, tmp_project, capsys):
@@ -450,6 +507,50 @@ class TestBootstrapModulePages:
 
         content = (wiki_dir / "modules" / "models.md").read_text(encoding="utf-8")
         assert "# models Module" in content
+
+    def test_module_local_dependency_map_renders_diagram_tables_and_counts(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\nname = "sample"\nversion = "0.1.0"\ndependencies = ["requests"]\n'
+        )
+        (tmp_path / "api.py").write_text(
+            "from service import Service\nimport requests\n\n"
+            "def run() -> Service:\n"
+            "    requests.get('https://example.test')\n"
+            "    return Service()\n"
+        )
+        (tmp_path / "service.py").write_text(
+            "from api import run\n\nclass Service:\n    pass\n"
+        )
+        monkeypatch.chdir(tmp_path)
+
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
+
+        content = (tmp_path / "wiki" / "modules" / "api.md").read_text(encoding="utf-8")
+        assert "## Local dependency map" in content
+        assert "Auto-generated local dependency summary" in content
+        assert "```mermaid\nflowchart LR" in content
+        assert 'click n0 "../modules/api.md"' in content
+        assert 'click n1 "../modules/service.md"' in content
+        assert "==>" in content
+        assert "| Outbound | [service](../modules/service.md) |" in content
+        assert "| python | 1 | 0 |" in content
+
+    def test_module_local_dependency_map_uses_note_without_blank_diagram(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        (tmp_path / "solo.py").write_text("def run():\n    return 1\n")
+        monkeypatch.chdir(tmp_path)
+
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
+
+        content = (tmp_path / "wiki" / "modules" / "solo.md").read_text(
+            encoding="utf-8"
+        )
+        local_map = content.split("## Local dependency map", 1)[1]
+        assert "No internal module dependencies detected" in local_map
+        assert "```mermaid" not in local_map
 
 
 class TestBootstrapIndex:
@@ -1039,6 +1140,8 @@ class TestBootstrapArchitecturePages:
         )
         assert not (tmp_path / "wiki" / "dependencies.md").exists()
         assert not (tmp_path / "wiki" / "load-order.md").exists()
+        module = (tmp_path / "wiki" / "modules" / "a.md").read_text(encoding="utf-8")
+        assert "## Local dependency map" not in module
         index = (tmp_path / "wiki" / "index.md").read_text(encoding="utf-8")
         assert "## Architecture" not in index
 
@@ -1098,25 +1201,26 @@ class TestBootstrapArchitecturePages:
         assert "| [pkg4_mod39](modules/pkg4_mod39.md) |" in md
         assert md.count("    ") < 30
 
-    def test_dependency_pages_reuse_single_bootstrap_inventory_extraction(
+    def test_dependency_pages_and_module_maps_reuse_single_dependency_analysis(
         self, tmp_path, monkeypatch, capsys
     ):
         self._write_project(tmp_path)
         monkeypatch.chdir(tmp_path)
         calls = 0
-        real_get_inventory_result = bootstrap_cmd.get_inventory_result
+        real_analyze_dependencies = bootstrap_cmd.analyze_dependencies
 
-        def counted_get_inventory_result(*args, **kwargs):
+        def counted_analyze_dependencies(*args, **kwargs):
             nonlocal calls
             calls += 1
-            return real_get_inventory_result(*args, **kwargs)
+            return real_analyze_dependencies(*args, **kwargs)
 
         monkeypatch.setattr(
-            bootstrap_cmd, "get_inventory_result", counted_get_inventory_result
+            bootstrap_cmd, "analyze_dependencies", counted_analyze_dependencies
         )
 
         bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
 
         assert calls == 1
+        assert (tmp_path / "wiki" / "modules" / "a.md").exists()
         assert (tmp_path / "wiki" / "dependencies.md").exists()
         assert (tmp_path / "wiki" / "load-order.md").exists()

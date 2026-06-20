@@ -32,7 +32,9 @@ from ..services.diagrams import data_flow_diagram, flowchart, sequence_diagram
 from ..services.entrypoints import build_flow, get_entry_points, read_console_scripts
 from ..services.imports import ModulePathResolver, build_module_path_resolver
 from ..services.io import read_md, write_md
+from ..services.module_maps import build_module_dependency_maps
 from ..services.paths import normalize_source_path
+from ..services.relationships import build_entity_relationship_summaries
 from ..services.schema import (
     ALL_SCHEMA_FILES as _AGENT_SCHEMA_FILES,
     CONSTRAINT_END as _CONSTRAINT_END,
@@ -263,11 +265,284 @@ def _format_signature(fn: dict) -> str:
     return sig
 
 
+def _module_page_stem(
+    filepath: str | None, module_page_map: Mapping[str, str] | None = None
+) -> str | None:
+    if not filepath:
+        return None
+    return (module_page_map or {}).get(filepath, _module_name_from_path(filepath))
+
+
+def _module_link(
+    filepath: str | None, module_page_map: Mapping[str, str] | None = None
+) -> str:
+    stem = _module_page_stem(filepath, module_page_map)
+    if not stem:
+        return "—"
+    return f"[{stem}](../modules/{stem}.md)"
+
+
+def _code_join(values: list[str]) -> str:
+    return ", ".join(f"`{value}`" for value in values) if values else "—"
+
+
+def _entity_node_label(summary: Mapping) -> str:
+    file_label = summary.get("file") or "unknown"
+    return f"{summary.get('name', 'entity')} ({file_label})"
+
+
+def _class_ref_label(ref: Mapping) -> str:
+    file_label = ref.get("file")
+    if file_label:
+        return f"{ref.get('name', 'class')} ({file_label})"
+    return str(ref.get("name") or "class")
+
+
+def _reference_label(ref: Mapping) -> str:
+    symbol = ref.get("symbol")
+    file_label = ref.get("file") or ref.get("module") or "unknown"
+    return f"{symbol} ({file_label})" if symbol else str(file_label)
+
+
+def _entity_relationship_graph(
+    summary: Mapping, module_page_map: Mapping[str, str] | None
+) -> str | None:
+    current = _entity_node_label(summary)
+    nodes = [current]
+    edges: list[tuple[str, str]] = []
+    links: dict[str, str] = {}
+
+    current_file = summary.get("file")
+    current_stem = _module_page_stem(
+        str(current_file) if current_file else None, module_page_map
+    )
+    if current_stem:
+        links[current] = f"../modules/{current_stem}.md"
+
+    for base in summary.get("bases", []) or []:
+        target = _class_ref_label(base)
+        nodes.append(target)
+        edges.append((current, target))
+        stem = _module_page_stem(base.get("file"), module_page_map)
+        if stem:
+            links[target] = f"../modules/{stem}.md"
+
+    for subclass in summary.get("subclasses", []) or []:
+        source = _class_ref_label(subclass)
+        nodes.append(source)
+        edges.append((source, current))
+        stem = _module_page_stem(subclass.get("file"), module_page_map)
+        if stem:
+            links[source] = f"../modules/{stem}.md"
+
+    for reference in summary.get("references", []) or []:
+        source = _reference_label(reference)
+        nodes.append(source)
+        edges.append((source, current))
+        stem = _module_page_stem(reference.get("file"), module_page_map)
+        if stem:
+            links[source] = f"../modules/{stem}.md"
+
+    if not edges:
+        return None
+    return flowchart(nodes, edges, direction="LR", links=links)
+
+
+def _relationship_source_cell(
+    record: Mapping, module_page_map: Mapping[str, str] | None
+) -> str:
+    filepath = record.get("file")
+    return _module_link(str(filepath) if filepath else None, module_page_map)
+
+
+def _append_entity_relationship_tables(
+    lines: list[str],
+    summary: Mapping,
+    module_page_map: Mapping[str, str] | None,
+) -> None:
+    lines.extend(["### Summary", ""])
+    lines.append("| Module | Methods | Attributes |")
+    lines.append("|---|---:|---|")
+    lines.append(
+        "| "
+        + " | ".join(
+            [
+                _module_link(summary.get("file"), module_page_map),
+                str(summary.get("methods_count", 0)),
+                _code_join(list(summary.get("attributes", []) or [])),
+            ]
+        )
+        + " |"
+    )
+    lines.append("")
+
+    structure_rows = []
+    for base in summary.get("bases", []) or []:
+        structure_rows.append(("Base", base))
+    for subclass in summary.get("subclasses", []) or []:
+        structure_rows.append(("Subclass", subclass))
+    if structure_rows:
+        lines.extend(["### Structure", ""])
+        lines.append("| Kind | Entity | Module |")
+        lines.append("|---|---|---|")
+        for kind, item in structure_rows:
+            lines.append(
+                f"| {kind} | `{_md_cell(item.get('name'))}` | "
+                f"{_relationship_source_cell(item, module_page_map)} |"
+            )
+        lines.append("")
+
+    references = list(summary.get("references", []) or [])
+    if references:
+        lines.extend(["### References", ""])
+        lines.append("| Reference | Kind | Source |")
+        lines.append("|---|---|---|")
+        for reference in references:
+            symbol = reference.get("symbol") or reference.get("module") or "module"
+            lines.append(
+                f"| `{_md_cell(symbol)}` | {_md_cell(reference.get('kind'))} | "
+                f"{_relationship_source_cell(reference, module_page_map)} |"
+            )
+        lines.append("")
+
+
+def _generate_entity_relationship_section(
+    summary: Mapping | None,
+    module_page_map: Mapping[str, str] | None = None,
+) -> list[str]:
+    lines = [
+        "## Relationships",
+        "",
+        "<!-- Auto-generated relationship summary. Do not edit by hand. -->",
+    ]
+    if not summary:
+        lines.extend(["*No generated relationships detected.*", ""])
+        return lines
+
+    diagram = _entity_relationship_graph(summary, module_page_map)
+    if diagram:
+        lines.append(diagram)
+    else:
+        lines.append("*No generated relationships detected.*")
+    lines.append("")
+    _append_entity_relationship_tables(lines, summary, module_page_map)
+    return lines
+
+
+def _module_map_node_link(
+    node: str, module_page_map: Mapping[str, str] | None = None
+) -> str | None:
+    stem = _module_page_stem(node, module_page_map)
+    if stem:
+        return f"../modules/{stem}.md"
+    return None
+
+
+def _module_dependency_graph(
+    summary: Mapping, module_page_map: Mapping[str, str] | None
+) -> str | None:
+    edges = list(summary.get("edges", []) or [])
+    if not edges:
+        return None
+    nodes = list(summary.get("nodes", []) or [])
+    links = {
+        str(node): link
+        for node in nodes
+        for link in [_module_map_node_link(str(node), module_page_map)]
+        if link
+    }
+    return flowchart(
+        nodes,
+        edges,
+        direction="LR",
+        links=links,
+        highlight_edges=summary.get("cycle_edges", []),
+    )
+
+
+def _module_dependency_cell(
+    item: object, module_page_map: Mapping[str, str] | None
+) -> str:
+    if isinstance(item, Mapping):
+        return f"`{_md_cell(item.get('package'))}` ({_md_cell(item.get('count'))})"
+    return _module_link(str(item), module_page_map)
+
+
+def _append_module_dependency_tables(
+    lines: list[str],
+    summary: Mapping,
+    module_page_map: Mapping[str, str] | None,
+) -> None:
+    rows = [("Inbound", item) for item in summary.get("inbound", []) or []] + [
+        ("Outbound", item) for item in summary.get("outbound", []) or []
+    ]
+    if rows:
+        lines.extend(["### Internal neighbors", ""])
+        lines.append("| Direction | Module |")
+        lines.append("|---|---|")
+        for direction, item in rows:
+            lines.append(
+                f"| {direction} | {_module_dependency_cell(item, module_page_map)} |"
+            )
+        lines.append("")
+
+    external = summary.get("external", {}) or {}
+    if external:
+        lines.extend(["### External packages", ""])
+        lines.append("| Language | Used packages | Undeclared packages |")
+        lines.append("|---|---:|---:|")
+        for language in sorted(external):
+            data = external[language]
+            lines.append(
+                f"| {_md_cell(language)} | {_md_cell(data.get('used_count'))} | "
+                f"{_md_cell(data.get('undeclared_count'))} |"
+            )
+        lines.append("")
+
+    overflow = summary.get("overflow", {}) or {}
+    if overflow.get("omitted_count"):
+        lines.append(
+            f"> Showing {overflow.get('node_limit')} local graph nodes; "
+            f"{overflow.get('omitted_count')} neighbor(s) are summarized by package."
+        )
+        lines.append("")
+
+
+def _generate_module_dependency_section(
+    summary: Mapping | None,
+    module_page_map: Mapping[str, str] | None = None,
+) -> list[str]:
+    lines = [
+        "## Local dependency map",
+        "",
+        "<!-- Auto-generated local dependency summary. Do not edit by hand. -->",
+    ]
+    if not summary:
+        lines.extend(["*No internal module dependencies detected.*", ""])
+        return lines
+
+    diagram = _module_dependency_graph(summary, module_page_map)
+    if diagram:
+        if summary.get("cycle_participation"):
+            lines.append(
+                "<!-- Thick arrows (==>) mark edges inside an import cycle. -->"
+            )
+        lines.append(diagram)
+    else:
+        lines.append("*No internal module dependencies detected.*")
+    lines.append("")
+    _append_module_dependency_tables(lines, summary, module_page_map)
+    return lines
+
+
 def _generate_entity_md(
     class_info: dict,
     filepath: str,
     relationships: dict,
     mod_page_name: str | None = None,
+    *,
+    relationship_summary: Mapping | None = None,
+    module_page_map: Mapping[str, str] | None = None,
 ) -> str:
     """Generate comprehensive markdown for a class entity."""
     name = class_info["name"]
@@ -337,26 +612,36 @@ def _generate_entity_md(
     lines.append("")
 
     # Relationships
-    rels = relationships.get((name, filepath), relationships.get(name, []))
-    lines.append("## Relationships")
-    lines.append("")
-    if rels:
-        for r in rels:
-            page = r.get("module_page", r["module"])
-            mod_link = f"[{r['module']}](../modules/{page}.md)"
-            if r.get("function"):
-                lines.append(f"- **{r['rel']}**: `{r['function']}()` in {mod_link}")
-            else:
-                lines.append(f"- **{r['rel']}**: {mod_link}")
+    if relationship_summary is not None:
+        lines.extend(
+            _generate_entity_relationship_section(relationship_summary, module_page_map)
+        )
     else:
-        lines.append("*No cross-module references detected.*")
-    lines.append("")
+        rels = relationships.get((name, filepath), relationships.get(name, []))
+        lines.append("## Relationships")
+        lines.append("")
+        if rels:
+            for r in rels:
+                page = r.get("module_page", r["module"])
+                mod_link = f"[{r['module']}](../modules/{page}.md)"
+                if r.get("function"):
+                    lines.append(f"- **{r['rel']}**: `{r['function']}()` in {mod_link}")
+                else:
+                    lines.append(f"- **{r['rel']}**: {mod_link}")
+        else:
+            lines.append("*No cross-module references detected.*")
+        lines.append("")
 
     return "\n".join(lines)
 
 
 def _generate_module_md(
-    filepath: str, file_data: dict, entity_page_map: dict | None = None
+    filepath: str,
+    file_data: dict,
+    entity_page_map: dict | None = None,
+    *,
+    module_dependency_map: Mapping | None = None,
+    module_page_map: Mapping[str, str] | None = None,
 ) -> str:
     """Generate comprehensive markdown for a module page."""
     mod_name = _module_name_from_path(filepath)
@@ -395,6 +680,11 @@ def _generate_module_md(
         for module, names in sorted(grouped.items()):
             lines.append(f"| `{module}` | {', '.join(f'`{n}`' for n in names)} |")
         lines.append("")
+
+    if module_dependency_map is not None:
+        lines.extend(
+            _generate_module_dependency_section(module_dependency_map, module_page_map)
+        )
 
     # Classes
     if classes:
@@ -1696,12 +1986,33 @@ def _build_bootstrap_relationships(
     return relationships, cross_reference_count
 
 
+def _build_entity_relationship_summary_map(
+    inventory: dict, call_edges: list[Mapping]
+) -> dict[tuple[str, str], Mapping]:
+    summaries = build_entity_relationship_summaries(inventory, call_edges=call_edges)
+    return {
+        (str(summary["name"]), str(summary["file"])): summary
+        for summary in summaries.get("classes", [])
+        if summary.get("name") and summary.get("file")
+    }
+
+
+def _build_bootstrap_dependency_analysis(
+    state: _BootstrapRunState, inventory: dict
+) -> dict | None:
+    if not state.options.deep or state.options.skip_dependencies:
+        return None
+    return analyze_dependencies(inventory, state.options.src_dir_for_scan)
+
+
 def _write_bootstrap_entity_pages(
     state: _BootstrapRunState,
     filepath: str,
     file_data: dict,
     relationships: dict,
     mod_page_name: str,
+    module_page_map: Mapping[str, str],
+    entity_relationship_summaries: Mapping[tuple[str, str], Mapping] | None,
     file_entity_page_map: dict[str, str],
     seen_entity_pages: set[str],
     all_entity_names: list[str],
@@ -1717,7 +2028,16 @@ def _write_bootstrap_entity_pages(
             _write_bootstrap_file(
                 state,
                 entity_path,
-                _generate_entity_md(cls, filepath, relationships, mod_page_name),
+                _generate_entity_md(
+                    cls,
+                    filepath,
+                    relationships,
+                    mod_page_name,
+                    relationship_summary=(entity_relationship_summaries or {}).get(
+                        (cls["name"], filepath)
+                    ),
+                    module_page_map=module_page_map,
+                ),
             )
             entities_created += 1
             _emit_bootstrap(state, f"  CREATE entity: {entity_page_name}")
@@ -1733,6 +2053,8 @@ def _write_bootstrap_module_page(
     file_data: dict,
     mod_page_name: str,
     file_entity_page_map: dict[str, str],
+    module_dependency_map: Mapping | None,
+    module_page_map: Mapping[str, str],
 ) -> bool:
     module_path = state.options.wiki_dir / "modules" / f"{mod_page_name}.md"
     if module_path.exists() and not state.options.overwrite:
@@ -1743,7 +2065,13 @@ def _write_bootstrap_module_page(
     _write_bootstrap_file(
         state,
         module_path,
-        _generate_module_md(filepath, file_data, file_entity_page_map),
+        _generate_module_md(
+            filepath,
+            file_data,
+            file_entity_page_map,
+            module_dependency_map=module_dependency_map,
+            module_page_map=module_page_map,
+        ),
     )
     _emit_bootstrap(state, f"  CREATE module: {mod_page_name}")
     return True
@@ -1754,6 +2082,8 @@ def _write_entity_and_module_pages(
     inventory: dict,
     page_maps: _BootstrapPageMaps,
     relationships: dict,
+    entity_relationship_summaries: Mapping[tuple[str, str], Mapping] | None,
+    module_dependency_maps: Mapping[str, Mapping] | None,
 ) -> _EntityModuleResult:
     all_entity_names: list[str] = []
     module_entries: list[dict] = []
@@ -1774,12 +2104,22 @@ def _write_entity_and_module_pages(
             file_data,
             relationships,
             mod_page_name,
+            page_maps.module_page_map,
+            entity_relationship_summaries,
             file_entity_page_map,
             seen_entity_pages,
             all_entity_names,
         )
         if _write_bootstrap_module_page(
-            state, filepath, file_data, mod_page_name, file_entity_page_map
+            state,
+            filepath,
+            file_data,
+            mod_page_name,
+            file_entity_page_map,
+            (module_dependency_maps or {}).get(filepath)
+            if module_dependency_maps is not None
+            else None,
+            page_maps.module_page_map,
         ):
             modules_created += 1
         module_entries.append(
@@ -1835,6 +2175,7 @@ def _write_bootstrap_flow_pages(
     state: _BootstrapRunState,
     inventory: dict,
     module_page_map: dict[str, str],
+    call_edges: list[Mapping] | None = None,
 ) -> _FlowResult:
     flow_entries: list[dict] = []
     flows_created = 0
@@ -1845,7 +2186,12 @@ def _write_bootstrap_flow_pages(
     _emit_bootstrap(state, "Generating user-flow pages...", flush=True)
     console_scripts = read_console_scripts(state.options.src_dir_for_scan)
     entry_points = get_entry_points(inventory, console_scripts=console_scripts)
-    edges = resolve_call_edges(inventory) if entry_points else []
+    if not entry_points:
+        edges = []
+    elif call_edges is not None:
+        edges = list(call_edges)
+    else:
+        edges = resolve_call_edges(inventory)
     data_flow_enabled = not state.options.skip_data_flow
     data_flow_context = (
         build_data_flow_context(inventory, edges)
@@ -1946,12 +2292,16 @@ def _write_bootstrap_dependency_pages(
     state: _BootstrapRunState,
     inventory: dict,
     module_page_map: dict[str, str],
+    *,
+    analysis: dict | None = None,
 ) -> _DependencyResult:
     if not state.options.deep or state.options.skip_dependencies:
         return _DependencyResult([], 0, {"generated": False})
 
     _emit_bootstrap(state, "Generating architecture pages...", flush=True)
-    analysis = analyze_dependencies(inventory, state.options.src_dir_for_scan)
+    analysis = analysis or analyze_dependencies(
+        inventory, state.options.src_dir_for_scan
+    )
     pages = (
         (
             "dependencies",
@@ -2154,25 +2504,45 @@ def _generate_bootstrap_content(
     inventory: dict,
     page_maps: _BootstrapPageMaps,
 ) -> _BootstrapGenerationResult:
+    call_edges = resolve_call_edges(inventory) if state.options.deep else []
+    entity_relationship_summaries = (
+        _build_entity_relationship_summary_map(inventory, call_edges)
+        if state.options.deep
+        else None
+    )
+    dependency_analysis = _build_bootstrap_dependency_analysis(state, inventory)
+    module_dependency_maps = (
+        build_module_dependency_maps(dependency_analysis)
+        if dependency_analysis is not None
+        else None
+    )
     relationships, cross_reference_count = _build_bootstrap_relationships(
         state,
         inventory,
         page_maps.module_page_map,
     )
     entity_result = _write_entity_and_module_pages(
-        state, inventory, page_maps, relationships
+        state,
+        inventory,
+        page_maps,
+        relationships,
+        entity_relationship_summaries,
+        module_dependency_maps,
     )
     workflow_result = _write_bootstrap_workflow_pages(
         state, inventory, page_maps.module_page_map
     )
     flow_result = _write_bootstrap_flow_pages(
-        state, inventory, page_maps.module_page_map
+        state, inventory, page_maps.module_page_map, call_edges=call_edges
     )
     infrastructure_result = _write_bootstrap_infrastructure_pages(
         state, page_maps.module_page_map
     )
     dependency_result = _write_bootstrap_dependency_pages(
-        state, inventory, page_maps.module_page_map
+        state,
+        inventory,
+        page_maps.module_page_map,
+        analysis=dependency_analysis,
     )
     return _BootstrapGenerationResult(
         entity_result,
