@@ -233,8 +233,11 @@ class TestE2EFlows:
             __all__ = ["process"]
 
 
-            def process(payload):
-                return _normalize(payload)
+            def process(payload, output_path, client):
+                result = _normalize(payload)
+                output_path.write_text(str(result))
+                client.publish(result)
+                return result
 
 
             def _normalize(payload):
@@ -242,7 +245,7 @@ class TestE2EFlows:
 
 
             def main():
-                return process({})
+                return process({}, "out.txt", object())
 
 
             if __name__ == "__main__":
@@ -269,6 +272,12 @@ class TestE2EFlows:
         api_flow = (flows_dir / "api-process.md").read_text(encoding="utf-8")
         assert "```mermaid" in api_flow
         assert "_normalize" in api_flow  # resolved internal call appears in the diagram
+        assert "## Call sequence" in api_flow
+        assert "## Data flow" in api_flow
+        assert "flowchart TD" in api_flow
+        assert "| filesystem_write | `output_path.write_text` | `process` |" in api_flow
+        assert "client.publish" in api_flow
+        assert "## Behavior" in api_flow
 
         index = (proj / "docs" / "llm_wiki" / "index.md").read_text(encoding="utf-8")
         assert "## User Flows" in index
@@ -277,6 +286,11 @@ class TestE2EFlows:
         # Strict lint on the freshly bootstrapped wiki passes with zero issues.
         report = lint_cmd.build_report("docs/llm_wiki", ".", strict=True)
         assert report.passed, [issue.message for issue in report.issues]
+        assert any(
+            diagnostic.category == "data_flow_gaps"
+            and "client.publish" in diagnostic.message
+            for diagnostic in report.diagnostics
+        )
 
 
 class TestE2EDependencyArchitecture:

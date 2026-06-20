@@ -1578,6 +1578,23 @@ class TestSyncFlowRegeneration:
         self._write_svc(proj, callee)
         return proj, proj / "docs" / "llm_wiki"
 
+    def _write_svc_with_arg(self, proj, value):
+        (proj / "svc.py").write_text(
+            textwrap.dedent(f"""\
+            __all__ = ["run"]
+
+
+            def run(path):
+                result = helper("{value}")
+                path.write_text(result)
+                return result
+
+
+            def helper(value):
+                return value
+        """)
+        )
+
     def test_regenerates_changed_flow_and_preserves_behavior(
         self, tmp_path, monkeypatch, capsys
     ):
@@ -1604,6 +1621,33 @@ class TestSyncFlowRegeneration:
         assert "helper_b" in updated  # diagram regenerated
         assert "helper_a" not in updated  # old call removed
         assert "Runs the primary path." in updated  # human Behavior preserved
+
+    def test_regenerates_data_flow_for_changed_call_argument(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        self._write_svc_with_arg(proj, "alpha")
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        flow_page = wiki / "flows" / "api-run.md"
+        original = flow_page.read_text(encoding="utf-8")
+        assert "helper('alpha')" in original
+        flow_page.write_text(
+            sync_cmd._replace_section_body(
+                original, "Behavior", "Keeps the reviewed behavior notes."
+            ),
+            encoding="utf-8",
+        )
+
+        self._write_svc_with_arg(proj, "beta")
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        updated = flow_page.read_text(encoding="utf-8")
+        assert "helper('beta')" in updated
+        assert "helper('alpha')" not in updated
+        assert "| filesystem_write | `path.write_text` | `run` |" in updated
+        assert "Keeps the reviewed behavior notes." in updated
 
     def test_does_not_create_flows_when_opted_out(self, tmp_path, monkeypatch, capsys):
         proj, wiki = self._new_project(tmp_path, "helper_a")

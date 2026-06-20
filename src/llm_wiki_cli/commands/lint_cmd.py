@@ -10,10 +10,12 @@ from collections.abc import Iterator
 from pathlib import Path
 
 from .extract_cmd import get_call_graph, get_docker_inventory, get_inventory_result
+from .extract_cmd import resolve_call_edges
 from .bootstrap_cmd import build_module_page_map, build_entity_page_map
 from ..config import validate_path
+from ..services.data_flow import analyze_data_flow
 from ..services.dependencies import analyze_dependencies
-from ..services.entrypoints import get_entry_points, read_console_scripts
+from ..services.entrypoints import build_flow, get_entry_points, read_console_scripts
 from ..services.inventory_cache import (
     InventoryCacheOptions,
     InventoryCacheStats,
@@ -37,6 +39,7 @@ _PROFILE_PHASES = [
     "modules",
     "workflows",
     "flows",
+    "data_flow",
     "dependencies",
     "infrastructure",
     "strict",
@@ -639,6 +642,39 @@ def _check_flow_coverage(
         )
 
 
+def _check_data_flow_diagnostics(
+    report: LintReport,
+    wiki_path: Path,
+    deep_inventory: dict,
+    src_dir: str,
+) -> None:
+    documented_flows = _collect_documented_flows(wiki_path)
+    if not documented_flows:
+        return
+
+    edges = resolve_call_edges(deep_inventory)
+    for entry_point in get_entry_points(
+        deep_inventory, console_scripts=read_console_scripts(src_dir)
+    ):
+        if entry_point["id"] not in documented_flows:
+            continue
+        data_flow = analyze_data_flow(
+            deep_inventory, build_flow(entry_point, edges), edges
+        )
+        for gap in data_flow["gaps"]:
+            line = gap.get("line")
+            location = f" line {line}" if line else ""
+            _diagnose(
+                report,
+                "data_flow_gaps",
+                (
+                    f"Data-flow gap in {entry_point['id']}: {gap['kind']} "
+                    f"{gap['step']} -> {gap['target']}{location}"
+                ),
+                target=entry_point["id"],
+            )
+
+
 def _check_dependency_coverage(
     report: LintReport,
     wiki_path: Path,
@@ -766,6 +802,8 @@ def _run_report_checks(
         )
     with _profile_phase(profiler, "flows"):
         _check_flow_coverage(report, wiki_path, inputs.deep_inventory, src_dir)
+    with _profile_phase(profiler, "data_flow"):
+        _check_data_flow_diagnostics(report, wiki_path, inputs.deep_inventory, src_dir)
     with _profile_phase(profiler, "dependencies"):
         _check_dependency_coverage(report, wiki_path, inputs.deep_inventory, src_dir)
     with _profile_phase(profiler, "infrastructure"):

@@ -1354,6 +1354,103 @@ class TestExtractEntryPoints:
         assert "entrypoints" not in result.payload
 
 
+class TestExtractDataFlows:
+    def _write_data_flow_project(self, tmp_path):
+        (tmp_path / "api.py").write_text(
+            textwrap.dedent("""\
+            __all__ = ["run"]
+
+
+            def run(path, client):
+                result = helper("alpha")
+                path.write_text(result)
+                client.publish(result)
+                return result
+
+
+            def helper(value):
+                return value
+        """),
+            encoding="utf-8",
+        )
+
+    def test_deep_payload_includes_data_flows(self, tmp_path, monkeypatch):
+        self._write_data_flow_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+
+        result = extract_cmd.build_extract_payload(".", deep=True)
+
+        data_flows = result.payload["data_flows"]
+        api_flow = next(flow for flow in data_flows if flow["id"] == "api-run")
+        assert [step["symbol"] for step in api_flow["steps"]][:2] == ["run", "helper"]
+        assert any(
+            boundary["kind"] == "filesystem_write"
+            and boundary["target"] == "path.write_text"
+            for boundary in api_flow["boundaries"]
+        )
+        assert any(
+            transfer["call"] == "helper('alpha')" for transfer in api_flow["transfers"]
+        )
+        assert any(
+            gap["kind"] == "unresolved_call" and gap["target"] == "client.publish"
+            for gap in api_flow["gaps"]
+        )
+
+    def test_non_deep_payload_omits_data_flows(self, tmp_path, monkeypatch):
+        self._write_data_flow_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+
+        result = extract_cmd.build_extract_payload(".", deep=False)
+
+        assert "data_flows" not in result.payload
+
+    def test_summary_payload_data_flows_use_full_inventory_before_collapse(
+        self, tmp_path, monkeypatch
+    ):
+        self._write_data_flow_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+
+        result = extract_cmd.build_extract_payload(".", deep=True, summary=True)
+
+        assert "calls" not in result.payload["inventory"]["api.py"]["functions"][0]
+        assert any(flow["id"] == "api-run" for flow in result.payload["data_flows"])
+
+    def test_deep_payload_includes_empty_data_flows_for_empty_changed_inventory(
+        self, tmp_path, monkeypatch
+    ):
+        self._write_data_flow_project(tmp_path)
+        subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+        subprocess.run(
+            ["git", "config", "user.email", "test@example.com"],
+            cwd=tmp_path,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "user.name", "Test"],
+            cwd=tmp_path,
+            check=True,
+        )
+        subprocess.run(["git", "add", "."], cwd=tmp_path, check=True)
+        subprocess.run(
+            ["git", "commit", "-m", "initial"],
+            cwd=tmp_path,
+            check=True,
+            capture_output=True,
+        )
+        subprocess.run(
+            ["git", "commit", "--allow-empty", "-m", "empty"],
+            cwd=tmp_path,
+            check=True,
+            capture_output=True,
+        )
+        monkeypatch.chdir(tmp_path)
+
+        result = extract_cmd.build_extract_payload(".", changed=True, deep=True)
+
+        assert result.payload["inventory"] == {}
+        assert result.payload["data_flows"] == []
+
+
 class TestExtractDependencies:
     def _write_dependency_project(self, tmp_path):
         pkg = tmp_path / "pkg"

@@ -666,14 +666,54 @@ class TestGenerateFlowMd:
             "modules_touched": ["pkg/api.py", "pkg/helper.py"],
             "truncated": True,
         }
+        data_flow = {
+            "steps": [
+                {
+                    "symbol": "run",
+                    "kind": "entry",
+                    "inputs": [{"kind": "param", "name": "payload", "type": "dict"}],
+                    "returns": [{"kind": "name", "value": "result", "line": 4}],
+                }
+            ],
+            "transfers": [
+                {
+                    "from": "run",
+                    "to": "work",
+                    "line": 4,
+                    "call": "work(payload)",
+                    "kind": "internal",
+                }
+            ],
+            "boundaries": [
+                {
+                    "step": "run",
+                    "kind": "filesystem_write",
+                    "target": "path.write_text",
+                    "line": 5,
+                }
+            ],
+            "gaps": [
+                {
+                    "kind": "unresolved_call",
+                    "step": "run",
+                    "target": "client.publish",
+                    "line": 6,
+                }
+            ],
+        }
         md = bootstrap_cmd._generate_flow_md(
-            flow, {"pkg/api.py": "api", "pkg/helper.py": "helper"}
+            flow, {"pkg/api.py": "api", "pkg/helper.py": "helper"}, data_flow=data_flow
         )
         assert md.startswith("# run")
         assert "**Entry point:** `run` (`api`)" in md
         assert "[api](../modules/api.md)" in md
         assert "[helper](../modules/helper.md)" in md
         assert "sequenceDiagram" in md
+        assert md.index("## Data flow") < md.index("## Behavior")
+        assert "flowchart TD" in md
+        assert "| filesystem_write | `path.write_text` | `run` | 5 |" in md
+        assert "| run | work | 4 | `work(payload)` |" in md
+        assert "client.publish" in md
         assert "-->>" in md  # external call rendered as a dashed arrow
         assert "truncated" in md
         assert "## Behavior" in md

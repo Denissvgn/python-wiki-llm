@@ -21,8 +21,9 @@ from ..extractors.common import LANGUAGE_EXTENSIONS
 from ..extractors.go_extractor import GoExtractionRequest
 from ..extractors.rust_extractor import RustExtractionRequest
 from ..services.contracts import EXTRACT_SCHEMA_VERSION
+from ..services.data_flow import analyze_data_flow
 from ..services.dependencies import analyze_dependencies
-from ..services.entrypoints import get_entry_points, read_console_scripts
+from ..services.entrypoints import build_flow, get_entry_points, read_console_scripts
 from ..services.inventory_cache import (
     InventoryCache,
     InventoryCacheOptions,
@@ -882,6 +883,7 @@ def build_extract_payload(
             output["dependencies"] = _dependency_extract_block(
                 analyze_dependencies({}, str(src_root))
             )
+            output["data_flows"] = []
         return ExtractPayloadResult(
             output,
             inventory_count=0,
@@ -920,6 +922,15 @@ def build_extract_payload(
         if deep
         else []
     )
+    call_edges = resolve_call_edges(inventory) if deep else []
+    data_flows = (
+        [
+            analyze_data_flow(inventory, build_flow(entrypoint, call_edges), call_edges)
+            for entrypoint in entrypoints
+        ]
+        if deep
+        else None
+    )
     dependencies = (
         _dependency_extract_block(analyze_dependencies(inventory, str(src_root)))
         if deep
@@ -939,6 +950,8 @@ def build_extract_payload(
         output["docker"] = docker_inv
     if entrypoints:
         output["entrypoints"] = entrypoints
+    if data_flows is not None:
+        output["data_flows"] = data_flows
     if dependencies is not None:
         output["dependencies"] = dependencies
 

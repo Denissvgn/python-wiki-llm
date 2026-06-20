@@ -203,7 +203,9 @@ llm-wiki bootstrap --format json --source-adapter
 
 `bootstrap` writes entity, module, workflow, flow, infrastructure, index, log,
 dependency architecture, and manifest files. User-flow pages under `flows/` are
-generated from detected entry points; use `--skip-flows` to omit them.
+generated from detected entry points with a call sequence, generated static
+`## Data flow` section, boundary-effects table, and editable `## Behavior`; use
+`--skip-flows` to omit them.
 Dependency architecture pages are generated as `dependencies.md` and
 `load-order.md`; use `--skip-dependencies` for projects that do not want those
 pages or lint diagnostics. `--depth full` is the default and includes
@@ -248,6 +250,10 @@ dynamic imports, side effects, and notable dependency rationale. Projects
 bootstrapped with `--skip-dependencies`, or older wikis without those pages,
 stay untouched.
 
+When flow pages already exist, `sync` also refreshes generated call-sequence and
+`## Data flow` content from the current inventory while preserving the
+human-authored `## Behavior` section by default.
+
 ### `extract`
 
 Print source inventory as JSON. All registered extractors run; missing optional
@@ -272,12 +278,12 @@ reads, writes, returns, and boundary effects such as filesystem, environment,
 process, network, output, and logging calls) and optional `calls` lists (in-body
 call targets, optionally with compact `args` and `kwargs` expression summaries).
 The payload also gains an optional top-level `entrypoints` array (detected
-user-reachable entry points: `{id, category, file, symbol, label}`) plus a top-level
-`dependencies` object with internal `edges`, `cycles`, per-language external
-dependency reconciliation, and `load_order`. When `--deep` is combined with
-`--changed`, `--paths`,
-`--package`, or `--summary`, `dependencies` describes the emitted inventory
-before summary collapse. Inventory keys are POSIX paths relative to `--src-dir`,
+user-reachable entry points: `{id, category, file, symbol, label}`), a
+`data_flows` list for detected user flows, plus a top-level `dependencies`
+object with internal `edges`, `cycles`, per-language external dependency
+reconciliation, and `load_order`. When `--deep` is combined with `--changed`,
+`--paths`, `--package`, or `--summary`, `data_flows` and `dependencies` describe
+the emitted inventory before summary collapse. Inventory keys are POSIX paths relative to `--src-dir`,
 never absolute paths. The v1 contract permits additive fields; incompatible
 shape changes require a new schema version.
 
@@ -334,6 +340,8 @@ dependencies as warning diagnostics. These warnings are visible in human output
 and profile JSON but do not make `lint`, `lint --strict`, or `ci-check` fail by
 themselves. Stale architecture pages with no current source modules remain hard
 issues.
+When flow pages exist, lint also reports generated data-flow gaps, such as
+unresolved calls that static analysis cannot classify, as warning diagnostics.
 
 For CI:
 

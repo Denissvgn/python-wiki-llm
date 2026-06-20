@@ -23,6 +23,7 @@ from ..config import (
     validate_source_root,
 )
 from ..services.contracts import BOOTSTRAP_SUMMARY_SCHEMA_VERSION
+from ..services.data_flow import analyze_data_flow
 from ..services.dependencies import (
     analyze_dependencies,
     package_dependency_graph,
@@ -634,9 +635,150 @@ def _flow_interactions(flow: dict) -> list[dict]:
     return interactions
 
 
+def _md_cell(value: object) -> str:
+    return str(value).replace("|", "\\|") if value not in (None, "") else "-"
+
+
+def _effect_label(effect: Mapping) -> str:
+    label = (
+        effect.get("name")
+        or effect.get("value")
+        or effect.get("target")
+        or effect.get("annotation")
+        or effect.get("kind")
+        or "?"
+    )
+    if effect.get("type"):
+        label = f"{label}: {effect['type']}"
+    return str(label)
+
+
+def _effects_cell(effects: list[Mapping]) -> str:
+    if not effects:
+        return "-"
+    return ", ".join(f"`{_md_cell(_effect_label(effect))}`" for effect in effects)
+
+
+def _data_flow_step_nodes(data_flow: Mapping) -> dict[str, str]:
+    nodes: dict[str, str] = {}
+    for index, step in enumerate(data_flow.get("steps", []), start=1):
+        symbol = str(step.get("symbol") or "?")
+        nodes.setdefault(symbol, f"{index}. {symbol}")
+    return nodes
+
+
+def _data_flow_diagram(data_flow: Mapping) -> str:
+    step_nodes = _data_flow_step_nodes(data_flow)
+    nodes = list(step_nodes.values())
+    edges: list[tuple[str, str]] = []
+    for transfer in data_flow.get("transfers", []):
+        src = step_nodes.get(str(transfer.get("from")))
+        dst = step_nodes.get(str(transfer.get("to")))
+        if src and dst:
+            edges.append((src, dst))
+    for boundary in data_flow.get("boundaries", []):
+        src = step_nodes.get(str(boundary.get("step")))
+        if not src:
+            continue
+        dst = f"{boundary.get('kind', 'boundary')}: {boundary.get('target', '?')}"
+        nodes.append(dst)
+        edges.append((src, dst))
+    return flowchart(nodes, edges)
+
+
+def _generate_data_flow_section(data_flow: Mapping) -> list[str]:
+    lines = [
+        "## Data flow",
+        "",
+        "<!-- Auto-generated static analysis. Treat values and boundaries as "
+        "best-effort hints, not runtime proof. -->",
+        _data_flow_diagram(data_flow),
+        "",
+        "### Step data",
+        "",
+        "| Step | Inputs | Reads | Writes | Returns |",
+        "|---|---|---|---|---|",
+    ]
+    for step in data_flow.get("steps", []):
+        lines.append(
+            "| "
+            + " | ".join(
+                [
+                    f"`{_md_cell(step.get('symbol'))}`",
+                    _effects_cell(step.get("inputs", [])),
+                    _effects_cell(step.get("reads", [])),
+                    _effects_cell(step.get("writes", [])),
+                    _effects_cell(step.get("returns", [])),
+                ]
+            )
+            + " |"
+        )
+    lines.extend(["", "### Call data", ""])
+    transfers = data_flow.get("transfers", [])
+    if transfers:
+        lines.extend(["| From | To | Line | Call |", "|---|---|---:|---|"])
+        for transfer in transfers:
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        _md_cell(transfer.get("from")),
+                        _md_cell(transfer.get("to")),
+                        _md_cell(transfer.get("line")),
+                        f"`{_md_cell(transfer.get('call'))}`",
+                    ]
+                )
+                + " |"
+            )
+    else:
+        lines.append("*No call data transfers detected.*")
+    lines.extend(["", "### Boundary effects", ""])
+    boundaries = data_flow.get("boundaries", [])
+    if boundaries:
+        lines.extend(["| Kind | Target | Step | Line |", "|---|---|---|---:|"])
+        for boundary in boundaries:
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        _md_cell(boundary.get("kind")),
+                        f"`{_md_cell(boundary.get('target'))}`",
+                        f"`{_md_cell(boundary.get('step'))}`",
+                        _md_cell(boundary.get("line")),
+                    ]
+                )
+                + " |"
+            )
+    else:
+        lines.append("*No boundary effects detected.*")
+    lines.extend(["", "### Static analysis gaps", ""])
+    gaps = data_flow.get("gaps", [])
+    if gaps:
+        lines.extend(["| Kind | Step | Target | Line |", "|---|---|---|---:|"])
+        for gap in gaps:
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        _md_cell(gap.get("kind")),
+                        f"`{_md_cell(gap.get('step'))}`",
+                        f"`{_md_cell(gap.get('target'))}`",
+                        _md_cell(gap.get("line")),
+                    ]
+                )
+                + " |"
+            )
+    else:
+        lines.append("*No static analysis gaps detected.*")
+    lines.append("")
+    return lines
+
+
 def _generate_flow_md(
     flow: dict,
     module_page_map: Mapping[str, str] | None = None,
+    *,
+    data_flow: Mapping | None = None,
 ) -> str:
     """Generate a user-flow page with a Mermaid sequence diagram from *flow*."""
     entry = flow["entry"]
@@ -653,7 +795,9 @@ def _generate_flow_md(
         stem = page_map.get(entry["file"], _module_name_from_path(entry["file"]))
         lines.append(f"**Source:** [{stem}](../modules/{stem}.md)")
     if modules:
-        joined = ", ".join(f"[{label}](../modules/{page}.md)" for label, page in modules)
+        joined = ", ".join(
+            f"[{label}](../modules/{page}.md)" for label, page in modules
+        )
         lines.append(f"**Modules touched:** {joined}")
     lines.append("")
 
@@ -671,6 +815,9 @@ def _generate_flow_md(
         lines.append("")
         lines.append("> Trace truncated at the depth limit; deeper calls are omitted.")
     lines.append("")
+
+    if data_flow is not None:
+        lines.extend(_generate_data_flow_section(data_flow))
 
     lines.append("## Behavior")
     lines.append("")
@@ -1710,13 +1857,16 @@ def _write_bootstrap_flow_pages(
     console_scripts = read_console_scripts(state.options.src_dir_for_scan)
     for entry_point in get_entry_points(inventory, console_scripts=console_scripts):
         flow = build_flow(entry_point, edges)
+        data_flow = analyze_data_flow(inventory, flow, edges)
         flow_path = state.options.wiki_dir / "flows" / f"{entry_point['id']}.md"
         if flow_path.exists() and not state.options.overwrite:
             state.skipped_files.append(_path_text(flow_path))
             _emit_bootstrap(state, f"  SKIP flow (exists): {entry_point['id']}")
         else:
             _write_bootstrap_file(
-                state, flow_path, _generate_flow_md(flow, module_page_map)
+                state,
+                flow_path,
+                _generate_flow_md(flow, module_page_map, data_flow=data_flow),
             )
             flows_created += 1
             _emit_bootstrap(state, f"  CREATE flow: {entry_point['id']}")
@@ -1797,7 +1947,11 @@ def _write_bootstrap_dependency_pages(
                 detail=state.options.dependency_graph_detail,
             ),
         ),
-        ("load-order", "Load order", _generate_load_order_md(analysis, module_page_map)),
+        (
+            "load-order",
+            "Load order",
+            _generate_load_order_md(analysis, module_page_map),
+        ),
     )
 
     architecture_entries: list[dict] = []
@@ -1816,7 +1970,11 @@ def _write_bootstrap_dependency_pages(
         architecture_entries.append({"name": label, "page": stem})
 
     _emit_bootstrap(state, f"Generated architecture pages: {created}.", flush=True)
-    summary = {"generated": True, "pages_created": created, **_dependency_counts(analysis)}
+    summary = {
+        "generated": True,
+        "pages_created": created,
+        **_dependency_counts(analysis),
+    }
     return _DependencyResult(architecture_entries, created, summary)
 
 
