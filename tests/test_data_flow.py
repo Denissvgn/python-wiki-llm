@@ -2,7 +2,8 @@
 
 import json
 
-from llm_wiki_cli.services.data_flow import analyze_data_flow
+from llm_wiki_cli.services import data_flow as data_flow_module
+from llm_wiki_cli.services.data_flow import analyze_data_flow, build_data_flow_context
 
 
 def test_analyze_data_flow_orders_steps_boundaries_transfers_and_gaps():
@@ -136,3 +137,67 @@ def test_analyze_data_flow_orders_steps_boundaries_transfers_and_gaps():
         }
     ]
     json.dumps(data_flow, sort_keys=True)
+
+
+def test_reusable_context_does_not_rebuild_indexes_or_leak_edges(monkeypatch):
+    inventory = {
+        "svc.py": {
+            "language": "python",
+            "classes": [],
+            "functions": [
+                {
+                    "name": "run",
+                    "calls": [
+                        {"name": "helper", "line": 4},
+                        {"name": "helper", "line": 5},
+                    ],
+                },
+                {"name": "helper"},
+            ],
+        }
+    }
+    edges = [
+        {
+            "from": {"file": "svc.py", "symbol": "run"},
+            "to": {"file": "svc.py", "symbol": "helper"},
+            "name": "helper",
+            "kind": "internal",
+            "line": 4,
+        },
+        {
+            "from": {"file": "svc.py", "symbol": "run"},
+            "to": {"file": "svc.py", "symbol": "helper"},
+            "name": "helper",
+            "kind": "internal",
+            "line": 5,
+        },
+    ]
+    flow = {
+        "entry": {
+            "id": "api-run",
+            "category": "api",
+            "file": "svc.py",
+            "symbol": "run",
+            "label": "run",
+        },
+        "steps": [
+            {"depth": 0, "file": "svc.py", "symbol": "run", "kind": "entry"},
+            {"depth": 1, "file": "svc.py", "symbol": "helper", "kind": "internal"},
+            {"depth": 1, "file": "svc.py", "symbol": "helper", "kind": "internal"},
+        ],
+        "modules_touched": ["svc.py"],
+        "truncated": False,
+    }
+    context = build_data_flow_context(inventory, edges)
+
+    def fail_rebuild(*args, **kwargs):
+        raise AssertionError("context should reuse prebuilt data-flow indexes")
+
+    monkeypatch.setattr(data_flow_module, "_callable_index", fail_rebuild)
+    monkeypatch.setattr(data_flow_module, "_incoming_edge_queues", fail_rebuild)
+
+    first = analyze_data_flow(inventory, flow, edges, context=context)
+    second = analyze_data_flow(inventory, flow, edges, context=context)
+
+    assert [transfer["line"] for transfer in first["transfers"]] == [4, 5]
+    assert [transfer["line"] for transfer in second["transfers"]] == [4, 5]

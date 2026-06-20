@@ -42,7 +42,7 @@ from .bootstrap_cmd import (
     build_module_page_map,
 )
 from ..config import validate_path
-from ..services.data_flow import analyze_data_flow
+from ..services.data_flow import analyze_data_flow, build_data_flow_context
 from ..services.dependencies import analyze_dependencies
 from ..services.entrypoints import build_flow, get_entry_points, read_console_scripts
 from ..services.inventory_cache import (
@@ -1631,12 +1631,16 @@ def _regenerate_flow_pages(
     if not flows_dir.exists() or not any(flows_dir.glob("*.md")):
         return 0
 
-    edges = resolve_call_edges(inventory)
     console_scripts = read_console_scripts(options.src_dir)
+    entry_points = get_entry_points(inventory, console_scripts=console_scripts)
+    edges = resolve_call_edges(inventory) if entry_points else []
+    data_flow_context = (
+        build_data_flow_context(inventory, edges) if entry_points else None
+    )
     regenerated = 0
-    for entry_point in get_entry_points(inventory, console_scripts=console_scripts):
+    for entry_point in entry_points:
         flow = build_flow(entry_point, edges)
-        data_flow = analyze_data_flow(inventory, flow, edges)
+        data_flow = analyze_data_flow(inventory, flow, edges, context=data_flow_context)
         new_md = _generate_flow_md(flow, module_page_map, data_flow=data_flow)
         flow_path = flows_dir / f"{entry_point['id']}.md"
         if options.preserve_semantic and flow_path.exists():

@@ -1396,6 +1396,26 @@ class TestExtractDataFlows:
             for gap in api_flow["gaps"]
         )
 
+    def test_deep_payload_reuses_single_data_flow_context(self, tmp_path, monkeypatch):
+        self._write_data_flow_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        calls = 0
+        real_build_context = extract_cmd.build_data_flow_context
+
+        def counted_build_context(*args, **kwargs):
+            nonlocal calls
+            calls += 1
+            return real_build_context(*args, **kwargs)
+
+        monkeypatch.setattr(
+            extract_cmd, "build_data_flow_context", counted_build_context
+        )
+
+        result = extract_cmd.build_extract_payload(".", deep=True)
+
+        assert calls == 1
+        assert any(flow["id"] == "api-run" for flow in result.payload["data_flows"])
+
     def test_non_deep_payload_omits_data_flows(self, tmp_path, monkeypatch):
         self._write_data_flow_project(tmp_path)
         monkeypatch.chdir(tmp_path)

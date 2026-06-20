@@ -1649,6 +1649,28 @@ class TestSyncFlowRegeneration:
         assert "| filesystem_write | `path.write_text` | `run` |" in updated
         assert "Keeps the reviewed behavior notes." in updated
 
+    def test_flow_regeneration_reuses_single_data_flow_context(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        calls = 0
+        real_build_context = sync_cmd.build_data_flow_context
+
+        def counted_build_context(*args, **kwargs):
+            nonlocal calls
+            calls += 1
+            return real_build_context(*args, **kwargs)
+
+        monkeypatch.setattr(sync_cmd, "build_data_flow_context", counted_build_context)
+
+        self._write_svc(proj, "helper_b")
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        assert calls == 1
+        assert "helper_b" in (wiki / "flows" / "api-run.md").read_text(encoding="utf-8")
+
     def test_does_not_create_flows_when_opted_out(self, tmp_path, monkeypatch, capsys):
         proj, wiki = self._new_project(tmp_path, "helper_a")
         monkeypatch.chdir(proj)

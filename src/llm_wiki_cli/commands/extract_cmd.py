@@ -21,7 +21,7 @@ from ..extractors.common import LANGUAGE_EXTENSIONS
 from ..extractors.go_extractor import GoExtractionRequest
 from ..extractors.rust_extractor import RustExtractionRequest
 from ..services.contracts import EXTRACT_SCHEMA_VERSION
-from ..services.data_flow import analyze_data_flow
+from ..services.data_flow import analyze_data_flow, build_data_flow_context
 from ..services.dependencies import analyze_dependencies
 from ..services.entrypoints import build_flow, get_entry_points, read_console_scripts
 from ..services.inventory_cache import (
@@ -922,10 +922,18 @@ def build_extract_payload(
         if deep
         else []
     )
-    call_edges = resolve_call_edges(inventory) if deep else []
+    call_edges = resolve_call_edges(inventory) if deep and entrypoints else []
+    data_flow_context = (
+        build_data_flow_context(inventory, call_edges) if deep and entrypoints else None
+    )
     data_flows = (
         [
-            analyze_data_flow(inventory, build_flow(entrypoint, call_edges), call_edges)
+            analyze_data_flow(
+                inventory,
+                build_flow(entrypoint, call_edges),
+                call_edges,
+                context=data_flow_context,
+            )
             for entrypoint in entrypoints
         ]
         if deep

@@ -23,7 +23,7 @@ from ..config import (
     validate_source_root,
 )
 from ..services.contracts import BOOTSTRAP_SUMMARY_SCHEMA_VERSION
-from ..services.data_flow import analyze_data_flow
+from ..services.data_flow import analyze_data_flow, build_data_flow_context
 from ..services.dependencies import (
     analyze_dependencies,
     package_dependency_graph,
@@ -1868,19 +1868,27 @@ def _write_bootstrap_flow_pages(
         return _FlowResult(flow_entries, flows_created, data_flow_summary)
 
     _emit_bootstrap(state, "Generating user-flow pages...", flush=True)
-    edges = resolve_call_edges(inventory)
     console_scripts = read_console_scripts(state.options.src_dir_for_scan)
+    entry_points = get_entry_points(inventory, console_scripts=console_scripts)
+    edges = resolve_call_edges(inventory) if entry_points else []
     data_flow_enabled = not state.options.skip_data_flow
+    data_flow_context = (
+        build_data_flow_context(inventory, edges)
+        if data_flow_enabled and entry_points
+        else None
+    )
     if not data_flow_enabled:
         _emit_bootstrap(state, "  SKIP data flow (--skip-data-flow)")
     analyzed = 0
     boundary_effects = 0
     gaps = 0
-    for entry_point in get_entry_points(inventory, console_scripts=console_scripts):
+    for entry_point in entry_points:
         flow = build_flow(entry_point, edges)
         data_flow = None
         if data_flow_enabled:
-            data_flow = analyze_data_flow(inventory, flow, edges)
+            data_flow = analyze_data_flow(
+                inventory, flow, edges, context=data_flow_context
+            )
             analyzed += 1
             boundary_effects += len(data_flow.get("boundaries", []))
             gaps += len(data_flow.get("gaps", []))

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from collections import defaultdict, deque
 from collections.abc import Iterable
+from dataclasses import dataclass
 
 _STEP_LIMIT = 12
 _EFFECT_LIMIT = 8
@@ -50,12 +51,30 @@ def _callable_index(inventory: dict) -> dict[tuple[str | None, str | None], dict
     }
 
 
-def _incoming_edge_queues(edges: list[dict]) -> dict[tuple, deque]:
+def _incoming_edge_queues(edges: list[dict]) -> dict[tuple, tuple[dict, ...]]:
     queues: dict[tuple, deque] = defaultdict(deque)
     for edge in edges:
         key = (edge["to"]["file"], edge["to"]["symbol"], edge["kind"])
         queues[key].append(edge)
-    return queues
+    return {key: tuple(value) for key, value in queues.items()}
+
+
+@dataclass(frozen=True)
+class DataFlowAnalysisContext:
+    """Precomputed indexes shared by all data-flow analyses in one run."""
+
+    callable_index: dict[tuple[str | None, str | None], dict]
+    incoming_edges: dict[tuple, tuple[dict, ...]]
+
+
+def build_data_flow_context(
+    inventory: dict, edges: list[dict]
+) -> DataFlowAnalysisContext:
+    """Build reusable indexes for analyzing one or more user flows."""
+    return DataFlowAnalysisContext(
+        callable_index=_callable_index(inventory),
+        incoming_edges=_incoming_edge_queues(edges),
+    )
 
 
 def _effect_list(effects: dict, key: str) -> list[dict]:
@@ -168,10 +187,19 @@ def _add_gap(gaps: list[dict], *, kind: str, step: str, target: str, line: int) 
         gaps.append(gap)
 
 
-def analyze_data_flow(inventory: dict, flow: dict, edges: list[dict]) -> dict:
+def analyze_data_flow(
+    inventory: dict,
+    flow: dict,
+    edges: list[dict],
+    *,
+    context: DataFlowAnalysisContext | None = None,
+) -> dict:
     """Return a bounded static data-flow summary for one built user flow."""
-    index = _callable_index(inventory)
-    incoming = _incoming_edge_queues(edges)
+    if context is None:
+        context = build_data_flow_context(inventory, edges)
+    index = context.callable_index
+    incoming = context.incoming_edges
+    incoming_offsets: dict[tuple, int] = defaultdict(int)
     steps: list[dict] = []
     transfers: list[dict] = []
     boundaries: list[dict] = []
@@ -186,8 +214,11 @@ def analyze_data_flow(inventory: dict, flow: dict, edges: list[dict]) -> dict:
         if step_index == 0:
             continue
         key = (step.get("file"), step.get("symbol"), step.get("kind"))
-        if incoming.get(key):
-            edge_by_step_index[step_index] = incoming[key].popleft()
+        edges_for_step = incoming.get(key, ())
+        offset = incoming_offsets[key]
+        if offset < len(edges_for_step):
+            edge_by_step_index[step_index] = edges_for_step[offset]
+            incoming_offsets[key] = offset + 1
 
     for step_index, edge in edge_by_step_index.items():
         if len(transfers) >= _TRANSFER_LIMIT:

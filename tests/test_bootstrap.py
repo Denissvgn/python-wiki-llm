@@ -795,6 +795,28 @@ class TestBootstrapFlows:
         assert "## User Flows" in index
         assert "[api-run](flows/api-run.md)" in index
 
+    def test_flow_generation_reuses_single_data_flow_context(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        self._write_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        calls = 0
+        real_build_context = bootstrap_cmd.build_data_flow_context
+
+        def counted_build_context(*args, **kwargs):
+            nonlocal calls
+            calls += 1
+            return real_build_context(*args, **kwargs)
+
+        monkeypatch.setattr(
+            bootstrap_cmd, "build_data_flow_context", counted_build_context
+        )
+
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
+
+        assert calls == 1
+        assert (tmp_path / "wiki" / "flows" / "api-run.md").exists()
+
     def test_skip_flows_writes_no_flow_pages(self, tmp_path, monkeypatch, capsys):
         self._write_project(tmp_path)
         monkeypatch.chdir(tmp_path)
