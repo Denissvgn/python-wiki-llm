@@ -118,6 +118,7 @@ def test_analyze_data_flow_orders_steps_boundaries_transfers_and_gaps():
     assert data_flow["boundaries"] == [
         {
             "step": "run",
+            "step_index": 1,
             "kind": "filesystem_write",
             "target": "output_path.write_text",
             "line": 5,
@@ -201,3 +202,171 @@ def test_reusable_context_does_not_rebuild_indexes_or_leak_edges(monkeypatch):
 
     assert [transfer["line"] for transfer in first["transfers"]] == [4, 5]
     assert [transfer["line"] for transfer in second["transfers"]] == [4, 5]
+
+
+def test_step_edge_metadata_prevents_unrelated_callers_from_leaking_into_flow():
+    inventory = {
+        "svc.py": {
+            "language": "python",
+            "classes": [],
+            "functions": [
+                {
+                    "name": "other",
+                    "calls": [
+                        {
+                            "name": "helper",
+                            "line": 2,
+                            "args": [{"kind": "literal", "value": "'other'"}],
+                        }
+                    ],
+                },
+                {
+                    "name": "run",
+                    "calls": [
+                        {
+                            "name": "helper",
+                            "line": 6,
+                            "args": [{"kind": "literal", "value": "'run'"}],
+                        }
+                    ],
+                },
+                {"name": "helper"},
+            ],
+        }
+    }
+    edges = [
+        {
+            "from": {"file": "svc.py", "symbol": "other"},
+            "to": {"file": "svc.py", "symbol": "helper"},
+            "name": "helper",
+            "kind": "internal",
+            "line": 2,
+            "args": [{"kind": "literal", "value": "'other'"}],
+        },
+        {
+            "from": {"file": "svc.py", "symbol": "run"},
+            "to": {"file": "svc.py", "symbol": "helper"},
+            "name": "helper",
+            "kind": "internal",
+            "line": 6,
+            "args": [{"kind": "literal", "value": "'run'"}],
+        },
+    ]
+    flow = {
+        "entry": {
+            "id": "api-run",
+            "category": "api",
+            "file": "svc.py",
+            "symbol": "run",
+            "label": "run",
+        },
+        "steps": [
+            {"depth": 0, "file": "svc.py", "symbol": "run", "kind": "entry"},
+            {
+                "depth": 1,
+                "file": "svc.py",
+                "symbol": "helper",
+                "kind": "internal",
+                "edge": edges[1],
+            },
+        ],
+        "modules_touched": ["svc.py"],
+        "truncated": False,
+    }
+
+    data_flow = analyze_data_flow(inventory, flow, edges)
+
+    assert data_flow["transfers"] == [
+        {
+            "from": "run",
+            "to": "helper",
+            "from_step": 1,
+            "to_step": 2,
+            "line": 6,
+            "call": "helper('run')",
+            "arguments": ["'run'"],
+            "kind": "internal",
+        }
+    ]
+
+
+def test_repeated_helper_calls_and_unknown_arguments_are_distinct_transfers():
+    inventory = {
+        "svc.py": {
+            "language": "python",
+            "classes": [],
+            "functions": [
+                {
+                    "name": "run",
+                    "calls": [
+                        {"name": "helper", "line": 2},
+                        {
+                            "name": "helper",
+                            "line": 3,
+                            "args": [{"kind": "literal", "value": "'known'"}],
+                        },
+                    ],
+                },
+                {"name": "helper"},
+            ],
+        }
+    }
+    edges = [
+        {
+            "from": {"file": "svc.py", "symbol": "run"},
+            "to": {"file": "svc.py", "symbol": "helper"},
+            "name": "helper",
+            "kind": "internal",
+            "line": 2,
+        },
+        {
+            "from": {"file": "svc.py", "symbol": "run"},
+            "to": {"file": "svc.py", "symbol": "helper"},
+            "name": "helper",
+            "kind": "internal",
+            "line": 3,
+            "args": [{"kind": "literal", "value": "'known'"}],
+        },
+    ]
+    flow = {
+        "entry": {
+            "id": "api-run",
+            "category": "api",
+            "file": "svc.py",
+            "symbol": "run",
+            "label": "run",
+        },
+        "steps": [
+            {"depth": 0, "file": "svc.py", "symbol": "run", "kind": "entry"},
+            {
+                "depth": 1,
+                "file": "svc.py",
+                "symbol": "helper",
+                "kind": "internal",
+                "edge": edges[0],
+            },
+            {
+                "depth": 1,
+                "file": "svc.py",
+                "symbol": "helper",
+                "kind": "internal",
+                "edge": edges[1],
+            },
+        ],
+        "modules_touched": ["svc.py"],
+        "truncated": False,
+    }
+
+    data_flow = analyze_data_flow(inventory, flow, edges)
+
+    assert [transfer["call"] for transfer in data_flow["transfers"]] == [
+        "helper(data not statically known)",
+        "helper('known')",
+    ]
+    assert [
+        (transfer["from_step"], transfer["to_step"])
+        for transfer in data_flow["transfers"]
+    ] == [
+        (1, 2),
+        (1, 3),
+    ]

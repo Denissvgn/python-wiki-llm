@@ -148,5 +148,13 @@ def test_resolver_tolerates_enriched_call_records():
             "name": "helper",
             "kind": "internal",
             "line": 2,
+            "args": [{"kind": "name", "value": "value"}],
+            "kwargs": [
+                {
+                    "name": "mode",
+                    "kind": "literal",
+                    "value": "'fast'",
+                }
+            ],
         }
     ]

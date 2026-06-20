@@ -1,7 +1,12 @@
 """Tests for services/diagrams.py — pure Mermaid renderers."""
+
 from __future__ import annotations
 
-from llm_wiki_cli.services.diagrams import flowchart, sequence_diagram
+from llm_wiki_cli.services.diagrams import (
+    data_flow_diagram,
+    flowchart,
+    sequence_diagram,
+)
 
 
 class TestSequenceDiagram:
@@ -11,10 +16,12 @@ class TestSequenceDiagram:
         assert out.endswith("```")
 
     def test_declares_participants_in_first_seen_order(self):
-        out = sequence_diagram([
-            {"from": "main", "to": "parse", "label": "parse"},
-            {"from": "main", "to": "run", "label": "run"},
-        ])
+        out = sequence_diagram(
+            [
+                {"from": "main", "to": "parse", "label": "parse"},
+                {"from": "main", "to": "run", "label": "run"},
+            ]
+        )
         lines = out.splitlines()
         assert "    participant p0 as main" in lines
         assert "    participant p1 as parse" in lines
@@ -23,7 +30,9 @@ class TestSequenceDiagram:
         assert "    p0->>p2: run" in lines
 
     def test_dashed_arrow_for_boundary_calls(self):
-        out = sequence_diagram([{"from": "a", "to": "getcwd", "label": "getcwd", "dashed": True}])
+        out = sequence_diagram(
+            [{"from": "a", "to": "getcwd", "label": "getcwd", "dashed": True}]
+        )
         assert "-->>" in out
         assert "->>" in out  # the dashed arrow still contains the base arrow token
 
@@ -34,7 +43,10 @@ class TestSequenceDiagram:
         assert "\n\n" not in out.split(": ", 1)[1].split("\n")[0]
 
     def test_is_deterministic(self):
-        interactions = [{"from": "a", "to": "b", "label": "b"}, {"from": "b", "to": "c", "label": "c"}]
+        interactions = [
+            {"from": "a", "to": "b", "label": "b"},
+            {"from": "b", "to": "c", "label": "c"},
+        ]
         assert sequence_diagram(interactions) == sequence_diagram(interactions)
 
 
@@ -86,3 +98,72 @@ class TestFlowchart:
         assert flowchart(["a", "b"], [("a", "b")]) == flowchart(
             ["a", "b"], [("a", "b")], links=None, highlight_edges=None
         )
+
+
+class TestDataFlowDiagram:
+    def test_renders_labeled_lr_diagram_with_links_and_styled_boundaries(self):
+        data_flow = {
+            "steps": [
+                {"index": 1, "symbol": "run", "file": "pkg/api.py", "kind": "entry"},
+                {
+                    "index": 2,
+                    "symbol": "helper",
+                    "file": "pkg/helper.py",
+                    "kind": "internal",
+                },
+                {
+                    "index": 3,
+                    "symbol": "helper",
+                    "file": "pkg/helper.py",
+                    "kind": "internal",
+                },
+                {"index": 4, "symbol": "publish", "file": None, "kind": "unresolved"},
+            ],
+            "transfers": [
+                {
+                    "from_step": 1,
+                    "to_step": 2,
+                    "call": "helper('first')",
+                    "kind": "internal",
+                },
+                {
+                    "from_step": 1,
+                    "to_step": 3,
+                    "call": "helper('second')",
+                    "kind": "internal",
+                },
+                {
+                    "from_step": 1,
+                    "to_step": 4,
+                    "call": "client.publish(result)",
+                    "kind": "unresolved",
+                },
+            ],
+            "boundaries": [
+                {
+                    "step": "run",
+                    "step_index": 1,
+                    "kind": "filesystem_write",
+                    "target": "path.write_text",
+                    "line": 5,
+                }
+            ],
+        }
+
+        out = data_flow_diagram(
+            data_flow,
+            {"pkg/api.py": "api", "pkg/helper.py": "helper"},
+        )
+
+        assert out.startswith("```mermaid\nflowchart LR")
+        assert 's1["1. run"]' in out
+        assert 's2["2. helper"]' in out
+        assert 's3["3. helper"]' in out
+        assert "s1 -->|helper first| s2" in out
+        assert "s1 -->|helper second| s3" in out
+        assert "s1 -. client.publish result .-> s4" in out
+        assert 'click s1 "../modules/api.md"' in out
+        assert 'click s2 "../modules/helper.md"' in out
+        assert 'click s3 "../modules/helper.md"' in out
+        assert "filesystem_write path.write_text" in out
+        assert "class b0 boundary" in out

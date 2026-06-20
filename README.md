@@ -227,13 +227,13 @@ Dependency architecture pages are generated as `dependencies.md` and
 `load-order.md`; use `--skip-dependencies` for projects that do not want those
 pages or lint diagnostics. `--depth full` is the default and includes
 docstrings, imports, attributes, method signatures, generated relationship
-sections, and diagram data where extractors provide it. Generated Mermaid
-diagrams and generated structure are refreshed by the CLI; edit the semantic
-sections instead. Use `--source-adapter` when callers need bootstrap to write
-only under `--wiki-dir`; this skips agent constraint-file updates outside the
-generated wiki directory. Use `--format json` to emit a machine-readable summary
-with created, updated, and skipped files plus source counts and the manifest
-path.
+sections, bounded per-module dependency mini-map summaries, and diagram data
+where extractors provide it. Generated Mermaid diagrams and generated structure
+are refreshed by the CLI; edit the semantic sections instead. Use
+`--source-adapter` when callers need bootstrap to write only under `--wiki-dir`;
+this skips agent constraint-file updates outside the generated wiki directory.
+Use `--format json` to emit a machine-readable summary with created, updated,
+and skipped files plus source counts and the manifest path.
 
 ### `sync`
 

@@ -94,3 +94,104 @@ def flowchart(
             lines.append(f'    click {alias[node]} "{_sanitize_href(href)}"')
     lines.append("```")
     return "\n".join(lines)
+
+
+def _step_number(step: Mapping, fallback: int) -> int:
+    try:
+        return int(step.get("index") or fallback)
+    except (TypeError, ValueError):
+        return fallback
+
+
+def _transfer_endpoint(
+    transfer: Mapping,
+    key: str,
+    symbol_key: str,
+    aliases_by_index: Mapping[int, str],
+    aliases_by_symbol: Mapping[str, str],
+) -> str | None:
+    try:
+        step_index = int(transfer.get(key))
+    except (TypeError, ValueError):
+        step_index = 0
+    if step_index in aliases_by_index:
+        return aliases_by_index[step_index]
+    symbol = str(transfer.get(symbol_key) or "")
+    return aliases_by_symbol.get(symbol)
+
+
+def _link_for_step(step: Mapping, module_page_map: Mapping[str, str]) -> str:
+    filepath = step.get("file")
+    if not filepath:
+        return ""
+    page = module_page_map.get(str(filepath))
+    return f"../modules/{page}.md" if page else ""
+
+
+def data_flow_diagram(
+    data_flow: Mapping, module_page_map: Mapping[str, str] | None = None
+) -> str:
+    """Render a labeled Mermaid diagram for one static data-flow summary."""
+    page_map = dict(module_page_map or {})
+    steps = list(data_flow.get("steps", []))
+    aliases_by_index: dict[int, str] = {}
+    aliases_by_symbol: dict[str, str] = {}
+    lines = [_FENCE, "flowchart LR"]
+
+    for fallback, step in enumerate(steps, start=1):
+        number = _step_number(step, fallback)
+        alias = f"s{number}"
+        aliases_by_index[number] = alias
+        symbol = str(step.get("symbol") or "?")
+        aliases_by_symbol.setdefault(symbol, alias)
+        lines.append(f'    {alias}["{_sanitize(f"{number}. {symbol}")}"]')
+
+    for transfer in data_flow.get("transfers", []):
+        src = _transfer_endpoint(
+            transfer, "from_step", "from", aliases_by_index, aliases_by_symbol
+        )
+        dst = _transfer_endpoint(
+            transfer, "to_step", "to", aliases_by_index, aliases_by_symbol
+        )
+        if not src or not dst:
+            continue
+        label = _sanitize(transfer.get("call") or transfer.get("kind") or "data")
+        if transfer.get("kind") in {"external", "unresolved"}:
+            lines.append(f"    {src} -. {label} .-> {dst}")
+        else:
+            lines.append(f"    {src} -->|{label}| {dst}")
+
+    boundary_aliases = []
+    for offset, boundary in enumerate(data_flow.get("boundaries", [])):
+        src = None
+        try:
+            step_index = int(boundary.get("step_index"))
+        except (TypeError, ValueError):
+            step_index = 0
+        if step_index:
+            src = aliases_by_index.get(step_index)
+        if src is None:
+            src = aliases_by_symbol.get(str(boundary.get("step") or ""))
+        if src is None:
+            continue
+        alias = f"b{offset}"
+        label = _sanitize(
+            f"{boundary.get('kind', 'boundary')} {boundary.get('target', '?')}"
+        )
+        lines.append(f'    {alias}["{label}"]')
+        lines.append(f"    {src} -. {label} .-> {alias}")
+        boundary_aliases.append(alias)
+
+    for fallback, step in enumerate(steps, start=1):
+        number = _step_number(step, fallback)
+        href = _link_for_step(step, page_map)
+        if href:
+            lines.append(f'    click s{number} "{_sanitize_href(href)}"')
+
+    if boundary_aliases:
+        lines.append("    classDef boundary stroke:#b45309,stroke-dasharray: 4 2")
+        for alias in boundary_aliases:
+            lines.append(f"    class {alias} boundary")
+
+    lines.append("```")
+    return "\n".join(lines)

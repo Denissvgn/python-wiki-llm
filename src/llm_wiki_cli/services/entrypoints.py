@@ -34,14 +34,23 @@ CATEGORIES = (CATEGORY_CLI, CATEGORY_API, CATEGORY_MCP, CATEGORY_HTTP, CATEGORY_
 # decorators are required to be attribute-form (``app.route``, ``server.tool``)
 # to avoid matching unrelated bare decorators.
 _CLI_DECORATORS = frozenset({"command", "group"})
-_HTTP_DECORATORS = frozenset({"route", "get", "post", "put", "delete", "patch", "head", "options"})
+_HTTP_DECORATORS = frozenset(
+    {"route", "get", "post", "put", "delete", "patch", "head", "options"}
+)
 _MCP_DECORATORS = frozenset({"tool", "resource", "prompt"})
 
 _DEFAULT_FLOW_DEPTH = 6
 
 
-def _entry(category: str, file: str | None, symbol: str, label: str | None = None) -> dict:
-    return {"category": category, "file": file, "symbol": symbol, "label": label or symbol}
+def _entry(
+    category: str, file: str | None, symbol: str, label: str | None = None
+) -> dict:
+    return {
+        "category": category,
+        "file": file,
+        "symbol": symbol,
+        "label": label or symbol,
+    }
 
 
 def _local_symbols(data: dict) -> set[str]:
@@ -87,7 +96,9 @@ def _decorator_leaf(decorator: str) -> tuple[str, bool]:
     return base.rsplit(".", 1)[-1], "." in base
 
 
-def _detect_decorated(inventory: dict, leaves: frozenset[str], category: str, *, allow_bare: bool) -> list[dict]:
+def _detect_decorated(
+    inventory: dict, leaves: frozenset[str], category: str, *, allow_bare: bool
+) -> list[dict]:
     entries: list[dict] = []
     for filepath, symbol, fn in _iter_callables(inventory):
         for decorator in fn.get("decorators", []):
@@ -105,12 +116,16 @@ def _detect_process(inventory: dict, console_scripts: list[dict] | None) -> list
         if not data.get("main_block"):
             continue
         symbol = "main" if "main" in _local_symbols(data) else "__main__"
-        entries.append(_entry(CATEGORY_PROCESS, filepath, symbol, label=Path(filepath).stem))
+        entries.append(
+            _entry(CATEGORY_PROCESS, filepath, symbol, label=Path(filepath).stem)
+        )
 
     resolver = build_module_path_resolver(inventory)
     for script in console_scripts or []:
         file = _resolve_module_file(script["module"], resolver)
-        entries.append(_entry(CATEGORY_PROCESS, file, script["attr"], label=script["name"]))
+        entries.append(
+            _entry(CATEGORY_PROCESS, file, script["attr"], label=script["name"])
+        )
     return entries
 
 
@@ -140,7 +155,9 @@ def _parse_scripts_section(text: str) -> list[dict]:
         name, _, target = line.partition("=")
         target = target.strip().strip('"').strip("'")
         module, _, attr = target.partition(":")
-        scripts.append({"name": name.strip().strip('"').strip("'"), "module": module, "attr": attr})
+        scripts.append(
+            {"name": name.strip().strip('"').strip("'"), "module": module, "attr": attr}
+        )
     return scripts
 
 
@@ -197,7 +214,9 @@ def _assign_ids(entries: list[dict]) -> list[dict]:
     return entries
 
 
-def get_entry_points(inventory: dict, *, console_scripts: list[dict] | None = None) -> list[dict]:
+def get_entry_points(
+    inventory: dict, *, console_scripts: list[dict] | None = None
+) -> list[dict]:
     """Detect user-reachable entry points from a deep inventory.
 
     Returns a deterministically ordered list of
@@ -205,10 +224,16 @@ def get_entry_points(inventory: dict, *, console_scripts: list[dict] | None = No
     are the parsed ``[project.scripts]`` entries (see :func:`read_console_scripts`).
     """
     entries: list[dict] = []
-    entries += _detect_decorated(inventory, _CLI_DECORATORS, CATEGORY_CLI, allow_bare=True)
+    entries += _detect_decorated(
+        inventory, _CLI_DECORATORS, CATEGORY_CLI, allow_bare=True
+    )
     entries += _detect_api(inventory)
-    entries += _detect_decorated(inventory, _MCP_DECORATORS, CATEGORY_MCP, allow_bare=False)
-    entries += _detect_decorated(inventory, _HTTP_DECORATORS, CATEGORY_HTTP, allow_bare=False)
+    entries += _detect_decorated(
+        inventory, _MCP_DECORATORS, CATEGORY_MCP, allow_bare=False
+    )
+    entries += _detect_decorated(
+        inventory, _HTTP_DECORATORS, CATEGORY_HTTP, allow_bare=False
+    )
     entries += _detect_process(inventory, console_scripts)
 
     entries = _dedup(entries)
@@ -227,6 +252,30 @@ def _build_adjacency(edges: list[dict]) -> dict[tuple, list[dict]]:
     return adjacency
 
 
+def _edge_metadata(edge: dict) -> dict:
+    metadata = {
+        "from": dict(edge["from"]),
+        "to": dict(edge["to"]),
+        "name": edge.get("name", ""),
+        "kind": edge.get("kind", "unknown"),
+        "line": edge.get("line", 0),
+    }
+    for key in ("args", "kwargs"):
+        if key in edge:
+            metadata[key] = edge[key]
+    return metadata
+
+
+def _flow_step_from_edge(edge: dict, depth: int) -> dict:
+    return {
+        "depth": depth,
+        "file": edge["to"]["file"],
+        "symbol": edge["to"]["symbol"],
+        "kind": edge["kind"],
+        "edge": _edge_metadata(edge),
+    }
+
+
 def _expand_flow(node, depth, adjacency, steps, visited, max_depth, state) -> None:
     if depth >= max_depth:
         if adjacency.get(node):
@@ -234,15 +283,12 @@ def _expand_flow(node, depth, adjacency, steps, visited, max_depth, state) -> No
         return
     for edge in adjacency.get(node, []):
         target = (edge["to"]["file"], edge["to"]["symbol"])
-        steps.append(
-            {
-                "depth": depth + 1,
-                "file": edge["to"]["file"],
-                "symbol": edge["to"]["symbol"],
-                "kind": edge["kind"],
-            }
-        )
-        if edge["kind"] == "internal" and edge["to"]["file"] is not None and target not in visited:
+        steps.append(_flow_step_from_edge(edge, depth + 1))
+        if (
+            edge["kind"] == "internal"
+            and edge["to"]["file"] is not None
+            and target not in visited
+        ):
             visited.add(target)
             _expand_flow(target, depth + 1, adjacency, steps, visited, max_depth, state)
 
@@ -258,7 +304,9 @@ def _modules_touched(steps: list[dict]) -> list[str]:
     return modules
 
 
-def build_flow(entry: dict, edges: list[dict], *, max_depth: int = _DEFAULT_FLOW_DEPTH) -> dict:
+def build_flow(
+    entry: dict, edges: list[dict], *, max_depth: int = _DEFAULT_FLOW_DEPTH
+) -> dict:
     """Trace an ordered call path from *entry* through resolved *edges*.
 
     Performs a depth-first preorder walk of internal call edges, bounded by
@@ -269,7 +317,9 @@ def build_flow(entry: dict, edges: list[dict], *, max_depth: int = _DEFAULT_FLOW
     """
     adjacency = _build_adjacency(edges)
     start = (entry["file"], entry["symbol"])
-    steps = [{"depth": 0, "file": entry["file"], "symbol": entry["symbol"], "kind": "entry"}]
+    steps = [
+        {"depth": 0, "file": entry["file"], "symbol": entry["symbol"], "kind": "entry"}
+    ]
     state = {"truncated": False}
     _expand_flow(start, 0, adjacency, steps, {start}, max_depth, state)
     return {

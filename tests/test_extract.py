@@ -765,6 +765,41 @@ class TestCallCapture:
             ],
         }
 
+    def test_repeated_same_target_calls_keep_occurrence_metadata(self, tmp_path):
+        (tmp_path / "api.py").write_text(
+            textwrap.dedent("""\
+            def run():
+                helper("first")
+                helper("second")
+
+            def helper(value):
+                return value
+        """)
+        )
+        inventory = get_inventory(str(tmp_path), deep=True)
+        run = next(fn for fn in inventory["api.py"]["functions"] if fn["name"] == "run")
+
+        assert run["calls"] == [
+            {
+                "name": "helper",
+                "line": 2,
+                "args": [{"kind": "literal", "value": "'first'"}],
+            },
+            {
+                "name": "helper",
+                "line": 3,
+                "args": [{"kind": "literal", "value": "'second'"}],
+            },
+        ]
+        edges = resolve_call_edges(inventory)
+        assert [
+            (edge["from"]["symbol"], edge["to"]["symbol"], edge["line"], edge["args"])
+            for edge in edges
+        ] == [
+            ("run", "helper", 2, [{"kind": "literal", "value": "'first'"}]),
+            ("run", "helper", 3, [{"kind": "literal", "value": "'second'"}]),
+        ]
+
     def test_comprehension_and_lambda_calls_are_kept(self, tmp_path):
         (tmp_path / "m.py").write_text(
             textwrap.dedent("""\
@@ -796,7 +831,7 @@ class TestCallCapture:
         assert "setup" in names
         assert "leaked" not in names
 
-    def test_calls_are_deduplicated_in_source_order(self, tmp_path):
+    def test_calls_preserve_occurrences_in_source_order(self, tmp_path):
         (tmp_path / "m.py").write_text(
             textwrap.dedent("""\
             def run():
@@ -807,8 +842,10 @@ class TestCallCapture:
         )
         inventory = get_inventory(str(tmp_path), deep=True)
         run = inventory["m.py"]["functions"][0]
-        assert [c["name"] for c in run["calls"]] == ["first", "second"]
+        assert [c["name"] for c in run["calls"]] == ["first", "second", "first"]
+        assert [c["line"] for c in run["calls"]] == [2, 3, 4]
         assert run["calls"][0]["args"] == [{"kind": "literal", "value": "'initial'"}]
+        assert run["calls"][2]["args"] == [{"kind": "literal", "value": "'ignored'"}]
 
     def test_slim_mode_omits_calls(self, tmp_path):
         (tmp_path / "m.py").write_text(

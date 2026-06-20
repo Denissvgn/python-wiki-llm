@@ -1336,15 +1336,17 @@ def _edges_for_file(
                 local_symbols,
                 symbol_to_files,
             )
-            edges.append(
-                {
-                    "from": {"file": filepath, "symbol": caller_symbol},
-                    "to": {"file": to_file, "symbol": to_symbol},
-                    "name": call.get("attr") or call["name"],
-                    "kind": kind,
-                    "line": call.get("line", 0),
-                }
-            )
+            edge = {
+                "from": {"file": filepath, "symbol": caller_symbol},
+                "to": {"file": to_file, "symbol": to_symbol},
+                "name": call.get("attr") or call["name"],
+                "kind": kind,
+                "line": call.get("line", 0),
+            }
+            for key in ("args", "kwargs"):
+                if key in call:
+                    edge[key] = call[key]
+            edges.append(edge)
     return edges
 
 

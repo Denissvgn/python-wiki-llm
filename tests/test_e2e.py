@@ -274,7 +274,7 @@ class TestE2EFlows:
         assert "_normalize" in api_flow  # resolved internal call appears in the diagram
         assert "## Call sequence" in api_flow
         assert "## Data flow" in api_flow
-        assert "flowchart TD" in api_flow
+        assert "flowchart LR" in api_flow
         assert "| filesystem_write | `output_path.write_text` | `process` |" in api_flow
         assert "client.publish" in api_flow
         assert "## Behavior" in api_flow

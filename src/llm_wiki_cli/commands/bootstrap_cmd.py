@@ -28,7 +28,7 @@ from ..services.dependencies import (
     analyze_dependencies,
     package_dependency_graph,
 )
-from ..services.diagrams import flowchart, sequence_diagram
+from ..services.diagrams import data_flow_diagram, flowchart, sequence_diagram
 from ..services.entrypoints import build_flow, get_entry_points, read_console_scripts
 from ..services.imports import ModulePathResolver, build_module_path_resolver
 from ..services.io import read_md, write_md
@@ -659,40 +659,15 @@ def _effects_cell(effects: list[Mapping]) -> str:
     return ", ".join(f"`{_md_cell(_effect_label(effect))}`" for effect in effects)
 
 
-def _data_flow_step_nodes(data_flow: Mapping) -> dict[str, str]:
-    nodes: dict[str, str] = {}
-    for index, step in enumerate(data_flow.get("steps", []), start=1):
-        symbol = str(step.get("symbol") or "?")
-        nodes.setdefault(symbol, f"{index}. {symbol}")
-    return nodes
-
-
-def _data_flow_diagram(data_flow: Mapping) -> str:
-    step_nodes = _data_flow_step_nodes(data_flow)
-    nodes = list(step_nodes.values())
-    edges: list[tuple[str, str]] = []
-    for transfer in data_flow.get("transfers", []):
-        src = step_nodes.get(str(transfer.get("from")))
-        dst = step_nodes.get(str(transfer.get("to")))
-        if src and dst:
-            edges.append((src, dst))
-    for boundary in data_flow.get("boundaries", []):
-        src = step_nodes.get(str(boundary.get("step")))
-        if not src:
-            continue
-        dst = f"{boundary.get('kind', 'boundary')}: {boundary.get('target', '?')}"
-        nodes.append(dst)
-        edges.append((src, dst))
-    return flowchart(nodes, edges)
-
-
-def _generate_data_flow_section(data_flow: Mapping) -> list[str]:
+def _generate_data_flow_section(
+    data_flow: Mapping, module_page_map: Mapping[str, str] | None = None
+) -> list[str]:
     lines = [
         "## Data flow",
         "",
         "<!-- Auto-generated static analysis. Treat values and boundaries as "
         "best-effort hints, not runtime proof. -->",
-        _data_flow_diagram(data_flow),
+        data_flow_diagram(data_flow, module_page_map),
         "",
         "### Step data",
         "",
@@ -817,7 +792,7 @@ def _generate_flow_md(
     lines.append("")
 
     if data_flow is not None:
-        lines.extend(_generate_data_flow_section(data_flow))
+        lines.extend(_generate_data_flow_section(data_flow, page_map))
 
     lines.append("## Behavior")
     lines.append("")

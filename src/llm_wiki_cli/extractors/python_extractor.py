@@ -201,11 +201,11 @@ def _extract_calls(node) -> list[dict]:
 
     Walks the body but does not descend into nested function or class
     definitions, so their calls are attributed to the inner scope. Calls inside
-    comprehensions and lambdas are kept (same scope). Records are de-duplicated
-    by ``(name, attr)`` and returned in source order.
+    comprehensions and lambdas are kept (same scope). Every nameable occurrence
+    is returned in source order so data-flow analysis can preserve call-site
+    argument metadata for repeated calls to the same target.
     """
     calls: list[dict] = []
-    seen: set[tuple[str, str]] = set()
 
     def _walk(current) -> None:
         for child in ast.iter_child_nodes(current):
@@ -214,10 +214,7 @@ def _extract_calls(node) -> list[dict]:
             if isinstance(child, ast.Call):
                 record = _call_record(child, include_arguments=True)
                 if record is not None:
-                    key = (record["name"], record.get("attr", ""))
-                    if key not in seen:
-                        seen.add(key)
-                        calls.append(record)
+                    calls.append(record)
             _walk(child)
 
     for statement in node.body:

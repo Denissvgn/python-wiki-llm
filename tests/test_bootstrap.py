@@ -679,16 +679,26 @@ class TestGenerateFlowMd:
         data_flow = {
             "steps": [
                 {
+                    "index": 1,
                     "symbol": "run",
+                    "file": "pkg/api.py",
                     "kind": "entry",
                     "inputs": [{"kind": "param", "name": "payload", "type": "dict"}],
                     "returns": [{"kind": "name", "value": "result", "line": 4}],
-                }
+                },
+                {
+                    "index": 2,
+                    "symbol": "work",
+                    "file": "pkg/helper.py",
+                    "kind": "internal",
+                },
             ],
             "transfers": [
                 {
                     "from": "run",
                     "to": "work",
+                    "from_step": 1,
+                    "to_step": 2,
                     "line": 4,
                     "call": "work(payload)",
                     "kind": "internal",
@@ -720,7 +730,10 @@ class TestGenerateFlowMd:
         assert "[helper](../modules/helper.md)" in md
         assert "sequenceDiagram" in md
         assert md.index("## Data flow") < md.index("## Behavior")
-        assert "flowchart TD" in md
+        assert "flowchart LR" in md
+        assert "work payload" in md
+        assert 'click s1 "../modules/api.md"' in md
+        assert 'click s2 "../modules/helper.md"' in md
         assert "| filesystem_write | `path.write_text` | `run` | 5 |" in md
         assert "| run | work | 4 | `work(payload)` |" in md
         assert "client.publish" in md

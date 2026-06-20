@@ -128,13 +128,18 @@ def _find_call(
 def _call_label(edge: dict, call: dict | None) -> tuple[str, list[str]]:
     target = _call_target(call, edge)
     args = _call_args(call)
+    if not args:
+        return f"{target}(data not statically known)", ["data not statically known"]
     return f"{target}({', '.join(args)})", args
 
 
-def _step_summary(step: dict, index: dict[tuple[str | None, str | None], dict]) -> dict:
+def _step_summary(
+    step: dict, index: dict[tuple[str | None, str | None], dict], step_index: int
+) -> dict:
     record = index.get((step.get("file"), step.get("symbol")), {})
     effects = record.get("data_effects", {}) or {}
     return {
+        "index": step_index,
         "depth": step.get("depth", 0),
         "file": step.get("file"),
         "symbol": step.get("symbol"),
@@ -153,6 +158,7 @@ def _boundary_rows(step_summary: dict) -> list[dict]:
         rows.append(
             {
                 "step": step_summary["symbol"],
+                "step_index": step_summary["index"],
                 "kind": effect.get("kind", "unknown"),
                 "target": effect.get("target", "?"),
                 "line": effect.get("line", 0),
@@ -187,6 +193,26 @@ def _add_gap(gaps: list[dict], *, kind: str, step: str, target: str, line: int) 
         gaps.append(gap)
 
 
+def _legacy_edge_for_step(
+    step: dict,
+    incoming: dict[tuple, tuple[dict, ...]],
+    incoming_offsets: dict[tuple, int],
+) -> dict | None:
+    key = (step.get("file"), step.get("symbol"), step.get("kind"))
+    edges_for_step = incoming.get(key, ())
+    offset = incoming_offsets[key]
+    if offset >= len(edges_for_step):
+        return None
+    incoming_offsets[key] = offset + 1
+    return edges_for_step[offset]
+
+
+def _parent_step_for_depth(stack: dict[int, int], depth: int) -> int | None:
+    if depth <= 0:
+        return None
+    return stack.get(depth - 1)
+
+
 def analyze_data_flow(
     inventory: dict,
     flow: dict,
@@ -204,30 +230,41 @@ def analyze_data_flow(
     transfers: list[dict] = []
     boundaries: list[dict] = []
     gaps: list[dict] = []
-    edge_by_step_index: dict[int, dict] = {}
+    edge_by_step_index: dict[int, tuple[dict, int | None]] = {}
+    stack_by_depth: dict[int, int] = {}
 
-    for step_index, step in enumerate(flow.get("steps", [])[:_STEP_LIMIT]):
-        summary = _step_summary(step, index)
+    for zero_based_index, step in enumerate(flow.get("steps", [])[:_STEP_LIMIT]):
+        step_index = zero_based_index + 1
+        depth = int(step.get("depth", 0))
+        summary = _step_summary(step, index, step_index)
         steps.append(summary)
         new_boundaries = _boundary_rows(summary)
         boundaries.extend(new_boundaries[: max(0, _EFFECT_LIMIT - len(boundaries))])
-        if step_index == 0:
+        if zero_based_index == 0:
+            stack_by_depth[depth] = step_index
             continue
-        key = (step.get("file"), step.get("symbol"), step.get("kind"))
-        edges_for_step = incoming.get(key, ())
-        offset = incoming_offsets[key]
-        if offset < len(edges_for_step):
-            edge_by_step_index[step_index] = edges_for_step[offset]
-            incoming_offsets[key] = offset + 1
+        edge = step.get("edge") or _legacy_edge_for_step(
+            step, incoming, incoming_offsets
+        )
+        parent_step = _parent_step_for_depth(stack_by_depth, depth)
+        if edge is not None:
+            edge_by_step_index[step_index] = (edge, parent_step)
+        stack_by_depth[depth] = step_index
+        for deeper in [
+            known_depth for known_depth in stack_by_depth if known_depth > depth
+        ]:
+            del stack_by_depth[deeper]
 
-    for step_index, edge in edge_by_step_index.items():
+    for step_index, (edge, parent_step) in edge_by_step_index.items():
         if len(transfers) >= _TRANSFER_LIMIT:
             break
-        call = _find_call(edge, index)
+        call = edge if "args" in edge or "kwargs" in edge else _find_call(edge, index)
         call_label, args = _call_label(edge, call)
         transfer = {
             "from": edge["from"]["symbol"],
             "to": edge["to"]["symbol"],
+            "from_step": parent_step,
+            "to_step": step_index,
             "line": edge.get("line", 0),
             "call": call_label,
             "arguments": args,
