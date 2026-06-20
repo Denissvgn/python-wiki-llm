@@ -60,6 +60,31 @@ def test_deep_module_calls_field_is_additive_and_optional(tmp_path):
     assert "module_calls" not in slim["wired.py"]
 
 
+def test_deep_data_effects_field_is_additive_and_optional(tmp_path):
+    """The deep-mode ``data_effects`` field is optional: present only when a
+    function has extractable inputs/effects, absent otherwise and in slim mode."""
+    from llm_wiki_cli.commands.extract_cmd import get_inventory
+
+    (tmp_path / "m.py").write_text(
+        "def echo(value):\n    print(value)\n    return value\n\n\ndef noop():\n    pass\n"
+    )
+
+    deep = {
+        fn["name"]: fn
+        for fn in get_inventory(str(tmp_path), deep=True)["m.py"]["functions"]
+    }
+    assert deep["echo"]["data_effects"]["inputs"] == [
+        {"kind": "param", "name": "value", "type": ""}
+    ]
+    assert deep["echo"]["data_effects"]["boundary_effects"] == [
+        {"kind": "output", "target": "print", "line": 2}
+    ]
+    assert "data_effects" not in deep["noop"]
+
+    slim = get_inventory(str(tmp_path), deep=False)["m.py"]["functions"]
+    assert all("data_effects" not in fn for fn in slim)
+
+
 def test_resolver_tolerates_extractor_inventory_without_calls():
     """Extractors that do not emit ``calls`` must not break edge resolution."""
     from llm_wiki_cli.commands.extract_cmd import resolve_call_edges

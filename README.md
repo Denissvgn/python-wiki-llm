@@ -266,13 +266,16 @@ llm-wiki extract --src-dir /path/to/repo --allow-external-src --summary
 ```
 
 The JSON output includes `schema_version: "llm-wiki-extract/v1"` plus
-`inventory` and optional `docker` objects. With `--deep`, deep function entries
-may carry an optional `calls` list (in-body call targets, optionally with compact
-`args` and `kwargs` expression summaries) and the payload gains an optional
-top-level `entrypoints` array (detected user-reachable entry points:
-`{id, category, file, symbol, label}`) plus a top-level `dependencies` object
-with internal `edges`, `cycles`, per-language external dependency reconciliation,
-and `load_order`. When `--deep` is combined with `--changed`, `--paths`,
+`inventory` and optional `docker` objects. With `--deep`, Python function entries
+may carry optional `data_effects` blocks (inputs, selected global/attribute
+reads, writes, returns, and boundary effects such as filesystem, environment,
+process, network, output, and logging calls) and optional `calls` lists (in-body
+call targets, optionally with compact `args` and `kwargs` expression summaries).
+The payload also gains an optional top-level `entrypoints` array (detected
+user-reachable entry points: `{id, category, file, symbol, label}`) plus a top-level
+`dependencies` object with internal `edges`, `cycles`, per-language external
+dependency reconciliation, and `load_order`. When `--deep` is combined with
+`--changed`, `--paths`,
 `--package`, or `--summary`, `dependencies` describes the emitted inventory
 before summary collapse. Inventory keys are POSIX paths relative to `--src-dir`,
 never absolute paths. The v1 contract permits additive fields; incompatible

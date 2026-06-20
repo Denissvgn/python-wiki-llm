@@ -843,6 +843,312 @@ class TestCallCapture:
         }
 
 
+class TestDataEffects:
+    def test_inputs_global_reads_and_return_annotations(self, tmp_path):
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
+            CONFIG = {"mode": "fast"}
+
+            def run(src_dir: str, retries: int = 3) -> dict:
+                mode = CONFIG["mode"]
+                return {"src": src_dir, "mode": mode}
+        """)
+        )
+
+        run = get_inventory(str(tmp_path), deep=True)["m.py"]["functions"][0]
+
+        assert run["data_effects"] == {
+            "inputs": [
+                {"kind": "param", "name": "src_dir", "type": "str"},
+                {"kind": "param", "name": "retries", "type": "int", "default": "3"},
+            ],
+            "reads": [{"kind": "global", "name": "CONFIG", "line": 4}],
+            "returns": [
+                {"kind": "literal", "value": "{...}", "line": 5, "annotation": "dict"}
+            ],
+        }
+
+    def test_bare_returns_are_recorded(self, tmp_path):
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
+            def maybe(flag):
+                if flag:
+                    return
+                return build(flag)
+        """)
+        )
+
+        effects = get_inventory(str(tmp_path), deep=True)["m.py"]["functions"][0][
+            "data_effects"
+        ]
+
+        assert effects["returns"] == [
+            {"kind": "none", "line": 3},
+            {"kind": "call", "value": "build(...)", "line": 4},
+        ]
+        assert "build" not in {read["name"] for read in effects.get("reads", [])}
+
+    def test_reads_and_writes_capture_attributes_subscripts_augassign_and_globals(
+        self, tmp_path
+    ):
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
+            TOTAL = 0
+
+            def update(self, cls, options, payload):
+                global TOTAL
+                current = self.state
+                cls.config = options.wiki_dir
+                payload["status"] = current
+                self.count += 1
+                TOTAL = payload["status"]
+        """)
+        )
+
+        effects = get_inventory(str(tmp_path), deep=True)["m.py"]["functions"][0][
+            "data_effects"
+        ]
+
+        assert effects["reads"] == [
+            {"kind": "attribute", "name": "self.state", "line": 5},
+            {"kind": "attribute", "name": "options.wiki_dir", "line": 6},
+        ]
+        assert effects["writes"] == [
+            {"kind": "attribute", "name": "cls.config", "line": 6},
+            {"kind": "subscript", "name": "payload[...]", "line": 7},
+            {"kind": "attribute", "name": "self.count", "line": 8},
+            {"kind": "global", "name": "TOTAL", "line": 9},
+        ]
+
+    def test_methods_async_functions_and_decorated_nested_functions(self, tmp_path):
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
+            class Service:
+                async def fetch(self, options):
+                    self.cache = options.cache
+                    return self.cache
+
+            def create(app):
+                @app.route("/items")
+                def list_items(options):
+                    return options.repository
+                return app
+        """)
+        )
+
+        data = get_inventory(str(tmp_path), deep=True)["m.py"]
+        method = data["classes"][0]["methods"][0]
+        nested = data["nested_functions"][0]
+        outer = data["functions"][0]
+
+        assert method["is_async"] is True
+        assert method["data_effects"]["reads"] == [
+            {"kind": "attribute", "name": "options.cache", "line": 3},
+            {"kind": "attribute", "name": "self.cache", "line": 4},
+        ]
+        assert method["data_effects"]["writes"] == [
+            {"kind": "attribute", "name": "self.cache", "line": 3}
+        ]
+        assert nested["data_effects"]["reads"] == [
+            {"kind": "attribute", "name": "options.repository", "line": 9}
+        ]
+        assert "options.repository" not in {
+            read["name"] for read in outer["data_effects"].get("reads", [])
+        }
+
+    def test_boundary_effects_classify_common_python_boundaries(self, tmp_path):
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
+            import logging
+            import os
+            import requests
+            import subprocess
+
+            def run(path, target):
+                path.read_text()
+                path.write_text("content")
+                os.getenv("TOKEN")
+                os.environ["MODE"] = "test"
+                subprocess.run(["echo", "ok"])
+                requests.get("https://example.invalid")
+                print("done")
+                logging.info("done")
+        """)
+        )
+
+        effects = get_inventory(str(tmp_path), deep=True)["m.py"]["functions"][0][
+            "data_effects"
+        ]
+
+        assert effects["boundary_effects"] == [
+            {"kind": "filesystem_read", "target": "path.read_text", "line": 7},
+            {"kind": "filesystem_write", "target": "path.write_text", "line": 8},
+            {"kind": "environment_read", "target": "os.getenv", "line": 9},
+            {"kind": "environment_write", "target": "os.environ[...]", "line": 10},
+            {"kind": "process", "target": "subprocess.run", "line": 11},
+            {"kind": "network", "target": "requests.get", "line": 12},
+            {"kind": "output", "target": "print", "line": 13},
+            {"kind": "logging", "target": "logging.info", "line": 14},
+        ]
+
+    def test_boundary_effect_variants_use_import_aliases_and_literal_modes(
+        self, tmp_path
+    ):
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
+            import json
+            import os
+            import shutil
+            import subprocess as sp
+            from pathlib import Path
+            from subprocess import Popen
+
+            def run(src, dst):
+                with open(src) as fh:
+                    json.load(fh)
+                open(dst, "w")
+                shutil.copy(src, dst)
+                src.unlink()
+                Path.home()
+                os.environ.get("TOKEN")
+                del os.environ["OLD"]
+                sp.check_output(["echo", "ok"])
+                Popen(["echo", "ok"])
+        """)
+        )
+
+        effects = get_inventory(str(tmp_path), deep=True)["m.py"]["functions"][0][
+            "data_effects"
+        ]
+
+        assert effects["boundary_effects"] == [
+            {"kind": "filesystem_read", "target": "open", "line": 9},
+            {"kind": "filesystem_read", "target": "json.load", "line": 10},
+            {"kind": "filesystem_write", "target": "open", "line": 11},
+            {"kind": "filesystem_write", "target": "shutil.copy", "line": 12},
+            {"kind": "filesystem_write", "target": "src.unlink", "line": 13},
+            {"kind": "environment_read", "target": "Path.home", "line": 14},
+            {"kind": "environment_read", "target": "os.environ.get", "line": 15},
+            {"kind": "environment_write", "target": "os.environ[...]", "line": 16},
+        ]
+
+    def test_boundary_effect_network_variants_are_classified(self, tmp_path):
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
+            import httpx
+            import socket
+            import urllib.request as urlrequest
+
+            def run():
+                httpx.post("https://example.invalid")
+                urlrequest.urlopen("https://example.invalid")
+                socket.create_connection(("example.invalid", 443))
+        """)
+        )
+
+        effects = get_inventory(str(tmp_path), deep=True)["m.py"]["functions"][0][
+            "data_effects"
+        ]
+
+        assert effects["boundary_effects"] == [
+            {"kind": "network", "target": "httpx.post", "line": 6},
+            {"kind": "network", "target": "urlrequest.urlopen", "line": 7},
+            {"kind": "network", "target": "socket.create_connection", "line": 8},
+        ]
+
+    def test_process_import_aliases_classify_without_bare_name_false_positives(
+        self, tmp_path
+    ):
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
+            import subprocess as sp
+            from subprocess import Popen
+
+            def run():
+                sp.check_output(["echo", "ok"])
+                Popen(["echo", "ok"])
+                run_helper()
+        """)
+        )
+
+        effects = get_inventory(str(tmp_path), deep=True)["m.py"]["functions"][0][
+            "data_effects"
+        ]
+
+        assert effects["boundary_effects"] == [
+            {"kind": "process", "target": "sp.check_output", "line": 5},
+            {"kind": "process", "target": "Popen", "line": 6},
+        ]
+
+    def test_generic_mutations_are_classified_but_unknown_calls_are_not(self, tmp_path):
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
+            def run(items, client):
+                items.append("value")
+                client.get("https://example.invalid")
+                helper()
+        """)
+        )
+
+        run = get_inventory(str(tmp_path), deep=True)["m.py"]["functions"][0]
+
+        assert run["data_effects"]["boundary_effects"] == [
+            {"kind": "mutation", "target": "items.append", "line": 2}
+        ]
+        assert {call["attr"] for call in run["calls"] if "attr" in call} == {
+            "items.append",
+            "client.get",
+        }
+
+    def test_boundary_effects_are_capped_in_source_order(self, tmp_path):
+        calls = "\n".join(f'    print("line-{idx}")' for idx in range(9))
+        (tmp_path / "m.py").write_text(f"def run():\n{calls}\n")
+
+        effects = get_inventory(str(tmp_path), deep=True)["m.py"]["functions"][0][
+            "data_effects"
+        ]
+
+        assert effects["boundary_effects"] == [
+            {"kind": "output", "target": "print", "line": line} for line in range(2, 10)
+        ]
+
+    def test_empty_effects_and_slim_mode_omit_data_effects(self, tmp_path):
+        (tmp_path / "m.py").write_text(
+            textwrap.dedent("""\
+            def noop():
+                pass
+
+            def echo(value):
+                return value
+        """)
+        )
+
+        deep = {
+            fn["name"]: fn
+            for fn in get_inventory(str(tmp_path), deep=True)["m.py"]["functions"]
+        }
+        slim = get_inventory(str(tmp_path), deep=False)["m.py"]["functions"]
+
+        assert "data_effects" not in deep["noop"]
+        assert "data_effects" in deep["echo"]
+        assert all("data_effects" not in fn for fn in slim)
+
+    def test_effect_categories_are_capped_in_source_order(self, tmp_path):
+        module_constants = "\n".join(f"CONFIG_{idx} = {idx}" for idx in range(9))
+        reads = "\n".join(f"    value_{idx} = CONFIG_{idx}" for idx in range(9))
+        (tmp_path / "m.py").write_text(
+            f"{module_constants}\n\n\ndef run():\n{reads}\n    return value_8\n"
+        )
+
+        effects = get_inventory(str(tmp_path), deep=True)["m.py"]["functions"][0][
+            "data_effects"
+        ]
+
+        assert [read["name"] for read in effects["reads"]] == [
+            f"CONFIG_{idx}" for idx in range(8)
+        ]
+
+
 class TestModuleCalls:
     def test_assignment_call_records_target(self, tmp_path):
         (tmp_path / "m.py").write_text(

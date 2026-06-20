@@ -1,8 +1,10 @@
 """Stable machine-readable contracts exposed by source-adapter commands.
 
 Dependency/load-order architecture decisions stay additive under the current
-extract contract: deep Python inventory may include ``module_calls`` only when
-module-level side effects exist, and ``extract --deep`` may include a top-level
+extract contract: deep Python inventory may include ``data_effects`` on function
+entries, including bounded ``boundary_effects`` for filesystem, environment,
+process, network, output, and logging calls; ``module_calls`` only when
+module-level side effects exist; and ``extract --deep`` may include a top-level
 ``dependencies`` block. Python dependency reconciliation treats
 ``sys.stdlib_module_names`` as the stdlib source when available, falls back to
 the bundled Python 3.9 list in dependency analysis, and uses the curated

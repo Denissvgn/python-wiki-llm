@@ -116,6 +116,42 @@ def _extract_decorators(node) -> list[str]:
 # Nodes that open a new scope; calls inside them belong to that inner scope,
 # not the enclosing function, so the walk does not descend into them.
 _SCOPE_BOUNDARIES = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
+_DATA_EFFECT_LIMIT = 8
+_ATTRIBUTE_READ_ROOTS = {"self", "cls", "options"}
+_FILESYSTEM_READ_CALLS = {"json.load"}
+_FILESYSTEM_READ_METHODS = {"read_text", "read_bytes"}
+_FILESYSTEM_WRITE_CALLS = {
+    "shutil.copy",
+    "shutil.copy2",
+    "shutil.copyfile",
+    "shutil.copytree",
+    "shutil.move",
+    "shutil.rmtree",
+    "os.remove",
+    "os.unlink",
+    "os.rmdir",
+}
+_FILESYSTEM_WRITE_METHODS = {"write_text", "write_bytes", "unlink", "rmdir"}
+_PROCESS_CALLS = {
+    "subprocess.run",
+    "subprocess.Popen",
+    "subprocess.call",
+    "subprocess.check_call",
+    "subprocess.check_output",
+}
+_MUTATION_METHODS = {
+    "append",
+    "extend",
+    "insert",
+    "update",
+    "add",
+    "remove",
+    "discard",
+    "pop",
+    "clear",
+    "sort",
+    "reverse",
+}
 
 
 def _call_arguments(node: ast.Call) -> dict:
@@ -191,6 +227,480 @@ def _extract_calls(node) -> list[dict]:
     return calls
 
 
+def _bound_import_name(alias: ast.alias, *, from_import: bool = False) -> str:
+    if alias.asname:
+        return alias.asname
+    if from_import:
+        return alias.name
+    return alias.name.split(".", 1)[0]
+
+
+def _iter_binding_targets(target) -> list[ast.AST]:
+    if isinstance(target, (ast.Tuple, ast.List)):
+        targets = []
+        for elt in target.elts:
+            targets.extend(_iter_binding_targets(elt))
+        return targets
+    if isinstance(target, ast.Starred):
+        return _iter_binding_targets(target.value)
+    return [target]
+
+
+def _target_bound_names(target) -> set[str]:
+    names = set()
+    for item in _iter_binding_targets(target):
+        if isinstance(item, ast.Name):
+            names.add(item.id)
+    return names
+
+
+def _argument_bound_names(args: ast.arguments) -> set[str]:
+    names = {arg.arg for arg in args.posonlyargs}
+    names.update(arg.arg for arg in args.args)
+    names.update(arg.arg for arg in args.kwonlyargs)
+    if args.vararg is not None:
+        names.add(args.vararg.arg)
+    if args.kwarg is not None:
+        names.add(args.kwarg.arg)
+    return names
+
+
+def _extract_module_globals(tree: ast.Module) -> set[str]:
+    globals_: set[str] = set()
+    for statement in tree.body:
+        if isinstance(statement, ast.Import):
+            globals_.update(_bound_import_name(alias) for alias in statement.names)
+        elif isinstance(statement, ast.ImportFrom):
+            globals_.update(
+                _bound_import_name(alias, from_import=True) for alias in statement.names
+            )
+        elif isinstance(statement, _SCOPE_BOUNDARIES):
+            globals_.add(statement.name)
+        elif isinstance(statement, ast.Assign):
+            for target in statement.targets:
+                globals_.update(_target_bound_names(target))
+        elif isinstance(statement, ast.AnnAssign):
+            globals_.update(_target_bound_names(statement.target))
+        elif isinstance(statement, ast.AugAssign):
+            globals_.update(_target_bound_names(statement.target))
+        elif isinstance(statement, (ast.For, ast.AsyncFor)):
+            globals_.update(_target_bound_names(statement.target))
+        elif isinstance(statement, ast.With):
+            for item in statement.items:
+                if item.optional_vars is not None:
+                    globals_.update(_target_bound_names(item.optional_vars))
+    return globals_
+
+
+def _import_alias_target(
+    alias: ast.alias, *, module: str = ""
+) -> tuple[str, str] | None:
+    if alias.name == "*":
+        return None
+    if module:
+        return _bound_import_name(alias, from_import=True), f"{module}.{alias.name}"
+    bound = _bound_import_name(alias)
+    if alias.asname:
+        return bound, alias.name
+    return bound, bound
+
+
+def _import_aliases_from_statement(statement) -> dict[str, str]:
+    aliases: dict[str, str] = {}
+    if isinstance(statement, ast.Import):
+        for alias in statement.names:
+            target = _import_alias_target(alias)
+            if target is not None:
+                aliases[target[0]] = target[1]
+    elif isinstance(statement, ast.ImportFrom) and statement.module:
+        module = "." * statement.level + statement.module
+        for alias in statement.names:
+            target = _import_alias_target(alias, module=module)
+            if target is not None:
+                aliases[target[0]] = target[1]
+    return aliases
+
+
+def _extract_import_aliases(tree: ast.Module) -> dict[str, str]:
+    aliases: dict[str, str] = {}
+    for statement in tree.body:
+        aliases.update(_import_aliases_from_statement(statement))
+    return aliases
+
+
+def _normalize_reference(name: str, import_aliases: dict[str, str]) -> str:
+    if not name:
+        return ""
+    root, _, rest = name.partition(".")
+    mapped = import_aliases.get(root)
+    if not mapped:
+        return name
+    if not rest:
+        return mapped
+    return f"{mapped}.{rest}"
+
+
+def _open_mode(node: ast.Call) -> str | None:
+    mode_node = node.args[1] if len(node.args) > 1 else None
+    for keyword in node.keywords:
+        if keyword.arg == "mode":
+            mode_node = keyword.value
+            break
+    if mode_node is None:
+        return "r"
+    if isinstance(mode_node, ast.Constant) and isinstance(mode_node.value, str):
+        return mode_node.value
+    return None
+
+
+def _classify_open_call(node: ast.Call) -> str | None:
+    mode = _open_mode(node)
+    if mode is None:
+        return None
+    if any(flag in mode for flag in ("w", "a", "x")):
+        return "filesystem_write"
+    return "filesystem_read"
+
+
+def _classify_boundary_call(normalized: str, node: ast.Call) -> str | None:
+    if normalized in {"open", "io.open", "pathlib.Path.open"}:
+        return _classify_open_call(node)
+    if normalized in _FILESYSTEM_READ_CALLS:
+        return "filesystem_read"
+    if normalized in _FILESYSTEM_WRITE_CALLS:
+        return "filesystem_write"
+
+    method = normalized.rsplit(".", 1)[-1]
+    if method in _FILESYSTEM_READ_METHODS:
+        return "filesystem_read"
+    if method in _FILESYSTEM_WRITE_METHODS:
+        return "filesystem_write"
+
+    if normalized in {"os.getenv", "pathlib.Path.home"}:
+        return "environment_read"
+    if normalized in {"os.environ.get", "os.environ.__getitem__"}:
+        return "environment_read"
+    if normalized in {
+        "os.environ.update",
+        "os.environ.clear",
+        "os.environ.pop",
+        "os.environ.popitem",
+        "os.environ.setdefault",
+        "os.putenv",
+        "os.unsetenv",
+    }:
+        return "environment_write"
+
+    if normalized in _PROCESS_CALLS:
+        return "process"
+    if (
+        normalized.startswith("requests.")
+        or normalized.startswith("httpx.")
+        or normalized.startswith("urllib.request.")
+        or normalized.startswith("socket.")
+    ):
+        return "network"
+    if normalized in {"print", "sys.stdout.write", "sys.stderr.write"}:
+        return "output"
+    if normalized.startswith("logging."):
+        return "logging"
+    if "." in normalized and method in _MUTATION_METHODS:
+        return "mutation"
+    return None
+
+
+def _boundary_call_record(
+    node: ast.Call,
+    import_aliases: dict[str, str],
+) -> dict | None:
+    target = _simple_reference_to_str(node.func)
+    if not target:
+        return None
+    kind = _classify_boundary_call(_normalize_reference(target, import_aliases), node)
+    if kind is None:
+        return None
+    return {"kind": kind, "target": target, "line": node.lineno}
+
+
+def _environment_subscript_record(
+    node: ast.Subscript,
+    import_aliases: dict[str, str],
+    kind: str,
+) -> dict | None:
+    target = _simple_reference_to_str(node.value)
+    if _normalize_reference(target, import_aliases) != "os.environ":
+        return None
+    return {"kind": kind, "target": f"{target}[...]", "line": node.lineno}
+
+
+def _collect_function_scope(node) -> tuple[set[str], set[str], dict[str, str]]:
+    local_bindings = _argument_bound_names(node.args)
+    global_declarations: set[str] = set()
+    import_aliases: dict[str, str] = {}
+
+    def _walk(current) -> None:
+        if isinstance(current, ast.Global):
+            global_declarations.update(current.names)
+            return
+        if isinstance(current, _SCOPE_BOUNDARIES):
+            local_bindings.add(current.name)
+            return
+        if isinstance(current, ast.Import):
+            import_aliases.update(_import_aliases_from_statement(current))
+            local_bindings.update(_bound_import_name(alias) for alias in current.names)
+        elif isinstance(current, ast.ImportFrom):
+            import_aliases.update(_import_aliases_from_statement(current))
+            local_bindings.update(
+                _bound_import_name(alias, from_import=True) for alias in current.names
+            )
+        elif isinstance(current, ast.Assign):
+            for target in current.targets:
+                local_bindings.update(_target_bound_names(target))
+        elif isinstance(current, ast.AnnAssign):
+            local_bindings.update(_target_bound_names(current.target))
+        elif isinstance(current, ast.AugAssign):
+            local_bindings.update(_target_bound_names(current.target))
+        elif isinstance(current, (ast.For, ast.AsyncFor)):
+            local_bindings.update(_target_bound_names(current.target))
+        elif isinstance(current, (ast.With, ast.AsyncWith)):
+            for item in current.items:
+                if item.optional_vars is not None:
+                    local_bindings.update(_target_bound_names(item.optional_vars))
+        elif isinstance(current, ast.ExceptHandler) and current.name:
+            local_bindings.add(current.name)
+        elif isinstance(current, ast.NamedExpr):
+            local_bindings.update(_target_bound_names(current.target))
+
+        for child in ast.iter_child_nodes(current):
+            _walk(child)
+
+    for statement in node.body:
+        _walk(statement)
+    local_bindings.difference_update(global_declarations)
+    return local_bindings, global_declarations, import_aliases
+
+
+def _attribute_read_name(node: ast.Attribute) -> str:
+    name = _simple_reference_to_str(node)
+    if not name:
+        return ""
+    root = name.split(".", 1)[0]
+    if root in _ATTRIBUTE_READ_ROOTS:
+        return name
+    return ""
+
+
+def _write_record(target, global_declarations: set[str]) -> dict | None:
+    if isinstance(target, ast.Attribute):
+        name = _simple_reference_to_str(target)
+        if name:
+            return {"kind": "attribute", "name": name, "line": target.lineno}
+    if isinstance(target, ast.Subscript):
+        summary = _summarize_expression(target)
+        if summary["kind"] == "subscript":
+            return {
+                "kind": "subscript",
+                "name": summary["value"],
+                "line": target.lineno,
+            }
+    if isinstance(target, ast.Name) and target.id in global_declarations:
+        return {"kind": "global", "name": target.id, "line": target.lineno}
+    return None
+
+
+class _DataEffectVisitor(ast.NodeVisitor):
+    def __init__(
+        self,
+        module_globals: set[str],
+        local_bindings: set[str],
+        global_declarations: set[str],
+        import_aliases: dict[str, str],
+        return_annotation: str,
+    ):
+        self.module_globals = module_globals
+        self.local_bindings = local_bindings
+        self.global_declarations = global_declarations
+        self.import_aliases = import_aliases
+        self.return_annotation = return_annotation
+        self.reads: list[dict] = []
+        self.writes: list[dict] = []
+        self.returns: list[dict] = []
+        self.boundary_effects: list[dict] = []
+        self._seen: dict[str, set[tuple]] = {
+            "reads": set(),
+            "writes": set(),
+            "returns": set(),
+            "boundary_effects": set(),
+        }
+
+    def _add(self, category: str, record: dict) -> None:
+        bucket = getattr(self, category)
+        if len(bucket) >= _DATA_EFFECT_LIMIT:
+            return
+        key = tuple(record.items())
+        if key in self._seen[category]:
+            return
+        self._seen[category].add(key)
+        bucket.append(record)
+
+    def _add_write_targets(self, target) -> None:
+        for item in _iter_binding_targets(target):
+            boundary_record = None
+            if isinstance(item, ast.Subscript):
+                boundary_record = _environment_subscript_record(
+                    item,
+                    self.import_aliases,
+                    "environment_write",
+                )
+            if boundary_record is not None:
+                self._add("boundary_effects", boundary_record)
+            record = _write_record(item, self.global_declarations)
+            if record is not None:
+                self._add("writes", record)
+
+    def visit_FunctionDef(self, node) -> None:
+        return
+
+    def visit_AsyncFunctionDef(self, node) -> None:
+        return
+
+    def visit_ClassDef(self, node) -> None:
+        return
+
+    def visit_Global(self, node) -> None:
+        return
+
+    def visit_Call(self, node) -> None:
+        record = _boundary_call_record(node, self.import_aliases)
+        if record is not None:
+            self._add("boundary_effects", record)
+        for arg in node.args:
+            self.visit(arg)
+        for keyword in node.keywords:
+            self.visit(keyword.value)
+
+    def visit_Subscript(self, node) -> None:
+        if isinstance(node.ctx, ast.Load):
+            record = _environment_subscript_record(
+                node,
+                self.import_aliases,
+                "environment_read",
+            )
+            if record is not None:
+                self._add("boundary_effects", record)
+        self.generic_visit(node)
+
+    def visit_Attribute(self, node) -> None:
+        if isinstance(node.ctx, ast.Load):
+            name = _attribute_read_name(node)
+            if name:
+                self._add(
+                    "reads",
+                    {"kind": "attribute", "name": name, "line": node.lineno},
+                )
+                return
+        self.generic_visit(node)
+
+    def visit_Name(self, node) -> None:
+        if (
+            isinstance(node.ctx, ast.Load)
+            and node.id in self.module_globals
+            and node.id not in self.local_bindings
+        ):
+            self._add("reads", {"kind": "global", "name": node.id, "line": node.lineno})
+
+    def visit_Assign(self, node) -> None:
+        self.visit(node.value)
+        for target in node.targets:
+            self._add_write_targets(target)
+
+    def visit_AnnAssign(self, node) -> None:
+        if node.value is not None:
+            self.visit(node.value)
+        self._add_write_targets(node.target)
+
+    def visit_AugAssign(self, node) -> None:
+        self.visit(node.value)
+        self._add_write_targets(node.target)
+
+    def visit_For(self, node) -> None:
+        self.visit(node.iter)
+        self._add_write_targets(node.target)
+        for statement in node.body:
+            self.visit(statement)
+        for statement in node.orelse:
+            self.visit(statement)
+
+    def visit_AsyncFor(self, node) -> None:
+        self.visit_For(node)
+
+    def visit_With(self, node) -> None:
+        for item in node.items:
+            self.visit(item.context_expr)
+            if item.optional_vars is not None:
+                self._add_write_targets(item.optional_vars)
+        for statement in node.body:
+            self.visit(statement)
+
+    def visit_AsyncWith(self, node) -> None:
+        self.visit_With(node)
+
+    def visit_Delete(self, node) -> None:
+        for target in node.targets:
+            self._add_write_targets(target)
+
+    def visit_NamedExpr(self, node) -> None:
+        self.visit(node.value)
+        self._add_write_targets(node.target)
+
+    def visit_Return(self, node) -> None:
+        if node.value is None:
+            self._add("returns", {"kind": "none", "line": node.lineno})
+            return
+        record = {**_summarize_expression(node.value), "line": node.lineno}
+        if self.return_annotation:
+            record["annotation"] = self.return_annotation
+        self._add("returns", record)
+        self.visit(node.value)
+
+
+def _extract_data_effects(
+    node,
+    params: list[dict],
+    module_globals: set[str],
+    module_import_aliases: dict[str, str],
+    return_annotation: str,
+) -> dict:
+    local_bindings, global_declarations, local_import_aliases = _collect_function_scope(
+        node
+    )
+    import_aliases = {**module_import_aliases, **local_import_aliases}
+    visitor = _DataEffectVisitor(
+        module_globals=module_globals,
+        local_bindings=local_bindings,
+        global_declarations=global_declarations,
+        import_aliases=import_aliases,
+        return_annotation=return_annotation,
+    )
+    for statement in node.body:
+        visitor.visit(statement)
+
+    effects: dict[str, list[dict]] = {}
+    if params:
+        effects["inputs"] = [
+            {"kind": "param", **param} for param in params[:_DATA_EFFECT_LIMIT]
+        ]
+    if visitor.reads:
+        effects["reads"] = visitor.reads
+    if visitor.writes:
+        effects["writes"] = visitor.writes
+    if visitor.returns:
+        effects["returns"] = visitor.returns
+    if visitor.boundary_effects:
+        effects["boundary_effects"] = visitor.boundary_effects
+    return effects
+
+
 def _assign_target_name(targets) -> str:
     """First simple ``Name`` target of an assignment (e.g. ``app`` in
     ``app = Flask(...)``); empty for tuple/attribute/subscript targets."""
@@ -252,7 +762,12 @@ def _extract_module_calls(tree: ast.Module) -> list[dict]:
     return calls
 
 
-def _extract_function_info(node, deep: bool = False) -> dict:
+def _extract_function_info(
+    node,
+    deep: bool = False,
+    module_globals: set[str] | None = None,
+    module_import_aliases: dict[str, str] | None = None,
+) -> dict:
     """Extract full function/method info from a FunctionDef or AsyncFunctionDef.
 
     When *deep* is true, a ``"calls"`` list of in-body call targets is added
@@ -287,13 +802,23 @@ def _extract_function_info(node, deep: bool = False) -> dict:
             param["default"] = _default_to_str(args_node.defaults[default_idx])
         params.append(param)
 
+    return_type = _annotation_to_str(node.returns)
     info["params"] = params
-    info["return_type"] = _annotation_to_str(node.returns)
+    info["return_type"] = return_type
 
     if deep:
         calls = _extract_calls(node)
         if calls:
             info["calls"] = calls
+        data_effects = _extract_data_effects(
+            node,
+            params,
+            module_globals or set(),
+            module_import_aliases or {},
+            return_type,
+        )
+        if data_effects:
+            info["data_effects"] = data_effects
 
     return info
 
@@ -339,7 +864,12 @@ def _is_main_guard(test) -> bool:
 
 
 class ComponentVisitor(ast.NodeVisitor):
-    def __init__(self, deep: bool = False):
+    def __init__(
+        self,
+        deep: bool = False,
+        module_globals: set[str] | None = None,
+        module_import_aliases: dict[str, str] | None = None,
+    ):
         self.classes = []
         self.functions = []  # top-level functions only
         self.imports = []
@@ -351,6 +881,8 @@ class ComponentVisitor(ast.NodeVisitor):
         self._class_depth = 0
         self._function_depth = 0
         self._deep = deep
+        self._module_globals = module_globals or set()
+        self._module_import_aliases = module_import_aliases or {}
 
     def visit_Import(self, node):
         for alias in node.names:
@@ -389,7 +921,14 @@ class ComponentVisitor(ast.NodeVisitor):
         methods = []
         for child in node.body:
             if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                methods.append(_extract_function_info(child, deep=self._deep))
+                methods.append(
+                    _extract_function_info(
+                        child,
+                        deep=self._deep,
+                        module_globals=self._module_globals,
+                        module_import_aliases=self._module_import_aliases,
+                    )
+                )
 
         self.classes.append(
             {
@@ -408,16 +947,35 @@ class ComponentVisitor(ast.NodeVisitor):
         # Only capture top-level functions (not methods inside classes)
         if self._class_depth == 0 and self._function_depth == 0:
             if not node.name.startswith("_"):
-                self.functions.append(_extract_function_info(node, deep=self._deep))
+                self.functions.append(
+                    _extract_function_info(
+                        node,
+                        deep=self._deep,
+                        module_globals=self._module_globals,
+                        module_import_aliases=self._module_import_aliases,
+                    )
+                )
             elif self._deep:
-                info = _extract_function_info(node, deep=self._deep)
+                info = _extract_function_info(
+                    node,
+                    deep=self._deep,
+                    module_globals=self._module_globals,
+                    module_import_aliases=self._module_import_aliases,
+                )
                 info["private"] = True
                 self.functions.append(info)
         elif self._deep and node.decorator_list:
             # Decorated functions nested inside a factory (e.g. @app.route,
             # @server.tool) are framework entry points even though they are not
             # module-level. Capture them separately from regular functions.
-            self.nested_functions.append(_extract_function_info(node, deep=True))
+            self.nested_functions.append(
+                _extract_function_info(
+                    node,
+                    deep=True,
+                    module_globals=self._module_globals,
+                    module_import_aliases=self._module_import_aliases,
+                )
+            )
         self._function_depth += 1
         try:
             self.generic_visit(node)
@@ -427,16 +985,35 @@ class ComponentVisitor(ast.NodeVisitor):
     def visit_AsyncFunctionDef(self, node):
         if self._class_depth == 0 and self._function_depth == 0:
             if not node.name.startswith("_"):
-                self.functions.append(_extract_function_info(node, deep=self._deep))
+                self.functions.append(
+                    _extract_function_info(
+                        node,
+                        deep=self._deep,
+                        module_globals=self._module_globals,
+                        module_import_aliases=self._module_import_aliases,
+                    )
+                )
             elif self._deep:
-                info = _extract_function_info(node, deep=self._deep)
+                info = _extract_function_info(
+                    node,
+                    deep=self._deep,
+                    module_globals=self._module_globals,
+                    module_import_aliases=self._module_import_aliases,
+                )
                 info["private"] = True
                 self.functions.append(info)
         elif self._deep and node.decorator_list:
             # Decorated functions nested inside a factory (e.g. @app.route,
             # @server.tool) are framework entry points even though they are not
             # module-level. Capture them separately from regular functions.
-            self.nested_functions.append(_extract_function_info(node, deep=True))
+            self.nested_functions.append(
+                _extract_function_info(
+                    node,
+                    deep=True,
+                    module_globals=self._module_globals,
+                    module_import_aliases=self._module_import_aliases,
+                )
+            )
         self._function_depth += 1
         try:
             self.generic_visit(node)
@@ -529,7 +1106,11 @@ def _scan_python_files(
         except SyntaxError:
             continue
 
-        visitor = ComponentVisitor(deep=deep)
+        visitor = ComponentVisitor(
+            deep=deep,
+            module_globals=_extract_module_globals(tree),
+            module_import_aliases=_extract_import_aliases(tree),
+        )
         visitor.visit(tree)
 
         # Module-level side effects (deep only) make an otherwise-defless module

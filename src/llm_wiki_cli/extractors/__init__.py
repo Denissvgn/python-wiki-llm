@@ -37,6 +37,12 @@ class ExtractorProtocol(Protocol):
             method details, imports).  When ``False``, return a slim
             name-only summary suitable for quick index generation.
 
+            In deep mode a function/method entry **may** carry an optional
+            ``"data_effects"`` block for inputs, selected reads/writes,
+            returns, and bounded boundary effects such as filesystem,
+            environment, process, network, output, and logging calls. The field
+            is additive and omitted when no extractable effects exist.
+
             In deep mode a function/method entry **may** also carry an
             optional ``"calls"`` list of in-body call targets
             (``{"name", "attr"?, "line", "args"?, "kwargs"?}``) used for
