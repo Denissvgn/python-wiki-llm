@@ -150,6 +150,32 @@ class TestMcpWikiService:
         assert result["results"][0]["kind"] == "dependencies"
         assert result["results"][0]["uri"] == "llm-wiki://dependencies"
 
+    def test_search_wiki_accepts_all_registry_discovery_kinds(self, tmp_project):
+        _write_wiki(tmp_project)
+        service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+        cases = {
+            "index": ("User", "llm-wiki://index"),
+            "log": ("Created wiki", "llm-wiki://log"),
+            "flows": ("Checkout user flow", "llm-wiki://flows/checkout"),
+            "dependencies": ("Dependency graph", "llm-wiki://dependencies"),
+            "load-order": ("Initialization sequence", "llm-wiki://load-order"),
+        }
+
+        for kind, (query, expected_uri) in cases.items():
+            result = service.search_wiki(query, kinds=[kind], limit=10)
+
+            assert result["count"] == 1
+            assert result["results"][0]["kind"] == kind
+            assert result["results"][0]["uri"] == expected_uri
+
+    def test_search_wiki_rejects_unknown_kind(self, tmp_project):
+        _write_wiki(tmp_project)
+        service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+        with pytest.raises(mcp_server.McpWikiError, match="Unknown wiki search kind"):
+            service.search_wiki("User", kinds=["unknown"], limit=10)
+
     def test_list_resources_includes_registry_pages(self, tmp_project):
         _write_wiki(tmp_project)
         service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
@@ -219,7 +245,12 @@ class TestMcpWikiService:
 
         assert result["wiki_exists"] is True
         assert result["pages"]["entities"] == 1
+        assert result["pages"]["index"] == 1
+        assert result["pages"]["log"] == 1
+        assert result["pages"]["modules"] == 1
+        assert result["pages"]["workflows"] == 1
         assert result["pages"]["flows"] == 1
+        assert result["pages"]["infrastructure"] == 1
         assert result["pages"]["dependencies"] == 1
         assert result["pages"]["load-order"] == 1
         assert result["pages"]["architecture_pages"] == 2

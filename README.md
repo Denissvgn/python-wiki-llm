@@ -624,8 +624,11 @@ llm-wiki review --base main --head HEAD
 llm-wiki review --patch change.patch --format json
 ```
 
-The review command compares code changes with wiki coverage and reports stale or
-missing documentation risks.
+The review command compares code changes with full-surface wiki coverage and
+reports stale or missing documentation risks. Module/entity pages, source-linked
+user-flow pages, workflow pages, infrastructure notes, and dependency/load-order
+architecture pages all count as relevant review coverage when they describe the
+changed code or dependency relationship.
 
 ### `upgrade`
 

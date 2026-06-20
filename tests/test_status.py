@@ -11,13 +11,28 @@ def _make_args(**kwargs):
     return types.SimpleNamespace(**kwargs)
 
 
+def _status_counts(output: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for line in output.splitlines():
+        label, sep, rest = line.strip().partition(":")
+        if not sep:
+            continue
+        value = rest.strip().split(maxsplit=1)[0] if rest.strip() else ""
+        if value.isdigit():
+            counts[label] = int(value)
+    return counts
+
+
 class TestStatusWiki:
     def test_shows_wiki_exists(self, tmp_project, capsys):
         wiki = tmp_project / "docs" / "llm_wiki"
         for d in ["entities", "modules", "workflows", "flows", "infrastructure"]:
             (wiki / d).mkdir(parents=True)
+        (wiki / "index.md").write_text("# Index\n")
+        (wiki / "log.md").write_text("# Log\n")
         (wiki / "entities" / "User.md").write_text("# User\n")
         (wiki / "modules" / "main.md").write_text("# main\n")
+        (wiki / "workflows" / "signup.md").write_text("# signup\n")
         (wiki / "flows" / "checkout.md").write_text("# checkout\n")
         (wiki / "infrastructure" / "Dockerfile.md").write_text("# Dockerfile\n")
         (wiki / "dependencies.md").write_text("# Dependencies\n")
@@ -25,12 +40,19 @@ class TestStatusWiki:
 
         status_cmd.run(_make_args(wiki_dir=str(wiki)))
         out = capsys.readouterr().out
+        counts = _status_counts(out)
+
         assert "exists" in out
-        assert "Entities:      1" in out
-        assert "Modules:       1" in out
-        assert "Flows:         1" in out
-        assert "Infrastructure:1" in out
-        assert "Architecture pages:2" in out
+        assert counts["Index"] == 1
+        assert counts["Log"] == 1
+        assert counts["Entities"] == 1
+        assert counts["Modules"] == 1
+        assert counts["Workflows"] == 1
+        assert counts["Flows"] == 1
+        assert counts["Infrastructure"] == 1
+        assert counts["Dependencies"] == 1
+        assert counts["Load order"] == 1
+        assert counts["Architecture pages"] == 2
 
     def test_counts_wiki_pages_without_materializing_globs(
         self, tmp_project, capsys, monkeypatch
@@ -53,12 +75,13 @@ class TestStatusWiki:
 
         status_cmd.run(_make_args(wiki_dir=str(wiki)))
         out = capsys.readouterr().out
+        counts = _status_counts(out)
 
-        assert "Entities:      1" in out
-        assert "Modules:       1" in out
-        assert "Workflows:     1" in out
-        assert "Flows:         1" in out
-        assert "Infrastructure:1" in out
+        assert counts["Entities"] == 1
+        assert counts["Modules"] == 1
+        assert counts["Workflows"] == 1
+        assert counts["Flows"] == 1
+        assert counts["Infrastructure"] == 1
 
     def test_missing_optional_registry_surfaces_count_as_zero(
         self, tmp_project, capsys
@@ -70,11 +93,18 @@ class TestStatusWiki:
 
         status_cmd.run(_make_args(wiki_dir=str(wiki)))
         out = capsys.readouterr().out
+        counts = _status_counts(out)
 
-        assert "Entities:      1" in out
-        assert "Flows:         0" in out
-        assert "Infrastructure:0" in out
-        assert "Architecture pages:0" in out
+        assert counts["Index"] == 0
+        assert counts["Log"] == 0
+        assert counts["Entities"] == 1
+        assert counts["Modules"] == 0
+        assert counts["Workflows"] == 0
+        assert counts["Flows"] == 0
+        assert counts["Infrastructure"] == 0
+        assert counts["Dependencies"] == 0
+        assert counts["Load order"] == 0
+        assert counts["Architecture pages"] == 0
 
     def test_shows_wiki_missing(self, tmp_project, capsys):
         status_cmd.run(_make_args(wiki_dir="nonexistent"))

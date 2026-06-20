@@ -178,6 +178,59 @@ class TestSmartPromptTemplates:
 
 
 class TestReviewMode:
+    def _patch_inventory_for_api(
+        self,
+        monkeypatch,
+        inventory: dict | None = None,
+        module_page_map: dict | None = None,
+    ) -> None:
+        current_inventory = inventory or {"api.py": {"classes": []}}
+        current_module_page_map = module_page_map or {
+            path: Path(path).stem for path in current_inventory
+        }
+        monkeypatch.setattr(
+            review_cmd, "get_inventory", lambda src_dir, deep=True: current_inventory
+        )
+        monkeypatch.setattr(
+            review_cmd,
+            "build_module_page_map",
+            lambda inventory: current_module_page_map,
+        )
+        monkeypatch.setattr(review_cmd, "build_entity_page_map", lambda inventory: {})
+
+    def _write_surface_index(self, wiki_dir: Path, pages: list[dict]) -> None:
+        (wiki_dir / ".llm-wiki-surface.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "llm-wiki-surface-index/v1",
+                    "pages": pages,
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    def _source_diff(self, path: str, added: str = "+pass") -> str:
+        return "\n".join(
+            [
+                f"diff --git a/{path} b/{path}",
+                f"--- a/{path}",
+                f"+++ b/{path}",
+                "@@",
+                added,
+            ]
+        )
+
+    def _wiki_diff(self, path: str) -> str:
+        return "\n".join(
+            [
+                f"diff --git a/{path} b/{path}",
+                f"--- a/{path}",
+                f"+++ b/{path}",
+                "@@",
+                "+Updated notes.",
+            ]
+        )
+
     def test_cross_module_workflow_lookup_scales_with_unique_symbols(
         self, tmp_project, monkeypatch
     ):
@@ -248,6 +301,141 @@ class TestReviewMode:
         ]
         assert len(cross_module_findings) == source_count * import_count
         assert checks["count"] <= (source_count + import_count) * workflow_count
+
+    def test_review_accepts_flow_page_change_as_source_documentation(
+        self, tmp_project, monkeypatch
+    ):
+        wiki_dir = tmp_project / "docs" / "llm_wiki"
+        (wiki_dir / "modules").mkdir(parents=True)
+        (wiki_dir / "flows").mkdir(parents=True)
+        (wiki_dir / "modules" / "api.md").write_text("# api\n", encoding="utf-8")
+        (wiki_dir / "flows" / "api-run.md").write_text("# api-run\n", encoding="utf-8")
+        self._write_surface_index(
+            wiki_dir,
+            [
+                {
+                    "kind": "modules",
+                    "canonical_path": "modules/api.md",
+                    "source_path": "api.py",
+                },
+                {
+                    "kind": "flows",
+                    "canonical_path": "flows/api-run.md",
+                    "source_path": "api.py",
+                },
+            ],
+        )
+        self._patch_inventory_for_api(monkeypatch)
+        diff = "\n".join(
+            [
+                self._source_diff("api.py", "+def run():"),
+                self._wiki_diff("docs/llm_wiki/flows/api-run.md"),
+            ]
+        )
+
+        findings = review_cmd.build_findings(
+            diff, src_dir=".", wiki_dir="docs/llm_wiki"
+        )
+
+        assert not any(
+            finding.source_path == "api.py"
+            and "related wiki page" in finding.reason.lower()
+            for finding in findings
+        )
+
+    def test_review_lists_flow_pages_for_stale_source_documentation(
+        self, tmp_project, monkeypatch
+    ):
+        wiki_dir = tmp_project / "docs" / "llm_wiki"
+        (wiki_dir / "modules").mkdir(parents=True)
+        (wiki_dir / "flows").mkdir(parents=True)
+        (wiki_dir / "modules" / "api.md").write_text("# api\n", encoding="utf-8")
+        (wiki_dir / "flows" / "api-run.md").write_text("# api-run\n", encoding="utf-8")
+        self._write_surface_index(
+            wiki_dir,
+            [
+                {
+                    "kind": "modules",
+                    "canonical_path": "modules/api.md",
+                    "source_path": "api.py",
+                },
+                {
+                    "kind": "flows",
+                    "canonical_path": "flows/api-run.md",
+                    "source_path": "api.py",
+                },
+            ],
+        )
+        self._patch_inventory_for_api(monkeypatch)
+
+        findings = review_cmd.build_findings(
+            self._source_diff("api.py", "+def run():"),
+            src_dir=".",
+            wiki_dir="docs/llm_wiki",
+        )
+
+        stale = [
+            finding
+            for finding in findings
+            if finding.source_path == "api.py"
+            and "related wiki page" in finding.reason.lower()
+        ]
+        assert stale
+        assert "flows/api-run.md" in stale[0].wiki_pages
+
+    @pytest.mark.parametrize(
+        "page_path",
+        [
+            "workflows/api-service.md",
+            "flows/api-run.md",
+            "dependencies.md",
+            "load-order.md",
+        ],
+    )
+    def test_review_suppresses_cross_module_import_when_any_surface_represents_it(
+        self, tmp_project, monkeypatch, page_path
+    ):
+        wiki_dir = tmp_project / "docs" / "llm_wiki"
+        (wiki_dir / "modules").mkdir(parents=True)
+        target = wiki_dir / page_path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("# relationship\n\napi imports service.\n", encoding="utf-8")
+        (wiki_dir / "modules" / "api.md").write_text("# api\n", encoding="utf-8")
+        inventory = {"api.py": {"classes": []}, "service.py": {"classes": []}}
+        module_page_map = {"api.py": "api", "service.py": "service"}
+        self._patch_inventory_for_api(monkeypatch, inventory, module_page_map)
+
+        findings = review_cmd.build_findings(
+            self._source_diff("api.py", "+import service"),
+            src_dir=".",
+            wiki_dir="docs/llm_wiki",
+        )
+
+        assert not [
+            finding for finding in findings if "cross-module import" in finding.reason
+        ]
+
+    def test_review_accepts_architecture_page_change_for_dependency_files(
+        self, tmp_project, monkeypatch
+    ):
+        wiki_dir = tmp_project / "docs" / "llm_wiki"
+        wiki_dir.mkdir(parents=True)
+        (wiki_dir / "dependencies.md").write_text("# Dependencies\n", encoding="utf-8")
+        self._patch_inventory_for_api(monkeypatch)
+        diff = "\n".join(
+            [
+                self._source_diff("pyproject.toml", '+requests = "*"'),
+                self._wiki_diff("docs/llm_wiki/dependencies.md"),
+            ]
+        )
+
+        findings = review_cmd.build_findings(
+            diff, src_dir=".", wiki_dir="docs/llm_wiki"
+        )
+
+        assert not [
+            finding for finding in findings if finding.source_path == "pyproject.toml"
+        ]
 
     def test_review_flags_documented_source_without_wiki_changes(self, tmp_project):
         _bootstrap()
