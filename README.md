@@ -582,13 +582,14 @@ llm-wiki plugins validate ./vendor/my-plugin
 llm-wiki plugins remove my-plugin
 ```
 
-Plugin manifests can register extractors, prompt templates, lint rules, and
-agent skill blocks. Plugin references are resolved from project-local paths or
-`.llm-wiki/catalog.json`. Extractor and lint-rule entry points must resolve to
+Plugin manifests can register extractors, entry-point detectors, diagram styles,
+prompt templates, lint rules, and agent skill blocks. Plugin references are
+resolved from project-local paths or `.llm-wiki/catalog.json`. Extractor,
+lint-rule, entry-point detector, and diagram-style entry points must resolve to
 Python files inside the plugin directory; installed entry points are checked
-again before runtime import. Extractor components may set
-`"parallel_safe": true` to opt into `--jobs` parallel execution; omit it unless
-the extractor is safe to run concurrently in a fresh instance.
+again before runtime import. Extractor components may set `"parallel_safe": true`
+to opt into `--jobs` parallel execution; omit it unless the extractor is safe to
+run concurrently in a fresh instance.
 
 ### `team`
 

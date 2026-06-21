@@ -65,10 +65,11 @@ class TestPluginManifestValidation:
         assert manifest["id"] == "demo-plugin"
         assert manifest["components"][0]["type"] == "skill"
 
-    def test_rejects_component_path_escape(self, tmp_project):
+    @pytest.mark.parametrize("component_type", ["prompt_template", "skill"])
+    def test_rejects_component_path_escape(self, tmp_project, component_type):
         plugin_dir = _write_plugin(
             tmp_project / "vendor" / "escape",
-            components=[{"type": "skill", "id": "bad", "path": "../secret.md"}],
+            components=[{"type": component_type, "id": "bad", "path": "../secret.md"}],
         )
 
         with pytest.raises(plugins.PluginError, match="escapes"):
@@ -80,6 +81,119 @@ class TestPluginManifestValidation:
             components=[
                 {
                     "type": "lint_rule",
+                    "id": "bad",
+                    "entry_point": "pathlib:Path",
+                }
+            ],
+        )
+
+        with pytest.raises(plugins.PluginError, match="plugin directory"):
+            plugins.validate_plugin(plugin_dir)
+
+    @pytest.mark.parametrize(
+        ("component_type", "entry_point", "extra_files"),
+        [
+            (
+                "entrypoint_detector",
+                "detectors:detect",
+                {"detectors.py": "def detect(inventory):\n    return []\n"},
+            ),
+            (
+                "diagram_style",
+                "styles:style",
+                {"styles.py": "def style(context):\n    return {}\n"},
+            ),
+        ],
+    )
+    def test_validates_documentation_entry_point_components(
+        self, tmp_project, component_type, entry_point, extra_files
+    ):
+        plugin_dir = _write_plugin(
+            tmp_project / "vendor" / "docs",
+            components=[
+                {
+                    "type": component_type,
+                    "id": "docs-hook",
+                    "entry_point": entry_point,
+                }
+            ],
+            extra_files=extra_files,
+        )
+
+        manifest = plugins.validate_plugin(plugin_dir)
+
+        assert manifest["components"][0] == {
+            "type": component_type,
+            "id": "docs-hook",
+            "entry_point": entry_point,
+        }
+
+    def test_install_persists_documentation_components_in_lockfile(self, tmp_project):
+        plugin_dir = _write_plugin(
+            tmp_project / "vendor" / "docs",
+            components=[
+                {
+                    "type": "entrypoint_detector",
+                    "id": "django",
+                    "entry_point": "detectors:detect",
+                },
+                {
+                    "type": "diagram_style",
+                    "id": "brand",
+                    "entry_point": "styles:style",
+                },
+            ],
+            extra_files={
+                "detectors.py": "def detect(inventory):\n    return []\n",
+                "styles.py": "def style(context):\n    return {}\n",
+            },
+        )
+
+        plugins.install_plugin(str(plugin_dir), yes=True)
+
+        lock = plugins.read_lock()
+        assert lock["version"] == 1
+        assert lock["plugins"]["demo-plugin"]["components"] == [
+            {
+                "type": "entrypoint_detector",
+                "id": "django",
+                "entry_point": "detectors:detect",
+            },
+            {
+                "type": "diagram_style",
+                "id": "brand",
+                "entry_point": "styles:style",
+            },
+        ]
+
+    @pytest.mark.parametrize("component_type", ["entrypoint_detector", "diagram_style"])
+    def test_documentation_entry_point_components_reject_invalid_id(
+        self, tmp_project, component_type
+    ):
+        plugin_dir = _write_plugin(
+            tmp_project / "vendor" / "docs-invalid-id",
+            components=[
+                {
+                    "type": component_type,
+                    "id": "invalid id",
+                    "entry_point": "hooks:run",
+                }
+            ],
+            extra_files={"hooks.py": "def run():\n    return None\n"},
+        )
+
+        with pytest.raises(plugins.PluginError, match="component.id"):
+            plugins.validate_plugin(plugin_dir)
+
+    @pytest.mark.parametrize("component_type", ["entrypoint_detector", "diagram_style"])
+    def test_documentation_entry_point_components_reject_outside_entry_point(
+        self, tmp_project, component_type
+    ):
+        plugin_dir = _write_plugin(
+            tmp_project / "vendor" / "docs-outside-entry",
+            components=[
+                {
+                    "type": component_type,
                     "id": "bad",
                     "entry_point": "pathlib:Path",
                 }

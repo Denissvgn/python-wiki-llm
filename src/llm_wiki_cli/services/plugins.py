@@ -26,7 +26,14 @@ LOCK_FILENAME = "plugins.lock.json"
 PROJECT_CATALOG = Path(PLUGIN_HOME) / "catalog.json"
 USER_CATALOG = Path.home() / ".llm-wiki" / "catalog.json"
 
-SUPPORTED_COMPONENT_TYPES = {"extractor", "lint_rule", "prompt_template", "skill"}
+SUPPORTED_COMPONENT_TYPES = {
+    "diagram_style",
+    "entrypoint_detector",
+    "extractor",
+    "lint_rule",
+    "prompt_template",
+    "skill",
+}
 _ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
 _MODULE_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$")
 _ATTR_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$")
@@ -284,6 +291,12 @@ def _normalize_component(plugin_dir: Path, raw: Any) -> dict[str, Any]:
         component["entry_point"] = _ensure_entry_point(
             raw.get("entry_point"),
             "lint_rule.entry_point",
+            plugin_dir=plugin_dir,
+        )
+    elif component_type in {"entrypoint_detector", "diagram_style"}:
+        component["entry_point"] = _ensure_entry_point(
+            raw.get("entry_point"),
+            f"{component_type}.entry_point",
             plugin_dir=plugin_dir,
         )
     elif component_type == "prompt_template":
