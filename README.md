@@ -595,6 +595,21 @@ again before runtime import. Extractor components may set `"parallel_safe": true
 to opt into `--jobs` parallel execution; omit it unless the extractor is safe to
 run concurrently in a fresh instance.
 
+A tested M4 sample plugin lives at `examples/plugins/m4-documentation-hooks`.
+It can be inspected or installed like any other local plugin:
+
+```bash
+llm-wiki plugins validate examples/plugins/m4-documentation-hooks
+llm-wiki install examples/plugins/m4-documentation-hooks --yes
+```
+
+The sample manifest declares `m4-documentation-hooks/worker-tasks`
+(`detectors:detect_worker_tasks`) and
+`m4-documentation-hooks/brand-flowcharts` (`styles:style_flowcharts`). The
+detector only reads the plain inventory it receives and returns task handler
+records; the style hook only returns normalized direction, class, and color
+hints for generated flowcharts.
+
 An `entrypoint_detector` hook is called with the plain extracted inventory and
 returns entry-point records shaped as `{category, file, symbol, label}`. `file`
 may be `null` or a relative POSIX inventory path, `label` is optional, and any
@@ -610,6 +625,11 @@ and `category_colors` mapping safe class names to `#RGB` or `#RRGGBB` colors.
 LLM Wiki ignores invalid values and unknown keys, so plugins cannot inject
 Markdown, labels, hrefs, or raw Mermaid lines. Labels and `click` hrefs remain
 sanitized by the core diagram renderers.
+
+These hooks are deterministic local extension contracts over explicit inputs;
+they do not perform network discovery and they do not mutate Markdown directly.
+They are not a sandbox, though: installing a plugin runs trusted project-local
+Python code, so use plugins only from paths you control.
 
 ### `team`
 
