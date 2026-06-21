@@ -183,6 +183,9 @@ Do not edit generated Mermaid diagrams by hand. Treat generated diagrams,
 tables, links, headings, canonical filenames, and machine-readable artifacts as
 CLI-owned structure. Keep semantic sections such as descriptions, `## Behavior`,
 `## Notes`, and log summaries aligned with the current source.
+Diagram style plugins may configure generated Mermaid flowchart direction,
+node classes, and class colors, but they cannot inject arbitrary Markdown,
+labels, hrefs, or raw Mermaid content.
 
 ## When you change code
 - First run `llm-wiki sync --jobs auto --wiki-dir {wiki_dir} --src-dir .` after

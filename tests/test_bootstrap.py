@@ -85,6 +85,36 @@ def _write_entrypoint_detector_plugin(root: Path, *, body: str) -> None:
     plugins.install_plugin(str(plugin_dir), root=root, yes=True)
 
 
+def _write_diagram_style_plugin(root: Path, *, body: str) -> None:
+    plugin_dir = root / "vendor" / "diagram-style-plugin"
+    plugin_dir.mkdir(parents=True)
+    module_name = "styles_" + "_".join(root.parts[-3:])
+    module_name = "".join(
+        ch if ch.isalnum() or ch == "_" else "_" for ch in module_name
+    )
+    (plugin_dir / plugins.MANIFEST_FILENAME).write_text(
+        textwrap.dedent(f"""\
+        {{
+          "id": "diagram-style-plugin",
+          "version": "0.1.0",
+          "llm_wiki_version": "*",
+          "components": [
+            {{
+              "type": "diagram_style",
+              "id": "brand",
+              "entry_point": "{module_name}:style"
+            }}
+          ]
+        }}
+        """),
+        encoding="utf-8",
+    )
+    (plugin_dir / f"{module_name}.py").write_text(
+        textwrap.dedent(body), encoding="utf-8"
+    )
+    plugins.install_plugin(str(plugin_dir), root=root, yes=True)
+
+
 def test_bootstrap_run_stays_a_short_coordinator():
     assert _body_line_count(bootstrap_cmd.run) <= 40
 
@@ -493,6 +523,40 @@ class TestBootstrapEntityPages:
         assert (
             "| `list_items` | type_reference | [main](../modules/main.md) |" in content
         )
+
+    def test_entity_relationship_diagram_uses_bounded_plugin_style(
+        self, tmp_project, capsys
+    ):
+        _write_diagram_style_plugin(
+            tmp_project,
+            body="""
+            def style(context):
+                assert context["surface"] == "relationships"
+                return {
+                    "direction": "BT",
+                    "node_classes": {
+                        "User (models.py)": "entity",
+                        "create_user (main.py)": "bad; click n0",
+                    },
+                    "category_colors": {
+                        "entity": "#123456",
+                        "bad; click n0": "#fff",
+                    },
+                    "markdown": "```markdown\\n# injected",
+                }
+            """,
+        )
+        wiki_dir = tmp_project / "docs" / "llm_wiki"
+        args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
+        bootstrap_cmd.run(args)
+
+        content = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
+
+        assert "```mermaid\nflowchart BT" in content
+        assert "    class n0 entity" in content
+        assert "    classDef entity fill:#123456,stroke:#123456" in content
+        assert "bad; click" not in content
+        assert "# injected" not in content
 
     def test_entity_relationship_section_uses_note_without_blank_diagram(
         self, tmp_path, monkeypatch, capsys

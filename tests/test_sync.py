@@ -91,6 +91,36 @@ def _write_entrypoint_detector_plugin(root: Path, *, body: str) -> None:
     plugins.install_plugin(str(plugin_dir), root=root, yes=True)
 
 
+def _write_diagram_style_plugin(root: Path, *, body: str) -> None:
+    plugin_dir = root / "vendor" / "diagram-style-plugin"
+    plugin_dir.mkdir(parents=True)
+    module_name = "styles_" + "_".join(root.parts[-3:])
+    module_name = "".join(
+        ch if ch.isalnum() or ch == "_" else "_" for ch in module_name
+    )
+    (plugin_dir / plugins.MANIFEST_FILENAME).write_text(
+        textwrap.dedent(f"""\
+        {{
+          "id": "diagram-style-plugin",
+          "version": "0.1.0",
+          "llm_wiki_version": "*",
+          "components": [
+            {{
+              "type": "diagram_style",
+              "id": "brand",
+              "entry_point": "{module_name}:style"
+            }}
+          ]
+        }}
+        """),
+        encoding="utf-8",
+    )
+    (plugin_dir / f"{module_name}.py").write_text(
+        textwrap.dedent(body), encoding="utf-8"
+    )
+    plugins.install_plugin(str(plugin_dir), root=root, yes=True)
+
+
 class TestSyncRunStructure:
     def test_run_stays_a_small_coordinator(self):
         assert _body_line_count(sync_cmd.run) <= 40
@@ -1770,6 +1800,49 @@ class TestSyncFlowRegeneration:
         assert "helper('alpha')" not in updated
         assert "| filesystem_write | `path.write_text` | `run` |" in updated
         assert "Keeps the reviewed behavior notes." in updated
+
+    def test_sync_preserves_bounded_plugin_style_on_regenerated_data_flow(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        self._write_svc_with_arg(proj, "alpha")
+        _write_diagram_style_plugin(
+            proj,
+            body="""
+            def style(context):
+                assert context["surface"] == "data_flow"
+                return {
+                    "direction": "RL",
+                    "node_classes": {
+                        "1. run": "entry",
+                        "2. helper": "worker",
+                    },
+                    "category_colors": {
+                        "entry": "#abc",
+                        "worker": "#123456",
+                    },
+                    "markdown": "```markdown\\n# injected",
+                }
+            """,
+        )
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        flow_page = wiki / "flows" / "api-run.md"
+        original = flow_page.read_text(encoding="utf-8")
+        assert "```mermaid\nflowchart RL" in original
+        assert "    class s1 entry" in original
+        assert "# injected" not in original
+
+        self._write_svc_with_arg(proj, "beta")
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        updated = flow_page.read_text(encoding="utf-8")
+        assert "helper('beta')" in updated
+        assert "```mermaid\nflowchart RL" in updated
+        assert "    class s1 entry" in updated
+        assert "    classDef worker fill:#123456,stroke:#123456" in updated
+        assert "# injected" not in updated
 
     def test_flow_regeneration_reuses_single_data_flow_context(
         self, tmp_path, monkeypatch, capsys

@@ -2,9 +2,14 @@
 
 from __future__ import annotations
 
+import json
+import textwrap
+
+from llm_wiki_cli.services import plugins
 from llm_wiki_cli.services.diagrams import (
     data_flow_diagram,
     flowchart,
+    resolve_diagram_style,
     sequence_diagram,
 )
 
@@ -99,6 +104,47 @@ class TestFlowchart:
             ["a", "b"], [("a", "b")], links=None, highlight_edges=None
         )
 
+    def test_bounded_style_applies_direction_classes_and_colors(self):
+        out = flowchart(
+            ["api", "database"],
+            [("api", "database")],
+            style={
+                "direction": "LR",
+                "node_classes": {"api": "entry", "database": "store"},
+                "category_colors": {"entry": "#0f0", "store": "#112233"},
+            },
+        )
+
+        assert out.startswith("```mermaid\nflowchart LR")
+        assert "    class n0 entry" in out
+        assert "    class n1 store" in out
+        assert "    classDef entry fill:#0f0,stroke:#0f0" in out
+        assert "    classDef store fill:#112233,stroke:#112233" in out
+
+    def test_bounded_style_rejects_unsafe_mermaid_fragments(self):
+        out = flowchart(
+            ["api; raw"],
+            [],
+            links={"api; raw": 'modules/"api".md'},
+            style={
+                "direction": "LR\nclassDef injected fill:#fff",
+                "node_classes": {"api; raw": "entry; click x"},
+                "category_colors": {
+                    "entry; click x": "#fff",
+                    "raw": "red; markdown",
+                },
+                "markdown": "```markdown\n# injected",
+            },
+        )
+
+        assert out.startswith("```mermaid\nflowchart TD")
+        assert '    n0["api raw"]' in out
+        assert '    click n0 "modules/api.md"' in out
+        assert "class n0" not in out
+        assert "classDef" not in out
+        assert "injected" not in out
+        assert "markdown" not in out
+
 
 class TestDataFlowDiagram:
     def test_renders_labeled_lr_diagram_with_links_and_styled_boundaries(self):
@@ -167,3 +213,126 @@ class TestDataFlowDiagram:
         assert 'click s3 "../modules/helper.md"' in out
         assert "filesystem_write path.write_text" in out
         assert "class b0 boundary" in out
+
+    def test_accepts_bounded_flowchart_style(self):
+        out = data_flow_diagram(
+            {
+                "steps": [
+                    {"index": 1, "symbol": "run", "file": "pkg/api.py"},
+                    {"index": 2, "symbol": "save", "file": "pkg/store.py"},
+                ],
+                "transfers": [
+                    {
+                        "from_step": 1,
+                        "to_step": 2,
+                        "call": "save",
+                        "kind": "internal",
+                    }
+                ],
+                "boundaries": [],
+            },
+            {"pkg/api.py": "api", "pkg/store.py": "store"},
+            style={
+                "direction": "RL",
+                "node_classes": {"1. run": "entry", "2. save": "store"},
+                "category_colors": {"entry": "#abc", "store": "#123456"},
+            },
+        )
+
+        assert out.startswith("```mermaid\nflowchart RL")
+        assert "    class s1 entry" in out
+        assert "    class s2 store" in out
+        assert "    classDef entry fill:#abc,stroke:#abc" in out
+
+
+def _write_diagram_style_plugin(root, *, body):
+    plugin_dir = root / "vendor" / "diagram-style-plugin"
+    plugin_dir.mkdir(parents=True)
+    module_name = "styles_" + "_".join(root.parts[-3:])
+    module_name = "".join(
+        ch if ch.isalnum() or ch == "_" else "_" for ch in module_name
+    )
+    (plugin_dir / plugins.MANIFEST_FILENAME).write_text(
+        json.dumps(
+            {
+                "id": "diagram-style-plugin",
+                "version": "0.1.0",
+                "llm_wiki_version": "*",
+                "components": [
+                    {
+                        "type": "diagram_style",
+                        "id": "brand",
+                        "entry_point": f"{module_name}:style",
+                    }
+                ],
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    (plugin_dir / f"{module_name}.py").write_text(
+        textwrap.dedent(body), encoding="utf-8"
+    )
+    plugins.install_plugin(str(plugin_dir), root=root, yes=True)
+
+
+class TestResolveDiagramStyle:
+    def test_merges_installed_plugin_styles_deterministically(self, tmp_path):
+        _write_diagram_style_plugin(
+            tmp_path,
+            body="""
+            def style(context):
+                assert context["surface"] == "relationships"
+                return {
+                    "direction": "BT",
+                    "node_classes": {"User (models.py)": "entity"},
+                    "category_colors": {"entity": "#123456"},
+                }
+            """,
+        )
+
+        style = resolve_diagram_style({"surface": "relationships"}, root=tmp_path)
+
+        assert style == {
+            "direction": "BT",
+            "node_classes": {"User (models.py)": "entity"},
+            "category_colors": {"entity": "#123456"},
+        }
+
+    def test_invalid_plugin_style_falls_back_to_defaults(self, tmp_path):
+        _write_diagram_style_plugin(
+            tmp_path,
+            body="""
+            def style(context):
+                return {
+                    "direction": "LR\\nclassDef injected fill:#fff",
+                    "node_classes": {"api": "entry; click n0"},
+                    "category_colors": {"entry": "red"},
+                    "markdown": "```markdown\\n# injected",
+                }
+            """,
+        )
+
+        style = resolve_diagram_style({"surface": "dependencies"}, root=tmp_path)
+
+        assert style == {}
+
+    def test_strict_invalid_plugin_style_raises(self, tmp_path):
+        _write_diagram_style_plugin(
+            tmp_path,
+            body="""
+            def style(context):
+                return {"direction": "LR\\nclassDef injected fill:#fff"}
+            """,
+        )
+
+        try:
+            resolve_diagram_style(
+                {"surface": "dependencies"},
+                root=tmp_path,
+                strict_plugin_errors=True,
+            )
+        except Exception as exc:
+            assert "direction" in str(exc)
+        else:
+            raise AssertionError("strict invalid diagram style did not fail")

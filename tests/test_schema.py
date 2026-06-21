@@ -85,6 +85,8 @@ def test_agent_schema_mentions_canonical_surfaces_and_generated_ownership():
     ]:
         assert path in content
     assert "Do not edit generated Mermaid diagrams by hand" in content
+    assert "Diagram style plugins may configure generated Mermaid flowchart" in content
+    assert "cannot inject arbitrary Markdown" in content
     assert "semantic sections" in content
     assert "Static-site mirror output" in content
     assert "not as an editable source of truth" in content

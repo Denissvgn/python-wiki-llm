@@ -28,7 +28,12 @@ from ..services.dependencies import (
     analyze_dependencies,
     package_dependency_graph,
 )
-from ..services.diagrams import data_flow_diagram, flowchart, sequence_diagram
+from ..services.diagrams import (
+    data_flow_diagram,
+    flowchart,
+    resolve_diagram_style,
+    sequence_diagram,
+)
 from ..services.entrypoints import build_flow, detect_entry_points, read_console_scripts
 from ..services.imports import ModulePathResolver, build_module_path_resolver
 from ..services.io import read_md, write_md
@@ -46,6 +51,12 @@ from ..services.wiki_surface_index import write_surface_index
 
 
 _SURFACE_LABELS = {entry.kind: entry.label for entry in iter_page_kinds()}
+
+
+def _generated_diagram_style(surface: str, **context: Any) -> dict[str, Any]:
+    payload: dict[str, Any] = {"surface": surface}
+    payload.update(context)
+    return resolve_diagram_style(payload)
 
 
 def _module_name_from_path(filepath: str) -> str:
@@ -310,7 +321,9 @@ def _reference_label(ref: Mapping) -> str:
 
 
 def _entity_relationship_graph(
-    summary: Mapping, module_page_map: Mapping[str, str] | None
+    summary: Mapping,
+    module_page_map: Mapping[str, str] | None,
+    diagram_style: Mapping[str, Any] | None = None,
 ) -> str | None:
     current = _entity_node_label(summary)
     nodes = [current]
@@ -350,7 +363,13 @@ def _entity_relationship_graph(
 
     if not edges:
         return None
-    return flowchart(nodes, edges, direction="LR", links=links)
+    if diagram_style is None:
+        diagram_style = _generated_diagram_style(
+            "relationships",
+            entity=summary.get("name"),
+            file=summary.get("file"),
+        )
+    return flowchart(nodes, edges, direction="LR", links=links, style=diagram_style)
 
 
 def _relationship_source_cell(
@@ -414,6 +433,7 @@ def _append_entity_relationship_tables(
 def _generate_entity_relationship_section(
     summary: Mapping | None,
     module_page_map: Mapping[str, str] | None = None,
+    diagram_style: Mapping[str, Any] | None = None,
 ) -> list[str]:
     lines = [
         "## Relationships",
@@ -424,7 +444,7 @@ def _generate_entity_relationship_section(
         lines.extend(["*No generated relationships detected.*", ""])
         return lines
 
-    diagram = _entity_relationship_graph(summary, module_page_map)
+    diagram = _entity_relationship_graph(summary, module_page_map, diagram_style)
     if diagram:
         lines.append(diagram)
     else:
@@ -444,7 +464,9 @@ def _module_map_node_link(
 
 
 def _module_dependency_graph(
-    summary: Mapping, module_page_map: Mapping[str, str] | None
+    summary: Mapping,
+    module_page_map: Mapping[str, str] | None,
+    diagram_style: Mapping[str, Any] | None = None,
 ) -> str | None:
     edges = list(summary.get("edges", []) or [])
     if not edges:
@@ -456,12 +478,18 @@ def _module_dependency_graph(
         for link in [_module_map_node_link(str(node), module_page_map)]
         if link
     }
+    if diagram_style is None:
+        diagram_style = _generated_diagram_style(
+            "module_dependency",
+            file=summary.get("file"),
+        )
     return flowchart(
         nodes,
         edges,
         direction="LR",
         links=links,
         highlight_edges=summary.get("cycle_edges", []),
+        style=diagram_style,
     )
 
 
@@ -516,6 +544,7 @@ def _append_module_dependency_tables(
 def _generate_module_dependency_section(
     summary: Mapping | None,
     module_page_map: Mapping[str, str] | None = None,
+    diagram_style: Mapping[str, Any] | None = None,
 ) -> list[str]:
     lines = [
         "## Local dependency map",
@@ -526,7 +555,7 @@ def _generate_module_dependency_section(
         lines.extend(["*No internal module dependencies detected.*", ""])
         return lines
 
-    diagram = _module_dependency_graph(summary, module_page_map)
+    diagram = _module_dependency_graph(summary, module_page_map, diagram_style)
     if diagram:
         if summary.get("cycle_participation"):
             lines.append(
@@ -548,6 +577,7 @@ def _generate_entity_md(
     *,
     relationship_summary: Mapping | None = None,
     module_page_map: Mapping[str, str] | None = None,
+    diagram_style: Mapping[str, Any] | None = None,
 ) -> str:
     """Generate comprehensive markdown for a class entity."""
     name = class_info["name"]
@@ -619,7 +649,9 @@ def _generate_entity_md(
     # Relationships
     if relationship_summary is not None:
         lines.extend(
-            _generate_entity_relationship_section(relationship_summary, module_page_map)
+            _generate_entity_relationship_section(
+                relationship_summary, module_page_map, diagram_style
+            )
         )
     else:
         rels = relationships.get((name, filepath), relationships.get(name, []))
@@ -647,6 +679,7 @@ def _generate_module_md(
     *,
     module_dependency_map: Mapping | None = None,
     module_page_map: Mapping[str, str] | None = None,
+    diagram_style: Mapping[str, Any] | None = None,
 ) -> str:
     """Generate comprehensive markdown for a module page."""
     mod_name = _module_name_from_path(filepath)
@@ -688,7 +721,9 @@ def _generate_module_md(
 
     if module_dependency_map is not None:
         lines.extend(
-            _generate_module_dependency_section(module_dependency_map, module_page_map)
+            _generate_module_dependency_section(
+                module_dependency_map, module_page_map, diagram_style
+            )
         )
 
     # Classes
@@ -1091,14 +1126,16 @@ def _effects_cell(effects: list[Mapping]) -> str:
 
 
 def _generate_data_flow_section(
-    data_flow: Mapping, module_page_map: Mapping[str, str] | None = None
+    data_flow: Mapping,
+    module_page_map: Mapping[str, str] | None = None,
+    diagram_style: Mapping[str, Any] | None = None,
 ) -> list[str]:
     lines = [
         "## Data flow",
         "",
         "<!-- Auto-generated static analysis. Treat values and boundaries as "
         "best-effort hints, not runtime proof. -->",
-        data_flow_diagram(data_flow, module_page_map),
+        data_flow_diagram(data_flow, module_page_map, style=diagram_style),
         "",
         "### Step data",
         "",
@@ -1185,6 +1222,7 @@ def _generate_flow_md(
     module_page_map: Mapping[str, str] | None = None,
     *,
     data_flow: Mapping | None = None,
+    diagram_style: Mapping[str, Any] | None = None,
 ) -> str:
     """Generate a user-flow page with a Mermaid sequence diagram from *flow*."""
     entry = flow["entry"]
@@ -1223,7 +1261,13 @@ def _generate_flow_md(
     lines.append("")
 
     if data_flow is not None:
-        lines.extend(_generate_data_flow_section(data_flow, page_map))
+        if diagram_style is None:
+            diagram_style = _generated_diagram_style(
+                "data_flow",
+                flow_id=entry.get("id"),
+                category=entry.get("category"),
+            )
+        lines.extend(_generate_data_flow_section(data_flow, page_map, diagram_style))
 
     lines.append("## Behavior")
     lines.append("")
@@ -1265,7 +1309,10 @@ def _cyclic_edges(
 
 
 def _render_dependency_graph(
-    analysis: dict, module_page_map: Mapping[str, str], detail: str
+    analysis: dict,
+    module_page_map: Mapping[str, str],
+    detail: str,
+    diagram_style: Mapping[str, Any] | None = None,
 ) -> tuple[str | None, str]:
     """Render the dependency flowchart, choosing module vs package detail.
 
@@ -1276,6 +1323,8 @@ def _render_dependency_graph(
     """
     graph = analysis["graph"]
     nodes = graph["nodes"]
+    if diagram_style is None:
+        diagram_style = _generated_diagram_style("dependencies", detail=detail)
     use_package = detail == "package" or (
         detail == "auto" and len(nodes) > _DEPENDENCY_GRAPH_NODE_LIMIT
     )
@@ -1283,7 +1332,10 @@ def _render_dependency_graph(
         collapsed = package_dependency_graph(graph)
         if not collapsed["nodes"]:
             return None, "package"
-        return flowchart(collapsed["nodes"], collapsed["edges"]), "package"
+        return (
+            flowchart(collapsed["nodes"], collapsed["edges"], style=diagram_style),
+            "package",
+        )
     if not nodes:
         return None, "module"
     links = {
@@ -1292,7 +1344,13 @@ def _render_dependency_graph(
     }
     highlight = _cyclic_edges(graph["edges"], analysis["cycles"])
     return (
-        flowchart(nodes, graph["edges"], links=links, highlight_edges=highlight),
+        flowchart(
+            nodes,
+            graph["edges"],
+            links=links,
+            highlight_edges=highlight,
+            style=diagram_style,
+        ),
         "module",
     )
 
@@ -1335,6 +1393,7 @@ def _generate_dependencies_md(
     module_page_map: Mapping[str, str] | None = None,
     *,
     detail: str = "auto",
+    diagram_style: Mapping[str, Any] | None = None,
 ) -> str:
     """Render ``dependencies.md`` from a :func:`analyze_dependencies` bundle.
 
@@ -1355,7 +1414,9 @@ def _generate_dependencies_md(
         "## Module graph",
         "",
     ]
-    diagram, rendered_detail = _render_dependency_graph(analysis, page_map, detail)
+    diagram, rendered_detail = _render_dependency_graph(
+        analysis, page_map, detail, diagram_style
+    )
     if diagram and rendered_detail == "package":
         lines.append(
             "<!-- Collapsed to top-level packages; the full module list is in the "

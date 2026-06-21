@@ -602,6 +602,15 @@ plugin-supplied `id` is ignored so core deduplication and stable id assignment
 remain authoritative. Detector exceptions or invalid records become warnings in
 `extract --deep`, `bootstrap`, and `sync`; built-in detectors still run.
 
+A `diagram_style` hook is called with a plain context object such as
+`{"surface": "relationships"}` or `{"surface": "data_flow"}` and may return
+only bounded style hints: `direction` (`TB`, `TD`, `BT`, `RL`, or `LR`),
+`node_classes` mapping exact generated node labels to safe Mermaid class names,
+and `category_colors` mapping safe class names to `#RGB` or `#RRGGBB` colors.
+LLM Wiki ignores invalid values and unknown keys, so plugins cannot inject
+Markdown, labels, hrefs, or raw Mermaid lines. Labels and `click` hrefs remain
+sanitized by the core diagram renderers.
+
 ### `team`
 
 Manage shared team policy for prompt defaults, required plugin components, and

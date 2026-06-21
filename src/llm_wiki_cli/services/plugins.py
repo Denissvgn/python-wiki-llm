@@ -584,6 +584,10 @@ def entrypoint_detector_components(root: str | Path = ".") -> list[dict[str, Any
     return iter_components("entrypoint_detector", root=root)
 
 
+def diagram_style_components(root: str | Path = ".") -> list[dict[str, Any]]:
+    return iter_components("diagram_style", root=root)
+
+
 def read_component_text(component: dict[str, Any]) -> str:
     path = Path(component["plugin_dir"]) / component["path"]
     return path.read_text(encoding="utf-8")

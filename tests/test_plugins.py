@@ -166,6 +166,27 @@ class TestPluginManifestValidation:
             },
         ]
 
+    def test_lists_installed_diagram_style_components(self, tmp_project):
+        plugin_dir = _write_plugin(
+            tmp_project / "vendor" / "diagram-style",
+            plugin_id="diagram-style-plugin",
+            components=[
+                {
+                    "type": "diagram_style",
+                    "id": "brand",
+                    "entry_point": "styles:style",
+                }
+            ],
+            extra_files={"styles.py": "def style(context):\n    return {}\n"},
+        )
+        plugins.install_plugin(str(plugin_dir), yes=True)
+
+        components = plugins.diagram_style_components()
+
+        assert len(components) == 1
+        assert components[0]["ref"] == "diagram-style-plugin/brand"
+        assert components[0]["entry_point"] == "styles:style"
+
     @pytest.mark.parametrize("component_type", ["entrypoint_detector", "diagram_style"])
     def test_documentation_entry_point_components_reject_invalid_id(
         self, tmp_project, component_type
