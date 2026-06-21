@@ -992,6 +992,11 @@ def _add_context_command(subparsers):
         "--src-dir", default=".", help="Source directory to scan (default: .)"
     )
     context_parser.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Wiki directory to read graph surface metadata from (default: docs/llm_wiki)",
+    )
+    context_parser.add_argument(
         "--format",
         choices=["json", "markdown"],
         default="json",

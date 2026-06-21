@@ -301,6 +301,7 @@ class McpWikiService:
                 validated["focus"],
                 validated["filters"],
                 emit_warnings=False,
+                wiki_dir=str(self.wiki_dir),
             )
         except context_cmd.ProtocolRequestError as exc:
             raise McpWikiError(str(exc)) from exc

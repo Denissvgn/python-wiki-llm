@@ -253,6 +253,54 @@ class TestMcpWikiService:
         assert result["ok"] is True
         assert "models.py" in result["files"]
 
+    def test_get_context_passes_filters_and_wiki_dir_to_context_builder(
+        self, tmp_project, monkeypatch
+    ):
+        seen = {}
+
+        def fake_build_context(
+            src_dir,
+            budget,
+            fmt,
+            focus,
+            filters,
+            *,
+            emit_warnings,
+            wiki_dir,
+        ):
+            seen["args"] = (src_dir, budget, fmt, focus, filters, emit_warnings)
+            seen["wiki_dir"] = wiki_dir
+            return (
+                {
+                    "budget": budget,
+                    "used": 0,
+                    "files": {},
+                    "graphs": {"symbol": {"callers": {"query": "run"}}},
+                },
+                [],
+            )
+
+        monkeypatch.setattr(context_cmd, "_build_context", fake_build_context)
+        service = mcp_server.McpWikiService(src_dir="src", wiki_dir="agent_wiki")
+
+        result = service.get_context(
+            budget_tokens=1000,
+            focus=["all"],
+            format="json",
+            filters={"symbol": "run"},
+        )
+
+        assert seen["args"] == (
+            "src",
+            1000,
+            "json",
+            ["all"],
+            {"symbol": "run"},
+            False,
+        )
+        assert seen["wiki_dir"] == "agent_wiki"
+        assert result["graphs"]["symbol"]["callers"]["query"] == "run"
+
     def test_get_context_raises_mcp_error_on_extractor_failure(
         self, tmp_project, monkeypatch
     ):

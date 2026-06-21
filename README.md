@@ -430,6 +430,7 @@ External tools can use the `llm-wiki-context/v1` JSON request protocol:
 ```bash
 llm-wiki context --request request.json --src-dir .
 cat request.json | llm-wiki context --request - --src-dir .
+llm-wiki context --request request.json --src-dir . --wiki-dir docs/llm_wiki
 ```
 
 Example request:
@@ -441,10 +442,18 @@ Example request:
   "focus": ["changed", "neighbors"],
   "format": "json",
   "filters": {
-    "language": "python"
+    "language": "python",
+    "symbol": "build_context",
+    "entrypoint": "llm-wiki-context",
+    "surface": "flows"
   }
 }
 ```
+
+`filters.language` and `filters.module` scope the budgeted `files` payload.
+`filters.symbol`, `filters.entrypoint`, and `filters.surface` add bounded
+`graphs` and `surface` sections without changing the file-priority budget.
+`--wiki-dir` selects the wiki surface metadata used for graph page references.
 
 `--output PATH` writes the generated JSON or Markdown directly instead of
 printing it to stdout. `--read-only` documents source-adapter intent: the command

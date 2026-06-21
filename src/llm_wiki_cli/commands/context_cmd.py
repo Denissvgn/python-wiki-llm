@@ -21,17 +21,39 @@ import json
 import sys
 from pathlib import Path, PurePosixPath
 
-from .extract_cmd import _git_changed_files, get_inventory_result
-from ..config import validate_source_root
+from .extract_cmd import (
+    _git_changed_files,
+    analyze_data_flow,
+    build_data_flow_context,
+    build_flow,
+    get_entry_points,
+    get_inventory_result,
+    read_console_scripts,
+    resolve_call_edges,
+)
+from ..config import (
+    DEFAULT_WIKI_DIR,
+    PathValidationError,
+    validate_path,
+    validate_source_root,
+)
+from ..services import wiki_surface
+from ..services.dependencies import analyze_dependencies
+from ..services.documentation_queries import (
+    DocumentationGraphQueryService,
+    DocumentationQueryError,
+)
 from ..services.io import write_text_output
+from ..services.wiki_surface_index import build_surface_index
 
 
 PROTOCOL_VERSION = "llm-wiki-context/v1"
 
 _REQUEST_KEYS = {"protocol", "budget_tokens", "focus", "format", "filters"}
-_FILTER_KEYS = {"language", "module"}
+_FILTER_KEYS = {"language", "module", "symbol", "entrypoint", "surface"}
 _FOCUS_VALUES = {"changed", "neighbors", "all"}
 _FORMATS = {"json", "markdown"}
+_CONTEXT_QUERY_LIMIT = 20
 
 
 class ProtocolRequestError(ValueError):
@@ -391,7 +413,79 @@ def _render_markdown(payload: dict) -> str:
             lines.append(f"- `{fp}`")
         lines.append("")
 
+    graphs = payload.get("graphs", {})
+    if graphs:
+        lines.append("## Documentation Graphs")
+        lines.append("")
+        symbol_graph = graphs.get("symbol")
+        if symbol_graph:
+            query = _graph_query(symbol_graph.get("callers"))
+            lines.append(f"### Symbol `{query}`")
+            lines.append("")
+            lines.append(
+                f"- callers: {_graph_status(symbol_graph.get('callers'), 'callers')}"
+            )
+            lines.append(
+                f"- callees: {_graph_status(symbol_graph.get('callees'), 'callees')}"
+            )
+            lines.append(
+                f"- pages: {_graph_status(symbol_graph.get('pages'), 'pages')}"
+            )
+            lines.append("")
+
+        entrypoint_graph = graphs.get("entrypoint")
+        if entrypoint_graph:
+            query = _graph_query(entrypoint_graph.get("flow"))
+            lines.append(f"### Entry point `{query}`")
+            lines.append("")
+            lines.append(
+                f"- flow: {_graph_status(entrypoint_graph.get('flow'), 'flow')}"
+            )
+            lines.append(
+                "- data flow: "
+                f"{_graph_status(entrypoint_graph.get('data_flow'), 'data_flow')}"
+            )
+            lines.append("")
+
+    surface = payload.get("surface")
+    if surface:
+        lines.append(f"## Surface `{surface['kind']}`")
+        lines.append("")
+        lines.append(
+            f"{surface['count']} page(s)"
+            + (" (truncated)" if surface.get("truncated") else "")
+        )
+        lines.append("")
+        for page in surface.get("pages", []):
+            title = page.get("title") or page.get("id") or page.get("canonical_path")
+            lines.append(
+                f"- `{page.get('canonical_path')}` - {title} ({page.get('mcp_uri')})"
+            )
+        lines.append("")
+
     return "\n".join(lines)
+
+
+def _graph_query(result: object) -> str:
+    return str(result.get("query", "")) if isinstance(result, dict) else ""
+
+
+def _graph_status(result: object, collection_key: str) -> str:
+    if not isinstance(result, dict):
+        return "unavailable"
+    if collection_key in result and isinstance(result[collection_key], list):
+        count = len(result[collection_key])
+    elif result.get(collection_key) is None:
+        count = 0
+    elif collection_key in result:
+        count = 1
+    else:
+        count = 0
+    status = "found" if result.get("found") else "not found"
+    if result.get("ambiguous"):
+        status = "ambiguous"
+    suffix = " (truncated)" if result.get("truncated") else ""
+    return f"{status}, {count} item(s){suffix}"
 
 
 # ── Wiki-as-Context protocol ──────────────────────────────────────────
@@ -503,7 +597,7 @@ def _normalise_protocol_filters(raw_filters: object) -> dict:
         )
 
     filters: dict[str, str] = {}
-    for key in ("language", "module"):
+    for key in ("language", "module", "symbol", "entrypoint", "surface"):
         if key not in raw_filters:
             continue
         value = raw_filters[key]
@@ -511,8 +605,19 @@ def _normalise_protocol_filters(raw_filters: object) -> dict:
             raise ProtocolRequestError(
                 f"filters.{key} must be a non-empty string.", f"filters.{key}"
             )
+        if key == "surface":
+            _validate_surface_filter(value)
         filters[key] = value
     return filters
+
+
+def _validate_surface_filter(value: str) -> None:
+    known = {entry.kind.value for entry in wiki_surface.iter_page_kinds()}
+    if value not in known:
+        raise ProtocolRequestError(
+            f"filters.surface must be one of: {', '.join(sorted(known))}.",
+            "filters.surface",
+        )
 
 
 def _protocol_error_payload(error: ProtocolRequestError) -> dict:
@@ -564,6 +669,113 @@ def _matches_module_filter(filepath: str, pattern: str) -> bool:
     )
 
 
+def _build_protocol_enrichment(
+    inventory: dict,
+    filters: dict,
+    *,
+    src_root: Path,
+    wiki_dir: str,
+) -> dict:
+    if not any(key in filters for key in ("symbol", "entrypoint", "surface")):
+        return {}
+
+    try:
+        wiki_root = validate_path(wiki_dir, "--wiki-dir")
+        entrypoints = get_entry_points(
+            inventory, console_scripts=read_console_scripts(str(src_root))
+        )
+        call_edges = resolve_call_edges(inventory) if entrypoints else []
+        flows = [build_flow(entrypoint, call_edges) for entrypoint in entrypoints]
+        data_flow_context = (
+            build_data_flow_context(inventory, call_edges) if entrypoints else None
+        )
+        data_flows = [
+            analyze_data_flow(
+                inventory,
+                flow,
+                call_edges,
+                context=data_flow_context,
+            )
+            for flow in flows
+        ]
+        surface_index = build_surface_index(
+            wiki_root,
+            inventory,
+            src_dir=src_root,
+            entry_points=entrypoints,
+        )
+        query_service = DocumentationGraphQueryService(
+            inventory,
+            call_edges=call_edges,
+            flows=flows,
+            data_flows=data_flows,
+            dependency_analysis=analyze_dependencies(inventory, str(src_root)),
+            surface_index=surface_index,
+            limit=_CONTEXT_QUERY_LIMIT,
+        )
+    except PathValidationError as exc:
+        raise ProtocolRequestError(str(exc), "wiki_dir") from exc
+    except DocumentationQueryError as exc:
+        raise ProtocolRequestError(str(exc), "filters") from exc
+    except OSError as exc:
+        raise ProtocolRequestError(
+            f"Could not read wiki surface: {exc}", "wiki_dir"
+        ) from exc
+
+    enrichment: dict = {}
+    graphs: dict = {}
+    if "symbol" in filters:
+        symbol = filters["symbol"]
+        graphs["symbol"] = {
+            "callers": query_service.callers(symbol),
+            "callees": query_service.callees(symbol),
+            "pages": query_service.pages_for_symbol(symbol),
+        }
+    if "entrypoint" in filters:
+        entrypoint = filters["entrypoint"]
+        graphs["entrypoint"] = {
+            "flow": query_service.flow_for_entrypoint(entrypoint),
+            "data_flow": query_service.data_flow_for_entrypoint(entrypoint),
+        }
+    if graphs:
+        enrichment["graphs"] = graphs
+    if "surface" in filters:
+        enrichment["surface"] = _surface_filter_payload(
+            surface_index,
+            filters["surface"],
+            limit=_CONTEXT_QUERY_LIMIT,
+        )
+    return enrichment
+
+
+def _surface_filter_payload(surface_index: dict, surface: str, *, limit: int) -> dict:
+    pages = [
+        _surface_page_ref(page)
+        for page in surface_index.get("pages", []) or []
+        if page.get("kind") == surface
+    ]
+    capped = pages[:limit]
+    return {
+        "kind": surface,
+        "count": len(capped),
+        "total": len(pages),
+        "truncated": len(pages) > limit,
+        "pages": capped,
+    }
+
+
+def _surface_page_ref(page: dict) -> dict:
+    return {
+        "kind": page.get("kind"),
+        "id": page.get("id"),
+        "title": page.get("title"),
+        "canonical_path": page.get("canonical_path"),
+        "source_path": page.get("source_path"),
+        "role": page.get("role"),
+        "mcp_uri": page.get("mcp_uri"),
+    }
+
+
 def _build_context(
     src_dir: str,
     budget: int,
@@ -574,6 +786,7 @@ def _build_context(
     emit_warnings: bool = True,
     allow_external_src: bool = False,
     read_only: bool = False,
+    wiki_dir: str = DEFAULT_WIKI_DIR,
 ) -> tuple[dict, list[str]]:
     """Build a context payload and return ``(payload, warnings)``."""
     src_root = validate_source_root(
@@ -582,12 +795,22 @@ def _build_context(
         allow_external=allow_external_src,
     )
 
-    inventory = get_inventory(str(src_root), deep=True)
-    inventory = _apply_protocol_filters(inventory, filters or {})
+    raw_inventory = get_inventory(str(src_root), deep=True)
+    filters = filters or {}
+    inventory = _apply_protocol_filters(raw_inventory, filters)
     warnings: list[str] = []
 
     if not inventory:
-        return {"budget": budget, "used": 0, "files": {}}, warnings
+        payload = {"budget": budget, "used": 0, "files": {}}
+        payload.update(
+            _build_protocol_enrichment(
+                raw_inventory,
+                filters,
+                src_root=src_root,
+                wiki_dir=wiki_dir,
+            )
+        )
+        return payload, warnings
 
     changed: list[str] | None = None
     focus_mode = "all" if "all" in focus_values else "changed"
@@ -621,7 +844,16 @@ def _build_context(
         include_neighbors=include_neighbors,
     )
 
-    return _build_context_payload(inventory, classification, budget), warnings
+    payload = _build_context_payload(inventory, classification, budget)
+    payload.update(
+        _build_protocol_enrichment(
+            raw_inventory,
+            filters,
+            src_root=src_root,
+            wiki_dir=wiki_dir,
+        )
+    )
+    return payload, warnings
 
 
 def _protocol_success_payload(
@@ -638,6 +870,10 @@ def _protocol_success_payload(
     }
     if warnings:
         response["warnings"] = warnings
+    if "graphs" in payload:
+        response["graphs"] = payload["graphs"]
+    if "surface" in payload:
+        response["surface"] = payload["surface"]
 
     if request["format"] == "markdown":
         response["content"] = _render_markdown(payload)
@@ -659,6 +895,7 @@ def _run_protocol(args) -> None:
             emit_warnings=False,
             allow_external_src=getattr(args, "allow_external_src", False),
             read_only=getattr(args, "read_only", False),
+            wiki_dir=getattr(args, "wiki_dir", DEFAULT_WIKI_DIR),
         )
     except ProtocolRequestError as exc:
         _emit_protocol_error(exc)

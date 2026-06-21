@@ -49,8 +49,8 @@ def _write_query_project(root):
     )
 
 
-def _write_api_wiki(root):
-    wiki = root / "docs" / "llm_wiki"
+def _write_api_wiki(root, rel_path="docs/llm_wiki"):
+    wiki = root / rel_path
     for subdir in ["entities", "modules", "workflows", "flows", "infrastructure"]:
         (wiki / subdir).mkdir(parents=True, exist_ok=True)
     (wiki / "index.md").write_text("# Index\n\n", encoding="utf-8")
@@ -90,6 +90,27 @@ def test_build_context_returns_markdown_content_and_raw_payload(tmp_project):
 
     assert "Context Budget" in payload["content"]
     assert payload["payload"]["files"]
+
+
+def test_build_context_accepts_graph_filters_and_wiki_dir(tmp_project):
+    _write_query_project(tmp_project)
+    _write_api_wiki(tmp_project, "agent_wiki")
+
+    payload = build_context(
+        ".",
+        budget=100000,
+        focus="all",
+        format="json",
+        filters={"symbol": "run", "surface": "flows"},
+        wiki_dir="agent_wiki",
+    )
+
+    assert payload["graphs"]["symbol"]["callees"]["found"] is True
+    assert payload["graphs"]["symbol"]["pages"]["pages"]
+    assert payload["surface"]["kind"] == "flows"
+    assert [page["canonical_path"] for page in payload["surface"]["pages"]] == [
+        "flows/api-run.md"
+    ]
 
 
 def test_list_wiki_pages_returns_registry_metadata_without_running_extraction(

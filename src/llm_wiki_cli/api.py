@@ -84,6 +84,7 @@ def build_context(
     format: str = "json",
     focus: str | list[str] = "changed",
     filters: dict | None = None,
+    wiki_dir: str = DEFAULT_WIKI_DIR,
     allow_external_src: bool = False,
     read_only: bool = True,
 ) -> dict[str, Any]:
@@ -107,10 +108,13 @@ def build_context(
             emit_warnings=False,
             allow_external_src=allow_external_src,
             read_only=read_only,
+            wiki_dir=wiki_dir,
         )
     except PathValidationError as exc:
         raise PathPolicyError(str(exc)) from exc
     except context_cmd.ProtocolRequestError as exc:
+        if exc.field == "wiki_dir":
+            raise PathPolicyError(str(exc)) from exc
         if exc.field == "src_dir":
             raise ExtractionError(str(exc)) from exc
         raise LlmWikiApiError(str(exc)) from exc

@@ -5,6 +5,7 @@ from __future__ import annotations
 import io
 import json
 import sys
+import textwrap
 import types
 from pathlib import Path
 
@@ -44,6 +45,51 @@ def _protocol_request(**overrides):
     }
     data.update(overrides)
     return data
+
+
+def _write_query_project(root: Path) -> None:
+    (root / "api.py").write_text(
+        textwrap.dedent(
+            """\
+            from repo import save
+
+            __all__ = ["run"]
+
+            def run(payload):
+                return save(payload)
+            """
+        ),
+        encoding="utf-8",
+    )
+    (root / "repo.py").write_text(
+        textwrap.dedent(
+            """\
+            def save(payload):
+                return payload
+            """
+        ),
+        encoding="utf-8",
+    )
+
+
+def _write_query_wiki(root: Path, rel_path: str = "docs/llm_wiki") -> Path:
+    wiki = root / rel_path
+    for subdir in ["entities", "modules", "workflows", "flows", "infrastructure"]:
+        (wiki / subdir).mkdir(parents=True, exist_ok=True)
+    (wiki / "index.md").write_text("# Index\n\n", encoding="utf-8")
+    (wiki / "log.md").write_text("# Log\n\n", encoding="utf-8")
+    (wiki / "modules" / "api.md").write_text(
+        "# api Module\n\n**Path:** `api.py`\n", encoding="utf-8"
+    )
+    (wiki / "modules" / "repo.md").write_text(
+        "# repo Module\n\n**Path:** `repo.py`\n", encoding="utf-8"
+    )
+    (wiki / "flows" / "api-run.md").write_text(
+        "# api-run\n\nFlow for run.\n", encoding="utf-8"
+    )
+    (wiki / "dependencies.md").write_text("# Dependencies\n\n", encoding="utf-8")
+    (wiki / "load-order.md").write_text("# Load order\n\n", encoding="utf-8")
+    return wiki
 
 
 # ── Token estimation ──────────────────────────────────────────────────
@@ -340,6 +386,45 @@ class TestRenderMarkdown:
         assert "Omitted Files" in md
         assert "`too_big.py`" in md
 
+    def test_contains_graph_and_surface_sections(self):
+        payload = {
+            "budget": 10,
+            "used": 0,
+            "files": {},
+            "graphs": {
+                "symbol": {
+                    "callers": {"query": "run", "found": True},
+                    "callees": {"query": "run", "found": True},
+                    "pages": {"query": "run", "found": True},
+                },
+                "entrypoint": {
+                    "flow": {"query": "api-run", "found": True},
+                    "data_flow": {"query": "api-run", "found": True},
+                },
+            },
+            "surface": {
+                "kind": "flows",
+                "count": 1,
+                "truncated": False,
+                "pages": [
+                    {
+                        "id": "api-run",
+                        "title": "api-run",
+                        "canonical_path": "flows/api-run.md",
+                        "mcp_uri": "llm-wiki://flows/api-run",
+                    }
+                ],
+            },
+        }
+
+        md = context_cmd._render_markdown(payload)
+
+        assert "Documentation Graphs" in md
+        assert "Symbol `run`" in md
+        assert "Entry point `api-run`" in md
+        assert "Surface `flows`" in md
+        assert "`flows/api-run.md`" in md
+
 
 # ── Protocol helpers ──────────────────────────────────────────────────
 
@@ -379,6 +464,27 @@ class TestProtocolValidation:
         assert result["focus"] == ["changed", "neighbors"]
         assert result["format"] == "json"
         assert result["filters"] == {}
+
+    def test_validation_accepts_graph_and_surface_filters(self):
+        result = context_cmd._validate_protocol_request(
+            _protocol_request(
+                filters={
+                    "language": "python",
+                    "module": "api/*",
+                    "symbol": "api.py:run",
+                    "entrypoint": "api-run",
+                    "surface": "flows",
+                }
+            )
+        )
+
+        assert result["filters"] == {
+            "language": "python",
+            "module": "api/*",
+            "symbol": "api.py:run",
+            "entrypoint": "api-run",
+            "surface": "flows",
+        }
 
 
 class TestProtocolRun:
@@ -488,6 +594,111 @@ class TestProtocolRun:
         data = json.loads(capsys.readouterr().out)
         assert set(data["files"]) == {"web/api/client.ts"}
 
+    def test_request_graph_and_surface_filters_add_sections(
+        self, tmp_project, tmp_path, capsys
+    ):
+        _write_query_project(tmp_project)
+        _write_query_wiki(tmp_project, "agent_wiki")
+        request = _write_request(
+            tmp_path,
+            _protocol_request(
+                budget_tokens=100000,
+                filters={
+                    "symbol": "run",
+                    "entrypoint": "api-run",
+                    "surface": "flows",
+                },
+            ),
+        )
+
+        context_cmd.run(_make_args(request=request, budget=None, wiki_dir="agent_wiki"))
+
+        data = json.loads(capsys.readouterr().out)
+        assert data["ok"] is True
+        assert "files" in data
+        assert data["graphs"]["symbol"]["callees"]["found"] is True
+        assert data["graphs"]["symbol"]["pages"]["pages"]
+        assert data["graphs"]["entrypoint"]["flow"]["found"] is True
+        assert data["graphs"]["entrypoint"]["data_flow"]["found"] is True
+        assert data["surface"]["kind"] == "flows"
+        assert [page["canonical_path"] for page in data["surface"]["pages"]] == [
+            "flows/api-run.md"
+        ]
+
+    def test_graph_and_surface_filters_do_not_compete_with_file_budget(
+        self, tmp_project, tmp_path, capsys
+    ):
+        _write_query_project(tmp_project)
+        _write_query_wiki(tmp_project, "agent_wiki")
+        request = _write_request(
+            tmp_path,
+            _protocol_request(
+                budget_tokens=1,
+                filters={
+                    "symbol": "run",
+                    "entrypoint": "api-run",
+                    "surface": "flows",
+                },
+            ),
+        )
+
+        context_cmd.run(_make_args(request=request, budget=None, wiki_dir="agent_wiki"))
+
+        data = json.loads(capsys.readouterr().out)
+        assert data["used_tokens"] == 0
+        assert data["files"] == {}
+        assert data["graphs"]["symbol"]["callees"]["found"] is True
+        assert data["graphs"]["entrypoint"]["flow"]["found"] is True
+        assert data["surface"]["pages"]
+
+    def test_unknown_graph_filters_return_structured_empty_results(
+        self, tmp_project, tmp_path, capsys
+    ):
+        _write_query_project(tmp_project)
+        _write_query_wiki(tmp_project, "agent_wiki")
+        request = _write_request(
+            tmp_path,
+            _protocol_request(
+                budget_tokens=100000,
+                filters={"symbol": "missing", "entrypoint": "missing"},
+            ),
+        )
+
+        context_cmd.run(_make_args(request=request, budget=None, wiki_dir="agent_wiki"))
+
+        data = json.loads(capsys.readouterr().out)
+        assert data["graphs"]["symbol"]["callers"]["found"] is False
+        assert data["graphs"]["symbol"]["callees"]["found"] is False
+        assert data["graphs"]["symbol"]["pages"]["pages"] == []
+        assert data["graphs"]["entrypoint"]["flow"]["flow"] is None
+        assert data["graphs"]["entrypoint"]["data_flow"]["data_flow"] is None
+
+    def test_request_markdown_includes_graph_and_surface_sections(
+        self, tmp_project, tmp_path, capsys
+    ):
+        _write_query_project(tmp_project)
+        _write_query_wiki(tmp_project, "agent_wiki")
+        request = _write_request(
+            tmp_path,
+            _protocol_request(
+                budget_tokens=100000,
+                format="markdown",
+                filters={
+                    "symbol": "run",
+                    "entrypoint": "api-run",
+                    "surface": "flows",
+                },
+            ),
+        )
+
+        context_cmd.run(_make_args(request=request, budget=None, wiki_dir="agent_wiki"))
+
+        data = json.loads(capsys.readouterr().out)
+        assert "Documentation Graphs" in data["content"]
+        assert "Symbol `run`" in data["content"]
+        assert "Entry point `api-run`" in data["content"]
+        assert "Surface `flows`" in data["content"]
+
     @pytest.mark.parametrize(
         ("request_data", "field"),
         [
@@ -496,6 +707,9 @@ class TestProtocolRun:
             (_protocol_request(focus=["neighbors"]), "focus"),
             (_protocol_request(extra=True), "extra"),
             (_protocol_request(filters={"package": "api"}), "filters.package"),
+            (_protocol_request(filters={"symbol": ""}), "filters.symbol"),
+            (_protocol_request(filters={"entrypoint": ""}), "filters.entrypoint"),
+            (_protocol_request(filters={"surface": "bad"}), "filters.surface"),
         ],
     )
     def test_invalid_requests_return_error_envelope(
