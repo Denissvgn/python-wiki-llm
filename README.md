@@ -46,9 +46,10 @@ notes instead of blank diagram fences.
 Registry-backed surfaces are distributed through the available query and mirror
 interfaces. The MCP server exposes read-only resources, search, and status
 counts for the same surface kinds. The supported Python API exposes source
-inventory and context payloads through `extract_source(...)` and
-`build_context(...)`. `llm-wiki obsidian export` mirrors the canonical Markdown
-wiki for Obsidian, and `llm-wiki site export|check` mirrors and validates
+inventory, context payloads, registry-backed page metadata, and graph queries
+through `extract_source(...)`, `build_context(...)`, `list_wiki_pages(...)`, and
+the documentation query wrappers. `llm-wiki obsidian export` mirrors the canonical
+Markdown wiki for Obsidian, and `llm-wiki site export|check` mirrors and validates
 plain, MkDocs-compatible, or Docusaurus-compatible Markdown output without
 invoking external builders. Static-site output is a derived artifact; it must
 not become a second editable source of truth.
