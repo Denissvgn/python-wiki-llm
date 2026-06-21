@@ -20,6 +20,7 @@ from llm_wiki_cli.commands.sync_cmd import (
 )
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME, InventoryCacheStats
+from llm_wiki_cli.services import plugins
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -58,6 +59,36 @@ def _body_line_count(function) -> int:
     first_body_line = min(stmt.lineno for stmt in body)
     last_body_line = max(stmt.end_lineno for stmt in body)
     return last_body_line - first_body_line + 1
+
+
+def _write_entrypoint_detector_plugin(root: Path, *, body: str) -> None:
+    plugin_dir = root / "vendor" / "detector-plugin"
+    plugin_dir.mkdir(parents=True)
+    module_name = "detectors_" + "_".join(root.parts[-3:])
+    module_name = "".join(
+        ch if ch.isalnum() or ch == "_" else "_" for ch in module_name
+    )
+    (plugin_dir / plugins.MANIFEST_FILENAME).write_text(
+        textwrap.dedent(f"""\
+        {{
+          "id": "detector-plugin",
+          "version": "0.1.0",
+          "llm_wiki_version": "*",
+          "components": [
+            {{
+              "type": "entrypoint_detector",
+              "id": "worker",
+              "entry_point": "{module_name}:detect"
+            }}
+          ]
+        }}
+        """),
+        encoding="utf-8",
+    )
+    (plugin_dir / f"{module_name}.py").write_text(
+        textwrap.dedent(body), encoding="utf-8"
+    )
+    plugins.install_plugin(str(plugin_dir), root=root, yes=True)
 
 
 class TestSyncRunStructure:
@@ -1760,6 +1791,67 @@ class TestSyncFlowRegeneration:
         sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
 
         assert calls == 1
+        assert "helper_b" in (wiki / "flows" / "api-run.md").read_text(encoding="utf-8")
+
+    def test_regenerates_plugin_detector_flow_and_surface_index(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        _write_entrypoint_detector_plugin(
+            proj,
+            body="""
+            def detect(inventory):
+                return [{
+                    "category": "task",
+                    "file": "svc.py",
+                    "symbol": "run",
+                    "label": "task-handler",
+                }]
+            """,
+        )
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        capsys.readouterr()
+
+        self._write_svc(proj, "helper_b")
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        flow_page = wiki / "flows" / "task-task-handler.md"
+        assert "helper_b" in flow_page.read_text(encoding="utf-8")
+        surface = json.loads(
+            (wiki / SURFACE_INDEX_FILENAME).read_text(encoding="utf-8")
+        )
+        assert {
+            "id": "task-task-handler",
+            "category": "task",
+            "entry_point": {
+                "symbol": "run",
+                "source_path": "svc.py",
+                "label": "task-handler",
+            },
+        } in surface["flows"]
+
+    def test_plugin_detector_failure_warns_once_during_sync(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        _write_entrypoint_detector_plugin(
+            proj,
+            body="""
+            def detect(inventory):
+                raise RuntimeError("sync detector failed")
+            """,
+        )
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        capsys.readouterr()
+
+        self._write_svc(proj, "helper_b")
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        out = capsys.readouterr().out
+        assert out.count("sync detector failed") == 1
+        assert "Warning:" in out
         assert "helper_b" in (wiki / "flows" / "api-run.md").read_text(encoding="utf-8")
 
     def test_does_not_create_flows_when_opted_out(self, tmp_path, monkeypatch, capsys):

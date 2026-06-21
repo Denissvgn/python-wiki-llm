@@ -14,10 +14,14 @@ LLM calls and tolerates inventories that omit optional fields.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable, Mapping
 from collections import Counter
-from pathlib import Path
+from dataclasses import dataclass
+from pathlib import Path, PurePosixPath
+from typing import Any
 
 from .imports import build_module_path_resolver
+from .plugins import PluginError, entrypoint_detector_components, load_entry_point
 
 # ── Entry-point categories ────────────────────────────────────────────
 
@@ -38,8 +42,15 @@ _HTTP_DECORATORS = frozenset(
     {"route", "get", "post", "put", "delete", "patch", "head", "options"}
 )
 _MCP_DECORATORS = frozenset({"tool", "resource", "prompt"})
+_PLUGIN_CATEGORY_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
 
 _DEFAULT_FLOW_DEPTH = 6
+
+
+@dataclass(frozen=True)
+class EntryPointDetectionResult:
+    entries: list[dict]
+    warnings: list[str]
 
 
 def _entry(
@@ -134,6 +145,99 @@ def _resolve_module_file(module: str, resolver) -> str | None:
     return next(iter(candidates)) if len(candidates) == 1 else None
 
 
+def _plugin_warning(component: Mapping[str, Any], message: str) -> str:
+    ref = component.get("ref") or component.get("id") or component.get("entry_point")
+    return f"Plugin entry-point detector {ref}: {message}"
+
+
+def _plugin_error(message: str) -> PluginError:
+    return PluginError(message)
+
+
+def _iter_plugin_records(value: Any) -> Iterable[Mapping[str, Any]]:
+    if isinstance(value, (str, bytes)) or isinstance(value, Mapping):
+        raise _plugin_error("must return an iterable of entry-point records.")
+    if not isinstance(value, Iterable):
+        raise _plugin_error("must return an iterable of entry-point records.")
+    return value
+
+
+def _safe_plugin_file(value: Any) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value:
+        raise _plugin_error("file must be a non-empty relative POSIX path or null.")
+    if "\\" in value:
+        raise _plugin_error("file must use POSIX '/' separators.")
+    path = PurePosixPath(value)
+    if path.is_absolute() or ".." in path.parts:
+        raise _plugin_error("file must stay relative to the source inventory.")
+    return path.as_posix()
+
+
+def _safe_plugin_text(record: Mapping[str, Any], key: str) -> str:
+    value = record.get(key)
+    if not isinstance(value, str) or not value:
+        raise _plugin_error(f"{key} must be a non-empty string.")
+    return value
+
+
+def _normalize_plugin_entry(record: Any) -> dict:
+    if not isinstance(record, Mapping):
+        raise _plugin_error("record must be an object.")
+    category = _safe_plugin_text(record, "category")
+    if not _PLUGIN_CATEGORY_RE.match(category):
+        raise _plugin_error(f"category must be a safe identifier: {category!r}.")
+    symbol = _safe_plugin_text(record, "symbol")
+    label = record.get("label", symbol)
+    if not isinstance(label, str) or not label:
+        raise _plugin_error("label must be a non-empty string when provided.")
+    return _entry(category, _safe_plugin_file(record.get("file")), symbol, label)
+
+
+def _load_plugin_detector(component: Mapping[str, Any], root: str | Path):
+    return load_entry_point(str(component["entry_point"]), root=root)
+
+
+def _detector_components(
+    root: str | Path, *, strict_plugin_errors: bool
+) -> tuple[list[dict[str, Any]], list[str]]:
+    try:
+        return entrypoint_detector_components(root=root), []
+    except PluginError as exc:
+        if strict_plugin_errors:
+            raise
+        return [], [f"Plugin entry-point detectors unavailable: {exc}"]
+
+
+def _detect_plugin_entries(
+    inventory: dict, *, root: str | Path, strict_plugin_errors: bool
+) -> EntryPointDetectionResult:
+    components, warnings = _detector_components(
+        root, strict_plugin_errors=strict_plugin_errors
+    )
+    entries: list[dict] = []
+    for component in components:
+        try:
+            detector = _load_plugin_detector(component, root)
+            records = list(_iter_plugin_records(detector(inventory)))
+        except Exception as exc:
+            if strict_plugin_errors:
+                raise
+            warnings.append(_plugin_warning(component, f"failed: {exc}"))
+            continue
+        for index, record in enumerate(records, start=1):
+            try:
+                entries.append(_normalize_plugin_entry(record))
+            except Exception as exc:
+                if strict_plugin_errors:
+                    raise
+                warnings.append(
+                    _plugin_warning(component, f"invalid record {index}: {exc}")
+                )
+    return EntryPointDetectionResult(entries, warnings)
+
+
 # ── Console-script parsing (pyproject.toml ``[project.scripts]``) ──────
 
 
@@ -214,15 +318,9 @@ def _assign_ids(entries: list[dict]) -> list[dict]:
     return entries
 
 
-def get_entry_points(
-    inventory: dict, *, console_scripts: list[dict] | None = None
+def _builtin_entry_points(
+    inventory: dict, console_scripts: list[dict] | None
 ) -> list[dict]:
-    """Detect user-reachable entry points from a deep inventory.
-
-    Returns a deterministically ordered list of
-    ``{"id", "category", "file", "symbol", "label"}`` records. ``console_scripts``
-    are the parsed ``[project.scripts]`` entries (see :func:`read_console_scripts`).
-    """
     entries: list[dict] = []
     entries += _detect_decorated(
         inventory, _CLI_DECORATORS, CATEGORY_CLI, allow_bare=True
@@ -236,9 +334,45 @@ def get_entry_points(
     )
     entries += _detect_process(inventory, console_scripts)
 
+    return entries
+
+
+def _finalize_entries(entries: list[dict]) -> list[dict]:
     entries = _dedup(entries)
     entries.sort(key=lambda e: (e["category"], e.get("file") or "", e["symbol"]))
     return _assign_ids(entries)
+
+
+def detect_entry_points(
+    inventory: dict,
+    *,
+    console_scripts: list[dict] | None = None,
+    root: str | Path = ".",
+    include_plugins: bool = True,
+    strict_plugin_errors: bool = False,
+) -> EntryPointDetectionResult:
+    """Detect user-reachable entry points and non-fatal plugin warnings."""
+    entries = _builtin_entry_points(inventory, console_scripts)
+    warnings: list[str] = []
+    if include_plugins:
+        plugin_result = _detect_plugin_entries(
+            inventory, root=root, strict_plugin_errors=strict_plugin_errors
+        )
+        entries += plugin_result.entries
+        warnings += plugin_result.warnings
+    return EntryPointDetectionResult(_finalize_entries(entries), warnings)
+
+
+def get_entry_points(
+    inventory: dict, *, console_scripts: list[dict] | None = None
+) -> list[dict]:
+    """Detect user-reachable entry points from a deep inventory.
+
+    Returns a deterministically ordered list of
+    ``{"id", "category", "file", "symbol", "label"}`` records. ``console_scripts``
+    are the parsed ``[project.scripts]`` entries (see :func:`read_console_scripts`).
+    """
+    return detect_entry_points(inventory, console_scripts=console_scripts).entries
 
 
 # ── Flow assembly ─────────────────────────────────────────────────────

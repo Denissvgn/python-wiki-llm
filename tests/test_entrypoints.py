@@ -7,8 +7,10 @@ import inspect
 import textwrap
 
 from llm_wiki_cli.commands.extract_cmd import get_inventory, resolve_call_edges
+from llm_wiki_cli.services import plugins
 from llm_wiki_cli.services.entrypoints import (
     build_flow,
+    detect_entry_points,
     get_entry_points,
     read_console_scripts,
     _parse_scripts_section,
@@ -29,6 +31,37 @@ def _entry(file, symbol):
         "symbol": symbol,
         "label": symbol,
     }
+
+
+def _write_detector_plugin(tmp_path, *, body, plugin_id="detector-plugin"):
+    plugin_dir = tmp_path / "vendor" / plugin_id
+    plugin_dir.mkdir(parents=True)
+    module_name = "detectors_" + "_".join(tmp_path.parts[-3:])
+    module_name = "".join(
+        ch if ch.isalnum() or ch == "_" else "_" for ch in module_name
+    )
+    (plugin_dir / plugins.MANIFEST_FILENAME).write_text(
+        textwrap.dedent(f"""\
+        {{
+          "id": "{plugin_id}",
+          "version": "0.1.0",
+          "llm_wiki_version": "*",
+          "components": [
+            {{
+              "type": "entrypoint_detector",
+              "id": "worker",
+              "entry_point": "{module_name}:detect"
+            }}
+          ]
+        }}
+        """),
+        encoding="utf-8",
+    )
+    (plugin_dir / f"{module_name}.py").write_text(
+        textwrap.dedent(body), encoding="utf-8"
+    )
+    plugins.install_plugin(str(plugin_dir), root=tmp_path, yes=True)
+    return plugin_dir
 
 
 class TestGetEntryPoints:
@@ -150,6 +183,90 @@ class TestGetEntryPoints:
         assert len(ids) == len(set(ids))
         assert {"api-run-a", "api-run-b"} == set(ids)
         assert get_entry_points(inventory) == eps  # deterministic across runs
+
+    def test_installed_plugin_detector_adds_entry_point(self, tmp_path):
+        _write_detector_plugin(
+            tmp_path,
+            body="""
+            def detect(inventory):
+                assert "tasks.py" in inventory
+                return [{
+                    "id": "ignored-by-core",
+                    "category": "task",
+                    "file": "tasks.py",
+                    "symbol": "handle",
+                    "label": "task-handler",
+                }]
+            """,
+        )
+        (tmp_path / "tasks.py").write_text("def handle():\n    return 1\n")
+        inventory = get_inventory(str(tmp_path), deep=True)
+
+        result = detect_entry_points(inventory, root=tmp_path)
+
+        assert result.warnings == []
+        assert {
+            "id": "task-task-handler",
+            "category": "task",
+            "file": "tasks.py",
+            "symbol": "handle",
+            "label": "task-handler",
+        } in result.entries
+
+    def test_plugin_detector_failure_warns_and_keeps_builtins(self, tmp_path):
+        _write_detector_plugin(
+            tmp_path,
+            body="""
+            def detect(inventory):
+                raise RuntimeError("detector exploded")
+            """,
+        )
+        (tmp_path / "api.py").write_text('__all__ = ["run"]\n\ndef run():\n    pass\n')
+        inventory = get_inventory(str(tmp_path), deep=True)
+
+        result = detect_entry_points(inventory, root=tmp_path)
+
+        assert [entry["id"] for entry in result.entries] == ["api-run"]
+        assert len(result.warnings) == 1
+        assert "detector-plugin/worker" in result.warnings[0]
+        assert "detector exploded" in result.warnings[0]
+
+    def test_plugin_entry_collisions_use_existing_stable_ids(self, tmp_path):
+        _write_detector_plugin(
+            tmp_path,
+            body="""
+            def detect(inventory):
+                return [{
+                    "category": "api",
+                    "file": "b.py",
+                    "symbol": "run",
+                    "label": "run",
+                }]
+            """,
+        )
+        (tmp_path / "a.py").write_text('__all__ = ["run"]\n\ndef run():\n    pass\n')
+        (tmp_path / "b.py").write_text("def run():\n    pass\n")
+        inventory = get_inventory(str(tmp_path), deep=True)
+
+        result = detect_entry_points(inventory, root=tmp_path)
+
+        assert [entry["id"] for entry in result.entries] == ["api-run-a", "api-run-b"]
+
+    def test_invalid_plugin_records_warn_without_crashing(self, tmp_path):
+        _write_detector_plugin(
+            tmp_path,
+            body="""
+            def detect(inventory):
+                return [{"category": "bad category", "symbol": "run"}]
+            """,
+        )
+        inventory = {"api.py": {"functions": [{"name": "run"}], "classes": []}}
+
+        result = detect_entry_points(inventory, root=tmp_path)
+
+        assert result.entries == []
+        assert len(result.warnings) == 1
+        assert "bad category" in result.warnings[0]
 
 
 class TestBuildFlow:

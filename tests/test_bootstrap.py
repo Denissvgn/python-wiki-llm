@@ -15,6 +15,7 @@ from llm_wiki_cli import cli
 from llm_wiki_cli.commands import bootstrap_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.services.dependencies import analyze_dependencies
+from llm_wiki_cli.services import plugins
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 # True when git is on PATH; used to guard git-dependent fixture steps.
@@ -52,6 +53,36 @@ def _body_line_count(function) -> int:
     first_body_line = min(stmt.lineno for stmt in body)
     last_body_line = max(stmt.end_lineno for stmt in body)
     return last_body_line - first_body_line + 1
+
+
+def _write_entrypoint_detector_plugin(root: Path, *, body: str) -> None:
+    plugin_dir = root / "vendor" / "detector-plugin"
+    plugin_dir.mkdir(parents=True)
+    module_name = "detectors_" + "_".join(root.parts[-3:])
+    module_name = "".join(
+        ch if ch.isalnum() or ch == "_" else "_" for ch in module_name
+    )
+    (plugin_dir / plugins.MANIFEST_FILENAME).write_text(
+        textwrap.dedent(f"""\
+        {{
+          "id": "detector-plugin",
+          "version": "0.1.0",
+          "llm_wiki_version": "*",
+          "components": [
+            {{
+              "type": "entrypoint_detector",
+              "id": "worker",
+              "entry_point": "{module_name}:detect"
+            }}
+          ]
+        }}
+        """),
+        encoding="utf-8",
+    )
+    (plugin_dir / f"{module_name}.py").write_text(
+        textwrap.dedent(body), encoding="utf-8"
+    )
+    plugins.install_plugin(str(plugin_dir), root=root, yes=True)
 
 
 def test_bootstrap_run_stays_a_short_coordinator():
@@ -923,6 +954,72 @@ class TestBootstrapFlows:
         assert "sequenceDiagram" in text
         assert "_helper" in text
         assert "## Behavior" in text
+
+    def test_plugin_detector_creates_flow_page(self, tmp_path, monkeypatch, capsys):
+        _write_entrypoint_detector_plugin(
+            tmp_path,
+            body="""
+            def detect(inventory):
+                return [{
+                    "category": "task",
+                    "file": "tasks.py",
+                    "symbol": "handle",
+                    "label": "task-handler",
+                }]
+            """,
+        )
+        (tmp_path / "tasks.py").write_text("def handle():\n    return 1\n")
+        monkeypatch.chdir(tmp_path)
+
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
+
+        flow_page = tmp_path / "wiki" / "flows" / "task-task-handler.md"
+        assert flow_page.exists()
+        assert "# task-handler" in flow_page.read_text(encoding="utf-8")
+
+    def test_plugin_detector_failure_warns_in_text_output(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        _write_entrypoint_detector_plugin(
+            tmp_path,
+            body="""
+            def detect(inventory):
+                raise RuntimeError("bootstrap detector failed")
+            """,
+        )
+        self._write_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
+
+        out = capsys.readouterr().out
+        assert "Warning:" in out
+        assert "bootstrap detector failed" in out
+        assert (tmp_path / "wiki" / "flows" / "api-run.md").exists()
+
+    def test_json_summary_includes_plugin_detector_warnings(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        _write_entrypoint_detector_plugin(
+            tmp_path,
+            body="""
+            def detect(inventory):
+                raise RuntimeError("json detector failed")
+            """,
+        )
+        self._write_project(tmp_path)
+        monkeypatch.chdir(tmp_path)
+
+        bootstrap_cmd.run(
+            _make_args(src_dir=".", wiki_dir="wiki", format="json", source_adapter=True)
+        )
+
+        captured = capsys.readouterr()
+        data = json.loads(captured.out)
+        assert len(data["warnings"]) == 1
+        assert "json detector failed" in data["warnings"][0]
+        assert "Warning:" in captured.err
+        assert "json detector failed" in captured.err
 
     def test_generates_flow_page_without_data_flow_when_skipped(
         self, tmp_path, monkeypatch, capsys

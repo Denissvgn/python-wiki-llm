@@ -29,7 +29,7 @@ from ..services.dependencies import (
     package_dependency_graph,
 )
 from ..services.diagrams import data_flow_diagram, flowchart, sequence_diagram
-from ..services.entrypoints import build_flow, get_entry_points, read_console_scripts
+from ..services.entrypoints import build_flow, detect_entry_points, read_console_scripts
 from ..services.imports import ModulePathResolver, build_module_path_resolver
 from ..services.io import read_md, write_md
 from ..services.module_maps import build_module_dependency_maps
@@ -1914,6 +1914,7 @@ class _BootstrapRunState:
     created_files: list[str] = field(default_factory=list)
     updated_files: list[str] = field(default_factory=list)
     skipped_files: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -2015,6 +2016,12 @@ def _emit_bootstrap(
     state: _BootstrapRunState, message: str = "", *, flush: bool = False
 ) -> None:
     print(message, file=state.options.progress_stream, flush=flush)
+
+
+def _emit_bootstrap_warnings(state: _BootstrapRunState, warnings: list[str]) -> None:
+    state.warnings.extend(warnings)
+    for warning in warnings:
+        _emit_bootstrap(state, f"Warning: {warning}", flush=True)
 
 
 def _record_bootstrap_write(
@@ -2326,7 +2333,9 @@ def _write_bootstrap_flow_pages(
 
     _emit_bootstrap(state, "Generating user-flow pages...", flush=True)
     console_scripts = read_console_scripts(state.options.src_dir_for_scan)
-    entry_points = get_entry_points(inventory, console_scripts=console_scripts)
+    entrypoint_result = detect_entry_points(inventory, console_scripts=console_scripts)
+    _emit_bootstrap_warnings(state, entrypoint_result.warnings)
+    entry_points = entrypoint_result.entries
     if not entry_points:
         edges = []
     elif call_edges is not None:
@@ -2634,34 +2643,28 @@ def _emit_bootstrap_json_summary(
     if not state.options.json_mode:
         return
 
-    print(
-        json.dumps(
-            {
-                "schema_version": BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
-                "src_dir": state.options.src_dir_for_scan,
-                "generated_wiki_path": _path_text(state.options.wiki_dir),
-                "depth": state.options.depth,
-                "source_files": len(state.source_snapshot.all_source_paths),
-                "classes": sum(
-                    len(data.get("classes", [])) for data in inventory.values()
-                ),
-                "functions": sum(
-                    len(data.get("functions", [])) for data in inventory.values()
-                ),
-                "docker_files": len(infrastructure_result.docker_inventory),
-                "workflows": len(workflow_result.entries),
-                "flows": len(flow_result.entries),
-                "data_flows": flow_result.data_flow_summary,
-                "dependencies": dependency_result.summary,
-                "cross_references": cross_reference_count,
-                "created_files": state.created_files,
-                "updated_files": state.updated_files,
-                "skipped_files": state.skipped_files,
-                "manifest_path": _path_text(manifest_path),
-            },
-            indent=2,
-        )
-    )
+    summary = {
+        "schema_version": BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
+        "src_dir": state.options.src_dir_for_scan,
+        "generated_wiki_path": _path_text(state.options.wiki_dir),
+        "depth": state.options.depth,
+        "source_files": len(state.source_snapshot.all_source_paths),
+        "classes": sum(len(data.get("classes", [])) for data in inventory.values()),
+        "functions": sum(len(data.get("functions", [])) for data in inventory.values()),
+        "docker_files": len(infrastructure_result.docker_inventory),
+        "workflows": len(workflow_result.entries),
+        "flows": len(flow_result.entries),
+        "data_flows": flow_result.data_flow_summary,
+        "dependencies": dependency_result.summary,
+        "cross_references": cross_reference_count,
+        "created_files": state.created_files,
+        "updated_files": state.updated_files,
+        "skipped_files": state.skipped_files,
+        "manifest_path": _path_text(manifest_path),
+    }
+    if state.warnings:
+        summary["warnings"] = state.warnings
+    print(json.dumps(summary, indent=2))
 
 
 def _generate_bootstrap_content(

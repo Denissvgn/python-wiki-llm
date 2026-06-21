@@ -45,7 +45,12 @@ from .bootstrap_cmd import (
 from ..config import validate_path
 from ..services.data_flow import analyze_data_flow, build_data_flow_context
 from ..services.dependencies import analyze_dependencies
-from ..services.entrypoints import build_flow, get_entry_points, read_console_scripts
+from ..services.entrypoints import (
+    EntryPointDetectionResult,
+    build_flow,
+    detect_entry_points,
+    read_console_scripts,
+)
 from ..services.inventory_cache import (
     InventoryCacheOptions,
     InventoryCacheStats,
@@ -1569,10 +1574,11 @@ def _finish_if_no_changes(
     inventory_result: InventoryResult,
     inventory: dict,
     page_maps: _SyncPageMaps,
+    entry_points: list[dict],
 ) -> bool:
     if diff.has_changes:
         return False
-    _write_sync_surface_index(options, inventory, page_maps)
+    _write_sync_surface_index(options, inventory, page_maps, entry_points)
     print("Wiki is up to date.")
     _print_cache_stats(
         inventory_result.cache_stats, enabled=options.cache_stats_enabled
@@ -1608,6 +1614,7 @@ def _apply_sync_changes(
     inventory: dict,
     diff: "SyncDiff",
     page_maps: _SyncPageMaps,
+    entry_points: list[dict],
 ) -> "SyncResult":
     generated_sections = _build_generated_section_context(options, inventory)
     result = _apply_diff(
@@ -1622,7 +1629,9 @@ def _apply_sync_changes(
         preserve_semantic=options.preserve_semantic,
     )
 
-    _regenerate_flow_pages(options, inventory, page_maps.module_page_map)
+    _regenerate_flow_pages(
+        options, inventory, page_maps.module_page_map, entry_points=entry_points
+    )
     _regenerate_dependency_pages(
         options,
         inventory,
@@ -1659,23 +1668,31 @@ def _write_updated_manifest(
     print(f"Manifest written to {options.wiki_dir / MANIFEST_FILENAME}", flush=True)
 
 
-def _surface_index_entry_points(inventory: dict, src_dir: str) -> list[dict]:
+def _detect_sync_entry_points(
+    inventory: dict, src_dir: str
+) -> EntryPointDetectionResult:
     console_scripts = read_console_scripts(src_dir)
-    return get_entry_points(inventory, console_scripts=console_scripts)
+    result = detect_entry_points(inventory, console_scripts=console_scripts)
+    for warning in result.warnings:
+        print(f"Warning: {warning}", flush=True)
+    return result
 
 
 def _write_sync_surface_index(
     options: _SyncRunOptions,
     inventory: dict,
     page_maps: _SyncPageMaps,
+    entry_points: list[dict] | None = None,
 ) -> None:
+    if entry_points is None:
+        entry_points = _detect_sync_entry_points(inventory, options.src_dir).entries
     surface_path, write_state = write_surface_index(
         options.wiki_dir,
         inventory,
         src_dir=options.src_dir,
         entity_page_cache=page_maps.entity_page_cache,
         module_page_map=page_maps.module_page_map,
-        entry_points=_surface_index_entry_points(inventory, options.src_dir),
+        entry_points=entry_points,
     )
     if write_state != "unchanged":
         print(f"Surface index written to {surface_path}", flush=True)
@@ -1712,17 +1729,18 @@ def run(args) -> None:
     if _repair_manifest_if_needed(options, manifest, inventory, inventory_result):
         return
 
-    page_maps = _prepare_sync_page_maps(inventory)
-    diff = _compute_sync_diff(manifest, inventory, options, page_maps)
+    maps = _prepare_sync_page_maps(inventory)
+    entries = _detect_sync_entry_points(inventory, options.src_dir).entries
+    diff = _compute_sync_diff(manifest, inventory, options, maps)
 
-    if _finish_if_no_changes(options, diff, inventory_result, inventory, page_maps):
+    if _finish_if_no_changes(options, diff, inventory_result, inventory, maps, entries):
         return
 
     _exit_if_large_unforced_diff(options, diff, manifest, inventory_result)
 
-    result = _apply_sync_changes(options, manifest, inventory, diff, page_maps)
-    _write_sync_surface_index(options, inventory, page_maps)
-    _write_updated_manifest(options, inventory, page_maps)
+    result = _apply_sync_changes(options, manifest, inventory, diff, maps, entries)
+    _write_sync_surface_index(options, inventory, maps, entries)
+    _write_updated_manifest(options, inventory, maps)
     _print_sync_summary(result, diff)
     _print_cache_stats(
         inventory_result.cache_stats, enabled=options.cache_stats_enabled
@@ -1949,6 +1967,8 @@ def _regenerate_flow_pages(
     options: _SyncRunOptions,
     inventory: dict,
     module_page_map: dict[str, str],
+    *,
+    entry_points: list[dict] | None = None,
 ) -> int:
     """Regenerate flow pages from the current inventory, preserving Behavior.
 
@@ -1962,8 +1982,8 @@ def _regenerate_flow_pages(
     if not flows_dir.exists() or not any(flows_dir.glob("*.md")):
         return 0
 
-    console_scripts = read_console_scripts(options.src_dir)
-    entry_points = get_entry_points(inventory, console_scripts=console_scripts)
+    if entry_points is None:
+        entry_points = _detect_sync_entry_points(inventory, options.src_dir).entries
     edges = resolve_call_edges(inventory) if entry_points else []
     data_flow_context = (
         build_data_flow_context(inventory, edges) if entry_points else None

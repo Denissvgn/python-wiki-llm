@@ -580,6 +580,10 @@ def parallel_safe_extractor_entry_points(root: str | Path = ".") -> set[str]:
     }
 
 
+def entrypoint_detector_components(root: str | Path = ".") -> list[dict[str, Any]]:
+    return iter_components("entrypoint_detector", root=root)
+
+
 def read_component_text(component: dict[str, Any]) -> str:
     path = Path(component["plugin_dir"]) / component["path"]
     return path.read_text(encoding="utf-8")

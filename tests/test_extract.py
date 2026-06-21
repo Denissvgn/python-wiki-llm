@@ -25,6 +25,7 @@ from llm_wiki_cli.extractors.python_extractor import (
 )
 from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
 from llm_wiki_cli.services.packages import discover_packages, stamp_inventory_packages
+from llm_wiki_cli.services import plugins
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
 
@@ -39,6 +40,36 @@ def _body_line_count(function) -> int:
 
 def _expression_node(source: str) -> ast.expr:
     return ast.parse(source, mode="eval").body
+
+
+def _write_entrypoint_detector_plugin(root: Path, *, body: str) -> None:
+    plugin_dir = root / "vendor" / "detector-plugin"
+    plugin_dir.mkdir(parents=True)
+    module_name = "detectors_" + "_".join(root.parts[-3:])
+    module_name = "".join(
+        ch if ch.isalnum() or ch == "_" else "_" for ch in module_name
+    )
+    (plugin_dir / plugins.MANIFEST_FILENAME).write_text(
+        textwrap.dedent(f"""\
+        {{
+          "id": "detector-plugin",
+          "version": "0.1.0",
+          "llm_wiki_version": "*",
+          "components": [
+            {{
+              "type": "entrypoint_detector",
+              "id": "worker",
+              "entry_point": "{module_name}:detect"
+            }}
+          ]
+        }}
+        """),
+        encoding="utf-8",
+    )
+    (plugin_dir / f"{module_name}.py").write_text(
+        textwrap.dedent(body), encoding="utf-8"
+    )
+    plugins.install_plugin(str(plugin_dir), root=root, yes=True)
 
 
 class TestExpressionSummarizer:
@@ -1389,6 +1420,56 @@ class TestExtractEntryPoints:
         )
         result = extract_cmd.build_extract_payload(".", deep=False)
         assert "entrypoints" not in result.payload
+
+    def test_deep_payload_includes_plugin_detector_entrypoints(
+        self, tmp_path, monkeypatch
+    ):
+        monkeypatch.chdir(tmp_path)
+        _write_entrypoint_detector_plugin(
+            tmp_path,
+            body="""
+            def detect(inventory):
+                return [{
+                    "category": "task",
+                    "file": "tasks.py",
+                    "symbol": "handle",
+                    "label": "task-handler",
+                }]
+            """,
+        )
+        (tmp_path / "tasks.py").write_text("def handle():\n    return 1\n")
+
+        result = extract_cmd.build_extract_payload(".", deep=True)
+
+        assert {
+            "id": "task-task-handler",
+            "category": "task",
+            "file": "tasks.py",
+            "symbol": "handle",
+            "label": "task-handler",
+        } in result.payload["entrypoints"]
+
+    def test_deep_payload_includes_plugin_detector_warnings(
+        self, tmp_path, monkeypatch
+    ):
+        monkeypatch.chdir(tmp_path)
+        _write_entrypoint_detector_plugin(
+            tmp_path,
+            body="""
+            def detect(inventory):
+                raise RuntimeError("no detector today")
+            """,
+        )
+        (tmp_path / "api.py").write_text(
+            '__all__ = ["run"]\n\n\ndef run():\n    return 1\n'
+        )
+
+        result = extract_cmd.build_extract_payload(".", deep=True)
+
+        assert [entry["id"] for entry in result.payload["entrypoints"]] == ["api-run"]
+        assert len(result.payload["warnings"]) == 1
+        assert "detector-plugin/worker" in result.payload["warnings"][0]
+        assert "no detector today" in result.payload["warnings"][0]
 
 
 class TestExtractDataFlows:

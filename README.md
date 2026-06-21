@@ -336,6 +336,10 @@ the emitted inventory before summary collapse. Inventory keys are POSIX paths re
 never absolute paths. The v1 contract permits additive fields; incompatible
 shape changes require a new schema version. The M3 data-flow fields are
 therefore optional additions under `llm-wiki-extract/v1`, not a schema bump.
+Installed `entrypoint_detector` plugin hooks also contribute to the same
+`entrypoints` array in deep output. Detector failures are isolated: built-in
+entry-point detection still runs, `extract` prints a warning to stderr, and the
+JSON payload includes top-level `warnings` only when such diagnostics exist.
 
 ### `prepare-extractors`
 
@@ -590,6 +594,13 @@ Python files inside the plugin directory; installed entry points are checked
 again before runtime import. Extractor components may set `"parallel_safe": true`
 to opt into `--jobs` parallel execution; omit it unless the extractor is safe to
 run concurrently in a fresh instance.
+
+An `entrypoint_detector` hook is called with the plain extracted inventory and
+returns entry-point records shaped as `{category, file, symbol, label}`. `file`
+may be `null` or a relative POSIX inventory path, `label` is optional, and any
+plugin-supplied `id` is ignored so core deduplication and stable id assignment
+remain authoritative. Detector exceptions or invalid records become warnings in
+`extract --deep`, `bootstrap`, and `sync`; built-in detectors still run.
 
 ### `team`
 

@@ -23,7 +23,8 @@ from ..extractors.rust_extractor import RustExtractionRequest
 from ..services.contracts import EXTRACT_SCHEMA_VERSION
 from ..services.data_flow import analyze_data_flow, build_data_flow_context
 from ..services.dependencies import analyze_dependencies
-from ..services.entrypoints import build_flow, get_entry_points, read_console_scripts
+from ..services.entrypoints import build_flow, detect_entry_points, read_console_scripts
+from ..services.entrypoints import get_entry_points as get_entry_points  # noqa: F401
 from ..services.inventory_cache import (
     InventoryCache,
     InventoryCacheOptions,
@@ -917,11 +918,15 @@ def build_extract_payload(
 
     # Entry points need the deep fields (decorators, __all__, __main__); detect
     # before any summary collapse.
-    entrypoints = (
-        get_entry_points(inventory, console_scripts=read_console_scripts(str(src_root)))
-        if deep
-        else []
-    )
+    entrypoint_warnings: list[str] = []
+    if deep:
+        entrypoint_result = detect_entry_points(
+            inventory, console_scripts=read_console_scripts(str(src_root))
+        )
+        entrypoints = entrypoint_result.entries
+        entrypoint_warnings = entrypoint_result.warnings
+    else:
+        entrypoints = []
     call_edges = resolve_call_edges(inventory) if deep and entrypoints else []
     data_flow_context = (
         build_data_flow_context(inventory, call_edges) if deep and entrypoints else None
@@ -962,6 +967,8 @@ def build_extract_payload(
         output["data_flows"] = data_flows
     if dependencies is not None:
         output["dependencies"] = dependencies
+    if entrypoint_warnings:
+        output["warnings"] = entrypoint_warnings
 
     return ExtractPayloadResult(
         output,
@@ -1042,6 +1049,9 @@ def run(args):
         print(f"Extract output written to: {output_path}", file=sys.stderr)
     else:
         print(rendered)
+
+    for warning in result.payload.get("warnings", []):
+        print(f"Warning: {warning}", file=sys.stderr)
 
     print(
         f"Extracted {result.inventory_count} files with tracked components.",
