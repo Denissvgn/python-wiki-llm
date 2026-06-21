@@ -96,6 +96,52 @@ class TestMcpWikiService:
         assert result["id"] == "models"
         assert result["uri"] == "llm-wiki://modules/models"
 
+    def test_get_flow_reads_flow_page(self, tmp_project):
+        _write_wiki(tmp_project)
+        service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+        result = service.get_flow("checkout")
+
+        assert result["kind"] == "flows"
+        assert result["id"] == "checkout"
+        assert result["uri"] == "llm-wiki://flows/checkout"
+        assert result["path"] == "flows/checkout.md"
+        assert "Checkout user flow" in result["content"]
+
+    def test_get_flow_rejects_unsafe_page_id(self, tmp_project):
+        _write_wiki(tmp_project)
+        service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+        with pytest.raises(mcp_server.McpWikiError, match="Unsafe wiki page id"):
+            service.get_flow("../checkout")
+
+    def test_get_architecture_page_reads_dependency_pages(self, tmp_project):
+        _write_wiki(tmp_project)
+        service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+        dependencies = service.get_architecture_page("dependencies")
+        load_order = service.get_architecture_page("load-order")
+
+        assert dependencies["uri"] == "llm-wiki://dependencies"
+        assert dependencies["path"] == "dependencies.md"
+        assert "Dependency graph" in dependencies["content"]
+        assert load_order["uri"] == "llm-wiki://load-order"
+        assert load_order["path"] == "load-order.md"
+
+    def test_get_architecture_page_rejects_unknown_page(self, tmp_project):
+        _write_wiki(tmp_project)
+        service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+        with pytest.raises(mcp_server.McpWikiError, match="Unknown architecture page"):
+            service.get_architecture_page("index")
+
+    def test_get_architecture_page_reports_missing_optional_page(self, tmp_project):
+        _write_legacy_wiki(tmp_project)
+        service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+        with pytest.raises(mcp_server.McpWikiError, match="Wiki page not found"):
+            service.get_architecture_page("dependencies")
+
     def test_resource_uri_resolution(self, tmp_project):
         _write_wiki(tmp_project)
         service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
@@ -255,6 +301,106 @@ class TestMcpWikiService:
         assert result["pages"]["load-order"] == 1
         assert result["pages"]["architecture_pages"] == 2
         assert result["hooks"] == ["post-commit"]
+
+    def test_query_graph_dispatches_to_documentation_query_service(
+        self, tmp_project, monkeypatch
+    ):
+        seen = {}
+
+        class FakeQueryService:
+            def __init__(self, limit):
+                self.limit = limit
+
+            def flow_for_entrypoint(self, value):
+                seen["flow"] = (value, self.limit)
+                return {"query": value, "found": True, "flow": {"id": value}}
+
+        def fake_builder(src_dir, *, wiki_dir, limit):
+            seen["builder"] = (src_dir, wiki_dir, limit)
+            return FakeQueryService(limit)
+
+        monkeypatch.setattr(
+            mcp_server, "build_documentation_query_service", fake_builder
+        )
+        service = mcp_server.McpWikiService(src_dir="src", wiki_dir="wiki")
+
+        result = service.query_graph(
+            {"type": "flow_for_entrypoint", "value": "api-run", "limit": 250}
+        )
+
+        assert result == {"query": "api-run", "found": True, "flow": {"id": "api-run"}}
+        assert seen["builder"] == ("src", "wiki", 100)
+        assert seen["flow"] == ("api-run", 100)
+
+    @pytest.mark.parametrize(
+        ("query", "message"),
+        [
+            ({}, "type must be a non-empty string"),
+            ({"type": "missing", "value": "x"}, "Unknown graph query type"),
+            ({"type": "callers", "value": ""}, "value must be a non-empty string"),
+            (
+                {"type": "callers", "value": "run", "limit": 0},
+                "limit must be a positive integer",
+            ),
+            ("callers run", "query must be an object"),
+        ],
+    )
+    def test_query_graph_validates_structured_request(
+        self, tmp_project, monkeypatch, query, message
+    ):
+        def fail_if_built(*args, **kwargs):  # pragma: no cover - assertion helper
+            raise AssertionError("invalid graph queries must not build a service")
+
+        monkeypatch.setattr(
+            mcp_server, "build_documentation_query_service", fail_if_built
+        )
+        service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+        with pytest.raises(mcp_server.McpWikiError, match=message):
+            service.query_graph(query)
+
+    def test_query_graph_maps_query_service_errors(self, tmp_project, monkeypatch):
+        def fake_builder(*args, **kwargs):
+            raise mcp_server.LlmWikiApiError("bad graph request")
+
+        monkeypatch.setattr(
+            mcp_server, "build_documentation_query_service", fake_builder
+        )
+        service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+        with pytest.raises(mcp_server.McpWikiError, match="bad graph request"):
+            service.query_graph({"type": "callers", "value": "run"})
+
+
+class RecordingMcpServer:
+    def __init__(self):
+        self.tool_names: list[str] = []
+
+    def tool(self):
+        def decorator(func):
+            self.tool_names.append(func.__name__)
+            return func
+
+        return decorator
+
+
+def test_tool_registration_names_without_sdk(tmp_project):
+    server = RecordingMcpServer()
+    service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+    mcp_server._register_mcp_tools(server, service)
+
+    assert server.tool_names == [
+        "get_entity",
+        "get_module",
+        "get_flow",
+        "get_architecture_page",
+        "query_graph",
+        "search_wiki",
+        "get_context",
+        "check_wiki",
+        "get_status",
+    ]
 
 
 class TestOriginSafety:

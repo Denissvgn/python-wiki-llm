@@ -12,13 +12,16 @@ import json
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
+from typing import Mapping
 from urllib.parse import unquote, urlparse
 
+from ..api import LlmWikiApiError, build_documentation_query_service
 from ..config import IDE_AGENTS, get_agent_config_path, read_config, validate_path
 from ..commands import context_cmd, lint_cmd
 from ..commands.bootstrap_cmd import build_module_page_map
 from ..commands.extract_cmd import get_inventory
 from . import circuit_breaker, wiki_surface
+from .documentation_queries import DocumentationQueryError
 from .io import read_md
 
 
@@ -37,6 +40,14 @@ _ROOT_RESOURCES = {
 }
 _SEARCH_KINDS = set(_PAGE_KINDS_BY_MCP_KIND)
 _ARCHITECTURE_PAGE_KINDS = {"dependencies", "load-order"}
+_GRAPH_QUERY_METHODS = {
+    "flow_for_entrypoint": "flow_for_entrypoint",
+    "data_flow_for_entrypoint": "data_flow_for_entrypoint",
+    "callers": "callers",
+    "callees": "callees",
+    "dependency_neighborhood": "dependency_neighborhood",
+    "pages_for_symbol": "pages_for_symbol",
+}
 
 
 class MCPDependencyError(RuntimeError):
@@ -203,6 +214,29 @@ class McpWikiService:
         page_id = self._resolve_module_page_id(module_id_or_source_path)
         page = self._page_for("modules", page_id)
         return self._read_page_result(page)
+
+    def get_flow(self, flow_id: str) -> dict:
+        page = self._page_for("flows", flow_id)
+        return self._read_page_result(page)
+
+    def get_architecture_page(self, page: str) -> dict:
+        if not isinstance(page, str) or page.strip() not in _ARCHITECTURE_PAGE_KINDS:
+            raise McpWikiError(f"Unknown architecture page: {page}")
+        root_page = self._page_from_uri(wiki_surface.mcp_uri(page.strip()))
+        return self._read_page_result(root_page)
+
+    def query_graph(self, query: Mapping[str, object]) -> dict:
+        query_type, value, limit = _graph_query_args(query)
+        try:
+            query_service = build_documentation_query_service(
+                self.src_dir,
+                wiki_dir=str(self.wiki_dir),
+                limit=limit,
+            )
+            method = getattr(query_service, _GRAPH_QUERY_METHODS[query_type])
+            return method(value)
+        except (LlmWikiApiError, DocumentationQueryError) as exc:
+            raise McpWikiError(str(exc)) from exc
 
     def search_wiki(
         self,
@@ -460,10 +494,18 @@ def create_mcp_server(config: McpServerConfig):
         "llm-wiki",
         instructions=(
             "Read-only access to the local LLM Wiki. Use tools to fetch wiki pages, "
-            "search documentation, request generated context, and run checks."
+            "search documentation, query documentation graphs, request generated "
+            "context, and run checks."
         ),
     )
 
+    _register_mcp_tools(server, service)
+    _register_mcp_resources(server, service)
+
+    return server
+
+
+def _register_mcp_tools(server, service: McpWikiService) -> None:
     @server.tool()
     def get_entity(entity_id: str) -> dict:
         """Return a wiki entity page by entity page id."""
@@ -473,6 +515,21 @@ def create_mcp_server(config: McpServerConfig):
     def get_module(module_id_or_source_path: str) -> dict:
         """Return a wiki module page by page id or source path."""
         return service.get_module(module_id_or_source_path)
+
+    @server.tool()
+    def get_flow(flow_id: str) -> dict:
+        """Return a wiki user-flow page by flow page id."""
+        return service.get_flow(flow_id)
+
+    @server.tool()
+    def get_architecture_page(page: str) -> dict:
+        """Return a wiki dependency architecture page."""
+        return service.get_architecture_page(page)
+
+    @server.tool()
+    def query_graph(query: dict) -> dict:
+        """Run a bounded read-only documentation graph query."""
+        return service.query_graph(query)
 
     @server.tool()
     def search_wiki(
@@ -505,10 +562,6 @@ def create_mcp_server(config: McpServerConfig):
     def get_status() -> dict:
         """Return local llm-wiki status without mutating files."""
         return service.get_status()
-
-    _register_mcp_resources(server, service)
-
-    return server
 
 
 def _register_mcp_resources(server, service: McpWikiService) -> None:
@@ -584,6 +637,28 @@ def run_mcp_server(config: McpServerConfig) -> None:
 
 def _resource_uri(kind: str, page_id: str) -> str:
     return wiki_surface.mcp_uri(kind, page_id)
+
+
+def _graph_query_args(query: Mapping[str, object]) -> tuple[str, str, int]:
+    if not isinstance(query, Mapping):
+        raise McpWikiError("query must be an object.")
+
+    query_type = query.get("type")
+    if not isinstance(query_type, str) or not query_type.strip():
+        raise McpWikiError("type must be a non-empty string.")
+    query_type = query_type.strip()
+    if query_type not in _GRAPH_QUERY_METHODS:
+        raise McpWikiError(f"Unknown graph query type: {query_type}")
+
+    value = query.get("value")
+    if not isinstance(value, str) or not value.strip():
+        raise McpWikiError("value must be a non-empty string.")
+
+    limit = query.get("limit", 20)
+    if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
+        raise McpWikiError("limit must be a positive integer.")
+
+    return query_type, value.strip(), min(limit, 100)
 
 
 def _validate_page_id(page_id: str) -> str:

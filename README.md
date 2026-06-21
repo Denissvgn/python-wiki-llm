@@ -552,9 +552,14 @@ llm-wiki mcp --transport http --host 127.0.0.1 --port 8765
 
 The MCP server exposes registry-backed wiki resources and search across index,
 log, entities, modules, workflows, flows, infrastructure, dependencies, and
-load order. It also exposes context payloads, lint summaries, and status
-information with page counts for the same canonical surfaces. HTTP mode is
-intended for local use and defaults to loopback.
+load order. It also exposes direct page tools including `get_flow(flow_id)` and
+`get_architecture_page(page)`, where `page` is `dependencies` or `load-order`.
+Use `query_graph({"type": "callers", "value": "run", "limit": 20})` for
+bounded graph queries; supported types are `flow_for_entrypoint`,
+`data_flow_for_entrypoint`, `callers`, `callees`, `dependency_neighborhood`,
+and `pages_for_symbol`. Context payloads, lint summaries, and status
+information report the same canonical surfaces. HTTP mode is intended for local
+use and defaults to loopback.
 
 ### `install` and `plugins`
 
