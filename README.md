@@ -48,8 +48,11 @@ interfaces. The MCP server exposes read-only resources, search, and status
 counts for the same surface kinds. The supported Python API exposes source
 inventory and context payloads through `extract_source(...)` and
 `build_context(...)`. `llm-wiki obsidian export` is the current mirror export
-for the canonical Markdown wiki. Future static-site export work should mirror
-`docs/llm_wiki/`; it must not create a second editable source of truth.
+for the canonical Markdown wiki. The pure
+`llm_wiki_cli.services.site_export.export_site_mirror(...)` service can mirror
+`docs/llm_wiki/` into plain, MkDocs-compatible, or Docusaurus-compatible
+Markdown output without invoking external builders. Static-site output is a
+derived artifact; it must not become a second editable source of truth.
 
 The package has no required Python runtime dependencies. Optional features use
 external tools when they are available on `PATH`.
@@ -603,6 +606,28 @@ Page discovery follows the canonical surface registry, so flows and optional
 architecture pages are mirrored when present. The canonical source of truth
 remains `docs/llm_wiki/`; generated mirror output is not edited as an
 independent documentation source.
+
+### Static-site mirror service
+
+The service layer exposes a pure static-site mirror builder for integrations
+that want Markdown output before the dedicated CLI is added:
+
+```python
+from llm_wiki_cli.services.site_export import export_site_mirror
+
+report = export_site_mirror(
+    wiki_dir="docs/llm_wiki",
+    out_dir="site",
+    format="mkdocs",
+    front_matter=True,
+)
+```
+
+The builder copies registry-backed wiki pages in canonical order, preserves
+Mermaid fences, rewrites resolvable internal Markdown links to remain local to
+the mirror, and refuses source/output overlap unless explicitly allowed. It does
+not write MkDocs or Docusaurus config files yet; that belongs to the future
+`llm-wiki site` command surface.
 
 ### `metrics`
 

@@ -86,6 +86,8 @@ def test_agent_schema_mentions_canonical_surfaces_and_generated_ownership():
         assert path in content
     assert "Do not edit generated Mermaid diagrams by hand" in content
     assert "semantic sections" in content
+    assert "Static-site mirror output" in content
+    assert "not as an editable source of truth" in content
 
 
 def test_ide_schema_mentions_incremental_sync_workflow():
