@@ -6,6 +6,7 @@ Markdown mirror for static-site tooling without invoking external builders.
 
 from __future__ import annotations
 
+import json
 import posixpath
 import re
 from dataclasses import dataclass, field
@@ -115,6 +116,81 @@ def export_site_mirror(
     return report
 
 
+def check_site_mirror(
+    *,
+    wiki_dir: Union[str, Path],
+    out_dir: Union[str, Path],
+) -> SiteExportReport:
+    """Validate that an exported static-site mirror is present and linked."""
+    wiki = Path(wiki_dir).expanduser()
+    out = Path(out_dir).expanduser()
+    _validate_existing_dir(wiki, "wiki_dir")
+    pages = wiki_surface.collect_wiki_pages(wiki)
+    report = SiteExportReport(
+        wiki_dir=str(wiki),
+        out_dir=str(out),
+        page_count=len(pages),
+    )
+
+    if not out.exists() or not out.is_dir():
+        report.issues.append(
+            {
+                "category": "missing_output_dir",
+                "path": str(out),
+                "message": f"Output directory does not exist: {out}",
+            }
+        )
+        report.ok = False
+        return report
+
+    for page in pages:
+        target = _safe_join(out, page.relative_path)
+        if not target.is_file():
+            report.issues.append(
+                {
+                    "category": "missing_mirror_page",
+                    "path": str(target),
+                    "message": f"Missing mirrored page for {page.relative_path}",
+                }
+            )
+            continue
+        report.issues.extend(_check_mirror_markdown_links(target, read_md(target), out))
+
+    report.ok = not report.issues
+    return report
+
+
+def render_report_text(report: SiteExportReport, *, action: str) -> str:
+    lines = [f"Static site {action}", f"Output: {report.out_dir}"]
+    if report.wiki_dir:
+        lines.append(f"Wiki: {report.wiki_dir}")
+    lines.append(f"Format: {report.format}")
+    lines.append(f"Pages: {report.page_count}")
+    if report.dry_run:
+        lines.append("Dry run: no files were changed.")
+    if report.operations:
+        lines.append("")
+        lines.append("Operations:")
+        for operation in report.operations:
+            suffix = f" - {operation.message}" if operation.message else ""
+            lines.append(f"- {operation.action}: {operation.path}{suffix}")
+    if report.issues:
+        lines.append("")
+        lines.append("Issues:")
+        for issue in report.issues:
+            target = f" -> {issue.get('target')}" if issue.get("target") else ""
+            lines.append(
+                f"- {issue['category']}: {issue['path']}{target} - {issue['message']}"
+            )
+    elif action == "check":
+        lines.append("No static-site mirror issues found.")
+    return "\n".join(lines) + "\n"
+
+
+def render_report_json(report: SiteExportReport) -> str:
+    return json.dumps(report.to_dict(), indent=2, sort_keys=True) + "\n"
+
+
 def _build_export_page(
     page: wiki_surface.WikiSurfacePage,
     content: str,
@@ -169,6 +245,72 @@ def _rewrite_markdown_links(
             )
         )
     return "".join(lines)
+
+
+def _check_mirror_markdown_links(
+    page_path: Path,
+    content: str,
+    out_dir: Path,
+) -> list[dict[str, str]]:
+    issues: list[dict[str, str]] = []
+    out_resolved = out_dir.resolve()
+    for target in _iter_markdown_link_targets(content):
+        base = _local_markdown_link_base(target)
+        if base is None:
+            continue
+        normalized = unquote(base).replace("\\", "/")
+        candidate = (page_path.parent / normalized).resolve()
+        try:
+            candidate.relative_to(out_resolved)
+        except ValueError:
+            issues.append(
+                {
+                    "category": "unsafe_markdown_link",
+                    "path": str(page_path),
+                    "target": target,
+                    "message": f"Markdown link escapes output directory: {target}",
+                }
+            )
+            continue
+        if not candidate.is_file():
+            issues.append(
+                {
+                    "category": "broken_markdown_link",
+                    "path": str(page_path),
+                    "target": target,
+                    "message": f"Broken local Markdown link: {target}",
+                }
+            )
+    return issues
+
+
+def _iter_markdown_link_targets(content: str) -> list[str]:
+    targets: list[str] = []
+    in_fence = False
+    for line in content.splitlines():
+        if line.lstrip().startswith("```"):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        for match in MARKDOWN_LINK_RE.finditer(line):
+            if match.group(1):
+                continue
+            targets.append(match.group(3).strip())
+    return targets
+
+
+def _local_markdown_link_base(target: str) -> Optional[str]:
+    if _is_external_link(target) or target.startswith("#"):
+        return None
+    raw_base = target.split("#", 1)[0].strip()
+    if not raw_base:
+        return None
+    if raw_base.startswith("<") and raw_base.endswith(">"):
+        raw_base = raw_base[1:-1].strip()
+    if not raw_base.lower().endswith(".md"):
+        return None
+    return raw_base
 
 
 def _rewrite_markdown_link(

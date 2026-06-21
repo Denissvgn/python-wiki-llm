@@ -47,12 +47,11 @@ Registry-backed surfaces are distributed through the available query and mirror
 interfaces. The MCP server exposes read-only resources, search, and status
 counts for the same surface kinds. The supported Python API exposes source
 inventory and context payloads through `extract_source(...)` and
-`build_context(...)`. `llm-wiki obsidian export` is the current mirror export
-for the canonical Markdown wiki. The pure
-`llm_wiki_cli.services.site_export.export_site_mirror(...)` service can mirror
-`docs/llm_wiki/` into plain, MkDocs-compatible, or Docusaurus-compatible
-Markdown output without invoking external builders. Static-site output is a
-derived artifact; it must not become a second editable source of truth.
+`build_context(...)`. `llm-wiki obsidian export` mirrors the canonical Markdown
+wiki for Obsidian, and `llm-wiki site export|check` mirrors and validates
+plain, MkDocs-compatible, or Docusaurus-compatible Markdown output without
+invoking external builders. Static-site output is a derived artifact; it must
+not become a second editable source of truth.
 
 The package has no required Python runtime dependencies. Optional features use
 external tools when they are available on `PATH`.
@@ -607,10 +606,22 @@ architecture pages are mirrored when present. The canonical source of truth
 remains `docs/llm_wiki/`; generated mirror output is not edited as an
 independent documentation source.
 
-### Static-site mirror service
+### `site`
 
-The service layer exposes a pure static-site mirror builder for integrations
-that want Markdown output before the dedicated CLI is added:
+Export and validate a static-site-friendly mirror of the canonical wiki.
+
+```bash
+llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site --format mkdocs
+llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site --format mkdocs --dry-run --output-format json
+llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site
+llm-wiki site check --out-dir site --output-format json
+```
+
+`--format` supports `plain`, `mkdocs`, and `docusaurus`; `--output-format`
+controls text versus JSON reports. The export command can add safe
+`llm_wiki` front matter with `--front-matter`.
+
+The service layer also exposes the same pure mirror builder for integrations:
 
 ```python
 from llm_wiki_cli.services.site_export import export_site_mirror
@@ -626,8 +637,8 @@ report = export_site_mirror(
 The builder copies registry-backed wiki pages in canonical order, preserves
 Mermaid fences, rewrites resolvable internal Markdown links to remain local to
 the mirror, and refuses source/output overlap unless explicitly allowed. It does
-not write MkDocs or Docusaurus config files yet; that belongs to the future
-`llm-wiki site` command surface.
+not write MkDocs or Docusaurus config files yet; those integrations are tracked
+as follow-up static-site backlog items.
 
 ### `metrics`
 

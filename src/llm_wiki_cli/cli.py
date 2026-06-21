@@ -20,6 +20,7 @@ from .commands import (
     prepare_extractors_cmd,
     release_cmd,
     review_cmd,
+    site_cmd,
     status_cmd,
     sync_cmd,
     team_cmd,
@@ -73,6 +74,7 @@ _COMMAND_MODULES = {
     "status": status_cmd,
     "mcp": mcp_cmd,
     "obsidian": obsidian_cmd,
+    "site": site_cmd,
     "release": release_cmd,
     "upgrade": upgrade_cmd,
     "sync": sync_cmd,
@@ -111,6 +113,7 @@ def _register_commands(subparsers):
     _add_status_command(subparsers)
     _add_mcp_command(subparsers)
     _add_obsidian_command(subparsers)
+    _add_site_command(subparsers)
     _add_release_command(subparsers)
     _add_upgrade_command(subparsers)
     _add_sync_command(subparsers)
@@ -766,6 +769,68 @@ def _add_obsidian_command(subparsers):
         "--plugin-dir",
         default="integrations/obsidian/llm-wiki",
         help="Source plugin directory (default: integrations/obsidian/llm-wiki)",
+    )
+
+
+def _add_site_command(subparsers):
+    site_parser = subparsers.add_parser(
+        "site",
+        help="Export and check a static-site-friendly mirror of the LLM Wiki",
+    )
+    site_sub = site_parser.add_subparsers(dest="site_action", required=True)
+    site_export = site_sub.add_parser(
+        "export", help="Export a static-site-friendly Markdown mirror"
+    )
+    site_export.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Canonical wiki directory (default: docs/llm_wiki)",
+    )
+    site_export.add_argument(
+        "--out-dir",
+        required=True,
+        help="Output directory for the derived static-site mirror",
+    )
+    site_export.add_argument(
+        "--format",
+        choices=site_cmd.SITE_FORMAT_CHOICES,
+        default="plain",
+        help="Static-site output format (default: plain)",
+    )
+    site_export.add_argument(
+        "--front-matter",
+        action="store_true",
+        help="Add safe llm_wiki front matter to exported pages",
+    )
+    site_export.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview mirror writes without changing files",
+    )
+    site_export.add_argument(
+        "--output-format",
+        choices=["text", "json"],
+        default="text",
+        help="Console output format (default: text)",
+    )
+    site_check = site_sub.add_parser(
+        "check", help="Check a static-site mirror for missing pages and links"
+    )
+    site_check.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Canonical wiki directory (default: docs/llm_wiki)",
+    )
+    site_check.add_argument(
+        "--out-dir",
+        required=True,
+        help="Output directory for the derived static-site mirror",
+    )
+    site_check.add_argument(
+        "--output-format",
+        choices=["text", "json"],
+        default="text",
+        help="Console output format (default: text)",
     )
 
 

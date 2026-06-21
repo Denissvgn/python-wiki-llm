@@ -168,8 +168,9 @@ The canonical wiki surfaces are:
   counts, and outgoing internal links.
 
 Static-site mirror output, when present, is derived from these canonical
-surfaces. Treat exported plain, MkDocs-compatible, or Docusaurus-compatible
-Markdown as generated distribution output, not as an editable source of truth.
+surfaces. Use `llm-wiki site export|check` or the site export service to build
+and validate plain, MkDocs-compatible, or Docusaurus-compatible Markdown as
+generated distribution output, not as an editable source of truth.
 
 Do not edit generated Mermaid diagrams by hand. Treat generated diagrams,
 tables, links, headings, canonical filenames, and machine-readable artifacts as

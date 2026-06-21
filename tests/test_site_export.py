@@ -2,11 +2,20 @@
 
 from __future__ import annotations
 
+import importlib
+import json
+import sys
+import types
 from pathlib import Path
 
 import pytest
 
+from llm_wiki_cli import cli
 from llm_wiki_cli.services.site_export import SiteExportError, export_site_mirror
+
+
+def _ns(**kwargs):
+    return types.SimpleNamespace(**kwargs)
 
 
 def _write(path: Path, content: str) -> None:
@@ -210,3 +219,151 @@ def test_rewrites_internal_markdown_links_and_preserves_fences(tmp_path):
     assert "![image](../assets/logo.png)" in user_content
     assert "[models](../modules/./models.md)" in user_content
     assert 'click M "../modules/models.md"' in user_content
+
+
+def test_check_succeeds_after_export(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+
+    export_site_mirror(wiki_dir=wiki, out_dir=out)
+    _write(out / "missing.md", "# Missing\n\n")
+    report = importlib.import_module(
+        "llm_wiki_cli.services.site_export"
+    ).check_site_mirror(wiki_dir=wiki, out_dir=out)
+
+    assert report.ok is True
+    assert report.page_count == 9
+    assert report.issues == []
+
+
+def test_check_reports_missing_output_dir_and_page(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+    service = importlib.import_module("llm_wiki_cli.services.site_export")
+
+    missing = service.check_site_mirror(wiki_dir=wiki, out_dir=out)
+
+    assert missing.ok is False
+    assert missing.issues == [
+        {
+            "category": "missing_output_dir",
+            "path": str(out),
+            "message": f"Output directory does not exist: {out}",
+        }
+    ]
+
+    export_site_mirror(wiki_dir=wiki, out_dir=out)
+    (out / "entities" / "User.md").unlink()
+    broken = service.check_site_mirror(wiki_dir=wiki, out_dir=out)
+
+    assert broken.ok is False
+    assert any(
+        issue["category"] == "missing_mirror_page"
+        and issue["path"] == str(out / "entities" / "User.md")
+        for issue in broken.issues
+    )
+
+
+def test_check_reports_broken_and_unsafe_local_markdown_links(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+    export_site_mirror(wiki_dir=wiki, out_dir=out)
+    user_page = out / "entities" / "User.md"
+    user_page.write_text(
+        user_page.read_text(encoding="utf-8")
+        + "\n[Broken](../modules/missing.md)\n[Unsafe](../../outside.md)\n",
+        encoding="utf-8",
+    )
+
+    report = importlib.import_module(
+        "llm_wiki_cli.services.site_export"
+    ).check_site_mirror(wiki_dir=wiki, out_dir=out)
+
+    assert report.ok is False
+    assert any(
+        issue["category"] == "broken_markdown_link"
+        and issue["target"] == "../modules/missing.md"
+        for issue in report.issues
+    )
+    assert any(
+        issue["category"] == "unsafe_markdown_link"
+        and issue["target"] == "../../outside.md"
+        for issue in report.issues
+    )
+
+
+class TestSiteCli:
+    def test_cli_export_dry_run_json(self, tmp_path, monkeypatch, capsys):
+        site_cmd = importlib.import_module("llm_wiki_cli.commands.site_cmd")
+        _write_wiki(tmp_path)
+        monkeypatch.chdir(tmp_path)
+
+        site_cmd.run(
+            _ns(
+                site_action="export",
+                wiki_dir="docs/llm_wiki",
+                out_dir="site",
+                format="mkdocs",
+                front_matter=False,
+                dry_run=True,
+                output_format="json",
+            )
+        )
+
+        data = json.loads(capsys.readouterr().out)
+        assert data["page_count"] == 9
+        assert data["format"] == "mkdocs"
+        assert data["dry_run"] is True
+        assert {operation["action"] for operation in data["operations"]} == {
+            "would_write"
+        }
+        assert not (tmp_path / "site").exists()
+
+    def test_cli_check_json_success_and_failure(self, tmp_path, monkeypatch, capsys):
+        site_cmd = importlib.import_module("llm_wiki_cli.commands.site_cmd")
+        wiki = _write_wiki(tmp_path)
+        out = tmp_path / "site"
+        export_site_mirror(wiki_dir=wiki, out_dir=out)
+        _write(out / "missing.md", "# Missing\n\n")
+        monkeypatch.chdir(tmp_path)
+
+        site_cmd.run(
+            _ns(
+                site_action="check",
+                wiki_dir="docs/llm_wiki",
+                out_dir="site",
+                output_format="json",
+            )
+        )
+        ok = json.loads(capsys.readouterr().out)
+        assert ok["ok"] is True
+
+        (out / "modules" / "models.md").unlink()
+        with pytest.raises(SystemExit) as exc_info:
+            site_cmd.run(
+                _ns(
+                    site_action="check",
+                    wiki_dir="docs/llm_wiki",
+                    out_dir="site",
+                    output_format="json",
+                )
+            )
+
+        assert exc_info.value.code == 1
+        failed = json.loads(capsys.readouterr().out)
+        assert failed["ok"] is False
+        assert any(
+            issue["category"] == "missing_mirror_page"
+            for issue in failed["issues"]
+        )
+
+    def test_cli_help_includes_site_actions(self, monkeypatch, capsys):
+        monkeypatch.setattr(sys, "argv", ["llm-wiki", "site", "--help"])
+
+        with pytest.raises(SystemExit) as exc_info:
+            cli.main()
+
+        assert exc_info.value.code == 0
+        output = capsys.readouterr().out
+        assert "export" in output
+        assert "check" in output
