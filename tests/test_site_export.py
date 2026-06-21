@@ -450,6 +450,7 @@ def test_check_succeeds_after_export(tmp_path):
     assert report.ok is True
     assert report.page_count == 9
     assert report.issues == []
+    assert report.warnings == []
 
 
 def test_check_reports_missing_output_dir_and_page(tmp_path):
@@ -508,6 +509,130 @@ def test_check_reports_broken_and_unsafe_local_markdown_links(tmp_path):
     )
 
 
+def test_check_reports_malformed_front_matter(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+    export_site_mirror(wiki_dir=wiki, out_dir=out, format="mkdocs")
+    _write(out / "missing.md", "# Missing\n\n")
+    user_page = out / "entities" / "User.md"
+    user_page.write_text("---\ntitle: Broken\n# no closing fence\n", encoding="utf-8")
+
+    report = importlib.import_module(
+        "llm_wiki_cli.services.site_export"
+    ).check_site_mirror(wiki_dir=wiki, out_dir=out)
+
+    assert report.ok is False
+    assert any(
+        issue["category"] == "malformed_front_matter"
+        and issue["path"] == str(user_page)
+        for issue in report.issues
+    )
+
+
+def test_check_reports_missing_and_mismatched_front_matter_metadata(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+    export_site_mirror(wiki_dir=wiki, out_dir=out, format="mkdocs")
+    _write(out / "missing.md", "# Missing\n\n")
+    user_page = out / "entities" / "User.md"
+    content = user_page.read_text(encoding="utf-8")
+    content = content.replace('  id: "User"\n', "")
+    content = content.replace(
+        '  canonical_path: "entities/User.md"',
+        '  canonical_path: "wrong.md"',
+    )
+    user_page.write_text(content, encoding="utf-8")
+
+    report = importlib.import_module(
+        "llm_wiki_cli.services.site_export"
+    ).check_site_mirror(wiki_dir=wiki, out_dir=out)
+
+    assert report.ok is False
+    assert any(
+        issue["category"] == "front_matter_missing_key"
+        and issue["target"] == "llm_wiki.id"
+        for issue in report.issues
+    )
+    assert any(
+        issue["category"] == "front_matter_mismatch"
+        and issue["target"] == "llm_wiki.canonical_path"
+        for issue in report.issues
+    )
+
+
+def test_check_reports_duplicate_docusaurus_front_matter_ids(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+    export_site_mirror(wiki_dir=wiki, out_dir=out, format="docusaurus")
+    _write(out / "missing.md", "# Missing\n\n")
+    user_page = out / "entities" / "User.md"
+    models_page = out / "modules" / "models.md"
+    models_page.write_text(
+        models_page.read_text(encoding="utf-8").replace(
+            'id: "modules/models"', 'id: "entities/User"'
+        ),
+        encoding="utf-8",
+    )
+
+    report = importlib.import_module(
+        "llm_wiki_cli.services.site_export"
+    ).check_site_mirror(wiki_dir=wiki, out_dir=out)
+
+    assert report.ok is False
+    assert any(
+        issue["category"] == "duplicate_front_matter_id"
+        and issue["path"] == str(models_page)
+        and issue["target"] == str(user_page)
+        for issue in report.issues
+    )
+
+
+def test_check_reports_missing_front_matter_warning_for_mixed_mirror(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+    export_site_mirror(wiki_dir=wiki, out_dir=out, format="mkdocs")
+    _write(out / "missing.md", "# Missing\n\n")
+    user_page = out / "entities" / "User.md"
+    content = user_page.read_text(encoding="utf-8")
+    user_page.write_text(content.split("---\n\n", 1)[1], encoding="utf-8")
+
+    report = importlib.import_module(
+        "llm_wiki_cli.services.site_export"
+    ).check_site_mirror(wiki_dir=wiki, out_dir=out)
+
+    assert report.ok is True
+    assert report.issues == []
+    assert any(
+        warning["category"] == "missing_front_matter"
+        and warning["path"] == str(user_page)
+        for warning in report.warnings
+    )
+
+
+def test_check_reports_output_paths_that_escape_out_dir(tmp_path, monkeypatch):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+    export_site_mirror(wiki_dir=wiki, out_dir=out)
+    service = importlib.import_module("llm_wiki_cli.services.site_export")
+    original_safe_join = service._safe_join
+
+    def fake_safe_join(root, relative):
+        if relative == "entities/User.md":
+            return root.parent / "escaped.md"
+        return original_safe_join(root, relative)
+
+    monkeypatch.setattr(service, "_safe_join", fake_safe_join)
+
+    report = service.check_site_mirror(wiki_dir=wiki, out_dir=out)
+
+    assert report.ok is False
+    assert any(
+        issue["category"] == "unsafe_output_path"
+        and issue["target"] == "entities/User.md"
+        for issue in report.issues
+    )
+
+
 class TestSiteCli:
     def test_cli_export_dry_run_json(self, tmp_path, monkeypatch, capsys):
         site_cmd = importlib.import_module("llm_wiki_cli.commands.site_cmd")
@@ -553,6 +678,8 @@ class TestSiteCli:
         )
         ok = json.loads(capsys.readouterr().out)
         assert ok["ok"] is True
+        assert ok["issues"] == []
+        assert ok["warnings"] == []
 
         (out / "modules" / "models.md").unlink()
         with pytest.raises(SystemExit) as exc_info:
@@ -568,8 +695,39 @@ class TestSiteCli:
         assert exc_info.value.code == 1
         failed = json.loads(capsys.readouterr().out)
         assert failed["ok"] is False
+        assert failed["warnings"] == []
         assert any(
             issue["category"] == "missing_mirror_page" for issue in failed["issues"]
+        )
+
+    def test_cli_check_json_warning_only_does_not_exit(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        site_cmd = importlib.import_module("llm_wiki_cli.commands.site_cmd")
+        wiki = _write_wiki(tmp_path)
+        out = tmp_path / "site"
+        export_site_mirror(wiki_dir=wiki, out_dir=out, format="mkdocs")
+        _write(out / "missing.md", "# Missing\n\n")
+        user_page = out / "entities" / "User.md"
+        content = user_page.read_text(encoding="utf-8")
+        user_page.write_text(content.split("---\n\n", 1)[1], encoding="utf-8")
+        monkeypatch.chdir(tmp_path)
+
+        site_cmd.run(
+            _ns(
+                site_action="check",
+                wiki_dir="docs/llm_wiki",
+                out_dir="site",
+                output_format="json",
+            )
+        )
+
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["ok"] is True
+        assert payload["issues"] == []
+        assert any(
+            warning["category"] == "missing_front_matter"
+            for warning in payload["warnings"]
         )
 
     def test_cli_help_includes_site_actions(self, monkeypatch, capsys):

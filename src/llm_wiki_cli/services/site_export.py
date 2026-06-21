@@ -20,6 +20,7 @@ from .io import read_md, write_md
 
 SUPPORTED_SITE_FORMATS = frozenset({"plain", "mkdocs", "docusaurus"})
 MARKDOWN_LINK_RE = re.compile(r"(!)?\[([^\]]+)\]\(([^)]+)\)")
+FRONT_MATTER_KEY_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 
 
 class SiteExportError(ValueError):
@@ -45,6 +46,7 @@ class SiteExportReport:
     page_count: int = 0
     operations: list[SiteExportOperation] = field(default_factory=list)
     issues: list[dict[str, str]] = field(default_factory=list)
+    warnings: list[dict[str, str]] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -57,7 +59,15 @@ class SiteExportReport:
             "page_count": self.page_count,
             "operations": [operation.__dict__ for operation in self.operations],
             "issues": self.issues,
+            "warnings": self.warnings,
         }
+
+
+@dataclass(frozen=True)
+class FrontMatterParseResult:
+    exists: bool
+    metadata: dict[str, Any] = field(default_factory=dict)
+    issue: Optional[dict[str, str]] = None
 
 
 def export_site_mirror(
@@ -154,8 +164,37 @@ def check_site_mirror(
         report.ok = False
         return report
 
+    out_resolved = out.resolve()
+    pages_without_front_matter: list[tuple[wiki_surface.WikiSurfacePage, Path]] = []
+    front_matter_ids: dict[str, Path] = {}
+    found_front_matter = False
+
     for page in pages:
-        target = _safe_join(out, page.relative_path)
+        try:
+            target = _safe_join(out, page.relative_path)
+        except SiteExportError as exc:
+            report.issues.append(
+                {
+                    "category": "unsafe_output_path",
+                    "path": str(out),
+                    "target": page.relative_path,
+                    "message": str(exc),
+                }
+            )
+            continue
+        if not _is_relative_to(target.resolve(), out_resolved):
+            report.issues.append(
+                {
+                    "category": "unsafe_output_path",
+                    "path": str(target),
+                    "target": page.relative_path,
+                    "message": (
+                        "Mirrored page path escapes output directory: "
+                        f"{page.relative_path}"
+                    ),
+                }
+            )
+            continue
         if not target.is_file():
             report.issues.append(
                 {
@@ -165,7 +204,48 @@ def check_site_mirror(
                 }
             )
             continue
-        report.issues.extend(_check_mirror_markdown_links(target, read_md(target), out))
+        content = read_md(target)
+        report.issues.extend(_check_mirror_markdown_links(target, content, out))
+        front_matter = _parse_front_matter(target, content)
+        if front_matter.issue is not None:
+            report.issues.append(front_matter.issue)
+            continue
+        if not front_matter.exists:
+            pages_without_front_matter.append((page, target))
+            continue
+
+        found_front_matter = True
+        report.issues.extend(
+            _check_front_matter_metadata(page, target, front_matter.metadata)
+        )
+        doc_id = front_matter.metadata.get("id")
+        if isinstance(doc_id, str):
+            if doc_id in front_matter_ids:
+                report.issues.append(
+                    {
+                        "category": "duplicate_front_matter_id",
+                        "path": str(target),
+                        "target": str(front_matter_ids[doc_id]),
+                        "message": f"Duplicate front matter id: {doc_id}",
+                    }
+                )
+            else:
+                front_matter_ids[doc_id] = target
+
+    report.front_matter = found_front_matter
+    if found_front_matter:
+        for page, target in pages_without_front_matter:
+            report.warnings.append(
+                {
+                    "category": "missing_front_matter",
+                    "path": str(target),
+                    "target": page.relative_path,
+                    "message": (
+                        "Expected front matter in mixed static-site mirror page: "
+                        f"{page.relative_path}"
+                    ),
+                }
+            )
 
     report.ok = not report.issues
     return report
@@ -193,7 +273,17 @@ def render_report_text(report: SiteExportReport, *, action: str) -> str:
             lines.append(
                 f"- {issue['category']}: {issue['path']}{target} - {issue['message']}"
             )
-    elif action == "check":
+    if report.warnings:
+        lines.append("")
+        lines.append("Warnings:")
+        for warning in report.warnings:
+            target = f" -> {warning.get('target')}" if warning.get("target") else ""
+            lines.append(
+                "- "
+                f"{warning['category']}: "
+                f"{warning['path']}{target} - {warning['message']}"
+            )
+    elif action == "check" and not report.issues:
         lines.append("No static-site mirror issues found.")
     return "\n".join(lines) + "\n"
 
@@ -419,6 +509,217 @@ def _check_mirror_markdown_links(
     return issues
 
 
+def _parse_front_matter(page_path: Path, content: str) -> FrontMatterParseResult:
+    lines = content.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return FrontMatterParseResult(exists=False)
+
+    closing_index: Optional[int] = None
+    for index, line in enumerate(lines[1:], start=1):
+        if line.strip() == "---":
+            closing_index = index
+            break
+    if closing_index is None:
+        return FrontMatterParseResult(
+            exists=True,
+            issue=_malformed_front_matter_issue(
+                page_path, "Front matter is missing a closing delimiter."
+            ),
+        )
+
+    metadata: dict[str, Any] = {}
+    current_section: Optional[str] = None
+    for raw_line in lines[1:closing_index]:
+        if not raw_line.strip() or raw_line.lstrip().startswith("#"):
+            continue
+        indent = len(raw_line) - len(raw_line.lstrip(" "))
+        if indent == 0:
+            parsed = _parse_front_matter_key_value(raw_line)
+            if parsed is None:
+                return FrontMatterParseResult(
+                    exists=True,
+                    issue=_malformed_front_matter_issue(
+                        page_path, f"Cannot parse front matter line: {raw_line}"
+                    ),
+                )
+            key, value = parsed
+            if value == "":
+                metadata[key] = {}
+                current_section = key
+                continue
+            scalar = _parse_front_matter_scalar(value)
+            if scalar is None:
+                return FrontMatterParseResult(
+                    exists=True,
+                    issue=_malformed_front_matter_issue(
+                        page_path, f"Cannot parse front matter value: {value}"
+                    ),
+                )
+            metadata[key] = scalar
+            current_section = None
+            continue
+
+        if indent == 2:
+            parsed = _parse_front_matter_key_value(raw_line.strip())
+            section = metadata.get(current_section or "")
+            if parsed is None or not isinstance(section, dict):
+                return FrontMatterParseResult(
+                    exists=True,
+                    issue=_malformed_front_matter_issue(
+                        page_path, f"Cannot parse nested front matter line: {raw_line}"
+                    ),
+                )
+            key, value = parsed
+            scalar = _parse_front_matter_scalar(value)
+            if scalar is None:
+                return FrontMatterParseResult(
+                    exists=True,
+                    issue=_malformed_front_matter_issue(
+                        page_path, f"Cannot parse front matter value: {value}"
+                    ),
+                )
+            section[key] = scalar
+            continue
+
+        return FrontMatterParseResult(
+            exists=True,
+            issue=_malformed_front_matter_issue(
+                page_path, f"Unsupported front matter indentation: {raw_line}"
+            ),
+        )
+
+    return FrontMatterParseResult(exists=True, metadata=metadata)
+
+
+def _parse_front_matter_key_value(line: str) -> Optional[tuple[str, str]]:
+    if ":" not in line:
+        return None
+    key, value = line.split(":", 1)
+    key = key.strip()
+    if not key or not FRONT_MATTER_KEY_RE.fullmatch(key):
+        return None
+    return key, value.strip()
+
+
+def _parse_front_matter_scalar(value: str) -> Optional[str]:
+    if not value:
+        return ""
+    if not value.startswith('"'):
+        return value
+    if len(value) < 2 or not value.endswith('"'):
+        return None
+    return _yaml_unquote(value[1:-1])
+
+
+def _yaml_unquote(value: str) -> Optional[str]:
+    chars: list[str] = []
+    index = 0
+    while index < len(value):
+        char = value[index]
+        if char != "\\":
+            chars.append(char)
+            index += 1
+            continue
+        index += 1
+        if index >= len(value):
+            return None
+        escaped = value[index]
+        if escaped == "n":
+            chars.append("\n")
+        elif escaped in {'"', "\\"}:
+            chars.append(escaped)
+        else:
+            return None
+        index += 1
+    return "".join(chars)
+
+
+def _check_front_matter_metadata(
+    page: wiki_surface.WikiSurfacePage,
+    page_path: Path,
+    metadata: dict[str, Any],
+) -> list[dict[str, str]]:
+    issues: list[dict[str, str]] = []
+    llm_wiki = metadata.get("llm_wiki")
+    if llm_wiki is None:
+        issues.append(_missing_front_matter_key_issue(page_path, "llm_wiki"))
+        return issues
+    if not isinstance(llm_wiki, dict):
+        issues.append(
+            _malformed_front_matter_issue(
+                page_path, "Front matter llm_wiki value must be a mapping."
+            )
+        )
+        return issues
+
+    expected_llm_wiki = {
+        "kind": page.kind.value,
+        "id": page.page_id,
+        "role": page.role.value,
+        "canonical_path": page.relative_path,
+        "mcp_uri": page.mcp_uri,
+    }
+    for key, expected in expected_llm_wiki.items():
+        actual = llm_wiki.get(key)
+        target = f"llm_wiki.{key}"
+        if actual is None:
+            issues.append(_missing_front_matter_key_issue(page_path, target))
+            continue
+        if actual != expected:
+            issues.append(
+                _front_matter_mismatch_issue(
+                    page_path,
+                    target,
+                    expected=expected,
+                    actual=str(actual),
+                )
+            )
+
+    doc_id = metadata.get("id")
+    if isinstance(doc_id, str) and doc_id != _docusaurus_doc_id(page):
+        issues.append(
+            _front_matter_mismatch_issue(
+                page_path,
+                "id",
+                expected=_docusaurus_doc_id(page),
+                actual=doc_id,
+            )
+        )
+    return issues
+
+
+def _malformed_front_matter_issue(page_path: Path, message: str) -> dict[str, str]:
+    return {
+        "category": "malformed_front_matter",
+        "path": str(page_path),
+        "message": message,
+    }
+
+
+def _missing_front_matter_key_issue(page_path: Path, target: str) -> dict[str, str]:
+    return {
+        "category": "front_matter_missing_key",
+        "path": str(page_path),
+        "target": target,
+        "message": f"Front matter is missing required key: {target}",
+    }
+
+
+def _front_matter_mismatch_issue(
+    page_path: Path,
+    target: str,
+    *,
+    expected: str,
+    actual: str,
+) -> dict[str, str]:
+    return {
+        "category": "front_matter_mismatch",
+        "path": str(page_path),
+        "target": target,
+        "message": (f"Front matter {target} is {actual!r}, expected {expected!r}."),
+    }
+
+
 def _iter_markdown_link_targets(content: str) -> list[str]:
     targets: list[str] = []
     in_fence = False
@@ -581,6 +882,14 @@ def _paths_overlap(left: Path, right: Path) -> bool:
         pass
     try:
         right.relative_to(left)
+        return True
+    except ValueError:
+        return False
+
+
+def _is_relative_to(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
         return True
     except ValueError:
         return False

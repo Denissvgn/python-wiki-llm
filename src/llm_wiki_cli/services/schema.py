@@ -173,7 +173,11 @@ and validate plain, MkDocs-compatible, or Docusaurus-compatible Markdown as
 generated distribution output, not as an editable source of truth. MkDocs
 exports include generated `llm_wiki` front matter and `mkdocs.yml` navigation;
 Docusaurus exports include generated front matter and sidebars.json. Mermaid
-fences are preserved for the site's configured Markdown/Mermaid renderer.
+fences are preserved for the site's configured Markdown/Mermaid renderer. The
+static-site checker validates missing pages, local Markdown links, generated
+front matter metadata, duplicate Docusaurus ids, and output path containment
+without invoking external builders; warning-only findings do not fail the
+check.
 
 Do not edit generated Mermaid diagrams by hand. Treat generated diagrams,
 tables, links, headings, canonical filenames, and machine-readable artifacts as
