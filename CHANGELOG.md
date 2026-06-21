@@ -55,6 +55,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   dependency architecture links only when those pages exist, and a log link.
   `sync` preserves custom top-level index sections by default while
   regenerating the landing-page structure.
+- Milestone 4 release-readiness is documented with a verification matrix for
+  static-site export/check, documentation graph query access through MCP,
+  Python API wrappers and context filters, deterministic plugin component
+  types, migration and upgrade closure, and this repo's dogfood smoke.
+- The M4 release-readiness matrix records the local `.venv` verification
+  commands, package build check, and the compatible CI matrix for
+  Ubuntu/macOS/Windows on Python 3.9, 3.12, and 3.13 without stamping a release
+  or publishing artifacts.
 
 ## [0.6.1] - 2026-06-14
 

@@ -110,7 +110,7 @@ From source:
 ```bash
 git clone https://github.com/Denissvgn/python-wiki-llm.git
 cd python-wiki-llm
-pip install -e ".[dev]"
+.venv/bin/pip install -e ".[dev]"
 ```
 
 The following extras are accepted for compatibility with documented workflows,
@@ -798,30 +798,36 @@ The repository includes community health files:
 Run tests from the repository root:
 
 ```bash
-pip install -e ".[dev]"
-python -m pytest
+.venv/bin/pip install -e ".[dev]"
+.venv/bin/pytest tests/ -v
 ```
 
 Run the MCP tests with the optional dependency installed:
 
 ```bash
-pip install -e ".[dev,mcp]"
-python -m pytest tests/test_mcp.py
+.venv/bin/pip install -e ".[dev,mcp]"
+.venv/bin/pytest tests/test_mcp.py
 ```
 
 Before release, check metadata and docs:
 
 ```bash
-python -m pytest tests/test_package_metadata.py
-python -m build
+.venv/bin/pytest tests/test_package_metadata.py tests/test_release.py -q
+.venv/bin/python -m build
 ```
+
+The M4 release-readiness matrix in `M4_RELEASE_READINESS.md` records the
+surface, distribution, compatibility, and local verification gates for the
+current `[Unreleased]` documentation-surface work. It is documentation evidence
+only; use `llm-wiki release` separately when stamping a real version.
 
 The M4 dogfood smoke exercises this repository's own documentation surface by
 copying the checkout to a temp project, bootstrapping a full wiki, running
 `sync`, exporting a MkDocs mirror, and checking the mirror:
 
 ```bash
-python -m pytest tests/test_bootstrap.py::TestGenerateFlowMd tests/test_m4_dogfood.py -q
+.venv/bin/pytest tests/test_bootstrap.py::TestGenerateFlowMd tests/test_m4_dogfood.py -q
+.venv/bin/pytest -q
 ```
 
 ## Contribution Policy

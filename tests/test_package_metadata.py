@@ -13,6 +13,13 @@ except ModuleNotFoundError:  # pragma: no cover - Python 3.9/3.10
 PROJECT_ROOT = Path(__file__).parents[1]
 
 
+def _changelog_unreleased_section() -> str:
+    changelog = (PROJECT_ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    start = changelog.index("## [Unreleased]")
+    next_release = changelog.index("\n## [", start + 1)
+    return changelog[start:next_release]
+
+
 def test_project_description_mentions_multi_language_projects():
     data = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     assert "multi-language projects" in data["project"]["description"]
@@ -56,3 +63,67 @@ def test_readme_documents_fork_first_policy():
     assert "CONTRIBUTING.md" not in readme
     assert not (PROJECT_ROOT / "CONTRIBUTING.md").exists()
     assert not (PROJECT_ROOT / ".github/PULL_REQUEST_TEMPLATE.md").exists()
+
+
+def test_m4_release_readiness_matrix_documents_surfaces_and_verification():
+    matrix = (PROJECT_ROOT / "M4_RELEASE_READINESS.md").read_text(encoding="utf-8")
+
+    for required in [
+        "canonical wiki surface registry",
+        "landing page",
+        "surface index",
+        "flows",
+        "dependencies.md",
+        "load-order.md",
+        "site export",
+        "site check",
+        "Obsidian",
+        "MCP",
+        "Python API",
+        "context filters",
+        "plugin component types",
+        "ubuntu-latest",
+        "macos-latest",
+        "windows-latest",
+        "Python 3.9",
+        "Python 3.12",
+        "Python 3.13",
+        ".venv/bin/pytest -q",
+        ".venv/bin/python -m build",
+        "git diff --check",
+    ]:
+        assert required in matrix
+
+
+def test_readme_release_verification_uses_project_virtualenv():
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+    readme_lines = {line.strip() for line in readme.splitlines()}
+
+    assert "M4_RELEASE_READINESS.md" in readme
+    for required in [
+        '.venv/bin/pip install -e ".[dev]"',
+        ".venv/bin/pytest tests/ -v",
+        ".venv/bin/python -m build",
+        ".venv/bin/pytest -q",
+    ]:
+        assert required in readme
+
+    assert 'pip install -e ".[dev]"' not in readme_lines
+    assert not any(line.startswith("python -m pytest") for line in readme_lines)
+
+
+def test_changelog_unreleased_documents_m4_public_surfaces():
+    unreleased = _changelog_unreleased_section()
+
+    for required in [
+        "static-site",
+        "documentation graph",
+        "MCP",
+        "Python API",
+        "context",
+        "plugin",
+        "migration",
+        "dogfood",
+        "release-readiness",
+    ]:
+        assert required in unreleased
