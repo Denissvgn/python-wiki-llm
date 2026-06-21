@@ -618,8 +618,10 @@ llm-wiki site check --out-dir site --output-format json
 ```
 
 `--format` supports `plain`, `mkdocs`, and `docusaurus`; `--output-format`
-controls text versus JSON reports. The export command can add safe
-`llm_wiki` front matter with `--front-matter`.
+controls text versus JSON reports. MkDocs exports include safe `llm_wiki`
+front matter and a generated `mkdocs.yml` with registry-ordered navigation.
+Plain and Docusaurus exports can add the same front matter with
+`--front-matter`.
 
 The service layer also exposes the same pure mirror builder for integrations:
 
@@ -630,15 +632,15 @@ report = export_site_mirror(
     wiki_dir="docs/llm_wiki",
     out_dir="site",
     format="mkdocs",
-    front_matter=True,
 )
 ```
 
 The builder copies registry-backed wiki pages in canonical order, preserves
 Mermaid fences, rewrites resolvable internal Markdown links to remain local to
-the mirror, and refuses source/output overlap unless explicitly allowed. It does
-not write MkDocs or Docusaurus config files yet; those integrations are tracked
-as follow-up static-site backlog items.
+the mirror, writes MkDocs config comments that point users at a Mermaid plugin
+when diagram rendering is desired, and refuses source/output overlap unless
+explicitly allowed. Docusaurus-specific sidebar/config generation remains a
+follow-up static-site backlog item.
 
 ### `metrics`
 
