@@ -1844,6 +1844,45 @@ class TestSyncFlowRegeneration:
         assert "    classDef worker fill:#123456,stroke:#123456" in updated
         assert "# injected" not in updated
 
+    def test_sync_uses_source_root_plugin_style_when_cwd_differs(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        self._write_svc_with_arg(proj, "alpha")
+        _write_diagram_style_plugin(
+            proj,
+            body="""
+            def style(context):
+                if context["surface"] == "data_flow":
+                    return {"direction": "RL"}
+                return {}
+            """,
+        )
+        _write_diagram_style_plugin(
+            tmp_path,
+            body="""
+            def style(context):
+                if context["surface"] == "data_flow":
+                    return {"direction": "TD"}
+                return {}
+            """,
+        )
+        monkeypatch.chdir(tmp_path)
+        bootstrap_cmd.run(
+            _make_bootstrap_args(src_dir="proj", wiki_dir="proj/docs/llm_wiki")
+        )
+
+        flow_page = wiki / "flows" / "api-run.md"
+        original = flow_page.read_text(encoding="utf-8")
+        assert "```mermaid\nflowchart RL" in original
+
+        self._write_svc_with_arg(proj, "beta")
+        sync_cmd.run(_make_sync_args(src_dir="proj", wiki_dir="proj/docs/llm_wiki"))
+
+        updated = flow_page.read_text(encoding="utf-8")
+        assert "helper('beta')" in updated
+        assert "```mermaid\nflowchart RL" in updated
+
     def test_flow_regeneration_reuses_single_data_flow_context(
         self, tmp_path, monkeypatch, capsys
     ):

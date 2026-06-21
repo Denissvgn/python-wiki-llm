@@ -1071,6 +1071,60 @@ class TestBootstrapFlows:
         assert flow_page.exists()
         assert "# task-handler" in flow_page.read_text(encoding="utf-8")
 
+    def test_source_root_plugins_drive_flow_detection_and_style(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        source = tmp_path / "source"
+        source.mkdir()
+        _write_entrypoint_detector_plugin(
+            source,
+            body="""
+            def detect(inventory):
+                return [{
+                    "category": "task",
+                    "file": "tasks.py",
+                    "symbol": "handle",
+                    "label": "source-task",
+                }]
+            """,
+        )
+        _write_diagram_style_plugin(
+            source,
+            body="""
+            def style(context):
+                if context["surface"] == "data_flow":
+                    return {"direction": "RL"}
+                return {}
+            """,
+        )
+        _write_diagram_style_plugin(
+            tmp_path,
+            body="""
+            def style(context):
+                if context["surface"] == "data_flow":
+                    return {"direction": "TD"}
+                return {}
+            """,
+        )
+        (source / "tasks.py").write_text(
+            textwrap.dedent("""\
+            def handle():
+                return helper()
+
+            def helper():
+                return 1
+            """),
+            encoding="utf-8",
+        )
+        monkeypatch.chdir(tmp_path)
+
+        bootstrap_cmd.run(_make_args(src_dir="source", wiki_dir="wiki"))
+
+        flow_page = tmp_path / "wiki" / "flows" / "task-source-task.md"
+        text = flow_page.read_text(encoding="utf-8")
+        assert "# source-task" in text
+        assert "```mermaid\nflowchart RL" in text
+
     def test_plugin_detector_failure_warns_in_text_output(
         self, tmp_path, monkeypatch, capsys
     ):

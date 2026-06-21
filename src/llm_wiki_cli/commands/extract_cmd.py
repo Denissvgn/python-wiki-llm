@@ -921,7 +921,10 @@ def build_extract_payload(
     entrypoint_warnings: list[str] = []
     if deep:
         entrypoint_result = detect_entry_points(
-            inventory, console_scripts=read_console_scripts(str(src_root))
+            inventory,
+            console_scripts=read_console_scripts(str(src_root)),
+            root=str(src_root),
+            fallback_root=Path.cwd(),
         )
         entrypoints = entrypoint_result.entries
         entrypoint_warnings = entrypoint_result.warnings

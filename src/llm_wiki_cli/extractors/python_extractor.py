@@ -845,6 +845,34 @@ def _string_list(node) -> list[str]:
     ]
 
 
+def _safe_name_or_attribute(node) -> dict | None:
+    if isinstance(node, ast.Name):
+        return {"kind": "name", "value": node.id}
+    if isinstance(node, ast.Attribute):
+        parent = _safe_name_or_attribute(node.value)
+        if parent is None:
+            return None
+        return {"kind": "attribute", "value": f"{parent['value']}.{node.attr}"}
+    return None
+
+
+def _safe_constant_value(node) -> dict | None:
+    """Summarize small static constant values without executing user code."""
+    if not isinstance(node, ast.Dict):
+        return None
+    items = []
+    for key_node, value_node in zip(node.keys, node.values):
+        if not isinstance(key_node, ast.Constant) or not isinstance(
+            key_node.value, str
+        ):
+            return None
+        value = _safe_name_or_attribute(value_node)
+        if value is None:
+            return None
+        items.append({"key": key_node.value, "value": value})
+    return {"kind": "dict", "items": items}
+
+
 def _is_main_guard(test) -> bool:
     """Detect an ``if __name__ == "__main__"`` test node."""
     return (
@@ -1030,12 +1058,15 @@ class ComponentVisitor(ast.NodeVisitor):
                         and target.id.replace("_", "").isalnum()
                         and not target.id[0].isdigit()
                     ):
-                        self.constants.append(
-                            {
-                                "name": target.id,
-                                "line": node.lineno,
-                            }
-                        )
+                        constant = {
+                            "name": target.id,
+                            "line": node.lineno,
+                        }
+                        if self._deep:
+                            value = _safe_constant_value(node.value)
+                            if value is not None:
+                                constant["value"] = value
+                        self.constants.append(constant)
         self.generic_visit(node)
 
     def visit_If(self, node):

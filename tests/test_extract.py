@@ -1404,6 +1404,33 @@ class TestEntryPointSignals:
 
 
 class TestExtractEntryPoints:
+    def test_deep_inventory_summarizes_safe_dict_constants(self, tmp_path):
+        (tmp_path / "cli.py").write_text(
+            textwrap.dedent("""\
+            from .commands import bootstrap_cmd, site_cmd
+
+            _COMMAND_MODULES = {
+                "bootstrap": bootstrap_cmd,
+                "site": site_cmd,
+            }
+        """),
+            encoding="utf-8",
+        )
+
+        data = get_inventory(str(tmp_path), deep=True)["cli.py"]
+
+        constants = {constant["name"]: constant for constant in data["constants"]}
+        assert constants["_COMMAND_MODULES"]["value"] == {
+            "kind": "dict",
+            "items": [
+                {
+                    "key": "bootstrap",
+                    "value": {"kind": "name", "value": "bootstrap_cmd"},
+                },
+                {"key": "site", "value": {"kind": "name", "value": "site_cmd"}},
+            ],
+        }
+
     def test_deep_payload_includes_entrypoints(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "api.py").write_text(
@@ -1448,6 +1475,66 @@ class TestExtractEntryPoints:
             "symbol": "handle",
             "label": "task-handler",
         } in result.payload["entrypoints"]
+
+    def test_deep_payload_uses_source_root_plugin_when_cwd_differs(
+        self, tmp_path, monkeypatch
+    ):
+        source = tmp_path / "source"
+        cwd = tmp_path / "cwd"
+        source.mkdir()
+        cwd.mkdir()
+        _write_entrypoint_detector_plugin(
+            source,
+            body="""
+            def detect(inventory):
+                return [{
+                    "category": "task",
+                    "file": "tasks.py",
+                    "symbol": "handle",
+                    "label": "source-task",
+                }]
+            """,
+        )
+        (source / "tasks.py").write_text("def handle():\n    return 1\n")
+        monkeypatch.chdir(cwd)
+
+        result = extract_cmd.build_extract_payload(
+            str(source), deep=True, allow_external_src=True
+        )
+
+        assert {
+            "id": "task-source-task",
+            "category": "task",
+            "file": "tasks.py",
+            "symbol": "handle",
+            "label": "source-task",
+        } in result.payload["entrypoints"]
+
+    def test_deep_payload_falls_back_to_cwd_plugin_when_source_has_none(
+        self, tmp_path, monkeypatch
+    ):
+        source = tmp_path / "source"
+        source.mkdir()
+        _write_entrypoint_detector_plugin(
+            tmp_path,
+            body="""
+            def detect(inventory):
+                return [{
+                    "category": "task",
+                    "file": "tasks.py",
+                    "symbol": "handle",
+                    "label": "fallback-task",
+                }]
+            """,
+        )
+        (source / "tasks.py").write_text("def handle():\n    return 1\n")
+        monkeypatch.chdir(tmp_path)
+
+        result = extract_cmd.build_extract_payload(str(source), deep=True)
+
+        assert [entry["id"] for entry in result.payload["entrypoints"]] == [
+            "task-fallback-task"
+        ]
 
     def test_deep_payload_includes_plugin_detector_warnings(
         self, tmp_path, monkeypatch

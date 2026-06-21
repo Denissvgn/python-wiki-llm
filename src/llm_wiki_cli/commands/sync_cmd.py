@@ -34,6 +34,7 @@ from .bootstrap_cmd import (
     _generate_dependencies_md,
     _generate_entity_md,
     _generate_flow_md,
+    _generated_diagram_style,
     _generate_index_md,
     _generate_load_order_md,
     _generate_module_md,
@@ -775,6 +776,7 @@ def _collision_maps(
 @dataclass(frozen=True)
 class _ApplyDiffContext:
     wiki_dir: Path
+    src_dir: str
     inventory: dict
     manifest: SyncManifest
     entity_page_cache: dict[tuple[str, str], str]
@@ -1029,6 +1031,13 @@ def _apply_entity_page(
         mod_page_name,
         relationship_summary=relationship_summary,
         module_page_map=ctx.module_page_map,
+        diagram_style=_generated_diagram_style(
+            "relationships",
+            root=ctx.src_dir,
+            fallback_root=Path.cwd(),
+            entity=relationship_summary.get("name"),
+            file=relationship_summary.get("file"),
+        ),
     )
     merge_result = _merge_entity_page(
         ctx,
@@ -1076,6 +1085,14 @@ def _apply_module_page(
         file_entity_page_map,
         module_dependency_map=module_dependency_map,
         module_page_map=ctx.module_page_map,
+        diagram_style=_generated_diagram_style(
+            "module_dependency",
+            root=ctx.src_dir,
+            fallback_root=Path.cwd(),
+            file=filepath,
+        )
+        if module_dependency_map is not None
+        else None,
     )
     merge_result = _merge_module_page(
         ctx, module_path, generated, old_generated_semantics, result
@@ -1250,16 +1267,26 @@ def _refresh_entity_relationship_sections(
             entity_path = ctx.wiki_dir / "entities" / f"{page_name}.md"
             if not entity_path.exists():
                 continue
+            relationship_summary = (
+                ctx.generated_sections.entity_relationship_summaries.get(
+                    (cls["name"], filepath),
+                    {},
+                )
+            )
             generated = _generate_entity_md(
                 cls,
                 filepath,
                 ctx.relationships,
                 mod_page_name,
-                relationship_summary=ctx.generated_sections.entity_relationship_summaries.get(
-                    (cls["name"], filepath),
-                    {},
-                ),
+                relationship_summary=relationship_summary,
                 module_page_map=ctx.module_page_map,
+                diagram_style=_generated_diagram_style(
+                    "relationships",
+                    root=ctx.src_dir,
+                    fallback_root=Path.cwd(),
+                    entity=relationship_summary.get("name"),
+                    file=relationship_summary.get("file"),
+                ),
             )
             refreshed = _replace_generated_section(
                 read_md(entity_path),
@@ -1298,6 +1325,12 @@ def _refresh_module_dependency_sections(
             _file_entity_page_map(filepath, file_data, ctx.entity_page_cache),
             module_dependency_map=module_dependency_maps.get(filepath) or {},
             module_page_map=ctx.module_page_map,
+            diagram_style=_generated_diagram_style(
+                "module_dependency",
+                root=ctx.src_dir,
+                fallback_root=Path.cwd(),
+                file=filepath,
+            ),
         )
         refreshed = _replace_generated_section(
             read_md(module_path),
@@ -1350,6 +1383,7 @@ def _apply_diff(
     result = SyncResult()
     ctx = _ApplyDiffContext(
         wiki_dir=wiki_dir,
+        src_dir=src_dir,
         inventory=inventory,
         manifest=manifest,
         entity_page_cache=entity_page_cache,
@@ -1672,7 +1706,12 @@ def _detect_sync_entry_points(
     inventory: dict, src_dir: str
 ) -> EntryPointDetectionResult:
     console_scripts = read_console_scripts(src_dir)
-    result = detect_entry_points(inventory, console_scripts=console_scripts)
+    result = detect_entry_points(
+        inventory,
+        console_scripts=console_scripts,
+        root=src_dir,
+        fallback_root=Path.cwd(),
+    )
     for warning in result.warnings:
         print(f"Warning: {warning}", flush=True)
     return result
@@ -1992,7 +2031,18 @@ def _regenerate_flow_pages(
     for entry_point in entry_points:
         flow = build_flow(entry_point, edges)
         data_flow = analyze_data_flow(inventory, flow, edges, context=data_flow_context)
-        new_md = _generate_flow_md(flow, module_page_map, data_flow=data_flow)
+        new_md = _generate_flow_md(
+            flow,
+            module_page_map,
+            data_flow=data_flow,
+            diagram_style=_generated_diagram_style(
+                "data_flow",
+                root=options.src_dir,
+                fallback_root=Path.cwd(),
+                flow_id=entry_point.get("id"),
+                category=entry_point.get("category"),
+            ),
+        )
         flow_path = flows_dir / f"{entry_point['id']}.md"
         if options.preserve_semantic and flow_path.exists():
             new_md = _preserve_flow_behavior(read_md(flow_path), new_md)
@@ -2035,7 +2085,19 @@ def _regenerate_dependency_pages(
 
     analysis = dependency_analysis or analyze_dependencies(inventory, options.src_dir)
     pages = (
-        (deps_path, _generate_dependencies_md(analysis, module_page_map)),
+        (
+            deps_path,
+            _generate_dependencies_md(
+                analysis,
+                module_page_map,
+                diagram_style=_generated_diagram_style(
+                    "dependencies",
+                    root=options.src_dir,
+                    fallback_root=Path.cwd(),
+                    detail="auto",
+                ),
+            ),
+        ),
         (load_path, _generate_load_order_md(analysis, module_page_map)),
     )
     regenerated = 0

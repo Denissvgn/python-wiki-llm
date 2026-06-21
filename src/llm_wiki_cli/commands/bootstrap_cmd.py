@@ -53,10 +53,16 @@ from ..services.wiki_surface_index import write_surface_index
 _SURFACE_LABELS = {entry.kind: entry.label for entry in iter_page_kinds()}
 
 
-def _generated_diagram_style(surface: str, **context: Any) -> dict[str, Any]:
+def _generated_diagram_style(
+    surface: str,
+    *,
+    root: str | Path = ".",
+    fallback_root: str | Path | None = None,
+    **context: Any,
+) -> dict[str, Any]:
     payload: dict[str, Any] = {"surface": surface}
     payload.update(context)
-    return resolve_diagram_style(payload)
+    return resolve_diagram_style(payload, root=root, fallback_root=fallback_root)
 
 
 def _module_name_from_path(filepath: str) -> str:
@@ -2248,6 +2254,18 @@ def _write_bootstrap_entity_pages(
     for cls in file_data.get("classes", []):
         entity_page_name = file_entity_page_map[cls["name"]]
         entity_path = state.options.wiki_dir / "entities" / f"{entity_page_name}.md"
+        relationship_summary = (entity_relationship_summaries or {}).get(
+            (cls["name"], filepath)
+        )
+        diagram_style = None
+        if relationship_summary is not None:
+            diagram_style = _generated_diagram_style(
+                "relationships",
+                root=state.options.src_dir_for_scan,
+                fallback_root=Path.cwd(),
+                entity=relationship_summary.get("name"),
+                file=relationship_summary.get("file"),
+            )
         if entity_path.exists() and not state.options.overwrite:
             state.skipped_files.append(_path_text(entity_path))
             _emit_bootstrap(state, f"  SKIP entity (exists): {entity_page_name}")
@@ -2260,10 +2278,9 @@ def _write_bootstrap_entity_pages(
                     filepath,
                     relationships,
                     mod_page_name,
-                    relationship_summary=(entity_relationship_summaries or {}).get(
-                        (cls["name"], filepath)
-                    ),
+                    relationship_summary=relationship_summary,
                     module_page_map=module_page_map,
+                    diagram_style=diagram_style,
                 ),
             )
             entities_created += 1
@@ -2298,6 +2315,14 @@ def _write_bootstrap_module_page(
             file_entity_page_map,
             module_dependency_map=module_dependency_map,
             module_page_map=module_page_map,
+            diagram_style=_generated_diagram_style(
+                "module_dependency",
+                root=state.options.src_dir_for_scan,
+                fallback_root=Path.cwd(),
+                file=filepath,
+            )
+            if module_dependency_map is not None
+            else None,
         ),
     )
     _emit_bootstrap(state, f"  CREATE module: {mod_page_name}")
@@ -2412,7 +2437,12 @@ def _write_bootstrap_flow_pages(
 
     _emit_bootstrap(state, "Generating user-flow pages...", flush=True)
     console_scripts = read_console_scripts(state.options.src_dir_for_scan)
-    entrypoint_result = detect_entry_points(inventory, console_scripts=console_scripts)
+    entrypoint_result = detect_entry_points(
+        inventory,
+        console_scripts=console_scripts,
+        root=state.options.src_dir_for_scan,
+        fallback_root=Path.cwd(),
+    )
     _emit_bootstrap_warnings(state, entrypoint_result.warnings)
     entry_points = entrypoint_result.entries
     if not entry_points:
@@ -2450,7 +2480,20 @@ def _write_bootstrap_flow_pages(
             _write_bootstrap_file(
                 state,
                 flow_path,
-                _generate_flow_md(flow, module_page_map, data_flow=data_flow),
+                _generate_flow_md(
+                    flow,
+                    module_page_map,
+                    data_flow=data_flow,
+                    diagram_style=_generated_diagram_style(
+                        "data_flow",
+                        root=state.options.src_dir_for_scan,
+                        fallback_root=Path.cwd(),
+                        flow_id=entry_point.get("id"),
+                        category=entry_point.get("category"),
+                    )
+                    if data_flow is not None
+                    else None,
+                ),
             )
             flows_created += 1
             _emit_bootstrap(state, f"  CREATE flow: {entry_point['id']}")
@@ -2541,6 +2584,12 @@ def _write_bootstrap_dependency_pages(
                 analysis,
                 module_page_map,
                 detail=state.options.dependency_graph_detail,
+                diagram_style=_generated_diagram_style(
+                    "dependencies",
+                    root=state.options.src_dir_for_scan,
+                    fallback_root=Path.cwd(),
+                    detail=state.options.dependency_graph_detail,
+                ),
             ),
         ),
         (

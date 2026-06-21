@@ -105,6 +105,55 @@ class TestGetEntryPoints:
         assert by_cat["http"] == "list_users"
         assert by_cat["mcp"] == "search"
 
+    def test_detects_top_level_argparse_dispatch_commands_only(self, tmp_path):
+        (tmp_path / "commands").mkdir()
+        (tmp_path / "commands" / "bootstrap_cmd.py").write_text(
+            "def run(args):\n    return args\n", encoding="utf-8"
+        )
+        (tmp_path / "commands" / "site_cmd.py").write_text(
+            "def run(args):\n    return args\n", encoding="utf-8"
+        )
+        (tmp_path / "cli.py").write_text(
+            textwrap.dedent("""\
+            from .commands import bootstrap_cmd, site_cmd
+
+            _COMMAND_MODULES = {
+                "bootstrap": bootstrap_cmd,
+                "site": site_cmd,
+            }
+
+            def _register_commands(subparsers):
+                subparsers.add_parser("bootstrap")
+                site_parser = subparsers.add_parser("site")
+                site_sub = site_parser.add_subparsers(dest="site_action")
+                site_sub.add_parser("export")
+                site_sub.add_parser("check")
+            """),
+            encoding="utf-8",
+        )
+        inventory = get_inventory(str(tmp_path), deep=True)
+
+        cli_entries = [
+            entry for entry in get_entry_points(inventory) if entry["category"] == "cli"
+        ]
+
+        assert cli_entries == [
+            {
+                "category": "cli",
+                "file": "commands/bootstrap_cmd.py",
+                "symbol": "run",
+                "label": "bootstrap",
+                "id": "cli-bootstrap",
+            },
+            {
+                "category": "cli",
+                "file": "commands/site_cmd.py",
+                "symbol": "run",
+                "label": "site",
+                "id": "cli-site",
+            },
+        ]
+
     def test_detects_decorated_nested_handlers(self, tmp_path):
         (tmp_path / "factory.py").write_text(
             textwrap.dedent("""\
@@ -212,6 +261,63 @@ class TestGetEntryPoints:
             "symbol": "handle",
             "label": "task-handler",
         } in result.entries
+
+    def test_plugin_detector_falls_back_to_cwd_root(self, tmp_path):
+        source = tmp_path / "source"
+        source.mkdir()
+        _write_detector_plugin(
+            tmp_path,
+            body="""
+            def detect(inventory):
+                return [{
+                    "category": "task",
+                    "file": "tasks.py",
+                    "symbol": "handle",
+                    "label": "fallback-task",
+                }]
+            """,
+        )
+        (source / "tasks.py").write_text("def handle():\n    return 1\n")
+        inventory = get_inventory(str(source), deep=True)
+
+        result = detect_entry_points(inventory, root=source, fallback_root=tmp_path)
+
+        assert [entry["id"] for entry in result.entries] == ["task-fallback-task"]
+
+    def test_source_root_plugin_detector_wins_over_cwd_fallback(self, tmp_path):
+        source = tmp_path / "source"
+        source.mkdir()
+        _write_detector_plugin(
+            source,
+            body="""
+            def detect(inventory):
+                return [{
+                    "category": "task",
+                    "file": "tasks.py",
+                    "symbol": "handle",
+                    "label": "source-task",
+                }]
+            """,
+        )
+        _write_detector_plugin(
+            tmp_path,
+            body="""
+            def detect(inventory):
+                return [{
+                    "category": "task",
+                    "file": "tasks.py",
+                    "symbol": "handle",
+                    "label": "fallback-task",
+                }]
+            """,
+            plugin_id="fallback-detector-plugin",
+        )
+        (source / "tasks.py").write_text("def handle():\n    return 1\n")
+        inventory = get_inventory(str(source), deep=True)
+
+        result = detect_entry_points(inventory, root=source, fallback_root=tmp_path)
+
+        assert [entry["id"] for entry in result.entries] == ["task-source-task"]
 
     def test_plugin_detector_failure_warns_and_keeps_builtins(self, tmp_path):
         _write_detector_plugin(

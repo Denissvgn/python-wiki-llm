@@ -98,6 +98,91 @@ def _detect_api(inventory: dict) -> list[dict]:
     return entries
 
 
+def _constant_dict_items(data: Mapping[str, Any], name: str) -> list[Mapping[str, Any]]:
+    for constant in data.get("constants", []):
+        if constant.get("name") != name:
+            continue
+        value = constant.get("value")
+        if isinstance(value, Mapping) and value.get("kind") == "dict":
+            items = value.get("items")
+            if isinstance(items, list):
+                return [item for item in items if isinstance(item, Mapping)]
+    return []
+
+
+def _import_targets(data: Mapping[str, Any]) -> dict[str, str]:
+    targets: dict[str, str] = {}
+    for record in data.get("imports", []):
+        if record.get("type") == "from":
+            module = str(record.get("module") or "")
+            name = str(record.get("name") or "")
+            if not name:
+                continue
+            binding = str(record.get("alias") or name)
+            targets[binding] = f"{module}.{name}" if module else name
+        elif record.get("type") == "import":
+            module = str(record.get("module") or "")
+            binding = str(record.get("name") or module)
+            if module and binding:
+                targets[binding] = module
+    return targets
+
+
+def _module_ref_candidates(ref: str, imports: Mapping[str, str]) -> list[str]:
+    candidates = [ref]
+    root, _, rest = ref.partition(".")
+    target = imports.get(root)
+    if target:
+        candidates.append(f"{target}.{rest}" if rest else target)
+    return list(dict.fromkeys(candidates))
+
+
+def _resolve_command_module(
+    ref: str, filepath: str, data: Mapping[str, Any], resolver
+) -> str | None:
+    for candidate in _module_ref_candidates(ref, _import_targets(data)):
+        matches = resolver.candidates(candidate, filepath)
+        if len(matches) == 1:
+            return next(iter(matches))
+    return None
+
+
+def _has_run_function(data: Mapping[str, Any]) -> bool:
+    return any(fn.get("name") == "run" for fn in data.get("functions", []))
+
+
+def _detect_argparse_dispatch_commands(inventory: dict) -> list[dict]:
+    """Detect top-level CLI commands declared in a module dispatch table.
+
+    ``llm-wiki`` command modules are registered as ``_COMMAND_MODULES`` in the
+    top-level CLI.  Each dispatch table entry is one user-flow root; nested
+    argparse subcommands remain part of that parent command flow.
+    """
+    resolver = build_module_path_resolver(inventory)
+    entries: list[dict] = []
+    for filepath, data in inventory.items():
+        for item in _constant_dict_items(data, "_COMMAND_MODULES"):
+            label = item.get("key")
+            value = item.get("value")
+            if not isinstance(label, str) or not isinstance(value, Mapping):
+                continue
+            if value.get("kind") not in {"name", "attribute"}:
+                continue
+            ref = value.get("value")
+            if not isinstance(ref, str) or not ref:
+                continue
+            command_file = _resolve_command_module(ref, filepath, data, resolver)
+            if command_file is None:
+                continue
+            command_data = inventory.get(command_file)
+            if not isinstance(command_data, Mapping) or not _has_run_function(
+                command_data
+            ):
+                continue
+            entries.append(_entry(CATEGORY_CLI, command_file, "run", label=label))
+    return entries
+
+
 def _decorator_leaf(decorator: str) -> tuple[str, bool]:
     """Return ``(leaf_name, is_dotted)`` for a decorator string.
 
@@ -199,7 +284,11 @@ def _load_plugin_detector(component: Mapping[str, Any], root: str | Path):
     return load_entry_point(str(component["entry_point"]), root=root)
 
 
-def _detector_components(
+def _roots_equal(left: str | Path, right: str | Path) -> bool:
+    return Path(left).resolve() == Path(right).resolve()
+
+
+def _read_detector_components(
     root: str | Path, *, strict_plugin_errors: bool
 ) -> tuple[list[dict[str, Any]], list[str]]:
     try:
@@ -210,16 +299,43 @@ def _detector_components(
         return [], [f"Plugin entry-point detectors unavailable: {exc}"]
 
 
-def _detect_plugin_entries(
-    inventory: dict, *, root: str | Path, strict_plugin_errors: bool
-) -> EntryPointDetectionResult:
-    components, warnings = _detector_components(
+def _detector_components(
+    root: str | Path,
+    *,
+    fallback_root: str | Path | None,
+    strict_plugin_errors: bool,
+) -> tuple[list[tuple[dict[str, Any], str | Path]], list[str]]:
+    components, warnings = _read_detector_components(
         root, strict_plugin_errors=strict_plugin_errors
     )
+    if components or fallback_root is None or _roots_equal(root, fallback_root):
+        return [(component, root) for component in components], warnings
+
+    fallback_components, fallback_warnings = _read_detector_components(
+        fallback_root, strict_plugin_errors=strict_plugin_errors
+    )
+    return (
+        [(component, fallback_root) for component in fallback_components],
+        warnings + fallback_warnings,
+    )
+
+
+def _detect_plugin_entries(
+    inventory: dict,
+    *,
+    root: str | Path,
+    fallback_root: str | Path | None,
+    strict_plugin_errors: bool,
+) -> EntryPointDetectionResult:
+    components, warnings = _detector_components(
+        root,
+        fallback_root=fallback_root,
+        strict_plugin_errors=strict_plugin_errors,
+    )
     entries: list[dict] = []
-    for component in components:
+    for component, component_root in components:
         try:
-            detector = _load_plugin_detector(component, root)
+            detector = _load_plugin_detector(component, component_root)
             records = list(_iter_plugin_records(detector(inventory)))
         except Exception as exc:
             if strict_plugin_errors:
@@ -322,6 +438,7 @@ def _builtin_entry_points(
     inventory: dict, console_scripts: list[dict] | None
 ) -> list[dict]:
     entries: list[dict] = []
+    entries += _detect_argparse_dispatch_commands(inventory)
     entries += _detect_decorated(
         inventory, _CLI_DECORATORS, CATEGORY_CLI, allow_bare=True
     )
@@ -348,6 +465,7 @@ def detect_entry_points(
     *,
     console_scripts: list[dict] | None = None,
     root: str | Path = ".",
+    fallback_root: str | Path | None = None,
     include_plugins: bool = True,
     strict_plugin_errors: bool = False,
 ) -> EntryPointDetectionResult:
@@ -356,7 +474,10 @@ def detect_entry_points(
     warnings: list[str] = []
     if include_plugins:
         plugin_result = _detect_plugin_entries(
-            inventory, root=root, strict_plugin_errors=strict_plugin_errors
+            inventory,
+            root=root,
+            fallback_root=fallback_root,
+            strict_plugin_errors=strict_plugin_errors,
         )
         entries += plugin_result.entries
         warnings += plugin_result.warnings
@@ -364,7 +485,11 @@ def detect_entry_points(
 
 
 def get_entry_points(
-    inventory: dict, *, console_scripts: list[dict] | None = None
+    inventory: dict,
+    *,
+    console_scripts: list[dict] | None = None,
+    root: str | Path = ".",
+    fallback_root: str | Path | None = None,
 ) -> list[dict]:
     """Detect user-reachable entry points from a deep inventory.
 
@@ -372,7 +497,12 @@ def get_entry_points(
     ``{"id", "category", "file", "symbol", "label"}`` records. ``console_scripts``
     are the parsed ``[project.scripts]`` entries (see :func:`read_console_scripts`).
     """
-    return detect_entry_points(inventory, console_scripts=console_scripts).entries
+    return detect_entry_points(
+        inventory,
+        console_scripts=console_scripts,
+        root=root,
+        fallback_root=fallback_root,
+    ).entries
 
 
 # ── Flow assembly ─────────────────────────────────────────────────────

@@ -115,7 +115,11 @@ def _load_style_hook(component: Mapping[str, Any], root: str | Path):
     return load_entry_point(str(component["entry_point"]), root=root)
 
 
-def _style_components(
+def _roots_equal(left: str | Path, right: str | Path) -> bool:
+    return Path(left).resolve() == Path(right).resolve()
+
+
+def _read_style_components(
     root: str | Path, *, strict_plugin_errors: bool
 ) -> list[dict[str, Any]]:
     try:
@@ -126,10 +130,27 @@ def _style_components(
         return []
 
 
+def _style_components(
+    root: str | Path,
+    *,
+    fallback_root: str | Path | None,
+    strict_plugin_errors: bool,
+) -> list[tuple[dict[str, Any], str | Path]]:
+    components = _read_style_components(root, strict_plugin_errors=strict_plugin_errors)
+    if components or fallback_root is None or _roots_equal(root, fallback_root):
+        return [(component, root) for component in components]
+
+    fallback_components = _read_style_components(
+        fallback_root, strict_plugin_errors=strict_plugin_errors
+    )
+    return [(component, fallback_root) for component in fallback_components]
+
+
 def resolve_diagram_style(
     context: Mapping[str, Any] | None,
     *,
     root: str | Path = ".",
+    fallback_root: str | Path | None = None,
     strict_plugin_errors: bool = False,
 ) -> dict[str, Any]:
     """Return normalized style options from installed diagram-style hooks.
@@ -141,12 +162,16 @@ def resolve_diagram_style(
     merged: dict[str, Any] = {}
     style_context = dict(context or {})
     components = sorted(
-        _style_components(root, strict_plugin_errors=strict_plugin_errors),
-        key=lambda component: str(component.get("ref", "")),
+        _style_components(
+            root,
+            fallback_root=fallback_root,
+            strict_plugin_errors=strict_plugin_errors,
+        ),
+        key=lambda item: str(item[0].get("ref", "")),
     )
-    for component in components:
+    for component, component_root in components:
         try:
-            hook = _load_style_hook(component, root)
+            hook = _load_style_hook(component, component_root)
             normalized = _normalize_style(
                 hook(dict(style_context)), strict=strict_plugin_errors
             )
