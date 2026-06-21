@@ -740,12 +740,18 @@ Refresh framework-managed artifacts in place.
 ```bash
 llm-wiki upgrade
 llm-wiki upgrade --agent copilot
+llm-wiki upgrade --wiki-dir .wiki
 llm-wiki upgrade --force
 llm-wiki upgrade --no-quality-hints
 ```
 
 `upgrade` refreshes agent instruction blocks, wiki directories, hooks, plugin
-skill blocks, and persisted local config.
+skill blocks, and persisted local config. For older wiki layouts, it
+idempotently adds registry-standard directories such as `flows/` and missing
+`.gitkeep` files without rewriting existing index, log, semantic pages, or
+optional `dependencies.md` / `load-order.md` pages. Run `bootstrap` or `sync`
+to generate user-flow and dependency architecture pages; after upgrading,
+`site export` and MCP automatically see any `flows/*.md` pages that exist.
 
 ### `migrate`
 

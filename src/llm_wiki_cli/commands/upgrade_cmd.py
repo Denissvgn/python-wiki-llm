@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import shutil
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 from ..config import (
@@ -37,6 +38,19 @@ from ..services.wiki_surface import iter_directory_kinds
 
 # Re-use hook builders from hook_cmd to avoid duplication
 from .hook_cmd import _build_ide_post_commit, _install_hook
+
+
+@dataclass(frozen=True)
+class StructureUpgradeResult:
+    """Paths created while refreshing the framework-owned wiki structure."""
+
+    directories: tuple[str, ...]
+    gitkeeps: tuple[str, ...]
+    files: tuple[str, ...]
+
+    @property
+    def created_count(self) -> int:
+        return len(self.directories) + len(self.gitkeeps) + len(self.files)
 
 
 def _read_agent_config(wiki_dir: str) -> str | None:
@@ -109,23 +123,27 @@ def _upgrade_schema(
     return "(no schema file)"
 
 
-def _upgrade_dirs(wiki_dir: str) -> int:
-    """Ensure all standard wiki subdirectories exist. Returns count of newly created dirs."""
+def _upgrade_dirs(wiki_dir: str) -> StructureUpgradeResult:
+    """Ensure all standard wiki subdirectories and tracking files exist."""
     base = Path(wiki_dir)
     subdirs = [
         entry.directory
         for entry in iter_directory_kinds()
         if entry.directory is not None
     ]
-    created = 0
+    created_dirs: list[str] = []
+    created_gitkeeps: list[str] = []
+    created_files: list[str] = []
     for name in ["."] + subdirs:
         d = base if name == "." else base / name
         if not d.exists():
             d.mkdir(parents=True, exist_ok=True)
-            created += 1
+            created_dirs.append("./" if name == "." else f"{name}/")
         gitkeep = d / ".gitkeep"
         if not gitkeep.exists():
             gitkeep.touch()
+            rel = ".gitkeep" if name == "." else f"{name}/.gitkeep"
+            created_gitkeeps.append(rel)
     # Ensure core files exist
     index_path = base / "index.md"
     if not index_path.exists():
@@ -134,12 +152,16 @@ def _upgrade_dirs(wiki_dir: str) -> int:
             "# LLM Wiki Index\n\nCatalog of project modules and entities.\n\n"
             "## Entities\n\n## Modules\n\n## Workflows\n\n## Infrastructure\n",
         )
-        created += 1
+        created_files.append("index.md")
     log_path = base / "log.md"
     if not log_path.exists():
         write_md(log_path, "# Architectural Log\n\nAppend-only chronological log.\n\n")
-        created += 1
-    return created
+        created_files.append("log.md")
+    return StructureUpgradeResult(
+        directories=tuple(created_dirs),
+        gitkeeps=tuple(created_gitkeeps),
+        files=tuple(created_files),
+    )
 
 
 def _upgrade_hooks(agent: str, wiki_dir: str, *, force: bool = False) -> None:
@@ -194,9 +216,15 @@ def run(args):
 
     # 2. Wiki directories
     print("\n2. Wiki Structure:")
-    new_dirs = _upgrade_dirs(wiki_dir)
-    if new_dirs:
-        print(f"  Created {new_dirs} new entries in {wiki_dir}/")
+    structure_result = _upgrade_dirs(wiki_dir)
+    if structure_result.created_count:
+        print(f"  Created {structure_result.created_count} new entries in {wiki_dir}/")
+        for rel in structure_result.directories:
+            print(f"  Created directory: {rel}")
+        for rel in structure_result.gitkeeps:
+            print(f"  Created .gitkeep: {rel}")
+        for rel in structure_result.files:
+            print(f"  Created file: {rel}")
     else:
         print(f"  All directories present in {wiki_dir}/")
 

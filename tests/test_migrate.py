@@ -535,6 +535,49 @@ class TestMigrateIntegration:
         output = capsys.readouterr().out
         assert "Lint passed" in output
 
+    def test_existing_m4_surfaces_are_indexed_as_canonical_sections(self, tmp_path):
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        _write(proj / "models.py", "class User:\n    pass\n")
+        wiki = _make_wiki(proj)
+        _write(wiki / "flows" / "api-run.md", "# api-run\n\nExisting flow.\n")
+        _write(wiki / "dependencies.md", "# Dependencies\n\nExisting graph.\n")
+        _write(wiki / "load-order.md", "# Load order\n\nExisting order.\n")
+
+        os.chdir(proj)
+        migrate_cmd.run(_make_args())
+
+        index = (wiki / "index.md").read_text(encoding="utf-8")
+        assert "## User Flows" in index
+        assert "- [api-run](flows/api-run.md)" in index
+        assert "## Dependency Architecture" in index
+        assert "- [Dependencies](dependencies.md)" in index
+        assert "- [Load order](load-order.md)" in index
+        additional_docs = index.partition("## Additional Docs")[2]
+        assert "flows/api-run.md" not in additional_docs
+        assert "dependencies.md" not in additional_docs
+        assert "load-order.md" not in additional_docs
+        assert (wiki / "flows" / "api-run.md").read_text(
+            encoding="utf-8"
+        ) == "# api-run\n\nExisting flow.\n"
+
+    def test_empty_upgraded_flows_directory_does_not_add_user_flows_section(
+        self, tmp_path
+    ):
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        _write(proj / "models.py", "class User:\n    pass\n")
+        wiki = _make_wiki(proj)
+        (wiki / "flows").mkdir(parents=True)
+        (wiki / "flows" / ".gitkeep").write_text("", encoding="utf-8")
+
+        os.chdir(proj)
+        migrate_cmd.run(_make_args())
+
+        index = (wiki / "index.md").read_text(encoding="utf-8")
+        assert "## User Flows" not in index
+        assert "flows/.gitkeep" not in index
+
     def test_rerun_uses_archived_pages_to_repair_legacy_links(self, tmp_path, capsys):
         proj = tmp_path / "proj"
         proj.mkdir()

@@ -36,9 +36,21 @@ from ..config import DEFAULT_WIKI_DIR, validate_path
 from ..services.io import read_md, write_md
 from ..services.paths import normalize_source_path
 from ..services.source_snapshot import build_source_snapshot
+from ..services.wiki_surface import PageKind
 
 LEGACY_MARKER = "<!-- llm-wiki-migrate:legacy-notes -->"
 _MANAGED_DIRS = ("entities", "modules", "infrastructure")
+_CANONICAL_SURFACE_DIRS = _MANAGED_DIRS + ("workflows", "flows")
+_ARCHITECTURE_PAGES: tuple[tuple[str, str], ...] = (
+    (PageKind.DEPENDENCIES.value, "Dependencies"),
+    (PageKind.LOAD_ORDER.value, "Load order"),
+)
+_ROOT_SURFACE_FILES = {
+    "index.md",
+    "log.md",
+    f"{PageKind.DEPENDENCIES.value}.md",
+    f"{PageKind.LOAD_ORDER.value}.md",
+}
 _LINK_RE = re.compile(r"(\[[^\]]+\]\()([^)]+)(\))")
 _HEADING_RE = re.compile(r"^#\s+(.+?)\s*$", re.MULTILINE)
 _LOCATION_RE = re.compile(r"^\*\*Location:\*\*\s*`?(.+?)`?\s*$", re.MULTILINE)
@@ -257,7 +269,7 @@ def _archived_managed_pages(wiki_dir: Path, src_dir: str) -> list[ExistingPage]:
 
 
 def _additional_doc_entries(wiki_dir: Path) -> list[str]:
-    ignored_top_level = set(_MANAGED_DIRS) | {"workflows", "legacy"}
+    ignored_top_level = set(_CANONICAL_SURFACE_DIRS) | {"legacy"}
     docs: list[str] = []
     if not wiki_dir.exists():
         return docs
@@ -267,7 +279,7 @@ def _additional_doc_entries(wiki_dir: Path) -> list[str]:
             continue
         rel = _page_rel(path, wiki_dir)
         parts = Path(rel).parts
-        if path.name in {"index.md", "log.md"}:
+        if path.name in _ROOT_SURFACE_FILES:
             continue
         if parts and parts[0] in ignored_top_level:
             continue
@@ -357,11 +369,14 @@ def _build_targets(
         )
 
     workflow_entries = _list_workflows(wiki_dir)
+    flow_entries = _list_flows(wiki_dir)
     index_content = _generate_index_md(
         entity_names,
         module_entries,
         workflow_entries or None,
         infra_entries or None,
+        flow_entries or None,
+        _list_architecture_pages(wiki_dir) or None,
     )
     manifest = SyncManifest.build_from_inventory(
         inventory,
@@ -378,6 +393,24 @@ def _list_workflows(wiki_dir: Path) -> list[dict]:
         return []
     return [
         {"name": path.stem, "entry": ""} for path in sorted(workflow_dir.glob("*.md"))
+    ]
+
+
+def _list_flows(wiki_dir: Path) -> list[dict]:
+    flow_dir = wiki_dir / PageKind.FLOWS.value
+    if not flow_dir.exists():
+        return []
+    return [
+        {"id": path.stem, "category": path.stem.split("-", 1)[0]}
+        for path in sorted(flow_dir.glob("*.md"))
+    ]
+
+
+def _list_architecture_pages(wiki_dir: Path) -> list[dict]:
+    return [
+        {"name": label, "page": stem}
+        for stem, label in _ARCHITECTURE_PAGES
+        if (wiki_dir / f"{stem}.md").exists()
     ]
 
 

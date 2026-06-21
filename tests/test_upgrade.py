@@ -286,6 +286,49 @@ class TestUpgradeCreatesNewDirs:
         assert not Path("docs/llm_wiki/dependencies.md").exists()
         assert not Path("docs/llm_wiki/load-order.md").exists()
 
+    def test_legacy_layout_scaffolded_without_rewriting_pages(self, tmp_path, capsys):
+        subprocess.run(["git", "init", str(tmp_path)], capture_output=True, check=True)
+        os.chdir(tmp_path)
+        wiki = Path("docs/llm_wiki")
+        for dirname in ["entities", "modules", "workflows", "infrastructure"]:
+            (wiki / dirname).mkdir(parents=True, exist_ok=True)
+        pages = {
+            "index.md": "# Legacy Index\n\n## Custom\n\nKeep this.\n",
+            "log.md": "# Legacy Log\n\nKeep log.\n",
+            "entities/User.md": "# User\n\nLegacy entity.\n",
+            "modules/models.md": "# models\n\nLegacy module.\n",
+            "workflows/signup.md": "# signup\n\nLegacy workflow.\n",
+            "infrastructure/docker.md": "# docker\n\nLegacy infrastructure.\n",
+        }
+        for rel, content in pages.items():
+            target = wiki / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(content, encoding="utf-8")
+
+        upgrade_cmd.run(_make_args(agent="generic"))
+
+        output = capsys.readouterr().out
+        assert "Created directory: flows/" in output
+        assert "Created .gitkeep: entities/.gitkeep" in output
+        assert "Created .gitkeep: flows/.gitkeep" in output
+        assert (wiki / "flows" / ".gitkeep").exists()
+        assert not (wiki / "dependencies.md").exists()
+        assert not (wiki / "load-order.md").exists()
+        for rel, content in pages.items():
+            assert (wiki / rel).read_text(encoding="utf-8") == content
+
+        snapshot = {
+            path.relative_to(wiki).as_posix(): path.read_text(encoding="utf-8")
+            for path in wiki.rglob("*")
+            if path.is_file()
+        }
+        upgrade_cmd.run(_make_args(agent="generic"))
+        assert {
+            path.relative_to(wiki).as_posix(): path.read_text(encoding="utf-8")
+            for path in wiki.rglob("*")
+            if path.is_file()
+        } == snapshot
+
 
 class TestUpgradeNoAgentConfig:
     """Errors helpfully if no agent is resolvable."""
