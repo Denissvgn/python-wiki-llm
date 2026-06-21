@@ -79,7 +79,7 @@ def export_site_mirror(
     pages = wiki_surface.collect_wiki_pages(wiki)
     export_rel_by_source = {page.path.resolve(): page.relative_path for page in pages}
     source_paths = _load_surface_index_sources(wiki)
-    effective_front_matter = front_matter or format == "mkdocs"
+    effective_front_matter = front_matter or format in {"mkdocs", "docusaurus"}
     report = SiteExportReport(
         dry_run=dry_run,
         wiki_dir=str(wiki),
@@ -89,13 +89,15 @@ def export_site_mirror(
         page_count=len(pages),
     )
 
-    for page in pages:
+    for sidebar_position, page in enumerate(pages, start=1):
         target = _safe_join(out, page.relative_path)
         content = _build_export_page(
             page,
             read_md(page.path),
             export_rel_by_source,
+            site_format=format,
             front_matter=effective_front_matter,
+            sidebar_position=sidebar_position,
             source_path=source_paths.get(page.relative_path),
         )
 
@@ -112,6 +114,14 @@ def export_site_mirror(
             source=str(wiki),
             target=_safe_join(out, "mkdocs.yml"),
             content=_build_mkdocs_config(pages),
+        )
+
+    if format == "docusaurus":
+        _record_write_operation(
+            report,
+            source=str(wiki),
+            target=_safe_join(out, "sidebars.json"),
+            content=_build_docusaurus_sidebar(pages),
         )
 
     return report
@@ -197,15 +207,26 @@ def _build_export_page(
     content: str,
     export_rel_by_source: dict[Path, str],
     *,
+    site_format: str,
     front_matter: bool,
+    sidebar_position: int,
     source_path: Optional[str],
 ) -> str:
     transformed = _rewrite_markdown_links(content, page, export_rel_by_source)
+    title_source = transformed
+    if site_format == "docusaurus":
+        transformed = _escape_docusaurus_mdx_text(transformed)
     if not front_matter:
         return transformed
     return "\n".join(
         [
-            _build_front_matter(page, transformed, source_path=source_path),
+            _build_front_matter(
+                page,
+                title_source,
+                site_format=site_format,
+                sidebar_position=sidebar_position,
+                source_path=source_path,
+            ),
             "",
             transformed,
         ]
@@ -216,18 +237,33 @@ def _build_front_matter(
     page: wiki_surface.WikiSurfacePage,
     content: str,
     *,
+    site_format: str,
+    sidebar_position: int,
     source_path: Optional[str],
 ) -> str:
-    lines = [
-        "---",
-        f"title: {_yaml_quote(_markdown_title(content, page.page_id))}",
-        "llm_wiki:",
-        f"  kind: {_yaml_quote(page.kind.value)}",
-        f"  id: {_yaml_quote(page.page_id)}",
-        f"  role: {_yaml_quote(page.role.value)}",
-        f"  canonical_path: {_yaml_quote(page.relative_path)}",
-        f"  mcp_uri: {_yaml_quote(page.mcp_uri)}",
-    ]
+    title = _markdown_title(content, page.page_id)
+    lines = ["---"]
+    if site_format == "docusaurus":
+        lines.extend(
+            [
+                f"id: {_yaml_quote(_docusaurus_doc_id(page))}",
+                f"title: {_yaml_quote(title)}",
+                f"sidebar_label: {_yaml_quote(title)}",
+                f"sidebar_position: {sidebar_position}",
+            ]
+        )
+    else:
+        lines.append(f"title: {_yaml_quote(title)}")
+    lines.extend(
+        [
+            "llm_wiki:",
+            f"  kind: {_yaml_quote(page.kind.value)}",
+            f"  id: {_yaml_quote(page.page_id)}",
+            f"  role: {_yaml_quote(page.role.value)}",
+            f"  canonical_path: {_yaml_quote(page.relative_path)}",
+            f"  mcp_uri: {_yaml_quote(page.mcp_uri)}",
+        ]
+    )
     if source_path:
         lines.append(f"  source_path: {_yaml_quote(source_path)}")
     lines.append("---")
@@ -270,6 +306,28 @@ def _build_mkdocs_config(pages: list[wiki_surface.WikiSurfacePage]) -> str:
         lines.append(f"  - {_yaml_quote(title)}: {_yaml_quote(page.relative_path)}")
     lines.append("")
     return "\n".join(lines)
+
+
+def _build_docusaurus_sidebar(pages: list[wiki_surface.WikiSurfacePage]) -> str:
+    sidebar_items: list[Any] = []
+    categories_by_kind: dict[str, dict[str, Any]] = {}
+    for page in pages:
+        doc_id = _docusaurus_doc_id(page)
+        if "/" not in page.relative_path:
+            sidebar_items.append(doc_id)
+            continue
+
+        category = categories_by_kind.get(page.kind.value)
+        if category is None:
+            category = {
+                "type": "category",
+                "label": page.label,
+                "items": [],
+            }
+            categories_by_kind[page.kind.value] = category
+            sidebar_items.append(category)
+        category["items"].append(doc_id)
+    return json.dumps({"llmWikiSidebar": sidebar_items}, indent=2) + "\n"
 
 
 def _load_surface_index_sources(wiki: Path) -> dict[str, str]:
@@ -442,6 +500,48 @@ def _markdown_title(content: str, fallback: str) -> str:
         if stripped.startswith("#"):
             return stripped.lstrip("#").strip() or fallback
     return fallback
+
+
+def _docusaurus_doc_id(page: wiki_surface.WikiSurfacePage) -> str:
+    if page.relative_path.endswith(".md"):
+        return page.relative_path[:-3]
+    return page.relative_path
+
+
+def _escape_docusaurus_mdx_text(content: str) -> str:
+    lines: list[str] = []
+    in_fence = False
+    for line in content.splitlines(keepends=True):
+        if line.lstrip().startswith("```"):
+            in_fence = not in_fence
+            lines.append(line)
+            continue
+        if in_fence:
+            lines.append(line)
+            continue
+        lines.append(_escape_docusaurus_mdx_line(line))
+    return "".join(lines)
+
+
+def _escape_docusaurus_mdx_line(line: str) -> str:
+    parts = line.split("`")
+    escaped: list[str] = []
+    for index, part in enumerate(parts):
+        if index % 2:
+            escaped.append(part)
+        else:
+            escaped.append(_escape_docusaurus_mdx_segment(part))
+    return "`".join(escaped)
+
+
+def _escape_docusaurus_mdx_segment(segment: str) -> str:
+    escaped: list[str] = []
+    for index, char in enumerate(segment):
+        if char in "{}<" and (index == 0 or segment[index - 1] != "\\"):
+            escaped.append("\\" + char)
+        else:
+            escaped.append(char)
+    return "".join(escaped)
 
 
 def _yaml_quote(value: str) -> str:

@@ -172,8 +172,8 @@ surfaces. Use `llm-wiki site export|check` or the site export service to build
 and validate plain, MkDocs-compatible, or Docusaurus-compatible Markdown as
 generated distribution output, not as an editable source of truth. MkDocs
 exports include generated `llm_wiki` front matter and `mkdocs.yml` navigation;
-Mermaid fences are preserved for the site's configured Markdown/Mermaid
-renderer.
+Docusaurus exports include generated front matter and sidebars.json. Mermaid
+fences are preserved for the site's configured Markdown/Mermaid renderer.
 
 Do not edit generated Mermaid diagrams by hand. Treat generated diagrams,
 tables, links, headings, canonical filenames, and machine-readable artifacts as

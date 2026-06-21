@@ -302,6 +302,122 @@ def test_mkdocs_dry_run_reports_config_without_writing(tmp_path):
     assert not out.exists()
 
 
+def test_docusaurus_export_writes_front_matter_with_surface_index_source(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    _write(
+        wiki / ".llm-wiki-surface.json",
+        json.dumps(
+            {
+                "schema_version": "llm-wiki-surface-index/v1",
+                "pages": [
+                    {
+                        "canonical_path": "entities/User.md",
+                        "source_path": "src/models.py",
+                    },
+                ],
+            },
+            sort_keys=True,
+        )
+        + "\n",
+    )
+    out = tmp_path / "site"
+
+    report = export_site_mirror(wiki_dir=wiki, out_dir=out, format="docusaurus")
+
+    content = (out / "entities" / "User.md").read_text(encoding="utf-8")
+    assert report.front_matter is True
+    assert content.startswith(
+        "\n".join(
+            [
+                "---",
+                'id: "entities/User"',
+                'title: "\\"User\\": account"',
+                'sidebar_label: "\\"User\\": account"',
+                "sidebar_position: 3",
+                "llm_wiki:",
+                '  kind: "entities"',
+                '  id: "User"',
+                '  role: "semantic"',
+                '  canonical_path: "entities/User.md"',
+                '  mcp_uri: "llm-wiki://entities/User"',
+                '  source_path: "src/models.py"',
+                "---",
+                "",
+                '# "User": account',
+            ]
+        )
+    )
+
+
+def test_docusaurus_export_writes_registry_ordered_sidebar(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+
+    report = export_site_mirror(wiki_dir=wiki, out_dir=out, format="docusaurus")
+
+    assert report.page_count == 9
+    assert Path(report.operations[-1].path) == out / "sidebars.json"
+    assert json.loads((out / "sidebars.json").read_text(encoding="utf-8")) == {
+        "llmWikiSidebar": [
+            "index",
+            "log",
+            {"type": "category", "label": "Entities", "items": ["entities/User"]},
+            {"type": "category", "label": "Modules", "items": ["modules/models"]},
+            {
+                "type": "category",
+                "label": "Workflows",
+                "items": ["workflows/signup"],
+            },
+            {"type": "category", "label": "User flows", "items": ["flows/checkout"]},
+            {
+                "type": "category",
+                "label": "Infrastructure",
+                "items": ["infrastructure/Dockerfile"],
+            },
+            "dependencies",
+            "load-order",
+        ]
+    }
+
+
+def test_docusaurus_dry_run_reports_sidebar_without_writing(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+
+    report = export_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        format="docusaurus",
+        dry_run=True,
+    )
+
+    assert report.front_matter is True
+    assert report.dry_run is True
+    assert report.operations[-1].action == "would_write"
+    assert Path(report.operations[-1].path) == out / "sidebars.json"
+    assert not out.exists()
+
+
+def test_docusaurus_export_preserves_fences_and_escapes_mdx_text(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    user_path = wiki / "entities" / "User.md"
+    user_path.write_text(
+        user_path.read_text(encoding="utf-8")
+        + "\nLiteral {value} <Widget /> outside `inline {safe} <Safe />`.\n",
+        encoding="utf-8",
+    )
+    out = tmp_path / "site"
+
+    export_site_mirror(wiki_dir=wiki, out_dir=out, format="docusaurus")
+
+    content = (out / "entities" / "User.md").read_text(encoding="utf-8")
+    assert (
+        "Literal \\{value\\} \\<Widget /> outside `inline {safe} <Safe />`." in content
+    )
+    assert "[models](../modules/./models.md)" in content
+    assert 'click M "../modules/models.md"' in content
+
+
 def test_rewrites_internal_markdown_links_and_preserves_fences(tmp_path):
     wiki = _write_wiki(tmp_path)
     out = tmp_path / "site"
