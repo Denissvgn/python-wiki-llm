@@ -1101,6 +1101,14 @@ def _flow_interactions(flow: dict) -> list[dict]:
     return interactions
 
 
+_FLOW_SEQUENCE_INTERACTION_LIMIT = 30
+
+
+def _bounded_flow_interactions(interactions: list[dict]) -> tuple[list[dict], int]:
+    shown = interactions[:_FLOW_SEQUENCE_INTERACTION_LIMIT]
+    return shown, max(0, len(interactions) - len(shown))
+
+
 def _md_cell(value: object) -> str:
     return str(value).replace("|", "\\|") if value not in (None, "") else "-"
 
@@ -1252,7 +1260,17 @@ def _generate_flow_md(
         "or unresolved calls. Refine order and conditions after review. -->"
     )
     if interactions:
-        lines.append(sequence_diagram(interactions))
+        shown_interactions, omitted_interactions = _bounded_flow_interactions(
+            interactions
+        )
+        lines.append(sequence_diagram(shown_interactions))
+        if omitted_interactions:
+            lines.append("")
+            lines.append(
+                f"> Call sequence truncated for readability: first "
+                f"{_FLOW_SEQUENCE_INTERACTION_LIMIT} interactions shown; "
+                f"{omitted_interactions} omitted."
+            )
     else:
         lines.append("*No outbound calls detected — describe the behavior manually.*")
     if flow.get("truncated"):

@@ -990,6 +990,36 @@ class TestGenerateFlowMd:
         assert "No outbound calls detected" in md
         assert "sequenceDiagram" not in md
 
+    def test_call_sequence_is_bounded_for_large_flows(self):
+        flow = {
+            "entry": {
+                "id": "api-run",
+                "category": "api",
+                "file": "m.py",
+                "symbol": "run",
+                "label": "run",
+            },
+            "steps": [{"depth": 0, "file": "m.py", "symbol": "run", "kind": "entry"}]
+            + [
+                {
+                    "depth": 1,
+                    "file": "m.py",
+                    "symbol": f"call_{index}",
+                    "kind": "internal",
+                }
+                for index in range(1, 41)
+            ],
+            "modules_touched": ["m.py"],
+            "truncated": False,
+        }
+
+        md = bootstrap_cmd._generate_flow_md(flow, {"m.py": "m"})
+
+        assert "first 30 interactions shown; 10 omitted" in md
+        assert "call_30" in md
+        assert "call_31" not in md
+        assert md.count("->>") == 30
+
 
 class TestBootstrapFlows:
     def _write_project(self, tmp_path):
