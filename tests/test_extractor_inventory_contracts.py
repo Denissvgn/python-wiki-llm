@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import inspect
+import textwrap
 
 import pytest
 
+from llm_wiki_cli.commands import extract_cmd
 from llm_wiki_cli.extractors.go_extractor import GoExtractor
 from llm_wiki_cli.extractors.rust_extractor import RustExtractor
 from llm_wiki_cli.extractors.ts_extractor import TypeScriptExtractor
@@ -18,6 +20,55 @@ def test_extract_v1_data_flow_fields_are_additive_contract():
         "data_effects",
         "data_flows",
     }
+
+
+def test_deep_extract_m4_top_level_fields_are_additive_for_old_clients(
+    tmp_path, monkeypatch
+):
+    (tmp_path / "api.py").write_text(
+        textwrap.dedent(
+            """\
+            from repo import save
+
+            __all__ = ["run"]
+
+            def run(payload):
+                return save(payload)
+            """
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "repo.py").write_text(
+        "def save(payload):\n    return payload\n", encoding="utf-8"
+    )
+    monkeypatch.chdir(tmp_path)
+
+    payload = extract_cmd.build_extract_payload(".", deep=True).payload
+    old_client_payload = {
+        "schema_version": payload["schema_version"],
+        "inventory": payload["inventory"],
+    }
+
+    assert payload["schema_version"] == "llm-wiki-extract/v1"
+    assert {"entrypoints", "data_flows", "dependencies"} <= set(payload)
+    assert set(old_client_payload) == {"schema_version", "inventory"}
+    assert old_client_payload["inventory"] == payload["inventory"]
+    assert "api.py" in old_client_payload["inventory"]
+
+
+def test_non_deep_extract_keeps_m4_top_level_fields_optional(tmp_path, monkeypatch):
+    (tmp_path / "api.py").write_text(
+        '__all__ = ["run"]\n\n\ndef run():\n    return 1\n', encoding="utf-8"
+    )
+    monkeypatch.chdir(tmp_path)
+
+    payload = extract_cmd.build_extract_payload(".", deep=False).payload
+
+    assert payload["schema_version"] == "llm-wiki-extract/v1"
+    assert "inventory" in payload
+    assert "entrypoints" not in payload
+    assert "data_flows" not in payload
+    assert "dependencies" not in payload
 
 
 @pytest.mark.parametrize(

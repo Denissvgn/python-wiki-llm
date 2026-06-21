@@ -430,6 +430,9 @@ class TestRenderMarkdown:
 
 
 class TestProtocolValidation:
+    def test_protocol_version_remains_context_v1(self):
+        assert context_cmd.PROTOCOL_VERSION == "llm-wiki-context/v1"
+
     def test_language_filter(self):
         inventory = {
             "src/api/users.py": {"language": "python"},
@@ -501,7 +504,44 @@ class TestProtocolRun:
         assert "used_tokens" in data
         assert "files" in data
         assert "content" not in data
+        assert "graphs" not in data
+        assert "surface" not in data
         assert data["files"]
+
+    def test_success_envelope_keeps_old_json_shape_when_enriched(
+        self, tmp_project, tmp_path, capsys
+    ):
+        _write_query_project(tmp_project)
+        _write_query_wiki(tmp_project, "agent_wiki")
+        request = _write_request(
+            tmp_path,
+            _protocol_request(
+                budget_tokens=100000,
+                filters={
+                    "symbol": "run",
+                    "entrypoint": "api-run",
+                    "surface": "flows",
+                },
+            ),
+        )
+
+        context_cmd.run(_make_args(request=request, budget=None, wiki_dir="agent_wiki"))
+
+        data = json.loads(capsys.readouterr().out)
+        assert {
+            "protocol",
+            "ok",
+            "budget_tokens",
+            "used_tokens",
+            "format",
+            "focus",
+            "filters",
+            "files",
+        } <= set(data)
+        assert data["protocol"] == "llm-wiki-context/v1"
+        assert data["ok"] is True
+        assert data["graphs"]["symbol"]["callees"]["found"] is True
+        assert data["surface"]["kind"] == "flows"
 
     def test_request_stdin(self, tmp_project, monkeypatch, capsys):
         monkeypatch.setattr(
@@ -725,6 +765,7 @@ class TestProtocolRun:
         assert data["ok"] is False
         assert data["error"]["code"] == "invalid_request"
         assert data["error"]["field"] == field
+        assert isinstance(data["error"]["message"], str)
 
     def test_invalid_json_returns_error_envelope(self, tmp_path, capsys):
         request = tmp_path / "bad-request.json"

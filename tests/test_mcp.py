@@ -423,10 +423,18 @@ class TestMcpWikiService:
 class RecordingMcpServer:
     def __init__(self):
         self.tool_names: list[str] = []
+        self.resource_uris: list[str] = []
 
     def tool(self):
         def decorator(func):
             self.tool_names.append(func.__name__)
+            return func
+
+        return decorator
+
+    def resource(self, uri):
+        def decorator(func):
+            self.resource_uris.append(uri)
             return func
 
         return decorator
@@ -449,6 +457,57 @@ def test_tool_registration_names_without_sdk(tmp_project):
         "check_wiki",
         "get_status",
     ]
+
+
+def test_tool_registration_preserves_legacy_tools_and_adds_m4_tools(tmp_project):
+    server = RecordingMcpServer()
+    service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+    mcp_server._register_mcp_tools(server, service)
+
+    assert {
+        "get_entity",
+        "get_module",
+        "search_wiki",
+        "get_context",
+        "check_wiki",
+        "get_status",
+    } <= set(server.tool_names)
+    assert {"get_flow", "get_architecture_page", "query_graph"} <= set(
+        server.tool_names
+    )
+
+
+def test_resource_registration_preserves_legacy_resources_and_adds_m4_resources(
+    tmp_project,
+):
+    server = RecordingMcpServer()
+    service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+    mcp_server._register_mcp_resources(server, service)
+
+    assert {
+        "llm-wiki://index",
+        "llm-wiki://log",
+        "llm-wiki://entities/{page_id}",
+        "llm-wiki://modules/{page_id}",
+        "llm-wiki://workflows/{page_id}",
+    } <= set(server.resource_uris)
+    assert {
+        "llm-wiki://flows/{page_id}",
+        "llm-wiki://infrastructure/{page_id}",
+        "llm-wiki://dependencies",
+        "llm-wiki://load-order",
+    } <= set(server.resource_uris)
+
+
+def test_mcp_graph_validation_errors_remain_structured_mcp_errors(tmp_project):
+    service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+    with pytest.raises(mcp_server.McpWikiError) as exc_info:
+        service.query_graph({"type": "callers", "value": ""})
+
+    assert "value must be a non-empty string" in str(exc_info.value)
 
 
 class TestOriginSafety:

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import inspect
 import textwrap
 
 import pytest
@@ -9,6 +10,7 @@ import pytest
 import llm_wiki_cli.api as api
 from llm_wiki_cli.api import (
     EXTRACT_SCHEMA_VERSION,
+    ExtractionError,
     LlmWikiApiError,
     PathPolicyError,
     build_context,
@@ -22,6 +24,69 @@ from llm_wiki_cli.api import (
     list_wiki_pages,
     pages_for_symbol,
 )
+
+
+def test_supported_api_exports_are_additive_contract():
+    expected_exports = {
+        "BOOTSTRAP_SUMMARY_SCHEMA_VERSION",
+        "EXTRACT_SCHEMA_VERSION",
+        "DocumentationGraphQueryService",
+        "ExtractionError",
+        "LlmWikiApiError",
+        "PathPolicyError",
+        "build_context",
+        "build_documentation_query_service",
+        "callees",
+        "callers",
+        "data_flow_for_entrypoint",
+        "dependency_neighborhood",
+        "extract_source",
+        "flow_for_entrypoint",
+        "list_wiki_pages",
+        "pages_for_symbol",
+    }
+
+    assert expected_exports <= set(api.__all__)
+
+
+def test_supported_api_signatures_preserve_existing_callers():
+    extract_params = inspect.signature(extract_source).parameters
+    context_params = inspect.signature(build_context).parameters
+
+    assert list(extract_params) == [
+        "src_dir",
+        "changed",
+        "summary",
+        "deep",
+        "paths",
+        "package",
+        "include_empty",
+        "allow_external_src",
+        "read_only",
+    ]
+    assert extract_params["src_dir"].default == "."
+    assert extract_params["changed"].kind is inspect.Parameter.KEYWORD_ONLY
+    assert extract_params["read_only"].default is True
+
+    assert list(context_params) == [
+        "src_dir",
+        "budget",
+        "format",
+        "focus",
+        "filters",
+        "wiki_dir",
+        "allow_external_src",
+        "read_only",
+    ]
+    assert context_params["src_dir"].default == "."
+    assert context_params["budget"].default == 32000
+    assert context_params["filters"].default is None
+    assert context_params["wiki_dir"].kind is inspect.Parameter.KEYWORD_ONLY
+
+
+def test_api_error_types_remain_structured_subclasses():
+    assert issubclass(PathPolicyError, LlmWikiApiError)
+    assert issubclass(ExtractionError, LlmWikiApiError)
 
 
 def _write_query_project(root):
@@ -108,9 +173,39 @@ def test_build_context_accepts_graph_filters_and_wiki_dir(tmp_project):
     assert payload["graphs"]["symbol"]["callees"]["found"] is True
     assert payload["graphs"]["symbol"]["pages"]["pages"]
     assert payload["surface"]["kind"] == "flows"
+    assert "files" in payload
     assert [page["canonical_path"] for page in payload["surface"]["pages"]] == [
         "flows/api-run.md"
     ]
+
+
+def test_build_context_graph_sections_are_optional_additions(tmp_project):
+    _write_query_project(tmp_project)
+    _write_api_wiki(tmp_project, "agent_wiki")
+
+    plain_payload = build_context(
+        ".",
+        budget=100000,
+        focus="all",
+        format="json",
+        wiki_dir="agent_wiki",
+    )
+    enriched_payload = build_context(
+        ".",
+        budget=100000,
+        focus="all",
+        format="json",
+        filters={"symbol": "run", "entrypoint": "api-run", "surface": "flows"},
+        wiki_dir="agent_wiki",
+    )
+
+    assert "graphs" not in plain_payload
+    assert "surface" not in plain_payload
+    assert {"budget", "used", "files"} <= set(enriched_payload)
+    assert enriched_payload["graphs"]["entrypoint"]["flow"]["found"] is True
+    assert enriched_payload["surface"]["pages"][0]["canonical_path"] == (
+        "flows/api-run.md"
+    )
 
 
 def test_list_wiki_pages_returns_registry_metadata_without_running_extraction(
