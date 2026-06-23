@@ -1240,6 +1240,83 @@ class TestSemanticPreservation:
         assert "Human-curated display name." not in entity_content
 
 
+class TestSyncIndexCustomSections:
+    def _inventory(self):
+        return {
+            "api.py": {
+                "language": "python",
+                "classes": [],
+                "functions": [{"name": "run", "line": 1}],
+            }
+        }
+
+    def test_rebuild_index_preserves_custom_section_links_for_strict_lint(
+        self, tmp_path
+    ):
+        wiki = tmp_path / "wiki"
+        config_docs = wiki / "config_docs"
+        config_docs.mkdir(parents=True)
+        (config_docs / "recording_rules_yml.md").write_text(
+            "# Recording rules\n", encoding="utf-8"
+        )
+        (config_docs / "grafana_dashboards.md").write_text(
+            "# Grafana dashboards\n", encoding="utf-8"
+        )
+        (wiki / "index.md").write_text(
+            textwrap.dedent("""\
+                # Old Index
+
+                ## Configuration Docs
+
+                - [Recording rules](config_docs/recording_rules_yml.md)
+                - [Grafana dashboards](config_docs/grafana_dashboards.md)
+            """),
+            encoding="utf-8",
+        )
+
+        sync_cmd._rebuild_index(
+            wiki, self._inventory(), str(tmp_path), preserve_semantic=True
+        )
+
+        index = (wiki / "index.md").read_text(encoding="utf-8")
+        assert "## Configuration Docs" in index
+        assert "config_docs/recording_rules_yml.md" in index
+        assert "config_docs/grafana_dashboards.md" in index
+
+        page_index = lint_cmd._build_page_index(wiki)
+        report = lint_cmd.LintReport(wiki_dir=str(wiki), src_dir=str(tmp_path))
+        lint_cmd._check_orphan_pages(report, wiki, page_index)
+        assert report.count("orphan_pages") == 0
+
+    def test_rebuild_index_no_preserve_semantic_drops_custom_section_links(
+        self, tmp_path
+    ):
+        wiki = tmp_path / "wiki"
+        config_docs = wiki / "config_docs"
+        config_docs.mkdir(parents=True)
+        (config_docs / "recording_rules_yml.md").write_text(
+            "# Recording rules\n", encoding="utf-8"
+        )
+        (wiki / "index.md").write_text(
+            textwrap.dedent("""\
+                # Old Index
+
+                ## Configuration Docs
+
+                - [Recording rules](config_docs/recording_rules_yml.md)
+            """),
+            encoding="utf-8",
+        )
+
+        sync_cmd._rebuild_index(
+            wiki, self._inventory(), str(tmp_path), preserve_semantic=False
+        )
+
+        index = (wiki / "index.md").read_text(encoding="utf-8")
+        assert "## Configuration Docs" not in index
+        assert "config_docs/recording_rules_yml.md" not in index
+
+
 class TestNewFile:
     """When a new source file is added, new pages are created and manifest updated."""
 
