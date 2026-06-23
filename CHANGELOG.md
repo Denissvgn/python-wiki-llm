@@ -108,7 +108,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Lint profiling** — `llm-wiki lint --profile` emits one JSON object with lint issues, diagnostics, phase timings, and optional cache stats.
 - **Prepared extractor helpers** — new `llm-wiki prepare-extractors` command prepares TypeScript, Go, and Rust helpers ahead of time, with helper cache resolution through `--cache-dir`, `LLM_WIKI_CACHE_DIR`, or `.git/llm-wiki-extractors/`.
 - **Go toolchain override** — `LLM_WIKI_GO` selects the Go executable used for helper preparation, with clearer diagnostics when Go is found but cannot run.
-- **Lint speed analysis report** — added `LINT_SPEED_OPTIMIZATION_REPORT.md` documenting the optimization phases and follow-up performance work.
+- **Lint speed analysis** — documented the optimization phases and follow-up performance work.
 
 ### Changed
 - `sync` now uses the same deep-inventory cache and `--jobs` execution path as `lint`, while preserving normal manifest and page output behavior.

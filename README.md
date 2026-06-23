@@ -814,12 +814,12 @@ Before release, check metadata and docs:
 ```bash
 .venv/bin/pytest tests/test_package_metadata.py tests/test_release.py -q
 .venv/bin/python -m build
+git diff --check
 ```
 
-The M4 release-readiness matrix in `M4_RELEASE_READINESS.md` records the
-surface, distribution, compatibility, and local verification gates for the
-current `[Unreleased]` documentation-surface work. It is documentation evidence
-only; use `llm-wiki release` separately when stamping a real version.
+Release notes and package metadata record the surface, distribution,
+compatibility, and local verification gates for documentation-surface work. Use
+`llm-wiki release` separately when stamping a real version.
 
 The M4 dogfood smoke exercises this repository's own documentation surface by
 copying the checkout to a temp project, bootstrapping a full wiki, running

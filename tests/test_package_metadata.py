@@ -65,13 +65,15 @@ def test_readme_documents_fork_first_policy():
     assert not (PROJECT_ROOT / ".github/PULL_REQUEST_TEMPLATE.md").exists()
 
 
-def test_m4_release_readiness_matrix_documents_surfaces_and_verification():
-    matrix = (PROJECT_ROOT / "M4_RELEASE_READINESS.md").read_text(encoding="utf-8")
+def test_release_metadata_documents_surfaces_and_verification():
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+    release_notes = _changelog_section("## [1.0.0]")
+    release_metadata = " ".join("\n".join([readme, release_notes]).split())
 
     for required in [
         "canonical wiki surface registry",
         "landing page",
-        "surface index",
+        ".llm-wiki-surface.json",
         "flows",
         "dependencies.md",
         "load-order.md",
@@ -82,24 +84,21 @@ def test_m4_release_readiness_matrix_documents_surfaces_and_verification():
         "Python API",
         "context filters",
         "plugin component types",
-        "ubuntu-latest",
-        "macos-latest",
-        "windows-latest",
-        "Python 3.9",
-        "Python 3.12",
-        "Python 3.13",
+        "Ubuntu",
+        "macOS",
+        "Windows",
+        "Python 3.9, 3.12, and 3.13",
         ".venv/bin/pytest -q",
         ".venv/bin/python -m build",
         "git diff --check",
     ]:
-        assert required in matrix
+        assert required in release_metadata
 
 
 def test_readme_release_verification_uses_project_virtualenv():
     readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
     readme_lines = {line.strip() for line in readme.splitlines()}
 
-    assert "M4_RELEASE_READINESS.md" in readme
     for required in [
         '.venv/bin/pip install -e ".[dev]"',
         ".venv/bin/pytest tests/ -v",
