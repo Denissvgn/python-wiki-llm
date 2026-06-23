@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-06-23
+
 ### Added
 - Deep extraction now captures decorated functions defined inside other
   functions (e.g. factory-registered `@app.route`/`@server.tool` handlers) in an
@@ -244,7 +246,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Test suite** — 89 unit + integration tests with pytest
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.6.1...v1.0.0
 [0.6.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.5.2...v0.6.0
 [0.5.2]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.5.1...v0.5.2

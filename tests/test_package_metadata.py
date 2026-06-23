@@ -13,9 +13,9 @@ except ModuleNotFoundError:  # pragma: no cover - Python 3.9/3.10
 PROJECT_ROOT = Path(__file__).parents[1]
 
 
-def _changelog_unreleased_section() -> str:
+def _changelog_section(heading: str) -> str:
     changelog = (PROJECT_ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
-    start = changelog.index("## [Unreleased]")
+    start = changelog.index(heading)
     next_release = changelog.index("\n## [", start + 1)
     return changelog[start:next_release]
 
@@ -112,8 +112,8 @@ def test_readme_release_verification_uses_project_virtualenv():
     assert not any(line.startswith("python -m pytest") for line in readme_lines)
 
 
-def test_changelog_unreleased_documents_m4_public_surfaces():
-    unreleased = _changelog_unreleased_section()
+def test_changelog_1_0_0_documents_m4_public_surfaces():
+    release_notes = _changelog_section("## [1.0.0]")
 
     for required in [
         "static-site",
@@ -126,4 +126,4 @@ def test_changelog_unreleased_documents_m4_public_surfaces():
         "dogfood",
         "release-readiness",
     ]:
-        assert required in unreleased
+        assert required in release_notes
