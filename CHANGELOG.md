@@ -66,6 +66,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Ubuntu/macOS/Windows on Python 3.9, 3.12, and 3.13 without stamping a release
   or publishing artifacts.
 
+## [0.6.2] - 2026-06-23
+
+### Fixed
+- Preserve custom top-level `index.md` sections during `sync` by default, so
+  extra wiki page categories such as `config_docs/` remain linked and
+  `lint --strict` does not report them as orphans after every sync.
+
 ## [0.6.1] - 2026-06-14
 
 ### Fixed
@@ -248,6 +255,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.6.1...v1.0.0
+[0.6.2]: https://github.com/Denissvgn/python-wiki-llm/releases/tag/v0.6.2
 [0.6.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.5.2...v0.6.0
 [0.5.2]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.5.1...v0.5.2
