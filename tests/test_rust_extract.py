@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import inspect
+import json
 import shutil
 import subprocess
 import textwrap
@@ -13,6 +14,7 @@ from unittest.mock import patch
 import pytest
 
 from llm_wiki_cli.config import EXTRACTOR_REGISTRY
+from llm_wiki_cli.extractors import common as extractor_common
 from llm_wiki_cli.extractors.rust_extractor import RustExtractionRequest, RustExtractor
 from llm_wiki_cli.services.extractor_helpers import get_prepared_binary
 
@@ -55,8 +57,7 @@ skip_no_cargo = pytest.mark.skipif(
 def _body_line_count(function) -> int:
     source = textwrap.dedent(inspect.getsource(function))
     function_node = ast.parse(source).body[0]
-    if not isinstance(function_node, ast.FunctionDef):
-        raise AssertionError("expected function source")
+    assert isinstance(function_node, ast.FunctionDef)
 
     body = [
         stmt
@@ -68,7 +69,7 @@ def _body_line_count(function) -> int:
         )
     ]
     first_body_line = min(stmt.lineno for stmt in body)
-    last_body_line = max(stmt.end_lineno for stmt in body)
+    last_body_line = max(stmt.end_lineno or stmt.lineno for stmt in body)
     return last_body_line - first_body_line + 1
 
 
@@ -111,6 +112,42 @@ class TestRustWrapperFiltering:
         cmd = commands[0]
         only_idx = cmd.index("--only-files") + 1
         assert cmd[only_idx] == "real.rs"
+
+    def test_large_file_selection_is_split_across_subprocess_calls(
+        self, tmp_path, monkeypatch
+    ):
+        paths = ["src/a.rs", "src/b.rs", "src/c.rs"]
+        for rel in paths:
+            _make_rs(tmp_path, rel, "pub struct Item;\n")
+        commands = []
+
+        def fake_run(cmd, *args, **kwargs):
+            commands.append(cmd)
+            only_files = cmd[cmd.index("--only-files") + 1].split(",")
+            payload = {rel: {"classes": [], "functions": []} for rel in only_files}
+            return subprocess.CompletedProcess(
+                cmd,
+                0,
+                stdout=json.dumps(payload),
+                stderr="",
+            )
+
+        monkeypatch.setattr(extractor_common, "MAX_ONLY_FILES_ARG_CHARS", 15)
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.rust_extractor.get_prepared_binary",
+            lambda *a, **k: Path("/tmp/rust-helper"),
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.rust_extractor.subprocess.run", fake_run
+        )
+
+        inv = RustExtractor().extract(str(tmp_path))
+
+        assert set(inv) == set(paths)
+        assert len(commands) > 1
+        for cmd in commands:
+            only_arg = cmd[cmd.index("--only-files") + 1]
+            assert len(only_arg) <= extractor_common.MAX_ONLY_FILES_ARG_CHARS
 
 
 # ===========================================================================

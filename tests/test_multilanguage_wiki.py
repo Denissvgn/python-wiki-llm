@@ -13,6 +13,7 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd, migrate_cmd
+from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.services.extractor_helpers import (
     prepare_helper,
     resolve_helper_cache_root,
@@ -103,6 +104,84 @@ def _prepare_helpers_or_fail(
     for language in languages:
         result = prepare_helper(language, cache_root)
         assert result.status in {"prepared", "already_current"}, result.message
+
+
+def test_bootstrap_python_plus_haskell_inventory_without_haskell_toolchain(
+    tmp_path, monkeypatch
+):
+    proj = tmp_path / "proj"
+    proj.mkdir()
+    _write(proj / "app.py", "class PyClient:\n    pass\n")
+    _write(
+        proj / "hls-analysis" / "src" / "HLSAnalysis" / "API.hs",
+        "module HLSAnalysis.API where\n",
+    )
+    wiki = proj / "docs" / "llm_wiki"
+
+    def fake_inventory(src_dir, *args, **kwargs):
+        return InventoryResult(
+            {
+                "app.py": {
+                    "language": "python",
+                    "classes": [{"name": "PyClient", "line": 1}],
+                    "functions": [],
+                    "imports": [],
+                },
+                "hls-analysis/src/HLSAnalysis/API.hs": {
+                    "language": "haskell",
+                    "module": "HLSAnalysis.API",
+                    "imports": [
+                        {
+                            "module": "Data.Text",
+                            "qualified": False,
+                            "alias": None,
+                            "line": 3,
+                        }
+                    ],
+                    "classes": [
+                        {"name": "User", "kind": "data", "line": 5},
+                        {
+                            "name": "instance Renderable User",
+                            "kind": "instance",
+                            "line": 8,
+                        },
+                    ],
+                    "functions": [
+                        {
+                            "name": "apiName",
+                            "kind": "signature",
+                            "signature": "Text",
+                            "line": 10,
+                        }
+                    ],
+                },
+            },
+            {
+                "python": ExtractorStatus("python", "ok", 1),
+                "haskell": ExtractorStatus("haskell", "ok", 1),
+            },
+        )
+
+    monkeypatch.setattr(bootstrap_cmd, "get_inventory_result", fake_inventory)
+    monkeypatch.setattr(bootstrap_cmd, "get_docker_inventory", lambda *a, **k: {})
+    monkeypatch.chdir(proj)
+
+    bootstrap_cmd.run(
+        _make_args(
+            src_dir=str(proj),
+            wiki_dir=str(wiki),
+            skip_dependencies=True,
+            skip_flows=True,
+        )
+    )
+
+    assert (wiki / "modules" / "app.md").exists()
+    assert (wiki / "entities" / "PyClient.md").exists()
+    haskell_module = (wiki / "modules" / "API.md").read_text(encoding="utf-8")
+    assert "# HLSAnalysis.API Module" in haskell_module
+    assert "| `Data.Text` | no | — | 3 |" in haskell_module
+    assert "| [User](../entities/User.md) | Data | 5 | — |" in haskell_module
+    assert (wiki / "entities" / "instance_Renderable_User.md").exists()
 
 
 @skip_no_ts_go_rust

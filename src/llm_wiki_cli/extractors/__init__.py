@@ -51,6 +51,11 @@ class ExtractorProtocol(Protocol):
             omitted when empty, and consumers must tolerate its absence for
             extractors that do not emit it.
 
+            Python file entries with a ``__main__`` guard may also carry
+            optional ``"main_block_calls"`` records using the same call shape,
+            so process-flow analysis can trace guarded entrypoint wrappers
+            without treating them as import-time ``module_calls``.
+
         Returns
         -------
         dict

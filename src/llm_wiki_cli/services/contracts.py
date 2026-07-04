@@ -10,12 +10,13 @@ Dependency/load-order architecture decisions also stay additive under the
 current extract contract: deep Python inventory may include ``data_effects`` on
 function entries, including bounded ``boundary_effects`` for filesystem,
 environment, process, network, output, and logging calls; ``module_calls`` only
-when module-level side effects exist; and ``extract --deep`` may include a
-top-level ``data_flows`` list plus a top-level ``dependencies`` block. Python
-dependency reconciliation treats ``sys.stdlib_module_names`` as the stdlib
-source when available, falls back to the bundled Python 3.9 list in dependency
-analysis, and uses the curated import-to-distribution aliases there with
-optional project overrides from ``[tool.llm-wiki.dependency-aliases]``.
+when module-level side effects exist; ``main_block_calls`` for calls inside a
+Python ``if __name__ == "__main__"`` guard; and ``extract --deep`` may include
+a top-level ``data_flows`` list plus a top-level ``dependencies`` block.
+Python dependency reconciliation treats ``sys.stdlib_module_names`` as the
+stdlib source when available, falls back to the bundled Python 3.9 list in
+dependency analysis, and uses the curated import-to-distribution aliases there
+with optional project overrides from ``[tool.llm-wiki.dependency-aliases]``.
 """
 
 from __future__ import annotations
@@ -28,4 +29,5 @@ EXTRACT_ADDITIVE_FIELDS = {
     "calls[].kwargs",
     "data_effects",
     "data_flows",
+    "main_block_calls",
 }

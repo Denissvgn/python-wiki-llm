@@ -79,6 +79,30 @@ class TestPythonClassification:
         used = classify_imports(inventory)["python"]
         assert set(used) == {"pyyaml", "pillow", "opencv-python"}
 
+    def test_assistant_service_aliases_map_to_distributions(self):
+        inventory = {
+            "services/dialogue/src/dialogue/main.py": _file(
+                "python",
+                _imp("grpc"),
+                _imp("grpc_health.v1", "health_pb2"),
+                _imp("riva.client", "RivaClient"),
+                _imp("pyannote.audio", "Pipeline"),
+                _imp("prometheus_client", "Counter"),
+                _imp("pydantic_settings", "BaseSettings"),
+            ),
+        }
+
+        used = classify_imports(inventory)["python"]
+
+        assert set(used) == {
+            "grpcio",
+            "grpcio-health-checking",
+            "nvidia-riva-client",
+            "prometheus-client",
+            "pydantic-settings",
+            "pyannote-audio",
+        }
+
     def test_single_and_multiline_dependency_arrays_parse(self, tmp_path):
         (tmp_path / "pyproject.toml").write_text(
             "[project]\n"
@@ -225,7 +249,8 @@ class TestGoClassification:
         report = reconcile_dependencies(inventory, str(tmp_path))["languages"]["go"]
         assert report["used"] == {"github.com/foo/bar/v2": ["a.go"]}
         assert report["undeclared"] == []
-        assert report["unused"] == ["github.com/baz/qux"]
+        assert report["optional"] == ["github.com/baz/qux"]
+        assert report["unused"] == []
 
     def test_single_line_require_and_replace_to_local(self, tmp_path):
         (tmp_path / "go.mod").write_text(
@@ -237,6 +262,59 @@ class TestGoClassification:
         declared = parse_declared_dependencies(str(tmp_path))["go"]
         # Replaced to a local path → treated as internal, not a declared require.
         assert declared["required"] == []
+
+    def test_indirect_requirements_are_optional_not_unused(self, tmp_path):
+        (tmp_path / "go.mod").write_text(
+            "module github.com/me/proj\n\n"
+            "require (\n"
+            "\tgithub.com/direct/pkg v1.0.0\n"
+            "\tgithub.com/indirect/pkg v1.0.0 // indirect\n"
+            ")\n",
+            encoding="utf-8",
+        )
+        inventory = {
+            "a.go": _file("go", _imp("github.com/direct/pkg/sub", "sub")),
+        }
+        declared = parse_declared_dependencies(str(tmp_path))["go"]
+        assert declared == {
+            "required": ["github.com/direct/pkg"],
+            "optional": ["github.com/indirect/pkg"],
+        }
+        report = reconcile_dependencies(inventory, str(tmp_path))["languages"]["go"]
+        assert report["undeclared"] == []
+        assert report["unused"] == []
+        assert report["optional"] == ["github.com/indirect/pkg"]
+
+    def test_nested_go_manifest_scope_reconciles_only_under_directory(self, tmp_path):
+        nested = tmp_path / "libs" / "identity_client_go"
+        nested.mkdir(parents=True)
+        (nested / "go.mod").write_text(
+            "module github.com/traid-platform/identityclient\n\n"
+            "require github.com/declared/pkg v1.0.0\n",
+            encoding="utf-8",
+        )
+        inventory = {
+            "libs/identity_client_go/example/main.go": _file(
+                "go",
+                _imp("github.com/declared/pkg/sub", "sub"),
+                _imp("github.com/traid-platform/identityclient/missing", "missing"),
+            ),
+            "cmd/root/main.go": _file(
+                "go",
+                _imp("github.com/declared/pkg/sub", "sub"),
+            ),
+        }
+
+        report = reconcile_dependencies(inventory, str(tmp_path))["languages"]["go"]
+
+        assert report["used"] == {
+            "github.com/declared/pkg": [
+                "cmd/root/main.go",
+                "libs/identity_client_go/example/main.go",
+            ]
+        }
+        assert report["undeclared"] == ["github.com/declared/pkg"]
+        assert report["unused"] == []
 
     def test_no_manifest_falls_back_to_host_org_repo(self):
         inventory = {"a.go": _file("go", _imp("github.com/foo/bar/baz/qux", "qux"))}
@@ -336,6 +414,23 @@ class TestReconcileDependencies:
         inventory = {"a.py": _file("python", _imp("rich"))}
         report = reconcile_dependencies(inventory, str(tmp_path))["languages"]["python"]
         assert report["undeclared"] == []  # satisfied by an extra
+
+    def test_nested_requirements_satisfy_imports_only_under_their_scope(self, tmp_path):
+        service = tmp_path / "service"
+        service.mkdir()
+        (service / "requirements.txt").write_text(
+            "fastapi>=0.104\npytest>=7\n", encoding="utf-8"
+        )
+        inventory = {
+            "app.py": _file("python", _imp("requests")),
+            "service/api.py": _file("python", _imp("fastapi")),
+            "service/tests/test_api.py": _file("python", _imp("pytest")),
+        }
+        declared = parse_declared_dependencies(str(tmp_path))["python"]
+        assert declared == {"required": ["fastapi", "pytest"], "optional": []}
+        report = reconcile_dependencies(inventory, str(tmp_path))["languages"]["python"]
+        assert report["undeclared"] == ["requests"]
+        assert report["unused"] == []
 
     def test_summary_aggregates_across_languages(self, tmp_path):
         (tmp_path / "pyproject.toml").write_text(

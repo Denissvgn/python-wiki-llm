@@ -151,6 +151,38 @@ def _has_run_function(data: Mapping[str, Any]) -> bool:
     return any(fn.get("name") == "run" for fn in data.get("functions", []))
 
 
+def _dedup_paths(paths: Iterable[str | None]) -> list[str]:
+    values: list[str] = []
+    seen: set[str] = set()
+    for path in paths:
+        if not path or path in seen:
+            continue
+        seen.add(path)
+        values.append(path)
+    return values
+
+
+def _related_internal_import_modules(
+    filepath: str | None, data: Mapping[str, Any] | None, resolver
+) -> list[str]:
+    if not filepath or data is None:
+        return []
+    paths: list[str] = []
+    for record in data.get("imports", []):
+        module = str(record.get("module") or "")
+        if not module:
+            continue
+        matches = sorted(resolver.candidates(module, filepath))
+        paths.extend(match for match in matches if match != filepath)
+    return _dedup_paths(paths)
+
+
+def _entry_with_related_modules(entry: dict, related_modules: list[str]) -> dict:
+    if related_modules:
+        entry["related_modules"] = related_modules
+    return entry
+
+
 def _detect_argparse_dispatch_commands(inventory: dict) -> list[dict]:
     """Detect top-level CLI commands declared in a module dispatch table.
 
@@ -205,22 +237,179 @@ def _detect_decorated(
     return entries
 
 
+_NODE_HTTP_MODULES = frozenset({"http", "node:http", "https", "node:https"})
+_GO_HTTP_MODULES = frozenset({"net/http"})
+_HASKELL_WEB_MODULE_PREFIXES = (
+    "Network.Wai",
+    "Network.Wai.Handler.Warp",
+    "Servant",
+)
+_GO_HANDLE_FUNC_RE = re.compile(
+    r"\bhttp\.HandleFunc\s*\([^,]+,\s*([A-Za-z_][A-Za-z0-9_]*)"
+)
+_GO_LISTEN_AND_SERVE_RE = re.compile(
+    r"\bhttp\.ListenAndServe(?:TLS)?\s*\([^,]+,\s*([A-Za-z_][A-Za-z0-9_]*)"
+)
+_GO_HTTP_SERVER_RE = re.compile(r"\bhttp\.Server\b")
+_HASKELL_SERVE_RE = re.compile(r"^\s*([A-Za-z_][A-Za-z0-9_']*)\s*=\s*serve\b", re.M)
+_HASKELL_WARP_RUN_RE = re.compile(r"\brun\s+\S+\s+([A-Za-z_][A-Za-z0-9_']*)")
+
+
+def _javascript_has_node_http_signal(data: Mapping[str, Any]) -> bool:
+    for record in data.get("imports", []):
+        module = str(record.get("module") or "")
+        if module in _NODE_HTTP_MODULES:
+            return True
+    for call in data.get("module_calls", []):
+        if call.get("name") == "require" and call.get("target") in {"http", "https"}:
+            return True
+    return False
+
+
+def _module_call_args(call: Mapping[str, Any]) -> list[str]:
+    args = call.get("args")
+    if not isinstance(args, list):
+        return []
+    return [arg for arg in args if isinstance(arg, str) and arg]
+
+
+def _javascript_server_symbol(data: Mapping[str, Any], call: Mapping[str, Any]) -> str:
+    local = _local_symbols(dict(data))
+    for arg in _module_call_args(call):
+        if arg in local:
+            return arg
+    target = call.get("target")
+    if isinstance(target, str) and target:
+        return target
+    return "createServer"
+
+
+def _detect_javascript_http_servers(inventory: dict) -> list[dict]:
+    entries: list[dict] = []
+    for filepath, data in inventory.items():
+        if not isinstance(data, Mapping) or data.get("language") != "javascript":
+            continue
+        if not _javascript_has_node_http_signal(data):
+            continue
+        for call in data.get("module_calls", []):
+            if not isinstance(call, Mapping) or call.get("name") != "createServer":
+                continue
+            symbol = _javascript_server_symbol(data, call)
+            entries.append(_entry(CATEGORY_HTTP, filepath, symbol))
+    return entries
+
+
+def _import_modules(data: Mapping[str, Any]) -> set[str]:
+    return {
+        str(record.get("module") or "")
+        for record in data.get("imports", [])
+        if isinstance(record, Mapping) and record.get("module")
+    }
+
+
+def _source_text(root: str | Path, filepath: str) -> str:
+    path = PurePosixPath(filepath)
+    if path.is_absolute() or ".." in path.parts:
+        return ""
+    root_path = Path(root).resolve()
+    candidate = root_path.joinpath(*path.parts).resolve()
+    try:
+        candidate.relative_to(root_path)
+    except ValueError:
+        return ""
+    try:
+        return candidate.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return ""
+
+
+def _detect_go_http_servers(inventory: dict, *, root: str | Path) -> list[dict]:
+    entries: list[dict] = []
+    for filepath, data in inventory.items():
+        if not isinstance(data, Mapping) or data.get("language") != "go":
+            continue
+        if not (_import_modules(data) & _GO_HTTP_MODULES):
+            continue
+        text = _source_text(root, filepath)
+        if not text:
+            continue
+        local = _local_symbols(dict(data))
+        for pattern in (_GO_HANDLE_FUNC_RE, _GO_LISTEN_AND_SERVE_RE):
+            for match in pattern.finditer(text):
+                symbol = match.group(1)
+                if symbol in local:
+                    entries.append(_entry(CATEGORY_HTTP, filepath, symbol))
+        if _GO_HTTP_SERVER_RE.search(text):
+            entries.append(_entry(CATEGORY_HTTP, filepath, "http.Server"))
+    return entries
+
+
+def _has_haskell_web_import(data: Mapping[str, Any]) -> bool:
+    modules = _import_modules(data)
+    return any(
+        module == prefix or module.startswith(f"{prefix}.")
+        for module in modules
+        for prefix in _HASKELL_WEB_MODULE_PREFIXES
+    )
+
+
+def _haskell_application_symbols(data: Mapping[str, Any], source: str) -> list[str]:
+    local = _local_symbols(dict(data))
+    symbols: list[str] = []
+    for fn in data.get("functions", []):
+        if not isinstance(fn, Mapping):
+            continue
+        name = str(fn.get("name") or "")
+        signature = str(fn.get("signature") or "")
+        if name in local and "Application" in signature:
+            symbols.append(name)
+    symbols.extend(match.group(1) for match in _HASKELL_SERVE_RE.finditer(source))
+    symbols.extend(match.group(1) for match in _HASKELL_WARP_RUN_RE.finditer(source))
+    return [symbol for symbol in dict.fromkeys(symbols) if symbol in local]
+
+
+def _detect_haskell_web_servers(inventory: dict, *, root: str | Path) -> list[dict]:
+    entries: list[dict] = []
+    for filepath, data in inventory.items():
+        if not isinstance(data, Mapping) or data.get("language") != "haskell":
+            continue
+        if not _has_haskell_web_import(data):
+            continue
+        text = _source_text(root, filepath)
+        if not text:
+            continue
+        entries.extend(
+            _entry(CATEGORY_HTTP, filepath, symbol)
+            for symbol in _haskell_application_symbols(data, text)
+        )
+    return entries
+
+
 def _detect_process(inventory: dict, console_scripts: list[dict] | None) -> list[dict]:
     """Process entry points: ``__main__`` guards and console-script targets."""
     entries: list[dict] = []
+    resolver = build_module_path_resolver(inventory)
     for filepath, data in inventory.items():
         if not data.get("main_block"):
             continue
         symbol = "main" if "main" in _local_symbols(data) else "__main__"
+        related_modules = _related_internal_import_modules(filepath, data, resolver)
         entries.append(
-            _entry(CATEGORY_PROCESS, filepath, symbol, label=Path(filepath).stem)
+            _entry_with_related_modules(
+                _entry(CATEGORY_PROCESS, filepath, symbol, label=Path(filepath).stem),
+                related_modules,
+            )
         )
 
-    resolver = build_module_path_resolver(inventory)
     for script in console_scripts or []:
         file = _resolve_module_file(script["module"], resolver)
+        data = inventory.get(file) if file is not None else None
+        related_modules = _related_internal_import_modules(file, data, resolver)
         entries.append(
-            _entry(CATEGORY_PROCESS, file, script["attr"], label=script["name"])
+            _entry_with_related_modules(
+                _entry(CATEGORY_PROCESS, file, script["attr"], label=script["name"]),
+                related_modules,
+            )
         )
     return entries
 
@@ -435,7 +624,7 @@ def _assign_ids(entries: list[dict]) -> list[dict]:
 
 
 def _builtin_entry_points(
-    inventory: dict, console_scripts: list[dict] | None
+    inventory: dict, console_scripts: list[dict] | None, *, root: str | Path
 ) -> list[dict]:
     entries: list[dict] = []
     entries += _detect_argparse_dispatch_commands(inventory)
@@ -449,6 +638,9 @@ def _builtin_entry_points(
     entries += _detect_decorated(
         inventory, _HTTP_DECORATORS, CATEGORY_HTTP, allow_bare=False
     )
+    entries += _detect_javascript_http_servers(inventory)
+    entries += _detect_go_http_servers(inventory, root=root)
+    entries += _detect_haskell_web_servers(inventory, root=root)
     entries += _detect_process(inventory, console_scripts)
 
     return entries
@@ -470,7 +662,7 @@ def detect_entry_points(
     strict_plugin_errors: bool = False,
 ) -> EntryPointDetectionResult:
     """Detect user-reachable entry points and non-fatal plugin warnings."""
-    entries = _builtin_entry_points(inventory, console_scripts)
+    entries = _builtin_entry_points(inventory, console_scripts, root=root)
     warnings: list[str] = []
     if include_plugins:
         plugin_result = _detect_plugin_entries(
@@ -503,6 +695,42 @@ def get_entry_points(
         root=root,
         fallback_root=fallback_root,
     ).entries
+
+
+def javascript_flow_limitations(
+    inventory: dict, entry_points: list[dict]
+) -> list[dict]:
+    """Return JavaScript HTTP server files that lack flow entry-point coverage."""
+    covered_files = {
+        entry.get("file") for entry in entry_points if entry.get("file") is not None
+    }
+    limitations: list[dict] = []
+    for filepath, data in inventory.items():
+        if data.get("language") != "javascript" or filepath in covered_files:
+            continue
+        create_server_calls = [
+            call
+            for call in data.get("module_calls", [])
+            if call.get("name") == "createServer"
+        ]
+        if not create_server_calls:
+            continue
+        first_call = create_server_calls[0]
+        line = first_call.get("line") or 0
+        location = f" at line {line}" if line else ""
+        limitations.append(
+            {
+                "file": filepath,
+                "line": line,
+                "message": (
+                    f"JavaScript HTTP flow detection for createServer{location} "
+                    "is still advisory for patterns outside raw "
+                    "http.createServer/https.createServer; add an entry-point "
+                    "detector plugin to generate flow pages for this file."
+                ),
+            }
+        )
+    return limitations
 
 
 # ── Flow assembly ─────────────────────────────────────────────────────
@@ -558,14 +786,11 @@ def _expand_flow(node, depth, adjacency, steps, visited, max_depth, state) -> No
 
 
 def _modules_touched(steps: list[dict]) -> list[str]:
-    modules: list[str] = []
-    seen: set[str] = set()
-    for step in steps:
-        file = step["file"]
-        if step["kind"] in ("entry", "internal") and file and file not in seen:
-            seen.add(file)
-            modules.append(file)
-    return modules
+    return _dedup_paths(
+        step["file"]
+        for step in steps
+        if step["kind"] in ("entry", "internal") and step["file"]
+    )
 
 
 def build_flow(
@@ -590,5 +815,6 @@ def build_flow(
         "entry": entry,
         "steps": steps,
         "modules_touched": _modules_touched(steps),
+        "related_modules": _dedup_paths(entry.get("related_modules", [])),
         "truncated": state["truncated"],
     }

@@ -28,6 +28,7 @@ class PageKind(str, Enum):
     ENTITIES = "entities"
     MODULES = "modules"
     WORKFLOWS = "workflows"
+    GUIDES = "guides"
     FLOWS = "flows"
     INFRASTRUCTURE = "infrastructure"
     DEPENDENCIES = "dependencies"
@@ -112,6 +113,14 @@ _PAGE_KINDS = (
         mcp_uri_kind="workflows",
         obsidian_mirror_dir="Workflows",
         role=SurfaceRole.MIXED,
+    ),
+    WikiSurfaceKind(
+        kind=PageKind.GUIDES,
+        label="Guides",
+        path_pattern="guides/{page_id}.md",
+        mcp_uri_kind="guides",
+        obsidian_mirror_dir="Guides",
+        role=SurfaceRole.SEMANTIC,
     ),
     WikiSurfaceKind(
         kind=PageKind.FLOWS,

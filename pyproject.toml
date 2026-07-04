@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agent-wiki-cli"
-version = "1.0.0"
+version = "1.1.0"
 description = "CLI tool to maintain hybrid LLM Wikis for multi-language projects."
 readme = "README.md"
 license = {text = "MIT"}
@@ -54,11 +54,42 @@ where = ["src"]
     "extractors/ts_scripts/extract.js",
     "extractors/go_scripts/main.go",
     "extractors/go_scripts/go.mod",
+    "extractors/haskell_scripts/Main.hs",
+    "extractors/haskell_scripts/Inventory.hs",
+    "extractors/haskell_scripts/Parser.hs",
+    "extractors/haskell_scripts/Paths.hs",
+    "extractors/haskell_scripts/Json.hs",
     "extractors/rust_scripts/Cargo.toml",
     "extractors/rust_scripts/Cargo.lock",
     "extractors/rust_scripts/src/main.rs",
+    "skills/attack-surface/SKILL.md",
+    "skills/attack-surface/reference.md",
+    "skills/dep-audit/SKILL.md",
+    "skills/dep-audit/reference.md",
+    "skills/dep-vuln-triage/SKILL.md",
+    "skills/dep-vuln-triage/reference.md",
+    "skills/doc-hub/SKILL.md",
+    "skills/doc-hub/reference.md",
+    "skills/doc-review/SKILL.md",
+    "skills/doc-review/reference.md",
+    "skills/impact-analysis/SKILL.md",
+    "skills/impact-analysis/reference.md",
+    "skills/infra-review/SKILL.md",
+    "skills/infra-review/reference.md",
+    "skills/onboarding-guide/SKILL.md",
+    "skills/onboarding-guide/reference.md",
+    "skills/publish-docs/SKILL.md",
+    "skills/publish-docs/reference.md",
+    "skills/wiki-bootstrap/SKILL.md",
+    "skills/wiki-bootstrap/reference.md",
+    "skills/wiki-sync/SKILL.md",
+    "skills/wiki-sync/reference.md",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+    "slow: tests that exercise large real repositories or helper toolchains",
+    "network: tests or utilities that require live network access",
+]

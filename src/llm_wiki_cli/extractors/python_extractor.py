@@ -620,7 +620,7 @@ class _DataEffectVisitor(ast.NodeVisitor):
         self.visit(node.value)
         self._add_write_targets(node.target)
 
-    def visit_For(self, node) -> None:
+    def visit_For(self, node: ast.For | ast.AsyncFor) -> None:
         self.visit(node.iter)
         self._add_write_targets(node.target)
         for statement in node.body:
@@ -628,10 +628,10 @@ class _DataEffectVisitor(ast.NodeVisitor):
         for statement in node.orelse:
             self.visit(statement)
 
-    def visit_AsyncFor(self, node) -> None:
+    def visit_AsyncFor(self, node: ast.AsyncFor) -> None:
         self.visit_For(node)
 
-    def visit_With(self, node) -> None:
+    def visit_With(self, node: ast.With | ast.AsyncWith) -> None:
         for item in node.items:
             self.visit(item.context_expr)
             if item.optional_vars is not None:
@@ -639,7 +639,7 @@ class _DataEffectVisitor(ast.NodeVisitor):
         for statement in node.body:
             self.visit(statement)
 
-    def visit_AsyncWith(self, node) -> None:
+    def visit_AsyncWith(self, node: ast.AsyncWith) -> None:
         self.visit_With(node)
 
     def visit_Delete(self, node) -> None:
@@ -902,6 +902,7 @@ class ComponentVisitor(ast.NodeVisitor):
         self.has_all = False  # whether __all__ is defined
         self.all_exports = []  # names listed in __all__ (when statically known)
         self.has_main = False  # whether an `if __name__ == "__main__"` guard exists
+        self.main_block_calls = []  # deep-mode calls inside the __main__ guard
         self.nested_functions = []  # decorated functions defined inside other defs
         self._class_depth = 0
         self._function_depth = 0
@@ -1077,6 +1078,8 @@ class ComponentVisitor(ast.NodeVisitor):
             and _is_main_guard(node.test)
         ):
             self.has_main = True
+            if self._deep:
+                self.main_block_calls.extend(_extract_calls(node))
         self.generic_visit(node)
 
 
@@ -1157,7 +1160,7 @@ def _scan_python_files(
             or include_empty
         )
         if has_content:
-            file_entry = {
+            file_entry: dict[str, object] = {
                 "classes": visitor.classes,
                 "functions": visitor.functions,
             }
@@ -1174,6 +1177,8 @@ def _scan_python_files(
                     file_entry["all_exports"] = visitor.all_exports
                 if visitor.has_main:
                     file_entry["main_block"] = True
+                if visitor.main_block_calls:
+                    file_entry["main_block_calls"] = visitor.main_block_calls
                 if visitor.nested_functions:
                     file_entry["nested_functions"] = visitor.nested_functions
                 if module_calls:

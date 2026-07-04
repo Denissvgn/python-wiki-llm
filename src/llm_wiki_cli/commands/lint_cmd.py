@@ -6,24 +6,42 @@ import sys
 import time
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 
 from .extract_cmd import get_call_graph, get_docker_inventory, get_inventory_result
 from .extract_cmd import resolve_call_edges
-from .bootstrap_cmd import build_module_page_map, build_entity_page_map
-from ..config import validate_path
+from .bootstrap_cmd import (
+    build_entity_occurrence_page_map,
+    build_module_page_map,
+)
+from ..config import validate_path, validate_source_root
 from ..services.data_flow import analyze_data_flow
 from ..services.dependencies import analyze_dependencies
-from ..services.entrypoints import build_flow, get_entry_points, read_console_scripts
+from ..services.entrypoints import (
+    build_flow,
+    get_entry_points,
+    javascript_flow_limitations,
+    read_console_scripts,
+)
 from ..services.inventory_cache import (
     InventoryCacheOptions,
     InventoryCacheStats,
     format_cache_stats,
 )
+from ..services.infrastructure_inventory import (
+    get_yaml_infrastructure_inventory,
+    infrastructure_page_name,
+)
 from ..services.io import read_md
 from ..services.plugins import PluginError, iter_components, load_entry_point
-from ..services.source_snapshot import build_source_snapshot
+from ..services.source_snapshot import (
+    SourceSnapshot,
+    build_source_snapshot,
+    format_unsupported_source_summary,
+    unsupported_source_label,
+    unsupported_source_summary,
+)
 from ..services.team import build_team_issues
 
 # basic regex for [text](url)
@@ -48,6 +66,7 @@ _PROFILE_PHASES = [
     "inventory",
     "docker_inventory",
     "page_index",
+    "unsupported_sources",
     "links",
     "generated_diagrams",
     "orphans",
@@ -56,6 +75,7 @@ _PROFILE_PHASES = [
     "workflows",
     "flows",
     "data_flow",
+    "javascript_flow",
     "dependencies",
     "infrastructure",
     "strict",
@@ -148,7 +168,10 @@ class _WikiPageIndex:
 class _LintInputs:
     deep_inventory: dict
     docker_inventory: dict
+    yaml_infrastructure_inventory: dict
     page_index: _WikiPageIndex
+    unsupported_sources: dict[str, dict[str, object]]
+    source_snapshot: SourceSnapshot
 
 
 def _local_link_path(link: str) -> str | None:
@@ -193,7 +216,7 @@ def _collect_code_classes(inventory_or_src_dir) -> set[str]:
         if isinstance(inventory_or_src_dir, dict)
         else get_inventory_result(inventory_or_src_dir).inventory
     )
-    entity_map = build_entity_page_map(inventory)
+    entity_map = build_entity_occurrence_page_map(inventory)
     return set(entity_map.values())
 
 
@@ -206,7 +229,7 @@ def _collect_documented_modules(wiki_dir: Path) -> set[str]:
 
 
 def _collect_code_modules(inventory_or_src_dir) -> set[str]:
-    """Return the set of module page names with tracked components.
+    """Return the set of module page names with tracked inventory.
 
     Uses collision-aware naming so that duplicate file stems across
     different directories are qualified (e.g. ``pkg_a_cli``).
@@ -251,9 +274,17 @@ def _collect_docker_files(docker_inventory_or_src_dir) -> set[str]:
         if isinstance(docker_inventory_or_src_dir, dict)
         else get_docker_inventory(docker_inventory_or_src_dir)
     )
-    return {
-        f.replace("\\", "/").replace("/", "_").replace(".", "_") for f in docker_inv
-    }
+    return {infrastructure_page_name(f) for f in docker_inv}
+
+
+def _collect_infrastructure_files(
+    docker_inventory: dict, yaml_infrastructure_inventory: dict | None = None
+) -> set[str]:
+    """Return page names for all supported infrastructure files in source."""
+    page_names = _collect_docker_files(docker_inventory)
+    for source_path in yaml_infrastructure_inventory or {}:
+        page_names.add(infrastructure_page_name(source_path))
+    return page_names
 
 
 def _add(
@@ -341,7 +372,7 @@ def _run_plugin_lint_rules(
 
 
 def _inventory_code_classes(inventory: dict) -> set[str]:
-    entity_map = build_entity_page_map(inventory)
+    entity_map = build_entity_occurrence_page_map(inventory)
     return set(entity_map.values())
 
 
@@ -446,15 +477,19 @@ def _collect_lint_inputs(
     profiler: _LintProfiler | None,
     cache_options: InventoryCacheOptions | None,
     parallel_jobs: int,
+    helper_cache_dir: str | None,
+    include_tests: Iterable[str] | None,
 ) -> _LintInputs | None:
     with _profile_phase(profiler, "inventory"):
-        source_snapshot = build_source_snapshot(src_dir)
+        source_snapshot = build_source_snapshot(src_dir, include_tests=include_tests)
         inventory_result = get_inventory_result(
             src_dir,
             deep=True,
             source_snapshot=source_snapshot,
             cache_options=cache_options,
             parallel_jobs=parallel_jobs,
+            helper_cache_dir=helper_cache_dir,
+            include_tests=include_tests,
         )
         if cache_options is not None and cache_options.stats_enabled:
             report.cache_stats = inventory_result.cache_stats
@@ -462,16 +497,63 @@ def _collect_lint_inputs(
             _add_extractor_failures(report, inventory_result)
             return None
         deep_inventory = inventory_result.inventory
+        unsupported_sources = unsupported_source_summary(
+            source_snapshot, supported_languages=inventory_result.statuses
+        )
 
     with _profile_phase(profiler, "docker_inventory"):
         docker_inventory = get_docker_inventory(
+            src_dir, source_snapshot=source_snapshot
+        )
+        yaml_infrastructure_inventory = get_yaml_infrastructure_inventory(
             src_dir, source_snapshot=source_snapshot
         )
 
     with _profile_phase(profiler, "page_index"):
         page_index = _build_page_index(wiki_path)
 
-    return _LintInputs(deep_inventory, docker_inventory, page_index)
+    return _LintInputs(
+        deep_inventory,
+        docker_inventory,
+        yaml_infrastructure_inventory,
+        page_index,
+        unsupported_sources,
+        source_snapshot,
+    )
+
+
+def _check_unsupported_source_diagnostics(
+    report: LintReport, unsupported_sources: dict[str, dict[str, object]]
+) -> None:
+    message = format_unsupported_source_summary(unsupported_sources)
+    if not message:
+        return
+    for language, data in sorted(unsupported_sources.items()):
+        label = unsupported_source_label(language)
+        raw_paths = data.get("paths", [])
+        paths = (
+            [str(path) for path in raw_paths if path]
+            if isinstance(raw_paths, list)
+            else []
+        )
+        if not paths:
+            _diagnose(
+                report,
+                "unsupported_sources",
+                message,
+                target=label,
+                severity="info",
+            )
+            continue
+        for path in paths:
+            _diagnose(
+                report,
+                "unsupported_sources",
+                f"{message}; {label}: {path}",
+                path=path,
+                target=label,
+                severity="info",
+            )
 
 
 def _build_page_index(wiki_path: Path) -> _WikiPageIndex:
@@ -757,7 +839,10 @@ def _check_flow_coverage(
     detected_flows = {
         ep["id"]
         for ep in get_entry_points(
-            deep_inventory, console_scripts=read_console_scripts(src_dir)
+            deep_inventory,
+            console_scripts=read_console_scripts(src_dir),
+            root=src_dir,
+            fallback_root=Path.cwd(),
         )
     }
     for name in sorted(documented_flows - detected_flows):
@@ -781,7 +866,10 @@ def _check_data_flow_diagnostics(
 
     edges = resolve_call_edges(deep_inventory)
     for entry_point in get_entry_points(
-        deep_inventory, console_scripts=read_console_scripts(src_dir)
+        deep_inventory,
+        console_scripts=read_console_scripts(src_dir),
+        root=src_dir,
+        fallback_root=Path.cwd(),
     ):
         if entry_point["id"] not in documented_flows:
             continue
@@ -802,11 +890,33 @@ def _check_data_flow_diagnostics(
             )
 
 
+def _check_javascript_flow_diagnostics(
+    report: LintReport,
+    deep_inventory: dict,
+    src_dir: str,
+) -> None:
+    entry_points = get_entry_points(
+        deep_inventory,
+        console_scripts=read_console_scripts(src_dir),
+        root=src_dir,
+        fallback_root=Path.cwd(),
+    )
+    for limitation in javascript_flow_limitations(deep_inventory, entry_points):
+        _diagnose(
+            report,
+            "javascript_flow_unsupported",
+            limitation["message"],
+            path=limitation["file"],
+            target=limitation["file"],
+        )
+
+
 def _check_dependency_coverage(
     report: LintReport,
     wiki_path: Path,
     deep_inventory: dict,
     src_dir: str,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> None:
     """Re-run dependency analysis for the architecture pages and warn on drift.
 
@@ -826,7 +936,9 @@ def _check_dependency_coverage(
     if not pages:
         return
 
-    analysis = analyze_dependencies(deep_inventory, src_dir)
+    analysis = analyze_dependencies(
+        deep_inventory, src_dir, source_snapshot=source_snapshot
+    )
     if not analysis["graph"]["nodes"]:
         for page in pages:
             _add(
@@ -845,39 +957,79 @@ def _check_dependency_coverage(
             "Import cycle: " + " ⇄ ".join(cycle),
         )
     for language, data in sorted(analysis["reconciliation"]["languages"].items()):
+        undeclared_details = {
+            item.get("package"): item for item in data.get("undeclared_details", [])
+        }
         for package in data["undeclared"]:
+            detail = undeclared_details.get(package)
+            suffix = ""
+            if detail:
+                files = detail.get("files") or []
+                locations = ", ".join(files) if files else "unknown file"
+                scope = _format_dependency_scope(detail.get("scope"))
+                suffix = f" in {locations} (manifest scope: {scope})"
             _diagnose(
                 report,
                 "undeclared_dependencies",
-                f"Undeclared {language} dependency (imported, not declared): {package}",
+                f"Undeclared {language} dependency "
+                f"(imported, not declared): {package}{suffix}",
                 target=package,
             )
+        unused_details = {
+            item.get("package"): item for item in data.get("unused_details", [])
+        }
         for package in data["unused"]:
+            detail = unused_details.get(package)
+            suffix = ""
+            if detail:
+                scope = _format_dependency_scope(detail.get("scope"))
+                suffix = f" (manifest scope: {scope})"
             _diagnose(
                 report,
                 "unused_dependencies",
-                f"Unused {language} dependency (declared, not imported): {package}",
+                f"Unused {language} dependency "
+                f"(declared, not imported): {package}{suffix}",
                 target=package,
             )
+        for module, files in sorted((data.get("path_aliases") or {}).items()):
+            locations = ", ".join(files)
+            _diagnose(
+                report,
+                "unresolved_path_aliases",
+                "Unresolved TypeScript path alias import "
+                f"(matched tsconfig paths, no local file found): {module}"
+                f" in {locations}",
+                target=module,
+            )
+
+
+def _format_dependency_scope(scope: object) -> str:
+    if scope is None:
+        return "<none>"
+    scope_text = str(scope)
+    return scope_text if scope_text else "."
 
 
 def _check_infrastructure_coverage(
     report: LintReport,
     wiki_path: Path,
     docker_inventory: dict,
+    yaml_infrastructure_inventory: dict | None = None,
 ) -> None:
     documented_infra = _collect_documented_infrastructure(wiki_path)
-    code_docker = _collect_docker_files(docker_inventory)
+    source_infra = _collect_infrastructure_files(
+        docker_inventory, yaml_infrastructure_inventory
+    )
 
-    undoc_infra = code_docker - documented_infra
-    stale_infra = documented_infra - code_docker
+    undoc_infra = source_infra - documented_infra
+    stale_infra = documented_infra - source_infra
 
     if undoc_infra:
         for name in sorted(undoc_infra):
             _add(
                 report,
                 "undocumented_infrastructure",
-                f"Undocumented Docker file (in source, not in wiki): {name}",
+                f"Undocumented infrastructure file (in source, not in wiki): {name}",
                 target=name,
             )
 
@@ -915,6 +1067,8 @@ def _run_report_checks(
     profiler: _LintProfiler | None,
     inputs: _LintInputs,
 ) -> None:
+    with _profile_phase(profiler, "unsupported_sources"):
+        _check_unsupported_source_diagnostics(report, inputs.unsupported_sources)
     with _profile_phase(profiler, "links"):
         _check_broken_links(report, wiki_path, inputs.page_index)
     with _profile_phase(profiler, "generated_diagrams"):
@@ -933,10 +1087,23 @@ def _run_report_checks(
         _check_flow_coverage(report, wiki_path, inputs.deep_inventory, src_dir)
     with _profile_phase(profiler, "data_flow"):
         _check_data_flow_diagnostics(report, wiki_path, inputs.deep_inventory, src_dir)
+    with _profile_phase(profiler, "javascript_flow"):
+        _check_javascript_flow_diagnostics(report, inputs.deep_inventory, src_dir)
     with _profile_phase(profiler, "dependencies"):
-        _check_dependency_coverage(report, wiki_path, inputs.deep_inventory, src_dir)
+        _check_dependency_coverage(
+            report,
+            wiki_path,
+            inputs.deep_inventory,
+            src_dir,
+            source_snapshot=inputs.source_snapshot,
+        )
     with _profile_phase(profiler, "infrastructure"):
-        _check_infrastructure_coverage(report, wiki_path, inputs.docker_inventory)
+        _check_infrastructure_coverage(
+            report,
+            wiki_path,
+            inputs.docker_inventory,
+            inputs.yaml_infrastructure_inventory,
+        )
     with _profile_phase(profiler, "strict"):
         if strict:
             _check_required_structure(report, wiki_path)
@@ -961,6 +1128,8 @@ def build_report(
     profiler: _LintProfiler | None = None,
     cache_options: InventoryCacheOptions | None = None,
     parallel_jobs: int = 1,
+    helper_cache_dir: str | None = None,
+    include_tests: Iterable[str] | None = None,
 ) -> LintReport:
     """Build a structured lint report without rendering or exiting."""
     wiki_path = Path(wiki_dir)
@@ -980,6 +1149,8 @@ def build_report(
         profiler,
         cache_options,
         parallel_jobs,
+        helper_cache_dir,
+        include_tests,
     )
     if inputs is None:
         return report
@@ -995,6 +1166,7 @@ def report_to_dict(report: LintReport) -> dict:
         "ok": report.passed,
         "issue_count": report.issue_count,
         "issues": [asdict(issue) for issue in report.issues],
+        "diagnostics": [asdict(diagnostic) for diagnostic in report.diagnostics],
     }
 
 
@@ -1095,8 +1267,8 @@ def render_text(report: LintReport) -> str:
     )
     emit_group(
         "undocumented_infrastructure",
-        "All Docker/Compose files documented.",
-        "Found {count} undocumented Docker file(s).",
+        "All infrastructure files documented.",
+        "Found {count} undocumented infrastructure file(s).",
     )
     emit_group(
         "stale_infrastructure",
@@ -1136,6 +1308,18 @@ def render_text(report: LintReport) -> str:
         "generated_diagram_bloat",
         "No generated diagram bloat.",
         "Found {count} generated diagram warning(s).",
+        only_if_present=True,
+    )
+    emit_group(
+        "unsupported_sources",
+        "No unsupported source files.",
+        "Found {count} unsupported source diagnostic(s).",
+        only_if_present=True,
+    )
+    emit_group(
+        "javascript_flow_unsupported",
+        "No unsupported JavaScript flow surfaces.",
+        "Found {count} JavaScript flow diagnostic(s).",
         only_if_present=True,
     )
 
@@ -1229,8 +1413,13 @@ def run(args):
     strict = bool(getattr(args, "strict", False))
     profile = bool(getattr(args, "profile", False))
     cache_stats = bool(getattr(args, "cache_stats", False))
+    allow_external_src = bool(getattr(args, "allow_external_src", False))
     validate_path(str(wiki_dir), "--wiki-dir")
-    validate_path(src_dir, "--src-dir")
+    src_root = validate_source_root(
+        src_dir, "--src-dir", allow_external=allow_external_src
+    )
+    if allow_external_src:
+        src_dir = str(src_root)
 
     profiler = _LintProfiler() if profile else None
     cache_options = InventoryCacheOptions(
@@ -1246,6 +1435,8 @@ def run(args):
         profiler=profiler,
         cache_options=cache_options,
         parallel_jobs=getattr(args, "jobs", 1),
+        helper_cache_dir=getattr(args, "helper_cache_dir", None),
+        include_tests=getattr(args, "include_tests", None),
     )
     if report.count("extractor_failure") and not profile:
         for issue in report.by_category().get("extractor_failure", []):

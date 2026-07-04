@@ -19,6 +19,7 @@ class TestGenerateDockerfileMd:
     def test_dockerfile_renderer_stays_decomposed(self):
         source = textwrap.dedent(inspect.getsource(_generate_dockerfile_md))
         function_node = ast.parse(source).body[0]
+        assert isinstance(function_node, ast.FunctionDef)
         body = list(function_node.body)
         if (
             body
@@ -29,7 +30,7 @@ class TestGenerateDockerfileMd:
             body = body[1:]
 
         first_body_line = min(stmt.lineno for stmt in body)
-        last_body_line = max(stmt.end_lineno for stmt in body)
+        last_body_line = max(stmt.end_lineno or stmt.lineno for stmt in body)
         body_lines = last_body_line - first_body_line + 1
 
         assert body_lines <= 25
@@ -296,5 +297,300 @@ class TestBootstrapInfrastructureIntegration:
             lint_cmd.run(argparse.Namespace(wiki_dir=str(wiki), src_dir="."))
             output = capsys.readouterr().out
             assert "Lint passed" in output
+        finally:
+            os.chdir(old_cwd)
+
+    def test_bootstrap_marks_copied_shell_scripts_as_unsupported_sources(
+        self, tmp_path
+    ):
+        """Docker pages should make copied unsupported deployment scripts visible."""
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        (proj / "app.py").write_text("class App:\n    pass\n", encoding="utf-8")
+        docker = proj / "docker"
+        docker.mkdir()
+        (docker / "entrypoint.sh").write_text("#!/bin/sh\n", encoding="utf-8")
+        (docker / "generate-config.sh").write_text("#!/bin/sh\n", encoding="utf-8")
+        (docker / "Dockerfile").write_text(
+            textwrap.dedent("""\
+                FROM alpine
+                COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+                COPY generate-config.sh /usr/local/bin/generate-config.sh
+                ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+            """),
+            encoding="utf-8",
+        )
+
+        wiki = proj / "docs" / "llm_wiki"
+        old_cwd = os.getcwd()
+        os.chdir(proj)
+        try:
+            from llm_wiki_cli.commands import bootstrap_cmd
+            import argparse
+
+            bootstrap_cmd.run(
+                argparse.Namespace(
+                    src_dir=".",
+                    wiki_dir=str(wiki),
+                    overwrite=True,
+                    depth="shallow",
+                    skip_workflows=True,
+                )
+            )
+
+            infra = (wiki / "infrastructure" / "docker_Dockerfile.md").read_text(
+                encoding="utf-8"
+            )
+            assert "## Unsupported Copied Sources" in infra
+            assert "`entrypoint.sh`" in infra
+            assert "`docker/entrypoint.sh`" in infra
+            assert "`generate-config.sh`" in infra
+            assert "`docker/generate-config.sh`" in infra
+            assert "Shell extraction is not yet supported" in infra
+        finally:
+            os.chdir(old_cwd)
+
+    def test_bootstrap_creates_actions_and_kubernetes_infrastructure_pages(
+        self, tmp_path, capsys
+    ):
+        """Bootstrap documents deployment YAML without mixing it into app workflows."""
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        (proj / "app.py").write_text("class App:\n    pass\n")
+        workflows = proj / ".github" / "workflows"
+        workflows.mkdir(parents=True)
+        (workflows / "ci.yml").write_text(
+            textwrap.dedent("""\
+                name: CI
+                on: push
+                jobs:
+                  test:
+                    runs-on: ubuntu-latest
+                    steps:
+                      - name: Run tests
+                        run: pytest
+            """)
+        )
+        k8s = proj / "k8s"
+        k8s.mkdir()
+        (k8s / "deployment.yaml").write_text(
+            textwrap.dedent("""\
+                apiVersion: apps/v1
+                kind: Deployment
+                metadata:
+                  name: api
+                spec:
+                  replicas: 2
+                  template:
+                    spec:
+                      containers:
+                        - name: api
+                          image: example/api:latest
+            """)
+        )
+        (k8s / "service.yaml").write_text(
+            textwrap.dedent("""\
+                apiVersion: v1
+                kind: Service
+                metadata:
+                  name: api
+                spec:
+                  type: ClusterIP
+                  ports:
+                    - port: 80
+                      targetPort: 8000
+            """)
+        )
+
+        wiki = proj / "docs" / "llm_wiki"
+        old_cwd = os.getcwd()
+        os.chdir(proj)
+        try:
+            from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd
+            import argparse
+
+            bootstrap_cmd.run(
+                argparse.Namespace(
+                    src_dir=".",
+                    wiki_dir=str(wiki),
+                    overwrite=True,
+                    depth="full",
+                    skip_workflows=True,
+                )
+            )
+
+            assert (wiki / "infrastructure" / "_github_workflows_ci_yml.md").exists()
+            assert (wiki / "infrastructure" / "k8s_deployment_yaml.md").exists()
+            assert (wiki / "infrastructure" / "k8s_service_yaml.md").exists()
+
+            actions_md = (
+                wiki / "infrastructure" / "_github_workflows_ci_yml.md"
+            ).read_text(encoding="utf-8")
+            assert "# GitHub Actions: CI" in actions_md
+            assert "`test`" in actions_md
+            assert "Run tests" in actions_md
+
+            deployment_md = (
+                wiki / "infrastructure" / "k8s_deployment_yaml.md"
+            ).read_text(encoding="utf-8")
+            assert "# Kubernetes: Deployment api" in deployment_md
+            assert "`example/api:latest`" in deployment_md
+
+            index_content = (wiki / "index.md").read_text(encoding="utf-8")
+            assert "GitHub Actions: CI" in index_content
+            assert "Kubernetes: Deployment api" in index_content
+            assert "## Workflows" not in index_content
+
+            lint_cmd.run(argparse.Namespace(wiki_dir=str(wiki), src_dir="."))
+            assert "Lint passed" in capsys.readouterr().out
+        finally:
+            os.chdir(old_cwd)
+
+    def test_bootstrap_creates_runtime_config_yaml_infrastructure_pages(
+        self, tmp_path, capsys
+    ):
+        """Bootstrap documents recognized runtime/config YAML but ignores generic YAML."""
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        (proj / "app.py").write_text("class App:\n    pass\n", encoding="utf-8")
+        (proj / "prometheus.yml").write_text(
+            textwrap.dedent("""\
+                global:
+                  scrape_interval: 15s
+                rule_files:
+                  - recording_rules.yml
+                scrape_configs:
+                  - job_name: api
+                    static_configs:
+                      - targets: ["api:8000"]
+            """),
+            encoding="utf-8",
+        )
+        (proj / "recording_rules.yml").write_text(
+            textwrap.dedent("""\
+                groups:
+                  - name: latency
+                    interval: 30s
+                    rules:
+                      - record: job:request_seconds:p95
+                        expr: histogram_quantile(0.95, rate(request_seconds_bucket[5m]))
+            """),
+            encoding="utf-8",
+        )
+        promtail = proj / "services" / "promtail"
+        promtail.mkdir(parents=True)
+        (promtail / "config.yml").write_text(
+            "server:\n  http_listen_port: 9080\nclients:\n  - url: http://loki:3100/loki/api/v1/push\nscrape_configs:\n  - job_name: docker\n",
+            encoding="utf-8",
+        )
+        loki = proj / "services" / "loki"
+        loki.mkdir(parents=True)
+        (loki / "config.yml").write_text(
+            "auth_enabled: false\nserver:\n  http_listen_port: 3100\nschema_config:\n  configs:\n    - store: tsdb\n",
+            encoding="utf-8",
+        )
+        envoy = proj / "host" / "bridge"
+        envoy.mkdir(parents=True)
+        (envoy / "envoy.yaml").write_text(
+            "static_resources:\n  listeners:\n    - name: grpc_web_listener\n  clusters:\n    - name: bridge_grpc\nadmin:\n  address:\n    socket_address:\n      port_value: 9901\n",
+            encoding="utf-8",
+        )
+        proto = proj / "proto"
+        proto.mkdir()
+        (proto / "buf.yaml").write_text(
+            "version: v2\nmodules:\n  - path: .\n    name: buf.build/example/proto\ndeps:\n  - buf.build/googleapis/googleapis\n",
+            encoding="utf-8",
+        )
+        grafana = proj / "services" / "grafana" / "provisioning" / "datasources"
+        grafana.mkdir(parents=True)
+        (grafana / "datasources.yml").write_text(
+            "apiVersion: 1\ndatasources:\n  - name: Prometheus\n    type: prometheus\n    url: http://prometheus:9090\n",
+            encoding="utf-8",
+        )
+        model = proj / "services" / "llm_dialogue"
+        model.mkdir(parents=True)
+        (model / "config.yaml").write_text(
+            "model: microsoft/Phi-4-mini-instruct\nquantization: bitsandbytes\nmax-model-len: 4096\ngpu-memory-utilization: 0.10\n",
+            encoding="utf-8",
+        )
+        prompts = proj / "services" / "dialogue" / "src" / "dialogue" / "prompts"
+        prompts.mkdir(parents=True)
+        (prompts / "policy.yaml").write_text(
+            "rules:\n  - be concise\n", encoding="utf-8"
+        )
+
+        wiki = proj / "docs" / "llm_wiki"
+        old_cwd = os.getcwd()
+        os.chdir(proj)
+        try:
+            from llm_wiki_cli.commands import bootstrap_cmd
+            import argparse
+            import json
+
+            bootstrap_cmd.run(
+                argparse.Namespace(
+                    src_dir=".",
+                    wiki_dir=str(wiki),
+                    overwrite=True,
+                    depth="full",
+                    skip_workflows=True,
+                    format="json",
+                    source_adapter=True,
+                )
+            )
+
+            summary = json.loads(capsys.readouterr().out)
+            assert summary["runtime_config_files"] == 8
+            assert summary["runtime_config_by_type"] == {
+                "buf": 1,
+                "envoy": 1,
+                "grafana_provisioning": 1,
+                "loki": 1,
+                "model_service_config": 1,
+                "prometheus": 1,
+                "prometheus_rules": 1,
+                "promtail": 1,
+            }
+            assert summary["infrastructure_files"] == 8
+
+            expected_pages = [
+                "prometheus_yml.md",
+                "recording_rules_yml.md",
+                "services_promtail_config_yml.md",
+                "services_loki_config_yml.md",
+                "host_bridge_envoy_yaml.md",
+                "proto_buf_yaml.md",
+                "services_grafana_provisioning_datasources_datasources_yml.md",
+                "services_llm_dialogue_config_yaml.md",
+            ]
+            for page in expected_pages:
+                assert (wiki / "infrastructure" / page).exists()
+            assert not (
+                wiki
+                / "infrastructure"
+                / "services_dialogue_src_dialogue_prompts_policy_yaml.md"
+            ).exists()
+
+            prometheus_md = (wiki / "infrastructure" / "prometheus_yml.md").read_text(
+                encoding="utf-8"
+            )
+            assert "# Prometheus: prometheus.yml" in prometheus_md
+            assert "**Type:** `prometheus`" in prometheus_md
+            assert "`api`" in prometheus_md
+            assert "`recording_rules.yml`" in prometheus_md
+            assert "Prometheus rules: recording_rules.yml" in (
+                wiki / "infrastructure" / "recording_rules_yml.md"
+            ).read_text(encoding="utf-8")
+            assert "Envoy: envoy.yaml" in (
+                wiki / "infrastructure" / "host_bridge_envoy_yaml.md"
+            ).read_text(encoding="utf-8")
+            assert "microsoft/Phi-4-mini-instruct" in (
+                wiki / "infrastructure" / "services_llm_dialogue_config_yaml.md"
+            ).read_text(encoding="utf-8")
+
+            index_content = (wiki / "index.md").read_text(encoding="utf-8")
+            assert "Prometheus: prometheus.yml" in index_content
+            assert "Model service config: llm_dialogue" in index_content
+            assert "policy.yaml" not in index_content
         finally:
             os.chdir(old_cwd)

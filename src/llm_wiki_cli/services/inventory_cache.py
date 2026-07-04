@@ -11,7 +11,13 @@ from pathlib import Path
 from typing import Any
 
 from .. import __version__ as LLM_WIKI_VERSION
-from ..config import COMPOSE_PATTERNS, DOCKERFILE_PATTERNS, EXCLUDED_DIRS
+from ..config import (
+    AGENT_WORKTREE_DIR_PATTERNS,
+    COMPOSE_PATTERNS,
+    DOCKERFILE_PATTERNS,
+    EXCLUDED_DIRS,
+    is_agent_worktree_path,
+)
 from ..extractors.common import LANGUAGE_EXTENSIONS
 from .plugins import lock_path, plugin_store
 from .source_snapshot import SourceFile, SourceSnapshot
@@ -114,7 +120,7 @@ def _hash_labeled_files(paths: list[tuple[str, Path]]) -> str:
 
 
 def _path_has_excluded_part(path: Path) -> bool:
-    return not EXCLUDED_DIRS.isdisjoint(path.parts)
+    return not EXCLUDED_DIRS.isdisjoint(path.parts) or is_agent_worktree_path(path)
 
 
 def _gitignore_fingerprint(root: Path) -> str:
@@ -139,10 +145,16 @@ def _implementation_fingerprint() -> str:
         "extractors/ts_extractor.py",
         "extractors/go_extractor.py",
         "extractors/rust_extractor.py",
+        "extractors/haskell_extractor.py",
         "extractors/ts_scripts/extract.js",
         "extractors/ts_scripts/package.json",
         "extractors/go_scripts/main.go",
         "extractors/go_scripts/go.mod",
+        "extractors/haskell_scripts/Main.hs",
+        "extractors/haskell_scripts/Inventory.hs",
+        "extractors/haskell_scripts/Parser.hs",
+        "extractors/haskell_scripts/Paths.hs",
+        "extractors/haskell_scripts/Json.hs",
         "extractors/rust_scripts/Cargo.toml",
         "extractors/rust_scripts/Cargo.lock",
         "extractors/rust_scripts/src/main.rs",
@@ -178,6 +190,7 @@ def _filter_fingerprint() -> str:
     return _hash_json(
         {
             "excluded_dirs": sorted(EXCLUDED_DIRS),
+            "agent_worktree_dir_patterns": AGENT_WORKTREE_DIR_PATTERNS,
             "language_extensions": LANGUAGE_EXTENSIONS,
             "dockerfile_patterns": DOCKERFILE_PATTERNS,
             "compose_patterns": COMPOSE_PATTERNS,

@@ -292,7 +292,10 @@ def _transfer_endpoint(
     aliases_by_symbol: Mapping[str, str],
 ) -> str | None:
     try:
-        step_index = int(transfer.get(key))
+        raw_step = transfer.get(key)
+        if not isinstance(raw_step, (int, float, str)) or isinstance(raw_step, bool):
+            raise TypeError
+        step_index = int(raw_step)
     except (TypeError, ValueError):
         step_index = 0
     if step_index in aliases_by_index:

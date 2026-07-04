@@ -19,7 +19,7 @@ import sys
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
-from typing import Optional
+from typing import Iterable, Mapping, Optional
 
 from .extract_cmd import (
     InventoryResult,
@@ -41,9 +41,10 @@ from .bootstrap_cmd import (
     _module_name_from_path,
     _page_name_for_module,
     build_entity_page_map,
+    build_entity_occurrence_page_map,
     build_module_page_map,
 )
-from ..config import validate_path
+from ..config import validate_path, validate_source_root
 from ..services.data_flow import analyze_data_flow, build_data_flow_context
 from ..services.dependencies import analyze_dependencies
 from ..services.entrypoints import (
@@ -59,6 +60,11 @@ from ..services.inventory_cache import (
 )
 from ..services.io import read_md, write_md
 from ..services.module_maps import build_module_dependency_maps
+from ..services.source_snapshot import (
+    build_source_snapshot,
+    format_unsupported_source_summary,
+    unsupported_source_summary,
+)
 from ..services.wiki_surface import PageKind
 from ..services.wiki_surface_index import write_surface_index
 
@@ -112,17 +118,23 @@ def _build_manifest_from_inventory(
     src_dir: str,
     *,
     entity_page_cache: dict[tuple[str, str], str] | None = None,
+    entity_occurrence_page_cache: dict[tuple[str, str, int], str] | None = None,
     module_page_map: dict[str, str] | None = None,
 ) -> "SyncManifest":
     if entity_page_cache is None:
         _, _, entity_page_cache = _collision_maps(inventory, src_dir)
     if module_page_map is None:
         module_page_map = build_module_page_map(inventory)
+    if entity_occurrence_page_cache is None:
+        entity_occurrence_page_cache = build_entity_occurrence_page_map(
+            inventory, module_page_map
+        )
     return SyncManifest.build_from_inventory(
         inventory,
         src_dir,
         entity_page_cache,
         module_page_map,
+        entity_occurrence_page_cache=entity_occurrence_page_cache,
     )
 
 
@@ -369,6 +381,8 @@ def _preserve_table_description_cells(
             key = _semantic_table_key(row[0])
             existing_description = descriptions.get(key)
             old_description = (old_descriptions or {}).get(key)
+            if existing_description is None:
+                continue
             if not _should_preserve_semantic_value(
                 existing_description,
                 row[desc_idx],
@@ -408,7 +422,7 @@ def _merge_semantic_markdown(
 
     existing_description = _section_body(existing, "Description")
     generated_description = _section_body(generated, "Description")
-    if _should_preserve_semantic_value(
+    if existing_description is not None and _should_preserve_semantic_value(
         existing_description,
         generated_description,
         old_description,
@@ -541,10 +555,35 @@ class SyncManifest:
         src_dir: str,
         entity_page_cache: dict[tuple[str, str], str],
         module_page_map: dict[str, str],
+        *,
+        entity_occurrence_page_cache: dict[tuple[str, str, int], str] | None = None,
     ) -> "SyncManifest":
         """Create a manifest that reflects the current inventory state."""
         sources: dict[str, dict] = {}
+        if entity_occurrence_page_cache is None:
+            entity_occurrence_page_cache = build_entity_occurrence_page_map(
+                inventory, module_page_map
+            )
         for filepath, file_data in inventory.items():
+            seen_entity_names: dict[str, int] = {}
+            entity_page_occurrences = []
+            first_entity_pages: dict[str, str] = {}
+            for cls_info in file_data.get("classes", []):
+                name = str(cls_info["name"])
+                seen_entity_names[name] = seen_entity_names.get(name, 0) + 1
+                occurrence = seen_entity_names[name]
+                page_name = entity_occurrence_page_cache.get(
+                    (name, filepath, occurrence),
+                    entity_page_cache.get((name, filepath), name),
+                )
+                first_entity_pages.setdefault(name, page_name)
+                entity_page_occurrences.append(
+                    {
+                        "name": name,
+                        "page": page_name,
+                        "occurrence": occurrence,
+                    }
+                )
             sources[filepath] = {
                 "hash": _hash_file(Path(src_dir) / filepath),
                 "semantic_hash": _semantic_hash_for_file(file_data),
@@ -553,11 +592,9 @@ class SyncManifest:
                 ),
                 "language": file_data.get("language")
                 or infer_language_from_path(filepath),
-                "entities": [c["name"] for c in file_data.get("classes", [])],
-                "entity_pages": {
-                    c["name"]: entity_page_cache.get((c["name"], filepath), c["name"])
-                    for c in file_data.get("classes", [])
-                },
+                "entities": [str(c["name"]) for c in file_data.get("classes", [])],
+                "entity_pages": first_entity_pages,
+                "entity_page_occurrences": entity_page_occurrences,
                 "module_page": module_page_map.get(
                     filepath, _module_name_from_path(filepath)
                 ),
@@ -734,7 +771,7 @@ def _compute_diff(
 
         entity_pages = old_info.get("entity_pages")
         for cls in file_data.get("classes", []):
-            cls_name = cls["name"]
+            cls_name = str(cls["name"])
             new_page = entity_page_cache.get((cls_name, filepath), cls_name)
             old_page = (
                 str(entity_pages[cls_name])
@@ -780,6 +817,7 @@ class _ApplyDiffContext:
     inventory: dict
     manifest: SyncManifest
     entity_page_cache: dict[tuple[str, str], str]
+    entity_occurrence_page_cache: dict[tuple[str, str, int], str]
     module_page_map: dict[str, str]
     relationships: dict
     generated_sections: "_GeneratedSectionContext"
@@ -791,7 +829,7 @@ class _ApplyDiffContext:
 
 @dataclass(frozen=True)
 class _GeneratedSectionContext:
-    entity_relationship_summaries: dict[tuple[str, str], dict]
+    entity_relationship_summaries: Mapping[tuple[str, str], Mapping]
     module_dependency_maps: dict[str, dict] | None = None
     dependency_analysis: dict | None = None
 
@@ -888,11 +926,21 @@ def _file_entity_page_map(
     filepath: str,
     file_data: dict,
     entity_page_cache: dict[tuple[str, str], str],
+    entity_occurrence_page_cache: dict[tuple[str, str, int], str] | None = None,
 ) -> dict[str, str]:
-    return {
-        cls["name"]: entity_page_cache[(cls["name"], filepath)]
-        for cls in file_data.get("classes", [])
-    }
+    page_map: dict[str, str] = {}
+    seen_names: dict[str, int] = {}
+    for cls in file_data.get("classes", []):
+        name = cls["name"]
+        seen_names[name] = seen_names.get(name, 0) + 1
+        page_name = entity_page_cache[(name, filepath)]
+        if entity_occurrence_page_cache is not None:
+            page_name = entity_occurrence_page_cache.get(
+                (name, filepath, seen_names[name]),
+                page_name,
+            )
+        page_map.setdefault(name, page_name)
+    return page_map
 
 
 def _move_renamed_entity_page(
@@ -1013,9 +1061,8 @@ def _apply_entity_page(
     cls: dict,
     mod_page_name: str,
     old_generated_semantics: dict,
-    file_entity_page_map: dict[str, str],
+    entity_page_name: str,
 ) -> None:
-    entity_page_name = file_entity_page_map[cls["name"]]
     entity_path = ctx.wiki_dir / "entities" / f"{entity_page_name}.md"
     rename = diff.renamed_entity_pages.get((cls["name"], filepath))
     _move_renamed_entity_page(ctx.wiki_dir, rename, ctx.current_entity_pages)
@@ -1085,6 +1132,7 @@ def _apply_module_page(
         file_entity_page_map,
         module_dependency_map=module_dependency_map,
         module_page_map=ctx.module_page_map,
+        entity_occurrence_page_map=ctx.entity_occurrence_page_cache,
         diagram_style=_generated_diagram_style(
             "module_dependency",
             root=ctx.src_dir,
@@ -1122,10 +1170,20 @@ def _apply_refreshed_file_pages(
             "generated_semantics", {}
         )
         file_entity_page_map = _file_entity_page_map(
-            filepath, file_data, ctx.entity_page_cache
+            filepath,
+            file_data,
+            ctx.entity_page_cache,
+            ctx.entity_occurrence_page_cache,
         )
 
+        seen_names: dict[str, int] = {}
         for cls in file_data.get("classes", []):
+            name = cls["name"]
+            seen_names[name] = seen_names.get(name, 0) + 1
+            entity_page_name = ctx.entity_occurrence_page_cache.get(
+                (name, filepath, seen_names[name]),
+                file_entity_page_map[name],
+            )
             _apply_entity_page(
                 ctx,
                 diff,
@@ -1134,7 +1192,7 @@ def _apply_refreshed_file_pages(
                 cls,
                 mod_page_name,
                 old_generated_semantics,
-                file_entity_page_map,
+                entity_page_name,
             )
         _apply_module_page(
             ctx,
@@ -1262,8 +1320,14 @@ def _refresh_entity_relationship_sections(
         mod_page_name = ctx.module_page_map.get(
             filepath, _page_name_for_module(filepath)
         )
+        seen_names: dict[str, int] = {}
         for cls in file_data.get("classes", []):
-            page_name = ctx.entity_page_cache[(cls["name"], filepath)]
+            name = cls["name"]
+            seen_names[name] = seen_names.get(name, 0) + 1
+            page_name = ctx.entity_occurrence_page_cache.get(
+                (name, filepath, seen_names[name]),
+                ctx.entity_page_cache[(name, filepath)],
+            )
             entity_path = ctx.wiki_dir / "entities" / f"{page_name}.md"
             if not entity_path.exists():
                 continue
@@ -1322,9 +1386,15 @@ def _refresh_module_dependency_sections(
         generated = _generate_module_md(
             filepath,
             file_data,
-            _file_entity_page_map(filepath, file_data, ctx.entity_page_cache),
+            _file_entity_page_map(
+                filepath,
+                file_data,
+                ctx.entity_page_cache,
+                ctx.entity_occurrence_page_cache,
+            ),
             module_dependency_map=module_dependency_maps.get(filepath) or {},
             module_page_map=ctx.module_page_map,
+            entity_occurrence_page_map=ctx.entity_occurrence_page_cache,
             diagram_style=_generated_diagram_style(
                 "module_dependency",
                 root=ctx.src_dir,
@@ -1357,6 +1427,59 @@ def _refresh_generated_sections(
     _refresh_module_dependency_sections(ctx, diff, result)
 
 
+def _apply_diff_page_maps(
+    inventory: dict,
+    src_dir: str,
+    entity_page_cache: dict[tuple[str, str], str] | None,
+    entity_occurrence_page_cache: dict[tuple[str, str, int], str] | None,
+    module_page_map: dict[str, str] | None,
+) -> tuple[
+    dict[tuple[str, str], str],
+    dict[tuple[str, str, int], str],
+    dict[str, str],
+]:
+    if entity_page_cache is None:
+        _, _, entity_page_cache = _collision_maps(inventory, src_dir)
+    if module_page_map is None:
+        module_page_map = build_module_page_map(inventory)
+    if entity_occurrence_page_cache is None:
+        entity_occurrence_page_cache = build_entity_occurrence_page_map(
+            inventory, module_page_map
+        )
+    return entity_page_cache, entity_occurrence_page_cache, module_page_map
+
+
+def _build_apply_diff_context(
+    *,
+    wiki_dir: Path,
+    src_dir: str,
+    inventory: dict,
+    manifest: SyncManifest,
+    entity_page_cache: dict[tuple[str, str], str],
+    entity_occurrence_page_cache: dict[tuple[str, str, int], str],
+    module_page_map: dict[str, str],
+    relationships: dict,
+    generated_sections: _GeneratedSectionContext | None,
+    diff: SyncDiff,
+    preserve_semantic: bool,
+) -> _ApplyDiffContext:
+    return _ApplyDiffContext(
+        wiki_dir=wiki_dir,
+        src_dir=src_dir,
+        inventory=inventory,
+        manifest=manifest,
+        entity_page_cache=entity_page_cache,
+        entity_occurrence_page_cache=entity_occurrence_page_cache,
+        module_page_map=module_page_map,
+        relationships=relationships,
+        generated_sections=generated_sections or _empty_generated_section_context(),
+        metadata_only_files=set(diff.metadata_only_files),
+        current_entity_pages=set(entity_occurrence_page_cache.values()),
+        current_module_pages=set(module_page_map.values()),
+        preserve_semantic=preserve_semantic,
+    )
+
+
 def _apply_diff(
     diff: SyncDiff,
     wiki_dir: Path,
@@ -1365,15 +1488,21 @@ def _apply_diff(
     manifest: SyncManifest,
     *,
     entity_page_cache: dict[tuple[str, str], str] | None = None,
+    entity_occurrence_page_cache: dict[tuple[str, str, int], str] | None = None,
     module_page_map: dict[str, str] | None = None,
     generated_sections: _GeneratedSectionContext | None = None,
     preserve_semantic: bool = True,
 ) -> SyncResult:
     """Regenerate pages for new/changed files, deprecate pages for removed files."""
-    if entity_page_cache is None:
-        _, _, entity_page_cache = _collision_maps(inventory, src_dir)
-    if module_page_map is None:
-        module_page_map = build_module_page_map(inventory)
+    entity_page_cache, entity_occurrence_page_cache, module_page_map = (
+        _apply_diff_page_maps(
+            inventory,
+            src_dir,
+            entity_page_cache,
+            entity_occurrence_page_cache,
+            module_page_map,
+        )
+    )
 
     target_entities = _target_entities_for_diff(diff, inventory)
     relationships = _relationships_for_targets(
@@ -1381,30 +1510,24 @@ def _apply_diff(
     )
     refresh_files = _refresh_files_for_diff(diff)
     result = SyncResult()
-    ctx = _ApplyDiffContext(
+    ctx = _build_apply_diff_context(
         wiki_dir=wiki_dir,
         src_dir=src_dir,
         inventory=inventory,
         manifest=manifest,
         entity_page_cache=entity_page_cache,
+        entity_occurrence_page_cache=entity_occurrence_page_cache,
         module_page_map=module_page_map,
         relationships=relationships,
-        generated_sections=generated_sections or _empty_generated_section_context(),
-        metadata_only_files=set(diff.metadata_only_files),
-        current_entity_pages=set(entity_page_cache.values()),
-        current_module_pages=set(module_page_map.values()),
+        generated_sections=generated_sections,
+        diff=diff,
         preserve_semantic=preserve_semantic,
     )
 
-    # ── New + changed + renamed files ──────────────────────────────────────────
     print("Applying wiki page changes...", flush=True)
     _apply_refreshed_file_pages(ctx, diff, result, refresh_files)
-
-    # ── Unchanged files ────────────────────────────────────────────────────────
     _record_unchanged_file_skips(ctx, diff, result, refresh_files)
     _refresh_generated_sections(ctx, diff, result)
-
-    # ── Removed files ──────────────────────────────────────────────────────────
     _deprecate_removed_files(ctx, diff, result)
 
     print("Applied wiki page changes.", flush=True)
@@ -1447,9 +1570,12 @@ def _removed_entity_page_name(
 class _SyncRunOptions:
     src_dir: str
     wiki_dir: Path
+    allow_external_src: bool
     cache_options: InventoryCacheOptions
     cache_stats_enabled: bool
     parallel_jobs: int
+    helper_cache_dir: str | None
+    include_tests: Iterable[str] | None
     force: bool
     preserve_semantic: bool
 
@@ -1458,6 +1584,7 @@ class _SyncRunOptions:
 class _SyncPageMaps:
     module_page_map: dict[str, str]
     entity_page_cache: dict[tuple[str, str], str]
+    entity_occurrence_page_cache: dict[tuple[str, str, int], str]
 
 
 def _sync_run_options_from_args(args) -> _SyncRunOptions:
@@ -1466,17 +1593,27 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
     cache_options = _cache_options_from_args(args)
     cache_stats_enabled = bool(getattr(args, "cache_stats", False))
     parallel_jobs = getattr(args, "jobs", 1)
+    helper_cache_dir = getattr(args, "helper_cache_dir", None)
+    include_tests = getattr(args, "include_tests", None)
     force = bool(getattr(args, "force", False))
     preserve_semantic = not bool(getattr(args, "no_preserve_semantic", False))
-    validate_path(src_dir, "--src-dir")
+    allow_external_src = bool(getattr(args, "allow_external_src", False))
+    src_root = validate_source_root(
+        src_dir, "--src-dir", allow_external=allow_external_src
+    )
+    if allow_external_src:
+        src_dir = str(src_root)
     validate_path(str(wiki_dir), "--wiki-dir")
 
     return _SyncRunOptions(
         src_dir=src_dir,
         wiki_dir=wiki_dir,
+        allow_external_src=allow_external_src,
         cache_options=cache_options,
         cache_stats_enabled=cache_stats_enabled,
         parallel_jobs=parallel_jobs,
+        helper_cache_dir=helper_cache_dir,
+        include_tests=include_tests,
         force=force,
         preserve_semantic=preserve_semantic,
     )
@@ -1523,15 +1660,29 @@ def _seed_manifest_from_existing_wiki(options: _SyncRunOptions) -> None:
 
 def _extract_current_inventory(options: _SyncRunOptions) -> InventoryResult:
     print("Extracting current source inventory...")
+    source_snapshot = build_source_snapshot(
+        options.src_dir,
+        include_tests=options.include_tests,
+    )
     inventory_result = get_inventory_result(
         options.src_dir,
         deep=True,
+        source_snapshot=source_snapshot,
         cache_options=options.cache_options,
         parallel_jobs=options.parallel_jobs,
+        helper_cache_dir=options.helper_cache_dir,
+        include_tests=options.include_tests,
     )
     if inventory_result.failed:
         print_inventory_failures(inventory_result)
         sys.exit(1)
+    unsupported_message = format_unsupported_source_summary(
+        unsupported_source_summary(
+            source_snapshot, supported_languages=inventory_result.statuses
+        )
+    )
+    if unsupported_message:
+        print(unsupported_message)
     print(
         f"Extracted current source inventory: {len(inventory_result.inventory)} file(s)."
     )
@@ -1545,7 +1696,7 @@ def _finish_if_empty_inventory(
 ) -> bool:
     if inventory_result.inventory or manifest.sources:
         return False
-    print("No supported source files with classes or functions found.")
+    print("No supported source files with documentable inventory found.")
     _print_cache_stats(
         inventory_result.cache_stats, enabled=options.cache_stats_enabled
     )
@@ -1579,9 +1730,14 @@ def _repair_manifest_if_needed(
 
 def _prepare_sync_page_maps(inventory: dict) -> _SyncPageMaps:
     print("Preparing sync page maps...", flush=True)
+    module_page_map = build_module_page_map(inventory)
+    entity_occurrence_page_cache = build_entity_occurrence_page_map(
+        inventory, module_page_map
+    )
     page_maps = _SyncPageMaps(
-        module_page_map=build_module_page_map(inventory),
+        module_page_map=module_page_map,
         entity_page_cache=build_entity_page_map(inventory),
+        entity_occurrence_page_cache=entity_occurrence_page_cache,
     )
     print("Prepared sync page maps.", flush=True)
     return page_maps
@@ -1612,6 +1768,20 @@ def _finish_if_no_changes(
 ) -> bool:
     if diff.has_changes:
         return False
+    # Guide pages under guides/ are agent-owned: sync never creates or
+    # rewrites them, but must still keep index.md's links current even when
+    # source hasn't changed (adding a guide touches no source file, so the
+    # diff above is empty). _rebuild_index is idempotent — it no-ops when
+    # nothing on the wiki side actually changed.
+    _rebuild_index(
+        options.wiki_dir,
+        inventory,
+        options.src_dir,
+        entity_page_cache=page_maps.entity_page_cache,
+        entity_occurrence_page_cache=page_maps.entity_occurrence_page_cache,
+        module_page_map=page_maps.module_page_map,
+        preserve_semantic=options.preserve_semantic,
+    )
     _write_sync_surface_index(options, inventory, page_maps, entry_points)
     print("Wiki is up to date.")
     _print_cache_stats(
@@ -1658,6 +1828,7 @@ def _apply_sync_changes(
         options.src_dir,
         manifest,
         entity_page_cache=page_maps.entity_page_cache,
+        entity_occurrence_page_cache=page_maps.entity_occurrence_page_cache,
         module_page_map=page_maps.module_page_map,
         generated_sections=generated_sections,
         preserve_semantic=options.preserve_semantic,
@@ -1678,6 +1849,7 @@ def _apply_sync_changes(
         inventory,
         options.src_dir,
         entity_page_cache=page_maps.entity_page_cache,
+        entity_occurrence_page_cache=page_maps.entity_occurrence_page_cache,
         module_page_map=page_maps.module_page_map,
         preserve_semantic=options.preserve_semantic,
     )
@@ -1696,6 +1868,7 @@ def _write_updated_manifest(
         inventory,
         options.src_dir,
         entity_page_cache=page_maps.entity_page_cache,
+        entity_occurrence_page_cache=page_maps.entity_occurrence_page_cache,
         module_page_map=page_maps.module_page_map,
     )
     updated_manifest.save(options.wiki_dir)
@@ -1730,6 +1903,7 @@ def _write_sync_surface_index(
         inventory,
         src_dir=options.src_dir,
         entity_page_cache=page_maps.entity_page_cache,
+        entity_occurrence_page_cache=page_maps.entity_occurrence_page_cache,
         module_page_map=page_maps.module_page_map,
         entry_points=entry_points,
     )
@@ -1796,6 +1970,7 @@ _INDEX_GENERATED_HEADINGS = frozenset(
         "Entities",
         "Modules",
         "Workflows",
+        "Guides",
         "User Flows",
         "Infrastructure",
         "Architecture",
@@ -1902,6 +2077,7 @@ def _rebuild_index(
     src_dir: str,
     *,
     entity_page_cache: dict[tuple[str, str], str] | None = None,
+    entity_occurrence_page_cache: dict[tuple[str, str, int], str] | None = None,
     module_page_map: dict[str, str] | None = None,
     preserve_semantic: bool = True,
 ) -> None:
@@ -1909,6 +2085,10 @@ def _rebuild_index(
     if entity_page_cache is None:
         _, _, entity_page_cache = _collision_maps(inventory, src_dir)
     mod_page_map = module_page_map or build_module_page_map(inventory)
+    if entity_occurrence_page_cache is None:
+        entity_occurrence_page_cache = build_entity_occurrence_page_map(
+            inventory, mod_page_map
+        )
 
     all_entity_names: list[str] = []
     seen: set[str] = set()
@@ -1923,14 +2103,21 @@ def _rebuild_index(
                 "docstring": file_data.get("module_docstring", ""),
             }
         )
+        seen_names: dict[str, int] = {}
         for cls in file_data.get("classes", []):
-            page_name = entity_page_cache[(cls["name"], filepath)]
+            name = cls["name"]
+            seen_names[name] = seen_names.get(name, 0) + 1
+            page_name = entity_occurrence_page_cache.get(
+                (name, filepath, seen_names[name]),
+                entity_page_cache[(name, filepath)],
+            )
             if page_name not in seen:
                 all_entity_names.append(page_name)
                 seen.add(page_name)
 
-    # Collect any existing workflow + flow + infrastructure entries from disk
+    # Collect any existing semantic/user-facing entries from disk.
     workflow_entries = _list_existing_pages(wiki_dir / "workflows", "entry")
+    guide_entries = _list_existing_pages(wiki_dir / "guides", "topic")
     flow_entries = _list_existing_flow_pages(wiki_dir / "flows")
     infra_entries = _list_existing_pages(wiki_dir / "infrastructure", "type")
     architecture_entries = _list_existing_architecture_pages(wiki_dir)
@@ -1939,10 +2126,11 @@ def _rebuild_index(
     new_index = _generate_index_md(
         all_entity_names,
         module_entries,
-        workflow_entries or None,
-        infra_entries or None,
-        flow_entries or None,
-        architecture_entries or None,
+        workflow_entries=workflow_entries or None,
+        guide_entries=guide_entries or None,
+        infra_entries=infra_entries or None,
+        flow_entries=flow_entries or None,
+        architecture_entries=architecture_entries or None,
     )
     if preserve_semantic and index_path.exists():
         new_index = _preserve_index_custom_sections(read_md(index_path), new_index)
@@ -1960,7 +2148,21 @@ def _list_existing_pages(directory: Path, extra_key: str) -> list[dict]:
     """Return a list of ``{"name": stem}`` dicts for every .md file in *directory*."""
     if not directory.exists():
         return []
-    return [{"name": p.stem, extra_key: ""} for p in sorted(directory.glob("*.md"))]
+    return [
+        {"name": p.stem, "label": _markdown_title(p), extra_key: ""}
+        for p in sorted(directory.glob("*.md"))
+    ]
+
+
+def _markdown_title(path: Path) -> str:
+    try:
+        for line in read_md(path).splitlines():
+            stripped = line.strip()
+            if stripped.startswith("#"):
+                return stripped.lstrip("#").strip()
+    except OSError:
+        return ""
+    return ""
 
 
 # Top-level architecture pages (stem → index label), regenerated and re-linked

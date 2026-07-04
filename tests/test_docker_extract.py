@@ -19,6 +19,7 @@ from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 def _body_line_count(function) -> int:
     source = textwrap.dedent(inspect.getsource(function))
     function_node = ast.parse(source).body[0]
+    assert isinstance(function_node, ast.FunctionDef)
     body = list(function_node.body)
     if (
         body
@@ -29,7 +30,7 @@ def _body_line_count(function) -> int:
         body = body[1:]
 
     first_body_line = min(stmt.lineno for stmt in body)
-    last_body_line = max(stmt.end_lineno for stmt in body)
+    last_body_line = max(stmt.end_lineno or stmt.lineno for stmt in body)
     return last_body_line - first_body_line + 1
 
 
@@ -537,6 +538,19 @@ class TestRecursiveDiscovery:
         (venv / "Dockerfile").write_text("FROM python:3.12\n")
         inv = get_docker_inventory(str(tmp_path))
         assert inv == {}
+
+    def test_skips_agent_worktree_docker_and_compose_by_default(self, tmp_path):
+        (tmp_path / "Dockerfile").write_text("FROM python:3.12\n", encoding="utf-8")
+        worktree = tmp_path / ".claude" / "worktrees" / "agent-strict-instructions"
+        worktree.mkdir(parents=True)
+        (worktree / "Dockerfile").write_text("FROM alpine\n", encoding="utf-8")
+        (worktree / "docker-compose.yml").write_text(
+            "services:\n  agent:\n    image: alpine\n", encoding="utf-8"
+        )
+
+        inv = get_docker_inventory(str(tmp_path))
+
+        assert sorted(inv) == ["Dockerfile"]
 
     def test_skips_virtualenv_layout_with_custom_name(self, tmp_path):
         site_packages = (

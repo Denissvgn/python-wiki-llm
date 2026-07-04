@@ -143,6 +143,59 @@ def test_extract_source_returns_stable_payload(tmp_project):
     assert "language" in first
 
 
+def test_extract_source_preserves_haskell_inventory_entries(monkeypatch):
+    haskell_entry = {
+        "language": "haskell",
+        "module": "HLSAnalysis.API",
+        "imports": [
+            {
+                "module": "Data.Text",
+                "qualified": False,
+                "alias": None,
+                "line": 4,
+            }
+        ],
+        "classes": [
+            {
+                "name": "User",
+                "kind": "data",
+                "line": 8,
+                "deriving": ["Show"],
+            }
+        ],
+        "functions": [
+            {
+                "name": "loadUser",
+                "kind": "signature",
+                "signature": "UserId -> Maybe User",
+                "line": 18,
+            },
+            {"name": "loadUser", "kind": "function", "line": 19},
+        ],
+        "language_pragmas": ["FlexibleInstances"],
+        "exports": ["User", "loadUser"],
+    }
+    payload = {
+        "schema_version": EXTRACT_SCHEMA_VERSION,
+        "inventory": {"hls-analysis/src/HLSAnalysis/API.hs": haskell_entry},
+    }
+
+    def fake_build_extract_payload(src_dir, **kwargs):
+        assert src_dir == "source-root"
+        assert kwargs["read_only"] is True
+        return api.extract_cmd.ExtractPayloadResult(
+            payload=payload,
+            inventory_count=1,
+            docker_count=0,
+        )
+
+    monkeypatch.setattr(
+        api.extract_cmd, "build_extract_payload", fake_build_extract_payload
+    )
+
+    assert extract_source("source-root", read_only=True) == payload
+
+
 def test_build_context_returns_json_payload(tmp_project):
     payload = build_context(".", budget=100000, focus="all", format="json")
 
@@ -211,7 +264,11 @@ def test_build_context_graph_sections_are_optional_additions(tmp_project):
 def test_list_wiki_pages_returns_registry_metadata_without_running_extraction(
     tmp_project, monkeypatch
 ):
-    _write_api_wiki(tmp_project)
+    wiki = _write_api_wiki(tmp_project)
+    (wiki / "guides").mkdir()
+    (wiki / "guides" / "operator-onboarding.md").write_text(
+        "# Operator Onboarding\n\n", encoding="utf-8"
+    )
 
     def fail_if_extracted(*args, **kwargs):  # pragma: no cover - assertion helper
         raise AssertionError("list_wiki_pages must not run source extraction")
@@ -223,6 +280,7 @@ def test_list_wiki_pages_returns_registry_metadata_without_running_extraction(
     assert payload["wiki_dir"] == "docs/llm_wiki"
     assert payload["counts"]["by_kind"]["index"] == 1
     assert payload["counts"]["by_kind"]["modules"] == 2
+    assert payload["counts"]["by_kind"]["guides"] == 1
     assert payload["counts"]["by_kind"]["flows"] == 1
     assert payload["counts"]["architecture_pages"] == 2
     assert {
@@ -231,6 +289,12 @@ def test_list_wiki_pages_returns_registry_metadata_without_running_extraction(
     } >= {
         ("index", "index", "index.md", "llm-wiki://index"),
         ("modules", "api", "modules/api.md", "llm-wiki://modules/api"),
+        (
+            "guides",
+            "operator-onboarding",
+            "guides/operator-onboarding.md",
+            "llm-wiki://guides/operator-onboarding",
+        ),
         ("flows", "api-run", "flows/api-run.md", "llm-wiki://flows/api-run"),
         ("dependencies", "dependencies", "dependencies.md", "llm-wiki://dependencies"),
     }

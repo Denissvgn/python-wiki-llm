@@ -28,9 +28,10 @@ def _make_args(**kwargs):
 def _body_line_count(function) -> int:
     source = textwrap.dedent(inspect.getsource(function))
     function_node = ast.parse(source).body[0]
+    assert isinstance(function_node, ast.FunctionDef)
     body = list(function_node.body)
     first_body_line = min(stmt.lineno for stmt in body)
-    last_body_line = max(stmt.end_lineno for stmt in body)
+    last_body_line = max(stmt.end_lineno or stmt.lineno for stmt in body)
     return last_body_line - first_body_line + 1
 
 

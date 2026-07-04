@@ -24,6 +24,7 @@ def test_registry_contains_canonical_page_kinds_and_metadata():
         PageKind.ENTITIES,
         PageKind.MODULES,
         PageKind.WORKFLOWS,
+        PageKind.GUIDES,
         PageKind.FLOWS,
         PageKind.INFRASTRUCTURE,
         PageKind.DEPENDENCIES,
@@ -48,6 +49,12 @@ def test_registry_contains_canonical_page_kinds_and_metadata():
     assert by_kind[PageKind.FLOWS].obsidian_mirror_dir == "Flows"
     assert by_kind[PageKind.FLOWS].role is SurfaceRole.MIXED
 
+    assert by_kind[PageKind.GUIDES].label == "Guides"
+    assert by_kind[PageKind.GUIDES].path_pattern == "guides/{page_id}.md"
+    assert by_kind[PageKind.GUIDES].mcp_uri_kind == "guides"
+    assert by_kind[PageKind.GUIDES].obsidian_mirror_dir == "Guides"
+    assert by_kind[PageKind.GUIDES].role is SurfaceRole.SEMANTIC
+
     assert by_kind[PageKind.DEPENDENCIES].label == "Dependencies"
     assert by_kind[PageKind.DEPENDENCIES].path_pattern == "dependencies.md"
     assert by_kind[PageKind.DEPENDENCIES].mcp_uri_kind == "dependencies"
@@ -66,6 +73,7 @@ def test_registry_helpers_filter_roots_and_directory_kinds():
         PageKind.ENTITIES,
         PageKind.MODULES,
         PageKind.WORKFLOWS,
+        PageKind.GUIDES,
         PageKind.FLOWS,
         PageKind.INFRASTRUCTURE,
     ]
@@ -81,12 +89,20 @@ def test_canonical_paths_and_mcp_uris_are_posix():
     assert wiki_surface.canonical_path(
         PageKind.INFRASTRUCTURE, "docker_Dockerfile"
     ) == ("infrastructure/docker_Dockerfile.md")
+    assert (
+        wiki_surface.canonical_path(PageKind.GUIDES, "operator-onboarding")
+        == "guides/operator-onboarding.md"
+    )
 
     assert wiki_surface.mcp_uri(PageKind.INDEX) == "llm-wiki://index"
     assert wiki_surface.mcp_uri(PageKind.LOAD_ORDER) == "llm-wiki://load-order"
     assert (
         wiki_surface.mcp_uri(PageKind.MODULES, "pkg.module")
         == "llm-wiki://modules/pkg.module"
+    )
+    assert (
+        wiki_surface.mcp_uri(PageKind.GUIDES, "operator-onboarding")
+        == "llm-wiki://guides/operator-onboarding"
     )
 
 
@@ -128,6 +144,7 @@ def test_collect_wiki_pages_handles_old_and_new_layouts_deterministically(tmp_pa
     _write(wiki / "entities" / "alpha.md")
     _write(wiki / "modules" / "models.py.md")
     _write(wiki / "workflows" / "signup.md")
+    _write(wiki / "guides" / "operator-onboarding.md")
     _write(wiki / "flows" / "api-run.md")
     _write(wiki / "infrastructure" / "Dockerfile.md")
 
@@ -147,6 +164,7 @@ def test_collect_wiki_pages_handles_old_and_new_layouts_deterministically(tmp_pa
         (PageKind.ENTITIES, "beta", "entities/beta.md"),
         (PageKind.MODULES, "models.py", "modules/models.py.md"),
         (PageKind.WORKFLOWS, "signup", "workflows/signup.md"),
+        (PageKind.GUIDES, "operator-onboarding", "guides/operator-onboarding.md"),
         (PageKind.FLOWS, "api-run", "flows/api-run.md"),
         (PageKind.INFRASTRUCTURE, "Dockerfile", "infrastructure/Dockerfile.md"),
         (PageKind.DEPENDENCIES, "dependencies", "dependencies.md"),

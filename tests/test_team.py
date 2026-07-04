@@ -17,6 +17,7 @@ from llm_wiki_cli.commands import (
     lint_cmd,
     team_cmd,
 )
+from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.services import plugins, team
 
 
@@ -100,6 +101,7 @@ class TestTeamConfig:
         config = team.load_team_config(required=True)
 
         assert path == Path(".llm-wiki/team.json")
+        assert config is not None
         assert config["version"] == 1
         assert config["wiki_dir"] == "docs/llm_wiki"
         assert config["agent"]["required_lint_rules"] == []
@@ -126,6 +128,7 @@ class TestTeamLintAndCheck:
     def test_check_team_conventions_uses_request_object(self):
         source = textwrap.dedent(inspect.getsource(team.check_team_conventions))
         function_node = ast.parse(source).body[0]
+        assert isinstance(function_node, ast.FunctionDef)
 
         assert [arg.arg for arg in function_node.args.args] == ["request"]
         assert function_node.args.kwonlyargs == []
@@ -183,6 +186,79 @@ class TestTeamLintAndCheck:
         )
 
         assert "No team issues found" in capsys.readouterr().out
+
+    def test_team_check_rejects_external_source_without_opt_in(
+        self, tmp_path, monkeypatch
+    ):
+        project = tmp_path / "project"
+        outside = tmp_path / "outside"
+        project.mkdir()
+        outside.mkdir()
+        (project / "docs" / "llm_wiki").mkdir(parents=True)
+        monkeypatch.chdir(project)
+
+        with pytest.raises(PathValidationError, match="--src-dir"):
+            team_cmd.run(
+                _ns(
+                    team_action="check",
+                    src_dir=str(outside),
+                    wiki_dir="docs/llm_wiki",
+                    format="text",
+                    allow_external_src=False,
+                )
+            )
+
+    def test_team_check_accepts_external_source_with_opt_in(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        project = tmp_path / "project"
+        outside = tmp_path / "outside"
+        project.mkdir()
+        outside.mkdir()
+        (project / "docs" / "llm_wiki").mkdir(parents=True)
+        monkeypatch.chdir(project)
+        seen = {}
+        monkeypatch.setattr(
+            team_cmd,
+            "get_inventory",
+            lambda src_dir: seen.setdefault("src_dir", src_dir) or {},
+        )
+        monkeypatch.setattr(team, "build_team_issues", lambda *args, **kwargs: [])
+
+        team_cmd.run(
+            _ns(
+                team_action="check",
+                src_dir=str(outside),
+                wiki_dir="docs/llm_wiki",
+                format="text",
+                allow_external_src=True,
+            )
+        )
+
+        assert Path(seen["src_dir"]) == outside
+        assert "No team issues found" in capsys.readouterr().out
+
+    def test_team_check_allow_external_source_still_rejects_external_wiki(
+        self, tmp_path, monkeypatch
+    ):
+        project = tmp_path / "project"
+        outside = tmp_path / "outside"
+        external_wiki = tmp_path / "external-wiki"
+        project.mkdir()
+        outside.mkdir()
+        external_wiki.mkdir()
+        monkeypatch.chdir(project)
+
+        with pytest.raises(PathValidationError, match="--wiki-dir"):
+            team_cmd.run(
+                _ns(
+                    team_action="check",
+                    src_dir=str(outside),
+                    wiki_dir=str(external_wiki),
+                    format="text",
+                    allow_external_src=True,
+                )
+            )
 
 
 class TestTeamPromptAndPluginRequirements:
@@ -321,6 +397,33 @@ class TestTeamConflictResolver:
 
 
 class TestTeamCliSmoke:
+    def test_team_check_help_lists_allow_external_src(self, monkeypatch, capsys):
+        monkeypatch.setattr("sys.argv", ["llm-wiki", "team", "check", "--help"])
+
+        with pytest.raises(SystemExit) as exc_info:
+            cli.main()
+
+        assert exc_info.value.code == 0
+        help_text = capsys.readouterr().out
+        assert "--allow-external-src" in help_text
+        assert "outside the current working" in help_text
+        assert "directory" in help_text
+
+    def test_team_check_parses_allow_external_src(self, monkeypatch):
+        seen = {}
+        monkeypatch.setattr(
+            team_cmd,
+            "run",
+            lambda args: seen.setdefault("allow_external_src", args.allow_external_src),
+        )
+        monkeypatch.setattr(
+            "sys.argv", ["llm-wiki", "team", "check", "--allow-external-src"]
+        )
+
+        cli.main()
+
+        assert seen["allow_external_src"] is True
+
     def test_cli_init_check_and_resolve(self, tmp_project, capsys, monkeypatch):
         _bootstrap()
         monkeypatch.setattr("sys.argv", ["llm-wiki", "team", "init"])

@@ -61,13 +61,51 @@ agent automatically on commit. You are responsible for keeping the wiki current:
      issues until it exits 0.
    - Treat Import cycles, undeclared dependencies, and unused dependencies as
      warning diagnostics that require review even when lint exits 0.
-2. **When extractor helpers are missing** for TypeScript, Go, or Rust projects:
+     Python manifests include scoped `requirements*.txt` files in nested
+     directories; Go `// indirect` requirements are transitive and not unused
+     direct dependencies by themselves.
+   - Treat unsupported-source diagnostics as coverage notices: the wiki is
+     complete for active extractors only. Install or provide a language
+     extractor plugin when those sources need first-class generated pages.
+2. **When extractor helpers are missing** for TypeScript/JavaScript, Go, Rust, or Haskell projects:
    ```
    llm-wiki prepare-extractors --src-dir .
    ```
-   Then repeat the sync or lint command. Do not run npm/go/cargo helper setup
+   Then repeat the sync or lint command. Do not run npm/go/cargo/ghc helper setup
    manually; `prepare-extractors` owns that cache. If the Go executable on
-   `PATH` cannot run, set `LLM_WIKI_GO=/path/to/go` and retry.
+   `PATH` cannot run, set `LLM_WIKI_GO=/path/to/go` and retry. If GHC needs
+   to be selected explicitly, set `LLM_WIKI_GHC=/path/to/ghc` before preparing
+   extractors. GHC 9.6.x is the supported Haskell helper toolchain for this
+   release; newer GHC 9.x releases are best-effort, and older or malformed GHC
+   version output fails during helper preparation.
+   Haskell `.hs` and `.lhs` files are registered as built-in source files, and
+   normal CLI extraction invokes the prepared Haskell helper for syntax-only
+   inventory. The helper emits syntax-only Haskell inventory without
+   typechecking the target project and does not start Haskell Language Server.
+   Haskell dependency reconciliation reads Cabal `build-depends` statically,
+   treats Stack `extra-deps` and Nix package hints as optional advisory
+   metadata, and keeps missing or malformed metadata non-fatal. Generated Haskell module pages
+   render declared module names, qualified imports, aliases, signatures,
+   values, and type-oriented declarations when present. Haskell inventory stays additive under
+   `llm-wiki-extract/v1`: Haskell file entries include `language`, `imports`,
+   `classes`, and `functions`; `module` is present when the source declares one.
+   Haskell import records include `module`, `qualified`, `alias`, and `line`.
+   `classes` stores type-oriented declarations with `kind` set to `data`,
+   `newtype`, `type`, `class`, or `instance`; `functions` stores top-level
+   signatures, functions, and values with `kind` set to `signature`, `function`,
+   or `value`. Optional Haskell-specific fields such as `language_pragmas`,
+   `exports`, and `deriving` are best-effort additive metadata.
+   To keep prepared helpers separate from the inventory cache, use separate
+   paths:
+   ```
+   llm-wiki prepare-extractors --cache-dir .cache/llm-wiki-helpers
+   llm-wiki sync --cache-dir .cache/llm-wiki-inventory --helper-cache-dir .cache/llm-wiki-helpers
+   ```
+   On `sync`, `lint`, `ci-check`, and `extract`, `--helper-cache-dir` selects
+   prepared TypeScript/JavaScript/Go/Rust/Haskell helpers; `--cache-dir` controls only
+   `llm-wiki-inventory-cache.json`.
+   Go `_test.go` files stay excluded unless the command is run with
+   `--include-tests go`.
 3. **To build a full update prompt manually**, run in the terminal:
    ```
    llm-wiki generate-prompt
@@ -109,7 +147,9 @@ llm-wiki sync --jobs auto
   `_Auto-generated from ..._` text or unexplained placeholders.
 - Lint reports Import cycles, undeclared dependencies, and unused dependencies
   as warning diagnostics for dependency architecture pages. Review and document
-  intentional findings in the relevant `## Notes` section.
+  intentional findings in the relevant `## Notes` section. Python
+  `requirements*.txt` files are scoped to their directory, and Go `// indirect`
+  requirements are treated as transitive dependencies.
 
 ## Using `llm-wiki context` for large codebases
 `context` produces a token-budgeted, priority-ranked snapshot of the codebase —
@@ -159,8 +199,11 @@ The canonical wiki surfaces are:
   and generated `## Local dependency map` sections when dependency analysis is
   enabled.
 - `{wiki_dir}/workflows/`: mixed cross-module workflow pages.
+- `{wiki_dir}/guides/`: semantic agent-authored onboarding, operator, and
+  contributor guides. `sync` does not generate or overwrite guide prose.
 - `{wiki_dir}/flows/`: mixed user-flow pages generated from entry points.
-- `{wiki_dir}/infrastructure/`: mixed Docker and Compose pages.
+- `{wiki_dir}/infrastructure/`: mixed Docker, Compose, GitHub Actions,
+  Kubernetes, and targeted runtime/config YAML pages.
 - `{wiki_dir}/dependencies.md`: mixed dependency architecture page when present.
 - `{wiki_dir}/load-order.md`: mixed load-order architecture page when present.
 - `{wiki_dir}/.llm-wiki-surface.json`: generated machine-readable surface index
@@ -172,12 +215,13 @@ surfaces. Use `llm-wiki site export|check` or the site export service to build
 and validate plain, MkDocs-compatible, or Docusaurus-compatible Markdown as
 generated distribution output, not as an editable source of truth. MkDocs
 exports include generated `llm_wiki` front matter and `mkdocs.yml` navigation;
-Docusaurus exports include generated front matter and sidebars.json. Mermaid
-fences are preserved for the site's configured Markdown/Mermaid renderer. The
-static-site checker validates missing pages, local Markdown links, generated
-front matter metadata, duplicate Docusaurus ids, and output path containment
-without invoking external builders; warning-only findings do not fail the
-check.
+Docusaurus exports include generated front matter and sidebars.json. Generated
+static-site labels may include page-id context when duplicate Markdown headings
+would otherwise make navigation ambiguous. Mermaid fences are preserved for the
+site's configured Markdown/Mermaid renderer. The static-site checker validates
+missing pages, local Markdown links, generated front matter metadata, duplicate
+Docusaurus ids, and output path containment without invoking external builders;
+warning-only findings do not fail the check.
 
 Do not edit generated Mermaid diagrams by hand. Treat generated diagrams,
 tables, links, headings, canonical filenames, and machine-readable artifacts as
@@ -191,6 +235,10 @@ labels, hrefs, or raw Mermaid content.
 - First run `llm-wiki sync --jobs auto --wiki-dir {wiki_dir} --src-dir .` after
   code changes. Sync uses the manifest, persistent inventory cache, and
   collision-aware page naming to update only affected wiki pages.
+- If this wiki was bootstrapped from a trusted source root outside the current
+  working directory, pass the same external `--src-dir` with
+  `--allow-external-src` to `sync`, `lint`, and `ci-check`; `--wiki-dir` still
+  uses the project-root write guard.
 - If sync reports that it repaired only the manifest, run the same sync command
   again before linting.
 - If sync stops on a large diff, inspect the affected files. Use
@@ -229,26 +277,39 @@ Page filenames **must** match the conventions enforced by `llm-wiki lint`:
 - **Entity pages** (`entities/`): Use the class name as the file stem when it is
   unique (e.g., class `MyClass` → `MyClass.md`). When two classes in different
   modules share the same name, prefix with the disambiguated module page stem:
-  `<module_page_stem>_<ClassName>.md` (e.g., `pkg_a_cli_Parser.md`).
+  `<module_page_stem>_<ClassName>.md` (e.g., `pkg_a_cli_Parser.md`). When the
+  same class name appears more than once in one source file, suffix later
+  occurrences with their one-based occurrence number (e.g., `Parser.md`,
+  `Parser_2.md`).
 - **Module pages** (`modules/`): Use the source path from the extractor,
   relative to `--src-dir`. A unique file stem uses `<stem>.md`
   (e.g., `cli.py` → `cli.md`, `main.rs` → `main.md`). When two files share the
   same stem in different directories, parent directory components are prepended
   with underscores until unique (e.g., `pkg_a/cli.py` and `pkg_b/cli.py` →
-  `pkg_a_cli.md` and `pkg_b_cli.md`).
+  `pkg_a_cli.md` and `pkg_b_cli.md`). If that still collides with another page
+  id, all members of that collision use deterministic source-path context
+  (e.g., `scripts_compliance_report.md`).
 - **Infrastructure pages** (`infrastructure/`): Take the relative path of the
-  Docker/Compose file and replace `/` and `.` with `_`
+  Docker/Compose, GitHub Actions, Kubernetes, or targeted runtime/config YAML
+  file and replace `/` and `.` with `_`
   (e.g., `Dockerfile` → `Dockerfile.md`, `test_project/Dockerfile` →
-  `test_project_Dockerfile.md`, `docker-compose.yml` → `docker-compose_yml.md`).
+  `test_project_Dockerfile.md`, `docker-compose.yml` → `docker-compose_yml.md`,
+  `.github/workflows/ci.yml` → `_github_workflows_ci_yml.md`).
   Links from infrastructure pages to source modules must target the actual
   module page stem from `index.md`; if a COPY/ADD source is ambiguous, leave it
   as code text instead of creating a guessed link.
 - **Workflow pages** (`workflows/`): Free-form descriptive names.
+- **Guide pages** (`guides/`): Free-form descriptive names for agent-owned
+  onboarding, operator, or contributor narratives. Keep guide pages linked from
+  `index.md` or another canonical page so they are discoverable and lint-clean.
 - **User-flow pages** (`flows/`): Named by entry-point id (`<category>-<symbol>`,
   e.g. `api-extract_source.md`, `process-llm-wiki.md`). Do not rename them.
 
 ## Quality checks
 - Your wiki changes are **structurally valid** when `llm-wiki lint --strict --jobs auto --wiki-dir {wiki_dir} --src-dir .` exits 0.
+- For a trusted source root outside the current working directory, run
+  `llm-wiki lint --strict --jobs auto --wiki-dir {wiki_dir} --src-dir <repo> --allow-external-src`;
+  `--wiki-dir` still uses the project-root write guard.
 - Lint passing is not enough: affected pages must also have semantic
   explanations, not only generated skeletons or copied docstrings.
 - Run lint after every wiki update. If it reports issues, fix them and re-run until it passes.
@@ -256,11 +317,66 @@ Page filenames **must** match the conventions enforced by `llm-wiki lint`:
   when lint is slow or extractor failures need machine-readable diagnostics.
 - Treat Import cycles, undeclared dependencies, and unused dependencies as
   warning diagnostics that require review even when lint exits 0.
+- Interpret monorepo dependency diagnostics with manifest scope in mind:
+  nested Python `pyproject.toml` and `requirements*.txt` files apply to their
+  directory subtree. Python import/distribution aliases such as `grpc` ->
+  `grpcio` and local monorepo distributions discovered from package manifests
+  participate in reconciliation, while Go `// indirect` requirements are
+  transitive rather than unused direct imports.
+  Generic internal import matching is language-scoped before external
+  dependency reconciliation, so same-stem files in other languages do not
+  consume external imports. Python manifests inside generated agent worktree
+  copies are ignored during reconciliation, matching the default source
+  snapshot policy.
 - Run `llm-wiki extract --src-dir .` to see the live AST inventory when you need detail.
-- If TypeScript, Go, or Rust extraction reports a missing prepared helper, run
+- Go `_test.go` files are excluded by default; pass `--include-tests go` to
+  document Go behavior-spec or integration-test files intentionally.
+- If TypeScript/JavaScript, Go, Rust, or Haskell extraction reports a missing prepared helper, run
   `llm-wiki prepare-extractors --src-dir .` once and repeat the failed command.
+- JavaScript `.js` and `.jsx` files use the TypeScript extractor helper and
+  appear in inventory with `language: "javascript"` when extracted.
+  Raw Node `http.createServer` and `https.createServer` calls create built-in
+  `http` entry points for supported module-level server patterns. Lint keeps
+  `javascript_flow_unsupported` only for uncovered `createServer` patterns
+  outside that raw Node shape.
+- Dependency reconciliation may expose optional lockfile-backed `versions`
+  metadata for Go `go.sum`, Rust `Cargo.lock`, Python `poetry.lock` or exact
+  `requirements*.txt` pins, npm `package-lock.json`, and supported
+  `pnpm-lock.yaml` package entries. Missing or malformed lockfiles omit
+  version metadata without changing lint pass/fail behavior. Haskell lockfile
+  pinning is intentionally out of scope for this metadata.
+- Haskell `.hs` and `.lhs` files are registered as built-in source files, and
+  normal CLI extraction invokes the prepared Haskell helper for syntax-only
+  inventory. The helper emits syntax-only Haskell inventory without
+  typechecking the target project and does not start Haskell Language Server.
+  Haskell dependency reconciliation reads `*.cabal` manifests statically,
+  scopes nested Cabal packages by nearest manifest directory, treats
+  library/executable/common dependencies as required, and treats test-suite,
+  benchmark, setup, Stack `extra-deps`, and Nix hints as optional. Unknown
+  Haskell imports are ignored rather than guessed. Haskell internal dependency edges
+  resolve through declared module names from inventory entries rather than
+  filepath stems. Generated Haskell module pages render declared module names,
+  qualified imports, aliases, signatures, values, and type-oriented
+  declarations when present. Haskell inventory stays additive under
+  `llm-wiki-extract/v1`: Haskell file entries
+  include `language`, `imports`, `classes`, and `functions`; `module` is present
+  when the source declares one. Haskell import records include `module`,
+  `qualified`, `alias`, and `line`. `classes` stores type-oriented declarations
+  with `kind` set to `data`, `newtype`, `type`, `class`, or `instance`;
+  `functions` stores top-level signatures, functions, and values with `kind` set
+  to `signature`, `function`, or `value`. Optional Haskell-specific fields such
+  as `language_pragmas`, `exports`, and `deriving` are best-effort additive
+  metadata.
+- If the inventory cache and helper cache should live in different directories,
+  prepare helpers with `llm-wiki prepare-extractors --cache-dir .cache/llm-wiki-helpers`
+  and repeat extraction with `--helper-cache-dir .cache/llm-wiki-helpers`.
+- If lint or CI reports unsupported sources, do not claim those files were
+  documented. Either install a matching extractor plugin or note that the wiki
+  covers active extractor languages only.
 - If Go is installed but not runnable through `PATH`, set
   `LLM_WIKI_GO=/path/to/go` before preparing extractors.
+- If GHC is installed but not runnable through `PATH`, set
+  `LLM_WIKI_GHC=/path/to/ghc` before preparing extractors.
 - Never leave the wiki in a state where lint reports errors.
 
 ## Formatting rules

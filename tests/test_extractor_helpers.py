@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.commands import prepare_extractors_cmd
+from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.services import extractor_helpers
 from llm_wiki_cli.services.extractor_helpers import (
     HELPER_CACHE_DIRNAME,
@@ -19,6 +20,7 @@ from llm_wiki_cli.services.extractor_helpers import (
     get_prepared_binary,
     helper_cache_key,
     prepare_go,
+    prepare_haskell,
     prepare_rust,
     resolve_helper_cache_root,
 )
@@ -47,6 +49,36 @@ def test_helper_cache_key_changes_for_sources_platform_and_toolchain(
     )
     changed_toolchain = helper_cache_key(
         "go", toolchain_version="go2", platform_value="linux-x86_64"
+    )
+
+    assert changed_source != base
+    assert changed_platform != base
+    assert changed_toolchain != base
+
+
+def test_haskell_helper_cache_key_changes_for_sources_platform_and_toolchain(
+    tmp_path, monkeypatch
+):
+    script = tmp_path / "Main.hs"
+    script.write_text("module Main where\nmain = pure ()\n", encoding="utf-8")
+    monkeypatch.setattr(
+        extractor_helpers,
+        "helper_source_files",
+        lambda language: [("Main.hs", script)],
+    )
+
+    base = helper_cache_key(
+        "haskell", toolchain_version="ghc 9.8.2", platform_value="linux-x86_64"
+    )
+    script.write_text('module Main where\nmain = putStrLn "ok"\n', encoding="utf-8")
+    changed_source = helper_cache_key(
+        "haskell", toolchain_version="ghc 9.8.2", platform_value="linux-x86_64"
+    )
+    changed_platform = helper_cache_key(
+        "haskell", toolchain_version="ghc 9.8.2", platform_value="darwin-arm64"
+    )
+    changed_toolchain = helper_cache_key(
+        "haskell", toolchain_version="ghc 9.10.1", platform_value="linux-x86_64"
     )
 
     assert changed_source != base
@@ -111,6 +143,57 @@ def test_prepared_binary_uses_manifest_and_exe_suffix(tmp_path, monkeypatch):
     assert binary.name.endswith(".exe")
 
 
+def test_haskell_prepared_binary_uses_manifest_and_exe_suffix(tmp_path, monkeypatch):
+    cache_root = tmp_path / "cache" / HELPER_CACHE_DIRNAME
+    binary = cache_root / "haskell" / "key" / "llm-wiki-haskell-extractor.exe"
+    binary.parent.mkdir(parents=True)
+    binary.write_text("binary", encoding="utf-8")
+    (cache_root / "haskell").mkdir(exist_ok=True)
+    monkeypatch.setattr(extractor_helpers, "platform_id", lambda: "windows-amd64")
+    monkeypatch.setattr(
+        extractor_helpers, "helper_source_fingerprint", lambda language: "src"
+    )
+    (cache_root / "haskell" / "current.json").write_text(
+        json.dumps(
+            {
+                "version": HELPER_MANIFEST_VERSION,
+                "language": "haskell",
+                "platform": "windows-amd64",
+                "source_fingerprint": "src",
+                "path": str(binary),
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert get_prepared_binary("haskell", tmp_path, str(tmp_path / "cache")) == binary
+    assert binary.name.endswith(".exe")
+
+
+def test_haskell_manifest_path_must_point_to_file(tmp_path, monkeypatch):
+    cache_root = tmp_path / "cache" / HELPER_CACHE_DIRNAME
+    directory_path = cache_root / "haskell" / "key" / "not-a-binary"
+    directory_path.mkdir(parents=True)
+    monkeypatch.setattr(extractor_helpers, "platform_id", lambda: "linux-x86_64")
+    monkeypatch.setattr(
+        extractor_helpers, "helper_source_fingerprint", lambda language: "src"
+    )
+    (cache_root / "haskell" / "current.json").write_text(
+        json.dumps(
+            {
+                "version": HELPER_MANIFEST_VERSION,
+                "language": "haskell",
+                "platform": "linux-x86_64",
+                "source_fingerprint": "src",
+                "path": str(directory_path),
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert get_prepared_binary("haskell", tmp_path, str(tmp_path / "cache")) is None
+
+
 def test_prepare_extractors_detects_languages_from_snapshot(
     tmp_path, monkeypatch, capsys
 ):
@@ -118,6 +201,7 @@ def test_prepare_extractors_detects_languages_from_snapshot(
     (tmp_path / ".git").mkdir()
     (tmp_path / "app.ts").write_text("export class App {}\n", encoding="utf-8")
     (tmp_path / "main.go").write_text("package main\n", encoding="utf-8")
+    (tmp_path / "Main.hs").write_text("module Main where\n", encoding="utf-8")
     calls = []
 
     def fake_prepare(language, cache_root):
@@ -130,7 +214,82 @@ def test_prepare_extractors_detects_languages_from_snapshot(
         types.SimpleNamespace(src_dir=".", cache_dir=None, language=None)
     )
 
-    assert [language for language, _cache_root in calls] == ["typescript", "go"]
+    assert [language for language, _cache_root in calls] == [
+        "typescript",
+        "go",
+        "haskell",
+    ]
+    assert "typescript: prepared" in capsys.readouterr().out
+
+
+def test_prepare_extractors_rejects_external_source_without_opt_in(
+    tmp_path, monkeypatch
+):
+    project = tmp_path / "project"
+    outside = tmp_path / "outside"
+    project.mkdir()
+    outside.mkdir()
+    monkeypatch.chdir(project)
+
+    with pytest.raises(PathValidationError, match="--src-dir"):
+        prepare_extractors_cmd.run(
+            types.SimpleNamespace(
+                src_dir=str(outside),
+                cache_dir=str(tmp_path / "helpers"),
+                language=["go"],
+                allow_external_src=False,
+            )
+        )
+
+
+def test_prepare_extractors_accepts_external_source_with_opt_in(
+    tmp_path, monkeypatch, capsys
+):
+    project = tmp_path / "project"
+    outside = tmp_path / "outside"
+    project.mkdir()
+    outside.mkdir()
+    monkeypatch.chdir(project)
+    calls = []
+
+    def fake_prepare(language, cache_root):
+        calls.append((language, cache_root))
+        return HelperPrepareResult(language, "prepared", "ok")
+
+    monkeypatch.setattr(prepare_extractors_cmd, "prepare_helper", fake_prepare)
+
+    prepare_extractors_cmd.run(
+        types.SimpleNamespace(
+            src_dir=str(outside),
+            cache_dir=str(tmp_path / "helpers"),
+            language=["go"],
+            allow_external_src=True,
+        )
+    )
+
+    assert [language for language, _cache_root in calls] == ["go"]
+    assert "go: prepared" in capsys.readouterr().out
+
+
+def test_prepare_extractors_detects_javascript_as_typescript_helper(
+    tmp_path, monkeypatch, capsys
+):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / ".git").mkdir()
+    (tmp_path / "script.js").write_text("export function run() {}\n", encoding="utf-8")
+    calls = []
+
+    def fake_prepare(language, cache_root):
+        calls.append((language, cache_root))
+        return HelperPrepareResult(language, "prepared", "ok")
+
+    monkeypatch.setattr(prepare_extractors_cmd, "prepare_helper", fake_prepare)
+
+    prepare_extractors_cmd.run(
+        types.SimpleNamespace(src_dir=".", cache_dir=None, language=None)
+    )
+
+    assert [language for language, _cache_root in calls] == ["typescript"]
     assert "typescript: prepared" in capsys.readouterr().out
 
 
@@ -319,6 +478,30 @@ def test_resolve_go_executable_uses_path_when_no_override(tmp_path, monkeypatch)
     )
 
 
+def test_resolve_ghc_executable_uses_override_and_path(tmp_path):
+    override_ghc = tmp_path / extractor_helpers._binary_name("custom-ghc")
+    override_ghc.write_text("#!/bin/sh\n", encoding="utf-8")
+    override_ghc.chmod(override_ghc.stat().st_mode | 0o111)
+    path_ghc = tmp_path / extractor_helpers._binary_name("ghc")
+    path_ghc.write_text("#!/bin/sh\n", encoding="utf-8")
+    path_ghc.chmod(path_ghc.stat().st_mode | 0o111)
+
+    resolved_override = extractor_helpers._resolve_ghc_executable(
+        {
+            "LLM_WIKI_GHC": str(override_ghc),
+            "PATH": str(tmp_path),
+        }
+    )
+    resolved_path = extractor_helpers._resolve_ghc_executable({"PATH": str(tmp_path)})
+
+    assert os.path.normcase(
+        os.path.normpath(str(resolved_override))
+    ) == os.path.normcase(os.path.normpath(str(override_ghc)))
+    assert os.path.normcase(os.path.normpath(str(resolved_path))) == os.path.normcase(
+        os.path.normpath(str(path_ghc))
+    )
+
+
 def test_prepare_rust_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
     cache_root = tmp_path / "helpers"
     commands = []
@@ -354,3 +537,188 @@ def test_prepare_rust_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
         (cache_root / "rust" / "current.json").read_text(encoding="utf-8")
     )
     assert manifest["path"] == result.path
+
+
+def test_prepare_haskell_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
+    cache_root = tmp_path / "helpers"
+    commands = []
+
+    monkeypatch.setattr(
+        extractor_helpers, "_resolve_ghc_executable", lambda: "/usr/bin/ghc"
+    )
+    monkeypatch.setattr(
+        extractor_helpers, "_ghc_version", lambda ghc: ("ghc 9.8.2", "")
+    )
+
+    def fake_run(cmd, **kwargs):
+        assert cmd[0] == "/usr/bin/ghc"
+        assert "cabal" not in cmd
+        assert "stack" not in cmd
+        commands.append((cmd, kwargs))
+        output = Path(cmd[cmd.index("-o") + 1])
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text("binary", encoding="utf-8")
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(extractor_helpers.subprocess, "run", fake_run)
+
+    result = prepare_haskell(cache_root)
+
+    assert result.status == "prepared"
+    build_cmd, build_kwargs = commands[0]
+    assert build_cmd[0] == "/usr/bin/ghc"
+    assert build_cmd[build_cmd.index("-package") + 1] == "ghc"
+    assert build_cmd[build_cmd.index("-o") + 1] == result.path
+    assert build_kwargs["cwd"] == str(extractor_helpers.HASKELL_SCRIPTS_DIR)
+    manifest = json.loads(
+        (cache_root / "haskell" / "current.json").read_text(encoding="utf-8")
+    )
+    assert manifest["language"] == "haskell"
+    assert manifest["toolchain"] == "ghc 9.8.2"
+    assert manifest["ghc_executable"] == "/usr/bin/ghc"
+    assert manifest["path"] == result.path
+
+
+def test_prepare_haskell_accepts_supported_ghc_9_6_policy(tmp_path, monkeypatch):
+    cache_root = tmp_path / "helper cache with spaces"
+    commands = []
+
+    monkeypatch.setattr(
+        extractor_helpers, "_resolve_ghc_executable", lambda: "/usr/bin/ghc"
+    )
+    monkeypatch.setattr(
+        extractor_helpers, "_ghc_version", lambda ghc: ("ghc 9.6.7", "")
+    )
+
+    def fake_run(cmd, **kwargs):
+        commands.append((cmd, kwargs))
+        output = Path(cmd[cmd.index("-o") + 1])
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text("binary", encoding="utf-8")
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(extractor_helpers.subprocess, "run", fake_run)
+
+    result = prepare_haskell(cache_root)
+
+    assert result.status == "prepared"
+    assert "helper cache with spaces" in str(result.path)
+    build_cmd, _kwargs = commands[0]
+    assert build_cmd[build_cmd.index("-o") + 1] == result.path
+
+
+def test_prepare_haskell_rejects_malformed_ghc_version(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        extractor_helpers, "_resolve_ghc_executable", lambda: "/usr/bin/ghc"
+    )
+    monkeypatch.setattr(extractor_helpers, "_ghc_version", lambda ghc: ("ghc dev", ""))
+
+    result = prepare_haskell(tmp_path / "helpers")
+
+    assert result.status == "failed"
+    assert "unsupported GHC version output" in result.message
+    assert "ghc dev" in result.message
+
+
+def test_prepare_haskell_rejects_too_old_ghc_version(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        extractor_helpers, "_resolve_ghc_executable", lambda: "/usr/bin/ghc"
+    )
+    monkeypatch.setattr(
+        extractor_helpers, "_ghc_version", lambda ghc: ("ghc 9.4.8", "")
+    )
+
+    result = prepare_haskell(tmp_path / "helpers")
+
+    assert result.status == "failed"
+    assert "requires GHC 9.6.x" in result.message
+    assert "ghc 9.4.8" in result.message
+
+
+def test_ghc_version_timeout_message_names_probe_timeout(monkeypatch):
+    def fake_run(*args, **kwargs):
+        raise subprocess.TimeoutExpired(args[0], kwargs["timeout"])
+
+    monkeypatch.setattr(extractor_helpers.subprocess, "run", fake_run)
+
+    toolchain, error = extractor_helpers._ghc_version("/usr/bin/ghc", timeout=3)
+
+    assert toolchain is None
+    assert error == "version probe timed out after 3 s"
+
+
+def test_prepare_haskell_reuses_current_manifest(tmp_path, monkeypatch):
+    cache_root = tmp_path / "helpers"
+    commands = []
+
+    monkeypatch.setattr(
+        extractor_helpers, "_resolve_ghc_executable", lambda: "/usr/bin/ghc"
+    )
+    monkeypatch.setattr(
+        extractor_helpers, "_ghc_version", lambda ghc: ("ghc 9.8.2", "")
+    )
+
+    def fake_run(cmd, **kwargs):
+        commands.append(cmd)
+        output = Path(cmd[cmd.index("-o") + 1])
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text("binary", encoding="utf-8")
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(extractor_helpers.subprocess, "run", fake_run)
+
+    first = prepare_haskell(cache_root)
+    second = prepare_haskell(cache_root)
+
+    assert first.status == "prepared"
+    assert second.status == "already_current"
+    assert second.path == first.path
+    assert len(commands) == 1
+
+
+def test_prepare_haskell_reports_missing_executable(tmp_path, monkeypatch):
+    monkeypatch.setattr(extractor_helpers, "_resolve_ghc_executable", lambda: None)
+
+    result = prepare_haskell(tmp_path / "helpers")
+
+    assert result.status == "failed"
+    assert "ghc not found" in result.message
+    assert "LLM_WIKI_GHC=/path/to/ghc" in result.message
+
+
+def test_prepare_haskell_reports_failing_found_executable(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        extractor_helpers, "_resolve_ghc_executable", lambda: "/usr/bin/ghc"
+    )
+    monkeypatch.setattr(
+        extractor_helpers,
+        "_ghc_version",
+        lambda ghc: (None, "missing libgmp"),
+    )
+
+    result = prepare_haskell(tmp_path / "helpers")
+
+    assert result.status == "failed"
+    assert (
+        "ghc found at /usr/bin/ghc but failed to run: missing libgmp" in result.message
+    )
+    assert "LLM_WIKI_GHC=/path/to/ghc" in result.message
+
+
+def test_prepare_haskell_reports_build_timeout(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        extractor_helpers, "_resolve_ghc_executable", lambda: "/usr/bin/ghc"
+    )
+    monkeypatch.setattr(
+        extractor_helpers, "_ghc_version", lambda ghc: ("ghc 9.6.7", "")
+    )
+
+    def fake_run(*args, **kwargs):
+        raise subprocess.TimeoutExpired(args[0], kwargs["timeout"])
+
+    monkeypatch.setattr(extractor_helpers.subprocess, "run", fake_run)
+
+    result = prepare_haskell(tmp_path / "helpers")
+
+    assert result.status == "failed"
+    assert result.message == "ghc build timed out after 180 s"

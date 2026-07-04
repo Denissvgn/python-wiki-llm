@@ -7,6 +7,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Bundled `attack-surface` agent skill (from the 2026-07-04 workflow
+  dogfood): defensive security-review preparation — prepare extractor
+  helpers, run `extract --deep --read-only`, seed required coverage from
+  `SECURITY.md`, treat data-flow gaps as unknown surface (never as
+  evidence of safety), supplement bounded flow walks with a source-level
+  sink scan, and write a prioritized `AS-NNN` exposure report with a
+  security-model coverage matrix that hands suspicious paths to deeper
+  review. Installable and exportable through the `skills` command group
+  and shipped as wheel package data.
+- Bundled `wiki-bootstrap` agent skill (from the 2026-07-04 skill spec): the
+  first-adoption workflow for an existing codebase — prepare extractor
+  helpers through the CLI, run deterministic `bootstrap --depth full
+  --format json`, triage the summary, complete P0 pages then a
+  centrality-ranked (`fan_in`-weighted) budgeted semantic pass, write an
+  explicit `bootstrap-remainder.md` backlog with stable `WB-` item IDs for
+  deferred pages, validate with `lint --strict`/`ci-check` to convergence,
+  and commit the wiki separately. Installable and exportable through the
+  `skills` command group and shipped as wheel package data.
+- Bundled `dep-audit` agent skill for dependency-cycle,
+  undeclared-dependency, and unused-dependency triage from existing lint,
+  ci-check, review JSON, and wiki dependency outputs. The workflow requires
+  source verification before source, manifest, or wiki edits and records
+  deferred dependency findings explicitly.
+- Bundled `doc-review` agent skill for documentation review follow-through
+  from review JSON, branch diffs, patch findings, lint, or sync diagnostics.
+  The workflow validates findings against source truth, updates semantic wiki
+  or source-doc surfaces, runs lint/ci-check, and preserves unresolved
+  findings with rationale.
+- Bundled agent skills: the package now ships reusable `SKILL.md` workflow
+  directories (Claude Code-compatible) under `llm_wiki_cli/skills/`, starting
+  with `wiki-sync` — the post-change documentation loop (deterministic `sync`,
+  semantic-only prose pass, `lint --strict` validation loop, separate
+  `docs(wiki):` commit) with its guardrail reference.
+- New `skills` command group: `llm-wiki skills list`, `llm-wiki skills
+  install` (into a project's `.claude/skills/`), and `llm-wiki skills export
+  --dest <dir>` (any destination, e.g. a personal `~/.claude/skills`).
+  Existing identical files are kept, and locally edited skill files are never
+  overwritten without `--force`.
+
+## [1.1.0] - 2026-06-28
+
+### Added
+- **First-class Haskell source support** — `.hs` and `.lhs` files are now
+  discovered as built-in source files, extracted through an explicitly prepared
+  helper-backed GHC parser, rendered in generated wiki pages, and included in
+  declared-module dependency maps.
+- Haskell inventory is syntax-only for this milestone: it records module names,
+  imports, top-level signatures and values, and type-oriented declarations
+  without typechecking the target project, starting Haskell Language Server, or
+  reconciling Cabal, Stack, or Nix dependency manifests.
+
+### Changed
+- Haskell helper preparation now documents GHC 9.6.x as the supported release
+  line, treats newer GHC 9.x releases as best-effort, and fails clearly for
+  malformed or too-old GHC version output.
+- The default CI does not require GHC; Haskell helper tests that
+  need a real compiler remain opt-in through environments where GHC is present.
+
 ## [1.0.0] - 2026-06-23
 
 ### Added
@@ -253,7 +312,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Test suite** — 89 unit + integration tests with pytest
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.6.1...v1.0.0
 [0.6.2]: https://github.com/Denissvgn/python-wiki-llm/releases/tag/v0.6.2
 [0.6.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.6.0...v0.6.1

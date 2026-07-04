@@ -10,8 +10,9 @@ from __future__ import annotations
 
 import json
 import re
+from collections import defaultdict
 from pathlib import PurePosixPath
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any, Iterable, Mapping, Optional, Sequence, cast
 
 from .dependencies import (
     build_dependency_graph,
@@ -71,6 +72,14 @@ def _jsonable(value: object) -> object:
     if isinstance(value, list):
         return [_jsonable(item) for item in value]
     return value
+
+
+def _jsonable_mapping(value: Mapping[str, Any]) -> dict[str, Any]:
+    return cast(dict[str, Any], _jsonable(value))
+
+
+def _jsonable_mapping_list(values: Iterable[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    return [_jsonable_mapping(value) for value in values]
 
 
 def _require_query(value: object, field: str) -> str:
@@ -172,6 +181,36 @@ def _edge_pair(edge: object) -> Optional[tuple[str, str]]:
     return None
 
 
+def _call_endpoint_ref(endpoint: Mapping[str, Any], edge: Mapping[str, Any]) -> dict:
+    filepath = endpoint.get("file")
+    return {
+        "file": filepath,
+        "module": _module_name(str(filepath)) if filepath else None,
+        "symbol": endpoint.get("symbol"),
+        "kind": edge.get("kind", "unknown"),
+        "line": edge.get("line", 0),
+    }
+
+
+def _dedupe_sorted_all(records: Iterable[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    unique: dict[str, dict[str, Any]] = {}
+    for record in records:
+        key = json.dumps(_jsonable(record), sort_keys=True, separators=(",", ":"))
+        unique[key] = _jsonable_mapping(record)
+    return sorted(unique.values(), key=_record_sort_key)
+
+
+def _summary_relationship_records(
+    summary: Mapping[str, Any], field: str
+) -> list[dict[str, Any]]:
+    records = summary.get(field)
+    if not isinstance(records, list):
+        return []
+    return [
+        _jsonable_mapping(record) for record in records if isinstance(record, Mapping)
+    ]
+
+
 class DocumentationGraphQueryService:
     """Read-only graph query service over already-derived documentation payloads."""
 
@@ -195,8 +234,8 @@ class DocumentationGraphQueryService:
             or str(path).replace("\\", "/"): dict(data or {})
             for path, data in (inventory or {}).items()
         }
-        self.call_edges = [_jsonable(edge) for edge in (call_edges or [])]
-        self.flows = [_jsonable(flow) for flow in (flows or [])]
+        self.call_edges = _jsonable_mapping_list(call_edges or [])
+        self.flows = _jsonable_mapping_list(flows or [])
         self.data_flows = self._normalise_data_flows(data_flows)
         self.dependency = self._dependency_payload(dependency_analysis)
         self.pages = self._surface_pages(surface_index or {})
@@ -206,18 +245,21 @@ class DocumentationGraphQueryService:
             call_edges=self.call_edges,
             flows=self.flows,
         )
-        self.callable_summaries = [
-            _jsonable(summary) for summary in relationships.get("functions", [])
-        ]
-        self.class_summaries = [
-            _jsonable(summary) for summary in relationships.get("classes", [])
-        ]
+        relationship_functions = cast(
+            Iterable[Mapping[str, Any]], relationships.get("functions", [])
+        )
+        relationship_classes = cast(
+            Iterable[Mapping[str, Any]], relationships.get("classes", [])
+        )
+        self.callable_summaries = _jsonable_mapping_list(relationship_functions)
+        self.class_summaries = _jsonable_mapping_list(relationship_classes)
         self.callables = [_callable_ref(summary) for summary in self.callable_summaries]
         self.classes = [_class_ref(summary) for summary in self.class_summaries]
         self.callable_by_key = {
             (summary.get("file"), summary.get("symbol")): summary
             for summary in self.callable_summaries
         }
+        self.raw_callers, self.raw_callees = self._raw_function_links()
 
     def flow_for_entrypoint(self, id_or_symbol: object) -> dict[str, Any]:
         """Return a bounded user-flow payload for an entry-point id or symbol."""
@@ -245,7 +287,11 @@ class DocumentationGraphQueryService:
 
         selected = result.pop("_selected")
         summary = self.callable_by_key[(selected.get("file"), selected.get("symbol"))]
-        callers, truncated = self._bounded(summary.get("callers", []))
+        key = (selected.get("file"), selected.get("symbol"))
+        caller_records = self.raw_callers.get(key)
+        if caller_records is None:
+            caller_records = _summary_relationship_records(summary, "callers")
+        callers, truncated = self._bounded(caller_records)
         result["callable"] = selected
         result["callers"] = callers
         result["truncated"] = result["truncated"] or truncated
@@ -263,7 +309,11 @@ class DocumentationGraphQueryService:
 
         selected = result.pop("_selected")
         summary = self.callable_by_key[(selected.get("file"), selected.get("symbol"))]
-        callees, truncated = self._bounded(summary.get("callees", []))
+        key = (selected.get("file"), selected.get("symbol"))
+        callee_records = self.raw_callees.get(key)
+        if callee_records is None:
+            callee_records = _summary_relationship_records(summary, "callees")
+        callees, truncated = self._bounded(callee_records)
         result["callable"] = selected
         result["callees"] = callees
         result["truncated"] = result["truncated"] or truncated
@@ -378,9 +428,15 @@ class DocumentationGraphQueryService:
             return []
         if isinstance(data_flows, Mapping):
             if "entry" in data_flows or "steps" in data_flows:
-                return [_jsonable(data_flows)]  # type: ignore[list-item]
-            return [_jsonable(value) for value in data_flows.values()]  # type: ignore[list-item]
-        return [_jsonable(value) for value in data_flows]  # type: ignore[union-attr]
+                return [_jsonable_mapping(cast(Mapping[str, Any], data_flows))]
+            return [
+                _jsonable_mapping(cast(Mapping[str, Any], value))
+                for value in data_flows.values()
+            ]
+        return [
+            _jsonable_mapping(cast(Mapping[str, Any], value))
+            for value in cast(Iterable[Mapping[str, Any]], data_flows)
+        ]
 
     def _dependency_payload(
         self, dependency_analysis: Optional[Mapping[str, Any]]
@@ -422,6 +478,28 @@ class DocumentationGraphQueryService:
                 pairs.append(pair)
         return sorted(
             set(pairs), key=lambda item: (_text_key(item[0]), _text_key(item[1]))
+        )
+
+    def _raw_function_links(
+        self,
+    ) -> tuple[
+        dict[tuple[object, object], list[dict[str, Any]]],
+        dict[tuple[object, object], list[dict[str, Any]]],
+    ]:
+        callers: dict[tuple[object, object], list[dict[str, Any]]] = defaultdict(list)
+        callees: dict[tuple[object, object], list[dict[str, Any]]] = defaultdict(list)
+        for edge in self.call_edges:
+            source = edge.get("from", {}) or {}
+            target = edge.get("to", {}) or {}
+            source_key = (source.get("file"), source.get("symbol"))
+            target_key = (target.get("file"), target.get("symbol"))
+            if source_key in self.callable_by_key:
+                callees[source_key].append(_call_endpoint_ref(target, edge))
+            if target_key in self.callable_by_key:
+                callers[target_key].append(_call_endpoint_ref(source, edge))
+        return (
+            {key: _dedupe_sorted_all(value) for key, value in callers.items()},
+            {key: _dedupe_sorted_all(value) for key, value in callees.items()},
         )
 
     def _callable_matches(self, query: str) -> list[dict[str, Any]]:
@@ -472,7 +550,7 @@ class DocumentationGraphQueryService:
     def _selection_result(
         self,
         query: str,
-        matches: list[Mapping[str, Any]],
+        matches: Sequence[Mapping[str, Any]],
         payload_key: str,
         empty_payload: object,
     ) -> dict[str, Any]:
@@ -537,7 +615,7 @@ class DocumentationGraphQueryService:
     def _bounded(self, records: Iterable[object]) -> tuple[list[Any], bool]:
         items = [_jsonable(record) for record in records]
         if all(isinstance(item, Mapping) for item in items):
-            items = sorted(items, key=_record_sort_key)  # type: ignore[arg-type]
+            items = sorted(cast(list[Mapping[str, Any]], items), key=_record_sort_key)
         truncated = len(items) > self.limit
         return items[: self.limit], truncated
 

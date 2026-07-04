@@ -22,6 +22,7 @@ from .bootstrap_cmd import (
     _generate_entity_md,
     _generate_index_md,
     _generate_module_md,
+    build_entity_occurrence_page_map,
     build_entity_page_map,
     build_module_page_map,
 )
@@ -306,6 +307,9 @@ def _build_targets(
     docker_inventory: dict,
 ) -> tuple[list[TargetPage], str, SyncManifest]:
     module_page_map = build_module_page_map(inventory)
+    entity_occurrence_page_map = build_entity_occurrence_page_map(
+        inventory, module_page_map
+    )
     entity_page_map = build_entity_page_map(inventory)
     relationships = _build_relationships(inventory, module_page_map)
 
@@ -316,10 +320,15 @@ def _build_targets(
 
     for filepath, file_data in inventory.items():
         module_page = module_page_map[filepath]
-        file_entity_map = {
-            cls["name"]: entity_page_map[(cls["name"], filepath)]
-            for cls in file_data.get("classes", [])
-        }
+        file_entity_map: dict[str, str] = {}
+        seen_names: dict[str, int] = {}
+        for cls in file_data.get("classes", []):
+            cls_name = cls["name"]
+            seen_names[cls_name] = seen_names.get(cls_name, 0) + 1
+            file_entity_map.setdefault(
+                cls_name,
+                entity_occurrence_page_map[(cls_name, filepath, seen_names[cls_name])],
+            )
 
         module_entries.append(
             {
@@ -333,13 +342,23 @@ def _build_targets(
                 kind="modules",
                 stem=module_page,
                 rel=f"modules/{module_page}.md",
-                content=_generate_module_md(filepath, file_data, file_entity_map),
+                content=_generate_module_md(
+                    filepath,
+                    file_data,
+                    file_entity_map,
+                    entity_occurrence_page_map=entity_occurrence_page_map,
+                ),
                 source_path=filepath,
             )
         )
 
+        seen_names = {}
         for cls in file_data.get("classes", []):
-            entity_page = entity_page_map[(cls["name"], filepath)]
+            cls_name = cls["name"]
+            seen_names[cls_name] = seen_names.get(cls_name, 0) + 1
+            entity_page = entity_occurrence_page_map[
+                (cls_name, filepath, seen_names[cls_name])
+            ]
             entity_names.append(entity_page)
             targets.append(
                 TargetPage(
@@ -373,16 +392,17 @@ def _build_targets(
     index_content = _generate_index_md(
         entity_names,
         module_entries,
-        workflow_entries or None,
-        infra_entries or None,
-        flow_entries or None,
-        _list_architecture_pages(wiki_dir) or None,
+        workflow_entries=workflow_entries or None,
+        infra_entries=infra_entries or None,
+        flow_entries=flow_entries or None,
+        architecture_entries=_list_architecture_pages(wiki_dir) or None,
     )
     manifest = SyncManifest.build_from_inventory(
         inventory,
         src_dir,
         entity_page_map,
         module_page_map,
+        entity_occurrence_page_cache=entity_occurrence_page_map,
     )
     return targets, _append_additional_docs_index(index_content, wiki_dir), manifest
 
@@ -872,8 +892,16 @@ def _build_chunks(
     chunks: list[MigrationChunk] = []
     for index in range(total):
         page_units = units[index * chunk_size : (index + 1) * chunk_size]
-        targets = [unit for kind, unit in page_units if kind == "target"]
-        unmatched = [unit for kind, unit in page_units if kind == "unmatched"]
+        targets = [
+            unit
+            for kind, unit in page_units
+            if kind == "target" and isinstance(unit, TargetPage)
+        ]
+        unmatched = [
+            unit
+            for kind, unit in page_units
+            if kind == "unmatched" and isinstance(unit, ExistingPage)
+        ]
         chunks.append(
             MigrationChunk(
                 number=index + 1,

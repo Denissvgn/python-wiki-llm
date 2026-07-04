@@ -261,7 +261,10 @@ def check_plugin_requirements(
 def check_team_conventions(
     request: TeamConventionRequest,
 ) -> list[dict[str, str | None]]:
-    from ..commands.bootstrap_cmd import build_entity_page_map, build_module_page_map
+    from ..commands.bootstrap_cmd import (
+        build_entity_occurrence_page_map,
+        build_module_page_map,
+    )
     from ..commands.extract_cmd import get_docker_inventory
 
     wiki_path = request.wiki_path
@@ -334,7 +337,9 @@ def check_team_conventions(
                 )
 
     if conventions["canonical_naming"]:
-        expected_entities = set(build_entity_page_map(request.inventory).values())
+        expected_entities = set(
+            build_entity_occurrence_page_map(request.inventory).values()
+        )
         documented_entities = (
             {p.stem for p in (wiki_path / "entities").glob("*.md")}
             if (wiki_path / "entities").exists()
@@ -431,12 +436,12 @@ def _existing_page_entries(directory: Path, extra_key: str) -> list[dict[str, st
 def _index_content(wiki_dir: Path, inventory: dict) -> str:
     from ..commands.bootstrap_cmd import (
         _generate_index_md,
-        build_entity_page_map,
+        build_entity_occurrence_page_map,
         build_module_page_map,
     )
 
-    entity_page_map = build_entity_page_map(inventory)
     module_page_map = build_module_page_map(inventory)
+    entity_page_map = build_entity_occurrence_page_map(inventory, module_page_map)
     entity_names: list[str] = []
     seen: set[str] = set()
     module_entries: list[dict[str, str]] = []
@@ -448,8 +453,11 @@ def _index_content(wiki_dir: Path, inventory: dict) -> str:
                 "docstring": file_data.get("module_docstring", ""),
             }
         )
+        seen_names: dict[str, int] = {}
         for cls in file_data.get("classes", []):
-            name = entity_page_map[(cls["name"], filepath)]
+            cls_name = cls["name"]
+            seen_names[cls_name] = seen_names.get(cls_name, 0) + 1
+            name = entity_page_map[(cls_name, filepath, seen_names[cls_name])]
             if name not in seen:
                 entity_names.append(name)
                 seen.add(name)
@@ -462,14 +470,22 @@ def _index_content(wiki_dir: Path, inventory: dict) -> str:
 
 
 def _manifest_content(inventory: dict, src_dir: str) -> str:
-    from ..commands.bootstrap_cmd import build_entity_page_map, build_module_page_map
+    from ..commands.bootstrap_cmd import (
+        build_entity_occurrence_page_map,
+        build_entity_page_map,
+        build_module_page_map,
+    )
     from ..commands.sync_cmd import MANIFEST_VERSION, SyncManifest
 
+    module_page_map = build_module_page_map(inventory)
     manifest = SyncManifest.build_from_inventory(
         inventory,
         src_dir,
         build_entity_page_map(inventory),
-        build_module_page_map(inventory),
+        module_page_map,
+        entity_occurrence_page_cache=build_entity_occurrence_page_map(
+            inventory, module_page_map
+        ),
     )
     return json.dumps(
         {"version": MANIFEST_VERSION, "sources": manifest.sources},
@@ -481,7 +497,7 @@ def _manifest_content(inventory: dict, src_dir: str) -> str:
 def _module_content(page_stem: str, inventory: dict) -> tuple[str | None, str]:
     from ..commands.bootstrap_cmd import (
         _generate_module_md,
-        build_entity_page_map,
+        build_entity_occurrence_page_map,
         build_module_page_map,
     )
 
@@ -492,13 +508,21 @@ def _module_content(page_stem: str, inventory: dict) -> tuple[str | None, str]:
     if len(matches) != 1:
         return None, "module page does not map unambiguously to a live source file"
     filepath = matches[0]
-    entity_page_map = build_entity_page_map(inventory)
-    file_entity_page_map = {
-        cls["name"]: entity_page_map[(cls["name"], filepath)]
-        for cls in inventory[filepath].get("classes", [])
-    }
+    entity_occurrence_map = build_entity_occurrence_page_map(inventory, module_page_map)
+    file_entity_page_map: dict[str, str] = {}
+    seen_names: dict[str, int] = {}
+    for cls in inventory[filepath].get("classes", []):
+        cls_name = cls["name"]
+        seen_names[cls_name] = seen_names.get(cls_name, 0) + 1
+        file_entity_page_map.setdefault(
+            cls_name,
+            entity_occurrence_map[(cls_name, filepath, seen_names[cls_name])],
+        )
     return _generate_module_md(
-        filepath, inventory[filepath], file_entity_page_map
+        filepath,
+        inventory[filepath],
+        file_entity_page_map,
+        entity_occurrence_page_map=entity_occurrence_map,
     ), "regenerated module page"
 
 
@@ -506,30 +530,31 @@ def _entity_content(page_stem: str, inventory: dict) -> tuple[str | None, str]:
     from ..commands.bootstrap_cmd import (
         _build_relationships,
         _generate_entity_md,
-        build_entity_page_map,
+        build_entity_occurrence_page_map,
         build_module_page_map,
     )
 
-    entity_page_map = build_entity_page_map(inventory)
+    module_page_map = build_module_page_map(inventory)
+    entity_page_map = build_entity_occurrence_page_map(inventory, module_page_map)
     matches = [
-        (cls_name, filepath)
-        for (cls_name, filepath), stem in entity_page_map.items()
+        (cls_name, filepath, occurrence)
+        for (cls_name, filepath, occurrence), stem in entity_page_map.items()
         if stem == page_stem
     ]
     if len(matches) != 1:
         return None, "entity page does not map unambiguously to a live source entity"
-    cls_name, filepath = matches[0]
-    class_info = next(
-        (
-            cls
-            for cls in inventory[filepath].get("classes", [])
-            if cls["name"] == cls_name
-        ),
-        None,
-    )
+    cls_name, filepath, occurrence = matches[0]
+    class_info = None
+    seen = 0
+    for cls in inventory[filepath].get("classes", []):
+        if cls["name"] != cls_name:
+            continue
+        seen += 1
+        if seen == occurrence:
+            class_info = cls
+            break
     if class_info is None:
         return None, "entity page maps to a missing class"
-    module_page_map = build_module_page_map(inventory)
     relationships = _build_relationships(inventory, module_page_map)
     return _generate_entity_md(
         class_info, filepath, relationships, module_page_map[filepath]

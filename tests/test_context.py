@@ -941,3 +941,36 @@ class TestContextRun:
         with pytest.raises(SystemExit) as exc_info:
             cli.main()
         assert exc_info.value.code == 2
+
+
+class TestBuildProtocolEnrichmentRootPropagation:
+    def test_propagates_src_root_to_get_entry_points(self, tmp_path, monkeypatch):
+        """Regression (2026-07-04): ``_build_protocol_enrichment`` must pass
+        ``root=src_root``/``fallback_root=Path.cwd()`` to ``get_entry_points``.
+        Dropping those kwargs (as this call site once did) makes the Go/
+        Haskell web-server detectors silently miss entry points whenever
+        ``llm-wiki context`` runs with an external ``--src-dir`` from a
+        different cwd — proven end-to-end for the sibling lint check in
+        ``TestLintFlowCoverage::test_go_http_entrypoint_not_stale_for_external_src_dir``
+        in test_lint.py. This test pins the wiring at the call site directly.
+        """
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "wiki").mkdir()
+
+        calls = []
+        real_get_entry_points = context_cmd.get_entry_points
+
+        def spy(inventory, **kwargs):
+            calls.append(kwargs)
+            return real_get_entry_points(inventory, **kwargs)
+
+        monkeypatch.setattr(context_cmd, "get_entry_points", spy)
+
+        src_root = Path("/some/external/src")
+        context_cmd._build_protocol_enrichment(
+            {}, {"surface": True}, src_root=src_root, wiki_dir="wiki"
+        )
+
+        assert len(calls) == 1
+        assert calls[0]["root"] == src_root
+        assert calls[0]["fallback_root"] == Path.cwd()

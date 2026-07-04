@@ -13,9 +13,17 @@ from pathlib import Path
 import pytest
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import bootstrap_cmd
-from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
+from llm_wiki_cli.commands.extract_cmd import (
+    ExtractorStatus,
+    InventoryResult,
+    get_inventory,
+    resolve_call_edges,
+)
+from llm_wiki_cli.services.data_flow import analyze_data_flow
 from llm_wiki_cli.services.dependencies import analyze_dependencies
+from llm_wiki_cli.services.entrypoints import build_flow, get_entry_points
 from llm_wiki_cli.services import plugins
+from llm_wiki_cli.services.wiki_surface import is_safe_page_id
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 # True when git is on PATH; used to guard git-dependent fixture steps.
@@ -33,6 +41,8 @@ def _make_args(**kwargs):
         "format": "text",
         "source_adapter": False,
         "allow_external_src": False,
+        "helper_cache_dir": None,
+        "include_tests": None,
     }
     defaults.update(kwargs)
     return types.SimpleNamespace(**defaults)
@@ -41,6 +51,7 @@ def _make_args(**kwargs):
 def _body_line_count(function) -> int:
     source = textwrap.dedent(inspect.getsource(function))
     function_node = ast.parse(source).body[0]
+    assert isinstance(function_node, ast.FunctionDef)
     body = [
         stmt
         for stmt in function_node.body
@@ -51,7 +62,7 @@ def _body_line_count(function) -> int:
         )
     ]
     first_body_line = min(stmt.lineno for stmt in body)
-    last_body_line = max(stmt.end_lineno for stmt in body)
+    last_body_line = max(stmt.end_lineno or stmt.lineno for stmt in body)
     return last_body_line - first_body_line + 1
 
 
@@ -83,6 +94,45 @@ def _write_entrypoint_detector_plugin(root: Path, *, body: str) -> None:
         textwrap.dedent(body), encoding="utf-8"
     )
     plugins.install_plugin(str(plugin_dir), root=root, yes=True)
+
+
+def _write_project_team_open_style_async_main(root: Path) -> None:
+    cli_dir = root / "src" / "cli"
+    cli_dir.mkdir(parents=True)
+    (root / "src" / "__init__.py").write_text("", encoding="utf-8")
+    (cli_dir / "__init__.py").write_text("", encoding="utf-8")
+    (root / "src" / "main.py").write_text(
+        textwrap.dedent("""\
+        import asyncio
+        from src.cli.commands import main as cli_main
+        from src.cli.commands import print_banner
+        from src.cli.orchestrator import CLIOrchestrator
+
+        async def main_entry():
+            cli_main()
+            print_banner(None)
+
+        if __name__ == "__main__":
+            asyncio.run(main_entry())
+    """),
+        encoding="utf-8",
+    )
+    (cli_dir / "commands.py").write_text(
+        textwrap.dedent("""\
+        def main():
+            parse()
+
+        def parse():
+            pass
+
+        def print_banner(console):
+            pass
+    """),
+        encoding="utf-8",
+    )
+    (cli_dir / "orchestrator.py").write_text(
+        "class CLIOrchestrator:\n    pass\n", encoding="utf-8"
+    )
 
 
 def _write_diagram_style_plugin(root: Path, *, body: str) -> None:
@@ -125,6 +175,46 @@ def test_bootstrap_parser_accepts_skip_data_flow_flag():
     args = parser.parse_args(["bootstrap", "--skip-data-flow"])
 
     assert args.skip_data_flow is True
+
+
+def test_bootstrap_excludes_agent_worktree_surfaces(tmp_path, monkeypatch, capsys):
+    (tmp_path / "app.py").write_text(
+        textwrap.dedent("""\
+        class App:
+            pass
+        """),
+        encoding="utf-8",
+    )
+    (tmp_path / "Dockerfile").write_text("FROM python:3.12\n", encoding="utf-8")
+    worktree = tmp_path / ".claude" / "worktrees" / "agent-strict-instructions"
+    worktree.mkdir(parents=True)
+    (worktree / "app.py").write_text(
+        textwrap.dedent("""\
+        class WorktreeApp:
+            pass
+        """),
+        encoding="utf-8",
+    )
+    (worktree / "Dockerfile").write_text("FROM alpine\n", encoding="utf-8")
+    wiki_dir = tmp_path / "wiki"
+    monkeypatch.chdir(tmp_path)
+
+    bootstrap_cmd.run(
+        _make_args(src_dir=".", wiki_dir=str(wiki_dir), source_adapter=True)
+    )
+    capsys.readouterr()
+
+    index = (wiki_dir / "index.md").read_text(encoding="utf-8")
+    module_pages = [path.name for path in (wiki_dir / "modules").glob("*.md")]
+    infrastructure_pages = [
+        path.name for path in (wiki_dir / "infrastructure").glob("*.md")
+    ]
+
+    assert ".claude/worktrees" not in index
+    assert not any("_claude_worktrees" in name for name in module_pages)
+    assert not any("agent-strict-instructions" in name for name in module_pages)
+    assert not any("_claude_worktrees" in name for name in infrastructure_pages)
+    assert not any("agent-strict-instructions" in name for name in infrastructure_pages)
 
 
 @pytest.fixture
@@ -198,6 +288,37 @@ class TestBootstrapCollisions:
         assert data["created_files"]
         assert "Bootstrapping wiki" in captured.err
 
+    def test_bootstrap_reports_missing_haskell_helper_failure(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        monkeypatch.chdir(tmp_path)
+        hls_app = tmp_path / "hls-analysis" / "app"
+        hls_src = tmp_path / "hls-analysis" / "src" / "HLSAnalysis"
+        hls_app.mkdir(parents=True)
+        hls_src.mkdir(parents=True)
+        (hls_app / "Main.hs").write_text("module Main where\n", encoding="utf-8")
+        (hls_src / "API.hs").write_text(
+            "module HLSAnalysis.API where\n", encoding="utf-8"
+        )
+
+        with pytest.raises(SystemExit) as exc_info:
+            bootstrap_cmd.run(
+                _make_args(
+                    src_dir=".",
+                    wiki_dir="wiki",
+                    format="json",
+                    source_adapter=True,
+                )
+            )
+
+        captured = capsys.readouterr()
+        assert exc_info.value.code == 1
+        assert captured.out == ""
+        assert "Error: haskell extraction failed" in captured.err
+        assert "prepare-extractors --language haskell" in captured.err
+        assert "Unsupported sources detected" not in captured.err
+        assert list((tmp_path / "wiki" / "modules").glob("*.md")) == []
+
     def test_bootstrap_prints_long_phase_progress(self, tmp_collision_project, capsys):
         wiki_dir = tmp_collision_project / "docs" / "llm_wiki"
         args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
@@ -249,6 +370,135 @@ class TestBootstrapCollisions:
 
         # Both qualified modules must exist (one per source file)
         assert len([n for n in module_names if "config" in n]) == 2
+
+    def test_module_collision_after_parent_prefix_uses_source_path_context(self):
+        inventory = {
+            "scripts/compliance/report.py": {
+                "language": "python",
+                "classes": [],
+                "functions": [],
+                "imports": [],
+            },
+            "services/other/report.py": {
+                "language": "python",
+                "classes": [],
+                "functions": [],
+                "imports": [],
+            },
+            "services/mlflow-service/tests/compliance/compliance_report.py": {
+                "language": "python",
+                "classes": [],
+                "functions": [],
+                "imports": [],
+            },
+        }
+
+        page_map = bootstrap_cmd.build_module_page_map(inventory)
+
+        assert len(set(page_map.values())) == len(page_map)
+        assert page_map["scripts/compliance/report.py"] == "scripts_compliance_report"
+        assert (
+            page_map["services/mlflow-service/tests/compliance/compliance_report.py"]
+            == "services_mlflow-service_tests_compliance_compliance_report"
+        )
+
+    def test_duplicate_entity_names_in_same_file_get_distinct_pages(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        source = tmp_path / "tests" / "test_news_sentiment_integration.py"
+        source.parent.mkdir(parents=True)
+        source.write_text(
+            textwrap.dedent("""\
+                class TestErrorHandling:
+                    pass
+
+                class TestErrorHandling:
+                    pass
+            """),
+            encoding="utf-8",
+        )
+        inventory = {
+            "tests/test_news_sentiment_integration.py": {
+                "language": "python",
+                "classes": [
+                    {
+                        "name": "TestErrorHandling",
+                        "bases": [],
+                        "line": 1,
+                        "docstring": "First error handling tests.",
+                        "decorators": [],
+                        "attributes": [],
+                        "methods": [],
+                    },
+                    {
+                        "name": "TestErrorHandling",
+                        "bases": [],
+                        "line": 4,
+                        "docstring": "Second error handling tests.",
+                        "decorators": [],
+                        "attributes": [],
+                        "methods": [],
+                    },
+                ],
+                "functions": [],
+                "imports": [],
+                "module_docstring": "",
+            }
+        }
+        result = InventoryResult(
+            inventory,
+            {"python": ExtractorStatus("python", "ok", 1)},
+        )
+        occurrence_map = bootstrap_cmd.build_entity_occurrence_page_map(inventory)
+        assert (
+            occurrence_map[
+                ("TestErrorHandling", "tests/test_news_sentiment_integration.py", 1)
+            ]
+            == "TestErrorHandling"
+        )
+        assert (
+            occurrence_map[
+                ("TestErrorHandling", "tests/test_news_sentiment_integration.py", 2)
+            ]
+            == "TestErrorHandling_2"
+        )
+        assert (
+            bootstrap_cmd.build_entity_page_map(inventory)[
+                ("TestErrorHandling", "tests/test_news_sentiment_integration.py")
+            ]
+            == "TestErrorHandling"
+        )
+        monkeypatch.setattr(
+            bootstrap_cmd, "get_inventory_result", lambda *a, **k: result
+        )
+        monkeypatch.setattr(bootstrap_cmd, "get_docker_inventory", lambda *a, **k: {})
+
+        monkeypatch.chdir(tmp_path)
+        wiki_dir = tmp_path / "wiki"
+        bootstrap_cmd.run(
+            _make_args(
+                src_dir=".",
+                wiki_dir=str(wiki_dir),
+                format="json",
+                source_adapter=True,
+            )
+        )
+
+        summary = json.loads(capsys.readouterr().out)
+        entity_pages = sorted((wiki_dir / "entities").glob("TestErrorHandling*.md"))
+        module = (
+            wiki_dir / "modules" / "test_news_sentiment_integration.md"
+        ).read_text(encoding="utf-8")
+        index = (wiki_dir / "index.md").read_text(encoding="utf-8")
+
+        assert summary["skipped_files"] == []
+        assert [page.stem for page in entity_pages] == [
+            "TestErrorHandling",
+            "TestErrorHandling_2",
+        ]
+        assert "../entities/TestErrorHandling.md" in module
+        assert "../entities/TestErrorHandling_2.md" in module
+        assert "| Entities | 2 |" in index
 
     def test_index_has_no_duplicate_entries(self, tmp_collision_project, capsys):
         wiki_dir = tmp_collision_project / "docs" / "llm_wiki"
@@ -516,6 +766,7 @@ class TestBootstrapEntityPages:
         assert "```mermaid\nflowchart LR" in content
         assert 'click n0 "../modules/models.md"' in content
         assert '"../modules/main.md"' in content
+        assert "| Module | Methods | Attributes |" in content
         assert "| Reference | Kind | Source |" in content
         assert (
             "| `create_user` | type_reference | [main](../modules/main.md) |" in content
@@ -648,6 +899,368 @@ class TestBootstrapModulePages:
         assert "No internal module dependencies detected" in local_map
         assert "```mermaid" not in local_map
 
+    def test_module_local_dependency_map_does_not_link_package_buckets(self):
+        summary = {
+            "file": "pkg/service.py",
+            "detail": "package",
+            "inbound": [{"package": "adapters", "count": 2}],
+            "outbound": [{"package": "storage", "count": 3}],
+            "nodes": ["adapters", "pkg/service.py", "storage"],
+            "edges": [
+                ("adapters", "pkg/service.py"),
+                ("pkg/service.py", "storage"),
+            ],
+            "cycle_participation": False,
+            "cycle_edges": [],
+            "external": {},
+            "overflow": {
+                "node_limit": 4,
+                "total_neighbor_count": 5,
+                "omitted_count": 2,
+            },
+        }
+
+        content = "\n".join(
+            bootstrap_cmd._generate_module_dependency_section(
+                summary,
+                {"pkg/service.py": "service"},
+            )
+        )
+
+        assert 'click n1 "../modules/service.md"' in content
+        assert "../modules/adapters.md" not in content
+        assert "../modules/storage.md" not in content
+
+    def test_entity_docstrings_escape_source_symbol_links(self):
+        content = bootstrap_cmd._generate_entity_md(
+            {
+                "name": "Emitter",
+                "line": 10,
+                "docstring": (
+                    "See [`Manager::manage`](`crate::Manager::manage`) and "
+                    "[targets](EventTarget). See [site](https://example.test)."
+                ),
+                "methods": [
+                    {
+                        "name": "emit",
+                        "signature": "(event: &str)",
+                        "decorators": [],
+                        "docstring": "Emits to [targets](EventTarget).",
+                    }
+                ],
+            },
+            "src/lib.rs",
+            {},
+            "src_lib",
+        )
+
+        assert "](`crate::Manager::manage`)" not in content
+        assert "](EventTarget)" not in content
+        assert "`Manager::manage` (`crate::Manager::manage`)" in content
+        assert "targets (`EventTarget`)" in content
+        assert "[site](https://example.test)" in content
+
+    def test_haskell_module_page_uses_declared_module_and_inventory_shapes(self):
+        content = bootstrap_cmd._generate_module_md(
+            "hls-analysis/src/HLSAnalysis/API.hs",
+            {
+                "language": "haskell",
+                "module": "HLSAnalysis.API",
+                "imports": [
+                    {
+                        "module": "Data.Text",
+                        "qualified": False,
+                        "alias": None,
+                        "line": 4,
+                    },
+                    {
+                        "module": "Data.Map",
+                        "qualified": True,
+                        "alias": "Map",
+                        "line": 5,
+                    },
+                ],
+                "classes": [
+                    {"name": "User", "kind": "data", "line": 7},
+                    {"name": "Token", "kind": "newtype", "line": 9},
+                    {"name": "UserId", "kind": "type", "line": 11},
+                    {"name": "Renderable", "kind": "class", "line": 13},
+                    {
+                        "name": "instance Renderable User",
+                        "kind": "instance",
+                        "line": 16,
+                    },
+                ],
+                "functions": [
+                    {
+                        "name": "apiName",
+                        "kind": "signature",
+                        "signature": "Text",
+                        "line": 20,
+                    },
+                    {"name": "apiName", "kind": "value", "line": 21},
+                ],
+            },
+            {
+                "User": "User",
+                "Token": "Token",
+                "UserId": "UserId",
+                "Renderable": "Renderable",
+                "instance Renderable User": "instance_Renderable_User",
+            },
+        )
+
+        assert "# HLSAnalysis.API Module" in content
+        assert "**Path:** `hls-analysis/src/HLSAnalysis/API.hs`" in content
+        assert "**Declared module:** `HLSAnalysis.API`" in content
+        assert "| `Data.Map` | yes | `Map` | 5 |" in content
+        assert "| `Data.Text` | no | — | 4 |" in content
+        assert "## Declarations" in content
+        assert "## Classes" not in content
+        assert "| [User](../entities/User.md) | Data | 7 | — |" in content
+        assert "| [Token](../entities/Token.md) | Newtype | 9 | — |" in content
+        assert "| [UserId](../entities/UserId.md) | Type alias | 11 | — |" in content
+        assert (
+            "| [Renderable](../entities/Renderable.md) | Type class | 13 | — |"
+            in content
+        )
+        assert (
+            "| [instance Renderable User](../entities/instance_Renderable_User.md) | "
+            "Instance | 16 | — |"
+        ) in content
+        assert "| `apiName` | Signature | `Text` | 20 | — |" in content
+        assert "| `apiName` | Value | — | 21 | — |" in content
+
+    def test_haskell_entity_page_uses_declaration_wording_and_safe_page_ids(self):
+        inventory = {
+            "hls-analysis/src/HLSAnalysis/API.hs": {
+                "language": "haskell",
+                "module": "HLSAnalysis.API",
+                "classes": [
+                    {
+                        "name": "instance Renderable User",
+                        "kind": "instance",
+                        "line": 16,
+                    }
+                ],
+                "functions": [],
+                "imports": [],
+            }
+        }
+
+        page_map = bootstrap_cmd.build_entity_page_map(inventory)
+        page_id = page_map[
+            ("instance Renderable User", "hls-analysis/src/HLSAnalysis/API.hs")
+        ]
+        content = bootstrap_cmd._generate_entity_md(
+            {
+                "name": "instance Renderable User",
+                "kind": "instance",
+                "line": 16,
+            },
+            "hls-analysis/src/HLSAnalysis/API.hs",
+            {},
+            "API",
+        )
+
+        assert page_id == "instance_Renderable_User"
+        assert is_safe_page_id(page_id)
+        assert "**Kind:** `Instance`" in content
+        assert "## Declaration" in content
+        assert "## Attributes" not in content
+        assert "## Methods" not in content
+        assert "**Bases:**" not in content
+
+    def test_haskell_entity_relationship_summary_uses_declaration_kind_table(self):
+        content = bootstrap_cmd._generate_entity_md(
+            {"name": "Renderable", "kind": "class", "line": 13},
+            "hls-analysis/src/HLSAnalysis/API.hs",
+            {},
+            "API",
+            relationship_summary={
+                "name": "Renderable",
+                "file": "hls-analysis/src/HLSAnalysis/API.hs",
+                "kind": "class",
+                "methods_count": 4,
+                "attributes": ["python_shaped_noise"],
+                "bases": [
+                    {
+                        "name": "BaseRenderable",
+                        "file": "hls-analysis/src/HLSAnalysis/Base.hs",
+                    }
+                ],
+                "subclasses": [
+                    {
+                        "name": "HtmlRenderable",
+                        "file": "hls-analysis/src/HLSAnalysis/Html.hs",
+                    }
+                ],
+                "references": [
+                    {
+                        "symbol": "renderUser",
+                        "kind": "type_reference",
+                        "file": "hls-analysis/app/Main.hs",
+                    }
+                ],
+            },
+            module_page_map={
+                "hls-analysis/src/HLSAnalysis/API.hs": "API",
+                "hls-analysis/src/HLSAnalysis/Base.hs": "Base",
+                "hls-analysis/src/HLSAnalysis/Html.hs": "Html",
+                "hls-analysis/app/Main.hs": "Main",
+            },
+        )
+
+        relationships = content.split("## Relationships", 1)[1]
+        assert "| Module | Declaration kind |" in relationships
+        assert "| [API](../modules/API.md) | Type class |" in relationships
+        assert "| Module | Methods | Attributes |" not in relationships
+        assert "Methods" not in relationships
+        assert "Attributes" not in relationships
+        assert "### Structure" in relationships
+        assert (
+            "| Base | `BaseRenderable` | [Base](../modules/Base.md) |" in relationships
+        )
+        assert (
+            "| Subclass | `HtmlRenderable` | [Html](../modules/Html.md) |"
+            in relationships
+        )
+        assert "### References" in relationships
+        assert (
+            "| `renderUser` | type_reference | [Main](../modules/Main.md) |"
+            in relationships
+        )
+
+    def test_non_haskell_class_kind_keeps_methods_attributes_summary(self):
+        content = "\n".join(
+            bootstrap_cmd._generate_entity_relationship_section(
+                {
+                    "name": "Client",
+                    "file": "web/client.ts",
+                    "kind": "class",
+                    "methods_count": 2,
+                    "attributes": ["baseUrl"],
+                    "bases": [],
+                    "subclasses": [],
+                    "references": [],
+                },
+                {"web/client.ts": "web_client"},
+            )
+        )
+
+        assert "| Module | Methods | Attributes |" in content
+        assert "| [web_client](../modules/web_client.md) | 2 | `baseUrl` |" in content
+        assert "| Module | Declaration kind |" not in content
+
+    def test_empty_haskell_module_inventory_does_not_render_broken_tables(self):
+        content = bootstrap_cmd._generate_module_md(
+            "Empty.hs",
+            {
+                "language": "haskell",
+                "module": "Empty",
+                "imports": [],
+                "classes": [],
+                "functions": [],
+            },
+        )
+
+        assert "# Empty Module" in content
+        assert "## Imports" not in content
+        assert "## Declarations" not in content
+        assert "## Functions" not in content
+        assert "None" not in content
+
+    def test_typescript_module_only_inventory_renders_module_signals(self):
+        content = bootstrap_cmd._generate_module_md(
+            "frontend/src/lib/api.ts",
+            {
+                "language": "typescript",
+                "imports": [{"module": "axios", "name": "axios", "type": "default"}],
+                "classes": [],
+                "functions": [],
+                "exports": ["default"],
+                "constants": [
+                    {"name": "BASE_URL", "line": 4, "exported": False},
+                    {"name": "api", "line": 5, "exported": False},
+                ],
+                "module_calls": [
+                    {"name": "create", "target": "api", "line": 5},
+                    {"name": "use", "line": 7},
+                ],
+            },
+        )
+
+        assert "# api Module" in content
+        assert "## Classes" not in content
+        assert "## Functions" not in content
+        assert "## Module Signals" in content
+        assert "| Exports | `default` |" in content
+        assert "| Constants | `BASE_URL`, `api` |" in content
+        assert "| Module calls | `api = create`, `use` |" in content
+
+    def test_javascript_module_only_inventory_renders_module_signals(self):
+        content = bootstrap_cmd._generate_module_md(
+            "feature-showcase/script.js",
+            {
+                "language": "javascript",
+                "imports": [{"module": "react", "name": "React", "type": "default"}],
+                "classes": [],
+                "functions": [],
+                "exports": ["runShowcase"],
+                "constants": [{"name": "root", "line": 4, "exported": False}],
+                "module_calls": [{"name": "render", "target": "root", "line": 8}],
+            },
+        )
+
+        assert "# script Module" in content
+        assert "## Module Signals" in content
+        assert "| Exports | `runShowcase` |" in content
+        assert "| Constants | `root` |" in content
+        assert "| Module calls | `root = render` |" in content
+
+    def test_javascript_function_declarations_render_on_module_not_entity_pages(self):
+        inventory = {
+            "docker/web-auth-proxy.js": {
+                "language": "javascript",
+                "imports": [],
+                "classes": [],
+                "functions": [
+                    {
+                        "name": "isTruthy",
+                        "kind": "function",
+                        "line": 3,
+                        "end_line": 5,
+                        "params": [{"name": "value", "type": "", "default": ""}],
+                        "return_type": "",
+                        "decorators": [],
+                        "docstring": "",
+                    },
+                    {
+                        "name": "withAuthHeaders",
+                        "kind": "function",
+                        "line": 7,
+                        "end_line": 9,
+                        "params": [{"name": "headers", "type": "", "default": "{}"}],
+                        "return_type": "",
+                        "decorators": [],
+                        "docstring": "",
+                    },
+                ],
+            }
+        }
+
+        content = bootstrap_cmd._generate_module_md(
+            "docker/web-auth-proxy.js",
+            inventory["docker/web-auth-proxy.js"],
+            {},
+        )
+
+        assert bootstrap_cmd.build_entity_page_map(inventory) == {}
+        assert "## Functions" in content
+        assert "| `isTruthy` | `(value)` | — | — |" in content
+        assert "| `withAuthHeaders` | `(headers = {})` | — | — |" in content
+        assert "## Classes" not in content
+
 
 class TestBootstrapIndex:
     def test_creates_index(self, tmp_project, capsys):
@@ -660,6 +1273,7 @@ class TestBootstrapIndex:
         assert "| Entities | 2 |" in index
         assert "| Modules | 3 |" in index
         assert "| Workflows | 0 |" in index
+        assert "| Guides | 0 |" in index
         assert "| Dependency architecture | 2 |" in index
         assert "| Log | 1 | [Open log](log.md) |" in index
         assert "User" in index
@@ -675,6 +1289,7 @@ class TestBootstrapIndex:
         assert "Use this landing page to choose the right wiki surface." in index
         assert "## Log" in index
         assert "- [Architectural log](log.md)" in index
+        assert (wiki_dir / "guides").exists()
 
 
 class TestBootstrapLog:
@@ -734,6 +1349,24 @@ class TestBootstrapSkipWorkflows:
         workflows_dir = wiki_dir / "workflows"
         workflow_files = list(workflows_dir.glob("*.md"))
         assert len(workflow_files) == 0
+
+    def test_workflow_docstring_escapes_source_symbol_links(self):
+        content = bootstrap_cmd._generate_workflow_md(
+            "emit_to",
+            {
+                "entry": "lib.emit_to",
+                "modules_touched_paths": ["src/lib.rs"],
+                "chain": [],
+                "docstring": (
+                    "Emits to [targets](EventTarget). See [docs](https://example.test)."
+                ),
+            },
+            {"src/lib.rs": "src_lib"},
+        )
+
+        assert "](EventTarget)" not in content
+        assert "> Emits to targets (`EventTarget`)." in content
+        assert "[docs](https://example.test)" in content
 
 
 class TestBootstrapUpdatesAgentConstraints:
@@ -822,6 +1455,164 @@ class TestBootstrapCreatesManifest:
         for filepath, entry in data["sources"].items():
             assert "hash" in entry
             assert "entities" in entry
+
+    def test_include_tests_go_creates_go_test_module_and_manifest_entry(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        (tmp_path / "main_test.go").write_text(
+            "package main\n\nfunc TestMain() {}\n", encoding="utf-8"
+        )
+        wiki_dir = tmp_path / "wiki"
+        seen = {}
+        real_build_source_snapshot = bootstrap_cmd.build_source_snapshot
+
+        def fake_snapshot(src_dir, **kwargs):
+            seen["snapshot_include_tests"] = kwargs.get("include_tests")
+            return real_build_source_snapshot(src_dir)
+
+        def fake_inventory(src_dir, *args, **kwargs):
+            seen["inventory_include_tests"] = kwargs["include_tests"]
+            return InventoryResult(
+                {
+                    "main_test.go": {
+                        "classes": [],
+                        "functions": [{"name": "TestMain", "line": 3}],
+                        "language": "go",
+                    }
+                },
+                {"go": ExtractorStatus("go", "ok", 1)},
+            )
+
+        monkeypatch.setattr(bootstrap_cmd, "build_source_snapshot", fake_snapshot)
+        monkeypatch.setattr(bootstrap_cmd, "get_inventory_result", fake_inventory)
+        monkeypatch.setattr(bootstrap_cmd, "get_docker_inventory", lambda *a, **k: {})
+        monkeypatch.chdir(tmp_path)
+
+        bootstrap_cmd.run(
+            _make_args(
+                src_dir=".",
+                wiki_dir=str(wiki_dir),
+                include_tests=["go"],
+                skip_flows=True,
+                skip_dependencies=True,
+            )
+        )
+
+        assert set(seen["snapshot_include_tests"]) == {"go"}
+        assert set(seen["inventory_include_tests"]) == {"go"}
+        assert (wiki_dir / "modules" / "main_test.md").exists()
+        data = json.loads(
+            (wiki_dir / ".llm-wiki-manifest.json").read_text(encoding="utf-8")
+        )
+        assert "main_test.go" in data["sources"]
+        assert data["sources"]["main_test.go"]["module_page"] == "main_test"
+
+    def test_haskell_inventory_creates_module_summary_and_manifest_entry(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        (tmp_path / "Main.hs").write_text("module Main where\n", encoding="utf-8")
+        wiki_dir = tmp_path / "wiki"
+        seen = {}
+
+        def fake_inventory(src_dir, *args, **kwargs):
+            seen["helper_cache_dir"] = kwargs["helper_cache_dir"]
+            return InventoryResult(
+                {
+                    "Main.hs": {
+                        "classes": [],
+                        "functions": [{"name": "main", "line": 1}],
+                        "language": "haskell",
+                    }
+                },
+                {"haskell": ExtractorStatus("haskell", "ok", 1)},
+            )
+
+        monkeypatch.setattr(bootstrap_cmd, "get_inventory_result", fake_inventory)
+        monkeypatch.setattr(bootstrap_cmd, "get_docker_inventory", lambda *a, **k: {})
+        monkeypatch.chdir(tmp_path)
+
+        bootstrap_cmd.run(
+            _make_args(
+                src_dir=".",
+                wiki_dir=str(wiki_dir),
+                format="json",
+                source_adapter=True,
+                helper_cache_dir=str(tmp_path / "helper-cache"),
+                skip_flows=True,
+                skip_dependencies=True,
+            )
+        )
+
+        captured = capsys.readouterr()
+        data = json.loads(captured.out)
+        assert seen["helper_cache_dir"] == str(tmp_path / "helper-cache")
+        assert data["source_files"] == 1
+        assert data["functions"] == 1
+        assert "unsupported_sources" not in data
+        assert (wiki_dir / "modules" / "Main.md").exists()
+        manifest = json.loads(
+            (wiki_dir / ".llm-wiki-manifest.json").read_text(encoding="utf-8")
+        )
+        assert manifest["sources"]["Main.hs"]["language"] == "haskell"
+        assert manifest["sources"]["Main.hs"]["module_page"] == "Main"
+
+    def test_haskell_local_dependency_map_uses_declared_module_imports(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        (tmp_path / "hls-analysis" / "app").mkdir(parents=True)
+        (tmp_path / "hls-analysis" / "src" / "HLSAnalysis").mkdir(parents=True)
+        (tmp_path / "hls-analysis" / "app" / "Main.hs").write_text(
+            "module Main where\nimport HLSAnalysis.API\n", encoding="utf-8"
+        )
+        (tmp_path / "hls-analysis" / "src" / "HLSAnalysis" / "API.hs").write_text(
+            "module HLSAnalysis.API where\n", encoding="utf-8"
+        )
+        wiki_dir = tmp_path / "wiki"
+
+        def fake_inventory(src_dir, *args, **kwargs):
+            return InventoryResult(
+                {
+                    "hls-analysis/app/Main.hs": {
+                        "language": "haskell",
+                        "module": "Main",
+                        "imports": [
+                            {
+                                "module": "HLSAnalysis.API",
+                                "qualified": False,
+                                "alias": None,
+                                "line": 2,
+                            }
+                        ],
+                        "classes": [],
+                        "functions": [{"name": "main", "kind": "value", "line": 3}],
+                    },
+                    "hls-analysis/src/HLSAnalysis/API.hs": {
+                        "language": "haskell",
+                        "module": "HLSAnalysis.API",
+                        "imports": [],
+                        "classes": [{"name": "User", "kind": "data", "line": 3}],
+                        "functions": [],
+                    },
+                },
+                {"haskell": ExtractorStatus("haskell", "ok", 2)},
+            )
+
+        monkeypatch.setattr(bootstrap_cmd, "get_inventory_result", fake_inventory)
+        monkeypatch.setattr(bootstrap_cmd, "get_docker_inventory", lambda *a, **k: {})
+        monkeypatch.chdir(tmp_path)
+
+        bootstrap_cmd.run(
+            _make_args(
+                src_dir=str(tmp_path),
+                wiki_dir=str(wiki_dir),
+                skip_flows=True,
+            )
+        )
+
+        main_module = (wiki_dir / "modules" / "Main.md").read_text(encoding="utf-8")
+        api_module = (wiki_dir / "modules" / "API.md").read_text(encoding="utf-8")
+        assert "[API](../modules/API.md)" in main_module
+        assert "[Main](../modules/Main.md)" in api_module
 
     def test_surface_index_contains_pages_and_counts(self, tmp_project, capsys):
         wiki_dir = tmp_project / "docs" / "llm_wiki"
@@ -989,6 +1780,36 @@ class TestGenerateFlowMd:
         md = bootstrap_cmd._generate_flow_md(flow, {"m.py": "m"})
         assert "No outbound calls detected" in md
         assert "sequenceDiagram" not in md
+
+    def test_async_process_main_renders_dispatch_and_related_modules(self, tmp_path):
+        _write_project_team_open_style_async_main(tmp_path)
+        inventory = get_inventory(str(tmp_path), deep=True)
+        edges = resolve_call_edges(inventory)
+        entry = [
+            entry
+            for entry in get_entry_points(inventory)
+            if entry["id"] == "process-main"
+        ][0]
+        flow = build_flow(entry, edges)
+        data_flow = analyze_data_flow(inventory, flow, edges)
+
+        md = bootstrap_cmd._generate_flow_md(
+            flow,
+            {
+                "src/main.py": "src_main",
+                "src/cli/commands.py": "commands",
+                "src/cli/orchestrator.py": "orchestrator",
+            },
+            data_flow=data_flow,
+        )
+
+        assert "No outbound calls detected" not in md
+        assert "**Entry point:** `__main__` (`process`)" in md
+        assert "[commands](../modules/commands.md)" in md
+        assert "[orchestrator](../modules/orchestrator.md)" in md
+        assert "**Related modules:**" in md
+        assert "`asyncio.run(main_entry(...))`" in md
+        assert "| __main__ | run | 11 | `asyncio.run(main_entry(...))` |" in md
 
     def test_call_sequence_is_bounded_for_large_flows(self):
         flow = {
@@ -1460,6 +2281,22 @@ class TestBootstrapArchitecturePages:
         monkeypatch.chdir(tmp_path)
         bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki", depth="shallow"))
         assert not (tmp_path / "wiki" / "dependencies.md").exists()
+
+    def test_deep_bootstrap_skips_pages_when_dependency_graph_is_empty(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        (tmp_path / "service.js").write_text(
+            "function run() { return 1; }\nmodule.exports = { run };\n",
+            encoding="utf-8",
+        )
+        monkeypatch.chdir(tmp_path)
+
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
+
+        assert not (tmp_path / "wiki" / "dependencies.md").exists()
+        assert not (tmp_path / "wiki" / "load-order.md").exists()
+        index = (tmp_path / "wiki" / "index.md").read_text(encoding="utf-8")
+        assert "## Dependency Architecture" not in index
 
     def test_json_summary_reports_dependencies(self, tmp_path, monkeypatch, capsys):
         self._write_project(tmp_path)

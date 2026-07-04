@@ -14,7 +14,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from ..commands.bootstrap_cmd import build_entity_page_map, build_module_page_map
+from ..commands.bootstrap_cmd import (
+    build_entity_occurrence_page_map,
+    build_module_page_map,
+)
 from ..commands.extract_cmd import get_inventory
 from . import wiki_surface
 from .io import read_md, write_md
@@ -31,6 +34,7 @@ _OBSIDIAN_KIND_BY_PAGE_KIND = {
     wiki_surface.PageKind.ENTITIES: "entity",
     wiki_surface.PageKind.MODULES: "module",
     wiki_surface.PageKind.WORKFLOWS: "workflow",
+    wiki_surface.PageKind.GUIDES: "guide",
     wiki_surface.PageKind.FLOWS: "flow",
     wiki_surface.PageKind.INFRASTRUCTURE: "infrastructure",
     wiki_surface.PageKind.DEPENDENCIES: "dependencies",
@@ -278,7 +282,9 @@ def build_mirror_page(
     wiki_dir: Path,
     note_target: str,
 ) -> str:
-    transformed = convert_markdown_links(content, page, canonical_map, wiki_dir)
+    transformed = convert_markdown_links(
+        _escape_source_wikilinks(content), page, canonical_map, wiki_dir
+    )
     parts = [
         build_frontmatter(page),
         "",
@@ -294,6 +300,11 @@ def build_mirror_page(
         "",
     ]
     return "\n".join(parts).replace("\r\n", "\n")
+
+
+def _escape_source_wikilinks(content: str) -> str:
+    """Treat existing double-bracket text as source prose, not vault links."""
+    return content.replace("[[", r"\[\[").replace("]]", r"\]\]")
 
 
 def build_frontmatter(page: WikiPage) -> str:
@@ -419,14 +430,20 @@ def _merge_inventory_relationships(
         (page.kind, page.page_id): page.canonical_rel for page in pages
     }
     module_map = build_module_page_map(inventory)
-    entity_map = build_entity_page_map(inventory)
+    entity_map = build_entity_occurrence_page_map(inventory, module_map)
 
     for filepath, module_id in module_map.items():
         module_rel = canonical_by_kind_id.get(("module", module_id))
         if not module_rel:
             continue
+        seen_names: dict[str, int] = {}
         for cls in inventory.get(filepath, {}).get("classes", []):
-            entity_id = entity_map.get((cls.get("name"), filepath))
+            name = cls.get("name")
+            if not name:
+                continue
+            name_text = str(name)
+            seen_names[name_text] = seen_names.get(name_text, 0) + 1
+            entity_id = entity_map.get((name_text, filepath, seen_names[name_text]))
             entity_rel = (
                 canonical_by_kind_id.get(("entity", entity_id)) if entity_id else None
             )

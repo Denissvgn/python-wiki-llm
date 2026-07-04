@@ -85,7 +85,7 @@ def ensure_mcp_runtime() -> None:
             "official MCP Python SDK does not support Python 3.9. " + MCP_PACKAGE_HINT
         )
     try:
-        import mcp  # noqa: F401
+        import mcp  # type: ignore[reportMissingImports]  # noqa: F401
     except ImportError as exc:
         raise MCPDependencyError(
             "The optional MCP Python SDK is not installed. " + MCP_PACKAGE_HINT
@@ -488,7 +488,7 @@ class McpWikiService:
 def create_mcp_server(config: McpServerConfig):
     """Create and register the FastMCP server for a validated config."""
     ensure_mcp_runtime()
-    from mcp.server.fastmcp import FastMCP
+    from mcp.server.fastmcp import FastMCP  # type: ignore[reportMissingImports]
 
     service = McpWikiService(src_dir=config.src_dir, wiki_dir=config.wiki_dir)
     server = FastMCP(
@@ -617,7 +617,7 @@ def run_mcp_server(config: McpServerConfig) -> None:
         server.run(transport="stdio", show_banner=False)
         return
 
-    from starlette.middleware import Middleware
+    from starlette.middleware import Middleware  # type: ignore[reportMissingImports]
 
     middleware = [
         Middleware(

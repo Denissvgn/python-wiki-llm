@@ -541,7 +541,7 @@ def _ensure_loaded_module_not_shadowed(module_name: str, plugin_dir: Path) -> No
             )
 
 
-def load_entry_point(entry_point: str, *, root: str | Path = "."):
+def load_entry_point(entry_point: str, *, root: str | Path = ".") -> Any:
     entry_point = _ensure_entry_point(entry_point, "entry_point")
     module_name, attr_path = entry_point.split(":", 1)
     plugin_dir = _installed_entry_point_plugin_dir(entry_point, root=root)

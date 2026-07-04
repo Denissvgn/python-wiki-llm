@@ -10,6 +10,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
+from typing import Iterable
 
 from ..config import (
     EXTRACTOR_REGISTRY,
@@ -17,8 +18,13 @@ from ..config import (
     validate_source_paths,
     validate_source_root,
 )
-from ..extractors.common import LANGUAGE_EXTENSIONS
+from ..extractors.common import (
+    LANGUAGE_EXTENSIONS,
+    inventory_language_for_path,
+    normalize_include_tests,
+)
 from ..extractors.go_extractor import GoExtractionRequest
+from ..extractors.haskell_extractor import HaskellExtractionRequest
 from ..extractors.rust_extractor import RustExtractionRequest
 from ..services.contracts import EXTRACT_SCHEMA_VERSION
 from ..services.data_flow import analyze_data_flow, build_data_flow_context
@@ -42,7 +48,13 @@ from ..services.plugins import (
     parallel_safe_extractor_entry_points,
 )
 from ..services.io import write_text_output
-from ..services.source_snapshot import SourceFile, SourceSnapshot, build_source_snapshot
+from ..services.source_snapshot import (
+    SourceFile,
+    SourceSnapshot,
+    build_source_snapshot,
+    format_unsupported_source_summary,
+    unsupported_source_summary,
+)
 
 # Re-export ComponentVisitor so existing callers that import it from here
 # continue to work without modification.
@@ -83,6 +95,13 @@ class InventoryRequest:
     source_snapshot: SourceSnapshot | None = None
     cache_options: InventoryCacheOptions | None = None
     parallel_jobs: int = 1
+    helper_cache_dir: str | None = None
+    include_tests: Iterable[str] | None = None
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self, "include_tests", normalize_include_tests(self.include_tests)
+        )
 
 
 @dataclass(frozen=True)
@@ -234,6 +253,8 @@ _LEGACY_INVENTORY_REQUEST_FIELDS = (
     "source_snapshot",
     "cache_options",
     "parallel_jobs",
+    "helper_cache_dir",
+    "include_tests",
 )
 
 
@@ -256,7 +277,7 @@ def _coerce_inventory_request(
 
     if len(legacy_args) > len(_LEGACY_INVENTORY_REQUEST_FIELDS):
         raise TypeError(
-            "get_inventory_result() takes at most 7 positional arguments "
+            "get_inventory_result() takes at most 9 positional arguments "
             f"({len(legacy_args) + 1} given)"
         )
 
@@ -325,7 +346,9 @@ def _prepare_inventory_build_context(
     request: InventoryRequest,
 ) -> _InventoryBuildContext:
     source_snapshot = request.source_snapshot or build_source_snapshot(
-        request.src_dir, only_files=request.only_files
+        request.src_dir,
+        only_files=request.only_files,
+        include_tests=request.include_tests,
     )
     registry = get_extractor_registry()
     cache = (
@@ -540,20 +563,32 @@ def _build_extraction_kwargs(
 def _build_builtin_extraction_kwargs(
     context: _InventoryBuildContext, language: str, fresh_source_files: list[str]
 ) -> dict:
+    src_dir = str(context.request.src_dir)
     if language == "go":
         return {
             "src_dir": GoExtractionRequest(
-                src_dir=context.request.src_dir,
+                src_dir=src_dir,
+                only_files=context.request.only_files,
+                deep=context.request.deep,
+                source_files=fresh_source_files,
+                helper_cache_dir=_inventory_helper_cache_dir(context.request),
+                include_tests=context.request.include_tests,
+            ),
+        }
+    if language == "rust":
+        return {
+            "src_dir": RustExtractionRequest(
+                src_dir=src_dir,
                 only_files=context.request.only_files,
                 deep=context.request.deep,
                 source_files=fresh_source_files,
                 helper_cache_dir=_inventory_helper_cache_dir(context.request),
             ),
         }
-    if language == "rust":
+    if language == "haskell":
         return {
-            "src_dir": RustExtractionRequest(
-                src_dir=context.request.src_dir,
+            "src_dir": HaskellExtractionRequest(
+                src_dir=src_dir,
                 only_files=context.request.only_files,
                 deep=context.request.deep,
                 source_files=fresh_source_files,
@@ -561,7 +596,7 @@ def _build_builtin_extraction_kwargs(
             ),
         }
     return {
-        "src_dir": context.request.src_dir,
+        "src_dir": src_dir,
         "only_files": context.request.only_files,
         "deep": context.request.deep,
         "source_files": fresh_source_files,
@@ -569,9 +604,7 @@ def _build_builtin_extraction_kwargs(
 
 
 def _inventory_helper_cache_dir(request: InventoryRequest) -> str | None:
-    return (
-        request.cache_options.cache_dir if request.cache_options is not None else None
-    )
+    return request.helper_cache_dir
 
 
 def _run_inventory_plans(
@@ -668,7 +701,7 @@ def _merge_inventory_results(
             extracted_by_language.get(language, {}),
         )
     packages = discover_packages(
-        context.request.src_dir, source_snapshot=context.source_snapshot
+        str(context.request.src_dir), source_snapshot=context.source_snapshot
     )
     stamp_inventory_packages(inventory, packages)
     return inventory
@@ -732,7 +765,7 @@ def infer_language_from_path(filepath: str) -> str | None:
     suffix = Path(filepath).suffix
     for language, extensions in LANGUAGE_EXTENSIONS.items():
         if suffix in extensions:
-            return language
+            return inventory_language_for_path(language, filepath)
     return None
 
 
@@ -791,6 +824,23 @@ def _git_changed_files(src_dir: str) -> list[str] | None:
         return None
 
 
+def _compact_summary_names(items: Iterable, key: str | None = None) -> list[str]:
+    names: list[str] = []
+    seen: set[str] = set()
+    for item in items:
+        value = item
+        if isinstance(item, dict):
+            value = item.get(key or "name")
+        if not value:
+            continue
+        name = str(value)
+        if name in seen:
+            continue
+        names.append(name)
+        seen.add(name)
+    return names
+
+
 def _summarize_inventory(inventory: dict) -> dict:
     """Produce a compact one-line-per-symbol summary from a shallow inventory."""
     summary: dict[str, dict] = {}
@@ -806,6 +856,19 @@ def _summarize_inventory(inventory: dict) -> dict:
             entry["classes"] = cls_names
         if fn_names:
             entry["functions"] = fn_names
+        if data.get("language") in {"javascript", "typescript"}:
+            imports = _compact_summary_names(data.get("imports", []), "module")
+            exports = _compact_summary_names(data.get("exports", []))
+            constants = _compact_summary_names(data.get("constants", []), "name")
+            module_calls = _compact_summary_names(data.get("module_calls", []), "name")
+            if imports:
+                entry["imports"] = imports
+            if exports:
+                entry["exports"] = exports
+            if constants:
+                entry["constants"] = constants
+            if module_calls:
+                entry["module_calls"] = module_calls
         if entry:
             summary[fp] = entry
     return summary
@@ -817,8 +880,9 @@ def _dependency_extract_block(analysis: dict) -> dict:
     load_order = analysis.get("load_order", {})
     reconciliation = analysis.get("reconciliation", {})
     languages = reconciliation.get("languages", {})
-    external = {
-        language: {
+    external: dict[str, dict] = {}
+    for language, report in sorted(languages.items()):
+        entry = {
             "used": {
                 package: list(files)
                 for package, files in sorted(report.get("used", {}).items())
@@ -826,8 +890,14 @@ def _dependency_extract_block(analysis: dict) -> dict:
             "undeclared": list(report.get("undeclared", [])),
             "unused": list(report.get("unused", [])),
         }
-        for language, report in sorted(languages.items())
-    }
+        versions = report.get("versions", {})
+        if versions:
+            entry["versions"] = {
+                package: dict(metadata)
+                for package, metadata in sorted(versions.items())
+                if isinstance(metadata, dict)
+            }
+        external[language] = entry
     return {
         "edges": [list(edge) for edge in graph.get("edges", [])],
         "cycles": [list(cycle) for cycle in analysis.get("cycles", [])],
@@ -850,6 +920,8 @@ def build_extract_payload(
     paths: list[str] | None = None,
     package_filter: str | None = None,
     include_empty: bool = False,
+    helper_cache_dir: str | None = None,
+    include_tests: Iterable[str] | None = None,
     allow_external_src: bool = False,
     read_only: bool = False,
 ) -> ExtractPayloadResult:
@@ -893,7 +965,12 @@ def build_extract_payload(
             no_changed_files=True,
         )
 
-    source_snapshot = build_source_snapshot(str(src_root), only_files=only_files)
+    include_test_languages = normalize_include_tests(include_tests)
+    source_snapshot = build_source_snapshot(
+        str(src_root),
+        only_files=only_files,
+        include_tests=include_test_languages,
+    )
     result = get_inventory_result(
         InventoryRequest(
             src_dir=str(src_root),
@@ -901,6 +978,8 @@ def build_extract_payload(
             only_files=only_files,
             include_empty=include_empty,
             source_snapshot=source_snapshot,
+            helper_cache_dir=helper_cache_dir,
+            include_tests=include_test_languages,
         )
     )
     if result.failed:
@@ -948,7 +1027,11 @@ def build_extract_payload(
         else None
     )
     dependencies = (
-        _dependency_extract_block(analyze_dependencies(inventory, str(src_root)))
+        _dependency_extract_block(
+            analyze_dependencies(
+                inventory, str(src_root), source_snapshot=source_snapshot
+            )
+        )
         if deep
         else None
     )
@@ -964,6 +1047,11 @@ def build_extract_payload(
     }
     if docker_inv:
         output["docker"] = docker_inv
+    unsupported_sources = unsupported_source_summary(
+        source_snapshot, supported_languages=result.statuses
+    )
+    if unsupported_sources:
+        output["unsupported_sources"] = unsupported_sources
     if entrypoints:
         output["entrypoints"] = entrypoints
     if data_flows is not None:
@@ -993,6 +1081,8 @@ def run(args):
     output_path: str | None = getattr(args, "output", None)
     read_only: bool = getattr(args, "read_only", False)
     allow_external_src: bool = getattr(args, "allow_external_src", False)
+    helper_cache_dir: str | None = getattr(args, "helper_cache_dir", None)
+    include_tests = getattr(args, "include_tests", None)
 
     if changed and paths:
         print("Error: --changed and --paths are mutually exclusive.", file=sys.stderr)
@@ -1014,6 +1104,8 @@ def run(args):
             paths=paths,
             package_filter=package_filter,
             include_empty=include_empty,
+            helper_cache_dir=helper_cache_dir,
+            include_tests=include_tests,
             allow_external_src=allow_external_src,
             read_only=read_only,
         )
@@ -1056,8 +1148,14 @@ def run(args):
     for warning in result.payload.get("warnings", []):
         print(f"Warning: {warning}", file=sys.stderr)
 
+    unsupported_message = format_unsupported_source_summary(
+        result.payload.get("unsupported_sources", {})
+    )
+    if unsupported_message:
+        print(unsupported_message, file=sys.stderr)
+
     print(
-        f"Extracted {result.inventory_count} files with tracked components.",
+        f"Extracted {result.inventory_count} files with tracked inventory.",
         file=sys.stderr,
     )
     if result.docker_count:
@@ -1101,7 +1199,7 @@ def _resolve_import_candidates(
     symbol_to_files: dict[str, set[str]],
     module_resolver,
 ) -> set[str]:
-    source_name = imp["name"]
+    source_name = imp.get("name", "") or ""
     candidates = set(symbol_to_files.get(source_name, set()))
     module_candidates = module_resolver.candidates(imp.get("module", ""), filepath)
 
@@ -1122,8 +1220,10 @@ def _resolve_imported_symbols(
 ) -> dict[str, tuple[str, str]]:
     imported_symbols: dict[str, tuple[str, str]] = {}
     for imp in imports:
-        source_name = imp["name"]
+        source_name = imp.get("name", "") or ""
         visible_name = imp.get("alias") or source_name
+        if not visible_name:
+            continue
         candidates = _resolve_import_candidates(
             imp, filepath, symbol_to_files, module_resolver
         )
@@ -1259,6 +1359,8 @@ def _caller_components(data: dict):
     ``caller_symbol`` is the bare name for module-level functions and
     ``Class.method`` for methods; ``class_name`` is ``None`` for functions.
     """
+    if data.get("main_block_calls"):
+        yield "__main__", {"calls": data["main_block_calls"]}, None
     for fn in data.get("functions", []):
         yield fn["name"], fn, None
     for cls in data.get("classes", []):
@@ -1333,7 +1435,11 @@ def _edges_for_file(
     imported_internal = _resolve_imported_symbols(
         filepath, imports, symbol_to_files, module_resolver
     )
-    imported_names = {imp.get("alias") or imp["name"] for imp in imports}
+    imported_names = {
+        visible_name
+        for imp in imports
+        if (visible_name := (imp.get("alias") or imp.get("name")))
+    }
     local_symbols = _file_local_symbols(data)
 
     edges: list[dict] = []

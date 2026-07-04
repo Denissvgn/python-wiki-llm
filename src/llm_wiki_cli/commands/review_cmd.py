@@ -7,7 +7,11 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from ..config import DEFAULT_WIKI_DIR, validate_path
-from .bootstrap_cmd import build_entity_page_map, build_module_page_map
+from .bootstrap_cmd import (
+    build_entity_occurrence_page_map,
+    build_entity_page_map,
+    build_module_page_map,
+)
 from .extract_cmd import get_inventory
 from ..services.entrypoints import get_entry_points, read_console_scripts
 from ..services.wiki_surface import PageKind, collect_wiki_pages
@@ -200,14 +204,21 @@ def _build_surface_index_pages(
     src_dir: str,
     module_page_map: dict[str, str],
     entity_page_map: dict[tuple[str, str], str],
+    entity_occurrence_page_map: dict[tuple[str, str, int], str],
 ) -> list[dict]:
     console_scripts = read_console_scripts(src_dir)
-    entry_points = get_entry_points(inventory, console_scripts=console_scripts)
+    entry_points = get_entry_points(
+        inventory,
+        console_scripts=console_scripts,
+        root=src_dir,
+        fallback_root=Path.cwd(),
+    )
     payload = build_surface_index(
         wiki_dir,
         inventory,
         src_dir=src_dir,
         entity_page_cache=entity_page_map,
+        entity_occurrence_page_cache=entity_occurrence_page_map,
         module_page_map=module_page_map,
         entry_points=entry_points,
     )
@@ -221,6 +232,7 @@ def _surface_index_pages(
     src_dir: str,
     module_page_map: dict[str, str],
     entity_page_map: dict[tuple[str, str], str],
+    entity_occurrence_page_map: dict[tuple[str, str, int], str],
 ) -> list[dict]:
     pages = _load_surface_index_pages(wiki_dir)
     if pages is not None:
@@ -231,6 +243,7 @@ def _surface_index_pages(
         src_dir,
         module_page_map,
         entity_page_map,
+        entity_occurrence_page_map,
     )
 
 
@@ -240,6 +253,7 @@ def _flow_pages_by_source(
     src_dir: str,
     module_page_map: dict[str, str],
     entity_page_map: dict[tuple[str, str], str],
+    entity_occurrence_page_map: dict[tuple[str, str, int], str],
 ) -> dict[str, list[str]]:
     pages_by_source: dict[str, list[str]] = {}
     for page in _surface_index_pages(
@@ -248,6 +262,7 @@ def _flow_pages_by_source(
         src_dir,
         module_page_map,
         entity_page_map,
+        entity_occurrence_page_map,
     ):
         if page.get("kind") != PageKind.FLOWS.value:
             continue
@@ -273,13 +288,21 @@ def _related_pages_for_source(
     inventory: dict,
     module_page_map: dict[str, str],
     entity_page_map: dict[tuple[str, str], str],
+    entity_occurrence_page_map: dict[tuple[str, str, int], str],
     flow_pages_by_source: dict[str, list[str]],
 ) -> list[str]:
     if path not in inventory:
         return []
     pages = [f"modules/{module_page_map[path]}.md"]
+    seen_names: dict[str, int] = {}
     for cls in inventory[path].get("classes", []):
-        pages.append(f"entities/{entity_page_map[(cls['name'], path)]}.md")
+        name = cls["name"]
+        seen_names[name] = seen_names.get(name, 0) + 1
+        entity_page = entity_occurrence_page_map.get(
+            (name, path, seen_names[name]),
+            entity_page_map[(name, path)],
+        )
+        pages.append(f"entities/{entity_page}.md")
     pages.extend(flow_pages_by_source.get(path, []))
     return pages
 
@@ -299,12 +322,16 @@ def build_findings(
     inventory = get_inventory(src_dir, deep=True)
     module_page_map = build_module_page_map(inventory)
     entity_page_map = build_entity_page_map(inventory)
+    entity_occurrence_page_map = build_entity_occurrence_page_map(
+        inventory, module_page_map
+    )
     flow_pages = _flow_pages_by_source(
         wiki_path,
         inventory,
         src_dir,
         module_page_map,
         entity_page_map,
+        entity_occurrence_page_map,
     )
     symbol_pages = _symbol_reference_pages(wiki_path)
     imports_by_file = _added_imports_by_file(diff_text)
@@ -325,6 +352,7 @@ def build_findings(
             inventory,
             module_page_map,
             entity_page_map,
+            entity_occurrence_page_map,
             flow_pages,
         )
         if not pages:

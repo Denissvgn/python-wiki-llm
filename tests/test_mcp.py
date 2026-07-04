@@ -143,11 +143,16 @@ class TestMcpWikiService:
             service.get_architecture_page("dependencies")
 
     def test_resource_uri_resolution(self, tmp_project):
-        _write_wiki(tmp_project)
+        wiki = _write_wiki(tmp_project)
+        (wiki / "guides").mkdir()
+        (wiki / "guides" / "operator-onboarding.md").write_text(
+            "# Operator Onboarding\n\nGuide for operators.\n", encoding="utf-8"
+        )
         service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
 
         index = service.read_resource("llm-wiki://index")
         entity = service.read_resource("llm-wiki://entities/User")
+        guide = service.read_resource("llm-wiki://guides/operator-onboarding")
         flow = service.read_resource("llm-wiki://flows/checkout")
         dependencies = service.read_resource("llm-wiki://dependencies")
         load_order = service.read_resource("llm-wiki://load-order")
@@ -155,6 +160,8 @@ class TestMcpWikiService:
         assert index["mimeType"] == "text/markdown"
         assert entity["metadata"]["kind"] == "entities"
         assert "Primary account entity" in entity["text"]
+        assert guide["metadata"]["kind"] == "guides"
+        assert guide["metadata"]["path"] == "guides/operator-onboarding.md"
         assert flow["metadata"]["path"] == "flows/checkout.md"
         assert dependencies["metadata"]["kind"] == "dependencies"
         assert "Dependency graph" in dependencies["text"]
@@ -197,12 +204,17 @@ class TestMcpWikiService:
         assert result["results"][0]["uri"] == "llm-wiki://dependencies"
 
     def test_search_wiki_accepts_all_registry_discovery_kinds(self, tmp_project):
-        _write_wiki(tmp_project)
+        wiki = _write_wiki(tmp_project)
+        (wiki / "guides").mkdir()
+        (wiki / "guides" / "operator-onboarding.md").write_text(
+            "# Operator Onboarding\n\nGuide for operators.\n", encoding="utf-8"
+        )
         service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
 
         cases = {
             "index": ("User", "llm-wiki://index"),
             "log": ("Created wiki", "llm-wiki://log"),
+            "guides": ("Guide for operators", "llm-wiki://guides/operator-onboarding"),
             "flows": ("Checkout user flow", "llm-wiki://flows/checkout"),
             "dependencies": ("Dependency graph", "llm-wiki://dependencies"),
             "load-order": ("Initialization sequence", "llm-wiki://load-order"),
@@ -343,6 +355,7 @@ class TestMcpWikiService:
         assert result["pages"]["log"] == 1
         assert result["pages"]["modules"] == 1
         assert result["pages"]["workflows"] == 1
+        assert result["pages"]["guides"] == 0
         assert result["pages"]["flows"] == 1
         assert result["pages"]["infrastructure"] == 1
         assert result["pages"]["dependencies"] == 1
@@ -492,6 +505,7 @@ def test_resource_registration_preserves_legacy_resources_and_adds_m4_resources(
         "llm-wiki://entities/{page_id}",
         "llm-wiki://modules/{page_id}",
         "llm-wiki://workflows/{page_id}",
+        "llm-wiki://guides/{page_id}",
     } <= set(server.resource_uris)
     assert {
         "llm-wiki://flows/{page_id}",

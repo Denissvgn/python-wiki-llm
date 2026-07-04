@@ -50,19 +50,27 @@ class TestBumpMinor:
 class TestFindVersionFile:
     def test_pyproject(self, tmp_path):
         (tmp_path / "pyproject.toml").write_text('[project]\nversion = "1.0.0"\n')
-        assert find_version_file(str(tmp_path)).name == "pyproject.toml"
+        version_file = find_version_file(str(tmp_path))
+        assert version_file is not None
+        assert version_file.name == "pyproject.toml"
 
     def test_setup_cfg(self, tmp_path):
         (tmp_path / "setup.cfg").write_text("[metadata]\nversion = 1.0.0\n")
-        assert find_version_file(str(tmp_path)).name == "setup.cfg"
+        version_file = find_version_file(str(tmp_path))
+        assert version_file is not None
+        assert version_file.name == "setup.cfg"
 
     def test_package_json(self, tmp_path):
         (tmp_path / "package.json").write_text('{"version": "1.0.0"}')
-        assert find_version_file(str(tmp_path)).name == "package.json"
+        version_file = find_version_file(str(tmp_path))
+        assert version_file is not None
+        assert version_file.name == "package.json"
 
     def test_version_file(self, tmp_path):
         (tmp_path / "VERSION").write_text("1.0.0\n")
-        assert find_version_file(str(tmp_path)).name == "VERSION"
+        version_file = find_version_file(str(tmp_path))
+        assert version_file is not None
+        assert version_file.name == "VERSION"
 
     def test_none(self, tmp_path):
         assert find_version_file(str(tmp_path)) is None
@@ -70,7 +78,9 @@ class TestFindVersionFile:
     def test_priority_pyproject_over_setup_cfg(self, tmp_path):
         (tmp_path / "pyproject.toml").write_text('[project]\nversion = "1.0.0"\n')
         (tmp_path / "setup.cfg").write_text("[metadata]\nversion = 2.0.0\n")
-        assert find_version_file(str(tmp_path)).name == "pyproject.toml"
+        version_file = find_version_file(str(tmp_path))
+        assert version_file is not None
+        assert version_file.name == "pyproject.toml"
 
 
 # ── read_version / write_version ─────────────────────────────────────

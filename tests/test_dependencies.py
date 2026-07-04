@@ -83,6 +83,15 @@ class TestBuildDependencyGraph:
         graph = build_dependency_graph(inventory)
         assert graph["edges"] == [("pkg/a.py", "pkg/b.py")]
 
+    def test_bare_package_import_resolves_to_init_module(self):
+        inventory = {
+            "service/server.py": _mod(_imp("tools", "Widget")),
+            "service/tools/__init__.py": _mod(),
+        }
+        graph = build_dependency_graph(inventory)
+        assert graph["edges"] == [("service/server.py", "service/tools/__init__.py")]
+        assert graph["unresolved"] == []
+
     def test_stdlib_and_third_party_land_in_unresolved(self):
         inventory = {
             "a.py": _mod(_imp("os"), _imp("requests.adapters", "HTTPAdapter")),
@@ -430,6 +439,43 @@ def _pymod(*imports):
     }
 
 
+def _tsmod(*imports):
+    return {
+        "language": "typescript",
+        "imports": list(imports),
+        "classes": [],
+        "functions": [],
+    }
+
+
+def _jsmod(*imports):
+    return {
+        "language": "javascript",
+        "imports": list(imports),
+        "classes": [],
+        "functions": [],
+    }
+
+
+def _hsmod(*imports, module="Main"):
+    return {
+        "language": "haskell",
+        "module": module,
+        "imports": list(imports),
+        "classes": [],
+        "functions": [],
+    }
+
+
+def _gomod(*imports):
+    return {
+        "language": "go",
+        "imports": list(imports),
+        "classes": [],
+        "functions": [],
+    }
+
+
 class TestAnalyzeDependencies:
     def test_bundle_exposes_every_section(self, tmp_path):
         inventory = {
@@ -460,6 +506,959 @@ class TestAnalyzeDependencies:
         bundle = analyze_dependencies({"x.py": {}, "weird": "nope"}, str(tmp_path))
         assert bundle["graph"]["edges"] == []
         assert bundle["cycles"] == []
+
+    def test_go_module_imports_resolve_without_stdlib_stem_collision(self, tmp_path):
+        (tmp_path / "go.mod").write_text(
+            "module github.com/charmbracelet/teamcrush\n\ngo 1.23\n",
+            encoding="utf-8",
+        )
+        inventory = {
+            "cmd/teamcrush/main.go": {
+                "language": "go",
+                "imports": [
+                    _imp("github.com/charmbracelet/teamcrush/internal/agents"),
+                    _imp("context"),
+                ],
+            },
+            "internal/agents/agent.go": {
+                "language": "go",
+                "imports": [],
+            },
+            "internal/orchestrator/context.go": {
+                "language": "go",
+                "imports": [],
+            },
+        }
+
+        graph = analyze_dependencies(inventory, str(tmp_path))["graph"]
+
+        assert graph["edges"] == [("cmd/teamcrush/main.go", "internal/agents/agent.go")]
+        assert (
+            "cmd/teamcrush/main.go",
+            "internal/orchestrator/context.go",
+        ) not in graph["edges"]
+        assert graph["unresolved"] == [
+            {
+                "file": "cmd/teamcrush/main.go",
+                "module": "context",
+                "name": "context",
+            }
+        ]
+
+    def test_nested_go_module_import_resolves_as_internal_dependency(self, tmp_path):
+        nested = tmp_path / "libs" / "identity_client_go"
+        nested.mkdir(parents=True)
+        (nested / "go.mod").write_text(
+            "module github.com/traid-platform/identityclient\n\ngo 1.21\n",
+            encoding="utf-8",
+        )
+        inventory = {
+            "libs/identity_client_go/example/main.go": _gomod(
+                _imp("context"),
+                _imp("github.com/traid-platform/identityclient"),
+                _imp("github.com/external/undeclared"),
+            ),
+            "libs/identity_client_go/identity_client.go": _gomod(),
+            "libs/identity_client_go/example/context.go": _gomod(),
+        }
+
+        bundle = analyze_dependencies(inventory, str(tmp_path))
+        graph = bundle["graph"]
+        go = bundle["reconciliation"]["languages"]["go"]
+
+        assert graph["edges"] == [
+            (
+                "libs/identity_client_go/example/main.go",
+                "libs/identity_client_go/identity_client.go",
+            )
+        ]
+        assert {
+            "file": "libs/identity_client_go/example/main.go",
+            "module": "context",
+            "name": "context",
+        } in graph["unresolved"]
+        assert go["used"] == {
+            "github.com/external/undeclared": [
+                "libs/identity_client_go/example/main.go"
+            ]
+        }
+        assert go["undeclared"] == ["github.com/external/undeclared"]
+
+    def test_haskell_declared_modules_create_internal_edges_and_metrics(self, tmp_path):
+        inventory = {
+            "hls-analysis/app/Main.hs": {
+                "language": "haskell",
+                "module": "Main",
+                "imports": [
+                    _imp("HLSAnalysis.API", ""),
+                    _imp("Data.Text", ""),
+                ],
+                "classes": [],
+                "functions": [],
+            },
+            "hls-analysis/src/HLSAnalysis/API.hs": {
+                "language": "haskell",
+                "module": "HLSAnalysis.API",
+                "imports": [],
+                "classes": [],
+                "functions": [],
+            },
+        }
+
+        bundle = analyze_dependencies(inventory, str(tmp_path))
+        graph = bundle["graph"]
+
+        assert graph["edges"] == [
+            (
+                "hls-analysis/app/Main.hs",
+                "hls-analysis/src/HLSAnalysis/API.hs",
+            )
+        ]
+        assert graph["unresolved"] == [
+            {
+                "file": "hls-analysis/app/Main.hs",
+                "module": "Data.Text",
+                "name": "",
+            }
+        ]
+        assert bundle["metrics"]["metrics"]["hls-analysis/app/Main.hs"] == {
+            "fan_in": 0,
+            "fan_out": 1,
+        }
+        assert bundle["metrics"]["metrics"]["hls-analysis/src/HLSAnalysis/API.hs"] == {
+            "fan_in": 1,
+            "fan_out": 0,
+        }
+
+    def test_haskell_cabal_dependencies_reconcile_known_imports(self, tmp_path):
+        cabal = tmp_path / "hls-analysis" / "hls-analysis.cabal"
+        cabal.parent.mkdir()
+        cabal.write_text(
+            """
+            cabal-version: 3.0
+            name: hls-analysis
+
+            library
+              build-depends: base >=4.17
+                           , aeson >=2.0
+                           , containers >=0.6
+                           , servant >=0.19
+                           , text >=1.2
+                           , unused-required >=1.0
+              hs-source-dirs: src
+
+            test-suite hls-analysis-test
+              build-depends: base
+                           , hls-analysis
+                           , hspec >=2.10
+              hs-source-dirs: test
+            """,
+            encoding="utf-8",
+        )
+        inventory = {
+            "hls-analysis/src/HLSAnalysis/API.hs": _hsmod(
+                _imp("Prelude", ""),
+                _imp("Data.Map", ""),
+                _imp("Data.Text", ""),
+                _imp("Servant", ""),
+                _imp("Unknown.Widget", ""),
+                _imp("HLSAnalysis.Types", ""),
+                module="HLSAnalysis.API",
+            ),
+            "hls-analysis/src/HLSAnalysis/Types.hs": _hsmod(module="HLSAnalysis.Types"),
+            "hls-analysis/test/Spec.hs": _hsmod(
+                _imp("Test.Hspec", ""),
+                module="Spec",
+            ),
+        }
+
+        haskell = analyze_dependencies(inventory, str(tmp_path))["reconciliation"][
+            "languages"
+        ]["haskell"]
+
+        assert haskell["used"] == {
+            "base": ["hls-analysis/src/HLSAnalysis/API.hs"],
+            "containers": ["hls-analysis/src/HLSAnalysis/API.hs"],
+            "hspec": ["hls-analysis/test/Spec.hs"],
+            "servant": ["hls-analysis/src/HLSAnalysis/API.hs"],
+            "text": ["hls-analysis/src/HLSAnalysis/API.hs"],
+        }
+        assert haskell["undeclared"] == []
+        assert haskell["unused"] == ["aeson", "unused-required"]
+        assert "Data" not in haskell["used"]
+        assert "Test" not in haskell["used"]
+
+    def test_haskell_cabal_dependencies_are_scoped_to_nearest_package(self, tmp_path):
+        (tmp_path / "cabal.project").write_text(
+            "packages:\n  core\n  api\n",
+            encoding="utf-8",
+        )
+        core = tmp_path / "core"
+        api = tmp_path / "api"
+        core.mkdir()
+        api.mkdir()
+        (core / "core.cabal").write_text(
+            """
+            cabal-version: 3.0
+            name: core
+            library
+              build-depends: base, text
+              hs-source-dirs: src
+            """,
+            encoding="utf-8",
+        )
+        (api / "api.cabal").write_text(
+            """
+            cabal-version: 3.0
+            name: api
+            library
+              build-depends: base, servant
+              hs-source-dirs: src
+            """,
+            encoding="utf-8",
+        )
+        inventory = {
+            "core/src/Core.hs": _hsmod(
+                _imp("Prelude", ""),
+                _imp("Data.Text", ""),
+                _imp("Servant", ""),
+                module="Core",
+            ),
+            "api/src/API.hs": _hsmod(
+                _imp("Prelude", ""),
+                _imp("Servant", ""),
+                module="API",
+            ),
+        }
+
+        haskell = analyze_dependencies(inventory, str(tmp_path))["reconciliation"][
+            "languages"
+        ]["haskell"]
+
+        assert haskell["used"] == {
+            "base": ["api/src/API.hs", "core/src/Core.hs"],
+            "servant": ["api/src/API.hs", "core/src/Core.hs"],
+            "text": ["core/src/Core.hs"],
+        }
+        assert haskell["undeclared"] == ["servant"]
+        assert haskell["unused"] == []
+
+    def test_haskell_stack_and_nix_hints_are_optional_only(self, tmp_path):
+        (tmp_path / "app.cabal").write_text(
+            """
+            cabal-version: 3.0
+            name: app
+            library
+              build-depends: base, text
+              hs-source-dirs: src
+            """,
+            encoding="utf-8",
+        )
+        (tmp_path / "stack.yaml").write_text(
+            """
+            packages:
+            - .
+            extra-deps:
+            - hspec-2.11.0
+            """,
+            encoding="utf-8",
+        )
+        (tmp_path / "flake.nix").write_text(
+            """
+            { pkgs, ... }:
+            pkgs.haskellPackages.servant
+            """,
+            encoding="utf-8",
+        )
+        inventory = {
+            "src/App.hs": _hsmod(
+                _imp("Data.Text", ""),
+                _imp("Servant", ""),
+                _imp("Test.Hspec", ""),
+                module="App",
+            ),
+        }
+
+        haskell = analyze_dependencies(inventory, str(tmp_path))["reconciliation"][
+            "languages"
+        ]["haskell"]
+
+        assert haskell["required"] == ["base", "text"]
+        assert haskell["optional"] == ["hspec", "servant"]
+        assert haskell["undeclared"] == []
+        assert haskell["unused"] == ["base"]
+
+    def test_python_external_imports_do_not_resolve_to_same_stem_go_modules(
+        self, tmp_path
+    ):
+        (tmp_path / "rlm").mkdir()
+        (tmp_path / "rlm" / "requirements.txt").write_text(
+            "anthropic\nopenai\n",
+            encoding="utf-8",
+        )
+        inventory = {
+            "rlm/gateway.py": _pymod(
+                _imp("anthropic", "anthropic"),
+                _imp("openai", "openai"),
+            ),
+            "internal/llm/anthropic.go": {
+                "language": "go",
+                "imports": [],
+            },
+            "internal/llm/openai.go": {
+                "language": "go",
+                "imports": [],
+            },
+        }
+
+        bundle = analyze_dependencies(inventory, str(tmp_path))
+        graph = bundle["graph"]
+        python = bundle["reconciliation"]["languages"]["python"]
+
+        assert ("rlm/gateway.py", "internal/llm/anthropic.go") not in graph["edges"]
+        assert ("rlm/gateway.py", "internal/llm/openai.go") not in graph["edges"]
+        assert graph["unresolved"] == [
+            {
+                "file": "rlm/gateway.py",
+                "module": "anthropic",
+                "name": "anthropic",
+            },
+            {
+                "file": "rlm/gateway.py",
+                "module": "openai",
+                "name": "openai",
+            },
+        ]
+        assert python["used"] == {
+            "anthropic": ["rlm/gateway.py"],
+            "openai": ["rlm/gateway.py"],
+        }
+        assert python["unused"] == []
+        assert python["undeclared"] == []
+
+    def test_python_manifests_ignore_generated_agent_worktree_scopes(self, tmp_path):
+        (tmp_path / "rlm").mkdir()
+        (tmp_path / "rlm" / "requirements.txt").write_text(
+            "openai\n",
+            encoding="utf-8",
+        )
+        worktree_rlm = (
+            tmp_path / ".claude" / "worktrees" / "agent-strict-instructions" / "rlm"
+        )
+        worktree_rlm.mkdir(parents=True)
+        (worktree_rlm / "requirements.txt").write_text(
+            "openai\n",
+            encoding="utf-8",
+        )
+        inventory = {
+            "rlm/gateway.py": _pymod(_imp("openai", "openai")),
+        }
+
+        python = analyze_dependencies(inventory, str(tmp_path))["reconciliation"][
+            "languages"
+        ]["python"]
+
+        assert python["used"] == {"openai": ["rlm/gateway.py"]}
+        assert python["unused"] == []
+
+    def test_manifests_under_gitignored_directories_do_not_reconcile(self, tmp_path):
+        (tmp_path / ".gitignore").write_text(
+            "projects/\n!projects/.gitkeep\n", encoding="utf-8"
+        )
+        (tmp_path / "docker").mkdir()
+        (tmp_path / "docker" / "web-auth-proxy.js").write_text(
+            "export const proxy = {};\n", encoding="utf-8"
+        )
+        ignored = tmp_path / "projects" / "test-project"
+        ignored.mkdir(parents=True)
+        (ignored / "pyproject.toml").write_text(
+            """
+            [project]
+            dependencies = [
+                "boto3",
+                "pandas",
+                "pyarrow",
+                "python-dotenv",
+            ]
+            """,
+            encoding="utf-8",
+        )
+        (ignored / "package.json").write_text(
+            """
+            {
+              "dependencies": {
+                "@aws-sdk/client-s3": "^3.700.0",
+                "apache-arrow": "^18.0.0",
+                "dotenv": "^16.4.0"
+              }
+            }
+            """,
+            encoding="utf-8",
+        )
+        inventory = {
+            "docker/web-auth-proxy.js": _jsmod(),
+        }
+
+        languages = analyze_dependencies(inventory, str(tmp_path))["reconciliation"][
+            "languages"
+        ]
+
+        assert "python" not in languages
+        assert "typescript" not in languages
+
+    def test_typescript_nested_manifest_and_tsconfig_aliases_reconcile(self, tmp_path):
+        frontend = tmp_path / "frontend"
+        (frontend / "src" / "components" / "projects").mkdir(parents=True)
+        (frontend / "src" / "hooks").mkdir(parents=True)
+        (frontend / "package.json").write_text(
+            """
+            {
+              "dependencies": {
+                "@tanstack/react-query": "5.0.0",
+                "lucide-react": "0.1.0",
+                "react": "18.0.0",
+                "react-router-dom": "6.0.0",
+                "zustand": "4.0.0"
+              },
+              "devDependencies": {
+                "@playwright/test": "1.0.0",
+                "@testing-library/react": "14.0.0",
+                "vitest": "1.0.0"
+              }
+            }
+            """,
+            encoding="utf-8",
+        )
+        (frontend / "tsconfig.json").write_text(
+            """
+            {
+              "compilerOptions": {
+                "baseUrl": ".",
+                "paths": {
+                  "@/*": ["./src/*"],
+                  "@/components/*": ["./src/components/*"],
+                  "@/hooks/*": ["./src/hooks/*"]
+                }
+              }
+            }
+            """,
+            encoding="utf-8",
+        )
+        inventory = {
+            "frontend/src/App.tsx": _tsmod(
+                _imp("@/components/projects", "ProjectList"),
+                _imp("@/hooks/useAuth", "useAuth"),
+                _imp("@playwright/test", "test"),
+                _imp("@tanstack/react-query", "useQuery"),
+                _imp("@testing-library/react", "render"),
+                _imp("lucide-react", "Icon"),
+                _imp("react", "React"),
+                _imp("react-router-dom", "Router"),
+                _imp("vitest", "describe"),
+                _imp("zustand", "create"),
+            ),
+            "frontend/src/components/projects/index.ts": _tsmod(),
+            "frontend/src/hooks/useAuth.ts": _tsmod(),
+        }
+
+        bundle = analyze_dependencies(inventory, str(tmp_path))
+
+        assert (
+            "frontend/src/App.tsx",
+            "frontend/src/components/projects/index.ts",
+        ) in bundle["graph"]["edges"]
+        assert ("frontend/src/App.tsx", "frontend/src/hooks/useAuth.ts") in bundle[
+            "graph"
+        ]["edges"]
+        typescript = bundle["reconciliation"]["languages"]["typescript"]
+        assert typescript["undeclared"] == []
+        assert "@playwright/test" in typescript["optional"]
+        assert "@testing-library/react" in typescript["optional"]
+        assert "vitest" in typescript["optional"]
+
+    def test_nested_typescript_manifest_does_not_leak_outside_scope(self, tmp_path):
+        frontend = tmp_path / "frontend"
+        frontend.mkdir()
+        (frontend / "package.json").write_text(
+            '{"dependencies": {"react": "18.0.0"}}',
+            encoding="utf-8",
+        )
+        inventory = {
+            "tools/render.ts": _tsmod(_imp("react", "React")),
+        }
+
+        typescript = analyze_dependencies(inventory, str(tmp_path))["reconciliation"][
+            "languages"
+        ]["typescript"]
+
+        assert typescript["undeclared"] == ["react"]
+
+    def test_javascript_inventory_uses_typescript_manifest_and_aliases(self, tmp_path):
+        frontend = tmp_path / "frontend"
+        (frontend / "src" / "lib").mkdir(parents=True)
+        (frontend / "package.json").write_text(
+            '{"dependencies": {"react": "18.0.0"}}',
+            encoding="utf-8",
+        )
+        (frontend / "tsconfig.json").write_text(
+            """
+            {
+              "compilerOptions": {
+                "baseUrl": ".",
+                "paths": {"@/*": ["./src/*"]}
+              }
+            }
+            """,
+            encoding="utf-8",
+        )
+        inventory = {
+            "frontend/src/app.js": _jsmod(
+                _imp("@/lib/api", "api"),
+                _imp("react", "React"),
+            ),
+            "frontend/src/lib/api.js": _jsmod(),
+        }
+
+        bundle = analyze_dependencies(inventory, str(tmp_path))
+
+        assert ("frontend/src/app.js", "frontend/src/lib/api.js") in bundle["graph"][
+            "edges"
+        ]
+        typescript = bundle["reconciliation"]["languages"]["typescript"]
+        assert typescript["used"] == {"react": ["frontend/src/app.js"]}
+        assert typescript["undeclared"] == []
+
+    def test_typescript_manifests_ignore_generated_agent_worktree_scopes(
+        self, tmp_path
+    ):
+        web = tmp_path / "web"
+        web.mkdir()
+        (web / "package.json").write_text(
+            '{"dependencies": {"react": "18.0.0"}}',
+            encoding="utf-8",
+        )
+        generated_web = (
+            tmp_path / ".claude" / "worktrees" / "agent-strict-instructions" / "web"
+        )
+        generated_web.mkdir(parents=True)
+        (generated_web / "package.json").write_text(
+            '{"dependencies": {"left-pad": "1.3.0"}}',
+            encoding="utf-8",
+        )
+        inventory = {
+            "web/src/app.js": _jsmod(_imp("react", "React")),
+        }
+
+        typescript = analyze_dependencies(inventory, str(tmp_path))["reconciliation"][
+            "languages"
+        ]["typescript"]
+
+        assert typescript["required"] == ["react"]
+        assert typescript["unused"] == []
+
+    def test_python_local_src_imports_are_first_party_and_yaml_maps_to_pyyaml(
+        self, tmp_path
+    ):
+        (tmp_path / "src").mkdir()
+        (tmp_path / "src" / "__init__.py").write_text("", encoding="utf-8")
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\ndependencies = ["PyYAML"]\n',
+            encoding="utf-8",
+        )
+        inventory = {
+            "scripts/backup.py": _pymod(
+                _imp("src.config", "settings"),
+                _imp("yaml", "safe_load"),
+            ),
+        }
+
+        python = analyze_dependencies(inventory, str(tmp_path))["reconciliation"][
+            "languages"
+        ]["python"]
+
+        assert python["used"] == {"pyyaml": ["scripts/backup.py"]}
+        assert python["undeclared"] == []
+
+    def test_python_service_pyproject_aliases_reconcile_by_nearest_manifest(
+        self, tmp_path
+    ):
+        dialogue = tmp_path / "services" / "dialogue"
+        diarization = tmp_path / "services" / "diarization"
+        dialogue.mkdir(parents=True)
+        diarization.mkdir(parents=True)
+        (dialogue / "pyproject.toml").write_text(
+            """
+            [project]
+            name = "dialogue-service"
+            dependencies = [
+                "grpcio",
+                "prometheus-client",
+                "pydantic-settings",
+            ]
+            """,
+            encoding="utf-8",
+        )
+        (diarization / "pyproject.toml").write_text(
+            """
+            [project]
+            name = "diarization-service"
+            dependencies = [
+                "grpcio",
+                "nvidia-riva-client",
+                "pyannote.audio",
+                "numpy",
+            ]
+            """,
+            encoding="utf-8",
+        )
+        inventory = {
+            "services/dialogue/src/dialogue/main.py": _pymod(
+                _imp("grpc"),
+                _imp("prometheus_client", "Counter"),
+                _imp("pydantic_settings", "BaseSettings"),
+            ),
+            "services/diarization/src/diarization/riva_backend.py": _pymod(
+                _imp("grpc"),
+                _imp("riva.client", "RivaClient"),
+                _imp("pyannote.audio", "Pipeline"),
+                _imp("numpy", "array"),
+            ),
+        }
+
+        python = analyze_dependencies(inventory, str(tmp_path))["reconciliation"][
+            "languages"
+        ]["python"]
+
+        assert python["used"] == {
+            "grpcio": [
+                "services/dialogue/src/dialogue/main.py",
+                "services/diarization/src/diarization/riva_backend.py",
+            ],
+            "numpy": ["services/diarization/src/diarization/riva_backend.py"],
+            "nvidia-riva-client": [
+                "services/diarization/src/diarization/riva_backend.py"
+            ],
+            "prometheus-client": ["services/dialogue/src/dialogue/main.py"],
+            "pydantic-settings": ["services/dialogue/src/dialogue/main.py"],
+            "pyannote-audio": ["services/diarization/src/diarization/riva_backend.py"],
+        }
+        assert python["undeclared"] == []
+        assert python["unused"] == []
+
+    def test_python_internal_service_distribution_import_counts_as_used(self, tmp_path):
+        dialogue = tmp_path / "services" / "dialogue"
+        shared = tmp_path / "services" / "shared"
+        (dialogue / "src" / "dialogue").mkdir(parents=True)
+        (shared / "src" / "shared").mkdir(parents=True)
+        (dialogue / "pyproject.toml").write_text(
+            """
+            [project]
+            name = "dialogue-service"
+            dependencies = ["assistant-shared"]
+
+            [tool.setuptools.packages.find]
+            where = ["src"]
+            """,
+            encoding="utf-8",
+        )
+        (shared / "pyproject.toml").write_text(
+            """
+            [project]
+            name = "assistant-shared"
+            dependencies = []
+
+            [tool.setuptools.packages.find]
+            where = ["src"]
+            """,
+            encoding="utf-8",
+        )
+        (shared / "src" / "shared" / "__init__.py").write_text("", encoding="utf-8")
+        inventory = {
+            "services/dialogue/src/dialogue/main.py": _pymod(
+                _imp("shared.config", "get_settings")
+            ),
+            "services/shared/src/shared/config.py": _pymod(),
+        }
+
+        bundle = analyze_dependencies(inventory, str(tmp_path))
+        graph = bundle["graph"]
+        python = bundle["reconciliation"]["languages"]["python"]
+
+        assert (
+            "services/dialogue/src/dialogue/main.py",
+            "services/shared/src/shared/config.py",
+        ) in graph["edges"]
+        assert python["used"] == {
+            "assistant-shared": ["services/dialogue/src/dialogue/main.py"]
+        }
+        assert python["undeclared"] == []
+        assert python["unused"] == []
+
+    def test_python_repo_qualified_internal_edge_does_not_count_service_dist(
+        self, tmp_path
+    ):
+        service = tmp_path / "services" / "audio_ingest"
+        package = service / "src" / "audio_ingest"
+        package.mkdir(parents=True)
+        (service / "pyproject.toml").write_text(
+            """
+            [project]
+            name = "audio-ingest-service"
+            dependencies = []
+
+            [tool.setuptools.packages.find]
+            where = ["src"]
+            """,
+            encoding="utf-8",
+        )
+        (package / "__init__.py").write_text("", encoding="utf-8")
+        inventory = {
+            "tests/unit/test_audio.py": _pymod(
+                _imp("services.audio_ingest.src.audio_ingest.main", "run")
+            ),
+            "services/audio_ingest/src/audio_ingest/main.py": _pymod(),
+        }
+
+        bundle = analyze_dependencies(inventory, str(tmp_path))
+        graph = bundle["graph"]
+        python = bundle["reconciliation"]["languages"]["python"]
+
+        assert (
+            "tests/unit/test_audio.py",
+            "services/audio_ingest/src/audio_ingest/main.py",
+        ) in graph["edges"]
+        assert "audio-ingest-service" not in python["used"]
+        assert "audio-ingest-service" not in python["undeclared"]
+
+    def test_python_true_undeclared_and_unused_remain_scoped(self, tmp_path):
+        service = tmp_path / "services" / "dialogue"
+        service.mkdir(parents=True)
+        (service / "pyproject.toml").write_text(
+            """
+            [project]
+            name = "dialogue-service"
+            dependencies = ["requests"]
+            """,
+            encoding="utf-8",
+        )
+        inventory = {
+            "services/dialogue/src/dialogue/main.py": _pymod(_imp("httpx")),
+        }
+
+        python = analyze_dependencies(inventory, str(tmp_path))["reconciliation"][
+            "languages"
+        ]["python"]
+
+        assert python["undeclared"] == ["httpx"]
+        assert python["unused"] == ["requests"]
+        assert python["undeclared_details"] == [
+            {
+                "package": "httpx",
+                "files": ["services/dialogue/src/dialogue/main.py"],
+                "scope": "services/dialogue",
+            }
+        ]
+        assert python["unused_details"] == [
+            {
+                "package": "requests",
+                "files": [],
+                "scope": "services/dialogue",
+            }
+        ]
+
+    def test_go_sum_versions_are_resolved_metadata(self, tmp_path):
+        (tmp_path / "go.mod").write_text(
+            """
+            module example.com/app
+
+            go 1.22
+
+            require github.com/pkg/errors v0.9.0
+            """,
+            encoding="utf-8",
+        )
+        (tmp_path / "go.sum").write_text(
+            """
+            github.com/pkg/errors v0.8.1 h1:old
+            github.com/pkg/errors v0.9.1 h1:direct
+            github.com/pkg/errors v0.9.1/go.mod h1:mod
+            """,
+            encoding="utf-8",
+        )
+        inventory = {
+            "main.go": _gomod(_imp("github.com/pkg/errors")),
+        }
+
+        go = analyze_dependencies(inventory, str(tmp_path))["reconciliation"][
+            "languages"
+        ]["go"]
+
+        assert go["versions"] == {
+            "github.com/pkg/errors": {
+                "version": "v0.9.1",
+                "resolved_from": "go.sum",
+            }
+        }
+        assert go["required"] == ["github.com/pkg/errors"]
+        assert go["undeclared"] == []
+
+    def test_rust_cargo_lock_versions_are_resolved_metadata(self, tmp_path):
+        (tmp_path / "Cargo.toml").write_text(
+            """
+            [package]
+            name = "app"
+            version = "0.1.0"
+
+            [dependencies]
+            serde = "1"
+            """,
+            encoding="utf-8",
+        )
+        (tmp_path / "Cargo.lock").write_text(
+            """
+            [[package]]
+            name = "serde"
+            version = "1.0.197"
+            source = "registry+https://github.com/rust-lang/crates.io-index"
+            """,
+            encoding="utf-8",
+        )
+        inventory = {
+            "src/lib.rs": {
+                "language": "rust",
+                "imports": [_imp("serde::Serialize")],
+                "classes": [],
+                "functions": [],
+            }
+        }
+
+        rust = analyze_dependencies(inventory, str(tmp_path))["reconciliation"][
+            "languages"
+        ]["rust"]
+
+        assert rust["versions"] == {
+            "serde": {"version": "1.0.197", "resolved_from": "Cargo.lock"}
+        }
+        assert rust["required"] == ["serde"]
+
+    def test_python_poetry_lock_and_requirements_pins_resolve_versions(self, tmp_path):
+        (tmp_path / "pyproject.toml").write_text(
+            """
+            [project]
+            dependencies = ["requests>=2", "httpx>=0.27"]
+            """,
+            encoding="utf-8",
+        )
+        (tmp_path / "poetry.lock").write_text(
+            """
+            [[package]]
+            name = "requests"
+            version = "2.31.0"
+            """,
+            encoding="utf-8",
+        )
+        (tmp_path / "requirements.txt").write_text(
+            """
+            httpx==0.27.2
+            click>=8
+            -e git+https://example.invalid/pkg#egg=local-pkg
+            """,
+            encoding="utf-8",
+        )
+        inventory = {
+            "app.py": _pymod(
+                _imp("requests", "requests"),
+                _imp("httpx", "httpx"),
+            )
+        }
+
+        python = analyze_dependencies(inventory, str(tmp_path))["reconciliation"][
+            "languages"
+        ]["python"]
+
+        assert python["versions"] == {
+            "httpx": {"version": "0.27.2", "resolved_from": "requirements.txt"},
+            "requests": {"version": "2.31.0", "resolved_from": "poetry.lock"},
+        }
+        assert "click" not in python["versions"]
+        assert "local-pkg" not in python["versions"]
+
+    def test_javascript_package_lock_and_pnpm_versions_resolve_metadata(self, tmp_path):
+        (tmp_path / "package.json").write_text(
+            """
+            {
+              "dependencies": {
+                "react": "^18.0.0",
+                "@scope/pkg": "^2.0.0",
+                "left-pad": "^1.0.0"
+              }
+            }
+            """,
+            encoding="utf-8",
+        )
+        (tmp_path / "package-lock.json").write_text(
+            """
+            {
+              "lockfileVersion": 3,
+              "packages": {
+                "": {},
+                "node_modules/react": {"version": "18.2.0"},
+                "node_modules/@scope/pkg": {"version": "2.1.0"}
+              }
+            }
+            """,
+            encoding="utf-8",
+        )
+        (tmp_path / "pnpm-lock.yaml").write_text(
+            """
+            lockfileVersion: '9.0'
+            packages:
+              /left-pad@1.3.0:
+                resolution: {integrity: sha512-test}
+            """,
+            encoding="utf-8",
+        )
+        inventory = {
+            "src/app.js": _jsmod(
+                _imp("react", "React"),
+                _imp("@scope/pkg", "pkg"),
+                _imp("left-pad", "leftPad"),
+            )
+        }
+
+        typescript = analyze_dependencies(inventory, str(tmp_path))["reconciliation"][
+            "languages"
+        ]["typescript"]
+
+        assert typescript["versions"] == {
+            "@scope/pkg": {
+                "version": "2.1.0",
+                "resolved_from": "package-lock.json",
+            },
+            "left-pad": {"version": "1.3.0", "resolved_from": "pnpm-lock.yaml"},
+            "react": {"version": "18.2.0", "resolved_from": "package-lock.json"},
+        }
+
+    def test_unparseable_lockfiles_omit_versions_without_changing_lint_sets(
+        self, tmp_path
+    ):
+        (tmp_path / "package.json").write_text(
+            '{"dependencies": {"react": "^18.0.0"}}',
+            encoding="utf-8",
+        )
+        (tmp_path / "package-lock.json").write_text("{not json", encoding="utf-8")
+        (tmp_path / "pnpm-lock.yaml").write_text(
+            "packages:\n  not a supported shape\n", encoding="utf-8"
+        )
+        inventory = {"src/app.js": _jsmod(_imp("react", "React"))}
+
+        typescript = analyze_dependencies(inventory, str(tmp_path))["reconciliation"][
+            "languages"
+        ]["typescript"]
+
+        assert typescript["versions"] == {}
+        assert typescript["undeclared"] == []
+        assert typescript["unused"] == []
 
 
 class TestTopLevelPackage:

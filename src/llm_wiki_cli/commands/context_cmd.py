@@ -682,7 +682,10 @@ def _build_protocol_enrichment(
     try:
         wiki_root = validate_path(wiki_dir, "--wiki-dir")
         entrypoints = get_entry_points(
-            inventory, console_scripts=read_console_scripts(str(src_root))
+            inventory,
+            console_scripts=read_console_scripts(str(src_root)),
+            root=src_root,
+            fallback_root=Path.cwd(),
         )
         call_edges = resolve_call_edges(inventory) if entrypoints else []
         flows = [build_flow(entrypoint, call_edges) for entrypoint in entrypoints]
@@ -899,6 +902,7 @@ def _run_protocol(args) -> None:
         )
     except ProtocolRequestError as exc:
         _emit_protocol_error(exc)
+        return
 
     rendered = json.dumps(
         _protocol_success_payload(request, payload, warnings), indent=2

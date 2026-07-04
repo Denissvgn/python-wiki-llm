@@ -5,7 +5,7 @@ import sys
 import time
 from pathlib import Path
 
-from ..config import DEFAULT_WIKI_DIR, validate_path
+from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from ..services.inventory_cache import InventoryCacheOptions
 from ..services.metrics import record_validation_event
 from .lint_cmd import build_report, render_markdown, render_text, report_to_dict
@@ -26,8 +26,15 @@ def run(args) -> None:
     wiki_dir: str = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     output_format: str = getattr(args, "format", "text")
     report_path = Path(getattr(args, "report", DEFAULT_REPORT))
+    helper_cache_dir: str | None = getattr(args, "helper_cache_dir", None)
+    include_tests = getattr(args, "include_tests", None)
+    allow_external_src = bool(getattr(args, "allow_external_src", False))
 
-    validate_path(src_dir, "--src-dir")
+    src_root = validate_source_root(
+        src_dir, "--src-dir", allow_external=allow_external_src
+    )
+    if allow_external_src:
+        src_dir = str(src_root)
     validate_path(wiki_dir, "--wiki-dir")
 
     started = time.monotonic()
@@ -37,6 +44,8 @@ def run(args) -> None:
         strict=True,
         cache_options=InventoryCacheOptions(enabled=True),
         parallel_jobs=getattr(args, "jobs", 1),
+        helper_cache_dir=helper_cache_dir,
+        include_tests=include_tests,
     )
     duration_ms = int((time.monotonic() - started) * 1000)
 

@@ -11,7 +11,7 @@ import posixpath
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Iterable, Optional, Union
 from urllib.parse import unquote
 
 from . import wiki_surface
@@ -44,6 +44,7 @@ class SiteExportReport:
     format: str = "plain"
     front_matter: bool = False
     page_count: int = 0
+    source_count: int = 0
     operations: list[SiteExportOperation] = field(default_factory=list)
     issues: list[dict[str, str]] = field(default_factory=list)
     warnings: list[dict[str, str]] = field(default_factory=list)
@@ -57,6 +58,7 @@ class SiteExportReport:
             "format": self.format,
             "front_matter": self.front_matter,
             "page_count": self.page_count,
+            "source_count": self.source_count,
             "operations": [operation.__dict__ for operation in self.operations],
             "issues": self.issues,
             "warnings": self.warnings,
@@ -70,6 +72,12 @@ class FrontMatterParseResult:
     issue: Optional[dict[str, str]] = None
 
 
+@dataclass(frozen=True)
+class HubWikiSource:
+    source_id: str
+    wiki_dir: Path
+
+
 def export_site_mirror(
     *,
     wiki_dir: Union[str, Path],
@@ -78,6 +86,7 @@ def export_site_mirror(
     front_matter: bool = False,
     dry_run: bool = False,
     allow_overwrite_source: bool = False,
+    docusaurus_id_prefix: str = "",
 ) -> SiteExportReport:
     """Export a static-site-friendly Markdown mirror of the canonical wiki."""
     _validate_format(format)
@@ -87,6 +96,8 @@ def export_site_mirror(
     _validate_output_base(wiki, out, allow_overwrite_source=allow_overwrite_source)
 
     pages = wiki_surface.collect_wiki_pages(wiki)
+    page_contents = {page.relative_path: read_md(page.path) for page in pages}
+    display_titles = _build_display_titles(pages, page_contents)
     export_rel_by_source = {page.path.resolve(): page.relative_path for page in pages}
     source_paths = _load_surface_index_sources(wiki)
     effective_front_matter = front_matter or format in {"mkdocs", "docusaurus"}
@@ -103,12 +114,14 @@ def export_site_mirror(
         target = _safe_join(out, page.relative_path)
         content = _build_export_page(
             page,
-            read_md(page.path),
+            page_contents[page.relative_path],
             export_rel_by_source,
+            display_title=display_titles[page.relative_path],
             site_format=format,
             front_matter=effective_front_matter,
             sidebar_position=sidebar_position,
             source_path=source_paths.get(page.relative_path),
+            docusaurus_id_prefix=docusaurus_id_prefix,
         )
 
         _record_write_operation(
@@ -123,7 +136,7 @@ def export_site_mirror(
             report,
             source=str(wiki),
             target=_safe_join(out, "mkdocs.yml"),
-            content=_build_mkdocs_config(pages),
+            content=_build_mkdocs_config(pages, display_titles),
         )
 
     if format == "docusaurus":
@@ -131,9 +144,80 @@ def export_site_mirror(
             report,
             source=str(wiki),
             target=_safe_join(out, "sidebars.json"),
-            content=_build_docusaurus_sidebar(pages),
+            content=_build_docusaurus_sidebar(
+                pages, docusaurus_id_prefix=docusaurus_id_prefix
+            ),
         )
 
+    return report
+
+
+def export_site_hub(
+    *,
+    out_dir: Union[str, Path],
+    wiki_root: Union[str, Path, None] = None,
+    wikis: Iterable[Union[str, Path]] | None = None,
+    format: str = "plain",
+    front_matter: bool = False,
+    dry_run: bool = False,
+    allow_overwrite_source: bool = False,
+) -> SiteExportReport:
+    """Export multiple source wikis into a namespaced static-site hub."""
+    _validate_format(format)
+    out = Path(out_dir).expanduser()
+    sources = _resolve_hub_sources(wiki_root=wiki_root, wikis=wikis)
+    effective_front_matter = front_matter or format in {"mkdocs", "docusaurus"}
+    report = SiteExportReport(
+        dry_run=dry_run,
+        wiki_dir=str(Path(wiki_root).expanduser()) if wiki_root is not None else "",
+        out_dir=str(out),
+        format=format,
+        front_matter=effective_front_matter,
+        source_count=len(sources),
+    )
+
+    hub_rows: list[tuple[str, int]] = []
+    for source in sources:
+        target = _safe_join(out, source.source_id)
+        child = export_site_mirror(
+            wiki_dir=source.wiki_dir,
+            out_dir=target,
+            format=format,
+            front_matter=front_matter,
+            dry_run=dry_run,
+            allow_overwrite_source=allow_overwrite_source,
+            docusaurus_id_prefix=(source.source_id if format == "docusaurus" else ""),
+        )
+        report.operations.extend(child.operations)
+        report.issues.extend(child.issues)
+        report.warnings.extend(child.warnings)
+        report.page_count += child.page_count
+        hub_rows.append((source.source_id, child.page_count))
+
+    _record_write_operation(
+        report,
+        source=report.wiki_dir or "hub",
+        target=_safe_join(out, "index.md"),
+        content=_build_hub_index(hub_rows),
+    )
+    report.page_count += 1
+
+    if format == "mkdocs":
+        _record_write_operation(
+            report,
+            source=report.wiki_dir or "hub",
+            target=_safe_join(out, "mkdocs.yml"),
+            content=_build_mkdocs_hub_config(sources),
+        )
+    if format == "docusaurus":
+        _record_write_operation(
+            report,
+            source=report.wiki_dir or "hub",
+            target=_safe_join(out, "sidebars.json"),
+            content=_build_docusaurus_hub_sidebar(sources),
+        )
+
+    report.ok = not report.issues
     return report
 
 
@@ -141,6 +225,7 @@ def check_site_mirror(
     *,
     wiki_dir: Union[str, Path],
     out_dir: Union[str, Path],
+    docusaurus_id_prefix: str = "",
 ) -> SiteExportReport:
     """Validate that an exported static-site mirror is present and linked."""
     wiki = Path(wiki_dir).expanduser()
@@ -216,7 +301,12 @@ def check_site_mirror(
 
         found_front_matter = True
         report.issues.extend(
-            _check_front_matter_metadata(page, target, front_matter.metadata)
+            _check_front_matter_metadata(
+                page,
+                target,
+                front_matter.metadata,
+                docusaurus_id_prefix=docusaurus_id_prefix,
+            )
         )
         doc_id = front_matter.metadata.get("id")
         if isinstance(doc_id, str):
@@ -251,11 +341,53 @@ def check_site_mirror(
     return report
 
 
+def check_site_hub(
+    *,
+    out_dir: Union[str, Path],
+    wiki_root: Union[str, Path, None] = None,
+    wikis: Iterable[Union[str, Path]] | None = None,
+) -> SiteExportReport:
+    """Validate a namespaced multi-wiki static-site hub."""
+    out = Path(out_dir).expanduser()
+    sources = _resolve_hub_sources(wiki_root=wiki_root, wikis=wikis)
+    report = SiteExportReport(
+        wiki_dir=str(Path(wiki_root).expanduser()) if wiki_root is not None else "",
+        out_dir=str(out),
+        source_count=len(sources),
+        page_count=1,
+    )
+
+    if not (out / "index.md").is_file():
+        report.issues.append(
+            {
+                "category": "missing_hub_index",
+                "path": str(out / "index.md"),
+                "message": "Missing generated hub index page.",
+            }
+        )
+
+    for source in sources:
+        child = check_site_mirror(
+            wiki_dir=source.wiki_dir,
+            out_dir=out / source.source_id,
+            docusaurus_id_prefix=source.source_id,
+        )
+        report.page_count += child.page_count
+        report.issues.extend(child.issues)
+        report.warnings.extend(child.warnings)
+
+    report.issues.extend(_check_hub_front_matter_id_collisions(out, sources))
+    report.ok = not report.issues
+    return report
+
+
 def render_report_text(report: SiteExportReport, *, action: str) -> str:
     lines = [f"Static site {action}", f"Output: {report.out_dir}"]
     if report.wiki_dir:
         lines.append(f"Wiki: {report.wiki_dir}")
     lines.append(f"Format: {report.format}")
+    if report.source_count:
+        lines.append(f"Sources: {report.source_count}")
     lines.append(f"Pages: {report.page_count}")
     if report.dry_run:
         lines.append("Dry run: no files were changed.")
@@ -297,13 +429,14 @@ def _build_export_page(
     content: str,
     export_rel_by_source: dict[Path, str],
     *,
+    display_title: str,
     site_format: str,
     front_matter: bool,
     sidebar_position: int,
     source_path: Optional[str],
+    docusaurus_id_prefix: str = "",
 ) -> str:
     transformed = _rewrite_markdown_links(content, page, export_rel_by_source)
-    title_source = transformed
     if site_format == "docusaurus":
         transformed = _escape_docusaurus_mdx_text(transformed)
     if not front_matter:
@@ -312,10 +445,11 @@ def _build_export_page(
         [
             _build_front_matter(
                 page,
-                title_source,
+                display_title,
                 site_format=site_format,
                 sidebar_position=sidebar_position,
                 source_path=source_path,
+                docusaurus_id_prefix=docusaurus_id_prefix,
             ),
             "",
             transformed,
@@ -325,18 +459,18 @@ def _build_export_page(
 
 def _build_front_matter(
     page: wiki_surface.WikiSurfacePage,
-    content: str,
+    title: str,
     *,
     site_format: str,
     sidebar_position: int,
     source_path: Optional[str],
+    docusaurus_id_prefix: str = "",
 ) -> str:
-    title = _markdown_title(content, page.page_id)
     lines = ["---"]
     if site_format == "docusaurus":
         lines.extend(
             [
-                f"id: {_yaml_quote(_docusaurus_doc_id(page))}",
+                f"id: {_yaml_quote(_docusaurus_doc_id(page, prefix=docusaurus_id_prefix))}",
                 f"title: {_yaml_quote(title)}",
                 f"sidebar_label: {_yaml_quote(title)}",
                 f"sidebar_position: {sidebar_position}",
@@ -381,28 +515,112 @@ def _record_write_operation(
     report.operations.append(SiteExportOperation("write", source, str(target)))
 
 
-def _build_mkdocs_config(pages: list[wiki_surface.WikiSurfacePage]) -> str:
+def _build_mkdocs_config(
+    pages: list[wiki_surface.WikiSurfacePage],
+    display_titles: dict[str, str],
+) -> str:
     lines = [
         "# Generated by llm-wiki site export.",
         "# Mermaid code fences are preserved as Markdown. Configure a MkDocs",
         "# Mermaid plugin in your site environment to render diagrams.",
         'site_name: "LLM Wiki"',
         'docs_dir: "."',
-        'site_dir: "_site"',
+        'site_dir: "../_site"',
         "nav:",
     ]
     for page in pages:
-        title = _markdown_title(read_md(page.path), page.page_id)
+        title = display_titles[page.relative_path]
         lines.append(f"  - {_yaml_quote(title)}: {_yaml_quote(page.relative_path)}")
     lines.append("")
     return "\n".join(lines)
 
 
-def _build_docusaurus_sidebar(pages: list[wiki_surface.WikiSurfacePage]) -> str:
+def _build_hub_index(rows: list[tuple[str, int]]) -> str:
+    lines = [
+        "# LLM Wiki Hub",
+        "",
+        "| Source | Pages | Index |",
+        "|---|---:|---|",
+    ]
+    for source_id, page_count in sorted(rows):
+        lines.append(f"| {source_id} | {page_count} | [index]({source_id}/index.md) |")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _hub_source_page_data(
+    source: HubWikiSource,
+) -> tuple[list[wiki_surface.WikiSurfacePage], dict[str, str]]:
+    pages = wiki_surface.collect_wiki_pages(source.wiki_dir)
+    page_contents = {page.relative_path: read_md(page.path) for page in pages}
+    return pages, _build_display_titles(pages, page_contents)
+
+
+def _build_mkdocs_hub_config(sources: list[HubWikiSource]) -> str:
+    lines = [
+        "# Generated by llm-wiki site export.",
+        "# Mermaid code fences are preserved as Markdown. Configure a MkDocs",
+        "# Mermaid plugin in your site environment to render diagrams.",
+        'site_name: "LLM Wiki Hub"',
+        'docs_dir: "."',
+        'site_dir: "../_site"',
+        "nav:",
+    ]
+    for source in sources:
+        pages, display_titles = _hub_source_page_data(source)
+        lines.append(f"  - {_yaml_quote(source.source_id)}:")
+        for page in pages:
+            title = display_titles[page.relative_path]
+            path = f"{source.source_id}/{page.relative_path}"
+            lines.append(f"    - {_yaml_quote(title)}: {_yaml_quote(path)}")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _build_docusaurus_hub_sidebar(sources: list[HubWikiSource]) -> str:
+    sidebar_items: list[Any] = []
+    for source in sources:
+        pages, _display_titles = _hub_source_page_data(source)
+        sidebar_items.append(
+            {
+                "type": "category",
+                "label": source.source_id,
+                "items": _docusaurus_sidebar_items(
+                    pages,
+                    docusaurus_id_prefix=source.source_id,
+                ),
+            }
+        )
+    return json.dumps({"llmWikiSidebar": sidebar_items}, indent=2) + "\n"
+
+
+def _build_docusaurus_sidebar(
+    pages: list[wiki_surface.WikiSurfacePage],
+    *,
+    docusaurus_id_prefix: str = "",
+) -> str:
+    return (
+        json.dumps(
+            {
+                "llmWikiSidebar": _docusaurus_sidebar_items(
+                    pages, docusaurus_id_prefix=docusaurus_id_prefix
+                )
+            },
+            indent=2,
+        )
+        + "\n"
+    )
+
+
+def _docusaurus_sidebar_items(
+    pages: list[wiki_surface.WikiSurfacePage],
+    *,
+    docusaurus_id_prefix: str = "",
+) -> list[Any]:
     sidebar_items: list[Any] = []
     categories_by_kind: dict[str, dict[str, Any]] = {}
     for page in pages:
-        doc_id = _docusaurus_doc_id(page)
+        doc_id = _docusaurus_doc_id(page, prefix=docusaurus_id_prefix)
         if "/" not in page.relative_path:
             sidebar_items.append(doc_id)
             continue
@@ -417,7 +635,36 @@ def _build_docusaurus_sidebar(pages: list[wiki_surface.WikiSurfacePage]) -> str:
             categories_by_kind[page.kind.value] = category
             sidebar_items.append(category)
         category["items"].append(doc_id)
-    return json.dumps({"llmWikiSidebar": sidebar_items}, indent=2) + "\n"
+    return sidebar_items
+
+
+def _resolve_hub_sources(
+    *,
+    wiki_root: Union[str, Path, None],
+    wikis: Iterable[Union[str, Path]] | None,
+) -> list[HubWikiSource]:
+    sources: list[HubWikiSource] = []
+    if wiki_root is not None:
+        root = Path(wiki_root).expanduser()
+        _validate_existing_dir(root, "wiki_root")
+        for child in sorted(root.iterdir(), key=lambda path: path.name):
+            if child.is_dir() and (child / "index.md").is_file():
+                sources.append(HubWikiSource(child.name, child))
+
+    for wiki in wikis or []:
+        path = Path(wiki).expanduser()
+        _validate_existing_dir(path, "wiki")
+        sources.append(HubWikiSource(path.name, path))
+
+    if not sources:
+        raise SiteExportError("No source wikis found for hub export.")
+
+    seen: dict[str, Path] = {}
+    for source in sources:
+        if source.source_id in seen:
+            raise SiteExportError(f"Duplicate hub source id: {source.source_id}")
+        seen[source.source_id] = source.wiki_dir
+    return sources
 
 
 def _load_surface_index_sources(wiki: Path) -> dict[str, str]:
@@ -638,6 +885,8 @@ def _check_front_matter_metadata(
     page: wiki_surface.WikiSurfacePage,
     page_path: Path,
     metadata: dict[str, Any],
+    *,
+    docusaurus_id_prefix: str = "",
 ) -> list[dict[str, str]]:
     issues: list[dict[str, str]] = []
     llm_wiki = metadata.get("llm_wiki")
@@ -676,15 +925,49 @@ def _check_front_matter_metadata(
             )
 
     doc_id = metadata.get("id")
-    if isinstance(doc_id, str) and doc_id != _docusaurus_doc_id(page):
+    expected_doc_id = _docusaurus_doc_id(page, prefix=docusaurus_id_prefix)
+    if isinstance(doc_id, str) and doc_id != expected_doc_id:
         issues.append(
             _front_matter_mismatch_issue(
                 page_path,
                 "id",
-                expected=_docusaurus_doc_id(page),
+                expected=expected_doc_id,
                 actual=doc_id,
             )
         )
+    return issues
+
+
+def _check_hub_front_matter_id_collisions(
+    out: Path,
+    sources: list[HubWikiSource],
+) -> list[dict[str, str]]:
+    seen: dict[str, Path] = {}
+    issues: list[dict[str, str]] = []
+    for source in sources:
+        root = out / source.source_id
+        if not root.is_dir():
+            continue
+        for path in sorted(root.rglob("*.md")):
+            try:
+                content = read_md(path)
+            except OSError:
+                continue
+            front_matter = _parse_front_matter(path, content)
+            doc_id = front_matter.metadata.get("id") if front_matter.exists else None
+            if not isinstance(doc_id, str):
+                continue
+            if doc_id in seen:
+                issues.append(
+                    {
+                        "category": "duplicate_hub_front_matter_id",
+                        "path": str(path),
+                        "target": str(seen[doc_id]),
+                        "message": f"Duplicate hub front matter id: {doc_id}",
+                    }
+                )
+            else:
+                seen[doc_id] = path
     return issues
 
 
@@ -803,10 +1086,77 @@ def _markdown_title(content: str, fallback: str) -> str:
     return fallback
 
 
-def _docusaurus_doc_id(page: wiki_surface.WikiSurfacePage) -> str:
-    if page.relative_path.endswith(".md"):
-        return page.relative_path[:-3]
-    return page.relative_path
+def _build_display_titles(
+    pages: list[wiki_surface.WikiSurfacePage],
+    page_contents: dict[str, str],
+) -> dict[str, str]:
+    base_titles = {
+        page.relative_path: _markdown_title(
+            page_contents[page.relative_path], page.page_id
+        )
+        for page in pages
+    }
+    pages_by_title: dict[str, list[wiki_surface.WikiSurfacePage]] = {}
+    for page in pages:
+        title = base_titles[page.relative_path]
+        pages_by_title.setdefault(title, []).append(page)
+
+    display_titles: dict[str, str] = {}
+    used_titles: set[str] = set()
+    for page in pages:
+        title = base_titles[page.relative_path]
+        if len(pages_by_title[title]) == 1:
+            display_title = title
+        else:
+            display_title = _disambiguated_display_title(page, title)
+            if display_title in used_titles:
+                display_title = f"{page.page_id} / {title}"
+            if display_title in used_titles:
+                stable_path = page.relative_path.removesuffix(".md").replace("/", " / ")
+                display_title = f"{stable_path} / {title}"
+        display_titles[page.relative_path] = display_title
+        used_titles.add(display_title)
+    return display_titles
+
+
+def _disambiguated_display_title(
+    page: wiki_surface.WikiSurfacePage,
+    title: str,
+) -> str:
+    context = _page_id_context(page.page_id, title)
+    return f"{context} / {title}"
+
+
+def _page_id_context(page_id: str, title: str) -> str:
+    page_id_parts = [part for part in page_id.split("_") if part]
+    title_part_candidates = _title_part_candidates(title)
+    for title_parts in title_part_candidates:
+        if len(page_id_parts) <= len(title_parts):
+            continue
+        if _parts_match(page_id_parts[-len(title_parts) :], title_parts):
+            return " / ".join(page_id_parts[: -len(title_parts)])
+    return page_id.replace("_", " / ")
+
+
+def _title_part_candidates(title: str) -> list[list[str]]:
+    parts = [part for part in re.split(r"[^A-Za-z0-9]+", title) if part]
+    candidates = [parts]
+    if parts and parts[-1].casefold() == "module":
+        candidates.append(parts[:-1])
+    return [candidate for candidate in candidates if candidate]
+
+
+def _parts_match(left: list[str], right: list[str]) -> bool:
+    return [part.casefold() for part in left] == [part.casefold() for part in right]
+
+
+def _docusaurus_doc_id(page: wiki_surface.WikiSurfacePage, *, prefix: str = "") -> str:
+    doc_id = (
+        page.relative_path[:-3]
+        if page.relative_path.endswith(".md")
+        else page.relative_path
+    )
+    return f"{prefix}/{doc_id}" if prefix else doc_id
 
 
 def _escape_docusaurus_mdx_text(content: str) -> str:

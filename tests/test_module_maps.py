@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from llm_wiki_cli.services.dependencies import analyze_dependencies
 from llm_wiki_cli.services.module_maps import build_module_dependency_maps
 
 
@@ -94,6 +95,114 @@ def test_module_maps_summarize_external_package_counts_per_module():
     }
     assert "requests" not in str(result["service.py"]["external"])
     assert "yaml" not in str(result["service.py"]["external"])
+
+
+def test_module_maps_use_file_specific_undeclared_details():
+    reconciliation = {
+        "languages": {
+            "python": {
+                "used": {
+                    "assistant-shared": ["api.py", "service.py"],
+                    "grpcio": ["service.py"],
+                },
+                "required": ["assistant-shared", "grpcio"],
+                "optional": [],
+                "undeclared": ["assistant-shared"],
+                "undeclared_details": [
+                    {
+                        "package": "assistant-shared",
+                        "files": ["api.py"],
+                        "scope": None,
+                    }
+                ],
+                "unused": [],
+            }
+        }
+    }
+    analysis = _analysis(
+        ["api.py", "service.py"],
+        [("api.py", "service.py")],
+        reconciliation=reconciliation,
+    )
+
+    result = build_module_dependency_maps(analysis)
+
+    assert result["api.py"]["external"] == {
+        "python": {"used_count": 1, "undeclared_count": 1}
+    }
+    assert result["service.py"]["external"] == {
+        "python": {"used_count": 2, "undeclared_count": 0}
+    }
+
+
+def test_module_maps_include_haskell_declared_module_neighbors(tmp_path):
+    inventory = {
+        "hls-analysis/app/Main.hs": {
+            "language": "haskell",
+            "module": "Main",
+            "imports": [{"module": "HLSAnalysis.API", "name": ""}],
+            "classes": [],
+            "functions": [],
+        },
+        "hls-analysis/src/HLSAnalysis/API.hs": {
+            "language": "haskell",
+            "module": "HLSAnalysis.API",
+            "imports": [],
+            "classes": [],
+            "functions": [],
+        },
+    }
+
+    result = build_module_dependency_maps(
+        analyze_dependencies(inventory, str(tmp_path))
+    )
+
+    assert result["hls-analysis/app/Main.hs"]["outbound"] == [
+        "hls-analysis/src/HLSAnalysis/API.hs"
+    ]
+    assert result["hls-analysis/src/HLSAnalysis/API.hs"]["inbound"] == [
+        "hls-analysis/app/Main.hs"
+    ]
+
+
+def test_module_maps_keep_python_external_imports_out_of_go_neighbors(tmp_path):
+    (tmp_path / "rlm").mkdir()
+    (tmp_path / "rlm" / "requirements.txt").write_text(
+        "anthropic\nopenai\n",
+        encoding="utf-8",
+    )
+    inventory = {
+        "rlm/gateway.py": {
+            "language": "python",
+            "imports": [
+                {"module": "anthropic", "name": "anthropic"},
+                {"module": "openai", "name": "openai"},
+            ],
+            "classes": [],
+            "functions": [],
+        },
+        "internal/llm/anthropic.go": {
+            "language": "go",
+            "imports": [],
+            "classes": [],
+            "functions": [],
+        },
+        "internal/llm/openai.go": {
+            "language": "go",
+            "imports": [],
+            "classes": [],
+            "functions": [],
+        },
+    }
+
+    result = build_module_dependency_maps(
+        analyze_dependencies(inventory, str(tmp_path))
+    )
+
+    assert result["rlm/gateway.py"]["outbound"] == []
+    assert result["rlm/gateway.py"]["external"] == {
+        "python": {"used_count": 2, "undeclared_count": 0}
+    }
 
 
 def test_module_maps_collapse_large_neighborhoods_to_packages_with_overflow():

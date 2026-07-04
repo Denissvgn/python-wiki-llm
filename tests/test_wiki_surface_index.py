@@ -93,6 +93,7 @@ def test_build_surface_index_describes_pages_links_counts_and_flows(tmp_path):
         "entities": 1,
         "modules": 1,
         "workflows": 0,
+        "guides": 0,
         "flows": 1,
         "infrastructure": 1,
         "dependencies": 1,

@@ -23,6 +23,8 @@ class TestInitCreatesStructure:
         assert (base / "entities").exists()
         assert (base / "modules").exists()
         assert (base / "workflows").exists()
+        assert (base / "guides").exists()
+        assert (base / "guides" / ".gitkeep").exists()
         assert (base / "flows").exists()
         assert (base / "flows" / ".gitkeep").exists()
         assert (base / "infrastructure").exists()
@@ -36,7 +38,9 @@ class TestInitCreatesStructure:
         base = Path("docs/llm_wiki")
         assert (base / "index.md").exists()
         assert (base / "log.md").exists()
-        assert "Index" in (base / "index.md").read_text(encoding="utf-8")
+        index = (base / "index.md").read_text(encoding="utf-8")
+        assert "Index" in index
+        assert "## Guides" in index
 
 
 class TestInitAgentSchemas:

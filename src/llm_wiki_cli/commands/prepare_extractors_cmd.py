@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from ..config import validate_path
+from ..config import validate_source_root
 from ..services.extractor_helpers import (
     SUPPORTED_HELPERS,
     HelperPrepareResult,
@@ -43,8 +43,13 @@ def run(args) -> None:
     src_dir: str = getattr(args, "src_dir", ".")
     cache_dir: str | None = getattr(args, "cache_dir", None)
     selected_languages = _dedupe_languages(getattr(args, "language", None))
+    allow_external_src = bool(getattr(args, "allow_external_src", False))
 
-    validate_path(src_dir, "--src-dir")
+    src_root = validate_source_root(
+        src_dir, "--src-dir", allow_external=allow_external_src
+    )
+    if allow_external_src:
+        src_dir = str(src_root)
     cache_root = resolve_helper_cache_root(src_dir, cache_dir)
     if cache_root is None:
         print(
@@ -55,7 +60,10 @@ def run(args) -> None:
 
     languages = selected_languages or _languages_from_snapshot(src_dir)
     if not languages:
-        print("No TypeScript, Go, or Rust source files found. Nothing to prepare.")
+        print(
+            "No TypeScript/JavaScript, Go, Rust, or Haskell source files found. "
+            "Nothing to prepare."
+        )
         return
 
     print(f"Preparing extractor helpers in: {Path(cache_root)}")

@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli import cli
+from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd, sync_cmd
 from llm_wiki_cli.commands.sync_cmd import (
     MANIFEST_FILENAME,
@@ -47,6 +48,7 @@ def _make_sync_args(**kwargs):
 def _body_line_count(function) -> int:
     source = textwrap.dedent(inspect.getsource(function))
     function_node = ast.parse(source).body[0]
+    assert isinstance(function_node, ast.FunctionDef)
     body = [
         stmt
         for stmt in function_node.body
@@ -57,7 +59,7 @@ def _body_line_count(function) -> int:
         )
     ]
     first_body_line = min(stmt.lineno for stmt in body)
-    last_body_line = max(stmt.end_lineno for stmt in body)
+    last_body_line = max(stmt.end_lineno or stmt.lineno for stmt in body)
     return last_body_line - first_body_line + 1
 
 
@@ -233,6 +235,36 @@ class TestSyncSurfaceIndex:
         assert data["schema_version"] == "llm-wiki-surface-index/v1"
         assert data["counts"]["by_kind"]["entities"] == 1
         assert "Wiki is up to date." in capsys.readouterr().out
+
+    def test_sync_links_new_guide_page_without_source_changes(
+        self, bootstrapped_project, capsys
+    ):
+        """Regression (2026-07-04): found while dogfooding the
+        ``onboarding-guide`` skill. Adding a guide page touches no source
+        file, so ``_compute_sync_diff`` sees no changes and
+        ``_finish_if_no_changes`` used to return before index.md's
+        ``## Guides`` section was ever regenerated — the new guide stayed
+        permanently unlinked (and permanently flagged ``orphan_pages`` by
+        lint) until some unrelated source change next triggered a real sync.
+        The guides surface contract promises sync always keeps guide links
+        current; this must hold on the no-op path too.
+        """
+        proj, wiki_dir = bootstrapped_project
+        capsys.readouterr()
+
+        guides_dir = wiki_dir / "guides"
+        guides_dir.mkdir(parents=True, exist_ok=True)
+        (guides_dir / "operator-onboarding.md").write_text(
+            "# Operator onboarding\n", encoding="utf-8"
+        )
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
+        out = capsys.readouterr().out
+        assert "Wiki is up to date." in out
+        index = (wiki_dir / "index.md").read_text(encoding="utf-8")
+        assert "| Guides | 1 | [Open section](#guides) |" in index
+        assert "[Operator onboarding](guides/operator-onboarding.md)" in index
 
 
 class TestSeedManifest:
@@ -422,6 +454,8 @@ class TestSyncInventoryRuntime:
 
         def fake_inventory(*args, **kwargs):
             seen["cache_options"] = kwargs["cache_options"]
+            seen["helper_cache_dir"] = kwargs["helper_cache_dir"]
+            seen["include_tests"] = kwargs["include_tests"]
             seen["parallel_jobs"] = kwargs["parallel_jobs"]
             return InventoryResult(
                 {},
@@ -441,6 +475,8 @@ class TestSyncInventoryRuntime:
                     rebuild_cache=True,
                     cache_stats=True,
                     cache_dir=str(tmp_path / "cache"),
+                    helper_cache_dir=str(tmp_path / "helper-cache"),
+                    include_tests=["go"],
                     jobs=2,
                 )
             )
@@ -452,6 +488,291 @@ class TestSyncInventoryRuntime:
         assert seen["cache_options"].rebuild is True
         assert seen["cache_options"].stats_enabled is True
         assert seen["cache_options"].cache_dir == str(tmp_path / "cache")
+        assert seen["helper_cache_dir"] == str(tmp_path / "helper-cache")
+        assert seen["include_tests"] == ["go"]
+
+    def test_include_tests_go_creates_go_test_module_and_manifest_entry(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        wiki_dir = tmp_path / "docs" / "llm_wiki"
+        self._write_empty_manifest(wiki_dir)
+        (tmp_path / "main_test.go").write_text(
+            "package main\n\nfunc TestMain() {}\n", encoding="utf-8"
+        )
+        seen = {}
+        real_build_source_snapshot = sync_cmd.build_source_snapshot
+
+        def fake_snapshot(src_dir, **kwargs):
+            seen["snapshot_include_tests"] = kwargs.get("include_tests")
+            return real_build_source_snapshot(src_dir)
+
+        def fake_inventory(src_dir, *args, **kwargs):
+            seen["inventory_include_tests"] = kwargs["include_tests"]
+            return InventoryResult(
+                {
+                    "main_test.go": {
+                        "classes": [],
+                        "functions": [{"name": "TestMain", "line": 3}],
+                        "language": "go",
+                    }
+                },
+                {"go": ExtractorStatus("go", "ok", 1)},
+                InventoryCacheStats(enabled=False, status="disabled"),
+            )
+
+        monkeypatch.setattr(sync_cmd, "build_source_snapshot", fake_snapshot)
+        monkeypatch.setattr(sync_cmd, "get_inventory_result", fake_inventory)
+        monkeypatch.chdir(tmp_path)
+
+        sync_cmd.run(
+            _make_sync_args(
+                src_dir=str(tmp_path),
+                wiki_dir=str(wiki_dir),
+                include_tests=["go"],
+            )
+        )
+
+        assert set(seen["snapshot_include_tests"]) == {"go"}
+        assert set(seen["inventory_include_tests"]) == {"go"}
+        assert (wiki_dir / "modules" / "main_test.md").exists()
+        manifest = SyncManifest.load(wiki_dir)
+        assert "main_test.go" in manifest.sources
+        assert manifest.sources["main_test.go"]["module_page"] == "main_test"
+
+    def test_haskell_inventory_creates_module_page_and_manifest_entry(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        wiki_dir = tmp_path / "docs" / "llm_wiki"
+        self._write_empty_manifest(wiki_dir)
+        (tmp_path / "Main.hs").write_text("module Main where\n", encoding="utf-8")
+        seen = {}
+        real_build_source_snapshot = sync_cmd.build_source_snapshot
+
+        def fake_snapshot(src_dir, **kwargs):
+            seen["snapshot_paths"] = real_build_source_snapshot(
+                src_dir, **kwargs
+            ).language_paths("haskell")
+            return real_build_source_snapshot(src_dir, **kwargs)
+
+        def fake_inventory(src_dir, *args, **kwargs):
+            seen["helper_cache_dir"] = kwargs["helper_cache_dir"]
+            return InventoryResult(
+                {
+                    "Main.hs": {
+                        "classes": [],
+                        "functions": [{"name": "main", "line": 1}],
+                        "language": "haskell",
+                    }
+                },
+                {"haskell": ExtractorStatus("haskell", "ok", 1)},
+                InventoryCacheStats(enabled=False, status="disabled"),
+            )
+
+        monkeypatch.setattr(sync_cmd, "build_source_snapshot", fake_snapshot)
+        monkeypatch.setattr(sync_cmd, "get_inventory_result", fake_inventory)
+        monkeypatch.chdir(tmp_path)
+
+        sync_cmd.run(
+            _make_sync_args(
+                src_dir=str(tmp_path),
+                wiki_dir=str(wiki_dir),
+                helper_cache_dir=str(tmp_path / "helper-cache"),
+            )
+        )
+
+        assert seen["snapshot_paths"] == ["Main.hs"]
+        assert seen["helper_cache_dir"] == str(tmp_path / "helper-cache")
+        assert (wiki_dir / "modules" / "Main.md").exists()
+        manifest = SyncManifest.load(wiki_dir)
+        assert manifest.sources["Main.hs"]["language"] == "haskell"
+        assert manifest.sources["Main.hs"]["module_page"] == "Main"
+
+    def test_changed_haskell_inventory_regenerates_module_page(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        wiki_dir = tmp_path / "docs" / "llm_wiki"
+        (tmp_path / "API.hs").write_text(
+            "module API where\napiName :: Text\n", encoding="utf-8"
+        )
+        state = {"signature": "Text"}
+
+        def fake_inventory(src_dir, *args, **kwargs):
+            return InventoryResult(
+                {
+                    "API.hs": {
+                        "language": "haskell",
+                        "module": "API",
+                        "imports": [],
+                        "classes": [],
+                        "functions": [
+                            {
+                                "name": "apiName",
+                                "kind": "signature",
+                                "signature": state["signature"],
+                                "line": 2,
+                            }
+                        ],
+                    }
+                },
+                {"haskell": ExtractorStatus("haskell", "ok", 1)},
+                InventoryCacheStats(enabled=False, status="disabled"),
+            )
+
+        monkeypatch.setattr(bootstrap_cmd, "get_inventory_result", fake_inventory)
+        monkeypatch.setattr(sync_cmd, "get_inventory_result", fake_inventory)
+        monkeypatch.setattr(bootstrap_cmd, "get_docker_inventory", lambda *a, **k: {})
+        monkeypatch.chdir(tmp_path)
+
+        bootstrap_cmd.run(
+            _make_bootstrap_args(
+                src_dir=str(tmp_path),
+                wiki_dir=str(wiki_dir),
+                skip_dependencies=True,
+                skip_flows=True,
+            )
+        )
+        module_path = wiki_dir / "modules" / "API.md"
+        assert "| `apiName` | Signature | `Text` | 2 | — |" in module_path.read_text(
+            encoding="utf-8"
+        )
+
+        state["signature"] = "String"
+        (tmp_path / "API.hs").write_text(
+            "module API where\napiName :: String\n", encoding="utf-8"
+        )
+        sync_cmd.run(_make_sync_args(src_dir=str(tmp_path), wiki_dir=str(wiki_dir)))
+
+        assert "| `apiName` | Signature | `String` | 2 | — |" in (
+            module_path.read_text(encoding="utf-8")
+        )
+
+    def test_haskell_import_graph_change_refreshes_unchanged_module_local_map(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        wiki_dir = tmp_path / "docs" / "llm_wiki"
+        (tmp_path / "hls-analysis" / "app").mkdir(parents=True)
+        (tmp_path / "hls-analysis" / "src" / "HLSAnalysis").mkdir(parents=True)
+        (tmp_path / "hls-analysis" / "app" / "Main.hs").write_text(
+            "module Main where\nimport HLSAnalysis.API\n", encoding="utf-8"
+        )
+        (tmp_path / "hls-analysis" / "src" / "HLSAnalysis" / "API.hs").write_text(
+            "module HLSAnalysis.API where\n", encoding="utf-8"
+        )
+        state = {"imports_api": True}
+
+        def fake_inventory(src_dir, *args, **kwargs):
+            imports = []
+            if state["imports_api"]:
+                imports.append(
+                    {
+                        "module": "HLSAnalysis.API",
+                        "qualified": False,
+                        "alias": None,
+                        "line": 2,
+                    }
+                )
+            return InventoryResult(
+                {
+                    "hls-analysis/app/Main.hs": {
+                        "language": "haskell",
+                        "module": "Main",
+                        "imports": imports,
+                        "classes": [],
+                        "functions": [{"name": "main", "kind": "value", "line": 3}],
+                    },
+                    "hls-analysis/src/HLSAnalysis/API.hs": {
+                        "language": "haskell",
+                        "module": "HLSAnalysis.API",
+                        "imports": [],
+                        "classes": [{"name": "User", "kind": "data", "line": 3}],
+                        "functions": [],
+                    },
+                },
+                {"haskell": ExtractorStatus("haskell", "ok", 2)},
+                InventoryCacheStats(enabled=False, status="disabled"),
+            )
+
+        monkeypatch.setattr(bootstrap_cmd, "get_inventory_result", fake_inventory)
+        monkeypatch.setattr(sync_cmd, "get_inventory_result", fake_inventory)
+        monkeypatch.setattr(bootstrap_cmd, "get_docker_inventory", lambda *a, **k: {})
+        monkeypatch.chdir(tmp_path)
+
+        bootstrap_cmd.run(
+            _make_bootstrap_args(
+                src_dir=str(tmp_path),
+                wiki_dir=str(wiki_dir),
+                skip_flows=True,
+            )
+        )
+        api_module = wiki_dir / "modules" / "API.md"
+        assert "[Main](../modules/Main.md)" in api_module.read_text(encoding="utf-8")
+
+        state["imports_api"] = False
+        (tmp_path / "hls-analysis" / "app" / "Main.hs").write_text(
+            "module Main where\n", encoding="utf-8"
+        )
+        sync_cmd.run(_make_sync_args(src_dir=str(tmp_path), wiki_dir=str(wiki_dir)))
+
+        captured = capsys.readouterr()
+        updated = api_module.read_text(encoding="utf-8")
+        local_map = updated.split("## Local dependency map", 1)[1]
+        assert "[Main](../modules/Main.md)" not in local_map
+        assert "No internal module dependencies detected" in local_map
+        assert "UPDATE module local dependency map: API" in captured.out
+
+    def test_allow_external_src_reaches_inventory_for_external_source(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        runner = tmp_path / "runner"
+        external = tmp_path / "external"
+        wiki_dir = runner / "wiki"
+        runner.mkdir()
+        external.mkdir()
+        wiki_dir.mkdir()
+        (wiki_dir / "index.md").write_text("# Wiki\n", encoding="utf-8")
+        seen = {}
+
+        def fake_inventory(src_dir, *args, **kwargs):
+            seen["src_dir"] = src_dir
+            return InventoryResult(
+                {},
+                {"python": ExtractorStatus("python", "skipped", 0)},
+                InventoryCacheStats(enabled=False, status="disabled"),
+            )
+
+        monkeypatch.setattr(sync_cmd, "get_inventory_result", fake_inventory)
+        monkeypatch.chdir(runner)
+
+        sync_cmd.run(
+            _make_sync_args(
+                src_dir=os.path.relpath(external, runner),
+                wiki_dir="wiki",
+                allow_external_src=True,
+            )
+        )
+
+        assert Path(seen["src_dir"]) == external.resolve()
+
+    def test_external_source_without_opt_in_still_fails_closed(
+        self, tmp_path, monkeypatch
+    ):
+        runner = tmp_path / "runner"
+        external = tmp_path / "external"
+        runner.mkdir()
+        external.mkdir()
+        monkeypatch.chdir(runner)
+
+        with pytest.raises(PathValidationError) as exc_info:
+            sync_cmd.run(
+                _make_sync_args(
+                    src_dir=os.path.relpath(external, runner),
+                    wiki_dir="wiki",
+                )
+            )
+
+        message = str(exc_info.value)
+        assert "--src-dir" in message
+        assert "outside the project root" in message
 
     def test_cli_sync_jobs_auto_resolves_positive_count(self, monkeypatch):
         seen = {}
@@ -464,6 +785,26 @@ class TestSyncInventoryRuntime:
         cli.main()
 
         assert seen["jobs"] == 4
+
+    def test_cli_sync_allow_external_src_parses_with_jobs_auto(self, monkeypatch):
+        seen = {}
+        monkeypatch.setattr(cli.os, "cpu_count", lambda: 4)
+        monkeypatch.setattr(
+            cli.sync_cmd,
+            "run",
+            lambda args: seen.update(
+                allow_external_src=args.allow_external_src,
+                jobs=args.jobs,
+            ),
+        )
+        monkeypatch.setattr(
+            "sys.argv",
+            ["llm-wiki", "sync", "--allow-external-src", "--jobs", "auto"],
+        )
+
+        cli.main()
+
+        assert seen == {"allow_external_src": True, "jobs": 4}
 
     def test_cli_sync_force_parses(self, monkeypatch):
         seen = {}
@@ -1558,6 +1899,24 @@ def _write_manifest_from_bootstrap_from_disk(wiki_dir: Path, proj: Path) -> None
 class TestDiffOutput:
     """sync prints a concise per-page summary to stdout."""
 
+    def test_sync_reports_missing_haskell_helper_failure(
+        self, bootstrapped_project, capsys
+    ):
+        proj, wiki_dir = bootstrapped_project
+        hls_app = proj / "hls-analysis" / "app"
+        hls_app.mkdir(parents=True)
+        (hls_app / "Main.hs").write_text("module Main where\n", encoding="utf-8")
+
+        with pytest.raises(SystemExit) as exc_info:
+            sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
+        captured = capsys.readouterr()
+        assert exc_info.value.code == 1
+        assert "Error: haskell extraction failed" in captured.err
+        assert "prepare-extractors --language haskell" in captured.err
+        assert "Unsupported sources detected" not in captured.out
+        assert "Wiki is up to date." not in captured.out
+
     def test_summary_line_on_completion(self, bootstrapped_project, capsys):
         proj, wiki_dir = bootstrapped_project
         # Trigger a real change
@@ -1618,6 +1977,22 @@ class TestSyncFlowReindex:
         assert "[api-run](flows/api-run.md)" in index
         assert "[process-cli](flows/process-cli.md)" in index
         assert "## Dependency Architecture" not in index
+
+    def test_rebuild_index_includes_existing_guide_pages(self, tmp_path):
+        wiki = tmp_path / "wiki"
+        (wiki / "guides").mkdir(parents=True)
+        (wiki / "guides" / "operator-onboarding.md").write_text(
+            "# Operator onboarding\n",
+            encoding="utf-8",
+        )
+        (wiki / "log.md").write_text("# Architectural Log\n", encoding="utf-8")
+
+        sync_cmd._rebuild_index(wiki, self._inventory(), str(tmp_path))
+
+        index = (wiki / "index.md").read_text(encoding="utf-8")
+        assert "| Guides | 1 | [Open section](#guides) |" in index
+        assert "## Guides" in index
+        assert "[Operator onboarding](guides/operator-onboarding.md)" in index
 
     def test_rebuild_index_links_existing_architecture_pages(self, tmp_path):
         wiki = tmp_path / "wiki"

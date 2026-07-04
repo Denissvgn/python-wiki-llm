@@ -58,7 +58,7 @@ def run(args):
     if not index_path.exists():
         write_md(
             index_path,
-            "# LLM Wiki Index\n\nCatalog of project modules and entities.\n\n## Entities\n\n## Modules\n\n## Workflows\n\n## Infrastructure\n",
+            "# LLM Wiki Index\n\nCatalog of project modules and entities.\n\n## Entities\n\n## Modules\n\n## Workflows\n\n## Guides\n\n## Infrastructure\n",
         )
 
     log_path = base_dir / "log.md"

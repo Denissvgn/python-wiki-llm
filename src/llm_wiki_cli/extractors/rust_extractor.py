@@ -17,7 +17,11 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from .common import discover_source_files, filter_bundled_inventory
+from .common import (
+    chunk_source_files_for_cli,
+    discover_source_files,
+    filter_bundled_inventory,
+)
 from ..services.extractor_helpers import get_prepared_binary, missing_helper_message
 
 _RUST_SCRIPTS_DIR = Path(__file__).parent / "rust_scripts"
@@ -61,12 +65,7 @@ class RustExtractor:
         if helper_binary is None:
             return {}
 
-        cmd = self._build_command(request, source_files, helper_binary)
-        result = self._run_helper(cmd, helper_binary)
-        if result is None:
-            return {}
-
-        inventory = self._load_inventory(result)
+        inventory = self._load_chunked_inventory(request, source_files, helper_binary)
         if not inventory:
             return {}
 
@@ -104,6 +103,24 @@ class RustExtractor:
             )
             print(f"llm-wiki Rust extractor: {self.last_error}", file=sys.stderr)
         return helper_binary
+
+    def _load_chunked_inventory(
+        self,
+        request: RustExtractionRequest,
+        source_files: list[str],
+        helper_binary: Path,
+    ) -> dict:
+        inventory: dict = {}
+        for chunk in chunk_source_files_for_cli(source_files):
+            cmd = self._build_command(request, chunk, helper_binary)
+            result = self._run_helper(cmd, helper_binary)
+            if result is None:
+                return {}
+            chunk_inventory = self._load_inventory(result)
+            if self.last_error:
+                return {}
+            inventory.update(chunk_inventory)
+        return inventory
 
     def _build_command(
         self,

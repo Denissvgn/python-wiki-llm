@@ -29,6 +29,217 @@ def test_indexed_resolver_handles_common_import_shapes():
     }
 
 
+def test_generic_resolver_scopes_python_imports_to_python_modules():
+    inventory = {
+        "rlm/gateway.py": {"language": "python"},
+        "rlm/openai.py": {"language": "python"},
+        "internal/llm/openai.go": {"language": "go"},
+        "internal/llm/anthropic.go": {"language": "go"},
+    }
+    resolver = build_module_path_resolver(inventory)
+
+    assert resolver.candidates("openai", "rlm/gateway.py") == {"rlm/openai.py"}
+    assert resolver.candidates("anthropic", "rlm/gateway.py") == set()
+
+
+def test_generic_resolver_groups_typescript_and_javascript_without_other_languages():
+    inventory = {
+        "frontend/src/App.tsx": {"language": "typescript"},
+        "frontend/src/api.js": {"language": "javascript"},
+        "server/api.py": {"language": "python"},
+        "internal/api.go": {"language": "go"},
+    }
+    resolver = build_module_path_resolver(inventory)
+
+    assert resolver.candidates("api", "frontend/src/App.tsx") == {"frontend/src/api.js"}
+
+
+def test_go_resolver_uses_module_root_without_stdlib_stem_collision(tmp_path):
+    (tmp_path / "go.mod").write_text(
+        "module github.com/charmbracelet/teamcrush\n\ngo 1.23\n",
+        encoding="utf-8",
+    )
+    inventory = {
+        "cmd/teamcrush/main.go": {"language": "go"},
+        "internal/agents/agent.go": {"language": "go"},
+        "internal/orchestrator/context.go": {"language": "go"},
+    }
+    resolver = build_module_path_resolver(inventory, project_root=str(tmp_path))
+
+    assert resolver.candidates(
+        "github.com/charmbracelet/teamcrush/internal/agents",
+        "cmd/teamcrush/main.go",
+    ) == {"internal/agents/agent.go"}
+    assert resolver.candidates("context", "cmd/teamcrush/main.go") == set()
+
+
+def test_go_resolver_uses_nearest_nested_module_root(tmp_path):
+    nested = tmp_path / "libs" / "identity_client_go"
+    nested.mkdir(parents=True)
+    (nested / "go.mod").write_text(
+        "module github.com/traid-platform/identityclient\n\ngo 1.21\n",
+        encoding="utf-8",
+    )
+    inventory = {
+        "libs/identity_client_go/example/main.go": {"language": "go"},
+        "libs/identity_client_go/identity_client.go": {"language": "go"},
+        "libs/identity_client_go/example/context.go": {"language": "go"},
+    }
+    resolver = build_module_path_resolver(inventory, project_root=str(tmp_path))
+
+    assert resolver.candidates(
+        "github.com/traid-platform/identityclient",
+        "libs/identity_client_go/example/main.go",
+    ) == {"libs/identity_client_go/identity_client.go"}
+    assert (
+        resolver.candidates(
+            "context",
+            "libs/identity_client_go/example/main.go",
+        )
+        == set()
+    )
+
+
+def test_haskell_resolver_uses_declared_module_under_nested_root():
+    inventory = {
+        "hls-analysis/app/Main.hs": {
+            "language": "haskell",
+            "module": "Main",
+        },
+        "hls-analysis/src/HLSAnalysis/API.hs": {
+            "language": "haskell",
+            "module": "HLSAnalysis.API",
+        },
+    }
+    resolver = build_module_path_resolver(inventory)
+
+    assert resolver.candidates("HLSAnalysis.API", "hls-analysis/app/Main.hs") == {
+        "hls-analysis/src/HLSAnalysis/API.hs"
+    }
+
+
+def test_haskell_resolver_declared_module_matches_alternate_roots():
+    inventory = {
+        "app/Main.hs": {
+            "language": "haskell",
+            "module": "Main",
+        },
+        "src/HLSAnalysis/API.hs": {
+            "language": "haskell",
+            "module": "HLSAnalysis.API",
+        },
+        "lib/HLSAnalysis/API.hs": {
+            "language": "haskell",
+            "module": "HLSAnalysis.API",
+        },
+    }
+    resolver = build_module_path_resolver(inventory)
+
+    assert resolver.candidates("HLSAnalysis.API", "app/Main.hs") == {
+        "src/HLSAnalysis/API.hs",
+        "lib/HLSAnalysis/API.hs",
+    }
+
+
+def test_haskell_resolver_normalizes_declared_modules_without_changing_case():
+    inventory = {
+        "app/Main.hs": {
+            "language": "haskell",
+            "module": "Main",
+        },
+        "src/HLSAnalysis/API.hs": {
+            "language": "haskell",
+            "module": '  "HLSAnalysis.API"  ',
+        },
+    }
+    resolver = build_module_path_resolver(inventory)
+
+    assert resolver.candidates("  'HLSAnalysis.API'  ", "app/Main.hs") == {
+        "src/HLSAnalysis/API.hs"
+    }
+    assert resolver.candidates("hlsanalysis.api", "app/Main.hs") == set()
+
+
+def test_haskell_resolver_does_not_fallback_to_filepath_for_external_imports():
+    inventory = {
+        "app/Main.hs": {
+            "language": "haskell",
+            "module": "Main",
+        },
+        "Data/Text.hs": {
+            "language": "haskell",
+        },
+        "Control/Monad.hs": {
+            "language": "haskell",
+        },
+        "Test/Hspec.hs": {
+            "language": "haskell",
+        },
+    }
+    resolver = build_module_path_resolver(inventory)
+
+    assert resolver.candidates("Data.Text", "app/Main.hs") == set()
+    assert resolver.candidates("Control.Monad", "app/Main.hs") == set()
+    assert resolver.candidates("Test.Hspec", "app/Main.hs") == set()
+
+
+def test_haskell_resolver_ignores_entries_without_declared_module_for_bare_import():
+    inventory = {
+        "app/Main.hs": {
+            "language": "haskell",
+            "module": "Main",
+        },
+        "lib/Settings.hs": {
+            "language": "haskell",
+        },
+    }
+    resolver = build_module_path_resolver(inventory)
+
+    assert resolver.candidates("Settings", "app/Main.hs") == set()
+
+
+def test_typescript_resolver_uses_nearest_tsconfig_paths(tmp_path):
+    frontend = tmp_path / "frontend"
+    (frontend / "src" / "hooks").mkdir(parents=True)
+    (frontend / "src" / "components" / "projects").mkdir(parents=True)
+    (frontend / "tsconfig.json").write_text(
+        """
+        {
+          "compilerOptions": {
+            "baseUrl": ".",
+            "paths": {
+              "@/*": ["./src/*"],
+              "@/components/*": ["./src/components/*"],
+              "@/hooks/*": ["./src/hooks/*"]
+            }
+          }
+        }
+        """,
+        encoding="utf-8",
+    )
+    inventory = {
+        "frontend/src/App.tsx": {"language": "typescript"},
+        "frontend/src/hooks/useAuth.ts": {"language": "typescript"},
+        "frontend/src/components/projects/index.ts": {"language": "typescript"},
+        "other/src/hooks/useAuth.ts": {"language": "typescript"},
+    }
+    resolver = build_module_path_resolver(inventory, project_root=tmp_path)
+
+    assert resolver.candidates("@/hooks/useAuth", "frontend/src/App.tsx") == {
+        "frontend/src/hooks/useAuth.ts"
+    }
+    assert resolver.candidates("@/components/projects", "frontend/src/App.tsx") == {
+        "frontend/src/components/projects/index.ts"
+    }
+    assert resolver.candidates("@/hooks/useAuth", "other/src/page.tsx") == set()
+    assert (
+        resolver.typescript_path_alias_matched(
+            "@tanstack/react-query", "frontend/src/App.tsx"
+        )
+        is False
+    )
+
+
 def test_target_scoped_relationships_match_full_relationships_for_targets():
     inventory = {
         "models.py": {

@@ -21,6 +21,7 @@ from .commands import (
     release_cmd,
     review_cmd,
     site_cmd,
+    skills_cmd,
     status_cmd,
     sync_cmd,
     team_cmd,
@@ -54,6 +55,25 @@ def _jobs_value(value: str) -> int:
     return parsed
 
 
+def _add_helper_cache_argument(parser):
+    parser.add_argument(
+        "--helper-cache-dir",
+        default=None,
+        metavar="PATH",
+        help=HELPER_CACHE_HELP,
+    )
+
+
+def _add_include_tests_argument(parser):
+    parser.add_argument(
+        "--include-tests",
+        action="append",
+        choices=INCLUDE_TEST_LANGUAGES,
+        default=None,
+        help=INCLUDE_TESTS_HELP,
+    )
+
+
 _COMMAND_MODULES = {
     "init": init_cmd,
     "extract": extract_cmd,
@@ -75,12 +95,21 @@ _COMMAND_MODULES = {
     "mcp": mcp_cmd,
     "obsidian": obsidian_cmd,
     "site": site_cmd,
+    "skills": skills_cmd,
     "release": release_cmd,
     "upgrade": upgrade_cmd,
     "sync": sync_cmd,
     "migrate": migrate_cmd,
     "context": context_cmd,
 }
+
+HELPER_CACHE_HELP = (
+    "Directory for prepared TypeScript/JavaScript/Go/Rust/Haskell extractor helpers"
+)
+INCLUDE_TEST_LANGUAGES = ("go",)
+INCLUDE_TESTS_HELP = (
+    "Include language-specific test files in extraction; may be repeated"
+)
 
 
 def _build_parser():
@@ -114,6 +143,7 @@ def _register_commands(subparsers):
     _add_mcp_command(subparsers)
     _add_obsidian_command(subparsers)
     _add_site_command(subparsers)
+    _add_skills_command(subparsers)
     _add_release_command(subparsers)
     _add_upgrade_command(subparsers)
     _add_sync_command(subparsers)
@@ -183,6 +213,8 @@ def _add_extract_command(subparsers):
         action="store_true",
         help="Include all .py files even if they have no extractable components",
     )
+    _add_include_tests_argument(extract_parser)
+    _add_helper_cache_argument(extract_parser)
     extract_parser.add_argument(
         "--output", metavar="PATH", help="Write JSON output to a file instead of stdout"
     )
@@ -207,6 +239,11 @@ def _add_lint_command(subparsers):
     )
     lint_parser.add_argument(
         "--src-dir", default=".", help="Source directory to cross-reference against"
+    )
+    lint_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
     )
     lint_parser.add_argument(
         "--strict",
@@ -239,6 +276,8 @@ def _add_lint_command(subparsers):
         metavar="PATH",
         help="Directory for llm-wiki-inventory-cache.json",
     )
+    _add_helper_cache_argument(lint_parser)
+    _add_include_tests_argument(lint_parser)
     lint_parser.add_argument(
         "--jobs",
         type=_jobs_value,
@@ -251,10 +290,15 @@ def _add_lint_command(subparsers):
 def _add_prepare_extractors_command(subparsers):
     prepare_parser = subparsers.add_parser(
         "prepare-extractors",
-        help="Prepare TypeScript, Go, and Rust extractor helpers",
+        help="Prepare TypeScript/JavaScript, Go, Rust, and Haskell extractor helpers",
     )
     prepare_parser.add_argument(
         "--src-dir", default=".", help="Source directory to inspect"
+    )
+    prepare_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
     )
     prepare_parser.add_argument(
         "--cache-dir",
@@ -265,7 +309,7 @@ def _add_prepare_extractors_command(subparsers):
     prepare_parser.add_argument(
         "--language",
         action="append",
-        choices=["typescript", "go", "rust"],
+        choices=["typescript", "go", "rust", "haskell"],
         help="Helper language to prepare; may be repeated",
     )
 
@@ -275,6 +319,11 @@ def _add_ci_check_command(subparsers):
         "ci-check", help="Run strict wiki validation and write a CI report"
     )
     ci_parser.add_argument("--src-dir", default=".", help="Source directory to scan")
+    ci_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
     ci_parser.add_argument(
         "--wiki-dir",
         default=DEFAULT_WIKI_DIR,
@@ -291,6 +340,8 @@ def _add_ci_check_command(subparsers):
         default=".git/llm-wiki-ci-report.md",
         help="Markdown report path (default: .git/llm-wiki-ci-report.md)",
     )
+    _add_helper_cache_argument(ci_parser)
+    _add_include_tests_argument(ci_parser)
     ci_parser.add_argument(
         "--jobs",
         type=_jobs_value,
@@ -383,6 +434,11 @@ def _add_team_command(subparsers):
         "check", help="Validate team config and conventions"
     )
     team_check.add_argument("--src-dir", default=".", help="Source directory to scan")
+    team_check.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
     team_check.add_argument(
         "--wiki-dir", default=DEFAULT_WIKI_DIR, help="Wiki directory to validate"
     )
@@ -525,6 +581,8 @@ def _add_bootstrap_command(subparsers):
         action="store_true",
         help="Allow --src-dir to point outside the current working directory",
     )
+    _add_helper_cache_argument(bootstrap_parser)
+    _add_include_tests_argument(bootstrap_parser)
 
 
 def _add_bump_command(subparsers):
@@ -786,6 +844,7 @@ def _add_site_command(subparsers):
         default=DEFAULT_WIKI_DIR,
         help="Canonical wiki directory (default: docs/llm_wiki)",
     )
+    _add_site_hub_arguments(site_export)
     site_export.add_argument(
         "--out-dir",
         required=True,
@@ -821,6 +880,7 @@ def _add_site_command(subparsers):
         default=DEFAULT_WIKI_DIR,
         help="Canonical wiki directory (default: docs/llm_wiki)",
     )
+    _add_site_hub_arguments(site_check)
     site_check.add_argument(
         "--out-dir",
         required=True,
@@ -831,6 +891,77 @@ def _add_site_command(subparsers):
         choices=["text", "json"],
         default="text",
         help="Console output format (default: text)",
+    )
+
+
+def _add_site_hub_arguments(parser):
+    parser.add_argument(
+        "--wiki-root",
+        default=None,
+        help=(
+            "Directory containing source wiki subdirectories for hub export/check "
+            "(for example sources/code_wikis)"
+        ),
+    )
+    parser.add_argument(
+        "--wiki",
+        action="append",
+        default=None,
+        help=("Explicit source wiki directory for hub export/check; may be repeated"),
+    )
+
+
+def _add_skills_command(subparsers):
+    skills_parser = subparsers.add_parser(
+        "skills",
+        help="List, export, and install bundled agent skills (SKILL.md workflows)",
+    )
+    skills_sub = skills_parser.add_subparsers(dest="skills_action", required=True)
+    skills_list = skills_sub.add_parser("list", help="List bundled agent skills")
+    skills_list.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)",
+    )
+    skills_export = skills_sub.add_parser(
+        "export", help="Export bundled agent skills to a directory"
+    )
+    skills_export.add_argument(
+        "--dest",
+        required=True,
+        help="Destination skills directory (e.g. ~/.claude/skills)",
+    )
+    _add_skills_selection_arguments(skills_export)
+    skills_install = skills_sub.add_parser(
+        "install", help="Install bundled agent skills into this project"
+    )
+    skills_install.add_argument(
+        "--dest",
+        default=str(skills_cmd.DEFAULT_INSTALL_TARGET),
+        help="Project-relative skills directory (default: .claude/skills)",
+    )
+    _add_skills_selection_arguments(skills_install)
+
+
+def _add_skills_selection_arguments(parser):
+    parser.add_argument(
+        "--skill",
+        action="append",
+        default=None,
+        metavar="NAME",
+        help="Skill to include; may be repeated (default: all bundled skills)",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite existing skill files that differ from the bundled version",
+    )
+    parser.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)",
     )
 
 
@@ -897,6 +1028,11 @@ def _add_sync_command(subparsers):
         "--src-dir", default=".", help="Source directory to scan (default: .)"
     )
     sync_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    sync_parser.add_argument(
         "--wiki-dir",
         default=DEFAULT_WIKI_DIR,
         help="Wiki directory (default: docs/llm_wiki)",
@@ -922,6 +1058,8 @@ def _add_sync_command(subparsers):
         metavar="PATH",
         help="Directory for llm-wiki-inventory-cache.json",
     )
+    _add_helper_cache_argument(sync_parser)
+    _add_include_tests_argument(sync_parser)
     sync_parser.add_argument(
         "--jobs",
         type=_jobs_value,

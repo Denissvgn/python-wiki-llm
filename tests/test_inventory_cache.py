@@ -170,6 +170,13 @@ def test_cache_key_changes_for_gitignore_plugin_and_filter_inputs(
     assert key()["filter_fingerprint"] != base["filter_fingerprint"]
 
     monkeypatch.setattr(
+        inventory_cache,
+        "AGENT_WORKTREE_DIR_PATTERNS",
+        ((".claude", "worktrees"), (".other-agent", "worktrees")),
+    )
+    assert key()["filter_fingerprint"] != base["filter_fingerprint"]
+
+    monkeypatch.setattr(
         inventory_cache, "_implementation_fingerprint", lambda: "changed"
     )
     assert key()["extractor_fingerprint"] == "changed"

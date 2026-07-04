@@ -6,7 +6,7 @@ import hashlib
 import json
 import re
 from pathlib import Path
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Mapping, Optional, Sequence, Union
 from urllib.parse import unquote
 
 from .paths import normalize_source_path
@@ -33,8 +33,9 @@ def build_surface_index(
     *,
     src_dir: Union[str, Path] = ".",
     entity_page_cache: Optional[Mapping[tuple[str, str], str]] = None,
+    entity_occurrence_page_cache: Optional[Mapping[tuple[str, str, int], str]] = None,
     module_page_map: Optional[Mapping[str, str]] = None,
-    entry_points: Optional[list[Mapping[str, Any]]] = None,
+    entry_points: Optional[Sequence[Mapping[str, Any]]] = None,
 ) -> dict[str, Any]:
     """Build the deterministic wiki surface index payload."""
     wiki = Path(wiki_dir)
@@ -48,6 +49,7 @@ def build_surface_index(
             inventory,
             src_root,
             entity_page_cache=entity_page_cache,
+            entity_occurrence_page_cache=entity_occurrence_page_cache,
             module_page_map=module_page_map,
             entry_points=entry_points,
         ),
@@ -86,8 +88,9 @@ def write_surface_index(
     *,
     src_dir: Union[str, Path] = ".",
     entity_page_cache: Optional[Mapping[tuple[str, str], str]] = None,
+    entity_occurrence_page_cache: Optional[Mapping[tuple[str, str, int], str]] = None,
     module_page_map: Optional[Mapping[str, str]] = None,
-    entry_points: Optional[list[Mapping[str, Any]]] = None,
+    entry_points: Optional[Sequence[Mapping[str, Any]]] = None,
 ) -> tuple[Path, str]:
     """Write the surface index artifact and return ``(path, state)``."""
     wiki = Path(wiki_dir)
@@ -98,6 +101,7 @@ def write_surface_index(
         inventory,
         src_dir=src_dir,
         entity_page_cache=entity_page_cache,
+        entity_occurrence_page_cache=entity_occurrence_page_cache,
         module_page_map=module_page_map,
         entry_points=entry_points,
     )
@@ -155,8 +159,9 @@ def _source_maps(
     src_root: Path,
     *,
     entity_page_cache: Optional[Mapping[tuple[str, str], str]],
+    entity_occurrence_page_cache: Optional[Mapping[tuple[str, str, int], str]],
     module_page_map: Optional[Mapping[str, str]],
-    entry_points: Optional[list[Mapping[str, Any]]],
+    entry_points: Optional[Sequence[Mapping[str, Any]]],
 ) -> dict[tuple[PageKind, str], Optional[str]]:
     sources: dict[tuple[PageKind, str], Optional[str]] = {}
     for filepath, file_data in inventory.items():
@@ -166,14 +171,22 @@ def _source_maps(
             Path(str(filepath)).stem,
         )
         sources[(PageKind.MODULES, module_page)] = source_path
+        seen_names: dict[str, int] = {}
         for cls in file_data.get("classes", []):
             name = cls.get("name")
             if not name:
                 continue
+            name_text = str(name)
+            seen_names[name_text] = seen_names.get(name_text, 0) + 1
             entity_page = (entity_page_cache or {}).get(
-                (str(name), str(filepath)),
-                str(name),
+                (name_text, str(filepath)),
+                name_text,
             )
+            if entity_occurrence_page_cache is not None:
+                entity_page = entity_occurrence_page_cache.get(
+                    (name_text, str(filepath), seen_names[name_text]),
+                    entity_page,
+                )
             sources[(PageKind.ENTITIES, entity_page)] = source_path
 
     for entry in entry_points or []:
@@ -188,7 +201,7 @@ def _source_maps(
 
 def _flow_entries(
     pages: list[WikiSurfacePage],
-    entry_points: list[Mapping[str, Any]],
+    entry_points: Sequence[Mapping[str, Any]],
     src_root: Path,
 ) -> list[dict[str, Any]]:
     flow_pages = {page.page_id for page in pages if page.kind is PageKind.FLOWS}
@@ -216,7 +229,7 @@ def _flow_entries(
     return flows
 
 
-def _counts(page_entries: list[Mapping[str, Any]]) -> dict[str, Any]:
+def _counts(page_entries: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     by_kind = {entry.kind.value: 0 for entry in iter_page_kinds()}
     for page in page_entries:
         by_kind[str(page["kind"])] += 1

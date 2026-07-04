@@ -273,3 +273,20 @@ def test_relationship_summaries_are_deterministic_for_inventory_order():
     assert build_entity_relationship_summaries(
         first
     ) == build_entity_relationship_summaries(second)
+
+
+def test_haskell_declaration_kind_survives_relationship_summaries():
+    inventory = {
+        "hls-analysis/src/HLSAnalysis/API.hs": {
+            "language": "haskell",
+            "module": "HLSAnalysis.API",
+            "classes": [{"name": "User", "kind": "data", "line": 7}],
+            "functions": [],
+            "imports": [],
+        }
+    }
+
+    result = build_entity_relationship_summaries(inventory)
+    classes = _by_class(result)
+
+    assert classes[("User", "hls-analysis/src/HLSAnalysis/API.hs")]["kind"] == "data"

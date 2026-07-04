@@ -19,10 +19,10 @@ if TYPE_CHECKING:
     from .source_snapshot import SourceSnapshot
 
 try:  # Python 3.11+
-    import tomllib
+    import tomllib  # type: ignore[reportMissingImports]
 except ModuleNotFoundError:  # pragma: no cover - exercised on Python 3.9/3.10
     try:
-        import tomli as tomllib
+        import tomli as tomllib  # type: ignore[reportMissingImports]
     except ModuleNotFoundError:  # pragma: no cover - dependency missing in ad-hoc envs
         tomllib = None
 

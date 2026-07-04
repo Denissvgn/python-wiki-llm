@@ -16,8 +16,14 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Iterable
 
-from .common import discover_source_files, filter_bundled_inventory
+from .common import (
+    chunk_source_files_for_cli,
+    discover_source_files,
+    filter_bundled_inventory,
+    normalize_include_tests,
+)
 from ..services.extractor_helpers import get_prepared_binary, missing_helper_message
 
 _GO_SCRIPTS_DIR = Path(__file__).parent / "go_scripts"
@@ -32,6 +38,12 @@ class GoExtractionRequest:
     deep: bool = False
     source_files: list[str] | None = None
     helper_cache_dir: str | None = None
+    include_tests: Iterable[str] | None = None
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self, "include_tests", normalize_include_tests(self.include_tests)
+        )
 
 
 class GoExtractor:
@@ -61,12 +73,7 @@ class GoExtractor:
         if helper_binary is None:
             return {}
 
-        cmd = self._build_command(request, source_files, helper_binary)
-        result = self._run_helper(cmd, helper_binary)
-        if result is None:
-            return {}
-
-        inventory = self._load_inventory(result)
+        inventory = self._load_chunked_inventory(request, source_files, helper_binary)
         if not inventory:
             return {}
 
@@ -90,6 +97,7 @@ class GoExtractor:
             (".go",),
             only_files=request.only_files,
             language="go",
+            include_tests=request.include_tests,
         )
 
     def _prepared_helper(self, request: GoExtractionRequest) -> Path | None:
@@ -105,6 +113,24 @@ class GoExtractor:
             print(f"llm-wiki Go extractor: {self.last_error}", file=sys.stderr)
         return helper_binary
 
+    def _load_chunked_inventory(
+        self,
+        request: GoExtractionRequest,
+        source_files: list[str],
+        helper_binary: Path,
+    ) -> dict:
+        inventory: dict = {}
+        for chunk in chunk_source_files_for_cli(source_files):
+            cmd = self._build_command(request, chunk, helper_binary)
+            result = self._run_helper(cmd, helper_binary)
+            if result is None:
+                return {}
+            chunk_inventory = self._load_inventory(result)
+            if self.last_error:
+                return {}
+            inventory.update(chunk_inventory)
+        return inventory
+
     def _build_command(
         self,
         request: GoExtractionRequest,
@@ -119,6 +145,8 @@ class GoExtractor:
         cmd += ["--only-files", ",".join(source_files)]
         if request.deep:
             cmd.append("--deep")
+        if request.include_tests and "go" in request.include_tests:
+            cmd.append("--include-tests")
         return cmd
 
     def _run_helper(

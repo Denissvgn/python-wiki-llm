@@ -449,7 +449,7 @@ def _class_summary(
         },
         key=_sort_key,
     )
-    return {
+    summary = {
         "name": name,
         "file": filepath,
         "module": _module_name(filepath),
@@ -459,6 +459,9 @@ def _class_summary(
         "attributes": list(attributes)[:_RELATION_LIMIT],
         "references": references_by_class.get(key, []),
     }
+    if cls.get("kind"):
+        summary["kind"] = cls.get("kind")
+    return summary
 
 
 def _function_summary(

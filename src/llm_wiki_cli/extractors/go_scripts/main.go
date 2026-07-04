@@ -251,7 +251,7 @@ func receiverTypeName(fn *ast.FuncDecl) string {
 
 // ── File collection ───────────────────────────────────────────────────────────
 
-func collectGoFiles(root string) ([]string, error) {
+func collectGoFiles(root string, includeTests bool) ([]string, error) {
 	var files []string
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -264,7 +264,7 @@ func collectGoFiles(root string) ([]string, error) {
 			}
 			return nil
 		}
-		if filepath.Ext(path) == ".go" && !strings.HasSuffix(info.Name(), "_test.go") {
+		if filepath.Ext(path) == ".go" && (includeTests || !strings.HasSuffix(info.Name(), "_test.go")) {
 			files = append(files, path)
 		}
 		return nil
@@ -557,6 +557,7 @@ func main() {
 	srcDir := flag.String("src-dir", ".", "Root directory to scan")
 	onlyFiles := flag.String("only-files", "", "Comma-separated list of files to extract")
 	deep := flag.Bool("deep", false, "Include enriched data (docs, attributes, methods, imports)")
+	includeTests := flag.Bool("include-tests", false, "Include Go _test.go files")
 	flag.Parse()
 
 	fset := token.NewFileSet()
@@ -577,13 +578,13 @@ func main() {
 			if err != nil || isOutsideRoot(rel) || hasExcludedDir(rel) {
 				continue
 			}
-			if _, err := os.Stat(abs); err == nil && filepath.Ext(abs) == ".go" && !strings.HasSuffix(filepath.Base(abs), "_test.go") {
+			if _, err := os.Stat(abs); err == nil && filepath.Ext(abs) == ".go" && (*includeTests || !strings.HasSuffix(filepath.Base(abs), "_test.go")) {
 				files = append(files, abs)
 			}
 		}
 	} else {
 		var err error
-		files, err = collectGoFiles(*srcDir)
+		files, err = collectGoFiles(*srcDir, *includeTests)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error walking %s: %v\n", *srcDir, err)
 			os.Exit(1)

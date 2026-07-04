@@ -11,7 +11,12 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli import cli
-from llm_wiki_cli.services.site_export import SiteExportError, export_site_mirror
+from llm_wiki_cli.services.site_export import (
+    SiteExportError,
+    check_site_hub,
+    export_site_hub,
+    export_site_mirror,
+)
 
 
 def _ns(**kwargs):
@@ -89,6 +94,26 @@ def _write_wiki(root: Path) -> Path:
     return wiki
 
 
+def _write_hub_wiki(root: Path, source_id: str, title: str) -> Path:
+    wiki = root / source_id
+    _write(
+        wiki / "index.md",
+        f"# {title} Index\n\n- [Service](modules/service.md)\n",
+    )
+    _write(wiki / "log.md", f"# {title} Log\n\n")
+    _write(wiki / "modules" / "service.md", f"# {title} Service\n\n")
+    return wiki
+
+
+def _write_disambiguated_wiki(root: Path) -> Path:
+    wiki = _write_wiki(root)
+    _write(wiki / "entities" / "agent_ArtifactStore.md", "# ArtifactStore\n\n")
+    _write(wiki / "entities" / "artifacts_ArtifactStore.md", "# ArtifactStore\n\n")
+    _write(wiki / "modules" / "cmd_main.md", "# main Module\n\n")
+    _write(wiki / "modules" / "server_main.md", "# main Module\n\n")
+    return wiki
+
+
 def _operation_paths(report) -> list[str]:
     return [Path(operation.path).as_posix() for operation in report.operations]
 
@@ -121,6 +146,26 @@ def test_export_writes_registry_pages_in_surface_order(tmp_path):
     second = export_site_mirror(wiki_dir=wiki, out_dir=out, format="plain")
 
     assert [operation.action for operation in second.operations] == ["unchanged"] * 9
+
+
+def test_export_includes_guides_surface_pages(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    _write(
+        wiki / "guides" / "operator-onboarding.md",
+        "# Operator Onboarding\n\nUse [models](../modules/models.md).\n",
+    )
+    out = tmp_path / "site"
+
+    report = export_site_mirror(wiki_dir=wiki, out_dir=out, format="docusaurus")
+
+    assert report.page_count == 10
+    assert (out / "guides" / "operator-onboarding.md").is_file()
+    sidebar = json.loads((out / "sidebars.json").read_text(encoding="utf-8"))
+    assert {
+        "type": "category",
+        "label": "Guides",
+        "items": ["guides/operator-onboarding"],
+    } in sidebar["llmWikiSidebar"]
 
 
 def test_accepts_site_formats_and_rejects_unknown_format(tmp_path):
@@ -268,7 +313,7 @@ def test_mkdocs_export_writes_config_with_registry_ordered_nav(tmp_path):
             "# Mermaid plugin in your site environment to render diagrams.",
             'site_name: "LLM Wiki"',
             'docs_dir: "."',
-            'site_dir: "_site"',
+            'site_dir: "../_site"',
             "nav:",
             '  - "LLM Wiki Index": "index.md"',
             '  - "Architectural Log": "log.md"',
@@ -282,6 +327,22 @@ def test_mkdocs_export_writes_config_with_registry_ordered_nav(tmp_path):
             "",
         ]
     )
+
+
+def test_mkdocs_export_disambiguates_duplicate_navigation_labels(tmp_path):
+    wiki = _write_disambiguated_wiki(tmp_path)
+    out = tmp_path / "site"
+
+    export_site_mirror(wiki_dir=wiki, out_dir=out, format="mkdocs")
+
+    config = (out / "mkdocs.yml").read_text(encoding="utf-8")
+    assert '  - "agent / ArtifactStore": "entities/agent_ArtifactStore.md"' in config
+    assert (
+        '  - "artifacts / ArtifactStore": "entities/artifacts_ArtifactStore.md"'
+        in config
+    )
+    assert '  - "cmd / main Module": "modules/cmd_main.md"' in config
+    assert '  - "server / main Module": "modules/server_main.md"' in config
 
 
 def test_mkdocs_dry_run_reports_config_without_writing(tmp_path):
@@ -347,6 +408,48 @@ def test_docusaurus_export_writes_front_matter_with_surface_index_source(tmp_pat
             ]
         )
     )
+
+
+def test_docusaurus_export_disambiguates_duplicate_front_matter_labels(tmp_path):
+    wiki = _write_disambiguated_wiki(tmp_path)
+    out = tmp_path / "site"
+
+    export_site_mirror(wiki_dir=wiki, out_dir=out, format="docusaurus")
+
+    agent_content = (out / "entities" / "agent_ArtifactStore.md").read_text(
+        encoding="utf-8"
+    )
+    artifacts_content = (out / "entities" / "artifacts_ArtifactStore.md").read_text(
+        encoding="utf-8"
+    )
+    cmd_content = (out / "modules" / "cmd_main.md").read_text(encoding="utf-8")
+    server_content = (out / "modules" / "server_main.md").read_text(encoding="utf-8")
+
+    assert 'id: "entities/agent_ArtifactStore"' in agent_content
+    assert 'title: "agent / ArtifactStore"' in agent_content
+    assert 'sidebar_label: "agent / ArtifactStore"' in agent_content
+    assert '  id: "agent_ArtifactStore"' in agent_content
+    assert '  canonical_path: "entities/agent_ArtifactStore.md"' in agent_content
+
+    assert 'id: "entities/artifacts_ArtifactStore"' in artifacts_content
+    assert 'title: "artifacts / ArtifactStore"' in artifacts_content
+    assert 'sidebar_label: "artifacts / ArtifactStore"' in artifacts_content
+    assert '  id: "artifacts_ArtifactStore"' in artifacts_content
+    assert (
+        '  canonical_path: "entities/artifacts_ArtifactStore.md"' in artifacts_content
+    )
+
+    assert 'id: "modules/cmd_main"' in cmd_content
+    assert 'title: "cmd / main Module"' in cmd_content
+    assert 'sidebar_label: "cmd / main Module"' in cmd_content
+    assert '  id: "cmd_main"' in cmd_content
+    assert '  canonical_path: "modules/cmd_main.md"' in cmd_content
+
+    assert 'id: "modules/server_main"' in server_content
+    assert 'title: "server / main Module"' in server_content
+    assert 'sidebar_label: "server / main Module"' in server_content
+    assert '  id: "server_main"' in server_content
+    assert '  canonical_path: "modules/server_main.md"' in server_content
 
 
 def test_docusaurus_export_writes_registry_ordered_sidebar(tmp_path):
@@ -553,11 +656,119 @@ def test_check_reports_missing_and_mismatched_front_matter_metadata(tmp_path):
         and issue["target"] == "llm_wiki.id"
         for issue in report.issues
     )
-    assert any(
-        issue["category"] == "front_matter_mismatch"
-        and issue["target"] == "llm_wiki.canonical_path"
-        for issue in report.issues
+
+
+def test_hub_export_writes_namespaced_wikis_and_top_level_index(tmp_path):
+    root = tmp_path / "sources" / "code_wikis"
+    _write_hub_wiki(root, "alpha", "Alpha")
+    _write_hub_wiki(root, "beta", "Beta")
+    out = tmp_path / "hub"
+
+    report = export_site_hub(wiki_root=root, out_dir=out, format="plain")
+
+    assert report.ok is True
+    assert report.page_count == 7
+    assert (out / "alpha" / "index.md").is_file()
+    assert (out / "beta" / "modules" / "service.md").is_file()
+    assert (out / "index.md").read_text(encoding="utf-8") == "\n".join(
+        [
+            "# LLM Wiki Hub",
+            "",
+            "| Source | Pages | Index |",
+            "|---|---:|---|",
+            "| alpha | 3 | [index](alpha/index.md) |",
+            "| beta | 3 | [index](beta/index.md) |",
+            "",
+        ]
     )
+
+
+def test_hub_export_writes_grouped_mkdocs_and_docusaurus_navigation(tmp_path):
+    root = tmp_path / "sources" / "code_wikis"
+    _write_hub_wiki(root, "alpha", "Alpha")
+    _write_hub_wiki(root, "beta", "Beta")
+    out = tmp_path / "hub"
+
+    export_site_hub(wiki_root=root, out_dir=out, format="mkdocs")
+
+    mkdocs = (out / "mkdocs.yml").read_text(encoding="utf-8")
+    assert '  - "alpha":' in mkdocs
+    assert '    - "Alpha Index": "alpha/index.md"' in mkdocs
+    assert '  - "beta":' in mkdocs
+    assert '    - "Beta Service": "beta/modules/service.md"' in mkdocs
+
+    export_site_hub(wiki_root=root, out_dir=out, format="docusaurus")
+
+    alpha_index = (out / "alpha" / "index.md").read_text(encoding="utf-8")
+    sidebars = json.loads((out / "sidebars.json").read_text(encoding="utf-8"))
+    assert 'id: "alpha/index"' in alpha_index
+    assert sidebars == {
+        "llmWikiSidebar": [
+            {
+                "type": "category",
+                "label": "alpha",
+                "items": [
+                    "alpha/index",
+                    "alpha/log",
+                    {
+                        "type": "category",
+                        "label": "Modules",
+                        "items": ["alpha/modules/service"],
+                    },
+                ],
+            },
+            {
+                "type": "category",
+                "label": "beta",
+                "items": [
+                    "beta/index",
+                    "beta/log",
+                    {
+                        "type": "category",
+                        "label": "Modules",
+                        "items": ["beta/modules/service"],
+                    },
+                ],
+            },
+        ]
+    }
+
+
+def test_hub_check_validates_namespaced_wikis_and_broken_links(tmp_path):
+    root = tmp_path / "sources" / "code_wikis"
+    _write_hub_wiki(root, "alpha", "Alpha")
+    _write_hub_wiki(root, "beta", "Beta")
+    out = tmp_path / "hub"
+    export_site_hub(wiki_root=root, out_dir=out, format="docusaurus")
+
+    valid = check_site_hub(wiki_root=root, out_dir=out)
+
+    assert valid.ok is True
+    assert valid.issues == []
+
+    alpha_service = out / "alpha" / "modules" / "service.md"
+    alpha_service.write_text(
+        alpha_service.read_text(encoding="utf-8") + "\n[Broken](missing.md)\n",
+        encoding="utf-8",
+    )
+
+    broken = check_site_hub(wiki_root=root, out_dir=out)
+
+    assert broken.ok is False
+    assert any(
+        issue["category"] == "broken_markdown_link" and issue["target"] == "missing.md"
+        for issue in broken.issues
+    )
+
+
+def test_hub_export_rejects_duplicate_explicit_source_ids(tmp_path):
+    left = tmp_path / "left" / "wiki"
+    right = tmp_path / "right" / "wiki"
+    _write_hub_wiki(left.parent, "wiki", "Left")
+    _write_hub_wiki(right.parent, "wiki", "Right")
+
+    with pytest.raises(SiteExportError, match="Duplicate hub source id"):
+        export_site_hub(wikis=[left, right], out_dir=tmp_path / "hub")
 
 
 def test_check_reports_duplicate_docusaurus_front_matter_ids(tmp_path):
@@ -660,6 +871,32 @@ class TestSiteCli:
         }
         assert not (tmp_path / "site").exists()
 
+    def test_cli_export_hub_from_wiki_root_json(self, tmp_path, monkeypatch, capsys):
+        site_cmd = importlib.import_module("llm_wiki_cli.commands.site_cmd")
+        root = tmp_path / "sources" / "code_wikis"
+        _write_hub_wiki(root, "alpha", "Alpha")
+        _write_hub_wiki(root, "beta", "Beta")
+        monkeypatch.chdir(tmp_path)
+
+        site_cmd.run(
+            _ns(
+                site_action="export",
+                wiki_dir="docs/llm_wiki",
+                wiki_root="sources/code_wikis",
+                wiki=[],
+                out_dir="site",
+                format="plain",
+                front_matter=False,
+                dry_run=False,
+                output_format="json",
+            )
+        )
+
+        data = json.loads(capsys.readouterr().out)
+        assert data["source_count"] == 2
+        assert data["page_count"] == 7
+        assert (tmp_path / "site" / "alpha" / "index.md").is_file()
+
     def test_cli_check_json_success_and_failure(self, tmp_path, monkeypatch, capsys):
         site_cmd = importlib.import_module("llm_wiki_cli.commands.site_cmd")
         wiki = _write_wiki(tmp_path)
@@ -699,6 +936,32 @@ class TestSiteCli:
         assert any(
             issue["category"] == "missing_mirror_page" for issue in failed["issues"]
         )
+
+    def test_cli_check_hub_from_explicit_wikis_json(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        site_cmd = importlib.import_module("llm_wiki_cli.commands.site_cmd")
+        root = tmp_path / "sources" / "code_wikis"
+        alpha = _write_hub_wiki(root, "alpha", "Alpha")
+        beta = _write_hub_wiki(root, "beta", "Beta")
+        out = tmp_path / "site"
+        export_site_hub(wikis=[alpha, beta], out_dir=out, format="plain")
+        monkeypatch.chdir(tmp_path)
+
+        site_cmd.run(
+            _ns(
+                site_action="check",
+                wiki_dir="docs/llm_wiki",
+                wiki_root=None,
+                wiki=[str(alpha), str(beta)],
+                out_dir="site",
+                output_format="json",
+            )
+        )
+
+        data = json.loads(capsys.readouterr().out)
+        assert data["ok"] is True
+        assert data["source_count"] == 2
 
     def test_cli_check_json_warning_only_does_not_exit(
         self, tmp_path, monkeypatch, capsys

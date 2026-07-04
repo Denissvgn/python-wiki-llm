@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import inspect
+import json
 import shutil
 import subprocess
 import textwrap
@@ -12,6 +13,7 @@ from unittest.mock import patch
 
 import pytest
 
+from llm_wiki_cli.extractors import common as extractor_common
 from llm_wiki_cli.extractors.ts_extractor import TypeScriptExtractor
 
 # ---------------------------------------------------------------------------
@@ -102,6 +104,205 @@ class TestTypeScriptWrapperFiltering:
         cmd = commands[0]
         only_idx = cmd.index("--only-files") + 1
         assert cmd[only_idx] == "real.ts"
+
+    def test_full_scan_skips_generated_javascript_bundles(self, tmp_path, monkeypatch):
+        _make_ts(
+            tmp_path,
+            "services/dashboard/frontend/src/main.js",
+            "export const app = 1;",
+        )
+        _make_ts(
+            tmp_path,
+            "services/dashboard/static/assets/index-D0zaI3XT.js",
+            "function a(){};export{a as Ko};",
+        )
+        commands = []
+
+        def fake_run(cmd, *args, **kwargs):
+            commands.append(cmd)
+            return subprocess.CompletedProcess(
+                cmd,
+                0,
+                stdout='{"services/dashboard/frontend/src/main.js":{"classes":[],"functions":[]}}',
+                stderr="",
+            )
+
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.ts_extractor.shutil.which",
+            lambda _name: "/bin/tool",
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready",
+            lambda: True,
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.ts_extractor.subprocess.run", fake_run
+        )
+
+        TypeScriptExtractor().extract(str(tmp_path))
+
+        cmd = commands[0]
+        only_idx = cmd.index("--only-files") + 1
+        assert cmd[only_idx] == "services/dashboard/frontend/src/main.js"
+
+    def test_only_files_passes_gitignored_explicit_files_to_subprocess(
+        self, tmp_path, monkeypatch
+    ):
+        _make_ts(tmp_path, "frontend/src/lib/api.ts", "export const api = 1;")
+        (tmp_path / ".gitignore").write_text("lib/\n", encoding="utf-8")
+        commands = []
+
+        def fake_run(cmd, *args, **kwargs):
+            commands.append(cmd)
+            return subprocess.CompletedProcess(
+                cmd,
+                0,
+                stdout='{"frontend/src/lib/api.ts":{"classes":[],"functions":[]}}',
+                stderr="",
+            )
+
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.ts_extractor.shutil.which",
+            lambda _name: "/bin/tool",
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready",
+            lambda: True,
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.ts_extractor.subprocess.run", fake_run
+        )
+
+        TypeScriptExtractor().extract(
+            str(tmp_path),
+            only_files=["frontend/src/lib/api.ts"],
+        )
+
+        cmd = commands[0]
+        only_idx = cmd.index("--only-files") + 1
+        assert cmd[only_idx] == "frontend/src/lib/api.ts"
+
+    def test_only_files_passes_exact_generated_javascript_bundle_to_subprocess(
+        self, tmp_path, monkeypatch
+    ):
+        generated = "services/dashboard/static/assets/index-D0zaI3XT.js"
+        _make_ts(tmp_path, generated, "function a(){};export{a as Ko};")
+        commands = []
+
+        def fake_run(cmd, *args, **kwargs):
+            commands.append(cmd)
+            return subprocess.CompletedProcess(
+                cmd,
+                0,
+                stdout='{"services/dashboard/static/assets/index-D0zaI3XT.js":{"classes":[],"functions":[]}}',
+                stderr="",
+            )
+
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.ts_extractor.shutil.which",
+            lambda _name: "/bin/tool",
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready",
+            lambda: True,
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.ts_extractor.subprocess.run", fake_run
+        )
+
+        TypeScriptExtractor().extract(str(tmp_path), only_files=[generated])
+
+        cmd = commands[0]
+        only_idx = cmd.index("--only-files") + 1
+        assert cmd[only_idx] == generated
+
+    def test_large_file_selection_is_split_across_subprocess_calls(
+        self, tmp_path, monkeypatch
+    ):
+        paths = ["src/a.ts", "src/b.ts", "src/c.ts"]
+        for rel in paths:
+            _make_ts(tmp_path, rel, "export class Item {}\n")
+        commands = []
+
+        def fake_run(cmd, *args, **kwargs):
+            commands.append(cmd)
+            only_files = cmd[cmd.index("--only-files") + 1].split(",")
+            payload = {rel: {"classes": [], "functions": []} for rel in only_files}
+            return subprocess.CompletedProcess(
+                cmd,
+                0,
+                stdout=json.dumps(payload),
+                stderr="",
+            )
+
+        monkeypatch.setattr(extractor_common, "MAX_ONLY_FILES_ARG_CHARS", 15)
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.ts_extractor.shutil.which",
+            lambda _name: "/bin/tool",
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready",
+            lambda: True,
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.ts_extractor.subprocess.run", fake_run
+        )
+
+        inv = TypeScriptExtractor().extract(str(tmp_path))
+
+        assert set(inv) == set(paths)
+        assert len(commands) > 1
+        for cmd in commands:
+            only_arg = cmd[cmd.index("--only-files") + 1]
+            assert len(only_arg) <= extractor_common.MAX_ONLY_FILES_ARG_CHARS
+
+    def test_js_and_jsx_files_are_extracted_with_javascript_language(
+        self, tmp_path, monkeypatch
+    ):
+        _make_ts(tmp_path, "script.js", "export function run() {}\n")
+        _make_ts(tmp_path, "view.jsx", "export function View() { return null; }\n")
+        commands = []
+
+        def fake_run(cmd, *args, **kwargs):
+            commands.append(cmd)
+            return subprocess.CompletedProcess(
+                cmd,
+                0,
+                stdout=json.dumps(
+                    {
+                        "script.js": {
+                            "classes": [],
+                            "functions": [{"name": "run"}],
+                        },
+                        "view.jsx": {
+                            "classes": [],
+                            "functions": [{"name": "View"}],
+                        },
+                    }
+                ),
+                stderr="",
+            )
+
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.ts_extractor.shutil.which",
+            lambda _name: "/bin/tool",
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready",
+            lambda: True,
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.ts_extractor.subprocess.run", fake_run
+        )
+
+        inv = TypeScriptExtractor().extract(str(tmp_path), deep=True)
+
+        assert set(inv) == {"script.js", "view.jsx"}
+        assert {entry["language"] for entry in inv.values()} == {"javascript"}
+        cmd = commands[0]
+        assert cmd[cmd.index("--extensions") + 1] == ".ts,.tsx,.js,.jsx"
+        only_files = cmd[cmd.index("--only-files") + 1].split(",")
+        assert only_files == ["script.js", "view.jsx"]
 
 
 # ===========================================================================
@@ -229,6 +430,22 @@ class TestTypeScriptExtractor:
         inv = TypeScriptExtractor().extract(str(tmp_path))
         assert len(inv) == 1
         assert list(inv.values())[0]["functions"][0]["name"] == "Button"
+
+    def test_jsx_support(self, tmp_path):
+        _make_ts(
+            tmp_path,
+            "Button.jsx",
+            """
+            export function Button(props) {
+                return null;
+            }
+            """,
+        )
+        inv = TypeScriptExtractor().extract(str(tmp_path))
+        assert len(inv) == 1
+        data = inv["Button.jsx"]
+        assert data["language"] == "javascript"
+        assert data["functions"][0]["name"] == "Button"
 
     def test_skips_node_modules(self, tmp_path):
         nm = tmp_path / "node_modules" / "somelib"
@@ -464,6 +681,7 @@ class TestTypeScriptExtractorWrapper:
     def test_extract_remains_short_orchestrator(self):
         source = textwrap.dedent(inspect.getsource(TypeScriptExtractor.extract))
         function_node = ast.parse(source).body[0]
+        assert isinstance(function_node, ast.FunctionDef)
         body = list(function_node.body)
         if (
             body
@@ -474,7 +692,7 @@ class TestTypeScriptExtractorWrapper:
             body = body[1:]
 
         first_body_line = min(stmt.lineno for stmt in body)
-        last_body_line = max(stmt.end_lineno for stmt in body)
+        last_body_line = max(stmt.end_lineno or stmt.lineno for stmt in body)
         body_lines = last_body_line - first_body_line + 1
 
         assert body_lines <= 35
@@ -668,16 +886,51 @@ class TestTypeScriptExtractorFixes:
             f"Expected disambiguated name, got: {name!r}"
         )
 
-    def test_dts_files_excluded(self, tmp_path):
-        """Declaration files (.d.ts) must not appear in the inventory."""
+    def test_dts_files_included(self, tmp_path):
+        """First-party declaration files (.d.ts) appear in the inventory."""
         (tmp_path / "types.d.ts").write_text(
             "export declare class Phantom {}\n", encoding="utf-8"
         )
         _make_ts(tmp_path, "real.ts", "export class Real {}")
-        inv = TypeScriptExtractor().extract(str(tmp_path))
-        all_classes = [c["name"] for entry in inv.values() for c in entry["classes"]]
-        assert "Real" in all_classes
-        assert "Phantom" not in all_classes
+        inv = TypeScriptExtractor().extract(str(tmp_path), deep=True)
+
+        assert "types.d.ts" in inv
+        assert "real.ts" in inv
+        dts_classes = [c["name"] for c in inv["types.d.ts"]["classes"]]
+        assert "Phantom" in dts_classes
+
+    def test_shallow_module_only_javascript_file_is_retained(self, tmp_path):
+        _make_ts(
+            tmp_path,
+            "docker/proxy.js",
+            """
+            const http = require("node:http");
+            const listenPort = Number.parseInt(process.env.PORT || "3000", 10);
+            const server = http.createServer((req, res) => {
+              res.end("ok");
+            });
+            server.listen(listenPort);
+            """,
+        )
+
+        inv = TypeScriptExtractor().extract(str(tmp_path), deep=False)
+
+        assert sorted(inv) == ["docker/proxy.js"]
+        data = inv["docker/proxy.js"]
+        assert data["language"] == "javascript"
+        assert data["classes"] == []
+        assert data["functions"] == []
+        assert [constant["name"] for constant in data["constants"]] == [
+            "http",
+            "listenPort",
+            "server",
+        ]
+        assert [call["name"] for call in data["module_calls"]] == [
+            "require",
+            "parseInt",
+            "createServer",
+            "listen",
+        ]
 
     def test_tsconfig_walk_up(self, tmp_path):
         """tsconfig.json one level above srcDir must be discovered automatically."""
@@ -730,3 +983,225 @@ class TestTypeScriptExtractorFixes:
         all_names = [c["name"] for entry in inv.values() for c in entry["classes"]]
         assert "Dist" in all_names
         assert "Build" in all_names
+
+    def test_deep_includes_entrypoint_setup_module(self, tmp_path):
+        _make_ts(
+            tmp_path,
+            "main.tsx",
+            """
+            import React from 'react';
+            import ReactDOM from 'react-dom/client';
+            import App from './App';
+
+            const queryClient = new QueryClient();
+            ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+            """,
+        )
+
+        inv = TypeScriptExtractor().extract(str(tmp_path), deep=True)
+
+        data = inv["main.tsx"]
+        assert data["classes"] == []
+        assert data["functions"] == []
+        assert {imp["module"] for imp in data["imports"]} >= {
+            "react",
+            "react-dom/client",
+            "./App",
+        }
+        assert data["constants"] == [
+            {"name": "queryClient", "line": 6, "exported": False}
+        ]
+        assert [call["name"] for call in data["module_calls"]] == [
+            "QueryClient",
+            "render",
+        ]
+
+    def test_deep_includes_service_client_setup_module(self, tmp_path):
+        _make_ts(
+            tmp_path,
+            "api.ts",
+            """
+            import axios, { AxiosInstance } from 'axios';
+
+            const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            const api: AxiosInstance = axios.create({ baseURL: `${BASE_URL}/api/v1` });
+
+            api.interceptors.request.use((config) => config);
+
+            export default api;
+            """,
+        )
+
+        data = TypeScriptExtractor().extract(str(tmp_path), deep=True)["api.ts"]
+
+        assert data["exports"] == ["default"]
+        constants = {constant["name"]: constant for constant in data["constants"]}
+        assert constants["BASE_URL"]["exported"] is False
+        assert constants["api"]["line"] == 5
+        assert [call["name"] for call in data["module_calls"]] == ["create", "use"]
+
+    def test_deep_includes_exported_query_client_constant(self, tmp_path):
+        _make_ts(
+            tmp_path,
+            "queryClient.ts",
+            """
+            import { QueryClient } from '@tanstack/react-query';
+
+            export const queryClient = new QueryClient({
+              defaultOptions: { queries: { retry: 1 } },
+            });
+            """,
+        )
+
+        data = TypeScriptExtractor().extract(str(tmp_path), deep=True)["queryClient.ts"]
+
+        assert data["exports"] == ["queryClient"]
+        assert data["constants"] == [
+            {"name": "queryClient", "line": 4, "exported": True}
+        ]
+        assert data["module_calls"] == [
+            {"name": "QueryClient", "target": "queryClient", "line": 4}
+        ]
+
+    def test_commonjs_default_assignment_surfaces_top_level_function(self, tmp_path):
+        _make_ts(
+            tmp_path,
+            "SimpleRegister.tsx",
+            """
+            Object.defineProperty(exports, "__esModule", { value: true });
+            exports.default = SimpleRegister;
+
+            function SimpleRegister() {
+              return null;
+            }
+            """,
+        )
+
+        data = TypeScriptExtractor().extract(str(tmp_path), deep=True)[
+            "SimpleRegister.tsx"
+        ]
+
+        assert data["exports"] == ["default"]
+        assert [fn["name"] for fn in data["functions"]] == ["SimpleRegister"]
+
+    def test_plain_js_commonjs_service_surfaces_top_level_functions(self, tmp_path):
+        _make_ts(
+            tmp_path,
+            "docker/web-auth-proxy.js",
+            """\
+            const http = require("node:http");
+
+            function isTruthy(value) {
+              return Boolean(value);
+            }
+
+            function withAuthHeaders(headers = {}) {
+              return { ...headers, authorization: "Bearer token" };
+            }
+
+            function rewriteJsonPayload(req, payload) {
+              return payload;
+            }
+
+            const server = http.createServer((req, res) => {
+              res.end(rewriteJsonPayload(req, {}));
+            });
+            """,
+        )
+
+        data = TypeScriptExtractor().extract(str(tmp_path), deep=True)[
+            "docker/web-auth-proxy.js"
+        ]
+
+        assert data["language"] == "javascript"
+        assert [fn["name"] for fn in data["functions"]] == [
+            "isTruthy",
+            "withAuthHeaders",
+            "rewriteJsonPayload",
+        ]
+        by_name = {fn["name"]: fn for fn in data["functions"]}
+        assert by_name["isTruthy"]["line"] == 3
+        assert by_name["isTruthy"]["kind"] == "function"
+        assert by_name["isTruthy"]["end_line"] == 5
+        assert by_name["withAuthHeaders"]["params"] == [
+            {"name": "headers", "type": "", "default": "{}"}
+        ]
+        assert {"name": "createServer", "target": "server", "line": 15} in data[
+            "module_calls"
+        ]
+
+    def test_plain_js_create_server_named_handler_records_argument(self, tmp_path):
+        _make_ts(
+            tmp_path,
+            "server.js",
+            """\
+            const http = require("node:http");
+
+            function handleRequest(req, res) {
+              res.end("ok");
+            }
+
+            const server = http.createServer(handleRequest);
+            """,
+        )
+
+        data = TypeScriptExtractor().extract(str(tmp_path), deep=True)["server.js"]
+
+        assert {
+            "name": "createServer",
+            "target": "server",
+            "line": 7,
+            "args": ["handleRequest"],
+        } in data["module_calls"]
+
+    def test_non_exported_typescript_family_functions_stay_private(self, tmp_path):
+        _make_ts(
+            tmp_path,
+            "hidden.ts",
+            """\
+            export const visible = 1;
+            function privateTs() {
+              return visible;
+            }
+            """,
+        )
+        _make_ts(
+            tmp_path,
+            "Hidden.tsx",
+            """\
+            export function PublicTsx() {
+              return null;
+            }
+            function privateTsx() {
+              return null;
+            }
+            """,
+        )
+        _make_ts(
+            tmp_path,
+            "Hidden.jsx",
+            """\
+            export default function PublicJsx() {
+              return null;
+            }
+            function privateJsx() {
+              return null;
+            }
+            """,
+        )
+
+        inv = TypeScriptExtractor().extract(str(tmp_path), deep=True)
+
+        assert [fn["name"] for fn in inv["hidden.ts"]["functions"]] == []
+        assert [fn["name"] for fn in inv["Hidden.tsx"]["functions"]] == ["PublicTsx"]
+        assert [fn["name"] for fn in inv["Hidden.jsx"]["functions"]] == ["PublicJsx"]
+
+    def test_empty_typescript_file_reports_deep_skip_diagnostic(self, tmp_path, capsys):
+        _make_ts(tmp_path, "empty.ts", "// comments only\n")
+
+        inv = TypeScriptExtractor().extract(str(tmp_path), deep=True)
+
+        assert inv == {}
+        err = capsys.readouterr().err
+        assert "skipped empty.ts" in err
+        assert "no documentable TypeScript declarations" in err

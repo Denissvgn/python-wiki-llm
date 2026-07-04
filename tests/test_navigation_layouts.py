@@ -33,6 +33,7 @@ def _human_status_key(kind: str) -> str:
         "entities": "Entities",
         "modules": "Modules",
         "workflows": "Workflows",
+        "guides": "Guides",
         "flows": "Flows",
         "infrastructure": "Infrastructure",
         "dependencies": "Dependencies",

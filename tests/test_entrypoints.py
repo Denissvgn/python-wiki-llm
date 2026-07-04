@@ -12,6 +12,7 @@ from llm_wiki_cli.services.entrypoints import (
     build_flow,
     detect_entry_points,
     get_entry_points,
+    javascript_flow_limitations,
     read_console_scripts,
     _parse_scripts_section,
 )
@@ -19,8 +20,11 @@ from llm_wiki_cli.services.entrypoints import (
 
 def _body_line_count(function) -> int:
     source = textwrap.dedent(inspect.getsource(function))
-    body = ast.parse(source).body[0].body
-    return max(stmt.end_lineno for stmt in body) - min(stmt.lineno for stmt in body) + 1
+    function_node = ast.parse(source).body[0]
+    assert isinstance(function_node, ast.FunctionDef)
+    body = function_node.body
+    last_body_line = max(stmt.end_lineno or stmt.lineno for stmt in body)
+    return last_body_line - min(stmt.lineno for stmt in body) + 1
 
 
 def _entry(file, symbol):
@@ -31,6 +35,45 @@ def _entry(file, symbol):
         "symbol": symbol,
         "label": symbol,
     }
+
+
+def _write_project_team_open_style_async_main(tmp_path):
+    cli_dir = tmp_path / "src" / "cli"
+    cli_dir.mkdir(parents=True)
+    (tmp_path / "src" / "__init__.py").write_text("", encoding="utf-8")
+    (cli_dir / "__init__.py").write_text("", encoding="utf-8")
+    (tmp_path / "src" / "main.py").write_text(
+        textwrap.dedent("""\
+        import asyncio
+        from src.cli.commands import main as cli_main
+        from src.cli.commands import print_banner
+        from src.cli.orchestrator import CLIOrchestrator
+
+        async def main_entry():
+            cli_main()
+            print_banner(None)
+
+        if __name__ == "__main__":
+            asyncio.run(main_entry())
+    """),
+        encoding="utf-8",
+    )
+    (cli_dir / "commands.py").write_text(
+        textwrap.dedent("""\
+        def main():
+            parse()
+
+        def parse():
+            pass
+
+        def print_banner(console):
+            pass
+    """),
+        encoding="utf-8",
+    )
+    (cli_dir / "orchestrator.py").write_text(
+        "class CLIOrchestrator:\n    pass\n", encoding="utf-8"
+    )
 
 
 def _write_detector_plugin(tmp_path, *, body, plugin_id="detector-plugin"):
@@ -167,6 +210,215 @@ class TestGetEntryPoints:
         inventory = get_inventory(str(tmp_path), deep=True)
         mcp = [e for e in get_entry_points(inventory) if e["category"] == "mcp"]
         assert [e["symbol"] for e in mcp] == ["search"]
+
+    def test_detects_raw_javascript_create_server_as_http_entrypoint(self):
+        inventory = {
+            "docker/proxy.js": {
+                "language": "javascript",
+                "imports": [{"module": "node:http", "name": "http"}],
+                "functions": [],
+                "classes": [],
+                "module_calls": [
+                    {"name": "createServer", "target": "server", "line": 7}
+                ],
+            }
+        }
+
+        assert get_entry_points(inventory) == [
+            {
+                "category": "http",
+                "file": "docker/proxy.js",
+                "symbol": "server",
+                "label": "server",
+                "id": "http-server",
+            }
+        ]
+
+    def test_deduplicates_duplicate_javascript_create_server_calls(self):
+        inventory = {
+            "docker/proxy.js": {
+                "language": "javascript",
+                "imports": [{"module": "https", "name": "https"}],
+                "functions": [],
+                "classes": [],
+                "module_calls": [
+                    {"name": "createServer", "target": "server", "line": 7},
+                    {"name": "createServer", "target": "server", "line": 12},
+                ],
+            }
+        }
+
+        entries = get_entry_points(inventory)
+
+        assert [entry["id"] for entry in entries] == ["http-server"]
+        assert len(entries) == 1
+
+    def test_resolves_javascript_create_server_named_handler(self):
+        inventory = {
+            "server.js": {
+                "language": "javascript",
+                "imports": [{"module": "node:http", "name": "http"}],
+                "functions": [{"name": "handleRequest", "kind": "function"}],
+                "classes": [],
+                "module_calls": [
+                    {
+                        "name": "createServer",
+                        "target": "server",
+                        "line": 8,
+                        "args": ["handleRequest"],
+                    }
+                ],
+            }
+        }
+
+        assert get_entry_points(inventory) == [
+            {
+                "category": "http",
+                "file": "server.js",
+                "symbol": "handleRequest",
+                "label": "handleRequest",
+                "id": "http-handleRequest",
+            }
+        ]
+
+    def test_falls_back_for_inline_javascript_create_server_handler(self):
+        inventory = {
+            "server.js": {
+                "language": "javascript",
+                "imports": [{"module": "node:http", "name": "http"}],
+                "functions": [{"name": "helper", "kind": "function"}],
+                "classes": [],
+                "module_calls": [
+                    {"name": "createServer", "target": "server", "line": 8}
+                ],
+            }
+        }
+
+        assert get_entry_points(inventory)[0]["symbol"] == "server"
+
+    def test_detects_go_net_http_server_patterns(self, tmp_path):
+        server = tmp_path / "internal" / "web" / "server.go"
+        server.parent.mkdir(parents=True)
+        server.write_text(
+            textwrap.dedent("""\
+            package web
+
+            import "net/http"
+
+            func dashboard(w http.ResponseWriter, r *http.Request) {}
+
+            func main() {
+                http.HandleFunc("/dashboard", dashboard)
+                srv := &http.Server{Addr: ":8080"}
+                _ = srv.ListenAndServe()
+            }
+            """),
+            encoding="utf-8",
+        )
+        inventory = {
+            "internal/web/server.go": {
+                "language": "go",
+                "imports": [{"module": "net/http", "name": "http"}],
+                "functions": [{"name": "dashboard"}, {"name": "main"}],
+                "classes": [],
+            }
+        }
+
+        http_entries = [
+            entry
+            for entry in get_entry_points(inventory, root=tmp_path)
+            if entry["category"] == "http"
+        ]
+
+        assert {
+            "category": "http",
+            "file": "internal/web/server.go",
+            "symbol": "dashboard",
+            "label": "dashboard",
+            "id": "http-dashboard",
+        } in http_entries
+
+    def test_detects_haskell_servant_warp_server_patterns(self, tmp_path):
+        app = tmp_path / "hls-analysis" / "app" / "Main.hs"
+        app.parent.mkdir(parents=True)
+        app.write_text(
+            textwrap.dedent("""\
+            module Main where
+
+            import Network.Wai (Application)
+            import Network.Wai.Handler.Warp (run)
+            import Servant (serve)
+
+            app :: Application
+            app = serve api server
+
+            main :: IO ()
+            main = run 8080 app
+            """),
+            encoding="utf-8",
+        )
+        inventory = {
+            "hls-analysis/app/Main.hs": {
+                "language": "haskell",
+                "imports": [
+                    {"module": "Network.Wai", "qualified": False, "alias": None},
+                    {
+                        "module": "Network.Wai.Handler.Warp",
+                        "qualified": False,
+                        "alias": None,
+                    },
+                    {"module": "Servant", "qualified": False, "alias": None},
+                ],
+                "functions": [
+                    {"name": "app", "kind": "signature", "signature": "Application"},
+                    {"name": "app", "kind": "value"},
+                    {"name": "main", "kind": "signature", "signature": "IO ()"},
+                    {"name": "main", "kind": "function"},
+                ],
+                "classes": [],
+            }
+        }
+
+        http_entries = [
+            entry
+            for entry in get_entry_points(inventory, root=tmp_path)
+            if entry["category"] == "http"
+        ]
+
+        assert {
+            "category": "http",
+            "file": "hls-analysis/app/Main.hs",
+            "symbol": "app",
+            "label": "app",
+            "id": "http-app",
+        } in http_entries
+
+    def test_javascript_flow_limitations_warns_for_uncovered_create_server(self):
+        inventory = {
+            "not-node-server.js": {
+                "language": "javascript",
+                "imports": [{"module": "custom-framework", "name": "framework"}],
+                "functions": [],
+                "classes": [],
+                "module_calls": [
+                    {"name": "createServer", "target": "server", "line": 8}
+                ],
+            }
+        }
+
+        assert [entry["id"] for entry in get_entry_points(inventory)] == []
+        assert javascript_flow_limitations(inventory, []) == [
+            {
+                "file": "not-node-server.js",
+                "line": 8,
+                "message": (
+                    "JavaScript HTTP flow detection for createServer at line 8 "
+                    "is still advisory for patterns outside raw "
+                    "http.createServer/https.createServer; add an entry-point "
+                    "detector plugin to generate flow pages for this file."
+                ),
+            }
+        ]
 
     def test_bare_http_decorator_is_ignored(self, tmp_path):
         (tmp_path / "m.py").write_text("@get\ndef fetch():\n    pass\n")
@@ -456,6 +708,50 @@ class TestBuildFlow:
         flow = build_flow(_entry("m.py", "a"), edges, max_depth=2)
         assert max(s["depth"] for s in flow["steps"]) == 2
         assert flow["truncated"] is True
+
+    def test_async_main_guard_process_flow_expands_to_wrapped_entrypoint(
+        self, tmp_path
+    ):
+        _write_project_team_open_style_async_main(tmp_path)
+        inventory = get_inventory(str(tmp_path), deep=True)
+        entry = [
+            entry
+            for entry in get_entry_points(inventory)
+            if entry["id"] == "process-main"
+        ][0]
+        edges = resolve_call_edges(inventory)
+
+        flow = build_flow(entry, edges)
+        truncated = build_flow(entry, edges, max_depth=1)
+
+        assert entry["symbol"] == "__main__"
+        assert entry["file"] == "src/main.py"
+        assert entry["related_modules"] == [
+            "src/cli/commands.py",
+            "src/cli/orchestrator.py",
+        ]
+        assert [
+            (step["symbol"], step["kind"], step["file"], step["depth"])
+            for step in flow["steps"]
+        ] == [
+            ("__main__", "entry", "src/main.py", 0),
+            ("run", "external", None, 1),
+            ("main_entry", "internal", "src/main.py", 1),
+            ("main", "internal", "src/cli/commands.py", 2),
+            ("parse", "internal", "src/cli/commands.py", 3),
+            ("print_banner", "internal", "src/cli/commands.py", 2),
+        ]
+        assert flow["modules_touched"] == ["src/main.py", "src/cli/commands.py"]
+        assert flow["related_modules"] == [
+            "src/cli/commands.py",
+            "src/cli/orchestrator.py",
+        ]
+        assert truncated["truncated"] is True
+        assert [step["symbol"] for step in truncated["steps"]] == [
+            "__main__",
+            "run",
+            "main_entry",
+        ]
 
 
 class TestConsoleScripts:

@@ -25,6 +25,7 @@ def _write_wiki(root: Path) -> Path:
         "entities",
         "modules",
         "workflows",
+        "guides",
         "flows",
         "infrastructure",
         "legacy",
@@ -60,6 +61,10 @@ def _write_wiki(root: Path) -> Path:
         "# Signup\n\nTouches [models](../modules/models.md).\n",
         encoding="utf-8",
     )
+    (wiki / "guides" / "operator-onboarding.md").write_text(
+        "# Operator Onboarding\n\nGuidance for operators.\n",
+        encoding="utf-8",
+    )
     (wiki / "flows" / "checkout.md").write_text(
         "# Checkout\n\nUses [models](../modules/models.md).\n",
         encoding="utf-8",
@@ -80,6 +85,10 @@ class TestObsidianMirror:
         by_rel = {page.canonical_rel: page for page in pages}
 
         assert by_rel["entities/User.md"].mirror_rel == "LLM Wiki/Entities/User.md"
+        assert (
+            by_rel["guides/operator-onboarding.md"].mirror_rel
+            == "LLM Wiki/Guides/operator-onboarding.md"
+        )
         assert by_rel["flows/checkout.md"].mirror_rel == "LLM Wiki/Flows/checkout.md"
         assert by_rel["dependencies.md"].mirror_rel == "LLM Wiki/Dependencies.md"
         assert by_rel["load-order.md"].mirror_rel == "LLM Wiki/Load order.md"
@@ -133,7 +142,7 @@ class TestObsidianMirror:
         )
 
         mirror = vault / "LLM Wiki" / "Entities" / "User.md"
-        assert report.page_count == 9
+        assert report.page_count == 10
         assert mirror.exists()
         assert (vault / "LLM Wiki" / "Flows" / "checkout.md").exists()
         assert (vault / "LLM Wiki" / "Dependencies.md").exists()
@@ -143,6 +152,25 @@ class TestObsidianMirror:
         assert "[[LLM Wiki/Modules/models|models]]" in content
         assert "![[.llm-wiki/obsidian-notes/entity/User]]" in content
         assert note.read_text(encoding="utf-8") == "# Existing Notes\n\nKeep this.\n"
+
+    def test_export_escapes_source_wikilinks_before_vault_check(self, tmp_project):
+        wiki = _write_wiki(tmp_project)
+        user_page = wiki / "entities" / "User.md"
+        user_page.write_text(
+            user_page.read_text(encoding="utf-8")
+            + "\nRaw source docs mention [[std::string::String]].\n",
+            encoding="utf-8",
+        )
+        vault = tmp_project / "vault"
+
+        obsidian.export_obsidian_vault(src_dir=".", wiki_dir=wiki, vault_dir=vault)
+
+        mirror = vault / "LLM Wiki" / "Entities" / "User.md"
+        content = mirror.read_text(encoding="utf-8")
+        assert r"\[\[std::string::String\]\]" in content
+        assert "[[LLM Wiki/Modules/models|models]]" in content
+        report = obsidian.check_obsidian_vault(wiki_dir=wiki, vault_dir=vault)
+        assert report.ok is True
 
     def test_export_reads_each_wiki_page_once(self, tmp_project, monkeypatch):
         wiki = _write_wiki(tmp_project)
@@ -230,7 +258,7 @@ class TestObsidianCli:
             )
         )
         data = json.loads(capsys.readouterr().out)
-        assert data["page_count"] == 9
+        assert data["page_count"] == 10
 
         obsidian_cmd.run(
             _ns(

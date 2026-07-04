@@ -12,6 +12,78 @@ from llm_wiki_cli.extractors.ts_extractor import TypeScriptExtractor
 from llm_wiki_cli.services import contracts
 
 
+HASKELL_MINIMUM_INVENTORY = {
+    "hls-analysis/src/HLSAnalysis/API.hs": {
+        "language": "haskell",
+        "module": "HLSAnalysis.API",
+        "imports": [
+            {
+                "module": "Data.Text",
+                "qualified": False,
+                "alias": None,
+                "line": 4,
+            }
+        ],
+        "classes": [
+            {"name": "User", "kind": "data", "line": 8},
+            {
+                "name": "instance Renderable User",
+                "kind": "instance",
+                "line": 14,
+            },
+        ],
+        "functions": [
+            {
+                "name": "loadUser",
+                "kind": "signature",
+                "signature": "UserId -> Maybe User",
+                "line": 18,
+            },
+            {"name": "loadUser", "kind": "function", "line": 19},
+        ],
+    }
+}
+
+HASKELL_OPTIONAL_FIELD_INVENTORY = {
+    "hls-analysis/src/HLSAnalysis/API.hs": {
+        **HASKELL_MINIMUM_INVENTORY["hls-analysis/src/HLSAnalysis/API.hs"],
+        "language_pragmas": ["FlexibleInstances"],
+        "exports": ["User", "loadUser"],
+        "classes": [
+            {
+                "name": "User",
+                "kind": "data",
+                "line": 8,
+                "deriving": ["Show", "Eq"],
+            },
+            {
+                "name": "Token",
+                "kind": "newtype",
+                "line": 12,
+                "deriving": ["Show"],
+            },
+            {"name": "UserId", "kind": "type", "line": 16},
+            {"name": "Renderable", "kind": "class", "line": 20},
+            {
+                "name": "instance Renderable User",
+                "kind": "instance",
+                "line": 24,
+            },
+        ],
+        "functions": [
+            {
+                "name": "loadUser",
+                "kind": "signature",
+                "signature": "UserId -> Maybe User",
+                "line": 28,
+            },
+            {"name": "loadUser", "kind": "function", "line": 29},
+            {"name": "apiName", "kind": "value", "line": 32},
+        ],
+    }
+}
+
+
 def test_extract_v1_data_flow_fields_are_additive_contract():
     assert contracts.EXTRACT_SCHEMA_VERSION == "llm-wiki-extract/v1"
     assert getattr(contracts, "EXTRACT_ADDITIVE_FIELDS", None) == {
@@ -19,6 +91,7 @@ def test_extract_v1_data_flow_fields_are_additive_contract():
         "calls[].kwargs",
         "data_effects",
         "data_flows",
+        "main_block_calls",
     }
 
 
@@ -209,3 +282,68 @@ def test_resolver_tolerates_enriched_call_records():
             ],
         }
     ]
+
+
+def test_consumers_tolerate_minimum_haskell_inventory_shape():
+    """Haskell syntax inventory remains additive under llm-wiki-extract/v1."""
+    from llm_wiki_cli.commands.extract_cmd import resolve_call_edges
+    from llm_wiki_cli.services.dependencies import build_dependency_graph
+
+    assert contracts.EXTRACT_SCHEMA_VERSION == "llm-wiki-extract/v1"
+    assert resolve_call_edges(HASKELL_MINIMUM_INVENTORY) == []
+    assert build_dependency_graph(HASKELL_MINIMUM_INVENTORY)["unresolved"] == [
+        {
+            "file": "hls-analysis/src/HLSAnalysis/API.hs",
+            "module": "Data.Text",
+            "name": "",
+        }
+    ]
+
+
+def test_consumers_tolerate_optional_haskell_specific_fields():
+    """Optional Haskell metadata must not require an extract schema bump."""
+    from llm_wiki_cli.commands.extract_cmd import resolve_call_edges
+    from llm_wiki_cli.services.dependencies import build_dependency_graph
+    from llm_wiki_cli.services.relationships import build_entity_relationship_summaries
+
+    inventory = HASKELL_OPTIONAL_FIELD_INVENTORY
+
+    assert contracts.EXTRACT_SCHEMA_VERSION == "llm-wiki-extract/v1"
+    assert resolve_call_edges(inventory) == []
+    assert build_dependency_graph(inventory)["unresolved"] == [
+        {
+            "file": "hls-analysis/src/HLSAnalysis/API.hs",
+            "module": "Data.Text",
+            "name": "",
+        }
+    ]
+    summaries = build_entity_relationship_summaries(inventory, [])
+    class_kinds = {
+        summary["name"]: summary.get("kind") for summary in summaries["classes"]
+    }
+    assert class_kinds == {
+        "Renderable": "class",
+        "Token": "newtype",
+        "User": "data",
+        "UserId": "type",
+        "instance Renderable User": "instance",
+    }
+
+
+def test_haskell_declaration_kind_values_are_contract_fields():
+    """Removing Haskell ``kind`` fields must break focused contract coverage."""
+    class_kinds = {
+        declaration["kind"]
+        for declaration in HASKELL_OPTIONAL_FIELD_INVENTORY[
+            "hls-analysis/src/HLSAnalysis/API.hs"
+        ]["classes"]
+    }
+    function_kinds = {
+        declaration["kind"]
+        for declaration in HASKELL_OPTIONAL_FIELD_INVENTORY[
+            "hls-analysis/src/HLSAnalysis/API.hs"
+        ]["functions"]
+    }
+
+    assert class_kinds == {"data", "newtype", "type", "class", "instance"}
+    assert function_kinds == {"signature", "function", "value"}

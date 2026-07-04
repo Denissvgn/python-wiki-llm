@@ -372,6 +372,41 @@ def test_bounded_output_sets_truncated_flag():
     ]
 
 
+def test_default_limit_reports_raw_caller_truncation_past_relationship_page_cap():
+    inventory = {
+        f"caller_{idx}.py": {
+            "classes": [],
+            "functions": [{"name": f"caller_{idx}"}],
+            "imports": [],
+        }
+        for idx in range(25)
+    }
+    inventory["target.py"] = {
+        "classes": [],
+        "functions": [{"name": "target"}],
+        "imports": [],
+    }
+    edges = [
+        {
+            "from": {"file": f"caller_{idx}.py", "symbol": f"caller_{idx}"},
+            "to": {"file": "target.py", "symbol": "target"},
+            "name": "target",
+            "kind": "internal",
+            "line": idx + 1,
+        }
+        for idx in range(25)
+    ]
+    service = DocumentationGraphQueryService(inventory, call_edges=edges)
+
+    result = service.callers("target")
+
+    assert result["truncated"] is True
+    assert len(result["callers"]) == 20
+    assert [caller["symbol"] for caller in result["callers"]] == sorted(
+        f"caller_{idx}" for idx in range(25)
+    )[:20]
+
+
 @pytest.mark.parametrize("query", ["", "   ", None, 3])
 def test_empty_or_non_string_symbol_query_is_invalid(query):
     with pytest.raises(DocumentationQueryError):

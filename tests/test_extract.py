@@ -3,6 +3,7 @@
 import ast
 import inspect
 import json
+import shutil
 import subprocess
 import threading
 import textwrap
@@ -23,18 +24,29 @@ from llm_wiki_cli.extractors.python_extractor import (
     PythonExtractor,
     _summarize_expression,
 )
+from llm_wiki_cli.services.dependencies import analyze_dependencies
 from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
 from llm_wiki_cli.services.packages import discover_packages, stamp_inventory_packages
 from llm_wiki_cli.services import plugins
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
+TS_NODE_MODULES = (
+    Path(__file__).parents[1]
+    / "src"
+    / "llm_wiki_cli"
+    / "extractors"
+    / "ts_scripts"
+    / "node_modules"
+)
+
 
 def _body_line_count(function) -> int:
     source = textwrap.dedent(inspect.getsource(function))
     function_node = ast.parse(source).body[0]
+    assert isinstance(function_node, ast.FunctionDef)
     body = function_node.body
     first_body_line = min(stmt.lineno for stmt in body)
-    last_body_line = max(stmt.end_lineno for stmt in body)
+    last_body_line = max(stmt.end_lineno or stmt.lineno for stmt in body)
     return last_body_line - first_body_line + 1
 
 
@@ -161,6 +173,7 @@ class TestGetInventory:
             "source_snapshot",
             "cache_options",
             "parallel_jobs",
+            "include_tests",
         } & set(signature.parameters)
 
     def test_inventory_result_builder_stays_small(self):
@@ -216,6 +229,7 @@ class TestGetInventory:
                 include_empty=False,
                 source_files=None,
             ):
+                assert source_files is not None
                 calls["source_files"] = source_files
                 return {
                     rel: {"classes": [], "functions": [], "language": "python"}
@@ -263,7 +277,14 @@ class TestGetInventory:
             extract_cmd, "_load_extractor", lambda _entry_point: FakeGoExtractor()
         )
 
-        result = extract_cmd.get_inventory_result(str(tmp_path), deep=True)
+        result = extract_cmd.get_inventory_result(
+            str(tmp_path),
+            deep=True,
+            cache_options=InventoryCacheOptions(
+                enabled=True,
+                cache_dir=str(tmp_path / "inventory-cache"),
+            ),
+        )
 
         request = calls["request"]
         assert isinstance(request, extract_cmd.GoExtractionRequest)
@@ -274,6 +295,50 @@ class TestGetInventory:
         assert calls["only_files"] is None
         assert calls["deep"] is False
         assert sorted(result.inventory) == ["main.go"]
+
+    def test_builtin_go_extractor_receives_include_tests_request(
+        self, tmp_path, monkeypatch
+    ):
+        (tmp_path / "main.go").write_text("package main\n", encoding="utf-8")
+        (tmp_path / "main_test.go").write_text("package main\n", encoding="utf-8")
+        calls = {"request": None}
+
+        class FakeGoExtractor:
+            last_error = None
+
+            def extract(self, src_dir, only_files=None, deep=False):
+                calls["request"] = src_dir
+                return {
+                    rel: {
+                        "classes": [],
+                        "functions": [],
+                        "language": "go",
+                    }
+                    for rel in src_dir.source_files
+                }
+
+        monkeypatch.setattr(
+            extract_cmd,
+            "get_extractor_registry",
+            lambda: {"go": extract_cmd.EXTRACTOR_REGISTRY["go"]},
+        )
+        monkeypatch.setattr(
+            extract_cmd, "_load_extractor", lambda _entry_point: FakeGoExtractor()
+        )
+
+        result = extract_cmd.get_inventory_result(
+            extract_cmd.InventoryRequest(
+                src_dir=str(tmp_path),
+                deep=True,
+                include_tests={"go"},
+            )
+        )
+
+        request = calls["request"]
+        assert isinstance(request, extract_cmd.GoExtractionRequest)
+        assert set(request.include_tests) == {"go"}
+        assert request.source_files == ["main.go", "main_test.go"]
+        assert sorted(result.inventory) == ["main.go", "main_test.go"]
 
     def test_builtin_rust_extractor_receives_request_object(
         self, tmp_path, monkeypatch
@@ -307,7 +372,14 @@ class TestGetInventory:
             lambda _entry_point: FakeRustExtractor(),
         )
 
-        result = extract_cmd.get_inventory_result(str(tmp_path), deep=True)
+        result = extract_cmd.get_inventory_result(
+            str(tmp_path),
+            deep=True,
+            cache_options=InventoryCacheOptions(
+                enabled=True,
+                cache_dir=str(tmp_path / "inventory-cache"),
+            ),
+        )
 
         request = calls["request"]
         assert isinstance(request, extract_cmd.RustExtractionRequest)
@@ -318,6 +390,138 @@ class TestGetInventory:
         assert calls["only_files"] is None
         assert calls["deep"] is False
         assert sorted(result.inventory) == ["lib.rs"]
+
+    def test_builtin_haskell_extractor_receives_request_object(
+        self, tmp_path, monkeypatch
+    ):
+        hls_src = tmp_path / "hls-analysis" / "src" / "HLSAnalysis"
+        hls_src.mkdir(parents=True)
+        (hls_src / "API.hs").write_text(
+            "module HLSAnalysis.API where\n", encoding="utf-8"
+        )
+        (tmp_path / "hls-analysis" / "Main.lhs").write_text(
+            "> module Main where\n", encoding="utf-8"
+        )
+        calls = {"request": None, "only_files": "unset", "deep": "unset"}
+
+        class FakeHaskellExtractor:
+            last_error = None
+
+            def extract(self, src_dir, only_files=None, deep=False):
+                calls["request"] = src_dir
+                calls["only_files"] = only_files
+                calls["deep"] = deep
+                return {
+                    rel: {
+                        "classes": [],
+                        "functions": [],
+                        "language": "haskell",
+                    }
+                    for rel in src_dir.source_files
+                }
+
+        monkeypatch.setattr(
+            extract_cmd,
+            "get_extractor_registry",
+            lambda: {"haskell": extract_cmd.EXTRACTOR_REGISTRY["haskell"]},
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_load_extractor",
+            lambda _entry_point: FakeHaskellExtractor(),
+        )
+
+        result = extract_cmd.get_inventory_result(
+            str(tmp_path),
+            deep=True,
+            only_files=[
+                "hls-analysis/src/HLSAnalysis/API.hs",
+                "hls-analysis/Main.lhs",
+            ],
+            cache_options=InventoryCacheOptions(
+                enabled=True,
+                cache_dir=str(tmp_path / "inventory-cache"),
+            ),
+        )
+
+        request = calls["request"]
+        assert isinstance(request, extract_cmd.HaskellExtractionRequest)
+        assert request.src_dir == str(tmp_path)
+        assert request.deep is True
+        assert request.only_files == [
+            "hls-analysis/src/HLSAnalysis/API.hs",
+            "hls-analysis/Main.lhs",
+        ]
+        assert request.source_files == [
+            "hls-analysis/Main.lhs",
+            "hls-analysis/src/HLSAnalysis/API.hs",
+        ]
+        assert calls["only_files"] is None
+        assert calls["deep"] is False
+        assert sorted(result.inventory) == [
+            "hls-analysis/Main.lhs",
+            "hls-analysis/src/HLSAnalysis/API.hs",
+        ]
+
+    def test_builtin_helpers_receive_explicit_helper_cache_dir(
+        self, tmp_path, monkeypatch
+    ):
+        (tmp_path / "main.go").write_text("package main\n", encoding="utf-8")
+        (tmp_path / "lib.rs").write_text("pub struct App;\n", encoding="utf-8")
+        requests = {}
+
+        class FakeGoExtractor:
+            last_error = None
+
+            def extract(self, src_dir, only_files=None, deep=False):
+                requests["go"] = src_dir
+                return {
+                    "main.go": {
+                        "classes": [],
+                        "functions": [],
+                        "language": "go",
+                    }
+                }
+
+        class FakeRustExtractor:
+            last_error = None
+
+            def extract(self, src_dir, only_files=None, deep=False):
+                requests["rust"] = src_dir
+                return {
+                    "lib.rs": {
+                        "classes": [],
+                        "functions": [],
+                        "language": "rust",
+                    }
+                }
+
+        registry = {
+            "go": extract_cmd.EXTRACTOR_REGISTRY["go"],
+            "rust": extract_cmd.EXTRACTOR_REGISTRY["rust"],
+        }
+        monkeypatch.setattr(extract_cmd, "get_extractor_registry", lambda: registry)
+
+        def fake_load(entry_point):
+            if entry_point == registry["go"]:
+                return FakeGoExtractor()
+            return FakeRustExtractor()
+
+        monkeypatch.setattr(extract_cmd, "_load_extractor", fake_load)
+
+        result = extract_cmd.get_inventory_result(
+            str(tmp_path),
+            deep=True,
+            cache_options=InventoryCacheOptions(
+                enabled=True,
+                cache_dir=str(tmp_path / "inventory-cache"),
+            ),
+            helper_cache_dir=str(tmp_path / "helper-cache"),
+        )
+
+        assert requests["go"].helper_cache_dir == str(tmp_path / "helper-cache")
+        assert requests["rust"].helper_cache_dir == str(tmp_path / "helper-cache")
+        assert sorted(result.inventory) == ["lib.rs", "main.go"]
 
     def test_parallel_jobs_run_fresh_builtin_extractors_concurrently(
         self, tmp_path, monkeypatch
@@ -1347,6 +1551,33 @@ class TestEntryPointSignals:
         )
         assert get_inventory(str(tmp_path), deep=True)["cli.py"]["main_block"] is True
 
+    def test_deep_captures_main_block_calls_without_module_calls(self, tmp_path):
+        (tmp_path / "cli.py").write_text(
+            textwrap.dedent("""\
+            import asyncio
+
+            async def main_entry():
+                pass
+
+            if __name__ == "__main__":
+                asyncio.run(main_entry())
+        """)
+        )
+
+        data = get_inventory(str(tmp_path), deep=True)["cli.py"]
+
+        assert data["main_block"] is True
+        assert data["main_block_calls"] == [
+            {
+                "name": "run",
+                "attr": "asyncio.run",
+                "line": 7,
+                "args": [{"kind": "call", "value": "main_entry(...)"}],
+            },
+            {"name": "main_entry", "line": 7},
+        ]
+        assert "module_calls" not in data
+
     def test_main_block_omitted_when_absent(self, tmp_path):
         (tmp_path / "m.py").write_text("def main():\n    pass\n")
         assert "main_block" not in get_inventory(str(tmp_path), deep=True)["m.py"]
@@ -1401,6 +1632,7 @@ class TestEntryPointSignals:
         data = get_inventory(str(tmp_path), deep=False)["api.py"]
         assert "all_exports" not in data
         assert "main_block" not in data
+        assert "main_block_calls" not in data
 
 
 class TestExtractEntryPoints:
@@ -1755,6 +1987,65 @@ class TestExtractDependencies:
         assert python_external["undeclared"] == ["click"]
         assert python_external["unused"] == ["tomli"]
 
+    def test_dependency_extract_block_includes_optional_version_metadata(self):
+        analysis = {
+            "graph": {"edges": []},
+            "cycles": [],
+            "load_order": {"order": [], "cycle_groups": []},
+            "reconciliation": {
+                "languages": {
+                    "python": {
+                        "used": {"requests": ["app.py"]},
+                        "undeclared": [],
+                        "unused": [],
+                        "versions": {
+                            "requests": {
+                                "version": "2.31.0",
+                                "resolved_from": "poetry.lock",
+                            }
+                        },
+                    }
+                }
+            },
+        }
+
+        dependencies = extract_cmd._dependency_extract_block(analysis)
+
+        assert dependencies["external"]["python"]["versions"] == {
+            "requests": {"version": "2.31.0", "resolved_from": "poetry.lock"}
+        }
+
+    def test_haskell_external_dependencies_are_keyed_by_language(self, tmp_path):
+        (tmp_path / "app.cabal").write_text(
+            textwrap.dedent("""\
+            cabal-version: 3.0
+            name: app
+            library
+              build-depends: base, text
+            """),
+            encoding="utf-8",
+        )
+        analysis = analyze_dependencies(
+            {
+                "src/App.hs": {
+                    "language": "haskell",
+                    "module": "App",
+                    "imports": [{"module": "Data.Text", "name": ""}],
+                    "classes": [],
+                    "functions": [],
+                }
+            },
+            str(tmp_path),
+        )
+
+        dependencies = extract_cmd._dependency_extract_block(analysis)
+
+        assert dependencies["external"]["haskell"] == {
+            "used": {"text": ["src/App.hs"]},
+            "undeclared": [],
+            "unused": ["base"],
+        }
+
     def test_deep_payload_includes_dependencies_for_empty_changed_inventory(
         self, tmp_path, monkeypatch
     ):
@@ -1899,6 +2190,322 @@ class TestExtractPathValidation:
 
         assert not Path("docs").exists()
         assert not Path(".llm-wiki").exists()
+
+
+class TestUnsupportedSources:
+    def test_shell_files_are_reported_as_unsupported_sources(self, tmp_path):
+        (tmp_path / "app.py").write_text("def main():\n    pass\n", encoding="utf-8")
+        scripts = tmp_path / "scripts"
+        scripts.mkdir()
+        (scripts / "deploy.sh").write_text("#!/bin/sh\n", encoding="utf-8")
+
+        summary_result = extract_cmd.build_extract_payload(
+            str(tmp_path), summary=True, allow_external_src=True
+        )
+        deep_result = extract_cmd.build_extract_payload(
+            str(tmp_path), deep=True, allow_external_src=True
+        )
+
+        expected = {"shell": {"count": 1, "paths": ["scripts/deploy.sh"]}}
+        assert summary_result.payload["unsupported_sources"] == expected
+        assert deep_result.payload["unsupported_sources"] == expected
+        assert "scripts/deploy.sh" not in summary_result.payload["inventory"]
+        assert "scripts/deploy.sh" not in deep_result.payload["inventory"]
+
+    def test_generated_javascript_bundles_are_reported_not_extracted(
+        self, tmp_path, monkeypatch
+    ):
+        first_party = "services/dashboard/frontend/src/main.js"
+        generated = "services/dashboard/static/assets/index-D0zaI3XT.js"
+        for rel_path in (first_party, generated):
+            path = tmp_path / rel_path
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("export function visible() {}\n", encoding="utf-8")
+
+        class FakeTypeScriptExtractor:
+            last_error = None
+
+            def extract(
+                self,
+                src_dir,
+                only_files=None,
+                deep=False,
+                source_files=None,
+            ):
+                assert source_files is not None
+                return {
+                    rel: {"classes": [], "functions": [], "language": "javascript"}
+                    for rel in source_files
+                }
+
+        monkeypatch.setattr(
+            extract_cmd,
+            "get_extractor_registry",
+            lambda: {"typescript": extract_cmd.EXTRACTOR_REGISTRY["typescript"]},
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_load_extractor",
+            lambda _entry_point: FakeTypeScriptExtractor(),
+        )
+
+        result = extract_cmd.build_extract_payload(
+            str(tmp_path), summary=True, allow_external_src=True
+        )
+
+        assert sorted(result.payload["inventory"]) == [first_party]
+        assert result.payload["unsupported_sources"] == {
+            "generated_javascript_bundle": {"count": 1, "paths": [generated]}
+        }
+
+    def test_paths_can_extract_exact_generated_javascript_bundle(
+        self, tmp_path, monkeypatch
+    ):
+        generated = "services/dashboard/static/assets/index-D0zaI3XT.js"
+        path = tmp_path / generated
+        path.parent.mkdir(parents=True)
+        path.write_text("function a(){};export{a as Ko};\n", encoding="utf-8")
+
+        class FakeTypeScriptExtractor:
+            last_error = None
+
+            def extract(
+                self,
+                src_dir,
+                only_files=None,
+                deep=False,
+                source_files=None,
+            ):
+                assert source_files is not None
+                return {
+                    rel: {"classes": [], "functions": [], "language": "javascript"}
+                    for rel in source_files
+                }
+
+        monkeypatch.setattr(
+            extract_cmd,
+            "get_extractor_registry",
+            lambda: {"typescript": extract_cmd.EXTRACTOR_REGISTRY["typescript"]},
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_load_extractor",
+            lambda _entry_point: FakeTypeScriptExtractor(),
+        )
+
+        result = extract_cmd.build_extract_payload(
+            str(tmp_path),
+            paths=[generated],
+            summary=True,
+            allow_external_src=True,
+        )
+
+        assert sorted(result.payload["inventory"]) == [generated]
+        assert "unsupported_sources" not in result.payload
+
+    def test_haskell_summary_output_uses_builtin_inventory(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        app_dir = tmp_path / "app"
+        app_dir.mkdir()
+        (app_dir / "Main.hs").write_text("module Main where\n", encoding="utf-8")
+
+        class FakeHaskellExtractor:
+            last_error = None
+
+            def extract(self, src_dir, only_files=None, deep=False):
+                return {
+                    rel: {
+                        "language": "haskell",
+                        "classes": [{"name": "App", "kind": "data"}],
+                        "functions": [{"name": "main"}],
+                    }
+                    for rel in src_dir.source_files
+                }
+
+        monkeypatch.setattr(
+            extract_cmd,
+            "get_extractor_registry",
+            lambda: {"haskell": extract_cmd.EXTRACTOR_REGISTRY["haskell"]},
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_load_extractor",
+            lambda _entry_point: FakeHaskellExtractor(),
+        )
+
+        result = extract_cmd.build_extract_payload(".", summary=True)
+
+        assert result.payload["inventory"] == {
+            "app/Main.hs": {
+                "language": "haskell",
+                "classes": ["App"],
+                "functions": ["main"],
+            }
+        }
+        assert "unsupported_sources" not in result.payload
+
+    def test_haskell_builtin_registration_suppresses_unsupported_report(
+        self, tmp_path, monkeypatch
+    ):
+        monkeypatch.chdir(tmp_path)
+        hls_app = tmp_path / "hls-analysis" / "app"
+        hls_src = tmp_path / "hls-analysis" / "src" / "HLSAnalysis"
+        hls_app.mkdir(parents=True)
+        hls_src.mkdir(parents=True)
+        (tmp_path / ".git").mkdir()
+        (hls_app / "Main.hs").write_text("module Main where\n", encoding="utf-8")
+        (hls_src / "API.hs").write_text(
+            "module HLSAnalysis.API where\n", encoding="utf-8"
+        )
+
+        result = extract_cmd.get_inventory_result(".")
+
+        assert result.inventory == {}
+        assert result.statuses["haskell"].state == "failed"
+        assert result.statuses["haskell"].files_found == 2
+        assert (
+            "prepare-extractors --language haskell"
+            in result.statuses["haskell"].message
+        )
+        assert (
+            result.statuses["haskell"].message.count(
+                "prepare-extractors --language haskell"
+            )
+            == 1
+        )
+        assert (
+            "before extract/bootstrap/sync/lint/ci-check"
+            in result.statuses["haskell"].message
+        )
+        assert "before lint/extract" not in result.statuses["haskell"].message
+        assert (
+            extract_cmd.unsupported_source_summary(
+                build_source_snapshot("."),
+                supported_languages=result.statuses,
+            )
+            == {}
+        )
+
+    def test_no_haskell_files_do_not_probe_haskell_helper(self, tmp_path, monkeypatch):
+        (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
+        helper_calls = []
+
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.haskell_extractor.get_prepared_binary",
+            lambda *args, **kwargs: helper_calls.append((args, kwargs)),
+        )
+
+        result = extract_cmd.get_inventory_result(str(tmp_path))
+
+        assert result.statuses["haskell"] == extract_cmd.ExtractorStatus(
+            "haskell", "skipped", 0
+        )
+        assert helper_calls == []
+
+    def test_ignored_and_excluded_haskell_files_do_not_probe_helper(
+        self, tmp_path, monkeypatch
+    ):
+        ignored_dir = tmp_path / "ignored"
+        ignored_dir.mkdir()
+        (ignored_dir / "Main.hs").write_text("module Ignored where\n", encoding="utf-8")
+        dist_dir = tmp_path / "dist"
+        dist_dir.mkdir()
+        (dist_dir / "Generated.hs").write_text(
+            "module Generated where\n", encoding="utf-8"
+        )
+        (tmp_path / ".gitignore").write_text("ignored/\n", encoding="utf-8")
+        helper_calls = []
+
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.haskell_extractor.get_prepared_binary",
+            lambda *args, **kwargs: helper_calls.append((args, kwargs)),
+        )
+
+        result = extract_cmd.get_inventory_result(str(tmp_path))
+
+        assert result.statuses["haskell"] == extract_cmd.ExtractorStatus(
+            "haskell", "skipped", 0
+        )
+        assert helper_calls == []
+
+    def test_registered_haskell_plugin_suppresses_unsupported_report(
+        self, tmp_path, monkeypatch
+    ):
+        monkeypatch.chdir(tmp_path)
+        app_dir = tmp_path / "app"
+        app_dir.mkdir()
+        (app_dir / "Main.hs").write_text("module Main where\n", encoding="utf-8")
+        registry = {
+            **extract_cmd.EXTRACTOR_REGISTRY,
+            "haskell": "fake_haskell:HaskellExtractor",
+        }
+
+        class FakeHaskellExtractor:
+            last_error = None
+
+            def extract(self, src_dir, only_files=None, deep=False):
+                return {
+                    "app/Main.hs": {
+                        "language": "haskell",
+                        "classes": [],
+                        "functions": [{"name": "main"}],
+                    }
+                }
+
+        monkeypatch.setattr(extract_cmd, "get_extractor_registry", lambda: registry)
+        monkeypatch.setattr(
+            extract_cmd,
+            "_load_extractor",
+            lambda entry_point: (
+                FakeHaskellExtractor()
+                if entry_point == "fake_haskell:HaskellExtractor"
+                else extract_cmd._load_extractor(entry_point)
+            ),
+        )
+
+        result = extract_cmd.build_extract_payload(".", summary=True)
+
+        assert result.payload["inventory"] == {
+            "app/Main.hs": {
+                "language": "haskell",
+                "functions": ["main"],
+            }
+        }
+        assert "unsupported_sources" not in result.payload
+
+    def test_legacy_haskell_plugin_still_suppresses_unsupported_report(
+        self, tmp_path, monkeypatch
+    ):
+        monkeypatch.chdir(tmp_path)
+        app_dir = tmp_path / "app"
+        app_dir.mkdir()
+        (app_dir / "Main.hs").write_text("module Main where\n", encoding="utf-8")
+
+        monkeypatch.setitem(
+            extract_cmd.LANGUAGE_EXTENSIONS,
+            "haskell",
+            (),
+        )
+        monkeypatch.setitem(
+            extract_cmd.EXTRACTOR_REGISTRY,
+            "haskell",
+            "fake_haskell:HaskellExtractor",
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.services.source_snapshot.KNOWN_UNSUPPORTED_LANGUAGE_EXTENSIONS",
+            {"haskell": (".hs", ".lhs")},
+        )
+        snapshot = build_source_snapshot(".")
+
+        assert extract_cmd.unsupported_source_summary(snapshot) == {
+            "haskell": {"count": 1, "paths": ["app/Main.hs"]}
+        }
+        assert (
+            extract_cmd.unsupported_source_summary(
+                snapshot, supported_languages={"haskell"}
+            )
+            == {}
+        )
 
 
 class TestExcludedDirsRelative:
@@ -2122,6 +2729,31 @@ class TestOnlyFiles:
         inventory = get_inventory(str(tmp_path), only_files=[".venv/lib/hidden.py"])
         assert inventory == {}
 
+    def test_default_inventory_excludes_agent_worktree_sources(self, tmp_path):
+        (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
+        worktree = tmp_path / ".claude" / "worktrees" / "agent-strict-instructions"
+        worktree.mkdir(parents=True)
+        (worktree / "app.py").write_text("class WorktreeApp: pass\n", encoding="utf-8")
+
+        inventory = get_inventory(str(tmp_path))
+
+        assert sorted(inventory) == ["app.py"]
+
+    def test_only_files_can_select_exact_agent_worktree_source(self, tmp_path):
+        worktree = tmp_path / ".claude" / "worktrees" / "agent-strict-instructions"
+        worktree.mkdir(parents=True)
+        (worktree / "app.py").write_text("class WorktreeApp: pass\n", encoding="utf-8")
+        (worktree / "sibling.py").write_text("class Sibling: pass\n", encoding="utf-8")
+
+        inventory = get_inventory(
+            str(tmp_path),
+            only_files=[".claude/worktrees/agent-strict-instructions/app.py"],
+        )
+
+        assert sorted(inventory) == [
+            ".claude/worktrees/agent-strict-instructions/app.py"
+        ]
+
 
 class TestInventoryCache:
     def _cache_options(self, tmp_path, *, rebuild=False):
@@ -2150,6 +2782,7 @@ class TestInventoryCache:
         )
 
         assert second.inventory["app.py"]["classes"][0]["name"] == "App"
+        assert second.cache_stats is not None
         assert second.cache_stats.hits == 1
         assert second.cache_stats.fresh_extracted == 0
 
@@ -2174,6 +2807,7 @@ class TestInventoryCache:
                 include_empty=False,
                 source_files=None,
             ):
+                assert source_files is not None
                 calls.append(list(source_files))
                 return {
                     "b.py": {
@@ -2198,6 +2832,7 @@ class TestInventoryCache:
         assert calls == [["b.py"]]
         assert result.inventory["a.py"]["classes"][0]["name"] == "A"
         assert result.inventory["b.py"]["classes"][0]["name"] == "B2"
+        assert result.cache_stats is not None
         assert result.cache_stats.hits == 1
         assert result.cache_stats.changed == 1
 
@@ -2219,6 +2854,7 @@ class TestInventoryCache:
         )
 
         assert sorted(result.inventory) == ["a.py"]
+        assert result.cache_stats is not None
         assert result.cache_stats.deleted == 1
 
     def test_package_marker_change_restamps_cached_entry(self, tmp_path, monkeypatch):
@@ -2258,6 +2894,7 @@ class TestInventoryCache:
         )
 
         assert result.inventory["app.py"]["classes"][0]["name"] == "App"
+        assert result.cache_stats is not None
         assert result.cache_stats.status == "corrupt"
         assert result.cache_stats.load_error
 
@@ -2336,6 +2973,7 @@ class TestInventoryCache:
         )
 
         assert result.inventory["app.ts"]["classes"][0]["name"] == "App"
+        assert result.cache_stats is not None
         assert result.cache_stats.hits == 1
 
 
@@ -2363,6 +3001,292 @@ class TestSummarizeInventory:
 
     def test_empty_inventory(self):
         assert _summarize_inventory({}) == {}
+
+    def test_keeps_compact_module_metadata(self):
+        summary = _summarize_inventory(
+            {
+                "docker/proxy.js": {
+                    "language": "javascript",
+                    "classes": [],
+                    "functions": [],
+                    "imports": [
+                        {"module": "node:http", "name": "http"},
+                        {"module": "node:http", "name": "http"},
+                        {"module": "node:net", "name": "net"},
+                    ],
+                    "exports": ["default"],
+                    "constants": [
+                        {"name": "http", "line": 1, "exported": False},
+                        {"name": "server", "line": 2, "exported": False},
+                    ],
+                    "module_calls": [
+                        {"name": "require", "line": 1, "target": "http"},
+                        {"name": "createServer", "line": 2, "target": "server"},
+                        {"name": "listen", "line": 3},
+                    ],
+                    "module_docstring": "/** Proxy module. */",
+                }
+            }
+        )
+
+        assert summary["docker/proxy.js"] == {
+            "language": "javascript",
+            "imports": ["node:http", "node:net"],
+            "exports": ["default"],
+            "constants": ["http", "server"],
+            "module_calls": ["require", "createServer", "listen"],
+        }
+
+
+@pytest.mark.skipif(
+    not (TS_NODE_MODULES / "ts-morph").exists() or shutil.which("node") is None,
+    reason="Node.js/ts-morph dependencies not installed",
+)
+class TestTypeScriptModuleOnlyExtraction:
+    def test_summary_keeps_module_only_javascript_inventory(self, tmp_path):
+        path = tmp_path / "docker" / "proxy.js"
+        path.parent.mkdir(parents=True)
+        path.write_text(
+            textwrap.dedent("""\
+            const http = require("node:http");
+            const listenPort = Number.parseInt(process.env.PORT || "3000", 10);
+            const server = http.createServer((req, res) => {
+              res.end("ok");
+            });
+            server.listen(listenPort);
+            """),
+            encoding="utf-8",
+        )
+
+        summary = extract_cmd.build_extract_payload(
+            str(tmp_path),
+            summary=True,
+            allow_external_src=True,
+            read_only=True,
+        )
+        deep = extract_cmd.build_extract_payload(
+            str(tmp_path),
+            deep=True,
+            allow_external_src=True,
+            read_only=True,
+        )
+
+        assert sorted(summary.payload["inventory"]) == ["docker/proxy.js"]
+        assert sorted(deep.payload["inventory"]) == ["docker/proxy.js"]
+        entry = summary.payload["inventory"]["docker/proxy.js"]
+        assert entry["language"] == "javascript"
+        assert entry["constants"] == ["http", "listenPort", "server"]
+        assert entry["module_calls"] == [
+            "require",
+            "parseInt",
+            "createServer",
+            "listen",
+        ]
+
+    def test_deep_payload_includes_javascript_http_entrypoint_and_data_flow(
+        self, tmp_path
+    ):
+        path = tmp_path / "server.js"
+        path.write_text(
+            textwrap.dedent("""\
+            const http = require("node:http");
+
+            function handleRequest(req, res) {
+              res.end("ok");
+            }
+
+            const server = http.createServer(handleRequest);
+            """),
+            encoding="utf-8",
+        )
+
+        result = extract_cmd.build_extract_payload(
+            str(tmp_path),
+            deep=True,
+            allow_external_src=True,
+            read_only=True,
+        )
+
+        assert {
+            "category": "http",
+            "file": "server.js",
+            "symbol": "handleRequest",
+            "label": "handleRequest",
+            "id": "http-handleRequest",
+        } in result.payload["entrypoints"]
+        assert any(
+            flow["id"] == "http-handleRequest" for flow in result.payload["data_flows"]
+        )
+
+    def test_paths_keep_pto_style_typescript_modules_in_deep_inventory(self, tmp_path):
+        files = {
+            "frontend/src/main.tsx": """
+                import React from 'react';
+                import ReactDOM from 'react-dom/client';
+                import App from './App';
+
+                const queryClient = new QueryClient();
+                ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+            """,
+            "frontend/src/lib/api.ts": """
+                import axios, { AxiosInstance } from 'axios';
+
+                const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                const api: AxiosInstance = axios.create({ baseURL: `${BASE_URL}/api/v1` });
+                api.interceptors.request.use((config) => config);
+
+                export default api;
+            """,
+            "frontend/src/lib/queryClient.ts": """
+                import { QueryClient } from '@tanstack/react-query';
+
+                export const queryClient = new QueryClient();
+            """,
+            "frontend/src/pages/SimpleRegister.tsx": """
+                Object.defineProperty(exports, "__esModule", { value: true });
+                exports.default = SimpleRegister;
+
+                function SimpleRegister() {
+                  return null;
+                }
+            """,
+            "frontend/src/vite-env.d.ts": """
+                interface ImportMetaEnv {
+                  readonly VITE_API_URL?: string
+                }
+
+                interface ImportMeta {
+                  readonly env: ImportMetaEnv
+                }
+            """,
+        }
+        for rel_path, content in files.items():
+            path = tmp_path / rel_path
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(textwrap.dedent(content), encoding="utf-8")
+
+        result = extract_cmd.build_extract_payload(
+            str(tmp_path),
+            deep=True,
+            paths=list(files),
+            allow_external_src=True,
+        )
+
+        assert set(result.payload["inventory"]) == set(files)
+        assert result.inventory_count == 5
+        assert result.payload["inventory"]["frontend/src/main.tsx"]["module_calls"]
+        assert result.payload["inventory"]["frontend/src/lib/api.ts"]["exports"] == [
+            "default"
+        ]
+        assert result.payload["inventory"]["frontend/src/lib/queryClient.ts"][
+            "constants"
+        ] == [{"name": "queryClient", "line": 4, "exported": True}]
+        assert [
+            fn["name"]
+            for fn in result.payload["inventory"][
+                "frontend/src/pages/SimpleRegister.tsx"
+            ]["functions"]
+        ] == ["SimpleRegister"]
+        assert [
+            cls["name"]
+            for cls in result.payload["inventory"]["frontend/src/vite-env.d.ts"][
+                "classes"
+            ]
+        ] == ["ImportMetaEnv", "ImportMeta"]
+
+    def test_full_scan_keeps_pto_style_src_lib_modules_under_root_lib_ignore(
+        self, tmp_path
+    ):
+        (tmp_path / ".gitignore").write_text("lib/\n", encoding="utf-8")
+        files = {
+            "frontend/src/main.tsx": """
+                import React from 'react';
+                import ReactDOM from 'react-dom/client';
+                import App from './App';
+
+                const queryClient = new QueryClient();
+                ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+            """,
+            "frontend/src/lib/api.ts": """
+                import axios, { AxiosInstance } from 'axios';
+
+                const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                const api: AxiosInstance = axios.create({ baseURL: `${BASE_URL}/api/v1` });
+                api.interceptors.request.use((config) => config);
+
+                export default api;
+            """,
+            "frontend/src/lib/api.tsx": """
+                export default function ApiPreview() {
+                  return null;
+                }
+            """,
+            "frontend/src/lib/queryClient.ts": """
+                import { QueryClient } from '@tanstack/react-query';
+
+                export const queryClient = new QueryClient();
+            """,
+            "frontend/src/lib/queryClient.tsx": """
+                export const QueryClientPreview = () => null;
+            """,
+            "frontend/src/lib/utils.ts": """
+                export function cn(...classes: string[]) {
+                  return classes.filter(Boolean).join(' ');
+                }
+            """,
+            "frontend/src/lib/utils.tsx": """
+                export function UtilsPreview() {
+                  return null;
+                }
+            """,
+            "frontend/src/lib/websocket.ts": """
+                export function connectWebSocket() {
+                  return new WebSocket('ws://localhost');
+                }
+            """,
+            "frontend/src/lib/websocket.tsx": """
+                export function WebSocketPreview() {
+                  return null;
+                }
+            """,
+        }
+        for rel_path, content in files.items():
+            path = tmp_path / rel_path
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(textwrap.dedent(content), encoding="utf-8")
+        root_lib = tmp_path / "lib"
+        root_lib.mkdir()
+        (root_lib / "generated.ts").write_text(
+            "export const generated = 1;\n", encoding="utf-8"
+        )
+
+        result = extract_cmd.build_extract_payload(
+            str(tmp_path),
+            deep=True,
+            allow_external_src=True,
+        )
+
+        assert set(result.payload["inventory"]) == set(files)
+        assert "lib/generated.ts" not in result.payload["inventory"]
+        assert result.payload["inventory"]["frontend/src/main.tsx"]["module_calls"]
+        assert result.payload["inventory"]["frontend/src/lib/api.ts"]["exports"] == [
+            "default"
+        ]
+        assert result.payload["inventory"]["frontend/src/lib/queryClient.ts"][
+            "constants"
+        ] == [{"name": "queryClient", "line": 4, "exported": True}]
+        assert [
+            fn["name"]
+            for fn in result.payload["inventory"]["frontend/src/lib/utils.ts"][
+                "functions"
+            ]
+        ] == ["cn"]
+        assert [
+            fn["name"]
+            for fn in result.payload["inventory"]["frontend/src/lib/websocket.ts"][
+                "functions"
+            ]
+        ] == ["connectWebSocket"]
 
 
 class TestPackageDiscovery:
@@ -2576,6 +3500,7 @@ class TestExtractExitCodes:
             "deep": False,
             "package": None,
             "include_empty": False,
+            "include_tests": None,
         }
         defaults.update(kwargs)
         return types.SimpleNamespace(**defaults)
@@ -2592,3 +3517,38 @@ class TestExtractExitCodes:
         with pytest.raises(SystemExit) as exc_info:
             extract_cmd.run(self._args(src_dir=".", package="missing"))
         assert exc_info.value.code == 1
+
+    def test_run_passes_helper_cache_dir_to_payload(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        monkeypatch.chdir(tmp_path)
+        seen = {}
+
+        def fake_build_extract_payload(src_dir, **kwargs):
+            seen["src_dir"] = src_dir
+            seen["helper_cache_dir"] = kwargs["helper_cache_dir"]
+            seen["include_tests"] = kwargs["include_tests"]
+            return extract_cmd.ExtractPayloadResult(
+                {"schema_version": extract_cmd.EXTRACT_SCHEMA_VERSION, "inventory": {}},
+                inventory_count=0,
+                docker_count=0,
+            )
+
+        monkeypatch.setattr(
+            extract_cmd, "build_extract_payload", fake_build_extract_payload
+        )
+
+        extract_cmd.run(
+            self._args(
+                src_dir=".",
+                helper_cache_dir=str(tmp_path / "helper-cache"),
+                include_tests=["go"],
+            )
+        )
+
+        assert seen == {
+            "src_dir": ".",
+            "helper_cache_dir": str(tmp_path / "helper-cache"),
+            "include_tests": ["go"],
+        }
+        assert json.loads(capsys.readouterr().out)["inventory"] == {}

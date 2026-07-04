@@ -496,3 +496,41 @@ class TestReviewMode:
 
         payload = json.loads(capsys.readouterr().out)
         assert payload["findings"]
+
+    def test_build_surface_index_pages_propagates_src_dir_root(
+        self, tmp_path, monkeypatch
+    ):
+        """Regression (2026-07-04): ``_build_surface_index_pages`` must pass
+        ``root=src_dir``/``fallback_root=Path.cwd()`` to ``get_entry_points``.
+        Dropping those kwargs (as this call site once did) makes the Go/
+        Haskell web-server detectors silently miss entry points whenever the
+        review command runs with an external ``--src-dir`` from a different
+        cwd — proven end-to-end for the sibling lint check in
+        ``TestLintFlowCoverage::test_go_http_entrypoint_not_stale_for_external_src_dir``.
+        This test pins the wiring at the call site directly.
+        """
+        calls = []
+        real_get_entry_points = review_cmd.get_entry_points
+
+        def spy(inventory, **kwargs):
+            calls.append(kwargs)
+            return real_get_entry_points(inventory, **kwargs)
+
+        monkeypatch.setattr(review_cmd, "get_entry_points", spy)
+
+        wiki_dir = tmp_path / "wiki"
+        wiki_dir.mkdir()
+        src_dir = "/some/external/src"
+
+        review_cmd._build_surface_index_pages(
+            wiki_dir,
+            {},
+            src_dir,
+            module_page_map={},
+            entity_page_map={},
+            entity_occurrence_page_map={},
+        )
+
+        assert len(calls) == 1
+        assert calls[0]["root"] == src_dir
+        assert calls[0]["fallback_root"] == Path.cwd()

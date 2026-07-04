@@ -125,8 +125,7 @@ function collectFiles(dir) {
       }
     } else if (
       entry.isFile() &&
-      extensions.includes(path.extname(entry.name)) &&
-      !entry.name.endsWith(".d.ts") // skip declaration files — they duplicate source types
+      extensions.includes(path.extname(entry.name))
     ) {
       results.push(full);
     }
@@ -214,6 +213,45 @@ function extractMethodInfo(method) {
   return info;
 }
 
+function nodeEndLine(node) {
+  try {
+    return node.getEndLineNumber?.();
+  } catch {
+    return undefined;
+  }
+}
+
+function functionBaseInfo(node, name, line = null) {
+  const startLine = line ?? node.getStartLineNumber();
+  const info = {
+    name,
+    kind: "function",
+    line: startLine,
+  };
+  const endLine = nodeEndLine(node);
+  if (Number.isInteger(endLine) && endLine >= startLine) {
+    info.end_line = endLine;
+  }
+  return info;
+}
+
+function extractFunctionInfo(fn, name, docNode = null, line = null) {
+  const info = functionBaseInfo(fn, name, line);
+  const isAsync = fn.isAsync?.() ?? false;
+
+  if (deep) {
+    info.is_async = isAsync;
+    info.docstring = getJsDoc(docNode ?? fn);
+    info.decorators = getDecoratorNames(fn);
+    info.params = (fn.getParameters?.() ?? []).map(extractMethodParam);
+    info.return_type = typeToStr(fn.getReturnTypeNode?.());
+  } else if (isAsync) {
+    info.async = true;
+  }
+
+  return info;
+}
+
 function extractProperty(prop) {
   const info = { name: prop.getName(), type: "" };
   const typeNode = prop.getTypeNode?.();
@@ -224,11 +262,235 @@ function extractProperty(prop) {
   return info;
 }
 
+function relativePathFromSrc(filePath) {
+  const normalized = filePath.split("\\").join("/");
+  if (normalized === srcDirPosix) return path.basename(normalized);
+  if (normalized.startsWith(srcDirPosix + "/")) {
+    return normalized.slice(srcDirPosix.length + 1);
+  }
+  return normalized;
+}
+
+function commonJsExports(sourceFile) {
+  const exports = new Set();
+  const functionNames = new Set();
+
+  for (const assignment of sourceFile.getDescendantsOfKind(SyntaxKind.BinaryExpression)) {
+    if (assignment.getOperatorToken().getText() !== "=") continue;
+
+    const left = assignment.getLeft().getText();
+    const right = assignment.getRight();
+    let exportedName = "";
+    if (left === "module.exports") {
+      exportedName = "default";
+    } else if (left.startsWith("exports.")) {
+      exportedName = left.slice("exports.".length);
+    } else if (left.startsWith("module.exports.")) {
+      exportedName = left.slice("module.exports.".length);
+    }
+
+    if (!exportedName) continue;
+    exports.add(exportedName === "default" ? "default" : exportedName);
+    if (right.getKind() === SyntaxKind.Identifier) {
+      functionNames.add(right.getText());
+    }
+  }
+
+  return { exports, functionNames };
+}
+
+function extractExports(sourceFile, commonJs) {
+  const names = new Set(commonJs.exports);
+  const exportedDeclarations = sourceFile.getExportedDeclarations?.() ?? new Map();
+  for (const name of exportedDeclarations.keys()) {
+    names.add(name);
+  }
+
+  for (const exp of sourceFile.getExportDeclarations()) {
+    const namedExports = exp.getNamedExports();
+    if (namedExports.length === 0) {
+      names.add("*");
+      continue;
+    }
+    for (const named of namedExports) {
+      names.add(named.getName());
+    }
+  }
+
+  for (const assignment of sourceFile.getExportAssignments?.() ?? []) {
+    names.add(assignment.isExportEquals?.() ? "=" : "default");
+  }
+
+  return [...names].filter(Boolean).sort();
+}
+
+function extractTopLevelConstants(sourceFile) {
+  const constants = [];
+  for (const stmt of sourceFile.getStatements()) {
+    if (stmt.getKind() !== SyntaxKind.VariableStatement) continue;
+    if (stmt.getDeclarationKind?.() !== "const") continue;
+
+    for (const decl of stmt.getDeclarations()) {
+      const init = decl.getInitializer();
+      const initKind = init?.getKind();
+      if (
+        initKind === SyntaxKind.ArrowFunction ||
+        initKind === SyntaxKind.FunctionExpression
+      )
+        continue;
+      constants.push({
+        name: decl.getName(),
+        line: decl.getStartLineNumber(),
+        exported: stmt.isExported?.() ?? false,
+      });
+    }
+  }
+  return constants;
+}
+
+function expressionCallName(expr) {
+  const kind = expr.getKind();
+  if (kind === SyntaxKind.CallExpression) {
+    const callee = expr.getExpression();
+    if (callee.getKind() === SyntaxKind.PropertyAccessExpression) {
+      return callee.getName();
+    }
+    return callee.getText();
+  }
+  if (kind === SyntaxKind.NewExpression) {
+    return expr.getExpression().getText().split(".").pop();
+  }
+  return "";
+}
+
+function moduleCallFromExpression(expr, target = null, line = null) {
+  if (!expr) return null;
+  const kind = expr.getKind();
+  if (kind !== SyntaxKind.CallExpression && kind !== SyntaxKind.NewExpression) {
+    return null;
+  }
+  const name = expressionCallName(expr);
+  if (!name) return null;
+
+  const call = { name, line: line ?? expr.getStartLineNumber() };
+  if (target) call.target = target;
+  if (name === "createServer" && typeof expr.getArguments === "function") {
+    const firstArg = expr.getArguments()[0];
+    if (firstArg && firstArg.getKind() === SyntaxKind.Identifier) {
+      call.args = [firstArg.getText()];
+    }
+  }
+  return call;
+}
+
+function extractModuleCalls(sourceFile) {
+  const calls = [];
+  for (const stmt of sourceFile.getStatements()) {
+    if (stmt.getKind() === SyntaxKind.VariableStatement) {
+      for (const decl of stmt.getDeclarations()) {
+        const call = moduleCallFromExpression(
+          decl.getInitializer(),
+          decl.getName(),
+          decl.getStartLineNumber()
+        );
+        if (call) calls.push(call);
+      }
+      continue;
+    }
+
+    if (stmt.getKind() !== SyntaxKind.ExpressionStatement) continue;
+    const expr = stmt.getExpression();
+    if (expr.getKind() === SyntaxKind.BinaryExpression) {
+      const call = moduleCallFromExpression(
+        expr.getRight(),
+        expr.getLeft().getText(),
+        expr.getStartLineNumber()
+      );
+      if (call) calls.push(call);
+      continue;
+    }
+
+    const call = moduleCallFromExpression(expr, null, expr.getStartLineNumber());
+    if (call) calls.push(call);
+  }
+  return calls;
+}
+
+function extractImportRecords(sourceFile) {
+  const imports = [];
+  for (const imp of sourceFile.getImportDeclarations()) {
+    const moduleSpecifier = imp.getModuleSpecifierValue();
+    const defaultImport = imp.getDefaultImport();
+    if (defaultImport) {
+      imports.push({
+        module: moduleSpecifier,
+        name: defaultImport.getText(),
+        alias: null,
+        type: "default",
+      });
+    }
+
+    for (const named of imp.getNamedImports()) {
+      imports.push({
+        module: moduleSpecifier,
+        name: named.getName(),
+        alias: named.getAliasNode()?.getText() ?? null,
+        type: "named",
+      });
+    }
+
+    const ns = imp.getNamespaceImport();
+    if (ns) {
+      imports.push({
+        module: moduleSpecifier,
+        name: ns.getText(),
+        alias: null,
+        type: "namespace",
+      });
+    }
+  }
+  return imports;
+}
+
+function extractModuleDocstring(sourceFile) {
+  const firstStmt = sourceFile.getStatements()[0];
+  if (!firstStmt) return "";
+  const leading = firstStmt
+    .getLeadingCommentRanges()
+    .find((r) => r.getText().startsWith("/**"));
+  return leading ? leading.getText() : "";
+}
+
+function hasDocumentableModuleSignals(fileEntry, moduleDocstring = "") {
+  return Boolean(
+    fileEntry.imports?.length ||
+      moduleDocstring ||
+      fileEntry.exports?.length ||
+      fileEntry.constants?.length ||
+      fileEntry.module_calls?.length
+  );
+}
+
+function isPlainJavaScriptFile(filePath) {
+  return path.extname(filePath) === ".js";
+}
+
+function shouldIncludeTopLevelFunction(fn, filePath, commonJs) {
+  const fnName = fn.getName() ?? "";
+  if (isPlainJavaScriptFile(filePath) && fnName) return true;
+  return (
+    fn.isExported() ||
+    fn.isDefaultExport() ||
+    (deep && fnName && commonJs.functionNames.has(fnName))
+  );
+}
+
 // ── Per-file extraction ───────────────────────────────────────────────────────
 
 function extractFile(sourceFile) {
   const filePath = sourceFile.getFilePath();
   const fileEntry = { classes: [], functions: [] };
+  const cjs = commonJsExports(sourceFile);
 
   // ── Classes ────────────────────────────────────────────────────────────────
   for (const cls of sourceFile.getClasses()) {
@@ -345,27 +607,15 @@ function extractFile(sourceFile) {
 
   // ── Functions ──────────────────────────────────────────────────────────────
   for (const fn of sourceFile.getFunctions()) {
-    // Only exported or public top-level functions
-    if (!fn.isExported() && !fn.isDefaultExport()) continue;
+    const fnName = fn.getName() ?? "";
+    if (!shouldIncludeTopLevelFunction(fn, filePath, cjs)) continue;
 
-    if (deep) {
-      fileEntry.functions.push({
-        name: fn.getName() ?? `<anonymous_L${fn.getStartLineNumber()}>`,
-        line: fn.getStartLineNumber(),
-        is_async: fn.isAsync(),
-        docstring: getJsDoc(fn),
-        decorators: getDecoratorNames(fn),
-        params: fn.getParameters().map(extractMethodParam),
-        return_type: typeToStr(fn.getReturnTypeNode()),
-      });
-    } else {
-      const info = {
-        name: fn.getName() ?? `<anonymous_L${fn.getStartLineNumber()}>`,
-        line: fn.getStartLineNumber(),
-      };
-      if (fn.isAsync()) info.async = true;
-      fileEntry.functions.push(info);
-    }
+    fileEntry.functions.push(
+      extractFunctionInfo(
+        fn,
+        fnName || `<anonymous_L${fn.getStartLineNumber()}>`
+      )
+    );
   }
 
   // ── Arrow-function exports (const foo = () => ...) ─────────────────────────
@@ -383,78 +633,49 @@ function extractFile(sourceFile) {
       continue;
 
     const arrowFn = init;
-    if (deep) {
-      fileEntry.functions.push({
-        name: varDecl.getName(),
-        line: varDecl.getStartLineNumber(),
-        is_async: arrowFn.isAsync?.() ?? false,
-        docstring: getJsDoc(stmt),
-        decorators: [],
-        params: arrowFn.getParameters().map(extractMethodParam),
-        return_type: typeToStr(arrowFn.getReturnTypeNode()),
-      });
-    } else {
-      const info = {
-        name: varDecl.getName(),
-        line: varDecl.getStartLineNumber(),
-      };
-      if (arrowFn.isAsync?.()) info.async = true;
-      fileEntry.functions.push(info);
-    }
+    const info = extractFunctionInfo(
+      arrowFn,
+      varDecl.getName(),
+      stmt,
+      varDecl.getStartLineNumber()
+    );
+    if (deep) info.decorators = [];
+    fileEntry.functions.push(info);
   }
 
-  // ── Imports (deep only) ────────────────────────────────────────────────────
-  if (deep) {
-    fileEntry.imports = [];
-    for (const imp of sourceFile.getImportDeclarations()) {
-      const moduleSpecifier = imp.getModuleSpecifierValue();
-      // default import
-      const defaultImport = imp.getDefaultImport();
-      if (defaultImport) {
-        fileEntry.imports.push({
-          module: moduleSpecifier,
-          name: defaultImport.getText(),
-          alias: null,
-          type: "default",
-        });
-      }
-      // named imports
-      for (const named of imp.getNamedImports()) {
-        fileEntry.imports.push({
-          module: moduleSpecifier,
-          name: named.getName(),
-          alias: named.getAliasNode()?.getText() ?? null,
-          type: "named",
-        });
-      }
-      // namespace import (import * as X)
-      const ns = imp.getNamespaceImport();
-      if (ns) {
-        fileEntry.imports.push({
-          module: moduleSpecifier,
-          name: ns.getText(),
-          alias: null,
-          type: "namespace",
-        });
-      }
-    }
+  // ── Module-level signals ───────────────────────────────────────────────────
+  const imports = extractImportRecords(sourceFile);
+  if (imports.length > 0) fileEntry.imports = imports;
 
-    // Capture module-level JSDoc: find a leading /** ... */ on the first statement.
-    // getFirstChild() always returns SyntaxList, not a JSDocComment node — so we
-    // use getLeadingCommentRanges() on the first statement instead.
-    fileEntry.module_docstring = "";
-    const firstStmt = sourceFile.getStatements()[0];
-    if (firstStmt) {
-      const leading = firstStmt
-        .getLeadingCommentRanges()
-        .find((r) => r.getText().startsWith("/**"));
-      if (leading) fileEntry.module_docstring = leading.getText();
-    }
+  const moduleDocstring = extractModuleDocstring(sourceFile);
+
+  const exports = extractExports(sourceFile, cjs);
+  if (exports.length > 0) fileEntry.exports = exports;
+
+  const constants = extractTopLevelConstants(sourceFile);
+  if (constants.length > 0) fileEntry.constants = constants;
+
+  const moduleCalls = extractModuleCalls(sourceFile);
+  if (moduleCalls.length > 0) fileEntry.module_calls = moduleCalls;
+
+  if (deep) {
+    fileEntry.module_docstring = moduleDocstring;
   }
 
   // Only include files that have something worth tracking
-  if (fileEntry.classes.length > 0 || fileEntry.functions.length > 0) {
+  if (
+    fileEntry.classes.length > 0 ||
+    fileEntry.functions.length > 0 ||
+    hasDocumentableModuleSignals(fileEntry, moduleDocstring)
+  ) {
     return [filePath, fileEntry];
+  }
+  if (deep) {
+    process.stderr.write(
+      `llm-wiki TypeScript extractor: skipped ${relativePathFromSrc(
+        filePath
+      )}: no documentable TypeScript declarations, imports, exports, constants, or module statements.\n`
+    );
   }
   return null;
 }

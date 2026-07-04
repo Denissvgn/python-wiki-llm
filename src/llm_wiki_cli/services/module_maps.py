@@ -78,7 +78,6 @@ def _external_summary(module: str, reconciliation: Mapping) -> dict:
     for language in sorted((reconciliation.get("languages", {}) or {}), key=_sort_key):
         data = reconciliation.get("languages", {}).get(language) or {}
         used = data.get("used", {}) or {}
-        undeclared = set(data.get("undeclared", []) or [])
         used_packages = [
             str(package)
             for package, files in used.items()
@@ -86,11 +85,36 @@ def _external_summary(module: str, reconciliation: Mapping) -> dict:
         ]
         if not used_packages:
             continue
+        undeclared_packages = _module_undeclared_packages(module, used_packages, data)
         external[str(language)] = {
             "used_count": len(set(used_packages)),
-            "undeclared_count": len(set(used_packages) & undeclared),
+            "undeclared_count": len(undeclared_packages),
         }
     return external
+
+
+def _module_undeclared_packages(
+    module: str, used_packages: Iterable[str], reconciliation_data: Mapping
+) -> set[str]:
+    detail_files: dict[str, set[str]] = {}
+    for item in reconciliation_data.get("undeclared_details", []) or []:
+        if not isinstance(item, Mapping):
+            continue
+        package = item.get("package")
+        if package is None:
+            continue
+        detail_files[str(package)] = {str(file) for file in item.get("files", []) or []}
+    if detail_files:
+        return {
+            package
+            for package in set(used_packages)
+            if module in detail_files.get(package, set())
+        }
+
+    undeclared = {
+        str(package) for package in reconciliation_data.get("undeclared", []) or []
+    }
+    return set(used_packages) & undeclared
 
 
 def _package_buckets(files: Iterable[str]) -> list[dict]:

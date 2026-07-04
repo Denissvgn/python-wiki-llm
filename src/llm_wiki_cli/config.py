@@ -51,6 +51,28 @@ EXCLUDED_DIRS: set[str] = {
     "virtualenv",
 }
 
+AGENT_WORKTREE_DIR_PATTERNS: tuple[tuple[str, ...], ...] = ((".claude", "worktrees"),)
+
+
+def _normalized_rel_parts(path: "str | Path") -> tuple[str, ...]:
+    text = path.as_posix() if isinstance(path, Path) else str(path)
+    text = text.replace("\\", "/").strip("/")
+    return tuple(part for part in text.split("/") if part and part != ".")
+
+
+def is_agent_worktree_path(path: "str | Path") -> bool:
+    """Return whether *path* is inside a generated agent worktree subtree."""
+    parts = _normalized_rel_parts(path)
+    for pattern in AGENT_WORKTREE_DIR_PATTERNS:
+        pattern_len = len(pattern)
+        if pattern_len == 0 or len(parts) < pattern_len:
+            continue
+        for index in range(len(parts) - pattern_len + 1):
+            if parts[index : index + pattern_len] == pattern:
+                return True
+    return False
+
+
 AGENT_CHOICES = ["claude", "cursor", "copilot", "aider", "opencode", "generic"]
 
 # Agents that have a real CLI executable (key=agent name, value=executable)
@@ -164,6 +186,7 @@ EXTRACTOR_REGISTRY: dict[str, str] = {
     "typescript": "llm_wiki_cli.extractors.ts_extractor:TypeScriptExtractor",
     "go": "llm_wiki_cli.extractors.go_extractor:GoExtractor",
     "rust": "llm_wiki_cli.extractors.rust_extractor:RustExtractor",
+    "haskell": "llm_wiki_cli.extractors.haskell_extractor:HaskellExtractor",
 }
 
 
@@ -209,13 +232,18 @@ class GitIgnoreMatcher:
     def __init__(self, rules: list[_GitignoreRule]):
         self._rules = rules
 
-    def is_ignored(self, rel_path: str) -> bool:
+    def last_matching_rule(self, rel_path: str) -> _GitignoreRule | None:
+        """Return the final gitignore rule that matches *rel_path*, if any."""
         rel_path = rel_path.replace("\\", "/").strip("/")
-        ignored = False
+        last_rule: _GitignoreRule | None = None
         for rule in self._rules:
             if _rule_matches(rel_path, rule):
-                ignored = not rule.negated
-        return ignored
+                last_rule = rule
+        return last_rule
+
+    def is_ignored(self, rel_path: str) -> bool:
+        rule = self.last_matching_rule(rel_path)
+        return rule is not None and not rule.negated
 
 
 def _parse_gitignore_file(gitignore_path: Path, base: str = "") -> list[_GitignoreRule]:
@@ -326,7 +354,9 @@ def build_gitignore_matcher(root: "str | Path") -> GitIgnoreMatcher:
             rel_parent = gitignore.parent.relative_to(root_path)
         except ValueError:
             continue
-        if not EXCLUDED_DIRS.isdisjoint(rel_parent.parts):
+        if not EXCLUDED_DIRS.isdisjoint(rel_parent.parts) or is_agent_worktree_path(
+            rel_parent
+        ):
             continue
         base = "" if rel_parent == Path(".") else rel_parent.as_posix()
         rules.extend(_parse_gitignore_file(gitignore, base))

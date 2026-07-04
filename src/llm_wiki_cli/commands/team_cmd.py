@@ -4,7 +4,7 @@ import json
 import sys
 from pathlib import Path
 
-from ..config import DEFAULT_WIKI_DIR, validate_path
+from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from ..services import team
 from .extract_cmd import get_inventory
 
@@ -60,7 +60,12 @@ def _run_check(args) -> None:
     src_dir = getattr(args, "src_dir", ".")
     wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     output_format = getattr(args, "format", "text")
-    validate_path(src_dir, "--src-dir")
+    allow_external_src = bool(getattr(args, "allow_external_src", False))
+    src_root = validate_source_root(
+        src_dir, "--src-dir", allow_external=allow_external_src
+    )
+    if allow_external_src:
+        src_dir = str(src_root)
     validate_path(wiki_dir, "--wiki-dir")
 
     wiki_path = Path(wiki_dir)

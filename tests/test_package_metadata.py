@@ -5,9 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 
 try:
-    import tomllib
+    import tomllib  # type: ignore[reportMissingImports]
 except ModuleNotFoundError:  # pragma: no cover - Python 3.9/3.10
-    import tomli as tomllib
+    import tomli as tomllib  # type: ignore[reportMissingImports]
 
 
 PROJECT_ROOT = Path(__file__).parents[1]
@@ -31,9 +31,70 @@ def test_package_data_includes_rust_lockfile():
     assert "extractors/rust_scripts/Cargo.lock" in package_data
 
 
+def test_package_data_includes_haskell_helper_sources():
+    data = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    package_data = data["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]
+    assert "extractors/haskell_scripts/Main.hs" in package_data
+    assert "extractors/haskell_scripts/Inventory.hs" in package_data
+    assert "extractors/haskell_scripts/Parser.hs" in package_data
+    assert "extractors/haskell_scripts/Paths.hs" in package_data
+    assert "extractors/haskell_scripts/Json.hs" in package_data
+
+
+def test_package_data_includes_bundled_skills():
+    data = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    package_data = data["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]
+    assert "skills/wiki-sync/SKILL.md" in package_data
+    assert "skills/wiki-sync/reference.md" in package_data
+    assert "skills/wiki-bootstrap/SKILL.md" in package_data
+    assert "skills/wiki-bootstrap/reference.md" in package_data
+    assert "skills/attack-surface/SKILL.md" in package_data
+    assert "skills/attack-surface/reference.md" in package_data
+    assert "skills/dep-audit/SKILL.md" in package_data
+    assert "skills/dep-audit/reference.md" in package_data
+    assert "skills/dep-vuln-triage/SKILL.md" in package_data
+    assert "skills/dep-vuln-triage/reference.md" in package_data
+    assert "skills/doc-hub/SKILL.md" in package_data
+    assert "skills/doc-hub/reference.md" in package_data
+    assert "skills/doc-review/SKILL.md" in package_data
+    assert "skills/doc-review/reference.md" in package_data
+    assert "skills/impact-analysis/SKILL.md" in package_data
+    assert "skills/impact-analysis/reference.md" in package_data
+    assert "skills/infra-review/SKILL.md" in package_data
+    assert "skills/infra-review/reference.md" in package_data
+    assert "skills/onboarding-guide/SKILL.md" in package_data
+    assert "skills/onboarding-guide/reference.md" in package_data
+    assert "skills/publish-docs/SKILL.md" in package_data
+    assert "skills/publish-docs/reference.md" in package_data
+
+
 def test_project_distribution_name_is_pypi_safe_name():
     data = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     assert data["project"]["name"] == "agent-wiki-cli"
+
+
+def test_project_version_is_haskell_release():
+    data = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    assert data["project"]["version"] == "1.1.0"
+
+
+def test_readme_documents_bundled_skills():
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+
+    for skill_id in [
+        "attack-surface",
+        "dep-audit",
+        "dep-vuln-triage",
+        "doc-hub",
+        "doc-review",
+        "impact-analysis",
+        "infra-review",
+        "onboarding-guide",
+        "publish-docs",
+        "wiki-bootstrap",
+        "wiki-sync",
+    ]:
+        assert f"`{skill_id}`" in readme
 
 
 def test_readme_uses_distribution_name_for_uninstall():
@@ -126,3 +187,26 @@ def test_changelog_1_0_0_documents_m4_public_surfaces():
         "release-readiness",
     ]:
         assert required in release_notes
+
+
+def test_changelog_1_1_0_documents_haskell_release_boundaries():
+    release_notes = _changelog_section("## [1.1.0]")
+    release_text = " ".join(release_notes.split())
+
+    for required in [
+        "Haskell",
+        "helper-backed",
+        "syntax-only",
+        "GHC 9.6.x",
+        "default CI",
+        "does not require GHC",
+    ]:
+        assert required in release_text
+
+
+def test_default_ci_does_not_install_or_prepare_ghc():
+    ci = (PROJECT_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    ci_lower = ci.lower()
+
+    assert "ghc" not in ci_lower
+    assert "prepare-extractors --language haskell" not in ci_lower
