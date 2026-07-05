@@ -19,6 +19,19 @@ Supporting detail for [SKILL.md](SKILL.md).
 | out-of-scope request | The finding asks for work outside the requested docs review. | Record and defer. |
 | needs human confirmation | Product or policy intent is ambiguous. | Ask or record unresolved finding. |
 
+## Published user-docs finding classes
+
+Use these classes when reviewing `site export --profile user` or `site check --profile user` output:
+
+| Finding class | Typical signal | Action |
+|---|---|---|
+| broken distribution-mode link | Built-site validation reports HTTP/file mode link issues, including file-directory URLs in direct-file handoffs | Fix export mode, link target, or handoff instructions; re-run `site check --built-site-dir ... --link-mode http|file`. |
+| missing human landing page | Root `index.md` is absent, still starts as a raw generated inventory, or does not use the configured site name | Regenerate/export with `--profile user --site-name <project>` or fix the human root page. |
+| missing guide surface | `missing_user_guides` or no `guides/*.md` pages in the user profile | Run `onboarding-guide` before publishing user docs. |
+| bootstrap placeholder in primary docs | `published_placeholder` in root or guide pages | Replace placeholder prose with source-backed narrative or defer the page from primary docs. |
+| raw generated inventory used as root landing page | The root page begins with the exhaustive generated index instead of linking it as generated reference | Move the inventory to `generated-reference.md` and keep root `index.md` concise. |
+| generated reference placeholder | `generated_reference_placeholder` warning in generated-reference, entities, modules, or flows | Report visibly; fix only when the page is promoted into primary human docs. |
+
 ## Safe edit rules
 
 - Generated tables, diagrams, manifests, and "Do not edit by hand" blocks are protected.

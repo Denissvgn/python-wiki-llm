@@ -28,8 +28,9 @@ Consequences:
 | contributor | Where code lives, how to build/test, what to touch first | core modules → main flow → test/validation gate → first-task suggestion |
 | operator | How it starts, what it touches at runtime, what breaks | entrypoints → load-order/startup caveats → infrastructure pages → failure modes |
 | reviewer | What gates exist, where risk concentrates | validation flows → dependency/cycle notes → high fan-in entities → review checklist |
+| product/user reader | What the product does and which user-facing workflows matter | overview guide → primary workflow pages → generated reference for details |
 
-Rename or replace personas freely when the repository's audience differs — the budget and remainder rules stay the same.
+Use the product/user reader persona when the repository exposes user-facing workflows and the next step is `publish-docs --profile user`. Rename or replace personas freely when the repository's audience differs — the budget and remainder rules stay the same.
 
 ## Guide page template
 

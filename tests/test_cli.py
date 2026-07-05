@@ -144,3 +144,154 @@ def test_prepare_extractors_parses_allow_external_src(monkeypatch):
     cli.main()
 
     assert seen["allow_external_src"] is True
+
+
+def test_site_export_parses_file_friendly_mkdocs(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(
+        cli.site_cmd,
+        "run",
+        lambda args: seen.update(
+            {
+                "action": args.site_action,
+                "format": args.format,
+                "file_friendly": args.file_friendly,
+            }
+        ),
+    )
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "llm-wiki",
+            "site",
+            "export",
+            "--wiki-dir",
+            "docs/llm_wiki",
+            "--out-dir",
+            "site",
+            "--format",
+            "mkdocs",
+            "--file-friendly",
+        ],
+    )
+
+    cli.main()
+
+    assert seen == {
+        "action": "export",
+        "format": "mkdocs",
+        "file_friendly": True,
+    }
+
+
+def test_site_check_parses_built_site_dir_and_link_mode(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(
+        cli.site_cmd,
+        "run",
+        lambda args: seen.update(
+            {
+                "action": args.site_action,
+                "built_site_dir": args.built_site_dir,
+                "link_mode": args.link_mode,
+            }
+        ),
+    )
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "llm-wiki",
+            "site",
+            "check",
+            "--wiki-dir",
+            "docs/llm_wiki",
+            "--out-dir",
+            "site",
+            "--built-site-dir",
+            "_site",
+            "--link-mode",
+            "file",
+        ],
+    )
+
+    cli.main()
+
+    assert seen == {
+        "action": "check",
+        "built_site_dir": "_site",
+        "link_mode": "file",
+    }
+
+
+def test_site_export_parses_user_profile_and_site_name(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(
+        cli.site_cmd,
+        "run",
+        lambda args: seen.update(
+            {
+                "action": args.site_action,
+                "profile": args.profile,
+                "site_name": args.site_name,
+            }
+        ),
+    )
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "llm-wiki",
+            "site",
+            "export",
+            "--out-dir",
+            "site",
+            "--profile",
+            "user",
+            "--site-name",
+            "Assistant",
+        ],
+    )
+
+    cli.main()
+
+    assert seen == {
+        "action": "export",
+        "profile": "user",
+        "site_name": "Assistant",
+    }
+
+
+def test_site_check_parses_user_profile_and_site_name(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(
+        cli.site_cmd,
+        "run",
+        lambda args: seen.update(
+            {
+                "action": args.site_action,
+                "profile": args.profile,
+                "site_name": args.site_name,
+            }
+        ),
+    )
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "llm-wiki",
+            "site",
+            "check",
+            "--out-dir",
+            "site",
+            "--profile",
+            "user",
+            "--site-name",
+            "Assistant",
+        ],
+    )
+
+    cli.main()
+
+    assert seen == {
+        "action": "check",
+        "profile": "user",
+        "site_name": "Assistant",
+    }

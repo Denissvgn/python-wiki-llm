@@ -127,6 +127,14 @@ class TestBundledWikiBootstrapSkill:
         assert "team check --src-dir <repo> --allow-external-src" in combined
         assert "`--wiki-dir` remains project-root guarded" in combined
 
+    def test_wiki_bootstrap_skill_distinguishes_reference_from_user_docs(self):
+        skill_dir = skills.BUNDLED_SKILLS_ROOT / "wiki-bootstrap"
+        manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+
+        assert "reference-oriented" in manifest
+        assert "onboarding-guide" in manifest
+        assert "site export --profile user" in manifest
+
 
 class TestBundledAttackSurfaceSkill:
     def test_attack_surface_skill_is_bundled(self):
@@ -359,6 +367,16 @@ class TestBundledOnboardingGuideSkill:
         # Links must stay lint-checkable.
         assert "Relative links only" in combined
 
+    def test_onboarding_guide_skill_documents_user_profile_prerequisite(self):
+        skill_dir = skills.BUNDLED_SKILLS_ROOT / "onboarding-guide"
+        manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+        reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
+        combined = f"{manifest}\n{reference}"
+
+        assert "publish-docs --profile user" in combined
+        assert "product/user reader" in combined
+        assert "user-facing workflows" in combined
+
 
 class TestBundledDocReviewSkill:
     def test_doc_review_skill_is_bundled(self):
@@ -385,6 +403,23 @@ class TestBundledDocReviewSkill:
         assert "unresolved finding" in combined
         assert "llm-wiki sync" in combined
         assert "llm-wiki ci-check" in combined
+
+    def test_doc_review_skill_documents_user_docs_quality_findings(self):
+        skill_dir = skills.BUNDLED_SKILLS_ROOT / "doc-review"
+        manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+        reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
+        combined = f"{manifest}\n{reference}"
+
+        for required in [
+            "broken distribution-mode link",
+            "missing human landing page",
+            "missing guide surface",
+            "bootstrap placeholder in primary docs",
+            "raw generated inventory used as root landing page",
+            "published_placeholder",
+            "generated_reference_placeholder",
+        ]:
+            assert required in combined
 
 
 class TestBundledDocHubSkill:
@@ -512,6 +547,22 @@ class TestBundledPublishDocsSkill:
         assert "confirm with the user before doing it" in combined.lower()
         # Docusaurus needs an existing app; export alone isn't buildable.
         assert "docusaurus.config.js" in combined
+
+    def test_publish_docs_skill_documents_reference_user_and_distribution_modes(self):
+        skill_dir = skills.BUNDLED_SKILLS_ROOT / "publish-docs"
+        manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+        reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
+        combined = f"{manifest}\n{reference}"
+
+        assert "default export is a reference profile" in combined
+        assert "site export --profile user" in combined
+        assert "--site-name" in combined
+        assert "at least one guide page" in combined
+        assert "site check --profile user" in combined
+        assert "site check --built-site-dir" in combined
+        assert "--link-mode http" in combined
+        assert "--file-friendly" in combined
+        assert "--link-mode file" in combined
 
 
 class TestSkillExport:

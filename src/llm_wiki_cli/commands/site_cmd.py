@@ -6,6 +6,7 @@ import sys
 
 from ..config import DEFAULT_WIKI_DIR, validate_path
 from ..services.site_export import (
+    SUPPORTED_SITE_PROFILES,
     SUPPORTED_SITE_FORMATS,
     SiteExportError,
     check_site_hub,
@@ -15,9 +16,12 @@ from ..services.site_export import (
     render_report_json,
     render_report_text,
 )
+from ..services.site_html_check import SUPPORTED_LINK_MODES
 
 
 SITE_FORMAT_CHOICES = sorted(SUPPORTED_SITE_FORMATS)
+SITE_PROFILE_CHOICES = sorted(SUPPORTED_SITE_PROFILES)
+LINK_MODE_CHOICES = sorted(SUPPORTED_LINK_MODES)
 
 
 def _print_report(report, output_format: str, *, action: str) -> None:
@@ -57,6 +61,9 @@ def run(args) -> None:
                     wikis=wikis,
                     out_dir=out_dir,
                     format=getattr(args, "format", "plain"),
+                    file_friendly=bool(getattr(args, "file_friendly", False)),
+                    profile=getattr(args, "profile", "reference"),
+                    site_name=getattr(args, "site_name", None),
                     front_matter=bool(getattr(args, "front_matter", False)),
                     dry_run=bool(getattr(args, "dry_run", False)),
                 )
@@ -66,6 +73,9 @@ def run(args) -> None:
                     wiki_dir=wiki_dir,
                     out_dir=out_dir,
                     format=getattr(args, "format", "plain"),
+                    file_friendly=bool(getattr(args, "file_friendly", False)),
+                    profile=getattr(args, "profile", "reference"),
+                    site_name=getattr(args, "site_name", None),
                     front_matter=bool(getattr(args, "front_matter", False)),
                     dry_run=bool(getattr(args, "dry_run", False)),
                 )
@@ -85,7 +95,17 @@ def run(args) -> None:
                 )
             else:
                 validate_path(wiki_dir, "--wiki-dir")
-                report = check_site_mirror(wiki_dir=wiki_dir, out_dir=out_dir)
+                built_site_dir = getattr(args, "built_site_dir", None)
+                if built_site_dir:
+                    validate_path(built_site_dir, "--built-site-dir")
+                report = check_site_mirror(
+                    wiki_dir=wiki_dir,
+                    out_dir=out_dir,
+                    built_site_dir=built_site_dir,
+                    link_mode=getattr(args, "link_mode", "http"),
+                    profile=getattr(args, "profile", "reference"),
+                    site_name=getattr(args, "site_name", None),
+                )
             _print_report(report, output_format, action="check")
             if not report.ok:
                 raise SystemExit(1)

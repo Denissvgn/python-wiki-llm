@@ -14,6 +14,7 @@ from llm_wiki_cli import cli
 from llm_wiki_cli.services.site_export import (
     SiteExportError,
     check_site_hub,
+    check_site_mirror,
     export_site_hub,
     export_site_mirror,
 )
@@ -327,6 +328,155 @@ def test_mkdocs_export_writes_config_with_registry_ordered_nav(tmp_path):
             "",
         ]
     )
+
+
+def test_mkdocs_file_friendly_export_disables_directory_urls(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+
+    report = export_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        format="mkdocs",
+        file_friendly=True,
+    )
+
+    assert report.distribution_mode == "file"
+    assert report.to_dict()["distribution_mode"] == "file"
+    mkdocs = (out / "mkdocs.yml").read_text(encoding="utf-8")
+    assert "use_directory_urls: false\n" in mkdocs
+    assert 'custom_dir: ".llm-wiki-mkdocs-overrides"\n' in mkdocs
+    assert '<a class="navbar-brand" href="{{ home.prefix }}index.html">' in (
+        out / ".llm-wiki-mkdocs-overrides" / "main.html"
+    ).read_text(encoding="utf-8")
+    assert '<a class="navbar-brand" href="index.html">' in (
+        out / ".llm-wiki-mkdocs-overrides" / "404.html"
+    ).read_text(encoding="utf-8")
+
+
+def test_user_profile_requires_non_default_site_name(tmp_path):
+    wiki = _write_wiki(tmp_path)
+
+    with pytest.raises(SiteExportError, match="--profile user requires --site-name"):
+        export_site_mirror(
+            wiki_dir=wiki,
+            out_dir=tmp_path / "site-missing",
+            format="mkdocs",
+            profile="user",
+        )
+
+    with pytest.raises(SiteExportError, match="different from 'LLM Wiki'"):
+        export_site_mirror(
+            wiki_dir=wiki,
+            out_dir=tmp_path / "site-default",
+            format="mkdocs",
+            profile="user",
+            site_name="LLM Wiki",
+        )
+
+
+def test_user_profile_writes_human_root_and_generated_reference(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    _write(
+        wiki / "guides" / "operator-onboarding.md",
+        "# Operator Onboarding\n\nStart with [Signup](../workflows/signup.md).\n",
+    )
+    out = tmp_path / "site"
+
+    report = export_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        format="mkdocs",
+        profile="user",
+        site_name="Assistant",
+    )
+
+    assert report.profile == "user"
+    assert report.site_name == "Assistant"
+    root = (out / "index.md").read_text(encoding="utf-8")
+    generated = (out / "generated-reference.md").read_text(encoding="utf-8")
+    assert root.startswith('---\ntitle: "Assistant"\n---\n\n# Assistant\n')
+    assert "## Overview" in root
+    assert "- [Operator Onboarding](guides/operator-onboarding.md)" in root
+    assert "- [Generated Reference](generated-reference.md)" in root
+    assert len(root.splitlines()) < 250
+    assert generated.startswith("# LLM Wiki Index\n")
+    assert "llm_wiki:" not in generated
+    mkdocs = (out / "mkdocs.yml").read_text(encoding="utf-8")
+    assert '  - "Start Here":' in mkdocs
+    assert '    - "Assistant": "index.md"' in mkdocs
+    assert '    - "Operator Onboarding": "guides/operator-onboarding.md"' in mkdocs
+    assert '    - "Generated Reference": "generated-reference.md"' in mkdocs
+
+
+def test_user_profile_nav_groups_test_pages_and_demotes_placeholder_flows(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    _write(wiki / "guides" / "contributor-onboarding.md", "# Contributor\n\n")
+    _write(
+        wiki / "flows" / "empty-flow.md",
+        "# Empty Flow\n\n## Behavior\n\nReplace this placeholder.\n",
+    )
+    _write(
+        wiki / "modules" / "test_helpers.md",
+        "# test_helpers Module\n\n",
+    )
+    _write(
+        wiki / ".llm-wiki-surface.json",
+        json.dumps(
+            {
+                "schema_version": "llm-wiki-surface-index/v1",
+                "pages": [
+                    {
+                        "canonical_path": "modules/test_helpers.md",
+                        "source_path": "tests/test_helpers.py",
+                    },
+                    {
+                        "canonical_path": "modules/models.md",
+                        "source_path": "src/models.py",
+                    },
+                ],
+            },
+            sort_keys=True,
+        )
+        + "\n",
+    )
+    out = tmp_path / "site"
+
+    export_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        format="mkdocs",
+        profile="user",
+        site_name="Assistant",
+    )
+
+    mkdocs = (out / "mkdocs.yml").read_text(encoding="utf-8")
+    core = mkdocs.split('  - "Core Workflows":', 1)[1].split(
+        '  - "Architecture And Operations":',
+        1,
+    )[0]
+    reference = mkdocs.split('  - "Generated Reference":', 1)[1].split(
+        '  - "Test And Fixture Reference":',
+        1,
+    )[0]
+    tests = mkdocs.split('  - "Test And Fixture Reference":', 1)[1]
+    assert '"Empty Flow": "flows/empty-flow.md"' not in core
+    assert '"Empty Flow": "flows/empty-flow.md"' in reference
+    assert '"test_helpers Module": "modules/test_helpers.md"' in tests
+
+
+def test_file_friendly_export_requires_mkdocs_format(tmp_path):
+    wiki = _write_wiki(tmp_path)
+
+    with pytest.raises(
+        SiteExportError, match="--file-friendly requires --format mkdocs"
+    ):
+        export_site_mirror(
+            wiki_dir=wiki,
+            out_dir=tmp_path / "site",
+            format="plain",
+            file_friendly=True,
+        )
 
 
 def test_mkdocs_export_disambiguates_duplicate_navigation_labels(tmp_path):
@@ -734,6 +884,26 @@ def test_hub_export_writes_grouped_mkdocs_and_docusaurus_navigation(tmp_path):
     }
 
 
+def test_mkdocs_hub_file_friendly_export_disables_directory_urls(tmp_path):
+    root = tmp_path / "sources" / "code_wikis"
+    _write_hub_wiki(root, "alpha", "Alpha")
+    out = tmp_path / "hub"
+
+    report = export_site_hub(
+        wiki_root=root,
+        out_dir=out,
+        format="mkdocs",
+        file_friendly=True,
+    )
+
+    assert report.distribution_mode == "file"
+    mkdocs = (out / "mkdocs.yml").read_text(encoding="utf-8")
+    assert "use_directory_urls: false\n" in mkdocs
+    assert 'custom_dir: ".llm-wiki-mkdocs-overrides"\n' in mkdocs
+    assert (out / ".llm-wiki-mkdocs-overrides" / "main.html").exists()
+    assert (out / ".llm-wiki-mkdocs-overrides" / "404.html").exists()
+
+
 def test_hub_check_validates_namespaced_wikis_and_broken_links(tmp_path):
     root = tmp_path / "sources" / "code_wikis"
     _write_hub_wiki(root, "alpha", "Alpha")
@@ -842,6 +1012,235 @@ def test_check_reports_output_paths_that_escape_out_dir(tmp_path, monkeypatch):
         and issue["target"] == "entities/User.md"
         for issue in report.issues
     )
+
+
+def test_check_built_site_html_accepts_mkdocs_directory_urls_in_http_mode(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+    built = tmp_path / "_site"
+    export_site_mirror(wiki_dir=wiki, out_dir=out)
+    _write(out / "missing.md", "# Missing\n\n")
+    _write(
+        built / "index.html",
+        '<html><body><a href="entities/User/">User</a></body></html>',
+    )
+    _write(built / "entities" / "User" / "index.html", "<h1>User</h1>")
+
+    report = check_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        built_site_dir=built,
+        link_mode="http",
+    )
+
+    assert report.ok is True
+    assert report.built_site_dir == str(built)
+    assert report.link_mode == "http"
+    assert report.issues == []
+
+
+def test_check_built_site_html_rejects_directory_urls_in_file_mode(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+    built = tmp_path / "_site"
+    export_site_mirror(wiki_dir=wiki, out_dir=out)
+    _write(out / "missing.md", "# Missing\n\n")
+    _write(
+        built / "index.html",
+        '<html><body><a href="entities/User/">User</a></body></html>',
+    )
+    _write(built / "entities" / "User" / "index.html", "<h1>User</h1>")
+
+    report = check_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        built_site_dir=built,
+        link_mode="file",
+    )
+
+    assert report.ok is False
+    assert any(
+        issue["category"] == "file_directory_url"
+        and issue["target"] == "entities/User/"
+        for issue in report.issues
+    )
+
+
+def test_check_built_site_html_rejects_dot_directory_urls_in_file_mode(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+    built = tmp_path / "_site"
+    export_site_mirror(wiki_dir=wiki, out_dir=out)
+    _write(out / "missing.md", "# Missing\n\n")
+    _write(
+        built / "entities" / "User.html",
+        '<html><body><a href="..">Home</a></body></html>',
+    )
+    _write(built / "index.html", "<h1>Home</h1>")
+
+    report = check_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        built_site_dir=built,
+        link_mode="file",
+    )
+
+    assert report.ok is False
+    assert any(
+        issue["category"] == "file_directory_url" and issue["target"] == ".."
+        for issue in report.issues
+    )
+
+
+def test_check_built_site_html_accepts_direct_html_links_in_file_mode(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+    built = tmp_path / "_site"
+    export_site_mirror(wiki_dir=wiki, out_dir=out)
+    _write(out / "missing.md", "# Missing\n\n")
+    _write(
+        built / "index.html",
+        '<html><body><a href="entities/User.html#profile">User</a></body></html>',
+    )
+    _write(built / "entities" / "User.html", "<h1>User</h1>")
+
+    report = check_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        built_site_dir=built,
+        link_mode="file",
+    )
+
+    assert report.ok is True
+    assert report.issues == []
+
+
+def test_check_built_site_html_accepts_parent_relative_links_inside_site(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+    built = tmp_path / "_site"
+    export_site_mirror(wiki_dir=wiki, out_dir=out)
+    _write(out / "missing.md", "# Missing\n\n")
+    _write(
+        built / "dependencies" / "index.html",
+        '<link href="../css/base.css"><a href="..">Home</a>',
+    )
+    _write(built / "css" / "base.css", "body { color: #111; }")
+    _write(built / "index.html", "<h1>Home</h1>")
+
+    report = check_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        built_site_dir=built,
+        link_mode="http",
+    )
+
+    assert report.ok is True
+    assert report.issues == []
+
+
+def test_check_built_site_html_rejects_unsafe_traversal(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+    built = tmp_path / "_site"
+    export_site_mirror(wiki_dir=wiki, out_dir=out)
+    _write(out / "missing.md", "# Missing\n\n")
+    _write(
+        built / "index.html",
+        '<html><body><a href="../outside.html">Outside</a></body></html>',
+    )
+
+    report = check_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        built_site_dir=built,
+        link_mode="file",
+    )
+
+    assert report.ok is False
+    assert any(
+        issue["category"] == "unsafe_built_html_link"
+        and issue["target"] == "../outside.html"
+        for issue in report.issues
+    )
+
+
+def test_user_profile_check_reports_required_quality_categories(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+    export_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        format="mkdocs",
+        profile="user",
+        site_name="Assistant",
+    )
+    index = out / "index.md"
+    index.write_text(
+        "# Assistant\n\n"
+        + "\n".join(
+            f"- [Link {number}](generated-reference.md)" for number in range(81)
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    generated = out / "generated-reference.md"
+    generated.write_text(
+        generated.read_text(encoding="utf-8")
+        + "\n_Describe what this flow does. Replace this placeholder._\n",
+        encoding="utf-8",
+    )
+
+    report = check_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        profile="user",
+        site_name="Assistant",
+    )
+
+    assert report.ok is False
+    assert {issue["category"] for issue in report.issues} >= {
+        "human_index_too_many_links",
+        "missing_user_guides",
+    }
+    assert any(
+        warning["category"] == "generated_reference_placeholder"
+        and warning["path"] == str(generated)
+        for warning in report.warnings
+    )
+
+
+def test_user_profile_check_reports_long_index_default_name_and_placeholders(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+    export_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        format="mkdocs",
+        profile="user",
+        site_name="Assistant",
+    )
+    guide = out / "guides" / "operator-onboarding.md"
+    _write(guide, "# Operator\n\nReplace this placeholder.\n")
+    (out / "index.md").write_text(
+        "# Assistant\n\n" + "\n".join("line" for _ in range(251)) + "\n",
+        encoding="utf-8",
+    )
+
+    report = check_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        profile="user",
+        site_name="LLM Wiki",
+    )
+
+    assert report.ok is False
+    assert {issue["category"] for issue in report.issues} >= {
+        "human_index_too_long",
+        "default_user_site_name",
+        "published_placeholder",
+    }
+    assert any(issue["path"] == str(guide) for issue in report.issues)
 
 
 class TestSiteCli:
@@ -992,6 +1391,59 @@ class TestSiteCli:
             warning["category"] == "missing_front_matter"
             for warning in payload["warnings"]
         )
+
+    def test_cli_file_friendly_plain_fails_closed(self, tmp_path, monkeypatch, capsys):
+        site_cmd = importlib.import_module("llm_wiki_cli.commands.site_cmd")
+        _write_wiki(tmp_path)
+        monkeypatch.chdir(tmp_path)
+
+        with pytest.raises(SystemExit) as exc_info:
+            site_cmd.run(
+                _ns(
+                    site_action="export",
+                    wiki_dir="docs/llm_wiki",
+                    wiki_root=None,
+                    wiki=None,
+                    out_dir="site",
+                    format="plain",
+                    file_friendly=True,
+                    front_matter=False,
+                    dry_run=False,
+                    output_format="text",
+                )
+            )
+
+        assert exc_info.value.code == 1
+        assert "--file-friendly requires --format mkdocs" in capsys.readouterr().err
+
+    def test_cli_check_built_site_json(self, tmp_path, monkeypatch, capsys):
+        site_cmd = importlib.import_module("llm_wiki_cli.commands.site_cmd")
+        wiki = _write_wiki(tmp_path)
+        out = tmp_path / "site"
+        built = tmp_path / "_site"
+        export_site_mirror(wiki_dir=wiki, out_dir=out)
+        _write(out / "missing.md", "# Missing\n\n")
+        _write(built / "index.html", '<a href="entities/User/">User</a>')
+        _write(built / "entities" / "User" / "index.html", "<h1>User</h1>")
+        monkeypatch.chdir(tmp_path)
+
+        site_cmd.run(
+            _ns(
+                site_action="check",
+                wiki_dir="docs/llm_wiki",
+                wiki_root=None,
+                wiki=None,
+                out_dir="site",
+                built_site_dir="_site",
+                link_mode="http",
+                output_format="json",
+            )
+        )
+
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["ok"] is True
+        assert payload["built_site_dir"] == "_site"
+        assert payload["link_mode"] == "http"
 
     def test_cli_help_includes_site_actions(self, monkeypatch, capsys):
         monkeypatch.setattr(sys, "argv", ["llm-wiki", "site", "--help"])

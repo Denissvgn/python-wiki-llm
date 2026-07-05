@@ -841,11 +841,16 @@ independent documentation source.
 Export and validate a static-site-friendly mirror of the canonical wiki.
 
 ```bash
-llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site --format mkdocs
+llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site --format mkdocs --profile reference
+llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site --format mkdocs --profile user --site-name "Project Docs"
+llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site --format mkdocs --profile user --site-name "Project Docs" --file-friendly
 llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site --format mkdocs --dry-run --output-format json
 llm-wiki site export --wiki-root sources/code_wikis --out-dir site --format docusaurus
 llm-wiki site export --wiki sources/code_wikis/api --wiki sources/code_wikis/web --out-dir site
 llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site
+llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site --profile user --site-name "Project Docs"
+llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site --built-site-dir _site --link-mode http
+llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site --built-site-dir _site --link-mode file --profile user --site-name "Project Docs"
 llm-wiki site check --wiki-root sources/code_wikis --out-dir site
 llm-wiki site check --out-dir site --output-format json
 ```
@@ -858,12 +863,26 @@ modes write each wiki under `<out-dir>/<source_id>/` and generate a top-level
 hub `index.md`. MkDocs hub exports group navigation by source ID. Docusaurus
 hub exports namespace document IDs by source ID to avoid collisions.
 MkDocs exports include safe `llm_wiki` front matter and a generated
-`mkdocs.yml` with registry-ordered navigation. Docusaurus exports include
-Docusaurus front matter and generated `sidebars.json` metadata. When multiple
-exported pages share the same Markdown heading, generated MkDocs and
-Docusaurus labels include page-id context such as `agent / ArtifactStore` so
-static-site navigation remains unambiguous. Plain exports can add `llm_wiki`
-front matter with `--front-matter`.
+`mkdocs.yml` with registry-ordered navigation. `--profile reference` is the
+default agent/reference mirror. `--profile user --site-name ...` writes a
+concise human landing page, expects guide pages, and moves the exhaustive
+generated inventory to `generated-reference.md`; its check adds quality gates
+for default site names, missing guides, bloated landing pages, and placeholder
+text in primary human docs. Docusaurus exports include Docusaurus front matter
+and generated `sidebars.json` metadata. When multiple exported pages share the
+same Markdown heading, generated MkDocs and Docusaurus labels include page-id
+context such as `agent / ArtifactStore` so static-site navigation remains
+unambiguous. Plain exports can add `llm_wiki` front matter with
+`--front-matter`.
+
+MkDocs defaults target HTTP hosting. `--file-friendly` is an opt-in MkDocs mode
+for direct disk handoffs: it writes `use_directory_urls: false`, a small
+MkDocs theme override for file-safe home links, and reports
+`distribution_mode: "file"`. After building a site, `site check
+--built-site-dir _site --link-mode http|file` validates generated HTML links.
+`http` mode accepts MkDocs directory URLs that resolve to `index.html`; `file`
+mode requires concrete `.html` targets and reports directory-style links as
+hard issues.
 
 The service layer also exposes the same pure mirror builder for integrations:
 

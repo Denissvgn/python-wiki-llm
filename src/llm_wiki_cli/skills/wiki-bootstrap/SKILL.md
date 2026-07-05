@@ -5,7 +5,7 @@ description: Bootstrap an LLM Wiki for an existing codebase — prepare extracto
 
 # wiki-bootstrap
 
-Create a first useful wiki without pretending every generated page can be hand-polished in one session. The loop is: **prepare helpers → bootstrap → review summary → P0 semantic pages → centrality-ranked P1 pages → remainder backlog → lint/ci-check → commit**. Finish the central pages first, then record the long-tail remainder in a format another agent or human can resume. See [reference.md](reference.md) for the ranking policy, the remainder-backlog artifact format, validation expectations, and failure modes.
+Create a first useful wiki without pretending every generated page can be hand-polished in one session. The default output is reference-oriented: a complete generated wiki surface for agents, maintainers, and future documentation work, not finished user-facing product docs. The loop is: **prepare helpers → bootstrap → review summary → P0 semantic pages → centrality-ranked P1 pages → remainder backlog → lint/ci-check → commit**. Finish the central pages first, then record the long-tail remainder in a format another agent or human can resume. For user docs, follow this skill with `onboarding-guide` and then `publish-docs` / `site export --profile user --site-name <project>`. See [reference.md](reference.md) for the ranking policy, the remainder-backlog artifact format, validation expectations, and failure modes.
 
 ## Preconditions
 

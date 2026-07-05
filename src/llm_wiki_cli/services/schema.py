@@ -213,15 +213,25 @@ The canonical wiki surfaces are:
 Static-site mirror output, when present, is derived from these canonical
 surfaces. Use `llm-wiki site export|check` or the site export service to build
 and validate plain, MkDocs-compatible, or Docusaurus-compatible Markdown as
-generated distribution output, not as an editable source of truth. MkDocs
-exports include generated `llm_wiki` front matter and `mkdocs.yml` navigation;
-Docusaurus exports include generated front matter and sidebars.json. Generated
-static-site labels may include page-id context when duplicate Markdown headings
-would otherwise make navigation ambiguous. Mermaid fences are preserved for the
-site's configured Markdown/Mermaid renderer. The static-site checker validates
-missing pages, local Markdown links, generated front matter metadata, duplicate
-Docusaurus ids, and output path containment without invoking external builders;
-warning-only findings do not fail the check.
+generated distribution output, not as an editable source of truth. The default
+`--profile reference` mirror preserves the agent/reference wiki shape.
+`--profile user --site-name ...` is an opt-in human-docs profile that writes a
+concise landing page, expects authored guide pages, and moves the exhaustive
+generated inventory to `generated-reference.md`. MkDocs exports include
+generated `llm_wiki` front matter and `mkdocs.yml` navigation; `--file-friendly`
+is MkDocs-only and writes direct-file-safe configuration plus a theme override
+for local disk handoffs. Docusaurus exports include generated front matter and sidebars.json.
+Generated static-site labels may include page-id context when duplicate
+Markdown headings would otherwise make navigation ambiguous. Mermaid fences are
+preserved for the site's configured Markdown/Mermaid renderer. The static-site
+checker validates missing pages, local Markdown links, generated
+front matter metadata, duplicate Docusaurus ids, and output path containment
+without invoking external builders. When `--built-site-dir` is supplied it also
+parses built HTML links; `--link-mode http` accepts hosted MkDocs directory
+URLs, while `--link-mode file` requires direct `.html` targets. User-profile
+checks add quality gates for default site names, missing guides, oversized
+landing pages, and placeholder text in primary human docs. Warning-only
+findings do not fail the check.
 
 Do not edit generated Mermaid diagrams by hand. Treat generated diagrams,
 tables, links, headings, canonical filenames, and machine-readable artifacts as

@@ -857,6 +857,25 @@ def _add_site_command(subparsers):
         help="Static-site output format (default: plain)",
     )
     site_export.add_argument(
+        "--file-friendly",
+        action="store_true",
+        help=(
+            "For MkDocs exports opened directly from disk, emit direct-file "
+            "links with use_directory_urls: false"
+        ),
+    )
+    site_export.add_argument(
+        "--profile",
+        choices=site_cmd.SITE_PROFILE_CHOICES,
+        default="reference",
+        help="Documentation profile to export (default: reference)",
+    )
+    site_export.add_argument(
+        "--site-name",
+        default=None,
+        help="Human-facing site name required by --profile user",
+    )
+    site_export.add_argument(
         "--front-matter",
         action="store_true",
         help="Add safe llm_wiki front matter to exported pages",
@@ -885,6 +904,28 @@ def _add_site_command(subparsers):
         "--out-dir",
         required=True,
         help="Output directory for the derived static-site mirror",
+    )
+    site_check.add_argument(
+        "--built-site-dir",
+        default=None,
+        help="Built static site directory to validate for internal HTML links",
+    )
+    site_check.add_argument(
+        "--link-mode",
+        choices=site_cmd.LINK_MODE_CHOICES,
+        default="http",
+        help="Built HTML link contract: HTTP routing or direct file browsing",
+    )
+    site_check.add_argument(
+        "--profile",
+        choices=site_cmd.SITE_PROFILE_CHOICES,
+        default="reference",
+        help="Documentation profile quality gates to apply (default: reference)",
+    )
+    site_check.add_argument(
+        "--site-name",
+        default=None,
+        help="Human-facing site name required by --profile user",
     )
     site_check.add_argument(
         "--output-format",

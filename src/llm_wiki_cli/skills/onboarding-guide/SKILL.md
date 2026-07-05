@@ -5,13 +5,13 @@ description: Write persona-scoped onboarding guides into an LLM Wiki's first-cla
 
 # onboarding-guide
 
-Produce the "start here" narrative the deterministic layer cannot: reading order, mental model, where the seams are, what to touch first. The loop is: **verify the wiki is current → choose personas → rank the flows a newcomer hits → write one guide page per persona → remainder for deferred personas → lint/sync validation → commit**. Guide pages live in `guides/{page_id}.md`, an agent-owned surface: `sync` counts and links existing guide pages from the index `## Guides` section but never creates or rewrites them, so the prose written here is durable. See [reference.md](reference.md) for the surface contract, persona defaults, the page template, the flow-ranking recipe, and failure modes.
+Produce the "start here" narrative the deterministic layer cannot: reading order, mental model, where the seams are, what to touch first. These guides are the prerequisite narrative layer for `publish-docs --profile user`: user-profile publishing requires at least one guide page and a non-default site name. The loop is: **verify the wiki is current → choose personas → rank the flows a newcomer hits → write one guide page per persona → remainder for deferred personas → lint/sync validation → commit**. Guide pages live in `guides/{page_id}.md`, an agent-owned surface: `sync` counts and links existing guide pages from the index `## Guides` section but never creates or rewrites them, so the prose written here is durable. See [reference.md](reference.md) for the surface contract, persona defaults, the page template, the flow-ranking recipe, and failure modes.
 
 ## Preconditions
 
 - A maintained wiki exists (`.llm-wiki-manifest.json` present). If not, run the `wiki-bootstrap` skill first; guides written against a stale or structurally broken wiki link to pages that lint will reject.
 - The wiki directory is writable inside the current project root. Guide writing is a wiki mutation: it does not fit read-only external-source reviews. For source-adapter wikis, the wiki under `sources/code_wikis/<source_id>` is still inside the current project, so guides are allowed there; only the *source* is external and source-reading commands then take `--allow-external-src`.
-- Persona targets are known. Default to contributor / operator / reviewer; ask the user only when the repository's audience makes the defaults meaningless.
+- Persona targets are known. Default to contributor / operator / reviewer, plus a product/user reader when the repository exposes user-facing workflows; ask the user only when the repository's audience makes the defaults meaningless.
 
 ## Steps
 
