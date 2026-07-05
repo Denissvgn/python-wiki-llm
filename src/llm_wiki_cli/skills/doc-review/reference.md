@@ -32,6 +32,8 @@ Use these classes when reviewing `site export --profile user` or `site check --p
 | raw generated inventory used as root landing page | The root page begins with the exhaustive generated index instead of linking it as generated reference | Move the inventory to `generated-reference.md` and keep root `index.md` concise. |
 | generated reference placeholder | `generated_reference_placeholder` warning in generated-reference, entities, modules, or flows | Report visibly; fix only when the page is promoted into primary human docs. |
 
+Checker output from these classes can feed the `user-docs-author` adjustment loop when the fix is broader than one review finding. Preserve the original checker category, affected page, and evidence link so the authoring pass stays validation-backed.
+
 ## Safe edit rules
 
 - Generated tables, diagrams, manifests, and "Do not edit by hand" blocks are protected.

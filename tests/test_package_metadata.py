@@ -66,6 +66,8 @@ def test_package_data_includes_bundled_skills():
     assert "skills/onboarding-guide/reference.md" in package_data
     assert "skills/publish-docs/SKILL.md" in package_data
     assert "skills/publish-docs/reference.md" in package_data
+    assert "skills/user-docs-author/SKILL.md" in package_data
+    assert "skills/user-docs-author/reference.md" in package_data
 
 
 def test_project_distribution_name_is_pypi_safe_name():
@@ -91,6 +93,7 @@ def test_readme_documents_bundled_skills():
         "infra-review",
         "onboarding-guide",
         "publish-docs",
+        "user-docs-author",
         "wiki-bootstrap",
         "wiki-sync",
     ]:

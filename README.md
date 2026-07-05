@@ -919,7 +919,7 @@ emit non-failing `warnings` in JSON and text reports.
 List, export, and install the agent skills bundled with the package. Each
 skill is a directory holding a `SKILL.md` workflow definition (Claude
 Code-compatible frontmatter plus instructions) and optional supporting files.
-Eleven skills are bundled:
+Twelve skills are bundled:
 
 - `attack-surface`: defensive security-review preparation — prepare
   extractor helpers, run `extract --deep --read-only`, seed required
@@ -968,6 +968,11 @@ Eleven skills are bundled:
   site — export (single-wiki or hub), validate with `site check`, run the
   real mkdocs/docusaurus builder when installed, and hand off (never
   perform) the deploy step.
+- `user-docs-author`: full user documentation authoring pass — run
+  deterministic `sync`/`lint`/`site export --profile user`/`site check`
+  evidence first, write only evidence-linked semantic wiki prose such as
+  `guides/*.md`, and loop on validation-backed user-site issues without
+  editing generated blocks or static-site output directly.
 - `wiki-bootstrap`: the first-adoption workflow for an existing codebase —
   prepare extractor helpers, run deterministic `bootstrap --format json`, do
   a centrality-ranked semantic pass on the most central pages, write an

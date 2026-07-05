@@ -20,7 +20,7 @@ llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site \
   --profile reference --output-format json
 mkdocs build --strict -f site/mkdocs.yml   # only if `mkdocs` is installed
 llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site \
-  --built-site-dir site/_site --link-mode http --output-format json
+  --built-site-dir _site --link-mode http --output-format json
 
 # Human/user docs, direct-file handoff
 llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-file \
@@ -30,7 +30,7 @@ llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-file \
   --profile user --site-name <project> --output-format json
 mkdocs build --strict -f site-file/mkdocs.yml
 llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-file \
-  --built-site-dir site-file/_site --link-mode file --output-format json
+  --built-site-dir _site --link-mode file --output-format json
 
 # Hub, docusaurus (requires an existing Docusaurus app to receive the output)
 llm-wiki site export --wiki-root sources/code_wikis --out-dir site \
@@ -46,7 +46,7 @@ Hosted docs use MkDocs' default directory URLs and validate the built site with 
 
 The shorthand to remember is `site check --built-site-dir <built> --link-mode http|file` after the real builder has produced HTML.
 
-User-profile publishing is stricter than reference publishing. Before `site export --profile user`, ensure `guides/` contains at least one page and pass a non-default `--site-name`; then run `site check --profile user` so missing guides, default site names, overlarge root indexes, and placeholder text are caught before build.
+User-profile publishing is stricter than reference publishing. Before `site export --profile user`, ensure `guides/` contains at least one page and pass a non-default `--site-name`; then run `site check --profile user` so missing guides, default site names, overlarge root indexes, and placeholder text are caught before build. If guides or narrative docs are missing beyond one persona page, run `user-docs-author` before publishing so deterministic evidence feeds the semantic user-docs pass.
 
 ## Builder detection (fail closed)
 

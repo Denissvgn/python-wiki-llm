@@ -10,7 +10,7 @@ Turn `site export`'s Markdown mirror into an actually-buildable, optionally depl
 ## Preconditions
 
 - A current wiki (or several, for hub mode) already exists — run `wiki-sync`/`wiki-bootstrap` first if not; this skill does not generate wiki content.
-- For `--profile user`, a non-default `--site-name` and at least one guide page under `guides/` already exist — run `onboarding-guide` first if the guide surface is empty.
+- For `--profile user`, a non-default `--site-name` and at least one guide page under `guides/` already exist — run `onboarding-guide` first if only persona guides are missing, or `user-docs-author` first if the whole user-docs narrative layer needs to be filled from deterministic site evidence.
 - The user has said where this is being published (GitHub Pages, an internal MkDocs/Docusaurus host, or "just give me a static mirror") — that choice picks the export `--format` and whether a real build step applies at all (`--format plain` has no corresponding builder).
 - If a real builder (`mkdocs`, `npm`/docusaurus) will be invoked, confirm it is actually installed before attempting it — this skill fails closed and reports clearly rather than half-running a build.
 
@@ -74,7 +74,7 @@ Turn `site export`'s Markdown mirror into an actually-buildable, optionally depl
 
    ```bash
    llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site \
-     --built-site-dir site/_site --link-mode http --output-format json
+     --built-site-dir _site --link-mode http --output-format json
    ```
 
    Direct-file handoffs use file-friendly export plus file-mode validation:
@@ -86,7 +86,7 @@ Turn `site export`'s Markdown mirror into an actually-buildable, optionally depl
    llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-file \
      --profile user --site-name <project> --output-format json
    llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-file \
-     --built-site-dir site-file/_site --link-mode file --output-format json
+     --built-site-dir _site --link-mode file --output-format json
    ```
 
 5. **Hand off the deploy step, don't perform it.** State the built output location and the deploy mechanism the user named (GitHub Pages action, `rsync` to an internal host, etc.) as a next step. Actually pushing to a hosting target, publishing a GitHub Pages branch, or deploying is a visible, hard-to-reverse action — confirm with the user before doing it, even if they asked for "publish-docs" broadly; "publish" the export pipeline is safe to run repeatedly, an actual deploy is not.
@@ -95,4 +95,4 @@ Turn `site export`'s Markdown mirror into an actually-buildable, optionally depl
 
 ## Context budget
 
-This skill has almost no LLM judgment budget by design — every step is a deterministic command whose JSON/exit-code result is the only evidence needed. Do not read wiki page content as part of this workflow; that belongs to the skills that write or review it (`wiki-sync`, `doc-review`).
+This skill has almost no LLM judgment budget by design — every step is a deterministic command whose JSON/exit-code result is the only evidence needed. Do not read wiki page content as part of this workflow; that belongs to the skills that write or review it (`wiki-sync`, `doc-review`, `user-docs-author`).

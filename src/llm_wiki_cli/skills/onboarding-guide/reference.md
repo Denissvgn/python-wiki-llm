@@ -30,7 +30,7 @@ Consequences:
 | reviewer | What gates exist, where risk concentrates | validation flows → dependency/cycle notes → high fan-in entities → review checklist |
 | product/user reader | What the product does and which user-facing workflows matter | overview guide → primary workflow pages → generated reference for details |
 
-Use the product/user reader persona when the repository exposes user-facing workflows and the next step is `publish-docs --profile user`. Rename or replace personas freely when the repository's audience differs — the budget and remainder rules stay the same.
+Use the product/user reader persona when the repository exposes user-facing workflows and the next step is `publish-docs --profile user`. Use `user-docs-author` instead of this focused persona-guide pass when the project needs a complete user-docs layer driven by deterministic site/check evidence. Rename or replace personas freely when the repository's audience differs — the budget and remainder rules stay the same.
 
 ## Guide page template
 

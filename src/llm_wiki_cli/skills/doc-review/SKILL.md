@@ -25,7 +25,7 @@ See [reference.md](reference.md) for input shapes, status labels, and report for
 
 2. **Validate each finding.** Classify it as valid documentation defect, stale generated content, source-code truth mismatch, duplicate finding, out-of-scope request, or needs human confirmation.
 
-   For published user-docs reviews, also classify broken distribution-mode link, missing human landing page, missing guide surface, bootstrap placeholder in primary docs, and raw generated inventory used as root landing page. Map deterministic checker categories such as `published_placeholder` and `generated_reference_placeholder` to those review classes before editing.
+   For published user-docs reviews, also classify broken distribution-mode link, missing human landing page, missing guide surface, bootstrap placeholder in primary docs, and raw generated inventory used as root landing page. Map deterministic checker categories such as `published_placeholder` and `generated_reference_placeholder` to those review classes before editing. When findings require a broader user-docs rewrite rather than one review fix, hand the checker output to the `user-docs-author` adjustment loop.
 
 3. **Apply follow-through.**
 

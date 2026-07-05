@@ -565,6 +565,46 @@ class TestBundledPublishDocsSkill:
         assert "--link-mode file" in combined
 
 
+class TestBundledUserDocsAuthorSkill:
+    def test_user_docs_author_skill_is_bundled(self):
+        by_id = {skill.skill_id: skill for skill in skills.list_bundled_skills()}
+        assert "user-docs-author" in by_id
+        user_docs_author = by_id["user-docs-author"]
+        assert user_docs_author.name == "user-docs-author"
+        assert "user docs" in user_docs_author.description.lower()
+        assert user_docs_author.files[0] == "SKILL.md"
+        assert "reference.md" in user_docs_author.files
+
+    def test_user_docs_author_skill_encodes_deterministic_first_contract(self):
+        skill_dir = skills.BUNDLED_SKILLS_ROOT / "user-docs-author"
+        manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+        reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
+        combined = f"{manifest}\n{reference}"
+
+        assert "deterministic evidence first" in combined
+        assert "llm-wiki sync" in combined
+        assert "lint --strict" in combined
+        assert "site export --profile user" in combined
+        assert "site check --profile user" in combined
+        assert "site check --built-site-dir" in combined
+        assert "--link-mode http" in combined
+        assert "--link-mode file" in combined
+
+    def test_user_docs_author_skill_encodes_semantic_authoring_guardrails(self):
+        skill_dir = skills.BUNDLED_SKILLS_ROOT / "user-docs-author"
+        manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+        reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
+        combined = f"{manifest}\n{reference}"
+
+        assert "guides/*.md" in combined
+        assert "semantic wiki prose only" in combined
+        assert "Do not edit generated blocks" in combined
+        assert "Do not edit static-site output" in combined
+        assert "Do not invent facts" in combined
+        assert "deferred-docs" in combined
+        assert "validation-backed issues" in combined
+
+
 class TestSkillExport:
     def test_export_writes_all_skill_files(self, tmp_path):
         report = skills.export_skills(tmp_path / "out")
@@ -580,6 +620,7 @@ class TestSkillExport:
         assert "infra-review" in report.skills
         assert "onboarding-guide" in report.skills
         assert "publish-docs" in report.skills
+        assert "user-docs-author" in report.skills
         assert (tmp_path / "out" / "wiki-sync" / "SKILL.md").is_file()
         assert (tmp_path / "out" / "wiki-sync" / "reference.md").is_file()
         assert (tmp_path / "out" / "wiki-bootstrap" / "SKILL.md").is_file()
@@ -602,6 +643,8 @@ class TestSkillExport:
         assert (tmp_path / "out" / "onboarding-guide" / "reference.md").is_file()
         assert (tmp_path / "out" / "publish-docs" / "SKILL.md").is_file()
         assert (tmp_path / "out" / "publish-docs" / "reference.md").is_file()
+        assert (tmp_path / "out" / "user-docs-author" / "SKILL.md").is_file()
+        assert (tmp_path / "out" / "user-docs-author" / "reference.md").is_file()
         assert {op.action for op in report.operations} == {"write"}
 
     def test_export_is_idempotent(self, tmp_path):
@@ -682,6 +725,9 @@ class TestSkillInstall:
             tmp_path / ".claude" / "skills" / "onboarding-guide" / "SKILL.md"
         ).is_file()
         assert (tmp_path / ".claude" / "skills" / "publish-docs" / "SKILL.md").is_file()
+        assert (
+            tmp_path / ".claude" / "skills" / "user-docs-author" / "SKILL.md"
+        ).is_file()
 
 
 class TestSkillsCli:
@@ -697,6 +743,7 @@ class TestSkillsCli:
         assert any(skill["id"] == "infra-review" for skill in data["skills"])
         assert any(skill["id"] == "onboarding-guide" for skill in data["skills"])
         assert any(skill["id"] == "publish-docs" for skill in data["skills"])
+        assert any(skill["id"] == "user-docs-author" for skill in data["skills"])
 
     def test_cli_install_and_conflict_exit_code(self, tmp_project, capsys):
         skills_cmd.run(_ns(skills_action="install", format="text"))
