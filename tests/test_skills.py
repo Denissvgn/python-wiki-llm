@@ -605,6 +605,54 @@ class TestBundledUserDocsAuthorSkill:
         assert "validation-backed issues" in combined
 
 
+class TestBundledUsageExamplesSkill:
+    def test_usage_examples_skill_is_bundled(self):
+        by_id = {skill.skill_id: skill for skill in skills.list_bundled_skills()}
+        assert "usage-examples" in by_id
+        usage_examples = by_id["usage-examples"]
+        assert usage_examples.name == "usage-examples"
+        assert "usage examples" in usage_examples.description.lower()
+        assert "capture" in usage_examples.description.lower()
+        assert usage_examples.files[0] == "SKILL.md"
+        assert "reference.md" in usage_examples.files
+
+    def test_usage_examples_skill_encodes_capture_contract(self):
+        skill_dir = skills.BUNDLED_SKILLS_ROOT / "usage-examples"
+        manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+        reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
+        combined = f"{manifest}\n{reference}"
+
+        assert "assets/<surface>/<page-stem>/" in combined
+        assert "examples are evidence, not decoration" in combined
+        assert "capture tooling" in combined
+        assert "checked, never installed" in combined
+        assert "read-only source" in combined
+        assert "disposable" in combined
+        assert "alt text" in combined
+        assert "caption" in combined
+        assert "capture blocker" in combined
+        assert "media_link_broken" in combined
+        assert "media_missing_alt_text" in combined
+        assert "media_oversize" in combined
+        assert "site check --built-site-dir" in combined
+        assert "--link-mode http" in combined
+        assert "--link-mode file" in combined
+
+    def test_usage_examples_skill_is_agent_neutral(self):
+        skill_dir = skills.BUNDLED_SKILLS_ROOT / "usage-examples"
+        combined = "\n".join(
+            [
+                (skill_dir / "SKILL.md").read_text(encoding="utf-8"),
+                (skill_dir / "reference.md").read_text(encoding="utf-8"),
+            ]
+        ).lower()
+
+        assert "claude-only" not in combined
+        assert "claude code" not in combined
+        assert "agent platform" in combined
+        assert "llm-wiki site export" in combined
+
+
 class TestSkillExport:
     def test_export_writes_all_skill_files(self, tmp_path):
         report = skills.export_skills(tmp_path / "out")
@@ -620,6 +668,7 @@ class TestSkillExport:
         assert "infra-review" in report.skills
         assert "onboarding-guide" in report.skills
         assert "publish-docs" in report.skills
+        assert "usage-examples" in report.skills
         assert "user-docs-author" in report.skills
         assert (tmp_path / "out" / "wiki-sync" / "SKILL.md").is_file()
         assert (tmp_path / "out" / "wiki-sync" / "reference.md").is_file()
@@ -643,6 +692,8 @@ class TestSkillExport:
         assert (tmp_path / "out" / "onboarding-guide" / "reference.md").is_file()
         assert (tmp_path / "out" / "publish-docs" / "SKILL.md").is_file()
         assert (tmp_path / "out" / "publish-docs" / "reference.md").is_file()
+        assert (tmp_path / "out" / "usage-examples" / "SKILL.md").is_file()
+        assert (tmp_path / "out" / "usage-examples" / "reference.md").is_file()
         assert (tmp_path / "out" / "user-docs-author" / "SKILL.md").is_file()
         assert (tmp_path / "out" / "user-docs-author" / "reference.md").is_file()
         assert {op.action for op in report.operations} == {"write"}
@@ -726,6 +777,9 @@ class TestSkillInstall:
         ).is_file()
         assert (tmp_path / ".claude" / "skills" / "publish-docs" / "SKILL.md").is_file()
         assert (
+            tmp_path / ".claude" / "skills" / "usage-examples" / "SKILL.md"
+        ).is_file()
+        assert (
             tmp_path / ".claude" / "skills" / "user-docs-author" / "SKILL.md"
         ).is_file()
 
@@ -743,6 +797,7 @@ class TestSkillsCli:
         assert any(skill["id"] == "infra-review" for skill in data["skills"])
         assert any(skill["id"] == "onboarding-guide" for skill in data["skills"])
         assert any(skill["id"] == "publish-docs" for skill in data["skills"])
+        assert any(skill["id"] == "usage-examples" for skill in data["skills"])
         assert any(skill["id"] == "user-docs-author" for skill in data["skills"])
 
     def test_cli_install_and_conflict_exit_code(self, tmp_project, capsys):

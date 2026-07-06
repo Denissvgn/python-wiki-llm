@@ -101,3 +101,9 @@ When personas or topics exceed the run budget, append rows to the wiki's `bootst
 | No flows exist to link | Wiki bootstrapped without deep extraction or flows are placeholders | Run `wiki-bootstrap`/`wiki-sync` first; a guide is narrative over structure, not a substitute for it. |
 | Guides drift stale over months | Nothing regenerates guide prose | State the written-against baseline in each guide; let `doc-review` passes flag drift; refresh guides when their linked flows change behavior. |
 | Huge repo, many personas | Budget exhausted | Ship the highest-value persona pages, record the rest in the remainder — an explicit deferral, not a failure. |
+
+## Usage examples handoff
+
+After guide prose exists and validates, use `usage-examples` to attach
+evidence-linked screenshots, recordings, or terminal captures under the wiki
+`assets/` surface. Do not mix capture policy into onboarding guide drafting.

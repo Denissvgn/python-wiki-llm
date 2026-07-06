@@ -43,6 +43,7 @@ from ..services.source_snapshot import (
     unsupported_source_summary,
 )
 from ..services.team import build_team_issues
+from ..services import wiki_media
 
 # basic regex for [text](url)
 LINK_RE = re.compile(r"\[.+?\]\((.+?)\)")
@@ -176,12 +177,7 @@ class _LintInputs:
 
 def _local_link_path(link: str) -> str | None:
     """Return the file portion of a local markdown link, or None if ignored."""
-    if link.startswith(("http://", "https://", "mailto:", "#")):
-        return None
-    base, _sep, _anchor = link.partition("#")
-    if not base:
-        return None
-    return base
+    return wiki_media.local_link_path(link)
 
 
 def _is_legacy_page(path: Path, wiki_dir: Path) -> bool:
@@ -577,6 +573,8 @@ def _check_broken_links(
             local_path = _local_link_path(link)
             if local_path is None:
                 continue
+            if wiki_media.media_type_for_path(local_path) is not None:
+                continue
             target = (page.parent / local_path).resolve()
             if not target.exists():
                 rel = str(page.relative_to(wiki_path))
@@ -587,6 +585,83 @@ def _check_broken_links(
                     path=rel,
                     target=link,
                 )
+
+
+def _check_media_references(
+    report: LintReport,
+    wiki_path: Path,
+    page_index: _WikiPageIndex,
+    *,
+    media_size_warn_bytes: int,
+) -> None:
+    seen_targets: set[tuple[str, str, str]] = set()
+    for page in page_index.pages:
+        rel = page.relative_to(wiki_path).as_posix()
+        content = page_index.content_by_page.get(page, "")
+        for reference in wiki_media.collect_media_references(page, rel, content):
+            target = (page.parent / reference.target).resolve()
+            key = (rel, reference.target, reference.source)
+            if key in seen_targets:
+                continue
+            seen_targets.add(key)
+            if not target.exists():
+                _add(
+                    report,
+                    "media_link_broken",
+                    f"Broken media link in {rel} -> {reference.target}",
+                    path=rel,
+                    target=reference.target,
+                )
+                continue
+            if reference.requires_alt and not (reference.alt_text or "").strip():
+                _diagnose(
+                    report,
+                    "media_missing_alt_text",
+                    f"Media image in {rel} is missing alt text: {reference.target}",
+                    path=rel,
+                    target=reference.target,
+                )
+            try:
+                size = target.stat().st_size
+            except OSError:
+                continue
+            if size > media_size_warn_bytes:
+                _diagnose(
+                    report,
+                    "media_oversize",
+                    (
+                        f"Media asset in {rel} exceeds {media_size_warn_bytes} "
+                        f"bytes: {reference.target} ({size} bytes)"
+                    ),
+                    path=rel,
+                    target=reference.target,
+                )
+
+    asset_index = wiki_media.build_asset_index(
+        wiki_path, _content_by_relative_path(page_index, wiki_path)
+    )
+    for asset in asset_index.unreferenced:
+        expected_page = asset_index.expected_pages.get(asset)
+        message = f"Asset is not referenced by any wiki page: {asset}"
+        if expected_page:
+            message += f" (expected owner page: {expected_page})"
+        _diagnose(
+            report,
+            "media_orphan",
+            message,
+            path=asset,
+            target=expected_page,
+        )
+
+
+def _content_by_relative_path(
+    page_index: _WikiPageIndex,
+    wiki_path: Path,
+) -> dict[str, str]:
+    return {
+        page.relative_to(wiki_path).as_posix(): content
+        for page, content in page_index.content_by_page.items()
+    }
 
 
 def _section_body(markdown: str, heading: str) -> str | None:
@@ -1066,11 +1141,18 @@ def _run_report_checks(
     strict: bool,
     profiler: _LintProfiler | None,
     inputs: _LintInputs,
+    media_size_warn_bytes: int,
 ) -> None:
     with _profile_phase(profiler, "unsupported_sources"):
         _check_unsupported_source_diagnostics(report, inputs.unsupported_sources)
     with _profile_phase(profiler, "links"):
         _check_broken_links(report, wiki_path, inputs.page_index)
+        _check_media_references(
+            report,
+            wiki_path,
+            inputs.page_index,
+            media_size_warn_bytes=media_size_warn_bytes,
+        )
     with _profile_phase(profiler, "generated_diagrams"):
         _check_generated_diagrams(report, wiki_path, inputs.page_index)
     with _profile_phase(profiler, "orphans"):
@@ -1130,6 +1212,7 @@ def build_report(
     parallel_jobs: int = 1,
     helper_cache_dir: str | None = None,
     include_tests: Iterable[str] | None = None,
+    media_size_warn_bytes: int = wiki_media.DEFAULT_MEDIA_SIZE_WARN_BYTES,
 ) -> LintReport:
     """Build a structured lint report without rendering or exiting."""
     wiki_path = Path(wiki_dir)
@@ -1154,7 +1237,15 @@ def build_report(
     )
     if inputs is None:
         return report
-    _run_report_checks(report, wiki_path, src_dir, strict, profiler, inputs)
+    _run_report_checks(
+        report,
+        wiki_path,
+        src_dir,
+        strict,
+        profiler,
+        inputs,
+        media_size_warn_bytes,
+    )
     return report
 
 
@@ -1235,6 +1326,30 @@ def render_text(report: LintReport) -> str:
         "No broken links.",
         "Found {count} broken link(s).",
         prefix="  ❌ ",
+    )
+    emit_group(
+        "media_link_broken",
+        "No broken media links.",
+        "Found {count} broken media link(s).",
+        prefix="  ❌ ",
+    )
+    emit_group(
+        "media_missing_alt_text",
+        "No media alt-text warnings.",
+        "Found {count} media alt-text warning(s).",
+        only_if_present=True,
+    )
+    emit_group(
+        "media_oversize",
+        "No oversized media assets.",
+        "Found {count} oversized media asset warning(s).",
+        only_if_present=True,
+    )
+    emit_group(
+        "media_orphan",
+        "No unreferenced media assets.",
+        "Found {count} unreferenced media asset warning(s).",
+        only_if_present=True,
     )
     emit_group("orphan_pages", "No orphan pages.", "Found {count} orphan page(s).")
     emit_group(
@@ -1437,6 +1552,10 @@ def run(args):
         parallel_jobs=getattr(args, "jobs", 1),
         helper_cache_dir=getattr(args, "helper_cache_dir", None),
         include_tests=getattr(args, "include_tests", None),
+        media_size_warn_bytes=(
+            getattr(args, "media_size_warn_bytes", None)
+            or wiki_media.DEFAULT_MEDIA_SIZE_WARN_BYTES
+        ),
     )
     if report.count("extractor_failure") and not profile:
         for issue in report.by_category().get("extractor_failure", []):

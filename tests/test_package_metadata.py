@@ -66,6 +66,8 @@ def test_package_data_includes_bundled_skills():
     assert "skills/onboarding-guide/reference.md" in package_data
     assert "skills/publish-docs/SKILL.md" in package_data
     assert "skills/publish-docs/reference.md" in package_data
+    assert "skills/usage-examples/SKILL.md" in package_data
+    assert "skills/usage-examples/reference.md" in package_data
     assert "skills/user-docs-author/SKILL.md" in package_data
     assert "skills/user-docs-author/reference.md" in package_data
 
@@ -93,11 +95,20 @@ def test_readme_documents_bundled_skills():
         "infra-review",
         "onboarding-guide",
         "publish-docs",
+        "usage-examples",
         "user-docs-author",
         "wiki-bootstrap",
         "wiki-sync",
     ]:
         assert f"`{skill_id}`" in readme
+
+
+def test_readme_documents_autonomous_agent_consumption_paths():
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+    assert "For autonomous agents" in readme
+    assert "llm-wiki init --agent generic" in readme
+    assert "llm-wiki skills export --dest" in readme
+    assert "usage-examples" in readme
 
 
 def test_readme_uses_distribution_name_for_uninstall():

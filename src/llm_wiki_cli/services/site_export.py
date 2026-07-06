@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import posixpath
 import re
+import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable, Optional, Union
@@ -17,6 +18,7 @@ from urllib.parse import unquote
 from . import wiki_surface
 from .io import read_md, write_md
 from .site_html_check import SUPPORTED_LINK_MODES, check_built_site_links
+from .wiki_media import build_asset_index, collect_media_references, media_type_for_path
 
 
 SUPPORTED_SITE_FORMATS = frozenset({"plain", "mkdocs", "docusaurus"})
@@ -91,7 +93,9 @@ class SiteExportReport:
     front_matter: bool = False
     page_count: int = 0
     source_count: int = 0
+    asset_count: int = 0
     operations: list[SiteExportOperation] = field(default_factory=list)
+    asset_operations: list[SiteExportOperation] = field(default_factory=list)
     issues: list[dict[str, str]] = field(default_factory=list)
     warnings: list[dict[str, str]] = field(default_factory=list)
 
@@ -110,7 +114,11 @@ class SiteExportReport:
             "front_matter": self.front_matter,
             "page_count": self.page_count,
             "source_count": self.source_count,
+            "asset_count": self.asset_count,
             "operations": [operation.__dict__ for operation in self.operations],
+            "asset_operations": [
+                operation.__dict__ for operation in self.asset_operations
+            ],
             "issues": self.issues,
             "warnings": self.warnings,
         }
@@ -262,6 +270,7 @@ def export_site_mirror(
             ),
         )
 
+    _record_asset_operations(report, wiki=wiki, out=out, page_contents=page_contents)
     return report
 
 
@@ -313,9 +322,11 @@ def export_site_hub(
             file_friendly=file_friendly,
         )
         report.operations.extend(child.operations)
+        report.asset_operations.extend(child.asset_operations)
         report.issues.extend(child.issues)
         report.warnings.extend(child.warnings)
         report.page_count += child.page_count
+        report.asset_count += child.asset_count
         hub_rows.append((source.source_id, child.page_count))
 
     _record_write_operation(
@@ -494,6 +505,8 @@ def check_site_mirror(
             )
         )
 
+    report.warnings.extend(_stale_asset_warnings(wiki, out))
+
     if profile == "user":
         quality_issues, quality_warnings = _check_user_profile_quality(
             out,
@@ -569,6 +582,12 @@ def render_report_text(report: SiteExportReport, *, action: str) -> str:
         lines.append("")
         lines.append("Operations:")
         for operation in report.operations:
+            suffix = f" - {operation.message}" if operation.message else ""
+            lines.append(f"- {operation.action}: {operation.path}{suffix}")
+    if report.asset_operations:
+        lines.append("")
+        lines.append("Asset operations:")
+        for operation in report.asset_operations:
             suffix = f" - {operation.message}" if operation.message else ""
             lines.append(f"- {operation.action}: {operation.path}{suffix}")
     if report.issues:
@@ -842,6 +861,102 @@ def _record_mkdocs_file_friendly_override(
         target=_safe_join(out, f"{MKDOCS_FILE_FRIENDLY_OVERRIDE_DIR}/404.html"),
         content=MKDOCS_FILE_FRIENDLY_404_TEMPLATE,
     )
+
+
+def _record_asset_operations(
+    report: SiteExportReport,
+    *,
+    wiki: Path,
+    out: Path,
+    page_contents: dict[str, str],
+) -> None:
+    asset_index = build_asset_index(wiki, page_contents)
+    referenced = set(asset_index.referenced)
+    for asset_rel in asset_index.referenced:
+        source = wiki / Path(asset_rel)
+        if not source.is_file():
+            continue
+        report.asset_count += 1
+        target = _safe_join(out, asset_rel)
+        _record_asset_copy_operation(report, source=source, target=target)
+
+    for stale in _exported_asset_paths(out):
+        if stale not in referenced:
+            report.asset_operations.append(
+                SiteExportOperation(
+                    "stale_asset",
+                    str(out),
+                    str(_safe_join(out, stale)),
+                    "Previously exported asset is no longer referenced.",
+                )
+            )
+
+
+def _record_asset_copy_operation(
+    report: SiteExportReport,
+    *,
+    source: Path,
+    target: Path,
+) -> None:
+    if report.dry_run:
+        report.asset_operations.append(
+            SiteExportOperation("would_copy", str(source), str(target))
+        )
+        return
+    if target.is_file() and _same_file_bytes(source, target):
+        report.asset_operations.append(
+            SiteExportOperation("unchanged", str(source), str(target))
+        )
+        return
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, target)
+    report.asset_operations.append(
+        SiteExportOperation("copy", str(source), str(target))
+    )
+
+
+def _same_file_bytes(left: Path, right: Path) -> bool:
+    try:
+        return left.read_bytes() == right.read_bytes()
+    except OSError:
+        return False
+
+
+def _stale_asset_warnings(wiki: Path, out: Path) -> list[dict[str, str]]:
+    if not out.is_dir():
+        return []
+    source_assets = build_asset_index(wiki)
+    referenced = set(source_assets.referenced)
+    warnings: list[dict[str, str]] = []
+    for asset_rel in _exported_asset_paths(out):
+        if asset_rel in referenced:
+            continue
+        warnings.append(
+            {
+                "category": "stale_asset",
+                "path": str(_safe_join(out, asset_rel)),
+                "target": asset_rel,
+                "message": (
+                    "Exported asset is no longer referenced by the source wiki: "
+                    f"{asset_rel}"
+                ),
+            }
+        )
+    return warnings
+
+
+def _exported_asset_paths(root: Path) -> list[str]:
+    assets = root / "assets"
+    if not assets.is_dir():
+        return []
+    paths = []
+    for path in assets.rglob("*"):
+        if not path.is_file():
+            continue
+        rel = path.relative_to(root).as_posix()
+        if media_type_for_path(rel) is not None:
+            paths.append(rel)
+    return sorted(paths, key=lambda value: (value.casefold(), value))
 
 
 def _build_mkdocs_config(
@@ -1558,6 +1673,16 @@ def _check_user_profile_quality(
                 "message": "User profile requires at least one guides/*.md page.",
             }
         )
+    elif not _primary_user_docs_have_media(index_path, guide_paths):
+        warnings.append(
+            {
+                "category": "user_docs_missing_examples",
+                "path": str(out / "guides"),
+                "message": (
+                    "User-profile primary docs contain no usage-example media."
+                ),
+            }
+        )
 
     for path in [index_path] + guide_paths:
         if path.is_file():
@@ -1569,6 +1694,21 @@ def _check_user_profile_quality(
             _placeholder_findings(path, category="generated_reference_placeholder")
         )
     return issues, warnings
+
+
+def _primary_user_docs_have_media(index_path: Path, guide_paths: list[Path]) -> bool:
+    for path in [index_path] + guide_paths:
+        if not path.is_file():
+            continue
+        content = read_md(path)
+        rel = (
+            path.name
+            if path == index_path
+            else path.relative_to(path.parents[1]).as_posix()
+        )
+        if collect_media_references(path, rel, content):
+            return True
+    return False
 
 
 def _generated_reference_paths(out: Path) -> list[Path]:
@@ -1806,6 +1946,8 @@ def _escape_docusaurus_mdx_text(content: str) -> str:
 
 
 def _escape_docusaurus_mdx_line(line: str) -> str:
+    if _is_allowed_raw_media_html(line):
+        return line
     parts = line.split("`")
     escaped: list[str] = []
     for index, part in enumerate(parts):
@@ -1824,6 +1966,11 @@ def _escape_docusaurus_mdx_segment(segment: str) -> str:
         else:
             escaped.append(char)
     return "".join(escaped)
+
+
+def _is_allowed_raw_media_html(line: str) -> bool:
+    stripped = line.lstrip().casefold()
+    return stripped.startswith(("<img ", "<img>", "<video ", "<video>", "<source "))
 
 
 def _yaml_quote(value: str) -> str:

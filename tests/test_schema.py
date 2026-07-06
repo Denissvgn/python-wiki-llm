@@ -154,6 +154,26 @@ def test_agent_schema_mentions_canonical_surfaces_and_generated_ownership():
     assert "Haskell lockfile pinning is intentionally out of scope" in text
 
 
+def test_agent_schema_mentions_user_docs_usage_example_workflow():
+    content = build_schema_content("generic", "docs/llm_wiki")
+    text = _squash_ws(content)
+
+    assert "## User docs and usage examples" in content
+    assert (
+        "wiki-bootstrap -> wiki-sync -> user-docs-author -> usage-examples -> publish-docs"
+        in text
+    )
+    assert "assets/<surface>/<page-stem>/" in content
+    assert "semantic prose only" in content
+    assert "generated blocks are CLI-owned" in content
+    assert "source targets read-only" in content
+    assert "no toolchain installs" in content
+    assert "validation loop before commit" in content
+    assert "wiki commits separate from code commits" in content
+    assert "capture tooling" in content
+    assert "agent platform" in content
+
+
 def test_ide_schema_mentions_incremental_sync_workflow():
     content = build_schema_content("copilot", "docs/llm_wiki")
 

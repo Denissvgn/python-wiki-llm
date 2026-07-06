@@ -7,6 +7,10 @@ description: Wire LLM Wiki's static-site export into an actual publishable site 
 
 Turn `site export`'s Markdown mirror into an actually-buildable, optionally deployed site. The default export is a reference profile: complete generated coverage for agents and maintainers. Use `--profile user` only when a human documentation layer exists. The loop is: **export → check → detect and run the real builder if installed → validate built links for the selected distribution mode → hand off deploy**. Every step through `site check` is already deterministic and covered by existing commands; this skill's judgment calls are which profile matches the audience, which format matches the target host, which link mode matches the handoff, and whether to attempt the real build at all. See [reference.md](reference.md) for format/host pairings, builder detection, distribution modes, and the CI wiring pattern.
 
+If user docs need captured examples before publishing, run `usage-examples`
+first; this skill only validates and publishes the resulting media-bearing
+site.
+
 ## Preconditions
 
 - A current wiki (or several, for hub mode) already exists — run `wiki-sync`/`wiki-bootstrap` first if not; this skill does not generate wiki content.

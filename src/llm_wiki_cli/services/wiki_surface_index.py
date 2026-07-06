@@ -10,6 +10,7 @@ from typing import Any, Mapping, Optional, Sequence, Union
 from urllib.parse import unquote
 
 from .paths import normalize_source_path
+from .wiki_media import build_asset_index, normalize_markdown_link_target
 from .wiki_surface import (
     PageKind,
     WikiSurfacePage,
@@ -56,6 +57,8 @@ def build_surface_index(
         src_root,
     )
     counts = _counts(page_entries)
+    assets = build_asset_index(wiki, content_by_path)
+    counts["assets"] = assets.counts
     dependency_pages = {
         "dependencies": counts["by_kind"][PageKind.DEPENDENCIES.value] > 0,
         "load_order": counts["by_kind"][PageKind.LOAD_ORDER.value] > 0,
@@ -67,6 +70,11 @@ def build_surface_index(
         "schema_version": WIKI_SURFACE_INDEX_SCHEMA_VERSION,
         "counts": counts,
         "dependency_pages": dependency_pages,
+        "assets": {
+            "by_page": assets.by_page,
+            "referenced": assets.referenced,
+            "unreferenced": assets.unreferenced,
+        },
         "flows": flows,
         "pages": page_entries,
     }
@@ -75,6 +83,12 @@ def build_surface_index(
             "inventory": _inventory_fingerprint(inventory, src_root),
             "counts": counts,
             "dependency_pages": dependency_pages,
+            "assets": {
+                "counts": assets.counts,
+                "by_page": assets.by_page,
+                "referenced": assets.referenced,
+                "unreferenced": assets.unreferenced,
+            },
             "flows": flows,
             "pages": page_entries,
         }
@@ -265,9 +279,7 @@ def _resolve_internal_target(
     raw_link: str,
     canonical_by_path: Mapping[Path, str],
 ) -> Optional[str]:
-    link = raw_link.strip()
-    if link.startswith("<") and link.endswith(">"):
-        link = link[1:-1].strip()
+    link = normalize_markdown_link_target(raw_link)
     if link.startswith(("http://", "https://", "mailto:", "#")):
         return None
     base, _sep, _anchor = link.partition("#")

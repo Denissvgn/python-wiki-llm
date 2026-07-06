@@ -233,6 +233,33 @@ checks add quality gates for default site names, missing guides, oversized
 landing pages, and placeholder text in primary human docs. Warning-only
 findings do not fail the check.
 
+## User docs and usage examples
+Use the bundled docs workflow skills in this order when the goal is a
+human-facing documentation layer with captured examples:
+
+`wiki-bootstrap -> wiki-sync -> user-docs-author -> usage-examples -> publish-docs`
+
+External autonomous agents can consume the same instructions without a
+dedicated agent registration:
+
+```bash
+llm-wiki init --agent generic --wiki-dir {wiki_dir}
+llm-wiki skills export --dest exported-skills
+```
+
+Hard rules for every agent:
+
+- Edit semantic prose only; generated blocks are CLI-owned.
+- Keep source targets read-only unless the user explicitly asks for source edits.
+- Do not run toolchain installs for capture; no toolchain installs are part of
+  this workflow. Capture tooling comes from the agent platform, and missing
+  capture tooling becomes a deferred item.
+- Place usage media under `assets/<surface>/<page-stem>/`.
+- Run the validation loop before commit: lint, site export, site check, and
+  built-site checks when a builder exists.
+- Keep wiki commits separate from code commits.
+- Captures must demonstrate behavior already backed by wiki/source evidence.
+
 Do not edit generated Mermaid diagrams by hand. Treat generated diagrams,
 tables, links, headings, canonical filenames, and machine-readable artifacts as
 CLI-owned structure. Keep semantic sections such as descriptions, `## Behavior`,

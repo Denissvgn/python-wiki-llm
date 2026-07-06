@@ -12,12 +12,14 @@ from urllib.parse import unquote, urlsplit
 SUPPORTED_LINK_MODES = frozenset({"http", "file"})
 _IGNORED_SCHEMES = frozenset({"http", "https", "mailto", "tel", "data", "javascript"})
 _HREF_TAGS = frozenset({"a", "area", "link"})
+_MEDIA_SRC_TAGS = frozenset({"img", "video", "source"})
 
 
 class _HrefParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.hrefs: list[str] = []
+        self.media_srcs: list[str] = []
 
     def handle_starttag(
         self,
@@ -25,6 +27,11 @@ class _HrefParser(HTMLParser):
         attrs: list[tuple[str, Optional[str]]],
     ) -> None:
         if tag.casefold() not in _HREF_TAGS:
+            if tag.casefold() not in _MEDIA_SRC_TAGS:
+                return
+            for name, value in attrs:
+                if name.casefold() == "src" and value is not None:
+                    self.media_srcs.append(value.strip())
             return
         for name, value in attrs:
             if name.casefold() == "href" and value is not None:
@@ -73,6 +80,10 @@ def check_built_site_links(
                 root=root_resolved,
                 link_mode=link_mode,
             )
+            if issue is not None:
+                issues.append(issue)
+        for src in parser.media_srcs:
+            issue = _check_media_src(html_path, src, root=root_resolved)
             if issue is not None:
                 issues.append(issue)
     return issues
@@ -162,6 +173,73 @@ def _check_href(
         html_path,
         href,
         f"Built HTML link target does not exist: {href}",
+    )
+
+
+def _check_media_src(
+    html_path: Path,
+    src: str,
+    *,
+    root: Path,
+) -> Optional[dict[str, str]]:
+    if not src or src.startswith("#"):
+        return None
+    if "\x00" in src:
+        return _issue(
+            "malformed_built_html_link",
+            html_path,
+            src,
+            "Built HTML media source contains a NUL byte.",
+        )
+    try:
+        parsed = urlsplit(src)
+    except ValueError as exc:
+        return _issue(
+            "malformed_built_html_link",
+            html_path,
+            src,
+            f"Cannot parse built HTML media source: {exc}",
+        )
+    scheme = parsed.scheme.casefold()
+    if scheme in _IGNORED_SCHEMES or parsed.netloc:
+        return None
+    if scheme:
+        return _issue(
+            "malformed_built_html_link",
+            html_path,
+            src,
+            f"Unsupported built HTML media scheme: {scheme}",
+        )
+    raw_path = parsed.path
+    if not raw_path:
+        return None
+    try:
+        path = unquote(raw_path, errors="strict").replace("\\", "/")
+    except UnicodeDecodeError as exc:
+        return _issue(
+            "malformed_built_html_link",
+            html_path,
+            src,
+            f"Cannot decode built HTML media source: {exc}",
+        )
+    base_dir = root if path.startswith("/") else html_path.parent
+    candidate = (base_dir / path.lstrip("/")).resolve()
+    try:
+        candidate.relative_to(root)
+    except ValueError:
+        return _issue(
+            "unsafe_built_html_link",
+            html_path,
+            src,
+            f"Built HTML media source escapes built site directory: {src}",
+        )
+    if candidate.is_file():
+        return None
+    return _issue(
+        "missing_built_media_target",
+        html_path,
+        src,
+        f"Built HTML media target does not exist: {src}",
     )
 
 

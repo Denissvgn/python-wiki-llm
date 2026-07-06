@@ -80,6 +80,8 @@ where = ["src"]
     "skills/onboarding-guide/reference.md",
     "skills/publish-docs/SKILL.md",
     "skills/publish-docs/reference.md",
+    "skills/usage-examples/SKILL.md",
+    "skills/usage-examples/reference.md",
     "skills/user-docs-author/SKILL.md",
     "skills/user-docs-author/reference.md",
     "skills/wiki-bootstrap/SKILL.md",

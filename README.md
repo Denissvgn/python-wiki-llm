@@ -127,6 +127,21 @@ directories (Claude Code-compatible) that encode the documentation and
 analysis loops this tool is designed around. See [`skills`](#skills) in the
 command reference.
 
+### For autonomous agents
+
+Agents that do not have a dedicated schema target can use the generic
+instruction surface:
+
+```bash
+llm-wiki init --agent generic
+llm-wiki skills export --dest exported-skills
+```
+
+`init --agent generic` writes `AGENTS.md` with the docs workflow order and
+hard rules. `skills export --dest` writes the bundled skill directories into a
+location any shell-capable autonomous agent can read, including
+`usage-examples` for attaching validated screenshots or recordings.
+
 ## Installation
 
 From PyPI:
@@ -543,6 +558,13 @@ lint pass/fail behavior or undeclared/unused package diagnostics.
 When generated entity/module diagram sections exist, lint validates Mermaid
 `click` links as hard broken-link issues and reports over-large generated
 diagrams as warning diagnostics with page and section targets.
+When guide or other semantic pages embed local media, lint treats image and
+video targets separately from Markdown page links. Missing local media files
+are hard `media_link_broken` issues. Missing image alt text, media files over
+the default 2 MB warning threshold, and unreferenced files under `assets/` are
+warning diagnostics (`media_missing_alt_text`, `media_oversize`, and
+`media_orphan`). Use `--media-size-warn-bytes` to tune the size warning for a
+project.
 When flow pages exist, lint also reports generated data-flow gaps, such as
 unresolved calls that static analysis cannot classify, as warning diagnostics.
 Known but unsupported source files are reported as informational diagnostics
@@ -884,6 +906,14 @@ MkDocs theme override for file-safe home links, and reports
 mode requires concrete `.html` targets and reports directory-style links as
 hard issues.
 
+Agent-owned usage media lives under the semantic `assets/` surface, using the
+mirrored path convention `assets/<surface>/<page-stem>/<name>.<ext>`. Markdown
+image embeds and raw `<img>`, `<video>`, and `<source>` tags are recognized for
+`.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.svg`, `.mp4`, and `.webm` files.
+`site export` copies referenced assets into the mirror and reports asset
+operations separately from page operations. `site check --built-site-dir`
+validates built HTML media targets in both `http` and `file` link modes.
+
 The service layer also exposes the same pure mirror builder for integrations:
 
 ```python
@@ -919,7 +949,7 @@ emit non-failing `warnings` in JSON and text reports.
 List, export, and install the agent skills bundled with the package. Each
 skill is a directory holding a `SKILL.md` workflow definition (Claude
 Code-compatible frontmatter plus instructions) and optional supporting files.
-Twelve skills are bundled:
+Thirteen skills are bundled:
 
 - `attack-surface`: defensive security-review preparation — prepare
   extractor helpers, run `extract --deep --read-only`, seed required
@@ -968,6 +998,11 @@ Twelve skills are bundled:
   site — export (single-wiki or hub), validate with `site check`, run the
   real mkdocs/docusaurus builder when installed, and hand off (never
   perform) the deploy step.
+- `usage-examples`: capture evidence-linked examples for user docs — run
+  documented flows in a disposable environment, attach screenshots or
+  recordings under `assets/<surface>/<page-stem>/`, validate media links and
+  built-site media targets, and defer honestly when capture tooling or runtime
+  access is unavailable.
 - `user-docs-author`: full user documentation authoring pass — run
   deterministic `sync`/`lint`/`site export --profile user`/`site check`
   evidence first, write only evidence-linked semantic wiki prose such as

@@ -79,6 +79,17 @@ def test_registry_helpers_filter_roots_and_directory_kinds():
     ]
 
 
+def test_asset_surface_is_agent_owned_and_never_generated():
+    surface = wiki_surface.asset_surface()
+
+    assert surface.label == "Assets"
+    assert surface.directory == "assets"
+    assert surface.path_pattern == "assets/<surface>/<page-stem>/<name>.<ext>"
+    assert surface.role is SurfaceRole.SEMANTIC
+    assert surface.generated is False
+    assert surface.layout == "mirrored-page-path"
+
+
 def test_canonical_paths_and_mcp_uris_are_posix():
     assert wiki_surface.canonical_path(PageKind.INDEX) == "index.md"
     assert wiki_surface.canonical_path(PageKind.DEPENDENCIES) == "dependencies.md"

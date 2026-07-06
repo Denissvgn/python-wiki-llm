@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- User documentation usage media support: `lint` now validates local image and
+  video references with stable media categories, the wiki surface index records
+  `assets/` counts and page-to-asset references, and `site export` mirrors
+  referenced assets into static-site output with separate asset operations.
+- Built-site checks now validate `<img>`, `<video>`, and `<source>` media
+  targets in both `http` and `file` link modes, and user-profile site checks
+  warn when primary docs have no usage media.
+- Bundled `usage-examples` agent skill plus autonomous-agent schema guidance
+  for attaching evidence-linked screenshots or recordings under
+  `assets/<surface>/<page-stem>/` and validating the media pipeline before
+  publishing.
 - Bundled `attack-surface` agent skill (from the 2026-07-04 workflow
   dogfood): defensive security-review preparation — prepare extractor
   helpers, run `extract --deep --read-only`, seed required coverage from

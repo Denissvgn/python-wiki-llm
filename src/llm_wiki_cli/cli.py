@@ -276,6 +276,13 @@ def _add_lint_command(subparsers):
         metavar="PATH",
         help="Directory for llm-wiki-inventory-cache.json",
     )
+    lint_parser.add_argument(
+        "--media-size-warn-bytes",
+        type=_positive_int,
+        default=None,
+        metavar="BYTES",
+        help="Warn when a referenced media asset exceeds this size in bytes",
+    )
     _add_helper_cache_argument(lint_parser)
     _add_include_tests_argument(lint_parser)
     lint_parser.add_argument(

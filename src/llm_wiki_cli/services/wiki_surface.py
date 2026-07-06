@@ -73,6 +73,26 @@ class WikiSurfacePage:
     role: SurfaceRole
 
 
+@dataclass(frozen=True)
+class WikiAssetSurface:
+    label: str
+    directory: str
+    path_pattern: str
+    role: SurfaceRole
+    layout: str
+    generated: bool
+
+
+_ASSET_SURFACE = WikiAssetSurface(
+    label="Assets",
+    directory="assets",
+    path_pattern="assets/<surface>/<page-stem>/<name>.<ext>",
+    role=SurfaceRole.SEMANTIC,
+    layout="mirrored-page-path",
+    generated=False,
+)
+
+
 _PAGE_KINDS = (
     WikiSurfaceKind(
         kind=PageKind.INDEX,
@@ -162,6 +182,11 @@ _KINDS_BY_KIND = {entry.kind: entry for entry in _PAGE_KINDS}
 def iter_page_kinds() -> tuple[WikiSurfaceKind, ...]:
     """Return all canonical page kinds in display/collection order."""
     return _PAGE_KINDS
+
+
+def asset_surface() -> WikiAssetSurface:
+    """Return the canonical agent-owned media asset surface."""
+    return _ASSET_SURFACE
 
 
 def iter_root_pages() -> tuple[WikiSurfaceKind, ...]:

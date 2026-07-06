@@ -7,6 +7,10 @@ description: Run a deterministic-first user docs authoring pass for an existing 
 
 Build a user-facing documentation layer on top of a current LLM Wiki without weakening the reproducible core. The loop is: **deterministic evidence first -> LLM-authored semantic guide/docs pass -> deterministic site export/check/build -> LLM adjustment loop from checker output**. This is a skill-only workflow: `llm-wiki` commands produce evidence and validation, while the agent owns judgment, prose, and deferred-docs decisions. See [reference.md](reference.md) for the evidence map, page templates, command matrix, adjustment loop, and failure modes.
 
+After evidence-backed guides exist, use `usage-examples` to capture and attach
+validated screenshots, recordings, or command-output examples; do not duplicate
+that capture contract here.
+
 ## Preconditions
 
 - A maintained wiki exists and its source root is known. If not, run `wiki-bootstrap`; if the wiki is stale, run `wiki-sync` before authoring.

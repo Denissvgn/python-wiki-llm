@@ -426,6 +426,165 @@ class TestLintBrokenLink:
         assert "Found 1 broken link(s)." in out
 
 
+class TestLintMediaLinks:
+    def _stub_source_inputs(self, monkeypatch):
+        monkeypatch.setattr(
+            lint_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {}, {"python": ExtractorStatus("python", "skipped", 0)}
+            ),
+        )
+        monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
+        monkeypatch.setattr(
+            lint_cmd, "get_yaml_infrastructure_inventory", lambda *a, **k: {}
+        )
+
+    def _wiki_with_guide(self, tmp_path: Path) -> tuple[Path, Path]:
+        src = tmp_path / "src"
+        src.mkdir()
+        wiki = tmp_path / "wiki"
+        (wiki / "guides").mkdir(parents=True)
+        (wiki / "assets" / "guides" / "tour").mkdir(parents=True)
+        (wiki / "index.md").write_text(
+            "# Index\n\n- [Tour](guides/tour.md)\n", encoding="utf-8"
+        )
+        (wiki / "log.md").write_text("# Log\n", encoding="utf-8")
+        return src, wiki
+
+    def test_media_links_are_classified_and_markdown_titles_are_stripped(
+        self, tmp_path, monkeypatch
+    ):
+        self._stub_source_inputs(monkeypatch)
+        src, wiki = self._wiki_with_guide(tmp_path)
+        (wiki / "assets" / "guides" / "tour" / "ok.png").write_bytes(b"ok")
+        (wiki / "guides" / "tour.md").write_text(
+            "# Tour\n\n"
+            '![Screenshot](../assets/guides/tour/ok.png "Home screen")\n'
+            "![Missing](../assets/guides/tour/missing.png)\n"
+            "[Missing page](missing-page.md)\n",
+            encoding="utf-8",
+        )
+
+        report = lint_cmd.build_report(wiki, str(src))
+
+        assert sorted(
+            (issue.category, issue.path, issue.target) for issue in report.issues
+        ) == [
+            ("broken_links", "guides/tour.md", "missing-page.md"),
+            (
+                "media_link_broken",
+                "guides/tour.md",
+                "../assets/guides/tour/missing.png",
+            ),
+        ]
+
+    def test_raw_html_media_embeds_missing_alt_and_oversize_are_validated(
+        self, tmp_path, monkeypatch
+    ):
+        self._stub_source_inputs(monkeypatch)
+        src, wiki = self._wiki_with_guide(tmp_path)
+        (wiki / "assets" / "guides" / "tour" / "large.png").write_bytes(b"12345")
+        (wiki / "assets" / "guides" / "tour" / "clip.webm").write_bytes(b"video")
+        (wiki / "guides" / "tour.md").write_text(
+            "# Tour\n\n"
+            '<img src="../assets/guides/tour/large.png">\n'
+            '<video src="../assets/guides/tour/missing.webm"></video>\n'
+            '<video><source src="../assets/guides/tour/clip.webm"></video>\n',
+            encoding="utf-8",
+        )
+
+        report = lint_cmd.build_report(wiki, str(src), media_size_warn_bytes=4)
+
+        assert [
+            (issue.category, issue.path, issue.target) for issue in report.issues
+        ] == [
+            (
+                "media_link_broken",
+                "guides/tour.md",
+                "../assets/guides/tour/missing.webm",
+            )
+        ]
+        diagnostics = [
+            (item.category, item.path, item.target, item.severity)
+            for item in report.diagnostics
+            if item.category.startswith("media_")
+        ]
+        assert diagnostics == [
+            (
+                "media_missing_alt_text",
+                "guides/tour.md",
+                "../assets/guides/tour/large.png",
+                "warning",
+            ),
+            (
+                "media_oversize",
+                "guides/tour.md",
+                "../assets/guides/tour/large.png",
+                "warning",
+            ),
+            (
+                "media_oversize",
+                "guides/tour.md",
+                "../assets/guides/tour/clip.webm",
+                "warning",
+            ),
+        ]
+
+    def test_orphan_asset_is_a_warning_and_empty_asset_tree_is_compatible(
+        self, tmp_path, monkeypatch
+    ):
+        self._stub_source_inputs(monkeypatch)
+        src, wiki = self._wiki_with_guide(tmp_path)
+        (wiki / "guides" / "tour.md").write_text("# Tour\n", encoding="utf-8")
+
+        no_asset_report = lint_cmd.build_report(wiki, str(src))
+        assert no_asset_report.issues == []
+        assert [
+            item
+            for item in no_asset_report.diagnostics
+            if item.category == "media_orphan"
+        ] == []
+
+        (wiki / "assets" / "guides" / "tour" / "unused.png").write_bytes(b"unused")
+        orphan_report = lint_cmd.build_report(wiki, str(src))
+
+        assert orphan_report.issues == []
+        assert [
+            (item.path, item.target, item.severity)
+            for item in orphan_report.diagnostics
+            if item.category == "media_orphan"
+        ] == [
+            (
+                "assets/guides/tour/unused.png",
+                "guides/tour.md",
+                "warning",
+            )
+        ]
+
+    def test_lint_run_uses_default_media_size_when_cli_option_is_omitted(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        monkeypatch.chdir(tmp_path)
+        self._stub_source_inputs(monkeypatch)
+        src, wiki = self._wiki_with_guide(tmp_path)
+        (wiki / "assets" / "guides" / "tour" / "ok.png").write_bytes(b"ok")
+        (wiki / "guides" / "tour.md").write_text(
+            "# Tour\n\n![Screenshot](../assets/guides/tour/ok.png)\n",
+            encoding="utf-8",
+        )
+
+        lint_cmd.run(
+            _make_args(
+                wiki_dir=wiki.name,
+                src_dir=src.name,
+                media_size_warn_bytes=None,
+            )
+        )
+
+        assert "No broken media links" in capsys.readouterr().out
+
+
 class TestLintOrphanPage:
     def test_detects_orphan(self, tmp_project, capsys):
         wiki = tmp_project / "wiki"

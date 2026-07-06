@@ -69,6 +69,10 @@ class TestInitAgentSchemas:
         init_cmd.run(args)
         assert Path("AGENTS.md").exists()
         assert not Path(".agents.md").exists()
+        content = Path("AGENTS.md").read_text(encoding="utf-8")
+        assert "## User docs and usage examples" in content
+        assert "usage-examples" in content
+        assert "llm-wiki skills export --dest" in content
 
 
 class TestInitPreservesContent:

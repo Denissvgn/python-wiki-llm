@@ -106,6 +106,20 @@ def _write_hub_wiki(root: Path, source_id: str, title: str) -> Path:
     return wiki
 
 
+def _write_usage_asset_wiki(root: Path) -> Path:
+    wiki = _write_wiki(root)
+    _write(
+        wiki / "guides" / "tour.md",
+        "# Tour\n\n"
+        '![Home](../assets/guides/tour/home.png "Home")\n'
+        '<video src="../assets/guides/tour/clip.webm"></video>\n',
+    )
+    (wiki / "assets" / "guides" / "tour").mkdir(parents=True)
+    (wiki / "assets" / "guides" / "tour" / "home.png").write_bytes(b"png")
+    (wiki / "assets" / "guides" / "tour" / "clip.webm").write_bytes(b"webm")
+    return wiki
+
+
 def _write_disambiguated_wiki(root: Path) -> Path:
     wiki = _write_wiki(root)
     _write(wiki / "entities" / "agent_ArtifactStore.md", "# ArtifactStore\n\n")
@@ -184,6 +198,36 @@ def test_accepts_site_formats_and_rejects_unknown_format(tmp_path):
 
     with pytest.raises(SiteExportError, match="Unsupported site export format"):
         export_site_mirror(wiki_dir=wiki, out_dir=tmp_path / "site-bad", format="html")
+
+
+@pytest.mark.parametrize("site_format", ["plain", "mkdocs", "docusaurus"])
+def test_export_copies_referenced_assets_for_every_format(tmp_path, site_format):
+    wiki = _write_usage_asset_wiki(tmp_path)
+    out = tmp_path / f"site-{site_format}"
+
+    report = export_site_mirror(wiki_dir=wiki, out_dir=out, format=site_format)
+
+    assert report.asset_count == 2
+    assert {operation.action for operation in report.asset_operations} == {"copy"}
+    assert (out / "assets" / "guides" / "tour" / "home.png").read_bytes() == b"png"
+    assert (out / "assets" / "guides" / "tour" / "clip.webm").read_bytes() == b"webm"
+    guide = (out / "guides" / "tour.md").read_text(encoding="utf-8")
+    assert '![Home](../assets/guides/tour/home.png "Home")' in guide
+    assert '<video src="../assets/guides/tour/clip.webm"></video>' in guide
+    assert all(
+        "assets/guides/tour" in operation.path for operation in report.asset_operations
+    )
+
+
+def test_export_dry_run_reports_asset_copies_without_mutating(tmp_path):
+    wiki = _write_usage_asset_wiki(tmp_path)
+    out = tmp_path / "site"
+
+    report = export_site_mirror(wiki_dir=wiki, out_dir=out, dry_run=True)
+
+    assert report.asset_count == 2
+    assert {operation.action for operation in report.asset_operations} == {"would_copy"}
+    assert not out.exists()
 
 
 def test_dry_run_reports_planned_writes_without_mutating(tmp_path):
@@ -706,6 +750,29 @@ def test_check_succeeds_after_export(tmp_path):
     assert report.warnings == []
 
 
+def test_check_reports_stale_exported_assets_without_failing(tmp_path):
+    wiki = _write_usage_asset_wiki(tmp_path)
+    out = tmp_path / "site"
+    export_site_mirror(wiki_dir=wiki, out_dir=out)
+    _write(out / "missing.md", "# Missing\n\n")
+    (wiki / "guides" / "tour.md").write_text(
+        "# Tour\n\nNo media now.\n", encoding="utf-8"
+    )
+
+    report = check_site_mirror(wiki_dir=wiki, out_dir=out)
+
+    assert report.ok is True
+    assert report.issues == []
+    assert [
+        (warning["category"], warning["target"])
+        for warning in report.warnings
+        if warning["category"] == "stale_asset"
+    ] == [
+        ("stale_asset", "assets/guides/tour/clip.webm"),
+        ("stale_asset", "assets/guides/tour/home.png"),
+    ]
+
+
 def test_check_reports_missing_output_dir_and_page(tmp_path):
     wiki = _write_wiki(tmp_path)
     out = tmp_path / "site"
@@ -831,6 +898,24 @@ def test_hub_export_writes_namespaced_wikis_and_top_level_index(tmp_path):
             "",
         ]
     )
+
+
+def test_hub_export_copies_assets_under_source_namespace(tmp_path):
+    root = tmp_path / "sources" / "code_wikis"
+    alpha = _write_hub_wiki(root, "alpha", "Alpha")
+    _write(
+        alpha / "guides" / "tour.md",
+        "# Tour\n\n![Home](../assets/guides/tour/home.png)\n",
+    )
+    (alpha / "assets" / "guides" / "tour").mkdir(parents=True)
+    (alpha / "assets" / "guides" / "tour" / "home.png").write_bytes(b"png")
+    out = tmp_path / "hub"
+
+    report = export_site_hub(wiki_root=root, out_dir=out, format="plain")
+
+    assert report.asset_count == 1
+    assert (out / "alpha" / "assets" / "guides" / "tour" / "home.png").is_file()
+    assert not (out / "assets").exists()
 
 
 def test_hub_export_writes_grouped_mkdocs_and_docusaurus_navigation(tmp_path):
@@ -1165,6 +1250,88 @@ def test_check_built_site_html_rejects_unsafe_traversal(tmp_path):
     )
 
 
+def test_check_built_site_html_validates_media_src_in_both_link_modes(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+    built = tmp_path / "_site"
+    export_site_mirror(wiki_dir=wiki, out_dir=out)
+    _write(out / "missing.md", "# Missing\n\n")
+    _write(
+        built / "index.html",
+        (
+            '<html><body><img src="assets/home.png">'
+            '<video><source src="assets/clip.webm"></video></body></html>'
+        ),
+    )
+    (built / "assets").mkdir(parents=True)
+    (built / "assets" / "home.png").write_bytes(b"png")
+    (built / "assets" / "clip.webm").write_bytes(b"webm")
+
+    for link_mode in ("http", "file"):
+        report = check_site_mirror(
+            wiki_dir=wiki,
+            out_dir=out,
+            built_site_dir=built,
+            link_mode=link_mode,
+        )
+        assert report.ok is True
+        assert report.issues == []
+
+
+def test_check_built_site_html_reports_missing_media_and_ignores_external_video(
+    tmp_path,
+):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+    built = tmp_path / "_site"
+    export_site_mirror(wiki_dir=wiki, out_dir=out)
+    _write(out / "missing.md", "# Missing\n\n")
+    _write(
+        built / "index.html",
+        (
+            '<img src="assets/missing.png">'
+            '<video src="https://cdn.example/demo.mp4"></video>'
+        ),
+    )
+
+    report = check_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        built_site_dir=built,
+        link_mode="http",
+    )
+
+    assert report.ok is False
+    assert [
+        (issue["category"], issue["target"])
+        for issue in report.issues
+        if issue["category"] == "missing_built_media_target"
+    ] == [("missing_built_media_target", "assets/missing.png")]
+
+
+def test_check_built_site_html_rejects_media_traversal(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+    built = tmp_path / "_site"
+    export_site_mirror(wiki_dir=wiki, out_dir=out)
+    _write(out / "missing.md", "# Missing\n\n")
+    _write(built / "index.html", '<img src="../outside.png">')
+
+    report = check_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        built_site_dir=built,
+        link_mode="file",
+    )
+
+    assert report.ok is False
+    assert any(
+        issue["category"] == "unsafe_built_html_link"
+        and issue["target"] == "../outside.png"
+        for issue in report.issues
+    )
+
+
 def test_user_profile_check_reports_required_quality_categories(tmp_path):
     wiki = _write_wiki(tmp_path)
     out = tmp_path / "site"
@@ -1241,6 +1408,60 @@ def test_user_profile_check_reports_long_index_default_name_and_placeholders(tmp
         "published_placeholder",
     }
     assert any(issue["path"] == str(guide) for issue in report.issues)
+
+
+def test_user_profile_check_warns_once_when_primary_docs_have_no_usage_media(tmp_path):
+    wiki = tmp_path / "docs" / "llm_wiki"
+    _write(wiki / "index.md", "# Index\n\n- [Guide](guides/tour.md)\n")
+    _write(wiki / "log.md", "# Log\n")
+    _write(wiki / "guides" / "tour.md", "# Tour\n\nFollow the CLI flow.\n")
+    out = tmp_path / "site"
+
+    export_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        format="mkdocs",
+        profile="user",
+        site_name="Project Docs",
+    )
+    report = check_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        profile="user",
+        site_name="Project Docs",
+    )
+
+    assert report.ok is True
+    assert [
+        warning["category"]
+        for warning in report.warnings
+        if warning["category"] == "user_docs_missing_examples"
+    ] == ["user_docs_missing_examples"]
+
+    _write(
+        wiki / "guides" / "tour.md",
+        "# Tour\n\n![CLI](../assets/guides/tour/cli.svg)\n",
+    )
+    (wiki / "assets" / "guides" / "tour").mkdir(parents=True)
+    (wiki / "assets" / "guides" / "tour" / "cli.svg").write_bytes(b"svg")
+    export_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        format="mkdocs",
+        profile="user",
+        site_name="Project Docs",
+    )
+    with_media = check_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        profile="user",
+        site_name="Project Docs",
+    )
+
+    assert all(
+        warning["category"] != "user_docs_missing_examples"
+        for warning in with_media.warnings
+    )
 
 
 class TestSiteCli:

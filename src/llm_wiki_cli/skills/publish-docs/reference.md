@@ -83,3 +83,9 @@ Add export → check → build as a job step alongside the existing `ci-check` g
 | `mkdocs build --strict` fails | A real MkDocs plugin/theme issue outside `llm-wiki`'s validation scope | Surface the builder's own error; `site check` already covers what `llm-wiki` can validate without the real tool. |
 | Docusaurus build fails with "docs not found" | Exported output wasn't placed into an existing Docusaurus app's `docs/` directory | Confirm the target app structure before exporting; this format is not standalone-buildable. |
 | User expects a deployed site after running this skill | Deploy is a separate, confirmed action (step 4 of the SKILL) | Don't deploy without an explicit ask — hand off the build output and the deploy mechanism instead. |
+
+## Usage examples handoff
+
+Run `usage-examples` before publishing when user docs need screenshots,
+recordings, or command-output examples. `publish-docs` validates the exported
+and built media targets but does not capture or attach examples itself.

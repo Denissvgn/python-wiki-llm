@@ -266,6 +266,23 @@ class TestSyncSurfaceIndex:
         assert "| Guides | 1 | [Open section](#guides) |" in index
         assert "[Operator onboarding](guides/operator-onboarding.md)" in index
 
+    def test_sync_leaves_agent_owned_assets_untouched(
+        self, bootstrapped_project, capsys
+    ):
+        proj, wiki_dir = bootstrapped_project
+        assets_dir = wiki_dir / "assets" / "guides" / "operator-onboarding"
+        assets_dir.mkdir(parents=True)
+        asset = assets_dir / "terminal.png"
+        asset.write_bytes(b"agent-owned-media")
+        before = asset.read_bytes()
+        capsys.readouterr()
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
+        assert asset.exists()
+        assert asset.read_bytes() == before
+        assert "Wiki is up to date." in capsys.readouterr().out
+
 
 class TestSeedManifest:
     """When no manifest exists but a wiki does, sync seeds a baseline manifest."""

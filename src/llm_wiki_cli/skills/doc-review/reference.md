@@ -51,3 +51,10 @@ Checker output from these classes can feed the `user-docs-author` adjustment loo
 
 Always include an "Unresolved finding" section when anything remains open.
 Mention duplicate finding IDs and false-positive rationale explicitly.
+
+## Usage examples handoff
+
+For findings in media-backed docs, classify `media_link_broken`,
+`media_missing_alt_text`, `media_oversize`, `media_orphan`,
+`missing_built_media_target`, and `user_docs_missing_examples`. Use
+`usage-examples` when the fix requires new or updated captures.

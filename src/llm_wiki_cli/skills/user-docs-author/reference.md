@@ -78,3 +78,10 @@ For a direct-file handoff, pair the file-mode check with `site export --profile 
 | Unsupported workflow claim | The agent cannot cite wiki/source evidence | Add deferred-docs; do not invent facts. |
 | Builder unavailable | Deterministic export/check can run, but built-site validation cannot | Report export/check results and the missing builder; do not install toolchains without approval. |
 | Built-link failure | Exported docs and built docs disagree for the chosen distribution mode | Fix links in semantic wiki pages or distribution settings, then re-run `site check --built-site-dir` with the relevant link mode. |
+
+## Usage examples handoff
+
+When guides are evidence-backed and lint/site-check clean, use
+`usage-examples` for screenshots, recordings, captions, mirrored asset paths,
+and media validation. Keep this skill focused on prose and checker-driven
+adjustment.
