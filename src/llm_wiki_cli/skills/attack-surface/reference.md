@@ -1,6 +1,6 @@
 # attack-surface reference
 
-Supporting detail for [SKILL.md](SKILL.md). 
+Supporting detail for [SKILL.md](SKILL.md).
 
 ## Live extract schema contract
 
@@ -130,7 +130,7 @@ Assessment values: **confirmed** (evidence matches the stated risk), **refined**
 
 A successful run has:
 
-- Helpers prepared (or unsupported sources recorded as coverage notices). 
+- Helpers prepared (or unsupported sources recorded as coverage notices).
 - `extract --deep --read-only` completed with the payload saved and its counts cited in the report.
 - Source-adapter runs used `llm-wiki prepare-extractors --src-dir <repo> --allow-external-src` before extraction, and used `llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki` only when a guarded copied/project wiki exists.
 - Every security-model high-risk area covered by a matrix row.

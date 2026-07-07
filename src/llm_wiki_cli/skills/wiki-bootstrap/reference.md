@@ -43,7 +43,7 @@ Wiki directory: docs/llm_wiki
 Bootstrap command: `llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki --depth full --format json`
 Bootstrap summary: `logs/bootstrap.json`
 Semantic budget: P0 complete plus top 30 P1 module/entity pages
-Ranking policy: fan_in * 100 + cycle_bonus * 25 + fan_out * 5 + entrypoint_bonus * 20 
+Ranking policy: fan_in * 100 + cycle_bonus * 25 + fan_out * 5 + entrypoint_bonus * 20
 Last validation: `llm-wiki lint --strict --profile --src-dir . --wiki-dir docs/llm_wiki` exited 0
 
 ## Completed In This Pass

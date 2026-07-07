@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-07-08
+
+### Changed
+- Minimum supported Python is now 3.10; CI now tests Python 3.10 and 3.13
+  across Ubuntu, macOS, and Windows.
+
 ### Fixed
 - Media parsing now handles parenthesized Markdown targets, same-page
   reference-style images, fenced media examples, and local `srcset`
@@ -347,10 +353,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Test suite** — 89 unit + integration tests with pytest
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.6.1...v1.0.0
-[0.6.2]: https://github.com/Denissvgn/python-wiki-llm/releases/tag/v0.6.2
+[1.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.6.2...v1.0.0
+[0.6.2]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.5.2...v0.6.0
 [0.5.2]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.5.1...v0.5.2

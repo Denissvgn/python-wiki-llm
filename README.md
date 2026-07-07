@@ -65,7 +65,7 @@ external tools when they are available on `PATH`.
 
 | Area | Implementation | Runtime requirement |
 |---|---|---|
-| Python | stdlib `ast` | Python 3.9+ |
+| Python | stdlib `ast` | Python 3.10+ |
 | TypeScript / JavaScript / TSX / JSX | bundled Node script using `ts-morph` | prepared Node.js dependencies |
 | Go | bundled Go extractor using `go/ast` | prepared helper binary |
 | Rust | bundled Rust extractor using `syn` | prepared helper binary |

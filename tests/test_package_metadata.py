@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 from pathlib import Path
 
 try:
@@ -20,19 +21,34 @@ def _changelog_section(heading: str) -> str:
     return changelog[start:next_release]
 
 
+def _pyproject() -> dict:
+    return tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+
+
+def _ci_python_versions() -> list[str]:
+    ci = (PROJECT_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    matrix_line = next(
+        line.strip()
+        for line in ci.splitlines()
+        if line.strip().startswith("python-version:")
+    )
+    _, value = matrix_line.split(":", maxsplit=1)
+    return ast.literal_eval(value.strip())
+
+
 def test_project_description_mentions_multi_language_projects():
-    data = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    data = _pyproject()
     assert "multi-language projects" in data["project"]["description"]
 
 
 def test_package_data_includes_rust_lockfile():
-    data = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    data = _pyproject()
     package_data = data["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]
     assert "extractors/rust_scripts/Cargo.lock" in package_data
 
 
 def test_package_data_includes_haskell_helper_sources():
-    data = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    data = _pyproject()
     package_data = data["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]
     assert "extractors/haskell_scripts/Main.hs" in package_data
     assert "extractors/haskell_scripts/Inventory.hs" in package_data
@@ -42,7 +58,7 @@ def test_package_data_includes_haskell_helper_sources():
 
 
 def test_package_data_includes_bundled_skills():
-    data = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    data = _pyproject()
     package_data = data["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]
     assert "skills/wiki-sync/SKILL.md" in package_data
     assert "skills/wiki-sync/reference.md" in package_data
@@ -73,13 +89,37 @@ def test_package_data_includes_bundled_skills():
 
 
 def test_project_distribution_name_is_pypi_safe_name():
-    data = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    data = _pyproject()
     assert data["project"]["name"] == "agent-wiki-cli"
 
 
-def test_project_version_is_haskell_release():
-    data = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
-    assert data["project"]["version"] == "1.1.0"
+def test_project_version_is_release_target():
+    data = _pyproject()
+    assert data["project"]["version"] == "1.2.0"
+
+
+def test_project_requires_python_3_10_or_newer():
+    data = _pyproject()
+    assert data["project"]["requires-python"] == ">=3.10"
+
+
+def test_ci_python_matrix_matches_supported_boundary_versions():
+    assert _ci_python_versions() == ["3.10", "3.13"]
+
+
+def test_readme_current_support_table_mentions_python_3_10_plus():
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+    assert "| Python | stdlib `ast` | Python 3.10+ |" in readme
+    assert "| Python | stdlib `ast` | Python 3.9+ |" not in readme
+
+
+def test_changelog_1_2_0_documents_python_support_floor():
+    changelog = (PROJECT_ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    assert changelog.count("## [1.2.0] - 2026-07-08") == 1
+
+    release_notes = _changelog_section("## [1.2.0]")
+    assert "Minimum supported Python is now 3.10" in release_notes
+    assert "CI now tests Python 3.10 and 3.13" in release_notes
 
 
 def test_readme_documents_bundled_skills():
