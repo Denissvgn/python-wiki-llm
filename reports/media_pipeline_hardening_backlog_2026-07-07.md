@@ -22,6 +22,14 @@ Status: Done
 Owner: Unassigned
 Task prefix: `UDH-` (Usage Docs media Hardening)
 
+## Implementation Closeout
+
+- Main implementation commit: `76a2eb6` (`feat: harden media pipeline`)
+- Sibling wiki documentation commit: `6740448` (`docs: document media pipeline hardening`)
+- Closure report: `reports/media_pipeline_hardening_closure_2026-07-07.md`
+- Final review: initial final review found a built-site `data:` `srcset` false-positive gap and the missing closure report; both were addressed before closeout.
+- Verification evidence: full gate passed with `1605 passed, 34 skipped` for `.venv/bin/pytest -q --ignore=tests/test_rust_extract.py`, plus clean compileall, Ruff, format-check, and diff checks.
+
 ## Source Context
 
 The usage-docs media program shipped the first complete media layer: `assets/` surface registration, media lint categories, surface-index asset maps, static-export asset mirroring, built-site media validation, the `usage-examples` skill, and agent schema guidance. The feature commit `a78bfbc` shipped that layer. The blocker-fix commit `23fed29` fixed two release blockers:
