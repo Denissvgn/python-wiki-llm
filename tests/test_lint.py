@@ -18,7 +18,7 @@ from llm_wiki_cli.commands import extract_cmd
 from llm_wiki_cli.commands import lint_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME, InventoryCacheStats
-from llm_wiki_cli.services import team
+from llm_wiki_cli.services import team, wiki_media
 
 TS_NODE_MODULES = (
     Path(__file__).parents[1]
@@ -512,6 +512,88 @@ class TestLintMediaLinks:
             if item.category == "media_missing_alt_text"
         ] == []
 
+    def test_parenthesized_media_targets_are_not_truncated(self, tmp_path, monkeypatch):
+        self._stub_source_inputs(monkeypatch)
+        src, wiki = self._wiki_with_guide(tmp_path)
+        (wiki / "assets" / "guides" / "tour" / "shot(1).png").write_bytes(b"png")
+        (wiki / "assets" / "guides" / "tour" / "demo(1).webm").write_bytes(b"webm")
+        (wiki / "guides" / "tour.md").write_text(
+            "# Tour\n\n"
+            "![Screenshot](../assets/guides/tour/shot(1).png)\n"
+            "[Demo](../assets/guides/tour/demo(1).webm)\n",
+            encoding="utf-8",
+        )
+
+        report = lint_cmd.build_report(wiki, str(src))
+
+        assert report.issues == []
+        assert [
+            item for item in report.diagnostics if item.category == "media_orphan"
+        ] == []
+
+    def test_fenced_media_examples_are_ignored_by_media_lint(
+        self, tmp_path, monkeypatch
+    ):
+        self._stub_source_inputs(monkeypatch)
+        src, wiki = self._wiki_with_guide(tmp_path)
+        (wiki / "assets" / "example.png").write_bytes(b"example")
+        (wiki / "guides" / "tour.md").write_text(
+            "# Tour\n\n"
+            "```html\n"
+            '<img src="../assets/missing-from-fence.png">\n'
+            "```\n\n"
+            "```markdown\n"
+            "![Example](../assets/example.png)\n"
+            "[Demo](../assets/fenced-demo.webm)\n"
+            "```\n\n"
+            "![Missing](../assets/unfenced-missing.png)\n",
+            encoding="utf-8",
+        )
+
+        report = lint_cmd.build_report(wiki, str(src))
+
+        assert [(issue.category, issue.target) for issue in report.issues] == [
+            ("media_link_broken", "../assets/unfenced-missing.png")
+        ]
+        assert [
+            (item.category, item.path)
+            for item in report.diagnostics
+            if item.category == "media_orphan"
+        ] == [("media_orphan", "assets/example.png")]
+
+    def test_reference_style_images_are_validated_and_count_as_references(
+        self, tmp_path, monkeypatch
+    ):
+        self._stub_source_inputs(monkeypatch)
+        src, wiki = self._wiki_with_guide(tmp_path)
+        (wiki / "assets" / "guides" / "tour" / "home.png").write_bytes(b"png")
+        (wiki / "assets" / "guides" / "tour" / "collapsed.png").write_bytes(b"png")
+        (wiki / "guides" / "tour.md").write_text(
+            "# Tour\n\n"
+            "![Home][hero image]\n"
+            "![Collapsed][]\n"
+            "![Missing][missing]\n\n"
+            '[hero image]: ../assets/guides/tour/home.png "Home"\n'
+            "[collapsed]: ../assets/guides/tour/collapsed.png\n"
+            "[missing]: ../assets/guides/tour/missing.png\n",
+            encoding="utf-8",
+        )
+
+        report = lint_cmd.build_report(wiki, str(src))
+
+        assert [
+            (issue.category, issue.path, issue.target) for issue in report.issues
+        ] == [
+            (
+                "media_link_broken",
+                "guides/tour.md",
+                "../assets/guides/tour/missing.png",
+            )
+        ]
+        assert [
+            item for item in report.diagnostics if item.category == "media_orphan"
+        ] == []
+
     def test_raw_html_media_embeds_missing_alt_and_oversize_are_validated(
         self, tmp_path, monkeypatch
     ):
@@ -564,6 +646,64 @@ class TestLintMediaLinks:
             ),
         ]
 
+    def test_raw_html_srcset_candidates_are_validated(self, tmp_path, monkeypatch):
+        self._stub_source_inputs(monkeypatch)
+        src, wiki = self._wiki_with_guide(tmp_path)
+        (wiki / "assets" / "guides" / "tour" / "fallback.png").write_bytes(b"png")
+        (wiki / "assets" / "guides" / "tour" / "small.png").write_bytes(b"small")
+        (wiki / "guides" / "tour.md").write_text(
+            "# Tour\n\n"
+            '<img alt="Responsive" src="../assets/guides/tour/fallback.png" '
+            'srcset="../assets/guides/tour/small.png 1x, '
+            "../assets/guides/tour/missing.png 2x, "
+            'https://cdn.example/remote.png 3x, data:image/png;base64,AAAA 4x">\n',
+            encoding="utf-8",
+        )
+
+        report = lint_cmd.build_report(wiki, str(src))
+
+        assert [
+            (issue.category, issue.path, issue.target) for issue in report.issues
+        ] == [
+            (
+                "media_link_broken",
+                "guides/tour.md",
+                "../assets/guides/tour/missing.png",
+            )
+        ]
+        assert [
+            item for item in report.diagnostics if item.category == "media_orphan"
+        ] == []
+
+    def test_media_outside_assets_warns_once_per_page(self, tmp_path, monkeypatch):
+        self._stub_source_inputs(monkeypatch)
+        src, wiki = self._wiki_with_guide(tmp_path)
+        (wiki / "guides" / "pic.png").write_bytes(b"png")
+        (wiki / "assets" / "guides" / "tour" / "canonical.png").write_bytes(b"png")
+        (wiki / "guides" / "tour.md").write_text(
+            "# Tour\n\n"
+            "![Local](pic.png)\n"
+            "![Local again](pic.png)\n"
+            "![Canonical](../assets/guides/tour/canonical.png)\n",
+            encoding="utf-8",
+        )
+
+        report = lint_cmd.build_report(wiki, str(src))
+
+        assert report.issues == []
+        assert [
+            (item.category, item.path, item.target, item.severity)
+            for item in report.diagnostics
+            if item.category == "media_outside_assets"
+        ] == [
+            (
+                "media_outside_assets",
+                "guides/tour.md",
+                "guides/pic.png",
+                "warning",
+            )
+        ]
+
     def test_orphan_asset_is_a_warning_and_empty_asset_tree_is_compatible(
         self, tmp_path, monkeypatch
     ):
@@ -594,6 +734,100 @@ class TestLintMediaLinks:
                 "warning",
             )
         ]
+
+    def test_all_asset_files_are_inventoried_with_unrecognized_type_warnings(
+        self, tmp_path, monkeypatch
+    ):
+        self._stub_source_inputs(monkeypatch)
+        src, wiki = self._wiki_with_guide(tmp_path)
+        (wiki / "guides" / "tour.md").write_text("# Tour\n", encoding="utf-8")
+        (wiki / "assets" / "guides" / "tour" / "unused.png").write_bytes(b"unused")
+        (wiki / "assets" / "guides" / "tour" / "notes.txt").write_text(
+            "notes", encoding="utf-8"
+        )
+        (wiki / "assets" / "guides" / "tour" / "README.md").write_text(
+            "readme", encoding="utf-8"
+        )
+        (wiki / "assets" / "guides" / "tour" / ".hidden.png").write_bytes(b"hidden")
+        (wiki / "assets" / ".hidden" / "secret.txt").parent.mkdir(parents=True)
+        (wiki / "assets" / ".hidden" / "secret.txt").write_text(
+            "secret", encoding="utf-8"
+        )
+
+        report = lint_cmd.build_report(wiki, str(src))
+
+        assert [
+            (item.category, item.path)
+            for item in report.diagnostics
+            if item.category in {"media_orphan", "asset_unrecognized_type"}
+        ] == [
+            ("asset_unrecognized_type", "assets/guides/tour/notes.txt"),
+            ("media_orphan", "assets/guides/tour/unused.png"),
+        ]
+
+    def test_symlinked_media_escape_warns_without_counting_reference(
+        self, tmp_path, monkeypatch
+    ):
+        self._stub_source_inputs(monkeypatch)
+        src, wiki = self._wiki_with_guide(tmp_path)
+        outside = tmp_path / "outside"
+        outside.mkdir()
+        (outside / "escape.png").write_bytes(b"png")
+        link = wiki / "assets" / "escape.png"
+        try:
+            link.symlink_to(outside / "escape.png")
+        except (OSError, NotImplementedError) as exc:
+            pytest.skip(f"symlinks unavailable: {exc}")
+        (wiki / "guides" / "tour.md").write_text(
+            "# Tour\n\n![Escape](../assets/escape.png)\n", encoding="utf-8"
+        )
+
+        report = lint_cmd.build_report(wiki, str(src))
+
+        assert report.issues == []
+        assert [
+            (item.category, item.path, item.target, item.severity)
+            for item in report.diagnostics
+            if item.category == "media_symlink_escape"
+        ] == [
+            (
+                "media_symlink_escape",
+                "guides/tour.md",
+                "../assets/escape.png",
+                "warning",
+            )
+        ]
+
+    def test_lint_reuses_collected_media_references_for_asset_index(
+        self, tmp_path, monkeypatch
+    ):
+        self._stub_source_inputs(monkeypatch)
+        src, wiki = self._wiki_with_guide(tmp_path)
+        (wiki / "assets" / "guides" / "tour" / "ok.png").write_bytes(b"ok")
+        (wiki / "guides" / "tour.md").write_text(
+            "# Tour\n\n![Screenshot](../assets/guides/tour/ok.png)\n",
+            encoding="utf-8",
+        )
+        calls = 0
+        original = wiki_media.collect_media_references
+
+        def counted_collect(*args, **kwargs):
+            nonlocal calls
+            calls += 1
+            return original(*args, **kwargs)
+
+        monkeypatch.setattr(wiki_media, "collect_media_references", counted_collect)
+
+        report = lint_cmd.build_report(wiki, str(src))
+
+        assert report.issues == []
+        assert calls == len(list(wiki.rglob("*.md")))
+
+    def test_wiki_media_local_link_path_ignores_all_schemes(self):
+        assert wiki_media.local_link_path("https://example.com/image.png") is None
+        assert wiki_media.local_link_path("data:image/png;base64,AAAA") is None
+        assert wiki_media.local_link_path("mailto:docs@example.com") is None
+        assert wiki_media.local_link_path("custom:target.png") is None
 
     def test_lint_run_uses_default_media_size_when_cli_option_is_omitted(
         self, tmp_path, monkeypatch, capsys

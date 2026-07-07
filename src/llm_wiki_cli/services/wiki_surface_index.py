@@ -10,7 +10,11 @@ from typing import Any, Mapping, Optional, Sequence, Union
 from urllib.parse import unquote
 
 from .paths import normalize_source_path
-from .wiki_media import build_asset_index, normalize_markdown_link_target
+from .wiki_media import (
+    build_asset_index,
+    iter_markdown_link_targets,
+    normalize_markdown_link_target,
+)
 from .wiki_surface import (
     PageKind,
     WikiSurfacePage,
@@ -22,7 +26,6 @@ from .wiki_surface import (
 SURFACE_INDEX_FILENAME = ".llm-wiki-surface.json"
 WIKI_SURFACE_INDEX_SCHEMA_VERSION = "llm-wiki-surface-index/v1"
 
-_LINK_RE = re.compile(r"\[.+?\]\((.+?)\)")
 _MERMAID_CLICK_RE = re.compile(r'^\s*click\s+\S+\s+"([^"]+)"', re.MULTILINE)
 _MARKDOWN_PATH_RE = re.compile(r"\*\*Path:\*\*\s+`([^`]+)`")
 _WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:/")
@@ -263,8 +266,8 @@ def _outgoing_internal_links(
     canonical_by_path: Mapping[Path, str],
 ) -> list[str]:
     links = set()
-    for raw_link in _LINK_RE.findall(content):
-        target = _resolve_internal_target(page, raw_link, canonical_by_path)
+    for link in iter_markdown_link_targets(content):
+        target = _resolve_internal_target(page, link.raw_target, canonical_by_path)
         if target is not None:
             links.add(target)
     for raw_link in _MERMAID_CLICK_RE.findall(content):

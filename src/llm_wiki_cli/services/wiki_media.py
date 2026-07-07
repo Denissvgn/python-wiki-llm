@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import os
 import re
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import Mapping, Optional, Union
+from typing import Iterator, Mapping, Optional, Union
 from urllib.parse import unquote, urlsplit
 
 
@@ -15,12 +16,12 @@ VIDEO_EXTENSIONS = frozenset({".mp4", ".webm"})
 MEDIA_EXTENSIONS = IMAGE_EXTENSIONS | VIDEO_EXTENSIONS
 DEFAULT_MEDIA_SIZE_WARN_BYTES = 2 * 1024 * 1024
 
-_MARKDOWN_IMAGE_RE = re.compile(r"!\[([^\]]*)\]\((.+?)\)")
-_MARKDOWN_PLAIN_LINK_RE = re.compile(r"(?<!!)\[([^\]]*)\]\((.+?)\)")
 _MARKDOWN_TITLE_RE = re.compile(
     r"^(?P<target><[^>]+>|[^\s]+)(?:\s+(?:\"[^\"]*\"|'[^']*'))?\s*$"
 )
-_IGNORED_SCHEMES = frozenset({"http", "https", "mailto", "tel", "data", "javascript"})
+_REFERENCE_DEFINITION_RE = re.compile(r"^[ \t]{0,3}\[([^\]]+)\]:[ \t]*(.+?)\s*$")
+_REFERENCE_IMAGE_RE = re.compile(r"!\[([^\]]*)\]\[([^\]]*)\]")
+_README_ASSET_RE = re.compile(r"^README(?:\..+)?$", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -36,6 +37,16 @@ class MediaReference:
 
 
 @dataclass(frozen=True)
+class MarkdownLinkTarget:
+    raw_target: str
+    target: str
+    label: str
+    is_image: bool
+    start: int
+    end: int
+
+
+@dataclass(frozen=True)
 class AssetIndex:
     counts: dict[str, object]
     by_page: dict[str, list[str]]
@@ -47,7 +58,7 @@ class AssetIndex:
 class _HtmlMediaParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
-        self.references: list[tuple[str, str, Optional[str], bool]] = []
+        self.references: list[tuple[str, str, Optional[str], bool, str]] = []
 
     def handle_starttag(
         self,
@@ -59,10 +70,143 @@ class _HtmlMediaParser(HTMLParser):
             return
         values = {name.casefold(): value for name, value in attrs}
         src = values.get("src")
-        if src is None:
-            return
         alt = values.get("alt")
-        self.references.append((tag_name, src.strip(), alt, tag_name == "img"))
+        if src is not None:
+            self.references.append(
+                (tag_name, src.strip(), alt, tag_name == "img", "html")
+            )
+        if tag_name in {"img", "source"}:
+            srcset = values.get("srcset")
+            if srcset is not None:
+                for candidate in split_srcset_candidates(srcset):
+                    self.references.append(
+                        (tag_name, candidate, alt, False, "html_srcset")
+                    )
+
+
+def strip_fenced_code_blocks(content: str) -> str:
+    """Blank fenced code blocks while preserving line count."""
+    stripped: list[str] = []
+    in_fence = False
+    fence_char = ""
+    fence_len = 0
+    for line in content.splitlines(keepends=True):
+        marker = _fence_marker(line)
+        if in_fence:
+            stripped.append(_blank_line(line))
+            if (
+                marker is not None
+                and marker[0] == fence_char
+                and marker[1] >= fence_len
+            ):
+                in_fence = False
+            continue
+        if marker is not None:
+            in_fence = True
+            fence_char, fence_len = marker
+            stripped.append(_blank_line(line))
+            continue
+        stripped.append(line)
+    return "".join(stripped)
+
+
+def _fence_marker(line: str) -> Optional[tuple[str, int]]:
+    stripped = line.lstrip()
+    if stripped.startswith("```"):
+        return "`", len(stripped) - len(stripped.lstrip("`"))
+    if stripped.startswith("~~~"):
+        return "~", len(stripped) - len(stripped.lstrip("~"))
+    return None
+
+
+def _blank_line(line: str) -> str:
+    if line.endswith("\r\n"):
+        return "\r\n"
+    if line.endswith("\n"):
+        return "\n"
+    return ""
+
+
+def iter_markdown_link_targets(content: str) -> Iterator[MarkdownLinkTarget]:
+    """Yield inline markdown link/image targets with balanced parenthesis support."""
+    idx = 0
+    length = len(content)
+    while idx < length:
+        is_image = content.startswith("![", idx)
+        label_start = idx + 2 if is_image else idx + 1
+        if not is_image:
+            if content[idx] != "[" or (idx > 0 and content[idx - 1] == "!"):
+                idx += 1
+                continue
+        label_end = content.find("]", label_start)
+        if label_end == -1 or label_end + 1 >= length or content[label_end + 1] != "(":
+            idx += 1
+            continue
+        parsed = _scan_markdown_target(content, label_end + 2)
+        if parsed is None:
+            idx += 1
+            continue
+        raw_target, end = parsed
+        yield MarkdownLinkTarget(
+            raw_target=raw_target,
+            target=normalize_markdown_link_target(raw_target),
+            label=content[label_start:label_end],
+            is_image=is_image,
+            start=idx,
+            end=end,
+        )
+        idx = end
+
+
+def _scan_markdown_target(content: str, start: int) -> Optional[tuple[str, int]]:
+    idx = start
+    depth = 0
+    quote: Optional[str] = None
+    while idx < len(content):
+        char = content[idx]
+        if quote is not None:
+            if char == quote:
+                quote = None
+            idx += 1
+            continue
+        if char in {"'", '"'}:
+            quote = char
+            idx += 1
+            continue
+        if char == "(":
+            depth += 1
+            idx += 1
+            continue
+        if char == ")":
+            if depth == 0:
+                return content[start:idx], idx + 1
+            depth -= 1
+            idx += 1
+            continue
+        idx += 1
+    return None
+
+
+def split_srcset_candidates(value: str) -> list[str]:
+    candidates = []
+    idx = 0
+    length = len(value)
+    while idx < length:
+        while idx < length and (value[idx].isspace() or value[idx] == ","):
+            idx += 1
+        start = idx
+        if value[idx:].casefold().startswith("data:"):
+            while idx < length and not value[idx].isspace():
+                idx += 1
+        else:
+            while idx < length and not value[idx].isspace() and value[idx] != ",":
+                idx += 1
+        candidate = value[start:idx].strip()
+        if candidate:
+            candidates.append(candidate)
+        while idx < length and value[idx] != ",":
+            idx += 1
+    return candidates
 
 
 def normalize_markdown_link_target(raw_target: str) -> str:
@@ -85,9 +229,7 @@ def local_link_path(raw_target: str) -> Optional[str]:
         parsed = urlsplit(target)
     except ValueError:
         return target.partition("#")[0] or None
-    if parsed.scheme.casefold() in _IGNORED_SCHEMES or parsed.netloc:
-        return None
-    if parsed.scheme:
+    if parsed.netloc or parsed.scheme:
         return None
     path = parsed.path
     if not path:
@@ -115,35 +257,35 @@ def collect_media_references(
     content: str,
 ) -> list[MediaReference]:
     page = Path(page_path)
+    content = strip_fenced_code_blocks(content)
     references: list[MediaReference] = []
-    for regex, source, image_embed in (
-        (_MARKDOWN_IMAGE_RE, "markdown", True),
-        (_MARKDOWN_PLAIN_LINK_RE, "markdown_link", False),
-    ):
-        for match in regex.finditer(content):
-            raw_target = match.group(2)
-            target = local_link_path(raw_target)
-            if target is None:
-                continue
-            media_type = media_type_for_path(target)
-            if media_type is None:
-                continue
-            references.append(
-                MediaReference(
-                    page_path=page,
-                    page_rel=page_rel,
-                    raw_target=raw_target,
-                    target=target,
-                    media_type=media_type,
-                    source=source,
-                    alt_text=match.group(1).strip() if image_embed else None,
-                    requires_alt=image_embed and media_type == "image",
-                )
+    for link in iter_markdown_link_targets(content):
+        target = local_link_path(link.raw_target)
+        if target is None:
+            continue
+        media_type = media_type_for_path(target)
+        if media_type is None:
+            continue
+        references.append(
+            MediaReference(
+                page_path=page,
+                page_rel=page_rel,
+                raw_target=link.raw_target,
+                target=target,
+                media_type=media_type,
+                source="markdown" if link.is_image else "markdown_link",
+                alt_text=link.label.strip() if link.is_image else None,
+                requires_alt=link.is_image and media_type == "image",
             )
+        )
 
-    parser = _HtmlMediaParser()
-    parser.feed(content)
-    for _tag, raw_target, alt, requires_alt in parser.references:
+    definitions = _reference_definitions(content)
+    for match in _REFERENCE_IMAGE_RE.finditer(content):
+        alt_text = match.group(1).strip()
+        label = match.group(2).strip() or alt_text
+        raw_target = definitions.get(_reference_label(label))
+        if raw_target is None:
+            continue
         target = local_link_path(raw_target)
         if target is None:
             continue
@@ -157,7 +299,29 @@ def collect_media_references(
                 raw_target=raw_target,
                 target=target,
                 media_type=media_type,
-                source="html",
+                source="markdown_reference",
+                alt_text=alt_text,
+                requires_alt=media_type == "image",
+            )
+        )
+
+    parser = _HtmlMediaParser()
+    parser.feed(content)
+    for _tag, raw_target, alt, requires_alt, source in parser.references:
+        target = local_link_path(raw_target)
+        if target is None:
+            continue
+        media_type = media_type_for_path(target)
+        if media_type is None:
+            continue
+        references.append(
+            MediaReference(
+                page_path=page,
+                page_rel=page_rel,
+                raw_target=raw_target,
+                target=target,
+                media_type=media_type,
+                source=source,
                 alt_text=alt.strip() if alt is not None else None,
                 requires_alt=requires_alt,
             )
@@ -165,20 +329,45 @@ def collect_media_references(
     return references
 
 
+def _reference_definitions(content: str) -> dict[str, str]:
+    definitions: dict[str, str] = {}
+    for line in content.splitlines():
+        match = _REFERENCE_DEFINITION_RE.match(line)
+        if not match:
+            continue
+        definitions[_reference_label(match.group(1))] = match.group(2).strip()
+    return definitions
+
+
+def _reference_label(label: str) -> str:
+    return " ".join(label.split()).casefold()
+
+
+def collect_media_references_by_page(
+    wiki_dir: Union[str, Path],
+    content_by_page: Mapping[str, str],
+) -> dict[str, list[MediaReference]]:
+    wiki = Path(wiki_dir)
+    return {
+        page_rel: collect_media_references(wiki / Path(page_rel), page_rel, content)
+        for page_rel, content in sorted(content_by_page.items())
+    }
+
+
 def build_asset_index(
     wiki_dir: Union[str, Path],
     content_by_page: Optional[Mapping[str, str]] = None,
+    references_by_page: Optional[Mapping[str, list[MediaReference]]] = None,
 ) -> AssetIndex:
     wiki = Path(wiki_dir)
-    content = (
-        dict(content_by_page) if content_by_page is not None else _read_pages(wiki)
-    )
+    if references_by_page is None:
+        content = content_by_page if content_by_page is not None else _read_pages(wiki)
+        references_by_page = collect_media_references_by_page(wiki, content)
     by_page: dict[str, set[str]] = {}
     referenced_assets: set[str] = set()
-    for page_rel, page_content in content.items():
-        page = wiki / Path(page_rel)
+    for page_rel, references in sorted(references_by_page.items()):
         assets = set()
-        for reference in collect_media_references(page, page_rel, page_content):
+        for reference in references:
             asset_rel = asset_relative_path(wiki, reference)
             if asset_rel is None:
                 continue
@@ -190,11 +379,13 @@ def build_asset_index(
     asset_paths = _asset_files(wiki)
     all_assets = set(asset_paths)
     unreferenced = all_assets - referenced_assets
-    by_media_type = {"image": 0, "video": 0}
+    by_media_type = {"image": 0, "video": 0, "other": 0}
     for asset in asset_paths:
         media_type = media_type_for_path(asset)
         if media_type is not None:
             by_media_type[media_type] += 1
+        else:
+            by_media_type["other"] += 1
 
     return AssetIndex(
         counts={
@@ -230,10 +421,46 @@ def asset_relative_path(
         rel = target.relative_to(wiki)
     except ValueError:
         return None
-    rel_posix = rel.as_posix()
-    if rel_posix.split("/", 1)[0] != "assets":
-        return None
-    return rel_posix
+    return rel.as_posix()
+
+
+def is_assets_path(path: str) -> bool:
+    return Path(path).as_posix().split("/", 1)[0] == "assets"
+
+
+def is_unrecognized_asset_warning_path(path: str) -> bool:
+    rel = Path(path).as_posix()
+    parts = rel.split("/")
+    if any(part.startswith(".") for part in parts):
+        return False
+    if not is_assets_path(rel):
+        return False
+    if media_type_for_path(rel) is not None:
+        return False
+    return not _README_ASSET_RE.match(parts[-1])
+
+
+def is_symlink_escape(
+    wiki_dir: Union[str, Path],
+    reference: MediaReference,
+) -> bool:
+    wiki_lexical = _absolute_normalized(Path(wiki_dir))
+    target_lexical = _absolute_normalized(reference.page_path.parent / reference.target)
+    try:
+        target_lexical.relative_to(wiki_lexical)
+    except ValueError:
+        return False
+    wiki_resolved = Path(wiki_dir).resolve()
+    target_resolved = (reference.page_path.parent / reference.target).resolve()
+    try:
+        target_resolved.relative_to(wiki_resolved)
+    except ValueError:
+        return True
+    return False
+
+
+def _absolute_normalized(path: Path) -> Path:
+    return Path(os.path.abspath(os.path.normpath(str(path))))
 
 
 def expected_page_for_asset(
@@ -269,6 +496,7 @@ def _asset_files(wiki: Path) -> list[str]:
         if not path.is_file():
             continue
         rel = path.relative_to(wiki).as_posix()
-        if media_type_for_path(rel) is not None:
-            paths.append(rel)
+        if any(part.startswith(".") for part in rel.split("/")):
+            continue
+        paths.append(rel)
     return sorted(paths, key=lambda value: (value.casefold(), value))

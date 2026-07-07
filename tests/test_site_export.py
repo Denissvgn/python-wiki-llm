@@ -219,6 +219,58 @@ def test_export_copies_referenced_assets_for_every_format(tmp_path, site_format)
     )
 
 
+def test_export_copies_parenthesized_plain_and_reference_style_media(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    _write(
+        wiki / "guides" / "tour.md",
+        "# Tour\n\n"
+        "![Shot](../assets/guides/tour/shot(1).png)\n"
+        "[Demo](../assets/guides/tour/demo(1).webm)\n"
+        "![Reference][home]\n\n"
+        '[home]: ../assets/guides/tour/home.png "Home"\n',
+    )
+    (wiki / "assets" / "guides" / "tour").mkdir(parents=True)
+    (wiki / "assets" / "guides" / "tour" / "shot(1).png").write_bytes(b"shot")
+    (wiki / "assets" / "guides" / "tour" / "demo(1).webm").write_bytes(b"demo")
+    (wiki / "assets" / "guides" / "tour" / "home.png").write_bytes(b"home")
+    out = tmp_path / "site"
+
+    report = export_site_mirror(wiki_dir=wiki, out_dir=out, format="plain")
+
+    assert report.asset_count == 3
+    assert (out / "assets" / "guides" / "tour" / "shot(1).png").read_bytes() == b"shot"
+    assert (out / "assets" / "guides" / "tour" / "demo(1).webm").read_bytes() == b"demo"
+    assert (out / "assets" / "guides" / "tour" / "home.png").read_bytes() == b"home"
+
+
+def test_export_copies_srcset_and_outside_assets_media(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    _write(
+        wiki / "guides" / "tour.md",
+        "# Tour\n\n"
+        "![Local](pic.png)\n"
+        '<img alt="Responsive" src="../assets/guides/tour/fallback.png" '
+        'srcset="../assets/guides/tour/small.png 1x, '
+        '../assets/guides/tour/large.png 2x, https://cdn.example/remote.png 3x">\n',
+    )
+    (wiki / "guides" / "pic.png").write_bytes(b"local")
+    (wiki / "assets" / "guides" / "tour").mkdir(parents=True)
+    (wiki / "assets" / "guides" / "tour" / "fallback.png").write_bytes(b"fallback")
+    (wiki / "assets" / "guides" / "tour" / "small.png").write_bytes(b"small")
+    (wiki / "assets" / "guides" / "tour" / "large.png").write_bytes(b"large")
+    out = tmp_path / "site"
+
+    report = export_site_mirror(wiki_dir=wiki, out_dir=out, format="plain")
+
+    assert report.asset_count == 4
+    assert (out / "guides" / "pic.png").read_bytes() == b"local"
+    assert (
+        out / "assets" / "guides" / "tour" / "fallback.png"
+    ).read_bytes() == b"fallback"
+    assert (out / "assets" / "guides" / "tour" / "small.png").read_bytes() == b"small"
+    assert (out / "assets" / "guides" / "tour" / "large.png").read_bytes() == b"large"
+
+
 def test_export_dry_run_reports_asset_copies_without_mutating(tmp_path):
     wiki = _write_usage_asset_wiki(tmp_path)
     out = tmp_path / "site"
@@ -794,6 +846,31 @@ def test_check_reports_stale_exported_assets_without_failing(tmp_path):
     ]
 
 
+def test_check_reports_stale_outside_assets_and_matches_export_operations(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    _write(wiki / "guides" / "tour.md", "# Tour\n\n![Local](pic.png)\n")
+    (wiki / "guides" / "pic.png").write_bytes(b"local")
+    out = tmp_path / "site"
+    export_site_mirror(wiki_dir=wiki, out_dir=out)
+    _write(wiki / "guides" / "tour.md", "# Tour\n\nNo media now.\n")
+
+    export_report = export_site_mirror(wiki_dir=wiki, out_dir=out, dry_run=True)
+    check_report = check_site_mirror(wiki_dir=wiki, out_dir=out)
+
+    export_stale = [
+        Path(operation.path).relative_to(out).as_posix()
+        for operation in export_report.asset_operations
+        if operation.action == "stale_asset"
+    ]
+    check_stale = [
+        warning["target"]
+        for warning in check_report.warnings
+        if warning["category"] == "stale_asset"
+    ]
+    assert export_stale == ["guides/pic.png"]
+    assert check_stale == export_stale
+
+
 def test_check_reports_missing_output_dir_and_page(tmp_path):
     wiki = _write_wiki(tmp_path)
     out = tmp_path / "site"
@@ -937,6 +1014,19 @@ def test_hub_export_copies_assets_under_source_namespace(tmp_path):
     assert report.asset_count == 1
     assert (out / "alpha" / "assets" / "guides" / "tour" / "home.png").is_file()
     assert not (out / "assets").exists()
+
+
+def test_hub_export_copies_outside_assets_media_under_source_namespace(tmp_path):
+    root = tmp_path / "sources" / "code_wikis"
+    alpha = _write_hub_wiki(root, "alpha", "Alpha")
+    _write(alpha / "guides" / "tour.md", "# Tour\n\n![Local](pic.png)\n")
+    (alpha / "guides" / "pic.png").write_bytes(b"png")
+    out = tmp_path / "hub"
+
+    report = export_site_hub(wiki_root=root, out_dir=out, format="plain")
+
+    assert report.asset_count == 1
+    assert (out / "alpha" / "guides" / "pic.png").is_file()
 
 
 def test_hub_export_writes_grouped_mkdocs_and_docusaurus_navigation(tmp_path):
@@ -1330,6 +1420,40 @@ def test_check_built_site_html_reports_missing_media_and_ignores_external_video(
     ] == [("missing_built_media_target", "assets/missing.png")]
 
 
+def test_check_built_site_html_validates_srcset_candidates(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+    built = tmp_path / "_site"
+    export_site_mirror(wiki_dir=wiki, out_dir=out)
+    _write(out / "missing.md", "# Missing\n\n")
+    _write(
+        built / "index.html",
+        (
+            '<img src="assets/fallback.png" '
+            'srcset="assets/small.png 1x, assets/missing.png 2x, '
+            "https://cdn.example/remote.png 3x, "
+            'data:image/png;base64,AAAA 4x">'
+        ),
+    )
+    (built / "assets").mkdir(parents=True)
+    (built / "assets" / "fallback.png").write_bytes(b"fallback")
+    (built / "assets" / "small.png").write_bytes(b"small")
+
+    report = check_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        built_site_dir=built,
+        link_mode="http",
+    )
+
+    assert report.ok is False
+    assert [
+        (issue["category"], issue["target"])
+        for issue in report.issues
+        if issue["category"] == "missing_built_media_target"
+    ] == [("missing_built_media_target", "assets/missing.png")]
+
+
 def test_check_built_site_html_rejects_media_traversal(tmp_path):
     wiki = _write_wiki(tmp_path)
     out = tmp_path / "site"
@@ -1351,6 +1475,54 @@ def test_check_built_site_html_rejects_media_traversal(tmp_path):
         and issue["target"] == "../outside.png"
         for issue in report.issues
     )
+
+
+def test_check_built_site_html_rejects_srcset_traversal(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+    built = tmp_path / "_site"
+    export_site_mirror(wiki_dir=wiki, out_dir=out)
+    _write(out / "missing.md", "# Missing\n\n")
+    _write(built / "index.html", '<source srcset="../outside.png 1x">')
+
+    report = check_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        built_site_dir=built,
+        link_mode="file",
+    )
+
+    assert report.ok is False
+    assert any(
+        issue["category"] == "unsafe_built_html_link"
+        and issue["target"] == "../outside.png"
+        for issue in report.issues
+    )
+
+
+def test_same_file_bytes_compares_size_and_chunks(tmp_path):
+    service = importlib.import_module("llm_wiki_cli.services.site_export")
+    left = tmp_path / "left.bin"
+    right = tmp_path / "right.bin"
+    left.write_bytes(b"abc")
+    right.write_bytes(b"abcd")
+    assert service._same_file_bytes(left, right) is False
+
+    right.write_bytes(b"abd")
+    assert service._same_file_bytes(left, right) is False
+
+    right.write_bytes(b"abc")
+    assert service._same_file_bytes(left, right) is True
+
+
+def test_export_reports_unchanged_for_identical_existing_asset(tmp_path):
+    wiki = _write_usage_asset_wiki(tmp_path)
+    out = tmp_path / "site"
+    export_site_mirror(wiki_dir=wiki, out_dir=out)
+
+    report = export_site_mirror(wiki_dir=wiki, out_dir=out)
+
+    assert {operation.action for operation in report.asset_operations} == {"unchanged"}
 
 
 def test_user_profile_check_reports_required_quality_categories(tmp_path):

@@ -45,8 +45,6 @@ from ..services.source_snapshot import (
 from ..services.team import build_team_issues
 from ..services import wiki_media
 
-# basic regex for [text](url)
-LINK_RE = re.compile(r"\[.+?\]\((.+?)\)")
 MERMAID_CLICK_RE = re.compile(r'^\s*click\s+\S+\s+"([^"]+)"', re.MULTILINE)
 MERMAID_NODE_RE = re.compile(r'^\s*[A-Za-z][A-Za-z0-9_]*\s*\["')
 MERMAID_FENCE = "```mermaid"
@@ -558,7 +556,10 @@ def _build_page_index(wiki_path: Path) -> _WikiPageIndex:
     ]
     page_content = {page: read_md(page) for page in pages}
     links_by_page = {
-        page: LINK_RE.findall(content) for page, content in page_content.items()
+        page: [
+            link.raw_target for link in wiki_media.iter_markdown_link_targets(content)
+        ]
+        for page, content in page_content.items()
     }
     return _WikiPageIndex(pages, links_by_page, page_content)
 
@@ -595,15 +596,31 @@ def _check_media_references(
     media_size_warn_bytes: int,
 ) -> None:
     seen_targets: set[tuple[str, str, str]] = set()
+    content_by_rel = _content_by_relative_path(page_index, wiki_path)
+    references_by_page = wiki_media.collect_media_references_by_page(
+        wiki_path, content_by_rel
+    )
+    outside_assets_by_page: dict[str, set[str]] = {}
     for page in page_index.pages:
         rel = page.relative_to(wiki_path).as_posix()
-        content = page_index.content_by_page.get(page, "")
-        for reference in wiki_media.collect_media_references(page, rel, content):
+        for reference in references_by_page.get(rel, []):
             target = (page.parent / reference.target).resolve()
             key = (rel, reference.target, reference.source)
             if key in seen_targets:
                 continue
             seen_targets.add(key)
+            if wiki_media.is_symlink_escape(wiki_path, reference):
+                _diagnose(
+                    report,
+                    "media_symlink_escape",
+                    (
+                        f"Media link in {rel} resolves outside the wiki through "
+                        f"a symlink: {reference.target}"
+                    ),
+                    path=rel,
+                    target=reference.target,
+                )
+                continue
             if not target.exists():
                 _add(
                     report,
@@ -613,6 +630,9 @@ def _check_media_references(
                     target=reference.target,
                 )
                 continue
+            asset_rel = wiki_media.asset_relative_path(wiki_path, reference)
+            if asset_rel is not None and not wiki_media.is_assets_path(asset_rel):
+                outside_assets_by_page.setdefault(rel, set()).add(asset_rel)
             if reference.requires_alt and not (reference.alt_text or "").strip():
                 _diagnose(
                     report,
@@ -637,21 +657,39 @@ def _check_media_references(
                     target=reference.target,
                 )
 
-    asset_index = wiki_media.build_asset_index(
-        wiki_path, _content_by_relative_path(page_index, wiki_path)
-    )
-    for asset in asset_index.unreferenced:
-        expected_page = asset_index.expected_pages.get(asset)
-        message = f"Asset is not referenced by any wiki page: {asset}"
-        if expected_page:
-            message += f" (expected owner page: {expected_page})"
+    for rel, targets in sorted(outside_assets_by_page.items()):
+        sorted_targets = sorted(targets, key=lambda value: (value.casefold(), value))
         _diagnose(
             report,
-            "media_orphan",
-            message,
-            path=asset,
-            target=expected_page,
+            "media_outside_assets",
+            (f"Media referenced outside assets/ in {rel}: {', '.join(sorted_targets)}"),
+            path=rel,
+            target=", ".join(sorted_targets),
         )
+
+    asset_index = wiki_media.build_asset_index(
+        wiki_path, references_by_page=references_by_page
+    )
+    for asset in asset_index.unreferenced:
+        if wiki_media.media_type_for_path(asset) is not None:
+            expected_page = asset_index.expected_pages.get(asset)
+            message = f"Asset is not referenced by any wiki page: {asset}"
+            if expected_page:
+                message += f" (expected owner page: {expected_page})"
+            _diagnose(
+                report,
+                "media_orphan",
+                message,
+                path=asset,
+                target=expected_page,
+            )
+        elif wiki_media.is_unrecognized_asset_warning_path(asset):
+            _diagnose(
+                report,
+                "asset_unrecognized_type",
+                f"Asset has an unrecognized media type: {asset}",
+                path=asset,
+            )
 
 
 def _content_by_relative_path(
@@ -1349,6 +1387,24 @@ def render_text(report: LintReport) -> str:
         "media_orphan",
         "No unreferenced media assets.",
         "Found {count} unreferenced media asset warning(s).",
+        only_if_present=True,
+    )
+    emit_group(
+        "media_outside_assets",
+        "No media outside assets/.",
+        "Found {count} media outside assets/ warning(s).",
+        only_if_present=True,
+    )
+    emit_group(
+        "asset_unrecognized_type",
+        "No unrecognized asset file types.",
+        "Found {count} unrecognized asset file type warning(s).",
+        only_if_present=True,
+    )
+    emit_group(
+        "media_symlink_escape",
+        "No symlinked media escapes.",
+        "Found {count} symlinked media escape warning(s).",
         only_if_present=True,
     )
     emit_group("orphan_pages", "No orphan pages.", "Found {count} orphan page(s).")

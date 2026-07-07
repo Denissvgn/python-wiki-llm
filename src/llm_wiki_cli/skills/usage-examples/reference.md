@@ -21,6 +21,12 @@ Capture tooling is checked, never installed. If `asciinema`, `agg`,
 - Supported image formats: `png`, `jpg`, `jpeg`, `webp`, `gif`, `svg`.
 - In-repo video formats: `mp4`, `webm`, treated as opaque files and size
   warned by lint.
+- Markdown images, Markdown media links, same-page reference-style images, raw
+  media tags, and local `srcset` candidates are validated and mirrored.
+- Page-local media outside `assets/` is mirrored but reported as
+  `media_outside_assets`; move it under `assets/` when practical.
+- Symlinked media that resolves outside the wiki root is reported as
+  `media_symlink_escape` and is not mirrored.
 - Recommended video pattern: poster image in repo plus externally hosted video.
   External `http`/`https` video URLs are intentionally ignored by built-site
   validation; the in-repo poster remains validated.
@@ -69,6 +75,9 @@ Relevant categories:
 | `media_missing_alt_text` | image lacks useful alt text | rewrite embed |
 | `media_oversize` | referenced media exceeds warning cap | compress, externalize, or document decision |
 | `media_orphan` | asset file is unreferenced | attach, move, or remove with user approval |
+| `media_outside_assets` | referenced media is wiki-local but outside `assets/` | move under `assets/` when practical |
+| `asset_unrecognized_type` | non-hidden file under `assets/` has an unrecognized media type | remove, rename, or document why it belongs |
+| `media_symlink_escape` | symlinked media resolves outside the wiki root | vendor or mount files inside the wiki root |
 | `missing_built_media_target` | built HTML media `src` does not resolve | rebuild/export or fix path |
 | `user_docs_missing_examples` | primary user docs contain no media examples | add examples or record why media is not useful |
 

@@ -42,8 +42,10 @@ redaction rules, command matrix, deferred rows, and failure modes.
 
 4. **Attach under the mirrored asset path.** Store media under
    `assets/<surface>/<page-stem>/<name>.<ext>` next to the owning wiki page's
-   logical path. Embed images with descriptive alt text. Add a one-line caption
-   naming the exact command or flow and linking the evidence page.
+   logical path when practical. Page-local media outside `assets/` is mirrored
+   by export but should be treated as convention drift and cleaned up when the
+   page is being edited. Embed images with descriptive alt text. Add a one-line
+   caption naming the exact command or flow and linking the evidence page.
 
 5. **Validate and adjust.**
 
@@ -62,7 +64,8 @@ redaction rules, command matrix, deferred rows, and failure modes.
    ```
 
    Treat `media_link_broken`, `media_missing_alt_text`, `media_oversize`,
-   `media_orphan`, `missing_built_media_target`, and
+   `media_orphan`, `media_outside_assets`, `asset_unrecognized_type`,
+   `media_symlink_escape`, `missing_built_media_target`, and
    `user_docs_missing_examples` as the adjustment worklist.
 
 6. **Defer honestly.** If a flow cannot be exercised because credentials,

@@ -15,7 +15,7 @@ from urllib.parse import quote
 
 
 RESOURCE_SCHEME = "llm-wiki"
-_PAGE_ID_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
+_PAGE_ID_RE = re.compile(r"^[A-Za-z0-9_.()-]+$")
 
 
 class WikiSurfaceError(ValueError):

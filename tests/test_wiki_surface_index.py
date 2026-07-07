@@ -172,7 +172,7 @@ def test_surface_index_records_asset_counts_and_page_reference_map(tmp_path):
         "total": 3,
         "referenced": 2,
         "unreferenced": 1,
-        "by_media_type": {"image": 3, "video": 0},
+        "by_media_type": {"image": 3, "video": 0, "other": 0},
     }
     assert payload["assets"]["by_page"] == {
         "guides/tour.md": [
@@ -182,3 +182,47 @@ def test_surface_index_records_asset_counts_and_page_reference_map(tmp_path):
     }
     assert payload["assets"]["unreferenced"] == ["assets/guides/tour/unused.webp"]
     assert all("\\" not in path for path in payload["assets"]["by_page"])
+
+
+def test_surface_index_records_reference_style_and_other_asset_counts(tmp_path):
+    wiki = tmp_path / "wiki"
+    _write(wiki / "index.md", "# Index\n\n- [Guide](guides/tour.md)\n")
+    _write(
+        wiki / "guides" / "tour.md",
+        "# Tour\n\n"
+        "![Screenshot][home]\n\n"
+        '[home]: ../assets/guides/tour/home.png "Home"\n',
+    )
+    _write(wiki / "assets" / "guides" / "tour" / "home.png", "png")
+    _write(wiki / "assets" / "guides" / "tour" / "notes.txt", "notes")
+    _write(wiki / "assets" / "guides" / "tour" / "README.md", "readme")
+
+    payload = build_surface_index(wiki, {}, src_dir=str(tmp_path))
+
+    assert payload["counts"]["assets"] == {
+        "total": 3,
+        "referenced": 1,
+        "unreferenced": 2,
+        "by_media_type": {"image": 1, "video": 0, "other": 2},
+    }
+    assert payload["assets"]["by_page"] == {
+        "guides/tour.md": ["assets/guides/tour/home.png"]
+    }
+    assert payload["assets"]["unreferenced"] == [
+        "assets/guides/tour/notes.txt",
+        "assets/guides/tour/README.md",
+    ]
+
+
+def test_surface_index_resolves_titled_internal_links_with_parentheses(tmp_path):
+    wiki = tmp_path / "wiki"
+    _write(
+        wiki / "index.md",
+        '# Index\n\n[Setup](guides/setup(1).md "Setup guide")\n',
+    )
+    _write(wiki / "guides" / "setup(1).md", "# Setup\n")
+
+    payload = build_surface_index(wiki, {}, src_dir=str(tmp_path))
+
+    by_path = {page["canonical_path"]: page for page in payload["pages"]}
+    assert by_path["index.md"]["outgoing_internal_links"] == ["guides/setup(1).md"]

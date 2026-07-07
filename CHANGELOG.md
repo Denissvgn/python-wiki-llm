@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Media parsing now handles parenthesized Markdown targets, same-page
+  reference-style images, fenced media examples, and local `srcset`
+  candidates consistently across lint, asset indexing, surface indexing, site
+  export, and built-site checks.
+- `site export` mirrors every referenced media file that resolves inside the
+  wiki root, including page-local media outside `assets/`, and stale exported
+  media detection now uses one shared reducer for export operations and
+  `site check` warnings.
+- Internal links with Markdown titles, including safe parenthesized page ids,
+  now resolve in the surface index.
 - `lint` validates plain markdown links to media targets again: link-style
   references such as `[Download demo](assets/guides/tour/demo.mp4)` are
   existence-checked under `media_link_broken`, count their targets as
@@ -18,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `/>` are recognized as raw media HTML.
 
 ### Added
+- Media lint now reports warning-level `media_outside_assets`,
+  `asset_unrecognized_type`, and `media_symlink_escape` diagnostics, and the
+  surface-index asset counts include an additive `other` media-type bucket for
+  non-hidden unrecognized files under `assets/`.
 - User documentation usage media support: `lint` now validates local image and
   video references with stable media categories, the wiki surface index records
   `assets/` counts and page-to-asset references, and `site export` mirrors

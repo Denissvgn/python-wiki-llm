@@ -18,7 +18,13 @@ from urllib.parse import unquote
 from . import wiki_surface
 from .io import read_md, write_md
 from .site_html_check import SUPPORTED_LINK_MODES, check_built_site_links
-from .wiki_media import build_asset_index, collect_media_references, media_type_for_path
+from .wiki_media import (
+    build_asset_index,
+    collect_media_references,
+    iter_markdown_link_targets as iter_wiki_markdown_link_targets,
+    media_type_for_path,
+    strip_fenced_code_blocks,
+)
 
 
 SUPPORTED_SITE_FORMATS = frozenset({"plain", "mkdocs", "docusaurus"})
@@ -884,16 +890,15 @@ def _record_asset_operations(
         target = _safe_join(out, asset_rel)
         _record_asset_copy_operation(report, source=source, target=target)
 
-    for stale in _exported_asset_paths(out):
-        if stale not in referenced:
-            report.asset_operations.append(
-                SiteExportOperation(
-                    "stale_asset",
-                    str(out),
-                    str(_safe_join(out, stale)),
-                    "Previously exported asset is no longer referenced.",
-                )
+    for stale in _stale_exported_assets(referenced, out):
+        report.asset_operations.append(
+            SiteExportOperation(
+                "stale_asset",
+                str(out),
+                str(_safe_join(out, stale)),
+                "Previously exported asset is no longer referenced.",
             )
+        )
 
 
 def _record_asset_copy_operation(
@@ -921,9 +926,22 @@ def _record_asset_copy_operation(
 
 def _same_file_bytes(left: Path, right: Path) -> bool:
     try:
-        return left.read_bytes() == right.read_bytes()
+        if left.stat().st_size != right.stat().st_size:
+            return False
+        with left.open("rb") as left_file, right.open("rb") as right_file:
+            while True:
+                left_chunk = left_file.read(64 * 1024)
+                right_chunk = right_file.read(64 * 1024)
+                if left_chunk != right_chunk:
+                    return False
+                if not left_chunk:
+                    return True
     except OSError:
         return False
+
+
+def _stale_exported_assets(referenced: set[str], out: Path) -> list[str]:
+    return [asset for asset in _exported_asset_paths(out) if asset not in referenced]
 
 
 def _stale_asset_warnings(wiki: Path, out: Path) -> list[dict[str, str]]:
@@ -932,9 +950,7 @@ def _stale_asset_warnings(wiki: Path, out: Path) -> list[dict[str, str]]:
     source_assets = build_asset_index(wiki)
     referenced = set(source_assets.referenced)
     warnings: list[dict[str, str]] = []
-    for asset_rel in _exported_asset_paths(out):
-        if asset_rel in referenced:
-            continue
+    for asset_rel in _stale_exported_assets(referenced, out):
         warnings.append(
             {
                 "category": "stale_asset",
@@ -950,11 +966,10 @@ def _stale_asset_warnings(wiki: Path, out: Path) -> list[dict[str, str]]:
 
 
 def _exported_asset_paths(root: Path) -> list[str]:
-    assets = root / "assets"
-    if not assets.is_dir():
-        return []
     paths = []
-    for path in assets.rglob("*"):
+    if not root.is_dir():
+        return paths
+    for path in root.rglob("*"):
         if not path.is_file():
             continue
         rel = path.relative_to(root).as_posix()
@@ -1779,19 +1794,11 @@ def _front_matter_mismatch_issue(
 
 
 def _iter_markdown_link_targets(content: str) -> list[str]:
-    targets: list[str] = []
-    in_fence = False
-    for line in content.splitlines():
-        if line.lstrip().startswith("```"):
-            in_fence = not in_fence
-            continue
-        if in_fence:
-            continue
-        for match in MARKDOWN_LINK_RE.finditer(line):
-            if match.group(1):
-                continue
-            targets.append(match.group(3).strip())
-    return targets
+    return [
+        link.raw_target
+        for link in iter_wiki_markdown_link_targets(strip_fenced_code_blocks(content))
+        if not link.is_image
+    ]
 
 
 def _local_markdown_link_base(target: str) -> Optional[str]:

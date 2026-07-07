@@ -559,12 +559,20 @@ When generated entity/module diagram sections exist, lint validates Mermaid
 `click` links as hard broken-link issues and reports over-large generated
 diagrams as warning diagnostics with page and section targets.
 When guide or other semantic pages embed local media, lint treats image and
-video targets separately from Markdown page links. Missing local media files
-are hard `media_link_broken` issues. Missing image alt text, media files over
-the default 2 MB warning threshold, and unreferenced files under `assets/` are
-warning diagnostics (`media_missing_alt_text`, `media_oversize`, and
-`media_orphan`). Use `--media-size-warn-bytes` to tune the size warning for a
-project.
+video targets separately from Markdown page links. It recognizes inline
+Markdown images and media links, same-page reference-style images, and raw
+`<img>`, `<video>`, and `<source>` tags, including local `srcset` candidates.
+Fenced code blocks are ignored by the media pass so examples do not create
+media diagnostics; the general page-link check is unchanged. Missing local
+media files are hard `media_link_broken` issues. Missing image alt text, media
+files over the default 2 MB warning threshold, unreferenced media files under
+`assets/`, media stored outside the preferred `assets/` convention,
+unrecognized non-hidden files under `assets/`, and symlinked media that
+resolves outside the wiki root are warning diagnostics
+(`media_missing_alt_text`, `media_oversize`, `media_orphan`,
+`media_outside_assets`, `asset_unrecognized_type`, and
+`media_symlink_escape`). Use `--media-size-warn-bytes` to tune the size warning
+for a project.
 When flow pages exist, lint also reports generated data-flow gaps, such as
 unresolved calls that static analysis cannot classify, as warning diagnostics.
 Known but unsupported source files are reported as informational diagnostics
@@ -906,13 +914,18 @@ MkDocs theme override for file-safe home links, and reports
 mode requires concrete `.html` targets and reports directory-style links as
 hard issues.
 
-Agent-owned usage media lives under the semantic `assets/` surface, using the
-mirrored path convention `assets/<surface>/<page-stem>/<name>.<ext>`. Markdown
-image embeds and raw `<img>`, `<video>`, and `<source>` tags are recognized for
-`.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.svg`, `.mp4`, and `.webm` files.
-`site export` copies referenced assets into the mirror and reports asset
-operations separately from page operations. `site check --built-site-dir`
-validates built HTML media targets in both `http` and `file` link modes.
+Agent-owned usage media should live under the semantic `assets/` surface,
+using the mirrored path convention
+`assets/<surface>/<page-stem>/<name>.<ext>`. Markdown image embeds and media
+links, same-page reference-style images, and raw `<img>`, `<video>`, and
+`<source>` tags are recognized for `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`,
+`.svg`, `.mp4`, and `.webm` files; local `srcset` candidates are validated and
+mirrored too. `site export` copies every referenced media file that resolves
+inside the wiki root, including media kept beside a page outside `assets/`,
+and reports asset operations separately from page operations. Symlinked media
+that resolves outside the wiki root is warning-visible and is not mirrored.
+`site check --built-site-dir` validates built HTML media targets and local
+`srcset` candidates in both `http` and `file` link modes.
 
 The service layer also exposes the same pure mirror builder for integrations:
 

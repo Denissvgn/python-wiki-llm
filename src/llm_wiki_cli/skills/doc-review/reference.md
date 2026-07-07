@@ -56,5 +56,6 @@ Mention duplicate finding IDs and false-positive rationale explicitly.
 
 For findings in media-backed docs, classify `media_link_broken`,
 `media_missing_alt_text`, `media_oversize`, `media_orphan`,
+`media_outside_assets`, `asset_unrecognized_type`, `media_symlink_escape`,
 `missing_built_media_target`, and `user_docs_missing_examples`. Use
 `usage-examples` when the fix requires new or updated captures.
