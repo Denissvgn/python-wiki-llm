@@ -604,3 +604,37 @@ class TestPluginCliSmoke:
         monkeypatch.setattr("sys.argv", ["llm-wiki", "plugins", "list"])
         cli.main()
         assert "demo-plugin 0.1.0" in capsys.readouterr().out
+
+    def test_cli_lists_and_exports_bundled_plugin_sample(
+        self, tmp_project, capsys, monkeypatch
+    ):
+        dest = tmp_project / "vendor" / "m4-documentation-hooks"
+
+        monkeypatch.setattr("sys.argv", ["llm-wiki", "plugins", "samples", "list"])
+        cli.main()
+        assert "m4-documentation-hooks" in capsys.readouterr().out
+
+        monkeypatch.setattr(
+            "sys.argv",
+            [
+                "llm-wiki",
+                "plugins",
+                "samples",
+                "export",
+                "m4-documentation-hooks",
+                "--dest",
+                str(dest),
+            ],
+        )
+        cli.main()
+        assert (
+            "Exported plugin sample: m4-documentation-hooks" in capsys.readouterr().out
+        )
+
+        monkeypatch.setattr("sys.argv", ["llm-wiki", "plugins", "validate", str(dest)])
+        cli.main()
+        assert "Plugin valid: m4-documentation-hooks" in capsys.readouterr().out
+
+        monkeypatch.setattr("sys.argv", ["llm-wiki", "install", str(dest), "--yes"])
+        cli.main()
+        assert "Installed plugin: m4-documentation-hooks" in capsys.readouterr().out

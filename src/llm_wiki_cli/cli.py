@@ -411,6 +411,26 @@ def _add_plugins_command(subparsers):
     )
     plugins_sub = plugins_parser.add_subparsers(dest="plugins_action", required=True)
     plugins_sub.add_parser("list", help="List installed plugins")
+    plugins_samples = plugins_sub.add_parser(
+        "samples", help="List or export bundled sample plugins"
+    )
+    samples_sub = plugins_samples.add_subparsers(dest="samples_action", required=True)
+    samples_sub.add_parser("list", help="List bundled sample plugins")
+    samples_export = samples_sub.add_parser(
+        "export", help="Export a bundled sample plugin to a local directory"
+    )
+    samples_export.add_argument("sample_id", help="Bundled sample plugin id")
+    samples_export.add_argument(
+        "--dest",
+        required=True,
+        metavar="PATH",
+        help="Destination directory for the exported sample plugin",
+    )
+    samples_export.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite an existing exported sample plugin directory",
+    )
     plugins_remove = plugins_sub.add_parser("remove", help="Remove an installed plugin")
     plugins_remove.add_argument("plugin_id", help="Plugin id to remove")
     plugins_remove.add_argument(

@@ -6,13 +6,29 @@ import json
 import shutil
 from pathlib import Path
 
+import pytest
+
 from llm_wiki_cli.commands.extract_cmd import get_inventory
 from llm_wiki_cli.services import plugins
+from llm_wiki_cli.services import plugin_samples
 from llm_wiki_cli.services.diagrams import resolve_diagram_style
 from llm_wiki_cli.services.entrypoints import detect_entry_points
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SAMPLE_PLUGIN = REPO_ROOT / "examples" / "plugins" / "m4-documentation-hooks"
+BUNDLED_SAMPLE_PLUGIN = (
+    REPO_ROOT
+    / "src"
+    / "llm_wiki_cli"
+    / "examples"
+    / "plugins"
+    / "m4-documentation-hooks"
+)
+SAMPLE_FILES = (
+    "detectors.py",
+    "llm-wiki-plugin.json",
+    "styles.py",
+)
 
 
 def _install_sample_plugin(root: Path) -> Path:
@@ -40,6 +56,38 @@ def test_sample_plugin_manifest_uses_documented_component_refs(tmp_path):
             "description": "Apply bounded Mermaid styling to generated flowcharts.",
         },
     ]
+
+
+def test_bundled_sample_plugin_matches_source_fixture():
+    assert plugin_samples.list_samples() == [
+        {
+            "id": "m4-documentation-hooks",
+            "description": "M4 documentation hooks sample plugin",
+        }
+    ]
+
+    for rel in SAMPLE_FILES:
+        assert (BUNDLED_SAMPLE_PLUGIN / rel).read_bytes() == (
+            SAMPLE_PLUGIN / rel
+        ).read_bytes()
+
+
+def test_bundled_sample_plugin_exports_valid_plugin(tmp_path):
+    dest = tmp_path / "vendor" / "m4-documentation-hooks"
+
+    result = plugin_samples.export_sample("m4-documentation-hooks", dest)
+
+    assert result == {"id": "m4-documentation-hooks", "path": str(dest)}
+    assert sorted(path.name for path in dest.iterdir()) == sorted(SAMPLE_FILES)
+    manifest = plugins.validate_plugin(dest)
+    assert manifest["id"] == "m4-documentation-hooks"
+
+
+def test_bundled_sample_plugin_export_rejects_relative_destination_escape(tmp_path):
+    with pytest.raises(plugins.PluginError, match="inside the project root"):
+        plugin_samples.export_sample(
+            "m4-documentation-hooks", "../outside", root=tmp_path
+        )
 
 
 def test_sample_plugin_detector_contributes_task_handler_entrypoint(tmp_path):

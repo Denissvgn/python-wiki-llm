@@ -799,12 +799,21 @@ again before runtime import. Extractor components may set `"parallel_safe": true
 to opt into `--jobs` parallel execution; omit it unless the extractor is safe to
 run concurrently in a fresh instance.
 
-A tested M4 sample plugin lives at `examples/plugins/m4-documentation-hooks`.
-It can be inspected or installed like any other local plugin:
+A tested M4 sample plugin lives at `examples/plugins/m4-documentation-hooks` in
+source checkouts. It can be inspected or installed like any other local plugin:
 
 ```bash
 llm-wiki plugins validate examples/plugins/m4-documentation-hooks
 llm-wiki install examples/plugins/m4-documentation-hooks --yes
+```
+
+Installed packages can export the same bundled sample before installing it:
+
+```bash
+llm-wiki plugins samples list
+llm-wiki plugins samples export m4-documentation-hooks --dest vendor/m4-documentation-hooks
+llm-wiki plugins validate vendor/m4-documentation-hooks
+llm-wiki install vendor/m4-documentation-hooks --yes
 ```
 
 The sample manifest declares `m4-documentation-hooks/worker-tasks`
