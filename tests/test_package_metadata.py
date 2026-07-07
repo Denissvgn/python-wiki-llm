@@ -88,6 +88,24 @@ def test_package_data_includes_bundled_skills():
     assert "skills/user-docs-author/reference.md" in package_data
 
 
+def test_package_data_includes_bundled_m4_plugin_sample():
+    data = _pyproject()
+    package_data = data["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]
+    assert (
+        "examples/plugins/m4-documentation-hooks/llm-wiki-plugin.json" in package_data
+    )
+    assert "examples/plugins/m4-documentation-hooks/detectors.py" in package_data
+    assert "examples/plugins/m4-documentation-hooks/styles.py" in package_data
+
+
+def test_sdist_manifest_includes_source_m4_plugin_sample():
+    manifest = (PROJECT_ROOT / "MANIFEST.in").read_text(encoding="utf-8")
+    assert (
+        "recursive-include examples/plugins/m4-documentation-hooks *.py *.json"
+        in manifest
+    )
+
+
 def test_project_distribution_name_is_pypi_safe_name():
     data = _pyproject()
     assert data["project"]["name"] == "agent-wiki-cli"

@@ -1,0 +1,1 @@
+recursive-include examples/plugins/m4-documentation-hooks *.py *.json

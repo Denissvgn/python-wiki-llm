@@ -4,6 +4,7 @@ import sys
 
 from ..config import DEFAULT_WIKI_DIR, validate_path
 from ..services.plugins import PluginError, list_plugins, remove_plugin, validate_plugin
+from ..services.plugin_samples import export_sample, list_samples
 from ..services.schema import strip_plugin_skill_blocks
 
 
@@ -33,6 +34,32 @@ def run(args) -> None:
             print(f"{plugin['id']} {plugin['version']}")
             print(f"  components: {_render_components(plugin)}")
         return
+
+    if action == "samples":
+        samples_action = getattr(args, "samples_action", None)
+        if samples_action == "list":
+            samples = list_samples()
+            if not samples:
+                print("No bundled plugin samples found.")
+                return
+            for sample in samples:
+                print(f"{sample['id']}: {sample['description']}")
+            return
+
+        if samples_action == "export":
+            try:
+                exported = export_sample(
+                    getattr(args, "sample_id"),
+                    getattr(args, "dest"),
+                    force=bool(getattr(args, "force", False)),
+                )
+                validate_plugin(exported["path"])
+            except PluginError as exc:
+                print(f"Error: {exc}", file=sys.stderr)
+                sys.exit(1)
+            print(f"Exported plugin sample: {exported['id']}")
+            print(f"Destination: {exported['path']}")
+            return
 
     if action == "remove":
         wiki_dir: str = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
