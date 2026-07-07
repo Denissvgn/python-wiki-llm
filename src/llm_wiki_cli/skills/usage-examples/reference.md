@@ -8,37 +8,24 @@
 | Web UI | screenshot PNG from the agent platform browser or Playwright | platform-provided video | browser capability exists in the agent platform |
 | Long-running process | concise logs plus stop condition | short recording when motion matters | runtime can start in a disposable directory |
 
-Text-first rule: if command output communicates the behavior, use text instead
-of an image. Media is for what text cannot show.
+Text-first rule: if command output communicates the behavior, use text instead of an image. Media is for what text cannot show.
 
-Capture tooling is checked, never installed. If `asciinema`, `agg`,
-`playwright`, browser automation, or video recording is absent, defer with a
-`capture blocker` value instead of running package-manager installs.
+Capture tooling is checked, never installed. If `asciinema`, `agg`, `playwright`, browser automation, or video recording is absent, defer with a `capture blocker` value instead of running package-manager installs.
 
 ## Media Policy
 
 - Store files under `assets/<surface>/<page-stem>/<name>.<ext>`.
 - Supported image formats: `png`, `jpg`, `jpeg`, `webp`, `gif`, `svg`.
-- In-repo video formats: `mp4`, `webm`, treated as opaque files and size
-  warned by lint.
-- Markdown images, Markdown media links, same-page reference-style images, raw
-  media tags, and local `srcset` candidates are validated and mirrored.
-- Page-local media outside `assets/` is mirrored but reported as
-  `media_outside_assets`; move it under `assets/` when practical.
-- Symlinked media that resolves outside the wiki root is reported as
-  `media_symlink_escape` and is not mirrored.
-- Recommended video pattern: poster image in repo plus externally hosted video.
-  External `http`/`https` video URLs are intentionally ignored by built-site
-  validation; the in-repo poster remains validated.
-- Use descriptive alt text for images and one caption per example. Captions
-  name the exact command or flow and link the wiki evidence page.
+- In-repo video formats: `mp4`, `webm`, treated as opaque files and size warned by lint.
+- Markdown images, Markdown media links, same-page reference-style images, raw media tags, and local `srcset` candidates are validated and mirrored.
+- Page-local media outside `assets/` is mirrored but reported as `media_outside_assets`; move it under `assets/` when practical.
+- Symlinked media that resolves outside the wiki root is reported as `media_symlink_escape` and is not mirrored.
+- Recommended video pattern: poster image in repo plus externally hosted video. External `http`/`https` video URLs are intentionally ignored by built-site validation; the in-repo poster remains validated.
+- Use descriptive alt text for images and one caption per example. Captions name the exact command or flow and link the wiki evidence page.
 
 ## Redaction Rules
 
-Retake or redact captures that expose secrets, tokens, private URLs, real user
-data, machine-specific absolute paths, hostnames, home directories, or temporary
-paths that would confuse readers. Redaction must not change the behavior being
-documented.
+Retake or redact captures that expose secrets, tokens, private URLs, real user data, machine-specific absolute paths, hostnames, home directories, or temporary paths that would confuse readers. Redaction must not change the behavior being documented.
 
 ## Deferred Docs Row
 
@@ -50,8 +37,7 @@ Use this shape in the run report or deferred-docs section:
 
 ## Command Matrix
 
-Built-site validation uses `site check --built-site-dir` in both HTTP and file
-link modes when a real builder is available.
+Built-site validation uses `site check --built-site-dir` in both HTTP and file link modes when a real builder is available.
 
 ```bash
 llm-wiki lint --strict --src-dir . --wiki-dir docs/llm_wiki

@@ -86,6 +86,4 @@ Add export → check → build as a job step alongside the existing `ci-check` g
 
 ## Usage examples handoff
 
-Run `usage-examples` before publishing when user docs need screenshots,
-recordings, or command-output examples. `publish-docs` validates the exported
-and built media targets but does not capture or attach examples itself.
+Run `usage-examples` before publishing when user docs need screenshots, recordings, or command-output examples. `publish-docs` validates the exported and built media targets but does not capture or attach examples itself.

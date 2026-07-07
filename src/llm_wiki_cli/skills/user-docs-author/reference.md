@@ -81,7 +81,4 @@ For a direct-file handoff, pair the file-mode check with `site export --profile 
 
 ## Usage examples handoff
 
-When guides are evidence-backed and lint/site-check clean, use
-`usage-examples` for screenshots, recordings, captions, mirrored asset paths,
-and media validation. Keep this skill focused on prose and checker-driven
-adjustment.
+When guides are evidence-backed and lint/site-check clean, use `usage-examples` for screenshots, recordings, captions, mirrored asset paths, and media validation. Keep this skill focused on prose and checker-driven adjustment.

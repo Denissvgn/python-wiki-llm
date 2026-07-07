@@ -11,10 +11,7 @@ Create a first useful wiki without pretending every generated page can be hand-p
 
 - This is a first bootstrap or an intentional full re-bootstrap. If `<wiki-dir>/.llm-wiki-manifest.json` already exists and the user did not ask for a full regenerate, stop — use the wiki-sync skill instead.
 - The target repository is readable and the selected wiki directory (default `docs/llm_wiki`; substitute the project's configured `--wiki-dir` everywhere below) is writable.
-- If `--src-dir` points outside the current repository, the run uses
-  `--allow-external-src` for source-reading commands: `prepare-extractors`,
-  `bootstrap`, `lint`, `sync`, `ci-check`, and `team check`. The `--wiki-dir`
-  remains project-root guarded.
+- If `--src-dir` points outside the current repository, the run uses `--allow-external-src` for source-reading commands: `prepare-extractors`, `bootstrap`, `lint`, `sync`, `ci-check`, and `team check`. The `--wiki-dir` remains project-root guarded.
 - Helper toolchain overrides are captured before preparation (for example `LLM_WIKI_GO=/usr/local/go/bin/go` or `LLM_WIKI_GHC=/path/to/ghc`) when the default executable on `PATH` is broken.
 
 ## Steps

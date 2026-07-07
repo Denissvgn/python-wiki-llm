@@ -104,6 +104,4 @@ When personas or topics exceed the run budget, append rows to the wiki's `bootst
 
 ## Usage examples handoff
 
-After guide prose exists and validates, use `usage-examples` to attach
-evidence-linked screenshots, recordings, or terminal captures under the wiki
-`assets/` surface. Do not mix capture policy into onboarding guide drafting.
+After guide prose exists and validates, use `usage-examples` to attach evidence-linked screenshots, recordings, or terminal captures under the wiki `assets/` surface. Do not mix capture policy into onboarding guide drafting.

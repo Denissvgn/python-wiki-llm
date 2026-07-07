@@ -71,10 +71,8 @@ Last validation: `llm-wiki lint --strict --profile --src-dir . --wiki-dir docs/l
 - Centrality: fan_in=1, fan_out=16, cycle=false, entrypoint_related=true
 - Placeholder evidence: ``_Auto-generated from `src/repo.py`._``
 - Why deferred: semantic budget exhausted before repository-adapter pages.
-- Suggested context: `dependency_neighborhood("src/repo.py")`,
-  `pages_for_symbol("Repository")`, and the source file.
-- Completion check: preserve generated blocks, run `lint --strict`, then
-  change status to `done` with the date.
+- Suggested context: `dependency_neighborhood("src/repo.py")`, `pages_for_symbol("Repository")`, and the source file.
+- Completion check: preserve generated blocks, run `lint --strict`, then change status to `done` with the date.
 ```
 
 Required fields for every open item:
@@ -108,12 +106,7 @@ A successful run has:
 - **Large monorepo.** Do not attempt full semantic coverage. Complete P0, then top central pages, then backlog the rest.
 - **Unsupported sources.** Treat unsupported-language summaries as coverage notices. Include them in the validation notes and backlog if the user expects those languages to be first-class.
 - **Skipped generated pages.** Page skips can hide missing documentation due to collisions or unsafe output paths. Triage before semantic polishing.
-- **Source-adapter wikis.** Keep `--allow-external-src` consistent across
-  `prepare-extractors`, `bootstrap`, `lint`, `sync`, `ci-check`, and
-  `team check` after the initial run. Examples:
-  `llm-wiki prepare-extractors --src-dir <repo> --allow-external-src` and
-  `llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki`.
-  The `--wiki-dir` remains project-root guarded.
+- **Source-adapter wikis.** Keep `--allow-external-src` consistent across `prepare-extractors`, `bootstrap`, `lint`, `sync`, `ci-check`, and `team check` after the initial run. Examples: `llm-wiki prepare-extractors --src-dir <repo> --allow-external-src` and `llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki`. The `--wiki-dir` remains project-root guarded.
 - **Placeholder pressure.** Removing every placeholder is not the goal. The goal is to make central pages meaningful and make deferred work explicit.
 - **Custom backlog page lint.** If `bootstrap-remainder.md` is reported as an orphan, link it from `index.md`. If the target project forbids custom wiki pages, move it to `reports/` and record that fallback in `log.md`.
 

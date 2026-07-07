@@ -11,8 +11,7 @@ Use current command outputs only:
 - saved review JSON when a review workflow raised the dependency concern
 - generated wiki pages such as `dependencies.md` and `load-order.md`
 
-The skill consumes existing diagnostics. It does not require an unimplemented
-dependency-audit command.
+The skill consumes existing diagnostics. It does not require an unimplemented dependency-audit command.
 
 ## Triage statuses
 
