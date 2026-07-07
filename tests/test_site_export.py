@@ -715,6 +715,27 @@ def test_docusaurus_export_preserves_fences_and_escapes_mdx_text(tmp_path):
     assert 'click M "../modules/models.md"' in content
 
 
+def test_docusaurus_export_preserves_multiline_video_embed(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    user_path = wiki / "entities" / "User.md"
+    user_path.write_text(
+        user_path.read_text(encoding="utf-8")
+        + "\n<video controls>\n"
+        + '  <source src="../assets/clip.webm" type="video/webm">\n'
+        + "</video>\n",
+        encoding="utf-8",
+    )
+    out = tmp_path / "site"
+
+    export_site_mirror(wiki_dir=wiki, out_dir=out, format="docusaurus")
+
+    content = (out / "entities" / "User.md").read_text(encoding="utf-8")
+    assert "<video controls>" in content
+    assert '<source src="../assets/clip.webm" type="video/webm">' in content
+    assert "</video>" in content
+    assert "\\</video>" not in content
+
+
 def test_rewrites_internal_markdown_links_and_preserves_fences(tmp_path):
     wiki = _write_wiki(tmp_path)
     out = tmp_path / "site"

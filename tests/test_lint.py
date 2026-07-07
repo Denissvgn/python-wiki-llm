@@ -479,6 +479,39 @@ class TestLintMediaLinks:
             ),
         ]
 
+    def test_plain_markdown_links_to_media_are_existence_checked(
+        self, tmp_path, monkeypatch
+    ):
+        self._stub_source_inputs(monkeypatch)
+        src, wiki = self._wiki_with_guide(tmp_path)
+        (wiki / "assets" / "guides" / "tour" / "demo.webm").write_bytes(b"video")
+        (wiki / "guides" / "tour.md").write_text(
+            "# Tour\n\n"
+            "[Demo recording](../assets/guides/tour/demo.webm)\n"
+            "[Missing demo](../assets/guides/tour/missing.mp4)\n",
+            encoding="utf-8",
+        )
+
+        report = lint_cmd.build_report(wiki, str(src))
+
+        assert [
+            (issue.category, issue.path, issue.target) for issue in report.issues
+        ] == [
+            (
+                "media_link_broken",
+                "guides/tour.md",
+                "../assets/guides/tour/missing.mp4",
+            ),
+        ]
+        assert [
+            item for item in report.diagnostics if item.category == "media_orphan"
+        ] == []
+        assert [
+            item
+            for item in report.diagnostics
+            if item.category == "media_missing_alt_text"
+        ] == []
+
     def test_raw_html_media_embeds_missing_alt_and_oversize_are_validated(
         self, tmp_path, monkeypatch
     ):

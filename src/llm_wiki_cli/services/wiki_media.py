@@ -16,6 +16,7 @@ MEDIA_EXTENSIONS = IMAGE_EXTENSIONS | VIDEO_EXTENSIONS
 DEFAULT_MEDIA_SIZE_WARN_BYTES = 2 * 1024 * 1024
 
 _MARKDOWN_IMAGE_RE = re.compile(r"!\[([^\]]*)\]\((.+?)\)")
+_MARKDOWN_PLAIN_LINK_RE = re.compile(r"(?<!!)\[([^\]]*)\]\((.+?)\)")
 _MARKDOWN_TITLE_RE = re.compile(
     r"^(?P<target><[^>]+>|[^\s]+)(?:\s+(?:\"[^\"]*\"|'[^']*'))?\s*$"
 )
@@ -115,26 +116,30 @@ def collect_media_references(
 ) -> list[MediaReference]:
     page = Path(page_path)
     references: list[MediaReference] = []
-    for match in _MARKDOWN_IMAGE_RE.finditer(content):
-        raw_target = match.group(2)
-        target = local_link_path(raw_target)
-        if target is None:
-            continue
-        media_type = media_type_for_path(target)
-        if media_type is None:
-            continue
-        references.append(
-            MediaReference(
-                page_path=page,
-                page_rel=page_rel,
-                raw_target=raw_target,
-                target=target,
-                media_type=media_type,
-                source="markdown",
-                alt_text=match.group(1).strip(),
-                requires_alt=media_type == "image",
+    for regex, source, image_embed in (
+        (_MARKDOWN_IMAGE_RE, "markdown", True),
+        (_MARKDOWN_PLAIN_LINK_RE, "markdown_link", False),
+    ):
+        for match in regex.finditer(content):
+            raw_target = match.group(2)
+            target = local_link_path(raw_target)
+            if target is None:
+                continue
+            media_type = media_type_for_path(target)
+            if media_type is None:
+                continue
+            references.append(
+                MediaReference(
+                    page_path=page,
+                    page_rel=page_rel,
+                    raw_target=raw_target,
+                    target=target,
+                    media_type=media_type,
+                    source=source,
+                    alt_text=match.group(1).strip() if image_embed else None,
+                    requires_alt=image_embed and media_type == "image",
+                )
             )
-        )
 
     parser = _HtmlMediaParser()
     parser.feed(content)

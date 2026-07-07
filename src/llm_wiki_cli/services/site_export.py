@@ -24,6 +24,10 @@ from .wiki_media import build_asset_index, collect_media_references, media_type_
 SUPPORTED_SITE_FORMATS = frozenset({"plain", "mkdocs", "docusaurus"})
 SUPPORTED_SITE_PROFILES = frozenset({"reference", "user"})
 MARKDOWN_LINK_RE = re.compile(r"(!)?\[([^\]]+)\]\(([^)]+)\)")
+_RAW_MEDIA_HTML_RE = re.compile(
+    r"^\s*(?:<(?:img|video|source)(?=[\s/>])|</video\s*>)",
+    re.IGNORECASE,
+)
 FRONT_MATTER_KEY_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 GENERATED_REFERENCE_PATH = "generated-reference.md"
 MKDOCS_FILE_FRIENDLY_OVERRIDE_DIR = ".llm-wiki-mkdocs-overrides"
@@ -1969,8 +1973,7 @@ def _escape_docusaurus_mdx_segment(segment: str) -> str:
 
 
 def _is_allowed_raw_media_html(line: str) -> bool:
-    stripped = line.lstrip().casefold()
-    return stripped.startswith(("<img ", "<img>", "<video ", "<video>", "<source "))
+    return _RAW_MEDIA_HTML_RE.match(line) is not None
 
 
 def _yaml_quote(value: str) -> str:

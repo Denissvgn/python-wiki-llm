@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- `lint` validates plain markdown links to media targets again: link-style
+  references such as `[Download demo](assets/guides/tour/demo.mp4)` are
+  existence-checked under `media_link_broken`, count their targets as
+  referenced assets for `media_orphan` and the surface-index asset map, and
+  are mirrored by `site export`.
+- Docusaurus export no longer MDX-escapes the closing `</video>` line of a
+  multi-line raw video embed, and opening media tags followed by a tab or
+  `/>` are recognized as raw media HTML.
+
 ### Added
 - User documentation usage media support: `lint` now validates local image and
   video references with stable media categories, the wiki surface index records
