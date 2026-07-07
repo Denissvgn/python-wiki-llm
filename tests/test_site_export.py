@@ -215,7 +215,8 @@ def test_export_copies_referenced_assets_for_every_format(tmp_path, site_format)
     assert '![Home](../assets/guides/tour/home.png "Home")' in guide
     assert '<video src="../assets/guides/tour/clip.webm"></video>' in guide
     assert all(
-        "assets/guides/tour" in operation.path for operation in report.asset_operations
+        "assets/guides/tour" in Path(operation.path).as_posix()
+        for operation in report.asset_operations
     )
 
 

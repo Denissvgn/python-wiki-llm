@@ -11,6 +11,14 @@ def test_write_md_normalizes_newlines_and_reads_back(tmp_path):
     assert not list(path.parent.glob(".page.md.*.tmp"))
 
 
+def test_read_md_normalizes_existing_platform_newlines(tmp_path):
+    path = tmp_path / "wiki" / "page.md"
+    path.parent.mkdir(parents=True)
+    path.write_bytes(b"a\r\nb\rc\n")
+
+    assert read_md(path) == "a\nb\nc\n"
+
+
 def test_write_text_output_normalizes_newlines_and_reads_back(tmp_path):
     path = tmp_path / "records" / "output.json"
 

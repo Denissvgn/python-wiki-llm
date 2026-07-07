@@ -152,7 +152,7 @@ def test_collect_wiki_pages_handles_old_and_new_layouts_deterministically(tmp_pa
     _write(wiki / "load-order.md")
     _write(wiki / "entities" / "beta.md")
     _write(wiki / "entities" / "Alpha.md")
-    _write(wiki / "entities" / "alpha.md")
+    _write(wiki / "entities" / "gamma.md")
     _write(wiki / "modules" / "models.py.md")
     _write(wiki / "workflows" / "signup.md")
     _write(wiki / "guides" / "operator-onboarding.md")
@@ -171,8 +171,8 @@ def test_collect_wiki_pages_handles_old_and_new_layouts_deterministically(tmp_pa
         (PageKind.INDEX, "index", "index.md"),
         (PageKind.LOG, "log", "log.md"),
         (PageKind.ENTITIES, "Alpha", "entities/Alpha.md"),
-        (PageKind.ENTITIES, "alpha", "entities/alpha.md"),
         (PageKind.ENTITIES, "beta", "entities/beta.md"),
+        (PageKind.ENTITIES, "gamma", "entities/gamma.md"),
         (PageKind.MODULES, "models.py", "modules/models.py.md"),
         (PageKind.WORKFLOWS, "signup", "workflows/signup.md"),
         (PageKind.GUIDES, "operator-onboarding", "guides/operator-onboarding.md"),

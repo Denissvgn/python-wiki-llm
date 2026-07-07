@@ -2289,6 +2289,19 @@ class TestBootstrapArchitecturePages:
             "function run() { return 1; }\nmodule.exports = { run };\n",
             encoding="utf-8",
         )
+        result = InventoryResult(
+            {
+                "service.js": {
+                    "language": "javascript",
+                    "classes": [],
+                    "functions": [{"name": "run", "line": 1}],
+                }
+            },
+            {"typescript": ExtractorStatus("typescript", "ok", 1)},
+        )
+        monkeypatch.setattr(
+            bootstrap_cmd, "get_inventory_result", lambda *a, **k: result
+        )
         monkeypatch.chdir(tmp_path)
 
         bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))

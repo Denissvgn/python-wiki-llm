@@ -578,7 +578,7 @@ def _check_broken_links(
                 continue
             target = (page.parent / local_path).resolve()
             if not target.exists():
-                rel = str(page.relative_to(wiki_path))
+                rel = page.relative_to(wiki_path).as_posix()
                 _add(
                     report,
                     "broken_links",
@@ -805,7 +805,7 @@ def _check_generated_diagrams(
 ) -> None:
     for page in page_index.pages:
         markdown = page_index.content_by_page.get(page, "")
-        rel = str(page.relative_to(wiki_path))
+        rel = page.relative_to(wiki_path).as_posix()
         for heading, body in _generated_diagram_sections(markdown):
             for block in _iter_mermaid_blocks(body):
                 _check_generated_diagram_links(report, page, rel, heading, block)
@@ -832,7 +832,7 @@ def _check_orphan_pages(
             if page.name in ["index.md", "log.md"]:
                 continue
             if page.resolve() not in referenced_files:
-                rel = str(page.relative_to(wiki_path))
+                rel = page.relative_to(wiki_path).as_posix()
                 _add(
                     report,
                     "orphan_pages",
@@ -918,7 +918,7 @@ def _check_workflow_coverage(
                         report,
                         "broken_workflow_links",
                         f"Broken link in workflow {wf_page.stem} -> {link}",
-                        path=str(wf_page.relative_to(wiki_path)),
+                        path=wf_page.relative_to(wiki_path).as_posix(),
                         target=link,
                     )
 

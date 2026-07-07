@@ -18,6 +18,13 @@ from llm_wiki_cli.extractors.haskell_extractor import (
     HaskellExtractionRequest,
     HaskellExtractor,
 )
+from llm_wiki_cli.services.extractor_helpers import (
+    SUPPORTED_GHC_MAJOR,
+    SUPPORTED_GHC_MINOR,
+    _ghc_support_error,
+    _ghc_version,
+    _parse_ghc_version,
+)
 from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
 
 
@@ -33,27 +40,54 @@ def haskell_helper(tmp_path_factory: pytest.TempPathFactory) -> Path:
     if ghc is None:
         pytest.skip("GHC is not available")
 
+    toolchain, version_error = _ghc_version(ghc)
+    if toolchain is None:
+        pytest.skip(f"GHC is not usable: {version_error}")
+    support_error = _ghc_support_error(toolchain)
+    if support_error is not None:
+        pytest.skip(support_error)
+    ghc_version = _parse_ghc_version(toolchain)
+    assert ghc_version is not None
+
     build_root = tmp_path_factory.mktemp("haskell-helper")
     binary = build_root / "llm-wiki-haskell-extractor"
     output_dir = build_root / "build"
-    subprocess.run(
-        [
-            ghc,
-            "-package",
-            "ghc",
-            "-outputdir",
-            str(output_dir),
-            f"-i{HASKELL_SCRIPTS_DIR}",
-            "-o",
-            str(binary),
-            str(HASKELL_SCRIPTS_DIR / "Main.hs"),
-        ],
-        capture_output=True,
-        text=True,
-        check=True,
-        timeout=180,
-        cwd=str(HASKELL_SCRIPTS_DIR),
-    )
+    try:
+        subprocess.run(
+            [
+                ghc,
+                "-package",
+                "ghc",
+                "-outputdir",
+                str(output_dir),
+                f"-i{HASKELL_SCRIPTS_DIR}",
+                "-o",
+                str(binary),
+                str(HASKELL_SCRIPTS_DIR / "Main.hs"),
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=180,
+            cwd=str(HASKELL_SCRIPTS_DIR),
+        )
+    except subprocess.CalledProcessError as exc:
+        stderr = exc.stderr.strip() or exc.stdout.strip() or str(exc)
+        major, minor, _patch = ghc_version
+        if major == SUPPORTED_GHC_MAJOR and minor == SUPPORTED_GHC_MINOR:
+            raise AssertionError(
+                f"Supported {toolchain} failed to build Haskell helper:\n{stderr}"
+            ) from exc
+        pytest.skip(
+            f"Haskell helper build failed with best-effort {toolchain}: {stderr}"
+        )
+    except subprocess.TimeoutExpired as exc:
+        major, minor, _patch = ghc_version
+        if major == SUPPORTED_GHC_MAJOR and minor == SUPPORTED_GHC_MINOR:
+            raise AssertionError(
+                f"Supported {toolchain} timed out building Haskell helper"
+            ) from exc
+        pytest.skip(f"Haskell helper build timed out with best-effort {toolchain}")
     return binary
 
 
@@ -341,7 +375,7 @@ class TestHaskellExtractorWrapper:
         command, kwargs = commands[0]
         assert command[command.index("--src-dir") + 1] == str(source_root.resolve())
         assert command[command.index("--only-files") + 1] == "pkg/App.hs"
-        assert kwargs["cwd"] == "/tmp/helper cache"
+        assert Path(kwargs["cwd"]) == Path("/tmp/helper cache")
 
     def test_windows_absolute_helper_paths_normalize_under_source_root(
         self, tmp_path, monkeypatch
