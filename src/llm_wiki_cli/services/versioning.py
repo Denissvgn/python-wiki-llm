@@ -4,22 +4,25 @@ import re
 from pathlib import Path
 
 try:  # Python 3.11+
-    import tomllib
+    import tomllib  # type: ignore[reportMissingImports]
 except ModuleNotFoundError:  # pragma: no cover - exercised on Python 3.9/3.10
     try:
-        import tomli as tomllib
+        import tomli as tomllib  # type: ignore[reportMissingImports]
     except ModuleNotFoundError:  # pragma: no cover - dependency missing in ad-hoc envs
         tomllib = None
 
 # Supported version file patterns in priority order
 VERSION_PATTERNS = [
     ("pyproject.toml", re.compile(r"")),
-    ("setup.cfg", re.compile(r'^(version\s*=\s*)(\d+\.\d+\.\d+)', re.MULTILINE)),
-    ("package.json", re.compile(r'("version"\s*:\s*")(\d+\.\d+\.\d+)(")', re.MULTILINE)),
-    ("VERSION", re.compile(r'^(\d+\.\d+\.\d+)$', re.MULTILINE)),
+    ("setup.cfg", re.compile(r"^(version\s*=\s*)(\d+\.\d+\.\d+)", re.MULTILINE)),
+    (
+        "package.json",
+        re.compile(r'("version"\s*:\s*")(\d+\.\d+\.\d+)(")', re.MULTILINE),
+    ),
+    ("VERSION", re.compile(r"^(\d+\.\d+\.\d+)$", re.MULTILINE)),
 ]
 
-VERSION_RE = re.compile(r'^(\d+)\.(\d+)\.(\d+)$')
+VERSION_RE = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
 _TABLE_RE = re.compile(r"(?m)^\s*\[([^\]]+)\]\s*(?:#.*)?$")
 
 
@@ -65,6 +68,7 @@ def write_version(path: Path, new_version: str) -> None:
             if filename == "VERSION":
                 content = pattern.sub(new_version, content)
             else:
+
                 def _replacer(m):
                     groups = list(m.groups())
                     for i, g in enumerate(groups):
@@ -72,6 +76,7 @@ def write_version(path: Path, new_version: str) -> None:
                             groups[i] = new_version
                             break
                     return "".join(groups)
+
                 content = pattern.sub(_replacer, content, count=1)
             break
     if content == original:
@@ -92,7 +97,9 @@ def _read_pyproject_version(text: str) -> str | None:
             version = project.get("version")
             if isinstance(version, str) and VERSION_RE.match(version):
                 return version
-        poetry = data.get("tool", {}).get("poetry", {}) if isinstance(data, dict) else {}
+        poetry = (
+            data.get("tool", {}).get("poetry", {}) if isinstance(data, dict) else {}
+        )
         if isinstance(poetry, dict):
             version = poetry.get("version")
             if isinstance(version, str) and VERSION_RE.match(version):
@@ -118,7 +125,9 @@ def _write_pyproject_version(text: str, new_version: str, path: Path) -> str:
         start, end = project_bounds
         body = text[start:end]
         if _project_version_is_dynamic(body):
-            raise ValueError(f"{path}: [project].version is dynamic; cannot bump a static version")
+            raise ValueError(
+                f"{path}: [project].version is dynamic; cannot bump a static version"
+            )
         updated_body, changed = _replace_static_version_line(body, new_version)
         if changed:
             return text[:start] + updated_body + text[end:]
@@ -171,7 +180,7 @@ def _replace_static_version_line(body: str, new_version: str) -> tuple[str, bool
 
 
 def _project_version_is_dynamic(body: str) -> bool:
-    match = re.search(r'(?ms)^\s*dynamic\s*=\s*\[(.*?)\]', body)
+    match = re.search(r"(?ms)^\s*dynamic\s*=\s*\[(.*?)\]", body)
     return bool(match and re.search(r'["\']version["\']', match.group(1)))
 
 

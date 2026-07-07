@@ -21,13 +21,29 @@ def _ns(**kwargs):
 
 def _write_wiki(root: Path) -> Path:
     wiki = root / "docs" / "llm_wiki"
-    for subdir in ["entities", "modules", "workflows", "infrastructure", "legacy"]:
+    for subdir in [
+        "entities",
+        "modules",
+        "workflows",
+        "guides",
+        "flows",
+        "infrastructure",
+        "legacy",
+    ]:
         (wiki / subdir).mkdir(parents=True, exist_ok=True)
     (wiki / "index.md").write_text(
         "# LLM Wiki Index\n\n- [User](entities/User.md)\n- [models](modules/models.md)\n",
         encoding="utf-8",
     )
     (wiki / "log.md").write_text("# Architectural Log\n\n", encoding="utf-8")
+    (wiki / "dependencies.md").write_text(
+        "# Dependencies\n\nProject dependency graph.\n",
+        encoding="utf-8",
+    )
+    (wiki / "load-order.md").write_text(
+        "# Load Order\n\nProject initialization order.\n",
+        encoding="utf-8",
+    )
     (wiki / "entities" / "User.md").write_text(
         "# User\n\n"
         "**Location:** `models.py:3`\n"
@@ -43,6 +59,14 @@ def _write_wiki(root: Path) -> Path:
     )
     (wiki / "workflows" / "signup.md").write_text(
         "# Signup\n\nTouches [models](../modules/models.md).\n",
+        encoding="utf-8",
+    )
+    (wiki / "guides" / "operator-onboarding.md").write_text(
+        "# Operator Onboarding\n\nGuidance for operators.\n",
+        encoding="utf-8",
+    )
+    (wiki / "flows" / "checkout.md").write_text(
+        "# Checkout\n\nUses [models](../modules/models.md).\n",
         encoding="utf-8",
     )
     (wiki / "infrastructure" / "Dockerfile.md").write_text(
@@ -61,20 +85,31 @@ class TestObsidianMirror:
         by_rel = {page.canonical_rel: page for page in pages}
 
         assert by_rel["entities/User.md"].mirror_rel == "LLM Wiki/Entities/User.md"
+        assert (
+            by_rel["guides/operator-onboarding.md"].mirror_rel
+            == "LLM Wiki/Guides/operator-onboarding.md"
+        )
+        assert by_rel["flows/checkout.md"].mirror_rel == "LLM Wiki/Flows/checkout.md"
+        assert by_rel["dependencies.md"].mirror_rel == "LLM Wiki/Dependencies.md"
+        assert by_rel["load-order.md"].mirror_rel == "LLM Wiki/Load order.md"
         assert by_rel["modules/models.md"].source_path == "models.py"
         assert by_rel["entities/User.md"].source_line == 3
         assert "legacy/Old.md" not in by_rel
 
     def test_frontmatter_aliases_tags_and_metadata(self, tmp_project):
         wiki = _write_wiki(tmp_project)
-        page = next(page for page in obsidian.collect_wiki_pages(wiki) if page.canonical_rel == "entities/User.md")
+        page = next(
+            page
+            for page in obsidian.collect_wiki_pages(wiki)
+            if page.canonical_rel == "entities/User.md"
+        )
 
         frontmatter = obsidian.build_frontmatter(page)
 
         assert '  - "llm-wiki/entity"' in frontmatter
         assert '  canonical_path: "entities/User.md"' in frontmatter
         assert '  source_path: "models.py"' in frontmatter
-        assert '  source_line: 3' in frontmatter
+        assert "  source_line: 3" in frontmatter
         assert '  - "entity/User"' in frontmatter
 
     def test_converts_internal_markdown_links_to_wikilinks(self, tmp_project):
@@ -107,18 +142,42 @@ class TestObsidianMirror:
         )
 
         mirror = vault / "LLM Wiki" / "Entities" / "User.md"
-        assert report.page_count == 6
+        assert report.page_count == 10
         assert mirror.exists()
+        assert (vault / "LLM Wiki" / "Flows" / "checkout.md").exists()
+        assert (vault / "LLM Wiki" / "Dependencies.md").exists()
+        assert (vault / "LLM Wiki" / "Load order.md").exists()
         content = mirror.read_text(encoding="utf-8")
         assert "aliases:" in content
         assert "[[LLM Wiki/Modules/models|models]]" in content
         assert "![[.llm-wiki/obsidian-notes/entity/User]]" in content
         assert note.read_text(encoding="utf-8") == "# Existing Notes\n\nKeep this.\n"
 
+    def test_export_escapes_source_wikilinks_before_vault_check(self, tmp_project):
+        wiki = _write_wiki(tmp_project)
+        user_page = wiki / "entities" / "User.md"
+        user_page.write_text(
+            user_page.read_text(encoding="utf-8")
+            + "\nRaw source docs mention [[std::string::String]].\n",
+            encoding="utf-8",
+        )
+        vault = tmp_project / "vault"
+
+        obsidian.export_obsidian_vault(src_dir=".", wiki_dir=wiki, vault_dir=vault)
+
+        mirror = vault / "LLM Wiki" / "Entities" / "User.md"
+        content = mirror.read_text(encoding="utf-8")
+        assert r"\[\[std::string::String\]\]" in content
+        assert "[[LLM Wiki/Modules/models|models]]" in content
+        report = obsidian.check_obsidian_vault(wiki_dir=wiki, vault_dir=vault)
+        assert report.ok is True
+
     def test_export_reads_each_wiki_page_once(self, tmp_project, monkeypatch):
         wiki = _write_wiki(tmp_project)
         vault = tmp_project / "vault"
-        canonical_paths = {page.canonical_path.resolve() for page in obsidian.collect_wiki_pages(wiki)}
+        canonical_paths = {
+            page.canonical_path.resolve() for page in obsidian.collect_wiki_pages(wiki)
+        }
         reads: dict[Path, int] = {}
         original_read_md = obsidian.read_md
 
@@ -161,11 +220,16 @@ class TestObsidianMirror:
         report = obsidian.check_obsidian_vault(wiki_dir=wiki, vault_dir=vault)
 
         assert report.ok is False
-        assert any(issue["category"] == "missing_mirror_page" for issue in report.issues)
+        assert any(
+            issue["category"] == "missing_mirror_page" for issue in report.issues
+        )
 
         obsidian.export_obsidian_vault(src_dir=".", wiki_dir=wiki, vault_dir=vault)
         user_page = vault / "LLM Wiki" / "Entities" / "User.md"
-        user_page.write_text(user_page.read_text(encoding="utf-8") + "\n[[LLM Wiki/Missing/Page]]\n", encoding="utf-8")
+        user_page.write_text(
+            user_page.read_text(encoding="utf-8") + "\n[[LLM Wiki/Missing/Page]]\n",
+            encoding="utf-8",
+        )
         broken = obsidian.check_obsidian_vault(wiki_dir=wiki, vault_dir=vault)
 
         assert any(issue["category"] == "broken_wikilink" for issue in broken.issues)
@@ -182,36 +246,42 @@ class TestObsidianCli:
         _write_wiki(tmp_project)
         vault = tmp_project / "vault"
 
-        obsidian_cmd.run(_ns(
-            obsidian_action="export",
-            src_dir=".",
-            wiki_dir="docs/llm_wiki",
-            vault_dir=str(vault),
-            notes_dir=".llm-wiki/obsidian-notes",
-            dry_run=False,
-            format="json",
-        ))
+        obsidian_cmd.run(
+            _ns(
+                obsidian_action="export",
+                src_dir=".",
+                wiki_dir="docs/llm_wiki",
+                vault_dir=str(vault),
+                notes_dir=".llm-wiki/obsidian-notes",
+                dry_run=False,
+                format="json",
+            )
+        )
         data = json.loads(capsys.readouterr().out)
-        assert data["page_count"] == 6
+        assert data["page_count"] == 10
 
-        obsidian_cmd.run(_ns(
-            obsidian_action="check",
-            wiki_dir="docs/llm_wiki",
-            vault_dir=str(vault),
-            format="json",
-        ))
+        obsidian_cmd.run(
+            _ns(
+                obsidian_action="check",
+                wiki_dir="docs/llm_wiki",
+                vault_dir=str(vault),
+                format="json",
+            )
+        )
         check = json.loads(capsys.readouterr().out)
         assert check["ok"] is True
 
     def test_cli_install_plugin(self, tmp_project):
         vault = tmp_project / "vault"
 
-        obsidian_cmd.run(_ns(
-            obsidian_action="install-plugin",
-            vault_dir=str(vault),
-            plugin_dir="integrations/obsidian/llm-wiki",
-            format="text",
-        ))
+        obsidian_cmd.run(
+            _ns(
+                obsidian_action="install-plugin",
+                vault_dir=str(vault),
+                plugin_dir="integrations/obsidian/llm-wiki",
+                format="text",
+            )
+        )
 
         assert (vault / ".obsidian" / "plugins" / "llm-wiki" / "manifest.json").exists()
         assert (vault / ".obsidian" / "plugins" / "llm-wiki" / "main.js").exists()

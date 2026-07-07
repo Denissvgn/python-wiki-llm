@@ -1,6 +1,6 @@
 """Tests for services/lockfile.py"""
+
 import pytest
-from pathlib import Path
 
 from llm_wiki_cli.services.lockfile import WikiLock, LockAcquisitionError
 
@@ -13,7 +13,9 @@ class TestWikiLock:
 
     def test_writes_pid(self, tmp_path):
         import os
+
         with WikiLock(git_dir=tmp_path) as lock:
+            assert lock._fd is not None
             # On Windows, msvcrt locks prevent other handles from reading;
             # read through the lock's own file descriptor instead.
             lock._fd.seek(0)

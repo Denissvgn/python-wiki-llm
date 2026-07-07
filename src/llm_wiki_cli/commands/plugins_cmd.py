@@ -10,7 +10,12 @@ from ..services.schema import strip_plugin_skill_blocks
 def _render_components(plugin: dict) -> str:
     parts = []
     for component in plugin.get("components", []):
-        detail = component.get("language") or component.get("path") or component.get("entry_point") or ""
+        detail = (
+            component.get("language")
+            or component.get("path")
+            or component.get("entry_point")
+            or ""
+        )
         suffix = f":{detail}" if detail else ""
         parts.append(f"{component['type']}/{component['id']}{suffix}")
     return ", ".join(parts) if parts else "none"

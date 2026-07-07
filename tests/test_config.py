@@ -1,8 +1,7 @@
 """Tests for config.py — shared constants and validate_path."""
+
 import json
 import os
-import types
-from pathlib import Path
 
 import pytest
 
@@ -79,7 +78,10 @@ class TestValidatePath:
         outside.mkdir()
         os.chdir(project)
 
-        assert validate_source_root(str(outside), "--src-dir", allow_external=True) == outside
+        assert (
+            validate_source_root(str(outside), "--src-dir", allow_external=True)
+            == outside
+        )
 
     def test_source_paths_reject_escape_from_source_root(self, tmp_path):
         source = tmp_path / "source"
@@ -94,10 +96,13 @@ class TestValidatePath:
         module = package / "module.py"
         module.write_text("VALUE = 1\n", encoding="utf-8")
 
-        assert validate_source_paths(
-            source,
-            ["package/module.py", str(module)],
-        ) is None
+        assert (
+            validate_source_paths(
+                source,
+                ["package/module.py", str(module)],
+            )
+            is None
+        )
 
     def test_source_paths_accept_nonexistent_relative_inside_root(self, tmp_path):
         source = tmp_path / "source"
@@ -175,11 +180,7 @@ class TestReadWriteConfig:
 class TestGitIgnoreMatcher:
     def test_supports_root_anchored_negation_and_dir_patterns(self, tmp_path):
         (tmp_path / ".gitignore").write_text(
-            "/root_only.py\n"
-            "build/\n"
-            "*.pyc\n"
-            "!keep.pyc\n"
-            "**/cache/*.json\n",
+            "/root_only.py\nbuild/\n*.pyc\n!keep.pyc\n**/cache/*.json\n",
             encoding="utf-8",
         )
         matcher = build_gitignore_matcher(tmp_path)

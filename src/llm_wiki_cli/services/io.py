@@ -21,9 +21,10 @@ def read_md(path: Path) -> str:
     """
     data = path.read_bytes()
     try:
-        return data.decode("utf-8")
+        text = data.decode("utf-8")
     except UnicodeDecodeError:
-        return data.decode("cp1252")
+        text = data.decode("cp1252")
+    return text.replace("\r\n", "\n").replace("\r", "\n")
 
 
 def write_md(path: Path, text: str) -> None:

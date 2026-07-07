@@ -1,20 +1,22 @@
 from __future__ import annotations
 
 import json
+import re
 import shlex
 import sys
 from collections import defaultdict
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
-from typing import Any, TextIO
+from typing import Any, Iterable, TextIO
 
 from .extract_cmd import (
     get_call_graph,
     get_docker_inventory,
     get_inventory_result,
     print_inventory_failures,
+    resolve_call_edges,
 )
 from ..config import (
     DEFAULT_WIKI_DIR as _DEFAULT_WIKI_DIR,
@@ -22,20 +24,138 @@ from ..config import (
     validate_source_root,
 )
 from ..services.contracts import BOOTSTRAP_SUMMARY_SCHEMA_VERSION
+from ..services.data_flow import analyze_data_flow, build_data_flow_context
+from ..services.dependencies import (
+    analyze_dependencies,
+    package_dependency_graph,
+)
+from ..services.diagrams import (
+    data_flow_diagram,
+    flowchart,
+    resolve_diagram_style,
+    sequence_diagram,
+)
+from ..services.entrypoints import build_flow, detect_entry_points, read_console_scripts
 from ..services.imports import ModulePathResolver, build_module_path_resolver
+from ..services.infrastructure_inventory import (
+    RUNTIME_CONFIG_TYPES,
+    get_yaml_infrastructure_inventory,
+    infrastructure_display_label,
+    infrastructure_page_name,
+)
 from ..services.io import read_md, write_md
+from ..services.module_maps import build_module_dependency_maps
 from ..services.paths import normalize_source_path
+from ..services.relationships import build_entity_relationship_summaries
 from ..services.schema import (
     ALL_SCHEMA_FILES as _AGENT_SCHEMA_FILES,
     CONSTRAINT_END as _CONSTRAINT_END,
     CONSTRAINT_START as _CONSTRAINT_START,
 )
-from ..services.source_snapshot import build_source_snapshot
+from ..services.source_snapshot import (
+    build_source_snapshot,
+    format_unsupported_source_summary,
+    unsupported_source_summary,
+)
+from ..services.wiki_surface import PageKind, canonical_path, iter_page_kinds
+from ..services.wiki_surface_index import write_surface_index
+
+
+_SURFACE_LABELS = {entry.kind: entry.label for entry in iter_page_kinds()}
+_SOURCE_DOC_LINK_RE = re.compile(r"(!)?\[([^\]]+)\]\(([^)]+)\)")
+_UNSAFE_PAGE_ID_CHARS_RE = re.compile(r"[^A-Za-z0-9_.-]+")
+_HASKELL_DECLARATION_LABELS = {
+    "data": "Data",
+    "newtype": "Newtype",
+    "type": "Type alias",
+    "class": "Type class",
+    "instance": "Instance",
+}
+_HASKELL_FUNCTION_LABELS = {
+    "signature": "Signature",
+    "value": "Value",
+    "function": "Function",
+}
+EntityOccurrenceKey = tuple[str, str, int]
+
+
+def _preserve_source_doc_link(target: str) -> bool:
+    target = target.strip().lower()
+    return (
+        "://" in target
+        or target.startswith("mailto:")
+        or target.startswith("tel:")
+        or target.startswith("#")
+    )
+
+
+def _sanitize_source_doc_markdown(value: object) -> str:
+    """Keep extracted source prose readable without creating broken wiki links."""
+    if value in (None, ""):
+        return ""
+
+    def repl(match: re.Match[str]) -> str:
+        label = match.group(2).strip()
+        target = match.group(3).strip()
+        if _preserve_source_doc_link(target):
+            return match.group(0)
+        if match.group(1):
+            return label
+        target_text = target.strip("<>").strip("`")
+        if not target_text or label.strip("`") == target_text:
+            return label
+        return f"{label} (`{target_text}`)"
+
+    return _SOURCE_DOC_LINK_RE.sub(repl, str(value))
+
+
+def _source_doc_first_line(value: object) -> str:
+    return _sanitize_source_doc_markdown(value).split("\n")[0] if value else ""
+
+
+def _generated_diagram_style(
+    surface: str,
+    *,
+    root: str | Path = ".",
+    fallback_root: str | Path | None = None,
+    **context: Any,
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {"surface": surface}
+    payload.update(context)
+    return resolve_diagram_style(payload, root=root, fallback_root=fallback_root)
 
 
 def _module_name_from_path(filepath: str) -> str:
     """Derive a short module name from a file path."""
     return Path(filepath).stem
+
+
+def _is_haskell_filepath(filepath: str) -> bool:
+    return Path(filepath).suffix.lower() in {".hs", ".lhs"}
+
+
+def _is_haskell_file_data(file_data: Mapping | None) -> bool:
+    return isinstance(file_data, Mapping) and file_data.get("language") == "haskell"
+
+
+def _haskell_module_name(file_data: Mapping | None) -> str:
+    if not isinstance(file_data, Mapping):
+        return ""
+    module = file_data.get("module")
+    return str(module).strip() if module not in (None, "") else ""
+
+
+def _display_module_name(filepath: str, file_data: Mapping | None = None) -> str:
+    if _is_haskell_file_data(file_data):
+        return _haskell_module_name(file_data) or _module_name_from_path(filepath)
+    return _module_name_from_path(filepath)
+
+
+def _safe_page_component(value: object, *, fallback: str = "page") -> str:
+    raw = str(value).strip() if value not in (None, "") else ""
+    safe = _UNSAFE_PAGE_ID_CHARS_RE.sub("_", raw).strip("_")
+    safe = re.sub(r"_+", "_", safe).lstrip(".")
+    return safe or fallback
 
 
 def _page_name_for_module(filepath: str) -> str:
@@ -51,7 +171,7 @@ def _page_name_for_entity(cls_name: str) -> str:
 
     For collision-aware naming use :func:`build_entity_page_map` instead.
     """
-    return cls_name
+    return _safe_page_component(cls_name, fallback="entity")
 
 
 # ── Collision-aware page-name builders ────────────────────────────────
@@ -96,12 +216,48 @@ def _page_name_with_extension(filepath: str) -> str:
     return f"{base}_{ext}"
 
 
+def _page_name_from_source_path(filepath: str) -> str:
+    """Return a page-safe stem from the full source path without extension."""
+    path = Path(filepath)
+    base = path.with_suffix("").as_posix()
+    base = base.replace("/", "_").replace("\\", "_").replace(".", "_")
+    return _safe_page_component(base, fallback=_page_name_for_module(filepath))
+
+
+def _globally_disambiguate_module_pages(page_map: dict[str, str]) -> dict[str, str]:
+    """Resolve page-id collisions left after stem-group disambiguation."""
+    from collections import Counter
+
+    page_counts = Counter(page_map.values())
+    colliding_pages = {page for page, count in page_counts.items() if count > 1}
+    if not colliding_pages:
+        return page_map
+
+    resolved = dict(page_map)
+    used = {page for filepath, page in page_map.items() if page not in colliding_pages}
+    for filepath in sorted(page_map):
+        if page_map[filepath] not in colliding_pages:
+            continue
+        base = _page_name_from_source_path(filepath)
+        candidates = [base, _page_name_with_extension(filepath)]
+        candidate = next((item for item in candidates if item not in used), base)
+        suffix = 2
+        while candidate in used:
+            candidate = f"{base}_{suffix}"
+            suffix += 1
+        resolved[filepath] = candidate
+        used.add(candidate)
+    return resolved
+
+
 def build_module_page_map(inventory: dict) -> dict[str, str]:
     """Return ``{filepath: page_stem}`` qualifying colliding stems.
 
     When two files share the same stem (e.g. ``pkg_a/cli.py`` and
     ``pkg_b/cli.py``) parent directory components are prepended to
-    disambiguate.  Non-colliding stems keep their short name.
+    disambiguate.  A final global pass resolves collisions between already
+    qualified names and unrelated raw stems. Non-colliding stems keep their
+    short name.
     """
     from collections import defaultdict
 
@@ -115,34 +271,89 @@ def build_module_page_map(inventory: dict) -> dict[str, str]:
             page_map[fps[0]] = stem
         else:
             page_map.update(_disambiguate_paths(fps, stem))
+    return _globally_disambiguate_module_pages(page_map)
+
+
+def _entity_occurrences(
+    inventory: Mapping[str, Mapping],
+) -> list[tuple[EntityOccurrenceKey, Mapping]]:
+    occurrences: list[tuple[EntityOccurrenceKey, Mapping]] = []
+    for fp, data in inventory.items():
+        seen_names: defaultdict[str, int] = defaultdict(int)
+        for cls in data.get("classes", []):
+            name = cls.get("name")
+            if not name:
+                continue
+            name_text = str(name)
+            seen_names[name_text] += 1
+            occurrences.append(((name_text, fp, seen_names[name_text]), cls))
+    return occurrences
+
+
+def _legacy_entity_page_map(
+    occurrence_page_map: Mapping[EntityOccurrenceKey, str],
+) -> dict[tuple[str, str], str]:
+    page_map: dict[tuple[str, str], str] = {}
+    for (name, filepath, _occurrence), page_name in occurrence_page_map.items():
+        page_map.setdefault((name, filepath), page_name)
+    return page_map
+
+
+def build_entity_occurrence_page_map(
+    inventory: dict,
+    module_page_map: Mapping[str, str] | None = None,
+) -> dict[EntityOccurrenceKey, str]:
+    """Return occurrence-aware ``{(class_name, filepath, occurrence): page_stem}``.
+
+    The occurrence value is one-based per class name within a file. This keeps
+    duplicate class declarations in one source file addressable without
+    changing stable page names for non-colliding entities.
+    """
+    from collections import Counter
+
+    occurrences = _entity_occurrences(inventory)
+    name_counts = Counter(key[0] for key, _cls in occurrences)
+    files_by_name: defaultdict[str, set[str]] = defaultdict(set)
+    for (name, filepath, _occurrence), _cls in occurrences:
+        files_by_name[name].add(filepath)
+
+    mod_page_map = dict(module_page_map or build_module_page_map(inventory))
+    proposed_pages: list[tuple[EntityOccurrenceKey, str, str]] = []
+    for key, _cls in occurrences:
+        name, filepath, occurrence = key
+        safe_name = _page_name_for_entity(name)
+        if name_counts[name] > 1 and len(files_by_name[name]) > 1:
+            page_name = _safe_page_component(f"{mod_page_map[filepath]}_{safe_name}")
+        else:
+            page_name = safe_name
+        if occurrence > 1:
+            page_name = _safe_page_component(f"{page_name}_{occurrence}")
+        proposed_pages.append((key, page_name, mod_page_map[filepath]))
+
+    page_counts = Counter(page for _, page, _ in proposed_pages)
+    used: set[str] = set()
+    page_map: dict[EntityOccurrenceKey, str] = {}
+    for key, page_name, module_page in proposed_pages:
+        candidate = page_name
+        if page_counts[page_name] > 1:
+            candidate = _safe_page_component(f"{module_page}_{page_name}")
+        suffix = 2
+        while candidate in used:
+            candidate = f"{page_name}_{suffix}"
+            suffix += 1
+        page_map[key] = candidate
+        used.add(candidate)
     return page_map
 
 
 def build_entity_page_map(inventory: dict) -> dict[tuple[str, str], str]:
     """Return ``{(class_name, filepath): page_stem}`` qualifying collisions.
 
-    Uses the already-disambiguated module page name as prefix when two
-    classes share the same name across different files.  This guarantees
-    uniqueness because module page names are themselves unique.
+    Legacy projection of :func:`build_entity_occurrence_page_map`. If the same
+    class name appears multiple times in one file, this returns the first
+    occurrence for older consumers that cannot address occurrences directly.
     """
-    from collections import Counter
-
-    cls_count: Counter[str] = Counter()
-    for fp, data in inventory.items():
-        for cls in data.get("classes", []):
-            cls_count[cls["name"]] += 1
-
-    mod_page_map = build_module_page_map(inventory)
-
-    page_map: dict[tuple[str, str], str] = {}
-    for fp, data in inventory.items():
-        for cls in data.get("classes", []):
-            name = cls["name"]
-            if cls_count[name] > 1:
-                page_map[(name, fp)] = f"{mod_page_map[fp]}_{name}"
-            else:
-                page_map[(name, fp)] = name
-    return page_map
+    return _legacy_entity_page_map(build_entity_occurrence_page_map(inventory))
 
 
 def _build_relationships(
@@ -239,6 +450,9 @@ def _build_relationships(
 
 def _format_signature(fn: dict) -> str:
     """Build a readable function signature string."""
+    if fn.get("signature") and not fn.get("params"):
+        return str(fn["signature"])
+
     params = []
     for p in fn.get("params", []):
         part = p["name"]
@@ -255,13 +469,612 @@ def _format_signature(fn: dict) -> str:
     return sig
 
 
+def _haskell_declaration_label(kind: object) -> str:
+    normalized = str(kind).strip().casefold() if kind not in (None, "") else ""
+    return _HASKELL_DECLARATION_LABELS.get(normalized, "Declaration")
+
+
+def _haskell_function_label(kind: object) -> str:
+    normalized = str(kind).strip().casefold() if kind not in (None, "") else ""
+    return _HASKELL_FUNCTION_LABELS.get(normalized, "Function")
+
+
+def _dash(value: object) -> str:
+    return "—" if value in (None, "") else str(value)
+
+
+def _code_or_dash(value: object) -> str:
+    return "—" if value in (None, "") else f"`{_md_cell(value)}`"
+
+
+def _yes_no(value: object) -> str:
+    return "yes" if bool(value) else "no"
+
+
+def _line_sort_value(value: object) -> int:
+    try:
+        if value in (None, ""):
+            return 0
+        if isinstance(value, (int, float)):
+            return int(value)
+        return int(str(value))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _module_page_stem(
+    filepath: str | None, module_page_map: Mapping[str, str] | None = None
+) -> str | None:
+    if not filepath:
+        return None
+    return (module_page_map or {}).get(filepath, _module_name_from_path(filepath))
+
+
+def _module_link(
+    filepath: str | None, module_page_map: Mapping[str, str] | None = None
+) -> str:
+    stem = _module_page_stem(filepath, module_page_map)
+    if not stem:
+        return "—"
+    return f"[{stem}](../modules/{stem}.md)"
+
+
+def _code_join(values: list[str]) -> str:
+    return ", ".join(f"`{value}`" for value in values) if values else "—"
+
+
+def _entity_node_label(summary: Mapping) -> str:
+    file_label = summary.get("file") or "unknown"
+    return f"{summary.get('name', 'entity')} ({file_label})"
+
+
+def _class_ref_label(ref: Mapping) -> str:
+    file_label = ref.get("file")
+    if file_label:
+        return f"{ref.get('name', 'class')} ({file_label})"
+    return str(ref.get("name") or "class")
+
+
+def _reference_label(ref: Mapping) -> str:
+    symbol = ref.get("symbol")
+    file_label = ref.get("file") or ref.get("module") or "unknown"
+    return f"{symbol} ({file_label})" if symbol else str(file_label)
+
+
+def _entity_relationship_graph(
+    summary: Mapping,
+    module_page_map: Mapping[str, str] | None,
+    diagram_style: Mapping[str, Any] | None = None,
+) -> str | None:
+    current = _entity_node_label(summary)
+    nodes = [current]
+    edges: list[tuple[str, str]] = []
+    links: dict[str, str] = {}
+
+    current_file = summary.get("file")
+    current_stem = _module_page_stem(
+        str(current_file) if current_file else None, module_page_map
+    )
+    if current_stem:
+        links[current] = f"../modules/{current_stem}.md"
+
+    for base in summary.get("bases", []) or []:
+        target = _class_ref_label(base)
+        nodes.append(target)
+        edges.append((current, target))
+        stem = _module_page_stem(base.get("file"), module_page_map)
+        if stem:
+            links[target] = f"../modules/{stem}.md"
+
+    for subclass in summary.get("subclasses", []) or []:
+        source = _class_ref_label(subclass)
+        nodes.append(source)
+        edges.append((source, current))
+        stem = _module_page_stem(subclass.get("file"), module_page_map)
+        if stem:
+            links[source] = f"../modules/{stem}.md"
+
+    for reference in summary.get("references", []) or []:
+        source = _reference_label(reference)
+        nodes.append(source)
+        edges.append((source, current))
+        stem = _module_page_stem(reference.get("file"), module_page_map)
+        if stem:
+            links[source] = f"../modules/{stem}.md"
+
+    if not edges:
+        return None
+    if diagram_style is None:
+        diagram_style = _generated_diagram_style(
+            "relationships",
+            entity=summary.get("name"),
+            file=summary.get("file"),
+        )
+    return flowchart(nodes, edges, direction="LR", links=links, style=diagram_style)
+
+
+def _relationship_source_cell(
+    record: Mapping, module_page_map: Mapping[str, str] | None
+) -> str:
+    filepath = record.get("file")
+    return _module_link(str(filepath) if filepath else None, module_page_map)
+
+
+def _is_haskell_declaration_summary(summary: Mapping) -> bool:
+    filepath = summary.get("file")
+    if not filepath or not _is_haskell_filepath(str(filepath)):
+        return False
+    kind = summary.get("kind")
+    normalized = str(kind).strip().casefold() if kind not in (None, "") else ""
+    return normalized in _HASKELL_DECLARATION_LABELS
+
+
+def _append_haskell_relationship_summary_table(
+    lines: list[str],
+    summary: Mapping,
+    module_page_map: Mapping[str, str] | None,
+) -> None:
+    lines.append("| Module | Declaration kind |")
+    lines.append("|---|---|")
+    lines.append(
+        f"| {_module_link(summary.get('file'), module_page_map)} | "
+        f"{_haskell_declaration_label(summary.get('kind'))} |"
+    )
+    lines.append("")
+
+
+def _append_default_relationship_summary_table(
+    lines: list[str],
+    summary: Mapping,
+    module_page_map: Mapping[str, str] | None,
+) -> None:
+    lines.append("| Module | Methods | Attributes |")
+    lines.append("|---|---:|---|")
+    lines.append(
+        "| "
+        + " | ".join(
+            [
+                _module_link(summary.get("file"), module_page_map),
+                str(summary.get("methods_count", 0)),
+                _code_join(list(summary.get("attributes", []) or [])),
+            ]
+        )
+        + " |"
+    )
+    lines.append("")
+
+
+def _append_entity_relationship_tables(
+    lines: list[str],
+    summary: Mapping,
+    module_page_map: Mapping[str, str] | None,
+) -> None:
+    lines.extend(["### Summary", ""])
+    if _is_haskell_declaration_summary(summary):
+        _append_haskell_relationship_summary_table(lines, summary, module_page_map)
+    else:
+        _append_default_relationship_summary_table(lines, summary, module_page_map)
+
+    structure_rows = []
+    for base in summary.get("bases", []) or []:
+        structure_rows.append(("Base", base))
+    for subclass in summary.get("subclasses", []) or []:
+        structure_rows.append(("Subclass", subclass))
+    if structure_rows:
+        lines.extend(["### Structure", ""])
+        lines.append("| Kind | Entity | Module |")
+        lines.append("|---|---|---|")
+        for kind, item in structure_rows:
+            lines.append(
+                f"| {kind} | `{_md_cell(item.get('name'))}` | "
+                f"{_relationship_source_cell(item, module_page_map)} |"
+            )
+        lines.append("")
+
+    references = list(summary.get("references", []) or [])
+    if references:
+        lines.extend(["### References", ""])
+        lines.append("| Reference | Kind | Source |")
+        lines.append("|---|---|---|")
+        for reference in references:
+            symbol = reference.get("symbol") or reference.get("module") or "module"
+            lines.append(
+                f"| `{_md_cell(symbol)}` | {_md_cell(reference.get('kind'))} | "
+                f"{_relationship_source_cell(reference, module_page_map)} |"
+            )
+        lines.append("")
+
+
+def _generate_entity_relationship_section(
+    summary: Mapping | None,
+    module_page_map: Mapping[str, str] | None = None,
+    diagram_style: Mapping[str, Any] | None = None,
+) -> list[str]:
+    lines = [
+        "## Relationships",
+        "",
+        "<!-- Auto-generated relationship summary. Do not edit by hand. -->",
+    ]
+    if not summary:
+        lines.extend(["*No generated relationships detected.*", ""])
+        return lines
+
+    diagram = _entity_relationship_graph(summary, module_page_map, diagram_style)
+    if diagram:
+        lines.append(diagram)
+    else:
+        lines.append("*No generated relationships detected.*")
+    lines.append("")
+    _append_entity_relationship_tables(lines, summary, module_page_map)
+    return lines
+
+
+def _module_map_node_link(
+    node: str, module_page_map: Mapping[str, str] | None = None
+) -> str | None:
+    stem = (module_page_map or {}).get(node)
+    if stem:
+        return f"../modules/{stem}.md"
+    return None
+
+
+def _module_dependency_graph(
+    summary: Mapping,
+    module_page_map: Mapping[str, str] | None,
+    diagram_style: Mapping[str, Any] | None = None,
+) -> str | None:
+    edges = list(summary.get("edges", []) or [])
+    if not edges:
+        return None
+    nodes = list(summary.get("nodes", []) or [])
+    links = {
+        str(node): link
+        for node in nodes
+        for link in [_module_map_node_link(str(node), module_page_map)]
+        if link
+    }
+    if diagram_style is None:
+        diagram_style = _generated_diagram_style(
+            "module_dependency",
+            file=summary.get("file"),
+        )
+    return flowchart(
+        nodes,
+        edges,
+        direction="LR",
+        links=links,
+        highlight_edges=summary.get("cycle_edges", []),
+        style=diagram_style,
+    )
+
+
+def _module_dependency_cell(
+    item: object, module_page_map: Mapping[str, str] | None
+) -> str:
+    if isinstance(item, Mapping):
+        return f"`{_md_cell(item.get('package'))}` ({_md_cell(item.get('count'))})"
+    return _module_link(str(item), module_page_map)
+
+
+def _append_module_dependency_tables(
+    lines: list[str],
+    summary: Mapping,
+    module_page_map: Mapping[str, str] | None,
+) -> None:
+    rows = [("Inbound", item) for item in summary.get("inbound", []) or []] + [
+        ("Outbound", item) for item in summary.get("outbound", []) or []
+    ]
+    if rows:
+        lines.extend(["### Internal neighbors", ""])
+        lines.append("| Direction | Module |")
+        lines.append("|---|---|")
+        for direction, item in rows:
+            lines.append(
+                f"| {direction} | {_module_dependency_cell(item, module_page_map)} |"
+            )
+        lines.append("")
+
+    external = summary.get("external", {}) or {}
+    if external:
+        lines.extend(["### External packages", ""])
+        lines.append("| Language | Used packages | Undeclared packages |")
+        lines.append("|---|---:|---:|")
+        for language in sorted(external):
+            data = external[language]
+            lines.append(
+                f"| {_md_cell(language)} | {_md_cell(data.get('used_count'))} | "
+                f"{_md_cell(data.get('undeclared_count'))} |"
+            )
+        lines.append("")
+
+    overflow = summary.get("overflow", {}) or {}
+    if overflow.get("omitted_count"):
+        lines.append(
+            f"> Showing {overflow.get('node_limit')} local graph nodes; "
+            f"{overflow.get('omitted_count')} neighbor(s) are summarized by package."
+        )
+        lines.append("")
+
+
+def _generate_module_dependency_section(
+    summary: Mapping | None,
+    module_page_map: Mapping[str, str] | None = None,
+    diagram_style: Mapping[str, Any] | None = None,
+) -> list[str]:
+    lines = [
+        "## Local dependency map",
+        "",
+        "<!-- Auto-generated local dependency summary. Do not edit by hand. -->",
+    ]
+    if not summary:
+        lines.extend(["*No internal module dependencies detected.*", ""])
+        return lines
+
+    diagram = _module_dependency_graph(summary, module_page_map, diagram_style)
+    if diagram:
+        if summary.get("cycle_participation"):
+            lines.append(
+                "<!-- Thick arrows (==>) mark edges inside an import cycle. -->"
+            )
+        lines.append(diagram)
+    else:
+        lines.append("*No internal module dependencies detected.*")
+    lines.append("")
+    _append_module_dependency_tables(lines, summary, module_page_map)
+    return lines
+
+
+def _append_relationships_to_entity(
+    lines: list[str],
+    name: str,
+    filepath: str,
+    relationships: dict,
+    *,
+    relationship_summary: Mapping | None,
+    module_page_map: Mapping[str, str] | None,
+    diagram_style: Mapping[str, Any] | None,
+) -> None:
+    if relationship_summary is not None:
+        lines.extend(
+            _generate_entity_relationship_section(
+                relationship_summary, module_page_map, diagram_style
+            )
+        )
+        return
+
+    rels = relationships.get((name, filepath), relationships.get(name, []))
+    lines.append("## Relationships")
+    lines.append("")
+    if rels:
+        for r in rels:
+            page = r.get("module_page", r["module"])
+            mod_link = f"[{r['module']}](../modules/{page}.md)"
+            if r.get("function"):
+                lines.append(f"- **{r['rel']}**: `{r['function']}()` in {mod_link}")
+            else:
+                lines.append(f"- **{r['rel']}**: {mod_link}")
+    else:
+        lines.append("*No cross-module references detected.*")
+    lines.append("")
+
+
+def _generate_haskell_entity_md(
+    class_info: dict,
+    filepath: str,
+    relationships: dict,
+    mod_page_name: str | None = None,
+    *,
+    relationship_summary: Mapping | None = None,
+    module_page_map: Mapping[str, str] | None = None,
+    diagram_style: Mapping[str, Any] | None = None,
+) -> str:
+    name = class_info["name"]
+    line = class_info.get("line", "?")
+    docstring = class_info.get("docstring", "")
+    kind_label = _haskell_declaration_label(class_info.get("kind"))
+    mod_name = (
+        mod_page_name if mod_page_name is not None else _module_name_from_path(filepath)
+    )
+
+    lines = [
+        f"# {name}",
+        "",
+        f"**Location:** `{filepath}:{line}`",
+        f"**Kind:** `{kind_label}`",
+        f"**Module:** [{mod_name}](../modules/{mod_name}.md)",
+        "",
+        "## Description",
+        "",
+    ]
+    if docstring:
+        lines.append(_sanitize_source_doc_markdown(docstring))
+    else:
+        lines.append(f"_Auto-generated from `{name}` in `{filepath}`._")
+    lines.extend(
+        [
+            "",
+            "## Declaration",
+            "",
+            "| Kind | Line | Module |",
+            "|---|---:|---|",
+            f"| {kind_label} | {line} | [{mod_name}](../modules/{mod_name}.md) |",
+            "",
+        ]
+    )
+
+    _append_relationships_to_entity(
+        lines,
+        name,
+        filepath,
+        relationships,
+        relationship_summary=relationship_summary,
+        module_page_map=module_page_map,
+        diagram_style=diagram_style,
+    )
+    return "\n".join(lines)
+
+
+def _append_import_section(
+    lines: list[str], imports: list[dict], *, haskell: bool
+) -> None:
+    if not imports:
+        return
+
+    lines.append("## Imports")
+    lines.append("")
+    if haskell:
+        lines.append("| Module | Qualified | Alias | Line |")
+        lines.append("|---|---|---|---:|")
+        for imp in sorted(
+            imports,
+            key=lambda item: (
+                str(item.get("module", "")),
+                _line_sort_value(item.get("line")),
+                str(item.get("alias") or ""),
+            ),
+        ):
+            lines.append(
+                f"| `{_md_cell(imp.get('module'))}` | {_yes_no(imp.get('qualified'))} | "
+                f"{_code_or_dash(imp.get('alias'))} | {_dash(imp.get('line'))} |"
+            )
+        lines.append("")
+        return
+
+    grouped: dict[str, list[str]] = defaultdict(list)
+    for imp in imports:
+        grouped[imp["module"]].append(imp["name"])
+
+    lines.append("| Source | Symbols |")
+    lines.append("|--------|---------|")
+    for module, names in sorted(grouped.items()):
+        symbols = ", ".join(f"`{n}`" for n in names) if names else "—"
+        lines.append(f"| `{module}` | {symbols} |")
+    lines.append("")
+
+
+def _append_haskell_declarations(
+    lines: list[str],
+    declarations: list[dict],
+    entity_page_map: Mapping | None,
+    *,
+    filepath: str | None = None,
+    entity_occurrence_page_map: Mapping[EntityOccurrenceKey, str] | None = None,
+) -> None:
+    if not declarations:
+        return
+    lines.append("## Declarations")
+    lines.append("")
+    lines.append("| Declaration | Kind | Line | Description |")
+    lines.append("|---|---|---:|---|")
+    seen_names: defaultdict[str, int] = defaultdict(int)
+    for declaration in declarations:
+        name = declaration["name"]
+        seen_names[name] += 1
+        page_name = _entity_page_from_maps(
+            name,
+            filepath,
+            seen_names[name],
+            entity_page_map,
+            entity_occurrence_page_map,
+        )
+        entity_link = f"[{name}](../entities/{page_name}.md)"
+        kind = _haskell_declaration_label(declaration.get("kind"))
+        doc = _source_doc_first_line(declaration.get("docstring")) or "—"
+        lines.append(
+            f"| {entity_link} | {kind} | {_dash(declaration.get('line'))} | {doc} |"
+        )
+    lines.append("")
+
+
+def _entity_page_from_maps(
+    name: str,
+    filepath: str | None,
+    occurrence: int,
+    entity_page_map: Mapping | None,
+    entity_occurrence_page_map: Mapping[EntityOccurrenceKey, str] | None = None,
+) -> str:
+    if filepath is not None and entity_occurrence_page_map is not None:
+        page_name = entity_occurrence_page_map.get((name, filepath, occurrence))
+        if page_name:
+            return page_name
+    return (entity_page_map or {}).get(name, _page_name_for_entity(name))
+
+
+def _append_haskell_functions(lines: list[str], functions: list[dict]) -> None:
+    if not functions:
+        return
+    lines.append("## Functions")
+    lines.append("")
+    lines.append("| Function | Kind | Signature | Line | Description |")
+    lines.append("|---|---|---|---:|---|")
+    for fn in functions:
+        doc = _source_doc_first_line(fn.get("docstring")) or "—"
+        lines.append(
+            f"| `{fn['name']}` | {_haskell_function_label(fn.get('kind'))} | "
+            f"{_code_or_dash(fn.get('signature'))} | {_dash(fn.get('line'))} | {doc} |"
+        )
+    lines.append("")
+
+
+def _append_module_signals_section(lines: list[str], file_data: Mapping) -> None:
+    if file_data.get("language") not in {"typescript", "javascript"}:
+        return
+
+    rows: list[tuple[str, str]] = []
+    exports = [str(name) for name in file_data.get("exports", []) if str(name)]
+    if exports:
+        rows.append(("Exports", ", ".join(f"`{name}`" for name in exports)))
+
+    constants = [
+        str(constant.get("name"))
+        for constant in file_data.get("constants", [])
+        if isinstance(constant, Mapping) and constant.get("name")
+    ]
+    if constants:
+        rows.append(("Constants", ", ".join(f"`{name}`" for name in constants)))
+
+    module_calls = [
+        f"`{_format_side_effect_call(call)}`"
+        for call in file_data.get("module_calls", [])
+        if isinstance(call, Mapping)
+    ]
+    if module_calls:
+        rows.append(("Module calls", ", ".join(module_calls)))
+
+    if not rows:
+        return
+
+    lines.append("## Module Signals")
+    lines.append("")
+    lines.append("| Signal | Values |")
+    lines.append("|--------|--------|")
+    for label, value in rows:
+        lines.append(f"| {label} | {value} |")
+    lines.append("")
+
+
 def _generate_entity_md(
     class_info: dict,
     filepath: str,
     relationships: dict,
     mod_page_name: str | None = None,
+    *,
+    relationship_summary: Mapping | None = None,
+    module_page_map: Mapping[str, str] | None = None,
+    diagram_style: Mapping[str, Any] | None = None,
 ) -> str:
     """Generate comprehensive markdown for a class entity."""
+    if _is_haskell_filepath(filepath):
+        return _generate_haskell_entity_md(
+            class_info,
+            filepath,
+            relationships,
+            mod_page_name,
+            relationship_summary=relationship_summary,
+            module_page_map=module_page_map,
+            diagram_style=diagram_style,
+        )
+
     name = class_info["name"]
     bases = class_info.get("bases", [])
     line = class_info.get("line", "?")
@@ -292,7 +1105,7 @@ def _generate_entity_md(
     lines.append("## Description")
     lines.append("")
     if docstring:
-        lines.append(docstring)
+        lines.append(_sanitize_source_doc_markdown(docstring))
     else:
         lines.append(f"_Auto-generated from `{name}` in `{filepath}`._")
     lines.append("")
@@ -321,7 +1134,7 @@ def _generate_entity_md(
         for m in methods:
             sig = _format_signature(m)
             decs = ", ".join(f"`@{d}`" for d in m.get("decorators", [])) or "—"
-            doc = m.get("docstring", "").split("\n")[0] if m.get("docstring") else "—"
+            doc = _source_doc_first_line(m.get("docstring")) or "—"
             async_tag = "*(async)* " if m.get("is_async") else ""
             lines.append(f"| `{m['name']}` | `{async_tag}{sig}` | {decs} | {doc} |")
     else:
@@ -329,29 +1142,33 @@ def _generate_entity_md(
     lines.append("")
 
     # Relationships
-    rels = relationships.get((name, filepath), relationships.get(name, []))
-    lines.append("## Relationships")
-    lines.append("")
-    if rels:
-        for r in rels:
-            page = r.get("module_page", r["module"])
-            mod_link = f"[{r['module']}](../modules/{page}.md)"
-            if r.get("function"):
-                lines.append(f"- **{r['rel']}**: `{r['function']}()` in {mod_link}")
-            else:
-                lines.append(f"- **{r['rel']}**: {mod_link}")
-    else:
-        lines.append("*No cross-module references detected.*")
-    lines.append("")
+    _append_relationships_to_entity(
+        lines,
+        name,
+        filepath,
+        relationships,
+        relationship_summary=relationship_summary,
+        module_page_map=module_page_map,
+        diagram_style=diagram_style,
+    )
 
     return "\n".join(lines)
 
 
 def _generate_module_md(
-    filepath: str, file_data: dict, entity_page_map: dict | None = None
+    filepath: str,
+    file_data: dict,
+    entity_page_map: dict | None = None,
+    *,
+    module_dependency_map: Mapping | None = None,
+    module_page_map: Mapping[str, str] | None = None,
+    entity_occurrence_page_map: Mapping[EntityOccurrenceKey, str] | None = None,
+    diagram_style: Mapping[str, Any] | None = None,
 ) -> str:
     """Generate comprehensive markdown for a module page."""
-    mod_name = _module_name_from_path(filepath)
+    is_haskell = _is_haskell_file_data(file_data)
+    declared_haskell_module = _haskell_module_name(file_data)
+    mod_name = _display_module_name(filepath, file_data)
     classes = file_data.get("classes", [])
     functions = file_data.get("functions", [])
     imports = file_data.get("imports", [])
@@ -361,49 +1178,64 @@ def _generate_module_md(
         f"# {mod_name} Module",
         "",
         f"**Path:** `{filepath}`",
-        "",
     ]
+    if declared_haskell_module:
+        lines.append(f"**Declared module:** `{declared_haskell_module}`")
+    lines.append("")
 
     # Description
     lines.append("## Description")
     lines.append("")
     if module_docstring:
-        lines.append(module_docstring)
+        lines.append(_sanitize_source_doc_markdown(module_docstring))
     else:
         lines.append(f"_Auto-generated from `{filepath}`._")
     lines.append("")
 
-    # Imports
-    if imports:
-        # Group imports by source module
-        grouped: dict[str, list[str]] = defaultdict(list)
-        for imp in imports:
-            grouped[imp["module"]].append(imp["name"])
+    _append_import_section(lines, imports, haskell=is_haskell)
+    _append_module_signals_section(lines, file_data)
 
-        lines.append("## Imports")
-        lines.append("")
-        lines.append("| Source | Symbols |")
-        lines.append("|--------|---------|")
-        for module, names in sorted(grouped.items()):
-            lines.append(f"| `{module}` | {', '.join(f'`{n}`' for n in names)} |")
-        lines.append("")
+    if module_dependency_map is not None:
+        lines.extend(
+            _generate_module_dependency_section(
+                module_dependency_map, module_page_map, diagram_style
+            )
+        )
 
-    # Classes
-    if classes:
+    # Classes / declarations
+    if is_haskell:
+        _append_haskell_declarations(
+            lines,
+            classes,
+            entity_page_map,
+            filepath=filepath,
+            entity_occurrence_page_map=entity_occurrence_page_map,
+        )
+    elif classes:
         lines.append("## Classes")
         lines.append("")
         lines.append("| Class | Line | Bases | Description |")
         lines.append("|-------|------|-------|-------------|")
+        seen_names: defaultdict[str, int] = defaultdict(int)
         for c in classes:
-            page_name = (entity_page_map or {}).get(c["name"], c["name"])
+            seen_names[c["name"]] += 1
+            page_name = _entity_page_from_maps(
+                c["name"],
+                filepath,
+                seen_names[c["name"]],
+                entity_page_map,
+                entity_occurrence_page_map,
+            )
             entity_link = f"[{c['name']}](../entities/{page_name}.md)"
             bases = ", ".join(f"`{b}`" for b in c.get("bases", [])) or "—"
-            doc = c.get("docstring", "").split("\n")[0] if c.get("docstring") else "—"
+            doc = _source_doc_first_line(c.get("docstring")) or "—"
             lines.append(f"| {entity_link} | {c.get('line', '?')} | {bases} | {doc} |")
         lines.append("")
 
     # Functions
-    if functions:
+    if is_haskell:
+        _append_haskell_functions(lines, functions)
+    elif functions:
         lines.append("## Functions")
         lines.append("")
         lines.append("| Function | Signature | Decorators | Description |")
@@ -411,7 +1243,7 @@ def _generate_module_md(
         for fn in functions:
             sig = _format_signature(fn)
             decs = ", ".join(f"`@{d}`" for d in fn.get("decorators", [])) or "—"
-            doc = fn.get("docstring", "").split("\n")[0] if fn.get("docstring") else "—"
+            doc = _source_doc_first_line(fn.get("docstring")) or "—"
             async_tag = "*(async)* " if fn.get("is_async") else ""
             lines.append(f"| `{fn['name']}` | `{async_tag}{sig}` | {decs} | {doc} |")
         lines.append("")
@@ -419,57 +1251,266 @@ def _generate_module_md(
     return "\n".join(lines)
 
 
+def _flow_index_category(flow: dict) -> str:
+    """Category for a flow index entry, derived from the id prefix when absent."""
+    return flow.get("category") or flow["id"].split("-", 1)[0]
+
+
+def _overview_target(count: int, heading: str) -> str:
+    if count <= 0:
+        return "No pages"
+    anchor = heading.casefold().replace(" ", "-")
+    return f"[Open section](#{anchor})"
+
+
+def _overview_row(label: str, count: int, target: str) -> str:
+    return f"| {label} | {count} | {target} |"
+
+
+def _append_surface_overview(
+    lines: list[str],
+    *,
+    entity_count: int,
+    module_count: int,
+    workflow_count: int,
+    guide_count: int,
+    flow_count: int,
+    infrastructure_count: int,
+    architecture_count: int,
+    log_present: bool,
+) -> None:
+    lines.extend(
+        [
+            "## Surface Overview",
+            "",
+            "| Surface | Count | Start here |",
+            "|---|---:|---|",
+            _overview_row(
+                _SURFACE_LABELS[PageKind.ENTITIES],
+                entity_count,
+                _overview_target(entity_count, _SURFACE_LABELS[PageKind.ENTITIES]),
+            ),
+            _overview_row(
+                _SURFACE_LABELS[PageKind.MODULES],
+                module_count,
+                _overview_target(module_count, _SURFACE_LABELS[PageKind.MODULES]),
+            ),
+            _overview_row(
+                _SURFACE_LABELS[PageKind.WORKFLOWS],
+                workflow_count,
+                _overview_target(workflow_count, _SURFACE_LABELS[PageKind.WORKFLOWS]),
+            ),
+            _overview_row(
+                _SURFACE_LABELS[PageKind.GUIDES],
+                guide_count,
+                _overview_target(guide_count, _SURFACE_LABELS[PageKind.GUIDES]),
+            ),
+            _overview_row(
+                _SURFACE_LABELS[PageKind.FLOWS],
+                flow_count,
+                _overview_target(flow_count, _SURFACE_LABELS[PageKind.FLOWS]),
+            ),
+            _overview_row(
+                _SURFACE_LABELS[PageKind.INFRASTRUCTURE],
+                infrastructure_count,
+                _overview_target(
+                    infrastructure_count, _SURFACE_LABELS[PageKind.INFRASTRUCTURE]
+                ),
+            ),
+            _overview_row(
+                "Dependency architecture",
+                architecture_count,
+                _overview_target(architecture_count, "Dependency Architecture"),
+            ),
+            _overview_row(
+                _SURFACE_LABELS[PageKind.LOG],
+                1 if log_present else 0,
+                f"[Open log]({canonical_path(PageKind.LOG)})"
+                if log_present
+                else "No pages",
+            ),
+            "",
+        ]
+    )
+
+
+def _append_index_entities(lines: list[str], entity_names: list[str]) -> None:
+    if not entity_names:
+        return
+    lines.append(f"## {_SURFACE_LABELS[PageKind.ENTITIES]}")
+    lines.append("")
+    for name in sorted(entity_names):
+        lines.append(f"- [{name}]({canonical_path(PageKind.ENTITIES, name)})")
+    lines.append("")
+
+
+def _append_index_modules(lines: list[str], module_entries: list[dict]) -> None:
+    if not module_entries:
+        return
+    lines.append(f"## {_SURFACE_LABELS[PageKind.MODULES]}")
+    lines.append("")
+    for entry in sorted(module_entries, key=lambda e: e["name"]):
+        desc = _source_doc_first_line(entry.get("docstring"))
+        suffix = f" - {desc}" if desc else f" - `{entry['path']}`"
+        path = canonical_path(PageKind.MODULES, entry["name"])
+        lines.append(f"- [{entry['name']}]({path}){suffix}")
+    lines.append("")
+
+
+def _append_index_workflows(
+    lines: list[str], workflow_entries: list[dict] | None
+) -> None:
+    if not workflow_entries:
+        return
+    lines.append(f"## {_SURFACE_LABELS[PageKind.WORKFLOWS]}")
+    lines.append("")
+    for wf in sorted(workflow_entries, key=lambda w: w["name"]):
+        entry_point = wf.get("entry", "")
+        path = canonical_path(PageKind.WORKFLOWS, wf["name"])
+        lines.append(f"- [{wf['name']}]({path}) - entry: `{entry_point}`")
+    lines.append("")
+
+
+def _append_index_guides(lines: list[str], guide_entries: list[dict] | None) -> None:
+    if not guide_entries:
+        return
+    lines.append(f"## {_SURFACE_LABELS[PageKind.GUIDES]}")
+    lines.append("")
+    for guide in sorted(guide_entries, key=lambda entry: entry["name"]):
+        label = guide.get("label") or guide["name"]
+        path = canonical_path(PageKind.GUIDES, guide["name"])
+        lines.append(f"- [{label}]({path})")
+    lines.append("")
+
+
+def _append_index_user_flows(lines: list[str], flow_entries: list[dict] | None) -> None:
+    """Append the grouped "User Flows" section to *lines* (in place).
+
+    Tolerates minimal entries (``{"id"}``) so ``sync`` can re-index existing flow
+    pages without re-running entry-point detection.
+    """
+    if not flow_entries:
+        return
+    lines.append("## User Flows")
+    lines.append("")
+    for category in sorted({_flow_index_category(f) for f in flow_entries}):
+        lines.append(f"**{category}**")
+        lines.append("")
+        for flow in sorted(
+            (f for f in flow_entries if _flow_index_category(f) == category),
+            key=lambda f: f["id"],
+        ):
+            entry = flow.get("entry", "")
+            suffix = f" - entry: `{entry}`" if entry else ""
+            path = canonical_path(PageKind.FLOWS, flow["id"])
+            lines.append(f"- [{flow['id']}]({path}){suffix}")
+        lines.append("")
+
+
+def _append_index_infrastructure(
+    lines: list[str], infra_entries: list[dict] | None
+) -> None:
+    if not infra_entries:
+        return
+    lines.append(f"## {_SURFACE_LABELS[PageKind.INFRASTRUCTURE]}")
+    lines.append("")
+    for entry in sorted(infra_entries, key=lambda e: e["name"]):
+        label = entry.get("label") or entry["name"]
+        desc = entry.get("type", "")
+        suffix = f" - {desc}" if desc else ""
+        path = canonical_path(PageKind.INFRASTRUCTURE, entry["name"])
+        lines.append(f"- [{label}]({path}){suffix}")
+    lines.append("")
+
+
+def _architecture_path(page: str) -> str:
+    if page == PageKind.DEPENDENCIES.value:
+        return canonical_path(PageKind.DEPENDENCIES)
+    if page == PageKind.LOAD_ORDER.value:
+        return canonical_path(PageKind.LOAD_ORDER)
+    return f"{page}.md"
+
+
+def _architecture_order(entry: dict) -> int:
+    order = {
+        PageKind.DEPENDENCIES.value: 0,
+        PageKind.LOAD_ORDER.value: 1,
+    }
+    return order.get(entry.get("page", ""), 99)
+
+
+def _append_index_architecture(
+    lines: list[str], architecture_entries: list[dict] | None
+) -> None:
+    """Append the dependency architecture section linking top-level analysis pages.
+
+    Keeps ``dependencies.md`` / ``load-order.md`` linked from the index so lint
+    does not flag them as orphans. Omitted entirely when no such pages exist.
+    """
+    if not architecture_entries:
+        return
+    lines.append("## Dependency Architecture")
+    lines.append("")
+    for entry in sorted(
+        architecture_entries,
+        key=lambda e: (_architecture_order(e), e["page"]),
+    ):
+        lines.append(f"- [{entry['name']}]({_architecture_path(entry['page'])})")
+    lines.append("")
+
+
+def _append_index_log(lines: list[str], *, log_present: bool) -> None:
+    if not log_present:
+        return
+    lines.append(f"## {_SURFACE_LABELS[PageKind.LOG]}")
+    lines.append("")
+    lines.append(f"- [Architectural log]({canonical_path(PageKind.LOG)})")
+    lines.append("")
+
+
 def _generate_index_md(
     entity_names: list[str],
     module_entries: list[dict],
     workflow_entries: list[dict] | None = None,
+    guide_entries: list[dict] | None = None,
     infra_entries: list[dict] | None = None,
+    flow_entries: list[dict] | None = None,
+    architecture_entries: list[dict] | None = None,
+    *,
+    log_present: bool = True,
 ) -> str:
     """Generate the full index.md content."""
+    workflow_entries = workflow_entries or []
+    guide_entries = guide_entries or []
+    infra_entries = infra_entries or []
+    flow_entries = flow_entries or []
+    architecture_entries = architecture_entries or []
     lines = [
         "# LLM Wiki Index",
         "",
-        "Catalog of project modules and entities.",
-        "",
-        "## Entities",
+        "Use this landing page to choose the right wiki surface.",
         "",
     ]
 
-    for name in sorted(entity_names):
-        lines.append(f"- [{name}](entities/{name}.md)")
-
-    lines.append("")
-    lines.append("## Modules")
-    lines.append("")
-
-    for entry in sorted(module_entries, key=lambda e: e["name"]):
-        desc = entry.get("docstring", "")
-        suffix = f" - {desc}" if desc else f" - `{entry['path']}`"
-        lines.append(f"- [{entry['name']}](modules/{entry['name']}.md){suffix}")
-
-    lines.append("")
-    lines.append("## Workflows")
-    lines.append("")
-
-    if workflow_entries:
-        for wf in sorted(workflow_entries, key=lambda w: w["name"]):
-            entry_point = wf.get("entry", "")
-            lines.append(
-                f"- [{wf['name']}](workflows/{wf['name']}.md) - entry: `{entry_point}`"
-            )
-        lines.append("")
-
-    lines.append("## Infrastructure")
-    lines.append("")
-
-    if infra_entries:
-        for entry in sorted(infra_entries, key=lambda e: e["name"]):
-            desc = entry.get("type", "")
-            suffix = f" - {desc}" if desc else ""
-            lines.append(
-                f"- [{entry['name']}](infrastructure/{entry['name']}.md){suffix}"
-            )
-        lines.append("")
+    _append_surface_overview(
+        lines,
+        entity_count=len(entity_names),
+        module_count=len(module_entries),
+        workflow_count=len(workflow_entries),
+        guide_count=len(guide_entries),
+        flow_count=len(flow_entries),
+        infrastructure_count=len(infra_entries),
+        architecture_count=len(architecture_entries),
+        log_present=log_present,
+    )
+    _append_index_entities(lines, entity_names)
+    _append_index_modules(lines, module_entries)
+    _append_index_workflows(lines, workflow_entries)
+    _append_index_guides(lines, guide_entries)
+    _append_index_user_flows(lines, flow_entries)
+    _append_index_infrastructure(lines, infra_entries)
+    _append_index_architecture(lines, architecture_entries)
+    _append_index_log(lines, log_present=log_present)
 
     return "\n".join(lines)
 
@@ -511,7 +1552,7 @@ def _generate_workflow_md(
     ]
 
     if docstring:
-        lines.append(f"> {docstring}")
+        lines.append(f"> {_sanitize_source_doc_markdown(docstring)}")
         lines.append("")
 
     lines.append("## Sequence")
@@ -532,6 +1573,559 @@ def _generate_workflow_md(
         lines.append(f"- [{label}](../modules/{page}.md)")
     lines.append("")
 
+    return "\n".join(lines)
+
+
+def _flow_module_refs(
+    flow: dict,
+    module_page_map: Mapping[str, str] | None = None,
+) -> list[tuple[str, str]]:
+    """Return sorted ``(label, page_stem)`` pairs for a flow's touched modules."""
+    page_map = module_page_map or {}
+    refs = [
+        (
+            page_map.get(path, _module_name_from_path(path)),
+            page_map.get(path, _module_name_from_path(path)),
+        )
+        for path in flow.get("modules_touched", [])
+    ]
+    return sorted(set(refs), key=lambda item: item[0])
+
+
+def _flow_related_module_refs(
+    flow: dict,
+    module_page_map: Mapping[str, str] | None = None,
+) -> list[tuple[str, str]]:
+    """Return sorted module links for process-related internal imports."""
+    page_map = module_page_map or {}
+    refs = [
+        (
+            page_map.get(path, _module_name_from_path(path)),
+            page_map.get(path, _module_name_from_path(path)),
+        )
+        for path in flow.get("related_modules", [])
+    ]
+    return sorted(set(refs), key=lambda item: item[0])
+
+
+def _flow_interactions(flow: dict) -> list[dict]:
+    """Convert depth-tagged flow steps into caller→callee sequence interactions.
+
+    Reconstructs each step's caller from the most recent shallower step so the
+    nested call tree renders as an ordered sequence. External and unresolved
+    calls are marked ``dashed``.
+    """
+    interactions: list[dict] = []
+    stack: dict[int, str] = {}
+    for step in flow.get("steps", []):
+        depth = step["depth"]
+        symbol = step["symbol"]
+        if depth == 0:
+            stack = {0: symbol}
+            continue
+        interactions.append(
+            {
+                "from": stack.get(depth - 1, "?"),
+                "to": symbol,
+                "label": symbol,
+                "dashed": step["kind"] in ("external", "unresolved"),
+            }
+        )
+        stack[depth] = symbol
+        for deeper in [d for d in stack if d > depth]:
+            del stack[deeper]
+    return interactions
+
+
+_FLOW_SEQUENCE_INTERACTION_LIMIT = 30
+
+
+def _bounded_flow_interactions(interactions: list[dict]) -> tuple[list[dict], int]:
+    shown = interactions[:_FLOW_SEQUENCE_INTERACTION_LIMIT]
+    return shown, max(0, len(interactions) - len(shown))
+
+
+def _md_cell(value: object) -> str:
+    return str(value).replace("|", "\\|") if value not in (None, "") else "-"
+
+
+def _effect_label(effect: Mapping) -> str:
+    label = (
+        effect.get("name")
+        or effect.get("value")
+        or effect.get("target")
+        or effect.get("annotation")
+        or effect.get("kind")
+        or "?"
+    )
+    if effect.get("type"):
+        label = f"{label}: {effect['type']}"
+    return str(label)
+
+
+def _effects_cell(effects: list[Mapping]) -> str:
+    if not effects:
+        return "-"
+    return ", ".join(f"`{_md_cell(_effect_label(effect))}`" for effect in effects)
+
+
+def _generate_data_flow_section(
+    data_flow: Mapping,
+    module_page_map: Mapping[str, str] | None = None,
+    diagram_style: Mapping[str, Any] | None = None,
+) -> list[str]:
+    lines = [
+        "## Data flow",
+        "",
+        "<!-- Auto-generated static analysis. Treat values and boundaries as "
+        "best-effort hints, not runtime proof. -->",
+        data_flow_diagram(data_flow, module_page_map, style=diagram_style),
+        "",
+        "### Step data",
+        "",
+        "| Step | Inputs | Reads | Writes | Returns |",
+        "|---|---|---|---|---|",
+    ]
+    for step in data_flow.get("steps", []):
+        lines.append(
+            "| "
+            + " | ".join(
+                [
+                    f"`{_md_cell(step.get('symbol'))}`",
+                    _effects_cell(step.get("inputs", [])),
+                    _effects_cell(step.get("reads", [])),
+                    _effects_cell(step.get("writes", [])),
+                    _effects_cell(step.get("returns", [])),
+                ]
+            )
+            + " |"
+        )
+    lines.extend(["", "### Call data", ""])
+    transfers = data_flow.get("transfers", [])
+    if transfers:
+        lines.extend(["| From | To | Line | Call |", "|---|---|---:|---|"])
+        for transfer in transfers:
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        _md_cell(transfer.get("from")),
+                        _md_cell(transfer.get("to")),
+                        _md_cell(transfer.get("line")),
+                        f"`{_md_cell(transfer.get('call'))}`",
+                    ]
+                )
+                + " |"
+            )
+    else:
+        lines.append("*No call data transfers detected.*")
+    lines.extend(["", "### Boundary effects", ""])
+    boundaries = data_flow.get("boundaries", [])
+    if boundaries:
+        lines.extend(["| Kind | Target | Step | Line |", "|---|---|---|---:|"])
+        for boundary in boundaries:
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        _md_cell(boundary.get("kind")),
+                        f"`{_md_cell(boundary.get('target'))}`",
+                        f"`{_md_cell(boundary.get('step'))}`",
+                        _md_cell(boundary.get("line")),
+                    ]
+                )
+                + " |"
+            )
+    else:
+        lines.append("*No boundary effects detected.*")
+    lines.extend(["", "### Static analysis gaps", ""])
+    gaps = data_flow.get("gaps", [])
+    if gaps:
+        lines.extend(["| Kind | Step | Target | Line |", "|---|---|---|---:|"])
+        for gap in gaps:
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        _md_cell(gap.get("kind")),
+                        f"`{_md_cell(gap.get('step'))}`",
+                        f"`{_md_cell(gap.get('target'))}`",
+                        _md_cell(gap.get("line")),
+                    ]
+                )
+                + " |"
+            )
+    else:
+        lines.append("*No static analysis gaps detected.*")
+    lines.append("")
+    return lines
+
+
+def _generate_flow_md(
+    flow: dict,
+    module_page_map: Mapping[str, str] | None = None,
+    *,
+    data_flow: Mapping | None = None,
+    diagram_style: Mapping[str, Any] | None = None,
+) -> str:
+    """Generate a user-flow page with a Mermaid sequence diagram from *flow*."""
+    entry = flow["entry"]
+    page_map = module_page_map or {}
+    interactions = _flow_interactions(flow)
+    modules = _flow_module_refs(flow, page_map)
+    related_modules = _flow_related_module_refs(flow, page_map)
+
+    lines = [
+        f"# {entry['label']}",
+        "",
+        f"**Entry point:** `{entry['symbol']}` (`{entry['category']}`)",
+    ]
+    if entry.get("file"):
+        stem = page_map.get(entry["file"], _module_name_from_path(entry["file"]))
+        lines.append(f"**Source:** [{stem}](../modules/{stem}.md)")
+    if modules:
+        joined = ", ".join(
+            f"[{label}](../modules/{page}.md)" for label, page in modules
+        )
+        lines.append(f"**Modules touched:** {joined}")
+    if related_modules:
+        joined = ", ".join(
+            f"[{label}](../modules/{page}.md)" for label, page in related_modules
+        )
+        lines.append(f"**Related modules:** {joined}")
+    lines.append("")
+
+    lines.append("## Call sequence")
+    lines.append("")
+    lines.append(
+        "<!-- Auto-generated from static call edges. Dashed arrows are external "
+        "or unresolved calls. Refine order and conditions after review. -->"
+    )
+    if interactions:
+        shown_interactions, omitted_interactions = _bounded_flow_interactions(
+            interactions
+        )
+        lines.append(sequence_diagram(shown_interactions))
+        if omitted_interactions:
+            lines.append("")
+            lines.append(
+                f"> Call sequence truncated for readability: first "
+                f"{_FLOW_SEQUENCE_INTERACTION_LIMIT} interactions shown; "
+                f"{omitted_interactions} omitted."
+            )
+    else:
+        lines.append("*No outbound calls detected — describe the behavior manually.*")
+    if flow.get("truncated"):
+        lines.append("")
+        lines.append("> Trace truncated at the depth limit; deeper calls are omitted.")
+    lines.append("")
+
+    if data_flow is not None:
+        if diagram_style is None:
+            diagram_style = _generated_diagram_style(
+                "data_flow",
+                flow_id=entry.get("id"),
+                category=entry.get("category"),
+            )
+        lines.extend(_generate_data_flow_section(data_flow, page_map, diagram_style))
+
+    lines.append("## Behavior")
+    lines.append("")
+    lines.append(
+        "_Describe what this flow does, when it is triggered, and its key side "
+        "effects or outputs. Replace this placeholder._"
+    )
+    lines.append("")
+
+    return "\n".join(lines)
+
+
+# ── Architecture pages: dependencies + load order (Epic 2.4) ──────────
+
+# Above this many module nodes, the ``auto`` graph detail collapses the
+# flowchart to top-level packages so large repos stay readable (DL-404).
+_DEPENDENCY_GRAPH_NODE_LIMIT = 40
+
+
+def _dependency_module_link(filepath: str, module_page_map: Mapping[str, str]) -> str:
+    """Markdown link from an architecture page (wiki root) to a module page."""
+    stem = module_page_map.get(filepath, _module_name_from_path(filepath))
+    return f"[{stem}](modules/{stem}.md)"
+
+
+def _cyclic_edges(
+    edges: list[tuple[str, str]], cycles: list[list[str]]
+) -> set[tuple[str, str]]:
+    """Return the edges whose endpoints sit in the same import cycle."""
+    group_of: dict[str, int] = {}
+    for index, cycle in enumerate(cycles):
+        for node in cycle:
+            group_of[node] = index
+    return {
+        (src, dst)
+        for src, dst in edges
+        if src in group_of and group_of[src] == group_of.get(dst)
+    }
+
+
+def _render_dependency_graph(
+    analysis: dict,
+    module_page_map: Mapping[str, str],
+    detail: str,
+    diagram_style: Mapping[str, Any] | None = None,
+) -> tuple[str | None, str]:
+    """Render the dependency flowchart, choosing module vs package detail.
+
+    Returns ``(diagram_or_None, rendered_detail)``. ``auto`` collapses to a
+    package-level graph past :data:`_DEPENDENCY_GRAPH_NODE_LIMIT`; ``package``
+    always collapses; ``module`` keeps the full graph with per-module links and
+    cyclic edges highlighted. ``None`` when there is nothing to draw.
+    """
+    graph = analysis["graph"]
+    nodes = graph["nodes"]
+    if diagram_style is None:
+        diagram_style = _generated_diagram_style("dependencies", detail=detail)
+    use_package = detail == "package" or (
+        detail == "auto" and len(nodes) > _DEPENDENCY_GRAPH_NODE_LIMIT
+    )
+    if use_package:
+        collapsed = package_dependency_graph(graph)
+        if not collapsed["nodes"]:
+            return None, "package"
+        return (
+            flowchart(collapsed["nodes"], collapsed["edges"], style=diagram_style),
+            "package",
+        )
+    if not nodes:
+        return None, "module"
+    links = {
+        node: f"modules/{module_page_map.get(node, _module_name_from_path(node))}.md"
+        for node in nodes
+    }
+    highlight = _cyclic_edges(graph["edges"], analysis["cycles"])
+    return (
+        flowchart(
+            nodes,
+            graph["edges"],
+            links=links,
+            highlight_edges=highlight,
+            style=diagram_style,
+        ),
+        "module",
+    )
+
+
+def _format_package_list(packages: list[str]) -> str:
+    return ", ".join(f"`{pkg}`" for pkg in packages) if packages else "—"
+
+
+def _append_external_dependencies(lines: list[str], reconciliation: dict) -> None:
+    """Append the per-language external-dependency section (DL-205) to *lines*."""
+    lines.append("## External dependencies")
+    lines.append("")
+    languages = reconciliation.get("languages", {})
+    emitted = False
+    for language in sorted(languages):
+        lang = languages[language]
+        if not (lang["used"] or lang["undeclared"] or lang["unused"]):
+            continue
+        emitted = True
+        lines.append(f"### {language}")
+        lines.append("")
+        lines.append(f"- **Used:** {_format_package_list(sorted(lang['used']))}")
+        if lang["undeclared"]:
+            lines.append(
+                f"- ⚠️ **Undeclared:** {_format_package_list(lang['undeclared'])}"
+            )
+        if lang["unused"]:
+            lines.append(
+                f"- **Unused (declared, not imported):** "
+                f"{_format_package_list(lang['unused'])}"
+            )
+        lines.append("")
+    if not emitted:
+        lines.append("*No external dependencies detected.*")
+        lines.append("")
+
+
+def _generate_dependencies_md(
+    analysis: dict,
+    module_page_map: Mapping[str, str] | None = None,
+    *,
+    detail: str = "auto",
+    diagram_style: Mapping[str, Any] | None = None,
+) -> str:
+    """Render ``dependencies.md`` from a :func:`analyze_dependencies` bundle.
+
+    Sections: a linked internal-module Mermaid ``flowchart`` (cyclic edges
+    thickened), import **Cycles**, a **Fan-in / Fan-out** table, **External
+    dependencies** grouped by language, and a ``## Notes`` semantic placeholder.
+    Deterministic; degrades cleanly with no cycles or no external deps.
+    """
+    page_map = module_page_map or {}
+    cycles = analysis["cycles"]
+    metrics = analysis["metrics"]
+
+    lines = [
+        "# Dependencies",
+        "",
+        "Internal module dependency graph and external package reconciliation.",
+        "",
+        "## Module graph",
+        "",
+    ]
+    diagram, rendered_detail = _render_dependency_graph(
+        analysis, page_map, detail, diagram_style
+    )
+    if diagram and rendered_detail == "package":
+        lines.append(
+            "<!-- Collapsed to top-level packages; the full module list is in the "
+            "Fan-in / Fan-out table below. -->"
+        )
+        lines.append(diagram)
+    elif diagram:
+        lines.append("<!-- Thick arrows (==>) mark edges inside an import cycle. -->")
+        lines.append(diagram)
+    else:
+        lines.append("*No internal module dependencies detected.*")
+    lines.append("")
+
+    lines.append("## Cycles")
+    lines.append("")
+    if cycles:
+        lines.append(
+            "> Import cycles are legal but complicate load order — review the "
+            "modules below."
+        )
+        lines.append("")
+        for cycle in cycles:
+            joined = " ⇄ ".join(_dependency_module_link(fp, page_map) for fp in cycle)
+            lines.append(f"- {joined}")
+    else:
+        lines.append("*No import cycles detected.*")
+    lines.append("")
+
+    lines.append("## Fan-in / Fan-out")
+    lines.append("")
+    ranking = metrics.get("most_depended_on", [])
+    if ranking:
+        lines.append("| Module | Fan-in | Fan-out |")
+        lines.append("|--------|--------|---------|")
+        for module in ranking:
+            counts = metrics["metrics"][module]
+            link = _dependency_module_link(module, page_map)
+            lines.append(f"| {link} | {counts['fan_in']} | {counts['fan_out']} |")
+    else:
+        lines.append("*No internal modules detected.*")
+    lines.append("")
+
+    _append_external_dependencies(lines, analysis["reconciliation"])
+
+    lines.append("## Notes")
+    lines.append("")
+    lines.append(
+        "_Document dynamic or conditional imports, intentional cycles, and the "
+        "rationale behind notable dependencies. Replace this placeholder._"
+    )
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _format_side_effect_call(call: Mapping) -> str:
+    """Render a ``module_calls`` record as ``target = label`` or ``label``."""
+    label = str(call.get("attr") or call.get("name", ""))
+    target = call.get("target")
+    return f"{target} = {label}" if target else label
+
+
+def _generate_load_order_md(
+    analysis: dict,
+    module_page_map: Mapping[str, str] | None = None,
+) -> str:
+    """Render ``load-order.md`` from a :func:`analyze_dependencies` bundle.
+
+    Sections: the topological **Load order** (numbered, dependency-first),
+    **Module-level side effects**, a heuristic **Factory / wiring** table,
+    **Indeterminate (cyclic) groups** whose order cannot be resolved, and a
+    ``## Notes`` placeholder. Deterministic; degrades cleanly when empty.
+    """
+    page_map = module_page_map or {}
+    load_order = analysis["load_order"]
+    side_effects = analysis["side_effects"]
+    order = load_order.get("order", [])
+    cycle_groups = load_order.get("cycle_groups", [])
+
+    lines = [
+        "# Load order",
+        "",
+        "Topological module load / startup order and import-time side effects.",
+        "",
+        "## Load order",
+        "",
+        "<!-- Dependency-first order: each module loads after the internal "
+        "modules it imports. -->",
+    ]
+    if order:
+        for index, filepath in enumerate(order, 1):
+            lines.append(f"{index}. {_dependency_module_link(filepath, page_map)}")
+    else:
+        lines.append("*No modules detected.*")
+    lines.append("")
+
+    lines.append("## Module-level side effects")
+    lines.append("")
+    effects = side_effects.get("side_effects", [])
+    if effects:
+        lines.append("| Module | Import-time calls |")
+        lines.append("|--------|-------------------|")
+        for entry in effects:
+            calls = ", ".join(
+                f"`{_format_side_effect_call(call)}`" for call in entry["calls"]
+            )
+            link = _dependency_module_link(entry["file"], page_map)
+            lines.append(f"| {link} | {calls} |")
+    else:
+        lines.append("*No import-time side effects detected.*")
+    lines.append("")
+
+    lines.append("## Factory / wiring")
+    lines.append("")
+    factories = side_effects.get("factories", [])
+    if factories:
+        lines.append(
+            "<!-- Heuristic, name-based detection of app-factory / wiring "
+            "functions. -->"
+        )
+        lines.append("")
+        lines.append("| Function | Kind | Module |")
+        lines.append("|----------|------|--------|")
+        for factory in factories:
+            link = _dependency_module_link(factory["file"], page_map)
+            lines.append(f"| `{factory['symbol']}` | {factory['kind']} | {link} |")
+    else:
+        lines.append("*No factory or wiring functions detected.*")
+    lines.append("")
+
+    if cycle_groups:
+        lines.append("## Indeterminate (cyclic) groups")
+        lines.append("")
+        lines.append(
+            "> These modules form import cycles, so their relative load order is "
+            "indeterminate."
+        )
+        lines.append("")
+        for group in cycle_groups:
+            joined = " ⇄ ".join(_dependency_module_link(fp, page_map) for fp in group)
+            lines.append(f"- {joined}")
+        lines.append("")
+
+    lines.append("## Notes")
+    lines.append("")
+    lines.append(
+        "_Document required initialization order, lazy imports, and side effects "
+        "that must run before others. Replace this placeholder._"
+    )
+    lines.append("")
     return "\n".join(lines)
 
 
@@ -654,19 +2248,397 @@ def _format_copy_source_links(
     return ", ".join(formatted)
 
 
+def _unsupported_source_path_map(
+    unsupported_sources: dict[str, dict[str, object]] | None,
+) -> dict[str, str]:
+    """Return ``{source_path: language}`` for unsupported-source advisories."""
+    if not unsupported_sources:
+        return {}
+    result: dict[str, str] = {}
+    for language, data in sorted(unsupported_sources.items()):
+        paths = data.get("paths", [])
+        if not isinstance(paths, list):
+            continue
+        for path in paths:
+            normalized = _normalize_source_path(str(path))
+            if normalized:
+                result[normalized] = language
+    return result
+
+
+def _unsupported_copy_source_matches(
+    source: str,
+    docker_filename: str,
+    unsupported_sources: dict[str, dict[str, object]] | None,
+) -> list[dict[str, str]]:
+    """Resolve Docker COPY sources to known unsupported source paths."""
+    unsupported = _unsupported_source_path_map(unsupported_sources)
+    if not unsupported:
+        return []
+
+    matches: list[dict[str, str]] = []
+    for item in _split_copy_sources(source):
+        for candidate in _copy_source_candidates(item, docker_filename):
+            language = unsupported.get(candidate)
+            if language:
+                matches.append(
+                    {"source": item, "path": candidate, "language": language}
+                )
+                break
+    return matches
+
+
+def _unsupported_language_label(language: str) -> str:
+    return "Shell" if language == "shell" else language.title()
+
+
 def _generate_docker_md(
     filename: str,
     info: dict,
     module_links: Mapping[str, str] | set[str] | None = None,
     *,
     module_stems: set[str] | None = None,
+    unsupported_sources: dict[str, dict[str, object]] | None = None,
 ) -> str:
     """Generate a wiki page for a Dockerfile or docker-compose file."""
     if module_links is None and module_stems is not None:
         module_links = module_stems
     if info["type"] == "dockerfile":
-        return _generate_dockerfile_md(filename, info, module_links)
+        return _generate_dockerfile_md(
+            filename, info, module_links, unsupported_sources
+        )
     return _generate_compose_md(filename, info, module_links)
+
+
+def _generate_infrastructure_md(
+    filename: str,
+    info: dict,
+    module_links: Mapping[str, str] | set[str] | None = None,
+    unsupported_sources: dict[str, dict[str, object]] | None = None,
+) -> str:
+    """Generate a wiki page for any supported infrastructure inventory entry."""
+    if info["type"] in {"dockerfile", "compose"}:
+        return _generate_docker_md(
+            filename, info, module_links, unsupported_sources=unsupported_sources
+        )
+    if info["type"] == "github_actions":
+        return _generate_github_actions_md(filename, info)
+    if info["type"] == "kubernetes":
+        return _generate_kubernetes_md(filename, info)
+    if info["type"] in RUNTIME_CONFIG_TYPES:
+        return _generate_runtime_config_md(filename, info)
+    return _generate_unsupported_infrastructure_md(filename, info)
+
+
+def _append_infrastructure_advisories(lines: list[str], advisories: list[str]) -> None:
+    if not advisories:
+        return
+    lines.append("## Advisories")
+    lines.append("")
+    for advisory in advisories:
+        lines.append(f"- {advisory}")
+    lines.append("")
+
+
+def _generate_github_actions_md(filename: str, info: dict) -> str:
+    """Generate markdown for a GitHub Actions workflow file."""
+    title = infrastructure_display_label(filename, info)
+    lines = [
+        f"# {title}",
+        "",
+        f"**Path:** `{filename}`",
+        "**Type:** `github_actions`",
+        "",
+    ]
+    triggers = info.get("triggers") or []
+    if triggers:
+        lines.append("## Triggers")
+        lines.append("")
+        for trigger in triggers:
+            lines.append(f"- `{trigger}`")
+        lines.append("")
+
+    jobs = info.get("jobs") or []
+    if jobs:
+        lines.append("## Jobs")
+        lines.append("")
+        lines.append("| Job | Display Name | Runs On | Needs | Steps |")
+        lines.append("|---|---|---|---|---:|")
+        for job in jobs:
+            needs = job.get("needs") or []
+            needs_text = ", ".join(f"`{item}`" for item in needs) if needs else "—"
+            name = f"`{job['name']}`" if job.get("name") else "—"
+            runs_on = f"`{job['runs_on']}`" if job.get("runs_on") else "—"
+            step_count = len(job.get("steps") or [])
+            lines.append(
+                f"| `{job['id']}` | {name} | {runs_on} | {needs_text} | {step_count} |"
+            )
+        lines.append("")
+
+        for job in jobs:
+            lines.append(f"### {job['id']}")
+            lines.append("")
+            for step in job.get("steps") or []:
+                label = (
+                    step.get("name") or step.get("uses") or step.get("run") or "step"
+                )
+                details = []
+                if step.get("uses"):
+                    details.append(f"uses `{step['uses']}`")
+                if step.get("run"):
+                    details.append(f"runs `{step['run']}`")
+                suffix = f" - {'; '.join(details)}" if details else ""
+                lines.append(f"- {label}{suffix}")
+            lines.append("")
+
+    _append_infrastructure_advisories(lines, info.get("advisories") or [])
+    return "\n".join(lines)
+
+
+def _generate_kubernetes_md(filename: str, info: dict) -> str:
+    """Generate markdown for a Kubernetes manifest file."""
+    title = infrastructure_display_label(filename, info)
+    lines = [
+        f"# {title}",
+        "",
+        f"**Path:** `{filename}`",
+        "**Type:** `kubernetes`",
+        "",
+    ]
+    resources = info.get("resources") or []
+    if resources:
+        lines.append("## Resources")
+        lines.append("")
+        lines.append("| Kind | Name | Namespace | API Version | Replicas |")
+        lines.append("|---|---|---|---|---:|")
+        for resource in resources:
+            kind = resource.get("kind") or "unknown"
+            name = resource.get("name") or "unknown"
+            api_version = resource.get("api_version") or "unknown"
+            namespace = resource.get("namespace") or "—"
+            replicas = resource.get("replicas") or "—"
+            lines.append(
+                f"| `{kind}` | `{name}` | {namespace} | `{api_version}` | {replicas} |"
+            )
+        lines.append("")
+
+        for resource in resources:
+            heading = (
+                f"{resource.get('kind') or 'Resource'} "
+                f"{resource.get('name') or 'unknown'}"
+            )
+            lines.append(f"### {heading}")
+            lines.append("")
+            containers = resource.get("containers") or []
+            if containers:
+                lines.append("#### Containers")
+                lines.append("")
+                lines.append("| Name | Image | Ports | Requests | Limits |")
+                lines.append("|---|---|---|---|---|")
+                for container in containers:
+                    ports = ", ".join(f"`{p}`" for p in container.get("ports") or [])
+                    requests = _format_resource_map(container.get("requests") or {})
+                    limits = _format_resource_map(container.get("limits") or {})
+                    name = container.get("name") or "unknown"
+                    image = container.get("image") or "unknown"
+                    lines.append(
+                        f"| `{name}` | `{image}` | {ports or '—'} | "
+                        f"{requests} | {limits} |"
+                    )
+                lines.append("")
+            service_ports = resource.get("service_ports") or []
+            if service_ports:
+                lines.append("#### Service Ports")
+                lines.append("")
+                lines.append("| Port | Target Port | Protocol |")
+                lines.append("|---:|---|---|")
+                for port in service_ports:
+                    port_value = port.get("port") or "unknown"
+                    target_port = port.get("target_port") or "unknown"
+                    protocol = port.get("protocol") or "TCP"
+                    lines.append(f"| `{port_value}` | `{target_port}` | `{protocol}` |")
+                lines.append("")
+            selector = resource.get("selector") or {}
+            if selector:
+                lines.append(f"**Selector:** {_format_resource_map(selector)}")
+                lines.append("")
+
+    _append_infrastructure_advisories(lines, info.get("advisories") or [])
+    return "\n".join(lines)
+
+
+def _format_resource_map(values: Mapping[str, str]) -> str:
+    if not values:
+        return "—"
+    return ", ".join(f"`{key}={value}`" for key, value in sorted(values.items()))
+
+
+def _runtime_config_header(filename: str, info: dict) -> list[str]:
+    title = infrastructure_display_label(filename, info)
+    return [
+        f"# {title}",
+        "",
+        f"**Path:** `{filename}`",
+        f"**Type:** `{info['type']}`",
+        "",
+    ]
+
+
+def _append_value_list(lines: list[str], title: str, values: Iterable[str]) -> None:
+    values = list(values)
+    if not values:
+        return
+    lines.append(f"## {title}")
+    lines.append("")
+    for value in values:
+        lines.append(f"- `{value}`")
+    lines.append("")
+
+
+def _append_setting_table(lines: list[str], settings: Mapping[str, str]) -> None:
+    visible = [(key, value) for key, value in settings.items() if value]
+    if not visible:
+        return
+    lines.append("## Settings")
+    lines.append("")
+    lines.append("| Setting | Value |")
+    lines.append("|---|---|")
+    for key, value in visible:
+        lines.append(f"| `{key}` | `{value}` |")
+    lines.append("")
+
+
+def _generate_runtime_config_md(filename: str, info: dict) -> str:
+    entry_type = info["type"]
+    if entry_type == "prometheus":
+        return _generate_prometheus_md(filename, info)
+    if entry_type == "prometheus_rules":
+        return _generate_prometheus_rules_md(filename, info)
+    if entry_type == "grafana_provisioning":
+        return _generate_grafana_provisioning_md(filename, info)
+    if entry_type == "promtail":
+        return _generate_promtail_md(filename, info)
+    if entry_type == "loki":
+        return _generate_loki_md(filename, info)
+    if entry_type == "envoy":
+        return _generate_envoy_md(filename, info)
+    if entry_type == "buf":
+        return _generate_buf_md(filename, info)
+    if entry_type == "model_service_config":
+        return _generate_model_service_config_md(filename, info)
+    return _generate_unsupported_infrastructure_md(filename, info)
+
+
+def _generate_prometheus_md(filename: str, info: dict) -> str:
+    lines = _runtime_config_header(filename, info)
+    _append_value_list(lines, "Rule Files", info.get("rule_files") or [])
+    _append_value_list(lines, "Scrape Jobs", info.get("scrape_jobs") or [])
+    _append_infrastructure_advisories(lines, info.get("advisories") or [])
+    return "\n".join(lines)
+
+
+def _generate_prometheus_rules_md(filename: str, info: dict) -> str:
+    lines = _runtime_config_header(filename, info)
+    groups = info.get("groups") or []
+    if groups:
+        lines.append("## Rule Groups")
+        lines.append("")
+        lines.append("| Group | Interval | Rules |")
+        lines.append("|---|---|---:|")
+        for group in groups:
+            name = group.get("name") or "unknown"
+            interval = group.get("interval") or "—"
+            rules = group.get("rules") or 0
+            lines.append(f"| `{name}` | `{interval}` | {rules} |")
+        lines.append("")
+    _append_infrastructure_advisories(lines, info.get("advisories") or [])
+    return "\n".join(lines)
+
+
+def _generate_grafana_provisioning_md(filename: str, info: dict) -> str:
+    lines = _runtime_config_header(filename, info)
+    lines.extend(
+        [
+            f"**Provisioning Kind:** `{info.get('provisioning_kind') or 'unknown'}`",
+            "",
+        ]
+    )
+    _append_value_list(lines, "Entries", info.get("entries") or [])
+    _append_infrastructure_advisories(lines, info.get("advisories") or [])
+    return "\n".join(lines)
+
+
+def _generate_promtail_md(filename: str, info: dict) -> str:
+    lines = _runtime_config_header(filename, info)
+    _append_setting_table(lines, {"http_listen_port": info.get("listen_port") or ""})
+    _append_value_list(lines, "Clients", info.get("clients") or [])
+    _append_value_list(lines, "Scrape Jobs", info.get("scrape_jobs") or [])
+    _append_infrastructure_advisories(lines, info.get("advisories") or [])
+    return "\n".join(lines)
+
+
+def _generate_loki_md(filename: str, info: dict) -> str:
+    lines = _runtime_config_header(filename, info)
+    _append_setting_table(
+        lines,
+        {
+            "auth_enabled": info.get("auth_enabled") or "",
+            "http_listen_port": info.get("listen_port") or "",
+            "retention_period": info.get("retention_period") or "",
+        },
+    )
+    _append_value_list(lines, "Schema Stores", info.get("schema_stores") or [])
+    _append_infrastructure_advisories(lines, info.get("advisories") or [])
+    return "\n".join(lines)
+
+
+def _generate_envoy_md(filename: str, info: dict) -> str:
+    lines = _runtime_config_header(filename, info)
+    _append_value_list(lines, "Listeners", info.get("listeners") or [])
+    _append_value_list(lines, "Clusters", info.get("clusters") or [])
+    _append_value_list(lines, "Admin Ports", info.get("admin_ports") or [])
+    _append_infrastructure_advisories(lines, info.get("advisories") or [])
+    return "\n".join(lines)
+
+
+def _generate_buf_md(filename: str, info: dict) -> str:
+    lines = _runtime_config_header(filename, info)
+    _append_setting_table(
+        lines,
+        {
+            "config_kind": info.get("config_kind") or "",
+            "version": info.get("version") or "",
+        },
+    )
+    _append_value_list(lines, "Modules", info.get("modules") or [])
+    _append_value_list(lines, "Dependencies", info.get("deps") or [])
+    _append_value_list(lines, "Plugins", info.get("plugins") or [])
+    _append_value_list(lines, "Outputs", info.get("outputs") or [])
+    _append_infrastructure_advisories(lines, info.get("advisories") or [])
+    return "\n".join(lines)
+
+
+def _generate_model_service_config_md(filename: str, info: dict) -> str:
+    lines = _runtime_config_header(filename, info)
+    _append_setting_table(lines, info.get("settings") or {})
+    _append_infrastructure_advisories(lines, info.get("advisories") or [])
+    return "\n".join(lines)
+
+
+def _generate_unsupported_infrastructure_md(filename: str, info: dict) -> str:
+    lines = [
+        f"# {filename}",
+        "",
+        f"**Path:** `{filename}`",
+        f"**Type:** `{info.get('type') or 'unknown'}`",
+        "",
+        "## Advisories",
+        "",
+        "- This infrastructure file type is recognized but does not have a renderer yet.",
+        "",
+    ]
+    _append_infrastructure_advisories(lines, info.get("advisories") or [])
+    return "\n".join(lines)
 
 
 def _dockerfile_base_images(stages: list[dict]) -> list[str]:
@@ -772,6 +2744,42 @@ def _append_dockerfile_copies(
     lines.append("")
 
 
+def _append_dockerfile_unsupported_copies(
+    lines: list[str],
+    copies: list[dict],
+    filename: str,
+    unsupported_sources: dict[str, dict[str, object]] | None,
+) -> None:
+    matches: list[dict[str, str]] = []
+    seen: set[tuple[str, str, str]] = set()
+    for copy_info in copies:
+        for match in _unsupported_copy_source_matches(
+            copy_info.get("src", ""), filename, unsupported_sources
+        ):
+            key = (match["source"], match["path"], match["language"])
+            if key not in seen:
+                matches.append(match)
+                seen.add(key)
+    if not matches:
+        return
+
+    lines.append("## Unsupported Copied Sources")
+    lines.append("")
+    lines.append(
+        "Shell extraction is not yet supported; these copied deployment scripts "
+        "are reported as unsupported-source coverage notices."
+    )
+    lines.append("")
+    lines.append("| COPY Source | Resolved Source | Language |")
+    lines.append("|-------------|-----------------|----------|")
+    for match in matches:
+        lines.append(
+            f"| `{match['source']}` | `{match['path']}` | "
+            f"{_unsupported_language_label(match['language'])} |"
+        )
+    lines.append("")
+
+
 def _append_dockerfile_labels(lines: list[str], labels: dict[str, str]) -> None:
     if not labels:
         return
@@ -794,7 +2802,10 @@ def _append_dockerfile_healthcheck(lines: list[str], healthcheck: str) -> None:
 
 
 def _generate_dockerfile_md(
-    filename: str, info: dict, module_links: Mapping[str, str] | set[str] | None = None
+    filename: str,
+    info: dict,
+    module_links: Mapping[str, str] | set[str] | None = None,
+    unsupported_sources: dict[str, dict[str, object]] | None = None,
 ) -> str:
     """Generate markdown for a Dockerfile."""
     stages = info.get("stages", [])
@@ -814,6 +2825,9 @@ def _generate_dockerfile_md(
         lines, info.get("entrypoint", ""), info.get("cmd", "")
     )
     _append_dockerfile_copies(lines, info.get("copies", []), filename, module_links)
+    _append_dockerfile_unsupported_copies(
+        lines, info.get("copies", []), filename, unsupported_sources
+    )
     _append_dockerfile_labels(lines, info.get("labels", {}))
     _append_dockerfile_healthcheck(lines, info.get("healthcheck", ""))
     return "\n".join(lines)
@@ -924,9 +2938,15 @@ class _BootstrapRunOptions:
     depth: str
     deep: bool
     skip_workflows: bool
+    skip_flows: bool
+    skip_data_flow: bool
+    skip_dependencies: bool
+    dependency_graph_detail: str
     overwrite: bool
     json_mode: bool
     source_adapter: bool
+    helper_cache_dir: str | None
+    include_tests: Iterable[str] | None
     progress_stream: TextIO
 
 
@@ -937,12 +2957,15 @@ class _BootstrapRunState:
     created_files: list[str] = field(default_factory=list)
     updated_files: list[str] = field(default_factory=list)
     skipped_files: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+    unsupported_sources: dict[str, dict[str, object]] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
 class _BootstrapPageMaps:
     module_page_map: dict[str, str]
     entity_page_name_cache: dict[tuple[str, str], str]
+    entity_occurrence_page_name_cache: dict[EntityOccurrenceKey, str]
 
 
 @dataclass(frozen=True)
@@ -960,18 +2983,55 @@ class _WorkflowResult:
 
 
 @dataclass(frozen=True)
+class _FlowResult:
+    entries: list[dict]
+    created: int
+    data_flow_summary: dict
+
+
+@dataclass(frozen=True)
 class _InfrastructureResult:
     entries: list[dict]
     created: int
     docker_inventory: dict
+    yaml_inventory: dict
+    infrastructure_inventory: dict
+
+
+@dataclass(frozen=True)
+class _DependencyResult:
+    architecture_entries: list[dict]
+    created: int
+    summary: dict
 
 
 @dataclass(frozen=True)
 class _BootstrapGenerationResult:
     entity: _EntityModuleResult
     workflow: _WorkflowResult
+    flow: _FlowResult
     infrastructure: _InfrastructureResult
+    dependency: _DependencyResult
     cross_reference_count: int
+
+
+def _data_flow_summary(
+    *, generated: bool, analyzed: int = 0, boundary_effects: int = 0, gaps: int = 0
+) -> dict:
+    return {
+        "generated": generated,
+        "analyzed": analyzed,
+        "boundary_effects": boundary_effects,
+        "gaps": gaps,
+    }
+
+
+def _with_unsupported_sources(
+    payload: dict, unsupported_sources: dict[str, dict[str, object]]
+) -> dict:
+    if unsupported_sources:
+        payload["unsupported_sources"] = unsupported_sources
+    return payload
 
 
 def _bootstrap_run_options_from_args(args) -> _BootstrapRunOptions:
@@ -992,9 +3052,15 @@ def _bootstrap_run_options_from_args(args) -> _BootstrapRunOptions:
         depth=depth,
         deep=depth == "full",
         skip_workflows=getattr(args, "skip_workflows", False),
+        skip_flows=getattr(args, "skip_flows", False),
+        skip_data_flow=getattr(args, "skip_data_flow", False),
+        skip_dependencies=getattr(args, "skip_dependencies", False),
+        dependency_graph_detail=getattr(args, "dependency_graph_detail", "auto"),
         overwrite=args.overwrite,
         json_mode=json_mode,
         source_adapter=getattr(args, "source_adapter", False),
+        helper_cache_dir=getattr(args, "helper_cache_dir", None),
+        include_tests=getattr(args, "include_tests", None),
         progress_stream=sys.stderr if json_mode else sys.stdout,
     )
 
@@ -1007,6 +3073,12 @@ def _emit_bootstrap(
     state: _BootstrapRunState, message: str = "", *, flush: bool = False
 ) -> None:
     print(message, file=state.options.progress_stream, flush=flush)
+
+
+def _emit_bootstrap_warnings(state: _BootstrapRunState, warnings: list[str]) -> None:
+    state.warnings.extend(warnings)
+    for warning in warnings:
+        _emit_bootstrap(state, f"Warning: {warning}", flush=True)
 
 
 def _record_bootstrap_write(
@@ -1030,22 +3102,40 @@ def _start_bootstrap(state: _BootstrapRunState) -> None:
         flush=True,
     )
     _emit_bootstrap(state, f"Wiki output directory: {options.wiki_dir}", flush=True)
-    for subdir in ["entities", "modules", "workflows", "infrastructure"]:
+    for subdir in [
+        "entities",
+        "modules",
+        "workflows",
+        "guides",
+        "infrastructure",
+        "flows",
+    ]:
         (options.wiki_dir / subdir).mkdir(parents=True, exist_ok=True)
 
 
 def _extract_bootstrap_inventory(state: _BootstrapRunState):
     options = state.options
     _emit_bootstrap(state, "Extracting source inventory...", flush=True)
-    state.source_snapshot = build_source_snapshot(options.src_dir_for_scan)
+    state.source_snapshot = build_source_snapshot(
+        options.src_dir_for_scan,
+        include_tests=options.include_tests,
+    )
     inventory_result = get_inventory_result(
         options.src_dir_for_scan,
         deep=options.deep,
         source_snapshot=state.source_snapshot,
+        helper_cache_dir=options.helper_cache_dir,
+        include_tests=options.include_tests,
     )
     if inventory_result.failed:
         print_inventory_failures(inventory_result, file=options.progress_stream)
         sys.exit(1)
+    state.unsupported_sources = unsupported_source_summary(
+        state.source_snapshot, supported_languages=inventory_result.statuses
+    )
+    unsupported_message = format_unsupported_source_summary(state.unsupported_sources)
+    if unsupported_message:
+        _emit_bootstrap(state, unsupported_message, flush=True)
     _emit_bootstrap(
         state,
         f"Extracted source inventory: {len(inventory_result.inventory)} file(s).",
@@ -1063,27 +3153,32 @@ def _finish_if_empty_bootstrap_inventory(
     options = state.options
     _emit_bootstrap(
         state,
-        "No supported source files with classes or functions found. Nothing to bootstrap.",
+        "No supported source files with documentable inventory found. Nothing to bootstrap.",
     )
     if options.json_mode:
         print(
             json.dumps(
-                {
-                    "schema_version": BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
-                    "src_dir": options.src_dir_for_scan,
-                    "generated_wiki_path": _path_text(options.wiki_dir),
-                    "depth": options.depth,
-                    "source_files": len(state.source_snapshot.all_source_paths),
-                    "classes": 0,
-                    "functions": 0,
-                    "docker_files": 0,
-                    "workflows": 0,
-                    "cross_references": 0,
-                    "created_files": state.created_files,
-                    "updated_files": state.updated_files,
-                    "skipped_files": state.skipped_files,
-                    "manifest_path": None,
-                },
+                _with_unsupported_sources(
+                    {
+                        "schema_version": BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
+                        "src_dir": options.src_dir_for_scan,
+                        "generated_wiki_path": _path_text(options.wiki_dir),
+                        "depth": options.depth,
+                        "source_files": len(state.source_snapshot.all_source_paths),
+                        "classes": 0,
+                        "functions": 0,
+                        "docker_files": 0,
+                        "workflows": 0,
+                        "flows": 0,
+                        "dependencies": {"generated": False},
+                        "cross_references": 0,
+                        "created_files": state.created_files,
+                        "updated_files": state.updated_files,
+                        "skipped_files": state.skipped_files,
+                        "manifest_path": None,
+                    },
+                    state.unsupported_sources,
+                ),
                 indent=2,
             )
         )
@@ -1091,9 +3186,14 @@ def _finish_if_empty_bootstrap_inventory(
 
 
 def _prepare_bootstrap_page_maps(inventory: dict) -> _BootstrapPageMaps:
+    module_page_map = build_module_page_map(inventory)
+    entity_occurrence_page_map = build_entity_occurrence_page_map(
+        inventory, module_page_map
+    )
     return _BootstrapPageMaps(
-        module_page_map=build_module_page_map(inventory),
-        entity_page_name_cache=build_entity_page_map(inventory),
+        module_page_map=module_page_map,
+        entity_page_name_cache=_legacy_entity_page_map(entity_occurrence_page_map),
+        entity_occurrence_page_name_cache=entity_occurrence_page_map,
     )
 
 
@@ -1117,20 +3217,61 @@ def _build_bootstrap_relationships(
     return relationships, cross_reference_count
 
 
+def _build_entity_relationship_summary_map(
+    inventory: dict, call_edges: Sequence[Mapping]
+) -> dict[tuple[str, str], Mapping]:
+    summaries = build_entity_relationship_summaries(inventory, call_edges=call_edges)
+    return {
+        (str(summary["name"]), str(summary["file"])): summary
+        for summary in summaries.get("classes", [])
+        if summary.get("name") and summary.get("file")
+    }
+
+
+def _build_bootstrap_dependency_analysis(
+    state: _BootstrapRunState, inventory: dict
+) -> dict | None:
+    if not state.options.deep or state.options.skip_dependencies:
+        return None
+    return analyze_dependencies(
+        inventory,
+        state.options.src_dir_for_scan,
+        source_snapshot=state.source_snapshot,
+    )
+
+
 def _write_bootstrap_entity_pages(
     state: _BootstrapRunState,
     filepath: str,
     file_data: dict,
     relationships: dict,
     mod_page_name: str,
-    file_entity_page_map: dict[str, str],
+    module_page_map: Mapping[str, str],
+    entity_relationship_summaries: Mapping[tuple[str, str], Mapping] | None,
+    entity_occurrence_page_map: Mapping[EntityOccurrenceKey, str],
     seen_entity_pages: set[str],
     all_entity_names: list[str],
 ) -> int:
     entities_created = 0
+    seen_names: defaultdict[str, int] = defaultdict(int)
     for cls in file_data.get("classes", []):
-        entity_page_name = file_entity_page_map[cls["name"]]
+        seen_names[cls["name"]] += 1
+        entity_page_name = entity_occurrence_page_map[
+            (cls["name"], filepath, seen_names[cls["name"]])
+        ]
         entity_path = state.options.wiki_dir / "entities" / f"{entity_page_name}.md"
+        relationship_summary = (entity_relationship_summaries or {}).get(
+            (cls["name"], filepath)
+        )
+        diagram_style = None
+        if relationship_summary is not None:
+            diagram_style = _generated_diagram_style(
+                "relationships",
+                root=state.options.src_dir_for_scan,
+                fallback_root=Path.cwd(),
+                entity=relationship_summary.get("name"),
+                file=relationship_summary.get("file"),
+            )
         if entity_path.exists() and not state.options.overwrite:
             state.skipped_files.append(_path_text(entity_path))
             _emit_bootstrap(state, f"  SKIP entity (exists): {entity_page_name}")
@@ -1138,7 +3279,15 @@ def _write_bootstrap_entity_pages(
             _write_bootstrap_file(
                 state,
                 entity_path,
-                _generate_entity_md(cls, filepath, relationships, mod_page_name),
+                _generate_entity_md(
+                    cls,
+                    filepath,
+                    relationships,
+                    mod_page_name,
+                    relationship_summary=relationship_summary,
+                    module_page_map=module_page_map,
+                    diagram_style=diagram_style,
+                ),
             )
             entities_created += 1
             _emit_bootstrap(state, f"  CREATE entity: {entity_page_name}")
@@ -1154,6 +3303,9 @@ def _write_bootstrap_module_page(
     file_data: dict,
     mod_page_name: str,
     file_entity_page_map: dict[str, str],
+    entity_occurrence_page_map: Mapping[EntityOccurrenceKey, str],
+    module_dependency_map: Mapping | None,
+    module_page_map: Mapping[str, str],
 ) -> bool:
     module_path = state.options.wiki_dir / "modules" / f"{mod_page_name}.md"
     if module_path.exists() and not state.options.overwrite:
@@ -1164,10 +3316,42 @@ def _write_bootstrap_module_page(
     _write_bootstrap_file(
         state,
         module_path,
-        _generate_module_md(filepath, file_data, file_entity_page_map),
+        _generate_module_md(
+            filepath,
+            file_data,
+            file_entity_page_map,
+            module_dependency_map=module_dependency_map,
+            module_page_map=module_page_map,
+            entity_occurrence_page_map=entity_occurrence_page_map,
+            diagram_style=_generated_diagram_style(
+                "module_dependency",
+                root=state.options.src_dir_for_scan,
+                fallback_root=Path.cwd(),
+                file=filepath,
+            )
+            if module_dependency_map is not None
+            else None,
+        ),
     )
     _emit_bootstrap(state, f"  CREATE module: {mod_page_name}")
     return True
+
+
+def _file_entity_page_map_from_occurrences(
+    filepath: str,
+    file_data: Mapping,
+    entity_occurrence_page_map: Mapping[EntityOccurrenceKey, str],
+) -> dict[str, str]:
+    page_map: dict[str, str] = {}
+    seen_names: defaultdict[str, int] = defaultdict(int)
+    for cls in file_data.get("classes", []):
+        name = cls["name"]
+        seen_names[name] += 1
+        page_map.setdefault(
+            name,
+            entity_occurrence_page_map[(name, filepath, seen_names[name])],
+        )
+    return page_map
 
 
 def _write_entity_and_module_pages(
@@ -1175,6 +3359,8 @@ def _write_entity_and_module_pages(
     inventory: dict,
     page_maps: _BootstrapPageMaps,
     relationships: dict,
+    entity_relationship_summaries: Mapping[tuple[str, str], Mapping] | None,
+    module_dependency_maps: Mapping[str, Mapping] | None,
 ) -> _EntityModuleResult:
     all_entity_names: list[str] = []
     module_entries: list[dict] = []
@@ -1185,22 +3371,32 @@ def _write_entity_and_module_pages(
     _emit_bootstrap(state, "Generating entity and module pages...", flush=True)
     for filepath, file_data in inventory.items():
         mod_page_name = page_maps.module_page_map[filepath]
-        file_entity_page_map = {
-            cls["name"]: page_maps.entity_page_name_cache[(cls["name"], filepath)]
-            for cls in file_data.get("classes", [])
-        }
+        file_entity_page_map = _file_entity_page_map_from_occurrences(
+            filepath, file_data, page_maps.entity_occurrence_page_name_cache
+        )
         entities_created += _write_bootstrap_entity_pages(
             state,
             filepath,
             file_data,
             relationships,
             mod_page_name,
-            file_entity_page_map,
+            page_maps.module_page_map,
+            entity_relationship_summaries,
+            page_maps.entity_occurrence_page_name_cache,
             seen_entity_pages,
             all_entity_names,
         )
         if _write_bootstrap_module_page(
-            state, filepath, file_data, mod_page_name, file_entity_page_map
+            state,
+            filepath,
+            file_data,
+            mod_page_name,
+            file_entity_page_map,
+            page_maps.entity_occurrence_page_name_cache,
+            (module_dependency_maps or {}).get(filepath)
+            if module_dependency_maps is not None
+            else None,
+            page_maps.module_page_map,
         ):
             modules_created += 1
         module_entries.append(
@@ -1252,6 +3448,100 @@ def _write_bootstrap_workflow_pages(
     return _WorkflowResult(workflow_entries, workflows_created)
 
 
+def _write_bootstrap_flow_pages(
+    state: _BootstrapRunState,
+    inventory: dict,
+    module_page_map: dict[str, str],
+    call_edges: Sequence[Mapping] | None = None,
+) -> _FlowResult:
+    flow_entries: list[dict] = []
+    flows_created = 0
+    data_flow_summary = _data_flow_summary(generated=False)
+    if not state.options.deep or state.options.skip_flows:
+        return _FlowResult(flow_entries, flows_created, data_flow_summary)
+
+    _emit_bootstrap(state, "Generating user-flow pages...", flush=True)
+    console_scripts = read_console_scripts(state.options.src_dir_for_scan)
+    entrypoint_result = detect_entry_points(
+        inventory,
+        console_scripts=console_scripts,
+        root=state.options.src_dir_for_scan,
+        fallback_root=Path.cwd(),
+    )
+    _emit_bootstrap_warnings(state, entrypoint_result.warnings)
+    entry_points = entrypoint_result.entries
+    edges: list[dict]
+    if not entry_points:
+        edges = []
+    elif call_edges is not None:
+        edges = [dict(edge) for edge in call_edges]
+    else:
+        edges = resolve_call_edges(inventory)
+    data_flow_enabled = not state.options.skip_data_flow
+    data_flow_context = (
+        build_data_flow_context(inventory, edges)
+        if data_flow_enabled and entry_points
+        else None
+    )
+    if not data_flow_enabled:
+        _emit_bootstrap(state, "  SKIP data flow (--skip-data-flow)")
+    analyzed = 0
+    boundary_effects = 0
+    gaps = 0
+    for entry_point in entry_points:
+        flow = build_flow(entry_point, edges)
+        data_flow = None
+        if data_flow_enabled:
+            data_flow = analyze_data_flow(
+                inventory, flow, edges, context=data_flow_context
+            )
+            analyzed += 1
+            boundary_effects += len(data_flow.get("boundaries", []))
+            gaps += len(data_flow.get("gaps", []))
+        flow_path = state.options.wiki_dir / "flows" / f"{entry_point['id']}.md"
+        if flow_path.exists() and not state.options.overwrite:
+            state.skipped_files.append(_path_text(flow_path))
+            _emit_bootstrap(state, f"  SKIP flow (exists): {entry_point['id']}")
+        else:
+            _write_bootstrap_file(
+                state,
+                flow_path,
+                _generate_flow_md(
+                    flow,
+                    module_page_map,
+                    data_flow=data_flow,
+                    diagram_style=_generated_diagram_style(
+                        "data_flow",
+                        root=state.options.src_dir_for_scan,
+                        fallback_root=Path.cwd(),
+                        flow_id=entry_point.get("id"),
+                        category=entry_point.get("category"),
+                    )
+                    if data_flow is not None
+                    else None,
+                ),
+            )
+            flows_created += 1
+            _emit_bootstrap(state, f"  CREATE flow: {entry_point['id']}")
+        flow_entries.append(
+            {
+                "id": entry_point["id"],
+                "category": entry_point["category"],
+                "entry": entry_point["symbol"],
+                "file": entry_point.get("file"),
+                "label": entry_point.get("label"),
+            }
+        )
+    _emit_bootstrap(state, f"Generated user-flow pages: {flows_created}.", flush=True)
+    data_flow_summary = _data_flow_summary(
+        generated=data_flow_enabled,
+        analyzed=analyzed,
+        boundary_effects=boundary_effects,
+        gaps=gaps,
+    )
+    return _FlowResult(flow_entries, flows_created, data_flow_summary)
+
+
 def _write_bootstrap_infrastructure_pages(
     state: _BootstrapRunState,
     module_page_map: dict[str, str],
@@ -1263,8 +3553,18 @@ def _write_bootstrap_infrastructure_pages(
         state.options.src_dir_for_scan,
         source_snapshot=state.source_snapshot,
     )
-    for docker_file, docker_info in docker_inventory.items():
-        page_name = docker_file.replace("\\", "/").replace("/", "_").replace(".", "_")
+    yaml_inventory = get_yaml_infrastructure_inventory(
+        state.options.src_dir_for_scan,
+        source_snapshot=state.source_snapshot,
+    )
+    infrastructure_inventory = dict(docker_inventory)
+    for yaml_file, yaml_info in yaml_inventory.items():
+        if yaml_file not in infrastructure_inventory:
+            infrastructure_inventory[yaml_file] = yaml_info
+
+    advisory_warnings: list[str] = []
+    for source_file, info in sorted(infrastructure_inventory.items()):
+        page_name = infrastructure_page_name(source_file)
         infra_path = state.options.wiki_dir / "infrastructure" / f"{page_name}.md"
         if infra_path.exists() and not state.options.overwrite:
             state.skipped_files.append(_path_text(infra_path))
@@ -1273,22 +3573,157 @@ def _write_bootstrap_infrastructure_pages(
             _write_bootstrap_file(
                 state,
                 infra_path,
-                _generate_docker_md(docker_file, docker_info, module_page_map),
+                _generate_infrastructure_md(
+                    source_file,
+                    info,
+                    module_page_map,
+                    state.unsupported_sources,
+                ),
             )
             infra_created += 1
             _emit_bootstrap(state, f"  CREATE infrastructure: {page_name}")
-        infra_entries.append({"name": page_name, "type": docker_info["type"]})
+        infra_entries.append(
+            {
+                "name": page_name,
+                "type": info["type"],
+                "label": infrastructure_display_label(source_file, info),
+            }
+        )
+        for advisory in info.get("advisories") or []:
+            advisory_warnings.append(f"{source_file}: {advisory}")
+    if advisory_warnings:
+        _emit_bootstrap_warnings(state, advisory_warnings)
     _emit_bootstrap(
         state, f"Generated infrastructure pages: {infra_created}.", flush=True
     )
-    return _InfrastructureResult(infra_entries, infra_created, docker_inventory)
+    return _InfrastructureResult(
+        infra_entries,
+        infra_created,
+        docker_inventory,
+        yaml_inventory,
+        infrastructure_inventory,
+    )
+
+
+def _dependency_counts(analysis: dict) -> dict:
+    """Scalar counts about *analysis* for the bootstrap JSON summary."""
+    graph = analysis["graph"]
+    recon_summary = analysis["reconciliation"]["summary"]
+    return {
+        "modules": len(graph["nodes"]),
+        "edges": len(graph["edges"]),
+        "cycles": len(analysis["cycles"]),
+        "external": recon_summary["external_count"],
+        "undeclared": recon_summary["undeclared_count"],
+        "unused": recon_summary["unused_count"],
+    }
+
+
+def _infrastructure_type_count(
+    infrastructure_result: _InfrastructureResult, entry_type: str
+) -> int:
+    return sum(
+        1
+        for info in infrastructure_result.infrastructure_inventory.values()
+        if info.get("type") == entry_type
+    )
+
+
+def _runtime_config_type_counts(
+    infrastructure_result: _InfrastructureResult,
+) -> dict[str, int]:
+    counts = {
+        entry_type: _infrastructure_type_count(infrastructure_result, entry_type)
+        for entry_type in sorted(RUNTIME_CONFIG_TYPES)
+    }
+    return {entry_type: count for entry_type, count in counts.items() if count}
+
+
+def _runtime_config_count(infrastructure_result: _InfrastructureResult) -> int:
+    return sum(_runtime_config_type_counts(infrastructure_result).values())
+
+
+def _write_bootstrap_dependency_pages(
+    state: _BootstrapRunState,
+    inventory: dict,
+    module_page_map: dict[str, str],
+    *,
+    analysis: dict | None = None,
+) -> _DependencyResult:
+    if not state.options.deep or state.options.skip_dependencies:
+        return _DependencyResult([], 0, {"generated": False})
+
+    _emit_bootstrap(state, "Generating architecture pages...", flush=True)
+    analysis = analysis or analyze_dependencies(
+        inventory,
+        state.options.src_dir_for_scan,
+        source_snapshot=state.source_snapshot,
+    )
+    if not analysis["graph"]["nodes"]:
+        _emit_bootstrap(
+            state,
+            "Generated architecture pages: 0 (no dependency graph nodes).",
+            flush=True,
+        )
+        return _DependencyResult(
+            [],
+            0,
+            {"generated": False, "pages_created": 0, **_dependency_counts(analysis)},
+        )
+    pages = (
+        (
+            "dependencies",
+            "Dependencies",
+            _generate_dependencies_md(
+                analysis,
+                module_page_map,
+                detail=state.options.dependency_graph_detail,
+                diagram_style=_generated_diagram_style(
+                    "dependencies",
+                    root=state.options.src_dir_for_scan,
+                    fallback_root=Path.cwd(),
+                    detail=state.options.dependency_graph_detail,
+                ),
+            ),
+        ),
+        (
+            "load-order",
+            "Load order",
+            _generate_load_order_md(analysis, module_page_map),
+        ),
+    )
+
+    architecture_entries: list[dict] = []
+    created = 0
+    for stem, label, content in pages:
+        page_path = state.options.wiki_dir / f"{stem}.md"
+        if page_path.exists() and not state.options.overwrite:
+            state.skipped_files.append(_path_text(page_path))
+            _emit_bootstrap(state, f"  SKIP architecture (exists): {stem}")
+        else:
+            _write_bootstrap_file(state, page_path, content)
+            created += 1
+            _emit_bootstrap(state, f"  CREATE architecture: {stem}")
+        # Linked from the index regardless of skip so existing pages are not
+        # orphaned by lint.
+        architecture_entries.append({"name": label, "page": stem})
+
+    _emit_bootstrap(state, f"Generated architecture pages: {created}.", flush=True)
+    summary = {
+        "generated": True,
+        "pages_created": created,
+        **_dependency_counts(analysis),
+    }
+    return _DependencyResult(architecture_entries, created, summary)
 
 
 def _write_bootstrap_index(
     state: _BootstrapRunState,
     entity_result: _EntityModuleResult,
     workflow_result: _WorkflowResult,
+    flow_result: _FlowResult,
     infrastructure_result: _InfrastructureResult,
+    dependency_result: _DependencyResult,
 ) -> None:
     index_path = state.options.wiki_dir / "index.md"
     _write_bootstrap_file(
@@ -1297,8 +3732,11 @@ def _write_bootstrap_index(
         _generate_index_md(
             entity_result.all_entity_names,
             entity_result.module_entries,
-            workflow_result.entries or None,
-            infrastructure_result.entries or None,
+            workflow_entries=workflow_result.entries or None,
+            guide_entries=None,
+            infra_entries=infrastructure_result.entries or None,
+            flow_entries=flow_result.entries or None,
+            architecture_entries=dependency_result.architecture_entries or None,
         ),
     )
     _emit_bootstrap(state, "  WRITE index.md")
@@ -1309,10 +3747,17 @@ def _append_bootstrap_log(
     inventory: dict,
     entity_result: _EntityModuleResult,
     workflow_result: _WorkflowResult,
+    flow_result: _FlowResult,
     infrastructure_result: _InfrastructureResult,
+    dependency_result: _DependencyResult,
     cross_reference_count: int,
 ) -> None:
     log_path = state.options.wiki_dir / "log.md"
+    github_actions_count = _infrastructure_type_count(
+        infrastructure_result, "github_actions"
+    )
+    kubernetes_count = _infrastructure_type_count(infrastructure_result, "kubernetes")
+    runtime_config_count = _runtime_config_count(infrastructure_result)
     log_entry = (
         f"\n## {date.today().isoformat()}\n\n"
         f"### feat: bootstrap wiki from existing codebase\n"
@@ -1321,10 +3766,15 @@ def _append_bootstrap_log(
         f"- Entities created: {entity_result.entities_created}\n"
         f"- Modules created: {entity_result.modules_created}\n"
         f"- Workflows created: {workflow_result.created}\n"
+        f"- User flows created: {flow_result.created}\n"
         f"- Infrastructure created: {infrastructure_result.created}\n"
+        f"- Architecture pages created: {dependency_result.created}\n"
         f"- Total classes tracked: {len(entity_result.all_entity_names)}\n"
         f"- Total files scanned: {len(inventory)}\n"
         f"- Docker/Compose files: {len(infrastructure_result.docker_inventory)}\n"
+        f"- GitHub Actions files: {github_actions_count}\n"
+        f"- Kubernetes files: {kubernetes_count}\n"
+        f"- Runtime/config YAML files: {runtime_config_count}\n"
         f"- Cross-references resolved: {cross_reference_count}\n"
     )
     if log_path.exists():
@@ -1343,14 +3793,18 @@ def _emit_bootstrap_complete(
     inventory: dict,
     entity_result: _EntityModuleResult,
     workflow_result: _WorkflowResult,
+    flow_result: _FlowResult,
     infrastructure_result: _InfrastructureResult,
+    dependency_result: _DependencyResult,
     cross_reference_count: int,
 ) -> None:
     _emit_bootstrap(
         state,
         f"\nBootstrap complete: {entity_result.entities_created} entities, "
         f"{entity_result.modules_created} modules, {workflow_result.created} workflows, "
-        f"{infrastructure_result.created} infrastructure "
+        f"{flow_result.created} flows, "
+        f"{infrastructure_result.created} infrastructure, "
+        f"{dependency_result.created} architecture "
         f"created from {len(inventory)} source files "
         f"({cross_reference_count} cross-references).",
     )
@@ -1375,6 +3829,7 @@ def _write_bootstrap_manifest(
         state.options.src_dir_for_scan,
         page_maps.entity_page_name_cache,
         page_maps.module_page_map,
+        entity_occurrence_page_cache=page_maps.entity_occurrence_page_name_cache,
     )
     _emit_bootstrap(state, "Writing sync manifest...", flush=True)
     manifest_path = state.options.wiki_dir / ".llm-wiki-manifest.json"
@@ -1385,42 +3840,80 @@ def _write_bootstrap_manifest(
     return manifest_path
 
 
+def _write_bootstrap_surface_index(
+    state: _BootstrapRunState,
+    inventory: dict,
+    page_maps: _BootstrapPageMaps,
+    flow_result: _FlowResult,
+) -> None:
+    _emit_bootstrap(state, "Writing wiki surface index...", flush=True)
+    surface_path, write_state = write_surface_index(
+        state.options.wiki_dir,
+        inventory,
+        src_dir=state.options.src_dir_for_scan,
+        entity_page_cache=page_maps.entity_page_name_cache,
+        entity_occurrence_page_cache=page_maps.entity_occurrence_page_name_cache,
+        module_page_map=page_maps.module_page_map,
+        entry_points=flow_result.entries,
+    )
+    if write_state != "unchanged":
+        _record_bootstrap_write(state, surface_path, write_state == "updated")
+        _emit_bootstrap(state, f"  WRITE {surface_path}")
+    else:
+        _emit_bootstrap(state, f"  SKIP {surface_path} (unchanged)")
+
+
 def _emit_bootstrap_json_summary(
     state: _BootstrapRunState,
     inventory: dict,
     workflow_result: _WorkflowResult,
+    flow_result: _FlowResult,
     infrastructure_result: _InfrastructureResult,
+    dependency_result: _DependencyResult,
     cross_reference_count: int,
     manifest_path: Path,
 ) -> None:
     if not state.options.json_mode:
         return
 
-    print(
-        json.dumps(
-            {
-                "schema_version": BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
-                "src_dir": state.options.src_dir_for_scan,
-                "generated_wiki_path": _path_text(state.options.wiki_dir),
-                "depth": state.options.depth,
-                "source_files": len(state.source_snapshot.all_source_paths),
-                "classes": sum(
-                    len(data.get("classes", [])) for data in inventory.values()
-                ),
-                "functions": sum(
-                    len(data.get("functions", [])) for data in inventory.values()
-                ),
-                "docker_files": len(infrastructure_result.docker_inventory),
-                "workflows": len(workflow_result.entries),
-                "cross_references": cross_reference_count,
-                "created_files": state.created_files,
-                "updated_files": state.updated_files,
-                "skipped_files": state.skipped_files,
-                "manifest_path": _path_text(manifest_path),
-            },
-            indent=2,
-        )
+    summary = _with_unsupported_sources(
+        {
+            "schema_version": BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
+            "src_dir": state.options.src_dir_for_scan,
+            "generated_wiki_path": _path_text(state.options.wiki_dir),
+            "depth": state.options.depth,
+            "source_files": len(state.source_snapshot.all_source_paths),
+            "classes": sum(len(data.get("classes", [])) for data in inventory.values()),
+            "functions": sum(
+                len(data.get("functions", [])) for data in inventory.values()
+            ),
+            "docker_files": len(infrastructure_result.docker_inventory),
+            "infrastructure_files": len(infrastructure_result.infrastructure_inventory),
+            "github_actions_files": _infrastructure_type_count(
+                infrastructure_result, "github_actions"
+            ),
+            "kubernetes_files": _infrastructure_type_count(
+                infrastructure_result, "kubernetes"
+            ),
+            "runtime_config_files": _runtime_config_count(infrastructure_result),
+            "runtime_config_by_type": _runtime_config_type_counts(
+                infrastructure_result
+            ),
+            "workflows": len(workflow_result.entries),
+            "flows": len(flow_result.entries),
+            "data_flows": flow_result.data_flow_summary,
+            "dependencies": dependency_result.summary,
+            "cross_references": cross_reference_count,
+            "created_files": state.created_files,
+            "updated_files": state.updated_files,
+            "skipped_files": state.skipped_files,
+            "manifest_path": _path_text(manifest_path),
+        },
+        state.unsupported_sources,
     )
+    if state.warnings:
+        summary["warnings"] = state.warnings
+    print(json.dumps(summary, indent=2))
 
 
 def _generate_bootstrap_content(
@@ -1428,24 +3921,52 @@ def _generate_bootstrap_content(
     inventory: dict,
     page_maps: _BootstrapPageMaps,
 ) -> _BootstrapGenerationResult:
+    call_edges = resolve_call_edges(inventory) if state.options.deep else []
+    entity_relationship_summaries = (
+        _build_entity_relationship_summary_map(inventory, call_edges)
+        if state.options.deep
+        else None
+    )
+    dependency_analysis = _build_bootstrap_dependency_analysis(state, inventory)
+    module_dependency_maps = (
+        build_module_dependency_maps(dependency_analysis)
+        if dependency_analysis is not None
+        else None
+    )
     relationships, cross_reference_count = _build_bootstrap_relationships(
         state,
         inventory,
         page_maps.module_page_map,
     )
     entity_result = _write_entity_and_module_pages(
-        state, inventory, page_maps, relationships
+        state,
+        inventory,
+        page_maps,
+        relationships,
+        entity_relationship_summaries,
+        module_dependency_maps,
     )
     workflow_result = _write_bootstrap_workflow_pages(
         state, inventory, page_maps.module_page_map
     )
+    flow_result = _write_bootstrap_flow_pages(
+        state, inventory, page_maps.module_page_map, call_edges=call_edges
+    )
     infrastructure_result = _write_bootstrap_infrastructure_pages(
         state, page_maps.module_page_map
+    )
+    dependency_result = _write_bootstrap_dependency_pages(
+        state,
+        inventory,
+        page_maps.module_page_map,
+        analysis=dependency_analysis,
     )
     return _BootstrapGenerationResult(
         entity_result,
         workflow_result,
+        flow_result,
         infrastructure_result,
+        dependency_result,
         cross_reference_count,
     )
 
@@ -1456,21 +3977,33 @@ def _finalize_bootstrap(
     page_maps: _BootstrapPageMaps,
     result: _BootstrapGenerationResult,
 ) -> None:
-    _write_bootstrap_index(state, result.entity, result.workflow, result.infrastructure)
+    _write_bootstrap_index(
+        state,
+        result.entity,
+        result.workflow,
+        result.flow,
+        result.infrastructure,
+        result.dependency,
+    )
     _append_bootstrap_log(
         state,
         inventory,
         result.entity,
         result.workflow,
+        result.flow,
         result.infrastructure,
+        result.dependency,
         result.cross_reference_count,
     )
+    _write_bootstrap_surface_index(state, inventory, page_maps, result.flow)
     _emit_bootstrap_complete(
         state,
         inventory,
         result.entity,
         result.workflow,
+        result.flow,
         result.infrastructure,
+        result.dependency,
         result.cross_reference_count,
     )
     _update_bootstrap_agent_constraints(state)
@@ -1479,7 +4012,9 @@ def _finalize_bootstrap(
         state,
         inventory,
         result.workflow,
+        result.flow,
         result.infrastructure,
+        result.dependency,
         result.cross_reference_count,
         manifest_path,
     )

@@ -11,14 +11,19 @@ from llm_wiki_cli.services import metrics
 
 def test_metrics_path_resolves_inside_git_dir():
     assert metrics.metrics_path(".git") == Path(".git") / "llm-wiki-metrics.jsonl"
-    assert metrics.metrics_path(Path("repo") / ".git") == Path("repo") / ".git" / "llm-wiki-metrics.jsonl"
+    assert (
+        metrics.metrics_path(Path("repo") / ".git")
+        == Path("repo") / ".git" / "llm-wiki-metrics.jsonl"
+    )
 
 
 def test_record_event_appends_jsonl_and_load_events_reads_it(tmp_path):
     git_dir = tmp_path / ".git"
     git_dir.mkdir()
 
-    metrics.record_event("trigger_start", {"mode": "CLI", "agent": "claude"}, git_dir=git_dir)
+    metrics.record_event(
+        "trigger_start", {"mode": "CLI", "agent": "claude"}, git_dir=git_dir
+    )
 
     path = metrics.metrics_path(git_dir)
     assert path.exists()
@@ -49,7 +54,9 @@ def test_load_events_returns_empty_when_metrics_file_is_missing(tmp_path):
     assert metrics.load_events(git_dir=git_dir) == []
 
 
-def test_load_events_skips_blank_invalid_and_out_of_window_events(tmp_path, monkeypatch):
+def test_load_events_skips_blank_invalid_and_out_of_window_events(
+    tmp_path, monkeypatch
+):
     git_dir = tmp_path / ".git"
     git_dir.mkdir()
     now = datetime(2026, 6, 12, 9, 0, tzinfo=timezone.utc)

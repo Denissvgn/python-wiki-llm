@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import inspect
+import json
 import shutil
 import subprocess
 import textwrap
@@ -13,12 +14,14 @@ from unittest.mock import patch
 import pytest
 
 from llm_wiki_cli.config import EXTRACTOR_REGISTRY
-from llm_wiki_cli.extractors.go_extractor import GoExtractor
+from llm_wiki_cli.extractors import common as extractor_common
+from llm_wiki_cli.extractors.go_extractor import GoExtractionRequest, GoExtractor
 from llm_wiki_cli.services.extractor_helpers import get_prepared_binary
 
 # ---------------------------------------------------------------------------
 # Skip all tests when Go is not available on this machine.
 # ---------------------------------------------------------------------------
+
 
 def _command_available(*cmd: str) -> bool:
     if shutil.which(cmd[0]) is None:
@@ -32,7 +35,11 @@ def _command_available(*cmd: str) -> bool:
             timeout=10,
         )
         return True
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
+    except (
+        subprocess.CalledProcessError,
+        subprocess.TimeoutExpired,
+        FileNotFoundError,
+    ):
         return False
 
 
@@ -58,6 +65,7 @@ def _make_go(tmp_path: Path, filename: str, content: str) -> Path:
 def _body_line_count(function) -> int:
     source = textwrap.dedent(inspect.getsource(function))
     function_node = ast.parse(source).body[0]
+    assert isinstance(function_node, ast.FunctionDef)
     body = list(function_node.body)
     if (
         body
@@ -68,12 +76,14 @@ def _body_line_count(function) -> int:
         body = body[1:]
 
     first_body_line = min(stmt.lineno for stmt in body)
-    last_body_line = max(stmt.end_lineno for stmt in body)
+    last_body_line = max(stmt.end_lineno or stmt.lineno for stmt in body)
     return last_body_line - first_body_line + 1
 
 
 class TestGoWrapperFiltering:
-    def test_full_scan_passes_gitignore_filtered_files_to_subprocess(self, tmp_path, monkeypatch):
+    def test_full_scan_passes_gitignore_filtered_files_to_subprocess(
+        self, tmp_path, monkeypatch
+    ):
         _make_go(tmp_path, "real.go", "package main\n\ntype Real struct{}\n")
         _make_go(tmp_path, "ignored.go", "package main\n\ntype Ignored struct{}\n")
         (tmp_path / ".gitignore").write_text("ignored.go\n", encoding="utf-8")
@@ -88,14 +98,122 @@ class TestGoWrapperFiltering:
                 stderr="",
             )
 
-        monkeypatch.setattr("llm_wiki_cli.extractors.go_extractor.get_prepared_binary", lambda *a, **k: Path("/tmp/go-helper"))
-        monkeypatch.setattr("llm_wiki_cli.extractors.go_extractor.subprocess.run", fake_run)
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.go_extractor.get_prepared_binary",
+            lambda *a, **k: Path("/tmp/go-helper"),
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.go_extractor.subprocess.run", fake_run
+        )
 
         GoExtractor().extract(str(tmp_path))
 
         cmd = commands[0]
         only_idx = cmd.index("--only-files") + 1
         assert cmd[only_idx] == "real.go"
+
+    def test_large_file_selection_is_split_across_subprocess_calls(
+        self, tmp_path, monkeypatch
+    ):
+        paths = ["src/a.go", "src/b.go", "src/c.go"]
+        for rel in paths:
+            _make_go(tmp_path, rel, "package main\n\ntype Item struct{}\n")
+        commands = []
+
+        def fake_run(cmd, *args, **kwargs):
+            commands.append(cmd)
+            only_files = cmd[cmd.index("--only-files") + 1].split(",")
+            payload = {rel: {"classes": [], "functions": []} for rel in only_files}
+            return subprocess.CompletedProcess(
+                cmd,
+                0,
+                stdout=json.dumps(payload),
+                stderr="",
+            )
+
+        monkeypatch.setattr(extractor_common, "MAX_ONLY_FILES_ARG_CHARS", 15)
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.go_extractor.get_prepared_binary",
+            lambda *a, **k: Path("/tmp/go-helper"),
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.go_extractor.subprocess.run", fake_run
+        )
+
+        inv = GoExtractor().extract(str(tmp_path))
+
+        assert set(inv) == set(paths)
+        assert len(commands) > 1
+        for cmd in commands:
+            only_arg = cmd[cmd.index("--only-files") + 1]
+            assert len(only_arg) <= extractor_common.MAX_ONLY_FILES_ARG_CHARS
+
+    def test_default_go_test_files_are_not_passed_to_helper(
+        self, tmp_path, monkeypatch
+    ):
+        _make_go(tmp_path, "main.go", "package main\n\ntype Main struct{}\n")
+        _make_go(tmp_path, "main_test.go", "package main\n\nfunc TestMain() {}\n")
+        commands = []
+
+        def fake_run(cmd, *args, **kwargs):
+            commands.append(cmd)
+            return subprocess.CompletedProcess(
+                cmd,
+                0,
+                stdout='{"main.go":{"classes":[],"functions":[]}}',
+                stderr="",
+            )
+
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.go_extractor.get_prepared_binary",
+            lambda *a, **k: Path("/tmp/go-helper"),
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.go_extractor.subprocess.run", fake_run
+        )
+
+        inv = GoExtractor().extract(str(tmp_path))
+
+        assert sorted(inv) == ["main.go"]
+        assert "--include-tests" not in commands[0]
+        assert commands[0][commands[0].index("--only-files") + 1] == "main.go"
+
+    def test_go_test_files_are_passed_to_helper_when_request_opts_in(
+        self, tmp_path, monkeypatch
+    ):
+        _make_go(tmp_path, "main.go", "package main\n\ntype Main struct{}\n")
+        _make_go(tmp_path, "main_test.go", "package main\n\nfunc TestMain() {}\n")
+        commands = []
+
+        def fake_run(cmd, *args, **kwargs):
+            commands.append(cmd)
+            only_files = cmd[cmd.index("--only-files") + 1].split(",")
+            return subprocess.CompletedProcess(
+                cmd,
+                0,
+                stdout=json.dumps(
+                    {rel: {"classes": [], "functions": []} for rel in only_files}
+                ),
+                stderr="",
+            )
+
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.go_extractor.get_prepared_binary",
+            lambda *a, **k: Path("/tmp/go-helper"),
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.go_extractor.subprocess.run", fake_run
+        )
+
+        inv = GoExtractor().extract(
+            GoExtractionRequest(src_dir=str(tmp_path), include_tests={"go"})
+        )
+
+        assert sorted(inv) == ["main.go", "main_test.go"]
+        assert "--include-tests" in commands[0]
+        assert commands[0][commands[0].index("--only-files") + 1] == (
+            "main.go,main_test.go"
+        )
 
 
 # ===========================================================================
@@ -230,12 +348,20 @@ class TestGoExtractor:
         assert "PublicFunc" in names
         assert "helperPrivate" not in names
 
-    def test_test_files_excluded(self, tmp_path):
+    def test_test_files_excluded_by_default(self, tmp_path):
         _make_go(tmp_path, "main.go", "package main\n\nfunc Main() {}\n")
         _make_go(tmp_path, "main_test.go", "package main\n\nfunc TestMain() {}\n")
         inv = GoExtractor().extract(str(tmp_path))
         assert len(inv) == 1
         assert "main_test.go" not in list(inv.keys())[0]
+
+    def test_test_files_included_when_request_opts_in(self, tmp_path):
+        _make_go(tmp_path, "main.go", "package main\n\nfunc Main() {}\n")
+        _make_go(tmp_path, "main_test.go", "package main\n\nfunc TestMain() {}\n")
+        inv = GoExtractor().extract(
+            GoExtractionRequest(src_dir=str(tmp_path), include_tests={"go"})
+        )
+        assert sorted(inv) == ["main.go", "main_test.go"]
 
     def test_type_alias(self, tmp_path):
         _make_go(
@@ -249,7 +375,10 @@ class TestGoExtractor:
         )
         inv = GoExtractor().extract(str(tmp_path))
         data = list(inv.values())[0]
-        assert any(c["name"] == "StringSlice" and c["kind"] == "type_alias" for c in data["classes"])
+        assert any(
+            c["name"] == "StringSlice" and c["kind"] == "type_alias"
+            for c in data["classes"]
+        )
 
     def test_only_files(self, tmp_path):
         _make_go(tmp_path, "a.go", "package a\n\ntype A struct{}\n")
@@ -447,7 +576,9 @@ class TestGoExtractor:
     def test_syntax_error_graceful(self, tmp_path):
         """Files with syntax errors are skipped with a warning, not a crash."""
         _make_go(tmp_path, "good.go", "package good\n\ntype Good struct{}\n")
-        _make_go(tmp_path, "bad.go", "package bad\n\ntype Bad struct {\n")  # missing closing brace
+        _make_go(
+            tmp_path, "bad.go", "package bad\n\ntype Bad struct {\n"
+        )  # missing closing brace
         inv = GoExtractor().extract(str(tmp_path))
         # Should still get the good file
         assert any("good.go" in k for k in inv)
@@ -473,7 +604,9 @@ class TestGoExtractor:
         )
         inv = GoExtractor().extract(str(tmp_path))
         data = list(inv.values())[0]
-        assert any(c["name"] == "Role" and c["kind"] == "named_type" for c in data["classes"])
+        assert any(
+            c["name"] == "Role" and c["kind"] == "named_type" for c in data["classes"]
+        )
 
     def test_true_type_alias(self, tmp_path):
         """type StringSlice = []string should remain kind 'type_alias'."""
@@ -488,7 +621,10 @@ class TestGoExtractor:
         )
         inv = GoExtractor().extract(str(tmp_path))
         data = list(inv.values())[0]
-        assert any(c["name"] == "StringSlice" and c["kind"] == "type_alias" for c in data["classes"])
+        assert any(
+            c["name"] == "StringSlice" and c["kind"] == "type_alias"
+            for c in data["classes"]
+        )
 
     def test_named_type_method_attachment(self, tmp_path):
         """A method on an exported named type attaches to it in deep mode."""
@@ -612,19 +748,27 @@ class TestGoExtractor:
 class TestGoExtractorWithoutPreparedHelper:
     def test_missing_helper_returns_empty(self, tmp_path):
         _make_go(tmp_path, "main.go", "package main\n\ntype App struct{}\n")
-        with patch("llm_wiki_cli.extractors.go_extractor.get_prepared_binary", return_value=None):
+        with patch(
+            "llm_wiki_cli.extractors.go_extractor.get_prepared_binary",
+            return_value=None,
+        ):
             inv = GoExtractor().extract(str(tmp_path))
         assert inv == {}
 
     def test_missing_helper_stderr_warning(self, tmp_path, capsys):
         _make_go(tmp_path, "main.go", "package main\n\ntype App struct{}\n")
-        with patch("llm_wiki_cli.extractors.go_extractor.get_prepared_binary", return_value=None):
+        with patch(
+            "llm_wiki_cli.extractors.go_extractor.get_prepared_binary",
+            return_value=None,
+        ):
             GoExtractor().extract(str(tmp_path))
         err = capsys.readouterr().err
         assert "prepare-extractors" in err
 
     def test_no_go_files_skips_helper_probe(self, tmp_path):
-        with patch("llm_wiki_cli.extractors.go_extractor.get_prepared_binary") as mock_prepared:
+        with patch(
+            "llm_wiki_cli.extractors.go_extractor.get_prepared_binary"
+        ) as mock_prepared:
             inv = GoExtractor().extract(str(tmp_path))
         assert inv == {}
         mock_prepared.assert_not_called()
@@ -655,8 +799,14 @@ class TestGoExtractorWrapper:
             stdout='{"pkg\\\\client.go": {"classes": [], "functions": []}}',
             stderr="",
         )
-        with patch("llm_wiki_cli.extractors.go_extractor.get_prepared_binary", return_value=Path("/tmp/go-helper")):
-            with patch("llm_wiki_cli.extractors.go_extractor.subprocess.run", return_value=result):
+        with patch(
+            "llm_wiki_cli.extractors.go_extractor.get_prepared_binary",
+            return_value=Path("/tmp/go-helper"),
+        ):
+            with patch(
+                "llm_wiki_cli.extractors.go_extractor.subprocess.run",
+                return_value=result,
+            ):
                 inv = GoExtractor().extract(str(tmp_path))
 
         assert "pkg/client.go" in inv
@@ -672,8 +822,14 @@ class TestGoExtractorWrapper:
             stdout=f'{{"{source.as_posix()}": {{"classes": [], "functions": []}}}}',
             stderr="",
         )
-        with patch("llm_wiki_cli.extractors.go_extractor.get_prepared_binary", return_value=Path("/tmp/go-helper")):
-            with patch("llm_wiki_cli.extractors.go_extractor.subprocess.run", return_value=result):
+        with patch(
+            "llm_wiki_cli.extractors.go_extractor.get_prepared_binary",
+            return_value=Path("/tmp/go-helper"),
+        ):
+            with patch(
+                "llm_wiki_cli.extractors.go_extractor.subprocess.run",
+                return_value=result,
+            ):
                 inv = GoExtractor().extract(str(tmp_path))
 
         assert "pkg/client.go" in inv
@@ -687,8 +843,14 @@ class TestGoExtractorWrapper:
             stdout="{not-json",
             stderr="",
         )
-        with patch("llm_wiki_cli.extractors.go_extractor.get_prepared_binary", return_value=Path("/tmp/go-helper")):
-            with patch("llm_wiki_cli.extractors.go_extractor.subprocess.run", return_value=result):
+        with patch(
+            "llm_wiki_cli.extractors.go_extractor.get_prepared_binary",
+            return_value=Path("/tmp/go-helper"),
+        ):
+            with patch(
+                "llm_wiki_cli.extractors.go_extractor.subprocess.run",
+                return_value=result,
+            ):
                 inv = GoExtractor().extract(str(tmp_path))
 
         assert inv == {}
@@ -696,7 +858,10 @@ class TestGoExtractorWrapper:
 
     def test_timeout_returns_empty(self, tmp_path, capsys):
         _make_go(tmp_path, "client.go", "package main\n\ntype Client struct{}\n")
-        with patch("llm_wiki_cli.extractors.go_extractor.get_prepared_binary", return_value=Path("/tmp/go-helper")):
+        with patch(
+            "llm_wiki_cli.extractors.go_extractor.get_prepared_binary",
+            return_value=Path("/tmp/go-helper"),
+        ):
             with patch(
                 "llm_wiki_cli.extractors.go_extractor.subprocess.run",
                 side_effect=subprocess.TimeoutExpired(["go"], 120),
@@ -714,8 +879,14 @@ class TestGoExtractorWrapper:
             stdout='{"client.go": {"classes": [], "functions": []}}',
             stderr="Warning: skipped bad.go\n",
         )
-        with patch("llm_wiki_cli.extractors.go_extractor.get_prepared_binary", return_value=Path("/tmp/go-helper")):
-            with patch("llm_wiki_cli.extractors.go_extractor.subprocess.run", return_value=result):
+        with patch(
+            "llm_wiki_cli.extractors.go_extractor.get_prepared_binary",
+            return_value=Path("/tmp/go-helper"),
+        ):
+            with patch(
+                "llm_wiki_cli.extractors.go_extractor.subprocess.run",
+                return_value=result,
+            ):
                 GoExtractor().extract(str(tmp_path))
 
         assert "Warning: skipped bad.go" in capsys.readouterr().err

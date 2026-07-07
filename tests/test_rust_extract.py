@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import inspect
+import json
 import shutil
 import subprocess
 import textwrap
@@ -13,8 +14,12 @@ from unittest.mock import patch
 import pytest
 
 from llm_wiki_cli.config import EXTRACTOR_REGISTRY
+from llm_wiki_cli.extractors import common as extractor_common
 from llm_wiki_cli.extractors.rust_extractor import RustExtractionRequest, RustExtractor
-from llm_wiki_cli.services.extractor_helpers import get_prepared_binary
+from llm_wiki_cli.services.extractor_helpers import (
+    get_prepared_binary,
+    resolve_helper_cache_root,
+)
 
 # ---------------------------------------------------------------------------
 # Skip all tests when Rust toolchain is not available on this machine.
@@ -41,7 +46,18 @@ def _command_available(*cmd: str) -> bool:
         return False
 
 
-CARGO_AVAILABLE = get_prepared_binary("rust", ".") is not None
+def _repo_helper_cache_dir() -> str | None:
+    cache_root = resolve_helper_cache_root(".")
+    if cache_root is None:
+        return None
+    cache_dir = str(cache_root.parent)
+    if get_prepared_binary("rust", ".", cache_dir) is None:
+        return None
+    return cache_dir
+
+
+RUST_HELPER_CACHE_DIR = _repo_helper_cache_dir()
+CARGO_AVAILABLE = RUST_HELPER_CACHE_DIR is not None
 skip_no_cargo = pytest.mark.skipif(
     not CARGO_AVAILABLE,
     reason="Prepared Rust helper not available — Rust extractor integration tests skipped",
@@ -55,8 +71,7 @@ skip_no_cargo = pytest.mark.skipif(
 def _body_line_count(function) -> int:
     source = textwrap.dedent(inspect.getsource(function))
     function_node = ast.parse(source).body[0]
-    if not isinstance(function_node, ast.FunctionDef):
-        raise AssertionError("expected function source")
+    assert isinstance(function_node, ast.FunctionDef)
 
     body = [
         stmt
@@ -68,7 +83,7 @@ def _body_line_count(function) -> int:
         )
     ]
     first_body_line = min(stmt.lineno for stmt in body)
-    last_body_line = max(stmt.end_lineno for stmt in body)
+    last_body_line = max(stmt.end_lineno or stmt.lineno for stmt in body)
     return last_body_line - first_body_line + 1
 
 
@@ -78,6 +93,22 @@ def _make_rs(tmp_path: Path, filename: str, content: str) -> Path:
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(textwrap.dedent(content), encoding="utf-8")
     return p
+
+
+def _extract_rust(
+    tmp_path: Path,
+    *,
+    only_files: list[str] | None = None,
+    deep: bool = False,
+) -> dict:
+    return RustExtractor().extract(
+        RustExtractionRequest(
+            src_dir=str(tmp_path),
+            only_files=only_files,
+            deep=deep,
+            helper_cache_dir=RUST_HELPER_CACHE_DIR,
+        )
+    )
 
 
 class TestRustWrapperFiltering:
@@ -112,6 +143,42 @@ class TestRustWrapperFiltering:
         only_idx = cmd.index("--only-files") + 1
         assert cmd[only_idx] == "real.rs"
 
+    def test_large_file_selection_is_split_across_subprocess_calls(
+        self, tmp_path, monkeypatch
+    ):
+        paths = ["src/a.rs", "src/b.rs", "src/c.rs"]
+        for rel in paths:
+            _make_rs(tmp_path, rel, "pub struct Item;\n")
+        commands = []
+
+        def fake_run(cmd, *args, **kwargs):
+            commands.append(cmd)
+            only_files = cmd[cmd.index("--only-files") + 1].split(",")
+            payload = {rel: {"classes": [], "functions": []} for rel in only_files}
+            return subprocess.CompletedProcess(
+                cmd,
+                0,
+                stdout=json.dumps(payload),
+                stderr="",
+            )
+
+        monkeypatch.setattr(extractor_common, "MAX_ONLY_FILES_ARG_CHARS", 15)
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.rust_extractor.get_prepared_binary",
+            lambda *a, **k: Path("/tmp/rust-helper"),
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.extractors.rust_extractor.subprocess.run", fake_run
+        )
+
+        inv = RustExtractor().extract(str(tmp_path))
+
+        assert set(inv) == set(paths)
+        assert len(commands) > 1
+        for cmd in commands:
+            only_arg = cmd[cmd.index("--only-files") + 1]
+            assert len(only_arg) <= extractor_common.MAX_ONLY_FILES_ARG_CHARS
+
 
 # ===========================================================================
 # Unit-level tests (require Rust)
@@ -121,7 +188,7 @@ class TestRustWrapperFiltering:
 @skip_no_cargo
 class TestRustExtractor:
     def test_empty_dir(self, tmp_path):
-        inv = RustExtractor().extract(str(tmp_path))
+        inv = _extract_rust(tmp_path)
         assert inv == {}
 
     def test_single_struct(self, tmp_path):
@@ -135,7 +202,7 @@ class TestRustExtractor:
             }
             """,
         )
-        inv = RustExtractor().extract(str(tmp_path))
+        inv = _extract_rust(tmp_path)
         assert len(inv) == 1
         data = list(inv.values())[0]
         assert len(data["classes"]) == 1
@@ -144,7 +211,7 @@ class TestRustExtractor:
 
     def test_language_field_stamped(self, tmp_path):
         _make_rs(tmp_path, "a.rs", "pub struct A;\n")
-        inv = RustExtractor().extract(str(tmp_path))
+        inv = _extract_rust(tmp_path)
         for entry in inv.values():
             assert entry["language"] == "rust"
 
@@ -159,7 +226,7 @@ class TestRustExtractor:
             }
             """,
         )
-        inv = RustExtractor().extract(str(tmp_path))
+        inv = _extract_rust(tmp_path)
         data = list(inv.values())[0]
         assert len(data["classes"]) == 1
         assert data["classes"][0]["name"] == "Status"
@@ -175,7 +242,7 @@ class TestRustExtractor:
             }
             """,
         )
-        inv = RustExtractor().extract(str(tmp_path))
+        inv = _extract_rust(tmp_path)
         data = list(inv.values())[0]
         assert len(data["classes"]) == 1
         assert data["classes"][0]["name"] == "Drawable"
@@ -189,7 +256,7 @@ class TestRustExtractor:
             pub type UserId = u64;
             """,
         )
-        inv = RustExtractor().extract(str(tmp_path))
+        inv = _extract_rust(tmp_path)
         data = list(inv.values())[0]
         assert any(
             c["name"] == "UserId" and c["kind"] == "type_alias" for c in data["classes"]
@@ -205,7 +272,7 @@ class TestRustExtractor:
             }
             """,
         )
-        inv = RustExtractor().extract(str(tmp_path))
+        inv = _extract_rust(tmp_path)
         data = list(inv.values())[0]
         assert len(data["functions"]) == 1
         assert data["functions"][0]["name"] == "greet"
@@ -220,7 +287,7 @@ class TestRustExtractor:
             pub fn public_func() {}
             """,
         )
-        inv = RustExtractor().extract(str(tmp_path))
+        inv = _extract_rust(tmp_path)
         data = list(inv.values())[0]
         names = [f["name"] for f in data["functions"]]
         assert "public_func" in names
@@ -229,16 +296,13 @@ class TestRustExtractor:
     def test_only_files(self, tmp_path):
         _make_rs(tmp_path, "a.rs", "pub struct A;\n")
         _make_rs(tmp_path, "b.rs", "pub struct B;\n")
-        inv = RustExtractor().extract(str(tmp_path), only_files=["a.rs"])
+        inv = _extract_rust(tmp_path, only_files=["a.rs"])
         assert len(inv) == 1
         assert any("a.rs" in k for k in inv)
 
     def test_only_files_respects_excluded_dirs(self, tmp_path):
         _make_rs(tmp_path, "target/debug/build/dep.rs", "pub struct Dep;\n")
-        inv = RustExtractor().extract(
-            str(tmp_path),
-            only_files=["target/debug/build/dep.rs"],
-        )
+        inv = _extract_rust(tmp_path, only_files=["target/debug/build/dep.rs"])
         assert inv == {}
 
     def test_target_excluded(self, tmp_path):
@@ -248,7 +312,7 @@ class TestRustExtractor:
             "target/debug/build/dep.rs",
             "pub struct Dep;\n",
         )
-        inv = RustExtractor().extract(str(tmp_path))
+        inv = _extract_rust(tmp_path)
         assert len(inv) == 1
         assert not any("target" in k for k in inv)
 
@@ -272,7 +336,7 @@ class TestRustExtractor:
             }
             """,
         )
-        inv = RustExtractor().extract(str(tmp_path))
+        inv = _extract_rust(tmp_path)
         data = list(inv.values())[0]
         user = [c for c in data["classes"] if c["name"] == "User"][0]
         assert "Greetable" in user["bases"]
@@ -288,7 +352,7 @@ class TestRustExtractor:
             }
             """,
         )
-        inv = RustExtractor().extract(str(tmp_path), deep=True)
+        inv = _extract_rust(tmp_path, deep=True)
         data = list(inv.values())[0]
         config = data["classes"][0]
         assert "Debug" in config["decorators"]
@@ -297,14 +361,14 @@ class TestRustExtractor:
     def test_multiple_files(self, tmp_path):
         _make_rs(tmp_path, "a.rs", "pub struct Alpha;\n")
         _make_rs(tmp_path, "sub/b.rs", "pub struct Beta;\n")
-        inv = RustExtractor().extract(str(tmp_path))
+        inv = _extract_rust(tmp_path)
         assert len(inv) == 2
 
     def test_syntax_error_graceful(self, tmp_path):
         """Files with syntax errors are skipped with a warning, not a crash."""
         _make_rs(tmp_path, "good.rs", "pub struct Good;\n")
         _make_rs(tmp_path, "bad.rs", "pub struct Bad {\n")  # missing closing brace
-        inv = RustExtractor().extract(str(tmp_path))
+        inv = _extract_rust(tmp_path)
         # Should still get the good file.
         assert any("good.rs" in k for k in inv)
 
@@ -322,7 +386,7 @@ class TestRustExtractor:
             }
             """,
         )
-        inv = RustExtractor().extract(str(tmp_path))
+        inv = _extract_rust(tmp_path)
         data = list(inv.values())[0]
         names = [c["name"] for c in data["classes"]]
         assert "Real" in names
@@ -341,7 +405,7 @@ class TestRustExtractor:
             }
             """,
         )
-        inv = RustExtractor().extract(str(tmp_path), deep=True)
+        inv = _extract_rust(tmp_path, deep=True)
         data = list(inv.values())[0]
         user = data["classes"][0]
         assert "registered user" in user["docstring"]
@@ -357,7 +421,7 @@ class TestRustExtractor:
             }
             """,
         )
-        inv = RustExtractor().extract(str(tmp_path), deep=True)
+        inv = _extract_rust(tmp_path, deep=True)
         data = list(inv.values())[0]
         attrs = data["classes"][0]["attributes"]
         names = [a["name"] for a in attrs]
@@ -381,7 +445,7 @@ class TestRustExtractor:
             }
             """,
         )
-        inv = RustExtractor().extract(str(tmp_path), deep=True)
+        inv = _extract_rust(tmp_path, deep=True)
         data = list(inv.values())[0]
         user = [c for c in data["classes"] if c["name"] == "User"][0]
         assert len(user["methods"]) == 1
@@ -398,7 +462,7 @@ class TestRustExtractor:
             }
             """,
         )
-        inv = RustExtractor().extract(str(tmp_path), deep=True)
+        inv = _extract_rust(tmp_path, deep=True)
         data = list(inv.values())[0]
         fn_info = data["functions"][0]
         assert fn_info["name"] == "add"
@@ -419,7 +483,7 @@ class TestRustExtractor:
             }
             """,
         )
-        inv = RustExtractor().extract(str(tmp_path), deep=True)
+        inv = _extract_rust(tmp_path, deep=True)
         data = list(inv.values())[0]
         writer = data["classes"][0]
         assert writer["docstring"] == "A writer trait."
@@ -437,7 +501,7 @@ class TestRustExtractor:
             pub fn main() {}
             """,
         )
-        inv = RustExtractor().extract(str(tmp_path), deep=True)
+        inv = _extract_rust(tmp_path, deep=True)
         data = list(inv.values())[0]
         assert "imports" in data
         modules = [i["module"] for i in data["imports"]]
@@ -457,7 +521,7 @@ class TestRustExtractor:
             }
             """,
         )
-        inv = RustExtractor().extract(str(tmp_path), deep=True)
+        inv = _extract_rust(tmp_path, deep=True)
         data = list(inv.values())[0]
         cls = data["classes"][0]
         assert cls["kind"] == "enum"
@@ -488,7 +552,7 @@ class TestRustExtractor:
             }
             """,
         )
-        inv = RustExtractor().extract(str(tmp_path), deep=True)
+        inv = _extract_rust(tmp_path, deep=True)
         # Find the User class (may be in either file's entry).
         user = None
         for entry in inv.values():
@@ -516,7 +580,7 @@ class TestRustExtractor:
             }
             """,
         )
-        inv = RustExtractor().extract(str(tmp_path), deep=False)
+        inv = _extract_rust(tmp_path, deep=False)
         data = list(inv.values())[0]
         greet = [f for f in data["functions"] if f["name"] == "greet"]
         assert len(greet) == 1
@@ -534,7 +598,7 @@ class TestRustExtractor:
             }
             """,
         )
-        inv = RustExtractor().extract(str(tmp_path))
+        inv = _extract_rust(tmp_path)
         data = list(inv.values())[0]
         child = [c for c in data["classes"] if c["name"] == "Child"][0]
         assert "Base" in child["bases"]
@@ -549,7 +613,7 @@ class TestRustExtractor:
             }
             """,
         )
-        inv = RustExtractor().extract(str(tmp_path), deep=True)
+        inv = _extract_rust(tmp_path, deep=True)
         data = list(inv.values())[0]
         fn_info = data["functions"][0]
         assert fn_info["is_async"] is True

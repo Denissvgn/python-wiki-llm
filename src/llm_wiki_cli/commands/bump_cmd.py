@@ -1,6 +1,5 @@
 import subprocess
 import sys
-from pathlib import Path
 
 from ..services.versioning import (
     find_version_file,
@@ -16,7 +15,9 @@ def run(args):
     version_file = find_version_file(root)
 
     if version_file is None:
-        print("Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION).")
+        print(
+            "Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION)."
+        )
         sys.exit(1)
 
     current = read_version(version_file)
@@ -45,7 +46,9 @@ def run(args):
                 text=True,
             )
         except FileNotFoundError:
-            print("Error: git not found; could not stage version file.", file=sys.stderr)
+            print(
+                "Error: git not found; could not stage version file.", file=sys.stderr
+            )
             sys.exit(1)
         except subprocess.CalledProcessError as exc:
             detail = (exc.stderr or exc.stdout or "").strip()

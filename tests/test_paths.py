@@ -1,4 +1,5 @@
 """Tests for shared path helpers."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -44,10 +45,15 @@ def test_normalize_source_path_keeps_absolute_paths_outside_src_dir(tmp_path):
     outside_file.parent.mkdir()
     outside_file.write_text("class Module: pass\n", encoding="utf-8")
 
-    assert normalize_source_path(str(outside_file), str(src_dir)) == outside_file.as_posix()
+    assert (
+        normalize_source_path(str(outside_file), str(src_dir))
+        == outside_file.as_posix()
+    )
 
 
-def test_normalize_source_path_keeps_absolute_paths_outside_relative_src_dir(tmp_path, monkeypatch):
+def test_normalize_source_path_keeps_absolute_paths_outside_relative_src_dir(
+    tmp_path, monkeypatch
+):
     project = tmp_path / "project"
     outside_file = tmp_path / "external" / "module.py"
     project.mkdir()

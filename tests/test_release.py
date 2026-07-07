@@ -1,4 +1,5 @@
 """Tests for commands/release_cmd.py"""
+
 import subprocess
 import textwrap
 import types
@@ -57,6 +58,7 @@ def _make_args(**kwargs):
 # ---------------------------------------------------------------------------
 # Unit tests for stamp_changelog()
 # ---------------------------------------------------------------------------
+
 
 class TestStampChangelog:
     def test_replaces_unreleased_heading(self, tmp_path):
@@ -119,7 +121,9 @@ class TestStampChangelogEmptyGuard:
 
     def test_whitespace_only_body_is_empty(self, tmp_path):
         cl = tmp_path / "CHANGELOG.md"
-        cl.write_text("# Changelog\n\n## [Unreleased]\n\n\n\n## [0.1.4]\n\n[Unreleased]: https://github.com/x/y/compare/v0.1.4...HEAD\n[0.1.4]: https://github.com/x/y/releases/tag/v0.1.4\n")
+        cl.write_text(
+            "# Changelog\n\n## [Unreleased]\n\n\n\n## [0.1.4]\n\n[Unreleased]: https://github.com/x/y/compare/v0.1.4...HEAD\n[0.1.4]: https://github.com/x/y/releases/tag/v0.1.4\n"
+        )
         _text, stamped = stamp_changelog(cl, "0.1.5")
         assert stamped is False
 
@@ -129,13 +133,18 @@ class TestStampChangelogReferenceLinks:
         cl = tmp_path / "CHANGELOG.md"
         cl.write_text(_BASE_CHANGELOG)
         text, _ = stamp_changelog(cl, "0.1.5", today="2026-04-11")
-        assert "[Unreleased]: https://github.com/example/repo/compare/v0.1.5...HEAD" in text
+        assert (
+            "[Unreleased]: https://github.com/example/repo/compare/v0.1.5...HEAD"
+            in text
+        )
 
     def test_new_version_compare_link(self, tmp_path):
         cl = tmp_path / "CHANGELOG.md"
         cl.write_text(_BASE_CHANGELOG)
         text, _ = stamp_changelog(cl, "0.1.5", today="2026-04-11")
-        assert "[0.1.5]: https://github.com/example/repo/compare/v0.1.4...v0.1.5" in text
+        assert (
+            "[0.1.5]: https://github.com/example/repo/compare/v0.1.4...v0.1.5" in text
+        )
 
     def test_oldest_version_gets_releases_tag(self, tmp_path):
         cl = tmp_path / "CHANGELOG.md"
@@ -152,7 +161,8 @@ class TestStampChangelogReferenceLinks:
 
     def test_duplicate_version_headings_get_one_reference_link(self, tmp_path):
         cl = tmp_path / "CHANGELOG.md"
-        cl.write_text(textwrap.dedent("""\
+        cl.write_text(
+            textwrap.dedent("""\
             # Changelog
 
             ## [Unreleased]
@@ -168,7 +178,8 @@ class TestStampChangelogReferenceLinks:
 
             [Unreleased]: https://github.com/example/repo/compare/v0.1.4...HEAD
             [0.1.4]: https://github.com/example/repo/releases/tag/v0.1.4
-        """))
+        """)
+        )
 
         text, _ = stamp_changelog(cl, "0.1.5", today="2026-04-11")
 
@@ -206,9 +217,15 @@ class TestStampChangelogMultipleVersions:
         cl = tmp_path / "CHANGELOG.md"
         cl.write_text(self._MULTI)
         text, _ = stamp_changelog(cl, "0.1.3", today="2026-04-10")
-        assert "[0.1.3]: https://github.com/example/repo/compare/v0.1.2...v0.1.3" in text
-        assert "[0.1.2]: https://github.com/example/repo/compare/v0.1.1...v0.1.2" in text
-        assert "[0.1.1]: https://github.com/example/repo/compare/v0.1.0...v0.1.1" in text
+        assert (
+            "[0.1.3]: https://github.com/example/repo/compare/v0.1.2...v0.1.3" in text
+        )
+        assert (
+            "[0.1.2]: https://github.com/example/repo/compare/v0.1.1...v0.1.2" in text
+        )
+        assert (
+            "[0.1.1]: https://github.com/example/repo/compare/v0.1.0...v0.1.1" in text
+        )
         assert "[0.1.0]: https://github.com/example/repo/releases/tag/v0.1.0" in text
 
 
@@ -216,12 +233,14 @@ class TestStampChangelogMultipleVersions:
 # Integration tests for release_cmd.run()
 # ---------------------------------------------------------------------------
 
+
 class TestReleaseCmdRun:
     def _write_changelog(self, content: str):
         Path("CHANGELOG.md").write_text(content)
 
     def test_stamps_changelog_file(self, tmp_project, capsys):
         from llm_wiki_cli.commands import release_cmd
+
         self._write_changelog(_BASE_CHANGELOG)
         args = _make_args()
         release_cmd.run(args)
@@ -231,6 +250,7 @@ class TestReleaseCmdRun:
 
     def test_prints_confirmation(self, tmp_project, capsys):
         from llm_wiki_cli.commands import release_cmd
+
         self._write_changelog(_BASE_CHANGELOG)
         args = _make_args()
         release_cmd.run(args)
@@ -240,6 +260,7 @@ class TestReleaseCmdRun:
 
     def test_stage_flag_stages_changelog(self, tmp_project, capsys):
         from llm_wiki_cli.commands import release_cmd
+
         subprocess.run(["git", "add", "."], capture_output=True)
         subprocess.run(["git", "commit", "-m", "init"], capture_output=True)
         self._write_changelog(_BASE_CHANGELOG)
@@ -247,12 +268,14 @@ class TestReleaseCmdRun:
         release_cmd.run(args)
         result = subprocess.run(
             ["git", "diff", "--cached", "--name-only"],
-            capture_output=True, text=True,
+            capture_output=True,
+            text=True,
         )
         assert "CHANGELOG.md" in result.stdout
 
     def test_stage_git_add_uses_explicit_no_shell(self, tmp_project, monkeypatch):
         from llm_wiki_cli.commands import release_cmd
+
         self._write_changelog(_BASE_CHANGELOG)
         seen = {}
 
@@ -270,6 +293,7 @@ class TestReleaseCmdRun:
 
     def test_stage_git_add_failure_exits_nonzero(self, tmp_project, monkeypatch):
         from llm_wiki_cli.commands import release_cmd
+
         self._write_changelog(_BASE_CHANGELOG)
 
         def fake_run(*args, **kwargs):
@@ -284,6 +308,7 @@ class TestReleaseCmdRun:
 
     def test_missing_changelog_exits_1(self, tmp_project):
         from llm_wiki_cli.commands import release_cmd
+
         args = _make_args(changelog="NONEXISTENT.md")
         with pytest.raises(SystemExit) as exc_info:
             release_cmd.run(args)
@@ -291,6 +316,7 @@ class TestReleaseCmdRun:
 
     def test_no_unreleased_section_exits_1(self, tmp_project):
         from llm_wiki_cli.commands import release_cmd
+
         Path("CHANGELOG.md").write_text("# Changelog\n\n## [0.1.0]\n")
         args = _make_args()
         with pytest.raises(SystemExit) as exc_info:
@@ -300,6 +326,7 @@ class TestReleaseCmdRun:
     def test_empty_unreleased_skips_stamp_exits_0(self, tmp_project, capsys):
         """When [Unreleased] is empty, run() should print a notice and exit cleanly."""
         from llm_wiki_cli.commands import release_cmd
+
         self._write_changelog(_EMPTY_UNRELEASED)
         args = _make_args()
         release_cmd.run(args)  # must NOT raise SystemExit
@@ -311,6 +338,7 @@ class TestReleaseCmdRun:
     def test_empty_unreleased_does_not_stage(self, tmp_project):
         """Empty [Unreleased] should not stage CHANGELOG even with --stage."""
         from llm_wiki_cli.commands import release_cmd
+
         subprocess.run(["git", "add", "."], capture_output=True)
         subprocess.run(["git", "commit", "-m", "init"], capture_output=True)
         self._write_changelog(_EMPTY_UNRELEASED)
@@ -318,6 +346,7 @@ class TestReleaseCmdRun:
         release_cmd.run(args)
         result = subprocess.run(
             ["git", "diff", "--cached", "--name-only"],
-            capture_output=True, text=True,
+            capture_output=True,
+            text=True,
         )
         assert "CHANGELOG.md" not in result.stdout

@@ -14,8 +14,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from ..commands.bootstrap_cmd import build_entity_page_map, build_module_page_map
+from ..commands.bootstrap_cmd import (
+    build_entity_occurrence_page_map,
+    build_module_page_map,
+)
 from ..commands.extract_cmd import get_inventory
+from . import wiki_surface
 from .io import read_md, write_md
 
 
@@ -24,23 +28,17 @@ DEFAULT_NOTES_DIR = ".llm-wiki/obsidian-notes"
 PLUGIN_ID = "llm-wiki"
 DEFAULT_PLUGIN_SOURCE = Path("integrations") / "obsidian" / PLUGIN_ID
 
-KIND_DIRS = {
-    "entity": "Entities",
-    "module": "Modules",
-    "workflow": "Workflows",
-    "infrastructure": "Infrastructure",
-}
-
-WIKI_DIR_KINDS = {
-    "entities": "entity",
-    "modules": "module",
-    "workflows": "workflow",
-    "infrastructure": "infrastructure",
-}
-
-ROOT_PAGES = {
-    "index.md": ("index", "Index", "Index.md"),
-    "log.md": ("log", "Log", "Log.md"),
+_OBSIDIAN_KIND_BY_PAGE_KIND = {
+    wiki_surface.PageKind.INDEX: "index",
+    wiki_surface.PageKind.LOG: "log",
+    wiki_surface.PageKind.ENTITIES: "entity",
+    wiki_surface.PageKind.MODULES: "module",
+    wiki_surface.PageKind.WORKFLOWS: "workflow",
+    wiki_surface.PageKind.GUIDES: "guide",
+    wiki_surface.PageKind.FLOWS: "flow",
+    wiki_surface.PageKind.INFRASTRUCTURE: "infrastructure",
+    wiki_surface.PageKind.DEPENDENCIES: "dependencies",
+    wiki_surface.PageKind.LOAD_ORDER: "load-order",
 }
 
 MARKDOWN_LINK_RE = re.compile(r"(!)?\[([^\]]+)\]\(([^)]+)\)")
@@ -144,7 +142,9 @@ def export_obsidian_vault(
         if dry_run:
             report.operations.append(ObsidianOperation("would_write", str(mirror_path)))
             if not note_path.exists():
-                report.operations.append(ObsidianOperation("would_create_note", str(note_path)))
+                report.operations.append(
+                    ObsidianOperation("would_create_note", str(note_path))
+                )
             continue
 
         mirror_path.parent.mkdir(parents=True, exist_ok=True)
@@ -182,21 +182,25 @@ def check_obsidian_vault(
     for page in pages:
         mirror_path = _safe_join(vault, page.mirror_rel)
         if not mirror_path.exists():
-            report.issues.append({
-                "category": "missing_mirror_page",
-                "path": str(mirror_path),
-                "message": f"Missing mirrored page for {page.canonical_rel}",
-            })
+            report.issues.append(
+                {
+                    "category": "missing_mirror_page",
+                    "path": str(mirror_path),
+                    "message": f"Missing mirrored page for {page.canonical_rel}",
+                }
+            )
             continue
         for target in _wikilink_targets(read_md(mirror_path)):
             target_path = _safe_join(vault, target + ".md")
             if not target_path.exists():
-                report.issues.append({
-                    "category": "broken_wikilink",
-                    "path": str(mirror_path),
-                    "target": target,
-                    "message": f"Broken Obsidian wikilink: {target}",
-                })
+                report.issues.append(
+                    {
+                        "category": "broken_wikilink",
+                        "path": str(mirror_path),
+                        "target": target,
+                        "message": f"Broken Obsidian wikilink: {target}",
+                    }
+                )
 
     report.ok = not report.issues
     return report
@@ -232,49 +236,40 @@ def collect_wiki_pages(
     wiki = Path(wiki_dir)
     pages: list[WikiPage] = []
 
-    for filename, (kind, page_id, mirror_name) in ROOT_PAGES.items():
-        path = wiki / filename
-        if path.exists():
-            content = read_md(path)
-            if content_cache is not None:
-                content_cache[filename] = content
-            pages.append(WikiPage(
-                kind=kind,
-                page_id=page_id,
-                title=_markdown_title(content, page_id),
-                canonical_path=path,
-                canonical_rel=filename,
-                mirror_rel=(Path(MIRROR_ROOT) / mirror_name).as_posix(),
-                source_path=None,
-                source_line=None,
-            ))
-
-    for dirname, kind in WIKI_DIR_KINDS.items():
-        base = wiki / dirname
-        if not base.exists():
-            continue
-        for path in sorted(base.glob("*.md")):
-            if _is_legacy_page(path, wiki):
-                continue
-            content = read_md(path)
-            canonical_rel = path.relative_to(wiki).as_posix()
-            if content_cache is not None:
-                content_cache[canonical_rel] = content
-            source_path, source_line = _source_location(content)
-            page_id = path.stem
-            mirror_rel = (Path(MIRROR_ROOT) / KIND_DIRS[kind] / f"{page_id}.md").as_posix()
-            pages.append(WikiPage(
-                kind=kind,
-                page_id=page_id,
-                title=_markdown_title(content, page_id),
-                canonical_path=path,
+    for surface_page in wiki_surface.collect_wiki_pages(wiki):
+        content = read_md(surface_page.path)
+        canonical_rel = surface_page.relative_path
+        if content_cache is not None:
+            content_cache[canonical_rel] = content
+        source_path, source_line = _source_location(content)
+        pages.append(
+            WikiPage(
+                kind=_obsidian_kind(surface_page.kind),
+                page_id=surface_page.page_id,
+                title=_markdown_title(content, surface_page.page_id),
+                canonical_path=surface_page.path,
                 canonical_rel=canonical_rel,
-                mirror_rel=mirror_rel,
+                mirror_rel=_mirror_rel(surface_page),
                 source_path=source_path,
                 source_line=source_line,
-            ))
+            )
+        )
 
     return pages
+
+
+def _obsidian_kind(kind: wiki_surface.PageKind) -> str:
+    return _OBSIDIAN_KIND_BY_PAGE_KIND[kind]
+
+
+def _mirror_rel(surface_page: wiki_surface.WikiSurfacePage) -> str:
+    if surface_page.obsidian_mirror_dir:
+        return (
+            Path(MIRROR_ROOT)
+            / surface_page.obsidian_mirror_dir
+            / f"{surface_page.page_id}.md"
+        ).as_posix()
+    return (Path(MIRROR_ROOT) / f"{surface_page.label}.md").as_posix()
 
 
 def build_mirror_page(
@@ -287,7 +282,9 @@ def build_mirror_page(
     wiki_dir: Path,
     note_target: str,
 ) -> str:
-    transformed = convert_markdown_links(content, page, canonical_map, wiki_dir)
+    transformed = convert_markdown_links(
+        _escape_source_wikilinks(content), page, canonical_map, wiki_dir
+    )
     parts = [
         build_frontmatter(page),
         "",
@@ -303,6 +300,11 @@ def build_mirror_page(
         "",
     ]
     return "\n".join(parts).replace("\r\n", "\n")
+
+
+def _escape_source_wikilinks(content: str) -> str:
+    """Treat existing double-bracket text as source prose, not vault links."""
+    return content.replace("[[", r"\[\[").replace("]]", r"\]\]")
 
 
 def build_frontmatter(page: WikiPage) -> str:
@@ -346,7 +348,9 @@ def convert_markdown_links(
         anchor = ""
         if "#" in target:
             anchor = "#" + target.split("#", 1)[1]
-        return f"[[{_vault_link_target(linked)}{anchor}|{_escape_wikilink_alias(text)}]]"
+        return (
+            f"[[{_vault_link_target(linked)}{anchor}|{_escape_wikilink_alias(text)}]]"
+        )
 
     return MARKDOWN_LINK_RE.sub(repl, content)
 
@@ -369,7 +373,9 @@ def render_report_text(report: ObsidianReport, *, action: str) -> str:
         lines.append("Issues:")
         for issue in report.issues:
             target = f" -> {issue.get('target')}" if issue.get("target") else ""
-            lines.append(f"- {issue['category']}: {issue['path']}{target} - {issue['message']}")
+            lines.append(
+                f"- {issue['category']}: {issue['path']}{target} - {issue['message']}"
+            )
     elif action == "check":
         lines.append("No Obsidian mirror issues found.")
     return "\n".join(lines) + "\n"
@@ -391,7 +397,9 @@ def _collect_outgoing_links(
         for match in MARKDOWN_LINK_RE.finditer(page_content[page.canonical_rel]):
             if match.group(1):
                 continue
-            target = _resolve_markdown_target(page, match.group(3), canonical_map, wiki_dir)
+            target = _resolve_markdown_target(
+                page, match.group(3), canonical_map, wiki_dir
+            )
             if target is not None:
                 links.add(target.canonical_rel)
         outgoing[page.canonical_rel] = links
@@ -410,29 +418,43 @@ def _build_related_links(
     return related
 
 
-def _merge_inventory_relationships(related: dict[str, set[str]], pages: list[WikiPage], src_dir: str) -> None:
+def _merge_inventory_relationships(
+    related: dict[str, set[str]], pages: list[WikiPage], src_dir: str
+) -> None:
     try:
         inventory = get_inventory(src_dir, deep=True)
     except Exception:
         return
 
-    canonical_by_kind_id = {(page.kind, page.page_id): page.canonical_rel for page in pages}
+    canonical_by_kind_id = {
+        (page.kind, page.page_id): page.canonical_rel for page in pages
+    }
     module_map = build_module_page_map(inventory)
-    entity_map = build_entity_page_map(inventory)
+    entity_map = build_entity_occurrence_page_map(inventory, module_map)
 
     for filepath, module_id in module_map.items():
         module_rel = canonical_by_kind_id.get(("module", module_id))
         if not module_rel:
             continue
+        seen_names: dict[str, int] = {}
         for cls in inventory.get(filepath, {}).get("classes", []):
-            entity_id = entity_map.get((cls.get("name"), filepath))
-            entity_rel = canonical_by_kind_id.get(("entity", entity_id)) if entity_id else None
+            name = cls.get("name")
+            if not name:
+                continue
+            name_text = str(name)
+            seen_names[name_text] = seen_names.get(name_text, 0) + 1
+            entity_id = entity_map.get((name_text, filepath, seen_names[name_text]))
+            entity_rel = (
+                canonical_by_kind_id.get(("entity", entity_id)) if entity_id else None
+            )
             if entity_rel:
                 related.setdefault(module_rel, set()).add(entity_rel)
                 related.setdefault(entity_rel, set()).add(module_rel)
 
 
-def _render_related_links(related_rels: list[str], canonical_map: dict[str, WikiPage]) -> str:
+def _render_related_links(
+    related_rels: list[str], canonical_map: dict[str, WikiPage]
+) -> str:
     lines = []
     for rel in related_rels:
         page = canonical_map.get(rel)
@@ -465,15 +487,17 @@ def _resolve_markdown_target(
 
 
 def _wikilink_targets(content: str) -> set[str]:
-    return {match.group(1).strip() for match in WIKILINK_RE.finditer(content) if match.group(1).strip()}
+    return {
+        match.group(1).strip()
+        for match in WIKILINK_RE.finditer(content)
+        if match.group(1).strip()
+    }
 
 
 def _is_external_link(target: str) -> bool:
     lowered = target.lower()
     return (
-        "://" in lowered
-        or lowered.startswith("mailto:")
-        or lowered.startswith("tel:")
+        "://" in lowered or lowered.startswith("mailto:") or lowered.startswith("tel:")
     )
 
 
@@ -530,7 +554,9 @@ def _vault_link_target(page: WikiPage) -> str:
 
 def _vault_link_for_path(path: Path, vault_dir: Path) -> str:
     try:
-        return path.resolve().relative_to(vault_dir.resolve()).with_suffix("").as_posix()
+        return (
+            path.resolve().relative_to(vault_dir.resolve()).with_suffix("").as_posix()
+        )
     except ValueError:
         # Obsidian cannot transclude outside the vault; fall back to a readable
         # path so the page still communicates where the note lives.
@@ -575,16 +601,6 @@ def _ensure_safe_base(path: Path) -> None:
 def _validate_existing_dir(path: Path, label: str) -> None:
     if not path.exists() or not path.is_dir():
         raise ObsidianError(f"{label} does not exist or is not a directory: {path}")
-
-
-def _is_legacy_page(path: Path, wiki_dir: Path) -> bool:
-    try:
-        return path.relative_to(wiki_dir).parts[:1] == ("legacy",)
-    except ValueError:
-        try:
-            return path.resolve().relative_to(wiki_dir.resolve()).parts[:1] == ("legacy",)
-        except ValueError:
-            return False
 
 
 def _plugin_copy_ignore(_dir: str, names: list[str]) -> set[str]:

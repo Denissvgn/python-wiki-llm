@@ -1,0 +1,59 @@
+---
+name: onboarding-guide
+description: Write persona-scoped onboarding guides into an LLM Wiki's first-class `guides/` surface — verify the wiki is current, pick the flows a newcomer actually hits, write one guided-tour page per persona with links into existing flow/entity/module pages, record deferred personas as an explicit remainder, and validate with lint and sync. Use when a maintained wiki exists and the user wants "start here" narratives for contributors, operators, or reviewers; use wiki-bootstrap first when no wiki exists.
+---
+
+# onboarding-guide
+
+Produce the "start here" narrative the deterministic layer cannot: reading order, mental model, where the seams are, what to touch first. These guides are the prerequisite narrative layer for `publish-docs --profile user`: user-profile publishing requires at least one guide page and a non-default site name. The loop is: **verify the wiki is current → choose personas → rank the flows a newcomer hits → write one guide page per persona → remainder for deferred personas → lint/sync validation → commit**. Guide pages live in `guides/{page_id}.md`, an agent-owned surface: `sync` counts and links existing guide pages from the index `## Guides` section but never creates or rewrites them, so the prose written here is durable. Use this skill for focused persona guides; use `user-docs-author` when the goal is a complete user-docs pass that combines deterministic site evidence, broader semantic guide authoring, and checker-driven adjustment. See [reference.md](reference.md) for the surface contract, persona defaults, the page template, the flow-ranking recipe, and failure modes.
+
+When a guide needs screenshots, terminal recordings, or other usage media, finish the guide prose first and then run `usage-examples`; this skill only creates the narrative guide surface.
+
+## Preconditions
+
+- A maintained wiki exists (`.llm-wiki-manifest.json` present). If not, run the `wiki-bootstrap` skill first; guides written against a stale or structurally broken wiki link to pages that lint will reject.
+- The wiki directory is writable inside the current project root. Guide writing is a wiki mutation: it does not fit read-only external-source reviews. For source-adapter wikis, the wiki under `sources/code_wikis/<source_id>` is still inside the current project, so guides are allowed there; only the *source* is external and source-reading commands then take `--allow-external-src`.
+- Persona targets are known. Default to contributor / operator / reviewer, plus a product/user reader when the repository exposes user-facing workflows; ask the user only when the repository's audience makes the defaults meaningless.
+
+## Steps
+
+1. **Verify the wiki is current.**
+
+   ```bash
+   llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs auto
+   llm-wiki lint --strict --src-dir . --wiki-dir docs/llm_wiki
+   ```
+
+   A no-op sync ("Wiki is up to date") and clean strict lint are the entry gate. If sync rewrites pages or lint fails, finish that (the `wiki-sync` skill) before writing narrative on top of stale structure.
+
+2. **Choose personas and budget.** Default budget: one guide page per persona, at most three pages per run. Record the personas chosen and the budget in the run notes; deferred personas become remainder items, not silent omissions.
+
+3. **Rank the flows a newcomer actually hits.** For each persona, pick the 3–5 most relevant flows using existing evidence — do not invent a new graph:
+
+   - entrypoint category (`cli`, `api`, `http`, `process`) matched to the persona: operators meet process and service startup flows, contributors meet the core build/test/extend flows, reviewers meet the validation gates;
+   - boundary-effect count and fan-in from `dependencies.metrics` / `dependency_neighborhood` for centrality;
+   - `flows/` pages with substantive `## Behavior` prose first — guides should link to explained flows, and a flow that a guide needs but that still has placeholder prose is itself a finding to fix or defer.
+
+   Through MCP, `flow_for_entrypoint`, `dependency_neighborhood`, and `pages_for_symbol` answer the same questions.
+
+4. **Write one guide page per persona** at `<wiki-dir>/guides/<persona>-onboarding.md` using the template in [reference.md](reference.md): audience and prerequisites, the mental model in a few paragraphs, a guided tour in reading order with relative links to existing flow/entity/module/architecture pages, a first-task suggestion, and where to go deeper. Every claim that names a symbol, flow, or dependency must link to the wiki page that shows it; relative links keep lint able to validate them.
+
+5. **Respect the surface contract.** Guides are semantic prose only — no generated tables, no copied auto-generated sections, no content that `sync` would need to refresh. Facts that change with every commit (counts, line numbers, file inventories) belong in generated pages the guide links to, not in the guide body.
+
+6. **Record the remainder.** Personas or topics outside this run's budget go into an explicit remainder: either rows appended to the wiki's existing `bootstrap-remainder.md` or a `## Deferred guides` section in the run report, with persona, intended flows, and the reason deferred.
+
+7. **Re-link, then validate.**
+
+   ```bash
+   llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs auto
+   llm-wiki lint --strict --src-dir . --wiki-dir docs/llm_wiki
+   llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki --format json
+   ```
+
+   Run `sync` first, not after: new guide pages touch no source file, so lint would otherwise report them as `orphan_pages` before sync has had a chance to add their index links. Sync refreshes the index `## Guides` section on every run, including when source hasn't changed — that invariant is what makes this ordering safe. Strict lint then validates the new pages and their links; ci-check confirms the wiki as a whole still gates green. Loop on failures.
+
+8. **Review the diff, then commit.** The diff should contain only the new guide pages, the regenerated index link section, and optional remainder updates. Commit separately from code changes with a `docs(wiki): add onboarding guides` style message. Never reuse the hook path's literal `auto-update [bot]` message and never set `LLM_WIKI_AUTO_COMMIT` — both are reserved for the post-commit hook path.
+
+## Context budget
+
+Size the pass from `index.md`, the flows directory listing, and `dependencies.metrics` before reading any flow page in full. Read only the flow/architecture pages the chosen tours will link to. Use `llm-wiki context --budget 8000-12000 --focus all --format json` only when a persona's mental-model section needs source context the wiki pages do not already carry. Do not re-run extract for this workflow — guides are written from wiki surfaces, and if the wiki lacks the needed structure, that is `wiki-sync`/`wiki-bootstrap` work first.

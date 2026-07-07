@@ -1,9 +1,11 @@
 """Tests for the ``context`` command — structured context budgeting."""
+
 from __future__ import annotations
 
 import io
 import json
 import sys
+import textwrap
 import types
 from pathlib import Path
 
@@ -45,6 +47,51 @@ def _protocol_request(**overrides):
     return data
 
 
+def _write_query_project(root: Path) -> None:
+    (root / "api.py").write_text(
+        textwrap.dedent(
+            """\
+            from repo import save
+
+            __all__ = ["run"]
+
+            def run(payload):
+                return save(payload)
+            """
+        ),
+        encoding="utf-8",
+    )
+    (root / "repo.py").write_text(
+        textwrap.dedent(
+            """\
+            def save(payload):
+                return payload
+            """
+        ),
+        encoding="utf-8",
+    )
+
+
+def _write_query_wiki(root: Path, rel_path: str = "docs/llm_wiki") -> Path:
+    wiki = root / rel_path
+    for subdir in ["entities", "modules", "workflows", "flows", "infrastructure"]:
+        (wiki / subdir).mkdir(parents=True, exist_ok=True)
+    (wiki / "index.md").write_text("# Index\n\n", encoding="utf-8")
+    (wiki / "log.md").write_text("# Log\n\n", encoding="utf-8")
+    (wiki / "modules" / "api.md").write_text(
+        "# api Module\n\n**Path:** `api.py`\n", encoding="utf-8"
+    )
+    (wiki / "modules" / "repo.md").write_text(
+        "# repo Module\n\n**Path:** `repo.py`\n", encoding="utf-8"
+    )
+    (wiki / "flows" / "api-run.md").write_text(
+        "# api-run\n\nFlow for run.\n", encoding="utf-8"
+    )
+    (wiki / "dependencies.md").write_text("# Dependencies\n\n", encoding="utf-8")
+    (wiki / "load-order.md").write_text("# Load order\n\n", encoding="utf-8")
+    return wiki
+
+
 # ── Token estimation ──────────────────────────────────────────────────
 
 
@@ -68,13 +115,22 @@ class TestFilepathToModule:
         assert context_cmd._filepath_to_module("config.py") == "config"
 
     def test_nested(self):
-        assert context_cmd._filepath_to_module("llm_wiki_cli/config.py") == "llm_wiki_cli.config"
+        assert (
+            context_cmd._filepath_to_module("llm_wiki_cli/config.py")
+            == "llm_wiki_cli.config"
+        )
 
     def test_src_prefix(self):
-        assert context_cmd._filepath_to_module("src/llm_wiki_cli/config.py") == "llm_wiki_cli.config"
+        assert (
+            context_cmd._filepath_to_module("src/llm_wiki_cli/config.py")
+            == "llm_wiki_cli.config"
+        )
 
     def test_init(self):
-        assert context_cmd._filepath_to_module("src/llm_wiki_cli/__init__.py") == "llm_wiki_cli"
+        assert (
+            context_cmd._filepath_to_module("src/llm_wiki_cli/__init__.py")
+            == "llm_wiki_cli"
+        )
 
     def test_non_python(self):
         assert context_cmd._filepath_to_module("README.md") is None
@@ -96,7 +152,8 @@ class TestBuildImportGraph:
     def test_one_import(self):
         inventory = {
             "a.py": {
-                "classes": [], "functions": [],
+                "classes": [],
+                "functions": [],
                 "imports": [{"module": "b", "name": "foo", "type": "from"}],
             },
             "b.py": {"classes": [], "functions": [], "imports": []},
@@ -108,7 +165,8 @@ class TestBuildImportGraph:
     def test_external_import_skipped(self):
         inventory = {
             "a.py": {
-                "classes": [], "functions": [],
+                "classes": [],
+                "functions": [],
                 "imports": [{"module": "json", "name": "json", "type": "import"}],
             },
         }
@@ -118,7 +176,8 @@ class TestBuildImportGraph:
     def test_nested_module_match(self):
         inventory = {
             "src/pkg/mod.py": {
-                "classes": [], "functions": [],
+                "classes": [],
+                "functions": [],
                 "imports": [{"module": "pkg.utils", "name": "helper", "type": "from"}],
             },
             "src/pkg/utils.py": {"classes": [], "functions": [], "imports": []},
@@ -205,13 +264,15 @@ class TestBuildContextPayload:
     def test_high_downgraded_before_omit(self):
         inventory = {
             "a.py": {
-                "classes": [{
-                    "name": "X",
-                    "bases": [],
-                    "line": 1,
-                    "docstring": "D" * 1000,
-                    "methods": [{"name": "run", "params": [], "return_type": None}],
-                }],
+                "classes": [
+                    {
+                        "name": "X",
+                        "bases": [],
+                        "line": 1,
+                        "docstring": "D" * 1000,
+                        "methods": [{"name": "run", "params": [], "return_type": None}],
+                    }
+                ],
                 "functions": [],
                 "imports": [{"module": "huge", "name": "Huge", "type": "from"}],
             },
@@ -301,7 +362,11 @@ class TestRenderMarkdown:
             "budget": 1000,
             "used": 50,
             "files": {
-                "a.py": {"priority": "high", "classes": [{"name": "X", "bases": []}], "functions": []},
+                "a.py": {
+                    "priority": "high",
+                    "classes": [{"name": "X", "bases": []}],
+                    "functions": [],
+                },
                 "b.py": {"priority": "low", "classes": [], "functions": ["f"]},
             },
         }
@@ -321,11 +386,53 @@ class TestRenderMarkdown:
         assert "Omitted Files" in md
         assert "`too_big.py`" in md
 
+    def test_contains_graph_and_surface_sections(self):
+        payload = {
+            "budget": 10,
+            "used": 0,
+            "files": {},
+            "graphs": {
+                "symbol": {
+                    "callers": {"query": "run", "found": True},
+                    "callees": {"query": "run", "found": True},
+                    "pages": {"query": "run", "found": True},
+                },
+                "entrypoint": {
+                    "flow": {"query": "api-run", "found": True},
+                    "data_flow": {"query": "api-run", "found": True},
+                },
+            },
+            "surface": {
+                "kind": "flows",
+                "count": 1,
+                "truncated": False,
+                "pages": [
+                    {
+                        "id": "api-run",
+                        "title": "api-run",
+                        "canonical_path": "flows/api-run.md",
+                        "mcp_uri": "llm-wiki://flows/api-run",
+                    }
+                ],
+            },
+        }
+
+        md = context_cmd._render_markdown(payload)
+
+        assert "Documentation Graphs" in md
+        assert "Symbol `run`" in md
+        assert "Entry point `api-run`" in md
+        assert "Surface `flows`" in md
+        assert "`flows/api-run.md`" in md
+
 
 # ── Protocol helpers ──────────────────────────────────────────────────
 
 
 class TestProtocolValidation:
+    def test_protocol_version_remains_context_v1(self):
+        assert context_cmd.PROTOCOL_VERSION == "llm-wiki-context/v1"
+
     def test_language_filter(self):
         inventory = {
             "src/api/users.py": {"language": "python"},
@@ -351,13 +458,36 @@ class TestProtocolValidation:
         assert set(result) == {"web/api/client.ts"}
 
     def test_validation_defaults(self):
-        result = context_cmd._validate_protocol_request({
-            "protocol": context_cmd.PROTOCOL_VERSION,
-            "budget_tokens": 1000,
-        })
+        result = context_cmd._validate_protocol_request(
+            {
+                "protocol": context_cmd.PROTOCOL_VERSION,
+                "budget_tokens": 1000,
+            }
+        )
         assert result["focus"] == ["changed", "neighbors"]
         assert result["format"] == "json"
         assert result["filters"] == {}
+
+    def test_validation_accepts_graph_and_surface_filters(self):
+        result = context_cmd._validate_protocol_request(
+            _protocol_request(
+                filters={
+                    "language": "python",
+                    "module": "api/*",
+                    "symbol": "api.py:run",
+                    "entrypoint": "api-run",
+                    "surface": "flows",
+                }
+            )
+        )
+
+        assert result["filters"] == {
+            "language": "python",
+            "module": "api/*",
+            "symbol": "api.py:run",
+            "entrypoint": "api-run",
+            "surface": "flows",
+        }
 
 
 class TestProtocolRun:
@@ -374,7 +504,44 @@ class TestProtocolRun:
         assert "used_tokens" in data
         assert "files" in data
         assert "content" not in data
+        assert "graphs" not in data
+        assert "surface" not in data
         assert data["files"]
+
+    def test_success_envelope_keeps_old_json_shape_when_enriched(
+        self, tmp_project, tmp_path, capsys
+    ):
+        _write_query_project(tmp_project)
+        _write_query_wiki(tmp_project, "agent_wiki")
+        request = _write_request(
+            tmp_path,
+            _protocol_request(
+                budget_tokens=100000,
+                filters={
+                    "symbol": "run",
+                    "entrypoint": "api-run",
+                    "surface": "flows",
+                },
+            ),
+        )
+
+        context_cmd.run(_make_args(request=request, budget=None, wiki_dir="agent_wiki"))
+
+        data = json.loads(capsys.readouterr().out)
+        assert {
+            "protocol",
+            "ok",
+            "budget_tokens",
+            "used_tokens",
+            "format",
+            "focus",
+            "filters",
+            "files",
+        } <= set(data)
+        assert data["protocol"] == "llm-wiki-context/v1"
+        assert data["ok"] is True
+        assert data["graphs"]["symbol"]["callees"]["found"] is True
+        assert data["surface"]["kind"] == "flows"
 
     def test_request_stdin(self, tmp_project, monkeypatch, capsys):
         monkeypatch.setattr(
@@ -401,12 +568,24 @@ class TestProtocolRun:
         assert "files" not in data
         assert "Context Budget" in data["content"]
 
-    def test_request_language_filter_excludes_nonmatching_inventory(self, tmp_path, capsys, monkeypatch):
+    def test_request_language_filter_excludes_nonmatching_inventory(
+        self, tmp_path, capsys, monkeypatch
+    ):
         inventory = {
-            "api.py": {"language": "python", "classes": [{"name": "Api"}], "functions": []},
-            "web.ts": {"language": "typescript", "classes": [{"name": "Web"}], "functions": []},
+            "api.py": {
+                "language": "python",
+                "classes": [{"name": "Api"}],
+                "functions": [],
+            },
+            "web.ts": {
+                "language": "typescript",
+                "classes": [{"name": "Web"}],
+                "functions": [],
+            },
         }
-        monkeypatch.setattr(context_cmd, "get_inventory", lambda *args, **kwargs: inventory)
+        monkeypatch.setattr(
+            context_cmd, "get_inventory", lambda *args, **kwargs: inventory
+        )
         request = _write_request(
             tmp_path,
             _protocol_request(filters={"language": "python"}),
@@ -417,23 +596,148 @@ class TestProtocolRun:
         data = json.loads(capsys.readouterr().out)
         assert set(data["files"]) == {"api.py"}
 
-    def test_request_module_filter_matches_path_and_module(self, tmp_path, capsys, monkeypatch):
+    def test_request_module_filter_matches_path_and_module(
+        self, tmp_path, capsys, monkeypatch
+    ):
         inventory = {
-            "src/api/users.py": {"language": "python", "classes": [{"name": "User"}], "functions": []},
-            "web/api/client.ts": {"language": "typescript", "classes": [{"name": "Client"}], "functions": []},
-            "src/db/models.py": {"language": "python", "classes": [{"name": "Model"}], "functions": []},
+            "src/api/users.py": {
+                "language": "python",
+                "classes": [{"name": "User"}],
+                "functions": [],
+            },
+            "web/api/client.ts": {
+                "language": "typescript",
+                "classes": [{"name": "Client"}],
+                "functions": [],
+            },
+            "src/db/models.py": {
+                "language": "python",
+                "classes": [{"name": "Model"}],
+                "functions": [],
+            },
         }
-        monkeypatch.setattr(context_cmd, "get_inventory", lambda *args, **kwargs: inventory)
+        monkeypatch.setattr(
+            context_cmd, "get_inventory", lambda *args, **kwargs: inventory
+        )
 
-        request = _write_request(tmp_path, _protocol_request(filters={"module": "api/*"}))
+        request = _write_request(
+            tmp_path, _protocol_request(filters={"module": "api/*"})
+        )
         context_cmd.run(_make_args(request=request, budget=None))
         data = json.loads(capsys.readouterr().out)
         assert set(data["files"]) == {"src/api/users.py"}
 
-        request = _write_request(tmp_path, _protocol_request(filters={"module": "web/api/*"}))
+        request = _write_request(
+            tmp_path, _protocol_request(filters={"module": "web/api/*"})
+        )
         context_cmd.run(_make_args(request=request, budget=None))
         data = json.loads(capsys.readouterr().out)
         assert set(data["files"]) == {"web/api/client.ts"}
+
+    def test_request_graph_and_surface_filters_add_sections(
+        self, tmp_project, tmp_path, capsys
+    ):
+        _write_query_project(tmp_project)
+        _write_query_wiki(tmp_project, "agent_wiki")
+        request = _write_request(
+            tmp_path,
+            _protocol_request(
+                budget_tokens=100000,
+                filters={
+                    "symbol": "run",
+                    "entrypoint": "api-run",
+                    "surface": "flows",
+                },
+            ),
+        )
+
+        context_cmd.run(_make_args(request=request, budget=None, wiki_dir="agent_wiki"))
+
+        data = json.loads(capsys.readouterr().out)
+        assert data["ok"] is True
+        assert "files" in data
+        assert data["graphs"]["symbol"]["callees"]["found"] is True
+        assert data["graphs"]["symbol"]["pages"]["pages"]
+        assert data["graphs"]["entrypoint"]["flow"]["found"] is True
+        assert data["graphs"]["entrypoint"]["data_flow"]["found"] is True
+        assert data["surface"]["kind"] == "flows"
+        assert [page["canonical_path"] for page in data["surface"]["pages"]] == [
+            "flows/api-run.md"
+        ]
+
+    def test_graph_and_surface_filters_do_not_compete_with_file_budget(
+        self, tmp_project, tmp_path, capsys
+    ):
+        _write_query_project(tmp_project)
+        _write_query_wiki(tmp_project, "agent_wiki")
+        request = _write_request(
+            tmp_path,
+            _protocol_request(
+                budget_tokens=1,
+                filters={
+                    "symbol": "run",
+                    "entrypoint": "api-run",
+                    "surface": "flows",
+                },
+            ),
+        )
+
+        context_cmd.run(_make_args(request=request, budget=None, wiki_dir="agent_wiki"))
+
+        data = json.loads(capsys.readouterr().out)
+        assert data["used_tokens"] == 0
+        assert data["files"] == {}
+        assert data["graphs"]["symbol"]["callees"]["found"] is True
+        assert data["graphs"]["entrypoint"]["flow"]["found"] is True
+        assert data["surface"]["pages"]
+
+    def test_unknown_graph_filters_return_structured_empty_results(
+        self, tmp_project, tmp_path, capsys
+    ):
+        _write_query_project(tmp_project)
+        _write_query_wiki(tmp_project, "agent_wiki")
+        request = _write_request(
+            tmp_path,
+            _protocol_request(
+                budget_tokens=100000,
+                filters={"symbol": "missing", "entrypoint": "missing"},
+            ),
+        )
+
+        context_cmd.run(_make_args(request=request, budget=None, wiki_dir="agent_wiki"))
+
+        data = json.loads(capsys.readouterr().out)
+        assert data["graphs"]["symbol"]["callers"]["found"] is False
+        assert data["graphs"]["symbol"]["callees"]["found"] is False
+        assert data["graphs"]["symbol"]["pages"]["pages"] == []
+        assert data["graphs"]["entrypoint"]["flow"]["flow"] is None
+        assert data["graphs"]["entrypoint"]["data_flow"]["data_flow"] is None
+
+    def test_request_markdown_includes_graph_and_surface_sections(
+        self, tmp_project, tmp_path, capsys
+    ):
+        _write_query_project(tmp_project)
+        _write_query_wiki(tmp_project, "agent_wiki")
+        request = _write_request(
+            tmp_path,
+            _protocol_request(
+                budget_tokens=100000,
+                format="markdown",
+                filters={
+                    "symbol": "run",
+                    "entrypoint": "api-run",
+                    "surface": "flows",
+                },
+            ),
+        )
+
+        context_cmd.run(_make_args(request=request, budget=None, wiki_dir="agent_wiki"))
+
+        data = json.loads(capsys.readouterr().out)
+        assert "Documentation Graphs" in data["content"]
+        assert "Symbol `run`" in data["content"]
+        assert "Entry point `api-run`" in data["content"]
+        assert "Surface `flows`" in data["content"]
 
     @pytest.mark.parametrize(
         ("request_data", "field"),
@@ -443,9 +747,14 @@ class TestProtocolRun:
             (_protocol_request(focus=["neighbors"]), "focus"),
             (_protocol_request(extra=True), "extra"),
             (_protocol_request(filters={"package": "api"}), "filters.package"),
+            (_protocol_request(filters={"symbol": ""}), "filters.symbol"),
+            (_protocol_request(filters={"entrypoint": ""}), "filters.entrypoint"),
+            (_protocol_request(filters={"surface": "bad"}), "filters.surface"),
         ],
     )
-    def test_invalid_requests_return_error_envelope(self, tmp_path, capsys, request_data, field):
+    def test_invalid_requests_return_error_envelope(
+        self, tmp_path, capsys, request_data, field
+    ):
         request = _write_request(tmp_path, request_data)
         with pytest.raises(SystemExit) as exc_info:
             context_cmd.run(_make_args(request=request, budget=None))
@@ -456,6 +765,7 @@ class TestProtocolRun:
         assert data["ok"] is False
         assert data["error"]["code"] == "invalid_request"
         assert data["error"]["field"] == field
+        assert isinstance(data["error"]["message"], str)
 
     def test_invalid_json_returns_error_envelope(self, tmp_path, capsys):
         request = tmp_path / "bad-request.json"
@@ -469,12 +779,16 @@ class TestProtocolRun:
         assert data["ok"] is False
         assert data["error"]["field"] == "request"
 
-    def test_extractor_failure_returns_error_envelope(self, tmp_path, monkeypatch, capsys):
+    def test_extractor_failure_returns_error_envelope(
+        self, tmp_path, monkeypatch, capsys
+    ):
         result = InventoryResult(
             {},
             {"python": ExtractorStatus("python", "failed", 1, "boom")},
         )
-        monkeypatch.setattr(context_cmd, "get_inventory_result", lambda *args, **kwargs: result)
+        monkeypatch.setattr(
+            context_cmd, "get_inventory_result", lambda *args, **kwargs: result
+        )
         request = _write_request(tmp_path, _protocol_request())
 
         with pytest.raises(SystemExit) as exc_info:
@@ -524,7 +838,9 @@ class TestContextRun:
 
     def test_json_output_file_suppresses_stdout(self, tmp_project, tmp_path, capsys):
         out_path = tmp_path / "context.json"
-        args = _make_args(focus="all", budget=100000, output=str(out_path), read_only=True)
+        args = _make_args(
+            focus="all", budget=100000, output=str(out_path), read_only=True
+        )
 
         context_cmd.run(args)
 
@@ -533,9 +849,13 @@ class TestContextRun:
         data = json.loads(out_path.read_text(encoding="utf-8"))
         assert data["files"]
 
-    def test_markdown_output_file_suppresses_stdout(self, tmp_project, tmp_path, capsys):
+    def test_markdown_output_file_suppresses_stdout(
+        self, tmp_project, tmp_path, capsys
+    ):
         out_path = tmp_path / "context.md"
-        args = _make_args(focus="all", budget=100000, format="markdown", output=str(out_path))
+        args = _make_args(
+            focus="all", budget=100000, format="markdown", output=str(out_path)
+        )
 
         context_cmd.run(args)
 
@@ -543,7 +863,9 @@ class TestContextRun:
         assert captured.out == ""
         assert "Context Budget" in out_path.read_text(encoding="utf-8")
 
-    def test_run_allows_external_src_with_explicit_flag(self, tmp_project, tmp_path, capsys):
+    def test_run_allows_external_src_with_explicit_flag(
+        self, tmp_project, tmp_path, capsys
+    ):
         outside = tmp_path / "outside"
         outside.mkdir()
         (outside / "external.py").write_text("class External: pass\n", encoding="utf-8")
@@ -559,12 +881,16 @@ class TestContextRun:
         data = json.loads(capsys.readouterr().out)
         assert set(data["files"]) == {"external.py"}
 
-    def test_read_only_context_does_not_create_wiki_artifacts(self, tmp_project, capsys):
+    def test_read_only_context_does_not_create_wiki_artifacts(
+        self, tmp_project, capsys
+    ):
         context_cmd.run(_make_args(focus="all", budget=100000, read_only=True))
 
         assert not Path("docs").exists()
 
-    def test_changed_focus_warning_goes_to_stderr_json_stays_parseable(self, tmp_project, capsys):
+    def test_changed_focus_warning_goes_to_stderr_json_stays_parseable(
+        self, tmp_project, capsys
+    ):
         args = _make_args(focus="changed", budget=100000)
         context_cmd.run(args)
         captured = capsys.readouterr()
@@ -588,12 +914,16 @@ class TestContextRun:
         assert exc_info.value.code == 2
         assert "--budget is required" in capsys.readouterr().err
 
-    def test_extractor_failure_exits_at_cli_boundary(self, tmp_project, monkeypatch, capsys):
+    def test_extractor_failure_exits_at_cli_boundary(
+        self, tmp_project, monkeypatch, capsys
+    ):
         result = InventoryResult(
             {},
             {"python": ExtractorStatus("python", "failed", 1, "boom")},
         )
-        monkeypatch.setattr(context_cmd, "get_inventory_result", lambda *args, **kwargs: result)
+        monkeypatch.setattr(
+            context_cmd, "get_inventory_result", lambda *args, **kwargs: result
+        )
 
         with pytest.raises(SystemExit) as exc_info:
             context_cmd.run(_make_args(focus="all", budget=1000))
@@ -611,3 +941,36 @@ class TestContextRun:
         with pytest.raises(SystemExit) as exc_info:
             cli.main()
         assert exc_info.value.code == 2
+
+
+class TestBuildProtocolEnrichmentRootPropagation:
+    def test_propagates_src_root_to_get_entry_points(self, tmp_path, monkeypatch):
+        """Regression (2026-07-04): ``_build_protocol_enrichment`` must pass
+        ``root=src_root``/``fallback_root=Path.cwd()`` to ``get_entry_points``.
+        Dropping those kwargs (as this call site once did) makes the Go/
+        Haskell web-server detectors silently miss entry points whenever
+        ``llm-wiki context`` runs with an external ``--src-dir`` from a
+        different cwd — proven end-to-end for the sibling lint check in
+        ``TestLintFlowCoverage::test_go_http_entrypoint_not_stale_for_external_src_dir``
+        in test_lint.py. This test pins the wiring at the call site directly.
+        """
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "wiki").mkdir()
+
+        calls = []
+        real_get_entry_points = context_cmd.get_entry_points
+
+        def spy(inventory, **kwargs):
+            calls.append(kwargs)
+            return real_get_entry_points(inventory, **kwargs)
+
+        monkeypatch.setattr(context_cmd, "get_entry_points", spy)
+
+        src_root = Path("/some/external/src")
+        context_cmd._build_protocol_enrichment(
+            {}, {"surface": True}, src_root=src_root, wiki_dir="wiki"
+        )
+
+        assert len(calls) == 1
+        assert calls[0]["root"] == src_root
+        assert calls[0]["fallback_root"] == Path.cwd()

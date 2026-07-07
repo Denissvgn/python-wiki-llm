@@ -9,27 +9,45 @@ from __future__ import annotations
 
 import ipaddress
 import json
-import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
-from urllib.parse import quote, unquote, urlparse
+from typing import Mapping
+from urllib.parse import unquote, urlparse
 
+from ..api import LlmWikiApiError, build_documentation_query_service
 from ..config import IDE_AGENTS, get_agent_config_path, read_config, validate_path
 from ..commands import context_cmd, lint_cmd
 from ..commands.bootstrap_cmd import build_module_page_map
 from ..commands.extract_cmd import get_inventory
-from . import circuit_breaker
+from . import circuit_breaker, wiki_surface
+from .documentation_queries import DocumentationQueryError
 from .io import read_md
 
 
 MCP_PACKAGE_HINT = "Install it with: pip install 'agent-wiki-cli[mcp]'"
 RESOURCE_SCHEME = "llm-wiki"
 
-_PAGE_ID_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
-_RESOURCE_KINDS = {"entities", "modules", "workflows", "infrastructure"}
-_ROOT_RESOURCES = {"index": "index.md", "log": "log.md"}
-_SEARCH_KINDS = _RESOURCE_KINDS | set(_ROOT_RESOURCES)
+_PAGE_KINDS_BY_MCP_KIND = {
+    entry.mcp_uri_kind: entry for entry in wiki_surface.iter_page_kinds()
+}
+_MCP_KIND_BY_PAGE_KIND = {
+    entry.kind: entry.mcp_uri_kind for entry in wiki_surface.iter_page_kinds()
+}
+_RESOURCE_KINDS = {entry.mcp_uri_kind for entry in wiki_surface.iter_directory_kinds()}
+_ROOT_RESOURCES = {
+    entry.mcp_uri_kind: entry for entry in wiki_surface.iter_root_pages()
+}
+_SEARCH_KINDS = set(_PAGE_KINDS_BY_MCP_KIND)
+_ARCHITECTURE_PAGE_KINDS = {"dependencies", "load-order"}
+_GRAPH_QUERY_METHODS = {
+    "flow_for_entrypoint": "flow_for_entrypoint",
+    "data_flow_for_entrypoint": "data_flow_for_entrypoint",
+    "callers": "callers",
+    "callees": "callees",
+    "dependency_neighborhood": "dependency_neighborhood",
+    "pages_for_symbol": "pages_for_symbol",
+}
 
 
 class MCPDependencyError(RuntimeError):
@@ -64,11 +82,10 @@ def ensure_mcp_runtime() -> None:
     if sys.version_info < (3, 10):
         raise MCPDependencyError(
             "llm-wiki MCP support requires Python 3.10 or newer because the "
-            "official MCP Python SDK does not support Python 3.9. "
-            + MCP_PACKAGE_HINT
+            "official MCP Python SDK does not support Python 3.9. " + MCP_PACKAGE_HINT
         )
     try:
-        import mcp  # noqa: F401
+        import mcp  # type: ignore[reportMissingImports]  # noqa: F401
     except ImportError as exc:
         raise MCPDependencyError(
             "The optional MCP Python SDK is not installed. " + MCP_PACKAGE_HINT
@@ -117,7 +134,9 @@ def _normalise_origin(origin: str) -> str:
     return f"{parsed.scheme.lower()}://{host_part}{port_part}"
 
 
-def is_origin_allowed(origin: str, *, port: int, allowed_origins: list[str] | tuple[str, ...]) -> bool:
+def is_origin_allowed(
+    origin: str, *, port: int, allowed_origins: list[str] | tuple[str, ...]
+) -> bool:
     """Return True when an HTTP Origin is acceptable for local MCP use."""
     try:
         normalised = _normalise_origin(origin)
@@ -128,37 +147,54 @@ def is_origin_allowed(origin: str, *, port: int, allowed_origins: list[str] | tu
         return True
 
     parsed = urlparse(normalised)
-    origin_port = parsed.port if parsed.port is not None else _default_port_for_scheme(parsed.scheme)
-    return bool(parsed.hostname and _is_loopback_host(parsed.hostname) and origin_port == port)
+    origin_port = (
+        parsed.port
+        if parsed.port is not None
+        else _default_port_for_scheme(parsed.scheme)
+    )
+    return bool(
+        parsed.hostname and _is_loopback_host(parsed.hostname) and origin_port == port
+    )
 
 
 class OriginValidationMiddleware:
     """Minimal ASGI middleware that rejects unexpected browser origins."""
 
-    def __init__(self, app, *, port: int, allowed_origins: list[str] | tuple[str, ...] | None = None):
+    def __init__(
+        self,
+        app,
+        *,
+        port: int,
+        allowed_origins: list[str] | tuple[str, ...] | None = None,
+    ):
         self.app = app
         self.port = port
         self.allowed_origins = tuple(allowed_origins or ())
 
     async def __call__(self, scope, receive, send):
         if scope.get("type") == "http":
-            headers = {
-                key.lower(): value
-                for key, value in scope.get("headers", [])
-            }
+            headers = {key.lower(): value for key, value in scope.get("headers", [])}
             raw_origin = headers.get(b"origin")
             if raw_origin is not None:
                 origin = raw_origin.decode("latin1")
-                if not is_origin_allowed(origin, port=self.port, allowed_origins=self.allowed_origins):
-                    await send({
-                        "type": "http.response.start",
-                        "status": 403,
-                        "headers": [(b"content-type", b"text/plain; charset=utf-8")],
-                    })
-                    await send({
-                        "type": "http.response.body",
-                        "body": b"Forbidden origin",
-                    })
+                if not is_origin_allowed(
+                    origin, port=self.port, allowed_origins=self.allowed_origins
+                ):
+                    await send(
+                        {
+                            "type": "http.response.start",
+                            "status": 403,
+                            "headers": [
+                                (b"content-type", b"text/plain; charset=utf-8")
+                            ],
+                        }
+                    )
+                    await send(
+                        {
+                            "type": "http.response.body",
+                            "body": b"Forbidden origin",
+                        }
+                    )
                     return
         await self.app(scope, receive, send)
 
@@ -178,6 +214,29 @@ class McpWikiService:
         page_id = self._resolve_module_page_id(module_id_or_source_path)
         page = self._page_for("modules", page_id)
         return self._read_page_result(page)
+
+    def get_flow(self, flow_id: str) -> dict:
+        page = self._page_for("flows", flow_id)
+        return self._read_page_result(page)
+
+    def get_architecture_page(self, page: str) -> dict:
+        if not isinstance(page, str) or page.strip() not in _ARCHITECTURE_PAGE_KINDS:
+            raise McpWikiError(f"Unknown architecture page: {page}")
+        root_page = self._page_from_uri(wiki_surface.mcp_uri(page.strip()))
+        return self._read_page_result(root_page)
+
+    def query_graph(self, query: Mapping[str, object]) -> dict:
+        query_type, value, limit = _graph_query_args(query)
+        try:
+            query_service = build_documentation_query_service(
+                self.src_dir,
+                wiki_dir=str(self.wiki_dir),
+                limit=limit,
+            )
+            method = getattr(query_service, _GRAPH_QUERY_METHODS[query_type])
+            return method(value)
+        except (LlmWikiApiError, DocumentationQueryError) as exc:
+            raise McpWikiError(str(exc)) from exc
 
     def search_wiki(
         self,
@@ -204,14 +263,16 @@ class McpWikiService:
             idx = haystack.find(needle)
             if idx == -1:
                 continue
-            matches.append({
-                "kind": page.kind,
-                "id": page.page_id,
-                "uri": page.uri,
-                "path": _relative_posix(page.path, self.wiki_dir),
-                "title": _markdown_title(content, page.page_id),
-                "snippet": _snippet(content, idx, len(query)),
-            })
+            matches.append(
+                {
+                    "kind": page.kind,
+                    "id": page.page_id,
+                    "uri": page.uri,
+                    "path": _relative_posix(page.path, self.wiki_dir),
+                    "title": _markdown_title(content, page.page_id),
+                    "snippet": _snippet(content, idx, len(query)),
+                }
+            )
             if len(matches) >= limit:
                 break
 
@@ -240,6 +301,7 @@ class McpWikiService:
                 validated["focus"],
                 validated["filters"],
                 emit_warnings=False,
+                wiki_dir=str(self.wiki_dir),
             )
         except context_cmd.ProtocolRequestError as exc:
             raise McpWikiError(str(exc)) from exc
@@ -260,15 +322,17 @@ class McpWikiService:
 
     def get_status(self) -> dict:
         wiki = self.wiki_dir
+        pages = {
+            entry.mcp_uri_kind: _count_surface_pages(wiki, entry)
+            for entry in wiki_surface.iter_page_kinds()
+        }
+        pages["architecture_pages"] = sum(
+            pages[kind] for kind in _ARCHITECTURE_PAGE_KINDS
+        )
         status: dict[str, object] = {
             "wiki_dir": _posix_string(wiki),
             "wiki_exists": wiki.exists(),
-            "pages": {
-                "entities": _count_md(wiki / "entities"),
-                "modules": _count_md(wiki / "modules"),
-                "workflows": _count_md(wiki / "workflows"),
-                "infrastructure": _count_md(wiki / "infrastructure"),
-            },
+            "pages": pages,
         }
 
         agent_config = get_agent_config_path(wiki)
@@ -288,9 +352,13 @@ class McpWikiService:
             status["agent"] = {"configured": False}
 
         status["hooks"] = _installed_hooks()
-        state = circuit_breaker.load_state(Path(".git")) if Path(".git").exists() else {}
+        state = (
+            circuit_breaker.load_state(Path(".git")) if Path(".git").exists() else {}
+        )
         status["circuit_breaker"] = {
-            "state": state.get("state", "unavailable" if not Path(".git").exists() else "closed"),
+            "state": state.get(
+                "state", "unavailable" if not Path(".git").exists() else "closed"
+            ),
             "consecutive_failures": state.get("consecutive_failures", 0),
         }
         return status
@@ -313,19 +381,26 @@ class McpWikiService:
     def list_resources(self) -> list[dict]:
         resources = []
         for page in self._iter_pages(_SEARCH_KINDS):
-            resources.append({
-                "uri": page.uri,
-                "name": f"{page.kind}/{page.page_id}" if page.kind not in _ROOT_RESOURCES else page.page_id,
-                "title": page.page_id,
-                "mimeType": "text/markdown",
-            })
+            resources.append(
+                {
+                    "uri": page.uri,
+                    "name": f"{page.kind}/{page.page_id}"
+                    if page.kind not in _ROOT_RESOURCES
+                    else page.page_id,
+                    "title": page.page_id,
+                    "mimeType": "text/markdown",
+                }
+            )
         return resources
 
     def _resolve_module_page_id(self, value: str) -> str:
         if not isinstance(value, str) or not value.strip():
             raise McpWikiError("module_id_or_source_path must be a non-empty string.")
         candidate = value.strip()
-        if _is_safe_page_id(candidate) and (self.wiki_dir / "modules" / f"{candidate}.md").exists():
+        if (
+            _is_safe_page_id(candidate)
+            and (self.wiki_dir / "modules" / f"{candidate}.md").exists()
+        ):
             return candidate
 
         inventory = get_inventory(self.src_dir)
@@ -335,7 +410,8 @@ class McpWikiService:
             return page_map[normalised]
 
         suffix_matches = [
-            page_id for filepath, page_id in page_map.items()
+            page_id
+            for filepath, page_id in page_map.items()
             if filepath.endswith(normalised) or normalised.endswith(filepath)
         ]
         if len(suffix_matches) == 1:
@@ -348,26 +424,42 @@ class McpWikiService:
         raise McpWikiError(f"Unknown module source path or unsafe page id: {value}")
 
     def _page_for(self, kind: str, page_id: str) -> WikiPage:
-        if kind not in _RESOURCE_KINDS:
+        entry = _PAGE_KINDS_BY_MCP_KIND.get(kind)
+        if entry is None or not entry.requires_page_id:
             raise McpWikiError(f"Unknown wiki resource kind: {kind}")
         page_id = _validate_page_id(page_id)
-        path = self.wiki_dir / kind / f"{page_id}.md"
+        path = self.wiki_dir / wiki_surface.canonical_path(entry.kind, page_id)
         _ensure_inside(self.wiki_dir, path)
         if not path.exists():
-            raise McpWikiError(f"Wiki page not found: {kind}/{page_id}.md")
-        return WikiPage(kind=kind, page_id=page_id, path=path, uri=_resource_uri(kind, page_id))
+            raise McpWikiError(
+                f"Wiki page not found: {wiki_surface.canonical_path(entry.kind, page_id)}"
+            )
+        return WikiPage(
+            kind=entry.mcp_uri_kind,
+            page_id=page_id,
+            path=path,
+            uri=_resource_uri(entry.mcp_uri_kind, page_id),
+        )
 
     def _page_from_uri(self, uri: str) -> WikiPage:
         parsed = urlparse(uri)
         if parsed.scheme != RESOURCE_SCHEME:
             raise McpWikiError(f"Unsupported resource URI scheme: {parsed.scheme}")
         if parsed.netloc in _ROOT_RESOURCES and parsed.path in {"", "/"}:
-            page_id = parsed.netloc
-            path = self.wiki_dir / _ROOT_RESOURCES[page_id]
+            entry = _ROOT_RESOURCES[parsed.netloc]
+            page_id = entry.mcp_uri_kind
+            path = self.wiki_dir / wiki_surface.canonical_path(entry.kind)
             _ensure_inside(self.wiki_dir, path)
             if not path.exists():
-                raise McpWikiError(f"Wiki page not found: {_ROOT_RESOURCES[page_id]}")
-            return WikiPage(kind=page_id, page_id=page_id, path=path, uri=f"{RESOURCE_SCHEME}://{page_id}")
+                raise McpWikiError(
+                    f"Wiki page not found: {wiki_surface.canonical_path(entry.kind)}"
+                )
+            return WikiPage(
+                kind=entry.mcp_uri_kind,
+                page_id=page_id,
+                path=path,
+                uri=wiki_surface.mcp_uri(entry.kind),
+            )
 
         kind = parsed.netloc
         raw_id = parsed.path.lstrip("/")
@@ -387,40 +479,34 @@ class McpWikiService:
         }
 
     def _iter_pages(self, kinds: set[str]):
-        if "index" in kinds:
-            path = self.wiki_dir / "index.md"
-            if path.exists():
-                yield WikiPage("index", "index", path, f"{RESOURCE_SCHEME}://index")
-        if "log" in kinds:
-            path = self.wiki_dir / "log.md"
-            if path.exists():
-                yield WikiPage("log", "log", path, f"{RESOURCE_SCHEME}://log")
-        for kind in sorted(_RESOURCE_KINDS & kinds):
-            base = self.wiki_dir / kind
-            if not base.exists():
-                continue
-            for path in sorted(base.glob("*.md")):
-                if _is_legacy_page(path, self.wiki_dir):
-                    continue
-                page_id = path.stem
-                if _is_safe_page_id(page_id):
-                    yield WikiPage(kind, page_id, path, _resource_uri(kind, page_id))
+        for page in wiki_surface.collect_wiki_pages(self.wiki_dir):
+            kind = _MCP_KIND_BY_PAGE_KIND[page.kind]
+            if kind in kinds:
+                yield WikiPage(kind, page.page_id, page.path, page.mcp_uri)
 
 
 def create_mcp_server(config: McpServerConfig):
     """Create and register the FastMCP server for a validated config."""
     ensure_mcp_runtime()
-    from mcp.server.fastmcp import FastMCP
+    from mcp.server.fastmcp import FastMCP  # type: ignore[reportMissingImports]
 
     service = McpWikiService(src_dir=config.src_dir, wiki_dir=config.wiki_dir)
     server = FastMCP(
         "llm-wiki",
         instructions=(
             "Read-only access to the local LLM Wiki. Use tools to fetch wiki pages, "
-            "search documentation, request generated context, and run checks."
+            "search documentation, query documentation graphs, request generated "
+            "context, and run checks."
         ),
     )
 
+    _register_mcp_tools(server, service)
+    _register_mcp_resources(server, service)
+
+    return server
+
+
+def _register_mcp_tools(server, service: McpWikiService) -> None:
     @server.tool()
     def get_entity(entity_id: str) -> dict:
         """Return a wiki entity page by entity page id."""
@@ -432,7 +518,24 @@ def create_mcp_server(config: McpServerConfig):
         return service.get_module(module_id_or_source_path)
 
     @server.tool()
-    def search_wiki(query: str, kinds: list[str] | None = None, limit: int = 20) -> dict:
+    def get_flow(flow_id: str) -> dict:
+        """Return a wiki user-flow page by flow page id."""
+        return service.get_flow(flow_id)
+
+    @server.tool()
+    def get_architecture_page(page: str) -> dict:
+        """Return a wiki dependency architecture page."""
+        return service.get_architecture_page(page)
+
+    @server.tool()
+    def query_graph(query: dict) -> dict:
+        """Run a bounded read-only documentation graph query."""
+        return service.query_graph(query)
+
+    @server.tool()
+    def search_wiki(
+        query: str, kinds: list[str] | None = None, limit: int = 20
+    ) -> dict:
         """Search Markdown wiki pages and return snippets plus resource URIs."""
         return service.search_wiki(query, kinds=kinds, limit=limit)
 
@@ -461,37 +564,36 @@ def create_mcp_server(config: McpServerConfig):
         """Return local llm-wiki status without mutating files."""
         return service.get_status()
 
-    @server.resource("llm-wiki://index")
-    def index_resource() -> str:
-        """Read the wiki index."""
-        return service.read_resource("llm-wiki://index")["text"]
 
-    @server.resource("llm-wiki://log")
-    def log_resource() -> str:
-        """Read the architectural log."""
-        return service.read_resource("llm-wiki://log")["text"]
+def _register_mcp_resources(server, service: McpWikiService) -> None:
+    for entry in wiki_surface.iter_page_kinds():
+        if entry.requires_page_id:
+            _register_directory_resource(server, service, entry)
+        else:
+            _register_root_resource(server, service, entry)
 
-    @server.resource("llm-wiki://entities/{entity_id}")
-    def entity_resource(entity_id: str) -> str:
-        """Read a wiki entity resource."""
-        return service.read_resource(f"llm-wiki://entities/{quote(entity_id, safe='._-')}")["text"]
 
-    @server.resource("llm-wiki://modules/{module_id}")
-    def module_resource(module_id: str) -> str:
-        """Read a wiki module resource."""
-        return service.read_resource(f"llm-wiki://modules/{quote(module_id, safe='._-')}")["text"]
+def _register_root_resource(server, service: McpWikiService, entry) -> None:
+    uri = wiki_surface.mcp_uri(entry.kind)
 
-    @server.resource("llm-wiki://workflows/{workflow_id}")
-    def workflow_resource(workflow_id: str) -> str:
-        """Read a wiki workflow resource."""
-        return service.read_resource(f"llm-wiki://workflows/{quote(workflow_id, safe='._-')}")["text"]
+    def resource() -> str:
+        return service.read_resource(uri)["text"]
 
-    @server.resource("llm-wiki://infrastructure/{infra_id}")
-    def infrastructure_resource(infra_id: str) -> str:
-        """Read a wiki infrastructure resource."""
-        return service.read_resource(f"llm-wiki://infrastructure/{quote(infra_id, safe='._-')}")["text"]
+    resource.__name__ = f"{entry.mcp_uri_kind.replace('-', '_')}_resource"
+    resource.__doc__ = f"Read the wiki {entry.label.lower()} page."
+    server.resource(uri)(resource)
 
-    return server
+
+def _register_directory_resource(server, service: McpWikiService, entry) -> None:
+    template = f"{RESOURCE_SCHEME}://{entry.mcp_uri_kind}/{{page_id}}"
+
+    def resource(page_id: str) -> str:
+        uri = wiki_surface.mcp_uri(entry.kind, page_id)
+        return service.read_resource(uri)["text"]
+
+    resource.__name__ = f"{entry.mcp_uri_kind.replace('-', '_')}_resource"
+    resource.__doc__ = f"Read a wiki {entry.label.lower()} resource."
+    server.resource(template)(resource)
 
 
 def run_mcp_server(config: McpServerConfig) -> None:
@@ -515,7 +617,7 @@ def run_mcp_server(config: McpServerConfig) -> None:
         server.run(transport="stdio", show_banner=False)
         return
 
-    from starlette.middleware import Middleware
+    from starlette.middleware import Middleware  # type: ignore[reportMissingImports]
 
     middleware = [
         Middleware(
@@ -535,7 +637,29 @@ def run_mcp_server(config: McpServerConfig) -> None:
 
 
 def _resource_uri(kind: str, page_id: str) -> str:
-    return f"{RESOURCE_SCHEME}://{kind}/{quote(page_id, safe='._-')}"
+    return wiki_surface.mcp_uri(kind, page_id)
+
+
+def _graph_query_args(query: Mapping[str, object]) -> tuple[str, str, int]:
+    if not isinstance(query, Mapping):
+        raise McpWikiError("query must be an object.")
+
+    query_type = query.get("type")
+    if not isinstance(query_type, str) or not query_type.strip():
+        raise McpWikiError("type must be a non-empty string.")
+    query_type = query_type.strip()
+    if query_type not in _GRAPH_QUERY_METHODS:
+        raise McpWikiError(f"Unknown graph query type: {query_type}")
+
+    value = query.get("value")
+    if not isinstance(value, str) or not value.strip():
+        raise McpWikiError("value must be a non-empty string.")
+
+    limit = query.get("limit", 20)
+    if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
+        raise McpWikiError("limit must be a positive integer.")
+
+    return query_type, value.strip(), min(limit, 100)
 
 
 def _validate_page_id(page_id: str) -> str:
@@ -548,7 +672,7 @@ def _validate_page_id(page_id: str) -> str:
 
 
 def _is_safe_page_id(page_id: str) -> bool:
-    return bool(_PAGE_ID_RE.fullmatch(page_id)) and ".." not in page_id
+    return wiki_surface.is_safe_page_id(page_id)
 
 
 def _normalise_source_path(path: str) -> str:
@@ -566,7 +690,10 @@ def _ensure_inside(root: Path, path: Path) -> None:
 
 
 def _relative_posix(path: Path, root: Path) -> str:
-    return path.relative_to(root).as_posix()
+    try:
+        return path.relative_to(root).as_posix()
+    except ValueError:
+        return path.resolve().relative_to(root.resolve()).as_posix()
 
 
 def _posix_string(value: object) -> str:
@@ -580,16 +707,6 @@ def _normalise_report_paths(payload: dict) -> None:
     for issue in payload.get("issues", []):
         if isinstance(issue, dict) and issue.get("path") is not None:
             issue["path"] = _posix_string(issue["path"])
-
-
-def _is_legacy_page(path: Path, wiki_dir: Path) -> bool:
-    try:
-        return path.relative_to(wiki_dir).parts[:1] == ("legacy",)
-    except ValueError:
-        try:
-            return path.resolve().relative_to(wiki_dir.resolve()).parts[:1] == ("legacy",)
-        except ValueError:
-            return False
 
 
 def _markdown_title(content: str, fallback: str) -> str:
@@ -610,7 +727,13 @@ def _snippet(content: str, start: int, length: int) -> str:
 def _count_md(path: Path) -> int:
     if not path.exists():
         return 0
-    return len(list(path.glob("*.md")))
+    return sum(1 for _ in path.glob("*.md"))
+
+
+def _count_surface_pages(path: Path, entry) -> int:
+    if entry.requires_page_id:
+        return _count_md(path / entry.directory)
+    return int((path / wiki_surface.canonical_path(entry.kind)).is_file())
 
 
 def _installed_hooks() -> list[str]:

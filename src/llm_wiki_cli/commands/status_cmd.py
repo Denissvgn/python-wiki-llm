@@ -1,16 +1,38 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS, read_config, get_agent_config_path
 from ..services import circuit_breaker
+from ..services.wiki_surface import PageKind, canonical_path, iter_page_kinds
 
 
 def _count_markdown_files(directory: Path) -> int:
     if not directory.exists():
         return 0
     return sum(1 for _ in directory.glob("*.md"))
+
+
+def _status_label(kind: PageKind, fallback: str) -> str:
+    if kind == PageKind.FLOWS:
+        return "Flows"
+    return fallback
+
+
+def _count_surface_pages(wiki_path: Path, entry) -> int:
+    if entry.requires_page_id:
+        if entry.directory is None:
+            return 0
+        return _count_markdown_files(wiki_path / entry.directory)
+    return int((wiki_path / canonical_path(entry.kind)).is_file())
+
+
+def _architecture_page_count(wiki_path: Path) -> int:
+    return sum(
+        1
+        for kind in (PageKind.DEPENDENCIES, PageKind.LOAD_ORDER)
+        if (wiki_path / canonical_path(kind)).is_file()
+    )
 
 
 def run(args) -> None:
@@ -23,13 +45,12 @@ def run(args) -> None:
 
     # Wiki directory
     if wiki_path.exists():
-        entity_count = _count_markdown_files(wiki_path / "entities")
-        module_count = _count_markdown_files(wiki_path / "modules")
-        workflow_count = _count_markdown_files(wiki_path / "workflows")
         print(f"Wiki directory:  {wiki_dir} (exists)")
-        print(f"  Entities:      {entity_count}")
-        print(f"  Modules:       {module_count}")
-        print(f"  Workflows:     {workflow_count}")
+        for entry in iter_page_kinds():
+            label = _status_label(entry.kind, entry.label)
+            count = _count_surface_pages(wiki_path, entry)
+            print(f"  {label + ':':<15}{count}")
+        print(f"  {'Architecture pages:':<15}{_architecture_page_count(wiki_path)}")
     else:
         print(f"Wiki directory:  {wiki_dir} (not found)")
 
@@ -69,7 +90,9 @@ def run(args) -> None:
         failures = state.get("consecutive_failures", 0)
         if breaker_state == "open":
             print(f"Circuit breaker: OPEN ({failures} consecutive failures)")
-            print("                 Run `llm-wiki trigger-agent --reset-breaker` to re-enable")
+            print(
+                "                 Run `llm-wiki trigger-agent --reset-breaker` to re-enable"
+            )
         else:
             print(f"Circuit breaker: closed ({failures} recent failures)")
     else:

@@ -1,4 +1,5 @@
 """LLM Wiki CLI."""
+
 from importlib.metadata import version, PackageNotFoundError
 
 try:

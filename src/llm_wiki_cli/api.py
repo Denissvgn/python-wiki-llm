@@ -2,13 +2,32 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any
 
 from .commands import context_cmd, extract_cmd
-from .config import PathValidationError
+from .config import (
+    DEFAULT_WIKI_DIR,
+    PathValidationError,
+    validate_path,
+    validate_source_root,
+)
 from .services.contracts import (
     BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
     EXTRACT_SCHEMA_VERSION,
+)
+from .services.dependencies import analyze_dependencies
+from .services.documentation_queries import (
+    DocumentationGraphQueryService,
+    DocumentationQueryError,
+)
+from .services.entrypoints import build_flow
+from .services import wiki_surface
+from .services.wiki_surface_index import (
+    SURFACE_INDEX_FILENAME,
+    WIKI_SURFACE_INDEX_SCHEMA_VERSION,
+    build_surface_index,
 )
 
 
@@ -65,6 +84,7 @@ def build_context(
     format: str = "json",
     focus: str | list[str] = "changed",
     filters: dict | None = None,
+    wiki_dir: str = DEFAULT_WIKI_DIR,
     allow_external_src: bool = False,
     read_only: bool = True,
 ) -> dict[str, Any]:
@@ -88,10 +108,13 @@ def build_context(
             emit_warnings=False,
             allow_external_src=allow_external_src,
             read_only=read_only,
+            wiki_dir=wiki_dir,
         )
     except PathValidationError as exc:
         raise PathPolicyError(str(exc)) from exc
     except context_cmd.ProtocolRequestError as exc:
+        if exc.field == "wiki_dir":
+            raise PathPolicyError(str(exc)) from exc
         if exc.field == "src_dir":
             raise ExtractionError(str(exc)) from exc
         raise LlmWikiApiError(str(exc)) from exc
@@ -109,6 +132,219 @@ def build_context(
     return result
 
 
+def list_wiki_pages(wiki_dir: str = DEFAULT_WIKI_DIR) -> dict[str, Any]:
+    """Return registry-backed wiki page metadata without source extraction."""
+    try:
+        wiki_root = _validate_wiki_dir(wiki_dir)
+        pages = [
+            _wiki_page_payload(page)
+            for page in wiki_surface.collect_wiki_pages(wiki_root)
+        ]
+    except PathValidationError as exc:
+        raise PathPolicyError(str(exc)) from exc
+    except wiki_surface.WikiSurfaceError as exc:
+        raise LlmWikiApiError(str(exc)) from exc
+    except OSError as exc:
+        raise LlmWikiApiError(str(exc)) from exc
+
+    return {
+        "wiki_dir": _display_path(wiki_root),
+        "counts": _wiki_page_counts(pages),
+        "pages": pages,
+    }
+
+
+def build_documentation_query_service(
+    src_dir: str = ".",
+    *,
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    limit: int = 20,
+    allow_external_src: bool = False,
+    read_only: bool = True,
+) -> DocumentationGraphQueryService:
+    """Build a supported graph query service over derived documentation data."""
+    try:
+        src_root = validate_source_root(
+            src_dir,
+            "--src-dir",
+            allow_external=allow_external_src,
+        )
+        wiki_root = _validate_wiki_dir(wiki_dir)
+        result = extract_cmd.build_extract_payload(
+            str(src_root),
+            deep=True,
+            allow_external_src=True,
+            read_only=read_only,
+        )
+        inventory = result.payload["inventory"]
+        entrypoints = result.payload.get("entrypoints", [])
+        call_edges = extract_cmd.resolve_call_edges(inventory)
+        flows = [build_flow(entrypoint, call_edges) for entrypoint in entrypoints]
+        surface_index = _load_or_build_surface_index(
+            wiki_root,
+            inventory,
+            src_root=src_root,
+            entrypoints=entrypoints,
+        )
+        return DocumentationGraphQueryService(
+            inventory,
+            call_edges=call_edges,
+            flows=flows,
+            data_flows=result.payload.get("data_flows") or [],
+            dependency_analysis=analyze_dependencies(inventory, str(src_root)),
+            surface_index=surface_index,
+            limit=limit,
+        )
+    except PathValidationError as exc:
+        raise PathPolicyError(str(exc)) from exc
+    except extract_cmd.ExtractorFailureError as exc:
+        raise ExtractionError(str(exc)) from exc
+    except DocumentationQueryError as exc:
+        raise LlmWikiApiError(str(exc)) from exc
+    except ValueError as exc:
+        raise LlmWikiApiError(str(exc)) from exc
+    except OSError as exc:
+        raise LlmWikiApiError(str(exc)) from exc
+
+
+def flow_for_entrypoint(
+    id_or_symbol: object,
+    *,
+    service: DocumentationGraphQueryService | None = None,
+    src_dir: str = ".",
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    limit: int = 20,
+    allow_external_src: bool = False,
+    read_only: bool = True,
+) -> dict[str, Any]:
+    """Return a bounded user-flow query result for an entry point."""
+    return _run_query(
+        lambda: _query_service(
+            service,
+            src_dir=src_dir,
+            wiki_dir=wiki_dir,
+            limit=limit,
+            allow_external_src=allow_external_src,
+            read_only=read_only,
+        ).flow_for_entrypoint(id_or_symbol)
+    )
+
+
+def data_flow_for_entrypoint(
+    id_or_symbol: object,
+    *,
+    service: DocumentationGraphQueryService | None = None,
+    src_dir: str = ".",
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    limit: int = 20,
+    allow_external_src: bool = False,
+    read_only: bool = True,
+) -> dict[str, Any]:
+    """Return a bounded data-flow query result for an entry point."""
+    return _run_query(
+        lambda: _query_service(
+            service,
+            src_dir=src_dir,
+            wiki_dir=wiki_dir,
+            limit=limit,
+            allow_external_src=allow_external_src,
+            read_only=read_only,
+        ).data_flow_for_entrypoint(id_or_symbol)
+    )
+
+
+def callers(
+    symbol: object,
+    *,
+    service: DocumentationGraphQueryService | None = None,
+    src_dir: str = ".",
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    limit: int = 20,
+    allow_external_src: bool = False,
+    read_only: bool = True,
+) -> dict[str, Any]:
+    """Return bounded callers for one callable symbol."""
+    return _run_query(
+        lambda: _query_service(
+            service,
+            src_dir=src_dir,
+            wiki_dir=wiki_dir,
+            limit=limit,
+            allow_external_src=allow_external_src,
+            read_only=read_only,
+        ).callers(symbol)
+    )
+
+
+def callees(
+    symbol: object,
+    *,
+    service: DocumentationGraphQueryService | None = None,
+    src_dir: str = ".",
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    limit: int = 20,
+    allow_external_src: bool = False,
+    read_only: bool = True,
+) -> dict[str, Any]:
+    """Return bounded callees for one callable symbol."""
+    return _run_query(
+        lambda: _query_service(
+            service,
+            src_dir=src_dir,
+            wiki_dir=wiki_dir,
+            limit=limit,
+            allow_external_src=allow_external_src,
+            read_only=read_only,
+        ).callees(symbol)
+    )
+
+
+def dependency_neighborhood(
+    path: object,
+    *,
+    service: DocumentationGraphQueryService | None = None,
+    src_dir: str = ".",
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    limit: int = 20,
+    allow_external_src: bool = False,
+    read_only: bool = True,
+) -> dict[str, Any]:
+    """Return bounded dependency neighbors for one source path."""
+    return _run_query(
+        lambda: _query_service(
+            service,
+            src_dir=src_dir,
+            wiki_dir=wiki_dir,
+            limit=limit,
+            allow_external_src=allow_external_src,
+            read_only=read_only,
+        ).dependency_neighborhood(path)
+    )
+
+
+def pages_for_symbol(
+    symbol: object,
+    *,
+    service: DocumentationGraphQueryService | None = None,
+    src_dir: str = ".",
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    limit: int = 20,
+    allow_external_src: bool = False,
+    read_only: bool = True,
+) -> dict[str, Any]:
+    """Return wiki surface pages related to one symbol."""
+    return _run_query(
+        lambda: _query_service(
+            service,
+            src_dir=src_dir,
+            wiki_dir=wiki_dir,
+            limit=limit,
+            allow_external_src=allow_external_src,
+            read_only=read_only,
+        ).pages_for_symbol(symbol)
+    )
+
+
 def _normalise_focus(focus: str | list[str]) -> list[str]:
     if isinstance(focus, str):
         if focus == "all":
@@ -119,12 +355,114 @@ def _normalise_focus(focus: str | list[str]) -> list[str]:
     return list(focus)
 
 
+def _validate_wiki_dir(wiki_dir: str) -> Path:
+    return validate_path(wiki_dir, "--wiki-dir")
+
+
+def _display_path(path: Path) -> str:
+    try:
+        return path.relative_to(Path.cwd().resolve()).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
+def _wiki_page_payload(page: wiki_surface.WikiSurfacePage) -> dict[str, Any]:
+    return {
+        "kind": page.kind.value,
+        "id": page.page_id,
+        "label": page.label,
+        "canonical_path": page.relative_path,
+        "mcp_uri": page.mcp_uri,
+        "role": page.role.value,
+        "obsidian_mirror_dir": page.obsidian_mirror_dir,
+    }
+
+
+def _wiki_page_counts(pages: list[dict[str, Any]]) -> dict[str, Any]:
+    by_kind = {entry.kind.value: 0 for entry in wiki_surface.iter_page_kinds()}
+    for page in pages:
+        by_kind[str(page["kind"])] += 1
+    architecture_pages = (
+        by_kind[wiki_surface.PageKind.DEPENDENCIES.value]
+        + by_kind[wiki_surface.PageKind.LOAD_ORDER.value]
+    )
+    return {
+        "total": len(pages),
+        "by_kind": by_kind,
+        "architecture_pages": architecture_pages,
+    }
+
+
+def _load_or_build_surface_index(
+    wiki_root: Path,
+    inventory: dict[str, Any],
+    *,
+    src_root: Path,
+    entrypoints: list[dict[str, Any]],
+) -> dict[str, Any]:
+    index_path = wiki_root / SURFACE_INDEX_FILENAME
+    if index_path.is_file():
+        try:
+            payload = json.loads(index_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            raise LlmWikiApiError(f"Invalid wiki surface index: {index_path}") from exc
+        if payload.get(
+            "schema_version"
+        ) == WIKI_SURFACE_INDEX_SCHEMA_VERSION and isinstance(
+            payload.get("pages"), list
+        ):
+            return payload
+
+    return build_surface_index(
+        wiki_root,
+        inventory,
+        src_dir=src_root,
+        entry_points=entrypoints,
+    )
+
+
+def _query_service(
+    service: DocumentationGraphQueryService | None,
+    *,
+    src_dir: str,
+    wiki_dir: str,
+    limit: int,
+    allow_external_src: bool,
+    read_only: bool,
+) -> DocumentationGraphQueryService:
+    if service is not None:
+        return service
+    return build_documentation_query_service(
+        src_dir,
+        wiki_dir=wiki_dir,
+        limit=limit,
+        allow_external_src=allow_external_src,
+        read_only=read_only,
+    )
+
+
+def _run_query(callback) -> dict[str, Any]:
+    try:
+        return callback()
+    except DocumentationQueryError as exc:
+        raise LlmWikiApiError(str(exc)) from exc
+
+
 __all__ = [
     "BOOTSTRAP_SUMMARY_SCHEMA_VERSION",
     "EXTRACT_SCHEMA_VERSION",
+    "DocumentationGraphQueryService",
     "ExtractionError",
     "LlmWikiApiError",
     "PathPolicyError",
     "build_context",
+    "build_documentation_query_service",
+    "callees",
+    "callers",
+    "data_flow_for_entrypoint",
+    "dependency_neighborhood",
     "extract_source",
+    "flow_for_entrypoint",
+    "list_wiki_pages",
+    "pages_for_symbol",
 ]

@@ -1,4 +1,5 @@
 """Tests for commands/bump_cmd.py"""
+
 import shutil
 import subprocess
 import types
@@ -25,7 +26,7 @@ class TestBumpPatchCmd:
         args = _make_args(bump_type="patch")
         bump_cmd.run(args)
         content = Path("pyproject.toml").read_text(encoding="utf-8")
-        assert '0.1.1' in content
+        assert "0.1.1" in content
 
 
 class TestBumpMinorCmd:
@@ -48,8 +49,7 @@ class TestBumpStageFlag:
 
         # Check that pyproject.toml is staged
         result = subprocess.run(
-            ["git", "diff", "--cached", "--name-only"],
-            capture_output=True, text=True
+            ["git", "diff", "--cached", "--name-only"], capture_output=True, text=True
         )
         assert "pyproject.toml" in result.stdout
 

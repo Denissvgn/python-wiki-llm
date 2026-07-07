@@ -5,7 +5,11 @@ from __future__ import annotations
 import textwrap
 from pathlib import Path
 
-from llm_wiki_cli.services.packages import PackageInfo, discover_packages, stamp_inventory_packages
+from llm_wiki_cli.services.packages import (
+    PackageInfo,
+    discover_packages,
+    stamp_inventory_packages,
+)
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
 
@@ -130,7 +134,9 @@ def test_discover_packages_prefers_pyproject_over_setup_py(tmp_path):
 
 def test_discover_packages_ignores_unparseable_markers(tmp_path):
     _write(tmp_path / "bad-pyproject" / "pyproject.toml", "[project\nname =")
-    _write(tmp_path / "bad-setup" / "setup.py", "from setuptools import setup\nsetup(\n")
+    _write(
+        tmp_path / "bad-setup" / "setup.py", "from setuptools import setup\nsetup(\n"
+    )
 
     assert discover_packages(str(tmp_path)) == []
 

@@ -1,0 +1,19 @@
+{
+  "id": "m4-documentation-hooks",
+  "version": "0.1.0",
+  "llm_wiki_version": "*",
+  "components": [
+    {
+      "type": "entrypoint_detector",
+      "id": "worker-tasks",
+      "entry_point": "detectors:detect_worker_tasks",
+      "description": "Detect task-style worker functions as user-facing flows."
+    },
+    {
+      "type": "diagram_style",
+      "id": "brand-flowcharts",
+      "entry_point": "styles:style_flowcharts",
+      "description": "Apply bounded Mermaid styling to generated flowcharts."
+    }
+  ]
+}

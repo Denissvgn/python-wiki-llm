@@ -2,7 +2,6 @@
 
 import os
 import subprocess
-import textwrap
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -10,22 +9,34 @@ import pytest
 
 from llm_wiki_cli.commands import upgrade_cmd
 from llm_wiki_cli.config import read_config, write_config
-from llm_wiki_cli.services.schema import CONSTRAINT_START, CONSTRAINT_END, SCHEMA_FILENAMES
+from llm_wiki_cli.services.schema import (
+    CONSTRAINT_START,
+    CONSTRAINT_END,
+    SCHEMA_FILENAMES,
+)
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _init_project(proj: Path, agent: str = "copilot", wiki_dir: str = "docs/llm_wiki"):
     """Run a minimal init to create the wiki structure and schema file."""
     subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
-    subprocess.run(["git", "-C", str(proj), "config", "user.email", "t@t.com"],
-                   capture_output=True, check=True)
-    subprocess.run(["git", "-C", str(proj), "config", "user.name", "T"],
-                   capture_output=True, check=True)
+    subprocess.run(
+        ["git", "-C", str(proj), "config", "user.email", "t@t.com"],
+        capture_output=True,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "-C", str(proj), "config", "user.name", "T"],
+        capture_output=True,
+        check=True,
+    )
 
     from llm_wiki_cli.commands import init_cmd
+
     old_cwd = os.getcwd()
     os.chdir(proj)
     try:
@@ -70,6 +81,7 @@ class TestUpgradeRefreshesSchema:
         os.chdir(tmp_path)
 
         from llm_wiki_cli.services.schema import build_schema_content
+
         expected_block = build_schema_content("copilot", "docs/llm_wiki")
 
         upgrade_cmd.run(_make_args())
@@ -220,15 +232,18 @@ class TestUpgradeReinstallsHooks:
         # Switch to CLI agent
         upgrade_cmd.run(_make_args(agent="claude"))
         new_content = hook.read_text(encoding="utf-8")
-        assert "trigger-agent" in new_content  # CLI mode
+        assert "generate-prompt" in new_content
+        assert "trigger-agent" not in new_content
 
-    def test_cli_hook_keeps_custom_wiki_dir(self, tmp_path):
+    def test_prompt_hook_keeps_custom_wiki_dir_for_cli_agent(self, tmp_path):
         _init_project(tmp_path, agent="claude", wiki_dir="my docs/wiki")
         os.chdir(tmp_path)
 
         upgrade_cmd.run(_make_args(wiki_dir="my docs/wiki"))
 
         hook_text = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
+        assert "generate-prompt" in hook_text
+        assert "trigger-agent" not in hook_text
         assert "--wiki-dir 'my docs/wiki'" in hook_text
 
 
@@ -243,6 +258,7 @@ class TestUpgradeCreatesNewDirs:
         infra = Path("docs/llm_wiki/infrastructure")
         if infra.exists():
             import shutil
+
             shutil.rmtree(infra)
         assert not infra.exists()
 
@@ -250,6 +266,68 @@ class TestUpgradeCreatesNewDirs:
 
         assert infra.exists()
         assert (infra / ".gitkeep").exists()
+
+    def test_registry_dirs_created_without_architecture_placeholders(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+
+        flows = Path("docs/llm_wiki/flows")
+        if flows.exists():
+            import shutil
+
+            shutil.rmtree(flows)
+        Path("docs/llm_wiki/dependencies.md").unlink(missing_ok=True)
+        Path("docs/llm_wiki/load-order.md").unlink(missing_ok=True)
+
+        upgrade_cmd.run(_make_args())
+
+        assert flows.exists()
+        assert (flows / ".gitkeep").exists()
+        assert not Path("docs/llm_wiki/dependencies.md").exists()
+        assert not Path("docs/llm_wiki/load-order.md").exists()
+
+    def test_legacy_layout_scaffolded_without_rewriting_pages(self, tmp_path, capsys):
+        subprocess.run(["git", "init", str(tmp_path)], capture_output=True, check=True)
+        os.chdir(tmp_path)
+        wiki = Path("docs/llm_wiki")
+        for dirname in ["entities", "modules", "workflows", "infrastructure"]:
+            (wiki / dirname).mkdir(parents=True, exist_ok=True)
+        pages = {
+            "index.md": "# Legacy Index\n\n## Custom\n\nKeep this.\n",
+            "log.md": "# Legacy Log\n\nKeep log.\n",
+            "entities/User.md": "# User\n\nLegacy entity.\n",
+            "modules/models.md": "# models\n\nLegacy module.\n",
+            "workflows/signup.md": "# signup\n\nLegacy workflow.\n",
+            "infrastructure/docker.md": "# docker\n\nLegacy infrastructure.\n",
+        }
+        for rel, content in pages.items():
+            target = wiki / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(content, encoding="utf-8")
+
+        upgrade_cmd.run(_make_args(agent="generic"))
+
+        output = capsys.readouterr().out
+        assert "Created directory: flows/" in output
+        assert "Created .gitkeep: entities/.gitkeep" in output
+        assert "Created .gitkeep: flows/.gitkeep" in output
+        assert (wiki / "flows" / ".gitkeep").exists()
+        assert not (wiki / "dependencies.md").exists()
+        assert not (wiki / "load-order.md").exists()
+        for rel, content in pages.items():
+            assert (wiki / rel).read_text(encoding="utf-8") == content
+
+        snapshot = {
+            path.relative_to(wiki).as_posix(): path.read_text(encoding="utf-8")
+            for path in wiki.rglob("*")
+            if path.is_file()
+        }
+        upgrade_cmd.run(_make_args(agent="generic"))
+        assert {
+            path.relative_to(wiki).as_posix(): path.read_text(encoding="utf-8")
+            for path in wiki.rglob("*")
+            if path.is_file()
+        } == snapshot
 
 
 class TestUpgradeNoAgentConfig:
@@ -308,6 +386,7 @@ class TestUpgradeQualityHints:
 
         # Simulate stored config with quality_hints=False
         from llm_wiki_cli.config import write_config
+
         write_config("docs/llm_wiki", {"agent": "copilot", "quality_hints": False})
 
         upgrade_cmd.run(_make_args())  # no quality_hints flag
@@ -324,7 +403,9 @@ class TestUpgradeQualityHints:
 
         # Disable
         upgrade_cmd.run(_make_args(quality_hints=False))
-        assert "Agent quality guidelines" not in Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
+        assert "Agent quality guidelines" not in Path(
+            SCHEMA_FILENAMES["copilot"]
+        ).read_text(encoding="utf-8")
 
         # Re-enable
         upgrade_cmd.run(_make_args(quality_hints=True))
@@ -364,12 +445,20 @@ class TestUpgradeIdempotent:
         upgrade_cmd.run(_make_args())
         first = Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
         hook_first = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
-        gi_first = Path(".gitignore").read_text(encoding="utf-8") if Path(".gitignore").exists() else ""
+        gi_first = (
+            Path(".gitignore").read_text(encoding="utf-8")
+            if Path(".gitignore").exists()
+            else ""
+        )
 
         upgrade_cmd.run(_make_args())
         second = Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
         hook_second = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
-        gi_second = Path(".gitignore").read_text(encoding="utf-8") if Path(".gitignore").exists() else ""
+        gi_second = (
+            Path(".gitignore").read_text(encoding="utf-8")
+            if Path(".gitignore").exists()
+            else ""
+        )
 
         assert first == second
         assert hook_first == hook_second

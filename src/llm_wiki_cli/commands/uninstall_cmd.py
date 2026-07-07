@@ -5,8 +5,8 @@ from ..config import DEFAULT_WIKI_DIR, validate_path
 from ..services.io import read_md, write_md
 from ..services.schema import (
     ALL_SCHEMA_FILES as AGENT_SCHEMA_FILES,
+    CONSTRAINT_END as CONSTRAINT_END,
     CONSTRAINT_START,
-    CONSTRAINT_END,
     strip_wiki_block as _strip_wiki_block,
 )
 
@@ -66,7 +66,7 @@ def _remove_hooks(dry_run: bool = False) -> int:
 
 def _clean_agent_schemas(dry_run: bool = False) -> int:
     """Remove the LLM Wiki constraint block from agent schema files.
-    
+
     If the file becomes empty after block removal, delete it entirely.
     If user content remains, preserve it.
     """

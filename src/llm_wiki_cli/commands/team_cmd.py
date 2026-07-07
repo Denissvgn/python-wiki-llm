@@ -4,7 +4,7 @@ import json
 import sys
 from pathlib import Path
 
-from ..config import DEFAULT_WIKI_DIR, validate_path
+from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from ..services import team
 from .extract_cmd import get_inventory
 
@@ -34,7 +34,9 @@ def _render_conflicts_text(result: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
-def _print_payload(payload: dict, output_format: str, *, conflict: bool = False) -> None:
+def _print_payload(
+    payload: dict, output_format: str, *, conflict: bool = False
+) -> None:
     if output_format == "json":
         print(json.dumps(payload, indent=2, sort_keys=True))
     elif conflict:
@@ -58,13 +60,20 @@ def _run_check(args) -> None:
     src_dir = getattr(args, "src_dir", ".")
     wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     output_format = getattr(args, "format", "text")
-    validate_path(src_dir, "--src-dir")
+    allow_external_src = bool(getattr(args, "allow_external_src", False))
+    src_root = validate_source_root(
+        src_dir, "--src-dir", allow_external=allow_external_src
+    )
+    if allow_external_src:
+        src_dir = str(src_root)
     validate_path(wiki_dir, "--wiki-dir")
 
     wiki_path = Path(wiki_dir)
     pages = list(wiki_path.rglob("*.md")) if wiki_path.exists() else []
     inventory = get_inventory(src_dir)
-    issues = team.build_team_issues(wiki_dir, src_dir, inventory, pages, require_config=True)
+    issues = team.build_team_issues(
+        wiki_dir, src_dir, inventory, pages, require_config=True
+    )
     payload = {
         "ok": not issues,
         "wiki_dir": wiki_dir,

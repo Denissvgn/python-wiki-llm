@@ -12,12 +12,20 @@ from __future__ import annotations
 
 import shutil
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
-from ..config import AGENT_CHOICES, CLI_AGENTS, DEFAULT_WIKI_DIR, IDE_AGENTS, get_agent_config_path, read_config, validate_path, write_config
+from ..config import (
+    AGENT_CHOICES,
+    CLI_AGENTS,
+    DEFAULT_WIKI_DIR,
+    get_agent_config_path,
+    read_config,
+    validate_path,
+    write_config,
+)
 from ..services.io import read_md, write_md
 from ..services.schema import (
-    ALL_SCHEMA_FILES,
     CONSTRAINT_START,
     SCHEMA_FILENAMES,
     build_schema_content,
@@ -26,9 +34,23 @@ from ..services.schema import (
     strip_skill_blocks,
     strip_wiki_block,
 )
+from ..services.wiki_surface import iter_directory_kinds
 
 # Re-use hook builders from hook_cmd to avoid duplication
-from .hook_cmd import _build_ide_post_commit, _build_post_commit, _install_hook
+from .hook_cmd import _build_ide_post_commit, _install_hook
+
+
+@dataclass(frozen=True)
+class StructureUpgradeResult:
+    """Paths created while refreshing the framework-owned wiki structure."""
+
+    directories: tuple[str, ...]
+    gitkeeps: tuple[str, ...]
+    files: tuple[str, ...]
+
+    @property
+    def created_count(self) -> int:
+        return len(self.directories) + len(self.gitkeeps) + len(self.files)
 
 
 def _read_agent_config(wiki_dir: str) -> str | None:
@@ -65,7 +87,9 @@ def _resolve_agent(args, wiki_dir: str) -> str:
     sys.exit(1)
 
 
-def _upgrade_schema(agent: str, wiki_dir: str, old_agent: str | None, *, quality_hints: bool = True) -> str:
+def _upgrade_schema(
+    agent: str, wiki_dir: str, old_agent: str | None, *, quality_hints: bool = True
+) -> str:
     """Replace or migrate the agent schema constraint block.
 
     Returns a summary message.
@@ -87,7 +111,9 @@ def _upgrade_schema(agent: str, wiki_dir: str, old_agent: str | None, *, quality
                         print(f"  Cleaned constraint block from: {old_filename}")
                     else:
                         old_path.unlink()
-                        print(f"  Removed: {old_filename} (only contained wiki constraints)")
+                        print(
+                            f"  Removed: {old_filename} (only contained wiki constraints)"
+                        )
 
     # Write latest block to the target schema file
     if new_filename:
@@ -97,32 +123,45 @@ def _upgrade_schema(agent: str, wiki_dir: str, old_agent: str | None, *, quality
     return "(no schema file)"
 
 
-def _upgrade_dirs(wiki_dir: str) -> int:
-    """Ensure all standard wiki subdirectories exist. Returns count of newly created dirs."""
+def _upgrade_dirs(wiki_dir: str) -> StructureUpgradeResult:
+    """Ensure all standard wiki subdirectories and tracking files exist."""
     base = Path(wiki_dir)
-    subdirs = ["entities", "modules", "workflows", "infrastructure"]
-    created = 0
+    subdirs = [
+        entry.directory
+        for entry in iter_directory_kinds()
+        if entry.directory is not None
+    ]
+    created_dirs: list[str] = []
+    created_gitkeeps: list[str] = []
+    created_files: list[str] = []
     for name in ["."] + subdirs:
         d = base if name == "." else base / name
         if not d.exists():
             d.mkdir(parents=True, exist_ok=True)
-            created += 1
+            created_dirs.append("./" if name == "." else f"{name}/")
         gitkeep = d / ".gitkeep"
         if not gitkeep.exists():
             gitkeep.touch()
+            rel = ".gitkeep" if name == "." else f"{name}/.gitkeep"
+            created_gitkeeps.append(rel)
     # Ensure core files exist
     index_path = base / "index.md"
     if not index_path.exists():
-        write_md(index_path,
+        write_md(
+            index_path,
             "# LLM Wiki Index\n\nCatalog of project modules and entities.\n\n"
-            "## Entities\n\n## Modules\n\n## Workflows\n\n## Infrastructure\n"
+            "## Entities\n\n## Modules\n\n## Workflows\n\n## Infrastructure\n",
         )
-        created += 1
+        created_files.append("index.md")
     log_path = base / "log.md"
     if not log_path.exists():
         write_md(log_path, "# Architectural Log\n\nAppend-only chronological log.\n\n")
-        created += 1
-    return created
+        created_files.append("log.md")
+    return StructureUpgradeResult(
+        directories=tuple(created_dirs),
+        gitkeeps=tuple(created_gitkeeps),
+        files=tuple(created_files),
+    )
 
 
 def _upgrade_hooks(agent: str, wiki_dir: str, *, force: bool = False) -> None:
@@ -135,12 +174,10 @@ def _upgrade_hooks(agent: str, wiki_dir: str, *, force: bool = False) -> None:
     hooks_dir = git_dir / "hooks"
     hooks_dir.mkdir(exist_ok=True)
 
-    if agent in IDE_AGENTS:
-        _install_hook(hooks_dir, "post-commit", _build_ide_post_commit(wiki_dir), force=force)
-        print(f"  Hooks: IDE prompt-generation mode ({agent})")
-    else:
-        _install_hook(hooks_dir, "post-commit", _build_post_commit(agent, wiki_dir), force=force)
-        print(f"  Hooks: CLI auto-sync mode ({agent})")
+    _install_hook(
+        hooks_dir, "post-commit", _build_ide_post_commit(wiki_dir), force=force
+    )
+    print(f"  Hooks: prompt-generation mode ({agent})")
 
 
 def run(args):
@@ -169,7 +206,9 @@ def run(args):
 
     # 1. Schema constraint block
     print("\n1. Agent Schema:")
-    schema_file = _upgrade_schema(agent, wiki_dir, old_agent, quality_hints=quality_hints)
+    schema_file = _upgrade_schema(
+        agent, wiki_dir, old_agent, quality_hints=quality_hints
+    )
     print(f"  Updated: {schema_file}")
     refreshed_skills = refresh_skill_blocks(agent, wiki_dir)
     if refreshed_skills:
@@ -177,9 +216,15 @@ def run(args):
 
     # 2. Wiki directories
     print("\n2. Wiki Structure:")
-    new_dirs = _upgrade_dirs(wiki_dir)
-    if new_dirs:
-        print(f"  Created {new_dirs} new entries in {wiki_dir}/")
+    structure_result = _upgrade_dirs(wiki_dir)
+    if structure_result.created_count:
+        print(f"  Created {structure_result.created_count} new entries in {wiki_dir}/")
+        for rel in structure_result.directories:
+            print(f"  Created directory: {rel}")
+        for rel in structure_result.gitkeeps:
+            print(f"  Created .gitkeep: {rel}")
+        for rel in structure_result.files:
+            print(f"  Created file: {rel}")
     else:
         print(f"  All directories present in {wiki_dir}/")
 
@@ -195,7 +240,8 @@ def run(args):
     if executable and not shutil.which(executable):
         print(
             f"\nWarning: '{executable}' not found on PATH.\n"
-            f"  Background auto-sync won't work until '{executable}' is installed."
+            f"  Manual `llm-wiki trigger-agent --agent {agent}` won't work until "
+            f"'{executable}' is installed."
         )
 
     print("\nUpgrade complete.")

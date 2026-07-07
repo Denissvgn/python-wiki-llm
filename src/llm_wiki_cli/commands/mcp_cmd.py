@@ -4,7 +4,12 @@ from __future__ import annotations
 
 import sys
 
-from ..services.mcp_server import MCPDependencyError, McpServerConfig, McpWikiError, run_mcp_server
+from ..services.mcp_server import (
+    MCPDependencyError,
+    McpServerConfig,
+    McpWikiError,
+    run_mcp_server,
+)
 
 
 def run(args) -> None:

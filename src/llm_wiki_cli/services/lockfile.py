@@ -26,9 +26,11 @@ class WikiLock:
         try:
             if sys.platform == "win32":
                 import msvcrt
+
                 msvcrt.locking(self._fd.fileno(), msvcrt.LK_NBLCK, _LOCK_SIZE)
             else:
                 import fcntl
+
                 fcntl.flock(self._fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except (BlockingIOError, OSError):
             self._fd.close()
@@ -47,6 +49,7 @@ class WikiLock:
         if self._fd is not None:
             if sys.platform == "win32":
                 import msvcrt
+
                 try:
                     self._fd.seek(0)
                     msvcrt.locking(self._fd.fileno(), msvcrt.LK_UNLCK, _LOCK_SIZE)
@@ -54,6 +57,7 @@ class WikiLock:
                     print("Warning: failed to release wiki lock file.", file=sys.stderr)
             else:
                 import fcntl
+
                 fcntl.flock(self._fd, fcntl.LOCK_UN)
             self._fd.close()
             self._fd = None

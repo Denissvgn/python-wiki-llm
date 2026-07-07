@@ -18,7 +18,13 @@ import subprocess
 import sys
 from pathlib import Path
 
-from .common import discover_source_files, filter_bundled_inventory
+from .common import (
+    TYPESCRIPT_FAMILY_EXTENSIONS,
+    chunk_source_files_for_cli,
+    discover_source_files,
+    filter_bundled_inventory,
+    inventory_language_for_path,
+)
 from ..services.extractor_helpers import typescript_dependencies_ready
 
 _TS_SCRIPTS_DIR = Path(__file__).parent / "ts_scripts"
@@ -29,7 +35,9 @@ class TypeScriptExtractor:
 
     Implements :class:`~llm_wiki_cli.extractors.ExtractorProtocol`.
 
-    Each returned file entry includes ``"language": "typescript"``.
+    Each returned file entry includes ``"language": "typescript"`` for
+    ``.ts``/``.tsx`` files or ``"language": "javascript"`` for
+    ``.js``/``.jsx`` files.
     """
 
     last_error: str | None = None
@@ -49,7 +57,7 @@ class TypeScriptExtractor:
             Root directory to scan.
         only_files:
             Optional list of paths (relative to *src_dir*) to restrict
-            extraction to.  When ``None``, all ``.ts``/``.tsx`` files found
+            extraction to.  When ``None``, all TypeScript-family files found
             under *src_dir* are scanned.
         deep:
             When ``True``, include enriched data (JSDoc docstrings, attributes,
@@ -69,12 +77,16 @@ class TypeScriptExtractor:
         if not self._toolchain_ready():
             return {}
 
-        cmd = self._build_command(src_dir, source_files, deep)
-        result = self._run_node_extractor(cmd)
-        if result is None:
-            return {}
-
-        inventory = self._load_inventory(result)
+        inventory: dict = {}
+        for chunk in chunk_source_files_for_cli(source_files):
+            cmd = self._build_command(src_dir, chunk, deep)
+            result = self._run_node_extractor(cmd)
+            if result is None:
+                return {}
+            chunk_inventory = self._load_inventory(result)
+            if self.last_error:
+                return {}
+            inventory.update(chunk_inventory)
         if not inventory:
             return {}
 
@@ -88,7 +100,10 @@ class TypeScriptExtractor:
     ) -> list[str]:
         if source_files is None:
             return discover_source_files(
-                src_dir, (".ts", ".tsx"), only_files=only_files, language="typescript",
+                src_dir,
+                TYPESCRIPT_FAMILY_EXTENSIONS,
+                only_files=only_files,
+                language="typescript",
             )
         return source_files
 
@@ -111,13 +126,17 @@ class TypeScriptExtractor:
 
         return True
 
-    def _build_command(self, src_dir: str, source_files: list[str], deep: bool) -> list[str]:
+    def _build_command(
+        self, src_dir: str, source_files: list[str], deep: bool
+    ) -> list[str]:
         cmd = [
             "node",
             str(_TS_SCRIPTS_DIR / "extract.js"),
-            "--src-dir", str(Path(src_dir).resolve()),
+            "--src-dir",
+            str(Path(src_dir).resolve()),
         ]
         cmd += ["--only-files", ",".join(source_files)]
+        cmd += ["--extensions", ",".join(TYPESCRIPT_FAMILY_EXTENSIONS)]
         if deep:
             cmd.append("--deep")
 
@@ -173,8 +192,8 @@ class TypeScriptExtractor:
             )
             return {}
 
-        for entry in inventory.values():
-            entry["language"] = "typescript"
+        for fp, entry in inventory.items():
+            entry["language"] = inventory_language_for_path("typescript", fp)
 
         inventory = filter_bundled_inventory(inventory, _TS_SCRIPTS_DIR)
         return inventory

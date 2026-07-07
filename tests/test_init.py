@@ -1,6 +1,5 @@
 """Tests for commands/init_cmd.py"""
-import json
-import os
+
 import types
 from pathlib import Path
 
@@ -24,6 +23,13 @@ class TestInitCreatesStructure:
         assert (base / "entities").exists()
         assert (base / "modules").exists()
         assert (base / "workflows").exists()
+        assert (base / "guides").exists()
+        assert (base / "guides" / ".gitkeep").exists()
+        assert (base / "flows").exists()
+        assert (base / "flows" / ".gitkeep").exists()
+        assert (base / "infrastructure").exists()
+        assert not (base / "dependencies.md").exists()
+        assert not (base / "load-order.md").exists()
 
     def test_core_files_created(self, tmp_project):
         args = _make_args()
@@ -32,7 +38,9 @@ class TestInitCreatesStructure:
         base = Path("docs/llm_wiki")
         assert (base / "index.md").exists()
         assert (base / "log.md").exists()
-        assert "Index" in (base / "index.md").read_text(encoding="utf-8")
+        index = (base / "index.md").read_text(encoding="utf-8")
+        assert "Index" in index
+        assert "## Guides" in index
 
 
 class TestInitAgentSchemas:
@@ -61,6 +69,10 @@ class TestInitAgentSchemas:
         init_cmd.run(args)
         assert Path("AGENTS.md").exists()
         assert not Path(".agents.md").exists()
+        content = Path("AGENTS.md").read_text(encoding="utf-8")
+        assert "## User docs and usage examples" in content
+        assert "usage-examples" in content
+        assert "llm-wiki skills export --dest" in content
 
 
 class TestInitPreservesContent:
@@ -117,13 +129,15 @@ class TestInitAgentInstallCheck:
             assert "not installed" not in out
 
     def test_warning_when_cli_agent_missing(self, tmp_project, capsys, monkeypatch):
-        """If 'claude' binary is absent, user sees a clear warning."""
+        """If 'claude' binary is absent, manual trigger-agent warning is clear."""
         monkeypatch.setattr("shutil.which", lambda _: None)
         args = _make_args(agent="claude")
         init_cmd.run(args)
         out = capsys.readouterr().out
         assert "not installed" in out
         assert "claude" in out
+        assert "background auto-sync" not in out
+        assert "trigger-agent" in out
         # Schema file is still created despite the warning
         assert Path("CLAUDE.md").exists()
 
