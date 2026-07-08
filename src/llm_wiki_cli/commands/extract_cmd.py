@@ -1493,6 +1493,10 @@ def resolve_call_edges(inventory: dict) -> list[dict]:
 
 # ── Docker / Compose extraction ──────────────────────────────────────
 
+_DOCKERFILE_ENV_PATTERN = re.compile(r'(\w+)=("(?:[^"\\]|\\.)*"|\S+)')
+_DOCKERFILE_VOLUME_LIST_PATTERN = re.compile(r'"([^"]+)"')
+_DOCKERFILE_LABEL_PATTERN = re.compile(r'(\S+)=("(?:[^"\\]|\\.)*"|\S+)')
+
 
 def _parse_dockerfile(text: str) -> dict:
     """Parse a Dockerfile into a structured dict (line-based, no external deps)."""
@@ -1545,7 +1549,7 @@ def _parse_dockerfile(text: str) -> dict:
         elif upper == "ENV":
             rest = trimmed[4:].strip()
             if "=" in rest:
-                for pair in re.findall(r'(\w+)=("(?:[^"\\]|\\.)*"|\S+)', rest):
+                for pair in _DOCKERFILE_ENV_PATTERN.findall(rest):
                     env_vars.append({"name": pair[0], "default": pair[1].strip('"')})
             else:
                 parts = rest.split(None, 1)
@@ -1557,7 +1561,7 @@ def _parse_dockerfile(text: str) -> dict:
         elif upper == "VOLUME":
             rest = trimmed[7:].strip()
             if rest.startswith("["):
-                for v in re.findall(r'"([^"]+)"', rest):
+                for v in _DOCKERFILE_VOLUME_LIST_PATTERN.findall(rest):
                     volumes.append(v)
             else:
                 volumes.extend(rest.split())
@@ -1593,7 +1597,7 @@ def _parse_dockerfile(text: str) -> dict:
                 build_args.append({"name": rest, "default": ""})
 
         elif upper == "LABEL":
-            for pair in re.findall(r'(\S+)=("(?:[^"\\]|\\.)*"|\S+)', trimmed[6:]):
+            for pair in _DOCKERFILE_LABEL_PATTERN.findall(trimmed[6:]):
                 labels[pair[0]] = pair[1].strip('"')
 
         elif upper == "ENTRYPOINT":

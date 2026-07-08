@@ -6,6 +6,7 @@ import json
 import re
 from copy import deepcopy
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -194,10 +195,13 @@ def _issue(
     }
 
 
+@lru_cache(maxsize=None)
+def _section_pattern(section: str) -> re.Pattern[str]:
+    return re.compile(rf"^##\s+{re.escape(section)}\s*$", re.MULTILINE)
+
+
 def _has_section(content: str, section: str) -> bool:
-    return (
-        re.search(rf"^##\s+{re.escape(section)}\s*$", content, re.MULTILINE) is not None
-    )
+    return _section_pattern(section).search(content) is not None
 
 
 def _plugin_refs_by_type(root: str | Path = ".") -> dict[str, set[str]]:
