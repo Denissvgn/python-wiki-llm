@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- New bundled `wiki-reference` skill holding contract-level detail
+  (extraction contracts including the Haskell helper and inventory schema,
+  helper toolchains and caches, dependency reconciliation and lockfile
+  `versions` metadata, static-site export profiles, and `llm-wiki context`).
+  The install location follows the configured agent: `.claude/skills/` for
+  claude (natively indexed), the platform-neutral `.llm-wiki/skills/` for all
+  other agents — and the constraint block pointer is rendered per agent.
+  `init` installs it (`--no-skills` to opt out; the choice persists in config
+  and `upgrade --skills/--no-skills` overrides it), `upgrade` force-refreshes
+  it and relocates an unmodified copy when switching agents, `uninstall`
+  sweeps every known location but removes only unmodified copies, and
+  `skills install` defaults its `--dest` to the configured agent's directory.
+  `status` reports whether the installed copy is current, and `init` prints a
+  hint about the other bundled skills (`llm-wiki skills list`).
+- Agent constraint block now includes a "Report llm-wiki tool issues" rule:
+  agents must record CLI misbehavior in per-issue report files under
+  `llm-wiki-issues/` at the project root instead of silently working around
+  it.
+
+### Changed
+- The injected agent constraint block (`AGENTS.md`, `CLAUDE.md`, …) was
+  deduplicated and slimmed via progressive disclosure: rarely-needed contract
+  detail moved to the `wiki-reference` skill and the block now carries
+  pointers with explicit trigger conditions, cutting the block by roughly a
+  third (~6k to ~4k tokens) with no contract content lost.
+
 ## [1.2.0] - 2026-07-08
 
 ### Changed

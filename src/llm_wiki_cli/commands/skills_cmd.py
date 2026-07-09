@@ -4,7 +4,12 @@ from __future__ import annotations
 
 import sys
 
-from ..config import validate_path
+from ..config import (
+    DEFAULT_WIKI_DIR,
+    get_agent_config_path,
+    read_config,
+    validate_path,
+)
 from ..services.skills import (
     DEFAULT_INSTALL_TARGET,
     SkillsError,
@@ -15,7 +20,19 @@ from ..services.skills import (
     render_report_text,
     render_skill_list_json,
     render_skill_list_text,
+    skills_install_dir,
 )
+
+
+def _default_install_dest() -> str:
+    """Resolve the install destination from the configured agent.
+
+    Unconfigured projects keep the historical `.claude/skills` default.
+    """
+    if get_agent_config_path(DEFAULT_WIKI_DIR).exists():
+        agent = read_config(DEFAULT_WIKI_DIR).get("agent")
+        return str(skills_install_dir(agent))
+    return str(DEFAULT_INSTALL_TARGET)
 
 
 def _print_report(report, output_format: str, *, action: str) -> None:
@@ -50,7 +67,7 @@ def run(args) -> None:
             return
 
         if action == "install":
-            dest = getattr(args, "dest", str(DEFAULT_INSTALL_TARGET))
+            dest = getattr(args, "dest", None) or _default_install_dest()
             validate_path(dest, "--dest")
             report = install_skills(
                 ".",

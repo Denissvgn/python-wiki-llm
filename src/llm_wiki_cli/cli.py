@@ -172,6 +172,12 @@ def _add_init_command(subparsers):
         default=False,
         help="Omit agent quality guidelines from the constraint block",
     )
+    init_parser.add_argument(
+        "--no-skills",
+        action="store_true",
+        default=False,
+        help="Skip installing the wiki-reference skill into .claude/skills/",
+    )
 
 
 def _add_extract_command(subparsers):
@@ -1006,8 +1012,12 @@ def _add_skills_command(subparsers):
     )
     skills_install.add_argument(
         "--dest",
-        default=str(skills_cmd.DEFAULT_INSTALL_TARGET),
-        help="Project-relative skills directory (default: .claude/skills)",
+        default=None,
+        help=(
+            "Project-relative skills directory (default: the configured "
+            "agent's skills dir — .claude/skills for claude, "
+            ".llm-wiki/skills otherwise)"
+        ),
     )
     _add_skills_selection_arguments(skills_install)
 
@@ -1084,6 +1094,20 @@ def _add_upgrade_command(subparsers):
         dest="quality_hints",
         action="store_false",
         help="Omit agent quality guidelines from the constraint block",
+    )
+    upgrade_skills = upgrade_parser.add_mutually_exclusive_group()
+    upgrade_skills.add_argument(
+        "--skills",
+        dest="skills",
+        action="store_true",
+        default=None,
+        help="Refresh the wiki-reference skill in .claude/skills/",
+    )
+    upgrade_skills.add_argument(
+        "--no-skills",
+        dest="skills",
+        action="store_false",
+        help="Skip refreshing the wiki-reference skill in .claude/skills/",
     )
 
 

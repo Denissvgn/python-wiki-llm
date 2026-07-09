@@ -21,7 +21,12 @@ from llm_wiki_cli.services.schema import (
 # ---------------------------------------------------------------------------
 
 
-def _init_project(proj: Path, agent: str = "copilot", wiki_dir: str = "docs/llm_wiki"):
+def _init_project(
+    proj: Path,
+    agent: str = "copilot",
+    wiki_dir: str = "docs/llm_wiki",
+    no_skills: bool = False,
+):
     """Run a minimal init to create the wiki structure and schema file."""
     subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
     subprocess.run(
@@ -40,7 +45,7 @@ def _init_project(proj: Path, agent: str = "copilot", wiki_dir: str = "docs/llm_
     old_cwd = os.getcwd()
     os.chdir(proj)
     try:
-        args = SimpleNamespace(agent=agent, wiki_dir=wiki_dir)
+        args = SimpleNamespace(agent=agent, wiki_dir=wiki_dir, no_skills=no_skills)
         init_cmd.run(args)
     finally:
         os.chdir(old_cwd)
@@ -465,3 +470,78 @@ class TestUpgradeIdempotent:
         assert gi_first == gi_second
         assert ".git/llm-wiki-prompt.txt" not in gi_second
         assert ".git/llm-wiki.lock" not in gi_second
+
+
+class TestUpgradeReferenceSkill:
+    def test_force_refreshes_modified_copy(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+        ref = Path(".llm-wiki/skills/wiki-reference/reference.md")
+        ref.write_text("stale local copy\n", encoding="utf-8")
+
+        upgrade_cmd.run(_make_args())
+
+        assert ref.read_text(encoding="utf-8") != "stale local copy\n"
+        assert "GHC 9.6.x" in ref.read_text(encoding="utf-8")
+
+    def test_installs_when_absent(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+        import shutil as _shutil
+
+        _shutil.rmtree(".llm-wiki/skills/wiki-reference")
+
+        upgrade_cmd.run(_make_args())
+
+        assert Path(".llm-wiki/skills/wiki-reference/reference.md").is_file()
+
+    def test_no_skills_flag_skips_refresh(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+        ref = Path(".llm-wiki/skills/wiki-reference/reference.md")
+        ref.write_text("local copy\n", encoding="utf-8")
+
+        upgrade_cmd.run(_make_args(skills=False))
+
+        assert ref.read_text(encoding="utf-8") == "local copy\n"
+        assert read_config("docs/llm_wiki")["reference_skill"] is False
+
+    def test_respects_init_opt_out_without_flag(self, tmp_path):
+        _init_project(tmp_path, agent="copilot", no_skills=True)
+        os.chdir(tmp_path)
+        assert not Path(".llm-wiki/skills/wiki-reference").exists()
+
+        upgrade_cmd.run(_make_args())
+
+        assert not Path(".llm-wiki/skills/wiki-reference").exists()
+        assert read_config("docs/llm_wiki")["reference_skill"] is False
+
+    def test_skills_flag_overrides_stored_opt_out(self, tmp_path):
+        _init_project(tmp_path, agent="copilot", no_skills=True)
+        os.chdir(tmp_path)
+
+        upgrade_cmd.run(_make_args(skills=True))
+
+        assert Path(".llm-wiki/skills/wiki-reference/reference.md").is_file()
+        assert read_config("docs/llm_wiki")["reference_skill"] is True
+
+    def test_switch_migrates_skill_to_new_agent_dir(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+        assert Path(".llm-wiki/skills/wiki-reference/reference.md").is_file()
+
+        upgrade_cmd.run(_make_args(agent="claude"))
+
+        assert not Path(".llm-wiki/skills/wiki-reference").exists()
+        assert Path(".claude/skills/wiki-reference/reference.md").is_file()
+
+    def test_switch_keeps_modified_copy_at_old_location(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+        old_ref = Path(".llm-wiki/skills/wiki-reference/reference.md")
+        old_ref.write_text("local notes\n", encoding="utf-8")
+
+        upgrade_cmd.run(_make_args(agent="claude"))
+
+        assert old_ref.read_text(encoding="utf-8") == "local notes\n"
+        assert Path(".claude/skills/wiki-reference/reference.md").is_file()

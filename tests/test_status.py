@@ -189,3 +189,32 @@ class TestStatusBreaker:
         out = capsys.readouterr().out
         assert "OPEN" in out
         assert "3" in out
+
+
+class TestStatusReferenceSkill:
+    def test_not_installed(self, tmp_project, capsys):
+        status_cmd.run(_make_args())
+        out = capsys.readouterr().out
+        assert "Reference skill: not installed" in out
+
+    def test_current(self, tmp_project, capsys):
+        from llm_wiki_cli.services.skills import install_reference_skill
+
+        install_reference_skill(agent="generic")
+        status_cmd.run(_make_args())
+        out = capsys.readouterr().out
+        assert "Reference skill: wiki-reference (current)" in out
+
+    def test_differs_from_bundled(self, tmp_project, capsys):
+        from pathlib import Path
+
+        from llm_wiki_cli.services.skills import install_reference_skill
+
+        install_reference_skill(agent="generic")
+        Path(".llm-wiki/skills/wiki-reference/reference.md").write_text(
+            "old\n", encoding="utf-8"
+        )
+        status_cmd.run(_make_args())
+        out = capsys.readouterr().out
+        assert "differs from bundled" in out
+        assert "llm-wiki upgrade" in out

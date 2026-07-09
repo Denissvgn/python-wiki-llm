@@ -4,6 +4,7 @@ from pathlib import Path
 
 from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS, read_config, get_agent_config_path
 from ..services import circuit_breaker
+from ..services.skills import reference_skill_state
 from ..services.wiki_surface import PageKind, canonical_path, iter_page_kinds
 
 
@@ -56,8 +57,8 @@ def run(args) -> None:
 
     # Agent config
     agent_config = get_agent_config_path(wiki_dir)
+    config = read_config(wiki_dir)
     if agent_config.exists():
-        config = read_config(wiki_dir)
         agent = config.get("agent", "unknown")
         mode = "IDE" if agent in IDE_AGENTS else "CLI"
         print(f"Agent:           {agent} ({mode})")
@@ -65,6 +66,23 @@ def run(args) -> None:
         print(f"Quality hints:   {'enabled' if hints else 'disabled'}")
     else:
         print("Agent:           not configured (run `llm-wiki init --agent <agent>`)")
+
+    # Reference skill (the constraint block points at it); its home follows
+    # the configured agent
+    skill_state = reference_skill_state(agent=config.get("agent"))
+    if skill_state == "unmodified":
+        print("Reference skill: wiki-reference (current)")
+    elif skill_state == "modified":
+        print(
+            "Reference skill: wiki-reference differs from bundled\n"
+            "                 Run `llm-wiki upgrade` or "
+            "`llm-wiki skills install --force` to refresh"
+        )
+    else:
+        print(
+            "Reference skill: not installed "
+            "(run `llm-wiki init` or `llm-wiki skills install`)"
+        )
 
     # Hooks
     hooks_dir = git_dir / "hooks"

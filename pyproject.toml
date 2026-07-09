@@ -89,6 +89,8 @@ where = ["src"]
     "skills/user-docs-author/reference.md",
     "skills/wiki-bootstrap/SKILL.md",
     "skills/wiki-bootstrap/reference.md",
+    "skills/wiki-reference/SKILL.md",
+    "skills/wiki-reference/reference.md",
     "skills/wiki-sync/SKILL.md",
     "skills/wiki-sync/reference.md",
 ]

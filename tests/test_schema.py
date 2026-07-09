@@ -30,7 +30,6 @@ def test_replace_schema_block_preserves_literal_backslashes(tmp_path):
 
 def test_agent_schema_mentions_current_sync_and_lint_runtime():
     content = build_schema_content("generic", "docs/llm_wiki")
-    text = _squash_ws(content)
 
     assert "llm-wiki sync --jobs auto --wiki-dir docs/llm_wiki --src-dir ." in content
     assert (
@@ -46,31 +45,6 @@ def test_agent_schema_mentions_current_sync_and_lint_runtime():
         "--src-dir <repo> --allow-external-src" in content
     )
     assert "llm-wiki prepare-extractors --src-dir ." in content
-    assert "llm-wiki prepare-extractors --cache-dir .cache/llm-wiki-helpers" in content
-    assert (
-        "llm-wiki sync --cache-dir .cache/llm-wiki-inventory "
-        "--helper-cache-dir .cache/llm-wiki-helpers" in content
-    )
-    assert "--include-tests go" in content
-    assert "LLM_WIKI_GO=/path/to/go" in content
-    assert "LLM_WIKI_GHC=/path/to/ghc" in content
-    assert "prepared TypeScript/JavaScript/Go/Rust/Haskell helpers" in content
-    assert "normal CLI extraction invokes the prepared Haskell helper" in content
-    assert (
-        "syntax-only Haskell inventory without typechecking the target project" in text
-    )
-    assert "does not start Haskell Language Server" in text
-    assert (
-        "Haskell dependency reconciliation reads Cabal `build-depends` statically"
-        in text
-    )
-    assert (
-        "Stack `extra-deps` and Nix package hints as optional advisory metadata" in text
-    )
-    assert "Unknown Haskell imports are ignored rather than guessed" in text
-    assert "GHC 9.6.x is the supported Haskell helper toolchain" in text
-    assert "newer GHC 9.x releases are best-effort" in text
-    assert "Generated Haskell module pages render declared module names" in content
     assert "persistent inventory cache" in content
     assert "--allow-external-src" in content
     assert "project-root write guard" in content
@@ -94,22 +68,23 @@ def test_agent_schema_mentions_dependency_architecture_responsibilities():
     assert "warning diagnostics" in content
 
 
-def test_agent_schema_documents_haskell_inventory_contract():
+def test_agent_schema_points_to_wiki_reference_skill():
     content = build_schema_content("generic", "docs/llm_wiki")
     text = _squash_ws(content)
 
-    assert "Haskell inventory stays additive under `llm-wiki-extract/v1`" in text
-    assert (
-        "Haskell file entries include `language`, `imports`, `classes`, and `functions`"
-        in text
-    )
-    assert "`module` is present when the source declares one" in text
-    assert "`module`, `qualified`, `alias`, and `line`" in content
-    assert "`classes` stores type-oriented declarations" in text
-    assert "`data`, `newtype`, `type`, `class`, or `instance`" in content
-    assert "`functions` stores top-level signatures, functions, and values" in text
-    assert "`signature`, `function`, or `value`" in content
-    assert "`language_pragmas`, `exports`, and `deriving`" in text
+    assert "## Deep reference (read on demand)" in content
+    # generic agents get the platform-neutral skills home
+    assert ".llm-wiki/skills/wiki-reference/reference.md" in content
+    # claude gets its native, auto-indexed skills directory
+    claude_content = build_schema_content("claude", "docs/llm_wiki")
+    assert ".claude/skills/wiki-reference/reference.md" in claude_content
+    assert "llm-wiki skills install" in content
+    assert "llm-wiki skills export --dest exported-skills" in content
+    assert "Do not read it upfront" in text
+    # Inline pointers keep trigger conditions next to the rules that need them.
+    assert "Dependency reconciliation" in content
+    assert "Extractor" in content
+    assert "Static-site export" in content
 
 
 def test_agent_schema_mentions_data_flow_review_responsibilities():
@@ -123,7 +98,6 @@ def test_agent_schema_mentions_data_flow_review_responsibilities():
 
 def test_agent_schema_mentions_canonical_surfaces_and_generated_ownership():
     content = build_schema_content("generic", "docs/llm_wiki")
-    text = _squash_ws(content)
 
     assert "canonical wiki surfaces" in content
     for path in [
@@ -146,12 +120,6 @@ def test_agent_schema_mentions_canonical_surfaces_and_generated_ownership():
     assert "`sync` does not generate or overwrite guide prose" in content
     assert "Static-site mirror output" in content
     assert "not as an editable source of truth" in content
-    assert (
-        "Docusaurus exports include generated front matter and sidebars.json" in content
-    )
-    assert "Raw Node `http.createServer` and `https.createServer` calls" in content
-    assert "optional lockfile-backed `versions`" in content
-    assert "Haskell lockfile pinning is intentionally out of scope" in text
 
 
 def test_agent_schema_mentions_user_docs_usage_example_workflow():
@@ -174,6 +142,20 @@ def test_agent_schema_mentions_user_docs_usage_example_workflow():
     assert "agent platform" in content
 
 
+def test_agent_schema_mentions_tool_issue_reporting():
+    content = build_schema_content("generic", "docs/llm_wiki")
+    text = _squash_ws(content)
+
+    assert "## Report llm-wiki tool issues" in content
+    assert "never work around it silently" in text
+    assert "llm-wiki-issues/<YYYY-MM-DD>-<short-slug>.md" in content
+    assert "outside `docs/llm_wiki/` so lint does not flag them" in text
+    assert "exact command and flags you ran" in content
+    assert "`llm-wiki --version` output" in content
+    assert "minimal reproduction steps" in text
+    assert "addressed upstream" in content
+
+
 def test_ide_schema_mentions_incremental_sync_workflow():
     content = build_schema_content("copilot", "docs/llm_wiki")
 
@@ -183,10 +165,7 @@ def test_ide_schema_mentions_incremental_sync_workflow():
     assert "Passing lint is not enough" in content
     assert "_Auto-generated from ..._" in content
     assert "llm-wiki prepare-extractors --src-dir ." in content
-    assert "llm-wiki prepare-extractors --cache-dir .cache/llm-wiki-helpers" in content
-    assert "--include-tests go" in content
-    assert "LLM_WIKI_GO=/path/to/go" in content
-    assert "LLM_WIKI_GHC=/path/to/ghc" in content
+    assert "wiki-reference" in content
     assert "llm-wiki lint --strict --jobs auto" in content
 
 

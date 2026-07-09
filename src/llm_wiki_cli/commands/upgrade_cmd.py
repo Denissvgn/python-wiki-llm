@@ -34,6 +34,13 @@ from ..services.schema import (
     strip_skill_blocks,
     strip_wiki_block,
 )
+from ..services.skills import (
+    REFERENCE_SKILL_ID,
+    SkillsError,
+    install_reference_skill,
+    reference_skill_state,
+    skills_install_dir,
+)
 from ..services.wiki_surface import iter_directory_kinds
 
 # Re-use hook builders from hook_cmd to avoid duplication
@@ -123,6 +130,26 @@ def _upgrade_schema(
     return "(no schema file)"
 
 
+def _migrate_reference_skill(old_agent: str | None, new_agent: str) -> None:
+    """Move the wiki-reference skill when an agent switch changes its home.
+
+    Only an unmodified copy at the old location is removed; local edits are
+    left in place and reported.
+    """
+    old_dir = skills_install_dir(old_agent)
+    if old_dir == skills_install_dir(new_agent):
+        return
+    state = reference_skill_state(target=old_dir)
+    if state == "unmodified":
+        shutil.rmtree(old_dir / REFERENCE_SKILL_ID)
+        print(f"  Removed {REFERENCE_SKILL_ID} skill from {old_dir}/ (relocating)")
+    elif state == "modified":
+        print(
+            f"  Kept {REFERENCE_SKILL_ID} skill in {old_dir}/ "
+            "(locally modified — remove manually if unwanted)"
+        )
+
+
 def _upgrade_dirs(wiki_dir: str) -> StructureUpgradeResult:
     """Ensure all standard wiki subdirectories and tracking files exist."""
     base = Path(wiki_dir)
@@ -188,13 +215,19 @@ def run(args):
     old_agent = _read_agent_config(wiki_dir)
     switching = old_agent and old_agent != agent
 
-    # Resolve quality_hints: CLI flag > stored config > default (True)
+    # Resolve quality_hints and reference-skill refresh:
+    # CLI flag > stored config > default (True)
+    stored = read_config(wiki_dir)
     cli_hints = getattr(args, "quality_hints", None)
     if cli_hints is not None:
         quality_hints = cli_hints
     else:
-        stored = read_config(wiki_dir)
         quality_hints = stored.get("quality_hints", True)
+    cli_skills = getattr(args, "skills", None)
+    if cli_skills is not None:
+        reference_skill = cli_skills
+    else:
+        reference_skill = stored.get("reference_skill", True)
 
     print("LLM Wiki Upgrade")
     print("=" * 40)
@@ -213,6 +246,19 @@ def run(args):
     refreshed_skills = refresh_skill_blocks(agent, wiki_dir)
     if refreshed_skills:
         print(f"  Refreshed {len(refreshed_skills)} plugin skill block(s)")
+    if reference_skill:
+        if switching:
+            _migrate_reference_skill(old_agent, agent)
+        # The constraint block points at this skill; keep its content in
+        # lockstep with the installed CLI version.
+        try:
+            report = install_reference_skill(agent=agent, force=True)
+        except SkillsError as exc:
+            print(f"  Warning: could not refresh {REFERENCE_SKILL_ID} skill: {exc}")
+        else:
+            print(f"  Refreshed {REFERENCE_SKILL_ID} skill in {report.dest_dir}/")
+    else:
+        print(f"  Skipped {REFERENCE_SKILL_ID} skill refresh (opted out)")
 
     # 2. Wiki directories
     print("\n2. Wiki Structure:")
@@ -233,7 +279,14 @@ def run(args):
     _upgrade_hooks(agent, wiki_dir, force=getattr(args, "force", False))
 
     # 4. Persist agent config
-    write_config(wiki_dir, {"agent": agent, "quality_hints": quality_hints})
+    write_config(
+        wiki_dir,
+        {
+            "agent": agent,
+            "quality_hints": quality_hints,
+            "reference_skill": reference_skill,
+        },
+    )
 
     # Warn if CLI agent executable missing
     executable = CLI_AGENTS.get(agent)

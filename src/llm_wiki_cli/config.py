@@ -209,6 +209,7 @@ def get_agent_config_path(wiki_dir: "str | Path") -> Path:
 _DEFAULT_CONFIG: dict[str, object] = {
     "agent": "generic",
     "quality_hints": True,
+    "reference_skill": True,
 }
 
 

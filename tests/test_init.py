@@ -219,3 +219,48 @@ class TestInitGitignore:
         assert ".git/llm-wiki.lock" not in content
         assert ".git/llm-wiki-breaker.json" not in content
         assert ".git/llm-wiki-sync.log" not in content
+
+
+class TestInitReferenceSkill:
+    def test_generic_agent_uses_neutral_skills_dir(self, tmp_project):
+        init_cmd.run(_make_args())
+
+        skill_dir = Path(".llm-wiki/skills/wiki-reference")
+        assert (skill_dir / "SKILL.md").is_file()
+        assert (skill_dir / "reference.md").is_file()
+        assert not Path(".claude/skills").exists()
+
+    def test_claude_agent_uses_native_skills_dir(self, tmp_project):
+        init_cmd.run(_make_args(agent="claude"))
+
+        skill_dir = Path(".claude/skills/wiki-reference")
+        assert (skill_dir / "SKILL.md").is_file()
+        assert not Path(".llm-wiki/skills").exists()
+
+    def test_no_skills_flag_skips_install(self, tmp_project):
+        init_cmd.run(_make_args(no_skills=True))
+
+        assert not Path(".llm-wiki/skills/wiki-reference").exists()
+
+    def test_rerun_preserves_locally_modified_copy(self, tmp_project, capsys):
+        init_cmd.run(_make_args())
+        ref = Path(".llm-wiki/skills/wiki-reference/reference.md")
+        ref.write_text("local notes\n", encoding="utf-8")
+
+        init_cmd.run(_make_args())
+
+        assert ref.read_text(encoding="utf-8") == "local notes\n"
+        assert "differ from bundled" in capsys.readouterr().out
+
+    def test_persists_reference_skill_preference(self, tmp_project):
+        init_cmd.run(_make_args())
+        assert read_config("docs/llm_wiki")["reference_skill"] is True
+
+    def test_no_skills_persists_opt_out(self, tmp_project):
+        init_cmd.run(_make_args(no_skills=True))
+        assert read_config("docs/llm_wiki")["reference_skill"] is False
+
+    def test_hints_at_other_bundled_skills(self, tmp_project, capsys):
+        init_cmd.run(_make_args())
+        out = capsys.readouterr().out
+        assert "llm-wiki skills list" in out

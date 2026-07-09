@@ -20,6 +20,39 @@ DEFAULT_INSTALL_TARGET = Path(".claude") / "skills"
 BUNDLED_SKILLS_ROOT = Path(__file__).resolve().parents[1] / "skills"
 SKILL_MANIFEST_NAME = "SKILL.md"
 
+# CLI-owned deep-reference skill the agent constraint block points at.
+# init installs it and upgrade force-refreshes it so its content always
+# matches the installed CLI version.
+REFERENCE_SKILL_ID = "wiki-reference"
+
+# Platform-neutral skills home for agents without a native skills runtime.
+# Skills are plain Markdown, so any agent that can read files can follow the
+# constraint block's explicit pointer into this directory.
+GENERIC_INSTALL_TARGET = Path(".llm-wiki") / "skills"
+
+# Agents with a native, auto-indexed skills directory. Everything else gets
+# the neutral target; extend this map when a platform grows skill support.
+AGENT_INSTALL_TARGETS: dict[str, Path] = {
+    "claude": DEFAULT_INSTALL_TARGET,
+}
+
+# Every directory provisioning may have used — uninstall sweeps all of them.
+KNOWN_INSTALL_TARGETS: tuple[Path, ...] = (
+    DEFAULT_INSTALL_TARGET,
+    GENERIC_INSTALL_TARGET,
+)
+
+
+def skills_install_dir(agent: str | None) -> Path:
+    """Project-relative skills directory for *agent*.
+
+    ``None`` (agent unknown/unconfigured) keeps the historical
+    ``.claude/skills`` default.
+    """
+    if agent is None:
+        return DEFAULT_INSTALL_TARGET
+    return AGENT_INSTALL_TARGETS.get(agent, GENERIC_INSTALL_TARGET)
+
 
 class SkillsError(ValueError):
     """Raised for invalid skill list/export/install requests."""
@@ -149,6 +182,64 @@ def install_skills(
     """Install bundled skills into a project's agent skills directory."""
     dest = Path(project_dir) / target
     return export_skills(dest, skills=skills, force=force, skills_root=skills_root)
+
+
+def install_reference_skill(
+    project_dir: str | Path = ".",
+    *,
+    agent: str | None = None,
+    force: bool = False,
+    target: str | Path | None = None,
+    skills_root: Path | None = None,
+) -> SkillsReport:
+    """Install (or refresh) the CLI-owned `wiki-reference` skill.
+
+    The destination comes from *target* when given, otherwise from the
+    *agent*'s skills directory (see :func:`skills_install_dir`).
+    """
+    return install_skills(
+        project_dir,
+        skills=[REFERENCE_SKILL_ID],
+        force=force,
+        target=target if target is not None else skills_install_dir(agent),
+        skills_root=skills_root,
+    )
+
+
+def reference_skill_state(
+    project_dir: str | Path = ".",
+    *,
+    agent: str | None = None,
+    target: str | Path | None = None,
+    skills_root: Path | None = None,
+) -> str:
+    """Classify the installed `wiki-reference` copy: absent, unmodified, or modified.
+
+    Extra files, missing files, or content drift against the bundled skill all
+    count as modified so callers never delete local edits.
+    """
+    resolved = target if target is not None else skills_install_dir(agent)
+    installed_dir = Path(project_dir) / resolved / REFERENCE_SKILL_ID
+    if not installed_dir.is_dir():
+        return "absent"
+
+    bundled = {
+        skill.skill_id: skill for skill in list_bundled_skills(skills_root)
+    }.get(REFERENCE_SKILL_ID)
+    if bundled is None:
+        return "modified"
+
+    installed_files = {
+        path.relative_to(installed_dir).as_posix()
+        for path in installed_dir.rglob("*")
+        if path.is_file()
+    }
+    if installed_files != set(bundled.files):
+        return "modified"
+    for rel in installed_files:
+        if read_md(installed_dir / rel) != read_md(bundled.path / rel):
+            return "modified"
+    return "unmodified"
 
 
 def render_report_text(report: SkillsReport, *, action: str) -> str:

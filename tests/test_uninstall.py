@@ -208,3 +208,43 @@ class TestUninstallDryRun:
         assert wiki.exists()
         assert hook.exists()
         assert Path("CLAUDE.md").exists()
+
+
+class TestUninstallReferenceSkill:
+    def test_removes_unmodified_skill_copy(self, tmp_project, capsys, monkeypatch):
+        from llm_wiki_cli.services.skills import install_reference_skill
+
+        _setup_wiki_project(tmp_project)
+        install_reference_skill()
+        monkeypatch.setattr("builtins.input", lambda _: "y")
+
+        uninstall_cmd.run(_make_args())
+
+        assert not Path(".claude/skills/wiki-reference").exists()
+
+    def test_keeps_modified_skill_copy(self, tmp_project, capsys, monkeypatch):
+        from llm_wiki_cli.services.skills import install_reference_skill
+
+        _setup_wiki_project(tmp_project)
+        install_reference_skill()
+        ref = Path(".claude/skills/wiki-reference/reference.md")
+        ref.write_text("local notes\n", encoding="utf-8")
+        monkeypatch.setattr("builtins.input", lambda _: "y")
+
+        uninstall_cmd.run(_make_args())
+
+        assert ref.read_text(encoding="utf-8") == "local notes\n"
+        assert "locally modified" in capsys.readouterr().out
+
+    def test_sweeps_all_known_skill_locations(self, tmp_project, capsys, monkeypatch):
+        from llm_wiki_cli.services.skills import install_reference_skill
+
+        _setup_wiki_project(tmp_project)
+        install_reference_skill(agent="claude")
+        install_reference_skill(agent="generic")
+        monkeypatch.setattr("builtins.input", lambda _: "y")
+
+        uninstall_cmd.run(_make_args())
+
+        assert not Path(".claude/skills/wiki-reference").exists()
+        assert not Path(".llm-wiki/skills/wiki-reference").exists()
