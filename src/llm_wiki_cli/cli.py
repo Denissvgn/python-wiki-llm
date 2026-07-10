@@ -1141,7 +1141,7 @@ def _add_upgrade_command(subparsers):
         dest="skills",
         action="store_true",
         default=None,
-        help="Refresh the wiki-reference skill in .claude/skills/",
+        help="Refresh the wiki-reference skill in the configured agent's skills directory (.claude/skills for claude, .llm-wiki/skills otherwise)",
     )
     upgrade_skills.add_argument(
         "--no-skills",
