@@ -193,7 +193,7 @@ def _add_init_command(subparsers):
         "--no-skills",
         action="store_true",
         default=False,
-        help="Skip installing the wiki-reference skill into .claude/skills/",
+        help="Skip installing the wiki-reference skill into the agent's skills directory (.claude/skills for claude, .llm-wiki/skills otherwise)",
     )
 
 
