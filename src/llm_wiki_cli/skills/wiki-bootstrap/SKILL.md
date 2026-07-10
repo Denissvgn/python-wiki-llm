@@ -38,11 +38,15 @@ Create a first useful wiki without pretending every generated page can be hand-p
    llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki --depth full --format json
    ```
 
+   For FastAPI projects, add `--api-contracts`; when the project already
+   exports OpenAPI, add `--openapi-file <source-relative json|yaml>` so the
+   declared wire contract is authoritative without importing the application.
+
    Add `--source-adapter --allow-external-src` only for documented external-source source-adapter workflows. Capture stdout to a log file when practical so the JSON summary can be cited from the remainder backlog.
 
 4. **Triage the JSON summary before semantic editing.** If the summary has `skipped_files`, helper warnings, unsupported-source summaries, or surprising generated counts, resolve those first. Do not spend the semantic budget polishing a wiki that is structurally incomplete because pages were skipped by collisions or helpers failed.
 
-5. **Finish P0 semantic pages first**: the `index.md` introduction, `flows/*` `## Behavior` sections (ordered by entry-point category, then boundary-effect count, then page path), `dependencies.md` and `load-order.md` `## Notes`, and obvious high-signal infrastructure/runtime prose.
+5. **Finish P0 semantic pages first**: the `index.md` introduction, `flows/*` `## Behavior` sections (ordered by entry-point category, then boundary-effect count, then page path), `api-contracts.md`, `dependencies.md`, and `load-order.md` `## Notes`, and obvious high-signal infrastructure/runtime prose. Contract unknowns and reconciliation diagnostics must stay explicit rather than being rewritten as confirmed facts.
 
 6. **Rank remaining module/entity pages by dependency centrality.**
 

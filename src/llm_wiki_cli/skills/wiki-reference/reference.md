@@ -63,6 +63,37 @@ top-level signatures, functions, and values with `kind` set to
 as `language_pragmas`, `exports`, and `deriving` are best-effort additive
 metadata.
 
+## Python and FastAPI contract extraction
+
+- Deep Python inventory records every parameter kind in declaration order and
+  keeps required/nullable/default/factory state separate for model fields.
+  Pydantic aliases, constraints, descriptions/examples, validators/config,
+  enums, literals, and type aliases are extracted from syntax only; unknown
+  expressions remain explicit and target modules are never imported.
+- Optional per-file `frameworks.fastapi` declarations are assembled into the
+  top-level `api_contracts` block. Router and inclusion prefixes are composed,
+  parameter locations/wire aliases and declared responses are normalized, and
+  test-source plus `include_in_schema=False` operations are excluded from the
+  production operation list by default.
+- Inspect an exported contract with
+  `llm-wiki extract --deep --openapi-file openapi.yaml`; `--openapi-file`
+  requires `--deep`. The file must stay inside the source root and contain
+  OpenAPI 3.0/3.1 JSON or YAML. JSON uses the standard library and YAML uses
+  the package's required PyYAML safe loader. OpenAPI owns wire fields; static
+  analysis supplies source/module/entity/flow links and diagnostics. External
+  references are never fetched.
+- `bootstrap --api-contracts` creates `api-contracts.md`. For an existing wiki,
+  preview `sync --initialize-surfaces api-contracts --dry-run`, then rerun
+  without `--dry-run` to create it. A surface-only sync may combine `flows`,
+  `dependencies`, and `api-contracts`, filter flows with repeatable
+  `--flow-category`, and omit test sources with `--exclude-tests`; ordinary
+  entity/module changes are deferred during that pass. Operation sections are
+  generated; only `api-contracts.md` `## Notes` and flow `## Behavior` are
+  semantic.
+- Persisted OpenAPI path/hash metadata and surface policy live in manifest v4.
+  Later syncs refresh on specification-only changes; use
+  `--clear-openapi-file` to return deliberately to static contract authority.
+
 ## Dependency reconciliation
 
 - Interpret monorepo dependency diagnostics with manifest scope in mind:

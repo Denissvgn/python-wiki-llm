@@ -3,7 +3,11 @@
 from __future__ import annotations
 
 import shlex
-from pathlib import Path
+from pathlib import Path, PurePosixPath
+
+
+_TEST_DIRECTORY_NAMES = frozenset({"test", "tests", "__tests__"})
+_TEST_FILE_STEMS = frozenset({"conftest"})
 
 
 def normalize_source_path(value: str | None, src_dir: str | None = None) -> str | None:
@@ -24,6 +28,31 @@ def normalize_source_path(value: str | None, src_dir: str | None = None) -> str 
         except ValueError:
             return candidate.as_posix()
     return normalized
+
+
+def is_test_source_path(value: str | Path | None) -> bool:
+    """Return whether *value* follows a common cross-language test path pattern.
+
+    Inventory paths are normally POSIX-relative, but normalising separators here
+    keeps filtering deterministic for callers and fixtures on Windows too.
+    """
+    if value is None:
+        return False
+    normalized = str(value).replace("\\", "/").strip("/")
+    if not normalized:
+        return False
+    path = PurePosixPath(normalized)
+    parts = tuple(part.casefold() for part in path.parts)
+    if _TEST_DIRECTORY_NAMES.intersection(parts[:-1]):
+        return True
+
+    name = path.name.casefold()
+    stem = path.stem.casefold()
+    if stem in _TEST_FILE_STEMS or stem.startswith("test_"):
+        return True
+    if stem.endswith("_test"):
+        return True
+    return ".test." in name or ".spec." in name
 
 
 def shell_quote(value: str | Path) -> str:

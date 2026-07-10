@@ -468,18 +468,44 @@ def _index_content(wiki_dir: Path, inventory: dict) -> str:
     return _generate_index_md(
         entity_names,
         module_entries,
-        _existing_page_entries(wiki_dir / "workflows", "entry") or None,
-        _existing_page_entries(wiki_dir / "infrastructure", "type") or None,
+        workflow_entries=(
+            _existing_page_entries(wiki_dir / "workflows", "entry") or None
+        ),
+        guide_entries=_existing_page_entries(wiki_dir / "guides", "topic") or None,
+        infra_entries=(
+            _existing_page_entries(wiki_dir / "infrastructure", "type") or None
+        ),
+        flow_entries=[
+            {"id": path.stem, "category": path.stem.split("-", 1)[0]}
+            for path in sorted((wiki_dir / "flows").glob("*.md"))
+        ]
+        or None,
+        architecture_entries=[
+            {"name": label, "page": stem}
+            for stem, label in (
+                ("dependencies", "Dependencies"),
+                ("load-order", "Load order"),
+            )
+            if (wiki_dir / f"{stem}.md").is_file()
+        ]
+        or None,
+        api_contracts_present=(wiki_dir / "api-contracts.md").is_file(),
     )
 
 
-def _manifest_content(inventory: dict, src_dir: str) -> str:
+def _manifest_content(
+    inventory: dict,
+    src_dir: str,
+    *,
+    surfaces: dict[str, dict] | None = None,
+    generation_inputs: dict[str, object] | None = None,
+) -> str:
     from ..commands.bootstrap_cmd import (
         build_entity_occurrence_page_map,
         build_entity_page_map,
         build_module_page_map,
     )
-    from ..commands.sync_cmd import MANIFEST_VERSION, SyncManifest
+    from ..commands.sync_cmd import SyncManifest
 
     module_page_map = build_module_page_map(inventory)
     manifest = SyncManifest.build_from_inventory(
@@ -490,12 +516,62 @@ def _manifest_content(inventory: dict, src_dir: str) -> str:
         entity_occurrence_page_cache=build_entity_occurrence_page_map(
             inventory, module_page_map
         ),
+        surfaces=surfaces,
+        generation_inputs=generation_inputs,
     )
-    return json.dumps(
-        {"version": MANIFEST_VERSION, "sources": manifest.sources},
-        indent=2,
-        sort_keys=True,
-    )
+    return manifest.to_json()
+
+
+def _conflict_variants(text: str) -> tuple[str, str]:
+    ours: list[str] = []
+    theirs: list[str] = []
+    side = "both"
+    for line in text.splitlines():
+        if line.startswith("<<<<<<<"):
+            side = "ours"
+            continue
+        if side == "ours" and line.startswith("======="):
+            side = "theirs"
+            continue
+        if side == "theirs" and line.startswith(">>>>>>>"):
+            side = "both"
+            continue
+        if side in {"both", "ours"}:
+            ours.append(line)
+        if side in {"both", "theirs"}:
+            theirs.append(line)
+    return "\n".join(ours), "\n".join(theirs)
+
+
+def _manifest_state_from_conflict(
+    text: str,
+) -> tuple[dict[str, dict] | None, dict[str, object] | None, str]:
+    variants = _conflict_variants(text)
+    parsed: list[dict] = []
+    for variant in variants:
+        try:
+            payload = json.loads(variant)
+        except (json.JSONDecodeError, TypeError):
+            continue
+        if isinstance(payload, dict):
+            parsed.append(payload)
+    if not parsed:
+        return {}, {}, ""
+
+    preserved: dict[str, dict] = {}
+    for key in ("surfaces", "generation_inputs"):
+        explicit_values = [
+            payload[key]
+            for payload in parsed
+            if key in payload and isinstance(payload[key], dict)
+        ]
+        values = explicit_values or [{}]
+        unique = {json.dumps(value, sort_keys=True) for value in values}
+        if len(unique) > 1:
+            label = key.replace("_", " ")
+            return None, None, f"manifest {label} differ and require manual resolution"
+        preserved[key] = values[0]
+    return preserved["surfaces"], preserved["generation_inputs"], ""
 
 
 def _module_content(page_stem: str, inventory: dict) -> tuple[str | None, str]:
@@ -642,8 +718,16 @@ def _resolution_for_path(
             wiki_dir, inventory
         ), "rebuilt index from current inventory"
     if rel_path == ".llm-wiki-manifest.json":
+        surfaces, generation_inputs, error = _manifest_state_from_conflict(
+            read_md(path)
+        )
+        if surfaces is None:
+            return None, error
         return _manifest_content(
-            inventory, src_dir
+            inventory,
+            src_dir,
+            surfaces=surfaces,
+            generation_inputs=generation_inputs,
         ), "rebuilt sync manifest from current inventory"
     if rel_path == "log.md":
         return _merge_conflicted_log(

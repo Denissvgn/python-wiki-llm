@@ -55,6 +55,23 @@ def _jobs_value(value: str) -> int:
     return parsed
 
 
+def _surface_values(value: str) -> tuple[str, ...]:
+    values = tuple(part.strip().lower() for part in value.split(",") if part.strip())
+    if not values:
+        raise argparse.ArgumentTypeError("must name at least one surface")
+    invalid = [
+        surface
+        for surface in values
+        if surface not in sync_cmd.INITIALIZABLE_SURFACES
+    ]
+    if invalid:
+        allowed = ", ".join(sync_cmd.INITIALIZABLE_SURFACES)
+        raise argparse.ArgumentTypeError(
+            f"unknown surface {invalid[0]!r}; choose from: {allowed}"
+        )
+    return values
+
+
 def _add_helper_cache_argument(parser):
     parser.add_argument(
         "--helper-cache-dir",
@@ -207,6 +224,12 @@ def _add_extract_command(subparsers):
         "--deep",
         action="store_true",
         help="Include docstrings, params, attributes, and imports",
+    )
+    extract_parser.add_argument(
+        "--openapi-file",
+        default=None,
+        metavar="PATH",
+        help="Use a source-contained OpenAPI 3.0/3.1 JSON or YAML contract (requires --deep)",
     )
     extract_parser.add_argument(
         "--package",
@@ -588,6 +611,23 @@ def _add_bootstrap_command(subparsers):
         "--skip-dependencies",
         action="store_true",
         help="Skip dependency / load-order architecture page generation",
+    )
+    bootstrap_parser.add_argument(
+        "--api-contracts",
+        action="store_true",
+        help=(
+            "Generate the optional api-contracts.md production HTTP inventory "
+            "from static FastAPI analysis"
+        ),
+    )
+    bootstrap_parser.add_argument(
+        "--openapi-file",
+        default=None,
+        metavar="PATH",
+        help=(
+            "Use a source-root-relative OpenAPI JSON/YAML document as the "
+            "authoritative HTTP contract; implies --api-contracts and full depth"
+        ),
     )
     bootstrap_parser.add_argument(
         "--dependency-graph-detail",
@@ -1162,7 +1202,53 @@ def _add_sync_command(subparsers):
     sync_parser.add_argument(
         "--force",
         action="store_true",
-        help="Allow sync to apply unusually broad source diffs",
+        help="Allow sync to apply unusually broad source or surface diffs",
+    )
+    openapi_group = sync_parser.add_mutually_exclusive_group()
+    openapi_group.add_argument(
+        "--openapi-file",
+        default=None,
+        metavar="PATH",
+        help=(
+            "Use a source-root-contained OpenAPI 3.0/3.1 JSON or YAML file as "
+            "the authoritative API contract"
+        ),
+    )
+    openapi_group.add_argument(
+        "--clear-openapi-file",
+        action="store_true",
+        help="Clear persisted OpenAPI authority and return to static contracts",
+    )
+    sync_parser.add_argument(
+        "--initialize-surfaces",
+        action="append",
+        type=_surface_values,
+        default=None,
+        metavar="SURFACE[,SURFACE...]",
+        help=(
+            "Initialize optional wiki surfaces; accepted values are flows, "
+            "dependencies, and api-contracts; may be repeated"
+        ),
+    )
+    sync_parser.add_argument(
+        "--flow-category",
+        action="append",
+        default=None,
+        metavar="CATEGORY",
+        help="Only initialize flow entry points in this category; may be repeated",
+    )
+    sync_parser.add_argument(
+        "--exclude-tests",
+        action="store_true",
+        help="Exclude test sources from explicitly initialized surfaces",
+    )
+    sync_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help=(
+            "Preview optional-surface initialization without modifying files; "
+            "requires --initialize-surfaces"
+        ),
     )
     sync_parser.add_argument(
         "--no-preserve-semantic",

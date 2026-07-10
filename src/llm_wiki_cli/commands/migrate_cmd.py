@@ -32,7 +32,7 @@ from .extract_cmd import (
     get_inventory_result,
     print_inventory_failures,
 )
-from .sync_cmd import MANIFEST_FILENAME, MANIFEST_VERSION, SyncManifest
+from .sync_cmd import MANIFEST_FILENAME, SyncManifest
 from ..config import DEFAULT_WIKI_DIR, validate_path
 from ..services.io import read_md, write_md
 from ..services.paths import normalize_source_path
@@ -49,6 +49,7 @@ _ARCHITECTURE_PAGES: tuple[tuple[str, str], ...] = (
 _ROOT_SURFACE_FILES = {
     "index.md",
     "log.md",
+    f"{PageKind.API_CONTRACTS.value}.md",
     f"{PageKind.DEPENDENCIES.value}.md",
     f"{PageKind.LOAD_ORDER.value}.md",
 }
@@ -396,13 +397,20 @@ def _build_targets(
         infra_entries=infra_entries or None,
         flow_entries=flow_entries or None,
         architecture_entries=_list_architecture_pages(wiki_dir) or None,
+        api_contracts_present=(wiki_dir / "api-contracts.md").is_file(),
     )
+    try:
+        existing_manifest = SyncManifest.load(wiki_dir)
+    except (FileNotFoundError, json.JSONDecodeError, TypeError, ValueError):
+        existing_manifest = SyncManifest()
     manifest = SyncManifest.build_from_inventory(
         inventory,
         src_dir,
         entity_page_map,
         module_page_map,
         entity_occurrence_page_cache=entity_occurrence_page_map,
+        surfaces=existing_manifest.surfaces,
+        generation_inputs=existing_manifest.generation_inputs,
     )
     return targets, _append_additional_docs_index(index_content, wiki_dir), manifest
 
@@ -814,11 +822,7 @@ def _target_needs_apply(
 
 
 def _manifest_payload(manifest: SyncManifest) -> str:
-    return json.dumps(
-        {"version": MANIFEST_VERSION, "sources": manifest.sources},
-        indent=2,
-        sort_keys=True,
-    )
+    return manifest.to_json()
 
 
 def _manifest_needs_write(wiki_dir: Path, manifest: SyncManifest | None) -> bool:

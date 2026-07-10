@@ -10,6 +10,7 @@ Supporting detail for [SKILL.md](SKILL.md).
 | `## Relationships`, `## Local dependency map` | No | Entire block; wrapped in `<!-- Auto-generated ... Do not edit by hand. -->` markers, replaced wholesale each `sync` |
 | Flow pages `## Behavior` | Yes — the one section `sync` always preserves and never generates content for | — |
 | Flow pages `## Data flow`, call-sequence diagram | No | Regenerated from inventory each `sync` |
+| `api-contracts.md` `## Notes` | Yes — document reviewed contract caveats and unresolved runtime knowledge | Operation inventory, parameters, responses, source links, and diagnostics — regenerated |
 | `dependencies.md` / `load-order.md` `## Notes` | Yes — document intentional cycles, dynamic imports, rationale | Rest of the page (cycles/load-order tables) — regenerated |
 | `index.md` custom trailing sections | Yes | Registry-backed overview/per-surface link sections — regenerated |
 | `log.md` | Append-only, new content at the bottom | Existing entries — never edit or reorder past log lines |
@@ -27,6 +28,14 @@ Rule of thumb: if a section is bounded by an explicit "Do not edit by hand" comm
 
 - **No lock on plain `sync`.** Locking and circuit-breaking (`.git/llm-wiki.lock`, `.git/llm-wiki-breaker.json`) only exist in `trigger-agent`. This skill assumes a single interactive session. If it is ever wired into unattended automation (cron, CI, a bot), shell out through `trigger-agent` (`--timeout`, `--max-diff-lines`, `--max-prompt-bytes`, `--reset-breaker`) rather than reimplementing locking/backoff — and in that path only, set `LLM_WIKI_AUTO_COMMIT=1` on the commit so the post-commit hook does not re-trigger itself.
 - **Sync's broad-diff guard.** `sync` aborts when a change would affect more than 50 files or more than 30% of sources (once the manifest tracks ≥10 sources). Distinguish "expected, force it" (mass rename) from "manifest is stale/corrupt" (repair, don't force).
+- **Surface initialization guard.** An explicit backfill also requires `--force` above 50 new pages or 30% of the current canonical wiki once it has at least 10 pages. Run the same initialization with `--dry-run` first; persisted category/test policy prevents later syncs from broadening the chosen surface silently.
+- **Persisted OpenAPI input.** Manifest v4 stores a source-relative OpenAPI
+  path, SHA-256, and format under `generation_inputs.openapi`. Ordinary sync
+  reparses and re-hashes that source-contained OpenAPI 3.0/3.1 document, so a
+  specification-only change refreshes `api-contracts.md`. A missing or invalid
+  file, an outside-root path, or malformed persisted state fails before wiki
+  writes; replace it with `--openapi-file PATH` or remove it with
+  `--clear-openapi-file`. Those two flags are mutually exclusive.
 - **Oversized diff.** Bound how much diff text is read into context — large diffs should lean on `extract --changed --summary` instead of full `git diff` text.
 - **No machine-readable sync summary.** Unlike `bootstrap --format json`, `sync` prints text lines with fixed prefixes (`CREATE` / `UPDATE` / `METADATA` / `SKIP` / `DEPRECATE` / `RENAME`, plus the tally and `APPEND log.md`); parse those rather than expecting JSON.
 - **Source-adapter / multi-repo wikis.** `--allow-external-src` must be passed to `sync`, `lint`, `ci-check`, and `team check` consistently. For example: `llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki`. `--wiki-dir` itself always stays inside the current project root.

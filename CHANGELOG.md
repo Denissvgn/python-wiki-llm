@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Reconstructable Python contracts: deep inventory now preserves every
+  parameter kind and normalizes Pydantic field metadata, validators/config,
+  enums, literals, and type aliases without importing target code.
+- Syntax-only FastAPI contract analysis with composed router prefixes,
+  parameter locations and aliases, declared responses/content types, an
+  optional canonical `api-contracts.md` surface, and authoritative exported
+  OpenAPI 3.0/3.1 JSON/YAML reconciliation.
+- Explicit `sync --initialize-surfaces` backfill for flows, dependency
+  architecture, and API contracts, including category/test filters, a no-write
+  preview, broad-surface guards, and persistent manifest v4 surface policy.
 - New bundled `wiki-reference` skill holding contract-level detail
   (extraction contracts including the Haskell helper and inventory schema,
   helper toolchains and caches, dependency reconciliation and lockfile
@@ -28,6 +38,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   it.
 
 ### Changed
+- Generated Python signature and model tables now render normalized contract
+  metadata, so existing generated pages may change on their next bootstrap or
+  sync as a correctness update.
+- `PyYAML>=6` is now a required runtime dependency for safely loading
+  user-supplied OpenAPI YAML. FastAPI and Pydantic remain unnecessary runtime
+  dependencies, and target application code is not imported for extraction.
 - The injected agent constraint block (`AGENTS.md`, `CLAUDE.md`, …) was
   deduplicated and slimmed via progressive disclosure: rarely-needed contract
   detail moved to the `wiki-reference` skill and the block now carries

@@ -12,9 +12,10 @@ Edited before any rank calculation because they define the reader's first experi
 
 1. `index.md`: replace generic introduction text and add a short custom section linking to the remainder backlog when one exists.
 2. `flows/*`: fill each `## Behavior` section, ordered by entry-point category, boundary-effect count, then page path. For very large repos, finish at least the top 10 flows and backlog the rest.
-3. `dependencies.md`: fill `## Notes` with intentional cycles, dynamic imports, package-boundary caveats, and dependency-graph interpretation.
-4. `load-order.md`: fill `## Notes` with startup-order caveats and cycle rationale when generated.
-5. High-signal infrastructure/runtime pages: edit prose only when the page is a deployment or operational entry point and the source context is clear.
+3. `api-contracts.md`: review production-operation filtering, declared wire fields, unknowns, and static/OpenAPI diagnostics; add `## Notes` only for source-backed contract caveats.
+4. `dependencies.md`: fill `## Notes` with intentional cycles, dynamic imports, package-boundary caveats, and dependency-graph interpretation.
+5. `load-order.md`: fill `## Notes` with startup-order caveats and cycle rationale when generated.
+6. High-signal infrastructure/runtime pages: edit prose only when the page is a deployment or operational entry point and the source context is clear.
 
 ### P1: module and entity pages
 

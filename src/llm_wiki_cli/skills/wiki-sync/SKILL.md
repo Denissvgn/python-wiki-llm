@@ -23,6 +23,21 @@ Bring the LLM Wiki back in sync with the code that just changed. The loop is alw
 
    Never hand-edit a generated page instead of running this. If sync aborts on its broad-diff guard, do not reflexively pass `--force`: first decide whether the cause is a mass rename/refactor (expected — force is fine) or a stale/corrupted manifest (repair the manifest instead).
 
+   To backfill optional surfaces intentionally, preview the surface-only pass
+   before applying it:
+
+   ```bash
+   llm-wiki sync --initialize-surfaces flows,dependencies --flow-category http --exclude-tests --dry-run
+   llm-wiki sync --initialize-surfaces api-contracts --openapi-file openapi.yaml --dry-run
+   ```
+
+   This mode defers ordinary entity/module source changes. Inspect its page
+   counts, rerun without `--dry-run`, and only add `--force` when the reported
+   surface wave is expected. OpenAPI paths must stay inside the source root.
+   Sync persists the selected path and hash in manifest v4, refreshes contracts
+   on later specification-only changes, and returns to static authority when
+   run with `--clear-openapi-file`.
+
 2. **Build the changed-page list.** Parse sync's `CREATE` / `UPDATE` / `METADATA` / `SKIP` / `DEPRECATE` / `RENAME` output lines — that output is the only changed-page manifest available. Cross-reference `llm-wiki extract --src-dir . --changed --summary` to learn *why* each page changed; only read the full `git diff HEAD~1..HEAD` (or the working-tree diff when run before committing) for files whose change reason is not obvious from the summary.
 
 3. **Classify each CREATE/UPDATE page** (skip `METADATA`-only pages — the semantic hash did not change, so there is nothing to say):
@@ -46,7 +61,7 @@ Bring the LLM Wiki back in sync with the code that just changed. The loop is alw
    llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki
    ```
 
-6. **Review the diff before staging.** `git diff -- docs/llm_wiki/` — confirm only pages that correspond to the code diff changed; no reformatting or unrelated edits. `sync` has no `--dry-run`, so this post-hoc review is the only preview mechanism.
+6. **Review the diff before staging.** `git diff -- docs/llm_wiki/` — confirm only pages that correspond to the code diff changed; no reformatting or unrelated edits. `--dry-run` previews explicit surface initialization only; ordinary incremental sync still requires this post-write diff review.
 
 7. **CHANGELOG.** Add a `## [Unreleased]` entry for user-facing changes; skip for pure refactors, test-only, or doc-only commits.
 
