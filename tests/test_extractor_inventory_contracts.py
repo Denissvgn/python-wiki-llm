@@ -89,9 +89,37 @@ def test_extract_v1_data_flow_fields_are_additive_contract():
     assert getattr(contracts, "EXTRACT_ADDITIVE_FIELDS", None) == {
         "calls[].args",
         "calls[].kwargs",
+        "classes[].attributes[].alias",
+        "classes[].attributes[].annotated_metadata",
+        "classes[].attributes[].constraints",
+        "classes[].attributes[].default_factory",
+        "classes[].attributes[].description",
+        "classes[].attributes[].examples",
+        "classes[].attributes[].line",
+        "classes[].attributes[].literal_values",
+        "classes[].attributes[].nullable",
+        "classes[].attributes[].required",
+        "classes[].attributes[].serialization_alias",
+        "classes[].attributes[].unknowns",
+        "classes[].attributes[].validation_alias",
+        "classes[].attributes[].value",
+        "classes[].inferred",
+        "classes[].kind",
+        "classes[].literal_values",
+        "classes[].methods[].validator",
+        "classes[].model_config",
+        "classes[].model_config[].unknowns",
+        "classes[].model_kind",
+        "classes[].target",
+        "classes[].type_params",
         "data_effects",
+        "data_effects.inputs[].parameter_kind",
         "data_flows",
+        "entrypoints[].routes",
+        "frameworks.fastapi",
         "main_block_calls",
+        "params[].kind",
+        "api_contracts",
     }
 
 
@@ -209,7 +237,12 @@ def test_deep_data_effects_field_is_additive_and_optional(tmp_path):
         for fn in get_inventory(str(tmp_path), deep=True)["m.py"]["functions"]
     }
     assert deep["echo"]["data_effects"]["inputs"] == [
-        {"kind": "param", "name": "value", "type": ""}
+        {
+            "kind": "param",
+            "parameter_kind": "positional_or_keyword",
+            "name": "value",
+            "type": "",
+        }
     ]
     assert deep["echo"]["data_effects"]["boundary_effects"] == [
         {"kind": "output", "target": "print", "line": 2}

@@ -7,7 +7,24 @@ import sys
 from pathlib import Path
 
 from ..config import build_gitignore_matcher
+from ..services.imports import build_module_path_resolver
 from .common import discover_source_files
+from .fastapi_contracts import extract_fastapi_declarations
+from .python_contracts import (
+    class_kind,
+    explicit_type_alias,
+    expression_to_str,
+    extract_class_attributes as extract_contract_attributes,
+    extract_enum_attributes,
+    extract_model_config,
+    extract_parameters,
+    extract_validator,
+    finalize_inventory_model_kinds,
+    finalize_model_kinds,
+    inferred_type_alias,
+    is_pydantic_model,
+    type_alias_record,
+)
 
 
 # ── AST helper utilities ──────────────────────────────────────────────
@@ -15,41 +32,12 @@ from .common import discover_source_files
 
 def _annotation_to_str(node) -> str:
     """Convert an AST annotation node to a readable string."""
-    if node is None:
-        return ""
-    if isinstance(node, ast.Constant):
-        return repr(node.value)
-    if isinstance(node, ast.Name):
-        return node.id
-    if isinstance(node, ast.Attribute):
-        return f"{_annotation_to_str(node.value)}.{node.attr}"
-    if isinstance(node, ast.Subscript):
-        return f"{_annotation_to_str(node.value)}[{_annotation_to_str(node.slice)}]"
-    if isinstance(node, ast.Tuple):
-        return ", ".join(_annotation_to_str(e) for e in node.elts)
-    if isinstance(node, ast.List):
-        return "[" + ", ".join(_annotation_to_str(e) for e in node.elts) + "]"
-    if isinstance(node, ast.BinOp) and isinstance(node.op, ast.BitOr):
-        return f"{_annotation_to_str(node.left)} | {_annotation_to_str(node.right)}"
-    return ast.dump(node)
+    return expression_to_str(node)
 
 
 def _default_to_str(node) -> str:
     """Convert a default-value AST node to a readable string."""
-    if node is None:
-        return ""
-    if isinstance(node, ast.Constant):
-        return repr(node.value)
-    if isinstance(node, ast.Name):
-        return node.id
-    if isinstance(node, ast.List):
-        return "[" + ", ".join(_default_to_str(e) for e in node.elts) + "]"
-    if isinstance(node, ast.Dict):
-        return "{...}"
-    if isinstance(node, ast.Call):
-        func = _annotation_to_str(node.func)
-        return f"{func}(...)"
-    return "..."
+    return expression_to_str(node)
 
 
 def _simple_reference_to_str(node) -> str:
@@ -96,21 +84,7 @@ def _summarize_expression(node) -> dict[str, str]:
 
 def _extract_decorators(node) -> list[str]:
     """Extract decorator names from a node."""
-    decorators = []
-    for dec in node.decorator_list:
-        if isinstance(dec, ast.Name):
-            decorators.append(dec.id)
-        elif isinstance(dec, ast.Attribute):
-            decorators.append(_annotation_to_str(dec))
-        elif isinstance(dec, ast.Call):
-            func_str = _annotation_to_str(dec.func)
-            args_parts = []
-            for a in dec.args:
-                args_parts.append(_annotation_to_str(a))
-            for kw in dec.keywords:
-                args_parts.append(f"{kw.arg}={_annotation_to_str(kw.value)}")
-            decorators.append(f"{func_str}({', '.join(args_parts)})")
-    return decorators
+    return [expression_to_str(dec) for dec in node.decorator_list]
 
 
 # Nodes that open a new scope; calls inside them belong to that inner scope,
@@ -684,9 +658,14 @@ def _extract_data_effects(
 
     effects: dict[str, list[dict]] = {}
     if params:
-        effects["inputs"] = [
-            {"kind": "param", **param} for param in params[:_DATA_EFFECT_LIMIT]
-        ]
+        inputs = []
+        for param in params[:_DATA_EFFECT_LIMIT]:
+            record = {key: value for key, value in param.items() if key != "kind"}
+            record["kind"] = "param"
+            if param.get("kind"):
+                record["parameter_kind"] = param["kind"]
+            inputs.append(record)
+        effects["inputs"] = inputs
     if visitor.reads:
         effects["reads"] = visitor.reads
     if visitor.writes:
@@ -764,6 +743,8 @@ def _extract_function_info(
     deep: bool = False,
     module_globals: set[str] | None = None,
     module_import_aliases: dict[str, str] | None = None,
+    *,
+    omit_method_receiver: bool = False,
 ) -> dict:
     """Extract full function/method info from a FunctionDef or AsyncFunctionDef.
 
@@ -778,26 +759,9 @@ def _extract_function_info(
         "is_async": isinstance(node, ast.AsyncFunctionDef),
     }
 
-    # Parameters (skip 'self'/'cls' for methods)
-    params = []
-    args_node = node.args
-
-    # Pair defaults with args (defaults align to the end of the args list)
-    num_args = len(args_node.args)
-    num_defaults = len(args_node.defaults)
-    default_offset = num_args - num_defaults
-
-    for i, arg in enumerate(args_node.args):
-        if arg.arg in ("self", "cls"):
-            continue
-        param = {
-            "name": arg.arg,
-            "type": _annotation_to_str(arg.annotation),
-        }
-        default_idx = i - default_offset
-        if default_idx >= 0:
-            param["default"] = _default_to_str(args_node.defaults[default_idx])
-        params.append(param)
+    params = extract_parameters(
+        node.args, omit_method_receiver=omit_method_receiver
+    )
 
     return_type = _annotation_to_str(node.returns)
     info["params"] = params
@@ -820,18 +784,11 @@ def _extract_function_info(
     return info
 
 
-def _extract_class_attributes(node) -> list[dict]:
+def _extract_class_attributes(
+    node, module_import_aliases: dict[str, str] | None = None
+) -> list[dict]:
     """Extract annotated attributes from a class body (Pydantic fields, dataclass fields, etc.)."""
-    attrs = []
-    for child in node.body:
-        if isinstance(child, ast.AnnAssign) and isinstance(child.target, ast.Name):
-            attr = {
-                "name": child.target.id,
-                "type": _annotation_to_str(child.annotation),
-                "default": _default_to_str(child.value) if child.value else "",
-            }
-            attrs.append(attr)
-    return attrs
+    return extract_contract_attributes(node, module_import_aliases or {})
 
 
 def _string_list(node) -> list[str]:
@@ -941,32 +898,50 @@ class ComponentVisitor(ast.NodeVisitor):
         bases = [_annotation_to_str(b) for b in node.bases]
         docstring = ast.get_docstring(node) or ""
         decorators = _extract_decorators(node)
-        attributes = _extract_class_attributes(node)
+        kind = class_kind(node, self._module_import_aliases)
+        attributes = (
+            extract_enum_attributes(node)
+            if kind == "enum"
+            else _extract_class_attributes(node, self._module_import_aliases)
+        )
 
         # Extract methods (including private for completeness)
         methods = []
         for child in node.body:
             if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                is_static_method = any(
+                    _annotation_to_str(decorator).split("(", 1)[0] == "staticmethod"
+                    for decorator in child.decorator_list
+                )
                 methods.append(
                     _extract_function_info(
                         child,
                         deep=self._deep,
                         module_globals=self._module_globals,
                         module_import_aliases=self._module_import_aliases,
+                        omit_method_receiver=not is_static_method,
                     )
                 )
+                validator = extract_validator(child, self._module_import_aliases)
+                if validator is not None:
+                    methods[-1]["validator"] = validator
 
-        self.classes.append(
-            {
-                "name": node.name,
-                "bases": bases,
-                "line": node.lineno,
-                "docstring": docstring,
-                "decorators": decorators,
-                "attributes": attributes,
-                "methods": methods,
-            }
-        )
+        class_info = {
+            "name": node.name,
+            "kind": kind,
+            "bases": bases,
+            "line": node.lineno,
+            "docstring": docstring,
+            "decorators": decorators,
+            "attributes": attributes,
+            "methods": methods,
+        }
+        if is_pydantic_model(node, self._module_import_aliases):
+            class_info["model_kind"] = "pydantic"
+        model_config = extract_model_config(node, self._module_import_aliases)
+        if model_config:
+            class_info["model_config"] = model_config
+        self.classes.append(class_info)
         # Don't generic_visit — we already walked class body for methods/attrs
 
     def visit_FunctionDef(self, node):
@@ -1049,6 +1024,12 @@ class ComponentVisitor(ast.NodeVisitor):
     def visit_Assign(self, node):
         """Detect module-level UPPER_CASE constants and ``__all__``."""
         if self._class_depth == 0 and self._function_depth == 0:
+            alias = inferred_type_alias(
+                node, self._module_import_aliases, deep=self._deep
+            )
+            if alias is not None:
+                self.classes.append(alias)
+                return
             for target in node.targets:
                 if isinstance(target, ast.Name):
                     if target.id == "__all__":
@@ -1069,6 +1050,39 @@ class ComponentVisitor(ast.NodeVisitor):
                                 constant["value"] = value
                         self.constants.append(constant)
         self.generic_visit(node)
+
+    def visit_AnnAssign(self, node):
+        """Detect explicit PEP 613 module-level type aliases."""
+        if self._class_depth == 0 and self._function_depth == 0:
+            alias = explicit_type_alias(
+                node, self._module_import_aliases, deep=self._deep
+            )
+            if alias is not None:
+                self.classes.append(alias)
+                return
+        self.generic_visit(node)
+
+    def visit_TypeAlias(self, node):
+        """Detect PEP 695 aliases when the running Python parser supports them."""
+        if self._class_depth > 0 or self._function_depth > 0:
+            return
+        name = getattr(getattr(node, "name", None), "id", "")
+        value = getattr(node, "value", None)
+        if not name or value is None:
+            return
+        type_params = [
+            expression_to_str(param) for param in getattr(node, "type_params", [])
+        ]
+        self.classes.append(
+            type_alias_record(
+                name,
+                value,
+                node.lineno,
+                self._module_import_aliases,
+                deep=self._deep,
+                type_params=type_params,
+            )
+        )
 
     def visit_If(self, node):
         """Detect a module-level ``if __name__ == "__main__"`` entry guard."""
@@ -1143,11 +1157,17 @@ def _scan_python_files(
             module_import_aliases=_extract_import_aliases(tree),
         )
         visitor.visit(tree)
+        finalize_model_kinds(visitor.classes)
 
         # Module-level side effects (deep only) make an otherwise-defless module
         # (e.g. a config module that only calls ``logging.basicConfig(...)``)
         # meaningful content for load-order analysis.
         module_calls = _extract_module_calls(tree) if deep else []
+        fastapi_declarations = (
+            extract_fastapi_declarations(source, filepath=rel.as_posix())
+            if deep
+            else {}
+        )
 
         # Include the file if it has classes, public functions, constants,
         # __all__, (in deep mode) private functions or module-level side effects.
@@ -1157,6 +1177,7 @@ def _scan_python_files(
             or visitor.constants
             or visitor.has_all
             or module_calls
+            or fastapi_declarations
             or include_empty
         )
         if has_content:
@@ -1183,12 +1204,25 @@ def _scan_python_files(
                     file_entry["nested_functions"] = visitor.nested_functions
                 if module_calls:
                     file_entry["module_calls"] = module_calls
+                if fastapi_declarations:
+                    file_entry["frameworks"] = {"fastapi": fastapi_declarations}
             else:
                 # Slim format: strip rich fields for backward compat
-                file_entry["classes"] = [
-                    {"name": c["name"], "bases": c["bases"], "line": c["line"]}
-                    for c in visitor.classes
-                ]
+                slim_classes = []
+                for class_info in visitor.classes:
+                    slim = {
+                        "name": class_info["name"],
+                        "bases": class_info["bases"],
+                        "line": class_info["line"],
+                    }
+                    if class_info.get("kind"):
+                        slim["kind"] = class_info["kind"]
+                    if class_info.get("model_kind"):
+                        slim["model_kind"] = class_info["model_kind"]
+                    if class_info.get("inferred"):
+                        slim["inferred"] = True
+                    slim_classes.append(slim)
+                file_entry["classes"] = slim_classes
                 fns = []
                 for f in visitor.functions:
                     fn = {"name": f["name"], "line": f["line"]}
@@ -1201,6 +1235,10 @@ def _scan_python_files(
 
             inventory[rel.as_posix()] = file_entry
 
+    resolver = build_module_path_resolver(inventory)
+    finalize_inventory_model_kinds(
+        inventory, module_candidates=resolver.candidates
+    )
     return inventory
 
 

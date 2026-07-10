@@ -17,6 +17,16 @@ Python dependency reconciliation treats ``sys.stdlib_module_names`` as the
 stdlib source when available, falls back to the bundled Python 3.9 list in
 dependency analysis, and uses the curated import-to-distribution aliases there
 with optional project overrides from ``[tool.llm-wiki.dependency-aliases]``.
+Reconstructable Python contracts also remain additive: parameter ``kind``
+values preserve declaration separators, while class/attribute records may add
+enum members, type-alias targets, normalized Pydantic field state, model
+configuration, and validator metadata. Extraction remains syntax-only and
+consumers must tolerate these optional records being absent.
+Deep Python inventory may additionally expose per-file ``frameworks.fastapi``
+declarations and the payload may expose top-level ``api_contracts`` assembled
+from static syntax or an authoritative source-contained OpenAPI export. These
+records, their diagnostics, and entry-point ``routes`` remain optional under
+``llm-wiki-extract/v1``.
 """
 
 from __future__ import annotations
@@ -27,7 +37,35 @@ BOOTSTRAP_SKIP_DATA_FLOW_FLAG = "--skip-data-flow"
 EXTRACT_ADDITIVE_FIELDS = {
     "calls[].args",
     "calls[].kwargs",
+    "classes[].attributes[].alias",
+    "classes[].attributes[].annotated_metadata",
+    "classes[].attributes[].constraints",
+    "classes[].attributes[].default_factory",
+    "classes[].attributes[].description",
+    "classes[].attributes[].examples",
+    "classes[].attributes[].line",
+    "classes[].attributes[].literal_values",
+    "classes[].attributes[].nullable",
+    "classes[].attributes[].required",
+    "classes[].attributes[].serialization_alias",
+    "classes[].attributes[].unknowns",
+    "classes[].attributes[].validation_alias",
+    "classes[].attributes[].value",
+    "classes[].inferred",
+    "classes[].kind",
+    "classes[].literal_values",
+    "classes[].methods[].validator",
+    "classes[].model_config",
+    "classes[].model_config[].unknowns",
+    "classes[].model_kind",
+    "classes[].target",
+    "classes[].type_params",
     "data_effects",
+    "data_effects.inputs[].parameter_kind",
     "data_flows",
+    "entrypoints[].routes",
+    "frameworks.fastapi",
     "main_block_calls",
+    "params[].kind",
+    "api_contracts",
 }

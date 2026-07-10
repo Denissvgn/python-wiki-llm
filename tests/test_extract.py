@@ -948,6 +948,276 @@ class TestGetInventory:
         assert [fn["name"] for fn in data["functions"]] == ["make_model"]
 
 
+class TestPythonContractExtraction:
+    def test_complete_signature_preserves_parameter_kinds_and_defaults(self, tmp_path):
+        (tmp_path / "api.py").write_text(
+            textwrap.dedent("""\
+            from typing import Literal
+
+            def publish(
+                source: str,
+                /,
+                destination: str = "out",
+                *values: float,
+                required: bool,
+                mode: Literal["fast", "safe"] = "safe",
+                options: dict[str, int] = {"retries": 2},
+                **extras: object,
+            ) -> str | None:
+                return destination
+            """),
+            encoding="utf-8",
+        )
+
+        fn = get_inventory(str(tmp_path), deep=True)["api.py"]["functions"][0]
+
+        assert fn["params"] == [
+            {"name": "source", "kind": "positional_only", "type": "str"},
+            {
+                "name": "destination",
+                "kind": "positional_or_keyword",
+                "type": "str",
+                "default": "'out'",
+            },
+            {"name": "values", "kind": "var_positional", "type": "float"},
+            {"name": "required", "kind": "keyword_only", "type": "bool"},
+            {
+                "name": "mode",
+                "kind": "keyword_only",
+                "type": "Literal['fast', 'safe']",
+                "default": "'safe'",
+            },
+            {
+                "name": "options",
+                "kind": "keyword_only",
+                "type": "dict[str, int]",
+                "default": "{'retries': 2}",
+            },
+            {"name": "extras", "kind": "var_keyword", "type": "object"},
+        ]
+        assert fn["return_type"] == "str | None"
+        assert [item["kind"] for item in fn["data_effects"]["inputs"]] == [
+            "param"
+        ] * 7
+        assert [
+            item["parameter_kind"] for item in fn["data_effects"]["inputs"]
+        ] == [item["kind"] for item in fn["params"]]
+
+    def test_receiver_is_omitted_only_for_class_methods(self, tmp_path):
+        (tmp_path / "receivers.py").write_text(
+            textwrap.dedent("""\
+            def callback(self: object, *, enabled: bool = True):
+                return self
+
+            class Service:
+                def run(self, value: int, /, *, enabled: bool = True):
+                    return value
+
+                @staticmethod
+                def static(self: object, *, enabled: bool = True):
+                    return self
+            """),
+            encoding="utf-8",
+        )
+
+        data = get_inventory(str(tmp_path), deep=True)["receivers.py"]
+
+        assert [item["name"] for item in data["functions"][0]["params"]] == [
+            "self",
+            "enabled",
+        ]
+        assert [
+            item["name"] for item in data["classes"][0]["methods"][0]["params"]
+        ] == ["value", "enabled"]
+        assert [
+            item["name"] for item in data["classes"][0]["methods"][1]["params"]
+        ] == ["self", "enabled"]
+
+    def test_pydantic_fields_are_normalized_without_importing_pydantic(self, tmp_path):
+        (tmp_path / "models.py").write_text(
+            textwrap.dedent("""\
+            from typing import Annotated, Literal
+            from pydantic import BaseModel, Field as PydanticField
+
+            class Request(BaseModel):
+                name: Annotated[
+                    str,
+                    PydanticField(
+                        alias="fullName",
+                        min_length=1,
+                        description="Display name",
+                        examples=["Ada"],
+                    ),
+                ]
+                labels: list[str] = PydanticField(
+                    default_factory=list,
+                    validation_alias="inputLabels",
+                    serialization_alias="outputLabels",
+                )
+                state: Literal["open", "closed"] = "open"
+                required_direct: str = PydanticField()
+                required_ellipsis: str = PydanticField(default=...)
+                count: int = PydanticField(0, ge=0)
+                nullable_required: str | None
+                forward_nullable: "str | None"
+                nullable_defaulted: str | None = PydanticField(default=None, ge=0)
+            """),
+            encoding="utf-8",
+        )
+
+        model = get_inventory(str(tmp_path), deep=True)["models.py"]["classes"][0]
+        fields = {item["name"]: item for item in model["attributes"]}
+
+        assert model["model_kind"] == "pydantic"
+        assert fields["name"]["required"] is True
+        assert fields["name"]["alias"] == "fullName"
+        assert fields["name"]["constraints"] == {"min_length": "1"}
+        assert fields["name"]["description"] == "Display name"
+        assert fields["name"]["examples"] == ["'Ada'"]
+        assert "Call(func=" not in fields["name"]["type"]
+        assert fields["labels"]["default_factory"] == "list"
+        assert fields["labels"]["required"] is False
+        assert fields["labels"]["validation_alias"] == "inputLabels"
+        assert fields["labels"]["serialization_alias"] == "outputLabels"
+        assert fields["state"]["literal_values"] == ["'open'", "'closed'"]
+        assert fields["required_direct"]["required"] is True
+        assert "default" not in fields["required_direct"]
+        assert fields["required_ellipsis"]["required"] is True
+        assert "default" not in fields["required_ellipsis"]
+        assert fields["count"]["required"] is False
+        assert fields["count"]["default"] == "0"
+        assert fields["nullable_required"]["required"] is True
+        assert fields["nullable_required"]["nullable"] is True
+        assert fields["forward_nullable"]["nullable"] is True
+        assert fields["nullable_defaulted"]["required"] is False
+        assert fields["nullable_defaulted"]["default"] == "None"
+
+    def test_dynamic_alias_is_explicitly_unknown(self, tmp_path):
+        (tmp_path / "models.py").write_text(
+            "from pydantic import BaseModel, Field\n"
+            "class Request(BaseModel):\n"
+            "    name: str = Field(alias=build_alias())\n",
+            encoding="utf-8",
+        )
+
+        field = get_inventory(str(tmp_path), deep=True)["models.py"]["classes"][0][
+            "attributes"
+        ][0]
+
+        assert "alias" not in field
+        assert field["unknowns"] == [
+            {
+                "property": "alias",
+                "expression": "build_alias()",
+                "reason": "not_statically_resolvable",
+            }
+        ]
+
+    def test_enums_literals_and_type_aliases_are_entities(self, tmp_path):
+        (tmp_path / "types.py").write_text(
+            textwrap.dedent("""\
+            from enum import Enum, auto
+            from typing import Literal, TypeAlias
+
+            UserId: TypeAlias = int
+            Mode = Literal["fast", "safe"]
+
+            class Color(str, Enum):
+                RED = "red"
+                AUTOMATIC = auto()
+            """),
+            encoding="utf-8",
+        )
+
+        classes = get_inventory(str(tmp_path), deep=True)["types.py"]["classes"]
+        by_name = {item["name"]: item for item in classes}
+
+        assert by_name["UserId"]["kind"] == "type_alias"
+        assert by_name["UserId"]["target"] == "int"
+        assert by_name["Mode"]["target"] == "Literal['fast', 'safe']"
+        assert by_name["Mode"]["literal_values"] == ["'fast'", "'safe'"]
+        assert by_name["Mode"]["inferred"] is True
+        assert by_name["Color"]["kind"] == "enum"
+        assert by_name["Color"]["attributes"] == [
+            {"name": "RED", "line": 8, "value": "'red'"},
+            {"name": "AUTOMATIC", "line": 9, "value": "auto()"},
+        ]
+
+        shallow = get_inventory(str(tmp_path), deep=False)["types.py"]["classes"]
+        assert {item["name"] for item in shallow} == {"UserId", "Mode", "Color"}
+        assert all("target" not in item for item in shallow)
+
+    def test_model_config_and_validators_are_structured(self, tmp_path):
+        (tmp_path / "models.py").write_text(
+            textwrap.dedent("""\
+            from pydantic import BaseModel, ConfigDict, field_validator
+
+            class Request(BaseModel):
+                model_config = ConfigDict(extra="forbid", populate_by_name=True)
+                name: str
+
+                @field_validator("name", mode="before", check_fields=False)
+                @classmethod
+                def normalize_name(cls, value: str) -> str:
+                    return value.strip()
+
+                @field_validator("name", mode=VALIDATION_MODE)
+                @classmethod
+                def normalize_name_dynamic(cls, value: str) -> str:
+                    return value
+            """),
+            encoding="utf-8",
+        )
+
+        model = get_inventory(str(tmp_path), deep=True)["models.py"]["classes"][0]
+
+        assert model["model_config"] == [
+            {
+                "name": "extra",
+                "value": "'forbid'",
+                "line": 4,
+                "source": "model_config",
+            },
+            {
+                "name": "populate_by_name",
+                "value": "True",
+                "line": 4,
+                "source": "model_config",
+            },
+        ]
+        assert model["methods"][0]["validator"] == {
+            "kind": "field",
+            "mode": "before",
+            "fields": ["name"],
+            "options": {"check_fields": "False"},
+        }
+        assert model["methods"][1]["validator"] == {
+            "kind": "field",
+            "mode": "unknown",
+            "fields": ["name"],
+            "unknowns": [
+                {
+                    "property": "mode",
+                    "expression": "VALIDATION_MODE",
+                    "reason": "not_statically_resolvable",
+                }
+            ],
+        }
+
+    @pytest.mark.skipif(not hasattr(ast, "TypeAlias"), reason="requires Python 3.12")
+    def test_pep_695_type_alias_is_captured_when_parser_supports_it(self, tmp_path):
+        (tmp_path / "types.py").write_text(
+            "type Pair[T] = tuple[T, T]\n", encoding="utf-8"
+        )
+
+        alias = get_inventory(str(tmp_path), deep=True)["types.py"]["classes"][0]
+
+        assert alias["kind"] == "type_alias"
+        assert alias["name"] == "Pair"
+        assert alias["target"] == "tuple[T, T]"
+        assert alias["type_params"] == ["T"]
+
+
 class TestCallCapture:
     def test_deep_mode_captures_body_calls(self, tmp_path):
         (tmp_path / "m.py").write_text(
@@ -1131,8 +1401,19 @@ class TestDataEffects:
 
         assert run["data_effects"] == {
             "inputs": [
-                {"kind": "param", "name": "src_dir", "type": "str"},
-                {"kind": "param", "name": "retries", "type": "int", "default": "3"},
+                {
+                    "kind": "param",
+                    "parameter_kind": "positional_or_keyword",
+                    "name": "src_dir",
+                    "type": "str",
+                },
+                {
+                    "kind": "param",
+                    "parameter_kind": "positional_or_keyword",
+                    "name": "retries",
+                    "type": "int",
+                    "default": "3",
+                },
             ],
             "reads": [{"kind": "global", "name": "CONFIG", "line": 4}],
             "returns": [
