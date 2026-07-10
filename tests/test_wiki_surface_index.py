@@ -94,9 +94,10 @@ def test_build_surface_index_describes_pages_links_counts_and_flows(tmp_path):
         "modules": 1,
         "workflows": 0,
         "guides": 0,
-        "flows": 1,
-        "infrastructure": 1,
-        "dependencies": 1,
+            "flows": 1,
+            "infrastructure": 1,
+            "api-contracts": 0,
+            "dependencies": 1,
         "load-order": 1,
     }
     assert payload["counts"]["dependency_architecture"] == 2

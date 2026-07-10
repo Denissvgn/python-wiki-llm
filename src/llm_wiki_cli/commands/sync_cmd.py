@@ -16,6 +16,8 @@ import hashlib
 import json
 import re
 import sys
+from collections import Counter
+from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
@@ -46,6 +48,13 @@ from .bootstrap_cmd import (
 )
 from ..config import validate_path, validate_source_root
 from ..services.data_flow import analyze_data_flow, build_data_flow_context
+from ..services.api_contracts import (
+    ApiContractError,
+    attach_routes_to_entry_points,
+    build_api_contracts,
+    load_openapi_document,
+    render_api_contracts_markdown,
+)
 from ..services.dependencies import analyze_dependencies
 from ..services.entrypoints import (
     EntryPointDetectionResult,
@@ -60,22 +69,33 @@ from ..services.inventory_cache import (
 )
 from ..services.io import read_md, write_md
 from ..services.module_maps import build_module_dependency_maps
+from ..services.paths import is_test_source_path
 from ..services.source_snapshot import (
     build_source_snapshot,
     format_unsupported_source_summary,
     unsupported_source_summary,
 )
-from ..services.wiki_surface import PageKind
+from ..services.wiki_surface import PageKind, canonical_path, collect_wiki_pages
 from ..services.wiki_surface_index import write_surface_index
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
 MANIFEST_FILENAME = ".llm-wiki-manifest.json"
-MANIFEST_VERSION = 3
+MANIFEST_VERSION = 4
 MAX_SYNC_AFFECTED_FILES = 50
 MAX_SYNC_AFFECTED_RATIO = 0.30
 MIN_SOURCES_FOR_RATIO_GUARD = 10
+INITIALIZABLE_SURFACES = ("flows", "dependencies", "api-contracts")
+_SURFACE_POLICY_KEYS = {
+    "flows": "flows",
+    "dependencies": "dependencies",
+    "api-contracts": "api_contracts",
+}
+MAX_SURFACE_CREATED_PAGES = MAX_SYNC_AFFECTED_FILES
+MAX_SURFACE_CREATED_RATIO = MAX_SYNC_AFFECTED_RATIO
+MIN_PAGES_FOR_SURFACE_RATIO_GUARD = MIN_SOURCES_FOR_RATIO_GUARD
 _HASH_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
+_FLOW_CATEGORY_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
 _AUTO_GENERATED_RE = re.compile(r"^_Auto-generated from `.+`(?: in `.+`)?\._$")
 _HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 _DEPRECATION_HEADER = (
@@ -120,6 +140,8 @@ def _build_manifest_from_inventory(
     entity_page_cache: dict[tuple[str, str], str] | None = None,
     entity_occurrence_page_cache: dict[tuple[str, str, int], str] | None = None,
     module_page_map: dict[str, str] | None = None,
+    surfaces: Mapping[str, Mapping] | None = None,
+    generation_inputs: Mapping[str, object] | None = None,
 ) -> "SyncManifest":
     if entity_page_cache is None:
         _, _, entity_page_cache = _collision_maps(inventory, src_dir)
@@ -135,6 +157,8 @@ def _build_manifest_from_inventory(
         entity_page_cache,
         module_page_map,
         entity_occurrence_page_cache=entity_occurrence_page_cache,
+        surfaces=surfaces,
+        generation_inputs=generation_inputs,
     )
 
 
@@ -203,7 +227,10 @@ def _generated_semantics_for_file(filepath: str, file_data: dict) -> dict:
             cls["name"]: {
                 "description": cls.get("docstring", "")
                 or f"_Auto-generated from `{cls['name']}` in `{filepath}`._",
-                "attributes": {attr["name"]: "—" for attr in cls.get("attributes", [])},
+                "attributes": {
+                    attr["name"]: attr.get("description") or "—"
+                    for attr in cls.get("attributes", [])
+                },
                 "methods": {
                     method["name"]: _first_doc_line(method)
                     for method in cls.get("methods", [])
@@ -265,6 +292,24 @@ def _replace_section_body(markdown: str, heading: str, body: str) -> str:
     return "\n".join(lines[: heading_idx + 1] + replacement + lines[end:])
 
 
+def _preserve_level_two_section_exact(
+    existing: str, generated: str, heading: str
+) -> str:
+    """Splice a human-owned level-two section without normalizing its body."""
+    pattern = re.compile(
+        rf"(?ms)^##[ \t]+{re.escape(heading)}[ \t]*\r?\n.*?"
+        rf"(?=^##[ \t]+|\Z)"
+    )
+    old_match = pattern.search(existing)
+    new_match = pattern.search(generated)
+    if old_match is None or new_match is None:
+        return generated
+    old_section = old_match.group(0)
+    if old_section == new_match.group(0):
+        return generated
+    return generated[: new_match.start()] + old_section + generated[new_match.end() :]
+
+
 def _is_placeholder_description(value: str | None) -> bool:
     if value is None:
         return True
@@ -297,7 +342,37 @@ def _split_table_row(line: str) -> list[str]:
     stripped = line.strip()
     if not stripped.startswith("|") or not stripped.endswith("|"):
         return []
-    return [cell.strip() for cell in stripped.strip("|").split("|")]
+    body = stripped[1:-1]
+    cells: list[str] = []
+    current: list[str] = []
+    code_fence = 0
+    index = 0
+    while index < len(body):
+        char = body[index]
+        if char == "\\" and index + 1 < len(body):
+            current.extend((char, body[index + 1]))
+            index += 2
+            continue
+        if char == "`":
+            end = index + 1
+            while end < len(body) and body[end] == "`":
+                end += 1
+            run = end - index
+            current.append(body[index:end])
+            if code_fence == 0:
+                code_fence = run
+            elif run == code_fence:
+                code_fence = 0
+            index = end
+            continue
+        if char == "|" and code_fence == 0:
+            cells.append("".join(current).strip())
+            current = []
+        else:
+            current.append(char)
+        index += 1
+    cells.append("".join(current).strip())
+    return cells
 
 
 def _format_table_row(cells: list[str]) -> str:
@@ -312,7 +387,7 @@ def _is_table_separator(cells: list[str]) -> bool:
 
 def _semantic_table_key(cell: str) -> str:
     key = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", cell)
-    key = key.replace("`", "").replace("*", "")
+    key = key.replace("`", "").replace("*", "").replace("\\|", "|")
     return key.strip()
 
 
@@ -486,10 +561,10 @@ def _merge_module_semantics(
 class SyncManifest:
     """Persistent record of what the wiki was generated from.
 
-    Schema v2::
+    Schema v4::
 
         {
-            "version": 2,
+            "version": 4,
             "sources": {
                 "src/models.py": {
                     "hash": "sha256:<hex>",
@@ -513,11 +588,20 @@ class SyncManifest:
                     "entity_pages": {"User": "User", "Role": "Role"},
                     "module_page": "models"
                 }
+            },
+            "surfaces": {
+                "flows": {
+                    "enabled": true,
+                    "categories": ["http"],
+                    "exclude_tests": true
+                }
             }
         }
     """
 
     sources: dict[str, dict] = field(default_factory=dict)
+    surfaces: dict[str, dict] = field(default_factory=dict)
+    generation_inputs: dict[str, object] = field(default_factory=dict)
 
     # ── Persistence ───────────────────────────────────────────────────────────
 
@@ -529,21 +613,38 @@ class SyncManifest:
             raise FileNotFoundError(manifest_path)
         data = json.loads(manifest_path.read_text(encoding="utf-8"))
         sources = data.get("sources", {})
+        surfaces = data.get("surfaces", {})
+        if not isinstance(surfaces, dict):
+            surfaces = {}
+        generation_inputs = data.get("generation_inputs", {})
+        if not isinstance(generation_inputs, dict):
+            generation_inputs = {}
         for filepath, info in sources.items():
             if "language" not in info:
                 info["language"] = infer_language_from_path(filepath)
-        return cls(sources=sources)
+        return cls(
+            sources=sources,
+            surfaces=deepcopy(surfaces),
+            generation_inputs=deepcopy(generation_inputs),
+        )
+
+    def to_payload(self) -> dict:
+        """Return the canonical payload shared by manifest writers."""
+        return {
+            "version": MANIFEST_VERSION,
+            "sources": self.sources,
+            "surfaces": self.surfaces,
+            "generation_inputs": self.generation_inputs,
+        }
+
+    def to_json(self) -> str:
+        return json.dumps(self.to_payload(), indent=2, sort_keys=True)
 
     def save(self, wiki_dir: Path) -> None:
         """Write manifest to *wiki_dir* atomically (write + rename)."""
         manifest_path = wiki_dir / MANIFEST_FILENAME
         tmp_path = manifest_path.with_suffix(".json.tmp")
-        payload = json.dumps(
-            {"version": MANIFEST_VERSION, "sources": self.sources},
-            indent=2,
-            sort_keys=True,
-        )
-        tmp_path.write_text(payload, encoding="utf-8")
+        tmp_path.write_text(self.to_json(), encoding="utf-8")
         tmp_path.replace(manifest_path)
 
     # ── Factory ───────────────────────────────────────────────────────────────
@@ -557,6 +658,8 @@ class SyncManifest:
         module_page_map: dict[str, str],
         *,
         entity_occurrence_page_cache: dict[tuple[str, str, int], str] | None = None,
+        surfaces: Mapping[str, Mapping] | None = None,
+        generation_inputs: Mapping[str, object] | None = None,
     ) -> "SyncManifest":
         """Create a manifest that reflects the current inventory state."""
         sources: dict[str, dict] = {}
@@ -599,7 +702,15 @@ class SyncManifest:
                     filepath, _module_name_from_path(filepath)
                 ),
             }
-        return cls(sources=sources)
+        return cls(
+            sources=sources,
+            surfaces={
+                str(key): deepcopy(dict(value))
+                for key, value in (surfaces or {}).items()
+                if isinstance(value, Mapping)
+            },
+            generation_inputs=deepcopy(dict(generation_inputs or {})),
+        )
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -1578,6 +1689,12 @@ class _SyncRunOptions:
     include_tests: Iterable[str] | None
     force: bool
     preserve_semantic: bool
+    initialize_surfaces: frozenset[str]
+    flow_categories: frozenset[str] | None
+    exclude_tests: bool
+    dry_run: bool
+    openapi_file: str | None
+    clear_openapi_file: bool
 
 
 @dataclass(frozen=True)
@@ -1587,16 +1704,509 @@ class _SyncPageMaps:
     entity_occurrence_page_cache: dict[tuple[str, str, int], str]
 
 
+@dataclass(frozen=True)
+class _SurfaceInitializationPlan:
+    surfaces: dict[str, dict]
+    policy_changed: bool
+    flow_entries: tuple[dict, ...]
+    new_flow_entries: tuple[dict, ...]
+    excluded_flow_tests: int
+    dependency_inventory: dict
+    dependency_analysis: dict | None
+    dependency_target_pages: tuple[str, ...]
+    new_dependency_pages: tuple[str, ...]
+    requested_surfaces: frozenset[str]
+    excluded_dependency_tests: int = 0
+    api_contracts: dict | None = None
+    api_contract_target: bool = False
+    new_api_contract_page: bool = False
+    generation_inputs: dict[str, object] = field(default_factory=dict)
+    generation_inputs_changed: bool = False
+
+    @property
+    def created_pages(self) -> int:
+        return (
+            len(self.new_flow_entries)
+            + len(self.new_dependency_pages)
+            + int(self.new_api_contract_page)
+        )
+
+    @property
+    def has_work(self) -> bool:
+        return (
+            self.policy_changed
+            or self.generation_inputs_changed
+            or self.created_pages > 0
+        )
+
+
+@dataclass(frozen=True)
+class _PreparedSyncRun:
+    manifest: "SyncManifest"
+    seed_manifest: bool
+    inventory_result: InventoryResult
+    inventory: dict
+    page_maps: _SyncPageMaps
+    entry_points: list[dict]
+    diff: "SyncDiff"
+    surface_plan: _SurfaceInitializationPlan
+
+
+def _updated_surface_policies(
+    options: _SyncRunOptions, manifest: "SyncManifest"
+) -> tuple[dict[str, dict], bool]:
+    surfaces = deepcopy(manifest.surfaces)
+    if "flows" in options.initialize_surfaces:
+        surfaces["flows"] = {
+            "enabled": True,
+            "categories": (
+                sorted(options.flow_categories) if options.flow_categories else None
+            ),
+            "exclude_tests": options.exclude_tests,
+        }
+    if "dependencies" in options.initialize_surfaces:
+        surfaces["dependencies"] = {
+            "enabled": True,
+            "exclude_tests": options.exclude_tests,
+        }
+    if "api-contracts" in options.initialize_surfaces or options.openapi_file:
+        surfaces["api_contracts"] = {"enabled": True}
+    return surfaces, surfaces != manifest.surfaces
+
+
+def _surface_policy(surfaces: Mapping[str, Mapping], key: str) -> Mapping | None:
+    value = surfaces.get(key)
+    return value if isinstance(value, Mapping) else None
+
+
+def _filtered_surface_inventory(inventory: dict, *, exclude_tests: bool) -> dict:
+    if not exclude_tests:
+        return inventory
+    return {
+        filepath: file_data
+        for filepath, file_data in inventory.items()
+        if not is_test_source_path(filepath)
+    }
+
+
+def _flow_plan(
+    options: _SyncRunOptions,
+    surfaces: Mapping[str, Mapping],
+    entry_points: list[dict],
+    *,
+    allow_legacy_creation: bool,
+) -> tuple[tuple[dict, ...], tuple[dict, ...], int]:
+    flows_dir = options.wiki_dir / PageKind.FLOWS.value
+    existing_ids = {
+        path.stem for path in flows_dir.glob("*.md") if path.is_file()
+    } if flows_dir.exists() else set()
+    policy = _surface_policy(surfaces, "flows")
+    if policy is None:
+        enabled = bool(existing_ids) and allow_legacy_creation
+        categories = None
+        exclude_tests = False
+    else:
+        enabled = bool(policy.get("enabled", False))
+        raw_categories = policy.get("categories")
+        categories = (
+            {str(category) for category in raw_categories}
+            if isinstance(raw_categories, list)
+            else None
+        )
+        exclude_tests = bool(policy.get("exclude_tests", False))
+
+    category_entries = [
+        entry
+        for entry in entry_points
+        if categories is None or entry.get("category") in categories
+    ]
+    excluded_tests = sum(
+        1
+        for entry in category_entries
+        if exclude_tests and is_test_source_path(entry.get("file"))
+    )
+    allowed_new = {
+        str(entry.get("id"))
+        for entry in category_entries
+        if enabled
+        and entry.get("id")
+        and not (exclude_tests and is_test_source_path(entry.get("file")))
+    }
+    target_ids = existing_ids | allowed_new
+    target_entries = tuple(
+        entry for entry in entry_points if str(entry.get("id")) in target_ids
+    )
+    new_entries = tuple(
+        entry for entry in target_entries if str(entry.get("id")) not in existing_ids
+    )
+    return target_entries, new_entries, excluded_tests
+
+
+def _dependency_plan(
+    options: _SyncRunOptions,
+    surfaces: Mapping[str, Mapping],
+    inventory: dict,
+) -> tuple[dict, dict | None, tuple[str, ...], tuple[str, ...], int]:
+    existing = tuple(
+        stem
+        for stem, _label in _ARCHITECTURE_PAGES
+        if (options.wiki_dir / f"{stem}.md").exists()
+    )
+    policy = _surface_policy(surfaces, "dependencies")
+    if policy is None:
+        target_pages = existing
+        exclude_tests = False
+    elif policy.get("enabled", False):
+        target_pages = tuple(stem for stem, _label in _ARCHITECTURE_PAGES)
+        exclude_tests = bool(policy.get("exclude_tests", False))
+    else:
+        target_pages = existing
+        exclude_tests = False
+
+    dependency_inventory = _filtered_surface_inventory(
+        inventory, exclude_tests=exclude_tests
+    )
+    excluded_tests = len(inventory) - len(dependency_inventory)
+    analysis = (
+        analyze_dependencies(dependency_inventory, options.src_dir)
+        if target_pages
+        else None
+    )
+    has_nodes = bool(analysis and analysis["graph"]["nodes"])
+    new_pages = tuple(
+        stem
+        for stem in target_pages
+        if has_nodes and not (options.wiki_dir / f"{stem}.md").exists()
+    )
+    active_targets = tuple(dict.fromkeys((*existing, *new_pages)))
+    return dependency_inventory, analysis, active_targets, new_pages, excluded_tests
+
+
+def _build_surface_initialization_plan(
+    options: _SyncRunOptions,
+    manifest: "SyncManifest",
+    inventory: dict,
+    entry_points: list[dict],
+    *,
+    source_changed: bool,
+    api_contracts: dict | None,
+    generation_inputs: Mapping[str, object],
+) -> _SurfaceInitializationPlan:
+    surfaces, policy_changed = _updated_surface_policies(options, manifest)
+    include_all_enabled = not options.initialize_surfaces
+    if include_all_enabled or "flows" in options.initialize_surfaces:
+        flow_entries, new_flow_entries, excluded_flow_tests = _flow_plan(
+            options,
+            surfaces,
+            entry_points,
+            allow_legacy_creation=source_changed,
+        )
+    else:
+        flow_entries, new_flow_entries, excluded_flow_tests = (), (), 0
+    if include_all_enabled or "dependencies" in options.initialize_surfaces:
+        (
+            dependency_inventory,
+            dependency_analysis,
+            target_pages,
+            new_pages,
+            excluded_dependency_tests,
+        ) = (
+            _dependency_plan(options, surfaces, inventory)
+        )
+    else:
+        dependency_inventory = inventory
+        dependency_analysis = None
+        target_pages = ()
+        new_pages = ()
+        excluded_dependency_tests = 0
+    api_selected = (
+        include_all_enabled
+        or "api-contracts" in options.initialize_surfaces
+        or bool(options.openapi_file)
+        or options.clear_openapi_file
+        or dict(generation_inputs) != manifest.generation_inputs
+    )
+    api_policy = _surface_policy(surfaces, "api_contracts")
+    api_contract_path = options.wiki_dir / f"{PageKind.API_CONTRACTS.value}.md"
+    api_contract_target = api_selected and bool(
+        api_contract_path.exists()
+        or (api_policy and api_policy.get("enabled", False))
+        or generation_inputs.get("openapi")
+        or options.openapi_file
+        or "api-contracts" in options.initialize_surfaces
+    )
+    new_api_contract_page = api_contract_target and not api_contract_path.exists()
+    return _SurfaceInitializationPlan(
+        surfaces=surfaces,
+        policy_changed=policy_changed,
+        flow_entries=flow_entries,
+        new_flow_entries=new_flow_entries,
+        excluded_flow_tests=excluded_flow_tests,
+        dependency_inventory=dependency_inventory,
+        dependency_analysis=dependency_analysis,
+        dependency_target_pages=target_pages,
+        new_dependency_pages=new_pages,
+        excluded_dependency_tests=excluded_dependency_tests,
+        api_contracts=api_contracts if api_contract_target else None,
+        api_contract_target=api_contract_target,
+        new_api_contract_page=new_api_contract_page,
+        generation_inputs=deepcopy(dict(generation_inputs)),
+        generation_inputs_changed=(
+            dict(generation_inputs) != manifest.generation_inputs
+        ),
+        requested_surfaces=options.initialize_surfaces,
+    )
+
+
+def _large_surface_message(
+    plan: _SurfaceInitializationPlan, wiki_dir: Path
+) -> str | None:
+    created = plan.created_pages
+    if created > MAX_SURFACE_CREATED_PAGES:
+        return (
+            f"surface initialization would create {created} page(s), which exceeds "
+            f"the safety limit of {MAX_SURFACE_CREATED_PAGES}."
+        )
+    current_pages = len(collect_wiki_pages(wiki_dir))
+    if current_pages >= MIN_PAGES_FOR_SURFACE_RATIO_GUARD:
+        ratio = created / current_pages
+        if ratio > MAX_SURFACE_CREATED_RATIO:
+            percent = int(ratio * 100)
+            limit = int(MAX_SURFACE_CREATED_RATIO * 100)
+            return (
+                f"surface initialization would create {created} page(s) against "
+                f"{current_pages} current wiki page(s) ({percent}%), which exceeds "
+                f"the {limit}% safety limit."
+            )
+    return None
+
+
+def _exit_if_large_unforced_surface_plan(
+    options: _SyncRunOptions, plan: _SurfaceInitializationPlan
+) -> None:
+    message = _large_surface_message(plan, options.wiki_dir)
+    if not message or options.force or options.dry_run:
+        return
+    print(f"Error: {message}", file=sys.stderr)
+    print(
+        "Preview with `llm-wiki sync --dry-run`, then re-run with --force "
+        "if the initialization is intentional.",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+
+
+def _print_dry_run_plan(
+    options: _SyncRunOptions,
+    diff: "SyncDiff",
+    plan: _SurfaceInitializationPlan,
+    *,
+    seed_manifest: bool,
+) -> None:
+    print("\nSync dry-run plan:")
+    print(
+        "  deferred source files: "
+        f"{len(diff.new_files)} new, {len(diff.changed_files)} changed, "
+        f"{len(diff.metadata_only_files)} metadata-only, "
+        f"{len(diff.removed_files)} removed"
+    )
+    categories = Counter(
+        str(entry.get("category") or "unknown") for entry in plan.new_flow_entries
+    )
+    category_text = ", ".join(
+        f"{category}: {count}" for category, count in sorted(categories.items())
+    ) or "none"
+    print(
+        f"  flows: {len(plan.new_flow_entries)} create "
+        f"({category_text}); {plan.excluded_flow_tests} test candidate(s) excluded"
+    )
+    print(
+        f"  dependency architecture: {len(plan.new_dependency_pages)} create "
+        f"({', '.join(plan.new_dependency_pages) or 'none'}); "
+        f"{plan.excluded_dependency_tests} test source(s) excluded"
+    )
+    api_source = (
+        str(plan.api_contracts.get("source"))
+        if isinstance(plan.api_contracts, Mapping)
+        else "disabled"
+    )
+    print(
+        "  api contracts: "
+        f"{int(plan.new_api_contract_page)} create; authority: {api_source}"
+    )
+    if plan.generation_inputs_changed:
+        openapi = plan.generation_inputs.get("openapi")
+        if isinstance(openapi, Mapping):
+            print(f"  OpenAPI input: {openapi.get('path')} ({openapi.get('sha256')})")
+        else:
+            print("  OpenAPI input: cleared; static authority will be used")
+    policy_names = [
+        surface
+        for surface, key in _SURFACE_POLICY_KEYS.items()
+        if plan.surfaces.get(key) != {}
+        and key in plan.surfaces
+        and surface in plan.requested_surfaces
+    ]
+    print(f"  policy updates: {', '.join(policy_names) or 'none'}")
+    if seed_manifest:
+        print("  manifest: seed from the current source inventory")
+    ancillary = [
+        "index.md",
+        "log.md",
+        ".llm-wiki-surface.json",
+        MANIFEST_FILENAME,
+    ]
+    print(f"  ancillary files considered: {', '.join(ancillary)}")
+    requires_force = bool(_large_surface_message(plan, options.wiki_dir))
+    print(f"  requires --force: {'yes' if requires_force else 'no'}")
+    print("DRY-RUN: no files modified.")
+
+
+def _surface_args(value: object) -> frozenset[str]:
+    if value in (None, ""):
+        return frozenset()
+    raw_items = list(value) if isinstance(value, (list, tuple, set)) else [value]
+    surfaces: set[str] = set()
+    for raw in raw_items:
+        nested = list(raw) if isinstance(raw, (list, tuple, set)) else [raw]
+        for item in nested:
+            surfaces.update(
+                part.strip().lower()
+                for part in str(item).split(",")
+                if part.strip()
+            )
+    invalid = sorted(surfaces - set(INITIALIZABLE_SURFACES))
+    if invalid:
+        allowed = ", ".join(INITIALIZABLE_SURFACES)
+        print(
+            f"Error: unknown initialization surface {invalid[0]!r}; "
+            f"choose from: {allowed}.",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+    return frozenset(surfaces)
+
+
+def _flow_category_args(value: object) -> frozenset[str] | None:
+    if value in (None, ""):
+        return None
+    raw_items = list(value) if isinstance(value, (list, tuple, set)) else [value]
+    categories = frozenset(str(item).strip() for item in raw_items if str(item).strip())
+    invalid = sorted(
+        category for category in categories if not _FLOW_CATEGORY_RE.fullmatch(category)
+    )
+    if invalid:
+        print(f"Error: unsafe flow category {invalid[0]!r}.", file=sys.stderr)
+        sys.exit(2)
+    return categories or None
+
+
+def _manifest_openapi_path(manifest: "SyncManifest") -> str | None:
+    """Return the persisted OpenAPI path, rejecting malformed v4 state."""
+    if "openapi" not in manifest.generation_inputs:
+        return None
+    value = manifest.generation_inputs.get("openapi")
+    if not isinstance(value, Mapping):
+        raise ApiContractError(
+            "Persisted generation_inputs.openapi must be an object."
+        )
+    path = value.get("path")
+    if not isinstance(path, str) or not path.strip():
+        raise ApiContractError(
+            "Persisted generation_inputs.openapi.path must be a non-empty string."
+        )
+    return path
+
+
+def _resolve_openapi_generation_input(
+    options: _SyncRunOptions,
+    manifest: "SyncManifest",
+) -> tuple[str | None, dict[str, object]]:
+    """Validate OpenAPI state before inventory/cache writes and update metadata."""
+    generation_inputs = deepcopy(manifest.generation_inputs)
+    if options.clear_openapi_file:
+        generation_inputs.pop("openapi", None)
+        return None, generation_inputs
+
+    selected = options.openapi_file or _manifest_openapi_path(manifest)
+    if not selected:
+        return None, generation_inputs
+    loaded = load_openapi_document(selected, source_root=options.src_dir)
+    generation_inputs["openapi"] = {
+        key: loaded[key] for key in ("path", "sha256", "format")
+    }
+    return str(loaded["path"]), generation_inputs
+
+
+def _linked_api_contracts(
+    contracts: Mapping[str, object], entry_points: Iterable[Mapping[str, object]]
+) -> dict:
+    """Attach stable flow ids to operations with statically linked handlers."""
+    linked = deepcopy(dict(contracts))
+    flow_ids: dict[tuple[str, str], str] = {}
+    for entry in entry_points:
+        if entry.get("category") != "http" or not entry.get("id"):
+            continue
+        symbol = str(entry.get("symbol") or "").rsplit(".", 1)[-1]
+        flow_ids[(str(entry.get("file") or ""), symbol)] = str(entry["id"])
+    operations = linked.get("operations")
+    if not isinstance(operations, list):
+        operations = []
+    for operation in operations:
+        if not isinstance(operation, dict):
+            continue
+        handler = operation.get("handler")
+        if not isinstance(handler, Mapping):
+            continue
+        symbol = str(handler.get("symbol") or "").rsplit(".", 1)[-1]
+        flow_id = flow_ids.get((str(handler.get("file") or ""), symbol))
+        if flow_id:
+            operation["flow_id"] = flow_id
+    return linked
+
+
 def _sync_run_options_from_args(args) -> _SyncRunOptions:
     src_dir: str = getattr(args, "src_dir", ".")
     wiki_dir = Path(getattr(args, "wiki_dir", "docs/llm_wiki"))
+    dry_run = bool(getattr(args, "dry_run", False))
     cache_options = _cache_options_from_args(args)
+    if dry_run:
+        cache_options = InventoryCacheOptions(enabled=False)
     cache_stats_enabled = bool(getattr(args, "cache_stats", False))
     parallel_jobs = getattr(args, "jobs", 1)
     helper_cache_dir = getattr(args, "helper_cache_dir", None)
     include_tests = getattr(args, "include_tests", None)
     force = bool(getattr(args, "force", False))
     preserve_semantic = not bool(getattr(args, "no_preserve_semantic", False))
+    initialize_surfaces = _surface_args(getattr(args, "initialize_surfaces", None))
+    flow_categories = _flow_category_args(getattr(args, "flow_category", None))
+    exclude_tests = bool(getattr(args, "exclude_tests", False))
+    openapi_file = getattr(args, "openapi_file", None)
+    clear_openapi_file = bool(getattr(args, "clear_openapi_file", False))
+    if openapi_file and clear_openapi_file:
+        print(
+            "Error: --openapi-file and --clear-openapi-file are mutually exclusive.",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+    if flow_categories and "flows" not in initialize_surfaces:
+        print(
+            "Error: --flow-category requires --initialize-surfaces flows.",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+    if exclude_tests and not initialize_surfaces:
+        print(
+            "Error: --exclude-tests requires --initialize-surfaces.",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+    if dry_run and not initialize_surfaces:
+        print(
+            "Error: --dry-run requires --initialize-surfaces.",
+            file=sys.stderr,
+        )
+        sys.exit(2)
     allow_external_src = bool(getattr(args, "allow_external_src", False))
     src_root = validate_source_root(
         src_dir, "--src-dir", allow_external=allow_external_src
@@ -1616,16 +2226,31 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
         include_tests=include_tests,
         force=force,
         preserve_semantic=preserve_semantic,
+        initialize_surfaces=initialize_surfaces,
+        flow_categories=flow_categories,
+        exclude_tests=exclude_tests,
+        dry_run=dry_run,
+        openapi_file=str(openapi_file) if openapi_file else None,
+        clear_openapi_file=clear_openapi_file,
     )
 
 
-def _load_or_seed_manifest(options: _SyncRunOptions) -> Optional["SyncManifest"]:
+def _load_or_seed_manifest(
+    options: _SyncRunOptions,
+) -> tuple[Optional["SyncManifest"], bool]:
     try:
-        return SyncManifest.load(options.wiki_dir)
+        return SyncManifest.load(options.wiki_dir), False
     except FileNotFoundError:
         if (options.wiki_dir / "index.md").exists():
+            if (
+                options.initialize_surfaces
+                or options.dry_run
+                or options.openapi_file
+                or options.clear_openapi_file
+            ):
+                return None, True
             _seed_manifest_from_existing_wiki(options)
-            return None
+            return None, False
         print(
             f"Error: no sync manifest found at {options.wiki_dir / MANIFEST_FILENAME}.\n"
             "Run `llm-wiki bootstrap` first to create the initial wiki and manifest.",
@@ -1696,6 +2321,14 @@ def _finish_if_empty_inventory(
 ) -> bool:
     if inventory_result.inventory or manifest.sources:
         return False
+    if (
+        options.openapi_file
+        or options.clear_openapi_file
+        or "api-contracts" in options.initialize_surfaces
+        or "openapi" in manifest.generation_inputs
+        or (options.wiki_dir / f"{PageKind.API_CONTRACTS.value}.md").exists()
+    ):
+        return False
     print("No supported source files with documentable inventory found.")
     _print_cache_stats(
         inventory_result.cache_stats, enabled=options.cache_stats_enabled
@@ -1713,7 +2346,24 @@ def _repair_manifest_if_needed(
     if not invalid_hash_paths:
         return False
 
-    repaired = _build_manifest_from_inventory(inventory, options.src_dir)
+    if options.dry_run:
+        print(
+            "DRY-RUN: sync manifest has "
+            f"{len(invalid_hash_paths)} invalid or missing source hash(es); "
+            "a normal sync would repair the manifest before changing pages."
+        )
+        print("DRY-RUN: no files modified.")
+        _print_cache_stats(
+            inventory_result.cache_stats, enabled=options.cache_stats_enabled
+        )
+        return True
+
+    repaired = _build_manifest_from_inventory(
+        inventory,
+        options.src_dir,
+        surfaces=manifest.surfaces,
+        generation_inputs=manifest.generation_inputs,
+    )
     repaired.save(options.wiki_dir)
     print(
         f"Sync manifest repaired: {len(invalid_hash_paths)} source entr"
@@ -1765,8 +2415,20 @@ def _finish_if_no_changes(
     inventory: dict,
     page_maps: _SyncPageMaps,
     entry_points: list[dict],
+    surface_plan: _SurfaceInitializationPlan,
 ) -> bool:
-    if diff.has_changes:
+    if options.initialize_surfaces:
+        if surface_plan.has_work:
+            return False
+        deferred = len(_affected_source_files(diff))
+        print("Requested optional surfaces are up to date.")
+        if deferred:
+            print(f"Deferred source changes: {deferred} file(s).")
+        _print_cache_stats(
+            inventory_result.cache_stats, enabled=options.cache_stats_enabled
+        )
+        return True
+    if diff.has_changes or surface_plan.has_work:
         return False
     # Guide pages under guides/ are agent-owned: sync never creates or
     # rewrites them, but must still keep index.md's links current even when
@@ -1818,7 +2480,7 @@ def _apply_sync_changes(
     inventory: dict,
     diff: "SyncDiff",
     page_maps: _SyncPageMaps,
-    entry_points: list[dict],
+    surface_plan: _SurfaceInitializationPlan,
 ) -> "SyncResult":
     generated_sections = _build_generated_section_context(options, inventory)
     result = _apply_diff(
@@ -1834,15 +2496,7 @@ def _apply_sync_changes(
         preserve_semantic=options.preserve_semantic,
     )
 
-    _regenerate_flow_pages(
-        options, inventory, page_maps.module_page_map, entry_points=entry_points
-    )
-    _regenerate_dependency_pages(
-        options,
-        inventory,
-        page_maps.module_page_map,
-        dependency_analysis=generated_sections.dependency_analysis,
-    )
+    _apply_surface_page_changes(options, inventory, page_maps, surface_plan)
 
     _rebuild_index(
         options.wiki_dir,
@@ -1854,14 +2508,55 @@ def _apply_sync_changes(
         preserve_semantic=options.preserve_semantic,
     )
 
-    _append_log(options.wiki_dir, options.src_dir, diff, result)
+    _append_log(
+        options.wiki_dir,
+        options.src_dir,
+        diff,
+        result,
+        surface_plan=surface_plan,
+    )
     return result
+
+
+def _apply_surface_page_changes(
+    options: _SyncRunOptions,
+    inventory: dict,
+    page_maps: _SyncPageMaps,
+    surface_plan: _SurfaceInitializationPlan,
+) -> None:
+    initializing = bool(options.initialize_surfaces)
+    _regenerate_flow_pages(
+        options,
+        inventory,
+        page_maps.module_page_map,
+        entry_points=list(
+            surface_plan.new_flow_entries
+            if initializing
+            else surface_plan.flow_entries
+        ),
+        allow_create=_surface_policy(surface_plan.surfaces, "flows") is not None,
+        api_contracts=surface_plan.api_contracts,
+    )
+    _regenerate_dependency_pages(
+        options,
+        surface_plan.dependency_inventory,
+        page_maps.module_page_map,
+        dependency_analysis=surface_plan.dependency_analysis,
+        target_pages=(
+            surface_plan.new_dependency_pages
+            if initializing
+            else surface_plan.dependency_target_pages
+        ),
+    )
+    _regenerate_api_contracts_page(options, page_maps, surface_plan)
 
 
 def _write_updated_manifest(
     options: _SyncRunOptions,
     inventory: dict,
     page_maps: _SyncPageMaps,
+    surfaces: Mapping[str, Mapping] | None = None,
+    generation_inputs: Mapping[str, object] | None = None,
 ) -> None:
     print("Writing sync manifest...", flush=True)
     updated_manifest = _build_manifest_from_inventory(
@@ -1870,6 +2565,8 @@ def _write_updated_manifest(
         entity_page_cache=page_maps.entity_page_cache,
         entity_occurrence_page_cache=page_maps.entity_occurrence_page_cache,
         module_page_map=page_maps.module_page_map,
+        surfaces=surfaces,
+        generation_inputs=generation_inputs,
     )
     updated_manifest.save(options.wiki_dir)
     print(f"Manifest written to {options.wiki_dir / MANIFEST_FILENAME}", flush=True)
@@ -1924,40 +2621,197 @@ def _print_sync_summary(result: "SyncResult", diff: "SyncDiff") -> None:
         print(f"Moved entities detected (pages updated in-place): {names}")
 
 
-def run(args) -> None:
-    options = _sync_run_options_from_args(args)
-    manifest = _load_or_seed_manifest(options)
-    if manifest is None:
+def _print_surface_summary(plan: _SurfaceInitializationPlan) -> None:
+    if not plan.has_work:
         return
+    print(
+        "Surface initialization: "
+        f"{len(plan.new_flow_entries)} flow page(s), "
+        f"{len(plan.new_dependency_pages)} dependency page(s), "
+        f"{int(plan.new_api_contract_page)} API-contract page(s), "
+        f"policy {'updated' if plan.policy_changed else 'unchanged'}."
+    )
 
+
+def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
+    manifest, seed_manifest = _load_or_seed_manifest(options)
+    if manifest is None and not seed_manifest:
+        return None
+
+    baseline_manifest = manifest or SyncManifest()
+    selected_openapi, generation_inputs = _resolve_openapi_generation_input(
+        options, baseline_manifest
+    )
     print(f"Syncing wiki from source: {options.src_dir}")
     print(f"Wiki directory: {options.wiki_dir}")
-
     inventory_result = _extract_current_inventory(options)
     inventory = inventory_result.inventory
-
-    if _finish_if_empty_inventory(options, manifest, inventory_result):
-        return
-
-    if _repair_manifest_if_needed(options, manifest, inventory, inventory_result):
-        return
-
+    if _finish_if_empty_inventory(options, baseline_manifest, inventory_result):
+        return None
+    if manifest is not None and _repair_manifest_if_needed(
+        options, manifest, inventory, inventory_result
+    ):
+        return None
     maps = _prepare_sync_page_maps(inventory)
-    entries = _detect_sync_entry_points(inventory, options.src_dir).entries
+    if manifest is None:
+        manifest = _build_manifest_from_inventory(
+            inventory,
+            options.src_dir,
+            entity_page_cache=maps.entity_page_cache,
+            entity_occurrence_page_cache=maps.entity_occurrence_page_cache,
+            module_page_map=maps.module_page_map,
+        )
+    contracts = build_api_contracts(
+        inventory,
+        openapi_file=selected_openapi,
+        source_root=options.src_dir,
+    )
+    entries = attach_routes_to_entry_points(
+        _detect_sync_entry_points(inventory, options.src_dir).entries,
+        contracts,
+    )
+    contracts = _linked_api_contracts(contracts, entries)
     diff = _compute_sync_diff(manifest, inventory, options, maps)
+    surface_plan = _build_surface_initialization_plan(
+        options,
+        manifest,
+        inventory,
+        entries,
+        source_changed=diff.has_changes,
+        api_contracts=contracts,
+        generation_inputs=generation_inputs,
+    )
+    return _PreparedSyncRun(
+        manifest,
+        seed_manifest,
+        inventory_result,
+        inventory,
+        maps,
+        entries,
+        diff,
+        surface_plan,
+    )
 
-    if _finish_if_no_changes(options, diff, inventory_result, inventory, maps, entries):
+
+def _apply_prepared_sync(
+    options: _SyncRunOptions, prepared: _PreparedSyncRun
+) -> SyncResult:
+    if prepared.diff.has_changes and not options.initialize_surfaces:
+        return _apply_sync_changes(
+            options,
+            prepared.manifest,
+            prepared.inventory,
+            prepared.diff,
+            prepared.page_maps,
+            prepared.surface_plan,
+        )
+    result = SyncResult()
+    _apply_surface_page_changes(
+        options, prepared.inventory, prepared.page_maps, prepared.surface_plan
+    )
+    if options.initialize_surfaces:
+        _rebuild_surface_only_index(
+            options.wiki_dir,
+            prepared.manifest,
+            preserve_semantic=options.preserve_semantic,
+        )
+    else:
+        _rebuild_index(
+            options.wiki_dir,
+            prepared.inventory,
+            options.src_dir,
+            entity_page_cache=prepared.page_maps.entity_page_cache,
+            entity_occurrence_page_cache=(
+                prepared.page_maps.entity_occurrence_page_cache
+            ),
+            module_page_map=prepared.page_maps.module_page_map,
+            preserve_semantic=options.preserve_semantic,
+        )
+    _append_log(
+        options.wiki_dir,
+        options.src_dir,
+        prepared.diff,
+        result,
+        surface_plan=prepared.surface_plan,
+    )
+    return result
+
+
+def _finalize_prepared_sync(
+    options: _SyncRunOptions, prepared: _PreparedSyncRun, result: SyncResult
+) -> None:
+    _write_sync_surface_index(
+        options,
+        prepared.inventory,
+        prepared.page_maps,
+        prepared.entry_points,
+    )
+    if options.initialize_surfaces:
+        print("Writing sync manifest...", flush=True)
+        SyncManifest(
+            sources=deepcopy(prepared.manifest.sources),
+            surfaces=deepcopy(prepared.surface_plan.surfaces),
+            generation_inputs=deepcopy(prepared.surface_plan.generation_inputs),
+        ).save(options.wiki_dir)
+        print(f"Manifest written to {options.wiki_dir / MANIFEST_FILENAME}", flush=True)
+        _print_surface_summary(prepared.surface_plan)
+        deferred = len(_affected_source_files(prepared.diff))
+        if deferred:
+            print(f"Deferred source changes: {deferred} file(s).")
+    else:
+        _write_updated_manifest(
+            options,
+            prepared.inventory,
+            prepared.page_maps,
+            prepared.surface_plan.surfaces,
+            prepared.surface_plan.generation_inputs,
+        )
+        _print_sync_summary(result, prepared.diff)
+    _print_cache_stats(
+        prepared.inventory_result.cache_stats,
+        enabled=options.cache_stats_enabled,
+    )
+
+
+def run(args) -> None:
+    options = _sync_run_options_from_args(args)
+    try:
+        prepared = _prepare_sync_run(options)
+    except ApiContractError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(2)
+    if prepared is None:
         return
 
-    _exit_if_large_unforced_diff(options, diff, manifest, inventory_result)
-
-    result = _apply_sync_changes(options, manifest, inventory, diff, maps, entries)
-    _write_sync_surface_index(options, inventory, maps, entries)
-    _write_updated_manifest(options, inventory, maps)
-    _print_sync_summary(result, diff)
-    _print_cache_stats(
-        inventory_result.cache_stats, enabled=options.cache_stats_enabled
-    )
+    if options.dry_run:
+        _print_dry_run_plan(
+            options,
+            prepared.diff,
+            prepared.surface_plan,
+            seed_manifest=prepared.seed_manifest,
+        )
+        _print_cache_stats(
+            prepared.inventory_result.cache_stats,
+            enabled=options.cache_stats_enabled,
+        )
+        return
+    if _finish_if_no_changes(
+        options,
+        prepared.diff,
+        prepared.inventory_result,
+        prepared.inventory,
+        prepared.page_maps,
+        prepared.entry_points,
+        prepared.surface_plan,
+    ):
+        return
+    if not options.initialize_surfaces:
+        _exit_if_large_unforced_diff(
+            options, prepared.diff, prepared.manifest, prepared.inventory_result
+        )
+    _exit_if_large_unforced_surface_plan(options, prepared.surface_plan)
+    result = _apply_prepared_sync(options, prepared)
+    _finalize_prepared_sync(options, prepared, result)
 
 
 # ── Index + log helpers ───────────────────────────────────────────────────────
@@ -1975,6 +2829,7 @@ _INDEX_GENERATED_HEADINGS = frozenset(
         "Infrastructure",
         "Architecture",
         "Dependency Architecture",
+        "API Contracts",
         "Log",
     )
 )
@@ -2131,6 +2986,7 @@ def _rebuild_index(
         infra_entries=infra_entries or None,
         flow_entries=flow_entries or None,
         architecture_entries=architecture_entries or None,
+        api_contracts_present=(wiki_dir / "api-contracts.md").is_file(),
     )
     if preserve_semantic and index_path.exists():
         new_index = _preserve_index_custom_sections(read_md(index_path), new_index)
@@ -2139,6 +2995,75 @@ def _rebuild_index(
         new_index,
     )
     if write_state == "unchanged":
+        print("  SKIP index.md (unchanged)")
+    else:
+        print("  WRITE index.md")
+
+
+def _rebuild_surface_only_index(
+    wiki_dir: Path,
+    manifest: SyncManifest,
+    *,
+    preserve_semantic: bool = True,
+) -> None:
+    """Re-index only pages already present during source-deferred backfill."""
+    entity_names = [
+        path.stem
+        for path in sorted((wiki_dir / PageKind.ENTITIES.value).glob("*.md"))
+        if path.is_file()
+    ]
+    source_by_module_page = {}
+    description_by_module_page = {}
+    for filepath, info in manifest.sources.items():
+        page = str(info.get("module_page") or _module_name_from_path(filepath))
+        source_by_module_page[page] = filepath
+        semantics = info.get("generated_semantics")
+        module_semantics = (
+            semantics.get("module") if isinstance(semantics, Mapping) else None
+        )
+        if isinstance(module_semantics, Mapping):
+            description_by_module_page[page] = str(
+                module_semantics.get("description") or ""
+            )
+    module_entries = [
+        {
+            "name": path.stem,
+            "path": source_by_module_page.get(path.stem, ""),
+            "docstring": description_by_module_page.get(path.stem, ""),
+        }
+        for path in sorted((wiki_dir / PageKind.MODULES.value).glob("*.md"))
+        if path.is_file()
+    ]
+    index_path = wiki_dir / canonical_path(PageKind.INDEX)
+    new_index = _generate_index_md(
+        entity_names,
+        module_entries,
+        workflow_entries=_list_existing_pages(
+            wiki_dir / PageKind.WORKFLOWS.value, "entry"
+        )
+        or None,
+        guide_entries=_list_existing_pages(
+            wiki_dir / PageKind.GUIDES.value, "topic"
+        )
+        or None,
+        infra_entries=_list_existing_pages(
+            wiki_dir / PageKind.INFRASTRUCTURE.value, "type"
+        )
+        or None,
+        flow_entries=_list_existing_flow_pages(
+            wiki_dir / PageKind.FLOWS.value
+        )
+        or None,
+        architecture_entries=_list_existing_architecture_pages(wiki_dir) or None,
+        api_contracts_present=(
+            wiki_dir / canonical_path(PageKind.API_CONTRACTS)
+        ).is_file(),
+        log_present=(wiki_dir / canonical_path(PageKind.LOG)).is_file(),
+    )
+    if preserve_semantic and index_path.exists():
+        new_index = _preserve_index_custom_sections(read_md(index_path), new_index)
+    state = _write_md_if_changed(index_path, new_index)
+    if state == "unchanged":
         print("  SKIP index.md (unchanged)")
     else:
         print("  WRITE index.md")
@@ -2198,10 +3123,30 @@ def _list_existing_flow_pages(directory: Path) -> list[dict]:
 
 def _preserve_flow_behavior(old_md: str, new_md: str) -> str:
     """Carry a human-edited ``## Behavior`` section into regenerated flow md."""
-    old_body = _section_body(old_md, "Behavior")
-    if not old_body or old_body == _section_body(new_md, "Behavior"):
-        return new_md
-    return _replace_section_body(new_md, "Behavior", old_body)
+    return _preserve_level_two_section_exact(old_md, new_md, "Behavior")
+
+
+def _api_operations_for_flow(
+    contracts: Mapping[str, object] | None, entry_point: Mapping[str, object]
+) -> list[dict]:
+    if not contracts:
+        return []
+    file = str(entry_point.get("file") or "")
+    symbol = str(entry_point.get("symbol") or "").rsplit(".", 1)[-1]
+    matches = []
+    operations = contracts.get("operations")
+    if not isinstance(operations, list):
+        return []
+    for operation in operations:
+        if not isinstance(operation, Mapping):
+            continue
+        handler = operation.get("handler")
+        if not isinstance(handler, Mapping):
+            continue
+        handler_symbol = str(handler.get("symbol") or "").rsplit(".", 1)[-1]
+        if str(handler.get("file") or "") == file and handler_symbol == symbol:
+            matches.append(dict(operation))
+    return matches
 
 
 def _regenerate_flow_pages(
@@ -2210,17 +3155,19 @@ def _regenerate_flow_pages(
     module_page_map: dict[str, str],
     *,
     entry_points: list[dict] | None = None,
+    allow_create: bool = False,
+    api_contracts: Mapping[str, object] | None = None,
 ) -> int:
     """Regenerate flow pages from the current inventory, preserving Behavior.
 
-    Runs only when the wiki already has flow pages, so projects that opted out
-    of flows (``bootstrap --skip-flows``) are left untouched. Detection and the
-    Mermaid diagrams are recomputed from the full inventory; only pages whose
-    generated content actually changed are rewritten, and a human-edited
-    ``## Behavior`` section is carried over when ``preserve_semantic`` is on.
+    Legacy projects run only when a flow page already exists; explicit surface
+    policy can opt into creating selected missing pages. Detection and Mermaid
+    diagrams are recomputed from the full inventory, content-equal pages are not
+    rewritten, and human-edited ``## Behavior`` is preserved by default.
     """
     flows_dir = options.wiki_dir / "flows"
-    if not flows_dir.exists() or not any(flows_dir.glob("*.md")):
+    has_existing_pages = flows_dir.exists() and any(flows_dir.glob("*.md"))
+    if not has_existing_pages and not allow_create:
         return 0
 
     if entry_points is None:
@@ -2244,6 +3191,9 @@ def _regenerate_flow_pages(
                 flow_id=entry_point.get("id"),
                 category=entry_point.get("category"),
             ),
+            api_contract_operations=_api_operations_for_flow(
+                api_contracts, entry_point
+            ),
         )
         flow_path = flows_dir / f"{entry_point['id']}.md"
         if options.preserve_semantic and flow_path.exists():
@@ -2257,12 +3207,38 @@ def _regenerate_flow_pages(
     return regenerated
 
 
+def _regenerate_api_contracts_page(
+    options: _SyncRunOptions,
+    page_maps: _SyncPageMaps,
+    plan: _SurfaceInitializationPlan,
+) -> int:
+    """Regenerate the canonical mixed API surface while preserving Notes."""
+    if not plan.api_contract_target or plan.api_contracts is None:
+        return 0
+    if (
+        options.initialize_surfaces
+        and not plan.new_api_contract_page
+        and not plan.generation_inputs_changed
+    ):
+        return 0
+    path = options.wiki_dir / f"{PageKind.API_CONTRACTS.value}.md"
+    new_md = render_api_contracts_markdown(
+        plan.api_contracts,
+        module_page_map=page_maps.module_page_map,
+        entity_page_map=page_maps.entity_page_cache,
+    )
+    if options.preserve_semantic and path.exists():
+        new_md = _preserve_notes(read_md(path), new_md)
+    state = _write_md_if_changed(path, new_md)
+    if state == "unchanged":
+        return 0
+    print(f"  {state.upper()} {path.name}")
+    return 1
+
+
 def _preserve_notes(old_md: str, new_md: str) -> str:
     """Carry a human-edited ``## Notes`` section into regenerated architecture md."""
-    old_body = _section_body(old_md, "Notes")
-    if not old_body or old_body == _section_body(new_md, "Notes"):
-        return new_md
-    return _replace_section_body(new_md, "Notes", old_body)
+    return _preserve_level_two_section_exact(old_md, new_md, "Notes")
 
 
 def _regenerate_dependency_pages(
@@ -2271,18 +3247,27 @@ def _regenerate_dependency_pages(
     module_page_map: dict[str, str],
     *,
     dependency_analysis: dict | None = None,
+    target_pages: Iterable[str] | None = None,
 ) -> int:
     """Regenerate dependencies.md / load-order.md, preserving ``## Notes``.
 
-    Runs only when a page already exists, so projects that opted out
-    (``bootstrap --skip-dependencies``) are left untouched. The graph, cycles,
-    reconciliation, and load order are recomputed once from the current
-    inventory; only pages whose generated content changed are rewritten, and a
-    human-edited ``## Notes`` section is carried over under ``preserve_semantic``.
+    Legacy projects regenerate only root pages already present. Explicit
+    surface policy may select missing architecture pages for creation. The
+    graph, cycles, reconciliation, and load order are computed once; unchanged
+    Markdown is not rewritten and human-authored ``## Notes`` is preserved.
     """
     deps_path = options.wiki_dir / "dependencies.md"
     load_path = options.wiki_dir / "load-order.md"
-    if not deps_path.exists() and not load_path.exists():
+    selected_pages = (
+        set(target_pages)
+        if target_pages is not None
+        else {
+            stem
+            for stem, _label in _ARCHITECTURE_PAGES
+            if (options.wiki_dir / f"{stem}.md").exists()
+        }
+    )
+    if not selected_pages:
         return 0
 
     analysis = dependency_analysis or analyze_dependencies(inventory, options.src_dir)
@@ -2304,9 +3289,9 @@ def _regenerate_dependency_pages(
     )
     regenerated = 0
     for path, new_md in pages:
-        if not path.exists():
+        if path.stem not in selected_pages:
             continue
-        if options.preserve_semantic:
+        if options.preserve_semantic and path.exists():
             new_md = _preserve_notes(read_md(path), new_md)
         state = _write_md_if_changed(path, new_md)
         if state != "unchanged":
@@ -2318,7 +3303,12 @@ def _regenerate_dependency_pages(
 
 
 def _append_log(
-    wiki_dir: Path, src_dir: str, diff: SyncDiff, result: SyncResult
+    wiki_dir: Path,
+    src_dir: str,
+    diff: SyncDiff,
+    result: SyncResult,
+    *,
+    surface_plan: _SurfaceInitializationPlan | None = None,
 ) -> None:
     log_path = wiki_dir / "log.md"
     today = date.today().isoformat()
@@ -2330,9 +3320,36 @@ def _append_log(
         if diff.moved_entities
         else "none"
     )
+    surface_lines = ""
+    if surface_plan is not None and surface_plan.has_work:
+        categories = Counter(
+            str(entry.get("category") or "unknown")
+            for entry in surface_plan.new_flow_entries
+        )
+        category_text = ", ".join(
+            f"{category}={count}" for category, count in sorted(categories.items())
+        ) or "none"
+        surface_lines = (
+            f"- Flow pages initialized: {len(surface_plan.new_flow_entries)} "
+            f"({category_text})\n"
+            "- Dependency pages initialized: "
+            f"{len(surface_plan.new_dependency_pages)}\n"
+            "- Surface policy updated: "
+            f"{'yes' if surface_plan.policy_changed else 'no'}\n"
+        )
+        if surface_plan.requested_surfaces:
+            surface_lines += (
+                "- Source files deferred: "
+                f"{len(_affected_source_files(diff))}\n"
+            )
+    operation = (
+        "surface initialization"
+        if surface_plan is not None and surface_plan.requested_surfaces
+        else "incremental sync"
+    )
     entry = (
         f"\n## {today}\n\n"
-        f"### feat: incremental sync\n"
+        f"### feat: {operation}\n"
         f"- Source: `{src_dir}`\n"
         f"- Pages created: {result.created}\n"
         f"- Pages updated: {result.updated}\n"
@@ -2341,6 +3358,7 @@ def _append_log(
         f"- Pages deprecated: {result.deprecated}\n"
         f"- Semantic fields preserved: {result.preserved_semantic}\n"
         f"- Moved entities: {moved_str}\n"
+        f"{surface_lines}"
     )
     if log_path.exists():
         existing_log = read_md(log_path)

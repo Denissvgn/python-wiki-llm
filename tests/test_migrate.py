@@ -541,6 +541,10 @@ class TestMigrateIntegration:
         _write(proj / "models.py", "class User:\n    pass\n")
         wiki = _make_wiki(proj)
         _write(wiki / "flows" / "api-run.md", "# api-run\n\nExisting flow.\n")
+        _write(
+            wiki / "api-contracts.md",
+            "# API contracts\n\n## Notes\n\nExisting contract note.\n",
+        )
         _write(wiki / "dependencies.md", "# Dependencies\n\nExisting graph.\n")
         _write(wiki / "load-order.md", "# Load order\n\nExisting order.\n")
 
@@ -551,15 +555,21 @@ class TestMigrateIntegration:
         assert "## User Flows" in index
         assert "- [api-run](flows/api-run.md)" in index
         assert "## Dependency Architecture" in index
+        assert "## API contracts" in index
+        assert "[Production HTTP API inventory](api-contracts.md)" in index
         assert "- [Dependencies](dependencies.md)" in index
         assert "- [Load order](load-order.md)" in index
         additional_docs = index.partition("## Additional Docs")[2]
         assert "flows/api-run.md" not in additional_docs
+        assert "api-contracts.md" not in additional_docs
         assert "dependencies.md" not in additional_docs
         assert "load-order.md" not in additional_docs
         assert (wiki / "flows" / "api-run.md").read_text(
             encoding="utf-8"
         ) == "# api-run\n\nExisting flow.\n"
+        assert (wiki / "api-contracts.md").read_text(
+            encoding="utf-8"
+        ) == "# API contracts\n\n## Notes\n\nExisting contract note.\n"
 
     def test_empty_upgraded_flows_directory_does_not_add_user_flows_section(
         self, tmp_path

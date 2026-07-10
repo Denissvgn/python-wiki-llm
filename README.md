@@ -23,6 +23,7 @@ canonical wiki surface registry:
 | `guides/` | semantic | Agent-authored onboarding, operator, and contributor guides. |
 | `flows/` | mixed | User-flow pages, one per detected entry point, with bounded generated Mermaid call and data-flow diagrams. |
 | `infrastructure/` | mixed | Dockerfile, Compose, GitHub Actions, Kubernetes, and targeted runtime/config YAML pages. |
+| `api-contracts.md` | mixed | Optional production HTTP contract inventory generated from static FastAPI declarations or an exported OpenAPI document; `## Notes` is semantic. |
 | `dependencies.md` | mixed | Optional internal and external dependency architecture page. |
 | `load-order.md` | mixed | Optional load-order, cycle, and startup-caveat architecture page. |
 
@@ -58,8 +59,11 @@ plain, MkDocs-compatible, or Docusaurus-compatible Markdown output without
 invoking external builders. Static-site output is a derived artifact; it must
 not become a second editable source of truth.
 
-The package has no required Python runtime dependencies. Optional features use
-external tools when they are available on `PATH`.
+The package has a small required Python runtime footprint. `PyYAML>=6` parses
+user-supplied OpenAPI YAML, and Python versions older than 3.11 use `tomli` for
+TOML. FastAPI, Pydantic, and the target application are not runtime
+dependencies and are never imported for contract extraction. Optional language
+features use external tools when they are available on `PATH`.
 
 ## Supported Inputs
 
@@ -72,6 +76,7 @@ external tools when they are available on `PATH`.
 | Haskell | bundled GHC parser helper for syntax-only inventory | prepared helper binary |
 | Docker / Compose | built-in parsers | none |
 | Runtime/config YAML | targeted built-in parsers | none |
+| OpenAPI 3.0/3.1 JSON / YAML | stdlib `json` / PyYAML safe loader | `PyYAML>=6` (installed with the package) |
 | MCP server | official Python MCP SDK | `agent-wiki-cli[mcp]`, Python 3.10+ |
 
 TypeScript/JavaScript, Go, Rust, and Haskell helper setup is explicit; prepare
@@ -280,6 +285,8 @@ llm-wiki bootstrap --skip-workflows
 llm-wiki bootstrap --skip-flows
 llm-wiki bootstrap --skip-data-flow
 llm-wiki bootstrap --skip-dependencies
+llm-wiki bootstrap --api-contracts
+llm-wiki bootstrap --api-contracts --openapi-file openapi.yaml
 llm-wiki bootstrap --include-tests go
 llm-wiki bootstrap --helper-cache-dir .cache/llm-wiki-helpers
 llm-wiki bootstrap --format json --source-adapter
@@ -298,6 +305,12 @@ Dependency architecture pages are generated as `dependencies.md` and
 pages or lint diagnostics. Generated `index.md` is a registry-backed landing
 page with a surface overview table, per-surface counts, grouped user-flow
 entries, optional dependency architecture links, and a direct log link.
+`--api-contracts` adds the optional `api-contracts.md` production HTTP
+inventory and generated API-contract sections on matching HTTP flow pages.
+Passing `--openapi-file` implies `--api-contracts`; the supplied OpenAPI 3.0 or
+3.1 JSON/YAML document is authoritative for wire fields, while syntax-only
+source analysis contributes handler, module, entity, and flow links. The target
+application is never imported or executed.
 `--depth full` is the default and includes
 docstrings, imports, attributes, method signatures, generated relationship
 sections, bounded per-module dependency mini-map summaries, and diagram data
@@ -326,6 +339,8 @@ llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki sync --jobs auto --cache-stats --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki sync --cache-dir .cache/llm-wiki-inventory --helper-cache-dir .cache/llm-wiki-helpers
 llm-wiki sync --include-tests go --src-dir . --wiki-dir docs/llm_wiki
+llm-wiki sync --initialize-surfaces flows,dependencies --flow-category http --exclude-tests --dry-run
+llm-wiki sync --initialize-surfaces api-contracts --openapi-file openapi.yaml --dry-run
 llm-wiki sync --src-dir /path/to/repo --wiki-dir docs/llm_wiki --allow-external-src
 ```
 
@@ -341,6 +356,14 @@ languages and plugin extractors whose manifests set `"parallel_safe": true`.
 Sync repairs
 manifests with invalid source hashes without touching pages, and stops unusually
 broad diffs unless `--force` is used.
+`--initialize-surfaces` enters a surface-only backfill mode for `flows`,
+`dependencies`, and/or `api-contracts`: ordinary entity/module source changes
+are reported but deferred. `--flow-category` is repeatable, `--exclude-tests`
+uses a cross-platform test-path classifier for the selected flow/dependency
+analysis, and `--dry-run` previews exact page counts and safety-guard results
+without writing the wiki, manifest, log, index, surface index, or cache.
+Selected flow categories and test filtering are persisted in manifest v4 so a
+later ordinary sync cannot silently expand an HTTP-only backfill to every flow.
 Pass `--include-tests go` to include Go `_test.go` files in the synced
 inventory and generated module pages; the default remains production Go source
 only.
@@ -374,6 +397,13 @@ When flow pages already exist, `sync` also refreshes generated call-sequence and
 `## Data flow` content from the current inventory while preserving the
 human-authored `## Behavior` section by default.
 
+When `api-contracts.md` exists, sync refreshes its generated operation inventory
+and matching flow-page contract sections while preserving `## Notes` and
+`## Behavior`. A bootstrap/sync OpenAPI input is stored as a source-relative
+path and hash; a specification-only change refreshes contracts even when source
+files are unchanged. Use `--clear-openapi-file` to return deliberately to
+static contract authority.
+
 When `sync` rebuilds `index.md`, the generated landing-page overview and
 per-surface link sections are replaced from the live registry and inventory.
 With semantic preservation enabled, old custom top-level index sections are
@@ -391,6 +421,7 @@ llm-wiki extract --src-dir .
 llm-wiki extract --src-dir . --changed
 llm-wiki extract --src-dir . --summary
 llm-wiki extract --src-dir . --deep
+llm-wiki extract --src-dir . --deep --openapi-file openapi.json
 llm-wiki extract --src-dir . --paths src/foo.py src/bar.ts
 llm-wiki extract --src-dir . --package llm_wiki_cli
 llm-wiki extract --src-dir . --include-empty
@@ -443,7 +474,13 @@ With `--deep`, Python function entries may carry optional `data_effects` blocks
 (inputs, selected global/attribute reads, writes, returns, and boundary effects
 such as filesystem, environment, process, network, output, and logging calls)
 and optional `calls` lists (in-body call targets, optionally with compact `args`
-and `kwargs` expression summaries). The payload also gains an optional top-level
+and `kwargs` expression summaries). Function `params` include reconstructable
+parameter kinds for positional-only, positional-or-keyword, variadic,
+keyword-only, and variadic-keyword declarations. Python model/type inventory
+also carries optional required/nullable/default/factory, alias, constraint,
+description/example, `Annotated`, validator/config, enum-member, literal, and
+type-alias metadata without importing Pydantic or application modules.
+The payload also gains an optional top-level
 `entrypoints` array (detected user-reachable entry points: `{id, category, file,
 symbol, label}`), a `data_flows` list for detected user flows, plus a top-level
 `dependencies` object with internal `edges`, `cycles`, per-language external
@@ -459,6 +496,13 @@ keys are POSIX paths relative to `--src-dir`, never absolute paths. The v1
 contract permits additive fields; incompatible shape changes require a new
 schema version. The M3 data-flow fields are therefore optional additions under
 `llm-wiki-extract/v1`, not a schema bump.
+Deep Python extraction also emits optional per-file `frameworks.fastapi`
+declarations and a top-level `api_contracts` object. Static uncertainty is
+reported through `unknowns` and diagnostics; test-source and
+`include_in_schema=False` operations are excluded from the production operation
+inventory by default. With `--openapi-file`, OpenAPI defines the operation set
+and wire contract, external references are never fetched, and unmatched or
+conflicting static declarations remain visible as diagnostics.
 Installed `entrypoint_detector` plugin hooks also contribute to the same
 `entrypoints` array in deep output. Detector failures are isolated: built-in
 entry-point detection still runs, `extract` prints a warning to stderr, and the

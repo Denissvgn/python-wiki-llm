@@ -26,6 +26,10 @@ from ..extractors.common import (
 from ..extractors.go_extractor import GoExtractionRequest
 from ..extractors.haskell_extractor import HaskellExtractionRequest
 from ..extractors.rust_extractor import RustExtractionRequest
+from ..services.api_contracts import (
+    attach_routes_to_entry_points,
+    build_api_contracts,
+)
 from ..services.contracts import EXTRACT_SCHEMA_VERSION
 from ..services.data_flow import analyze_data_flow, build_data_flow_context
 from ..services.dependencies import analyze_dependencies
@@ -922,6 +926,7 @@ def build_extract_payload(
     include_empty: bool = False,
     helper_cache_dir: str | None = None,
     include_tests: Iterable[str] | None = None,
+    openapi_file: str | Path | None = None,
     allow_external_src: bool = False,
     read_only: bool = False,
 ) -> ExtractPayloadResult:
@@ -931,6 +936,8 @@ def build_extract_payload(
         "--src-dir",
         allow_external=allow_external_src,
     )
+    if openapi_file is not None and not deep:
+        raise ValueError("--openapi-file requires --deep.")
     if paths:
         validate_source_paths(src_root, paths, "--paths")
 
@@ -953,6 +960,9 @@ def build_extract_payload(
     if no_changed_files:
         output = {"schema_version": EXTRACT_SCHEMA_VERSION, "inventory": {}}
         if deep:
+            output["api_contracts"] = build_api_contracts(
+                {}, openapi_file=openapi_file, source_root=src_root
+            )
             output["dependencies"] = _dependency_extract_block(
                 analyze_dependencies({}, str(src_root))
             )
@@ -995,6 +1005,16 @@ def build_extract_payload(
         if not inventory:
             raise ValueError(f"No files found for package '{package_filter}'.")
 
+    api_contracts = (
+        build_api_contracts(
+            inventory,
+            openapi_file=openapi_file,
+            source_root=src_root,
+        )
+        if deep
+        else None
+    )
+
     # Entry points need the deep fields (decorators, __all__, __main__); detect
     # before any summary collapse.
     entrypoint_warnings: list[str] = []
@@ -1006,6 +1026,7 @@ def build_extract_payload(
             fallback_root=Path.cwd(),
         )
         entrypoints = entrypoint_result.entries
+        entrypoints = attach_routes_to_entry_points(entrypoints, api_contracts or {})
         entrypoint_warnings = entrypoint_result.warnings
     else:
         entrypoints = []
@@ -1058,6 +1079,8 @@ def build_extract_payload(
         output["data_flows"] = data_flows
     if dependencies is not None:
         output["dependencies"] = dependencies
+    if api_contracts is not None:
+        output["api_contracts"] = api_contracts
     if entrypoint_warnings:
         output["warnings"] = entrypoint_warnings
 
@@ -1083,6 +1106,7 @@ def run(args):
     allow_external_src: bool = getattr(args, "allow_external_src", False)
     helper_cache_dir: str | None = getattr(args, "helper_cache_dir", None)
     include_tests = getattr(args, "include_tests", None)
+    openapi_file: str | None = getattr(args, "openapi_file", None)
 
     if changed and paths:
         print("Error: --changed and --paths are mutually exclusive.", file=sys.stderr)
@@ -1106,6 +1130,7 @@ def run(args):
             include_empty=include_empty,
             helper_cache_dir=helper_cache_dir,
             include_tests=include_tests,
+            openapi_file=openapi_file,
             allow_external_src=allow_external_src,
             read_only=read_only,
         )
@@ -1493,6 +1518,10 @@ def resolve_call_edges(inventory: dict) -> list[dict]:
 
 # ── Docker / Compose extraction ──────────────────────────────────────
 
+_DOCKERFILE_ENV_PATTERN = re.compile(r'(\w+)=("(?:[^"\\]|\\.)*"|\S+)')
+_DOCKERFILE_VOLUME_LIST_PATTERN = re.compile(r'"([^"]+)"')
+_DOCKERFILE_LABEL_PATTERN = re.compile(r'(\S+)=("(?:[^"\\]|\\.)*"|\S+)')
+
 
 def _parse_dockerfile(text: str) -> dict:
     """Parse a Dockerfile into a structured dict (line-based, no external deps)."""
@@ -1545,7 +1574,7 @@ def _parse_dockerfile(text: str) -> dict:
         elif upper == "ENV":
             rest = trimmed[4:].strip()
             if "=" in rest:
-                for pair in re.findall(r'(\w+)=("(?:[^"\\]|\\.)*"|\S+)', rest):
+                for pair in _DOCKERFILE_ENV_PATTERN.findall(rest):
                     env_vars.append({"name": pair[0], "default": pair[1].strip('"')})
             else:
                 parts = rest.split(None, 1)
@@ -1557,7 +1586,7 @@ def _parse_dockerfile(text: str) -> dict:
         elif upper == "VOLUME":
             rest = trimmed[7:].strip()
             if rest.startswith("["):
-                for v in re.findall(r'"([^"]+)"', rest):
+                for v in _DOCKERFILE_VOLUME_LIST_PATTERN.findall(rest):
                     volumes.append(v)
             else:
                 volumes.extend(rest.split())
@@ -1593,7 +1622,7 @@ def _parse_dockerfile(text: str) -> dict:
                 build_args.append({"name": rest, "default": ""})
 
         elif upper == "LABEL":
-            for pair in re.findall(r'(\S+)=("(?:[^"\\]|\\.)*"|\S+)', trimmed[6:]):
+            for pair in _DOCKERFILE_LABEL_PATTERN.findall(trimmed[6:]):
                 labels[pair[0]] = pair[1].strip('"')
 
         elif upper == "ENTRYPOINT":

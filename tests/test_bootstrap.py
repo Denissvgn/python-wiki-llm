@@ -855,6 +855,204 @@ class TestBootstrapModulePages:
         content = (wiki_dir / "modules" / "models.md").read_text(encoding="utf-8")
         assert "# models Module" in content
 
+    def test_python_signature_renders_all_parameter_kinds_and_escapes_pipes(self):
+        signature = bootstrap_cmd._format_signature(
+            {
+                "params": [
+                    {"name": "source", "kind": "positional_only", "type": "str"},
+                    {
+                        "name": "target",
+                        "kind": "positional_or_keyword",
+                        "type": "str",
+                        "default": "'out'",
+                    },
+                    {"name": "values", "kind": "var_positional", "type": "float"},
+                    {"name": "required", "kind": "keyword_only", "type": "bool"},
+                    {
+                        "name": "mode",
+                        "kind": "keyword_only",
+                        "type": "str | None",
+                        "default": "None",
+                    },
+                    {"name": "extras", "kind": "var_keyword", "type": "object"},
+                ],
+                "return_type": "str | None",
+            }
+        )
+
+        assert signature == (
+            "(source: str, /, target: str = 'out', *values: float, "
+            "required: bool, mode: str | None = None, **extras: object) -> str | None"
+        )
+        assert bootstrap_cmd._table_inline_code(signature).count("\\|") == 2
+        assert bootstrap_cmd._format_signature(
+            {
+                "params": [
+                    {"name": "source", "kind": "positional_or_keyword", "type": "str"},
+                    {"name": "required", "kind": "keyword_only", "type": "bool"},
+                ],
+                "return_type": "",
+            }
+        ) == "(source: str, *, required: bool)"
+
+    def test_python_contract_entity_renders_model_metadata(self):
+        content = bootstrap_cmd._generate_entity_md(
+            {
+                "name": "Request",
+                "kind": "class",
+                "model_kind": "pydantic",
+                "bases": ["BaseModel"],
+                "line": 4,
+                "docstring": "Request payload.",
+                "decorators": [],
+                "model_config": [
+                    {
+                        "name": "extra",
+                        "value": "'forbid'",
+                        "source": "model_config",
+                    }
+                ],
+                "attributes": [
+                    {
+                        "name": "name",
+                        "type": "str | None",
+                        "required": True,
+                        "nullable": True,
+                        "alias": "fullName",
+                        "constraints": {"min_length": "1"},
+                        "description": "Display name.",
+                        "examples": ["'Ada'"],
+                    },
+                    {
+                        "name": "labels",
+                        "type": "list[str]",
+                        "required": False,
+                        "nullable": False,
+                        "default_factory": "list",
+                        "validation_alias": "inputLabels",
+                        "serialization_alias": "outputLabels",
+                    },
+                ],
+                "methods": [
+                    {
+                        "name": "normalize_name",
+                        "params": [
+                            {
+                                "name": "value",
+                                "kind": "positional_or_keyword",
+                                "type": "str",
+                            }
+                        ],
+                        "return_type": "str",
+                        "decorators": ["field_validator('name')"],
+                        "validator": {
+                            "kind": "field",
+                            "fields": ["name"],
+                            "mode": "after",
+                        },
+                    }
+                ],
+            },
+            "models.py",
+            {},
+        )
+
+        assert "**Kind:** Pydantic model" in content
+        assert "## Model Configuration" in content
+        assert "## Validators" in content
+        assert "| `name` | `str \\| None` | `fullName` | Yes | Yes | — |" in content
+        assert "min_length=1" in content
+        assert "Display name." in content
+        assert "factory: `list`" in content
+        assert "input: inputLabels; output: outputLabels" in content
+        assert "Call(func=" not in content
+
+    def test_enum_and_type_alias_contracts_render_declared_values(self):
+        enum_content = bootstrap_cmd._generate_entity_md(
+            {
+                "name": "Color",
+                "kind": "enum",
+                "bases": ["str", "Enum"],
+                "line": 2,
+                "attributes": [
+                    {"name": "RED", "value": "'red'"},
+                    {"name": "AUTOMATIC", "value": "auto()"},
+                ],
+                "methods": [],
+            },
+            "types.py",
+            {},
+        )
+        alias_content = bootstrap_cmd._generate_entity_md(
+            {
+                "name": "Mode",
+                "kind": "type_alias",
+                "bases": [],
+                "line": 8,
+                "target": "Literal['fast', 'safe']",
+                "attributes": [],
+                "methods": [],
+            },
+            "types.py",
+            {},
+        )
+
+        assert "**Kind:** Enum" in enum_content
+        assert "| `RED` | `'red'` | — |" in enum_content
+        assert "| `AUTOMATIC` | `auto()` | — |" in enum_content
+        assert "**Kind:** Type alias" in alias_content
+        assert "**Target:** `Literal['fast', 'safe']`" in alias_content
+        assert "## Attributes" in alias_content
+        assert "## Methods" in alias_content
+
+    def test_python_contract_round_trips_from_source_to_markdown(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        (tmp_path / "api.py").write_text(
+            textwrap.dedent("""\
+            from typing import Annotated, Literal
+            from pydantic import BaseModel, Field
+
+            class Request(BaseModel):
+                name: Annotated[
+                    str,
+                    Field(alias="fullName", min_length=1, description="Display name"),
+                ]
+                labels: list[str] = Field(default_factory=list)
+
+            def publish(
+                source: str,
+                /,
+                *values: float,
+                required: bool,
+                mode: Literal["fast", "safe"] = "safe",
+                **extras: object,
+            ) -> Request | None:
+                return None
+            """),
+            encoding="utf-8",
+        )
+        monkeypatch.chdir(tmp_path)
+
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
+
+        module = (tmp_path / "wiki" / "modules" / "api.md").read_text(
+            encoding="utf-8"
+        )
+        entity = (tmp_path / "wiki" / "entities" / "Request.md").read_text(
+            encoding="utf-8"
+        )
+        assert (
+            "(source: str, /, *values: float, required: bool, "
+            "mode: Literal['fast', 'safe'] = 'safe', **extras: object) "
+            "-> Request \\| None"
+        ) in module
+        assert "| `name` | `Annotated[str, Field(" in entity
+        assert "`fullName` | Yes | No | — | min_length=1" in entity
+        assert "Display name" in entity
+        assert "factory: `list`" in entity
+        assert "Call(func=" not in entity
+
     def test_module_local_dependency_map_renders_diagram_tables_and_counts(
         self, tmp_path, monkeypatch, capsys
     ):

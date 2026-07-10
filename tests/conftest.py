@@ -114,6 +114,7 @@ def _write_legacy_navigation_wiki(root: Path) -> NavigationWikiLayout:
             "infrastructure": 0,
             "dependencies": 0,
             "load-order": 0,
+            "api-contracts": 0,
             "architecture_pages": 0,
         },
         expected_uris={
@@ -245,6 +246,7 @@ def _write_current_navigation_wiki(root: Path) -> NavigationWikiLayout:
             "infrastructure": 1,
             "dependencies": 1,
             "load-order": 1,
+            "api-contracts": 0,
             "architecture_pages": 2,
         },
         expected_uris={

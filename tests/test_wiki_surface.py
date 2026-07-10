@@ -27,6 +27,7 @@ def test_registry_contains_canonical_page_kinds_and_metadata():
         PageKind.GUIDES,
         PageKind.FLOWS,
         PageKind.INFRASTRUCTURE,
+        PageKind.API_CONTRACTS,
         PageKind.DEPENDENCIES,
         PageKind.LOAD_ORDER,
     ]
@@ -55,6 +56,12 @@ def test_registry_contains_canonical_page_kinds_and_metadata():
     assert by_kind[PageKind.GUIDES].obsidian_mirror_dir == "Guides"
     assert by_kind[PageKind.GUIDES].role is SurfaceRole.SEMANTIC
 
+    assert by_kind[PageKind.API_CONTRACTS].label == "API contracts"
+    assert by_kind[PageKind.API_CONTRACTS].path_pattern == "api-contracts.md"
+    assert by_kind[PageKind.API_CONTRACTS].mcp_uri_kind == "api-contracts"
+    assert by_kind[PageKind.API_CONTRACTS].obsidian_mirror_dir is None
+    assert by_kind[PageKind.API_CONTRACTS].role is SurfaceRole.MIXED
+
     assert by_kind[PageKind.DEPENDENCIES].label == "Dependencies"
     assert by_kind[PageKind.DEPENDENCIES].path_pattern == "dependencies.md"
     assert by_kind[PageKind.DEPENDENCIES].mcp_uri_kind == "dependencies"
@@ -66,6 +73,7 @@ def test_registry_helpers_filter_roots_and_directory_kinds():
     assert [entry.kind for entry in wiki_surface.iter_root_pages()] == [
         PageKind.INDEX,
         PageKind.LOG,
+        PageKind.API_CONTRACTS,
         PageKind.DEPENDENCIES,
         PageKind.LOAD_ORDER,
     ]
@@ -92,6 +100,7 @@ def test_asset_surface_is_agent_owned_and_never_generated():
 
 def test_canonical_paths_and_mcp_uris_are_posix():
     assert wiki_surface.canonical_path(PageKind.INDEX) == "index.md"
+    assert wiki_surface.canonical_path(PageKind.API_CONTRACTS) == "api-contracts.md"
     assert wiki_surface.canonical_path(PageKind.DEPENDENCIES) == "dependencies.md"
     assert (
         wiki_surface.canonical_path(PageKind.MODULES, "pkg.module")
@@ -106,6 +115,7 @@ def test_canonical_paths_and_mcp_uris_are_posix():
     )
 
     assert wiki_surface.mcp_uri(PageKind.INDEX) == "llm-wiki://index"
+    assert wiki_surface.mcp_uri(PageKind.API_CONTRACTS) == "llm-wiki://api-contracts"
     assert wiki_surface.mcp_uri(PageKind.LOAD_ORDER) == "llm-wiki://load-order"
     assert (
         wiki_surface.mcp_uri(PageKind.MODULES, "pkg.module")
@@ -148,6 +158,7 @@ def test_collect_wiki_pages_handles_old_and_new_layouts_deterministically(tmp_pa
     wiki = tmp_path / "docs" / "llm_wiki"
     _write(wiki / "index.md")
     _write(wiki / "log.md")
+    _write(wiki / "api-contracts.md")
     _write(wiki / "dependencies.md")
     _write(wiki / "load-order.md")
     _write(wiki / "entities" / "beta.md")
@@ -178,6 +189,7 @@ def test_collect_wiki_pages_handles_old_and_new_layouts_deterministically(tmp_pa
         (PageKind.GUIDES, "operator-onboarding", "guides/operator-onboarding.md"),
         (PageKind.FLOWS, "api-run", "flows/api-run.md"),
         (PageKind.INFRASTRUCTURE, "Dockerfile", "infrastructure/Dockerfile.md"),
+        (PageKind.API_CONTRACTS, "api-contracts", "api-contracts.md"),
         (PageKind.DEPENDENCIES, "dependencies", "dependencies.md"),
         (PageKind.LOAD_ORDER, "load-order", "load-order.md"),
     ]

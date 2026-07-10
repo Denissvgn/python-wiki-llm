@@ -11,6 +11,12 @@ from ..services.schema import (
     SCHEMA_FILENAMES,
     build_schema_content as _build_schema_content,
 )
+from ..services.skills import (
+    REFERENCE_SKILL_ID,
+    SkillsError,
+    install_reference_skill,
+    list_bundled_skills,
+)
 from ..services.wiki_surface import iter_directory_kinds
 
 
@@ -91,7 +97,39 @@ def run(args):
             write_md(schema_path, content_to_add)
             print(f"Created agent schema file: {schema_path}")
 
-    # 4. Persist the chosen agent so install-hook can read it
-    write_config(base_dir, {"agent": args.agent, "quality_hints": quality_hints})
+    # 4. Install the CLI-owned wiki-reference skill that the constraint
+    # block's deep-reference pointers target
+    install_skill = not getattr(args, "no_skills", False)
+    if install_skill:
+        try:
+            report = install_reference_skill(agent=args.agent)
+        except SkillsError as exc:
+            print(f"Warning: could not install {REFERENCE_SKILL_ID} skill: {exc}")
+        else:
+            if report.ok:
+                print(f"Installed {REFERENCE_SKILL_ID} skill in {report.dest_dir}/")
+            else:
+                print(
+                    f"Kept existing {REFERENCE_SKILL_ID} skill files in "
+                    f"{report.dest_dir}/ (differ from bundled; run "
+                    "`llm-wiki upgrade` or `llm-wiki skills install --force` "
+                    "to refresh)"
+                )
+            other_skills = len(list_bundled_skills()) - 1
+            if other_skills > 0:
+                print(
+                    f"{other_skills} more bundled workflow skills are available: "
+                    "run `llm-wiki skills list`"
+                )
+
+    # 5. Persist the chosen agent so install-hook can read it
+    write_config(
+        base_dir,
+        {
+            "agent": args.agent,
+            "quality_hints": quality_hints,
+            "reference_skill": install_skill,
+        },
+    )
 
     print("LLM Wiki initialized successfully.")

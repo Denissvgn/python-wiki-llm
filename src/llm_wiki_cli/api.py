@@ -383,7 +383,8 @@ def _wiki_page_counts(pages: list[dict[str, Any]]) -> dict[str, Any]:
     for page in pages:
         by_kind[str(page["kind"])] += 1
     architecture_pages = (
-        by_kind[wiki_surface.PageKind.DEPENDENCIES.value]
+        by_kind[wiki_surface.PageKind.API_CONTRACTS.value]
+        + by_kind[wiki_surface.PageKind.DEPENDENCIES.value]
         + by_kind[wiki_surface.PageKind.LOAD_ORDER.value]
     )
     return {

@@ -78,6 +78,19 @@ def _write_wiki(root: Path) -> Path:
 
 
 class TestObsidianMirror:
+    def test_maps_api_contracts_to_root_vault_page(self, tmp_project):
+        wiki = _write_wiki(tmp_project)
+        (wiki / "api-contracts.md").write_text(
+            "# API contracts\n", encoding="utf-8"
+        )
+
+        by_rel = {
+            page.canonical_rel: page for page in obsidian.collect_wiki_pages(wiki)
+        }
+
+        assert by_rel["api-contracts.md"].mirror_rel == "LLM Wiki/API contracts.md"
+        assert by_rel["api-contracts.md"].kind == "api-contracts"
+
     def test_collects_pages_and_maps_to_vault_paths(self, tmp_project):
         wiki = _write_wiki(tmp_project)
 

@@ -141,6 +141,8 @@ def _implementation_fingerprint() -> str:
     package_root = Path(__file__).resolve().parents[1]
     rel_paths = [
         "extractors/common.py",
+        "extractors/fastapi_contracts.py",
+        "extractors/python_contracts.py",
         "extractors/python_extractor.py",
         "extractors/ts_extractor.py",
         "extractors/go_extractor.py",
@@ -151,6 +153,7 @@ def _implementation_fingerprint() -> str:
         "extractors/go_scripts/main.go",
         "extractors/go_scripts/go.mod",
         "extractors/haskell_scripts/Main.hs",
+        "services/imports.py",
         "extractors/haskell_scripts/Inventory.hs",
         "extractors/haskell_scripts/Parser.hs",
         "extractors/haskell_scripts/Paths.hs",

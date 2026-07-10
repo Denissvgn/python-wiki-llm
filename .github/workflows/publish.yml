@@ -1,9 +1,7 @@
 name: Publish to PyPI
 
 on:
-  workflow_dispatch:  # manual trigger only — re-enable tag trigger after configuring PyPI trusted publisher
-  # push:
-  #   tags: ["v*"]
+  workflow_dispatch:  # manual safeguard: select the exact v* release tag as the ref
 
 permissions:
   contents: read

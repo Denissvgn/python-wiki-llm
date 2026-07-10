@@ -388,6 +388,7 @@ class TestReviewMode:
         [
             "workflows/api-service.md",
             "flows/api-run.md",
+            "api-contracts.md",
             "dependencies.md",
             "load-order.md",
         ],

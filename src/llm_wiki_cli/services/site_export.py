@@ -786,6 +786,7 @@ def _architecture_pages(
 ) -> list[wiki_surface.WikiSurfacePage]:
     architecture_kinds = {
         wiki_surface.PageKind.INFRASTRUCTURE,
+        wiki_surface.PageKind.API_CONTRACTS,
         wiki_surface.PageKind.DEPENDENCIES,
         wiki_surface.PageKind.LOAD_ORDER,
     }

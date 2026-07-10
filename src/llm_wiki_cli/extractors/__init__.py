@@ -56,6 +56,15 @@ class ExtractorProtocol(Protocol):
             so process-flow analysis can trace guarded entrypoint wrappers
             without treating them as import-time ``module_calls``.
 
+            Deep Python callable parameters use an optional ``"kind"`` value
+            (``positional_only``, ``positional_or_keyword``, ``var_positional``,
+            ``keyword_only``, or ``var_keyword``) so signatures can be
+            reconstructed without executing the target module. Python class
+            records may also carry additive enum, type-alias, Pydantic field,
+            model-configuration, and validator metadata. Consumers must
+            tolerate all of these fields being absent in older inventories or
+            inventories emitted by other language extractors.
+
         Returns
         -------
         dict

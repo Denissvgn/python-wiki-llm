@@ -23,6 +23,13 @@ from ..config import (
     validate_path,
     validate_source_root,
 )
+from ..services.api_contracts import (
+    ApiContractError,
+    attach_routes_to_entry_points,
+    build_api_contracts,
+    render_api_contracts_markdown,
+    render_flow_api_contract_section,
+)
 from ..services.contracts import BOOTSTRAP_SUMMARY_SCHEMA_VERSION
 from ..services.data_flow import analyze_data_flow, build_data_flow_context
 from ..services.dependencies import (
@@ -453,20 +460,56 @@ def _format_signature(fn: dict) -> str:
     if fn.get("signature") and not fn.get("params"):
         return str(fn["signature"])
 
-    params = []
-    for p in fn.get("params", []):
+    records = list(fn.get("params", []))
+    params: list[str] = []
+    inserted_keyword_separator = False
+    for index, p in enumerate(records):
+        kind = p.get("kind", "positional_or_keyword")
+        if kind == "keyword_only" and not inserted_keyword_separator:
+            if not any(
+                item.get("kind") == "var_positional" for item in records[:index]
+            ):
+                params.append("*")
+            inserted_keyword_separator = True
+
         part = p["name"]
+        if kind == "var_positional":
+            part = f"*{part}"
+            inserted_keyword_separator = True
+        elif kind == "var_keyword":
+            part = f"**{part}"
         if p.get("type"):
             part += f": {p['type']}"
-        if p.get("default"):
+        if p.get("default") not in (None, ""):
             part += f" = {p['default']}"
         params.append(part)
+        if kind == "positional_only" and (
+            index + 1 == len(records)
+            or records[index + 1].get("kind") != "positional_only"
+        ):
+            params.append("/")
 
     ret = fn.get("return_type", "")
     sig = f"({', '.join(params)})"
     if ret:
         sig += f" -> {ret}"
     return sig
+
+
+def _table_text(value: object) -> str:
+    if value in (None, ""):
+        return "—"
+    return str(value).replace("\n", "<br>").replace("|", "\\|")
+
+
+def _table_inline_code(value: object) -> str:
+    if value in (None, ""):
+        return "—"
+    text = str(value).replace("\n", " ").replace("|", "\\|")
+    runs = [len(match.group(0)) for match in re.finditer(r"`+", text)]
+    fence = "`" * (max(runs, default=0) + 1)
+    padding = " " if runs or text.startswith(" ") or text.endswith(" ") else ""
+    return f"{fence}{padding}{text}{padding}{fence}"
 
 
 def _haskell_declaration_label(kind: object) -> str:
@@ -1053,6 +1096,201 @@ def _append_module_signals_section(lines: list[str], file_data: Mapping) -> None
     lines.append("")
 
 
+def _entity_kind_label(class_info: Mapping) -> str:
+    if class_info.get("model_kind") == "pydantic":
+        return "Pydantic model"
+    return {
+        "class": "Class",
+        "enum": "Enum",
+        "type_alias": "Type alias",
+    }.get(str(class_info.get("kind") or "class"), "Class")
+
+
+def _field_wire_name(attribute: Mapping) -> str:
+    alias = attribute.get("alias")
+    input_name = attribute.get("validation_alias") or alias
+    output_name = attribute.get("serialization_alias") or alias
+    if input_name and output_name and input_name != output_name:
+        return f"input: {input_name}; output: {output_name}"
+    if input_name or output_name:
+        return str(input_name or output_name)
+    for unknown in attribute.get("unknowns", []):
+        if unknown.get("property") in {
+            "alias",
+            "validation_alias",
+            "serialization_alias",
+        }:
+            return f"unknown ({unknown.get('expression', '?')})"
+    return str(attribute.get("name") or "—")
+
+
+def _field_default(attribute: Mapping) -> str:
+    if attribute.get("value") not in (None, ""):
+        return _table_inline_code(attribute["value"])
+    if "default" in attribute:
+        return _table_inline_code(attribute["default"])
+    if attribute.get("default_factory"):
+        return f"factory: {_table_inline_code(attribute['default_factory'])}"
+    return "—"
+
+
+def _field_constraints(attribute: Mapping) -> str:
+    parts = [
+        f"{name}={value}"
+        for name, value in attribute.get("constraints", {}).items()
+    ]
+    parts.extend(str(value) for value in attribute.get("annotated_metadata", []))
+    parts.extend(
+        f"{str(unknown.get('property')).split(':', 1)[-1]}=unknown "
+        f"({unknown.get('expression', '?')})"
+        for unknown in attribute.get("unknowns", [])
+        if str(unknown.get("property", "")).startswith("constraint:")
+    )
+    return _table_text("; ".join(parts)) if parts else "—"
+
+
+def _model_config_value(setting: Mapping) -> str:
+    unknowns = setting.get("unknowns", [])
+    if unknowns:
+        expression = unknowns[0].get("expression", "?")
+        return _table_inline_code(f"unknown ({expression})")
+    return _table_inline_code(setting.get("value"))
+
+
+def _append_model_contract_sections(lines: list[str], class_info: Mapping) -> None:
+    model_config = class_info.get("model_config", [])
+    if model_config:
+        lines.extend(
+            [
+                "## Model Configuration",
+                "",
+                "| Setting | Value | Source |",
+                "|---------|-------|--------|",
+            ]
+        )
+        for setting in model_config:
+            lines.append(
+                f"| `{_table_text(setting.get('name'))}` | "
+                f"{_model_config_value(setting)} | "
+                f"{_table_text(setting.get('source'))} |"
+            )
+        lines.append("")
+
+    validators = [
+        (method, method.get("validator"))
+        for method in class_info.get("methods", [])
+        if method.get("validator")
+    ]
+    if validators:
+        lines.extend(
+            [
+                "## Validators",
+                "",
+                "| Method | Scope | Fields | Mode | Options |",
+                "|--------|-------|--------|------|---------|",
+            ]
+        )
+        for method, validator in validators:
+            fields = ", ".join(validator.get("fields", [])) or "—"
+            options = "; ".join(
+                f"{name}={value}"
+                for name, value in validator.get("options", {}).items()
+            )
+            lines.append(
+                f"| `{_table_text(method.get('name'))}` | "
+                f"{_table_text(validator.get('kind'))} | {_table_text(fields)} | "
+                f"{_table_text(validator.get('mode'))} | {_table_text(options)} |"
+            )
+        lines.append("")
+
+
+def _append_attribute_contract(lines: list[str], class_info: Mapping) -> None:
+    attributes = list(class_info.get("attributes", []))
+    lines.extend(["## Attributes", ""])
+    if not attributes:
+        lines.extend(["*No annotated attributes found.*", ""])
+        return
+
+    if class_info.get("kind") == "enum":
+        lines.extend(
+            [
+                "| Name | Declared value | Description |",
+                "|------|-------|-------------|",
+            ]
+        )
+        for attribute in attributes:
+            lines.append(
+                f"| `{_table_text(attribute.get('name'))}` | "
+                f"{_field_default(attribute)} | "
+                f"{_table_text(attribute.get('description'))} |"
+            )
+        lines.append("")
+        return
+
+    enriched = class_info.get("model_kind") == "pydantic" or any(
+        any(
+            key in attribute
+            for key in (
+                "alias",
+                "validation_alias",
+                "serialization_alias",
+                "constraints",
+                "annotated_metadata",
+            )
+        )
+        for attribute in attributes
+    )
+    if not enriched:
+        lines.extend(
+            [
+                "| Name | Type | Default | Description |",
+                "|------|------|---------|-------------|",
+            ]
+        )
+        for attribute in attributes:
+            default = (
+                _table_inline_code(attribute["default"])
+                if attribute.get("default")
+                else "*required*"
+            )
+            lines.append(
+                f"| `{_table_text(attribute.get('name'))}` | "
+                f"{_table_inline_code(attribute.get('type'))} | {default} | "
+                f"{_table_text(attribute.get('description'))} |"
+            )
+        lines.append("")
+        return
+
+    lines.extend(
+        [
+            "| Name | Type | Wire name | Required | Nullable | Default | "
+            "Constraints | Examples | Description |",
+            "|------|------|-----------|----------|----------|---------|"
+            "-------------|-------------|----------|",
+        ]
+    )
+    for attribute in attributes:
+        required = "Yes" if attribute.get("required") else "No"
+        nullable = "Yes" if attribute.get("nullable") else "No"
+        example_values = list(attribute.get("examples", []))
+        example_values.extend(
+            f"unknown ({unknown.get('expression', '?')})"
+            for unknown in attribute.get("unknowns", [])
+            if unknown.get("property") == "examples"
+        )
+        examples = ", ".join(example_values)
+        lines.append(
+            f"| `{_table_text(attribute.get('name'))}` | "
+            f"{_table_inline_code(attribute.get('type'))} | "
+            f"{_table_inline_code(_field_wire_name(attribute))} | {required} | "
+            f"{nullable} | {_field_default(attribute)} | "
+            f"{_field_constraints(attribute)} | "
+            f"{_table_text(examples)} | "
+            f"{_table_text(attribute.get('description'))} |"
+        )
+    lines.append("")
+
+
 def _generate_entity_md(
     class_info: dict,
     filepath: str,
@@ -1080,7 +1318,6 @@ def _generate_entity_md(
     line = class_info.get("line", "?")
     docstring = class_info.get("docstring", "")
     decorators = class_info.get("decorators", [])
-    attributes = class_info.get("attributes", [])
     methods = class_info.get("methods", [])
     mod_name = (
         mod_page_name if mod_page_name is not None else _module_name_from_path(filepath)
@@ -1092,10 +1329,13 @@ def _generate_entity_md(
         f"# {name}",
         "",
         f"**Location:** `{filepath}:{line}`",
+        f"**Kind:** {_entity_kind_label(class_info)}",
         f"**Bases:** {bases_str}",
         f"**Module:** [{mod_name}](../modules/{mod_name}.md)",
-        "",
     ]
+    if class_info.get("target"):
+        lines.append(f"**Target:** {_table_inline_code(class_info['target'])}")
+    lines.append("")
 
     if decorators:
         lines.append(f"**Decorators:** {', '.join(f'`@{d}`' for d in decorators)}")
@@ -1110,20 +1350,8 @@ def _generate_entity_md(
         lines.append(f"_Auto-generated from `{name}` in `{filepath}`._")
     lines.append("")
 
-    # Attributes
-    lines.append("## Attributes")
-    lines.append("")
-    if attributes:
-        lines.append("| Name | Type | Default | Description |")
-        lines.append("|------|------|---------|-------------|")
-        for attr in attributes:
-            default = f"`{attr['default']}`" if attr.get("default") else "*required*"
-            lines.append(
-                f"| `{attr['name']}` | `{attr.get('type', '—')}` | {default} | — |"
-            )
-    else:
-        lines.append("*No annotated attributes found.*")
-    lines.append("")
+    _append_model_contract_sections(lines, class_info)
+    _append_attribute_contract(lines, class_info)
 
     # Methods
     lines.append("## Methods")
@@ -1133,10 +1361,16 @@ def _generate_entity_md(
         lines.append("|--------|-----------|------------|-------------|")
         for m in methods:
             sig = _format_signature(m)
-            decs = ", ".join(f"`@{d}`" for d in m.get("decorators", [])) or "—"
+            decs = (
+                ", ".join(_table_inline_code(f"@{d}") for d in m.get("decorators", []))
+                or "—"
+            )
             doc = _source_doc_first_line(m.get("docstring")) or "—"
             async_tag = "*(async)* " if m.get("is_async") else ""
-            lines.append(f"| `{m['name']}` | `{async_tag}{sig}` | {decs} | {doc} |")
+            lines.append(
+                f"| `{_table_text(m['name'])}` | {async_tag}{_table_inline_code(sig)} | "
+                f"{decs} | {_table_text(doc)} |"
+            )
     else:
         lines.append("*No public methods. Inherits from base classes.*")
     lines.append("")
@@ -1214,8 +1448,15 @@ def _generate_module_md(
     elif classes:
         lines.append("## Classes")
         lines.append("")
-        lines.append("| Class | Line | Bases | Description |")
-        lines.append("|-------|------|-------|-------------|")
+        include_kind = any(
+            item.get("kind") not in (None, "", "class") for item in classes
+        )
+        if include_kind:
+            lines.append("| Class | Kind | Line | Bases / Target | Description |")
+            lines.append("|-------|------|------|----------------|-------------|")
+        else:
+            lines.append("| Class | Line | Bases | Description |")
+            lines.append("|-------|------|-------|-------------|")
         seen_names: defaultdict[str, int] = defaultdict(int)
         for c in classes:
             seen_names[c["name"]] += 1
@@ -1227,9 +1468,21 @@ def _generate_module_md(
                 entity_occurrence_page_map,
             )
             entity_link = f"[{c['name']}](../entities/{page_name}.md)"
-            bases = ", ".join(f"`{b}`" for b in c.get("bases", [])) or "—"
+            bases = ", ".join(
+                _table_inline_code(base) for base in c.get("bases", [])
+            )
+            bases = bases or _table_inline_code(c.get("target"))
             doc = _source_doc_first_line(c.get("docstring")) or "—"
-            lines.append(f"| {entity_link} | {c.get('line', '?')} | {bases} | {doc} |")
+            if include_kind:
+                lines.append(
+                    f"| {entity_link} | {_entity_kind_label(c)} | "
+                    f"{c.get('line', '?')} | {bases} | {_table_text(doc)} |"
+                )
+            else:
+                lines.append(
+                    f"| {entity_link} | {c.get('line', '?')} | {bases} | "
+                    f"{_table_text(doc)} |"
+                )
         lines.append("")
 
     # Functions
@@ -1242,10 +1495,18 @@ def _generate_module_md(
         lines.append("|----------|-----------|------------|-------------|")
         for fn in functions:
             sig = _format_signature(fn)
-            decs = ", ".join(f"`@{d}`" for d in fn.get("decorators", [])) or "—"
+            decs = (
+                ", ".join(
+                    _table_inline_code(f"@{d}") for d in fn.get("decorators", [])
+                )
+                or "—"
+            )
             doc = _source_doc_first_line(fn.get("docstring")) or "—"
             async_tag = "*(async)* " if fn.get("is_async") else ""
-            lines.append(f"| `{fn['name']}` | `{async_tag}{sig}` | {decs} | {doc} |")
+            lines.append(
+                f"| `{_table_text(fn['name'])}` | {async_tag}{_table_inline_code(sig)} | "
+                f"{decs} | {_table_text(doc)} |"
+            )
         lines.append("")
 
     return "\n".join(lines)
@@ -1276,6 +1537,7 @@ def _append_surface_overview(
     guide_count: int,
     flow_count: int,
     infrastructure_count: int,
+    api_contracts_present: bool,
     architecture_count: int,
     log_present: bool,
 ) -> None:
@@ -1318,6 +1580,13 @@ def _append_surface_overview(
                 ),
             ),
             _overview_row(
+                _SURFACE_LABELS[PageKind.API_CONTRACTS],
+                1 if api_contracts_present else 0,
+                f"[Open contracts]({canonical_path(PageKind.API_CONTRACTS)})"
+                if api_contracts_present
+                else "No pages",
+            ),
+            _overview_row(
                 "Dependency architecture",
                 architecture_count,
                 _overview_target(architecture_count, "Dependency Architecture"),
@@ -1351,7 +1620,8 @@ def _append_index_modules(lines: list[str], module_entries: list[dict]) -> None:
     lines.append("")
     for entry in sorted(module_entries, key=lambda e: e["name"]):
         desc = _source_doc_first_line(entry.get("docstring"))
-        suffix = f" - {desc}" if desc else f" - `{entry['path']}`"
+        source_path = entry.get("path")
+        suffix = f" - {desc}" if desc else f" - `{source_path}`" if source_path else ""
         path = canonical_path(PageKind.MODULES, entry["name"])
         lines.append(f"- [{entry['name']}]({path}){suffix}")
     lines.append("")
@@ -1423,6 +1693,19 @@ def _append_index_infrastructure(
     lines.append("")
 
 
+def _append_index_api_contracts(
+    lines: list[str], *, api_contracts_present: bool
+) -> None:
+    if not api_contracts_present:
+        return
+    lines.append(f"## {_SURFACE_LABELS[PageKind.API_CONTRACTS]}")
+    lines.append("")
+    lines.append(
+        f"- [Production HTTP API inventory]({canonical_path(PageKind.API_CONTRACTS)})"
+    )
+    lines.append("")
+
+
 def _architecture_path(page: str) -> str:
     if page == PageKind.DEPENDENCIES.value:
         return canonical_path(PageKind.DEPENDENCIES)
@@ -1477,6 +1760,7 @@ def _generate_index_md(
     flow_entries: list[dict] | None = None,
     architecture_entries: list[dict] | None = None,
     *,
+    api_contracts_present: bool = False,
     log_present: bool = True,
 ) -> str:
     """Generate the full index.md content."""
@@ -1500,6 +1784,7 @@ def _generate_index_md(
         guide_count=len(guide_entries),
         flow_count=len(flow_entries),
         infrastructure_count=len(infra_entries),
+        api_contracts_present=api_contracts_present,
         architecture_count=len(architecture_entries),
         log_present=log_present,
     )
@@ -1509,6 +1794,7 @@ def _generate_index_md(
     _append_index_guides(lines, guide_entries)
     _append_index_user_flows(lines, flow_entries)
     _append_index_infrastructure(lines, infra_entries)
+    _append_index_api_contracts(lines, api_contracts_present=api_contracts_present)
     _append_index_architecture(lines, architecture_entries)
     _append_index_log(lines, log_present=log_present)
 
@@ -1767,6 +2053,7 @@ def _generate_flow_md(
     *,
     data_flow: Mapping | None = None,
     diagram_style: Mapping[str, Any] | None = None,
+    api_contract_operations: Sequence[Mapping[str, Any]] | None = None,
 ) -> str:
     """Generate a user-flow page with a Mermaid sequence diagram from *flow*."""
     entry = flow["entry"]
@@ -1829,6 +2116,13 @@ def _generate_flow_md(
             )
         lines.extend(_generate_data_flow_section(data_flow, page_map, diagram_style))
 
+    api_contract_section = render_flow_api_contract_section(
+        api_contract_operations or []
+    )
+    if api_contract_section:
+        lines.extend(api_contract_section.rstrip().splitlines())
+        lines.append("")
+
     lines.append("## Behavior")
     lines.append("")
     lines.append(
@@ -1838,6 +2132,22 @@ def _generate_flow_md(
     lines.append("")
 
     return "\n".join(lines)
+
+
+def _preserve_level_two_section(existing: str, generated: str, heading: str) -> str:
+    """Carry one human-owned level-two section into regenerated Markdown."""
+    pattern = re.compile(
+        rf"(?ms)^##[ \t]+{re.escape(heading)}[ \t]*\r?\n.*?"
+        rf"(?=^##[ \t]+|\Z)"
+    )
+    old_match = pattern.search(existing)
+    new_match = pattern.search(generated)
+    if old_match is None or new_match is None:
+        return generated
+    # Splice the complete human-owned section verbatim, including its original
+    # blank-line and trailing-newline choices.
+    old_section = old_match.group(0)
+    return generated[: new_match.start()] + old_section + generated[new_match.end() :]
 
 
 # ── Architecture pages: dependencies + load order (Epic 2.4) ──────────
@@ -2941,6 +3251,8 @@ class _BootstrapRunOptions:
     skip_flows: bool
     skip_data_flow: bool
     skip_dependencies: bool
+    api_contracts: bool
+    openapi_file: str | None
     dependency_graph_detail: str
     overwrite: bool
     json_mode: bool
@@ -3006,12 +3318,20 @@ class _DependencyResult:
 
 
 @dataclass(frozen=True)
+class _ApiContractResult:
+    contracts: dict | None
+    present: bool
+    created: int
+
+
+@dataclass(frozen=True)
 class _BootstrapGenerationResult:
     entity: _EntityModuleResult
     workflow: _WorkflowResult
     flow: _FlowResult
     infrastructure: _InfrastructureResult
     dependency: _DependencyResult
+    api_contract: _ApiContractResult
     cross_reference_count: int
 
 
@@ -3043,7 +3363,9 @@ def _bootstrap_run_options_from_args(args) -> _BootstrapRunOptions:
         "--src-dir",
         allow_external=getattr(args, "allow_external_src", False),
     )
-    depth = getattr(args, "depth", "full")
+    openapi_file = getattr(args, "openapi_file", None)
+    api_contracts = bool(getattr(args, "api_contracts", False) or openapi_file)
+    depth = "full" if api_contracts else getattr(args, "depth", "full")
     json_mode = getattr(args, "format", "text") == "json"
     return _BootstrapRunOptions(
         src_dir=src_dir,
@@ -3055,6 +3377,8 @@ def _bootstrap_run_options_from_args(args) -> _BootstrapRunOptions:
         skip_flows=getattr(args, "skip_flows", False),
         skip_data_flow=getattr(args, "skip_data_flow", False),
         skip_dependencies=getattr(args, "skip_dependencies", False),
+        api_contracts=api_contracts,
+        openapi_file=openapi_file,
         dependency_graph_detail=getattr(args, "dependency_graph_detail", "auto"),
         overwrite=args.overwrite,
         json_mode=json_mode,
@@ -3448,11 +3772,78 @@ def _write_bootstrap_workflow_pages(
     return _WorkflowResult(workflow_entries, workflows_created)
 
 
+def _build_bootstrap_api_contracts(
+    state: _BootstrapRunState, inventory: dict
+) -> dict | None:
+    if not state.options.api_contracts:
+        return None
+    _emit_bootstrap(state, "Assembling API contracts...", flush=True)
+    contracts = build_api_contracts(
+        inventory,
+        openapi_file=state.options.openapi_file,
+        source_root=state.options.src_dir_for_scan,
+    )
+    _emit_bootstrap(
+        state,
+        f"Assembled API contracts: {len(contracts.get('operations', []))} operation(s).",
+        flush=True,
+    )
+    return contracts
+
+
+def _write_bootstrap_api_contract_page(
+    state: _BootstrapRunState,
+    contracts: dict | None,
+    page_maps: _BootstrapPageMaps,
+) -> _ApiContractResult:
+    page_path = state.options.wiki_dir / canonical_path(PageKind.API_CONTRACTS)
+    if contracts is None:
+        return _ApiContractResult(None, page_path.is_file(), 0)
+
+    generated = render_api_contracts_markdown(
+        contracts,
+        module_page_map=page_maps.module_page_map,
+        entity_page_map=page_maps.entity_page_name_cache,
+    )
+    if page_path.exists() and not state.options.overwrite:
+        state.skipped_files.append(_path_text(page_path))
+        _emit_bootstrap(state, "  SKIP API contracts (exists): api-contracts.md")
+        return _ApiContractResult(contracts, True, 0)
+    if page_path.exists():
+        generated = _preserve_level_two_section(
+            read_md(page_path), generated, "Notes"
+        )
+    _write_bootstrap_file(state, page_path, generated)
+    _emit_bootstrap(state, "  CREATE API contracts: api-contracts.md")
+    return _ApiContractResult(contracts, True, 1)
+
+
+def _api_operations_for_entry_point(
+    contracts: Mapping[str, Any] | None, entry_point: Mapping[str, Any]
+) -> list[Mapping[str, Any]]:
+    if not contracts:
+        return []
+    filepath = str(entry_point.get("file") or "")
+    symbol = str(entry_point.get("symbol") or "").rsplit(".", 1)[-1]
+    matches = []
+    for operation in contracts.get("operations", []):
+        handler = operation.get("handler")
+        if not isinstance(handler, Mapping):
+            continue
+        if str(handler.get("file") or "") != filepath:
+            continue
+        if str(handler.get("symbol") or "") != symbol:
+            continue
+        matches.append(operation)
+    return matches
+
+
 def _write_bootstrap_flow_pages(
     state: _BootstrapRunState,
     inventory: dict,
     module_page_map: dict[str, str],
     call_edges: Sequence[Mapping] | None = None,
+    api_contracts: Mapping[str, Any] | None = None,
 ) -> _FlowResult:
     flow_entries: list[dict] = []
     flows_created = 0
@@ -3469,7 +3860,15 @@ def _write_bootstrap_flow_pages(
         fallback_root=Path.cwd(),
     )
     _emit_bootstrap_warnings(state, entrypoint_result.warnings)
-    entry_points = entrypoint_result.entries
+    entry_points = attach_routes_to_entry_points(
+        entrypoint_result.entries, api_contracts or {}
+    )
+    for entry_point in entry_points:
+        for operation in _api_operations_for_entry_point(
+            api_contracts, entry_point
+        ):
+            if isinstance(operation, dict):
+                operation["flow_id"] = entry_point["id"]
     edges: list[dict]
     if not entry_points:
         edges = []
@@ -3503,35 +3902,44 @@ def _write_bootstrap_flow_pages(
             state.skipped_files.append(_path_text(flow_path))
             _emit_bootstrap(state, f"  SKIP flow (exists): {entry_point['id']}")
         else:
+            flow_markdown = _generate_flow_md(
+                flow,
+                module_page_map,
+                data_flow=data_flow,
+                diagram_style=_generated_diagram_style(
+                    "data_flow",
+                    root=state.options.src_dir_for_scan,
+                    fallback_root=Path.cwd(),
+                    flow_id=entry_point.get("id"),
+                    category=entry_point.get("category"),
+                )
+                if data_flow is not None
+                else None,
+                api_contract_operations=_api_operations_for_entry_point(
+                    api_contracts, entry_point
+                ),
+            )
+            if flow_path.exists():
+                flow_markdown = _preserve_level_two_section(
+                    read_md(flow_path), flow_markdown, "Behavior"
+                )
             _write_bootstrap_file(
                 state,
                 flow_path,
-                _generate_flow_md(
-                    flow,
-                    module_page_map,
-                    data_flow=data_flow,
-                    diagram_style=_generated_diagram_style(
-                        "data_flow",
-                        root=state.options.src_dir_for_scan,
-                        fallback_root=Path.cwd(),
-                        flow_id=entry_point.get("id"),
-                        category=entry_point.get("category"),
-                    )
-                    if data_flow is not None
-                    else None,
-                ),
+                flow_markdown,
             )
             flows_created += 1
             _emit_bootstrap(state, f"  CREATE flow: {entry_point['id']}")
-        flow_entries.append(
-            {
-                "id": entry_point["id"],
-                "category": entry_point["category"],
-                "entry": entry_point["symbol"],
-                "file": entry_point.get("file"),
-                "label": entry_point.get("label"),
-            }
-        )
+        flow_entry = {
+            "id": entry_point["id"],
+            "category": entry_point["category"],
+            "entry": entry_point["symbol"],
+            "file": entry_point.get("file"),
+            "label": entry_point.get("label"),
+        }
+        if entry_point.get("routes"):
+            flow_entry["routes"] = entry_point["routes"]
+        flow_entries.append(flow_entry)
     _emit_bootstrap(state, f"Generated user-flow pages: {flows_created}.", flush=True)
     data_flow_summary = _data_flow_summary(
         generated=data_flow_enabled,
@@ -3724,6 +4132,7 @@ def _write_bootstrap_index(
     flow_result: _FlowResult,
     infrastructure_result: _InfrastructureResult,
     dependency_result: _DependencyResult,
+    api_contract_result: _ApiContractResult,
 ) -> None:
     index_path = state.options.wiki_dir / "index.md"
     _write_bootstrap_file(
@@ -3737,6 +4146,7 @@ def _write_bootstrap_index(
             infra_entries=infrastructure_result.entries or None,
             flow_entries=flow_result.entries or None,
             architecture_entries=dependency_result.architecture_entries or None,
+            api_contracts_present=api_contract_result.present,
         ),
     )
     _emit_bootstrap(state, "  WRITE index.md")
@@ -3750,6 +4160,7 @@ def _append_bootstrap_log(
     flow_result: _FlowResult,
     infrastructure_result: _InfrastructureResult,
     dependency_result: _DependencyResult,
+    api_contract_result: _ApiContractResult,
     cross_reference_count: int,
 ) -> None:
     log_path = state.options.wiki_dir / "log.md"
@@ -3769,6 +4180,9 @@ def _append_bootstrap_log(
         f"- User flows created: {flow_result.created}\n"
         f"- Infrastructure created: {infrastructure_result.created}\n"
         f"- Architecture pages created: {dependency_result.created}\n"
+        f"- API contract pages created: {api_contract_result.created}\n"
+        f"- API operations tracked: "
+        f"{len((api_contract_result.contracts or {}).get('operations', []))}\n"
         f"- Total classes tracked: {len(entity_result.all_entity_names)}\n"
         f"- Total files scanned: {len(inventory)}\n"
         f"- Docker/Compose files: {len(infrastructure_result.docker_inventory)}\n"
@@ -3796,6 +4210,7 @@ def _emit_bootstrap_complete(
     flow_result: _FlowResult,
     infrastructure_result: _InfrastructureResult,
     dependency_result: _DependencyResult,
+    api_contract_result: _ApiContractResult,
     cross_reference_count: int,
 ) -> None:
     _emit_bootstrap(
@@ -3805,6 +4220,7 @@ def _emit_bootstrap_complete(
         f"{flow_result.created} flows, "
         f"{infrastructure_result.created} infrastructure, "
         f"{dependency_result.created} architecture "
+        f"and {api_contract_result.created} API contract pages "
         f"created from {len(inventory)} source files "
         f"({cross_reference_count} cross-references).",
     )
@@ -3821,8 +4237,34 @@ def _write_bootstrap_manifest(
     state: _BootstrapRunState,
     inventory: dict,
     page_maps: _BootstrapPageMaps,
+    api_contract_result: _ApiContractResult,
 ) -> Path:
     from .sync_cmd import SyncManifest  # local import to avoid circular dep
+
+    surfaces = {
+        "flows": {
+            "enabled": bool(state.options.deep and not state.options.skip_flows),
+            "categories": None,
+            "exclude_tests": False,
+        },
+        "dependencies": {
+            "enabled": bool(
+                state.options.deep and not state.options.skip_dependencies
+            ),
+            "exclude_tests": False,
+        },
+        "api_contracts": {
+            "enabled": bool(state.options.api_contracts or api_contract_result.present)
+        },
+    }
+    generation_inputs = {}
+    openapi = (api_contract_result.contracts or {}).get("openapi")
+    if isinstance(openapi, Mapping):
+        generation_inputs["openapi"] = {
+            key: openapi[key]
+            for key in ("path", "sha256", "format")
+            if key in openapi
+        }
 
     manifest = SyncManifest.build_from_inventory(
         inventory,
@@ -3830,6 +4272,8 @@ def _write_bootstrap_manifest(
         page_maps.entity_page_name_cache,
         page_maps.module_page_map,
         entity_occurrence_page_cache=page_maps.entity_occurrence_page_name_cache,
+        surfaces=surfaces,
+        generation_inputs=generation_inputs,
     )
     _emit_bootstrap(state, "Writing sync manifest...", flush=True)
     manifest_path = state.options.wiki_dir / ".llm-wiki-manifest.json"
@@ -3870,6 +4314,7 @@ def _emit_bootstrap_json_summary(
     flow_result: _FlowResult,
     infrastructure_result: _InfrastructureResult,
     dependency_result: _DependencyResult,
+    api_contract_result: _ApiContractResult,
     cross_reference_count: int,
     manifest_path: Path,
 ) -> None:
@@ -3903,6 +4348,13 @@ def _emit_bootstrap_json_summary(
             "flows": len(flow_result.entries),
             "data_flows": flow_result.data_flow_summary,
             "dependencies": dependency_result.summary,
+            "api_contracts": {
+                "generated": api_contract_result.present,
+                "source": (api_contract_result.contracts or {}).get("source"),
+                "operations": len(
+                    (api_contract_result.contracts or {}).get("operations", [])
+                ),
+            },
             "cross_references": cross_reference_count,
             "created_files": state.created_files,
             "updated_files": state.updated_files,
@@ -3921,6 +4373,7 @@ def _generate_bootstrap_content(
     inventory: dict,
     page_maps: _BootstrapPageMaps,
 ) -> _BootstrapGenerationResult:
+    api_contracts = _build_bootstrap_api_contracts(state, inventory)
     call_edges = resolve_call_edges(inventory) if state.options.deep else []
     entity_relationship_summaries = (
         _build_entity_relationship_summary_map(inventory, call_edges)
@@ -3950,7 +4403,14 @@ def _generate_bootstrap_content(
         state, inventory, page_maps.module_page_map
     )
     flow_result = _write_bootstrap_flow_pages(
-        state, inventory, page_maps.module_page_map, call_edges=call_edges
+        state,
+        inventory,
+        page_maps.module_page_map,
+        call_edges=call_edges,
+        api_contracts=api_contracts,
+    )
+    api_contract_result = _write_bootstrap_api_contract_page(
+        state, api_contracts, page_maps
     )
     infrastructure_result = _write_bootstrap_infrastructure_pages(
         state, page_maps.module_page_map
@@ -3967,6 +4427,7 @@ def _generate_bootstrap_content(
         flow_result,
         infrastructure_result,
         dependency_result,
+        api_contract_result,
         cross_reference_count,
     )
 
@@ -3984,6 +4445,7 @@ def _finalize_bootstrap(
         result.flow,
         result.infrastructure,
         result.dependency,
+        result.api_contract,
     )
     _append_bootstrap_log(
         state,
@@ -3993,6 +4455,7 @@ def _finalize_bootstrap(
         result.flow,
         result.infrastructure,
         result.dependency,
+        result.api_contract,
         result.cross_reference_count,
     )
     _write_bootstrap_surface_index(state, inventory, page_maps, result.flow)
@@ -4004,10 +4467,13 @@ def _finalize_bootstrap(
         result.flow,
         result.infrastructure,
         result.dependency,
+        result.api_contract,
         result.cross_reference_count,
     )
     _update_bootstrap_agent_constraints(state)
-    manifest_path = _write_bootstrap_manifest(state, inventory, page_maps)
+    manifest_path = _write_bootstrap_manifest(
+        state, inventory, page_maps, result.api_contract
+    )
     _emit_bootstrap_json_summary(
         state,
         inventory,
@@ -4015,6 +4481,7 @@ def _finalize_bootstrap(
         result.flow,
         result.infrastructure,
         result.dependency,
+        result.api_contract,
         result.cross_reference_count,
         manifest_path,
     )
@@ -4027,11 +4494,18 @@ def run(args):
 
     inventory_result = _extract_bootstrap_inventory(state)
     inventory = inventory_result.inventory
-    if _finish_if_empty_bootstrap_inventory(state, inventory):
+    if (
+        not state.options.openapi_file
+        and _finish_if_empty_bootstrap_inventory(state, inventory)
+    ):
         return
 
     page_maps = _prepare_bootstrap_page_maps(inventory)
-    result = _generate_bootstrap_content(state, inventory, page_maps)
+    try:
+        result = _generate_bootstrap_content(state, inventory, page_maps)
+    except ApiContractError as exc:
+        print(f"Error: {exc}", file=state.options.progress_stream)
+        sys.exit(2)
     _finalize_bootstrap(state, inventory, page_maps, result)
 
 

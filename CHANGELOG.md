@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-07-11
+
+Implements [#10 — Add reconstructable Python/FastAPI API contracts and explicit
+surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
+
+### Added
+- Reconstructable Python contracts: deep inventory now preserves every
+  parameter kind and normalizes Pydantic field metadata, validators/config,
+  enums, literals, and type aliases without importing target code.
+- Syntax-only FastAPI contract analysis with composed router prefixes,
+  parameter locations and aliases, declared responses/content types, an
+  optional canonical `api-contracts.md` surface, and authoritative exported
+  OpenAPI 3.0/3.1 JSON/YAML reconciliation.
+- Explicit `sync --initialize-surfaces` backfill for flows, dependency
+  architecture, and API contracts, including category/test filters, a no-write
+  preview, broad-surface guards, and persistent manifest v4 surface policy.
+- New bundled `wiki-reference` skill holding contract-level detail
+  (extraction contracts including the Haskell helper and inventory schema,
+  helper toolchains and caches, dependency reconciliation and lockfile
+  `versions` metadata, static-site export profiles, and `llm-wiki context`).
+  The install location follows the configured agent: `.claude/skills/` for
+  claude (natively indexed), the platform-neutral `.llm-wiki/skills/` for all
+  other agents — and the constraint block pointer is rendered per agent.
+  `init` installs it (`--no-skills` to opt out; the choice persists in config
+  and `upgrade --skills/--no-skills` overrides it), `upgrade` force-refreshes
+  it and relocates an unmodified copy when switching agents, `uninstall`
+  sweeps every known location but removes only unmodified copies, and
+  `skills install` defaults its `--dest` to the configured agent's directory.
+  `status` reports whether the installed copy is current, and `init` prints a
+  hint about the other bundled skills (`llm-wiki skills list`).
+- Agent constraint block now includes a "Report llm-wiki tool issues" rule:
+  agents must record CLI misbehavior in per-issue report files under
+  `llm-wiki-issues/` at the project root instead of silently working around
+  it.
+
+### Changed
+- Generated Python signature and model tables now render normalized contract
+  metadata, so existing generated pages may change on their next bootstrap or
+  sync as a correctness update.
+- `PyYAML>=6` is now a required runtime dependency for safely loading
+  user-supplied OpenAPI YAML. FastAPI and Pydantic remain unnecessary runtime
+  dependencies, and target application code is not imported for extraction.
+- The injected agent constraint block (`AGENTS.md`, `CLAUDE.md`, …) was
+  deduplicated and slimmed via progressive disclosure: rarely-needed contract
+  detail moved to the `wiki-reference` skill and the block now carries
+  pointers with explicit trigger conditions, cutting the block by roughly a
+  third (~6k to ~4k tokens) with no contract content lost.
+
 ## [1.2.0] - 2026-07-08
 
 ### Changed
@@ -353,7 +401,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Test suite** — 89 unit + integration tests with pytest
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v0.6.2...v1.0.0

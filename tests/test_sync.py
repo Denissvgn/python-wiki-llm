@@ -1529,6 +1529,53 @@ class TestSemanticPreservation:
                 updated.append(line)
         return "\n".join(updated)
 
+    def test_table_parser_keeps_pipes_inside_code_spans_and_escaped_cells(self):
+        assert sync_cmd._split_table_row(
+            "| Name | `str | None` | Human description |"
+        ) == ["Name", "`str | None`", "Human description"]
+        assert sync_cmd._split_table_row(
+            r"| Name | `str \| None` | Human \| description |"
+        ) == ["Name", r"`str \| None`", r"Human \| description"]
+
+    def test_generated_field_description_updates_unedited_text_and_preserves_edits(self):
+        old_generated = textwrap.dedent("""\
+            # Request
+
+            ## Description
+
+            Request payload.
+
+            ## Attributes
+
+            | Name | Type | Default | Description |
+            |------|------|---------|-------------|
+            | `name` | `str` | *required* | Old source description. |
+            """)
+        new_generated = old_generated.replace(
+            "Old source description.", "New source description."
+        )
+        old_semantics = {
+            "description": "Request payload.",
+            "attributes": {"name": "Old source description."},
+            "methods": {},
+        }
+
+        unchanged = sync_cmd._merge_entity_semantics(
+            old_generated, new_generated, old_semantics
+        )
+        human_edited = sync_cmd._merge_entity_semantics(
+            old_generated.replace(
+                "Old source description.", "Human-curated description."
+            ),
+            new_generated,
+            old_semantics,
+        )
+
+        assert "New source description." in unchanged.text
+        assert "Old source description." not in unchanged.text
+        assert "Human-curated description." in human_edited.text
+        assert "New source description." not in human_edited.text
+
     def test_line_number_shift_preserves_entity_semantics(
         self, bootstrapped_project, capsys
     ):

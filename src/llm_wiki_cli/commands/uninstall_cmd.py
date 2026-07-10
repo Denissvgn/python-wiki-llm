@@ -9,6 +9,11 @@ from ..services.schema import (
     CONSTRAINT_START,
     strip_wiki_block as _strip_wiki_block,
 )
+from ..services.skills import (
+    KNOWN_INSTALL_TARGETS,
+    REFERENCE_SKILL_ID,
+    reference_skill_state,
+)
 
 # Hook identifier — all llm-wiki hooks contain this string
 HOOK_SIGNATURE = "LLM Wiki"
@@ -114,6 +119,33 @@ def _remove_wiki_dir(wiki_dir: Path, dry_run: bool = False) -> bool:
     return True
 
 
+def _remove_reference_skill(dry_run: bool = False) -> int:
+    """Remove installed wiki-reference skill copies, but only unmodified ones.
+
+    Sweeps every directory provisioning may have used across agents.
+    """
+    removed = 0
+    for target in KNOWN_INSTALL_TARGETS:
+        state = reference_skill_state(target=target)
+        if state == "absent":
+            continue
+
+        skill_dir = Path(target) / REFERENCE_SKILL_ID
+        if state == "modified":
+            print(
+                f"  SKIP {skill_dir}/ (locally modified — remove manually if intended)"
+            )
+            continue
+
+        if dry_run:
+            print(f"  WOULD REMOVE: {skill_dir}/")
+        else:
+            shutil.rmtree(skill_dir)
+            print(f"  REMOVED: {skill_dir}/")
+        removed += 1
+    return removed
+
+
 def _remove_runtime_artifacts(dry_run: bool = False) -> int:
     """Remove local runtime artifacts created by llm-wiki."""
     removed = 0
@@ -184,8 +216,32 @@ def run(args):
     else:
         print("  Nothing to remove.")
 
+    # Installed wiki-reference skill copies (any agent's location)
+    print("\n5. Bundled Reference Skill:")
+    skill_count = 0
+    skill_found = False
+    for target in KNOWN_INSTALL_TARGETS:
+        skill_state = reference_skill_state(target=target)
+        if skill_state == "absent":
+            continue
+        skill_found = True
+        skill_dir = Path(target) / REFERENCE_SKILL_ID
+        if skill_state == "unmodified":
+            print(f"  {skill_dir}/")
+            skill_count += 1
+        else:
+            print(f"  {skill_dir}/ — KEPT (locally modified)")
+    if not skill_found:
+        print("  Not found.")
+
     wiki_targeted = remove_wiki and wiki_dir.exists()
-    total = hooks_count + schema_count + (1 if wiki_targeted else 0) + artifact_count
+    total = (
+        hooks_count
+        + schema_count
+        + (1 if wiki_targeted else 0)
+        + artifact_count
+        + skill_count
+    )
     if total == 0:
         print("\nNothing to uninstall. Project is clean.")
         return
@@ -215,6 +271,9 @@ def run(args):
         removed_total += 1
 
     r = _remove_runtime_artifacts()
+    removed_total += r
+
+    r = _remove_reference_skill()
     removed_total += r
 
     print(f"\nUninstall complete. {removed_total} item(s) removed.")
