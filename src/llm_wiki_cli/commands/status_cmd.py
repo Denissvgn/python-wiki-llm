@@ -31,7 +31,11 @@ def _count_surface_pages(wiki_path: Path, entry) -> int:
 def _architecture_page_count(wiki_path: Path) -> int:
     return sum(
         1
-        for kind in (PageKind.DEPENDENCIES, PageKind.LOAD_ORDER)
+        for kind in (
+            PageKind.API_CONTRACTS,
+            PageKind.DEPENDENCIES,
+            PageKind.LOAD_ORDER,
+        )
         if (wiki_path / canonical_path(kind)).is_file()
     )
 

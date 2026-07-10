@@ -300,6 +300,30 @@ def test_list_wiki_pages_returns_registry_metadata_without_running_extraction(
     }
 
 
+def test_list_wiki_pages_exposes_api_contract_root_surface(
+    tmp_project, monkeypatch
+):
+    wiki = _write_api_wiki(tmp_project)
+    (wiki / "api-contracts.md").write_text(
+        "# API contracts\n\n## Notes\n\nReviewed.\n", encoding="utf-8"
+    )
+
+    def fail_if_extracted(*args, **kwargs):  # pragma: no cover - assertion helper
+        raise AssertionError("list_wiki_pages must not run source extraction")
+
+    monkeypatch.setattr(api.extract_cmd, "build_extract_payload", fail_if_extracted)
+
+    payload = list_wiki_pages("docs/llm_wiki")
+
+    assert payload["counts"]["by_kind"]["api-contracts"] == 1
+    assert payload["counts"]["architecture_pages"] == 3
+    page = next(
+        item for item in payload["pages"] if item["kind"] == "api-contracts"
+    )
+    assert page["canonical_path"] == "api-contracts.md"
+    assert page["mcp_uri"] == "llm-wiki://api-contracts"
+
+
 def test_graph_query_service_and_wrappers_return_documentation_answers(tmp_project):
     _write_query_project(tmp_project)
     _write_api_wiki(tmp_project)

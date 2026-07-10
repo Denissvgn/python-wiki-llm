@@ -39,7 +39,7 @@ _ROOT_RESOURCES = {
     entry.mcp_uri_kind: entry for entry in wiki_surface.iter_root_pages()
 }
 _SEARCH_KINDS = set(_PAGE_KINDS_BY_MCP_KIND)
-_ARCHITECTURE_PAGE_KINDS = {"dependencies", "load-order"}
+_ARCHITECTURE_PAGE_KINDS = {"api-contracts", "dependencies", "load-order"}
 _GRAPH_QUERY_METHODS = {
     "flow_for_entrypoint": "flow_for_entrypoint",
     "data_flow_for_entrypoint": "data_flow_for_entrypoint",

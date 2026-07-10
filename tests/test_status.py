@@ -35,6 +35,7 @@ class TestStatusWiki:
         (wiki / "workflows" / "signup.md").write_text("# signup\n")
         (wiki / "flows" / "checkout.md").write_text("# checkout\n")
         (wiki / "infrastructure" / "Dockerfile.md").write_text("# Dockerfile\n")
+        (wiki / "api-contracts.md").write_text("# API contracts\n")
         (wiki / "dependencies.md").write_text("# Dependencies\n")
         (wiki / "load-order.md").write_text("# Load Order\n")
 
@@ -50,9 +51,10 @@ class TestStatusWiki:
         assert counts["Workflows"] == 1
         assert counts["Flows"] == 1
         assert counts["Infrastructure"] == 1
+        assert counts["API contracts"] == 1
         assert counts["Dependencies"] == 1
         assert counts["Load order"] == 1
-        assert counts["Architecture pages"] == 2
+        assert counts["Architecture pages"] == 3
 
     def test_counts_wiki_pages_without_materializing_globs(
         self, tmp_project, capsys, monkeypatch
@@ -102,6 +104,7 @@ class TestStatusWiki:
         assert counts["Workflows"] == 0
         assert counts["Flows"] == 0
         assert counts["Infrastructure"] == 0
+        assert counts["API contracts"] == 0
         assert counts["Dependencies"] == 0
         assert counts["Load order"] == 0
         assert counts["Architecture pages"] == 0

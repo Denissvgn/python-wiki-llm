@@ -22,6 +22,7 @@ classifiers = [
     "Topic :: Software Development :: Documentation",
 ]
 dependencies = [
+    "PyYAML>=6",
     "tomli>=2; python_version < '3.11'",
 ]
 

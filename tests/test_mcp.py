@@ -128,6 +128,20 @@ class TestMcpWikiService:
         assert load_order["uri"] == "llm-wiki://load-order"
         assert load_order["path"] == "load-order.md"
 
+    def test_reads_api_contracts_root_resource(self, tmp_project):
+        wiki = _write_wiki(tmp_project)
+        (wiki / "api-contracts.md").write_text(
+            "# API contracts\n\n## Notes\n\nReviewed contract.\n",
+            encoding="utf-8",
+        )
+        service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+        result = service.read_resource("llm-wiki://api-contracts")
+
+        assert result["metadata"]["kind"] == "api-contracts"
+        assert result["metadata"]["path"] == "api-contracts.md"
+        assert "Reviewed contract" in result["text"]
+
     def test_get_architecture_page_rejects_unknown_page(self, tmp_project):
         _write_wiki(tmp_project)
         service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")

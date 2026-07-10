@@ -37,6 +37,7 @@ _OBSIDIAN_KIND_BY_PAGE_KIND = {
     wiki_surface.PageKind.GUIDES: "guide",
     wiki_surface.PageKind.FLOWS: "flow",
     wiki_surface.PageKind.INFRASTRUCTURE: "infrastructure",
+    wiki_surface.PageKind.API_CONTRACTS: "api-contracts",
     wiki_surface.PageKind.DEPENDENCIES: "dependencies",
     wiki_surface.PageKind.LOAD_ORDER: "load-order",
 }

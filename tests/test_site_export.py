@@ -163,6 +163,26 @@ def test_export_writes_registry_pages_in_surface_order(tmp_path):
     assert [operation.action for operation in second.operations] == ["unchanged"] * 9
 
 
+def test_export_places_api_contracts_with_architecture_pages(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    _write(wiki / "api-contracts.md", "# API contracts\n\n## Notes\n\nReviewed.\n")
+    out = tmp_path / "site"
+
+    report = export_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        format="mkdocs",
+        profile="user",
+        site_name="Assistant",
+    )
+
+    assert report.page_count == 11
+    assert (out / "api-contracts.md").is_file()
+    mkdocs = (out / "mkdocs.yml").read_text(encoding="utf-8")
+    architecture = mkdocs.split('  - "Architecture And Operations":', 1)[1]
+    assert '"API contracts": "api-contracts.md"' in architecture
+
+
 def test_export_includes_guides_surface_pages(tmp_path):
     wiki = _write_wiki(tmp_path)
     _write(

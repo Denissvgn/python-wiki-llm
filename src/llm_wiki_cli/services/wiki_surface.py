@@ -31,6 +31,7 @@ class PageKind(str, Enum):
     GUIDES = "guides"
     FLOWS = "flows"
     INFRASTRUCTURE = "infrastructure"
+    API_CONTRACTS = "api-contracts"
     DEPENDENCIES = "dependencies"
     LOAD_ORDER = "load-order"
 
@@ -156,6 +157,14 @@ _PAGE_KINDS = (
         path_pattern="infrastructure/{page_id}.md",
         mcp_uri_kind="infrastructure",
         obsidian_mirror_dir="Infrastructure",
+        role=SurfaceRole.MIXED,
+    ),
+    WikiSurfaceKind(
+        kind=PageKind.API_CONTRACTS,
+        label="API contracts",
+        path_pattern="api-contracts.md",
+        mcp_uri_kind="api-contracts",
+        obsidian_mirror_dir=None,
         role=SurfaceRole.MIXED,
     ),
     WikiSurfaceKind(

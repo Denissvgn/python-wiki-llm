@@ -38,10 +38,15 @@ _DEPENDENCY_FILES = {
     "go.mod",
     "go.sum",
 }
-_ARCHITECTURE_PAGE_PATHS = {"dependencies.md", "load-order.md"}
+_ARCHITECTURE_PAGE_PATHS = {
+    "api-contracts.md",
+    "dependencies.md",
+    "load-order.md",
+}
 _SYMBOL_REFERENCE_KINDS = {
     PageKind.WORKFLOWS,
     PageKind.FLOWS,
+    PageKind.API_CONTRACTS,
     PageKind.DEPENDENCIES,
     PageKind.LOAD_ORDER,
 }

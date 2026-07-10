@@ -38,6 +38,7 @@ def _human_status_key(kind: str) -> str:
         "infrastructure": "Infrastructure",
         "dependencies": "Dependencies",
         "load-order": "Load order",
+        "api-contracts": "API contracts",
         "architecture_pages": "Architecture pages",
     }[kind]
 

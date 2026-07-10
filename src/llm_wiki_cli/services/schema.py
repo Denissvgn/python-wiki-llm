@@ -144,6 +144,9 @@ The canonical wiki surfaces are:
 - `{wiki_dir}/flows/`: mixed user-flow pages generated from entry points.
 - `{wiki_dir}/infrastructure/`: mixed Docker, Compose, GitHub Actions,
   Kubernetes, and targeted runtime/config YAML pages.
+- `{wiki_dir}/api-contracts.md`: optional mixed production HTTP contract
+  inventory generated from static FastAPI analysis or an exported OpenAPI file;
+  its `## Notes` section is semantic.
 - `{wiki_dir}/dependencies.md`: mixed dependency architecture page when present.
 - `{wiki_dir}/load-order.md`: mixed load-order architecture page when present.
 - `{wiki_dir}/.llm-wiki-surface.json`: generated machine-readable surface index
@@ -211,6 +214,9 @@ labels, hrefs, or raw Mermaid content.
   agent-owned: document intentional cycles, dynamic imports, side effects, and
   notable dependency rationale. Projects bootstrapped with
   `--skip-dependencies`, or older wikis without those pages, stay untouched.
+- If `{wiki_dir}/api-contracts.md` exists, inspect its declared operations,
+  static-analysis unknowns, OpenAPI reconciliation diagnostics, and preserved
+  `## Notes`; never treat an unknown contract field as a confirmed value.
 - If `{wiki_dir}/flows/` exists, inspect regenerated user-flow pages too. Treat
   generated `## Data flow` sections, boundary effects, and static-analysis gaps
   as review inputs, then keep the human-authored `## Behavior` section aligned
