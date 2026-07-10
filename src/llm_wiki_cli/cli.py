@@ -1147,7 +1147,7 @@ def _add_upgrade_command(subparsers):
         "--no-skills",
         dest="skills",
         action="store_false",
-        help="Skip refreshing the wiki-reference skill in .claude/skills/",
+        help="Skip refreshing the wiki-reference skill in the configured agent's skills directory (.claude/skills for claude, .llm-wiki/skills otherwise)",
     )
 
 
