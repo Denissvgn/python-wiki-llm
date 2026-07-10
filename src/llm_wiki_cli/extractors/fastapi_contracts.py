@@ -202,7 +202,7 @@ def _call_payload(
     }
 
 
-def _annotation_parts(node: ast.AST | None) -> tuple[str, list[ast.AST]]:
+def _annotation_parts(node: ast.AST | None) -> tuple[str, list[ast.expr]]:
     if not isinstance(node, ast.Subscript):
         return _display_expr(node), []
     if _simple_ref(node.value).rsplit(".", 1)[-1] != "Annotated":
@@ -241,7 +241,7 @@ def _parameter_payloads(
 ) -> list[dict[str, Any]]:
     arguments = node.args
     positional = list(arguments.posonlyargs) + list(arguments.args)
-    positional_defaults: list[ast.AST | None] = [None] * (
+    positional_defaults: list[ast.expr | None] = [None] * (
         len(positional) - len(arguments.defaults)
     ) + list(arguments.defaults)
     entries: list[tuple[ast.arg, str, ast.AST | None]] = []
