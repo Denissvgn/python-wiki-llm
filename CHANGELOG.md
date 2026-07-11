@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-07-11
+
+### Changed
+- Agent instructions for reporting `llm-wiki` tool issues are now opt-in
+  instead of enabled by default. Use `init --issue-reporting` to enable them for
+  a new project, or `upgrade --issue-reporting` / `--no-issue-reporting` to
+  change and persist the preference for an existing project. The guidance only
+  creates local report files; it never submits or uploads them automatically.
+  Re-running `init` without `--agent` now preserves the stored agent while
+  refreshing these preferences.
+
+### Fixed
+- Source discovery now follows Git's trailing-space handling for `.gitignore`
+  entries: unescaped trailing ASCII spaces are ignored, while `\ ` preserves a
+  literal final space.
+
 ## [1.3.0] - 2026-07-11
 
 Implements [#10 — Add reconstructable Python/FastAPI API contracts and explicit
@@ -401,7 +417,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Test suite** — 89 unit + integration tests with pytest
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.0.0...v1.1.0

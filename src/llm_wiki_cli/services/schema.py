@@ -110,7 +110,32 @@ _QUALITY_HINTS = """\
 """
 
 
-def _wiki_instructions(wiki_dir: str, skills_dir: str) -> str:
+def _issue_reporting_instructions(wiki_dir: str) -> str:
+    return f"""## Report llm-wiki tool issues
+If an `llm-wiki` command itself misbehaves while you use it — a crash or
+traceback, wrong or stale generated output, a diagnostic that contradicts the
+observed state, or behavior that contradicts these instructions — never work
+around it silently:
+
+- Write one report file per issue under `llm-wiki-issues/` at the project root,
+  named `llm-wiki-issues/<YYYY-MM-DD>-<short-slug>.md`. Keep reports outside
+  `{wiki_dir}/` so lint does not flag them as orphan pages.
+- Each report must include: the exact command and flags you ran, expected
+  behavior, actual behavior (trim long output to the relevant lines), minimal
+  reproduction steps, `llm-wiki --version` output, and the workaround you
+  applied, if any.
+- Then continue the original task with the safest workaround and mention the
+  report file in your final summary so the issue can be addressed upstream.
+
+"""
+
+
+def _wiki_instructions(
+    wiki_dir: str, skills_dir: str, *, issue_reporting: bool = False
+) -> str:
+    issue_reporting_instructions = (
+        _issue_reporting_instructions(wiki_dir) if issue_reporting else ""
+    )
     return f"""You are operating within an LLM Wiki architecture. The project's persistent memory is stored in `{wiki_dir}/`.
 
 ## Before you start
@@ -298,23 +323,7 @@ Page filenames **must** match the conventions enforced by `llm-wiki lint`:
   covers active extractor languages only.
 - Never leave the wiki in a state where lint reports errors.
 
-## Report llm-wiki tool issues
-If an `llm-wiki` command itself misbehaves while you use it — a crash or
-traceback, wrong or stale generated output, a diagnostic that contradicts the
-observed state, or behavior that contradicts these instructions — never work
-around it silently:
-
-- Write one report file per issue under `llm-wiki-issues/` at the project root,
-  named `llm-wiki-issues/<YYYY-MM-DD>-<short-slug>.md`. Keep reports outside
-  `{wiki_dir}/` so lint does not flag them as orphan pages.
-- Each report must include: the exact command and flags you ran, expected
-  behavior, actual behavior (trim long output to the relevant lines), minimal
-  reproduction steps, `llm-wiki --version` output, and the workaround you
-  applied, if any.
-- Then continue the original task with the safest workaround and mention the
-  report file in your final summary so the issue can be addressed upstream.
-
-## Formatting rules
+{issue_reporting_instructions}## Formatting rules
 - Entity pages must have: Location, Bases, Module link, Attributes table, Methods table, Relationships.
 - Module pages must have: Path, Imports table, Classes summary, Functions table.
 - User-flow pages have generated Mermaid call-sequence and `## Data flow`
@@ -330,13 +339,19 @@ around it silently:
 
 
 def build_schema_content(
-    agent: str, wiki_dir: str, *, quality_hints: bool = True
+    agent: str,
+    wiki_dir: str,
+    *,
+    quality_hints: bool = True,
+    issue_reporting: bool = False,
 ) -> str:
     """Build the full constraint block for the given agent and wiki directory."""
     from .skills import skills_install_dir
 
     instructions = _wiki_instructions(
-        wiki_dir, skills_install_dir(agent).as_posix()
+        wiki_dir,
+        skills_install_dir(agent).as_posix(),
+        issue_reporting=issue_reporting,
     )
     preambles = {
         "claude": f"# Project Wiki\n\nThis project uses an LLM Wiki for persistent architectural memory.\nRead `{wiki_dir}/index.md` first when starting any task.\n\n",

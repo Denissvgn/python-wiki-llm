@@ -10,6 +10,8 @@ from llm_wiki_cli.config import (
     CLI_AGENTS,
     DEFAULT_WIKI_DIR,
     IDE_AGENTS,
+    _normalize_gitignore_trailing_spaces,
+    _parse_gitignore_file,
     build_gitignore_matcher,
     read_config,
     PathValidationError,
@@ -134,17 +136,23 @@ class TestReadWriteConfig:
         os.chdir(tmp_path)
         wiki = tmp_path / "docs" / "wiki"
         wiki.mkdir(parents=True)
-        data = {"agent": "copilot", "quality_hints": False}
+        data = {
+            "agent": "copilot",
+            "quality_hints": False,
+            "issue_reporting": True,
+        }
         write_config(str(wiki), data)
         result = read_config(str(wiki))
         assert result["agent"] == "copilot"
         assert result["quality_hints"] is False
+        assert result["issue_reporting"] is True
 
     def test_defaults_when_no_file(self, tmp_path):
         os.chdir(tmp_path)
         result = read_config(str(tmp_path / "nonexistent"))
         assert result["agent"] == "generic"
         assert result["quality_hints"] is True
+        assert result["issue_reporting"] is False
 
     def test_backward_compat_bare_string(self, tmp_path):
         os.chdir(tmp_path)
@@ -155,6 +163,7 @@ class TestReadWriteConfig:
         result = read_config(str(wiki))
         assert result["agent"] == "claude"
         assert result["quality_hints"] is True
+        assert result["issue_reporting"] is False
 
     def test_missing_key_gets_default(self, tmp_path):
         os.chdir(tmp_path)
@@ -165,6 +174,7 @@ class TestReadWriteConfig:
         result = read_config(str(wiki))
         assert result["agent"] == "aider"
         assert result["quality_hints"] is True
+        assert result["issue_reporting"] is False
 
     def test_corrupted_json_returns_defaults(self, tmp_path):
         os.chdir(tmp_path)
@@ -175,9 +185,79 @@ class TestReadWriteConfig:
         result = read_config(str(wiki))
         assert result["agent"] == "generic"
         assert result["quality_hints"] is True
+        assert result["issue_reporting"] is False
 
 
 class TestGitIgnoreMatcher:
+    @pytest.mark.parametrize(
+        ("line", "expected"),
+        [
+            ("generated/ ", "generated/"),
+            ("generated/   ", "generated/"),
+            (r"literal\ ", "literal "),
+            (r"literal\ /", "literal /"),
+            (r"mixed\  ", "mixed "),
+            (r"two\ \ ", "two  "),
+            (r"two\\ ", r"two\\"),
+            (r"three\\\ ", "three\\\\ "),
+            (r"two words \ ", "two words  "),
+            ("   ", ""),
+            ("generated/\t", "generated/\t"),
+            ("generated/ \t", "generated/ \t"),
+        ],
+    )
+    def test_normalizes_only_unescaped_trailing_ascii_spaces(self, line, expected):
+        assert _normalize_gitignore_trailing_spaces(line) == expected
+
+    def test_normalizes_trailing_spaces_before_parsing_rule_syntax(self, tmp_path):
+        gitignore = tmp_path / ".gitignore"
+        gitignore.write_bytes(
+            b"   \r\n"
+            b".shared/ \r\n"
+            b".agent/   \r\n"
+            b"!kept/ \r\n"
+            b"/root/ \r\n"
+            b"literal\\ \r\n"
+            b"literal-dir\\ /\r\n"
+            b"mixed\\  \r\n"
+            b"two\\ \\ \r\n"
+            b"tabbed\t \r\n"
+        )
+
+        rules = _parse_gitignore_file(gitignore)
+        assert [
+            (
+                rule.pattern,
+                rule.negated,
+                rule.directory_only,
+                rule.anchored,
+            )
+            for rule in rules
+        ] == [
+            (".shared", False, True, False),
+            (".agent", False, True, False),
+            ("kept", True, True, False),
+            ("root", False, True, True),
+            ("literal ", False, False, False),
+            ("literal-dir ", False, True, False),
+            ("mixed ", False, False, False),
+            ("two  ", False, False, False),
+            ("tabbed\t", False, False, False),
+        ]
+
+        matcher = build_gitignore_matcher(tmp_path)
+        assert matcher.is_ignored(".shared/example.py")
+        assert matcher.is_ignored("pkg/.agent/example.py")
+        assert not matcher.is_ignored("kept/example.py")
+        assert matcher.is_ignored("root/example.py")
+        assert not matcher.is_ignored("pkg/root/example.py")
+        assert matcher.is_ignored("literal ")
+        assert matcher.is_ignored("literal-dir /example.py")
+        assert matcher.is_ignored("mixed ")
+        assert matcher.is_ignored("two  ")
+        assert not matcher.is_ignored("two ")
+        assert matcher.is_ignored("tabbed\t")
+
     def test_supports_root_anchored_negation_and_dir_patterns(self, tmp_path):
         (tmp_path / ".gitignore").write_text(
             "/root_only.py\nbuild/\n*.pyc\n!keep.pyc\n**/cache/*.json\n",

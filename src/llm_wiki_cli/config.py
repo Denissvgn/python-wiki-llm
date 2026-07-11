@@ -210,6 +210,7 @@ _DEFAULT_CONFIG: dict[str, object] = {
     "agent": "generic",
     "quality_hints": True,
     "reference_skill": True,
+    "issue_reporting": False,
 }
 
 
@@ -247,6 +248,53 @@ class GitIgnoreMatcher:
         return rule is not None and not rule.negated
 
 
+def _normalize_gitignore_trailing_spaces(line: str) -> str:
+    """Remove Git-insignificant trailing spaces from one ignore pattern.
+
+    Backslashes quote the next character, so escaped spaces are retained while
+    an unescaped trailing run is removed.  Decode only quoted spaces here;
+    broader gitignore escape and wildmatch semantics remain unchanged.  Tabs
+    are intentionally untouched.
+    """
+    first_trailing_space: int | None = None
+    index = 0
+    while index < len(line):
+        if line[index] == "\\":
+            first_trailing_space = None
+            index += 2
+            continue
+        if line[index] == " ":
+            if first_trailing_space is None:
+                first_trailing_space = index
+        else:
+            first_trailing_space = None
+        index += 1
+
+    if first_trailing_space is not None:
+        line = line[:first_trailing_space]
+
+    normalized: list[str] = []
+    index = 0
+    while index < len(line):
+        if line[index] != "\\":
+            normalized.append(line[index])
+            index += 1
+            continue
+
+        run_start = index
+        while index < len(line) and line[index] == "\\":
+            index += 1
+        backslash_count = index - run_start
+        if index < len(line) and line[index] == " " and backslash_count % 2:
+            normalized.append("\\" * (backslash_count - 1))
+            normalized.append(" ")
+            index += 1
+            continue
+        normalized.append("\\" * backslash_count)
+
+    return "".join(normalized)
+
+
 def _parse_gitignore_file(gitignore_path: Path, base: str = "") -> list[_GitignoreRule]:
     rules: list[_GitignoreRule] = []
     if not gitignore_path.exists():
@@ -256,6 +304,7 @@ def _parse_gitignore_file(gitignore_path: Path, base: str = "") -> list[_Gitigno
         with open(gitignore_path, "r", encoding="utf-8") as f:
             for raw in f:
                 line = raw.rstrip("\n\r")
+                line = _normalize_gitignore_trailing_spaces(line)
                 if not line or line.startswith("#"):
                     continue
                 negated = line.startswith("!")
@@ -376,7 +425,8 @@ def read_config(wiki_dir: "str | Path") -> dict:
     """Read the persisted llm-wiki config as a dict.
 
     Handles backward compatibility: if the file contains a bare agent name
-    string (pre-v0.3 format), it is treated as ``{"agent": "<value>", "quality_hints": true}``.
+    string (pre-v0.3 format), it is treated as an agent selection with all
+    current defaults applied.
 
     Returns *_DEFAULT_CONFIG* values for any missing keys.
     """

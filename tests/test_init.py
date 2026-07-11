@@ -4,7 +4,7 @@ import types
 from pathlib import Path
 
 from llm_wiki_cli.commands import init_cmd
-from llm_wiki_cli.config import read_config
+from llm_wiki_cli.config import read_config, write_config
 
 
 def _make_args(**kwargs):
@@ -73,6 +73,12 @@ class TestInitAgentSchemas:
         assert "## User docs and usage examples" in content
         assert "usage-examples" in content
         assert "llm-wiki skills export --dest" in content
+
+    def test_omitted_agent_defaults_to_generic_for_new_project(self, tmp_project):
+        init_cmd.run(types.SimpleNamespace(wiki_dir="docs/llm_wiki", no_skills=True))
+
+        assert Path("AGENTS.md").exists()
+        assert read_config("docs/llm_wiki")["agent"] == "generic"
 
 
 class TestInitPreservesContent:
@@ -205,6 +211,86 @@ class TestInitQualityHints:
         init_cmd.run(args)
         config = read_config("docs/llm_wiki")
         assert config["quality_hints"] is True
+
+
+class TestInitIssueReporting:
+    """Tool issue-report instructions are an explicit, persisted opt-in."""
+
+    def test_default_omits_instructions_and_persists_disabled(self, tmp_project):
+        init_cmd.run(_make_args(agent="copilot"))
+
+        content = Path(".github/copilot-instructions.md").read_text(encoding="utf-8")
+        assert "## Report llm-wiki tool issues" not in content
+        assert read_config("docs/llm_wiki")["issue_reporting"] is False
+
+    def test_opt_in_includes_instructions_and_persists_enabled(self, tmp_project):
+        init_cmd.run(_make_args(agent="copilot", issue_reporting=True))
+
+        content = Path(".github/copilot-instructions.md").read_text(encoding="utf-8")
+        assert "## Report llm-wiki tool issues" in content
+        assert read_config("docs/llm_wiki")["issue_reporting"] is True
+
+    def test_no_flag_preserves_stored_opt_in(self, tmp_project):
+        init_cmd.run(_make_args(agent="copilot", issue_reporting=True))
+
+        init_cmd.run(_make_args(agent="copilot"))
+
+        content = Path(".github/copilot-instructions.md").read_text(encoding="utf-8")
+        assert "## Report llm-wiki tool issues" in content
+        assert read_config("docs/llm_wiki")["issue_reporting"] is True
+
+    def test_explicit_flags_toggle_existing_instructions(self, tmp_project):
+        schema = Path(".github/copilot-instructions.md")
+        init_cmd.run(_make_args(agent="copilot", issue_reporting=True))
+
+        init_cmd.run(_make_args(agent="copilot", issue_reporting=False))
+
+        assert "## Report llm-wiki tool issues" not in schema.read_text(
+            encoding="utf-8"
+        )
+        assert read_config("docs/llm_wiki")["issue_reporting"] is False
+
+        init_cmd.run(_make_args(agent="copilot", issue_reporting=True))
+
+        assert "## Report llm-wiki tool issues" in schema.read_text(encoding="utf-8")
+        assert read_config("docs/llm_wiki")["issue_reporting"] is True
+
+    def test_issue_toggle_preserves_other_stored_preferences(self, tmp_project):
+        init_cmd.run(
+            _make_args(
+                agent="copilot",
+                no_quality_hints=True,
+                no_skills=True,
+            )
+        )
+
+        init_cmd.run(_make_args(agent="copilot", issue_reporting=True))
+
+        content = Path(".github/copilot-instructions.md").read_text(encoding="utf-8")
+        config = read_config("docs/llm_wiki")
+        assert "## Report llm-wiki tool issues" in content
+        assert "Agent quality guidelines" not in content
+        assert not Path(".llm-wiki/skills/wiki-reference").exists()
+        assert config["issue_reporting"] is True
+        assert config["quality_hints"] is False
+        assert config["reference_skill"] is False
+
+    def test_no_flag_removes_legacy_default_on_instructions(self, tmp_project):
+        init_cmd.run(_make_args(agent="copilot", issue_reporting=True))
+        write_config(
+            "docs/llm_wiki",
+            {
+                "agent": "copilot",
+                "quality_hints": True,
+                "reference_skill": True,
+            },
+        )
+
+        init_cmd.run(_make_args(agent="copilot"))
+
+        content = Path(".github/copilot-instructions.md").read_text(encoding="utf-8")
+        assert "## Report llm-wiki tool issues" not in content
+        assert read_config("docs/llm_wiki")["issue_reporting"] is False
 
 
 class TestInitGitignore:

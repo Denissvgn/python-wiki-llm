@@ -84,11 +84,13 @@ helper dependencies and binaries with `llm-wiki prepare-extractors`. Lint, CI,
 and extract never run `npm install`, `go build`, `go run`, `cargo build`,
 `cargo run`, or `ghc` automatically.
 
-Source discovery honors `.gitignore` before extractors run. A root, unanchored
-`lib/` rule is treated as a generic build-output pattern for TypeScript
-projects, so `.ts`, `.tsx`, `.js`, and `.jsx` files under `src/lib/` remain
-first-party source; top-level `lib/`, excluded dependency/build directories,
-and explicit nested `.gitignore` rules still stay excluded. Generated agent
+Source discovery honors `.gitignore` before extractors run. Unescaped trailing
+ASCII spaces in ignore entries are ignored, while `\ ` preserves a literal
+final space. A root, unanchored `lib/` rule is treated as a generic build-output
+pattern for TypeScript projects, so `.ts`, `.tsx`, `.js`, and `.jsx` files under
+`src/lib/` remain first-party source; top-level `lib/`, excluded
+dependency/build directories, and explicit nested `.gitignore` rules still stay
+excluded. Generated agent
 worktree copies such as `.claude/worktrees/**` are excluded from default
 snapshots; pass an exact `--paths` entry if you intentionally want to inspect
 one file there.
@@ -209,9 +211,17 @@ Install a post-commit hook:
 llm-wiki install-hook
 ```
 
-`init` writes the selected agent and quality-hint setting to
+`init` writes the selected agent and instruction preferences to
 `.git/.llm-wiki-agent` when the project is a Git repo. Outside Git, it falls
-back to `<wiki-dir>/.llm-wiki-agent`.
+back to `<wiki-dir>/.llm-wiki-agent`. Tool-issue reporting guidance is omitted
+by default; opt in when you want agents to create local bug-report files:
+
+```bash
+llm-wiki init --agent claude --issue-reporting
+```
+
+This only adds guidance to the generated agent instruction block. It does not
+upload reports, submit issues, or enable telemetry.
 
 ## Automation
 
@@ -268,10 +278,16 @@ Scaffold the wiki structure and agent constraint file.
 llm-wiki init --agent claude
 llm-wiki init --agent copilot --wiki-dir .wiki
 llm-wiki init --agent cursor --no-quality-hints
+llm-wiki init --agent generic --issue-reporting
 ```
 
 Supported agents are `claude`, `aider`, `opencode`, `copilot`, `cursor`, and
-`generic`.
+`generic`. `--issue-reporting` includes instructions that ask agents to record
+`llm-wiki` tool failures under the local `llm-wiki-issues/` directory. The
+instructions are off by default; use `--no-issue-reporting` to explicitly omit
+them when refreshing an existing initialization. On a refresh, omitting
+`--agent` reuses the stored agent; a project with no stored selection defaults
+to `generic`.
 
 ### `bootstrap`
 
@@ -1134,10 +1150,15 @@ llm-wiki upgrade --agent copilot
 llm-wiki upgrade --wiki-dir .wiki
 llm-wiki upgrade --force
 llm-wiki upgrade --no-quality-hints
+llm-wiki upgrade --issue-reporting
+llm-wiki upgrade --no-issue-reporting
 ```
 
 `upgrade` refreshes agent instruction blocks, wiki directories, hooks, plugin
-skill blocks, and persisted local config. For older wiki layouts, it
+skill blocks, and persisted local config. The issue-reporting pair explicitly
+enables or disables the local agent guidance; without either flag, `upgrade`
+preserves the stored preference. Configurations created before this preference
+existed default to disabled. For older wiki layouts, `upgrade`
 idempotently adds registry-standard directories such as `flows/` and missing
 `.gitkeep` files without rewriting existing index, log, semantic pages, or
 optional `dependencies.md` / `load-order.md` pages. Run `bootstrap` or `sync`

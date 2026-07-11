@@ -26,6 +26,7 @@ def _init_project(
     agent: str = "copilot",
     wiki_dir: str = "docs/llm_wiki",
     no_skills: bool = False,
+    issue_reporting=None,
 ):
     """Run a minimal init to create the wiki structure and schema file."""
     subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
@@ -45,7 +46,12 @@ def _init_project(
     old_cwd = os.getcwd()
     os.chdir(proj)
     try:
-        args = SimpleNamespace(agent=agent, wiki_dir=wiki_dir, no_skills=no_skills)
+        args = SimpleNamespace(
+            agent=agent,
+            wiki_dir=wiki_dir,
+            no_skills=no_skills,
+            issue_reporting=issue_reporting,
+        )
         init_cmd.run(args)
     finally:
         os.chdir(old_cwd)
@@ -203,6 +209,18 @@ class TestUpgradeSwitchAgent:
         remaining = old_schema.read_text(encoding="utf-8")
         assert "My Copilot Rules" in remaining
         assert CONSTRAINT_START not in remaining
+
+    def test_switch_preserves_issue_reporting_preference(self, tmp_path):
+        _init_project(tmp_path, agent="copilot", issue_reporting=True)
+        os.chdir(tmp_path)
+
+        upgrade_cmd.run(_make_args(agent="cursor"))
+
+        new_schema = Path(SCHEMA_FILENAMES["cursor"])
+        assert "## Report llm-wiki tool issues" in new_schema.read_text(
+            encoding="utf-8"
+        )
+        assert read_config("docs/llm_wiki")["issue_reporting"] is True
 
 
 class TestUpgradeReinstallsHooks:
@@ -418,6 +436,75 @@ class TestUpgradeQualityHints:
         assert "Agent quality guidelines" in content
         config = read_config("docs/llm_wiki")
         assert config["quality_hints"] is True
+
+
+class TestUpgradeIssueReporting:
+    """CLI overrides stored issue-reporting state; otherwise state persists."""
+
+    def test_default_omits_instructions_and_persists_disabled(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+
+        upgrade_cmd.run(_make_args())
+
+        content = Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
+        assert "## Report llm-wiki tool issues" not in content
+        assert read_config("docs/llm_wiki")["issue_reporting"] is False
+
+    def test_no_flag_preserves_stored_opt_in(self, tmp_path):
+        _init_project(tmp_path, agent="copilot", issue_reporting=True)
+        os.chdir(tmp_path)
+
+        upgrade_cmd.run(_make_args())
+
+        content = Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
+        assert "## Report llm-wiki tool issues" in content
+        assert read_config("docs/llm_wiki")["issue_reporting"] is True
+
+    @pytest.mark.parametrize(
+        ("stored", "cli_value"),
+        [(False, True), (True, False)],
+    )
+    def test_cli_flag_overrides_stored_preference(self, tmp_path, stored, cli_value):
+        _init_project(tmp_path, agent="copilot", issue_reporting=stored)
+        os.chdir(tmp_path)
+
+        upgrade_cmd.run(_make_args(issue_reporting=cli_value))
+
+        content = Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
+        assert ("## Report llm-wiki tool issues" in content) is cli_value
+        assert read_config("docs/llm_wiki")["issue_reporting"] is cli_value
+
+    def test_explicit_flags_toggle_instructions_repeatedly(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+        schema = Path(SCHEMA_FILENAMES["copilot"])
+
+        upgrade_cmd.run(_make_args(issue_reporting=True))
+        assert "## Report llm-wiki tool issues" in schema.read_text(encoding="utf-8")
+
+        upgrade_cmd.run(_make_args(issue_reporting=False))
+        assert "## Report llm-wiki tool issues" not in schema.read_text(
+            encoding="utf-8"
+        )
+
+    def test_missing_legacy_config_key_migrates_to_disabled(self, tmp_path):
+        _init_project(tmp_path, agent="copilot", issue_reporting=True)
+        os.chdir(tmp_path)
+        write_config(
+            "docs/llm_wiki",
+            {
+                "agent": "copilot",
+                "quality_hints": True,
+                "reference_skill": True,
+            },
+        )
+
+        upgrade_cmd.run(_make_args())
+
+        content = Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
+        assert "## Report llm-wiki tool issues" not in content
+        assert read_config("docs/llm_wiki")["issue_reporting"] is False
 
 
 class TestUpgradeGitignore:
