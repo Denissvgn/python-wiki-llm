@@ -95,13 +95,23 @@ def _resolve_agent(args, wiki_dir: str) -> str:
 
 
 def _upgrade_schema(
-    agent: str, wiki_dir: str, old_agent: str | None, *, quality_hints: bool = True
+    agent: str,
+    wiki_dir: str,
+    old_agent: str | None,
+    *,
+    quality_hints: bool = True,
+    issue_reporting: bool = False,
 ) -> str:
     """Replace or migrate the agent schema constraint block.
 
     Returns a summary message.
     """
-    new_content = build_schema_content(agent, wiki_dir, quality_hints=quality_hints)
+    new_content = build_schema_content(
+        agent,
+        wiki_dir,
+        quality_hints=quality_hints,
+        issue_reporting=issue_reporting,
+    )
     new_filename = SCHEMA_FILENAMES.get(agent)
 
     if old_agent and old_agent != agent:
@@ -228,6 +238,11 @@ def run(args):
         reference_skill = cli_skills
     else:
         reference_skill = stored.get("reference_skill", True)
+    cli_issue_reporting = getattr(args, "issue_reporting", None)
+    if cli_issue_reporting is not None:
+        issue_reporting = cli_issue_reporting
+    else:
+        issue_reporting = stored.get("issue_reporting", False)
 
     print("LLM Wiki Upgrade")
     print("=" * 40)
@@ -240,7 +255,11 @@ def run(args):
     # 1. Schema constraint block
     print("\n1. Agent Schema:")
     schema_file = _upgrade_schema(
-        agent, wiki_dir, old_agent, quality_hints=quality_hints
+        agent,
+        wiki_dir,
+        old_agent,
+        quality_hints=quality_hints,
+        issue_reporting=issue_reporting,
     )
     print(f"  Updated: {schema_file}")
     refreshed_skills = refresh_skill_blocks(agent, wiki_dir)
@@ -285,6 +304,7 @@ def run(args):
             "agent": agent,
             "quality_hints": quality_hints,
             "reference_skill": reference_skill,
+            "issue_reporting": issue_reporting,
         },
     )
 

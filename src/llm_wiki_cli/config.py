@@ -210,6 +210,7 @@ _DEFAULT_CONFIG: dict[str, object] = {
     "agent": "generic",
     "quality_hints": True,
     "reference_skill": True,
+    "issue_reporting": False,
 }
 
 
@@ -424,7 +425,8 @@ def read_config(wiki_dir: "str | Path") -> dict:
     """Read the persisted llm-wiki config as a dict.
 
     Handles backward compatibility: if the file contains a bare agent name
-    string (pre-v0.3 format), it is treated as ``{"agent": "<value>", "quality_hints": true}``.
+    string (pre-v0.3 format), it is treated as an agent selection with all
+    current defaults applied.
 
     Returns *_DEFAULT_CONFIG* values for any missing keys.
     """

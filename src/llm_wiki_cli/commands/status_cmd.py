@@ -68,6 +68,8 @@ def run(args) -> None:
         print(f"Agent:           {agent} ({mode})")
         hints = config.get("quality_hints", True)
         print(f"Quality hints:   {'enabled' if hints else 'disabled'}")
+        issue_reporting = config.get("issue_reporting", False)
+        print(f"Issue reporting: {'enabled' if issue_reporting else 'disabled'}")
     else:
         print("Agent:           not configured (run `llm-wiki init --agent <agent>`)")
 

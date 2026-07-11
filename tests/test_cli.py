@@ -5,10 +5,12 @@ from __future__ import annotations
 import ast
 import inspect
 import textwrap
+from pathlib import Path
 
 import pytest
 
 from llm_wiki_cli import cli
+from llm_wiki_cli.config import read_config
 
 
 def _body_line_count(function) -> int:
@@ -32,6 +34,103 @@ def _body_line_count(function) -> int:
 class TestCliMainStructure:
     def test_main_stays_decomposed(self):
         assert _body_line_count(cli.main) <= 25
+
+
+@pytest.mark.parametrize("command", ["init", "upgrade"])
+def test_issue_reporting_flags_are_documented(command, monkeypatch, capsys):
+    monkeypatch.setattr("sys.argv", ["llm-wiki", command, "--help"])
+
+    with pytest.raises(SystemExit) as exc_info:
+        cli.main()
+
+    assert exc_info.value.code == 0
+    help_text = capsys.readouterr().out
+    assert "--issue-reporting" in help_text
+    assert "--no-issue-reporting" in help_text
+    assert "local" in help_text
+    assert "does not submit" in help_text
+
+
+@pytest.mark.parametrize(
+    ("command", "module_name"),
+    [("init", "init_cmd"), ("upgrade", "upgrade_cmd")],
+)
+@pytest.mark.parametrize(
+    ("flag", "expected"),
+    [
+        (None, None),
+        ("--issue-reporting", True),
+        ("--no-issue-reporting", False),
+    ],
+)
+def test_issue_reporting_flags_parse(command, module_name, flag, expected, monkeypatch):
+    seen = {}
+    command_module = getattr(cli, module_name)
+    monkeypatch.setattr(
+        command_module,
+        "run",
+        lambda args: seen.setdefault("issue_reporting", args.issue_reporting),
+    )
+    argv = ["llm-wiki", command]
+    if flag is not None:
+        argv.append(flag)
+    monkeypatch.setattr("sys.argv", argv)
+
+    cli.main()
+
+    assert seen["issue_reporting"] is expected
+
+
+@pytest.mark.parametrize("command", ["init", "upgrade"])
+def test_issue_reporting_flags_are_mutually_exclusive(command, monkeypatch):
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "llm-wiki",
+            command,
+            "--issue-reporting",
+            "--no-issue-reporting",
+        ],
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        cli.main()
+
+    assert exc_info.value.code == 2
+
+
+def test_init_issue_toggle_without_agent_reuses_stored_agent(
+    tmp_project, monkeypatch
+):
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "llm-wiki",
+            "init",
+            "--agent",
+            "copilot",
+            "--issue-reporting",
+            "--no-skills",
+        ],
+    )
+    cli.main()
+
+    schema = Path(".github/copilot-instructions.md")
+    assert "## Report llm-wiki tool issues" in schema.read_text(encoding="utf-8")
+
+    monkeypatch.setattr(
+        "sys.argv",
+        ["llm-wiki", "init", "--no-issue-reporting", "--no-skills"],
+    )
+    cli.main()
+
+    assert "## Report llm-wiki tool issues" not in schema.read_text(
+        encoding="utf-8"
+    )
+    assert not Path("AGENTS.md").exists()
+    config = read_config("docs/llm_wiki")
+    assert config["agent"] == "copilot"
+    assert config["issue_reporting"] is False
 
 
 @pytest.mark.parametrize(

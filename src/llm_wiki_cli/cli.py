@@ -175,8 +175,8 @@ def _add_init_command(subparsers):
     init_parser.add_argument(
         "--agent",
         choices=AGENT_CHOICES,
-        default="generic",
-        help="Target agent format for rules/constraints",
+        default=None,
+        help="Target agent format (default: stored agent, or generic for a new project)",
     )
     init_parser.add_argument(
         "--wiki-dir",
@@ -186,14 +186,28 @@ def _add_init_command(subparsers):
     init_parser.add_argument(
         "--no-quality-hints",
         action="store_true",
-        default=False,
+        default=None,
         help="Omit agent quality guidelines from the constraint block",
     )
     init_parser.add_argument(
         "--no-skills",
         action="store_true",
-        default=False,
+        default=None,
         help="Skip installing the wiki-reference skill into the agent's skills directory (.claude/skills for claude, .llm-wiki/skills otherwise)",
+    )
+    init_issue_reporting = init_parser.add_mutually_exclusive_group()
+    init_issue_reporting.add_argument(
+        "--issue-reporting",
+        dest="issue_reporting",
+        action="store_true",
+        default=None,
+        help="Include local agent instructions for llm-wiki tool issues; does not submit reports",
+    )
+    init_issue_reporting.add_argument(
+        "--no-issue-reporting",
+        dest="issue_reporting",
+        action="store_false",
+        help="Omit local agent instructions for reporting llm-wiki tool issues (default)",
     )
 
 
@@ -1148,6 +1162,20 @@ def _add_upgrade_command(subparsers):
         dest="skills",
         action="store_false",
         help="Skip refreshing the wiki-reference skill in the configured agent's skills directory (.claude/skills for claude, .llm-wiki/skills otherwise)",
+    )
+    upgrade_issue_reporting = upgrade_parser.add_mutually_exclusive_group()
+    upgrade_issue_reporting.add_argument(
+        "--issue-reporting",
+        dest="issue_reporting",
+        action="store_true",
+        default=None,
+        help="Include local agent instructions for llm-wiki tool issues; does not submit reports",
+    )
+    upgrade_issue_reporting.add_argument(
+        "--no-issue-reporting",
+        dest="issue_reporting",
+        action="store_false",
+        help="Omit local agent instructions for reporting llm-wiki tool issues",
     )
 
 

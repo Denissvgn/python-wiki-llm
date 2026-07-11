@@ -345,6 +345,7 @@ class McpWikiService:
                     "name": agent,
                     "mode": "IDE" if agent in IDE_AGENTS else "CLI",
                     "quality_hints": bool(config.get("quality_hints", True)),
+                    "issue_reporting": bool(config.get("issue_reporting", False)),
                 }
             except Exception as exc:
                 status["agent"] = {"configured": False, "error": str(exc)}

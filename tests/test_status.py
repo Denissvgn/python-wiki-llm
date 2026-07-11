@@ -125,6 +125,24 @@ class TestStatusAgent:
         out = capsys.readouterr().out
         assert "claude" in out
         assert "CLI" in out
+        assert "Issue reporting: disabled" in out
+
+    def test_shows_issue_reporting_enabled(self, tmp_project, capsys):
+        wiki = tmp_project / "docs" / "llm_wiki"
+        wiki.mkdir(parents=True)
+        config = {
+            "agent": "copilot",
+            "quality_hints": True,
+            "issue_reporting": True,
+        }
+        (tmp_project / ".git" / ".llm-wiki-agent").write_text(
+            json.dumps(config), encoding="utf-8"
+        )
+
+        status_cmd.run(_make_args(wiki_dir=str(wiki)))
+
+        out = capsys.readouterr().out
+        assert "Issue reporting: enabled" in out
 
     def test_shows_ide_agent(self, tmp_project, capsys):
         wiki = tmp_project / "docs" / "llm_wiki"

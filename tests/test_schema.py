@@ -142,8 +142,15 @@ def test_agent_schema_mentions_user_docs_usage_example_workflow():
     assert "agent platform" in content
 
 
-def test_agent_schema_mentions_tool_issue_reporting():
+def test_agent_schema_omits_tool_issue_reporting_by_default():
     content = build_schema_content("generic", "docs/llm_wiki")
+
+    assert "## Report llm-wiki tool issues" not in content
+    assert "llm-wiki-issues/" not in content
+
+
+def test_agent_schema_mentions_tool_issue_reporting_when_enabled():
+    content = build_schema_content("generic", "docs/llm_wiki", issue_reporting=True)
     text = _squash_ws(content)
 
     assert "## Report llm-wiki tool issues" in content

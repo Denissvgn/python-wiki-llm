@@ -136,17 +136,23 @@ class TestReadWriteConfig:
         os.chdir(tmp_path)
         wiki = tmp_path / "docs" / "wiki"
         wiki.mkdir(parents=True)
-        data = {"agent": "copilot", "quality_hints": False}
+        data = {
+            "agent": "copilot",
+            "quality_hints": False,
+            "issue_reporting": True,
+        }
         write_config(str(wiki), data)
         result = read_config(str(wiki))
         assert result["agent"] == "copilot"
         assert result["quality_hints"] is False
+        assert result["issue_reporting"] is True
 
     def test_defaults_when_no_file(self, tmp_path):
         os.chdir(tmp_path)
         result = read_config(str(tmp_path / "nonexistent"))
         assert result["agent"] == "generic"
         assert result["quality_hints"] is True
+        assert result["issue_reporting"] is False
 
     def test_backward_compat_bare_string(self, tmp_path):
         os.chdir(tmp_path)
@@ -157,6 +163,7 @@ class TestReadWriteConfig:
         result = read_config(str(wiki))
         assert result["agent"] == "claude"
         assert result["quality_hints"] is True
+        assert result["issue_reporting"] is False
 
     def test_missing_key_gets_default(self, tmp_path):
         os.chdir(tmp_path)
@@ -167,6 +174,7 @@ class TestReadWriteConfig:
         result = read_config(str(wiki))
         assert result["agent"] == "aider"
         assert result["quality_hints"] is True
+        assert result["issue_reporting"] is False
 
     def test_corrupted_json_returns_defaults(self, tmp_path):
         os.chdir(tmp_path)
@@ -177,6 +185,7 @@ class TestReadWriteConfig:
         result = read_config(str(wiki))
         assert result["agent"] == "generic"
         assert result["quality_hints"] is True
+        assert result["issue_reporting"] is False
 
 
 class TestGitIgnoreMatcher:

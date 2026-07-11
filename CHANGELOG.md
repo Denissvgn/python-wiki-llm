@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Agent instructions for reporting `llm-wiki` tool issues are now opt-in
+  instead of enabled by default. Use `init --issue-reporting` to enable them for
+  a new project, or `upgrade --issue-reporting` / `--no-issue-reporting` to
+  change and persist the preference for an existing project. The guidance only
+  creates local report files; it never submits or uploads them automatically.
+  Re-running `init` without `--agent` now preserves the stored agent while
+  refreshing these preferences.
+
 ### Fixed
 - Source discovery now follows Git's trailing-space handling for `.gitignore`
   entries: unescaped trailing ASCII spaces are ignored, while `\ ` preserves a

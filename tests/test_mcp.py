@@ -13,6 +13,7 @@ import pytest
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import context_cmd, mcp_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
+from llm_wiki_cli.config import write_config
 from llm_wiki_cli.services import mcp_server
 
 
@@ -376,6 +377,24 @@ class TestMcpWikiService:
         assert result["pages"]["load-order"] == 1
         assert result["pages"]["architecture_pages"] == 2
         assert result["hooks"] == ["post-commit"]
+
+    def test_get_status_adds_issue_reporting_preference(self, tmp_project):
+        _write_wiki(tmp_project)
+        write_config(
+            "docs/llm_wiki",
+            {
+                "agent": "copilot",
+                "quality_hints": True,
+                "reference_skill": True,
+                "issue_reporting": True,
+            },
+        )
+        service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+        result = service.get_status()
+
+        assert result["agent"]["configured"] is True
+        assert result["agent"]["issue_reporting"] is True
 
     def test_query_graph_dispatches_to_documentation_query_service(
         self, tmp_project, monkeypatch
