@@ -113,7 +113,7 @@ def test_project_distribution_name_is_pypi_safe_name():
 
 def test_project_version_is_release_target():
     data = _pyproject()
-    assert data["project"]["version"] == "1.3.0"
+    assert data["project"]["version"] == "1.3.1"
 
 
 def test_project_requires_python_3_10_or_newer():
