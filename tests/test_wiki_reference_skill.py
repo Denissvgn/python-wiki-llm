@@ -110,9 +110,35 @@ def test_reference_documents_site_export_and_context():
     assert "--profile reference" in content
     assert "--file-friendly" in content
     assert (
-        "llm-wiki context --budget <TOKENS> --src-dir . "
-        "--format markdown --focus changed" in content
+        "llm-wiki context --budget 8000 --src-dir . "
+        "--format markdown --focus changed --read-only" in content
     )
+    assert "budget and focus bound emitted output after a full" in content
+    assert "do not bound scan work" in content
+    assert "For a narrow task" in content
+    assert "skip context" in content
+
+
+def test_reference_documents_resource_aware_execution():
+    content = _reference_text()
+    text = _squash_ws(content)
+
+    assert "## Resource-aware execution" in content
+    for environment in [
+        "Interactive IDE or unknown capacity",
+        "Isolated terminal",
+        "Controlled CI",
+    ]:
+        assert environment in content
+    assert "The supervisor owns the schedule" in content
+    assert "must not launch heavy gates unless explicitly assigned" in content
+    assert "`requested_jobs` is the user's raw selection" in content
+    assert "`resolved_jobs` is the integer concurrency ceiling" in content
+    assert "`effective_workers` is the maximum number" in content
+    assert "absent languages, cache-elided work, sequential-only" in text
+    assert "not a global host-resource cap" in content
+    assert "one later manual retry may use `--jobs 1`" in text
+    assert "not proof that `llm-wiki` leaked a watcher" in text
 
 
 class TestReferenceSkillProvisioning:

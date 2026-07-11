@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Heavy source scans now report their requested, resolved, and effective
+  extractor concurrency before work begins. Lint profile JSON and CI JSON add
+  optional execution-plan metadata, and resource-capacity failures receive
+  cross-platform recovery guidance without automatic retries.
+
+### Changed
+- Generated agent instructions, update prompts, and bundled wiki workflows now
+  serialize interactive heavy gates, use `--jobs 1`, distinguish broad context
+  discovery from narrow supplied-diff work, and reserve `--jobs auto` for
+  isolated terminals or capacity-controlled CI. The reference skill documents
+  that context budgets bound output after a full inventory rather than scan
+  cost, and that host watcher-limit symptoms do not prove an `llm-wiki`
+  watcher leak.
+
 ## [1.3.1] - 2026-07-11
 
 ### Changed

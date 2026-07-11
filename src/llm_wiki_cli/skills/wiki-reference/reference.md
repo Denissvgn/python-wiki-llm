@@ -147,6 +147,38 @@ User-profile checks add quality gates for default site names, missing guides,
 oversized landing pages, and placeholder text in primary human docs.
 Warning-only findings do not fail the check.
 
+## Resource-aware execution
+
+Treat `context`, full tests, coverage, builds, browser suites, `sync`, `lint`,
+and `ci-check` as heavy gates. Use this environment matrix when scheduling
+them:
+
+| Environment | Extractor jobs | Scheduling rule |
+| --- | --- | --- |
+| Interactive IDE or unknown capacity | `--jobs 1` | Run one heavy gate at a time. The supervisor owns the schedule; subagents may inspect bounded files and diffs but must not launch heavy gates unless explicitly assigned. |
+| Isolated terminal | `--jobs auto` is allowed | Use only when the terminal's process is the sole heavy gate and host capacity is available; do not nest another test/build/context fan-out. |
+| Controlled CI | `--jobs auto` is allowed with reserved capacity | Run one top-level gate per reserved runner allocation and avoid nested parallel fan-out. Use `--jobs 1` when capacity is shared or unknown. |
+
+Extractor plan diagnostics distinguish three values:
+
+- `requested_jobs` is the user's raw selection, such as `1` or `auto`.
+- `resolved_jobs` is the integer concurrency ceiling; `auto` resolves to the
+  visible logical CPU count, with a minimum of one.
+- `effective_workers` is the maximum number of extraction plans that can run
+  simultaneously after absent languages, cache-elided work, sequential-only
+  plugins, and eligible-plan caps are applied. It is zero when no extraction
+  remains and one for sequential-only work.
+
+The eligible parallel, parallel-plan, sequential-plan, and cache-elided plan
+fields explain why effective concurrency may be lower than the requested or
+resolved value. `auto` is intentionally not a global host-resource cap.
+
+On ENOSPC, inotify, file-descriptor, severe swapping, or editor-responsiveness
+failures, stop launching work and do not retry the same parallel burst. Treat
+unfinished gates as inconclusive until capacity is recovered; one later manual
+retry may use `--jobs 1`. Watcher-limit symptoms are host/IDE resource evidence,
+not proof that `llm-wiki` leaked a watcher.
+
 ## `llm-wiki context` for large codebases
 
 `context` produces a token-budgeted, priority-ranked snapshot of the codebase
@@ -154,7 +186,7 @@ Warning-only findings do not fail the check.
 large:
 
 ```
-llm-wiki context --budget <TOKENS> --src-dir . --format markdown --focus changed
+llm-wiki context --budget 8000 --src-dir . --format markdown --focus changed --read-only
 ```
 
 - **`--budget`** (required): maximum token count for the output.
@@ -164,6 +196,10 @@ llm-wiki context --budget <TOKENS> --src-dir . --format markdown --focus changed
   file equally.
 - **`--format`**: `json` (default, structured) or `markdown` (human-readable
   with tier-labelled sections).
-- **When to use:** before starting a complex task on a large project, pass the
-  context output to the agent so it has an accurate, right-sized view of the
-  codebase without exceeding the context window.
+- **Cost boundary:** the budget and focus bound emitted output after a full
+  deep inventory. They do not bound scan work or make `context`
+  computationally cheap.
+- **When to use:** for broad repository-wide work, run one serialized context
+  scan, then read only the source and wiki pages it selects. For a narrow task
+  with supplied files or a supplied diff, skip context and use the wiki index
+  only for navigation.

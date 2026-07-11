@@ -16,6 +16,7 @@ Usage::
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from fnmatch import fnmatch
 import json
 import sys
@@ -42,6 +43,11 @@ from ..services.dependencies import analyze_dependencies
 from ..services.documentation_queries import (
     DocumentationGraphQueryService,
     DocumentationQueryError,
+)
+from ..services.extraction_jobs import (
+    ExtractionJobPlan,
+    ExtractionJobRequest,
+    print_extraction_job_plan,
 )
 from ..services.io import write_text_output
 from ..services.wiki_surface_index import build_surface_index
@@ -73,9 +79,21 @@ def _extractor_failure_message(inventory_result) -> str:
     return "; ".join(details) or "Source extraction failed."
 
 
-def get_inventory(src_dir: str, *, deep: bool = False) -> dict:
+def get_inventory(
+    src_dir: str,
+    *,
+    deep: bool = False,
+    job_request: ExtractionJobRequest | None = None,
+    plan_reporter: Callable[[ExtractionJobPlan], None] | None = None,
+) -> dict:
     """Context-local inventory helper kept patchable for protocol tests."""
-    inventory_result = get_inventory_result(src_dir, deep=deep)
+    inventory_result = get_inventory_result(
+        src_dir,
+        deep=deep,
+        parallel_jobs=job_request.resolved_jobs if job_request is not None else 1,
+        job_request=job_request,
+        plan_reporter=plan_reporter,
+    )
     if inventory_result.failed:
         raise ProtocolRequestError(
             _extractor_failure_message(inventory_result), "src_dir"
@@ -790,6 +808,8 @@ def _build_context(
     allow_external_src: bool = False,
     read_only: bool = False,
     wiki_dir: str = DEFAULT_WIKI_DIR,
+    job_request: ExtractionJobRequest | None = None,
+    plan_reporter: Callable[[ExtractionJobPlan], None] | None = None,
 ) -> tuple[dict, list[str]]:
     """Build a context payload and return ``(payload, warnings)``."""
     src_root = validate_source_root(
@@ -798,7 +818,12 @@ def _build_context(
         allow_external=allow_external_src,
     )
 
-    raw_inventory = get_inventory(str(src_root), deep=True)
+    raw_inventory = get_inventory(
+        str(src_root),
+        deep=True,
+        job_request=job_request,
+        plan_reporter=plan_reporter,
+    )
     filters = filters or {}
     inventory = _apply_protocol_filters(raw_inventory, filters)
     warnings: list[str] = []
@@ -899,6 +924,8 @@ def _run_protocol(args) -> None:
             allow_external_src=getattr(args, "allow_external_src", False),
             read_only=getattr(args, "read_only", False),
             wiki_dir=getattr(args, "wiki_dir", DEFAULT_WIKI_DIR),
+            job_request=ExtractionJobRequest.resolved(1),
+            plan_reporter=print_extraction_job_plan,
         )
     except ProtocolRequestError as exc:
         _emit_protocol_error(exc)
@@ -947,6 +974,8 @@ def run(args) -> None:
             emit_warnings=True,
             allow_external_src=allow_external_src,
             read_only=read_only,
+            job_request=ExtractionJobRequest.resolved(1),
+            plan_reporter=print_extraction_job_plan,
         )
     except ProtocolRequestError as exc:
         print(f"Error: {exc}", file=sys.stderr)

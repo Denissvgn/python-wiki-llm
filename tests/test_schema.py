@@ -31,9 +31,9 @@ def test_replace_schema_block_preserves_literal_backslashes(tmp_path):
 def test_agent_schema_mentions_current_sync_and_lint_runtime():
     content = build_schema_content("generic", "docs/llm_wiki")
 
-    assert "llm-wiki sync --jobs auto --wiki-dir docs/llm_wiki --src-dir ." in content
+    assert "llm-wiki sync --jobs 1 --wiki-dir docs/llm_wiki --src-dir ." in content
     assert (
-        "llm-wiki lint --strict --jobs auto --wiki-dir docs/llm_wiki --src-dir ."
+        "llm-wiki lint --strict --jobs 1 --wiki-dir docs/llm_wiki --src-dir ."
         in content
     )
     assert (
@@ -41,7 +41,7 @@ def test_agent_schema_mentions_current_sync_and_lint_runtime():
         in content
     )
     assert (
-        "llm-wiki lint --strict --jobs auto --wiki-dir docs/llm_wiki "
+        "llm-wiki lint --strict --jobs 1 --wiki-dir docs/llm_wiki "
         "--src-dir <repo> --allow-external-src" in content
     )
     assert "llm-wiki prepare-extractors --src-dir ." in content
@@ -52,6 +52,27 @@ def test_agent_schema_mentions_current_sync_and_lint_runtime():
     assert "semantic pass" in content
     assert "Lint passing is not enough" in content
     assert "_Auto-generated from ..._" in content
+
+
+def test_agent_schema_is_scope_and_resource_aware():
+    content = build_schema_content("generic", "docs/llm_wiki")
+    text = _squash_ws(content)
+
+    assert "## Resource-aware execution" in content
+    assert "For broad repository-wide work" in content
+    assert (
+        "llm-wiki context --budget 8000 --src-dir . --format markdown "
+        "--focus changed --read-only" in content
+    )
+    assert "For a narrow task with supplied files or a supplied diff" in content
+    assert "skip the full context scan" in text
+    assert "full deep inventory" in content
+    assert "bound emitted output, not scan cost" in text
+    assert "The supervisor owns heavy-gate scheduling" in content
+    assert "must not launch a heavy gate unless the supervisor" in text
+    assert "Use `--jobs 1` for interactive" in content
+    assert "isolated terminal or controlled CI runner" in text
+    assert "mark unfinished gates inconclusive" in text
 
 
 def test_agent_schema_mentions_dependency_architecture_responsibilities():
@@ -166,19 +187,19 @@ def test_agent_schema_mentions_tool_issue_reporting_when_enabled():
 def test_ide_schema_mentions_incremental_sync_workflow():
     content = build_schema_content("copilot", "docs/llm_wiki")
 
-    assert "llm-wiki sync --jobs auto" in content
+    assert "llm-wiki sync --jobs 1" in content
     assert "If sync repairs only the manifest" in content
     assert "Sync output is a deterministic AST/docstring skeleton" in content
     assert "Passing lint is not enough" in content
     assert "_Auto-generated from ..._" in content
     assert "llm-wiki prepare-extractors --src-dir ." in content
     assert "wiki-reference" in content
-    assert "llm-wiki lint --strict --jobs auto" in content
+    assert "llm-wiki lint --strict --jobs 1" in content
 
 
 def test_cli_agent_schema_mentions_manual_sync_workflow():
     content = build_schema_content("claude", "docs/llm_wiki")
 
-    assert "llm-wiki sync --jobs auto" in content
+    assert "llm-wiki sync --jobs 1" in content
     assert "llm-wiki generate-prompt" in content
     assert "updated automatically on commit" not in content

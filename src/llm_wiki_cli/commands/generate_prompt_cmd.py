@@ -213,20 +213,26 @@ The project's wiki lives at `{wiki_dir}/`.
 ## Context
 {rich_context_block}
 
-Run these commands to update the deterministic wiki skeleton and understand what changed:
+Run these commands serially to update the deterministic wiki skeleton and
+understand what changed. In an interactive or capacity-unknown environment,
+the supervisor owns this heavy-gate schedule. Do not launch context, full
+tests, coverage, builds, browser suites, sync, lint, or CI in parallel, and do
+not delegate those gates to subagents unless the supervisor explicitly assigns
+one.
 
 ```bash
-# First update generated pages from the current source inventory
-llm-wiki sync --jobs auto --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}
-
-# Changed files — compact inventory of what was modified in the last commit
+# Start with the compact changed-file inventory
 llm-wiki extract --src-dir {quoted_src_dir} --changed --summary
 
-# Full diff of the last commit
-git diff HEAD~1..HEAD
+# Diff size and paths; use targeted diffs for only the affected files
+git diff --stat HEAD~1..HEAD
+git diff HEAD~1..HEAD -- path/to/affected-file
+
+# Update generated pages only after scoping the change
+llm-wiki sync --jobs 1 --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}
 
 # Current wiki health — shows what's already broken vs. what you need to fix
-llm-wiki lint --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}
+llm-wiki lint --jobs 1 --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}
 ```
 
 For full detail (methods, params, docstrings) on a specific file:
@@ -236,9 +242,11 @@ llm-wiki extract --src-dir {quoted_src_dir} --paths path/to/file.py
 
 ## Semantic Pass
 
-Use the sync output plus `git diff` and `extract --changed --summary` to identify
-pages that were created or updated. Inspect those affected entity/module pages
-and enrich any generated skeletons before you stop.
+Use the sync output plus `git diff --stat`, targeted per-file diffs, and
+`extract --changed --summary` to identify pages that were created or updated.
+Inspect those affected entity/module pages and enrich any generated skeletons
+before you stop. Do not run an unconditional repository-wide context scan for
+this incremental workflow.
 
 Replace `_Auto-generated from ..._`, copied-docstring-only descriptions, and
 table `—` placeholders where semantic context is knowable from the diff or
@@ -273,7 +281,7 @@ for user-facing changes. Skip for pure refactors, test-only, or doc-only commits
 After making your changes, run:
 
 ```bash
-llm-wiki lint --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}
+llm-wiki lint --jobs 1 --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}
 ```
 
 If lint reports issues, fix them and re-run until it exits 0. Then commit:

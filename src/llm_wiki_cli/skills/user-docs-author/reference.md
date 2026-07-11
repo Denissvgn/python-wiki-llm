@@ -47,7 +47,7 @@ Use the project-specific paths when they differ from these examples.
 
 | Stage | Command |
 | --- | --- |
-| Sync current wiki | `llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs auto` |
+| Sync current wiki | `llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs 1` |
 | Strict lint | `llm-wiki lint --strict --src-dir . --wiki-dir docs/llm_wiki` |
 | Whole-wiki gate | `llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki --format json` |
 | User export | `llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user --format mkdocs --profile user --site-name <project> --front-matter --output-format json` |

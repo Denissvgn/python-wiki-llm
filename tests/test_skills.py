@@ -44,9 +44,13 @@ class TestBundledWikiSyncSkill:
         reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
 
         # Deterministic pass, validation loop, and commit convention.
-        assert "llm-wiki sync --jobs auto" in manifest
+        assert "llm-wiki sync --jobs 1" in manifest
         assert "lint --strict" in manifest
         assert "docs(wiki):" in manifest
+        assert "The supervisor owns heavy-gate scheduling" in manifest
+        assert "must not launch a heavy gate unless explicitly assigned" in manifest
+        assert "report unfinished gates as" in manifest
+        assert "inconclusive until capacity is recovered" in manifest
         # Hook-path markers are reserved, not reused.
         assert "LLM_WIKI_AUTO_COMMIT" in manifest
         assert "auto-update [bot]" in manifest
@@ -366,6 +370,12 @@ class TestBundledOnboardingGuideSkill:
         assert relink_step.index("llm-wiki sync") < relink_step.index("llm-wiki lint")
         # Links must stay lint-checkable.
         assert "Relative links only" in combined
+        assert "llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs 1" in combined
+        assert "The supervisor schedules context, sync, lint, CI" in combined
+        assert "subagents must not launch them unless explicitly" in combined
+        assert "inconclusive until capacity is recovered" in combined
+        assert "full deep" in combined
+        assert "do not make the scan computationally cheap" in combined
 
     def test_onboarding_guide_skill_documents_user_profile_prerequisite(self):
         skill_dir = skills.BUNDLED_SKILLS_ROOT / "onboarding-guide"
@@ -589,6 +599,10 @@ class TestBundledUserDocsAuthorSkill:
         assert "site check --built-site-dir" in combined
         assert "--link-mode http" in combined
         assert "--link-mode file" in combined
+        assert "llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs 1" in combined
+        assert "The supervisor schedules" in combined
+        assert "subagents may inspect bounded pages" in combined
+        assert "inconclusive until capacity is recovered" in combined
 
     def test_user_docs_author_skill_encodes_semantic_authoring_guardrails(self):
         skill_dir = skills.BUNDLED_SKILLS_ROOT / "user-docs-author"

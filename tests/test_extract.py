@@ -1,6 +1,7 @@
 """Tests for commands/extract_cmd.py"""
 
 import ast
+import errno
 import inspect
 import json
 import shutil
@@ -25,6 +26,7 @@ from llm_wiki_cli.extractors.python_extractor import (
     _summarize_expression,
 )
 from llm_wiki_cli.services.dependencies import analyze_dependencies
+from llm_wiki_cli.services.extraction_jobs import ExtractionJobRequest
 from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
 from llm_wiki_cli.services.packages import discover_packages, stamp_inventory_packages
 from llm_wiki_cli.services import plugins
@@ -537,6 +539,8 @@ class TestGetInventory:
         both_started = threading.Event()
         lock = threading.Lock()
         created: list[str] = []
+        worker_counts: list[int] = []
+        real_executor = extract_cmd.ThreadPoolExecutor
 
         class FakeExtractor:
             def __init__(self, language):
@@ -565,6 +569,13 @@ class TestGetInventory:
             return FakeExtractor(language)
 
         monkeypatch.setattr(extract_cmd, "get_extractor_registry", lambda: registry)
+        monkeypatch.setattr(
+            extract_cmd,
+            "ThreadPoolExecutor",
+            lambda *, max_workers: (
+                worker_counts.append(max_workers) or real_executor(max_workers=max_workers)
+            ),
+        )
         monkeypatch.setattr(extract_cmd, "_instantiate_extractor", fake_instantiate)
         monkeypatch.setattr(
             extract_cmd,
@@ -574,11 +585,27 @@ class TestGetInventory:
             ),
         )
 
-        result = extract_cmd.get_inventory_result(str(tmp_path), parallel_jobs=2)
+        result = extract_cmd.get_inventory_result(
+            extract_cmd.InventoryRequest(
+                src_dir=str(tmp_path),
+                parallel_jobs=20,
+                job_request=ExtractionJobRequest("auto", 20),
+            )
+        )
 
         assert not result.failed
         assert sorted(created) == ["python", "typescript"]
         assert sorted(result.inventory) == ["app.py", "app.ts"]
+        assert worker_counts == [2]
+        assert result.extraction_job_plan.to_dict() == {
+            "requested_jobs": "auto",
+            "resolved_jobs": 20,
+            "eligible_parallel_plans": 2,
+            "effective_workers": 2,
+            "parallel_plan_ids": ["python", "typescript"],
+            "sequential_plan_ids": [],
+            "cache_elided_plan_ids": [],
+        }
 
     def test_parallel_jobs_keep_plugins_sequential(self, tmp_path, monkeypatch):
         (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
@@ -624,6 +651,238 @@ class TestGetInventory:
 
         assert calls == ["builtin", "plugin"]
         assert result.statuses["custom"].files_found == 1
+        assert result.extraction_job_plan.parallel_plan_ids == ("python",)
+        assert result.extraction_job_plan.sequential_plan_ids == ("custom",)
+        assert result.extraction_job_plan.effective_workers == 1
+
+    def test_inventory_plan_reports_once_before_extractor_work(
+        self, tmp_path, monkeypatch
+    ):
+        (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
+        events: list[str] = []
+
+        class FakeExtractor:
+            last_error = None
+
+            def extract(self, **kwargs):
+                events.append("extract")
+                return {
+                    "app.py": {
+                        "language": "python",
+                        "classes": [],
+                        "functions": [],
+                    }
+                }
+
+        monkeypatch.setattr(
+            extract_cmd,
+            "get_extractor_registry",
+            lambda: {"python": extract_cmd.EXTRACTOR_REGISTRY["python"]},
+        )
+        monkeypatch.setattr(extract_cmd, "_load_extractor", lambda _ep: FakeExtractor())
+
+        result = extract_cmd.get_inventory_result(
+            extract_cmd.InventoryRequest(
+                src_dir=str(tmp_path),
+                plan_reporter=lambda plan: events.append(
+                    f"report:{','.join(plan.parallel_plan_ids)}"
+                ),
+            )
+        )
+
+        assert not result.failed
+        assert events == ["report:python", "extract"]
+
+    def test_inventory_plan_is_empty_when_no_extraction_work(
+        self, tmp_path, monkeypatch
+    ):
+        monkeypatch.setattr(
+            extract_cmd,
+            "get_extractor_registry",
+            lambda: {"python": extract_cmd.EXTRACTOR_REGISTRY["python"]},
+        )
+
+        result = extract_cmd.get_inventory_result(str(tmp_path), parallel_jobs=4)
+
+        assert result.extraction_job_plan.effective_workers == 0
+        assert result.extraction_job_plan.eligible_parallel_plans == 0
+        assert result.extraction_job_plan.parallel_plan_ids == ()
+        assert result.extraction_job_plan.sequential_plan_ids == ()
+
+    def test_inventory_plan_uses_one_worker_for_sequential_only_plugin(
+        self, tmp_path, monkeypatch
+    ):
+        class PluginExtractor:
+            last_error = None
+
+            def extract(self, **kwargs):
+                return {}
+
+        monkeypatch.setattr(
+            extract_cmd,
+            "get_extractor_registry",
+            lambda: {"custom": "plugin.extractor:CustomExtractor"},
+        )
+        monkeypatch.setattr(
+            extract_cmd, "parallel_safe_extractor_entry_points", lambda: set()
+        )
+        monkeypatch.setattr(
+            extract_cmd, "_load_extractor", lambda _ep: PluginExtractor()
+        )
+
+        result = extract_cmd.get_inventory_result(str(tmp_path), parallel_jobs=8)
+
+        assert result.extraction_job_plan.parallel_plan_ids == ()
+        assert result.extraction_job_plan.sequential_plan_ids == ("custom",)
+        assert result.extraction_job_plan.effective_workers == 1
+
+    def test_inventory_plan_ids_are_sorted_independent_of_registry_order(
+        self, tmp_path, monkeypatch
+    ):
+        (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
+        (tmp_path / "app.ts").write_text("export class App {}\n", encoding="utf-8")
+        registry = {
+            "zeta": "plugin.extractor:ZetaExtractor",
+            "typescript": extract_cmd.EXTRACTOR_REGISTRY["typescript"],
+            "alpha": "plugin.extractor:AlphaExtractor",
+            "python": extract_cmd.EXTRACTOR_REGISTRY["python"],
+        }
+
+        class FakeExtractor:
+            last_error = None
+
+            def extract(self, **kwargs):
+                return {}
+
+        monkeypatch.setattr(extract_cmd, "get_extractor_registry", lambda: registry)
+        monkeypatch.setattr(
+            extract_cmd, "parallel_safe_extractor_entry_points", lambda: set()
+        )
+        monkeypatch.setattr(
+            extract_cmd, "_load_extractor", lambda _ep: FakeExtractor()
+        )
+
+        result = extract_cmd.get_inventory_result(str(tmp_path))
+
+        assert result.extraction_job_plan.parallel_plan_ids == (
+            "python",
+            "typescript",
+        )
+        assert result.extraction_job_plan.sequential_plan_ids == ("alpha", "zeta")
+
+    def test_inventory_plan_records_fully_warm_cache(
+        self, tmp_path, monkeypatch
+    ):
+        (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
+        (tmp_path / "app.ts").write_text("export class App {}\n", encoding="utf-8")
+        registry = {
+            "typescript": extract_cmd.EXTRACTOR_REGISTRY["typescript"],
+            "python": extract_cmd.EXTRACTOR_REGISTRY["python"],
+        }
+
+        class FakeExtractor:
+            def __init__(self, language):
+                self.language = language
+                self.last_error = None
+
+            def extract(self, **kwargs):
+                return {
+                    rel_path: {
+                        "language": self.language,
+                        "classes": [],
+                        "functions": [],
+                    }
+                    for rel_path in kwargs["source_files"]
+                }
+
+        monkeypatch.setattr(
+            extract_cmd,
+            "get_extractor_registry",
+            lambda: registry,
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_load_extractor",
+            lambda entry_point: FakeExtractor(
+                "python" if "python_extractor" in entry_point else "typescript"
+            ),
+        )
+        options = InventoryCacheOptions(
+            enabled=True,
+            cache_dir=str(tmp_path / "inventory-cache"),
+        )
+
+        extract_cmd.get_inventory_result(str(tmp_path), cache_options=options)
+        result = extract_cmd.get_inventory_result(str(tmp_path), cache_options=options)
+
+        assert result.extraction_job_plan.effective_workers == 0
+        assert result.extraction_job_plan.cache_elided_plan_ids == (
+            "python",
+            "typescript",
+        )
+
+    def test_resource_failure_is_not_retried(self, tmp_path, monkeypatch):
+        (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
+        calls = 0
+        error_number = getattr(errno, "ENOSPC", None)
+        if error_number is None:
+            pytest.skip("ENOSPC is not defined on this platform")
+
+        class FailingExtractor:
+            last_error = None
+
+            def extract(self, **kwargs):
+                nonlocal calls
+                calls += 1
+                raise OSError(error_number, "capacity exhausted")
+
+        monkeypatch.setattr(
+            extract_cmd,
+            "get_extractor_registry",
+            lambda: {"python": extract_cmd.EXTRACTOR_REGISTRY["python"]},
+        )
+        monkeypatch.setattr(
+            extract_cmd, "_load_extractor", lambda _ep: FailingExtractor()
+        )
+
+        result = extract_cmd.get_inventory_result(str(tmp_path))
+
+        assert calls == 1
+        assert len(result.failed) == 1
+        assert "does not identify a single cause" in result.failed[0].message
+        assert "manually retry once with --jobs 1" in result.failed[0].message
+
+    def test_executor_start_failure_does_not_fallback_to_serial_work(
+        self, tmp_path, monkeypatch
+    ):
+        (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
+        (tmp_path / "app.ts").write_text("export class App {}\n", encoding="utf-8")
+        monkeypatch.setattr(
+            extract_cmd,
+            "get_extractor_registry",
+            lambda: {
+                "python": extract_cmd.EXTRACTOR_REGISTRY["python"],
+                "typescript": extract_cmd.EXTRACTOR_REGISTRY["typescript"],
+            },
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "ThreadPoolExecutor",
+            lambda **_kwargs: (_ for _ in ()).throw(RuntimeError("cannot start")),
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_instantiate_extractor",
+            lambda _ep: pytest.fail("extractors must not run after executor failure"),
+        )
+
+        result = extract_cmd.get_inventory_result(str(tmp_path), parallel_jobs=2)
+
+        assert {status.language for status in result.failed} == {
+            "python",
+            "typescript",
+        }
+        assert all("no automatic retry" in status.message for status in result.failed)
 
     def test_parallel_jobs_run_parallel_safe_plugin_extractors_concurrently(
         self, tmp_path, monkeypatch

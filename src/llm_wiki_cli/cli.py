@@ -31,25 +31,13 @@ from .commands import (
 )
 from .config import AGENT_CHOICES, DEFAULT_WIKI_DIR, PathValidationError
 from .services.contracts import BOOTSTRAP_SKIP_DATA_FLOW_FLAG
+from .services.extraction_jobs import ExtractionJobsAction
+from .services.resource_diagnostics import resource_failure_hint
 from . import __version__
 
 
 def _positive_int(value: str) -> int:
     parsed = int(value)
-    if parsed < 1:
-        raise argparse.ArgumentTypeError("must be greater than zero")
-    return parsed
-
-
-def _jobs_value(value: str) -> int:
-    if value == "auto":
-        return max(1, os.cpu_count() or 1)
-    try:
-        parsed = int(value)
-    except ValueError as exc:
-        raise argparse.ArgumentTypeError(
-            "must be a positive integer or 'auto'"
-        ) from exc
     if parsed < 1:
         raise argparse.ArgumentTypeError("must be greater than zero")
     return parsed
@@ -88,6 +76,20 @@ def _add_include_tests_argument(parser):
         choices=INCLUDE_TEST_LANGUAGES,
         default=None,
         help=INCLUDE_TESTS_HELP,
+    )
+
+
+def _add_jobs_argument(parser):
+    parser.set_defaults(requested_jobs=1)
+    parser.add_argument(
+        "--jobs",
+        action=ExtractionJobsAction,
+        default=1,
+        metavar="JOBS",
+        help=(
+            "Parallel extractor jobs for built-ins and opted-in plugins: "
+            "positive integer or 'auto' (default: 1)"
+        ),
     )
 
 
@@ -328,13 +330,7 @@ def _add_lint_command(subparsers):
     )
     _add_helper_cache_argument(lint_parser)
     _add_include_tests_argument(lint_parser)
-    lint_parser.add_argument(
-        "--jobs",
-        type=_jobs_value,
-        default=1,
-        metavar="JOBS",
-        help="Parallel extractor jobs for built-ins and opted-in plugins: positive integer or 'auto' (default: 1)",
-    )
+    _add_jobs_argument(lint_parser)
 
 
 def _add_prepare_extractors_command(subparsers):
@@ -392,13 +388,7 @@ def _add_ci_check_command(subparsers):
     )
     _add_helper_cache_argument(ci_parser)
     _add_include_tests_argument(ci_parser)
-    ci_parser.add_argument(
-        "--jobs",
-        type=_jobs_value,
-        default=1,
-        metavar="JOBS",
-        help="Parallel extractor jobs for built-ins and opted-in plugins: positive integer or 'auto' (default: 1)",
-    )
+    _add_jobs_argument(ci_parser)
 
 
 def _add_install_hook_command(subparsers):
@@ -1220,13 +1210,7 @@ def _add_sync_command(subparsers):
     )
     _add_helper_cache_argument(sync_parser)
     _add_include_tests_argument(sync_parser)
-    sync_parser.add_argument(
-        "--jobs",
-        type=_jobs_value,
-        default=1,
-        metavar="JOBS",
-        help="Parallel extractor jobs for built-ins and opted-in plugins: positive integer or 'auto' (default: 1)",
-    )
+    _add_jobs_argument(sync_parser)
     sync_parser.add_argument(
         "--force",
         action="store_true",
@@ -1394,6 +1378,9 @@ def main():
         if os.environ.get("LLM_WIKI_DEBUG"):
             raise
         print(f"Error: {exc}", file=sys.stderr)
+        hint = resource_failure_hint(exc)
+        if hint is not None:
+            print(f"Resource guidance: {hint}", file=sys.stderr)
         sys.exit(1)
 
 

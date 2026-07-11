@@ -118,6 +118,14 @@ mkdir -p "$RUNNER/logs" "$RUNNER/helper-cache" "$RUNNER/inventory-cache"
 cd "$RUNNER"
 ```
 
+Run this plan serially: never overlap `context`, full tests, coverage, builds,
+browser suites, sync, lint, or CI. The `--jobs auto` commands in Sections 5 and
+6 are explicit parallel-determinism tests and may run only in this disposable,
+isolated terminal or on a capacity-reserved runner. In an interactive IDE,
+replace them with `--jobs 1`. If ENOSPC, inotify, file-descriptor, severe
+swapping, or editor-responsiveness failures occur, stop without retrying the
+burst and mark remaining gates inconclusive until capacity is recovered.
+
 ## Core Command Path
 
 Run the same command path for every project unless a category explicitly does not apply.
@@ -254,7 +262,8 @@ Failure signals:
 
 ### 5. Sync From Same Source
 
-Goal: prove generated output is stable and cache behavior is correct.
+Goal: prove generated output is stable, cache behavior is correct, and the
+isolated `auto` request reports its actual concurrency before work begins.
 
 ```bash
 "$PROJECT/.venv/bin/python" -m llm_wiki_cli.cli sync \
@@ -273,6 +282,8 @@ Record:
 - cache status, hits, misses, changed, stale, deleted;
 - inventory cache path;
 - helper cache path;
+- the single stderr extractor-plan line, including requested, resolved,
+  eligible, effective, parallel, sequential, and cache-elided values;
 - generated file changes, if any.
 
 Failure signals:
@@ -280,11 +291,17 @@ Failure signals:
 - sync rewrites unchanged generated files;
 - `--cache-dir` breaks helper lookup;
 - external source validation differs from bootstrap;
+- the extractor plan is missing, duplicated, or appears after extraction work;
 - parallel jobs change generated output.
 
 ### 6. Lint And CI Check
 
-Goal: prove validation works against the same source/wiki pair and distinguishes blocking issues from advisory diagnostics.
+Goal: prove validation works against the same source/wiki pair, distinguishes
+blocking issues from advisory diagnostics, and preserves parseable JSON while
+exposing additive execution metadata.
+
+The `auto` commands below are explicit parallel-determinism checks for this
+isolated or capacity-reserved runner; use `--jobs 1` everywhere else.
 
 ```bash
 "$PROJECT/.venv/bin/python" -m llm_wiki_cli.cli lint \
@@ -315,12 +332,18 @@ Record:
 - diagnostic count by category;
 - strict-mode behavior;
 - profile phase timings;
+- a single pre-execution stderr plan line for each command;
+- `execution.extractor_jobs` values in lint profile and CI JSON, including the
+  raw `requested_jobs` value and resolved/effective concurrency;
 - report path and size.
 
 Failure signals:
 
 - external `lint` or `ci-check` rejects a trusted source root with opt-in;
 - `--allow-external-src` also relaxes wiki/report write boundaries;
+- stdout contains progress text in addition to the single JSON object;
+- profile or CI JSON omits execution metadata, while default/MCP report shapes
+  gain it unexpectedly;
 - unsupported-source diagnostics block healthy projects unexpectedly;
 - diagnostics are too vague to turn into backlog work.
 

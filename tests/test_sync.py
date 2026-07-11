@@ -21,6 +21,7 @@ from llm_wiki_cli.commands.sync_cmd import (
 )
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME, InventoryCacheStats
+from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
 from llm_wiki_cli.services import plugins
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 
@@ -468,12 +469,23 @@ class TestSyncInventoryRuntime:
         wiki_dir = tmp_path / "docs" / "llm_wiki"
         self._write_empty_manifest(wiki_dir)
         seen = {}
+        events = []
+        real_reporter = sync_cmd.print_extraction_job_plan
+
+        def recording_reporter(plan):
+            events.append("report")
+            real_reporter(plan)
+
+        monkeypatch.setattr(sync_cmd, "print_extraction_job_plan", recording_reporter)
 
         def fake_inventory(*args, **kwargs):
             seen["cache_options"] = kwargs["cache_options"]
             seen["helper_cache_dir"] = kwargs["helper_cache_dir"]
             seen["include_tests"] = kwargs["include_tests"]
             seen["parallel_jobs"] = kwargs["parallel_jobs"]
+            seen["job_request"] = kwargs["job_request"]
+            kwargs["plan_reporter"](ExtractionJobPlan(requested_jobs=2))
+            events.append("work")
             return InventoryResult(
                 {},
                 {"python": ExtractorStatus("python", "skipped", 0)},
@@ -501,12 +513,16 @@ class TestSyncInventoryRuntime:
             os.chdir(old_cwd)
 
         assert seen["parallel_jobs"] == 2
+        assert seen["job_request"].requested_jobs == 2
+        assert seen["job_request"].resolved_jobs == 2
+        assert events == ["report", "work"]
         assert seen["cache_options"].enabled is False
         assert seen["cache_options"].rebuild is True
         assert seen["cache_options"].stats_enabled is True
         assert seen["cache_options"].cache_dir == str(tmp_path / "cache")
         assert seen["helper_cache_dir"] == str(tmp_path / "helper-cache")
         assert seen["include_tests"] == ["go"]
+        assert capsys.readouterr().err.count("Extractor plan:") == 1
 
     def test_include_tests_go_creates_go_test_module_and_manifest_entry(
         self, tmp_path, monkeypatch, capsys
@@ -795,13 +811,17 @@ class TestSyncInventoryRuntime:
         seen = {}
         monkeypatch.setattr(cli.os, "cpu_count", lambda: 4)
         monkeypatch.setattr(
-            cli.sync_cmd, "run", lambda args: seen.setdefault("jobs", args.jobs)
+            cli.sync_cmd,
+            "run",
+            lambda args: seen.update(
+                jobs=args.jobs, requested_jobs=args.requested_jobs
+            ),
         )
         monkeypatch.setattr("sys.argv", ["llm-wiki", "sync", "--jobs", "auto"])
 
         cli.main()
 
-        assert seen["jobs"] == 4
+        assert seen == {"jobs": 4, "requested_jobs": "auto"}
 
     def test_cli_sync_allow_external_src_parses_with_jobs_auto(self, monkeypatch):
         seen = {}

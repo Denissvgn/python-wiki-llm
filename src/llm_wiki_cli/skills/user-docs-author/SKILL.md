@@ -16,12 +16,24 @@ After evidence-backed guides exist, use `usage-examples` to capture and attach v
 - The user-facing audience and site name are known or can be inferred from repository evidence. If inferred, state the assumption in the run report.
 - No core-package LLM calls are added. This skill uses the current agent session for authoring and adjustment.
 
+## Execution budget
+
+- In an interactive IDE or when capacity is unknown, run each sync, lint, CI,
+  export, builder, and site-check gate one at a time. The supervisor schedules
+  these gates; subagents may inspect bounded pages but must not launch them
+  unless explicitly assigned.
+- Use `--jobs 1` for interactive source scans. Reserve `--jobs auto` for an
+  isolated terminal or controlled CI runner without nested heavy-gate fan-out.
+- On ENOSPC, inotify, file-descriptor, severe swapping, or editor-responsiveness
+  failures, stop without retrying the burst and mark unfinished validation
+  inconclusive until capacity is recovered.
+
 ## Steps
 
 1. **Establish the deterministic baseline.** Start from current command output, not from memory or guesses.
 
    ```bash
-   llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs auto
+   llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs 1
    llm-wiki lint --strict --src-dir . --wiki-dir docs/llm_wiki
    llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user \
      --format mkdocs --profile user --site-name <project> \
@@ -39,7 +51,7 @@ After evidence-backed guides exist, use `usage-examples` to capture and attach v
 4. **Re-link and validate the wiki.**
 
    ```bash
-   llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs auto
+   llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs 1
    llm-wiki lint --strict --src-dir . --wiki-dir docs/llm_wiki
    llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki --format json
    ```

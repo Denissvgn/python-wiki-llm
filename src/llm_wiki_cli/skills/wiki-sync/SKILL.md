@@ -13,12 +13,25 @@ Bring the LLM Wiki back in sync with the code that just changed. The loop is alw
 - For continued external-source wikis (source-adapter mode), pass `--allow-external-src` consistently to `sync`, `lint`, `ci-check`, and `team check` — never to one source-reading command and not the others.
 - No other `sync` or `trigger-agent` run is active against the same wiki directory (plain `sync` takes no lock).
 
+## Execution budget
+
+- Treat this as an interactive workflow unless the environment explicitly has
+  reserved capacity. Run one heavy gate at a time; `context`, full tests,
+  coverage, builds, browser suites, sync, lint, and CI are heavy gates.
+- The supervisor owns heavy-gate scheduling. Subagents may inspect bounded
+  files or diffs, but must not launch a heavy gate unless explicitly assigned.
+- Use `--jobs 1` below. `--jobs auto` is only for an isolated terminal or a
+  controlled CI runner, never for nested or overlapping heavy-gate fan-out.
+- On ENOSPC, inotify, file-descriptor, severe swapping, or editor-responsiveness
+  failures, stop. Do not retry the burst; report unfinished gates as
+  inconclusive until capacity is recovered.
+
 ## Steps
 
 1. **Deterministic pass.**
 
    ```bash
-   llm-wiki sync --jobs auto --src-dir . --wiki-dir docs/llm_wiki
+   llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
    ```
 
    Never hand-edit a generated page instead of running this. If sync aborts on its broad-diff guard, do not reflexively pass `--force`: first decide whether the cause is a mass rename/refactor (expected — force is fine) or a stale/corrupted manifest (repair the manifest instead).
@@ -38,7 +51,7 @@ Bring the LLM Wiki back in sync with the code that just changed. The loop is alw
    on later specification-only changes, and returns to static authority when
    run with `--clear-openapi-file`.
 
-2. **Build the changed-page list.** Parse sync's `CREATE` / `UPDATE` / `METADATA` / `SKIP` / `DEPRECATE` / `RENAME` output lines — that output is the only changed-page manifest available. Cross-reference `llm-wiki extract --src-dir . --changed --summary` to learn *why* each page changed; only read the full `git diff HEAD~1..HEAD` (or the working-tree diff when run before committing) for files whose change reason is not obvious from the summary.
+2. **Build the changed-page list.** Parse sync's `CREATE` / `UPDATE` / `METADATA` / `SKIP` / `DEPRECATE` / `RENAME` output lines — that output is the only changed-page manifest available. Cross-reference `llm-wiki extract --src-dir . --changed --summary` to learn *why* each page changed. Run `git diff --stat HEAD~1..HEAD` (or the working-tree equivalent), then read targeted per-file diffs only where the change reason is not obvious from the summary.
 
 3. **Classify each CREATE/UPDATE page** (skip `METADATA`-only pages — the semantic hash did not change, so there is nothing to say):
    - *Generated-only*: only auto-generated blocks or table row/column structure moved. Accept as-is.
@@ -76,4 +89,11 @@ Bring the LLM Wiki back in sync with the code that just changed. The loop is alw
 
 ## Context budget
 
-Prefer `llm-wiki extract --src-dir . --changed --summary` (cheap, always read) for knowing what changed. Only reach for `llm-wiki context --budget 4000-8000 --focus changed --format json` when a page's classification genuinely needs more source context than the summary plus diff provide. Never use `--focus all` or `--deep` in this workflow — that depth belongs to deep-analysis workflows, not the routine sync loop.
+Prefer `llm-wiki extract --src-dir . --changed --summary` (cheap, always read)
+for knowing what changed. Only reach for one serialized
+`llm-wiki context --budget 8000 --focus changed --format json --read-only` run
+when a page's classification genuinely needs more source context than the
+summary plus targeted diff provide. The budget and focus bound emitted output
+after a full deep inventory; they do not make the scan computationally cheap.
+Never use `--focus all` or `--deep` in this workflow — that depth belongs to
+deep-analysis workflows, not the routine sync loop.

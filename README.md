@@ -270,6 +270,30 @@ llm-wiki install-hook --force
 
 ## Command Reference
 
+### Resource-aware execution
+
+In an interactive IDE or whenever host capacity is unknown, run one heavy gate
+at a time. Heavy gates include `context`, full tests, coverage, builds, browser
+suites, `sync`, `lint`, and `ci-check`. The supervising agent owns that
+schedule; subagents may inspect bounded files and diffs, but should not launch
+heavy gates unless explicitly assigned.
+
+Use `--jobs 1` for interactive source scans. `--jobs auto` remains an uncapped
+opt-in for an isolated terminal or a controlled CI runner with reserved
+capacity; do not combine it with nested heavy-gate fan-out. If ENOSPC, inotify,
+file-descriptor, severe swapping, or editor-responsiveness failures occur, stop
+launching work and do not retry the same burst. Recover capacity first, then
+attempt at most one manual retry with `--jobs 1`; unfinished gates remain
+inconclusive. Watcher-limit symptoms are host/IDE resource evidence, not proof
+that `llm-wiki` leaked a watcher.
+
+Before extraction, `sync`, `lint`, `ci-check`, and `context` write one flushed
+plan line to stderr without contaminating stdout, for example:
+
+```text
+Extractor plan: requested=auto resolved=20 eligible_parallel=2 effective_workers=2 parallel=python,typescript sequential=- cache_elided=-
+```
+
 ### `init`
 
 Scaffold the wiki structure and agent constraint file.
@@ -352,7 +376,7 @@ manifest.
 
 ```bash
 llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki
-llm-wiki sync --jobs auto --cache-stats --src-dir . --wiki-dir docs/llm_wiki
+llm-wiki sync --jobs 1 --cache-stats --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki sync --cache-dir .cache/llm-wiki-inventory --helper-cache-dir .cache/llm-wiki-helpers
 llm-wiki sync --include-tests go --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki sync --initialize-surfaces flows,dependencies --flow-category http --exclude-tests --dry-run
@@ -367,8 +391,10 @@ persistent inventory cache as lint when a git directory is available. Use
 `--no-cache`, `--rebuild-cache`, `--cache-dir PATH`, and `--cache-stats` to
 control or inspect inventory cache behavior. Use `--helper-cache-dir PATH` to
 point Go/Rust/Haskell extraction at prepared helpers in a separate cache. Use
-`--jobs N` or `--jobs auto` to opt into parallel extraction for built-in
-languages and plugin extractors whose manifests set `"parallel_safe": true`.
+The interactive default is `--jobs 1`. Use `--jobs N` or `--jobs auto` to opt
+into parallel extraction for built-in languages and plugin extractors whose
+manifests set `"parallel_safe": true`; reserve `auto` for an isolated terminal
+or controlled CI runner with known capacity.
 Sync repairs
 manifests with invalid source hashes without touching pages, and stops unusually
 broad diffs unless `--force` is used.
@@ -561,7 +587,7 @@ llm-wiki lint --profile --wiki-dir docs/llm_wiki --src-dir .
 llm-wiki lint --cache-stats --wiki-dir docs/llm_wiki --src-dir .
 llm-wiki lint --cache-dir .cache/llm-wiki-inventory --helper-cache-dir .cache/llm-wiki-helpers
 llm-wiki lint --include-tests go --wiki-dir docs/llm_wiki --src-dir .
-llm-wiki lint --jobs auto --wiki-dir docs/llm_wiki --src-dir .
+llm-wiki lint --jobs 1 --wiki-dir docs/llm_wiki --src-dir .
 llm-wiki lint --wiki-dir docs/llm_wiki --src-dir /path/to/repo --allow-external-src
 ```
 
@@ -570,6 +596,27 @@ Strict mode also requires the core wiki structure and a fresh sync manifest.
 to stdout containing the normal lint report, diagnostics, and phase timings.
 The JSON contract is preserved for extractor failures as well; lint still exits
 nonzero, but stdout remains machine-readable.
+`lint --profile` and `ci-check --format json` additionally include this shape:
+
+```json
+{
+  "execution": {
+    "extractor_jobs": {
+      "requested_jobs": "auto",
+      "resolved_jobs": 20,
+      "eligible_parallel_plans": 2,
+      "effective_workers": 2,
+      "parallel_plan_ids": ["python", "typescript"],
+      "sequential_plan_ids": [],
+      "cache_elided_plan_ids": []
+    }
+  }
+}
+```
+
+This metadata is additive only in those two JSON modes. Default lint report
+serialization, MCP lint responses, CI text/Markdown output, sync state and
+manifests, and the `llm-wiki-context/v1` protocol stay unchanged.
 Lint uses a persistent deep-inventory cache by default when a git directory is
 available, storing `.git/llm-wiki-inventory-cache.json`. Override the cache
 directory with `LLM_WIKI_CACHE_DIR` or `--cache-dir PATH`; the CLI flag wins for
@@ -581,8 +628,9 @@ Cache corruption or invalid fingerprints fall back to a full extraction without
 reducing lint coverage. With `--profile --cache-stats`, the JSON payload includes a top-level
 `cache` object. Use `--jobs N` or `--jobs auto` to opt into parallel extraction
 for built-in languages and plugin extractors whose manifests set
-`"parallel_safe": true`; the default is `--jobs 1`. Plugin extractors without
-that opt-in remain sequential.
+`"parallel_safe": true`; the default and recommended interactive setting is
+`--jobs 1`. Reserve `auto` for an isolated terminal or controlled CI runner
+with known capacity. Plugin extractors without that opt-in remain sequential.
 Use `--include-tests go` when a wiki intentionally documents Go `_test.go`
 files; omit it to lint against the default production-source inventory.
 For trusted source trees outside the runner workspace, pass
@@ -646,6 +694,7 @@ For CI:
 
 ```bash
 llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki
+# Capacity-reserved CI only; shared or unknown-capacity runners should use jobs 1.
 llm-wiki ci-check --jobs auto --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki ci-check --helper-cache-dir .cache/llm-wiki-helpers --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki ci-check --include-tests go --src-dir . --wiki-dir docs/llm_wiki
@@ -678,6 +727,13 @@ llm-wiki context --budget 12000 --format json --focus all --output context.json 
 
 `--focus changed` is the default. Changed files get full detail, one-hop import
 neighbors get slim detail, and remaining files get names only.
+
+For broad repository-wide work, run one serialized
+`llm-wiki context --budget 8000 --focus changed --read-only`, then read only the
+source and wiki pages it selects. For a narrow task with supplied files or a
+supplied diff, skip the full context scan and use the wiki index only for
+navigation. The budget and focus bound emitted output after a full deep
+inventory; they do not make the scan computationally cheap.
 
 External tools can use the `llm-wiki-context/v1` JSON request protocol:
 
