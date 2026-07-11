@@ -84,11 +84,13 @@ helper dependencies and binaries with `llm-wiki prepare-extractors`. Lint, CI,
 and extract never run `npm install`, `go build`, `go run`, `cargo build`,
 `cargo run`, or `ghc` automatically.
 
-Source discovery honors `.gitignore` before extractors run. A root, unanchored
-`lib/` rule is treated as a generic build-output pattern for TypeScript
-projects, so `.ts`, `.tsx`, `.js`, and `.jsx` files under `src/lib/` remain
-first-party source; top-level `lib/`, excluded dependency/build directories,
-and explicit nested `.gitignore` rules still stay excluded. Generated agent
+Source discovery honors `.gitignore` before extractors run. Unescaped trailing
+ASCII spaces in ignore entries are ignored, while `\ ` preserves a literal
+final space. A root, unanchored `lib/` rule is treated as a generic build-output
+pattern for TypeScript projects, so `.ts`, `.tsx`, `.js`, and `.jsx` files under
+`src/lib/` remain first-party source; top-level `lib/`, excluded
+dependency/build directories, and explicit nested `.gitignore` rules still stay
+excluded. Generated agent
 worktree copies such as `.claude/worktrees/**` are excluded from default
 snapshots; pass an exact `--paths` entry if you intentionally want to inspect
 one file there.

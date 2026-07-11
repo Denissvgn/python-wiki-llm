@@ -239,6 +239,22 @@ def test_only_files_bypass_gitignore_for_explicit_source_paths(tmp_path):
     assert snapshot.language_paths("typescript") == ["frontend/src/lib/api.ts"]
 
 
+def test_gitignore_directory_rules_ignore_unescaped_trailing_spaces(tmp_path):
+    (tmp_path / ".gitignore").write_text(".shared/ \n.agent/   \n", encoding="utf-8")
+    for dirname in (".shared", ".agent"):
+        ignored_dir = tmp_path / dirname
+        ignored_dir.mkdir()
+        (ignored_dir / "example.py").write_text(
+            "class Ignored: pass\n", encoding="utf-8"
+        )
+    (tmp_path / "visible.py").write_text("class Visible: pass\n", encoding="utf-8")
+
+    snapshot = build_source_snapshot(tmp_path)
+
+    assert snapshot.language_paths("python") == ["visible.py"]
+    assert snapshot.all_source_paths == ("visible.py",)
+
+
 def test_root_lib_gitignore_keeps_typescript_src_lib_modules(tmp_path):
     (tmp_path / ".gitignore").write_text("lib/\n", encoding="utf-8")
     source_lib = tmp_path / "frontend" / "src" / "lib"

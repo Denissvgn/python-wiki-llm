@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Source discovery now follows Git's trailing-space handling for `.gitignore`
+  entries: unescaped trailing ASCII spaces are ignored, while `\ ` preserves a
+  literal final space.
+
 ## [1.3.0] - 2026-07-11
 
 Implements [#10 — Add reconstructable Python/FastAPI API contracts and explicit

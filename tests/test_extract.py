@@ -2473,6 +2473,43 @@ class TestExtractPathValidation:
         assert not Path(".llm-wiki").exists()
 
 
+class TestGitignoreDiscovery:
+    def test_summary_read_only_ignores_directory_rules_with_trailing_spaces(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / ".gitignore").write_text(
+            ".shared/ \n.agent/   \n", encoding="utf-8"
+        )
+        for dirname in (".shared", ".agent"):
+            ignored_dir = tmp_path / dirname
+            ignored_dir.mkdir()
+            (ignored_dir / "example.py").write_text(
+                "class Ignored: pass\n", encoding="utf-8"
+            )
+        (tmp_path / "visible.py").write_text("class Visible: pass\n", encoding="utf-8")
+
+        extract_cmd.run(
+            types.SimpleNamespace(
+                src_dir=".",
+                changed=False,
+                summary=True,
+                deep=False,
+                paths=None,
+                package=None,
+                include_empty=False,
+                output=None,
+                read_only=True,
+                allow_external_src=False,
+            )
+        )
+
+        payload = json.loads(capsys.readouterr().out)
+        assert set(payload["inventory"]) == {"visible.py"}
+        assert ".shared/example.py" not in payload["inventory"]
+        assert ".agent/example.py" not in payload["inventory"]
+
+
 class TestUnsupportedSources:
     def test_shell_files_are_reported_as_unsupported_sources(self, tmp_path):
         (tmp_path / "app.py").write_text("def main():\n    pass\n", encoding="utf-8")
