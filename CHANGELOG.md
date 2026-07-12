@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-07-12
+
+### Added
+- Heavy source scans now report their requested, resolved, and effective
+  extractor concurrency before work begins. Lint profile JSON and CI JSON add
+  optional execution-plan metadata, and resource-capacity failures receive
+  cross-platform recovery guidance without automatic retries.
+
+### Changed
+- Generated agent instructions, update prompts, and bundled wiki workflows now
+  serialize interactive heavy gates, use `--jobs 1`, distinguish broad context
+  discovery from narrow supplied-diff work, and reserve `--jobs auto` for
+  isolated terminals or capacity-controlled CI. The reference skill documents
+  that context budgets bound output after a full inventory rather than scan
+  cost, and that host watcher-limit symptoms do not prove an `llm-wiki`
+  watcher leak.
+
 ## [1.3.1] - 2026-07-11
 
 ### Changed
@@ -417,7 +434,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Test suite** — 89 unit + integration tests with pytest
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.3.1...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.3.1...v1.4.0
 [1.3.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.1.0...v1.2.0

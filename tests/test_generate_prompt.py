@@ -83,7 +83,10 @@ class TestGeneratePromptWritesFile:
 
         content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
         assert "llm-wiki extract --src-dir 'src dir' --changed --summary" in content
-        assert "llm-wiki lint --wiki-dir 'my docs/wiki' --src-dir 'src dir'" in content
+        assert (
+            "llm-wiki lint --jobs 1 --wiki-dir 'my docs/wiki' --src-dir 'src dir'"
+            in content
+        )
         assert "git add 'my docs/wiki/' CHANGELOG.md" in content
 
     def test_output_message_quotes_output_path_with_spaces(self, tmp_project, capsys):
@@ -142,24 +145,45 @@ class TestGeneratePromptBuildPrompt:
         assert "Only affected pages" in content
 
     def test_prompt_runs_sync_before_semantic_pass(self, tmp_project):
-        """Prompt should run deterministic sync, then require semantic enrichment."""
+        """Prompt should scope first, then sync before semantic enrichment."""
         args = _make_args()
         generate_prompt_cmd.run(args)
         content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
         assert (
-            "llm-wiki sync --jobs auto --wiki-dir docs/llm_wiki --src-dir ." in content
+            "llm-wiki sync --jobs 1 --wiki-dir docs/llm_wiki --src-dir ." in content
         )
         assert "## Semantic Pass" in content
         assert "Semantic pass complete" in content
         assert "_Auto-generated from ..._" in content
         assert "generated AST/docstring skeletons" in content
+        assert content.index("extract --src-dir . --changed --summary") < content.index(
+            "llm-wiki sync --jobs 1"
+        )
+        assert content.index("git diff --stat HEAD~1..HEAD") < content.index(
+            "llm-wiki sync --jobs 1"
+        )
 
-    def test_prompt_contains_git_diff_command(self, tmp_project):
-        """Prompt should instruct the agent to run git diff."""
+    def test_prompt_uses_stat_then_targeted_git_diffs(self, tmp_project):
+        """Prompt should scope diff reading from a stat and affected paths."""
         args = _make_args()
         generate_prompt_cmd.run(args)
         content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
-        assert "git diff HEAD~1..HEAD" in content
+        assert "git diff --stat HEAD~1..HEAD" in content
+        assert "git diff HEAD~1..HEAD -- path/to/affected-file" in content
+        assert "Full diff of the last commit" not in content
+
+    def test_prompt_serializes_heavy_gates_without_context_scan(self, tmp_project):
+        args = _make_args()
+        generate_prompt_cmd.run(args)
+        content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
+        text = " ".join(content.split())
+
+        assert "supervisor owns this heavy-gate schedule" in text
+        assert "Do not launch context, full tests, coverage, builds" in text
+        assert "unless the supervisor explicitly assigns" in text
+        assert "unconditional repository-wide context scan" in text
+        assert "llm-wiki context" not in content
+        assert "llm-wiki lint --jobs 1" in content
 
     def test_prompt_commit_uses_auto_commit_guard(self, tmp_project):
         args = _make_args()

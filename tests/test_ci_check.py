@@ -13,20 +13,49 @@ from llm_wiki_cli import cli
 from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.commands import ci_check_cmd
 from llm_wiki_cli.commands.lint_cmd import LintIssue, LintReport
+from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
+
+
+def _empty_execution_payload() -> dict:
+    return {
+        "extractor_jobs": {
+            "requested_jobs": 1,
+            "resolved_jobs": 1,
+            "eligible_parallel_plans": 0,
+            "effective_workers": 0,
+            "parallel_plan_ids": [],
+            "sequential_plan_ids": [],
+            "cache_elided_plan_ids": [],
+        }
+    }
 
 
 def test_ci_check_uses_inventory_cache_options(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
     (tmp_path / "wiki").mkdir()
     seen = {}
+    events = []
+    real_reporter = ci_check_cmd.print_extraction_job_plan
+
+    def recording_reporter(plan):
+        events.append("report")
+        real_reporter(plan)
+
+    monkeypatch.setattr(ci_check_cmd, "print_extraction_job_plan", recording_reporter)
 
     def fake_build_report(wiki_dir, src_dir, **kwargs):
         seen["cache_options"] = kwargs["cache_options"]
         seen["helper_cache_dir"] = kwargs["helper_cache_dir"]
         seen["include_tests"] = kwargs["include_tests"]
         seen["parallel_jobs"] = kwargs["parallel_jobs"]
+        seen["job_request"] = kwargs["job_request"]
+        kwargs["plan_reporter"](ExtractionJobPlan())
+        events.append("work")
         return LintReport(
-            wiki_dir=str(wiki_dir), src_dir=src_dir, strict=kwargs["strict"]
+            wiki_dir=str(wiki_dir),
+            src_dir=src_dir,
+            strict=kwargs["strict"],
+            extraction_job_plan=ExtractionJobPlan(),
         )
 
     monkeypatch.setattr(ci_check_cmd, "build_report", fake_build_report)
@@ -43,13 +72,18 @@ def test_ci_check_uses_inventory_cache_options(tmp_path, monkeypatch, capsys):
         )
     )
 
-    payload = json.loads(capsys.readouterr().out)
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
     assert payload["ok"] is True
     assert seen["cache_options"].enabled is True
     assert seen["cache_options"].stats_enabled is False
     assert seen["helper_cache_dir"] == str(tmp_path / "helper-cache")
     assert seen["include_tests"] == ["go"]
     assert seen["parallel_jobs"] == 1
+    assert seen["job_request"].requested_jobs == 1
+    assert events == ["report", "work"]
+    assert payload["execution"] == _empty_execution_payload()
+    assert captured.err.count("Extractor plan:") == 1
 
 
 def test_ci_check_passes_jobs_to_build_report(tmp_path, monkeypatch, capsys):
@@ -96,13 +130,17 @@ def test_cli_ci_check_jobs_auto_resolves_positive_count(monkeypatch):
 def test_cli_ci_check_jobs_parses_integer(monkeypatch):
     seen = {}
     monkeypatch.setattr(
-        cli.ci_check_cmd, "run", lambda args: seen.setdefault("jobs", args.jobs)
+        cli.ci_check_cmd,
+        "run",
+        lambda args: seen.update(
+            jobs=args.jobs, requested_jobs=args.requested_jobs
+        ),
     )
     monkeypatch.setattr("sys.argv", ["llm-wiki", "ci-check", "--jobs", "2"])
 
     cli.main()
 
-    assert seen["jobs"] == 2
+    assert seen == {"jobs": 2, "requested_jobs": 2}
 
 
 def test_cli_ci_check_allow_external_src_parses_with_jobs_auto(monkeypatch):
@@ -312,7 +350,7 @@ def test_ci_check_fails_on_stale_flow(tmp_path, monkeypatch, capsys):
     assert "api-ghost" in report_text
 
 
-def test_ci_check_json_output_unchanged_and_exits_nonzero(
+def test_ci_check_json_output_adds_execution_and_exits_nonzero(
     tmp_path, monkeypatch, capsys
 ):
     monkeypatch.chdir(tmp_path)
@@ -340,6 +378,7 @@ def test_ci_check_json_output_unchanged_and_exits_nonzero(
 
     assert exc.value.code == 1
     payload = json.loads(capsys.readouterr().out)
+    assert payload.pop("execution") == _empty_execution_payload()
     assert payload == {
         "diagnostics": [],
         "issue_count": 1,
@@ -389,7 +428,7 @@ def test_ci_check_reports_missing_haskell_helper_failure(tmp_path, monkeypatch, 
     assert "Unsupported sources detected" not in report_text
 
 
-def test_ci_check_diagnostic_only_report_exits_zero_and_keeps_json_shape(
+def test_ci_check_diagnostic_only_report_exits_zero_with_additive_execution(
     tmp_path, monkeypatch, capsys
 ):
     monkeypatch.chdir(tmp_path)
@@ -423,6 +462,7 @@ def test_ci_check_diagnostic_only_report_exits_zero_and_keeps_json_shape(
     )
 
     payload = json.loads(capsys.readouterr().out)
+    assert payload.pop("execution") == _empty_execution_payload()
     assert payload == {
         "diagnostics": [
             {

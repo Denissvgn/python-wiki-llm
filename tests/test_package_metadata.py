@@ -113,7 +113,7 @@ def test_project_distribution_name_is_pypi_safe_name():
 
 def test_project_version_is_release_target():
     data = _pyproject()
-    assert data["project"]["version"] == "1.3.1"
+    assert data["project"]["version"] == "1.4.0"
 
 
 def test_project_requires_python_3_10_or_newer():
@@ -196,6 +196,35 @@ def test_readme_documents_fork_first_policy():
     assert "CONTRIBUTING.md" not in readme
     assert not (PROJECT_ROOT / "CONTRIBUTING.md").exists()
     assert not (PROJECT_ROOT / ".github/PULL_REQUEST_TEMPLATE.md").exists()
+
+
+def test_readme_documents_resource_aware_execution():
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+    text = " ".join(readme.split())
+
+    assert "### Resource-aware execution" in readme
+    assert "run one heavy gate at a time" in text
+    assert "The supervising agent owns that schedule" in text
+    assert "Use `--jobs 1` for interactive source scans" in text
+    assert "isolated terminal or a controlled CI runner" in text
+    assert "do not retry the same burst" in text
+    assert "not proof that `llm-wiki` leaked a watcher" in text
+    assert "For a narrow task with supplied files or a supplied diff" in text
+    assert "budget and focus bound emitted output after a full deep inventory" in text
+    assert "Extractor plan: requested=auto resolved=20" in readme
+    assert '"extractor_jobs"' in readme
+    for field in [
+        "requested_jobs",
+        "resolved_jobs",
+        "eligible_parallel_plans",
+        "effective_workers",
+        "parallel_plan_ids",
+        "sequential_plan_ids",
+        "cache_elided_plan_ids",
+    ]:
+        assert field in readme
+    assert "Default lint report serialization, MCP lint responses" in text
+    assert "the `llm-wiki-context/v1` protocol stay unchanged" in text
 
 
 def test_release_metadata_documents_surfaces_and_verification():

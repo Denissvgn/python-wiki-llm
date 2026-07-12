@@ -6,7 +6,7 @@ import sys
 import time
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from pathlib import Path
 
 from .extract_cmd import get_call_graph, get_docker_inventory, get_inventory_result
@@ -23,6 +23,12 @@ from ..services.entrypoints import (
     get_entry_points,
     javascript_flow_limitations,
     read_console_scripts,
+)
+from ..services.extraction_jobs import (
+    ExtractionJobPlan,
+    ExtractionJobRequest,
+    extraction_job_request_from_args,
+    print_extraction_job_plan,
 )
 from ..services.inventory_cache import (
     InventoryCacheOptions,
@@ -137,6 +143,11 @@ class LintReport:
     issues: list[LintIssue] = field(default_factory=list)
     diagnostics: list[LintIssue] = field(default_factory=list)
     cache_stats: InventoryCacheStats | None = None
+    extraction_job_plan: ExtractionJobPlan = field(default_factory=ExtractionJobPlan)
+
+    @property
+    def job_plan(self) -> ExtractionJobPlan:
+        return self.extraction_job_plan
 
     @property
     def issue_count(self) -> int:
@@ -473,6 +484,8 @@ def _collect_lint_inputs(
     parallel_jobs: int,
     helper_cache_dir: str | None,
     include_tests: Iterable[str] | None,
+    job_request: ExtractionJobRequest | None,
+    plan_reporter: Callable[[ExtractionJobPlan], None] | None,
 ) -> _LintInputs | None:
     with _profile_phase(profiler, "inventory"):
         source_snapshot = build_source_snapshot(src_dir, include_tests=include_tests)
@@ -484,7 +497,10 @@ def _collect_lint_inputs(
             parallel_jobs=parallel_jobs,
             helper_cache_dir=helper_cache_dir,
             include_tests=include_tests,
+            job_request=job_request,
+            plan_reporter=plan_reporter,
         )
+        report.extraction_job_plan = inventory_result.extraction_job_plan
         if cache_options is not None and cache_options.stats_enabled:
             report.cache_stats = inventory_result.cache_stats
         if inventory_result.failed:
@@ -1251,6 +1267,8 @@ def build_report(
     helper_cache_dir: str | None = None,
     include_tests: Iterable[str] | None = None,
     media_size_warn_bytes: int = wiki_media.DEFAULT_MEDIA_SIZE_WARN_BYTES,
+    job_request: ExtractionJobRequest | None = None,
+    plan_reporter: Callable[[ExtractionJobPlan], None] | None = None,
 ) -> LintReport:
     """Build a structured lint report without rendering or exiting."""
     wiki_path = Path(wiki_dir)
@@ -1272,6 +1290,8 @@ def build_report(
         parallel_jobs,
         helper_cache_dir,
         include_tests,
+        job_request,
+        plan_reporter,
     )
     if inputs is None:
         return report
@@ -1287,8 +1307,8 @@ def build_report(
     return report
 
 
-def report_to_dict(report: LintReport) -> dict:
-    return {
+def report_to_dict(report: LintReport, *, include_execution: bool = False) -> dict:
+    payload = {
         "wiki_dir": report.wiki_dir,
         "src_dir": report.src_dir,
         "strict": report.strict,
@@ -1297,12 +1317,17 @@ def report_to_dict(report: LintReport) -> dict:
         "issues": [asdict(issue) for issue in report.issues],
         "diagnostics": [asdict(diagnostic) for diagnostic in report.diagnostics],
     }
+    if include_execution:
+        payload["execution"] = {
+            "extractor_jobs": report.extraction_job_plan.to_dict()
+        }
+    return payload
 
 
 def _profile_report_to_dict(
     report: LintReport, profiler: _LintProfiler, *, include_cache: bool = False
 ) -> dict:
-    payload = report_to_dict(report)
+    payload = report_to_dict(report, include_execution=True)
     payload["diagnostics"] = [asdict(diagnostic) for diagnostic in report.diagnostics]
     payload["profile"] = profiler.to_dict()
     if include_cache and report.cache_stats is not None:
@@ -1599,6 +1624,7 @@ def run(args):
         cache_dir=getattr(args, "cache_dir", None),
         stats_enabled=cache_stats,
     )
+    job_request = extraction_job_request_from_args(args)
     report = build_report(
         wiki_dir,
         src_dir,
@@ -1612,6 +1638,8 @@ def run(args):
             getattr(args, "media_size_warn_bytes", None)
             or wiki_media.DEFAULT_MEDIA_SIZE_WARN_BYTES
         ),
+        job_request=job_request,
+        plan_reporter=print_extraction_job_plan,
     )
     if report.count("extractor_failure") and not profile:
         for issue in report.by_category().get("extractor_failure", []):

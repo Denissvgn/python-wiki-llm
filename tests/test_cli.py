@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import errno
 import inspect
 import textwrap
 from pathlib import Path
@@ -394,3 +395,56 @@ def test_site_check_parses_user_profile_and_site_name(monkeypatch):
         "profile": "user",
         "site_name": "Assistant",
     }
+
+
+@pytest.mark.parametrize(
+    ("command", "command_module"),
+    [
+        ("lint", cli.lint_cmd),
+        ("sync", cli.sync_cmd),
+        ("ci-check", cli.ci_check_cmd),
+    ],
+)
+def test_extraction_commands_default_resolved_and_requested_jobs(
+    command, command_module, monkeypatch
+):
+    seen = {}
+    monkeypatch.setattr(
+        command_module,
+        "run",
+        lambda args: seen.update(
+            jobs=args.jobs, requested_jobs=args.requested_jobs
+        ),
+    )
+    monkeypatch.setattr("sys.argv", ["llm-wiki", command])
+
+    cli.main()
+
+    assert seen == {"jobs": 1, "requested_jobs": 1}
+
+
+def test_cli_adds_non_causal_resource_guidance_for_wrapped_enospc(
+    monkeypatch, capsys
+):
+    error_number = getattr(errno, "ENOSPC", None)
+    if error_number is None:
+        pytest.skip("ENOSPC is not defined on this platform")
+    inner = OSError(error_number, "capacity exhausted")
+    outer = RuntimeError("scan failed")
+    outer.__cause__ = inner
+
+    def fail(_args):
+        raise outer
+
+    monkeypatch.delenv("LLM_WIKI_DEBUG", raising=False)
+    monkeypatch.setattr(cli.lint_cmd, "run", fail)
+    monkeypatch.setattr("sys.argv", ["llm-wiki", "lint"])
+
+    with pytest.raises(SystemExit) as exc_info:
+        cli.main()
+
+    assert exc_info.value.code == 1
+    error = capsys.readouterr().err
+    assert "ENOSPC may indicate" in error
+    assert "does not identify a single cause" in error
+    assert "no automatic retry was attempted" in error

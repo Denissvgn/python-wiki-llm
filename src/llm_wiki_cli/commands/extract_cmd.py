@@ -10,7 +10,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
-from typing import Iterable
+from typing import Callable, Iterable
 
 from ..config import (
     EXTRACTOR_REGISTRY,
@@ -35,6 +35,7 @@ from ..services.data_flow import analyze_data_flow, build_data_flow_context
 from ..services.dependencies import analyze_dependencies
 from ..services.entrypoints import build_flow, detect_entry_points, read_console_scripts
 from ..services.entrypoints import get_entry_points as get_entry_points  # noqa: F401
+from ..services.extraction_jobs import ExtractionJobPlan, ExtractionJobRequest
 from ..services.inventory_cache import (
     InventoryCache,
     InventoryCacheOptions,
@@ -51,6 +52,7 @@ from ..services.plugins import (
     load_entry_point,
     parallel_safe_extractor_entry_points,
 )
+from ..services.resource_diagnostics import format_resource_failure
 from ..services.io import write_text_output
 from ..services.source_snapshot import (
     SourceFile,
@@ -101,6 +103,8 @@ class InventoryRequest:
     parallel_jobs: int = 1
     helper_cache_dir: str | None = None
     include_tests: Iterable[str] | None = None
+    job_request: ExtractionJobRequest | None = None
+    plan_reporter: Callable[[ExtractionJobPlan], None] | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -113,6 +117,11 @@ class InventoryResult:
     inventory: dict
     statuses: dict[str, ExtractorStatus]
     cache_stats: InventoryCacheStats | None = None
+    extraction_job_plan: ExtractionJobPlan = field(default_factory=ExtractionJobPlan)
+
+    @property
+    def job_plan(self) -> ExtractionJobPlan:
+        return self.extraction_job_plan
 
     @property
     def failed(self) -> list[ExtractorStatus]:
@@ -206,7 +215,11 @@ def _run_extraction_plan(
         )
     except Exception as exc:
         return _ExtractionOutcome(
-            plan.language, "failed", plan.files_found, {}, str(exc)
+            plan.language,
+            "failed",
+            plan.files_found,
+            {},
+            format_resource_failure(exc),
         )
     if hasattr(extractor, "last_error"):
         extractor.last_error = None
@@ -214,13 +227,22 @@ def _run_extraction_plan(
         extracted = extractor.extract(**plan.kwargs)
     except Exception as exc:
         return _ExtractionOutcome(
-            plan.language, "failed", plan.files_found, {}, str(exc)
+            plan.language,
+            "failed",
+            plan.files_found,
+            {},
+            format_resource_failure(exc),
         )
 
     error = getattr(extractor, "last_error", None)
     if error:
+        message = (
+            format_resource_failure(error)
+            if isinstance(error, BaseException)
+            else str(error)
+        )
         return _ExtractionOutcome(
-            plan.language, "failed", plan.files_found, {}, str(error)
+            plan.language, "failed", plan.files_found, {}, message
         )
 
     files_found = plan.files_found
@@ -259,6 +281,8 @@ _LEGACY_INVENTORY_REQUEST_FIELDS = (
     "parallel_jobs",
     "helper_cache_dir",
     "include_tests",
+    "job_request",
+    "plan_reporter",
 )
 
 
@@ -281,7 +305,8 @@ def _coerce_inventory_request(
 
     if len(legacy_args) > len(_LEGACY_INVENTORY_REQUEST_FIELDS):
         raise TypeError(
-            "get_inventory_result() takes at most 9 positional arguments "
+            "get_inventory_result() takes at most "
+            f"{len(_LEGACY_INVENTORY_REQUEST_FIELDS) + 1} positional arguments "
             f"({len(legacy_args) + 1} given)"
         )
 
@@ -328,6 +353,9 @@ def get_inventory_result(
 def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
     context = _prepare_inventory_build_context(request)
     planning = _plan_inventory_extractions(context)
+    extraction_job_plan = _build_extraction_job_plan(context, planning)
+    if request.plan_reporter is not None:
+        request.plan_reporter(extraction_job_plan)
     outcomes_by_language = _run_inventory_plans(planning.plans, context.parallel_jobs)
     extracted_by_language = _collect_inventory_outcomes(
         context, planning, outcomes_by_language
@@ -343,6 +371,45 @@ def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
         inventory=inventory,
         statuses=statuses,
         cache_stats=context.cache.stats if context.cache is not None else None,
+        extraction_job_plan=extraction_job_plan,
+    )
+
+
+def _build_extraction_job_plan(
+    context: _InventoryBuildContext,
+    planning: _InventoryPlanningResult,
+) -> ExtractionJobPlan:
+    parallel_plan_ids = tuple(
+        sorted(plan.language for plan in planning.plans if plan.parallel_safe)
+    )
+    sequential_plan_ids = tuple(
+        sorted(plan.language for plan in planning.plans if not plan.parallel_safe)
+    )
+    planned_ids = set(parallel_plan_ids) | set(sequential_plan_ids)
+    cache_elided_plan_ids = tuple(
+        sorted(
+            language
+            for language, status in planning.status_by_language.items()
+            if status.state == "ok" and language not in planned_ids
+        )
+    )
+    if not planning.plans:
+        effective_workers = 0
+    elif parallel_plan_ids:
+        effective_workers = min(context.parallel_jobs, len(parallel_plan_ids))
+    else:
+        effective_workers = 1
+    job_request = context.request.job_request or ExtractionJobRequest.resolved(
+        context.parallel_jobs
+    )
+    return ExtractionJobPlan(
+        requested_jobs=job_request.requested_jobs,
+        resolved_jobs=context.parallel_jobs,
+        eligible_parallel_plans=len(parallel_plan_ids),
+        effective_workers=effective_workers,
+        parallel_plan_ids=parallel_plan_ids,
+        sequential_plan_ids=sequential_plan_ids,
+        cache_elided_plan_ids=cache_elided_plan_ids,
     )
 
 
@@ -634,12 +701,23 @@ def _run_parallel_safe_inventory_plans(
 ) -> None:
     if parallel_jobs > 1 and len(parallel_safe_plans) > 1:
         max_workers = min(parallel_jobs, len(parallel_safe_plans))
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            for outcome in executor.map(
-                lambda plan: _run_extraction_plan(plan, fresh_instance=True),
-                parallel_safe_plans,
-            ):
-                outcomes_by_language[outcome.language] = outcome
+        try:
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                for outcome in executor.map(
+                    lambda plan: _run_extraction_plan(plan, fresh_instance=True),
+                    parallel_safe_plans,
+                ):
+                    outcomes_by_language[outcome.language] = outcome
+        except (MemoryError, OSError, RuntimeError) as exc:
+            message = format_resource_failure(exc, executor_start=True)
+            for plan in parallel_safe_plans:
+                outcomes_by_language[plan.language] = _ExtractionOutcome(
+                    plan.language,
+                    "failed",
+                    plan.files_found,
+                    {},
+                    message,
+                )
         return
 
     use_fresh_instances = parallel_jobs > 1

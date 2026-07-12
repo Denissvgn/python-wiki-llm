@@ -17,6 +17,7 @@ from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.commands import extract_cmd
 from llm_wiki_cli.commands import lint_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
+from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
 from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME, InventoryCacheStats
 from llm_wiki_cli.services import team, wiki_media
 
@@ -1149,6 +1150,13 @@ class TestLintProfile:
                     }
                 },
                 {"python": ExtractorStatus("python", "ok", 1)},
+                extraction_job_plan=ExtractionJobPlan(
+                    requested_jobs="auto",
+                    resolved_jobs=20,
+                    eligible_parallel_plans=2,
+                    effective_workers=2,
+                    parallel_plan_ids=("python", "typescript"),
+                ),
             ),
         )
         monkeypatch.setattr(lint_cmd, "get_docker_inventory", lambda *a, **k: {})
@@ -1159,6 +1167,17 @@ class TestLintProfile:
         assert payload["ok"] is True
         assert payload["issue_count"] == 0
         assert payload["diagnostics"] == []
+        assert payload["execution"] == {
+            "extractor_jobs": {
+                "requested_jobs": "auto",
+                "resolved_jobs": 20,
+                "eligible_parallel_plans": 2,
+                "effective_workers": 2,
+                "parallel_plan_ids": ["python", "typescript"],
+                "sequential_plan_ids": [],
+                "cache_elided_plan_ids": [],
+            }
+        }
         assert "profile" in payload
         assert isinstance(payload["profile"]["total_ms"], int)
         phase_names = {phase["name"] for phase in payload["profile"]["phases"]}
@@ -1425,11 +1444,23 @@ class TestLintProfile:
         monkeypatch.chdir(tmp_path)
         (tmp_path / "wiki").mkdir()
         seen = {}
+        events = []
+        real_reporter = lint_cmd.print_extraction_job_plan
+
+        def recording_reporter(plan):
+            events.append("report")
+            real_reporter(plan)
+
+        monkeypatch.setattr(lint_cmd, "print_extraction_job_plan", recording_reporter)
 
         def fake_build_report(wiki_dir, src_dir, **kwargs):
             seen["parallel_jobs"] = kwargs["parallel_jobs"]
             seen["helper_cache_dir"] = kwargs["helper_cache_dir"]
             seen["include_tests"] = kwargs["include_tests"]
+            seen["job_request"] = kwargs["job_request"]
+            seen["plan_reporter"] = kwargs["plan_reporter"]
+            kwargs["plan_reporter"](ExtractionJobPlan(requested_jobs=2))
+            events.append("work")
             return lint_cmd.LintReport(
                 wiki_dir=str(wiki_dir), src_dir=src_dir, strict=kwargs["strict"]
             )
@@ -1449,6 +1480,11 @@ class TestLintProfile:
         assert seen["parallel_jobs"] == 2
         assert seen["helper_cache_dir"] == str(tmp_path / "helper-cache")
         assert seen["include_tests"] == ["go"]
+        assert seen["job_request"].requested_jobs == 2
+        assert seen["job_request"].resolved_jobs == 2
+        assert callable(seen["plan_reporter"])
+        assert events == ["report", "work"]
+        assert capsys.readouterr().err.count("Extractor plan:") == 1
 
     def test_build_report_passes_helper_cache_dir_to_inventory(
         self, tmp_path, monkeypatch
@@ -1501,13 +1537,17 @@ class TestLintProfile:
         seen = {}
         monkeypatch.setattr(cli.os, "cpu_count", lambda: 8)
         monkeypatch.setattr(
-            cli.lint_cmd, "run", lambda args: seen.setdefault("jobs", args.jobs)
+            cli.lint_cmd,
+            "run",
+            lambda args: seen.update(
+                jobs=args.jobs, requested_jobs=args.requested_jobs
+            ),
         )
         monkeypatch.setattr("sys.argv", ["llm-wiki", "lint", "--jobs", "auto"])
 
         cli.main()
 
-        assert seen["jobs"] == 8
+        assert seen == {"jobs": 8, "requested_jobs": "auto"}
 
     def test_cli_lint_allow_external_src_parses_with_jobs_auto(self, monkeypatch):
         seen = {}

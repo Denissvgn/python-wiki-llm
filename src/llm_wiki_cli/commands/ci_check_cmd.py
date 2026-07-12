@@ -7,6 +7,10 @@ from pathlib import Path
 
 from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from ..services.inventory_cache import InventoryCacheOptions
+from ..services.extraction_jobs import (
+    extraction_job_request_from_args,
+    print_extraction_job_plan,
+)
 from ..services.metrics import record_validation_event
 from .lint_cmd import build_report, render_markdown, render_text, report_to_dict
 
@@ -15,7 +19,14 @@ DEFAULT_REPORT = ".git/llm-wiki-ci-report.md"
 
 def _render_console(report, output_format: str) -> str:
     if output_format == "json":
-        return json.dumps(report_to_dict(report), indent=2, sort_keys=True) + "\n"
+        return (
+            json.dumps(
+                report_to_dict(report, include_execution=True),
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n"
+        )
     if output_format == "markdown":
         return render_markdown(report)
     return render_text(report)
@@ -38,6 +49,7 @@ def run(args) -> None:
     validate_path(wiki_dir, "--wiki-dir")
 
     started = time.monotonic()
+    job_request = extraction_job_request_from_args(args)
     report = build_report(
         wiki_dir,
         src_dir,
@@ -46,6 +58,8 @@ def run(args) -> None:
         parallel_jobs=getattr(args, "jobs", 1),
         helper_cache_dir=helper_cache_dir,
         include_tests=include_tests,
+        job_request=job_request,
+        plan_reporter=print_extraction_job_plan,
     )
     duration_ms = int((time.monotonic() - started) * 1000)
 

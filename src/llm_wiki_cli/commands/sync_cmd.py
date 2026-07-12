@@ -21,7 +21,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
-from typing import Iterable, Mapping, Optional
+from typing import Callable, Iterable, Mapping, Optional
 
 from .extract_cmd import (
     InventoryResult,
@@ -61,6 +61,12 @@ from ..services.entrypoints import (
     build_flow,
     detect_entry_points,
     read_console_scripts,
+)
+from ..services.extraction_jobs import (
+    ExtractionJobPlan,
+    ExtractionJobRequest,
+    extraction_job_request_from_args,
+    print_extraction_job_plan,
 )
 from ..services.inventory_cache import (
     InventoryCacheOptions,
@@ -1685,6 +1691,8 @@ class _SyncRunOptions:
     cache_options: InventoryCacheOptions
     cache_stats_enabled: bool
     parallel_jobs: int
+    job_request: ExtractionJobRequest
+    plan_reporter: Callable[[ExtractionJobPlan], None] | None
     helper_cache_dir: str | None
     include_tests: Iterable[str] | None
     force: bool
@@ -2174,6 +2182,7 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
         cache_options = InventoryCacheOptions(enabled=False)
     cache_stats_enabled = bool(getattr(args, "cache_stats", False))
     parallel_jobs = getattr(args, "jobs", 1)
+    job_request = extraction_job_request_from_args(args)
     helper_cache_dir = getattr(args, "helper_cache_dir", None)
     include_tests = getattr(args, "include_tests", None)
     force = bool(getattr(args, "force", False))
@@ -2222,6 +2231,8 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
         cache_options=cache_options,
         cache_stats_enabled=cache_stats_enabled,
         parallel_jobs=parallel_jobs,
+        job_request=job_request,
+        plan_reporter=print_extraction_job_plan,
         helper_cache_dir=helper_cache_dir,
         include_tests=include_tests,
         force=force,
@@ -2295,6 +2306,8 @@ def _extract_current_inventory(options: _SyncRunOptions) -> InventoryResult:
         source_snapshot=source_snapshot,
         cache_options=options.cache_options,
         parallel_jobs=options.parallel_jobs,
+        job_request=options.job_request,
+        plan_reporter=options.plan_reporter,
         helper_cache_dir=options.helper_cache_dir,
         include_tests=options.include_tests,
     )

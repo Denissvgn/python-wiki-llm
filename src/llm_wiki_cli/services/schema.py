@@ -71,7 +71,7 @@ agent automatically on commit. You are responsible for keeping the wiki current:
 the wiki pages whose source has changed. Use it instead of a full re-bootstrap:
 
 ```
-llm-wiki sync --jobs auto
+llm-wiki sync --jobs 1
 ```
 
 - **When to use:** after pulling new code, after a rebase, or whenever you suspect
@@ -88,16 +88,20 @@ llm-wiki sync --jobs auto
   pages. Subsequent runs then work incrementally.
 - Sync has a large-diff guard to prevent accidental mass rewrites. Use
   `llm-wiki sync --force` only after confirming the broad update is expected.
-- After sync finishes, always run `llm-wiki lint --strict --jobs auto` and apply
+- After sync finishes, always run `llm-wiki lint --strict --jobs 1` and apply
   the review rules under "Quality checks". Passing lint is not enough if
   affected pages still contain generic `_Auto-generated from ..._` text or
   unexplained placeholders.
 
 ## Large codebases
-Before a complex task on a large project, run
-`llm-wiki context --budget <TOKENS> --src-dir . --format markdown --focus changed`
-for a token-budgeted, priority-ranked snapshot of the codebase. Flag semantics
-are documented in the `wiki-reference` skill.
+For broad repository-wide work, run one serialized
+`llm-wiki context --budget 8000 --src-dir . --format markdown --focus changed --read-only`
+scan, then read only the source and wiki pages it selects. For a narrow task
+with supplied files or a supplied diff, skip the full context scan and use the
+wiki index only to navigate to relevant pages. The budget and focus options
+bound emitted output after a full deep inventory; they do not make the scan
+computationally cheap. Flag semantics are documented in the `wiki-reference`
+skill.
 """
 
 _QUALITY_HINTS = """\
@@ -139,8 +143,14 @@ def _wiki_instructions(
     return f"""You are operating within an LLM Wiki architecture. The project's persistent memory is stored in `{wiki_dir}/`.
 
 ## Before you start
-- ALWAYS read `{wiki_dir}/index.md` before planning a new feature or making architectural changes.
-- Consult relevant entity and module pages to understand existing patterns before writing new code.
+- For broad repository-wide work, run one serialized
+  `llm-wiki context --budget 8000 --src-dir . --format markdown --focus changed --read-only`
+  scan, then read only the source and wiki pages it selects.
+- For a narrow task with supplied files or a supplied diff, skip the full
+  context scan. Use `{wiki_dir}/index.md` only to navigate to relevant entity,
+  module, flow, or guide pages.
+- `context` still performs a full deep inventory. Its budget and focus options
+  bound emitted output, not scan cost.
 
 ## Deep reference (read on demand)
 Contract-level detail lives in the bundled `wiki-reference` skill at
@@ -151,6 +161,20 @@ interpreting extractor, dependency, or site-check diagnostics — it covers
 extraction contracts (including Haskell), helper toolchains and caches,
 dependency reconciliation and lockfile `versions` metadata, static-site
 export profiles, and `llm-wiki context`. Do not read it upfront.
+
+## Resource-aware execution
+- In an interactive IDE or whenever capacity is unknown, run at most one heavy
+  gate at a time. Heavy gates include `context`, full tests, coverage, builds,
+  browser suites, `sync`, `lint`, and `ci-check`.
+- The supervisor owns heavy-gate scheduling. Subagents may inspect bounded
+  files and diffs, but must not launch a heavy gate unless the supervisor
+  explicitly assigns it.
+- Use `--jobs 1` for interactive `sync`, `lint`, and `ci-check` runs. Use
+  `--jobs auto` only in an isolated terminal or controlled CI runner with
+  reserved capacity, and never combine it with nested heavy-gate fan-out.
+- On ENOSPC, inotify, file-descriptor, severe swapping, or editor-responsiveness
+  failures, stop launching work. Do not retry the same parallel burst; mark
+  unfinished gates inconclusive until capacity is recovered.
 
 ## Canonical wiki surfaces
 The canonical wiki surfaces are:
@@ -220,7 +244,7 @@ node classes, and class colors, but they cannot inject arbitrary Markdown,
 labels, hrefs, or raw Mermaid content.
 
 ## When you change code
-- First run `llm-wiki sync --jobs auto --wiki-dir {wiki_dir} --src-dir .` after
+- First run `llm-wiki sync --jobs 1 --wiki-dir {wiki_dir} --src-dir .` after
   code changes. Sync uses the manifest, persistent inventory cache, and
   collision-aware page naming to update only affected wiki pages.
 - If this wiki was bootstrapped from a trusted source root outside the current
@@ -230,7 +254,7 @@ labels, hrefs, or raw Mermaid content.
 - If sync repairs only the manifest (its stored hashes were invalid, and no
   pages were modified), run the same sync command again before linting.
 - If sync stops on a large diff, inspect the affected files. Use
-  `llm-wiki sync --force --jobs auto --wiki-dir {wiki_dir} --src-dir .` only when
+  `llm-wiki sync --force --jobs 1 --wiki-dir {wiki_dir} --src-dir .` only when
   the broad update is intentional.
 - Then inspect the pages sync created or updated. Sync produces deterministic
   AST/docstring skeletons; you are responsible for the semantic pass.
@@ -297,9 +321,9 @@ Page filenames **must** match the conventions enforced by `llm-wiki lint`:
   e.g. `api-extract_source.md`, `process-llm-wiki.md`). Do not rename them.
 
 ## Quality checks
-- Your wiki changes are **structurally valid** when `llm-wiki lint --strict --jobs auto --wiki-dir {wiki_dir} --src-dir .` exits 0.
+- Your wiki changes are **structurally valid** when `llm-wiki lint --strict --jobs 1 --wiki-dir {wiki_dir} --src-dir .` exits 0.
 - For a trusted source root outside the current working directory, run
-  `llm-wiki lint --strict --jobs auto --wiki-dir {wiki_dir} --src-dir <repo> --allow-external-src`;
+  `llm-wiki lint --strict --jobs 1 --wiki-dir {wiki_dir} --src-dir <repo> --allow-external-src`;
   `--wiki-dir` still uses the project-root write guard.
 - Lint passing is not enough: affected pages must also have semantic
   explanations, not only generated skeletons or copied docstrings.
@@ -354,9 +378,9 @@ def build_schema_content(
         issue_reporting=issue_reporting,
     )
     preambles = {
-        "claude": f"# Project Wiki\n\nThis project uses an LLM Wiki for persistent architectural memory.\nRead `{wiki_dir}/index.md` first when starting any task.\n\n",
-        "cursor": f"# Cursor Rules — LLM Wiki Project\n\nThis project maintains a living wiki at `{wiki_dir}/`.\nAlways consult it before making changes.\n\n",
-        "copilot": f"# Copilot Instructions — LLM Wiki Project\n\nThis project uses `{wiki_dir}/` as persistent documentation.\nConsult the wiki before suggesting changes.\n\n",
+        "claude": f"# Project Wiki\n\nThis project uses an LLM Wiki at `{wiki_dir}/` for persistent architectural memory.\nFollow the scope-aware guidance below.\n\n",
+        "cursor": f"# Cursor Rules — LLM Wiki Project\n\nThis project maintains a living wiki at `{wiki_dir}/`.\nFollow the scope-aware guidance below.\n\n",
+        "copilot": f"# Copilot Instructions — LLM Wiki Project\n\nThis project uses `{wiki_dir}/` as persistent documentation.\nFollow the scope-aware guidance below.\n\n",
     }
     preamble = preambles.get(
         agent,

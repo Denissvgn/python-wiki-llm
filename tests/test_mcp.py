@@ -271,7 +271,7 @@ class TestMcpWikiService:
         assert status["pages"]["flows"] == 0
         assert status["pages"]["architecture_pages"] == 0
 
-    def test_get_context_uses_existing_context_builder(self, tmp_project):
+    def test_get_context_uses_existing_context_builder(self, tmp_project, capsys):
         service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
 
         result = service.get_context(budget_tokens=10000, focus=["all"], format="json")
@@ -279,6 +279,7 @@ class TestMcpWikiService:
         assert result["protocol"] == "llm-wiki-context/v1"
         assert result["ok"] is True
         assert "models.py" in result["files"]
+        assert "Extractor plan:" not in capsys.readouterr().err
 
     def test_get_context_passes_filters_and_wiki_dir_to_context_builder(
         self, tmp_project, monkeypatch
@@ -345,7 +346,7 @@ class TestMcpWikiService:
         ):
             service.get_context(budget_tokens=1000, focus=["all"], format="json")
 
-    def test_check_wiki_returns_lint_report(self, tmp_project):
+    def test_check_wiki_returns_lint_report(self, tmp_project, capsys):
         _write_wiki(tmp_project)
         service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
 
@@ -354,6 +355,8 @@ class TestMcpWikiService:
         assert result["format"] == "json"
         assert result["wiki_dir"] == "docs/llm_wiki"
         assert "issues" in result
+        assert "execution" not in result
+        assert "Extractor plan:" not in capsys.readouterr().err
 
     def test_get_status_returns_structured_status(self, tmp_project):
         _write_wiki(tmp_project)

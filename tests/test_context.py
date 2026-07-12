@@ -13,6 +13,7 @@ import pytest
 
 from llm_wiki_cli.commands import context_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
+from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
 
 
 # ── Helpers ───────────────────────────────────────────────────────────
@@ -897,8 +898,41 @@ class TestContextRun:
 
         data = json.loads(captured.out)
         assert "files" in data
+        assert "Extractor plan: requested=1 resolved=1" in captured.err
+        assert captured.err.count("Extractor plan:") == 1
         assert "Warning:" in captured.err
         assert "Warning:" not in captured.out
+
+    def test_extractor_plan_is_reported_once_before_context_inventory_work(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        monkeypatch.chdir(tmp_path)
+        events = []
+        real_reporter = context_cmd.print_extraction_job_plan
+
+        def recording_reporter(plan):
+            events.append("report")
+            real_reporter(plan)
+
+        def fake_inventory(*args, **kwargs):
+            kwargs["plan_reporter"](ExtractionJobPlan())
+            events.append("work")
+            return InventoryResult(
+                {},
+                {"python": ExtractorStatus("python", "skipped", 0)},
+            )
+
+        monkeypatch.setattr(
+            context_cmd, "print_extraction_job_plan", recording_reporter
+        )
+        monkeypatch.setattr(context_cmd, "get_inventory_result", fake_inventory)
+
+        context_cmd.run(_make_args(focus="all", budget=1000))
+
+        captured = capsys.readouterr()
+        assert captured.out.strip() == "{}"
+        assert captured.err.count("Extractor plan:") == 1
+        assert events == ["report", "work"]
 
     def test_empty_directory(self, tmp_path, capsys, monkeypatch):
         monkeypatch.chdir(tmp_path)

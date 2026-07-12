@@ -15,12 +15,24 @@ When a guide needs screenshots, terminal recordings, or other usage media, finis
 - The wiki directory is writable inside the current project root. Guide writing is a wiki mutation: it does not fit read-only external-source reviews. For source-adapter wikis, the wiki under `sources/code_wikis/<source_id>` is still inside the current project, so guides are allowed there; only the *source* is external and source-reading commands then take `--allow-external-src`.
 - Persona targets are known. Default to contributor / operator / reviewer, plus a product/user reader when the repository exposes user-facing workflows; ask the user only when the repository's audience makes the defaults meaningless.
 
+## Execution budget
+
+- In an interactive IDE or when capacity is unknown, run one heavy gate at a
+  time. The supervisor schedules context, sync, lint, CI, full tests, coverage,
+  builds, and browser suites; subagents must not launch them unless explicitly
+  assigned.
+- Use `--jobs 1` below. Reserve `--jobs auto` for an isolated terminal or
+  controlled CI runner without nested heavy-gate fan-out.
+- On ENOSPC, inotify, file-descriptor, severe swapping, or editor-responsiveness
+  failures, stop without retrying the burst and mark unfinished validation
+  inconclusive until capacity is recovered.
+
 ## Steps
 
 1. **Verify the wiki is current.**
 
    ```bash
-   llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs auto
+   llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs 1
    llm-wiki lint --strict --src-dir . --wiki-dir docs/llm_wiki
    ```
 
@@ -45,7 +57,7 @@ When a guide needs screenshots, terminal recordings, or other usage media, finis
 7. **Re-link, then validate.**
 
    ```bash
-   llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs auto
+   llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs 1
    llm-wiki lint --strict --src-dir . --wiki-dir docs/llm_wiki
    llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki --format json
    ```
@@ -56,4 +68,13 @@ When a guide needs screenshots, terminal recordings, or other usage media, finis
 
 ## Context budget
 
-Size the pass from `index.md`, the flows directory listing, and `dependencies.metrics` before reading any flow page in full. Read only the flow/architecture pages the chosen tours will link to. Use `llm-wiki context --budget 8000-12000 --focus all --format json` only when a persona's mental-model section needs source context the wiki pages do not already carry. Do not re-run extract for this workflow — guides are written from wiki surfaces, and if the wiki lacks the needed structure, that is `wiki-sync`/`wiki-bootstrap` work first.
+Size the pass from `index.md`, the flows directory listing, and
+`dependencies.metrics` before reading any flow page in full. Read only the
+flow/architecture pages the chosen tours will link to. Use one serialized
+`llm-wiki context --budget 8000 --focus changed --format json --read-only` run
+only when a persona's mental-model section needs source context the wiki pages
+do not already carry. Budget and focus bound emitted output after a full deep
+inventory; they do not make the scan computationally cheap. Do not re-run
+extract for this workflow — guides are written from wiki surfaces, and if the
+wiki lacks the needed structure, that is `wiki-sync`/`wiki-bootstrap` work
+first.
