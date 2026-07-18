@@ -11,10 +11,19 @@ After evidence-backed guides exist, use `usage-examples` to capture and attach v
 
 ## Preconditions
 
-- A maintained wiki exists and its source root is known. If not, run `wiki-bootstrap`; if the wiki is stale, run `wiki-sync` before authoring.
+- A maintained wiki exists. In managed mode its source root is known; if no wiki
+  exists, run `wiki-bootstrap`, and if a source-backed wiki is stale, run
+  `wiki-sync` before authoring. An external wiki-only run instead uses its
+  recorded snapshot/freshness limitation.
 - The wiki directory is writable. The source repository may be read-only; use existing `--allow-external-src` patterns only where the deterministic command already supports them.
 - The user-facing audience and site name are known or can be inferred from repository evidence. If inferred, state the assumption in the run report.
 - No core-package LLM calls are added. This skill uses the current agent session for authoring and adjustment.
+- In `external_agent_docs`, the semantic-readiness ledger has passed and the
+  packet carries the one-time recorded intake. Treat that intake as authority;
+  never re-ask or replace `unspecified` values with guesses. Source is optional
+  for a wiki-only run, but unverified imported claims cannot enter primary user
+  docs. Write only the workspace wiki/result paths and never commit source or
+  input-wiki files.
 
 ## Execution budget
 
@@ -30,7 +39,7 @@ After evidence-backed guides exist, use `usage-examples` to capture and attach v
 
 ## Steps
 
-1. **Establish the deterministic baseline.** Start from current command output, not from memory or guesses.
+1. **Establish the deterministic baseline.** Start from current command output, not from memory or guesses. In `external_agent_docs`, first confirm the packet's semantic-readiness gate and use its workspace paths. Run sync only when source is available and the supervisor assigned a refresh; a wiki-only run starts from its recorded snapshot and validation evidence.
 
    ```bash
    llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs 1
@@ -71,13 +80,24 @@ After evidence-backed guides exist, use `usage-examples` to capture and attach v
    llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user \
      --built-site-dir _site --link-mode http \
      --profile user --site-name <project> --output-format json
-   # For direct-file handoff, re-export file-friendly and validate file links:
+   # For direct-file handoff, re-export file-friendly, check, rebuild, then
+   # validate the newly built file-mode HTML:
+   llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user \
+     --format mkdocs --profile user --site-name <project> --file-friendly \
+     --front-matter --output-format json
+   llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user \
+     --profile user --site-name <project> --output-format json
+   mkdocs build --strict -f site-user/mkdocs.yml
    llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user \
      --built-site-dir _site --link-mode file \
      --profile user --site-name <project> --output-format json
    ```
 
 6. **Run the adjustment loop from checker output.** Feed `lint`, `ci-check`, `site check`, builder output, and `doc-review` findings back into the same evidence-first loop. Fix validation-backed issues; defer weak or ambiguous findings with enough context for the next pass. Never adjust prose only because it "sounds better" if the change cannot be tied to user-docs clarity, cited evidence, or a reported validation issue.
+
+   In `external_agent_docs`, preserve the finding ids/statuses supplied by the
+   run packet and return normalized deferrals and requested checks in the
+   structured result. The supervisor reconciles them before review.
 
 ## Context Budget
 

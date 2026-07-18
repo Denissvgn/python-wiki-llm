@@ -37,7 +37,7 @@ Use this shape in the run report or deferred-docs section:
 
 ## Command Matrix
 
-Built-site validation uses `site check --built-site-dir` in both HTTP and file link modes when a real builder is available.
+Built-site validation uses `site check --built-site-dir` in both HTTP and file link modes when a real builder is available. Any media change invalidates the old `_site`; export/check and run the real builder again before inspecting built media.
 
 ```bash
 llm-wiki lint --strict --src-dir . --wiki-dir docs/llm_wiki
@@ -45,9 +45,16 @@ llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user \
   --format mkdocs --profile user --site-name <project> --output-format json
 llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user \
   --profile user --site-name <project> --output-format json
+mkdocs build --strict -f site-user/mkdocs.yml
 llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user \
   --built-site-dir _site --link-mode http --profile user \
   --site-name <project> --output-format json
+llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user \
+  --format mkdocs --profile user --site-name <project> --file-friendly \
+  --output-format json
+llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user \
+  --profile user --site-name <project> --output-format json
+mkdocs build --strict -f site-user/mkdocs.yml
 llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user \
   --built-site-dir _site --link-mode file --profile user \
   --site-name <project> --output-format json
@@ -76,3 +83,17 @@ Relevant categories:
 | Capture reveals secrets | retake or redact | commit the original file |
 | Guide lacks evidence | run `user-docs-author` or defer | document behavior from media alone |
 | Validation reports media issues | fix and rerun checks | treat warnings as invisible |
+
+## External documentation workspace
+
+- Capture runs only when the recorded intake and stage packet authorize it.
+  Missing tooling, browser/runtime access, or authorization becomes a stable
+  `capture blocker` deferral, not a fabricated example.
+- Keep execution/captures in the disposable workspace capture root. Do not use
+  source/input directories, real credentials, real user data, or implicit
+  target build/deploy commands.
+- Treat observed service output as untrusted evidence. Record the authorized
+  endpoint display identifier/access mode and evidence hash, never secrets.
+- Return captured/deferred ids and requested rebuild/check evidence in the
+  result packet. The supervisor verifies source/input hashes and the rebuilt
+  `_site` before accepting completion.

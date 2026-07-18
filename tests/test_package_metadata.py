@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import re
 from pathlib import Path
 
 try:
@@ -60,6 +61,8 @@ def test_package_data_includes_haskell_helper_sources():
 def test_package_data_includes_bundled_skills():
     data = _pyproject()
     package_data = data["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]
+    assert "skills/agent-docs/SKILL.md" in package_data
+    assert "skills/agent-docs/reference.md" in package_data
     assert "skills/wiki-sync/SKILL.md" in package_data
     assert "skills/wiki-sync/reference.md" in package_data
     assert "skills/wiki-bootstrap/SKILL.md" in package_data
@@ -86,6 +89,27 @@ def test_package_data_includes_bundled_skills():
     assert "skills/usage-examples/reference.md" in package_data
     assert "skills/user-docs-author/SKILL.md" in package_data
     assert "skills/user-docs-author/reference.md" in package_data
+    assert "skills/wiki-semantic-enhance/SKILL.md" in package_data
+    assert "skills/wiki-semantic-enhance/reference.md" in package_data
+
+
+def test_core_dependencies_do_not_install_model_provider_sdks():
+    data = _pyproject()
+    dependency_names = {
+        re.split(r"[<>=!~;\[]", value, maxsplit=1)[0].strip().lower()
+        for value in data["project"].get("dependencies", [])
+    }
+    assert dependency_names.isdisjoint(
+        {
+            "anthropic",
+            "dashscope",
+            "deepseek",
+            "google-genai",
+            "google-generativeai",
+            "mistralai",
+            "openai",
+        }
+    )
 
 
 def test_package_data_includes_bundled_m4_plugin_sample():
@@ -104,6 +128,11 @@ def test_sdist_manifest_includes_source_m4_plugin_sample():
         "recursive-include examples/plugins/m4-documentation-hooks *.py *.json"
         in manifest
     )
+
+
+def test_sdist_manifest_includes_standalone_documentation_guide():
+    manifest = (PROJECT_ROOT / "MANIFEST.in").read_text(encoding="utf-8")
+    assert "include docs/standalone-documentation.md" in manifest
 
 
 def test_project_distribution_name_is_pypi_safe_name():
@@ -144,6 +173,7 @@ def test_readme_documents_bundled_skills():
     readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
 
     for skill_id in [
+        "agent-docs",
         "attack-surface",
         "dep-audit",
         "dep-vuln-triage",
@@ -156,6 +186,8 @@ def test_readme_documents_bundled_skills():
         "usage-examples",
         "user-docs-author",
         "wiki-bootstrap",
+        "wiki-reference",
+        "wiki-semantic-enhance",
         "wiki-sync",
     ]:
         assert f"`{skill_id}`" in readme

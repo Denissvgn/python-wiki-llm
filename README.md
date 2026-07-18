@@ -3,7 +3,10 @@
 LLM Wiki CLI builds and maintains a repo-local architectural wiki for coding
 agents. It scans source code into a compact structural inventory, generates
 Markdown pages under a wiki directory, validates those pages against the live
-codebase, and prepares or triggers wiki-sync prompts after commits.
+codebase, and prepares or triggers wiki-sync prompts after commits. It can also
+prepare an isolated, agent-driven documentation workspace from source or an
+existing LLM-enriched wiki without installing instructions in the target; see
+[Standalone documentation workspaces](docs/standalone-documentation.md).
 
 The PyPI distribution is `agent-wiki-cli`. The installed console command remains
 `llm-wiki`, and the Python import package remains `llm_wiki_cli`.
@@ -222,6 +225,38 @@ llm-wiki init --agent claude --issue-reporting
 
 This only adds guidance to the generated agent instruction block. It does not
 upload reports, submit issues, or enable telemetry.
+
+### Standalone human documentation
+
+Create a separate documentation workspace without changing the source
+project's agent configuration:
+
+```bash
+llm-wiki docs prepare \
+  --workspace ./project-docs \
+  --baseline bootstrap-source \
+  --src-dir /path/to/project \
+  --allow-external-src \
+  --site-name "Project" \
+  --audience user,operator
+
+llm-wiki docs packet \
+  --workspace ./project-docs \
+  --stage wiki-enrichment \
+  --format markdown
+```
+
+The deterministic core builds evidence and provider-neutral packets; the host
+invokes an agent and returns its versioned result. The core calls no model,
+installs no target instructions, and performs no deployment. It can instead
+adopt a wiki already enriched by `llm-wiki` agent workflows. The complete
+source/adoption, agent-result, low-cost model-routing, verification, and resume
+workflow is in the
+[standalone documentation guide](docs/standalone-documentation.md).
+
+The workspace and any helper-cache or capture root must not overlap the source
+project or adopted input wiki. The example assumes `./project-docs` is a
+parent/sibling workspace, not a directory inside `/path/to/project`.
 
 ## Automation
 
@@ -991,6 +1026,87 @@ optional architecture pages are mirrored when present. The canonical source of
 truth remains `docs/llm_wiki/`; generated mirror output is not edited as an
 independent documentation source.
 
+### `docs`
+
+Prepare and supervise an isolated, agent-driven human-documentation workspace.
+This mode does not replace the managed repo-local wiki workflow.
+
+Build a deterministic baseline from a read-only source tree:
+
+```bash
+llm-wiki docs prepare \
+  --workspace ./project-docs \
+  --baseline bootstrap-source \
+  --src-dir /path/to/project \
+  --allow-external-src \
+  --site-name "Project" \
+  --audience user,operator \
+  --site-format mkdocs \
+  --file-friendly
+```
+
+Or preserve and classify semantic prose from an existing wiki created by
+`llm-wiki` commands and agent skills:
+
+```bash
+llm-wiki docs prepare \
+  --workspace ./project-docs \
+  --baseline existing-wiki \
+  --input-wiki-dir /path/to/project/docs/llm_wiki \
+  --src-dir /path/to/project \
+  --wiki-freshness require-current \
+  --allow-external-src \
+  --site-name "Project" \
+  --audience user,operator
+```
+
+The lifecycle is explicit and resumable:
+
+```bash
+llm-wiki docs status --workspace ./project-docs --format json
+llm-wiki docs packet --workspace ./project-docs --stage wiki-enrichment --format markdown
+llm-wiki docs record-result --workspace ./project-docs --result ./wiki-result.json --format json
+llm-wiki docs packet --workspace ./project-docs --stage user-docs --format markdown
+llm-wiki docs record-result --workspace ./project-docs --result ./user-docs-result.json --format json
+llm-wiki docs packet --workspace ./project-docs --stage review --format markdown
+llm-wiki docs record-result --workspace ./project-docs --result ./review-result.json --format json
+llm-wiki docs export --workspace ./project-docs --format mkdocs --output-format json
+llm-wiki docs verify --workspace ./project-docs --format json --no-advance
+```
+
+The host must record a valid result after each packet before requesting the
+next stage. Results are reconciled against actual wiki diffs, source/input
+hashes, and generated ownership. `require-current` fails closed;
+`refresh-snapshot` refreshes only the isolated workspace copy while retaining
+imported semantic prose; `allow-unverified` permits source-unavailable local
+artifacts but cannot claim source-verified publication readiness.
+
+For an adopted wiki, `require-current` builds the current supported-source
+inventory and compares its path set and hashes with the imported manifest,
+along with recorded generation inputs such as OpenAPI. It therefore detects
+supported source files that were added, removed, or changed. The check does not
+prove semantic completeness, the relevance of unsupported files, or the
+accuracy of prior human/LLM prose.
+
+Packets are provider-neutral. The supported Python API can choose
+credential-free low-cost runner metadata for `generic-agent` and `handoff`
+modes across OpenAI/Codex, OpenAI-compatible, Anthropic, Google Gemini,
+Mistral, DeepSeek, Alibaba/Qwen, local/self-hosted, and other providers. The
+small v1 family enum represents unlisted publishers as `other`; first-class
+publisher/backend/transport bindings remain proposed backlog work. Both
+defaults must be low-cost; configured signals or an explicit user override are
+required to use balanced/capability routes. Model
+selection remains host-owned: the `llm-wiki` core imports no provider SDK,
+calls no model, and never deploys or installs target agent instructions.
+Provider families and cost/capability tiers are host-maintained labels, not
+native adapters or independently verified pricing. The host must keep them
+current and persist any concrete selection receipt separately; the lifecycle
+does not prove which runner or model was used.
+
+See [Standalone documentation workspaces](docs/standalone-documentation.md)
+for the result schema, trust boundary, skills, Python API, model-policy example,
+builder limitations, and troubleshooting.
+
 ### `site`
 
 Export and validate a static-site-friendly mirror of the canonical wiki.
@@ -1087,8 +1203,13 @@ emit non-failing `warnings` in JSON and text reports.
 List, export, and install the agent skills bundled with the package. Each
 skill is a directory holding a `SKILL.md` workflow definition (Claude
 Code-compatible frontmatter plus instructions) and optional supporting files.
-Thirteen skills are bundled:
+Sixteen skills are bundled:
 
+- `agent-docs`: standalone documentation supervisor workflow — record intake
+  once, prepare/resume an isolated source or existing-wiki baseline, dispatch
+  provider-neutral stage packets, reconcile results, preserve read-only roots,
+  and produce a local deployment handoff without installing target
+  instructions or committing/deploying for the target.
 - `attack-surface`: defensive security-review preparation — prepare
   extractor helpers, run `extract --deep --read-only`, seed required
   coverage from `SECURITY.md`, treat data-flow gaps as unknown surface,
@@ -1151,6 +1272,13 @@ Thirteen skills are bundled:
   a centrality-ranked semantic pass on the most central pages, write an
   explicit remainder backlog for deferred pages, validate with
   `lint --strict`/`ci-check`, and commit the wiki.
+- `wiki-reference`: progressive-disclosure reference for extractor contracts,
+  helper toolchains/caches, dependency reconciliation, static-site profiles,
+  resource-aware execution, and context budgets.
+- `wiki-semantic-enhance`: resumable standalone semantic-enrichment pass —
+  ground or reuse imported LLM prose, complete/defer stable worklist IDs within
+  budget, edit only agent-owned semantic surfaces, and return readiness/result
+  evidence without changing source, the input wiki, or generated owners.
 - `wiki-sync`: the post-change documentation loop — deterministic `sync`, a
   semantic-only prose pass, a `lint --strict` validation loop, and a
   separate `docs(wiki):` commit.
@@ -1254,6 +1382,29 @@ supports that mode.
 Manual CLI triggers can edit files and run commands according to the selected
 agent's own permission model. Review generated prompt files and wiki diffs
 before trusting agent-produced changes in a shared repository.
+
+Standalone `docs` runs use a stricter external-workspace boundary. Source trees
+and adopted wikis are read-only evidence; target agent-policy files, prompts,
+plugin manifests, README instructions, and prior LLM prose cannot change the
+run policy. The importer rejects symlinks, non-regular/non-portable paths,
+agent-policy files, and cache content. Source plugins are disabled unless the
+caller explicitly passes `--trust-source-plugins`; missing helpers and builders
+are never installed implicitly. Live-service observation permission is opt-in,
+requires an explicit disposable capture root, and rejects URL
+credentials/query/fragment data. The core records that permission but makes no
+request and captures nothing; later host execution needs separate authorization
+and must follow the packet's path contract. Callers must still keep secrets and
+real user data out of paths, captures, and documentation.
+
+The `docs` core emits provider-neutral packets and never imports a provider SDK,
+calls a model, stores provider credentials, deploys output, or installs target
+instructions. Credential-free model-routing metadata is selected separately by
+the host. Both generic-agent and handoff defaults must be low-cost; more
+capable/costly routes require configured escalation evidence or a user
+override. These tiers are host-declared labels, and the core provides no native
+provider adapter, price verification, or proof of the model actually invoked.
+See the [standalone documentation security and routing
+guide](docs/standalone-documentation.md#provider-neutral-low-cost-host-routing).
 
 The repository includes community health files:
 

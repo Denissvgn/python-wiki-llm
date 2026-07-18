@@ -7,6 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Agent-driven standalone documentation workspaces through `llm-wiki docs
+  prepare|status|packet|record-result|verify|export` and matching typed Python
+  APIs. Runs are explicit, resumable, provider-neutral, and isolated from the
+  source project; the core creates deterministic evidence and local publication
+  handoffs but invokes no model, installs no target instructions, and never
+  deploys.
+- Two baseline strategies: deterministic source bootstrap and path-safe
+  adoption of an existing canonical wiki, including pages previously enriched
+  by LLM-backed `llm-wiki` workflows. Runs record a source content-hash baseline
+  and byte-preserving input-wiki snapshot provenance, generated ownership,
+  semantic-page classifications, and explicit `require-current`, workspace-only
+  `refresh-snapshot`, or limited `allow-unverified` freshness decisions.
+- Versioned documentation run, worklist/readiness, agent packet/result, review
+  ledger, verification, final-report, and model-routing contracts. Result
+  reconciliation independently checks reported wiki paths, source/input hashes,
+  and generated ownership; review findings are normalized into a stable ledger,
+  while publication evidence is checked during export and verification.
+- Credential-free host model routing for both `generic-agent` and `handoff`
+  modes. Policies accept OpenAI-compatible, Anthropic, Google Gemini,
+  local/self-hosted, and other provider families, including caller labels for
+  Mistral, DeepSeek, Alibaba/Qwen, gateways, and cloud backends. Policies
+  require low-cost defaults and reserve balanced/capability routes for
+  configured escalation signals or explicit user overrides. The routing API
+  returns serializable host-owned selection metadata and does not invoke a
+  provider. Mistral, DeepSeek, Qwen, gateway, and cloud labels currently use the
+  v1 `other` family; first-class backend/publisher/transport bindings remain
+  proposed. Provider families and tiers are caller-maintained labels: the core
+  includes no native provider adapter, current-price lookup, or proof of the
+  concrete model used.
+- Bundled `agent-docs` and `wiki-semantic-enhance` skills plus external-mode
+  contracts in the user-doc, onboarding, usage, review, and publication skills.
+  Standalone runs export hashed run-local copies rather than installing skills
+  into the target project.
+- A focused [standalone documentation guide](docs/standalone-documentation.md)
+  covering source and enriched-wiki setup, trust/isolation, agent handoffs,
+  result schemas, low-cost routing, Python APIs, refresh/resume behavior,
+  builders, limitations, and troubleshooting.
+
+### Security
+
+- Standalone runs treat source trees, adopted wikis, target instructions, and
+  live-service responses as untrusted evidence. Source plugins are disabled by
+  default, helper/build preparation is explicit, symlink/non-regular/path-escape
+  inputs and overlapping roots are rejected, writes are constrained to declared
+  roots, live-service flags record permission without making a request or
+  capture, and remote publication remains a separately authorized handoff.
+
 ## [1.4.0] - 2026-07-12
 
 ### Added

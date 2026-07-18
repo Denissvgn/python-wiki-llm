@@ -28,6 +28,81 @@ def _write_custom_skill(root: Path, skill_id: str = "demo") -> Path:
     return skill_dir
 
 
+class TestBundledAgentDocsSkill:
+    def test_agent_docs_skill_is_bundled(self):
+        by_id = {skill.skill_id: skill for skill in skills.list_bundled_skills()}
+        assert "agent-docs" in by_id
+        agent_docs = by_id["agent-docs"]
+        assert agent_docs.name == "agent-docs"
+        assert "external workspace" in agent_docs.description.lower()
+        assert "existing llm wiki" in agent_docs.description.lower()
+        assert agent_docs.files == ("SKILL.md", "reference.md")
+
+    def test_agent_docs_orders_intake_baseline_packets_review_and_handoff(self):
+        skill_dir = skills.BUNDLED_SKILLS_ROOT / "agent-docs"
+        manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+        reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
+        combined = f"{manifest}\n{reference}"
+
+        ordered_markers = [
+            "**Record the intake exactly once.**",
+            "**Prepare one baseline.**",
+            "**Verify the baseline gate.**",
+            "**Run wiki enrichment from an explicit packet.**",
+            "**Run the user-docs packet in order.**",
+            "**Run an auditable review packet.**",
+            "**Verify and hand off locally.**",
+        ]
+        positions = [manifest.index(marker) for marker in ordered_markers]
+        assert positions == sorted(positions)
+
+        assert "`bootstrap-source` or `existing-wiki`" in combined
+        assert "never re-ask" in combined
+        assert "`unspecified`" in combined
+        assert "trusted human intent" in combined
+        assert "untrusted evidence" in combined
+        assert "wiki-semantic-enhance" in combined
+        assert "llm-wiki-documentation-semantic-readiness/v1" in combined
+        assert "llm-wiki-documentation-agent-result/v1" in combined
+        assert "worker and reviewer packets/results" in combined
+        assert "provider-neutral" in combined
+        assert "do not add a provider SDK" in combined
+        assert "`generic-agent`" in combined
+        assert "`handoff`" in combined
+        assert "`low-cost`" in combined
+        assert "Anthropic" in combined
+        assert "Google Gemini" in combined
+        assert "local/self-hosted" in combined
+        assert "none is the protocol default" in combined
+
+    def test_agent_docs_encodes_isolation_resume_and_heavy_gate_contracts(self):
+        skill_dir = skills.BUNDLED_SKILLS_ROOT / "agent-docs"
+        manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+        reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
+        combined = f"{manifest}\n{reference}"
+        normalized = " ".join(combined.split())
+
+        assert "external_agent_docs" in combined
+        assert "`.llm-wiki-docs/run.json`" in combined
+        assert "source and input wiki as read-only evidence" in combined
+        assert "AGENTS.md" in combined
+        assert "CLAUDE.md" in combined
+        assert "auto-discovered" in combined
+        assert "Never put credentials" in combined
+        assert "source_unavailable" in combined
+        assert "source_identity_unknown" in combined
+        assert "Run one heavy gate at a time" in combined
+        assert "Use `--jobs 1`" in combined
+        assert "mark unfinished checks inconclusive" in combined
+        assert "Three repeated unresolved high-severity failures block" in combined
+        assert "do not deploy, stage, or commit the source" in combined
+        assert "supervisor-only write control" in normalized
+        assert "one bounded result handoff" in normalized
+        assert "not a cryptographic boundary" in normalized
+        assert "shares the supervisor's principal" in normalized
+        assert "same boundary to every provider and runner" in normalized
+
+
 class TestBundledWikiSyncSkill:
     def test_wiki_sync_skill_is_bundled(self):
         by_id = {skill.skill_id: skill for skill in skills.list_bundled_skills()}
@@ -138,6 +213,69 @@ class TestBundledWikiBootstrapSkill:
         assert "reference-oriented" in manifest
         assert "onboarding-guide" in manifest
         assert "site export --profile user" in manifest
+
+    def test_wiki_bootstrap_uses_live_surface_name_and_external_handoff(self):
+        skill_dir = skills.BUNDLED_SKILLS_ROOT / "wiki-bootstrap"
+        manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+        reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
+        combined = f"{manifest}\n{reference}"
+
+        assert ".llm-wiki-surface.json" in manifest
+        assert ".llm-wiki-surface-index.json" not in combined
+        assert "external_agent_docs" in combined
+        assert "wiki-semantic-enhance" in combined
+        assert "never stage or commit the source or adopted input wiki" in combined
+
+
+class TestBundledWikiSemanticEnhanceSkill:
+    def test_wiki_semantic_enhance_skill_is_bundled(self):
+        by_id = {skill.skill_id: skill for skill in skills.list_bundled_skills()}
+        assert "wiki-semantic-enhance" in by_id
+        semantic = by_id["wiki-semantic-enhance"]
+        assert semantic.name == "wiki-semantic-enhance"
+        assert "semantic-enrichment" in semantic.description.lower()
+        assert semantic.files == ("SKILL.md", "reference.md")
+
+    def test_wiki_semantic_enhance_encodes_readiness_and_ownership(self):
+        skill_dir = skills.BUNDLED_SKILLS_ROOT / "wiki-semantic-enhance"
+        manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+        reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
+        combined = f"{manifest}\n{reference}"
+
+        assert "freshly bootstrapped source baseline" in manifest
+        assert "validated snapshot of an existing LLM Wiki" in manifest
+        assert "`candidate_reuse`" in combined
+        assert "`needs_grounding`" in combined
+        assert "`needs_enhancement`" in combined
+        assert "`incompatible`" in combined
+        assert "do not rewrite merely for style" in combined
+        assert "`wiki-bootstrap/reference.md`" in combined
+        assert "do not invent a parallel" in combined
+        assert "llm-wiki-documentation-semantic-readiness/v1" in combined
+        assert "every P0" in combined
+        assert "declared P1 budget" in combined
+        assert "ready_for_user_docs" in combined
+        assert "generator defects" in combined
+        assert "Never edit generated tables" in combined
+        assert "source or adopted input wiki" in combined
+
+    def test_wiki_semantic_enhance_supports_resume_and_wiki_only_limits(self):
+        skill_dir = skills.BUNDLED_SKILLS_ROOT / "wiki-semantic-enhance"
+        manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+        reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
+        combined = f"{manifest}\n{reference}"
+
+        assert "source is optional" in combined.lower()
+        assert "wiki-only run resumes from its recorded snapshot" in combined
+        assert "cannot upgrade an imported claim to" in combined
+        assert "source-verified" in combined
+        assert "Same source/snapshot and packet hashes" in combined
+        assert "Resume open ids" in combined
+        assert "Run one heavy gate at a time" in combined
+        assert "Semantic budget exhausted" in combined
+        assert (
+            "Never write, stage, or commit the source or adopted input wiki" in combined
+        )
 
 
 class TestBundledAttackSurfaceSkill:
@@ -574,6 +712,24 @@ class TestBundledPublishDocsSkill:
         assert "--file-friendly" in combined
         assert "--link-mode file" in combined
 
+    def test_publish_docs_direct_file_sequence_rebuilds_before_file_check(self):
+        manifest = (skills.BUNDLED_SKILLS_ROOT / "publish-docs" / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
+        start = manifest.index("Direct-file handoffs use file-friendly export")
+        end = manifest.index("5. **Hand off", start)
+        direct = manifest[start:end]
+
+        export = direct.index("llm-wiki site export")
+        file_friendly = direct.index("--file-friendly", export)
+        mirror_check = direct.index("llm-wiki site check", file_friendly)
+        rebuild = direct.index("mkdocs build --strict", mirror_check)
+        built_check = direct.index("--built-site-dir _site", rebuild)
+        file_check = direct.index("--link-mode file", built_check)
+        assert (
+            export < file_friendly < mirror_check < rebuild < built_check < file_check
+        )
+
 
 class TestBundledUserDocsAuthorSkill:
     def test_user_docs_author_skill_is_bundled(self):
@@ -617,6 +773,32 @@ class TestBundledUserDocsAuthorSkill:
         assert "Do not invent facts" in combined
         assert "deferred-docs" in combined
         assert "validation-backed issues" in combined
+
+    def test_user_docs_author_direct_file_handoff_is_complete_and_ordered(self):
+        manifest = (
+            skills.BUNDLED_SKILLS_ROOT / "user-docs-author" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+        start = manifest.index("# For direct-file handoff")
+        end = manifest.index("6. **Run the adjustment loop", start)
+        direct = manifest[start:end]
+
+        export = direct.index("llm-wiki site export")
+        file_friendly = direct.index("--file-friendly", export)
+        mirror_check = direct.index("llm-wiki site check", file_friendly)
+        rebuild = direct.index("mkdocs build --strict", mirror_check)
+        built_check = direct.index("--built-site-dir _site", rebuild)
+        file_check = direct.index("--link-mode file", built_check)
+        assert (
+            export < file_friendly < mirror_check < rebuild < built_check < file_check
+        )
+
+        reference = (
+            skills.BUNDLED_SKILLS_ROOT / "user-docs-author" / "reference.md"
+        ).read_text(encoding="utf-8")
+        assert (
+            "Reusing `_site` from a previous HTTP-mode build is invalid evidence"
+            in reference
+        )
 
 
 class TestBundledUsageExamplesSkill:
@@ -666,11 +848,101 @@ class TestBundledUsageExamplesSkill:
         assert "agent platform" in combined
         assert "llm-wiki site export" in combined
 
+    def test_usage_examples_rebuilds_after_media_changes_before_built_checks(self):
+        manifest = (
+            skills.BUNDLED_SKILLS_ROOT / "usage-examples" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+        start = manifest.index("5. **Validate and adjust.**")
+        end = manifest.index("6. **Defer honestly.**", start)
+        validation = manifest[start:end]
+
+        first_export = validation.index("llm-wiki site export")
+        first_mirror_check = validation.index("llm-wiki site check", first_export)
+        first_rebuild = validation.index("mkdocs build --strict", first_mirror_check)
+        http_built_check = validation.index("--built-site-dir _site", first_rebuild)
+        assert first_export < first_mirror_check < first_rebuild < http_built_check
+
+        file_export = validation.index("llm-wiki site export", http_built_check)
+        file_friendly = validation.index("--file-friendly", file_export)
+        file_mirror_check = validation.index("llm-wiki site check", file_friendly)
+        second_rebuild = validation.index("mkdocs build --strict", file_mirror_check)
+        file_built_check = validation.index("--built-site-dir _site", second_rebuild)
+        file_mode = validation.index("--link-mode file", file_built_check)
+        assert (
+            file_export
+            < file_friendly
+            < file_mirror_check
+            < second_rebuild
+            < file_built_check
+            < file_mode
+        )
+
+
+class TestExternalDocumentationSkillChain:
+    @staticmethod
+    def _combined(skill_id: str) -> str:
+        skill_dir = skills.BUNDLED_SKILLS_ROOT / skill_id
+        return "\n".join(
+            [
+                (skill_dir / "SKILL.md").read_text(encoding="utf-8"),
+                (skill_dir / "reference.md").read_text(encoding="utf-8"),
+            ]
+        )
+
+    def test_existing_skills_preserve_managed_defaults_and_add_external_gates(self):
+        bootstrap = self._combined("wiki-bootstrap")
+        sync = self._combined("wiki-sync")
+        onboarding = self._combined("onboarding-guide")
+
+        assert "Managed knowledge-base behavior remains the default" in bootstrap
+        assert "docs(wiki): bootstrap <project>" in bootstrap
+        assert "external_agent_docs" in bootstrap
+        assert "wiki-semantic-enhance" in bootstrap
+
+        assert "Commit wiki changes separately" in sync
+        assert "external_agent_docs" in sync
+        assert "resume from the recorded wiki snapshot" in sync
+        assert "never stage or commit the source or" in sync
+
+        assert "docs(wiki): add onboarding guides" in onboarding
+        assert "recorded audiences and per-audience intent" in onboarding
+        assert "Never re-ask intake on resume" in onboarding
+        assert "wiki-only runs" in onboarding.lower()
+        assert "never stage or commit the source or input wiki" in onboarding
+
+    def test_user_capture_review_and_publish_external_entry_exit_contracts(self):
+        author = self._combined("user-docs-author")
+        capture = self._combined("usage-examples")
+        review = self._combined("doc-review")
+        publish = self._combined("publish-docs")
+
+        assert "semantic-readiness ledger has passed" in author
+        assert "one-time recorded intake" in author
+        assert "Wiki-only runs" in author
+        assert "unverified imported claims" in author
+        assert "return normalized deferrals" in author
+
+        assert "capture is optional and separately authorized" in capture
+        assert "already-running caller-owned staging/demo service" in capture
+        assert "untrusted evidence" in capture
+        assert "Missing tooling, browser/runtime access, or authorization" in capture
+
+        assert "Keep reviewer and worker packets/results separately auditable" in review
+        assert "No finding may disappear" in review
+        assert "three repeated unresolved high-severity failures block" in review
+        assert "independent supervisor reconciliation" in review
+
+        assert "semantic readiness" in publish
+        assert "separate review ledger/result" in publish
+        assert "`publish_ready` is not" in publish
+        assert "deployment remains separately authorized" in publish
+
 
 class TestSkillExport:
     def test_export_writes_all_skill_files(self, tmp_path):
         report = skills.export_skills(tmp_path / "out")
         assert report.ok
+        assert "agent-docs" in report.skills
         assert "wiki-sync" in report.skills
         assert "wiki-bootstrap" in report.skills
         assert "attack-surface" in report.skills
@@ -684,6 +956,9 @@ class TestSkillExport:
         assert "publish-docs" in report.skills
         assert "usage-examples" in report.skills
         assert "user-docs-author" in report.skills
+        assert "wiki-semantic-enhance" in report.skills
+        assert (tmp_path / "out" / "agent-docs" / "SKILL.md").is_file()
+        assert (tmp_path / "out" / "agent-docs" / "reference.md").is_file()
         assert (tmp_path / "out" / "wiki-sync" / "SKILL.md").is_file()
         assert (tmp_path / "out" / "wiki-sync" / "reference.md").is_file()
         assert (tmp_path / "out" / "wiki-bootstrap" / "SKILL.md").is_file()
@@ -710,6 +985,8 @@ class TestSkillExport:
         assert (tmp_path / "out" / "usage-examples" / "reference.md").is_file()
         assert (tmp_path / "out" / "user-docs-author" / "SKILL.md").is_file()
         assert (tmp_path / "out" / "user-docs-author" / "reference.md").is_file()
+        assert (tmp_path / "out" / "wiki-semantic-enhance" / "SKILL.md").is_file()
+        assert (tmp_path / "out" / "wiki-semantic-enhance" / "reference.md").is_file()
         assert {op.action for op in report.operations} == {"write"}
 
     def test_export_is_idempotent(self, tmp_path):
@@ -769,6 +1046,7 @@ class TestSkillInstall:
     def test_install_defaults_to_claude_skills_dir(self, tmp_path):
         report = skills.install_skills(tmp_path)
         assert report.ok
+        assert (tmp_path / ".claude" / "skills" / "agent-docs" / "SKILL.md").is_file()
         assert (tmp_path / ".claude" / "skills" / "wiki-sync" / "SKILL.md").is_file()
         assert (
             tmp_path / ".claude" / "skills" / "wiki-bootstrap" / "SKILL.md"
@@ -796,12 +1074,16 @@ class TestSkillInstall:
         assert (
             tmp_path / ".claude" / "skills" / "user-docs-author" / "SKILL.md"
         ).is_file()
+        assert (
+            tmp_path / ".claude" / "skills" / "wiki-semantic-enhance" / "SKILL.md"
+        ).is_file()
 
 
 class TestSkillsCli:
     def test_cli_list_json(self, capsys):
         skills_cmd.run(_ns(skills_action="list", format="json"))
         data = json.loads(capsys.readouterr().out)
+        assert any(skill["id"] == "agent-docs" for skill in data["skills"])
         assert any(skill["id"] == "wiki-sync" for skill in data["skills"])
         assert any(skill["id"] == "dep-audit" for skill in data["skills"])
         assert any(skill["id"] == "dep-vuln-triage" for skill in data["skills"])
@@ -813,6 +1095,7 @@ class TestSkillsCli:
         assert any(skill["id"] == "publish-docs" for skill in data["skills"])
         assert any(skill["id"] == "usage-examples" for skill in data["skills"])
         assert any(skill["id"] == "user-docs-author" for skill in data["skills"])
+        assert any(skill["id"] == "wiki-semantic-enhance" for skill in data["skills"])
 
     def test_cli_install_and_conflict_exit_code(self, tmp_project, capsys):
         skills_cmd.run(_ns(skills_action="install", format="text"))

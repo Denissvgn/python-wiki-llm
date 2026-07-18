@@ -486,6 +486,7 @@ def _collect_lint_inputs(
     include_tests: Iterable[str] | None,
     job_request: ExtractionJobRequest | None,
     plan_reporter: Callable[[ExtractionJobPlan], None] | None,
+    include_plugins: bool,
 ) -> _LintInputs | None:
     with _profile_phase(profiler, "inventory"):
         source_snapshot = build_source_snapshot(src_dir, include_tests=include_tests)
@@ -499,6 +500,7 @@ def _collect_lint_inputs(
             include_tests=include_tests,
             job_request=job_request,
             plan_reporter=plan_reporter,
+            include_plugins=include_plugins,
         )
         report.extraction_job_plan = inventory_result.extraction_job_plan
         if cache_options is not None and cache_options.stats_enabled:
@@ -1196,6 +1198,7 @@ def _run_report_checks(
     profiler: _LintProfiler | None,
     inputs: _LintInputs,
     media_size_warn_bytes: int,
+    include_plugins: bool,
 ) -> None:
     with _profile_phase(profiler, "unsupported_sources"):
         _check_unsupported_source_diagnostics(report, inputs.unsupported_sources)
@@ -1245,13 +1248,14 @@ def _run_report_checks(
             _check_required_structure(report, wiki_path)
             _check_sync_manifest(report, wiki_path, src_dir, inputs.deep_inventory)
     with _profile_phase(profiler, "plugins"):
-        _run_plugin_lint_rules(
-            report,
-            wiki_path,
-            src_dir,
-            inputs.deep_inventory,
-            inputs.page_index.pages,
-        )
+        if include_plugins:
+            _run_plugin_lint_rules(
+                report,
+                wiki_path,
+                src_dir,
+                inputs.deep_inventory,
+                inputs.page_index.pages,
+            )
     with _profile_phase(profiler, "team"):
         _check_team_issues(report, wiki_path, src_dir, inputs)
 
@@ -1269,6 +1273,7 @@ def build_report(
     media_size_warn_bytes: int = wiki_media.DEFAULT_MEDIA_SIZE_WARN_BYTES,
     job_request: ExtractionJobRequest | None = None,
     plan_reporter: Callable[[ExtractionJobPlan], None] | None = None,
+    include_plugins: bool = True,
 ) -> LintReport:
     """Build a structured lint report without rendering or exiting."""
     wiki_path = Path(wiki_dir)
@@ -1292,6 +1297,7 @@ def build_report(
         include_tests,
         job_request,
         plan_reporter,
+        include_plugins,
     )
     if inputs is None:
         return report
@@ -1303,6 +1309,7 @@ def build_report(
         profiler,
         inputs,
         media_size_warn_bytes,
+        include_plugins,
     )
     return report
 
@@ -1318,9 +1325,7 @@ def report_to_dict(report: LintReport, *, include_execution: bool = False) -> di
         "diagnostics": [asdict(diagnostic) for diagnostic in report.diagnostics],
     }
     if include_execution:
-        payload["execution"] = {
-            "extractor_jobs": report.extraction_job_plan.to_dict()
-        }
+        payload["execution"] = {"extractor_jobs": report.extraction_job_plan.to_dict()}
     return payload
 
 

@@ -105,6 +105,7 @@ class InventoryRequest:
     include_tests: Iterable[str] | None = None
     job_request: ExtractionJobRequest | None = None
     plan_reporter: Callable[[ExtractionJobPlan], None] | None = None
+    include_plugins: bool = True
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -283,6 +284,7 @@ _LEGACY_INVENTORY_REQUEST_FIELDS = (
     "include_tests",
     "job_request",
     "plan_reporter",
+    "include_plugins",
 )
 
 
@@ -421,7 +423,11 @@ def _prepare_inventory_build_context(
         only_files=request.only_files,
         include_tests=request.include_tests,
     )
-    registry = get_extractor_registry()
+    registry = (
+        get_extractor_registry()
+        if request.include_plugins
+        else dict(EXTRACTOR_REGISTRY)
+    )
     cache = (
         InventoryCache(request.src_dir, request.cache_options)
         if request.cache_options is not None
@@ -442,7 +448,9 @@ def _prepare_inventory_build_context(
         updated_cache_files={},
         source_file_by_path=source_file_by_path,
         source_hashes=source_hashes,
-        parallel_safe_plugin_entry_points=parallel_safe_extractor_entry_points(),
+        parallel_safe_plugin_entry_points=(
+            parallel_safe_extractor_entry_points() if request.include_plugins else set()
+        ),
     )
 
 

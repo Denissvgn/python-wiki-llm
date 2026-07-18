@@ -29,21 +29,46 @@ from llm_wiki_cli.api import (
 def test_supported_api_exports_are_additive_contract():
     expected_exports = {
         "BOOTSTRAP_SUMMARY_SCHEMA_VERSION",
+        "DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION",
+        "DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION",
+        "DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION",
+        "DOCUMENTATION_MODEL_ROUTING_SCHEMA_VERSION",
+        "DOCUMENTATION_MODEL_SELECTION_SCHEMA_VERSION",
+        "DOCUMENTATION_RUN_SCHEMA_VERSION",
+        "DOCUMENTATION_VERIFICATION_SCHEMA_VERSION",
         "EXTRACT_SCHEMA_VERSION",
         "DocumentationGraphQueryService",
+        "DocumentationAgentPacket",
+        "DocumentationAgentResult",
+        "DocumentationModelRoutingPolicy",
+        "DocumentationModelRoutingRequest",
+        "DocumentationModelSelection",
+        "DocumentationRun",
+        "DocumentationRunStatus",
+        "DocumentationVerificationReport",
+        "DocumentationWikiSnapshot",
         "ExtractionError",
         "LlmWikiApiError",
         "PathPolicyError",
+        "adopt_documentation_wiki_snapshot",
+        "build_documentation_agent_packet",
         "build_context",
         "build_documentation_query_service",
         "callees",
         "callers",
         "data_flow_for_entrypoint",
         "dependency_neighborhood",
+        "export_documentation_run",
         "extract_source",
         "flow_for_entrypoint",
+        "fingerprint_documentation_wiki_input",
+        "get_documentation_run_status",
         "list_wiki_pages",
         "pages_for_symbol",
+        "prepare_documentation_run",
+        "record_documentation_agent_result",
+        "select_documentation_model",
+        "verify_documentation_run",
     }
 
     assert expected_exports <= set(api.__all__)
@@ -82,6 +107,44 @@ def test_supported_api_signatures_preserve_existing_callers():
     assert context_params["budget"].default == 32000
     assert context_params["filters"].default is None
     assert context_params["wiki_dir"].kind is inspect.Parameter.KEYWORD_ONLY
+
+
+def test_documentation_lifecycle_api_signatures_match_cli_contract():
+    prepare_params = inspect.signature(api.prepare_documentation_run).parameters
+    assert list(prepare_params) == [
+        "workspace",
+        "baseline_strategy",
+        "source_root",
+        "input_wiki_root",
+        "freshness_policy",
+        "site_name",
+        "audiences",
+        "project_purpose",
+        "audience_intent",
+        "live_service_url",
+        "live_service_access_mode",
+        "live_service_observation_allowed",
+        "helper_cache_root",
+        "capture_root",
+        "trust_source_plugins",
+        "semantic_budget",
+        "adjustment_loop_limit",
+        "distribution_format",
+        "link_mode",
+        "refresh",
+    ]
+    assert prepare_params["workspace"].kind is inspect.Parameter.POSITIONAL_OR_KEYWORD
+    assert prepare_params["baseline_strategy"].kind is inspect.Parameter.KEYWORD_ONLY
+
+    expected = {
+        "get_documentation_run_status": ["workspace"],
+        "build_documentation_agent_packet": ["workspace", "stage"],
+        "record_documentation_agent_result": ["workspace", "result"],
+        "verify_documentation_run": ["workspace", "advance"],
+        "export_documentation_run": ["workspace", "build", "builder_command"],
+    }
+    for name, parameters in expected.items():
+        assert list(inspect.signature(getattr(api, name)).parameters) == parameters
 
 
 def test_api_error_types_remain_structured_subclasses():
@@ -300,9 +363,7 @@ def test_list_wiki_pages_returns_registry_metadata_without_running_extraction(
     }
 
 
-def test_list_wiki_pages_exposes_api_contract_root_surface(
-    tmp_project, monkeypatch
-):
+def test_list_wiki_pages_exposes_api_contract_root_surface(tmp_project, monkeypatch):
     wiki = _write_api_wiki(tmp_project)
     (wiki / "api-contracts.md").write_text(
         "# API contracts\n\n## Notes\n\nReviewed.\n", encoding="utf-8"
@@ -317,9 +378,7 @@ def test_list_wiki_pages_exposes_api_contract_root_surface(
 
     assert payload["counts"]["by_kind"]["api-contracts"] == 1
     assert payload["counts"]["architecture_pages"] == 3
-    page = next(
-        item for item in payload["pages"] if item["kind"] == "api-contracts"
-    )
+    page = next(item for item in payload["pages"] if item["kind"] == "api-contracts")
     assert page["canonical_path"] == "api-contracts.md"
     assert page["mcp_uri"] == "llm-wiki://api-contracts"
 

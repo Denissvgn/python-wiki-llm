@@ -1,0 +1,207 @@
+{
+  "schema_version": "llm-wiki-documentation-run/v1",
+  "run_id": "33333333-3333-4333-8333-333333333333",
+  "state": "blocked",
+  "integration_mode": "external_agent_docs",
+  "baseline_strategy": "adopt_existing_wiki",
+  "created_at": "2026-07-18T10:00:00+00:00",
+  "updated_at": "2026-07-18T10:20:00+00:00",
+  "intake": {
+    "project_purpose": "Publish grounded operational documentation from a current enriched wiki.",
+    "audiences": [
+      "operator"
+    ],
+    "audience_intent": {
+      "operator": "identify prerequisites and failure recovery steps"
+    },
+    "live_service": {
+      "address": "https://docs-preview.example.invalid",
+      "access_mode": "anonymous",
+      "observation_allowed": true,
+      "secret_material_persisted": false
+    },
+    "provenance": {
+      "project_purpose": "answered",
+      "audiences": "answered",
+      "live_service": "answered",
+      "source": "supervisor_supplied"
+    },
+    "recorded_at": "2026-07-18T10:00:00+00:00",
+    "trust_rank": "human_intent"
+  },
+  "source": {
+    "available": true,
+    "display_identifier": "source",
+    "revision": "89abcdef0123456789abcdef0123456789abcdef",
+    "content_fingerprint": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "revision_kind": "git"
+  },
+  "baseline": {
+    "strategy": "adopt_existing_wiki",
+    "freshness_policy": "require-current",
+    "freshness": "verified_current",
+    "source_revision": "89abcdef0123456789abcdef0123456789abcdef",
+    "input_wiki": {
+      "display_identifier": "input_wiki",
+      "input_tree_hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "initial_snapshot_hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "manifest_version": 4,
+      "surface_schema_version": "llm-wiki-surface-index/v1",
+      "compatibility": "current",
+      "refresh_decision": "not_required"
+    }
+  },
+  "paths": {
+    "control": ".llm-wiki-docs",
+    "run": ".llm-wiki-docs/run.json",
+    "policy": ".llm-wiki-docs/policy.json",
+    "stages": ".llm-wiki-docs/stages",
+    "packets": ".llm-wiki-docs/packets",
+    "results": ".llm-wiki-docs/results",
+    "evidence": ".llm-wiki-docs/evidence",
+    "skills": ".llm-wiki-docs/skills",
+    "wiki": "wiki",
+    "site": "site",
+    "built_site": "_site"
+  },
+  "policy": {
+    "integration_mode": "external_agent_docs",
+    "allowed_write_roots": [
+      "workspace",
+      "capture"
+    ],
+    "forbidden_write_roots": [
+      "source",
+      "input_wiki"
+    ],
+    "agent_integration_writes": false,
+    "target_cache_writes": false,
+    "source_plugins_trusted": false,
+    "live_service": {
+      "configured": true,
+      "access_mode": "anonymous_read_only",
+      "observation_allowed": true,
+      "responses_are_untrusted_evidence": true,
+      "secret_material_persisted": false
+    }
+  },
+  "publication": {
+    "site_name": "Operations Manual",
+    "format": "mkdocs",
+    "link_mode": "http",
+    "deployment": "handoff_only"
+  },
+  "skills": [
+    {
+      "id": "agent-docs",
+      "package_version": "1.4.0",
+      "hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "path": ".llm-wiki-docs/skills/agent-docs"
+    },
+    {
+      "id": "wiki-semantic-enhance",
+      "package_version": "1.4.0",
+      "hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "path": ".llm-wiki-docs/skills/wiki-semantic-enhance"
+    },
+    {
+      "id": "user-docs-author",
+      "package_version": "1.4.0",
+      "hash": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+      "path": ".llm-wiki-docs/skills/user-docs-author"
+    },
+    {
+      "id": "onboarding-guide",
+      "package_version": "1.4.0",
+      "hash": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+      "path": ".llm-wiki-docs/skills/onboarding-guide"
+    },
+    {
+      "id": "usage-examples",
+      "package_version": "1.4.0",
+      "hash": "sha256:5555555555555555555555555555555555555555555555555555555555555555",
+      "path": ".llm-wiki-docs/skills/usage-examples"
+    },
+    {
+      "id": "doc-review",
+      "package_version": "1.4.0",
+      "hash": "sha256:6666666666666666666666666666666666666666666666666666666666666666",
+      "path": ".llm-wiki-docs/skills/doc-review"
+    },
+    {
+      "id": "publish-docs",
+      "package_version": "1.4.0",
+      "hash": "sha256:7777777777777777777777777777777777777777777777777777777777777777",
+      "path": ".llm-wiki-docs/skills/publish-docs"
+    }
+  ],
+  "semantic_budget": 20,
+  "adjustment_loop_limit": 3,
+  "evidence": {
+    "source_baseline": ".llm-wiki-docs/evidence/source-baseline.json",
+    "wiki_input": ".llm-wiki-docs/evidence/wiki-input.json",
+    "wiki_baseline": ".llm-wiki-docs/evidence/wiki-baseline.json",
+    "generated_ownership": ".llm-wiki-docs/evidence/generated-ownership.json",
+    "semantic_worklist": ".llm-wiki-docs/evidence/semantic-worklist.json",
+    "semantic_readiness": ".llm-wiki-docs/evidence/semantic-readiness.json",
+    "wiki-enrichment_before": ".llm-wiki-docs/evidence/wiki-enrichment-01-before.json",
+    "wiki-enrichment_packet": ".llm-wiki-docs/packets/wiki-enrichment-01.json",
+    "wiki-enrichment_result": ".llm-wiki-docs/results/wiki-enrichment-01.json",
+    "user-docs_before": ".llm-wiki-docs/evidence/user-docs-01-before.json",
+    "user-docs_packet": ".llm-wiki-docs/packets/user-docs-01.json",
+    "user-docs_result": ".llm-wiki-docs/results/user-docs-01.json",
+    "review_before": ".llm-wiki-docs/evidence/review-01-before.json",
+    "review_packet": ".llm-wiki-docs/packets/review-01.json",
+    "review_result": ".llm-wiki-docs/results/review-01.json",
+    "review_ledger": ".llm-wiki-docs/evidence/review-ledger.json",
+    "site_check": ".llm-wiki-docs/evidence/site-check.json",
+    "blocked": ".llm-wiki-docs/evidence/blocked.json"
+  },
+  "work": {
+    "reused": [
+      "DOC-P0-imported-overview"
+    ],
+    "completed": [
+      "DOC-P1-imported-core",
+      "DOC-USER-operator-guide"
+    ],
+    "deferred": [],
+    "blocked": [
+      "DOC-REVIEW-broken-recovery-link"
+    ]
+  },
+  "validation_results": [
+    {
+      "check": "semantic_readiness",
+      "ok": true,
+      "evidence": ".llm-wiki-docs/evidence/semantic-readiness.json"
+    },
+    {
+      "check": "site_check",
+      "ok": false,
+      "evidence": ".llm-wiki-docs/evidence/site-check.json"
+    }
+  ],
+  "unresolved_findings": [
+    {
+      "id": "DOC-3d6c1c91e8f2",
+      "severity": "high",
+      "source": "site",
+      "status": "open",
+      "message": "The recovery guide contains a broken local link.",
+      "evidence": [
+        ".llm-wiki-docs/evidence/site-check.json"
+      ]
+    }
+  ],
+  "stage_attempts": {
+    "wiki-enrichment": 1,
+    "user-docs": 1,
+    "review": 1
+  },
+  "current_stage": null,
+  "resume_state": "review",
+  "verdict_limitations": [
+    "unresolved_high_finding"
+  ]
+}

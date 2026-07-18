@@ -15,6 +15,10 @@ If user docs need captured examples before publishing, run `usage-examples` firs
 - For `--profile user`, a non-default `--site-name` and at least one guide page under `guides/` already exist — run `onboarding-guide` first if only persona guides are missing, or `user-docs-author` first if the whole user-docs narrative layer needs to be filled from deterministic site evidence.
 - The user has said where this is being published (GitHub Pages, an internal MkDocs/Docusaurus host, or "just give me a static mirror") — that choice picks the export `--format` and whether a real build step applies at all (`--format plain` has no corresponding builder).
 - If a real builder (`mkdocs`, `npm`/docusaurus) will be invoked, confirm it is actually installed before attempting it — this skill fails closed and reports clearly rather than half-running a build.
+- In `external_agent_docs`, semantic readiness, the user-doc result, and the
+  separate review ledger/result are supervisor-verified. `publish_ready` is not
+  inferred from worker prose or a green export alone. Use only workspace wiki,
+  site, and `_site` paths; deployment remains separately authorized.
 
 ## Steps
 
@@ -87,11 +91,16 @@ If user docs need captured examples before publishing, run `usage-examples` firs
      --front-matter --output-format json
    llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-file \
      --profile user --site-name <project> --output-format json
+   mkdocs build --strict -f site-file/mkdocs.yml
    llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-file \
      --built-site-dir _site --link-mode file --output-format json
    ```
 
 5. **Hand off the deploy step, don't perform it.** State the built output location and the deploy mechanism the user named (GitHub Pages action, `rsync` to an internal host, etc.) as a next step. Actually pushing to a hosting target, publishing a GitHub Pages branch, or deploying is a visible, hard-to-reverse action — confirm with the user before doing it, even if they asked for "publish-docs" broadly; "publish" the export pipeline is safe to run repeatedly, an actual deploy is not.
+
+   In `external_agent_docs`, also return the selected distribution/link mode,
+   export/build/check evidence hashes, unresolved deferrals, and exact local
+   output path to the supervisor. Never stage or commit source/input-wiki files.
 
 6. **CI wiring (optional).** If the user wants this as a CI step rather than an interactive run, wire export → check → build → built-link check into the existing CI workflow alongside `ci-check` (see [reference.md](reference.md) for the pattern) rather than creating a second, parallel docs-publishing pipeline.
 

@@ -1,0 +1,367 @@
+"""Commands for deterministic standalone documentation workspaces."""
+
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+from typing import Any, Mapping
+
+from ..config import PathValidationError, validate_source_root
+from ..services.documentation_run import (
+    DocumentationAgentResult,
+    DocumentationRunError,
+    build_documentation_agent_packet,
+    export_documentation_run,
+    get_documentation_run_status,
+    load_documentation_run,
+    prepare_documentation_run,
+    record_documentation_agent_result,
+    verify_documentation_run,
+)
+
+
+_MAX_INTAKE_BYTES = 1_000_000
+_BASELINE_STRATEGIES = {
+    "bootstrap-source": "bootstrap_source",
+    "existing-wiki": "adopt_existing_wiki",
+}
+_INTAKE_KEYS = {
+    "project_purpose",
+    "audiences",
+    "audience_intent",
+    "live_service",
+}
+
+
+def _read_bounded_text(path: str, *, label: str) -> str:
+    source = Path(path).expanduser()
+    try:
+        data = source.read_bytes()
+    except OSError as exc:
+        raise DocumentationRunError(f"Cannot read {label} {source}: {exc}") from exc
+    if len(data) > _MAX_INTAKE_BYTES:
+        raise DocumentationRunError(
+            f"{label} exceeds the {_MAX_INTAKE_BYTES}-byte input limit."
+        )
+    try:
+        return data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise DocumentationRunError(f"{label} must be UTF-8 text: {source}") from exc
+
+
+def _read_json_object(path: str, *, label: str) -> dict[str, Any]:
+    if path == "-":
+        text = sys.stdin.read(_MAX_INTAKE_BYTES + 1)
+        if len(text.encode("utf-8")) > _MAX_INTAKE_BYTES:
+            raise DocumentationRunError(
+                f"{label} exceeds the {_MAX_INTAKE_BYTES}-byte input limit."
+            )
+    else:
+        text = _read_bounded_text(path, label=label)
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise DocumentationRunError(f"Invalid {label} JSON: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise DocumentationRunError(f"{label} must contain one JSON object.")
+    return payload
+
+
+def _parse_audiences(values: list[str] | None) -> list[str] | None:
+    audiences = [
+        item.strip()
+        for value in values or []
+        for item in value.split(",")
+        if item.strip()
+    ]
+    return list(dict.fromkeys(audiences)) or None
+
+
+def _parse_audience_intent(values: list[str] | None) -> dict[str, str] | None:
+    parsed: dict[str, str] = {}
+    for value in values or []:
+        audience, separator, intent = value.partition("=")
+        if not separator or not audience.strip() or not intent.strip():
+            raise DocumentationRunError(
+                "--audience-intent must use the form AUDIENCE=INTENT."
+            )
+        parsed[audience.strip().lower()] = intent.strip()
+    return parsed or None
+
+
+def _intake_from_args(args) -> dict[str, Any]:
+    intake_path = getattr(args, "intake_file", None)
+    direct_values_present = any(
+        (
+            getattr(args, "project_brief", None),
+            getattr(args, "audience", None),
+            getattr(args, "audience_intent", None),
+            getattr(args, "live_service_url", None),
+            getattr(args, "live_service_access_mode", "unspecified") != "unspecified",
+            bool(getattr(args, "observe_live_service", False)),
+        )
+    )
+    if intake_path and direct_values_present:
+        raise DocumentationRunError(
+            "--intake-file cannot be combined with direct intake flags."
+        )
+
+    if not intake_path:
+        project_brief = getattr(args, "project_brief", None)
+        return {
+            "project_purpose": (
+                _read_bounded_text(project_brief, label="project brief").strip()
+                if project_brief
+                else None
+            ),
+            "audiences": _parse_audiences(getattr(args, "audience", None)),
+            "audience_intent": _parse_audience_intent(
+                getattr(args, "audience_intent", None)
+            ),
+            "live_service_url": getattr(args, "live_service_url", None),
+            "live_service_access_mode": getattr(
+                args, "live_service_access_mode", "unspecified"
+            ),
+            "live_service_observation_allowed": bool(
+                getattr(args, "observe_live_service", False)
+            ),
+        }
+
+    payload = _read_json_object(intake_path, label="intake file")
+    unknown = sorted(set(payload) - _INTAKE_KEYS)
+    if unknown:
+        raise DocumentationRunError(
+            f"Unknown intake-file field(s): {', '.join(unknown)}."
+        )
+    audiences = payload.get("audiences")
+    if audiences is not None and not (
+        isinstance(audiences, list)
+        and all(isinstance(value, str) for value in audiences)
+    ):
+        raise DocumentationRunError("intake audiences must be a list of strings.")
+    audience_intent = payload.get("audience_intent")
+    if audience_intent is not None and not (
+        isinstance(audience_intent, dict)
+        and all(
+            isinstance(key, str) and isinstance(value, str)
+            for key, value in audience_intent.items()
+        )
+    ):
+        raise DocumentationRunError(
+            "intake audience_intent must map audience names to strings."
+        )
+    live_service = payload.get("live_service", {})
+    if not isinstance(live_service, dict):
+        raise DocumentationRunError("intake live_service must be an object.")
+    live_unknown = sorted(
+        set(live_service) - {"address", "url", "access_mode", "observation_allowed"}
+    )
+    if live_unknown:
+        raise DocumentationRunError(
+            f"Unknown intake live_service field(s): {', '.join(live_unknown)}."
+        )
+    access_mode = live_service.get("access_mode", "unspecified")
+    if not isinstance(access_mode, str):
+        raise DocumentationRunError("intake live_service access_mode must be a string.")
+    observation_allowed = live_service.get("observation_allowed", False)
+    if not isinstance(observation_allowed, bool):
+        raise DocumentationRunError(
+            "intake live_service observation_allowed must be a boolean."
+        )
+    return {
+        "project_purpose": _optional_string(payload.get("project_purpose")),
+        "audiences": list(audiences) if audiences is not None else None,
+        "audience_intent": dict(audience_intent)
+        if audience_intent is not None
+        else None,
+        "live_service_url": _optional_string(
+            live_service.get("address", live_service.get("url"))
+        ),
+        "live_service_access_mode": access_mode,
+        "live_service_observation_allowed": observation_allowed,
+    }
+
+
+def _optional_string(value: Any) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise DocumentationRunError("intake text fields must be strings.")
+    return value
+
+
+def _validate_evidence_root(
+    value: str | None,
+    *,
+    label: str,
+    allow_external: bool,
+) -> str | None:
+    if value is None:
+        return None
+    return str(validate_source_root(value, label, allow_external=allow_external))
+
+
+def _print_status(payload: Mapping[str, Any], *, output_format: str) -> None:
+    if output_format == "json":
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        return
+    print(f"Documentation run: {payload['run_id']}")
+    print(f"State: {payload['state']}")
+    print(f"Baseline: {payload['baseline_strategy']}")
+    print(f"Source freshness: {payload['freshness']}")
+    print(f"Healthy: {'yes' if payload['healthy'] else 'no'}")
+    for action in payload.get("next_actions", []):
+        print(f"Next: {action}")
+    for limitation in payload.get("limitations", []):
+        print(f"Limitation: {limitation}")
+
+
+def _print_run_status(workspace: str, *, output_format: str) -> None:
+    _print_status(
+        get_documentation_run_status(workspace).to_dict(),
+        output_format=output_format,
+    )
+
+
+def _prepare(args) -> None:
+    allow_external = bool(getattr(args, "allow_external_src", False))
+    source_root = _validate_evidence_root(
+        getattr(args, "src_dir", None),
+        label="--src-dir",
+        allow_external=allow_external,
+    )
+    input_wiki_root = _validate_evidence_root(
+        getattr(args, "input_wiki_dir", None),
+        label="--input-wiki-dir",
+        allow_external=allow_external,
+    )
+    intake = _intake_from_args(args)
+    link_mode = "file" if getattr(args, "file_friendly", False) else args.link_mode
+    prepare_documentation_run(
+        args.workspace,
+        baseline_strategy=_BASELINE_STRATEGIES[args.baseline],
+        source_root=source_root,
+        input_wiki_root=input_wiki_root,
+        freshness_policy=args.wiki_freshness,
+        site_name=args.site_name,
+        helper_cache_root=args.helper_cache_dir,
+        capture_root=args.capture_dir,
+        trust_source_plugins=bool(args.trust_source_plugins),
+        semantic_budget=args.semantic_budget,
+        adjustment_loop_limit=args.adjustment_loop_limit,
+        distribution_format=args.site_format,
+        link_mode=link_mode,
+        refresh=bool(args.refresh),
+        **intake,
+    )
+    _print_run_status(args.workspace, output_format=args.output_format)
+
+
+def _status(args) -> None:
+    _print_run_status(args.workspace, output_format=args.format)
+
+
+def _packet(args) -> None:
+    packet = build_documentation_agent_packet(args.workspace, stage=args.stage)
+    if args.format == "json":
+        print(packet.to_json(), end="")
+    else:
+        print(packet.to_markdown(), end="")
+
+
+def _record_result(args) -> None:
+    payload = _read_json_object(args.result, label="agent result")
+    result = DocumentationAgentResult.from_dict(payload)
+    record_documentation_agent_result(args.workspace, result)
+    _print_run_status(args.workspace, output_format=args.format)
+
+
+def _verify(args) -> None:
+    report = verify_documentation_run(
+        args.workspace,
+        advance=not bool(args.no_advance),
+    )
+    payload = report.to_dict()
+    if args.format == "json":
+        print(json.dumps(payload, indent=2, sort_keys=True))
+    else:
+        print(f"Documentation verification: {'passed' if report.ok else 'failed'}")
+        print(f"Run: {report.run_id}")
+        print(f"State: {report.state}")
+        if report.next_state:
+            print(f"Advanced to: {report.next_state}")
+        for check in report.checks:
+            print(
+                f"Check {check.get('check', 'unknown')}: "
+                f"{'passed' if check.get('ok') else 'failed'}"
+            )
+        for limitation in report.limitations:
+            print(f"Limitation: {limitation}")
+    if not report.ok:
+        raise SystemExit(1)
+
+
+def _assert_export_options(args) -> None:
+    if args.builder_command is not None and not args.builder_command:
+        raise DocumentationRunError("--builder-command requires at least one argument.")
+    if args.builder_command is not None and not args.build:
+        raise DocumentationRunError("--builder-command requires --build.")
+    run = load_documentation_run(args.workspace)
+    requested_format = getattr(args, "format", None)
+    if requested_format and requested_format != run.publication.get("format"):
+        raise DocumentationRunError(
+            "Export format differs from the prepared run contract; rerun docs "
+            "prepare with --refresh and the intended --site-format."
+        )
+    if args.file_friendly and run.publication.get("link_mode") != "file":
+        raise DocumentationRunError(
+            "--file-friendly was not selected when the run was prepared; rerun docs "
+            "prepare with --refresh --file-friendly."
+        )
+
+
+def _export(args) -> None:
+    _assert_export_options(args)
+    report = export_documentation_run(
+        args.workspace,
+        build=bool(args.build),
+        builder_command=args.builder_command,
+    )
+    if args.output_format == "json":
+        print(json.dumps(report, indent=2, sort_keys=True))
+    else:
+        print(f"Documentation export verdict: {report.get('verdict', 'unknown')}")
+        print(f"Run: {report.get('run_id', '')}")
+        print(f"State: {report.get('state', '')}")
+        for limitation in report.get("limitations", []):
+            print(f"Limitation: {limitation}")
+        handoff = report.get("deployment_handoff", {})
+        if isinstance(handoff, dict) and handoff.get("instructions"):
+            print(f"Handoff: {handoff['instructions']}")
+    if report.get("verdict") == "blocked":
+        raise SystemExit(1)
+
+
+def run(args) -> None:
+    """Dispatch one standalone documentation action."""
+
+    action = getattr(args, "docs_action", None)
+    handlers = {
+        "prepare": _prepare,
+        "status": _status,
+        "packet": _packet,
+        "record-result": _record_result,
+        "verify": _verify,
+        "export": _export,
+    }
+    handler = handlers.get(action)
+    if handler is None:
+        raise DocumentationRunError("Missing documentation action.")
+    try:
+        handler(args)
+    except PathValidationError:
+        raise
+    except DocumentationRunError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        raise SystemExit(1) from exc

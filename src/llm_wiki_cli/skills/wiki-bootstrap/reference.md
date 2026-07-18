@@ -114,5 +114,10 @@ A successful run has:
 ## Related workflows
 
 - Incremental post-change refreshes after the first manifest exists belong to the wiki-sync skill, not a re-bootstrap.
+- An external documentation workspace uses this workflow only to materialize
+  the deterministic `bootstrap-source` baseline. Its separate, resumable
+  semantic phase belongs to `wiki-semantic-enhance`, which consumes the same P0
+  definitions and P1 ranking source from this reference and writes readiness
+  evidence inside the workspace. It never commits the source repository.
 - Dependency-warning remediation belongs to the dep-audit workflow; this skill may document obvious intentional cycles in `## Notes` but should not chase every warning.
 - Security attack-path reasoning belongs to the attack-surface workflow; static-site export/publishing belongs to the publish-docs workflow.

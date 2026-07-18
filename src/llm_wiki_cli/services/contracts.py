@@ -34,6 +34,20 @@ from __future__ import annotations
 EXTRACT_SCHEMA_VERSION = "llm-wiki-extract/v1"
 BOOTSTRAP_SUMMARY_SCHEMA_VERSION = "llm-wiki-bootstrap-summary/v1"
 BOOTSTRAP_SKIP_DATA_FLOW_FLAG = "--skip-data-flow"
+DOCUMENTATION_RUN_SCHEMA_VERSION = "llm-wiki-documentation-run/v1"
+DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION = "llm-wiki-documentation-agent-packet/v1"
+DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION = "llm-wiki-documentation-agent-result/v1"
+DOCUMENTATION_WORKLIST_SCHEMA_VERSION = "llm-wiki-documentation-worklist/v1"
+DOCUMENTATION_SEMANTIC_READINESS_SCHEMA_VERSION = (
+    "llm-wiki-documentation-semantic-readiness/v1"
+)
+DOCUMENTATION_REVIEW_LEDGER_SCHEMA_VERSION = "llm-wiki-documentation-review-ledger/v1"
+DOCUMENTATION_VERIFICATION_SCHEMA_VERSION = "llm-wiki-documentation-verification/v1"
+DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION = "llm-wiki-documentation-final-report/v1"
+DOCUMENTATION_MODEL_ROUTING_SCHEMA_VERSION = "llm-wiki-documentation-model-routing/v1"
+DOCUMENTATION_MODEL_SELECTION_SCHEMA_VERSION = (
+    "llm-wiki-documentation-model-selection/v1"
+)
 EXTRACT_ADDITIVE_FIELDS = {
     "calls[].args",
     "calls[].kwargs",
