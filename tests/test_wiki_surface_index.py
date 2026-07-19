@@ -154,6 +154,49 @@ def test_write_surface_index_is_deterministic_and_skips_unchanged_payload(tmp_pa
     assert first_content == second_content
 
 
+def test_surface_index_preserves_bounded_flow_evidence(tmp_path):
+    wiki = tmp_path / "wiki"
+    _write(wiki / "flows" / "http-create.md", "# Create\n")
+    evidence = {
+        "flow": {
+            "step_count": 2,
+            "truncated": False,
+            "modules_touched": ["src/api.py"],
+        },
+        "data_flow": {
+            "generated": True,
+            "step_count": 2,
+            "transfer_count": 1,
+            "truncated": False,
+            "boundary_effects": [{"kind": "database_write", "confidence": "high"}],
+            "gaps": [],
+        },
+    }
+
+    payload = build_surface_index(
+        wiki,
+        {},
+        src_dir=str(tmp_path),
+        entry_points=[
+            {
+                "id": "http-create",
+                "category": "http",
+                "entry": "create",
+                "file": "src/api.py",
+                "detector": "builtin",
+                "language": "python",
+                "routes": [{"method": "POST", "path": "/items"}],
+                "evidence": evidence,
+            }
+        ],
+    )
+
+    assert payload["flows"][0]["detector"] == "builtin"
+    assert payload["flows"][0]["language"] == "python"
+    assert payload["flows"][0]["routes"] == [{"method": "POST", "path": "/items"}]
+    assert payload["flows"][0]["evidence"] == evidence
+
+
 def test_surface_index_records_asset_counts_and_page_reference_map(tmp_path):
     wiki = tmp_path / "wiki"
     _write(wiki / "index.md", "# Index\n\n- [Guide](guides/tour.md)\n")

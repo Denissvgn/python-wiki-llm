@@ -3319,6 +3319,7 @@ class _DependencyResult:
     architecture_entries: list[dict]
     created: int
     summary: dict
+    evidence: dict
 
 
 @dataclass(frozen=True)
@@ -3922,6 +3923,7 @@ def _write_bootstrap_flow_pages(
         root=state.options.src_dir_for_scan,
         fallback_root=Path.cwd(),
         include_plugins=state.options.trust_source_plugins,
+        include_provenance=True,
     )
     _emit_bootstrap_warnings(state, entrypoint_result.warnings)
     entry_points = attach_routes_to_entry_points(
@@ -3999,6 +4001,29 @@ def _write_bootstrap_flow_pages(
             "entry": entry_point["symbol"],
             "file": entry_point.get("file"),
             "label": entry_point.get("label"),
+            "detector": entry_point.get("detector", "unknown"),
+            "language": (
+                inventory.get(entry_point.get("file"), {}).get("language") or "unknown"
+            ),
+            "evidence": {
+                "flow": {
+                    "step_count": len(flow.get("steps", [])),
+                    "truncated": bool(flow.get("truncated")),
+                    "modules_touched": list(flow.get("modules_touched", [])),
+                },
+                "data_flow": (
+                    {
+                        "generated": True,
+                        "step_count": len(data_flow.get("steps", [])),
+                        "transfer_count": len(data_flow.get("transfers", [])),
+                        "truncated": bool(data_flow.get("truncated")),
+                        "boundary_effects": list(data_flow.get("boundaries", [])),
+                        "gaps": list(data_flow.get("gaps", [])),
+                    }
+                    if data_flow is not None
+                    else None
+                ),
+            },
         }
         if entry_point.get("routes"):
             flow_entry["routes"] = entry_point["routes"]
@@ -4122,7 +4147,7 @@ def _write_bootstrap_dependency_pages(
     analysis: dict | None = None,
 ) -> _DependencyResult:
     if not state.options.deep or state.options.skip_dependencies:
-        return _DependencyResult([], 0, {"generated": False})
+        return _DependencyResult([], 0, {"generated": False}, {})
 
     _emit_bootstrap(state, "Generating architecture pages...", flush=True)
     analysis = analysis or analyze_dependencies(
@@ -4140,6 +4165,7 @@ def _write_bootstrap_dependency_pages(
             [],
             0,
             {"generated": False, "pages_created": 0, **_dependency_counts(analysis)},
+            analysis.get("metrics", {}),
         )
     plugin_root, plugin_fallback = _bootstrap_plugin_roots(state)
     pages = (
@@ -4186,7 +4212,12 @@ def _write_bootstrap_dependency_pages(
         "pages_created": created,
         **_dependency_counts(analysis),
     }
-    return _DependencyResult(architecture_entries, created, summary)
+    return _DependencyResult(
+        architecture_entries,
+        created,
+        summary,
+        analysis.get("metrics", {}),
+    )
 
 
 def _write_bootstrap_index(
@@ -4403,8 +4434,10 @@ def _emit_bootstrap_json_summary(
             ),
             "workflows": len(workflow_result.entries),
             "flows": len(flow_result.entries),
+            "flow_evidence": flow_result.entries,
             "data_flows": flow_result.data_flow_summary,
             "dependencies": dependency_result.summary,
+            "dependency_evidence": dependency_result.evidence,
             "api_contracts": {
                 "generated": api_contract_result.present,
                 "source": (api_contract_result.contracts or {}).get("source"),

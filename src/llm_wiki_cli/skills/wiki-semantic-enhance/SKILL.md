@@ -20,6 +20,10 @@ decisions, editable surfaces, and failure rules.
 - The deterministic baseline gate is clean and identifies the workspace wiki,
   optional read-only source, immutable input-wiki snapshot provenance, semantic
   worklist, ownership markers, source freshness, and work budget.
+- Treat `p0-calibration-census.json` and `p0-calibration-shadow.json` as
+  supervisor-owned diagnostics. Normal runs record an evidence-only shadow;
+  preliminary families are unadjudicated and never override the packet's v1
+  priorities or authorize a candidate policy.
 - The source is optional. A wiki-only run resumes from its recorded snapshot
   hash and visible `unverified` limitation; it must not invent source grounding.
 - The worker writes only the workspace wiki and assigned result/remainder paths.
@@ -42,7 +46,7 @@ decisions, editable surfaces, and failure rules.
 
 3. **Complete or defer every P0 item.** Follow the P0 definitions and
    centrality source in `wiki-bootstrap/reference.md`; do not invent a parallel
-   ranking formula. Improve the landing context, important flow behavior,
+   ranking formula or reinterpret calibration diagnostics as labels. Improve the landing context, important flow behavior,
    API/dependency/load-order notes, and high-signal runtime surfaces. A P0
    deferral must cite the missing evidence and exclude the affected claim/topic
    from primary user docs.

@@ -1081,6 +1081,14 @@ hashes, and generated ownership. `require-current` fails closed;
 imported semantic prose; `allow-unverified` permits source-unavailable local
 artifacts but cannot claim source-verified publication readiness.
 
+Preparation also writes a priority-blind P0 flow census and an evidence-only
+current-versus-candidate shadow under `.llm-wiki-docs/evidence/`. They preserve
+source citations, detector/language provenance, route, call/data-flow,
+boundary-confidence, gap, and dependency evidence without changing the v1
+worklist. Candidate fields remain unevaluated unless a separate qualified
+calibration runner supplies a complete policy result; the core never treats
+diagnostic family hints as semantic equivalence or a new default.
+
 For an adopted wiki, `require-current` builds the current supported-source
 inventory and compares its path set and hashes with the imported manifest,
 along with recorded generation inputs such as OpenAPI. It therefore detects

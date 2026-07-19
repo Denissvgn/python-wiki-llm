@@ -31,6 +31,10 @@ from .contracts import (
     DOCUMENTATION_VERIFICATION_SCHEMA_VERSION,
 )
 from .bootstrap_service import BootstrapRequest
+from .documentation_calibration import (
+    build_flow_evidence_census,
+    build_p0_calibration_shadow,
+)
 from .documentation_worklist import (
     DOCUMENTATION_WORKLIST_SCHEMA_VERSION,
     build_documentation_worklist,
@@ -225,6 +229,8 @@ _CONTROL_SNAPSHOT_EVIDENCE_KEYS = (
     "generated_ownership",
     "semantic_worklist",
     "semantic_readiness",
+    "p0_calibration_census",
+    "p0_calibration_shadow",
 )
 
 _ALLOWED_TRANSITIONS: dict[str, frozenset[str]] = {
@@ -1415,6 +1421,27 @@ def _prepare_documentation_run_impl(
         workspace_root / RUN_CONTROL_DIR / "evidence" / "semantic-worklist.json",
         worklist_payload,
     )
+    calibration_census = build_flow_evidence_census(
+        str(wiki_root),
+        source_root=policy.source_root,
+        source_revision=str(source.get("revision", "source_unavailable")),
+        source_fingerprint=str(source.get("content_fingerprint", "unknown")),
+        dependency_evidence=bootstrap_summary.get("dependency_evidence", {}),
+        tool_revision=__version__,
+        allow_surface_fallback=True,
+    )
+    calibration_shadow = build_p0_calibration_shadow(
+        worklist_payload,
+        calibration_census,
+    )
+    _write_json(
+        workspace_root / RUN_CONTROL_DIR / "evidence" / "p0-calibration-census.json",
+        calibration_census,
+    )
+    _write_json(
+        workspace_root / RUN_CONTROL_DIR / "evidence" / "p0-calibration-shadow.json",
+        calibration_shadow,
+    )
     readiness = _initial_readiness_ledger(run_id, worklist_payload)
     _write_json(
         workspace_root / RUN_CONTROL_DIR / "evidence" / "semantic-readiness.json",
@@ -1470,6 +1497,12 @@ def _prepare_documentation_run_impl(
             "semantic_worklist": f"{RUN_CONTROL_DIR}/evidence/semantic-worklist.json",
             "semantic_readiness": (
                 f"{RUN_CONTROL_DIR}/evidence/semantic-readiness.json"
+            ),
+            "p0_calibration_census": (
+                f"{RUN_CONTROL_DIR}/evidence/p0-calibration-census.json"
+            ),
+            "p0_calibration_shadow": (
+                f"{RUN_CONTROL_DIR}/evidence/p0-calibration-shadow.json"
             ),
         },
         current_stage=None,
@@ -6581,6 +6614,12 @@ def _validate_optional_run_collections(payload: Mapping[str, Any]) -> None:
         "site_check": f"{RUN_CONTROL_DIR}/evidence/site-check.json",
         "final_report": f"{RUN_CONTROL_DIR}/evidence/final-report.json",
         "review_ledger": f"{RUN_CONTROL_DIR}/evidence/review-ledger.json",
+        "p0_calibration_census": (
+            f"{RUN_CONTROL_DIR}/evidence/p0-calibration-census.json"
+        ),
+        "p0_calibration_shadow": (
+            f"{RUN_CONTROL_DIR}/evidence/p0-calibration-shadow.json"
+        ),
     }
     for key, expected in optional_exact.items():
         value = evidence.get(key, "")

@@ -208,6 +208,26 @@ def _prepare_source_run_at_review(tmp_path: Path):
     return workspace, run
 
 
+def test_prepare_records_fail_closed_p0_calibration_evidence(tmp_path):
+    _, _, workspace, run = _prepare_wiki_only_run(tmp_path)
+
+    census = json.loads(
+        (workspace / run.evidence["p0_calibration_census"]).read_text(encoding="utf-8")
+    )
+    shadow = json.loads(
+        (workspace / run.evidence["p0_calibration_shadow"]).read_text(encoding="utf-8")
+    )
+
+    assert census["priority_blind"] is True
+    assert census["population"] == {
+        "source": "flow_pages_fallback",
+        "complete": False,
+    }
+    assert shadow["mode"] == "evidence_only"
+    assert shadow["candidate_evaluated"] is False
+    assert shadow["counts"]["flows"] == census["counts"]["total"]
+
+
 def test_run_schema_tolerates_additive_fields_but_rejects_unknown_state(tmp_path):
     _, _, workspace, run = _prepare_wiki_only_run(tmp_path)
     payload = run.to_dict()

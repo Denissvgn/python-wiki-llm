@@ -67,7 +67,10 @@ packet/result fields, stage gates, and failure matrix.
 
 3. **Verify the baseline gate.** Require structural lint, source/input hashes,
    provenance, freshness, unsupported-source notices, and the deterministic
-   semantic worklist. Stop on a symlink/path escape, forbidden write, corrupt
+   semantic worklist. Verify that the P0 census remains priority-blind and its
+   shadow is `evidence_only` unless a separately authorized, isolated
+   calibration supplied a complete candidate. Preliminary family hints are
+   unadjudicated and do not change v1 priorities. Stop on a symlink/path escape, forbidden write, corrupt
    input, unexplained skip, or unresolved freshness decision.
 
 4. **Run wiki enrichment from an explicit packet.** Build the
@@ -115,4 +118,5 @@ packet/result fields, stage gates, and failure matrix.
   an explicit refresh/re-import decision.
 - Return `partial` or `blocked` with stable deferred/finding ids when evidence,
   budget, tooling, authorization, or freshness is insufficient. Never fabricate
-  completion, examples, source verification, or `publish_ready`.
+  completion, examples, source verification, calibration labels, holdout
+  results, candidate evaluation, or `publish_ready`.

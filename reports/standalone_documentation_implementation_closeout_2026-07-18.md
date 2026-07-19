@@ -78,6 +78,40 @@ Focused regression coverage was added for every boundary.
 | ADW-013 | Implemented as portable/fixture coverage | No-Git, Unicode/spaces, hostile instructions/plugins, unsafe inputs/links, tampered schemas/packets, changed roots/options, mutation, grounding, deferral, lint/CI, Windows-style paths, and Windows junction coverage where available |
 | ADW-014 | **Partial; qualification outstanding** | Required real projects, enriched-wiki rubric, real Windows, two agent platforms, and sibling-wiki publication proof are not all complete |
 
+## P0 Heuristic Calibration Execution
+
+The 2026-07-19 autonomous WorkChord calibration ended
+`BLOCKED_NO_SHIP` at P0C-001. P0C-000 reproduced the frozen source fingerprint
+and exact `f80c4990...` v1 worklist in two read-only control builds. The next
+gate could not lawfully dispatch the private source-evidence packet to external
+model services with the available authority, and same-principal local agents
+could not provide runner-enforced role and sealed-holdout isolation. No intake
+consensus, labels, adjudication, candidate score, holdout result, A/B result, or
+auditor vote was fabricated; P0C-003 through P0C-010 were not entered.
+
+A separately identified, non-qualifying diagnostic implementation remains in
+the repository. Bootstrap and the surface index preserve detector/language,
+route, call/data-flow, boundary-confidence, gap, and dependency evidence.
+Standalone preparation emits a priority-blind source-cited census and an
+`evidence_only` shadow whose candidate fields are explicitly unevaluated. The
+frozen WorkChord diagnostic replay covered 381 flows (240 HTTP, 122 MCP, 19
+process), 118 boundary rows, 2,212 gaps, 381 source citations, and 381 flow-page
+hashes. It reproduced the exact v1 worklist hash and 993 / 384 / 30 / 579
+total/P0/P1/P2 counts. Therefore this evidence-plumbing work does not amend the
+ADR, create worklist v2, or change the default category-based heuristic.
+
+Local diagnostic verification after the implementation passed repository Ruff,
+feature-source/new-test format and whitespace checks, bytecode compilation, and
+the full suite (`2206 passed, 39 skipped`). A Python 3.9 grammar parse passed for
+the 12 changed Python files, but no Python 3.9 runtime was exercised and package
+metadata still declares Python 3.10+, so this is not Python 3.9 qualification.
+The isolated sdist/wheel build passed with only the existing setuptools license
+metadata deprecation warnings; artifacts were written outside the repository
+under `/tmp/llm-wiki-p0-calibration-build-final-20260719`. The required
+changed-context discovery remained inconclusive because Go and Haskell helpers
+were not prepared in this environment. No real Windows or macOS run was
+performed.
+
 ## Provider And Model Routing Decision
 
 Standalone packets remain provider-neutral. The deterministic core does not

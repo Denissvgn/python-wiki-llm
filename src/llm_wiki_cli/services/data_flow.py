@@ -162,6 +162,7 @@ def _boundary_rows(step_summary: dict) -> list[dict]:
                 "kind": effect.get("kind", "unknown"),
                 "target": effect.get("target", "?"),
                 "line": effect.get("line", 0),
+                "confidence": effect.get("confidence", "unknown"),
             }
         )
     return rows

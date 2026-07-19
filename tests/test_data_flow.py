@@ -122,6 +122,7 @@ def test_analyze_data_flow_orders_steps_boundaries_transfers_and_gaps():
             "kind": "filesystem_write",
             "target": "output_path.write_text",
             "line": 5,
+            "confidence": "unknown",
         }
     ]
     assert [transfer["call"] for transfer in data_flow["transfers"]] == [

@@ -61,6 +61,35 @@ project-docs/
 └── _site/     # optional output from an authorized real builder
 ```
 
+### P0 calibration evidence is diagnostic
+
+Every prepared run now records two supervisor-owned artifacts beside the
+semantic worklist:
+
+- `evidence/p0-calibration-census.json` is a priority-blind inventory of the
+  flow population. It preserves detector and language provenance, routes,
+  bounded call/data-flow evidence, boundary confidence and gaps, dependency
+  metrics, source/page hashes, source citations, explicit unknowns, and an
+  exhaustive unlabelled review inventory. Its exact-normalized operation
+  families are preliminary partitioning hints with
+  `semantic_equivalence=unadjudicated`.
+- `evidence/p0-calibration-shadow.json` places the frozen v1 priority and
+  reason codes beside a separate candidate record. Normal preparation emits
+  `mode=evidence_only`, `candidate_evaluated=false`, and null candidate fields
+  because it has no sealed labels or qualified candidate policy.
+
+Both files are included in the supervisor control-integrity snapshot. A legacy
+wiki without a surface-index flow list uses a flow-page fallback and records
+`population.complete=false`; it does not claim that the fallback is a complete
+source inventory.
+
+These artifacts do not change the semantic worklist or current priority rule.
+A host may use them as inputs to a separately isolated calibration runner, but
+must not promote a candidate to the default without independent labels,
+holdout custody, real-agent comparison, and the declared compatibility gates.
+Missing authorization or enforceable role/holdout isolation is a fail-closed
+`BLOCKED_NO_SHIP` result, not permission to infer labels in-process.
+
 Only the workspace, an explicit helper cache, and an explicit disposable
 capture root are eligible write roots. The source and adopted input wiki remain
 forbidden write roots throughout the run.

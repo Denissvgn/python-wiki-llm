@@ -53,7 +53,7 @@ Managed knowledge-base behavior remains the default outside that explicit mode.
 
    Add `--source-adapter --allow-external-src` only for documented external-source source-adapter workflows. Capture stdout to a log file when practical so the JSON summary can be cited from the remainder backlog.
 
-4. **Triage the JSON summary before semantic editing.** If the summary has `skipped_files`, helper warnings, unsupported-source summaries, or surprising generated counts, resolve those first. Do not spend the semantic budget polishing a wiki that is structurally incomplete because pages were skipped by collisions or helpers failed.
+4. **Triage the JSON summary before semantic editing.** If the summary has `skipped_files`, helper warnings, unsupported-source summaries, or surprising generated counts, resolve those first. `flow_evidence` and `dependency_evidence` preserve bounded detector, route, call/data-flow, boundary-confidence, gap, and topology facts for the supervisor's priority-blind census. They are evidence, not calibrated priorities: do not infer semantic equivalence from preliminary family hints or change the v1 worklist from these fields. Do not spend the semantic budget polishing a wiki that is structurally incomplete because pages were skipped by collisions or helpers failed.
 
 5. **Finish P0 semantic pages first**: the `index.md` introduction, `flows/*` `## Behavior` sections (ordered by entry-point category, then boundary-effect count, then page path), `api-contracts.md`, `dependencies.md`, and `load-order.md` `## Notes`, and obvious high-signal infrastructure/runtime prose. Contract unknowns and reconciliation diagnostics must stay explicit rather than being rewritten as confirmed facts.
 

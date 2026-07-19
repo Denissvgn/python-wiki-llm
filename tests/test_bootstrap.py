@@ -2225,11 +2225,28 @@ class TestBootstrapFlows:
             {
                 "id": "api-run",
                 "category": "api",
+                "detector": "builtin",
                 "entry_point": {
                     "symbol": "run",
                     "source_path": "api.py",
                     "label": "run",
                 },
+                "evidence": {
+                    "flow": {
+                        "step_count": 2,
+                        "truncated": False,
+                        "modules_touched": ["api.py"],
+                    },
+                    "data_flow": {
+                        "generated": True,
+                        "step_count": 2,
+                        "transfer_count": 1,
+                        "truncated": False,
+                        "boundary_effects": [],
+                        "gaps": [],
+                    },
+                },
+                "language": "python",
             }
         ]
 
@@ -2287,6 +2304,8 @@ class TestBootstrapFlows:
         )
         data = json.loads(capsys.readouterr().out)
         assert data["flows"] == 1
+        assert data["flow_evidence"][0]["detector"] == "builtin"
+        assert data["flow_evidence"][0]["evidence"]["flow"]["step_count"] == 2
 
     def test_json_summary_reports_data_flow_counts(self, tmp_path, monkeypatch, capsys):
         self._write_project(tmp_path)
@@ -2519,6 +2538,7 @@ class TestBootstrapArchitecturePages:
         assert data["dependencies"]["generated"] is True
         assert data["dependencies"]["modules"] >= 2
         assert data["dependencies"]["undeclared"] == 0  # requests is declared
+        assert data["dependency_evidence"]["metrics"]
 
     def test_dependency_graph_detail_package_collapses(
         self, tmp_path, monkeypatch, capsys

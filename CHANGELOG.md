@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Priority-blind standalone P0 calibration evidence: bootstrap and surface
+  artifacts now preserve detector/language provenance, routes, bounded
+  call/data-flow details, boundary confidence and gaps, and dependency metrics;
+  `docs prepare` records a source-cited 381-scale census and an evidence-only
+  shadow without changing the v1 priority rule. Fail-closed preflight and
+  mechanical verdict helpers support an external isolated calibration runner,
+  while missing labels, holdout custody, or isolation cannot be represented as
+  a candidate result.
 - Agent-driven standalone documentation workspaces through `llm-wiki docs
   prepare|status|packet|record-result|verify|export` and matching typed Python
   APIs. Runs are explicit, resumable, provider-neutral, and isolated from the

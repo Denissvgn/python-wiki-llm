@@ -229,20 +229,22 @@ def _flow_entries(
     for flow_id in sorted(flow_pages, key=lambda value: (value.casefold(), value)):
         entry = metadata.get(flow_id, {})
         category = str(entry.get("category") or flow_id.split("-", 1)[0])
-        flows.append(
-            {
-                "id": flow_id,
-                "category": category,
-                "entry_point": {
-                    "symbol": entry.get("symbol") or entry.get("entry"),
-                    "source_path": _safe_source_path(
-                        entry.get("file") or entry.get("source_path"),
-                        src_root,
-                    ),
-                    "label": entry.get("label") or entry.get("entry"),
-                },
-            }
-        )
+        record = {
+            "id": flow_id,
+            "category": category,
+            "entry_point": {
+                "symbol": entry.get("symbol") or entry.get("entry"),
+                "source_path": _safe_source_path(
+                    entry.get("file") or entry.get("source_path"),
+                    src_root,
+                ),
+                "label": entry.get("label") or entry.get("entry"),
+            },
+        }
+        for key in ("detector", "language", "routes", "evidence"):
+            if key in entry:
+                record[key] = json.loads(json.dumps(entry[key], sort_keys=True))
+        flows.append(record)
     return flows
 
 

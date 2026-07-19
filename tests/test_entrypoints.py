@@ -514,6 +514,16 @@ class TestGetEntryPoints:
             "label": "task-handler",
         } in result.entries
 
+        with_provenance = detect_entry_points(
+            inventory,
+            root=tmp_path,
+            include_provenance=True,
+        )
+        plugin_entry = next(
+            entry for entry in with_provenance.entries if entry["category"] == "task"
+        )
+        assert plugin_entry["detector"] == "plugin:detector-plugin/worker@0.1.0"
+
     def test_plugin_detector_falls_back_to_cwd_root(self, tmp_path):
         source = tmp_path / "source"
         source.mkdir()
