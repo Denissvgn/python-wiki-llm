@@ -65,6 +65,11 @@ Only the workspace, an explicit helper cache, and an explicit disposable
 capture root are eligible write roots. The source and adopted input wiki remain
 forbidden write roots throughout the run.
 
+The general source/workspace baseline accepts at most 100,000 regular files,
+128 MiB per file, and 2 GiB in aggregate. The limits are checked before and
+while each file is streamed so a file that grows during hashing cannot bypass
+the budget. Oversized inputs fail closed; no partial baseline is accepted.
+
 Each eligible write root must not overlap either evidence root: the workspace,
 helper cache, and capture root cannot be the source or input-wiki root, an
 ancestor of either root, or a descendant of either root. The examples assume
@@ -163,6 +168,14 @@ single JSON intake file instead:
 Pass it with `--intake-file ./intake.json`. Direct intake flags and
 `--intake-file` cannot be mixed. Missing or declined answers are stored as
 `unspecified`, not inferred from untrusted source prose.
+
+Project-brief, intake, and result files use a 1,000,000-byte input limit. The CLI
+reads only the limit plus one byte before rejecting an oversized file, so the
+limit is also a memory-allocation boundary rather than a check after a full
+read. Run v1 readers do not coerce trusted values: purpose, audiences, audience
+intent, live-service decisions, timestamps, policy labels, source revisions,
+schema versions, and run-local skill bindings must have their canonical types
+and relationships.
 
 `--observe-live-service` records a supervisor permission decision and validates
 that an explicit disposable `--capture-dir` was supplied. The deterministic
@@ -592,6 +605,12 @@ reusing stale output while allowing a deterministic rebuild whose bytes match
 the previous artifact. A failed current build never inherits an earlier
 `publish_ready` verdict.
 
+Builder stdout and stderr are spooled to temporary files under the
+supervisor-owned evidence directory. Reports retain only the final 10,000 bytes
+of each stream and record total-byte and truncation metadata. This keeps a noisy
+authorized builder from turning diagnostic capture into unbounded process
+memory while preserving a useful error tail.
+
 Run deterministic verification explicitly when diagnosing or rechecking a
 workspace:
 
@@ -703,6 +722,11 @@ limit, and source/input evidence. It reuses the recorded intake and run rather
 than asking questions or rebuilding. A changed contract is rejected and
 requires explicit `--refresh` or a new workspace; repeated preparation never
 silently changes the recorded run.
+
+Before an apparently compatible resume compares live source/input state, the
+supervisor binds the portable policy to the current runtime paths and verifies
+the recorded initial integrity anchors. Replacing a baseline evidence file
+cannot therefore legitimize a changed source or input tree.
 
 During an initial prepare, a same-process failure rolls back only lifecycle-owned
 artifacts and preserves an initially empty workspace. Abrupt process loss

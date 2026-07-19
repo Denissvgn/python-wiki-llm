@@ -15,6 +15,7 @@ from llm_wiki_cli.services.contracts import (
 )
 from llm_wiki_cli.services.documentation_run import (
     DocumentationIntegrityError,
+    DocumentationRunError,
     DocumentationSchemaError,
     build_documentation_agent_packet,
     capture_generated_ownership,
@@ -258,6 +259,37 @@ def test_packet_rejects_source_baseline_rewritten_to_hide_source_change(
 
     with pytest.raises(DocumentationIntegrityError, match="source-baseline evidence"):
         build_documentation_agent_packet(workspace, stage="wiki-enrichment")
+
+
+def test_resume_rejects_source_baseline_rewritten_to_hide_source_change(
+    tmp_path: Path,
+):
+    source = tmp_path / "source"
+    source.mkdir()
+    source_file = source / "app.py"
+    source_file.write_text("VALUE = 1\n", encoding="utf-8")
+    workspace = tmp_path / "workspace"
+    prepare_documentation_run(
+        workspace,
+        baseline_strategy="bootstrap_source",
+        source_root=source,
+        site_name="Example",
+    )
+
+    source_file.write_text("VALUE = 2\n", encoding="utf-8")
+    baseline_path = workspace / ".llm-wiki-docs" / "evidence" / "source-baseline.json"
+    _rewrite_json(baseline_path, source_tree_baseline(source).to_dict())
+
+    with pytest.raises(
+        (DocumentationIntegrityError, DocumentationRunError),
+        match="source-baseline evidence",
+    ):
+        prepare_documentation_run(
+            workspace,
+            baseline_strategy="bootstrap_source",
+            source_root=source,
+            site_name="Example",
+        )
 
 
 def test_packet_rejects_rewritten_generated_baseline_before_dispatch(tmp_path: Path):

@@ -10,6 +10,7 @@ import pytest
 
 from llm_wiki_cli.services.documentation_policy import (
     DocumentationPolicyError,
+    capture_tree_baseline,
     compare_tree_baseline,
     resolve_documentation_policy,
     source_tree_baseline,
@@ -96,6 +97,35 @@ def test_tree_comparison_reports_added_removed_and_changed(tmp_path):
     assert difference.added == ("added.txt",)
     assert difference.removed == ("removed.txt",)
     assert difference.changed == ("module.py",)
+
+
+def test_tree_baseline_rejects_oversized_single_file(tmp_path):
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "large.bin").write_bytes(b"12345")
+
+    with pytest.raises(DocumentationPolicyError, match="per-file byte limit"):
+        capture_tree_baseline(
+            source,
+            display="source",
+            max_file_bytes=4,
+            max_total_bytes=100,
+        )
+
+
+def test_tree_baseline_rejects_oversized_aggregate(tmp_path):
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "one.bin").write_bytes(b"123")
+    (source / "two.bin").write_bytes(b"456")
+
+    with pytest.raises(DocumentationPolicyError, match="aggregate byte limit"):
+        capture_tree_baseline(
+            source,
+            display="source",
+            max_file_bytes=4,
+            max_total_bytes=5,
+        )
 
 
 @pytest.mark.skipif(not hasattr(os, "symlink"), reason="symlinks unavailable")

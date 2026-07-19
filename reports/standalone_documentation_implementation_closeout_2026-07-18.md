@@ -1,6 +1,7 @@
 # Agent-Driven Standalone Documentation Implementation Closeout
 
 - Date: 2026-07-18
+- Reviewed: 2026-07-19
 - Scope: `ADW-000` through `ADW-014` from the Agent-Driven Standalone
   Documentation Implementation Plan
 - Local implementation verdict: **COMPLETE** for the deterministic lifecycle
@@ -30,6 +31,32 @@ platforms consuming the same protocol. The repository also declares Python
 3.9+. Until those gaps are resolved, this report must remain `NO_SHIP` even if
 all local tests pass.
 
+## Completeness Review Hardening
+
+The 2026-07-19 completeness review confirmed the locally implemented backlog
+and closed additional fail-closed contract gaps. Run v1 validation now rejects
+coercible trusted-field values, inconsistent intake/policy provenance,
+unsupported imported schema metadata, noncanonical source revisions, and
+missing or id/path-mismatched run-local skills. Compatible resume verifies the
+recorded baseline integrity anchor before it compares current source evidence.
+
+General source-tree baselines now have count, per-file byte, and aggregate byte
+budgets. CLI file inputs are read only through their declared bound, authorized
+builder stdout/stderr are spooled outside process memory with bounded retained
+tails, portable path collision validation is linear, and production integrity
+guards no longer depend on assertions that disappear under `python -O`.
+Focused regression coverage was added for every boundary.
+
+| Review finding | Resolution |
+| --- | --- |
+| Trusted run fields accepted coercible values or incomplete semantic binding | Strict types and consistency checks now cover intake, timestamps, source identity, imported schemas, policy roots/live-service decisions, and required skill id/path binding |
+| Compatible resume compared replaceable baseline evidence before its anchor | Runtime policy binding and initial integrity-anchor verification now precede compatibility comparison |
+| General baselines bounded file count but not content bytes | Source/workspace hashing now enforces 128 MiB per file and 2 GiB aggregate while streaming |
+| CLI input limits were checked after a full read | Intake/result file readers request only the 1,000,000-byte limit plus one detection byte |
+| Builder output used unbounded in-memory capture | Output is spooled under supervisor-owned evidence; reports retain 10,000-byte tails plus byte/truncation metadata |
+| Portable path duplicate detection was quadratic | A single normalized collision map now detects exact, case, and Unicode collisions |
+| Production integrity guards used optimization-removable assertions | Explicit typed integrity/input errors preserve the guards under `python -O` |
+
 ## Delivered Scope
 
 | Work item | Local status | Evidence |
@@ -49,7 +76,7 @@ all local tests pass.
 | ADW-011 | Implemented | Stable review ledger, loop cap, repeated-high blocking, supervisor reconciliation |
 | ADW-012 | Implemented locally | Derived site export/check, optional authorized builder argv with fresh `_site` recreation proof, current-run final verdict, and no automatic deployment |
 | ADW-013 | Implemented as portable/fixture coverage | No-Git, Unicode/spaces, hostile instructions/plugins, unsafe inputs/links, tampered schemas/packets, changed roots/options, mutation, grounding, deferral, lint/CI, Windows-style paths, and Windows junction coverage where available |
-| ADW-014 | **Outstanding** | Required real projects, enriched-wiki rubric, real Windows, two agent platforms, and sibling-wiki publication proof are not all complete |
+| ADW-014 | **Partial; qualification outstanding** | Required real projects, enriched-wiki rubric, real Windows, two agent platforms, and sibling-wiki publication proof are not all complete |
 
 ## Provider And Model Routing Decision
 
@@ -73,6 +100,8 @@ authoritative execution receipts remain Proposed `MWR-*` work and must not be
 described as shipped.
 
 ## Local Verification Evidence
+
+### 2026-07-18 implementation closeout
 
 The main agent owned the serialized heavy-gate schedule. Final post-hardening
 evidence:
@@ -98,6 +127,29 @@ evidence:
 - sibling GitHub-wiki documentation: committed separately as `4a275ec`
   (`docs(wiki): document standalone workspaces`); remote publication was not
   attempted or claimed.
+
+### 2026-07-19 completeness review
+
+The current review reran the local gates after its hardening changes:
+
+- required read-only changed-context discovery was **inconclusive** because the
+  current environment had not prepared the Go and Haskell extractor helpers;
+- focused standalone/API/site/skill/package suite:
+  `498 passed, 5 skipped`;
+- full repository suite: `2195 passed, 39 skipped`;
+- `.venv/bin/ruff check src tests`: passed;
+- changed-file Ruff format check: passed for all eight changed Python files;
+- changed production-file Ruff security check: passed;
+- repository-wide Ruff format check remains a pre-existing baseline failure on
+  22 untouched files; none is in this review's diff;
+- `.venv/bin/python -m compileall -q src tests`: passed;
+- Python 3.9 grammar parse: passed for 176 Python files, but this is syntax-only
+  evidence because no Python 3.9 runtime was available;
+- isolated sdist/wheel build: passed at
+  `/tmp/llm-wiki-adw-completeness-commit.M9mizb`, producing
+  `agent_wiki_cli-1.4.0.tar.gz` and
+  `agent_wiki_cli-1.4.0-py3-none-any.whl`; only existing setuptools license
+  metadata deprecation warnings were emitted.
 
 ## Residual Local Operational Limitation
 
@@ -176,7 +228,7 @@ The following are release blockers, not optional polish:
    3.10+ support floor.
 6. Complete the semantic/user-doc/review/export stages in self-dogfood and
    attach the before/after usefulness evidence.
-7. Publish the locally committed sibling GitHub-wiki change `32d5138` remotely
+7. Publish the locally committed sibling GitHub-wiki change `4a275ec` remotely
    when authorized, and retain remote publication evidence.
 
 ## Ship Gate

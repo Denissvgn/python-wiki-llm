@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import io
 import json
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -248,6 +250,25 @@ def test_docs_prepare_rejects_intake_file_mixed_with_direct_answers(tmp_path, ca
 
     assert exc_info.value.code == 1
     assert "cannot be combined" in capsys.readouterr().err
+
+
+def test_docs_text_input_is_read_with_the_declared_byte_bound(monkeypatch):
+    reads: list[int] = []
+
+    class RecordingStream(io.BytesIO):
+        def read(self, size=-1):
+            reads.append(size)
+            return super().read(size)
+
+    monkeypatch.setattr(docs_cmd, "_MAX_INTAKE_BYTES", 4)
+    monkeypatch.setattr(
+        Path,
+        "open",
+        lambda self, mode="r", *args, **kwargs: RecordingStream(b"okay"),
+    )
+
+    assert docs_cmd._read_bounded_text("brief.md", label="project brief") == "okay"
+    assert reads == [5]
 
 
 def test_docs_packet_prints_selected_provider_neutral_representation(

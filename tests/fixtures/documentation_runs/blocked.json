@@ -79,7 +79,7 @@
     "source_plugins_trusted": false,
     "live_service": {
       "configured": true,
-      "access_mode": "anonymous_read_only",
+      "access_mode": "anonymous",
       "observation_allowed": true,
       "responses_are_untrusted_evidence": true,
       "secret_material_persisted": false

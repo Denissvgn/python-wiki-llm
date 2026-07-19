@@ -10,6 +10,7 @@ from types import SimpleNamespace
 
 import pytest
 
+import llm_wiki_cli.services.documentation_run as documentation_run_service
 from llm_wiki_cli.services.contracts import (
     DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION,
     DOCUMENTATION_RUN_SCHEMA_VERSION,
@@ -17,6 +18,7 @@ from llm_wiki_cli.services.contracts import (
 from llm_wiki_cli.services.documentation_run import (
     DocumentationAgentResult,
     DocumentationIntegrityError,
+    DocumentationIntakeBrief,
     DocumentationRun,
     DocumentationSchemaError,
     DocumentationTransitionError,
@@ -218,6 +220,133 @@ def test_run_schema_tolerates_additive_fields_but_rejects_unknown_state(tmp_path
     payload["state"] = "future_required_state"
     with pytest.raises(DocumentationSchemaError, match="Unsupported run state"):
         DocumentationRun.from_dict(payload)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        (
+            lambda payload: payload.__setitem__("created_at", 123),
+            "created_at must be a UTC timestamp",
+        ),
+        (
+            lambda payload: payload["intake"].__setitem__(
+                "project_purpose", {"text": "not a string"}
+            ),
+            "project_purpose must be a non-empty string",
+        ),
+        (
+            lambda payload: (
+                payload["intake"].__setitem__("audiences", [123]),
+                payload["intake"].__setitem__("audience_intent", {"123": 456}),
+            ),
+            "audiences must contain normalized strings",
+        ),
+        (
+            lambda payload: payload["intake"].__setitem__("recorded_at", 123),
+            "recorded_at must be a UTC timestamp",
+        ),
+        (
+            lambda payload: (
+                payload["policy"].__setitem__("allowed_write_roots", ["source"]),
+                payload["policy"].__setitem__("forbidden_write_roots", []),
+            ),
+            "allowed_write_roots",
+        ),
+        (
+            lambda payload: payload["policy"]["live_service"].__setitem__(
+                "configured", "yes"
+            ),
+            "configured must be a boolean",
+        ),
+        (
+            lambda payload: payload["skills"][0].__setitem__(
+                "path", ".llm-wiki-docs/skills/wiki-semantic-enhance"
+            ),
+            "path must match its id",
+        ),
+        (
+            lambda payload: payload["skills"].pop(),
+            "missing required bundled skill",
+        ),
+    ],
+    ids=[
+        "created-timestamp-type",
+        "project-purpose-type",
+        "audience-types",
+        "intake-timestamp-type",
+        "write-root-policy",
+        "live-service-policy-type",
+        "skill-path-binding",
+        "required-skill-presence",
+    ],
+)
+def test_run_schema_rejects_malformed_trusted_contract_fields(
+    tmp_path, mutation, message
+):
+    _, _, _, run = _prepare_wiki_only_run(tmp_path)
+    payload = json.loads(json.dumps(run.to_dict()))
+    mutation(payload)
+
+    with pytest.raises(DocumentationSchemaError, match=message):
+        DocumentationRun.from_dict(payload)
+
+
+def test_run_schema_rejects_incompatible_imported_schema_metadata(tmp_path):
+    _, _, _, run = _prepare_wiki_only_run(tmp_path)
+    payload = json.loads(json.dumps(run.to_dict()))
+    payload["baseline"]["input_wiki"]["manifest_version"] = {"version": 4}
+    payload["baseline"]["input_wiki"]["surface_schema_version"] = 1
+
+    with pytest.raises(DocumentationSchemaError, match="legacy input_wiki schemas"):
+        DocumentationRun.from_dict(payload)
+
+
+def test_run_schema_rejects_non_string_source_revision():
+    payload = json.loads(
+        Path("tests/fixtures/documentation_runs/complete.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    payload["source"]["revision"] = 123
+    payload["baseline"]["source_revision"] = 123
+
+    with pytest.raises(
+        DocumentationSchemaError, match="revision must be a non-empty string"
+    ):
+        DocumentationRun.from_dict(payload)
+
+
+def test_intake_normalizes_api_audience_intent_keys():
+    intake = DocumentationIntakeBrief.from_values(
+        project_purpose="Explain the operator workflow.",
+        audiences=[" Operator "],
+        audience_intent={"Operator": " Complete the first safe task. "},
+    )
+
+    assert intake.audiences == ("operator",)
+    assert intake.audience_intent == {"operator": "Complete the first safe task."}
+
+
+def test_intake_api_rejects_one_string_as_audience_collection():
+    with pytest.raises(DocumentationSchemaError, match="not one string"):
+        DocumentationIntakeBrief.from_values(
+            project_purpose=None,
+            audiences="operator",
+        )
+
+
+def test_intake_api_normalizes_blank_answers_to_declined_unspecified():
+    intake = DocumentationIntakeBrief.from_values(
+        project_purpose="   ",
+        audiences=None,
+        live_service_url="   ",
+    )
+
+    assert intake.project_purpose == "unspecified"
+    assert intake.live_service["address"] == "unspecified"
+    assert intake.provenance["project_purpose"] == "declined"
+    assert intake.provenance["live_service"] == "declined"
 
 
 def test_prepare_is_idempotent_and_reuses_recorded_intake(tmp_path):
@@ -941,6 +1070,35 @@ def test_source_bootstrap_rejects_existing_wiki_freshness_modes(tmp_path):
             freshness_policy="allow-unverified",
             site_name="Source Docs",
         )
+
+
+def test_authorized_builder_captures_only_bounded_output_tails(tmp_path):
+    workspace = tmp_path / "workspace"
+    (workspace / ".llm-wiki-docs" / "evidence").mkdir(parents=True)
+    run = SimpleNamespace(
+        publication={"format": "plain"},
+        paths={"built_site": "_site"},
+    )
+    output_bytes = documentation_run_service._MAX_BUILDER_LOG_BYTES + 500
+    builder_code = (
+        "import sys; from pathlib import Path; "
+        "p=Path('_site'); p.mkdir(); "
+        "(p/'index.html').write_text('<h1>ok</h1>', encoding='utf-8'); "
+        f"sys.stdout.buffer.write(b'x'*{output_bytes}+b'\\xff')"
+    )
+
+    evidence = documentation_run_service._run_authorized_builder(
+        workspace,
+        run,
+        build=True,
+        builder_command=[sys.executable, "-c", builder_code],
+    )
+
+    assert evidence["status"] == "complete"
+    assert evidence["stdout_bytes"] == output_bytes + 1
+    assert evidence["stdout_truncated"] is True
+    assert len(evidence["stdout"]) <= documentation_run_service._MAX_BUILDER_LOG_BYTES
+    assert "\N{REPLACEMENT CHARACTER}" in evidence["stdout"]
 
 
 def test_agent_result_requires_portable_paths():

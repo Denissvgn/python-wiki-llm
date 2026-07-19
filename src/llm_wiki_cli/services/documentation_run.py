@@ -12,6 +12,7 @@ import shutil
 import stat
 import subprocess
 import sys
+import tempfile
 import unicodedata
 import uuid
 from dataclasses import dataclass, field
@@ -53,6 +54,7 @@ from .documentation_review import (
     normalize_review_findings,
     reconcile_review_ledger,
 )
+from .documentation_wiki_input import SUPPORTED_MANIFEST_VERSION
 from .filesystem_guard import (
     WindowsDirectoryGuardError,
     guard_windows_directory_chain,
@@ -64,6 +66,7 @@ from .wiki_media import (
     local_link_path,
     strip_fenced_code_blocks,
 )
+from .wiki_surface_index import WIKI_SURFACE_INDEX_SCHEMA_VERSION
 
 
 RUN_CONTROL_DIR = ".llm-wiki-docs"
@@ -160,6 +163,7 @@ _WINDOWS_RESERVED_NAMES = frozenset(
 _WINDOWS_FORBIDDEN_PATH_CHARS = frozenset('<>:"|?*')
 _GENERATED_MARKER = "Auto-generated"
 _DO_NOT_EDIT_MARKER = "Do not edit by hand"
+_MAX_BUILDER_LOG_BYTES = 10_000
 _PACKET_FORBIDDEN_FIELDS = frozenset(
     {
         "access_token",
@@ -273,27 +277,75 @@ class DocumentationIntakeBrief:
         live_service_observation_allowed: bool = False,
         recorded_at: str | None = None,
     ) -> "DocumentationIntakeBrief":
+        if project_purpose is not None and not isinstance(project_purpose, str):
+            raise DocumentationSchemaError(
+                "Intake project_purpose must be a string or null."
+            )
         purpose = (project_purpose or "").strip() or "unspecified"
+        if isinstance(audiences, (str, bytes)):
+            raise DocumentationSchemaError(
+                "Intake audiences must be an iterable of strings, not one string."
+            )
+        raw_audiences = tuple(audiences or ())
+        if any(not isinstance(value, str) for value in raw_audiences):
+            raise DocumentationSchemaError("Intake audiences must contain strings.")
         normalized_audiences = tuple(
             dict.fromkeys(
                 value.strip().lower()
-                for value in (audiences or ())
+                for value in raw_audiences
                 if value and value.strip()
             )
         )
         if not normalized_audiences:
             normalized_audiences = ("unspecified",)
-        supplied_intent = dict(audience_intent or {})
+        if audience_intent is not None and not isinstance(audience_intent, Mapping):
+            raise DocumentationSchemaError("Intake audience_intent must be an object.")
+        supplied_intent: dict[str, str] = {}
+        for raw_audience, raw_intent in dict(audience_intent or {}).items():
+            if not isinstance(raw_audience, str) or not isinstance(raw_intent, str):
+                raise DocumentationSchemaError(
+                    "Intake audience_intent must map audience strings to strings."
+                )
+            audience_key = raw_audience.strip().lower()
+            if not audience_key:
+                raise DocumentationSchemaError(
+                    "Intake audience_intent keys must not be empty."
+                )
+            if audience_key in supplied_intent:
+                raise DocumentationSchemaError(
+                    "Intake audience_intent keys must remain unique after normalization."
+                )
+            supplied_intent[audience_key] = raw_intent.strip() or "unspecified"
+        unknown_intent = sorted(set(supplied_intent) - set(normalized_audiences))
+        if unknown_intent:
+            raise DocumentationSchemaError(
+                "Intake audience_intent contains an audience that was not selected: "
+                f"{unknown_intent[0]}"
+            )
         intents = {
-            audience: (str(supplied_intent.get(audience, "")).strip() or "unspecified")
+            audience: supplied_intent.get(audience, "unspecified")
             for audience in normalized_audiences
         }
-        return cls(
+        if live_service_url is not None and not isinstance(live_service_url, str):
+            raise DocumentationSchemaError(
+                "Intake live_service_url must be a string or null."
+            )
+        if not isinstance(live_service_access_mode, str):
+            raise DocumentationSchemaError(
+                "Intake live_service_access_mode must be a string."
+            )
+        if not isinstance(live_service_observation_allowed, bool):
+            raise DocumentationSchemaError(
+                "Intake live_service_observation_allowed must be a boolean."
+            )
+        timestamp = _utc_now() if recorded_at is None else recorded_at
+        address = (live_service_url or "").strip() or "unspecified"
+        value = cls(
             project_purpose=purpose,
             audiences=normalized_audiences,
             audience_intent=intents,
             live_service={
-                "address": live_service_url or "unspecified",
+                "address": address,
                 "access_mode": live_service_access_mode,
                 "observation_allowed": live_service_observation_allowed,
                 "secret_material_persisted": False,
@@ -305,11 +357,14 @@ class DocumentationIntakeBrief:
                 "audiences": "answered"
                 if normalized_audiences != ("unspecified",)
                 else "declined",
-                "live_service": "answered" if live_service_url else "declined",
+                "live_service": (
+                    "declined" if address == "unspecified" else "answered"
+                ),
                 "source": "supervisor_supplied",
             },
-            recorded_at=recorded_at or _utc_now(),
+            recorded_at=timestamp,
         )
+        return cls.from_dict(value.to_dict())
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -393,7 +448,11 @@ class DocumentationIntakeBrief:
                 "Intake must record secret_material_persisted=false."
             )
         address = live_service.get("address")
-        if not isinstance(address, str) or not address.strip():
+        if (
+            not isinstance(address, str)
+            or not address.strip()
+            or address != address.strip()
+        ):
             raise DocumentationSchemaError(
                 "Intake live_service address must be a non-empty string."
             )
@@ -416,9 +475,28 @@ class DocumentationIntakeBrief:
                     "Intake live_service address must be a credential-free HTTP(S) "
                     "origin without query or fragment data."
                 )
-        normalized_audiences = tuple(str(value) for value in audiences)
+        if any(
+            not isinstance(value, str)
+            or not value.strip()
+            or value != value.strip().lower()
+            for value in audiences
+        ):
+            raise DocumentationSchemaError(
+                "Intake audiences must contain normalized strings."
+            )
+        normalized_audiences = tuple(audiences)
         if len(normalized_audiences) != len(set(normalized_audiences)):
             raise DocumentationSchemaError("Intake audiences must be unique.")
+        if any(
+            not isinstance(key, str)
+            or not isinstance(value, str)
+            or not value.strip()
+            or value != value.strip()
+            for key, value in intent.items()
+        ):
+            raise DocumentationSchemaError(
+                "Intake audience_intent must map audiences to non-empty strings."
+            )
         if set(intent) != set(normalized_audiences):
             raise DocumentationSchemaError(
                 "Intake audience_intent keys must match audiences."
@@ -434,11 +512,36 @@ class DocumentationIntakeBrief:
             raise DocumentationSchemaError(
                 "Intake provenance source must be supervisor_supplied."
             )
+        project_purpose = payload.get("project_purpose")
+        if (
+            not isinstance(project_purpose, str)
+            or not project_purpose.strip()
+            or project_purpose != project_purpose.strip()
+        ):
+            raise DocumentationSchemaError(
+                "Intake project_purpose must be a non-empty string."
+            )
+        expected_provenance = {
+            "project_purpose": (
+                "declined" if project_purpose == "unspecified" else "answered"
+            ),
+            "audiences": (
+                "declined" if normalized_audiences == ("unspecified",) else "answered"
+            ),
+            "live_service": "declined" if address == "unspecified" else "answered",
+        }
+        for key, expected in expected_provenance.items():
+            if provenance.get(key) != expected:
+                raise DocumentationSchemaError(
+                    f"Intake provenance {key} does not match its recorded answer."
+                )
+        recorded_at = payload.get("recorded_at")
+        _require_utc_timestamp(recorded_at, "Intake recorded_at")
         _assert_no_forbidden_packet_fields(payload, label="intake")
         return cls(
-            project_purpose=str(payload.get("project_purpose", "unspecified")),
+            project_purpose=project_purpose,
             audiences=normalized_audiences,
-            audience_intent={str(key): str(value) for key, value in intent.items()},
+            audience_intent=dict(intent),
             live_service={
                 "address": address,
                 "access_mode": access_mode,
@@ -451,7 +554,7 @@ class DocumentationIntakeBrief:
                 "live_service": provenance["live_service"],
                 "source": provenance["source"],
             },
-            recorded_at=str(payload.get("recorded_at", "")),
+            recorded_at=recorded_at,
         )
 
 
@@ -1031,6 +1134,8 @@ def _prepare_documentation_run_impl(
     run_path = documentation_run_path(workspace_root)
     if run_path.is_file() and not refresh:
         existing = load_documentation_run(workspace_root)
+        _load_bound_runtime_policy(workspace_root, existing)
+        _verify_initial_integrity_anchors(workspace_root, existing)
         _assert_resume_compatible(
             workspace_root,
             existing,
@@ -1525,6 +1630,7 @@ def build_documentation_agent_packet(
     pre_stage_evidence_hash = hash_bytes(before_path.read_bytes())
 
     stage_contract = _stage_contract(stage)
+    skills_by_id = {str(skill["id"]): skill for skill in run.skills}
     selected_skills = [
         {
             "id": skill["id"],
@@ -1532,8 +1638,8 @@ def build_documentation_agent_packet(
             "hash": skill["hash"],
             "path": skill["path"],
         }
-        for skill in run.skills
-        if skill["id"] in stage_contract["skills"]
+        for skill_id in stage_contract["skills"]
+        for skill in (skills_by_id[skill_id],)
     ]
     imported = [
         {
@@ -2255,8 +2361,8 @@ def source_identity(source_root: str | Path, baseline: TreeBaseline) -> dict[str
     root = Path(source_root).expanduser().resolve()
     revision = None
     try:
-        result = subprocess.run(
-            ["git", "-C", str(root), "rev-parse", "HEAD"],
+        result = subprocess.run(  # noqa: S603 - fixed read-only git query
+            ["git", "-C", str(root), "rev-parse", "HEAD"],  # noqa: S607
             capture_output=True,
             text=True,
             check=True,
@@ -2923,11 +3029,12 @@ def _commit_initial_prepare(transaction: _InitialPrepareTransaction) -> None:
 def _rollback_initial_prepare(transaction: _InitialPrepareTransaction) -> None:
     if not transaction.active:
         return
-    assert transaction.workspace_root is not None
-    assert transaction.root_identity is not None
     workspace_root = transaction.workspace_root
+    root_identity = transaction.root_identity
+    if workspace_root is None or root_identity is None:
+        raise DocumentationIntegrityError("Invalid initial-prepare transaction state.")
 
-    if _directory_identity(workspace_root) != transaction.root_identity:
+    if _directory_identity(workspace_root) != root_identity:
         raise DocumentationIntegrityError(
             "Initial-prepare workspace root changed identity before rollback."
         )
@@ -2969,7 +3076,7 @@ def _rollback_initial_prepare(transaction: _InitialPrepareTransaction) -> None:
             raise DocumentationIntegrityError(
                 f"Cannot remove initial-prepare workspace artifact {relative}: {exc}"
             ) from exc
-        if _directory_identity(workspace_root) != transaction.root_identity:
+        if _directory_identity(workspace_root) != root_identity:
             raise DocumentationIntegrityError(
                 "Initial-prepare workspace root changed during rollback."
             )
@@ -2986,7 +3093,7 @@ def _rollback_initial_prepare(transaction: _InitialPrepareTransaction) -> None:
             f"{remaining[0]}"
         )
     if transaction.preserve_root:
-        if _directory_identity(workspace_root) != transaction.root_identity:
+        if _directory_identity(workspace_root) != root_identity:
             raise DocumentationIntegrityError(
                 "Initially empty workspace root changed during rollback."
             )
@@ -3061,17 +3168,17 @@ def _write_refresh_transaction_marker(
         "rolled_back",
     }:
         raise DocumentationIntegrityError("Invalid refresh transaction state.")
-    assert transaction.workspace_root is not None
-    assert transaction.archive is not None
-    assert transaction.prior_run_id is not None
+    workspace_root = transaction.workspace_root
+    archive = transaction.archive
+    prior_run_id = transaction.prior_run_id
+    if workspace_root is None or archive is None or prior_run_id is None:
+        raise DocumentationIntegrityError("Invalid refresh transaction state.")
     _write_json(
-        _refresh_transaction_path(transaction.workspace_root),
+        _refresh_transaction_path(workspace_root),
         {
             "schema_version": "llm-wiki-documentation-refresh-transaction/v1",
-            "prior_run_id": transaction.prior_run_id,
-            "archive_path": transaction.archive.relative_to(
-                transaction.workspace_root
-            ).as_posix(),
+            "prior_run_id": prior_run_id,
+            "archive_path": archive.relative_to(workspace_root).as_posix(),
             "phase": transaction.phase,
         },
     )
@@ -3085,9 +3192,11 @@ def _commit_refresh_archive(transaction: _RefreshArchiveTransaction) -> None:
     except Exception:
         transaction.phase = previous_phase
         raise
-    assert transaction.workspace_root is not None
+    workspace_root = transaction.workspace_root
+    if workspace_root is None:
+        raise DocumentationIntegrityError("Invalid refresh transaction state.")
     try:
-        _remove_refresh_transaction_marker(transaction.workspace_root)
+        _remove_refresh_transaction_marker(workspace_root)
     except DocumentationIntegrityError:
         # The durable committed marker is sufficient. A later prepare removes it
         # after confirming that no rollback is required.
@@ -3162,10 +3271,10 @@ def _recover_interrupted_refresh(workspace_root: Path) -> None:
 def _rollback_refresh_archive(transaction: _RefreshArchiveTransaction) -> None:
     if not transaction.active or transaction.phase not in {"archiving", "building"}:
         return
-    assert transaction.workspace_root is not None
-    assert transaction.archive is not None
     workspace_root = transaction.workspace_root
     archive = transaction.archive
+    if workspace_root is None or archive is None:
+        raise DocumentationIntegrityError("Invalid refresh transaction state.")
     control = workspace_root / RUN_CONTROL_DIR
     entries = (
         (archive / "stages", control / "stages", False),
@@ -4110,6 +4219,25 @@ def _load_bound_runtime_policy(
                 f"Runtime documentation policy {name} is not canonical."
             )
         resolved[name] = candidate
+
+    expected_allowed = ["workspace"]
+    if resolved["helper_cache_root"] is not None:
+        expected_allowed.append("helper_cache")
+    if resolved["capture_root"] is not None:
+        expected_allowed.append("capture")
+    if run.policy.get("allowed_write_roots") != expected_allowed:
+        raise DocumentationIntegrityError(
+            "Runtime writable roots no longer match the portable run policy."
+        )
+    expected_forbidden = []
+    if resolved["source_root"] is not None:
+        expected_forbidden.append("source")
+    if resolved["input_wiki_root"] is not None:
+        expected_forbidden.append("input_wiki")
+    if run.policy.get("forbidden_write_roots") != expected_forbidden:
+        raise DocumentationIntegrityError(
+            "Runtime read-only roots no longer match the portable run policy."
+        )
 
     source_root = resolved["source_root"]
     if bool(run.source.get("available")) != (source_root is not None):
@@ -5432,17 +5560,34 @@ def _run_authorized_builder(
         raise DocumentationIntegrityError(
             "Built-site output still exists after guarded pre-build cleanup."
         )
-    completed: subprocess.CompletedProcess[str] | None = None
+    completed: subprocess.CompletedProcess[bytes] | None = None
     execution_error: str | None = None
+    stdout_tail = ""
+    stderr_tail = ""
+    stdout_bytes = 0
+    stderr_bytes = 0
+    stdout_truncated = False
+    stderr_truncated = False
     try:
-        completed = subprocess.run(
-            command,
-            cwd=workspace_root,
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=600,
-        )
+        evidence_root = workspace_root / RUN_CONTROL_DIR / "evidence"
+        with (
+            tempfile.TemporaryFile(mode="w+b", dir=evidence_root) as stdout_stream,
+            tempfile.TemporaryFile(mode="w+b", dir=evidence_root) as stderr_stream,
+        ):
+            completed = subprocess.run(  # noqa: S603 - caller-authorized argv
+                command,
+                cwd=workspace_root,
+                stdout=stdout_stream,
+                stderr=stderr_stream,
+                check=False,
+                timeout=600,
+            )
+            stdout_tail, stdout_bytes, stdout_truncated = _read_builder_output_tail(
+                stdout_stream
+            )
+            stderr_tail, stderr_bytes, stderr_truncated = _read_builder_output_tail(
+                stderr_stream
+            )
     except (OSError, subprocess.SubprocessError) as exc:
         execution_error = str(exc)
     built_site_after: TreeBaseline | None = None
@@ -5492,8 +5637,12 @@ def _run_authorized_builder(
         "executed": True,
         "returncode": completed.returncode if completed is not None else None,
         "command_kind": "mkdocs" if "mkdocs" in command else "custom",
-        "stdout": completed.stdout[-10_000:] if completed is not None else "",
-        "stderr": completed.stderr[-10_000:] if completed is not None else "",
+        "stdout": stdout_tail,
+        "stderr": stderr_tail,
+        "stdout_bytes": stdout_bytes,
+        "stderr_bytes": stderr_bytes,
+        "stdout_truncated": stdout_truncated,
+        "stderr_truncated": stderr_truncated,
         "message": message,
         "built_site_present": built_site_after is not None,
         "built_site_recreated": built_site_after is not None,
@@ -5512,6 +5661,15 @@ def _run_authorized_builder(
             built_site_after.file_count if built_site_after is not None else 0
         ),
     }
+
+
+def _read_builder_output_tail(stream) -> tuple[str, int, bool]:
+    stream.flush()
+    total_bytes = stream.seek(0, os.SEEK_END)
+    truncated = total_bytes > _MAX_BUILDER_LOG_BYTES
+    stream.seek(max(0, total_bytes - _MAX_BUILDER_LOG_BYTES))
+    data = stream.read(_MAX_BUILDER_LOG_BYTES)
+    return data.decode("utf-8", errors="replace"), total_bytes, truncated
 
 
 def _remove_built_site_before_builder(
@@ -5902,10 +6060,17 @@ def _validate_run_payload(payload: Mapping[str, Any]) -> None:
         raise DocumentationSchemaError("adjustment_loop_limit must be an integer.")
     if loop_limit < 1:
         raise DocumentationSchemaError("adjustment_loop_limit must be positive.")
+    run_id = payload.get("run_id")
     try:
-        uuid.UUID(str(payload.get("run_id", "")))
+        parsed_run_id = uuid.UUID(run_id) if isinstance(run_id, str) else None
     except (ValueError, AttributeError) as exc:
         raise DocumentationSchemaError("run_id must be a UUID.") from exc
+    if parsed_run_id is None or str(parsed_run_id) != run_id:
+        raise DocumentationSchemaError("run_id must be a canonical UUID string.")
+    created_at = _require_utc_timestamp(payload.get("created_at"), "Run created_at")
+    updated_at = _require_utc_timestamp(payload.get("updated_at"), "Run updated_at")
+    if updated_at < created_at:
+        raise DocumentationSchemaError("Run updated_at must not precede created_at.")
     DocumentationIntakeBrief.from_dict(payload["intake"])
     _validate_source_contract(payload["source"])
     _validate_baseline_contract(
@@ -5927,7 +6092,12 @@ def _validate_run_payload(payload: Mapping[str, Any]) -> None:
             raise DocumentationSchemaError(
                 f"Run path {name} must remain {expected_paths[name]!r}."
             )
-    _validate_policy_contract(payload["policy"])
+    _validate_policy_contract(
+        payload["policy"],
+        source=payload["source"],
+        baseline=payload["baseline"],
+        intake=payload["intake"],
+    )
     _validate_publication_contract(payload["publication"])
     _validate_skill_contracts(payload["skills"])
     _validate_optional_run_collections(payload)
@@ -5952,6 +6122,11 @@ def _validate_source_contract(source: Mapping[str, Any]) -> None:
         raise DocumentationSchemaError("Run source available must be a boolean.")
     if source.get("revision_kind") not in {"git", "content", "unavailable"}:
         raise DocumentationSchemaError("Run source revision_kind is unsupported.")
+    revision = source.get("revision")
+    if not isinstance(revision, str) or not revision.strip():
+        raise DocumentationSchemaError(
+            "Run source revision must be a non-empty string."
+        )
     if available:
         if source.get("display_identifier") != "source":
             raise DocumentationSchemaError(
@@ -5961,13 +6136,24 @@ def _validate_source_contract(source: Mapping[str, Any]) -> None:
             raise DocumentationSchemaError(
                 "Available run source cannot use unavailable revision_kind."
             )
-        _require_sha256(source.get("content_fingerprint"), "source fingerprint")
-        if (
-            not str(source.get("revision", "")).strip()
-            or source.get("revision") == "source_unavailable"
-        ):
+        fingerprint = _require_sha256(
+            source.get("content_fingerprint"), "source fingerprint"
+        )
+        if revision == "source_unavailable":
             raise DocumentationSchemaError(
                 "Available run source requires a concrete revision."
+            )
+        if source.get("revision_kind") == "content" and revision != (
+            f"content:{fingerprint}"
+        ):
+            raise DocumentationSchemaError(
+                "Content-addressed source revision must match its fingerprint."
+            )
+        if source.get("revision_kind") == "git" and not re.fullmatch(
+            r"[0-9a-f]{40}|[0-9a-f]{64}", revision
+        ):
+            raise DocumentationSchemaError(
+                "Git source revision must be a full lowercase object id."
             )
     elif (
         source.get("display_identifier") != "source_unavailable"
@@ -6068,6 +6254,23 @@ def _validate_baseline_contract(
     _require_sha256(imported.get("initial_snapshot_hash"), "input wiki snapshot hash")
     if imported.get("compatibility") not in {"current", "legacy_index_only"}:
         raise DocumentationSchemaError("Run input_wiki compatibility is unsupported.")
+    compatibility = imported.get("compatibility")
+    manifest_version = imported.get("manifest_version")
+    surface_schema_version = imported.get("surface_schema_version")
+    if compatibility == "legacy_index_only":
+        if manifest_version is not None or surface_schema_version is not None:
+            raise DocumentationSchemaError(
+                "Run legacy input_wiki schemas must remain null."
+            )
+    elif (
+        isinstance(manifest_version, bool)
+        or manifest_version != SUPPORTED_MANIFEST_VERSION
+        or surface_schema_version != WIKI_SURFACE_INDEX_SCHEMA_VERSION
+    ):
+        raise DocumentationSchemaError(
+            "Run current input_wiki schemas must match the supported manifest and "
+            "surface versions."
+        )
     refresh_decision = imported.get("refresh_decision")
     if refresh_decision not in {
         "not_required",
@@ -6101,7 +6304,13 @@ def _validate_baseline_contract(
         )
 
 
-def _validate_policy_contract(policy: Mapping[str, Any]) -> None:
+def _validate_policy_contract(
+    policy: Mapping[str, Any],
+    *,
+    source: Mapping[str, Any],
+    baseline: Mapping[str, Any],
+    intake: Mapping[str, Any],
+) -> None:
     _require_exact_fields(
         policy,
         allowed={
@@ -6137,14 +6346,32 @@ def _validate_policy_contract(policy: Mapping[str, Any]) -> None:
         raise DocumentationSchemaError(
             "Run policy source_plugins_trusted must be a boolean."
         )
-    for field_name in ("allowed_write_roots", "forbidden_write_roots"):
-        values = policy.get(field_name)
-        if not isinstance(values, list) or any(
-            not isinstance(value, str) for value in values
-        ):
-            raise DocumentationSchemaError(
-                f"Run policy {field_name} must be a list of strings."
-            )
+    allowed_roots = policy.get("allowed_write_roots")
+    if (
+        not isinstance(allowed_roots, list)
+        or any(
+            not isinstance(value, str)
+            or value not in {"workspace", "helper_cache", "capture"}
+            for value in allowed_roots
+        )
+        or len(allowed_roots) != len(set(allowed_roots))
+        or not allowed_roots
+        or allowed_roots[0] != "workspace"
+    ):
+        raise DocumentationSchemaError(
+            "Run policy allowed_write_roots must start with workspace and contain "
+            "unique supported root labels."
+        )
+    forbidden_roots = policy.get("forbidden_write_roots")
+    expected_forbidden = []
+    if source.get("available") is True:
+        expected_forbidden.append("source")
+    if isinstance(baseline.get("input_wiki"), Mapping):
+        expected_forbidden.append("input_wiki")
+    if forbidden_roots != expected_forbidden:
+        raise DocumentationSchemaError(
+            "Run policy forbidden_write_roots must match the tagged baseline roots."
+        )
     live_service = policy.get("live_service")
     if not isinstance(live_service, Mapping):
         raise DocumentationSchemaError("Run policy live_service must be an object.")
@@ -6166,12 +6393,45 @@ def _validate_policy_contract(policy: Mapping[str, Any]) -> None:
         },
         label="run policy live_service",
     )
+    configured = live_service.get("configured")
+    observation_allowed = live_service.get("observation_allowed")
+    access_mode = live_service.get("access_mode")
+    if not isinstance(configured, bool):
+        raise DocumentationSchemaError(
+            "Run policy live_service configured must be a boolean."
+        )
+    if not isinstance(observation_allowed, bool):
+        raise DocumentationSchemaError(
+            "Run policy live_service observation_allowed must be a boolean."
+        )
+    if access_mode not in {"unspecified", "anonymous", "non-secret"}:
+        raise DocumentationSchemaError(
+            "Run policy live_service access_mode is unsupported."
+        )
     if (
         live_service.get("responses_are_untrusted_evidence") is not True
         or live_service.get("secret_material_persisted") is not False
     ):
         raise DocumentationSchemaError(
             "Run policy must keep live responses untrusted and secrets unpersisted."
+        )
+    intake_live = intake.get("live_service")
+    if not isinstance(intake_live, Mapping):
+        raise DocumentationSchemaError(
+            "Run policy cannot be reconciled without intake live_service."
+        )
+    expected_configured = intake_live.get("address") != "unspecified"
+    if (
+        configured != expected_configured
+        or observation_allowed != intake_live.get("observation_allowed")
+        or access_mode != intake_live.get("access_mode")
+    ):
+        raise DocumentationSchemaError(
+            "Run policy live_service must match the trusted intake decision."
+        )
+    if observation_allowed and "capture" not in allowed_roots:
+        raise DocumentationSchemaError(
+            "Run policy live-service observation requires the capture write root."
         )
 
 
@@ -6208,18 +6468,42 @@ def _validate_skill_contracts(skills: list[Any]) -> None:
             required={"id", "package_version", "hash", "path"},
             label="run skill",
         )
-        skill_id = str(raw.get("id", ""))
+        skill_id = raw.get("id")
+        if not isinstance(skill_id, str):
+            raise DocumentationSchemaError("Run skill id must be a string.")
         if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,127}", skill_id):
             raise DocumentationSchemaError("Run skill id is not portable.")
         if skill_id in seen:
             raise DocumentationSchemaError("Run skill ids must be unique.")
         seen.add(skill_id)
-        _require_sha256(raw.get("hash"), f"skill {skill_id} hash")
-        path = _portable_path(str(raw.get("path", "")), field_name="skill path")
-        if not path.startswith(f"{RUN_CONTROL_DIR}/skills/"):
+        package_version = raw.get("package_version")
+        if (
+            not isinstance(package_version, str)
+            or not package_version.strip()
+            or package_version != package_version.strip()
+        ):
             raise DocumentationSchemaError(
-                "Run skill path must remain under the run-local skills directory."
+                f"Run skill {skill_id} package_version must be a non-empty string."
             )
+        _require_sha256(raw.get("hash"), f"skill {skill_id} hash")
+        raw_path = raw.get("path")
+        if not isinstance(raw_path, str):
+            raise DocumentationSchemaError(
+                f"Run skill {skill_id} path must be a string."
+            )
+        path = _portable_path(raw_path, field_name="skill path")
+        expected_path = f"{RUN_CONTROL_DIR}/skills/{skill_id}"
+        if path != expected_path:
+            raise DocumentationSchemaError(
+                f"Run skill {skill_id} path must match its id at {expected_path!r}."
+            )
+    missing = [
+        skill_id for skill_id in DEFAULT_DOCUMENTATION_SKILLS if skill_id not in seen
+    ]
+    if missing:
+        raise DocumentationSchemaError(
+            f"Run skills are missing required bundled skill: {missing[0]}"
+        )
 
 
 def _validate_integrity_anchor_contract(payload: Mapping[str, Any]) -> None:
@@ -6411,6 +6695,19 @@ def _require_sha256(value: Any, label: str) -> str:
     if not re.fullmatch(r"sha256:[0-9a-f]{64}", text):
         raise DocumentationSchemaError(f"{label} must be a lowercase sha256 digest.")
     return text
+
+
+def _require_utc_timestamp(value: Any, label: str) -> datetime:
+    if not isinstance(value, str) or not value.strip() or value != value.strip():
+        raise DocumentationSchemaError(f"{label} must be a UTC timestamp string.")
+    normalized = value[:-1] + "+00:00" if value.endswith("Z") else value
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError as exc:
+        raise DocumentationSchemaError(f"{label} must be a UTC timestamp.") from exc
+    if parsed.tzinfo is None or parsed.utcoffset() != timezone.utc.utcoffset(parsed):
+        raise DocumentationSchemaError(f"{label} must be a UTC timestamp.")
+    return parsed
 
 
 def _render_packet_markdown(payload: Mapping[str, Any]) -> str:
@@ -6680,12 +6977,13 @@ def _portable_path_tuple(value: Any) -> tuple[str, ...]:
     seen: dict[str, str] = {}
     for path in paths:
         key = unicodedata.normalize("NFC", path).casefold()
-        previous = seen.setdefault(key, path)
-        if previous != path or paths.count(path) > 1:
+        previous = seen.get(key)
+        if previous is not None:
             raise DocumentationSchemaError(
                 "Portable paths must not collide on case-insensitive or "
                 f"Unicode-normalizing filesystems: {previous!r} and {path!r}."
             )
+        seen[key] = path
     return paths
 
 

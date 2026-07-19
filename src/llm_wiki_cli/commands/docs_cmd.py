@@ -37,7 +37,8 @@ _INTAKE_KEYS = {
 def _read_bounded_text(path: str, *, label: str) -> str:
     source = Path(path).expanduser()
     try:
-        data = source.read_bytes()
+        with source.open("rb") as stream:
+            data = stream.read(_MAX_INTAKE_BYTES + 1)
     except OSError as exc:
         raise DocumentationRunError(f"Cannot read {label} {source}: {exc}") from exc
     if len(data) > _MAX_INTAKE_BYTES:

@@ -55,6 +55,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   inputs and overlapping roots are rejected, writes are constrained to declared
   roots, live-service flags record permission without making a request or
   capture, and remote publication remains a separately authorized handoff.
+- Frozen standalone run contracts now reject coercible trusted-field values,
+  inconsistent intake/policy provenance, unsupported imported schemas,
+  noncanonical source revisions, and missing or id/path-mismatched run-local
+  skills. Compatible resume verifies the anchored baseline evidence before
+  comparing current source/input state.
+- Source-tree baselines now enforce count, 128 MiB per-file, and 2 GiB aggregate
+  limits while streaming. CLI intake/result files are bounded before full
+  allocation, and authorized builder output is spooled to workspace-local
+  temporary files with only 10,000-byte stdout/stderr tails retained.
 
 ## [1.4.0] - 2026-07-12
 

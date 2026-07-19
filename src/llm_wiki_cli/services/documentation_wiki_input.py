@@ -2990,7 +2990,13 @@ def _open_workspace_destination_at(
             os.close(destination_descriptor)
         os.close(parent_descriptor)
         raise
-    assert destination_descriptor is not None
+    if destination_descriptor is None:
+        os.close(parent_descriptor)
+        raise DocumentationWikiInputError(
+            "Workspace destination descriptor was not created.",
+            category="workspace_copy_failed",
+            path=relative.as_posix(),
+        )
     return destination_descriptor, parent_descriptor, opened
 
 

@@ -44,6 +44,8 @@ SOURCE_BASELINE_EXCLUDED_DIRS = frozenset(
     }
 )
 DEFAULT_MAX_BASELINE_FILES = 100_000
+DEFAULT_MAX_BASELINE_FILE_BYTES = 128 * 1024 * 1024
+DEFAULT_MAX_BASELINE_TOTAL_BYTES = 2 * 1024 * 1024 * 1024
 
 
 class DocumentationPolicyError(ValueError):
@@ -238,18 +240,47 @@ def capture_tree_baseline(
     display: str,
     excluded_directories: Iterable[str] = (),
     max_files: int = DEFAULT_MAX_BASELINE_FILES,
+    max_file_bytes: int = DEFAULT_MAX_BASELINE_FILE_BYTES,
+    max_total_bytes: int = DEFAULT_MAX_BASELINE_TOTAL_BYTES,
 ) -> TreeBaseline:
     """Hash regular files without following links or requiring Git."""
+
+    limits = {
+        "max_files": max_files,
+        "max_file_bytes": max_file_bytes,
+        "max_total_bytes": max_total_bytes,
+    }
+    for label, value in limits.items():
+        if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+            raise DocumentationPolicyError(f"{label} must be a non-negative integer.")
 
     resolved = _resolve_existing_directory(root, display)
     excluded = frozenset(str(value) for value in excluded_directories)
     file_hashes: dict[str, str] = {}
+    total_bytes = 0
     for rel_path, path, inspected in _walk_regular_files(resolved, excluded=excluded):
         if len(file_hashes) >= max_files:
             raise DocumentationPolicyError(
                 f"{display} exceeds the bounded baseline limit of {max_files} files."
             )
-        file_hashes[rel_path] = _hash_file(path, inspected=inspected)
+        file_bytes = int(inspected.st_size)
+        if file_bytes > max_file_bytes:
+            raise DocumentationPolicyError(
+                f"{display} file {rel_path!r} exceeds the per-file byte limit of "
+                f"{max_file_bytes}."
+            )
+        next_total = total_bytes + file_bytes
+        if next_total > max_total_bytes:
+            raise DocumentationPolicyError(
+                f"{display} exceeds the aggregate byte limit of {max_total_bytes} "
+                f"at {rel_path!r}."
+            )
+        file_hashes[rel_path] = _hash_file(
+            path,
+            inspected=inspected,
+            max_bytes=min(max_file_bytes, max_total_bytes - total_bytes),
+        )
+        total_bytes = next_total
     return TreeBaseline(
         root_display=display,
         tree_hash=_hash_labeled_hashes(file_hashes),
@@ -263,12 +294,16 @@ def compare_tree_baseline(
     root: str | Path,
     *,
     max_files: int = DEFAULT_MAX_BASELINE_FILES,
+    max_file_bytes: int = DEFAULT_MAX_BASELINE_FILE_BYTES,
+    max_total_bytes: int = DEFAULT_MAX_BASELINE_TOTAL_BYTES,
 ) -> IntegrityDifference:
     current = capture_tree_baseline(
         root,
         display=baseline.root_display,
         excluded_directories=baseline.excluded_directories,
         max_files=max_files,
+        max_file_bytes=max_file_bytes,
+        max_total_bytes=max_total_bytes,
     )
     before = baseline.file_hashes
     after = current.file_hashes
@@ -363,7 +398,12 @@ def _walk_regular_files(
         stack.extend(reversed(child_dirs))
 
 
-def _hash_file(path: Path, *, inspected: os.stat_result | None = None) -> str:
+def _hash_file(
+    path: Path,
+    *,
+    inspected: os.stat_result | None = None,
+    max_bytes: int | None = None,
+) -> str:
     digest = hashlib.sha256()
     descriptor: int | None = None
     try:
@@ -391,10 +431,16 @@ def _hash_file(path: Path, *, inspected: os.stat_result | None = None) -> str:
             operation="no-follow file open",
         )
 
+        bytes_read = 0
         while True:
             chunk = os.read(descriptor, 1024 * 1024)
             if not chunk:
                 break
+            bytes_read += len(chunk)
+            if max_bytes is not None and bytes_read > max_bytes:
+                raise DocumentationPolicyError(
+                    f"Baselined file exceeded its byte limit while hashing: {path}"
+                )
             digest.update(chunk)
 
         opened_after = os.fstat(descriptor)
@@ -609,6 +655,9 @@ def _overlap(left: Path, right: Path) -> bool:
 
 __all__ = [
     "AGENT_POLICY_FILENAMES",
+    "DEFAULT_MAX_BASELINE_FILE_BYTES",
+    "DEFAULT_MAX_BASELINE_FILES",
+    "DEFAULT_MAX_BASELINE_TOTAL_BYTES",
     "DocumentationMutationPolicy",
     "DocumentationPolicyError",
     "IntegrityDifference",
