@@ -33,6 +33,8 @@ from __future__ import annotations
 
 EXTRACT_SCHEMA_VERSION = "llm-wiki-extract/v1"
 BOOTSTRAP_SUMMARY_SCHEMA_VERSION = "llm-wiki-bootstrap-summary/v1"
+KNOWLEDGE_SCHEMA_VERSION = "llm-wiki-knowledge/v1"
+KNOWLEDGE_SCHEMA_FILENAME = "llm-wiki-knowledge-v1.schema.json"
 BOOTSTRAP_SKIP_DATA_FLOW_FLAG = "--skip-data-flow"
 EXTRACT_ADDITIVE_FIELDS = {
     "calls[].args",

@@ -57,6 +57,35 @@ def test_package_data_includes_haskell_helper_sources():
     assert "extractors/haskell_scripts/Json.hs" in package_data
 
 
+def test_package_data_includes_knowledge_schema():
+    data = _pyproject()
+    package_data = data["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]
+    assert "schemas/llm-wiki-knowledge-v1.schema.json" in package_data
+
+
+def test_jsonschema_is_a_dev_only_dependency():
+    data = _pyproject()
+    assert "jsonschema>=4.18" in data["project"]["optional-dependencies"]["dev"]
+    assert not any(
+        dependency.lower().startswith("jsonschema")
+        for dependency in data["project"]["dependencies"]
+    )
+
+
+def test_sdist_manifest_includes_knowledge_schema():
+    manifest = (PROJECT_ROOT / "MANIFEST.in").read_text(encoding="utf-8")
+    assert (
+        "include src/llm_wiki_cli/schemas/llm-wiki-knowledge-v1.schema.json"
+        in manifest.splitlines()
+    )
+
+
+def test_ci_verifies_schema_from_wheel_and_sdist_installations():
+    ci = (PROJECT_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    assert "python -m build" in ci
+    assert "python tests/verify_installed_knowledge_schema.py dist" in ci
+
+
 def test_package_data_includes_bundled_skills():
     data = _pyproject()
     package_data = data["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]

@@ -1,0 +1,1559 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:llm-wiki:schema:knowledge:v1",
+  "title": "LLM Wiki knowledge bundle v1",
+  "description": "The strict persisted contract for llm-wiki-knowledge/v1. Unknown record fields are rejected. Implementations may carry forward custom data only inside an explicit extensions object whose keys are qualified as namespace/name. This platform-portable wire shape is native/private data, not a public-safe redacted projection. This artifact records observation bases; it never stores a timeless freshness verdict. Freshness is computed by consumers against live evaluated inputs.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "bundle",
+    "concepts",
+    "relationships"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "llm-wiki-knowledge/v1"
+    },
+    "bundle": {
+      "$ref": "#/$defs/bundle"
+    },
+    "concepts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/concept"
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/relationship"
+      }
+    },
+    "extensions": {
+      "$ref": "#/$defs/extensions"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "qualifiedName": {
+      "type": "string",
+      "description": "A custom name qualified by its owner as namespace/name.",
+      "pattern": "^(?!.*[\\u0000-\\u001F])[A-Za-z][A-Za-z0-9._-]*/[A-Za-z][A-Za-z0-9._-]*$"
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Namespaced extension values. Values may be any JSON value; unqualified extension keys are forbidden.",
+      "propertyNames": {
+        "$ref": "#/$defs/qualifiedName"
+      },
+      "additionalProperties": true,
+      "default": {}
+    },
+    "hash": {
+      "type": "string",
+      "description": "A SHA-256 digest over the bytes or normalized observation named by the containing field.",
+      "pattern": "^(?!.*[\\u0000-\\u001F])sha256:[0-9a-f]{64}$"
+    },
+    "normalizedNonemptyString": {
+      "type": "string",
+      "description": "A non-empty string without surrounding whitespace or embedded control characters.",
+      "minLength": 1,
+      "pattern": "^(?!.*[\\u0000-\\u001F])(?!\\s)(?!.*\\s$).+$"
+    },
+    "limitationCode": {
+      "type": "string",
+      "description": "A lowercase stable machine code, optionally qualified by one lowercase namespace.",
+      "pattern": "^(?!.*[\\u0000-\\u001F])[a-z][a-z0-9.-]*(?:/[a-z][a-z0-9.-]*)?$"
+    },
+    "repositoryIdentity": {
+      "type": "string",
+      "description": "The literal unknown or a normalized configured/VCS namespace path with a lowercase leading namespace/host. Schemes, credentials, queries, fragments, checkout paths, opaque checkout hashes, and trailing .git suffixes are forbidden. The application-owned envelope builder records selection provenance in llm-wiki/identity-source.",
+      "pattern": "^(?!.*[\\u0000-\\u001F])(?:unknown|[a-z0-9][a-z0-9._-]*(?:/[A-Za-z0-9][A-Za-z0-9._-]*)+)$",
+      "not": {
+        "pattern": "\\.[gG][iI][tT]$"
+      }
+    },
+    "evaluatedRevision": {
+      "type": "string",
+      "description": "The literal unknown or the full lowercase Git object ID evaluated by the producer. Branch names, abbreviations, paths, and timestamps are forbidden.",
+      "pattern": "^(?!.*[\\u0000-\\u001F])(?:unknown|git:(?:[0-9a-f]{40}|[0-9a-f]{64}))$"
+    },
+    "repositoryRelativePath": {
+      "type": "string",
+      "description": "A normalized, non-empty, repository-relative POSIX path. Absolute paths, Windows separators, empty segments, and dot segments are forbidden.",
+      "pattern": "^(?!.*[\\u0000-\\u001F])(?!\\s)(?!.*\\s$)(?!/)(?![A-Za-z]:/)(?!\\.{1,2}(?:/|$))(?!.*//)(?!.*\\/\\.{1,2}(?:/|$))[^/\\\\]+(?:/[^/\\\\]+)*$"
+    },
+    "locator": {
+      "type": "string",
+      "format": "uri",
+      "description": "A normalized LLM Wiki concept or document locator with a non-empty authority and no credentials, port, query, fragment, backslash, malformed percent escape, raw dot segment, or encoded slash. The Python parser additionally performs URI authority parsing and rejects unsafe segments after percent-decoding.",
+      "pattern": "^(?!.*\\s)llm-wiki://(?![^/]*[@:])(?!.*[?#\\\\])(?!.*%(?![0-9A-Fa-f]{2}))(?!.*%(?:2[fF]|5[cC]))(?!.*(?:/\\.\\.?)(?:/|$))[^\\s/]+(?:/[^\\s/]+)*$"
+    },
+    "conceptKind": {
+      "description": "A built-in domain or document-only concept kind, or a namespaced custom kind.",
+      "oneOf": [
+        {
+          "enum": [
+            "source-module",
+            "code-entity",
+            "workflow",
+            "guide",
+            "user-flow",
+            "infrastructure-resource",
+            "api-contract",
+            "dependency-view",
+            "navigation-document",
+            "change-log-document"
+          ]
+        },
+        {
+          "$ref": "#/$defs/qualifiedName"
+        }
+      ]
+    },
+    "relationshipKind": {
+      "description": "A built-in relationship kind, or a namespaced custom kind.",
+      "oneOf": [
+        {
+          "enum": [
+            "derived_from",
+            "links_to"
+          ]
+        },
+        {
+          "$ref": "#/$defs/qualifiedName"
+        }
+      ]
+    },
+    "origin": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "extracted",
+        "authored",
+        "inferred",
+        "imported",
+        "markdown",
+        "governance"
+      ],
+      "default": "unknown"
+    },
+    "evidenceState": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "present",
+        "missing",
+        "invalid",
+        "not-applicable"
+      ],
+      "default": "unknown"
+    },
+    "resolution": {
+      "type": "string",
+      "enum": [
+        "resolved",
+        "ambiguous",
+        "external",
+        "unresolved"
+      ]
+    },
+    "targetClass": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "concept",
+        "source",
+        "external",
+        "mail",
+        "anchor",
+        "asset",
+        "malformed"
+      ],
+      "default": "unknown"
+    },
+    "linkLocation": {
+      "type": "object",
+      "description": "The half-open character range occupied by the observed Markdown link. The Python validator additionally requires end to be greater than start.",
+      "required": [
+        "start",
+        "end"
+      ],
+      "properties": {
+        "start": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "additionalProperties": false
+    },
+    "verification": {
+      "type": "string",
+      "enum": [
+        "untracked",
+        "unverified",
+        "machine-checked",
+        "human-reviewed",
+        "failed",
+        "expired"
+      ],
+      "default": "untracked"
+    },
+    "lifecycle": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "draft",
+        "active",
+        "deprecated",
+        "superseded"
+      ],
+      "default": "unknown"
+    },
+    "computedFreshness": {
+      "type": "string",
+      "description": "Consumer-computed freshness vocabulary. It is intentionally not referenced by any persisted bundle property.",
+      "enum": [
+        "unknown",
+        "current",
+        "nonsemantic-source-change",
+        "source-changed",
+        "basis-incompatible",
+        "source-missing"
+      ]
+    },
+    "knowledgeLoadState": {
+      "type": "string",
+      "description": "Consumer load-result vocabulary. It is intentionally not referenced by any persisted bundle property.",
+      "enum": [
+        "valid",
+        "absent",
+        "invalid",
+        "mixed-snapshot",
+        "degraded"
+      ]
+    },
+    "knowledgeProjectionProfile": {
+      "type": "string",
+      "description": "Out-of-band redaction policy vocabulary. Artifact metadata never selects a profile, and this definition is intentionally not referenced by a persisted property.",
+      "enum": [
+        "internal",
+        "public-portable"
+      ]
+    },
+    "pageKind": {
+      "type": "string",
+      "enum": [
+        "index",
+        "log",
+        "entities",
+        "modules",
+        "workflows",
+        "guides",
+        "flows",
+        "infrastructure",
+        "api-contracts",
+        "dependencies",
+        "load-order"
+      ]
+    },
+    "surfaceRole": {
+      "type": "string",
+      "enum": [
+        "generated",
+        "semantic",
+        "mixed"
+      ]
+    },
+    "workingTree": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "clean",
+        "dirty"
+      ],
+      "default": "unknown"
+    },
+    "repositoryIdentitySource": {
+      "type": "string",
+      "description": "How an application-owned producer selected repository identity. This is redaction provenance, not attestation or access-control state.",
+      "enum": [
+        "configured-public",
+        "normalized-vcs",
+        "unknown"
+      ]
+    },
+    "basisScope": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "module",
+        "entity",
+        "aggregate"
+      ]
+    },
+    "actorKind": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "tool",
+        "agent",
+        "human",
+        "process"
+      ]
+    },
+    "bundle": {
+      "type": "object",
+      "required": [
+        "repository",
+        "snapshot",
+        "producer"
+      ],
+      "properties": {
+        "repository": {
+          "$ref": "#/$defs/repository"
+        },
+        "snapshot": {
+          "$ref": "#/$defs/snapshot"
+        },
+        "producer": {
+          "$ref": "#/$defs/producer"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "additionalProperties": false
+    },
+    "repository": {
+      "type": "object",
+      "required": [
+        "identity"
+      ],
+      "properties": {
+        "identity": {
+          "$ref": "#/$defs/repositoryIdentity"
+        },
+        "evaluated_revision": {
+          "$ref": "#/$defs/evaluatedRevision",
+          "default": "unknown"
+        },
+        "working_tree": {
+          "$ref": "#/$defs/workingTree"
+        },
+        "extensions": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/extensions"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "llm-wiki/identity-source": {
+                  "$ref": "#/$defs/repositoryIdentitySource"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "identity": {
+                "const": "unknown"
+              }
+            },
+            "required": [
+              "identity"
+            ]
+          },
+          "then": {
+            "properties": {
+              "extensions": {
+                "properties": {
+                  "llm-wiki/identity-source": {
+                    "const": "unknown"
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "required": [
+              "extensions"
+            ],
+            "properties": {
+              "extensions": {
+                "required": [
+                  "llm-wiki/identity-source"
+                ],
+                "properties": {
+                  "llm-wiki/identity-source": {
+                    "enum": [
+                      "configured-public",
+                      "normalized-vcs"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "snapshot": {
+      "type": "object",
+      "required": [
+        "source_snapshot_hash",
+        "markdown_snapshot_hash",
+        "surface_index_hash",
+        "generation_options_hash"
+      ],
+      "properties": {
+        "source_snapshot_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "markdown_snapshot_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "surface_index_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "generation_options_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "additionalProperties": false
+    },
+    "component": {
+      "type": "object",
+      "required": [
+        "id",
+        "version"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?!.*[\\u0000-\\u001F])[A-Za-z0-9][A-Za-z0-9._/-]*$"
+        },
+        "version": {
+          "$ref": "#/$defs/normalizedNonemptyString"
+        },
+        "configuration_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/limitationCode"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "additionalProperties": false
+    },
+    "analyzerComponent": {
+      "description": "An extractor or plugin whose safe effective configuration basis must be known or explicitly limited.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/component"
+        },
+        {
+          "if": {
+            "required": [
+              "configuration_hash"
+            ]
+          },
+          "then": {
+            "properties": {
+              "limitations": {
+                "not": {
+                  "contains": {
+                    "const": "configuration-basis-unknown"
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "required": [
+              "limitations"
+            ],
+            "properties": {
+              "limitations": {
+                "contains": {
+                  "const": "configuration-basis-unknown"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "producer": {
+      "type": "object",
+      "required": [
+        "tool"
+      ],
+      "properties": {
+        "tool": {
+          "$ref": "#/$defs/component"
+        },
+        "extractors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/analyzerComponent"
+          },
+          "default": []
+        },
+        "plugins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/analyzerComponent"
+          },
+          "default": []
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "additionalProperties": false
+    },
+    "concept": {
+      "type": "object",
+      "required": [
+        "locator",
+        "concept_kind",
+        "title",
+        "document",
+        "facets"
+      ],
+      "properties": {
+        "locator": {
+          "$ref": "#/$defs/locator"
+        },
+        "concept_kind": {
+          "$ref": "#/$defs/conceptKind"
+        },
+        "title": {
+          "$ref": "#/$defs/normalizedNonemptyString"
+        },
+        "document": {
+          "$ref": "#/$defs/document"
+        },
+        "facets": {
+          "$ref": "#/$defs/facets"
+        },
+        "lifecycle": {
+          "$ref": "#/$defs/lifecycle"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "additionalProperties": false
+    },
+    "document": {
+      "type": "object",
+      "required": [
+        "page_kind",
+        "page_id",
+        "canonical_path",
+        "role"
+      ],
+      "properties": {
+        "page_kind": {
+          "$ref": "#/$defs/pageKind"
+        },
+        "page_id": {
+          "type": "string",
+          "description": "A safe canonical page identifier matching the surface registry.",
+          "pattern": "^(?!.*[\\u0000-\\u001F])(?!\\.)(?!.*\\.\\.)[A-Za-z0-9_.()-]+$"
+        },
+        "canonical_path": {
+          "description": "A normalized repository-relative canonical Markdown path.",
+          "allOf": [
+            {
+              "$ref": "#/$defs/repositoryRelativePath"
+            },
+            {
+              "pattern": "\\.md$"
+            }
+          ]
+        },
+        "role": {
+          "$ref": "#/$defs/surfaceRole"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "additionalProperties": false
+    },
+    "facets": {
+      "type": "object",
+      "required": [
+        "structure",
+        "semantics"
+      ],
+      "properties": {
+        "structure": {
+          "$ref": "#/$defs/structureFacet"
+        },
+        "semantics": {
+          "$ref": "#/$defs/semanticFacet"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "additionalProperties": false
+    },
+    "structureFacet": {
+      "type": "object",
+      "properties": {
+        "origin": {
+          "$ref": "#/$defs/origin"
+        },
+        "evidence": {
+          "$ref": "#/$defs/evidenceState"
+        },
+        "basis": {
+          "$ref": "#/$defs/observationBasis"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "evidence": {
+                "const": "present"
+              }
+            },
+            "required": [
+              "evidence"
+            ]
+          },
+          "then": {
+            "required": [
+              "basis"
+            ],
+            "properties": {
+              "basis": {
+                "properties": {
+                  "scope": {
+                    "enum": [
+                      "module",
+                      "entity",
+                      "aggregate"
+                    ]
+                  }
+                },
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "scope": {
+                          "enum": [
+                            "module",
+                            "entity"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "scope"
+                      ]
+                    },
+                    "then": {
+                      "required": [
+                        "source_path",
+                        "extractor_ref",
+                        "source_content_hash",
+                        "concept_observation_hash"
+                      ]
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "scope": {
+                          "const": "aggregate"
+                        }
+                      },
+                      "required": [
+                        "scope"
+                      ]
+                    },
+                    "then": {
+                      "required": [
+                        "aggregate_input_hash"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "observationBasis": {
+      "type": "object",
+      "required": [
+        "scope"
+      ],
+      "properties": {
+        "scope": {
+          "$ref": "#/$defs/basisScope"
+        },
+        "source_path": {
+          "$ref": "#/$defs/repositoryRelativePath"
+        },
+        "extractor_ref": {
+          "$ref": "#/$defs/normalizedNonemptyString"
+        },
+        "source_content_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "concept_observation_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "aggregate_input_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "additionalProperties": false
+    },
+    "actor": {
+      "type": "object",
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/actorKind"
+        },
+        "id": {
+          "$ref": "#/$defs/normalizedNonemptyString"
+        },
+        "version": {
+          "$ref": "#/$defs/normalizedNonemptyString"
+        },
+        "model": {
+          "$ref": "#/$defs/normalizedNonemptyString"
+        },
+        "organization": {
+          "$ref": "#/$defs/normalizedNonemptyString"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "not": {
+                  "const": "unknown"
+                }
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "unknown"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "id"
+                  ]
+                },
+                {
+                  "required": [
+                    "version"
+                  ]
+                },
+                {
+                  "required": [
+                    "model"
+                  ]
+                },
+                {
+                  "required": [
+                    "organization"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "semanticFacet": {
+      "type": "object",
+      "required": [
+        "ownership",
+        "page_hash"
+      ],
+      "properties": {
+        "ownership": {
+          "$ref": "#/$defs/surfaceRole"
+        },
+        "page_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "authorship": {
+          "$ref": "#/$defs/actor",
+          "default": {
+            "kind": "unknown"
+          }
+        },
+        "verification": {
+          "$ref": "#/$defs/verification"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "additionalProperties": false
+    },
+    "relationship": {
+      "type": "object",
+      "required": [
+        "kind",
+        "from",
+        "target",
+        "origin",
+        "evidence",
+        "resolution"
+      ],
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/relationshipKind"
+        },
+        "from": {
+          "$ref": "#/$defs/locator"
+        },
+        "target": {
+          "$ref": "#/$defs/relationshipTarget"
+        },
+        "origin": {
+          "$ref": "#/$defs/origin"
+        },
+        "evidence": {
+          "$ref": "#/$defs/relationshipEvidence"
+        },
+        "resolution": {
+          "$ref": "#/$defs/resolution"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "resolution": {
+                "const": "resolved"
+              }
+            },
+            "required": [
+              "resolution"
+            ]
+          },
+          "then": {
+            "properties": {
+              "target": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "locator"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "canonical_path"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "source_path"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "target_class": {
+                        "enum": [
+                          "anchor",
+                          "asset"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "raw_target",
+                      "target_class"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "resolution": {
+                "const": "external"
+              }
+            },
+            "required": [
+              "resolution"
+            ]
+          },
+          "then": {
+            "properties": {
+              "target": {
+                "required": [
+                  "external_uri"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "resolution": {
+                "enum": [
+                  "ambiguous",
+                  "unresolved"
+                ]
+              }
+            },
+            "required": [
+              "resolution"
+            ]
+          },
+          "then": {
+            "properties": {
+              "target": {
+                "not": {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "locator"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "canonical_path"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "source_path"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "external_uri"
+                      ]
+                    }
+                  ]
+                },
+                "required": [
+                  "raw_target"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "derived_from"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "resolution": {
+                "const": "resolved"
+              },
+              "origin": {
+                "enum": [
+                  "extracted",
+                  "inferred"
+                ]
+              },
+              "target": {
+                "properties": {
+                  "target_class": {
+                    "enum": [
+                      "unknown",
+                      "source"
+                    ]
+                  }
+                },
+                "required": [
+                  "source_path"
+                ]
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "evidence": {
+                      "properties": {
+                        "state": {
+                          "const": "present"
+                        }
+                      },
+                      "required": [
+                        "state"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "evidence"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "evidence": {
+                      "required": [
+                        "concept_observation_hash"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "links_to"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "origin": {
+                "const": "markdown"
+              },
+              "target": {
+                "required": [
+                  "raw_target",
+                  "normalized_target",
+                  "label",
+                  "location"
+                ]
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "resolution": {
+                      "const": "resolved"
+                    }
+                  },
+                  "required": [
+                    "resolution"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "target": {
+                      "anyOf": [
+                        {
+                          "required": [
+                            "locator"
+                          ]
+                        },
+                        {
+                          "required": [
+                            "canonical_path"
+                          ]
+                        },
+                        {
+                          "properties": {
+                            "target_class": {
+                              "enum": [
+                                "anchor",
+                                "asset"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "raw_target",
+                            "target_class"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "evidence": {
+                      "properties": {
+                        "state": {
+                          "const": "present"
+                        }
+                      },
+                      "required": [
+                        "state"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "evidence"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "evidence": {
+                      "required": [
+                        "page_hash"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "relationshipTarget": {
+      "type": "object",
+      "properties": {
+        "target_class": {
+          "$ref": "#/$defs/targetClass",
+          "default": "unknown"
+        },
+        "locator": {
+          "$ref": "#/$defs/locator"
+        },
+        "canonical_path": {
+          "$ref": "#/$defs/repositoryRelativePath"
+        },
+        "source_path": {
+          "$ref": "#/$defs/repositoryRelativePath"
+        },
+        "external_uri": {
+          "description": "An absolute URI outside the llm-wiki scheme.",
+          "allOf": [
+            {
+              "$ref": "#/$defs/normalizedNonemptyString"
+            }
+          ],
+          "format": "uri",
+        "pattern": "^(?!.*\\s)(?!.*\\\\)(?!.*%(?![0-9A-Fa-f]{2}))(?!(?:[Hh][Tt][Tt][Pp][Ss]?|[Ff][Tt][Pp][Ss]?):(?!//))(?![A-Za-z][A-Za-z0-9+.-]*://(?:[^/?#@]*@)?(?:[:/?#]|$))(?![Ll][Ll][Mm]-[Ww][Ii][Kk][Ii]:)[A-Za-z][A-Za-z0-9+.-]*:[A-Za-z0-9._~:/?#\\[\\]@!$&'()*+,;=%-]*$"
+        },
+        "raw_target": {
+          "type": "string",
+          "description": "The lossless target spelling observed in source Markdown."
+        },
+        "normalized_target": {
+          "type": "string",
+          "description": "The collector's normalized target spelling, which may be empty for malformed input."
+        },
+        "label": {
+          "type": "string",
+          "description": "The lossless Markdown link or image label."
+        },
+        "location": {
+          "$ref": "#/$defs/linkLocation"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "dependentRequired": {
+        "raw_target": [
+          "normalized_target",
+          "label",
+          "location"
+        ],
+        "normalized_target": [
+          "raw_target",
+          "label",
+          "location"
+        ],
+        "label": [
+          "raw_target",
+          "normalized_target",
+          "location"
+        ],
+        "location": [
+          "raw_target",
+          "normalized_target",
+          "label"
+        ]
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "target_class": {
+                "const": "concept"
+              }
+            },
+            "required": [
+              "target_class"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "anyOf": [
+                  {
+                    "required": [
+                      "locator"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "canonical_path"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "raw_target"
+                    ]
+                  }
+                ]
+              },
+              {
+                "not": {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "source_path"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "external_uri"
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "target_class": {
+                "const": "source"
+              }
+            },
+            "required": [
+              "target_class"
+            ]
+          },
+          "then": {
+            "required": [
+              "source_path"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "target_class": {
+                "const": "external"
+              }
+            },
+            "required": [
+              "target_class"
+            ]
+          },
+          "then": {
+            "properties": {
+              "external_uri": {
+                "not": {
+                  "pattern": "^[Mm][Aa][Ii][Ll][Tt][Oo]:"
+                }
+              }
+            },
+            "required": [
+              "external_uri"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "target_class": {
+                "const": "mail"
+              }
+            },
+            "required": [
+              "target_class"
+            ]
+          },
+          "then": {
+            "properties": {
+              "external_uri": {
+                "pattern": "^[Mm][Aa][Ii][Ll][Tt][Oo]:"
+              }
+            },
+            "required": [
+              "external_uri"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "target_class": {
+                "enum": [
+                  "anchor",
+                  "asset",
+                  "malformed"
+                ]
+              }
+            },
+            "required": [
+              "target_class"
+            ]
+          },
+          "then": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "locator"
+                  ]
+                },
+                {
+                  "required": [
+                    "canonical_path"
+                  ]
+                },
+                {
+                  "required": [
+                    "source_path"
+                  ]
+                },
+                {
+                  "required": [
+                    "external_uri"
+                  ]
+                }
+              ]
+            },
+            "required": [
+              "raw_target"
+            ]
+          }
+        }
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "locator"
+          ]
+        },
+        {
+          "required": [
+            "canonical_path"
+          ]
+        },
+        {
+          "required": [
+            "source_path"
+          ]
+        },
+        {
+          "required": [
+            "external_uri"
+          ]
+        },
+        {
+          "required": [
+            "raw_target"
+          ]
+        }
+      ],
+      "oneOf": [
+        {
+          "required": [
+            "locator"
+          ]
+        },
+        {
+          "required": [
+            "canonical_path"
+          ]
+        },
+        {
+          "required": [
+            "source_path"
+          ]
+        },
+        {
+          "required": [
+            "external_uri"
+          ]
+        },
+        {
+          "not": {
+            "anyOf": [
+              {
+                "required": [
+                  "locator"
+                ]
+              },
+              {
+                "required": [
+                  "canonical_path"
+                ]
+              },
+              {
+                "required": [
+                  "source_path"
+                ]
+              },
+              {
+                "required": [
+                  "external_uri"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "relationshipEvidence": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "$ref": "#/$defs/evidenceState"
+        },
+        "source_content_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "concept_observation_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "page_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "aggregate_input_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "present"
+              }
+            },
+            "required": [
+              "state"
+            ]
+          },
+          "then": {
+            "anyOf": [
+              {
+                "required": [
+                  "source_content_hash"
+                ]
+              },
+              {
+                "required": [
+                  "concept_observation_hash"
+                ]
+              },
+              {
+                "required": [
+                  "page_hash"
+                ]
+              },
+              {
+                "required": [
+                  "aggregate_input_hash"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "additionalProperties": false
+    }
+  }
+}

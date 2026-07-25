@@ -36,3 +36,4 @@ jobs:
         run: |
           python -m pip install --no-cache-dir build
           python -m build
+          python tests/verify_installed_knowledge_schema.py dist
