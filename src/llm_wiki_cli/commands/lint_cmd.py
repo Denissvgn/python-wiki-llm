@@ -55,6 +55,11 @@ from ..services.knowledge_model import (
     KnowledgeLoadState,
     ObservationScope,
 )
+from ..services.knowledge_observability import (
+    KnowledgeAggregateSummary,
+    KnowledgePhaseDurations,
+    summarize_knowledge_view,
+)
 from ..services.knowledge_orchestration import (
     RuntimeLiveEvaluationInputs,
     build_runtime_live_evaluation,
@@ -171,15 +176,41 @@ class LintIssue:
 
 
 @dataclass(frozen=True)
-class KnowledgeLintSummary:
+class KnowledgeLintSummary(KnowledgeAggregateSummary):
     """Aggregate strict-lint knowledge status without exposing evidence."""
 
-    availability: str
-    reason: str
     concepts_total: int
     concepts_by_kind: dict[str, int]
     evidence_by_state: dict[str, int]
     freshness_by_state: dict[str, int]
+
+    def aggregate_payload(self) -> dict[str, object]:
+        """Return only the shared low-cardinality metrics contract."""
+
+        return KnowledgeAggregateSummary(
+            availability=self.availability,
+            reason=self.reason,
+            concepts_evaluated=self.concepts_evaluated,
+            freshness_counts=self.freshness_counts,
+            evidence_issue_counts=self.evidence_issue_counts,
+            degraded_reason=self.degraded_reason,
+            phase_durations_ms=self.phase_durations_ms,
+            freshness_evaluated=self.freshness_evaluated,
+        ).to_payload()
+
+    def report_payload(self) -> dict[str, object]:
+        """Return aggregate observability plus the existing lint-only counts."""
+
+        payload = super().to_payload()
+        payload.update(
+            {
+                "concepts_total": self.concepts_total,
+                "concepts_by_kind": dict(self.concepts_by_kind),
+                "evidence_by_state": dict(self.evidence_by_state),
+                "freshness_by_state": dict(self.freshness_by_state),
+            }
+        )
+        return payload
 
 
 @dataclass
@@ -1462,22 +1493,26 @@ def _enum_count_payload(values: Mapping[object, int]) -> dict[str, int]:
 def _set_knowledge_summary(
     report: LintReport,
     view: KnowledgeReadView,
+    *,
+    durations: KnowledgePhaseDurations,
 ) -> None:
-    counts = view.counts
-    if (
-        view.availability is not KnowledgeAvailability.READY
-        or view.freshness is None
-        or counts is None
-        or counts.freshness_by_state is None
-    ):
+    if view.availability is KnowledgeAvailability.ABSENT:
         return
+
+    counts = view.counts
+    aggregate = summarize_knowledge_view(view, durations=durations)
     report.knowledge_summary = KnowledgeLintSummary(
-        availability=view.availability.value,
-        reason=view.reason_code,
-        concepts_total=counts.concepts_total,
-        concepts_by_kind=dict(counts.concepts_by_kind),
-        evidence_by_state=_enum_count_payload(counts.evidence_by_state),
-        freshness_by_state=_enum_count_payload(counts.freshness_by_state),
+        **aggregate.to_payload(),
+        concepts_total=0 if counts is None else counts.concepts_total,
+        concepts_by_kind={} if counts is None else dict(counts.concepts_by_kind),
+        evidence_by_state=(
+            {} if counts is None else _enum_count_payload(counts.evidence_by_state)
+        ),
+        freshness_by_state=(
+            {}
+            if aggregate.freshness_counts is None
+            else dict(aggregate.freshness_counts)
+        ),
     )
 
 
@@ -1624,7 +1659,21 @@ def _check_knowledge_lint(
     if state.view is None or not state.view.ready:
         return
     _check_knowledge_concepts(report, state.view)
-    _set_knowledge_summary(report, state.view)
+
+
+@contextmanager
+def _measure_knowledge_phase(
+    durations: dict[str, int],
+    name: str,
+) -> Iterator[None]:
+    started = time.perf_counter()
+    try:
+        yield
+    finally:
+        durations[name] = max(
+            0,
+            round((time.perf_counter() - started) * 1000),
+        )
 
 
 def _proven_nonsemantic_source_paths(
@@ -1718,15 +1767,35 @@ def _run_report_checks(
         )
     knowledge_state = _KnowledgeLintState()
     if strict:
-        with _profile_phase(profiler, "knowledge_load"):
+        knowledge_durations: dict[str, int] = {}
+        with (
+            _profile_phase(profiler, "knowledge_load"),
+            _measure_knowledge_phase(knowledge_durations, "load"),
+        ):
             knowledge_state = _load_knowledge_lint_state(wiki_path, inputs)
-        with _profile_phase(profiler, "knowledge_freshness"):
+        with (
+            _profile_phase(profiler, "knowledge_freshness"),
+            _measure_knowledge_phase(knowledge_durations, "evaluate"),
+        ):
             knowledge_state = _evaluate_knowledge_lint_state(
                 knowledge_state,
                 inputs,
             )
-        with _profile_phase(profiler, "knowledge_checks"):
+        with (
+            _profile_phase(profiler, "knowledge_checks"),
+            _measure_knowledge_phase(knowledge_durations, "check"),
+        ):
             _check_knowledge_lint(report, knowledge_state)
+        if knowledge_state.view is not None:
+            _set_knowledge_summary(
+                report,
+                knowledge_state.view,
+                durations=KnowledgePhaseDurations(
+                    load_ms=knowledge_durations["load"],
+                    evaluate_ms=knowledge_durations["evaluate"],
+                    check_ms=knowledge_durations["check"],
+                ),
+            )
     with _profile_phase(profiler, "strict"):
         if strict:
             _check_required_structure(report, wiki_path)
@@ -1814,7 +1883,7 @@ def report_to_dict(report: LintReport, *, include_execution: bool = False) -> di
         "diagnostics": [asdict(diagnostic) for diagnostic in report.diagnostics],
     }
     if report.knowledge_summary is not None:
-        payload["knowledge_summary"] = asdict(report.knowledge_summary)
+        payload["knowledge_summary"] = report.knowledge_summary.report_payload()
     if include_execution:
         payload["execution"] = {"extractor_jobs": report.extraction_job_plan.to_dict()}
     return payload
@@ -2197,8 +2266,13 @@ def run(args):
                 duration_ms=None,
                 wiki_dir=str(wiki_dir),
                 src_dir=src_dir,
+                knowledge_summary=(
+                    None
+                    if report.knowledge_summary is None
+                    else report.knowledge_summary.aggregate_payload()
+                ),
             )
-        except Exception:
+        except Exception:  # noqa: BLE001,S110 - metrics are best-effort
             pass
 
     if not report.passed:

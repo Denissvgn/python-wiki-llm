@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import types
+from contextlib import contextmanager
 from dataclasses import replace
 
 import pytest
@@ -116,17 +117,28 @@ def test_strict_lint_applies_shared_compatibility_policy_only_when_enabled(
             assert strict.knowledge_summary is not None
             assert strict.knowledge_summary.availability == "ready"
             assert strict.knowledge_summary.freshness_by_state["current"] == 3
+            assert strict.knowledge_summary.concepts_evaluated == 6
+            assert strict.knowledge_summary.freshness_evaluated is True
         else:
             assert strict.knowledge_summary is None
         return
 
-    assert strict.knowledge_summary is None
+    assert strict.knowledge_summary is not None
+    assert strict.knowledge_summary.availability == (case.expected_availability.value)
+    assert strict.knowledge_summary.reason == case.expected_reason.value
+    assert strict.knowledge_summary.degraded_reason == case.expected_reason.value
+    assert strict.knowledge_summary.concepts_evaluated == 0
+    assert strict.knowledge_summary.freshness_counts is None
+    assert strict.knowledge_summary.evidence_issue_counts is None
+    assert strict.knowledge_summary.freshness_evaluated is False
+    assert strict.knowledge_summary.concepts_total == 0
+    assert strict.knowledge_summary.concepts_by_kind == {}
+    assert strict.knowledge_summary.evidence_by_state == {}
+    assert strict.knowledge_summary.freshness_by_state == {}
     assert all(finding.severity == "error" for finding in findings)
     for reason in case.expected_issue_codes:
         matching = [
-            finding
-            for finding in findings
-            if f"[reason={reason}]" in finding.message
+            finding for finding in findings if f"[reason={reason}]" in finding.message
         ]
         assert len(matching) == 1
         expected_category = (
@@ -164,12 +176,49 @@ def test_strict_ready_state_reports_current_summary_and_optional_json(
     assert report.knowledge_summary.availability == "ready"
     assert report.knowledge_summary.reason == "all-projection-commitments-match"
     assert report.knowledge_summary.concepts_total == 6
+    assert report.knowledge_summary.concepts_evaluated == 6
+    assert report.knowledge_summary.freshness_evaluated is True
     assert report.knowledge_summary.freshness_by_state["current"] == 3
     assert report.knowledge_summary.freshness_by_state["unknown"] == 3
+    assert report.knowledge_summary.freshness_counts == (
+        report.knowledge_summary.freshness_by_state
+    )
+    assert report.knowledge_summary.evidence_issue_counts == {
+        "invalid": 0,
+        "missing": 0,
+        "unknown": 1,
+    }
+    assert report.knowledge_summary.degraded_reason is None
+    assert set(report.knowledge_summary.phase_durations_ms) == {
+        "load",
+        "evaluate",
+        "check",
+    }
+    assert all(
+        isinstance(value, int) and value >= 0
+        for value in report.knowledge_summary.phase_durations_ms.values()
+    )
     payload = lint_cmd.report_to_dict(report)
     assert payload["knowledge_summary"] == {
         "availability": "ready",
         "reason": "all-projection-commitments-match",
+        "concepts_evaluated": 6,
+        "freshness_counts": {
+            "basis-incompatible": 0,
+            "current": 3,
+            "nonsemantic-source-change": 0,
+            "source-changed": 0,
+            "source-missing": 0,
+            "unknown": 3,
+        },
+        "evidence_issue_counts": {
+            "invalid": 0,
+            "missing": 0,
+            "unknown": 1,
+        },
+        "degraded_reason": None,
+        "phase_durations_ms": report.knowledge_summary.phase_durations_ms,
+        "freshness_evaluated": True,
         "concepts_total": 6,
         "concepts_by_kind": {
             "change-log-document": 1,
@@ -193,6 +242,61 @@ def test_strict_ready_state_reports_current_summary_and_optional_json(
             "source-missing": 0,
             "unknown": 3,
         },
+    }
+
+
+def test_lint_sets_observability_summary_after_knowledge_checks_close(
+    tmp_path,
+    monkeypatch,
+):
+    wiki = tmp_path / "wiki"
+    source_root = tmp_path / "repository"
+    wiki.mkdir()
+    source_root.mkdir()
+    fixture, _plan, _result = _committed_state(wiki)
+    _write_fixture_sources(source_root, fixture)
+    monkeypatch.setattr(
+        lint_cmd,
+        "build_runtime_live_evaluation",
+        lambda inputs: _live_evaluation(inputs.knowledge),
+    )
+    events = []
+    real_set_summary = lint_cmd._set_knowledge_summary
+
+    @contextmanager
+    def recording_phase(_profiler, name):
+        events.append((name, "start"))
+        try:
+            yield
+        finally:
+            events.append((name, "end"))
+
+    def recording_set_summary(*args, **kwargs):
+        events.append(("knowledge_summary", "set"))
+        return real_set_summary(*args, **kwargs)
+
+    monkeypatch.setattr(lint_cmd, "_profile_phase", recording_phase)
+    monkeypatch.setattr(lint_cmd, "_set_knowledge_summary", recording_set_summary)
+
+    report = lint_cmd.build_report(
+        wiki,
+        str(source_root),
+        strict=True,
+        profiler=object(),
+    )
+
+    assert report.knowledge_summary is not None
+    assert events.index(("knowledge_checks", "end")) < events.index(
+        ("knowledge_summary", "set")
+    )
+    assert {
+        name
+        for name, event in events
+        if event == "start" and name.startswith("knowledge_")
+    } == {
+        "knowledge_load",
+        "knowledge_freshness",
+        "knowledge_checks",
     }
 
 

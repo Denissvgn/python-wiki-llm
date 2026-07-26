@@ -16,16 +16,17 @@ from pathlib import Path, PurePosixPath
 from urllib.parse import unquote, urlparse
 
 from ..api import LlmWikiApiError, build_documentation_query_service
-from ..config import IDE_AGENTS, get_agent_config_path, read_config, validate_path
 from ..commands import context_cmd, lint_cmd
 from ..commands.bootstrap_cmd import build_module_page_map
 from ..commands.extract_cmd import get_inventory
+from ..config import IDE_AGENTS, get_agent_config_path, read_config, validate_path
 from . import circuit_breaker, wiki_surface
 from .documentation_queries import DocumentationQueryError
 from .io import read_md
-from .knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
-from .wiki_surface_index import SURFACE_INDEX_FILENAME, evaluate_surface_index
-
+from .knowledge_observability import (
+    knowledge_status_payload,
+    load_snapshot_knowledge_observability,
+)
 
 MCP_PACKAGE_HINT = "Install it with: pip install 'agent-wiki-cli[mcp]'"
 RESOURCE_SCHEME = "llm-wiki"
@@ -380,12 +381,19 @@ class McpWikiService:
         pages["architecture_pages"] = sum(
             pages[kind] for kind in _ARCHITECTURE_PAGE_KINDS
         )
+        knowledge_observability = load_snapshot_knowledge_observability(
+            wiki,
+            src_dir=self.src_dir,
+        )
+        knowledge_status = knowledge_status_payload(knowledge_observability.view)
         status: dict[str, object] = {
             "wiki_dir": _posix_string(wiki),
             "wiki_exists": wiki.exists(),
             "pages": pages,
-            "knowledge": _snapshot_knowledge_status(wiki, self.src_dir),
+            "knowledge": knowledge_status,
         }
+        if knowledge_status["availability"] != "absent":
+            status["knowledge_summary"] = knowledge_observability.summary.to_payload()
 
         agent_config = get_agent_config_path(wiki)
         if agent_config.exists():
@@ -812,47 +820,6 @@ def _bounded_query_limit(value: object) -> int:
     if isinstance(value, bool) or not isinstance(value, int) or value < 1:
         raise McpWikiError("limit must be a positive integer.")
     return min(value, _MAX_QUERY_LIMIT)
-
-
-def _snapshot_knowledge_status(
-    wiki_dir: Path,
-    src_dir: str,
-) -> dict[str, object]:
-    surface_path = wiki_dir / SURFACE_INDEX_FILENAME
-    knowledge_path = wiki_dir / KNOWLEDGE_INDEX_FILENAME
-    if not context_cmd._context_knowledge_projection_declared(
-        wiki_dir,
-        surface_path,
-        knowledge_path,
-    ):
-        return {
-            "availability": "absent",
-            "reason": "knowledge-projection-not-present",
-            "freshness_evaluated": False,
-        }
-
-    try:
-        surface_evaluation = evaluate_surface_index(
-            wiki_dir,
-            {},
-            src_dir=src_dir,
-            entry_points=(),
-        )
-        view = context_cmd._build_context_knowledge_view(
-            wiki_dir,
-            surface_evaluation,
-            {},
-            None,
-        )
-    except (OSError, TypeError, UnicodeError, ValueError) as exc:
-        raise McpWikiError(
-            f"knowledge status could not be evaluated: {exc}"
-        ) from exc
-    return {
-        "availability": view.availability.value,
-        "reason": view.reason_code,
-        "freshness_evaluated": view.freshness_evaluated,
-    }
 
 
 def _validate_page_id(page_id: str) -> str:

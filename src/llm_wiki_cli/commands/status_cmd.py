@@ -2,8 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS, read_config, get_agent_config_path
+from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS, get_agent_config_path, read_config
 from ..services import circuit_breaker
+from ..services.knowledge_observability import (
+    knowledge_status_payload,
+    load_snapshot_knowledge_observability,
+)
 from ..services.skills import reference_skill_state
 from ..services.wiki_surface import PageKind, canonical_path, iter_page_kinds
 
@@ -40,8 +44,32 @@ def _architecture_page_count(wiki_path: Path) -> int:
     )
 
 
+def _format_counts(counts: object) -> str:
+    if not isinstance(counts, dict):
+        return "unavailable"
+    return ", ".join(f"{key}={value}" for key, value in sorted(counts.items()))
+
+
+def _print_knowledge_status(wiki_path: Path, src_dir: str) -> None:
+    observability = load_snapshot_knowledge_observability(
+        wiki_path,
+        src_dir=src_dir,
+    )
+    status = knowledge_status_payload(observability.view)
+    summary = observability.summary.to_payload()
+
+    print(f"Knowledge:       {status['availability']} (reason: {status['reason']})")
+    print(f"  Concepts evaluated: {summary['concepts_evaluated']}")
+    print(f"  Evidence issues: {_format_counts(summary['evidence_issue_counts'])}")
+    print("  Freshness: not evaluated (snapshot-only status)")
+    load_ms = summary["phase_durations_ms"]["load"]
+    if load_ms is not None:
+        print(f"  Snapshot load: {load_ms} ms")
+
+
 def run(args) -> None:
     wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
+    src_dir = getattr(args, "src_dir", ".")
     wiki_path = Path(wiki_dir)
     git_dir = Path(".git")
 
@@ -58,6 +86,8 @@ def run(args) -> None:
         print(f"  {'Architecture pages:':<15}{_architecture_page_count(wiki_path)}")
     else:
         print(f"Wiki directory:  {wiki_dir} (not found)")
+
+    _print_knowledge_status(wiki_path, src_dir)
 
     # Agent config
     agent_config = get_agent_config_path(wiki_dir)

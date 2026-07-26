@@ -6,11 +6,11 @@ import time
 from pathlib import Path
 
 from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
-from ..services.inventory_cache import InventoryCacheOptions
 from ..services.extraction_jobs import (
     extraction_job_request_from_args,
     print_extraction_job_plan,
 )
+from ..services.inventory_cache import InventoryCacheOptions
 from ..services.metrics import record_validation_event
 from .lint_cmd import build_report, render_markdown, render_text, report_to_dict
 
@@ -78,8 +78,13 @@ def run(args) -> None:
             duration_ms=duration_ms,
             wiki_dir=wiki_dir,
             src_dir=src_dir,
+            knowledge_summary=(
+                None
+                if report.knowledge_summary is None
+                else report.knowledge_summary.aggregate_payload()
+            ),
         )
-    except OSError:
+    except Exception:  # noqa: BLE001,S110 - metrics are best-effort observability
         pass
 
     if not report.passed:

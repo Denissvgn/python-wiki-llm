@@ -15,7 +15,7 @@ from llm_wiki_cli import cli
 from llm_wiki_cli.commands import context_cmd, mcp_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.config import write_config
-from llm_wiki_cli.services import mcp_server
+from llm_wiki_cli.services import knowledge_consumption, mcp_server
 from llm_wiki_cli.services.documentation_queries import (
     DocumentationGraphQueryService,
     DocumentationQueryError,
@@ -109,6 +109,51 @@ def _guard_status_extraction(monkeypatch) -> None:
         "get_inventory_result",
         fail_if_extraction_runs,
     )
+    monkeypatch.setattr(
+        knowledge_consumption,
+        "evaluate_knowledge_freshness",
+        fail_if_extraction_runs,
+    )
+
+
+def _assert_snapshot_knowledge_summary(
+    summary,
+    *,
+    availability,
+    reason,
+    evidence_issue_counts,
+):
+    assert set(summary) == {
+        "availability",
+        "reason",
+        "concepts_evaluated",
+        "freshness_counts",
+        "evidence_issue_counts",
+        "degraded_reason",
+        "phase_durations_ms",
+        "freshness_evaluated",
+    }
+    assert summary["availability"] == availability
+    assert summary["reason"] == reason
+    assert summary["concepts_evaluated"] == 0
+    assert summary["freshness_counts"] is None
+    assert summary["evidence_issue_counts"] == evidence_issue_counts
+    assert summary["degraded_reason"] == (
+        reason if availability in {"degraded", "unsupported"} else None
+    )
+    assert summary["freshness_evaluated"] is False
+    assert set(summary["phase_durations_ms"]) == {
+        "load",
+        "evaluate",
+        "check",
+    }
+    assert isinstance(summary["phase_durations_ms"]["load"], int)
+    assert summary["phase_durations_ms"]["load"] >= 0
+    assert summary["phase_durations_ms"]["evaluate"] is None
+    assert summary["phase_durations_ms"]["check"] is None
+    serialized = json.dumps(summary, sort_keys=True)
+    assert "llm-wiki://" not in serialized
+    assert "sha256:" not in serialized
 
 
 @pytest.mark.parametrize(
@@ -153,7 +198,8 @@ def test_mcp_knowledge_tools_and_status_share_compatibility_policy(
     concept = service.get_concept("llm-wiki://entities/User")
     related = service.related_concepts("llm-wiki://entities/User")
     evidence = service.explain_evidence("llm-wiki://entities/User")
-    status = service.get_status()["knowledge"]
+    status_result = service.get_status()
+    status = status_result["knowledge"]
 
     expected_status = {
         "availability": case.expected_availability.value,
@@ -170,6 +216,19 @@ def test_mcp_knowledge_tools_and_status_share_compatibility_policy(
         **expected_status,
         "freshness_evaluated": False,
     }
+    if case.expected_availability.value == "absent":
+        assert "knowledge_summary" not in status_result
+    else:
+        _assert_snapshot_knowledge_summary(
+            status_result["knowledge_summary"],
+            availability=case.expected_availability.value,
+            reason=case.expected_reason.value,
+            evidence_issue_counts=(
+                {"missing": 0, "invalid": 0, "unknown": 1}
+                if case.serves_knowledge
+                else None
+            ),
+        )
     assert calls == [
         (".", "docs/llm_wiki", 20, True),
         (".", "docs/llm_wiki", 20, True),
@@ -703,6 +762,16 @@ class TestMcpWikiService:
             "reason": "all-projection-commitments-match",
             "freshness_evaluated": False,
         }
+        _assert_snapshot_knowledge_summary(
+            result["knowledge_summary"],
+            availability="ready",
+            reason="all-projection-commitments-match",
+            evidence_issue_counts={
+                "missing": 0,
+                "invalid": 0,
+                "unknown": 1,
+            },
+        )
 
     def test_get_status_reports_legacy_absence_without_extraction(
         self,
@@ -723,6 +792,7 @@ class TestMcpWikiService:
             "reason": "knowledge-projection-not-present",
             "freshness_evaluated": False,
         }
+        assert "knowledge_summary" not in result
 
     def test_get_status_does_not_read_legacy_markdown_for_knowledge(
         self,
@@ -744,6 +814,7 @@ class TestMcpWikiService:
             "reason": "knowledge-projection-not-present",
             "freshness_evaluated": False,
         }
+        assert "knowledge_summary" not in result
 
     def test_get_status_preserves_missing_wiki_status_without_extraction(
         self,
@@ -764,6 +835,7 @@ class TestMcpWikiService:
             "reason": "knowledge-projection-not-present",
             "freshness_evaluated": False,
         }
+        assert "knowledge_summary" not in result
 
     def test_get_status_reports_degraded_snapshot_without_extraction(
         self,
@@ -786,6 +858,12 @@ class TestMcpWikiService:
             "reason": "policy-selected-surface-only-fallback-after-invalid",
             "freshness_evaluated": False,
         }
+        _assert_snapshot_knowledge_summary(
+            result["knowledge_summary"],
+            availability="degraded",
+            reason="policy-selected-surface-only-fallback-after-invalid",
+            evidence_issue_counts=None,
+        )
 
     def test_get_status_reports_unsupported_snapshot_without_extraction(
         self,
@@ -814,6 +892,12 @@ class TestMcpWikiService:
             "reason": "knowledge-schema-version-unsupported",
             "freshness_evaluated": False,
         }
+        _assert_snapshot_knowledge_summary(
+            result["knowledge_summary"],
+            availability="unsupported",
+            reason="knowledge-schema-version-unsupported",
+            evidence_issue_counts=None,
+        )
 
     def test_get_status_uses_live_surface_fallback_for_missing_projection_surface(
         self,
@@ -836,6 +920,12 @@ class TestMcpWikiService:
             "reason": "policy-selected-surface-only-fallback-after-invalid",
             "freshness_evaluated": False,
         }
+        _assert_snapshot_knowledge_summary(
+            result["knowledge_summary"],
+            availability="degraded",
+            reason="policy-selected-surface-only-fallback-after-invalid",
+            evidence_issue_counts=None,
+        )
 
     def test_get_status_adds_issue_reporting_preference(self, tmp_project):
         _write_wiki(tmp_project)

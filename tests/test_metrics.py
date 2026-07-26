@@ -6,7 +6,41 @@ from pathlib import Path
 
 import pytest
 
+from llm_wiki_cli.commands import metrics_cmd
 from llm_wiki_cli.services import metrics
+from llm_wiki_cli.services.knowledge_observability import (
+    KnowledgeAggregateSummary,
+)
+
+
+def _knowledge_summary(**overrides) -> KnowledgeAggregateSummary:
+    values = {
+        "availability": "ready",
+        "reason": "all-projection-commitments-match",
+        "concepts_evaluated": 6,
+        "freshness_counts": {
+            "basis-incompatible": 0,
+            "current": 3,
+            "nonsemantic-source-change": 0,
+            "source-changed": 0,
+            "source-missing": 0,
+            "unknown": 3,
+        },
+        "evidence_issue_counts": {
+            "missing": 0,
+            "invalid": 0,
+            "unknown": 1,
+        },
+        "degraded_reason": None,
+        "phase_durations_ms": {
+            "load": 2,
+            "evaluate": 3,
+            "check": 1,
+        },
+        "freshness_evaluated": True,
+    }
+    values.update(overrides)
+    return KnowledgeAggregateSummary(**values)
 
 
 def test_metrics_path_resolves_inside_git_dir():
@@ -141,6 +175,139 @@ def test_record_validation_event_writes_structured_validation_payload(tmp_path):
             "wiki_dir": "docs/llm_wiki",
         }
     ]
+    assert "knowledge_summary" not in events[0]
+
+
+def test_record_validation_event_adds_safe_knowledge_summary_from_model(tmp_path):
+    git_dir = tmp_path / ".git"
+    git_dir.mkdir()
+    summary = _knowledge_summary()
+
+    metrics.record_validation_event(
+        command="lint",
+        passed=True,
+        issue_count=0,
+        strict=True,
+        duration_ms=9,
+        wiki_dir="docs/llm_wiki",
+        src_dir=".",
+        knowledge_summary=summary,
+        git_dir=git_dir,
+    )
+
+    event = metrics.load_events(git_dir=git_dir)[0]
+    assert event["knowledge_summary"] == summary.to_payload()
+
+
+def test_validation_summary_mapping_is_allowlisted_and_sanitized(tmp_path):
+    git_dir = tmp_path / ".git"
+    git_dir.mkdir()
+    payload = _knowledge_summary().to_payload()
+    payload.update(
+        {
+            "locator": "llm-wiki://entities/Secret",
+            "source_hash": "sha256:secret",
+            "actor": "private@example.test",
+            "author_name": "Private User",
+            "repository_remote": "ssh://private.example/repo",
+            "source_path": "/private/checkout/secret.py",
+            "unexpected": {"remote": "private", "kept": "not-allowlisted"},
+        }
+    )
+    payload["freshness_counts"] = {
+        **payload["freshness_counts"],
+        "locator": 1,
+        "source_hash": 1,
+    }
+    payload["phase_durations_ms"] = {
+        **payload["phase_durations_ms"],
+        "output_path": "/private/report.json",
+    }
+
+    metrics.record_validation_event(
+        command="ci-check",
+        passed=False,
+        issue_count=1,
+        strict=True,
+        duration_ms=12,
+        wiki_dir="docs/llm_wiki",
+        src_dir=".",
+        knowledge_summary=payload,
+        git_dir=git_dir,
+    )
+
+    event = metrics.load_events(git_dir=git_dir)[0]
+    assert event["knowledge_summary"] == _knowledge_summary().to_payload()
+    serialized = json.dumps(event, sort_keys=True)
+    for secret in (
+        "llm-wiki://entities/Secret",
+        "sha256:secret",
+        "private@example.test",
+        "Private User",
+        "ssh://private.example/repo",
+        "/private/checkout/secret.py",
+        "/private/report.json",
+    ):
+        assert secret not in serialized
+
+
+def test_record_event_sanitizes_evidence_and_absolute_path_fields(tmp_path):
+    git_dir = tmp_path / ".git"
+    git_dir.mkdir()
+
+    metrics.record_event(
+        "validation",
+        {
+            "src_dir": "/private/checkout",
+            "wiki_dir": "docs/llm_wiki",
+            "details": {
+                "concept_locator": "llm-wiki://entities/Secret",
+                "observation_hash": "sha256:secret",
+                "actor_id": "private@example.test",
+                "author": "Private User",
+                "git_remote": "ssh://private.example/repo",
+                "output_path": r"C:\private\report.json",
+                "relative_path": "docs/llm_wiki/index.md",
+            },
+        },
+        git_dir=git_dir,
+    )
+
+    event = metrics.load_events(git_dir=git_dir)[0]
+    assert event["src_dir"] == metrics.REDACTED_ABSOLUTE_PATH
+    assert event["wiki_dir"] == "docs/llm_wiki"
+    assert event["details"] == {
+        "output_path": metrics.REDACTED_ABSOLUTE_PATH,
+        "relative_path": "docs/llm_wiki/index.md",
+    }
+
+
+def test_metrics_recording_is_best_effort_for_type_and_serialization_failures(
+    tmp_path,
+):
+    git_dir = tmp_path / ".git"
+    git_dir.mkdir()
+
+    metrics.record_event(
+        "bad-payload",
+        {"not_json": object()},
+        git_dir=git_dir,
+    )
+    metrics.record_validation_event(
+        command="lint",
+        passed=True,
+        issue_count=0,
+        strict=True,
+        duration_ms=None,
+        wiki_dir="wiki",
+        src_dir=".",
+        knowledge_summary=object(),
+        git_dir=git_dir,
+    )
+
+    events = metrics.load_events(git_dir=git_dir)
+    assert [event["event"] for event in events] == ["validation"]
+    assert "knowledge_summary" not in events[0]
 
 
 def test_summarize_events_aggregates_validation_sync_and_recent_failures(monkeypatch):
@@ -183,3 +350,175 @@ def test_summarize_events_aggregates_validation_sync_and_recent_failures(monkeyp
         {"event": "validation", "strict": True, "passed": False},
         {"event": "trigger_finish", "exit_code": 1, "duration_ms": 200},
     ]
+    assert "knowledge_summary" not in summary
+
+
+def test_summarize_events_uses_latest_safe_knowledge_summary(monkeypatch):
+    monkeypatch.setattr(
+        metrics,
+        "current_coverage",
+        lambda src_dir, wiki_dir: {
+            "percent": 100.0,
+            "entities": {"documented": 0, "total": 0},
+            "modules": {"documented": 0, "total": 0},
+        },
+    )
+    old = _knowledge_summary(
+        availability="degraded",
+        reason="policy-selected-surface-only-fallback-after-invalid",
+        concepts_evaluated=0,
+        freshness_counts=None,
+        evidence_issue_counts=None,
+        degraded_reason="policy-selected-surface-only-fallback-after-invalid",
+        freshness_evaluated=False,
+    ).to_payload()
+    latest = _knowledge_summary().to_payload()
+
+    summary = metrics.summarize_events(
+        [
+            {
+                "event": "validation",
+                "strict": True,
+                "passed": False,
+                "knowledge_summary": old,
+            },
+            {
+                "event": "validation",
+                "strict": True,
+                "passed": True,
+                "knowledge_summary": latest,
+            },
+            {
+                "event": "validation",
+                "strict": False,
+                "passed": True,
+                "knowledge_summary": {"availability": object()},
+            },
+        ],
+        src_dir="src",
+        wiki_dir="wiki",
+    )
+
+    assert summary["knowledge_summary"] == latest
+
+
+def test_summarize_events_rejects_unclosed_knowledge_reason_values(monkeypatch):
+    monkeypatch.setattr(
+        metrics,
+        "current_coverage",
+        lambda src_dir, wiki_dir: {
+            "percent": 100.0,
+            "entities": {"documented": 0, "total": 0},
+            "modules": {"documented": 0, "total": 0},
+        },
+    )
+    safe = _knowledge_summary().to_payload()
+    unsafe_reason = {
+        **safe,
+        "reason": "ssh://private.example/repository",
+    }
+    unsafe_degraded_reason = {
+        **safe,
+        "availability": "degraded",
+        "reason": "policy-selected-surface-only-fallback-after-invalid",
+        "degraded_reason": "actor:private@example.test",
+    }
+
+    summary = metrics.summarize_events(
+        [
+            {"event": "validation", "knowledge_summary": safe},
+            {"event": "validation", "knowledge_summary": unsafe_reason},
+            {"event": "validation", "knowledge_summary": unsafe_degraded_reason},
+        ],
+        src_dir="src",
+        wiki_dir="wiki",
+    )
+
+    assert summary["knowledge_summary"] == safe
+    serialized = json.dumps(summary, sort_keys=True)
+    assert "ssh://private.example/repository" not in serialized
+    assert "private@example.test" not in serialized
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {
+            "freshness_evaluated": True,
+            "freshness_counts": None,
+        },
+        {
+            "freshness_counts": {"current": 6},
+        },
+        {
+            "concepts_evaluated": 5,
+        },
+        {
+            "availability": "degraded",
+            "reason": "policy-selected-surface-only-fallback-after-invalid",
+            "degraded_reason": "policy-selected-surface-only-fallback-after-invalid",
+            "evidence_issue_counts": None,
+        },
+        {
+            "availability": "unsupported",
+            "reason": "knowledge-schema-version-unsupported",
+            "degraded_reason": "knowledge-schema-version-unsupported",
+            "concepts_evaluated": 0,
+            "freshness_counts": None,
+            "freshness_evaluated": False,
+        },
+        {
+            "freshness_evaluated": 1,
+        },
+    ],
+)
+def test_summarize_events_rejects_semantically_invalid_legacy_summary(
+    monkeypatch,
+    overrides,
+):
+    monkeypatch.setattr(
+        metrics,
+        "current_coverage",
+        lambda src_dir, wiki_dir: {
+            "percent": 100.0,
+            "entities": {"documented": 0, "total": 0},
+            "modules": {"documented": 0, "total": 0},
+        },
+    )
+    safe = _knowledge_summary().to_payload()
+    malformed = {**safe, **overrides}
+
+    summary = metrics.summarize_events(
+        [
+            {"event": "validation", "knowledge_summary": safe},
+            {"event": "validation", "knowledge_summary": malformed},
+        ],
+        src_dir="src",
+        wiki_dir="wiki",
+    )
+
+    assert summary["knowledge_summary"] == safe
+
+
+def test_metrics_text_adds_optional_knowledge_summary(monkeypatch):
+    monkeypatch.setattr(
+        metrics,
+        "current_coverage",
+        lambda src_dir, wiki_dir: {
+            "percent": 100.0,
+            "entities": {"documented": 0, "total": 0},
+            "modules": {"documented": 0, "total": 0},
+        },
+    )
+    base = metrics.summarize_events([], src_dir="src", wiki_dir="wiki")
+    without_knowledge = metrics_cmd.render_text(base, "30d")
+    assert "Knowledge:" not in without_knowledge
+
+    base["knowledge_summary"] = _knowledge_summary().to_payload()
+    rendered = metrics_cmd.render_text(base, "30d")
+
+    assert "Knowledge:" in rendered
+    assert "Availability: ready (all-projection-commitments-match)" in rendered
+    assert "Concepts evaluated: 6" in rendered
+    assert "current=3" in rendered
+    assert "load=2.0 ms, evaluate=3.0 ms, check=1.0 ms" in rendered

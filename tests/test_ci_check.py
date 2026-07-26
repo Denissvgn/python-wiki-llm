@@ -10,9 +10,13 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli import cli
-from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.commands import ci_check_cmd
-from llm_wiki_cli.commands.lint_cmd import LintIssue, LintReport
+from llm_wiki_cli.commands.lint_cmd import (
+    KnowledgeLintSummary,
+    LintIssue,
+    LintReport,
+)
+from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
 
 
@@ -28,6 +32,31 @@ def _empty_execution_payload() -> dict:
             "cache_elided_plan_ids": [],
         }
     }
+
+
+def _ready_knowledge_summary() -> KnowledgeLintSummary:
+    freshness = {
+        "basis-incompatible": 0,
+        "current": 3,
+        "nonsemantic-source-change": 0,
+        "source-changed": 0,
+        "source-missing": 0,
+        "unknown": 3,
+    }
+    return KnowledgeLintSummary(
+        availability="ready",
+        reason="all-projection-commitments-match",
+        concepts_evaluated=6,
+        freshness_counts=freshness,
+        evidence_issue_counts={"invalid": 0, "missing": 0, "unknown": 1},
+        degraded_reason=None,
+        phase_durations_ms={"load": 1, "evaluate": 2, "check": 3},
+        freshness_evaluated=True,
+        concepts_total=6,
+        concepts_by_kind={"code-entity": 2},
+        evidence_by_state={"present": 3},
+        freshness_by_state=freshness,
+    )
 
 
 def test_ci_check_uses_inventory_cache_options(tmp_path, monkeypatch, capsys):
@@ -132,9 +161,7 @@ def test_cli_ci_check_jobs_parses_integer(monkeypatch):
     monkeypatch.setattr(
         cli.ci_check_cmd,
         "run",
-        lambda args: seen.update(
-            jobs=args.jobs, requested_jobs=args.requested_jobs
-        ),
+        lambda args: seen.update(jobs=args.jobs, requested_jobs=args.requested_jobs),
     )
     monkeypatch.setattr("sys.argv", ["llm-wiki", "ci-check", "--jobs", "2"])
 
@@ -524,8 +551,66 @@ def test_ci_check_markdown_output_includes_diagnostics(tmp_path, monkeypatch, ca
     assert "pydantic" in out
 
 
-def test_ci_check_metrics_oserror_does_not_fail_passing_report(
-    tmp_path, monkeypatch, capsys
+def test_ci_check_metrics_receive_only_safe_aggregate_knowledge(
+    tmp_path,
+    monkeypatch,
+    capsys,
+):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "wiki").mkdir()
+    report = LintReport(wiki_dir="wiki", src_dir=".", strict=True)
+    report.knowledge_summary = _ready_knowledge_summary()
+    recorded = []
+
+    monkeypatch.setattr(
+        ci_check_cmd,
+        "build_report",
+        lambda wiki_dir, src_dir, **kwargs: report,
+    )
+    monkeypatch.setattr(
+        ci_check_cmd,
+        "record_validation_event",
+        lambda **kwargs: recorded.append(kwargs),
+    )
+
+    ci_check_cmd.run(
+        types.SimpleNamespace(
+            src_dir=".",
+            wiki_dir="wiki",
+            format="json",
+            report="report.md",
+        )
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["ok"] is True
+    assert len(recorded) == 1
+    assert recorded[0]["knowledge_summary"] == (
+        report.knowledge_summary.aggregate_payload()
+    )
+    assert {
+        "concepts_total",
+        "concepts_by_kind",
+        "evidence_by_state",
+        "freshness_by_state",
+    }.isdisjoint(recorded[0]["knowledge_summary"])
+    assert Path("report.md").exists()
+
+
+@pytest.mark.parametrize(
+    "metrics_error",
+    [
+        OSError("read-only"),
+        TypeError("not serializable"),
+        ValueError("invalid metrics payload"),
+        RuntimeError("metrics unavailable"),
+    ],
+)
+def test_ci_check_metrics_failures_do_not_fail_passing_report(
+    tmp_path,
+    monkeypatch,
+    capsys,
+    metrics_error,
 ):
     monkeypatch.chdir(tmp_path)
     (tmp_path / "wiki").mkdir()
@@ -539,11 +624,11 @@ def test_ci_check_metrics_oserror_does_not_fail_passing_report(
             strict=kwargs["strict"],
         ),
     )
-    monkeypatch.setattr(
-        ci_check_cmd,
-        "record_validation_event",
-        lambda **kwargs: (_ for _ in ()).throw(OSError("read-only")),
-    )
+
+    def fail_metrics(**_kwargs):
+        raise metrics_error
+
+    monkeypatch.setattr(ci_check_cmd, "record_validation_event", fail_metrics)
 
     ci_check_cmd.run(
         types.SimpleNamespace(
@@ -559,8 +644,20 @@ def test_ci_check_metrics_oserror_does_not_fail_passing_report(
     assert Path("report.md").exists()
 
 
-def test_ci_check_metrics_oserror_preserves_validation_failure(
-    tmp_path, monkeypatch, capsys
+@pytest.mark.parametrize(
+    "metrics_error",
+    [
+        OSError("read-only"),
+        TypeError("not serializable"),
+        ValueError("invalid metrics payload"),
+        RuntimeError("metrics unavailable"),
+    ],
+)
+def test_ci_check_metrics_failures_preserve_validation_failure(
+    tmp_path,
+    monkeypatch,
+    capsys,
+    metrics_error,
 ):
     monkeypatch.chdir(tmp_path)
     (tmp_path / "wiki").mkdir()
@@ -573,11 +670,11 @@ def test_ci_check_metrics_oserror_preserves_validation_failure(
         return report
 
     monkeypatch.setattr(ci_check_cmd, "build_report", fake_build_report)
-    monkeypatch.setattr(
-        ci_check_cmd,
-        "record_validation_event",
-        lambda **kwargs: (_ for _ in ()).throw(OSError("read-only")),
-    )
+
+    def fail_metrics(**_kwargs):
+        raise metrics_error
+
+    monkeypatch.setattr(ci_check_cmd, "record_validation_event", fail_metrics)
 
     with pytest.raises(SystemExit) as exc:
         ci_check_cmd.run(
