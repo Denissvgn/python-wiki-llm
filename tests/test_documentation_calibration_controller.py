@@ -42,7 +42,10 @@ from llm_wiki_cli.services.documentation_calibration_controller import (
     verify_p0_calibration_run,
 )
 from llm_wiki_cli.services.documentation_run import prepare_documentation_run
-from llm_wiki_cli.services.protected_artifacts import canonical_json_bytes
+from llm_wiki_cli.services.protected_artifacts import (
+    ProtectedArtifactStore,
+    canonical_json_bytes,
+)
 
 
 _HASH_A = "sha256:" + "a" * 64
@@ -1764,9 +1767,11 @@ def test_snapshot_is_rebuilt_but_ledger_tampering_rejects(tmp_path: Path):
 def test_unknown_controller_file_blocks_without_deleting_evidence(tmp_path: Path):
     root, _run = _prepare_external_cohort(tmp_path)
     unknown = root / "unexpected.json"
-    unknown.write_text("{}\n", encoding="utf-8")
-    if os.name != "nt":
-        unknown.chmod(0o600)
+    ProtectedArtifactStore(root)._write_bytes(
+        "unexpected.json",
+        b"{}\n",
+        immutable=True,
+    )
 
     status = get_p0_calibration_run_status(root)
 
@@ -1779,9 +1784,11 @@ def test_nested_unknown_controller_file_blocks_without_deleting_evidence(
 ):
     root, _run = _prepare_external_cohort(tmp_path)
     unknown = root / "baseline" / "unexpected.json"
-    unknown.write_text("{}\n", encoding="utf-8")
-    if os.name != "nt":
-        unknown.chmod(0o600)
+    ProtectedArtifactStore(root)._write_bytes(
+        "baseline/unexpected.json",
+        b"{}\n",
+        immutable=True,
+    )
 
     status = get_p0_calibration_run_status(root)
 

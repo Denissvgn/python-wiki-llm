@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-import ast
 import re
 from pathlib import Path
+
+import yaml
 
 try:
     import tomllib  # type: ignore[reportMissingImports]
@@ -26,15 +27,11 @@ def _pyproject() -> dict:
     return tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
 
 
-def _ci_python_versions() -> list[str]:
-    ci = (PROJECT_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
-    matrix_line = next(
-        line.strip()
-        for line in ci.splitlines()
-        if line.strip().startswith("python-version:")
+def _ci_test_matrix() -> dict:
+    ci = yaml.safe_load(
+        (PROJECT_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
     )
-    _, value = matrix_line.split(":", maxsplit=1)
-    return ast.literal_eval(value.strip())
+    return ci["jobs"]["test"]["strategy"]["matrix"]
 
 
 def test_project_description_mentions_multi_language_projects():
@@ -150,8 +147,14 @@ def test_project_requires_python_3_10_or_newer():
     assert data["project"]["requires-python"] == ">=3.10"
 
 
-def test_ci_python_matrix_matches_supported_boundary_versions():
-    assert _ci_python_versions() == ["3.10", "3.13", "3.14"]
+def test_ci_pairs_selected_python_versions_with_one_os_each():
+    assert _ci_test_matrix() == {
+        "include": [
+            {"os": "ubuntu-latest", "python-version": "3.10"},
+            {"os": "windows-latest", "python-version": "3.13"},
+            {"os": "macos-latest", "python-version": "3.14"},
+        ]
+    }
 
 
 def test_readme_current_support_table_mentions_python_3_10_plus():

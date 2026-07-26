@@ -13,6 +13,12 @@ from llm_wiki_cli.commands import skills_cmd
 from llm_wiki_cli.services import skills
 
 
+_CUSTOM_SKILL_MANIFEST_LF = (
+    b"---\nname: demo\ndescription: A demo skill.\n---\n\n# demo\n"
+)
+_CUSTOM_SKILL_EXTRA_LF = b"# extra\n"
+
+
 def _ns(**kwargs):
     return types.SimpleNamespace(**kwargs)
 
@@ -20,11 +26,8 @@ def _ns(**kwargs):
 def _write_custom_skill(root: Path, skill_id: str = "demo") -> Path:
     skill_dir = root / skill_id
     skill_dir.mkdir(parents=True)
-    (skill_dir / "SKILL.md").write_text(
-        "---\nname: demo\ndescription: A demo skill.\n---\n\n# demo\n",
-        encoding="utf-8",
-    )
-    (skill_dir / "extra.md").write_text("# extra\n", encoding="utf-8")
+    (skill_dir / "SKILL.md").write_bytes(_CUSTOM_SKILL_MANIFEST_LF)
+    (skill_dir / "extra.md").write_bytes(_CUSTOM_SKILL_EXTRA_LF)
     return skill_dir
 
 
@@ -1061,14 +1064,14 @@ class TestSkillExport:
         root = tmp_path / "bundled"
         skill_dir = _write_custom_skill(root)
         source = skill_dir / "SKILL.md"
-        source.write_bytes(source.read_bytes().replace(b"\n", b"\r\n"))
+        source.write_bytes(_CUSTOM_SKILL_MANIFEST_LF.replace(b"\n", b"\r\n"))
 
         report = skills.export_skills(tmp_path / "out", skills_root=root)
 
         assert report.ok
         exported = (tmp_path / "out" / "demo" / "SKILL.md").read_bytes()
         assert b"\r" not in exported
-        assert exported == source.read_bytes().replace(b"\r\n", b"\n")
+        assert exported == _CUSTOM_SKILL_MANIFEST_LF
 
     def test_export_unknown_skill_rejected(self, tmp_path):
         with pytest.raises(skills.SkillsError, match="Unknown skill 'nope'"):

@@ -71,7 +71,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- CI now qualifies Python 3.10, 3.13, and 3.14 on Ubuntu, macOS, and Windows.
+- CI now uses a resource-bounded three-job qualification matrix: Python 3.10
+  on Ubuntu, Python 3.13 on Windows, and Python 3.14 on macOS.
 
 ### Fixed
 
