@@ -3,7 +3,7 @@
     "producer": {
       "extractors": [
         {
-          "configuration_hash": "sha256:9929582a8b74083d0f523b651fa5f60279f272dc39d3e449f27cee778818100d",
+          "configuration_hash": "sha256:4b28c82d9a74fc608037d4861ac11058a655fa3261ddb5f8aa895f6a9ecdc18b",
           "id": "python-ast",
           "limitations": [
             "syntax-only"
@@ -13,6 +13,7 @@
       ],
       "plugins": [],
       "tool": {
+        "configuration_hash": "sha256:6d64864a5ba22c6c3176a2c8b5c7d8a09c1025a64b19d5e26f1bb4a749672d9f",
         "id": "agent-wiki-cli",
         "version": "1.4.0"
       }
@@ -26,9 +27,12 @@
       "working_tree": "clean"
     },
     "snapshot": {
-      "generation_options_hash": "sha256:ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
-      "markdown_snapshot_hash": "sha256:aa4908e6201f0bebee13b904711115f6a903b75de3a880d0e6e6fb7185fd72c8",
-      "source_snapshot_hash": "sha256:9eb168435771762d947cd585ce44e6afbadbf591a74fe06c7fe6a6e34c3ccc1d",
+      "extensions": {
+        "llm-wiki/inventory-hash": "sha256:453cf516b1c34a87fba6532789851e133c08f3ee4d0ed8332b153c0f28cb31e5"
+      },
+      "generation_options_hash": "sha256:d6657ce8a41c7863c75320c0a3065473392417e860c708f1796e5923892fced2",
+      "markdown_snapshot_hash": "sha256:77eea3041e54b014d12705aa672b288d2bb44c6080442a4930ee9c074e135105",
+      "source_snapshot_hash": "sha256:636170023b50cc4f8f4841dc6d4e9b0bb8505c0548bc6574662f2234e0090da5",
       "surface_index_hash": "sha256:632e44fcc87ee5ae85ddc9cbf175dcda660dee9f31bee92c0cec0644c7638e52"
     }
   },
@@ -52,7 +56,7 @@
         },
         "structure": {
           "basis": {
-            "concept_observation_hash": "sha256:6cb41367a185e36157f89c1f779c660784e1c9ec5e46c433302f809063ecd547",
+            "concept_observation_hash": "sha256:9fed76bcca61180ca26a0763e7edd43b5f84679ae0fdfdc7dc38a1b8376f9097",
             "extractor_ref": "python-ast",
             "scope": "entity",
             "source_content_hash": "sha256:f0b34a588d21c2dab7508e4f6557a411b8a5035afe8f79cc94dc7e669167e6d3",
@@ -85,7 +89,7 @@
         },
         "structure": {
           "basis": {
-            "concept_observation_hash": "sha256:16861e20b11df5a088272394243269674fa4616acc0fa854618cd5dc4b00cac9",
+            "concept_observation_hash": "sha256:169f7c3cf114a7158caf5347329aa7b0eb0a00278a0bbe2699fd27b2ef100c85",
             "extractor_ref": "python-ast",
             "scope": "entity",
             "source_content_hash": "sha256:f0b34a588d21c2dab7508e4f6557a411b8a5035afe8f79cc94dc7e669167e6d3",
@@ -123,7 +127,7 @@
       },
       "lifecycle": "unknown",
       "locator": "llm-wiki://index",
-      "title": "index"
+      "title": "LLM Wiki Index"
     },
     {
       "concept_kind": "change-log-document",
@@ -149,7 +153,7 @@
       },
       "lifecycle": "unknown",
       "locator": "llm-wiki://log",
-      "title": "log"
+      "title": "Architectural Log"
     },
     {
       "concept_kind": "source-module",
@@ -170,7 +174,7 @@
         },
         "structure": {
           "basis": {
-            "concept_observation_hash": "sha256:5cb1f3f9a215b9260d07f4bd34049a6f1424aedb3fe7c88bfa9192571f6919e0",
+            "concept_observation_hash": "sha256:c5aca1b4baa3afc794a436a56c6dfb4263c07a31c635c4a4cc35f3766b69ccef",
             "extractor_ref": "python-ast",
             "scope": "module",
             "source_content_hash": "sha256:f0b34a588d21c2dab7508e4f6557a411b8a5035afe8f79cc94dc7e669167e6d3",
@@ -182,7 +186,7 @@
       },
       "lifecycle": "unknown",
       "locator": "llm-wiki://modules/accounts",
-      "title": "accounts"
+      "title": "accounts Module"
     },
     {
       "concept_kind": "workflow",
@@ -211,16 +215,11 @@
       "title": "onboarding"
     }
   ],
-  "extensions": {
-    "example.invalid/fixture": {
-      "extraction_runs": 1,
-      "name": "knowledge-contract-matrix"
-    }
-  },
   "relationships": [
     {
       "evidence": {
-        "concept_observation_hash": "sha256:16861e20b11df5a088272394243269674fa4616acc0fa854618cd5dc4b00cac9",
+        "concept_observation_hash": "sha256:169f7c3cf114a7158caf5347329aa7b0eb0a00278a0bbe2699fd27b2ef100c85",
+        "source_content_hash": "sha256:f0b34a588d21c2dab7508e4f6557a411b8a5035afe8f79cc94dc7e669167e6d3",
         "state": "present"
       },
       "from": "llm-wiki://entities/User",
@@ -234,21 +233,8 @@
     },
     {
       "evidence": {
-        "concept_observation_hash": "sha256:5cb1f3f9a215b9260d07f4bd34049a6f1424aedb3fe7c88bfa9192571f6919e0",
-        "state": "present"
-      },
-      "from": "llm-wiki://modules/accounts",
-      "kind": "derived_from",
-      "origin": "extracted",
-      "resolution": "resolved",
-      "target": {
-        "source_path": "src/accounts.py",
-        "target_class": "source"
-      }
-    },
-    {
-      "evidence": {
-        "concept_observation_hash": "sha256:6cb41367a185e36157f89c1f779c660784e1c9ec5e46c433302f809063ecd547",
+        "concept_observation_hash": "sha256:9fed76bcca61180ca26a0763e7edd43b5f84679ae0fdfdc7dc38a1b8376f9097",
+        "source_content_hash": "sha256:f0b34a588d21c2dab7508e4f6557a411b8a5035afe8f79cc94dc7e669167e6d3",
         "state": "present"
       },
       "from": "llm-wiki://entities/AccountService",
@@ -262,8 +248,26 @@
     },
     {
       "evidence": {
+        "concept_observation_hash": "sha256:c5aca1b4baa3afc794a436a56c6dfb4263c07a31c635c4a4cc35f3766b69ccef",
+        "source_content_hash": "sha256:f0b34a588d21c2dab7508e4f6557a411b8a5035afe8f79cc94dc7e669167e6d3",
+        "state": "present"
+      },
+      "from": "llm-wiki://modules/accounts",
+      "kind": "derived_from",
+      "origin": "extracted",
+      "resolution": "resolved",
+      "target": {
+        "source_path": "src/accounts.py",
+        "target_class": "source"
+      }
+    },
+    {
+      "evidence": {
         "page_hash": "sha256:28a98ee471adfaf6157bb79d11918f14f2062c4aa905f18685b7619cb57a9018",
         "state": "present"
+      },
+      "extensions": {
+        "llm-wiki/link-syntax": "markdown"
       },
       "from": "llm-wiki://modules/accounts",
       "kind": "links_to",
@@ -286,6 +290,9 @@
         "page_hash": "sha256:28a98ee471adfaf6157bb79d11918f14f2062c4aa905f18685b7619cb57a9018",
         "state": "present"
       },
+      "extensions": {
+        "llm-wiki/link-syntax": "markdown"
+      },
       "from": "llm-wiki://modules/accounts",
       "kind": "links_to",
       "origin": "markdown",
@@ -306,6 +313,9 @@
       "evidence": {
         "page_hash": "sha256:28a98ee471adfaf6157bb79d11918f14f2062c4aa905f18685b7619cb57a9018",
         "state": "present"
+      },
+      "extensions": {
+        "llm-wiki/link-syntax": "markdown"
       },
       "from": "llm-wiki://modules/accounts",
       "kind": "links_to",
@@ -328,6 +338,9 @@
         "page_hash": "sha256:28a98ee471adfaf6157bb79d11918f14f2062c4aa905f18685b7619cb57a9018",
         "state": "present"
       },
+      "extensions": {
+        "llm-wiki/link-syntax": "markdown"
+      },
       "from": "llm-wiki://modules/accounts",
       "kind": "links_to",
       "origin": "markdown",
@@ -347,6 +360,9 @@
       "evidence": {
         "page_hash": "sha256:28a98ee471adfaf6157bb79d11918f14f2062c4aa905f18685b7619cb57a9018",
         "state": "present"
+      },
+      "extensions": {
+        "llm-wiki/link-syntax": "markdown"
       },
       "from": "llm-wiki://modules/accounts",
       "kind": "links_to",
@@ -368,6 +384,9 @@
         "page_hash": "sha256:28a98ee471adfaf6157bb79d11918f14f2062c4aa905f18685b7619cb57a9018",
         "state": "present"
       },
+      "extensions": {
+        "llm-wiki/link-syntax": "markdown"
+      },
       "from": "llm-wiki://modules/accounts",
       "kind": "links_to",
       "origin": "markdown",
@@ -387,6 +406,9 @@
       "evidence": {
         "page_hash": "sha256:28a98ee471adfaf6157bb79d11918f14f2062c4aa905f18685b7619cb57a9018",
         "state": "present"
+      },
+      "extensions": {
+        "llm-wiki/link-syntax": "markdown"
       },
       "from": "llm-wiki://modules/accounts",
       "kind": "links_to",

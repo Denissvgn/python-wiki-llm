@@ -14,9 +14,20 @@ import pytest
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import bootstrap_cmd, migrate_cmd, sync_cmd
 from llm_wiki_cli.commands.sync_cmd import MANIFEST_FILENAME, SyncManifest
-from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME
-from llm_wiki_cli.services.paths import is_test_source_path
 from llm_wiki_cli.services import team
+from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME
+from llm_wiki_cli.services.knowledge_evidence import (
+    ConceptObservationBasis,
+    sha256_bytes,
+)
+from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
+from llm_wiki_cli.services.paths import is_test_source_path
+from llm_wiki_cli.services.sync_manifest import (
+    ManifestEvidenceBaseline,
+    ManifestTombstone,
+    TOMBSTONE_UNKNOWN_PROVENANCE,
+)
 
 
 def _bootstrap_args(project: Path, wiki: Path, **kwargs):
@@ -118,6 +129,27 @@ def _tree_bytes(root: Path) -> dict[str, bytes]:
     }
 
 
+def test_bootstrap_records_page_mappings_with_concept_evidence(
+    optional_surface_project,
+):
+    _project, wiki = optional_surface_project
+
+    manifest = SyncManifest.load(wiki)
+
+    assert set(manifest.page_source_mappings) == {
+        "modules/app.md",
+        "modules/core.md",
+        "modules/test_api.md",
+    }
+    assert set(manifest.evidence_baselines) == set(manifest.page_source_mappings)
+    assert all(
+        baseline.is_known and baseline.basis is not None
+        for baseline in manifest.evidence_baselines.values()
+    )
+    assert manifest.tombstones == {}
+    assert manifest.artifact_hashes is not None
+
+
 def test_cli_accepts_surface_selection_and_preview_flags(monkeypatch):
     seen = {}
     monkeypatch.setattr(
@@ -201,7 +233,7 @@ def test_flow_policy_persists_and_later_sync_does_not_expand_scope(
     assert not (wiki / "flows" / "http-test_endpoint.md").exists()
     assert not (wiki / "flows" / "api-public_api.md").exists()
     manifest = json.loads((wiki / MANIFEST_FILENAME).read_text(encoding="utf-8"))
-    assert manifest["version"] == 4
+    assert manifest["version"] == 5
     assert manifest["surfaces"]["flows"] == {
         "enabled": True,
         "categories": ["http"],
@@ -280,6 +312,51 @@ def test_dependency_initialization_is_selective_and_preserves_semantic_pages(
     }
 
 
+def test_surface_only_sync_preserves_evidence_state_and_commits_artifact_hashes(
+    optional_surface_project,
+):
+    project, wiki = optional_surface_project
+    before = SyncManifest.load(wiki)
+    page_path = "modules/app.md"
+    mapping = before.page_source_mappings[page_path]
+    basis = ConceptObservationBasis(
+        scope=mapping.scope,
+        source_path=mapping.source_path,
+        extractor_ref="python-ast",
+        source_content_hash=before.sources[mapping.source_path]["hash"],
+        concept_observation_hash=sha256_bytes(b"app module observation"),
+    )
+    before.evidence_baselines[page_path] = ManifestEvidenceBaseline.from_basis(basis)
+    before.tombstones["modules/Retired.md"] = ManifestTombstone(
+        reason=TOMBSTONE_UNKNOWN_PROVENANCE,
+        unknown_reason="manifest-state-unavailable",
+    )
+    (wiki / "modules" / "Retired.md").write_text(
+        "# Retired\n\nRetained history.\n",
+        encoding="utf-8",
+    )
+    before = before.with_artifact_hashes(
+        surface_index_hash=sha256_bytes(b"surface index"),
+        knowledge_index_hash=sha256_bytes(b"knowledge index"),
+        evaluated_envelope_hash=sha256_bytes(b"evaluated envelope"),
+    )
+    before.save(wiki)
+
+    sync_cmd.run(
+        _sync_args(
+            project,
+            wiki,
+            initialize_surfaces=[("dependencies",)],
+        )
+    )
+
+    after = SyncManifest.load(wiki)
+    assert after.page_source_mappings == before.page_source_mappings
+    assert after.evidence_baselines == before.evidence_baselines
+    assert after.tombstones == before.tombstones
+    assert after.artifact_hashes is not None
+
+
 def test_explicit_initialization_seeds_old_wiki_and_applies_in_one_run(
     optional_surface_project, capsys
 ):
@@ -335,6 +412,38 @@ def test_initialization_defers_source_diff_and_keeps_manifest_hashes(
     assert _tree_bytes(wiki / "modules") == before_modules
     assert (wiki / "dependencies.md").is_file()
     assert "Deferred source changes: 1 file(s)." in capsys.readouterr().out
+
+
+def test_initialization_defers_removed_source_with_valid_preserved_mappings(
+    optional_surface_project,
+):
+    project, wiki = optional_surface_project
+    before_manifest = SyncManifest.load(wiki)
+    before_module = (wiki / "modules" / "app.md").read_bytes()
+    (project / "app.py").unlink()
+
+    sync_cmd.run(
+        _sync_args(
+            project,
+            wiki,
+            initialize_surfaces=[("dependencies",)],
+        )
+    )
+
+    after_manifest = SyncManifest.load(wiki)
+    assert after_manifest.sources == before_manifest.sources
+    assert after_manifest.page_source_mappings == before_manifest.page_source_mappings
+    assert after_manifest.evidence_baselines == before_manifest.evidence_baselines
+    assert (wiki / "modules" / "app.md").read_bytes() == before_module
+    loaded = load_knowledge_state(wiki)
+    assert loaded.status is KnowledgeLoadState.VALID
+    assert loaded.surface is not None
+    app_page = next(
+        page
+        for page in loaded.surface["pages"]
+        if page["canonical_path"] == "modules/app.md"
+    )
+    assert app_page["source_path"] == "app.py"
 
 
 def test_initialization_creates_only_missing_flows_and_indexes_existing_pages(
@@ -397,9 +506,7 @@ def test_dependency_policy_change_does_not_regenerate_existing_pages_from_deferr
     dependencies = wiki / "dependencies.md"
     load_order = wiki / "load-order.md"
     before = (dependencies.read_bytes(), load_order.read_bytes())
-    (project / "new_dependency.py").write_text(
-        "import core\n", encoding="utf-8"
-    )
+    (project / "new_dependency.py").write_text("import core\n", encoding="utf-8")
 
     sync_cmd.run(
         _sync_args(
@@ -411,9 +518,7 @@ def test_dependency_policy_change_does_not_regenerate_existing_pages_from_deferr
     )
 
     assert (dependencies.read_bytes(), load_order.read_bytes()) == before
-    assert "new_dependency" not in (wiki / "index.md").read_text(
-        encoding="utf-8"
-    )
+    assert "new_dependency" not in (wiki / "index.md").read_text(encoding="utf-8")
 
 
 def test_initialization_does_not_apply_other_persisted_surface_policies(
@@ -446,7 +551,7 @@ def test_initialization_does_not_apply_other_persisted_surface_policies(
     assert (wiki / "dependencies.md").is_file()
 
 
-def test_manifest_v3_loads_in_legacy_mode_and_v4_round_trips(tmp_path):
+def test_manifest_v3_loads_in_legacy_mode_and_v5_round_trips(tmp_path):
     wiki = tmp_path / "wiki"
     wiki.mkdir()
     (wiki / MANIFEST_FILENAME).write_text(
@@ -455,15 +560,49 @@ def test_manifest_v3_loads_in_legacy_mode_and_v4_round_trips(tmp_path):
     assert SyncManifest.load(wiki).surfaces == {}
 
     manifest = SyncManifest(
+        sources={
+            "src/example.py": {
+                "hash": "sha256:" + ("1" * 64),
+                "semantic_hash": "sha256:" + ("2" * 64),
+                "generated_semantics": {
+                    "module": {
+                        "description": "café",
+                        "classes": {"Example": "Example class."},
+                        "functions": {},
+                    },
+                    "entities": {
+                        "Example": {
+                            "description": "Example class.",
+                            "attributes": {},
+                            "methods": {},
+                        }
+                    },
+                },
+                "language": "python",
+                "entities": ["Example"],
+                "entity_pages": {"Example": "Example"},
+                "entity_page_occurrences": [
+                    {"name": "Example", "page": "Example", "occurrence": 1}
+                ],
+                "module_page": "example",
+            }
+        },
         surfaces={"flows": {"enabled": True, "categories": None}},
         generation_inputs={"openapi_file": "openapi.json"},
     )
     manifest.save(wiki)
 
-    payload = json.loads((wiki / MANIFEST_FILENAME).read_text(encoding="utf-8"))
-    assert payload["version"] == 4
-    assert SyncManifest.load(wiki).surfaces == manifest.surfaces
-    assert SyncManifest.load(wiki).generation_inputs == manifest.generation_inputs
+    manifest_bytes = (wiki / MANIFEST_FILENAME).read_bytes()
+    payload = json.loads(manifest_bytes)
+    loaded = SyncManifest.load(wiki)
+
+    assert payload == manifest.to_payload()
+    assert payload["version"] == 5
+    assert loaded.to_payload() == manifest.to_payload()
+    assert manifest_bytes == manifest.to_json().encode("utf-8")
+    assert b"caf\xc3\xa9" in manifest_bytes
+    assert manifest_bytes.endswith(b"\n")
+    assert not manifest_bytes.endswith(b"\n\n")
 
 
 def test_team_manifest_conflict_preserves_matching_generation_state():
@@ -474,9 +613,7 @@ def test_team_manifest_conflict_preserves_matching_generation_state():
     payload = json.dumps({"version": 4, "sources": {}, **state}, indent=2)
     conflicted = f"<<<<<<< ours\n{payload}\n=======\n{payload}\n>>>>>>> theirs\n"
 
-    surfaces, generation_inputs, error = team._manifest_state_from_conflict(
-        conflicted
-    )
+    surfaces, generation_inputs, error = team._manifest_state_from_conflict(conflicted)
 
     assert error == ""
     assert surfaces == state["surfaces"]
@@ -515,9 +652,7 @@ def test_manifest_conflict_does_not_silently_undo_explicit_openapi_clear():
         ]
     )
 
-    surfaces, generation_inputs, error = team._manifest_state_from_conflict(
-        conflicted
-    )
+    surfaces, generation_inputs, error = team._manifest_state_from_conflict(conflicted)
 
     assert surfaces is None
     assert generation_inputs is None
@@ -531,6 +666,21 @@ def test_migrate_preserves_surface_and_generation_state(
     manifest = SyncManifest.load(wiki)
     manifest.surfaces = {"api_contracts": {"enabled": True}}
     manifest.generation_inputs = {"openapi_file": "openapi.json"}
+    page_path = "modules/app.md"
+    mapping = manifest.page_source_mappings[page_path]
+    basis = ConceptObservationBasis(
+        scope=mapping.scope,
+        source_path=mapping.source_path,
+        extractor_ref="python-ast",
+        source_content_hash=manifest.sources[mapping.source_path]["hash"],
+        concept_observation_hash=sha256_bytes(b"app module observation"),
+    )
+    manifest.evidence_baselines[page_path] = ManifestEvidenceBaseline.from_basis(basis)
+    manifest = manifest.with_artifact_hashes(
+        surface_index_hash=sha256_bytes(b"surface index"),
+        knowledge_index_hash=sha256_bytes(b"knowledge index"),
+        evaluated_envelope_hash=sha256_bytes(b"evaluated envelope"),
+    )
     manifest.save(wiki)
 
     migrate_cmd.run(
@@ -547,6 +697,12 @@ def test_migrate_preserves_surface_and_generation_state(
     migrated = SyncManifest.load(wiki)
     assert migrated.surfaces == manifest.surfaces
     assert migrated.generation_inputs == manifest.generation_inputs
+    assert migrated.page_source_mappings[page_path] == mapping
+    migrated_baseline = migrated.evidence_baselines[page_path]
+    assert migrated_baseline.is_known
+    assert migrated_baseline.basis is not None
+    assert migrated_baseline.basis.source_content_hash == basis.source_content_hash
+    assert migrated.artifact_hashes is not None
 
 
 def test_surface_guard_uses_page_count_and_ratio(tmp_path):
@@ -606,20 +762,20 @@ def test_flow_category_requires_explicit_flow_initialization(tmp_path, capsys):
     assert "requires --initialize-surfaces flows" in capsys.readouterr().err
 
 
-def test_dry_run_requires_surface_initialization(tmp_path, capsys):
+def test_dry_run_is_available_for_normal_sync(tmp_path, capsys):
     old_cwd = Path.cwd()
     os.chdir(tmp_path)
     try:
-        with pytest.raises(SystemExit) as exc:
-            sync_cmd._sync_run_options_from_args(
-                types.SimpleNamespace(
-                    src_dir=".",
-                    wiki_dir="wiki",
-                    dry_run=True,
-                )
+        options = sync_cmd._sync_run_options_from_args(
+            types.SimpleNamespace(
+                src_dir=".",
+                wiki_dir="wiki",
+                dry_run=True,
             )
+        )
     finally:
         os.chdir(old_cwd)
 
-    assert exc.value.code == 2
-    assert "--dry-run requires --initialize-surfaces" in capsys.readouterr().err
+    assert options.dry_run is True
+    assert options.initialize_surfaces == frozenset()
+    assert capsys.readouterr().err == ""

@@ -48,9 +48,7 @@ def _surface_values(value: str) -> tuple[str, ...]:
     if not values:
         raise argparse.ArgumentTypeError("must name at least one surface")
     invalid = [
-        surface
-        for surface in values
-        if surface not in sync_cmd.INITIALIZABLE_SURFACES
+        surface for surface in values if surface not in sync_cmd.INITIALIZABLE_SURFACES
     ]
     if invalid:
         allowed = ", ".join(sync_cmd.INITIALIZABLE_SURFACES)
@@ -1258,8 +1256,8 @@ def _add_sync_command(subparsers):
         "--dry-run",
         action="store_true",
         help=(
-            "Preview optional-surface initialization without modifying files; "
-            "requires --initialize-surfaces"
+            "Preview source, optional-surface, and knowledge artifact actions "
+            "without modifying files"
         ),
     )
     sync_parser.add_argument(

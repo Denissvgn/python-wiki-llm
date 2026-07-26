@@ -1,0 +1,650 @@
+"""Command-facing orchestration for generated native knowledge artifacts.
+
+The bootstrap, sync, and migration commands already own source discovery,
+inventory extraction, Markdown generation, and surface evaluation.  This
+module adapts those exact in-memory results to the pure KNOW-109/110 planner
+and applies the shared KNOW-107 commit protocol.  It performs no discovery or
+extraction of its own.
+"""
+
+from __future__ import annotations
+
+import re
+from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Set as AbstractSet
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
+
+from .. import __version__
+from .contracts import KNOWLEDGE_SCHEMA_VERSION
+from .knowledge_artifacts import (
+    KNOWLEDGE_INDEX_FILENAME,
+    FaultInjector,
+    KnowledgeArtifactError,
+    KnowledgeCommitPlan,
+    KnowledgeCommitResult,
+    commit_knowledge_artifacts,
+    validate_knowledge_artifacts,
+)
+from .knowledge_envelope import (
+    ConsumedInput,
+    ConsumedInputKind,
+    ProducerComponentInput,
+    RepositoryEvidence,
+    collect_git_repository_evidence,
+    plugin_producer_inputs,
+)
+from .knowledge_evidence import is_valid_sha256
+from .knowledge_generation import (
+    KnowledgeGenerationError,
+    KnowledgeGenerationInputs,
+    build_knowledge_generation_plan,
+)
+from .knowledge_model import ProducerRecord
+from .source_snapshot import SourceSnapshot
+from .sync_manifest import EVIDENCE_NOT_RECORDED, MANIFEST_FILENAME, SyncManifest
+from .wiki_surface_index import (
+    SURFACE_INDEX_FILENAME,
+    WIKI_SURFACE_INDEX_SCHEMA_VERSION,
+    SurfaceIndexEvaluation,
+)
+
+_COMPONENT_PART_RE = re.compile(r"[^A-Za-z0-9._-]+")
+
+RUNTIME_GENERATION_INPUT_KEY = "llm-wiki/generation-options/v1"
+_RUNTIME_POLICY_KEYS = frozenset(
+    {
+        "data_flow_enabled",
+        "dependency_graph_detail",
+        "workflows_enabled",
+    }
+)
+_DEPENDENCY_GRAPH_DETAILS = frozenset({"auto", "module", "package"})
+RUNTIME_GENERATION_OPTION_DEFAULTS: dict[str, object] = {
+    "api_contracts_enabled": False,
+    "data_flow_enabled": True,
+    "dependencies_enabled": False,
+    "dependency_graph_detail": "auto",
+    "exclude_tests": False,
+    "flow_categories": None,
+    "flows_enabled": False,
+    "include_tests": [],
+    "preserve_semantic": True,
+    "workflows_enabled": True,
+}
+
+
+@dataclass(frozen=True)
+class RuntimeKnowledgeInputs:
+    """Evaluated command state needed to plan one three-artifact commit."""
+
+    target_wiki_dir: str | Path
+    inventory: Mapping[str, Mapping[str, Any]]
+    surface: SurfaceIndexEvaluation
+    source_snapshot: SourceSnapshot
+    module_page_map: Mapping[str, str]
+    entity_occurrence_page_map: Mapping[tuple[str, str, int], str]
+    repository_evidence: RepositoryEvidence
+    inventory_complete: bool
+    previous_manifest: SyncManifest | None = None
+    next_manifest: SyncManifest | None = None
+    manifest_surfaces: Mapping[str, Mapping[str, Any]] | None = None
+    manifest_generation_inputs: Mapping[str, object] | None = None
+    unknown_evidence_reason: str = EVIDENCE_NOT_RECORDED
+    force_unknown_evidence: bool = False
+    untrusted_evidence_page_paths: AbstractSet[str] = frozenset()
+    regenerated_evidence_page_paths: AbstractSet[str] = frozenset()
+    extractor_registry: Mapping[str, str] = field(default_factory=dict)
+    plugin_extractor_components: Sequence[Mapping[str, Any]] = ()
+    plugin_components: Sequence[Mapping[str, Any]] = ()
+    plugin_lock_path: str | None = None
+    plugin_lock_hash: str | None = None
+    generation_options: Mapping[str, Any] = field(default_factory=dict)
+    generation_option_defaults: Mapping[str, Any] = field(default_factory=dict)
+    generation_option_allowlist: Sequence[str] = ()
+
+
+def build_runtime_knowledge_plan(
+    inputs: RuntimeKnowledgeInputs,
+) -> KnowledgeCommitPlan:
+    """Build a commit plan from one command's already evaluated run state."""
+
+    if not isinstance(inputs, RuntimeKnowledgeInputs):
+        raise TypeError("inputs must be a RuntimeKnowledgeInputs")
+    source_hashes = inputs.source_snapshot.hashes_for(inputs.inventory)
+    (
+        extractor_ref_by_source,
+        completeness_by_source,
+        extractor_components,
+        plugin_components,
+    ) = _producer_evidence(
+        inputs.inventory,
+        inventory_complete=inputs.inventory_complete,
+        historical_extractor_refs=_manifest_extractor_refs(inputs.previous_manifest),
+        extractor_registry=inputs.extractor_registry,
+        plugin_extractor_components=inputs.plugin_extractor_components,
+        plugin_components=inputs.plugin_components,
+    )
+    inventory_mode = "deep" if inputs.inventory_complete else "shallow"
+    generation_options = {
+        "inventory_mode": inventory_mode,
+        **inputs.generation_options,
+    }
+    generation_option_defaults = {
+        "inventory_mode": "deep",
+        **inputs.generation_option_defaults,
+    }
+    generation_option_allowlist = tuple(
+        dict.fromkeys(("inventory_mode", *inputs.generation_option_allowlist))
+    )
+    return build_knowledge_generation_plan(
+        KnowledgeGenerationInputs(
+            wiki_dir=inputs.target_wiki_dir,
+            inventory=inputs.inventory,
+            pages=inputs.surface.pages,
+            content_by_page=inputs.surface.content_by_path,
+            surface_index_bytes=inputs.surface.serialized_bytes,
+            surface_index_payload=None,
+            source_content_hashes=source_hashes,
+            consumed_inputs=_runtime_consumed_inputs(inputs),
+            module_page_map=inputs.module_page_map,
+            entity_occurrence_page_map=inputs.entity_occurrence_page_map,
+            extractor_ref_by_source=extractor_ref_by_source,
+            inventory_complete_by_source=completeness_by_source,
+            repository_evidence=inputs.repository_evidence,
+            generation_options=generation_options,
+            generation_option_defaults=generation_option_defaults,
+            generation_option_allowlist=generation_option_allowlist,
+            tool=ProducerComponentInput(
+                component_id="agent-wiki-cli",
+                version=__version__,
+                configuration={
+                    "knowledge_schema": KNOWLEDGE_SCHEMA_VERSION,
+                    "surface_schema": WIKI_SURFACE_INDEX_SCHEMA_VERSION,
+                },
+            ),
+            extractors=extractor_components,
+            plugins=plugin_components,
+            previous_producer=_previous_committed_producer(
+                inputs.target_wiki_dir,
+                inputs.previous_manifest,
+            ),
+            previous_manifest=inputs.previous_manifest,
+            next_manifest=inputs.next_manifest,
+            asset_paths=inputs.surface.existing_asset_paths,
+            manifest_surfaces=inputs.manifest_surfaces,
+            manifest_generation_inputs=inputs.manifest_generation_inputs,
+            unknown_evidence_reason=inputs.unknown_evidence_reason,
+            force_unknown_evidence=inputs.force_unknown_evidence,
+            untrusted_evidence_page_paths=(inputs.untrusted_evidence_page_paths),
+            regenerated_evidence_page_paths=(inputs.regenerated_evidence_page_paths),
+        )
+    )
+
+
+def _previous_committed_producer(
+    wiki_dir: str | Path,
+    manifest: SyncManifest | None,
+) -> ProducerRecord | None:
+    """Return producer evidence only from the prior committed artifact set.
+
+    Markdown may already have been updated by sync, so the full live loader
+    would correctly classify the old projections as a mixed snapshot.  This
+    narrower check validates the still-committed surface/knowledge/manifest
+    trio and its exact marker without consulting current Markdown.
+    """
+
+    if manifest is None or manifest.artifact_hashes is None:
+        return None
+    root = Path(wiki_dir)
+    try:
+        validated = validate_knowledge_artifacts(
+            surface_index_bytes=(root / SURFACE_INDEX_FILENAME).read_bytes(),
+            knowledge_index_bytes=(root / KNOWLEDGE_INDEX_FILENAME).read_bytes(),
+            manifest=manifest,
+        )
+    except (KnowledgeArtifactError, OSError, TypeError, ValueError):
+        return None
+    marker = manifest.artifact_hashes
+    if (
+        validated.surface_index_hash != marker.surface_index_hash
+        or validated.knowledge_index_hash != marker.knowledge_index_hash
+        or validated.evaluated_envelope_hash != marker.evaluated_envelope_hash
+    ):
+        return None
+    return validated.knowledge.bundle.producer
+
+
+def finalize_runtime_knowledge(
+    inputs: RuntimeKnowledgeInputs,
+    *,
+    dry_run: bool = False,
+    fault_injector: FaultInjector | None = None,
+) -> KnowledgeCommitResult:
+    """Plan and commit one generated artifact set through the shared protocol."""
+
+    return commit_knowledge_artifacts(
+        build_runtime_knowledge_plan(inputs),
+        dry_run=dry_run,
+        fault_injector=fault_injector,
+    )
+
+
+def collect_runtime_repository_evidence(
+    source_root: str | Path,
+    target_wiki_dir: str | Path,
+) -> RepositoryEvidence:
+    """Collect Git evidence without recursively observing M1 output bytes."""
+
+    target = Path(target_wiki_dir).resolve()
+    return collect_git_repository_evidence(
+        source_root,
+        excluded_worktree_paths=tuple(
+            target / filename
+            for filename in (
+                SURFACE_INDEX_FILENAME,
+                KNOWLEDGE_INDEX_FILENAME,
+                MANIFEST_FILENAME,
+            )
+        ),
+    )
+
+
+def runtime_generation_options(
+    *,
+    surfaces: Mapping[str, Mapping[str, Any]],
+    generation_inputs: Mapping[str, object] | None = None,
+    include_tests: Iterable[str] | None,
+    preserve_semantic: bool,
+) -> dict[str, object]:
+    """Project command policy into one cross-command safe option allowlist."""
+
+    def surface_value(
+        name: str,
+        key: str,
+        default: object,
+    ) -> object:
+        surface = surfaces.get(name)
+        return surface.get(key, default) if isinstance(surface, Mapping) else default
+
+    raw_categories = surface_value("flows", "categories", None)
+    categories = (
+        sorted({str(value) for value in raw_categories})
+        if isinstance(raw_categories, (list, tuple, set, frozenset))
+        else None
+    )
+    persisted_policy = _runtime_policy_from_generation_inputs(generation_inputs)
+    data_flow_enabled = (
+        RUNTIME_GENERATION_OPTION_DEFAULTS["data_flow_enabled"]
+        if persisted_policy is None
+        else persisted_policy["data_flow_enabled"]
+    )
+    dependency_graph_detail = (
+        "auto"
+        if persisted_policy is None
+        else persisted_policy["dependency_graph_detail"]
+    )
+    workflows_enabled = (
+        RUNTIME_GENERATION_OPTION_DEFAULTS["workflows_enabled"]
+        if persisted_policy is None
+        else persisted_policy["workflows_enabled"]
+    )
+    return {
+        "api_contracts_enabled": bool(surface_value("api_contracts", "enabled", False)),
+        "data_flow_enabled": data_flow_enabled,
+        "dependencies_enabled": bool(surface_value("dependencies", "enabled", False)),
+        "dependency_graph_detail": dependency_graph_detail,
+        "exclude_tests": bool(
+            surface_value("flows", "exclude_tests", False)
+            or surface_value("dependencies", "exclude_tests", False)
+        ),
+        "flow_categories": categories,
+        "flows_enabled": bool(surface_value("flows", "enabled", False)),
+        "include_tests": sorted({str(value) for value in (include_tests or ())}),
+        "preserve_semantic": bool(preserve_semantic),
+        "workflows_enabled": workflows_enabled,
+    }
+
+
+def persist_runtime_generation_policy(
+    generation_inputs: Mapping[str, object],
+    *,
+    data_flow_enabled: bool,
+    dependency_graph_detail: str,
+    workflows_enabled: bool,
+) -> dict[str, object]:
+    """Persist bootstrap-only generation policy for later sync parity."""
+
+    policy = {
+        "data_flow_enabled": data_flow_enabled,
+        "dependency_graph_detail": dependency_graph_detail,
+        "workflows_enabled": workflows_enabled,
+    }
+    _validate_runtime_policy(policy)
+    persisted = dict(generation_inputs)
+    persisted[RUNTIME_GENERATION_INPUT_KEY] = policy
+    return persisted
+
+
+def _runtime_policy_from_generation_inputs(
+    generation_inputs: Mapping[str, object] | None,
+) -> dict[str, object] | None:
+    if (
+        generation_inputs is None
+        or RUNTIME_GENERATION_INPUT_KEY not in generation_inputs
+    ):
+        return None
+    raw_policy = generation_inputs[RUNTIME_GENERATION_INPUT_KEY]
+    if not isinstance(raw_policy, Mapping):
+        raise KnowledgeGenerationError(
+            f"manifest_generation_inputs.{RUNTIME_GENERATION_INPUT_KEY}",
+            "must be an object",
+        )
+    policy = dict(raw_policy)
+    _validate_runtime_policy(policy)
+    return policy
+
+
+def _validate_runtime_policy(policy: Mapping[str, object]) -> None:
+    keys = set(policy)
+    if keys != _RUNTIME_POLICY_KEYS:
+        missing = sorted(_RUNTIME_POLICY_KEYS - keys)
+        if missing:
+            field = missing[0]
+            message = "is required"
+        else:
+            field = min(keys - _RUNTIME_POLICY_KEYS)
+            message = "is not supported"
+        raise KnowledgeGenerationError(
+            f"manifest_generation_inputs.{RUNTIME_GENERATION_INPUT_KEY}.{field}",
+            message,
+        )
+    for field in ("data_flow_enabled", "workflows_enabled"):
+        if not isinstance(policy[field], bool):
+            raise KnowledgeGenerationError(
+                f"manifest_generation_inputs.{RUNTIME_GENERATION_INPUT_KEY}.{field}",
+                "must be a boolean",
+            )
+    detail = policy["dependency_graph_detail"]
+    if not isinstance(detail, str) or detail not in _DEPENDENCY_GRAPH_DETAILS:
+        raise KnowledgeGenerationError(
+            "manifest_generation_inputs."
+            f"{RUNTIME_GENERATION_INPUT_KEY}.dependency_graph_detail",
+            "must be one of: auto, module, package",
+        )
+
+
+def _producer_evidence(
+    inventory: Mapping[str, Mapping[str, Any]],
+    *,
+    inventory_complete: bool,
+    historical_extractor_refs: frozenset[str] = frozenset(),
+    extractor_registry: Mapping[str, str] | None = None,
+    plugin_extractor_components: Sequence[Mapping[str, Any]] = (),
+    plugin_components: Sequence[Mapping[str, Any]] = (),
+) -> tuple[
+    dict[str, str],
+    dict[str, bool],
+    tuple[ProducerComponentInput, ...],
+    tuple[ProducerComponentInput, ...],
+]:
+    refs: dict[str, str] = {}
+    completeness: dict[str, bool] = {}
+    components_by_id: dict[str, ProducerComponentInput] = {}
+    registry = dict(extractor_registry or {})
+    plugin_by_language = _plugin_extractors_by_language(plugin_extractor_components)
+    inventory_mode = "deep" if inventory_complete else "shallow"
+    for source_path, file_data in inventory.items():
+        raw_language = file_data.get("language")
+        language = (
+            str(raw_language).strip().casefold()
+            if raw_language not in (None, "")
+            else Path(source_path).suffix.lstrip(".").casefold() or "unknown"
+        )
+        plugin = plugin_by_language.get(language)
+        configuration: Mapping[str, Any] | None
+        if plugin is None:
+            component_id = _builtin_extractor_id(language)
+            version: str | None = __version__
+            entry_point = registry.get(language)
+            configuration = (
+                {
+                    "entry_point": entry_point,
+                    "inventory_mode": inventory_mode,
+                    "language": language,
+                }
+                if entry_point is not None
+                else None
+            )
+        else:
+            plugin_id = str(plugin["plugin_id"])
+            component_name = str(plugin["id"])
+            component_id = f"{plugin_id}/{component_name}"
+            raw_version = plugin.get("plugin_version")
+            version = (
+                raw_version if isinstance(raw_version, str) and raw_version else None
+            )
+            configuration = {
+                "entry_point": str(plugin["entry_point"]),
+                "inventory_mode": inventory_mode,
+                "language": language,
+                "parallel_safe": plugin.get("parallel_safe") is True,
+            }
+        refs[source_path] = component_id
+        completeness[source_path] = inventory_complete
+        components_by_id.setdefault(
+            component_id,
+            ProducerComponentInput(
+                component_id=component_id,
+                version=version,
+                configuration=configuration,
+                limitations=(() if inventory_complete else ("inventory-incomplete",)),
+            ),
+        )
+
+    components = tuple(
+        components_by_id[component_id] for component_id in sorted(components_by_id)
+    )
+    historical_components = tuple(
+        ProducerComponentInput(
+            component_id=component_id,
+            version=None,
+            configuration=None,
+            limitations=("historical-evidence",),
+        )
+        for component_id in sorted(historical_extractor_refs - set(components_by_id))
+    )
+    selected_plugin_components = (
+        plugin_components if plugin_components else plugin_extractor_components
+    )
+    plugin_ids = {
+        str(component["plugin_id"])
+        for component in selected_plugin_components
+        if isinstance(component, Mapping)
+        and isinstance(component.get("plugin_id"), str)
+    }
+    producer_plugins = plugin_producer_inputs(
+        selected_plugin_components,
+        plugin_configurations={plugin_id: {} for plugin_id in plugin_ids},
+    )
+    return (
+        refs,
+        completeness,
+        components + historical_components,
+        producer_plugins,
+    )
+
+
+def _builtin_extractor_id(language: str) -> str:
+    component_part = _COMPONENT_PART_RE.sub("-", language).strip("-._")
+    if not component_part:
+        component_part = "unknown"
+    return f"llm-wiki/extractor/{component_part}"
+
+
+def _plugin_extractors_by_language(
+    components: Sequence[Mapping[str, Any]],
+) -> dict[str, Mapping[str, Any]]:
+    by_language: dict[str, Mapping[str, Any]] = {}
+    for index, component in enumerate(components):
+        if not isinstance(component, Mapping):
+            raise KnowledgeGenerationError(
+                f"plugin_extractor_components[{index}]",
+                "must be an object",
+            )
+        language = component.get("language")
+        plugin_id = component.get("plugin_id")
+        component_id = component.get("id")
+        entry_point = component.get("entry_point")
+        if not isinstance(language, str) or not language.strip():
+            raise KnowledgeGenerationError(
+                f"plugin_extractor_components[{index}].language",
+                "must be a non-empty string",
+            )
+        for field_name, value in (
+            ("plugin_id", plugin_id),
+            ("id", component_id),
+            ("entry_point", entry_point),
+        ):
+            if not isinstance(value, str) or not value:
+                raise KnowledgeGenerationError(
+                    f"plugin_extractor_components[{index}].{field_name}",
+                    "must be a non-empty string",
+                )
+        normalized_language = language.strip().casefold()
+        if normalized_language in by_language:
+            raise KnowledgeGenerationError(
+                f"plugin_extractor_components[{index}].language",
+                f"duplicates selected language {normalized_language!r}",
+            )
+        by_language[normalized_language] = component
+    return by_language
+
+
+def _manifest_extractor_refs(
+    manifest: SyncManifest | None,
+) -> frozenset[str]:
+    if manifest is None:
+        return frozenset()
+    refs: set[str] = set()
+    for baseline in manifest.evidence_baselines.values():
+        if baseline.basis is not None:
+            refs.add(baseline.basis.extractor_ref)
+    for tombstone in manifest.tombstones.values():
+        if tombstone.last_valid_basis is not None:
+            refs.add(tombstone.last_valid_basis.extractor_ref)
+    return frozenset(refs)
+
+
+def _runtime_consumed_inputs(
+    inputs: RuntimeKnowledgeInputs,
+) -> tuple[ConsumedInput, ...]:
+    """Add explicitly selected inputs to the already captured source basis.
+
+    Source discovery captures normal language, infrastructure, package, YAML,
+    and selection inputs in one pass.  An explicitly selected OpenAPI JSON
+    document is not otherwise a source-tree candidate, so the command's
+    already validated generation-input commitment is merged here without
+    rereading it.  When an OpenAPI YAML file was captured by discovery, its
+    more specific classification replaces the generic YAML classification.
+    """
+
+    consumed_by_path = {
+        item.path: item for item in inputs.source_snapshot.to_consumed_inputs()
+    }
+    _merge_explicit_consumed_input(
+        consumed_by_path,
+        path=inputs.plugin_lock_path,
+        content_hash=inputs.plugin_lock_hash,
+        kind=ConsumedInputKind.PLUGIN,
+        field="plugin_lock",
+    )
+    generation_inputs = inputs.manifest_generation_inputs
+    if generation_inputs is None and inputs.next_manifest is not None:
+        generation_inputs = inputs.next_manifest.generation_inputs
+    if generation_inputs is None and inputs.previous_manifest is not None:
+        generation_inputs = inputs.previous_manifest.generation_inputs
+    if generation_inputs is None:
+        return tuple(consumed_by_path[path] for path in sorted(consumed_by_path))
+
+    openapi = generation_inputs.get("openapi")
+    if openapi is None:
+        return tuple(consumed_by_path[path] for path in sorted(consumed_by_path))
+    if not isinstance(openapi, Mapping):
+        raise KnowledgeGenerationError(
+            "manifest_generation_inputs.openapi",
+            "must be an object",
+        )
+    path = openapi.get("path")
+    if not isinstance(path, str) or not path:
+        raise KnowledgeGenerationError(
+            "manifest_generation_inputs.openapi.path",
+            "must be a non-empty repository-relative path",
+        )
+    content_hash = openapi.get("sha256")
+    if not is_valid_sha256(content_hash):
+        raise KnowledgeGenerationError(
+            "manifest_generation_inputs.openapi.sha256",
+            "must be a canonical lowercase SHA-256 value",
+        )
+    assert isinstance(content_hash, str)
+    _merge_explicit_consumed_input(
+        consumed_by_path,
+        path=path,
+        content_hash=content_hash,
+        kind=ConsumedInputKind.OPENAPI,
+        field="manifest_generation_inputs.openapi",
+    )
+    return tuple(consumed_by_path[path] for path in sorted(consumed_by_path))
+
+
+def _merge_explicit_consumed_input(
+    consumed_by_path: dict[str, ConsumedInput],
+    *,
+    path: str | None,
+    content_hash: str | None,
+    kind: ConsumedInputKind,
+    field: str,
+) -> None:
+    if (path is None) != (content_hash is None):
+        raise KnowledgeGenerationError(
+            field,
+            "path and content hash must be supplied together",
+        )
+    if path is None:
+        return
+    if not path:
+        raise KnowledgeGenerationError(
+            f"{field}.path",
+            "must be a non-empty repository-relative path",
+        )
+    if not is_valid_sha256(content_hash):
+        raise KnowledgeGenerationError(
+            f"{field}.sha256",
+            "must be a canonical lowercase SHA-256 value",
+        )
+    assert isinstance(content_hash, str)
+    captured = consumed_by_path.get(path)
+    if captured is not None and captured.content_hash != content_hash:
+        raise KnowledgeGenerationError(
+            f"{field}.sha256",
+            "does not match the exact source-snapshot commitment",
+        )
+    consumed_by_path[path] = ConsumedInput(
+        path=path,
+        content_hash=content_hash,
+        kind=kind,
+    )
+
+
+__all__ = [
+    "RUNTIME_GENERATION_INPUT_KEY",
+    "RUNTIME_GENERATION_OPTION_DEFAULTS",
+    "RuntimeKnowledgeInputs",
+    "build_runtime_knowledge_plan",
+    "collect_runtime_repository_evidence",
+    "finalize_runtime_knowledge",
+    "persist_runtime_generation_policy",
+    "runtime_generation_options",
+]

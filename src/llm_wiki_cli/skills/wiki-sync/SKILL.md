@@ -47,7 +47,7 @@ Bring the LLM Wiki back in sync with the code that just changed. The loop is alw
    This mode defers ordinary entity/module source changes. Inspect its page
    counts, rerun without `--dry-run`, and only add `--force` when the reported
    surface wave is expected. OpenAPI paths must stay inside the source root.
-   Sync persists the selected path and hash in manifest v4, refreshes contracts
+   Sync persists the selected path and hash in manifest v5, refreshes contracts
    on later specification-only changes, and returns to static authority when
    run with `--clear-openapi-file`.
 
@@ -74,7 +74,7 @@ Bring the LLM Wiki back in sync with the code that just changed. The loop is alw
    llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki
    ```
 
-6. **Review the diff before staging.** `git diff -- docs/llm_wiki/` — confirm only pages that correspond to the code diff changed; no reformatting or unrelated edits. `--dry-run` previews explicit surface initialization only; ordinary incremental sync still requires this post-write diff review.
+6. **Review the diff before staging.** `git diff -- docs/llm_wiki/` — confirm only pages that correspond to the code diff changed; no reformatting or unrelated edits. `--dry-run` previews both ordinary incremental sync and explicit surface initialization, including the three generated artifact actions.
 
 7. **CHANGELOG.** Add a `## [Unreleased]` entry for user-facing changes; skip for pure refactors, test-only, or doc-only commits.
 

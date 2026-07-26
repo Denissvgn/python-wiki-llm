@@ -5,21 +5,16 @@ import re
 import shlex
 import sys
 from collections import defaultdict
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
-from typing import Any, Iterable, TextIO
+from typing import Any, TextIO
 
-from .extract_cmd import (
-    get_call_graph,
-    get_docker_inventory,
-    get_inventory_result,
-    print_inventory_failures,
-    resolve_call_edges,
-)
 from ..config import (
     DEFAULT_WIKI_DIR as _DEFAULT_WIKI_DIR,
+)
+from ..config import (
     validate_path,
     validate_source_root,
 )
@@ -30,7 +25,10 @@ from ..services.api_contracts import (
     render_api_contracts_markdown,
     render_flow_api_contract_section,
 )
-from ..services.contracts import BOOTSTRAP_SUMMARY_SCHEMA_VERSION
+from ..services.contracts import (
+    BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
+    KNOWLEDGE_SCHEMA_VERSION,
+)
 from ..services.data_flow import analyze_data_flow, build_data_flow_context
 from ..services.dependencies import (
     analyze_dependencies,
@@ -51,12 +49,28 @@ from ..services.infrastructure_inventory import (
     infrastructure_page_name,
 )
 from ..services.io import read_md, write_md
+from ..services.knowledge_artifacts import (
+    ArtifactWriteState,
+    KnowledgeCommitResult,
+)
+from ..services.knowledge_orchestration import (
+    RUNTIME_GENERATION_OPTION_DEFAULTS,
+    RuntimeKnowledgeInputs,
+    collect_runtime_repository_evidence,
+    finalize_runtime_knowledge,
+    persist_runtime_generation_policy,
+    runtime_generation_options,
+)
 from ..services.module_maps import build_module_dependency_maps
 from ..services.paths import normalize_source_path
 from ..services.relationships import build_entity_relationship_summaries
 from ..services.schema import (
     ALL_SCHEMA_FILES as _AGENT_SCHEMA_FILES,
+)
+from ..services.schema import (
     CONSTRAINT_END as _CONSTRAINT_END,
+)
+from ..services.schema import (
     CONSTRAINT_START as _CONSTRAINT_START,
 )
 from ..services.source_snapshot import (
@@ -64,9 +78,17 @@ from ..services.source_snapshot import (
     format_unsupported_source_summary,
     unsupported_source_summary,
 )
+from ..services.sync_manifest import SyncManifest
 from ..services.wiki_surface import PageKind, canonical_path, iter_page_kinds
-from ..services.wiki_surface_index import write_surface_index
-
+from ..services.wiki_surface_index import evaluate_surface_index
+from .extract_cmd import (
+    InventoryResult,
+    get_call_graph,
+    get_docker_inventory,
+    get_inventory_result,
+    print_inventory_failures,
+    resolve_call_edges,
+)
 
 _SURFACE_LABELS = {entry.kind: entry.label for entry in iter_page_kinds()}
 _SOURCE_DOC_LINK_RE = re.compile(r"(!)?\[([^\]]+)\]\(([^)]+)\)")
@@ -1136,8 +1158,7 @@ def _field_default(attribute: Mapping) -> str:
 
 def _field_constraints(attribute: Mapping) -> str:
     parts = [
-        f"{name}={value}"
-        for name, value in attribute.get("constraints", {}).items()
+        f"{name}={value}" for name, value in attribute.get("constraints", {}).items()
     ]
     parts.extend(str(value) for value in attribute.get("annotated_metadata", []))
     parts.extend(
@@ -1468,9 +1489,7 @@ def _generate_module_md(
                 entity_occurrence_page_map,
             )
             entity_link = f"[{c['name']}](../entities/{page_name}.md)"
-            bases = ", ".join(
-                _table_inline_code(base) for base in c.get("bases", [])
-            )
+            bases = ", ".join(_table_inline_code(base) for base in c.get("bases", []))
             bases = bases or _table_inline_code(c.get("target"))
             doc = _source_doc_first_line(c.get("docstring")) or "—"
             if include_kind:
@@ -1496,9 +1515,7 @@ def _generate_module_md(
         for fn in functions:
             sig = _format_signature(fn)
             decs = (
-                ", ".join(
-                    _table_inline_code(f"@{d}") for d in fn.get("decorators", [])
-                )
+                ", ".join(_table_inline_code(f"@{d}") for d in fn.get("decorators", []))
                 or "—"
             )
             doc = _source_doc_first_line(fn.get("docstring")) or "—"
@@ -3271,6 +3288,7 @@ class _BootstrapRunState:
     skipped_files: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
     unsupported_sources: dict[str, dict[str, object]] = field(default_factory=dict)
+    written_structural_page_paths: set[str] = field(default_factory=set)
 
 
 @dataclass(frozen=True)
@@ -3454,6 +3472,7 @@ def _extract_bootstrap_inventory(state: _BootstrapRunState):
     if inventory_result.failed:
         print_inventory_failures(inventory_result, file=options.progress_stream)
         sys.exit(1)
+    state.source_snapshot = inventory_result.source_snapshot or state.source_snapshot
     state.unsupported_sources = unsupported_source_summary(
         state.source_snapshot, supported_languages=inventory_result.statuses
     )
@@ -3500,6 +3519,9 @@ def _finish_if_empty_bootstrap_inventory(
                         "updated_files": state.updated_files,
                         "skipped_files": state.skipped_files,
                         "manifest_path": None,
+                        "knowledge_path": None,
+                        "knowledge_status": None,
+                        "knowledge_schema_version": KNOWLEDGE_SCHEMA_VERSION,
                     },
                     state.unsupported_sources,
                 ),
@@ -3613,6 +3635,7 @@ def _write_bootstrap_entity_pages(
                     diagram_style=diagram_style,
                 ),
             )
+            state.written_structural_page_paths.add(f"entities/{entity_page_name}.md")
             entities_created += 1
             _emit_bootstrap(state, f"  CREATE entity: {entity_page_name}")
         if entity_page_name not in seen_entity_pages:
@@ -3657,6 +3680,7 @@ def _write_bootstrap_module_page(
             else None,
         ),
     )
+    state.written_structural_page_paths.add(f"modules/{mod_page_name}.md")
     _emit_bootstrap(state, f"  CREATE module: {mod_page_name}")
     return True
 
@@ -3810,9 +3834,7 @@ def _write_bootstrap_api_contract_page(
         _emit_bootstrap(state, "  SKIP API contracts (exists): api-contracts.md")
         return _ApiContractResult(contracts, True, 0)
     if page_path.exists():
-        generated = _preserve_level_two_section(
-            read_md(page_path), generated, "Notes"
-        )
+        generated = _preserve_level_two_section(read_md(page_path), generated, "Notes")
     _write_bootstrap_file(state, page_path, generated)
     _emit_bootstrap(state, "  CREATE API contracts: api-contracts.md")
     return _ApiContractResult(contracts, True, 1)
@@ -3864,9 +3886,7 @@ def _write_bootstrap_flow_pages(
         entrypoint_result.entries, api_contracts or {}
     )
     for entry_point in entry_points:
-        for operation in _api_operations_for_entry_point(
-            api_contracts, entry_point
-        ):
+        for operation in _api_operations_for_entry_point(api_contracts, entry_point):
             if isinstance(operation, dict):
                 operation["flow_id"] = entry_point["id"]
     edges: list[dict]
@@ -4233,78 +4253,141 @@ def _update_bootstrap_agent_constraints(state: _BootstrapRunState) -> None:
         )
 
 
-def _write_bootstrap_manifest(
+def _bootstrap_manifest_generation_state(
     state: _BootstrapRunState,
-    inventory: dict,
-    page_maps: _BootstrapPageMaps,
     api_contract_result: _ApiContractResult,
-) -> Path:
-    from .sync_cmd import SyncManifest  # local import to avoid circular dep
-
-    surfaces = {
+) -> tuple[dict[str, dict[str, object]], dict[str, object]]:
+    surfaces: dict[str, dict[str, object]] = {
         "flows": {
             "enabled": bool(state.options.deep and not state.options.skip_flows),
             "categories": None,
             "exclude_tests": False,
         },
         "dependencies": {
-            "enabled": bool(
-                state.options.deep and not state.options.skip_dependencies
-            ),
+            "enabled": bool(state.options.deep and not state.options.skip_dependencies),
             "exclude_tests": False,
         },
         "api_contracts": {
             "enabled": bool(state.options.api_contracts or api_contract_result.present)
         },
     }
-    generation_inputs = {}
+    generation_inputs = persist_runtime_generation_policy(
+        {},
+        data_flow_enabled=bool(
+            state.options.deep
+            and not state.options.skip_flows
+            and not state.options.skip_data_flow
+        ),
+        dependency_graph_detail=state.options.dependency_graph_detail,
+        workflows_enabled=bool(state.options.deep and not state.options.skip_workflows),
+    )
     openapi = (api_contract_result.contracts or {}).get("openapi")
     if isinstance(openapi, Mapping):
         generation_inputs["openapi"] = {
-            key: openapi[key]
-            for key in ("path", "sha256", "format")
-            if key in openapi
+            key: openapi[key] for key in ("path", "sha256", "format") if key in openapi
         }
-
-    manifest = SyncManifest.build_from_inventory(
-        inventory,
-        state.options.src_dir_for_scan,
-        page_maps.entity_page_name_cache,
-        page_maps.module_page_map,
-        entity_occurrence_page_cache=page_maps.entity_occurrence_page_name_cache,
-        surfaces=surfaces,
-        generation_inputs=generation_inputs,
-    )
-    _emit_bootstrap(state, "Writing sync manifest...", flush=True)
-    manifest_path = state.options.wiki_dir / ".llm-wiki-manifest.json"
-    manifest_existed = manifest_path.exists()
-    manifest.save(state.options.wiki_dir)
-    _record_bootstrap_write(state, manifest_path, manifest_existed)
-    _emit_bootstrap(state, f"  WRITE {manifest_path}")
-    return manifest_path
+    return surfaces, generation_inputs
 
 
-def _write_bootstrap_surface_index(
+def _load_previous_bootstrap_manifest(wiki_dir: Path) -> SyncManifest | None:
+    try:
+        return SyncManifest.load(wiki_dir)
+    except (FileNotFoundError, json.JSONDecodeError, TypeError, ValueError):
+        return None
+
+
+def _record_bootstrap_artifact(
     state: _BootstrapRunState,
-    inventory: dict,
-    page_maps: _BootstrapPageMaps,
-    flow_result: _FlowResult,
+    *,
+    path: Path,
+    write_state: ArtifactWriteState,
 ) -> None:
-    _emit_bootstrap(state, "Writing wiki surface index...", flush=True)
-    surface_path, write_state = write_surface_index(
+    if write_state is ArtifactWriteState.UNCHANGED:
+        state.skipped_files.append(_path_text(path))
+        _emit_bootstrap(state, f"  SKIP {path} (unchanged)")
+        return
+    _record_bootstrap_write(
+        state,
+        path,
+        write_state is ArtifactWriteState.UPDATED,
+    )
+    action = "CREATE" if write_state is ArtifactWriteState.CREATED else "UPDATE"
+    _emit_bootstrap(state, f"  {action} {path}")
+
+
+def _finalize_bootstrap_artifacts(
+    state: _BootstrapRunState,
+    inventory_result: InventoryResult,
+    page_maps: _BootstrapPageMaps,
+    result: _BootstrapGenerationResult,
+) -> KnowledgeCommitResult:
+    inventory = inventory_result.inventory
+    surface = evaluate_surface_index(
         state.options.wiki_dir,
         inventory,
         src_dir=state.options.src_dir_for_scan,
         entity_page_cache=page_maps.entity_page_name_cache,
         entity_occurrence_page_cache=page_maps.entity_occurrence_page_name_cache,
         module_page_map=page_maps.module_page_map,
-        entry_points=flow_result.entries,
+        entry_points=result.flow.entries,
     )
-    if write_state != "unchanged":
-        _record_bootstrap_write(state, surface_path, write_state == "updated")
-        _emit_bootstrap(state, f"  WRITE {surface_path}")
-    else:
-        _emit_bootstrap(state, f"  SKIP {surface_path} (unchanged)")
+    surfaces, generation_inputs = _bootstrap_manifest_generation_state(
+        state,
+        result.api_contract,
+    )
+    _emit_bootstrap(state, "Writing generated knowledge artifacts...", flush=True)
+    _emit_bootstrap(state, "Writing sync manifest...", flush=True)
+    committed = finalize_runtime_knowledge(
+        RuntimeKnowledgeInputs(
+            target_wiki_dir=state.options.wiki_dir,
+            inventory=inventory,
+            surface=surface,
+            source_snapshot=state.source_snapshot,
+            module_page_map=page_maps.module_page_map,
+            entity_occurrence_page_map=(page_maps.entity_occurrence_page_name_cache),
+            repository_evidence=collect_runtime_repository_evidence(
+                state.options.src_dir_for_scan,
+                state.options.wiki_dir,
+            ),
+            inventory_complete=state.options.deep,
+            previous_manifest=_load_previous_bootstrap_manifest(state.options.wiki_dir),
+            manifest_surfaces=surfaces,
+            manifest_generation_inputs=generation_inputs,
+            untrusted_evidence_page_paths={
+                page.relative_path
+                for page in surface.pages
+                if page.kind in {PageKind.ENTITIES, PageKind.MODULES}
+                and page.relative_path not in state.written_structural_page_paths
+            },
+            regenerated_evidence_page_paths=frozenset(
+                state.written_structural_page_paths
+            ),
+            extractor_registry=inventory_result.extractor_registry,
+            plugin_extractor_components=inventory_result.plugin_components,
+            plugin_components=inventory_result.producer_plugin_components,
+            plugin_lock_path=inventory_result.plugin_lock_path,
+            plugin_lock_hash=inventory_result.plugin_lock_hash,
+            generation_options=runtime_generation_options(
+                surfaces=surfaces,
+                generation_inputs=generation_inputs,
+                include_tests=state.options.include_tests,
+                preserve_semantic=True,
+            ),
+            generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS,
+            generation_option_allowlist=tuple(RUNTIME_GENERATION_OPTION_DEFAULTS),
+        )
+    )
+    for artifact in (
+        committed.surface_index,
+        committed.knowledge_index,
+        committed.manifest,
+    ):
+        _record_bootstrap_artifact(
+            state,
+            path=artifact.path,
+            write_state=artifact.state,
+        )
+    return committed
 
 
 def _emit_bootstrap_json_summary(
@@ -4316,7 +4399,7 @@ def _emit_bootstrap_json_summary(
     dependency_result: _DependencyResult,
     api_contract_result: _ApiContractResult,
     cross_reference_count: int,
-    manifest_path: Path,
+    artifacts: KnowledgeCommitResult,
 ) -> None:
     if not state.options.json_mode:
         return
@@ -4359,7 +4442,10 @@ def _emit_bootstrap_json_summary(
             "created_files": state.created_files,
             "updated_files": state.updated_files,
             "skipped_files": state.skipped_files,
-            "manifest_path": _path_text(manifest_path),
+            "manifest_path": _path_text(artifacts.manifest.path),
+            "knowledge_path": _path_text(artifacts.knowledge_index.path),
+            "knowledge_status": artifacts.knowledge_index.state.value,
+            "knowledge_schema_version": KNOWLEDGE_SCHEMA_VERSION,
         },
         state.unsupported_sources,
     )
@@ -4434,10 +4520,11 @@ def _generate_bootstrap_content(
 
 def _finalize_bootstrap(
     state: _BootstrapRunState,
-    inventory: dict,
+    inventory_result: InventoryResult,
     page_maps: _BootstrapPageMaps,
     result: _BootstrapGenerationResult,
 ) -> None:
+    inventory = inventory_result.inventory
     _write_bootstrap_index(
         state,
         result.entity,
@@ -4458,7 +4545,13 @@ def _finalize_bootstrap(
         result.api_contract,
         result.cross_reference_count,
     )
-    _write_bootstrap_surface_index(state, inventory, page_maps, result.flow)
+    _update_bootstrap_agent_constraints(state)
+    artifacts = _finalize_bootstrap_artifacts(
+        state,
+        inventory_result,
+        page_maps,
+        result,
+    )
     _emit_bootstrap_complete(
         state,
         inventory,
@@ -4470,10 +4563,6 @@ def _finalize_bootstrap(
         result.api_contract,
         result.cross_reference_count,
     )
-    _update_bootstrap_agent_constraints(state)
-    manifest_path = _write_bootstrap_manifest(
-        state, inventory, page_maps, result.api_contract
-    )
     _emit_bootstrap_json_summary(
         state,
         inventory,
@@ -4483,7 +4572,7 @@ def _finalize_bootstrap(
         result.dependency,
         result.api_contract,
         result.cross_reference_count,
-        manifest_path,
+        artifacts,
     )
 
 
@@ -4494,9 +4583,8 @@ def run(args):
 
     inventory_result = _extract_bootstrap_inventory(state)
     inventory = inventory_result.inventory
-    if (
-        not state.options.openapi_file
-        and _finish_if_empty_bootstrap_inventory(state, inventory)
+    if not state.options.openapi_file and _finish_if_empty_bootstrap_inventory(
+        state, inventory
     ):
         return
 
@@ -4506,7 +4594,7 @@ def run(args):
     except ApiContractError as exc:
         print(f"Error: {exc}", file=state.options.progress_stream)
         sys.exit(2)
-    _finalize_bootstrap(state, inventory, page_maps, result)
+    _finalize_bootstrap(state, inventory_result, page_maps, result)
 
 
 def _update_agent_constraints(wiki_dir: str, *, file=None) -> None:

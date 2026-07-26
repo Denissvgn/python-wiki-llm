@@ -427,11 +427,23 @@ class TestPluginRuntimeIntegration:
         )
         plugins.install_plugin(str(plugin_dir), yes=True)
 
-        inventory = extract_cmd.get_inventory(".")
+        result = extract_cmd.get_inventory_result(".")
+        inventory = result.inventory
 
         assert "models.py" in inventory
         assert inventory["models.py"]["language"] == "python"
         assert inventory["flow.toy"]["language"] == "toy"
+        assert result.extractor_registry["toy"] == "toy_plugin:ToyExtractor"
+        assert [component["ref"] for component in result.plugin_components] == [
+            "toy-extractor/toy"
+        ]
+        assert [
+            component["ref"] for component in result.producer_plugin_components
+        ] == ["toy-extractor/toy"]
+        assert result.plugin_lock_path == ".llm-wiki/plugins.lock.json"
+        assert result.plugin_lock_hash is not None
+        assert result.source_snapshot is not None
+        assert set(result.source_snapshot.hashes_for(["flow.toy"])) == {"flow.toy"}
 
     def test_installed_lint_rule_adds_issue(self, tmp_project, tmp_wiki):
         plugin_dir = _write_plugin(

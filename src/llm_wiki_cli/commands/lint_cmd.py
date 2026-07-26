@@ -415,7 +415,8 @@ def _check_sync_manifest(
     src_dir: str,
     inventory: dict | None = None,
 ) -> None:
-    from .sync_cmd import MANIFEST_FILENAME, SyncManifest, _compute_diff
+    from ..services.sync_manifest import MANIFEST_FILENAME, SyncManifest
+    from .sync_cmd import _compute_diff
 
     try:
         manifest = SyncManifest.load(wiki_dir)
@@ -1318,9 +1319,7 @@ def report_to_dict(report: LintReport, *, include_execution: bool = False) -> di
         "diagnostics": [asdict(diagnostic) for diagnostic in report.diagnostics],
     }
     if include_execution:
-        payload["execution"] = {
-            "extractor_jobs": report.extraction_job_plan.to_dict()
-        }
+        payload["execution"] = {"extractor_jobs": report.extraction_job_plan.to_dict()}
     return payload
 
 

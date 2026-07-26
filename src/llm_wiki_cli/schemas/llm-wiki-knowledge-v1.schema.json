@@ -19,12 +19,14 @@
     },
     "concepts": {
       "type": "array",
+      "description": "Semantically unordered concept records. Canonical payloads order them by locator.",
       "items": {
         "$ref": "#/$defs/concept"
       }
     },
     "relationships": {
       "type": "array",
+      "description": "Semantically unordered relationship records. Canonical payloads order them by compact canonical JSON of each complete normalized record.",
       "items": {
         "$ref": "#/$defs/relationship"
       }
@@ -34,7 +36,51 @@
     }
   },
   "additionalProperties": false,
+  "allOf": [
+    {
+      "$ref": "#/$defs/utf8JsonValue"
+    }
+  ],
   "$defs": {
+    "utf8String": {
+      "type": "string",
+      "description": "A Unicode scalar-value string that can be encoded as strict UTF-8.",
+      "not": {
+        "pattern": "[\\uD800-\\uDFFF]"
+      }
+    },
+    "utf8JsonValue": {
+      "description": "A JSON value whose object keys and string values contain only Unicode scalar values.",
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "$ref": "#/$defs/utf8String"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/utf8JsonValue"
+          }
+        },
+        {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/utf8String"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/utf8JsonValue"
+          }
+        }
+      ]
+    },
     "qualifiedName": {
       "type": "string",
       "description": "A custom name qualified by its owner as namespace/name.",
@@ -59,6 +105,13 @@
       "description": "A non-empty string without surrounding whitespace or embedded control characters.",
       "minLength": 1,
       "pattern": "^(?!.*[\\u0000-\\u001F])(?!\\s)(?!.*\\s$).+$"
+    },
+    "linkObservationString": {
+      "type": "string",
+      "description": "A lossless or normalized link target without credential-bearing URI authority userinfo, including after Markdown angle-destination normalization. Mail addresses and ordinary @ characters outside a URI authority remain valid.",
+      "not": {
+        "pattern": "(?:^\\s*<?(?:[A-Za-z][A-Za-z0-9+.-]*:)?//[^/?#\\s<>'\\\"]*@|^\\s*(?:<[^>]*>|\\S+)\\s+(?:\\S+\\s+)*(?:<?(?:[A-Za-z][A-Za-z0-9+.-]*:)?//[^/?#\\s<>'\\\"]*@|(?:(?!//)\\S)*?[^A-Za-z0-9._~/%+\\-\\s]<?(?:[A-Za-z][A-Za-z0-9+.-]*:)?//[^/?#\\s<>'\\\"]*@))"
+      }
     },
     "limitationCode": {
       "type": "string",
@@ -520,6 +573,7 @@
         },
         "extractors": {
           "type": "array",
+          "description": "Semantically unordered extractor components. Canonical payloads order them by component id.",
           "items": {
             "$ref": "#/$defs/analyzerComponent"
           },
@@ -527,6 +581,7 @@
         },
         "plugins": {
           "type": "array",
+          "description": "Semantically unordered plugin components. Canonical payloads order them by component id.",
           "items": {
             "$ref": "#/$defs/analyzerComponent"
           },
@@ -1205,21 +1260,21 @@
           "$ref": "#/$defs/repositoryRelativePath"
         },
         "external_uri": {
-          "description": "An absolute URI outside the llm-wiki scheme.",
+          "description": "An absolute URI outside the llm-wiki scheme and without credential-bearing authority userinfo.",
           "allOf": [
             {
               "$ref": "#/$defs/normalizedNonemptyString"
             }
           ],
           "format": "uri",
-        "pattern": "^(?!.*\\s)(?!.*\\\\)(?!.*%(?![0-9A-Fa-f]{2}))(?!(?:[Hh][Tt][Tt][Pp][Ss]?|[Ff][Tt][Pp][Ss]?):(?!//))(?![A-Za-z][A-Za-z0-9+.-]*://(?:[^/?#@]*@)?(?:[:/?#]|$))(?![Ll][Ll][Mm]-[Ww][Ii][Kk][Ii]:)[A-Za-z][A-Za-z0-9+.-]*:[A-Za-z0-9._~:/?#\\[\\]@!$&'()*+,;=%-]*$"
+          "pattern": "^(?!.*\\s)(?!.*\\\\)(?!.*%(?![0-9A-Fa-f]{2}))(?!(?:[A-Za-z][A-Za-z0-9+.-]*:)?//[^/?#]*@)(?!(?:[Hh][Tt][Tt][Pp][Ss]?|[Ff][Tt][Pp][Ss]?):(?!//))(?![A-Za-z][A-Za-z0-9+.-]*://(?:[^/?#@]*@)?(?:[:/?#]|$))(?![Ll][Ll][Mm]-[Ww][Ii][Kk][Ii]:)[A-Za-z][A-Za-z0-9+.-]*:[A-Za-z0-9._~:/?#\\[\\]@!$&'()*+,;=%-]*$"
         },
         "raw_target": {
-          "type": "string",
+          "$ref": "#/$defs/linkObservationString",
           "description": "The lossless target spelling observed in source Markdown."
         },
         "normalized_target": {
-          "type": "string",
+          "$ref": "#/$defs/linkObservationString",
           "description": "The collector's normalized target spelling, which may be empty for malformed input."
         },
         "label": {

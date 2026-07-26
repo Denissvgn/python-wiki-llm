@@ -288,6 +288,72 @@ class TestBootstrapCollisions:
         assert data["created_files"]
         assert "Bootstrapping wiki" in captured.err
 
+    def test_bootstrap_empty_inventory_json_includes_knowledge_state(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        monkeypatch.chdir(tmp_path)
+        wiki_dir = tmp_path / "wiki"
+
+        bootstrap_cmd.run(
+            _make_args(
+                src_dir=".",
+                wiki_dir=str(wiki_dir),
+                format="json",
+                source_adapter=True,
+            )
+        )
+
+        captured = capsys.readouterr()
+        data = json.loads(captured.out)
+        assert data["manifest_path"] is None
+        assert data["knowledge_path"] is None
+        assert data["knowledge_status"] is None
+        assert data["knowledge_schema_version"] == "llm-wiki-knowledge/v1"
+        assert "Nothing to bootstrap" in captured.err
+
+    def test_bootstrap_artifact_reporting_accounts_for_each_action(
+        self, tmp_path, monkeypatch
+    ):
+        state = types.SimpleNamespace(
+            created_files=[],
+            updated_files=[],
+            skipped_files=[],
+        )
+        messages = []
+        monkeypatch.setattr(
+            bootstrap_cmd,
+            "_emit_bootstrap",
+            lambda _state, message, **_kwargs: messages.append(message),
+        )
+        created = tmp_path / ".llm-wiki-surface.json"
+        updated = tmp_path / ".llm-wiki-knowledge.json"
+        unchanged = tmp_path / ".llm-wiki-manifest.json"
+
+        bootstrap_cmd._record_bootstrap_artifact(
+            state,
+            path=created,
+            write_state=bootstrap_cmd.ArtifactWriteState.CREATED,
+        )
+        bootstrap_cmd._record_bootstrap_artifact(
+            state,
+            path=updated,
+            write_state=bootstrap_cmd.ArtifactWriteState.UPDATED,
+        )
+        bootstrap_cmd._record_bootstrap_artifact(
+            state,
+            path=unchanged,
+            write_state=bootstrap_cmd.ArtifactWriteState.UNCHANGED,
+        )
+
+        assert state.created_files == [str(created).replace("\\", "/")]
+        assert state.updated_files == [str(updated).replace("\\", "/")]
+        assert state.skipped_files == [str(unchanged).replace("\\", "/")]
+        assert messages == [
+            f"  CREATE {created}",
+            f"  UPDATE {updated}",
+            f"  SKIP {unchanged} (unchanged)",
+        ]
+
     def test_bootstrap_reports_missing_haskell_helper_failure(
         self, tmp_path, monkeypatch, capsys
     ):
@@ -529,6 +595,11 @@ class TestBootstrapCollisions:
     ):
         from llm_wiki_cli.commands import lint_cmd
 
+        (tmp_path / "foo.py").write_text("class Thing:\n    pass\n", encoding="utf-8")
+        (tmp_path / "foo.ts").write_text(
+            "export class Thing {}\n",
+            encoding="utf-8",
+        )
         inventory = {
             "foo.py": {
                 "language": "python",
@@ -885,15 +956,22 @@ class TestBootstrapModulePages:
             "required: bool, mode: str | None = None, **extras: object) -> str | None"
         )
         assert bootstrap_cmd._table_inline_code(signature).count("\\|") == 2
-        assert bootstrap_cmd._format_signature(
-            {
-                "params": [
-                    {"name": "source", "kind": "positional_or_keyword", "type": "str"},
-                    {"name": "required", "kind": "keyword_only", "type": "bool"},
-                ],
-                "return_type": "",
-            }
-        ) == "(source: str, *, required: bool)"
+        assert (
+            bootstrap_cmd._format_signature(
+                {
+                    "params": [
+                        {
+                            "name": "source",
+                            "kind": "positional_or_keyword",
+                            "type": "str",
+                        },
+                        {"name": "required", "kind": "keyword_only", "type": "bool"},
+                    ],
+                    "return_type": "",
+                }
+            )
+            == "(source: str, *, required: bool)"
+        )
 
     def test_python_contract_entity_renders_model_metadata(self):
         content = bootstrap_cmd._generate_entity_md(
@@ -1036,9 +1114,7 @@ class TestBootstrapModulePages:
 
         bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
 
-        module = (tmp_path / "wiki" / "modules" / "api.md").read_text(
-            encoding="utf-8"
-        )
+        module = (tmp_path / "wiki" / "modules" / "api.md").read_text(encoding="utf-8")
         entity = (tmp_path / "wiki" / "entities" / "Request.md").read_text(
             encoding="utf-8"
         )
@@ -1666,7 +1742,7 @@ class TestBootstrapCreatesManifest:
 
         def fake_snapshot(src_dir, **kwargs):
             seen["snapshot_include_tests"] = kwargs.get("include_tests")
-            return real_build_source_snapshot(src_dir)
+            return real_build_source_snapshot(src_dir, **kwargs)
 
         def fake_inventory(src_dir, *args, **kwargs):
             seen["inventory_include_tests"] = kwargs["include_tests"]

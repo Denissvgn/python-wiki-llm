@@ -90,7 +90,7 @@ metadata.
   entity/module changes are deferred during that pass. Operation sections are
   generated; only `api-contracts.md` `## Notes` and flow `## Behavior` are
   semantic.
-- Persisted OpenAPI path/hash metadata and surface policy live in manifest v4.
+- Persisted OpenAPI path/hash metadata and surface policy live in manifest v5.
   Later syncs refresh on specification-only changes; use
   `--clear-openapi-file` to return deliberately to static contract authority.
 

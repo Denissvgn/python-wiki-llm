@@ -37,7 +37,7 @@ The relevant existing seams are:
 
 ## Decision
 
-LLM Wiki will use a native, evidence-aware knowledge contract and a generated,
+LLM Wiki uses a native, evidence-aware knowledge contract and a generated,
 rebuildable `.llm-wiki-knowledge.json` projection. The native contract is
 canonical for the meaning of its API records, but the projection is not an
 editable document store and does not supersede repository source, canonical
@@ -147,10 +147,101 @@ V1 uses the following closed-core policy:
   that qualified key for a constrained v1 value. Unqualified unknown fields or
   kind values are invalid because they are indistinguishable from misspelled
   core vocabulary.
+- Core collection arrays are semantically unordered. Canonical v1 payloads sort
+  producer extractors and plugins by component ID, concepts by locator, and
+  relationships by compact canonical JSON of the complete normalized record
+  with object keys sorted. Array order inside extension values remains
+  significant and is preserved.
 - Adding an unqualified core field or kind, removing a field or enum value, or
   changing an existing field's meaning requires a new schema version. A
   producer that needs forward-compatible v1 data must use a namespaced
   extension instead.
+
+#### Lossless Markdown link collection (KNOW-105 addendum)
+
+The knowledge link collector is a pure boundary over the already discovered
+canonical page registry, the exact Markdown strings for those pages, and the
+already evaluated set of asset paths. It performs no page or asset scan.
+Collection retains every supported occurrence, including duplicates, and has
+no result cap. Results are ordered by canonical source path and half-open
+character location so caller input order cannot affect the output.
+
+V1 observes inline Markdown links and images using the established media
+parser. The raw target, normalized target, label, and zero-based half-open
+Python string offsets refer to the exact Markdown string later committed by
+`page_hash`. Percent escapes, query strings, fragments, case, and backslashes
+remain lossless in the observation; URI query/fragment removal, percent
+decoding, and Windows-separator conversion occur only for canonical-route
+lookup. Reference-style links, raw HTML links, autolinks, and wikilinks are not
+added by this slice.
+
+Ordinary fenced code is excluded with an offset-preserving mask. URL-bearing
+`click <node> "<target>"` directives inside an explicit Mermaid fence are
+collected separately with `mermaid-click` syntax provenance. They remain
+Markdown-origin `links_to` relationships on the v1 wire. The knowledge-index
+builder preserves the syntax discriminator in the qualified
+`llm-wiki/link-syntax` relationship extension. Mermaid callbacks, `href` forms,
+and a general Mermaid parser are outside this contract.
+
+Target class and resolution remain independent. Exact unique page routes and
+locators resolve as concepts; missing Markdown routes remain unresolved
+concepts; fragment-only links resolve as anchors; valid absolute URIs and
+`mailto:` targets are external; and known or missing local media retain the
+asset class with the corresponding resolution. Empty, unsafe, or unusable
+spellings remain explicit malformed or unknown observations rather than being
+reported as missing concepts. Protocol-relative targets do not acquire an
+invented scheme and therefore cannot claim the v1 absolute `external_uri`
+coordinate. The evaluated asset set must be disjoint from active canonical
+page routes, and `.md` paths outside the asset namespace remain concept
+routes, so precedence cannot vary between collection and construction.
+
+The authority-userinfo rule in the redaction section applies before emission:
+the complete affected observation is omitted, including Mermaid clicks. Query
+strings and arbitrary extension values are not heuristically scanned in this
+slice.
+
+#### Pure knowledge-index construction (KNOW-106 addendum)
+
+The knowledge-index builder consumes one already validated KNOW-104 envelope,
+the active canonical page registry, exact Markdown strings, exact surface-index
+bytes, in-memory manifest mappings/evidence/tombstones, and already collected
+KNOW-105 link observations. Canonical page path is the join key. The builder
+requires exact page/content/surface parity and verifies both the LF-normalized
+Markdown snapshot commitment and the exact surface-index byte commitment
+before constructing records. It does not read a path, rebuild an inventory,
+invoke an extractor, inspect Git, use a clock, access the network, or write an
+artifact.
+
+Every active page produces exactly one concept and document. The existing
+page-kind registry supplies the concept kind, document coordinates, and role;
+the surface index supplies the title. Index and log pages remain explicit
+document-only concepts with not-applicable structural evidence. Other
+non-module/entity pages remain structurally unknown. Module/entity pages use
+their manifest evidence basis when available, preserve partial evidence as
+unknown without inventing an observation hash, and retain an explicit unknown
+facet when no reliable basis exists. A source-missing tombstone may preserve
+its last recorded basis, but the builder does not compute or persist a live
+freshness verdict.
+
+Each semantic facet commits the exact supplied Markdown UTF-8 bytes in
+`page_hash`, mirrors the whole-document surface role, uses unknown authorship,
+and labels verification `untracked`. A structural basis produces one matching
+`derived_from` observation. Each supplied safe link occurrence produces one
+`links_to` observation with its lossless fields, source `page_hash`, and
+syntax-provenance extension; multiplicity is preserved. Credential-bearing
+authority userinfo causes the complete affected link observation to be
+omitted. Surface `outgoing_internal_links` remains a separate lossy projection
+and is never used to infer knowledge relationships.
+
+Builder validation rejects duplicate active routes or locators, unsafe
+coordinates, page/surface/evidence mismatches, undeclared extractor
+references, invalid link locations, and resolved internal targets outside the
+active registry. Each link is re-parsed at its exact source offsets; its
+lossless fields, syntax, and deterministic non-asset classification must match
+that occurrence and its normalized target. Broken but unambiguous internal
+links remain recorded as unresolved. Construction then round-trips through the
+typed v1 model so its cross-record validation and canonical collection
+ordering remain the single wire-contract authority.
 
 JSON Schema enforces the platform-portable wire shape and cross-field rules
 expressible in Draft 2020-12. A payload is not a valid native knowledge record
@@ -243,6 +334,21 @@ tree; ignored entries are excluded. It is `clean` only after that evaluation
 completes with none of those conditions, and otherwise is `unknown`. Neither
 field participates in repository identity.
 
+Command orchestration also excludes the exact target paths of
+`.llm-wiki-surface.json`, `.llm-wiki-knowledge.json`, and
+`.llm-wiki-manifest.json` from this status evaluation. Those generated files
+commit the evaluated envelope or are committed by it, so observing their own
+pending replacement would make the envelope recursively depend on its prior
+output state. The exclusion is file-specific: canonical Markdown, assets, and
+every other staged, tracked, deleted, or non-ignored untracked path remain
+material to `working_tree`. A target path outside the evaluated Git work tree
+does not create a broader exclusion.
+
+Sync and migration capture this repository evidence once, after evaluating the
+run inputs and before writing canonical Markdown or generated projections.
+Apply and dry-run reuse that same pre-write snapshot, including when the source
+root and wiki are sibling directories in one Git work tree.
+
 #### Snapshot and observation hash domains
 
 All v1 hash fields use lowercase SHA-256 wire values. Each field has a distinct
@@ -269,6 +375,45 @@ persisted bytes. Later framing may not change the semantic domains above. Hash
 inputs exclude wall-clock time, absolute checkout roots, temporary files,
 caches, logs, process IDs, thread or completion order, and other machine-local
 state.
+
+#### Concept-scoped structural observations
+
+_KNOW-102 addendum._
+
+Module and entity observation hashes use compact canonical JSON with sorted
+object keys, UTF-8 encoding, and a `scope` member in the normalized payload.
+Source path, exact source-content hash, and extractor identity remain separate
+basis dimensions; they are not folded into the concept observation. Arrays
+retain extractor order and multiplicity because declaration order, repeated
+observations, and one-based same-name occurrence coordinates can be material.
+
+A module observation contains the source language, an optional declared module
+name, imports, module-facing class/type declaration summaries, and top-level
+function signature summaries. TypeScript and JavaScript module observations
+also include the exports, constant summaries, and module-call signals rendered
+by their module concept. Class/type summaries contain declaration identity and
+module-facing kind, inheritance, and target facts, not attributes or methods.
+Consequently an entity edit changes its module observation only when it changes
+one of those module-facing declaration facts. Import and top-level signature
+changes always change the module observation.
+
+An entity observation selects exactly one class/type declaration by name and
+one-based same-name occurrence within the source file. The occurrence is part
+of the normalized payload, so structurally identical duplicate declarations
+remain distinct. Its structural declaration and contract data are retained,
+while semantic prose, call/data-effect details, and the location-only keys
+`line`, `end_line`, and `decorator_line` are excluded recursively. The same
+location and prose exclusions apply to module observations. A line-only source
+edit can therefore change `source_content_hash` while leaving
+`concept_observation_hash` unchanged.
+
+Completeness is trusted current-run input, not inferred from optional inventory
+fields: empty rich collections are omitted by some deep extractors, while the
+prepared Haskell inventory is intentionally sparse. Builders must explicitly
+identify complete inventory. Slim input, an unsupported language, malformed
+inventory, or an absent entity occurrence produces an explicit unknown result
+without a concept-observation hash. The existing manifest v4 file-level
+semantic hash remains a separate compatibility commitment and is unchanged.
 
 #### Producer and analyzer evidence
 
@@ -305,6 +450,15 @@ Projection profile is trusted caller policy supplied out of band. It is never a
 persisted bundle field and cannot be selected by an extension, plugin record,
 actor, link, or other artifact value.
 
+URI authority userinfo in `external_uri`, `raw_target`, or
+`normalized_target` is always treated as unambiguously credential-bearing and
+is invalid in the native v1 core contract. This covers username-only and
+username/password authorities in absolute and protocol-relative targets;
+`mailto:` targets and ordinary `@` characters outside URI authority are not
+affected. A builder encountering such an affected lossless link observation
+must omit the entire relationship rather than redact a target and falsely
+present the result as lossless.
+
 | Profile | Required boundary |
 |---|---|
 | `internal` | May retain configured-public and normalized-VCS identities, evaluated revision and tree state, actor identity, producer evidence, raw lossless link observations, and schema-valid extensions. It still forbids credentials, raw remotes, machine-local absolute filesystem paths, environment dumps, and raw plugin settings. |
@@ -313,7 +467,8 @@ actor, link, or other artifact value.
 A public projection drops an entire observation when a required lossless core
 field contains credentialed or private material; it does not rewrite the raw
 observation into something falsely presented as lossless. Exact public
-allowlists and exporter mechanics belong to KNOW-501. The packaged native JSON
+allowlists, exporter mechanics, and heuristic secret detection in query strings
+or arbitrary extension values belong to KNOW-501. The packaged native JSON
 Schema is platform-portable, not proof that an instance is safe for public
 release.
 
@@ -343,15 +498,15 @@ unavailable; they never opt into broader behavior.
 
 ### Knowledge-load states
 
-The shared loader will use the following state vocabulary. Stable reason codes
+The shared loader uses the following state vocabulary. Stable reason codes
 may refine a state, including distinguishing malformed data from an unsupported
 future schema version.
 
 | State | Meaning | Required loader behavior |
 |---|---|---|
 | `valid` | Knowledge, surface, and manifest schemas validate; safe paths, the normalized Markdown snapshot, and required page parity hold; exact projection byte hashes and envelope commitments agree | Return the committed knowledge and surface projections. Do not infer live freshness, truth, authorship, lifecycle, or verification |
-| `absent` | No knowledge projection is available, as in a legacy wiki, deliberate deletion rollback, or a manifest-declared file that is now missing | Return an independently validated surface-v1 view with no knowledge or freshness claims. A reason code distinguishes ordinary absence from a declared artifact that is missing. Absence is not an empty trustworthy knowledge graph |
-| `invalid` | An artifact is malformed, schema-invalid, unsafe, unsupported, internally inconsistent, or an uncommitted knowledge file has no usable manifest marker | Never serve the invalid knowledge payload. Reject it, invoke an explicitly authorized rebuild policy, or produce a degraded result |
+| `absent` | No knowledge projection is available and no complete manifest commitment declares one, as in a legacy wiki or a completed deletion rollback | Return an independently validated surface-v1 view with no knowledge or freshness claims. Absence is not an empty trustworthy knowledge graph |
+| `invalid` | An artifact is malformed, schema-invalid, unsafe, unsupported, internally inconsistent, uncommitted, or declared by the manifest but missing | Never serve the invalid knowledge payload. Reject it, invoke an explicitly authorized rebuild policy, or produce a degraded result |
 | `mixed-snapshot` | Two or more present, individually readable commit components disagree with the manifest marker, exact byte hashes, envelope, Markdown/page parity, or each other | Never combine or serve the knowledge payload. Reject, explicitly rebuild all projections from one evaluated snapshot, or produce a degraded result |
 | `degraded` | An explicit policy-selected result after an `invalid` or `mixed-snapshot` condition, while an independently validated surface-v1 view is still available | Return only that fallback view plus structured issues and the underlying cause. Knowledge, evidence, graph, freshness, lifecycle, and verification remain unavailable or `unknown` |
 
@@ -361,18 +516,208 @@ fallback policy; it is not another spelling of `valid`, `absent`, or an empty
 result. If even the fallback surface cannot be independently validated, the
 loader must reject instead of degrading.
 
-`absent` describes knowledge availability, not overall artifact integrity.
-Ordinary absence with no manifest commitment is clean compatibility. A
-`declared-artifact-missing` reason is a manifest-validation failure and remains
-a structured, non-clean integrity finding. Compatibility consumers may
-continue with independently validated surface-only data because knowledge is
-unavailable and its freshness is `unknown`; strict policies may reject or
-require repair. A loader must never silently normalize that reason to ordinary
-absence.
+`absent` describes clean knowledge unavailability: no projection and no
+complete manifest commitment. A missing projection named by a complete marker
+is instead `invalid` with `declared-artifact-missing`; the loader never silently
+normalizes that integrity failure to ordinary absence. The default `reject`
+policy raises with structured issues. `rebuild` invokes one explicitly supplied
+callback at most once, rereads all artifacts, and succeeds only if the reread is
+`valid`. `degraded` may return only an independently validated, page-current
+surface view and records the original `invalid` or `mixed-snapshot` state; it
+never exposes knowledge from the failed set.
 
 Read-only API, context, query, site, and MCP paths must not repair files as a
 side effect. A rebuild requires an explicit caller policy and a write-authorized
 callback or command path.
+
+The KNOW-101 extraction retained manifest v4 fields and behavior while moving
+persistence and evidence primitives to service-level boundaries shared by
+bootstrap, sync, lint, migrate, and team operations. `commands.sync_cmd`
+continues to re-export `SyncManifest` and its manifest constants for one
+compatibility cycle. Artifact JSON is UTF-8 with sorted keys, LF formatting,
+and one trailing newline, and is replaced atomically through a unique
+same-directory temporary file whose cleanup is guaranteed on failure.
+
+### Manifest v5 operational evidence state
+
+_KNOW-103 addendum._
+
+Manifest v5 preserves the complete v4 `sources`, `surfaces`, and
+`generation_inputs` values and adds only rebuildable operational state:
+
+| Field | Meaning |
+|---|---|
+| `page_source_mappings` | Last observed module/entity source coordinate keyed by canonical page path. Entity coordinates include the exact name and one-based occurrence |
+| `evidence_baselines` | Known or explicitly unknown evidence for active module/entity pages. Known and partial bases use the KNOW-102 scope, relative source path, extractor reference, source-content hash, and optional concept-observation hash |
+| `tombstones` | Evidence retained for stale pages. A `source-missing` tombstone requires the last valid known basis; otherwise the tombstone is `unknown-provenance` with a machine-readable unknown reason |
+| `artifact_hashes` | Optional all-or-none exact-byte hashes for the surface index, knowledge index, and evaluated envelope |
+
+The page path is an operational locator, not a stable UID. Module mappings
+contain only a source path. Entity mappings additionally contain the exact
+entity name and occurrence; duplicate declarations are never collapsed to a
+name-only mapping.
+
+Loading manifest v4 deterministically produces v5 state without reading source
+or Markdown. Its existing fields are retained, recoverable page/source
+mappings are copied, and their evidence is explicitly
+`legacy-manifest-no-evidence`. No tombstone or artifact commitment is invented.
+Legacy ambiguous duplicate mappings are left unrecoverable rather than guessed.
+Saving writes v5.
+
+Reconciliation operates on the already evaluated inventory, supplied
+concept-observation bases, the prior manifest, and an explicit set of retained
+page paths. A retained page whose prior known basis loses its source becomes a
+`source-missing` tombstone with that exact basis. Missing, invalid, deleted, or
+previously unknown manifest evidence remains `unknown-provenance`; repair and
+reseed never promote it to source-missing and never infer provenance from page
+text. If the exact source coordinate remains live under a different canonical
+page path, the retained old page becomes `unknown-provenance` with
+`source-mapping-changed`; it is never misclassified as `source-missing`. If a
+page is no longer retained, its operational tombstone may be dropped.
+Reappearance removes the tombstone and restores a prior known basis only when
+its mapping and source-content hash still match.
+
+Before a retained source-missing basis reuses an extractor component ID that
+is active in the next envelope, generation compares the prior committed
+tool and referenced extractor records with their current normalized versions,
+configuration hashes, limitations, and extensions. If either prior record is
+unavailable or differs, the stale page is retained as `unknown-provenance` with
+`producer-basis-incompatible`; it is never attributed to the upgraded
+same-ID producer.
+
+Chunked migration carries regeneration proof across process boundaries in the
+temporary `.llm-wiki-migration-progress.json` receipt. Each entry commits the
+relative structural page, source-content hash, and exact written page bytes.
+A later chunk promotes the page only when those bytes are unchanged and still
+equal the current deterministic migration output. The receipt is written
+atomically before returning from a chunk and removed only after the final
+manifest-last artifact commit succeeds.
+
+`artifact_hashes` contains `surface_index_hash`, `knowledge_index_hash`, and
+`evaluated_envelope_hash`. The group is omitted unless all three canonical
+SHA-256 values describe one complete commit. Migration, repair, reseed, and
+ordinary manifest reconstruction clear it. The manifest-last writer derives and
+installs it only after both canonical projections have been atomically replaced
+and their persisted bytes verified. Loading and saving an unchanged v5 manifest
+preserves a complete commitment without rehashing files.
+
+Manifest state contains no stable UID, alias, lifecycle decision, review event,
+signature, timeless freshness verdict, or inferred governance fact.
+
+### Evaluated bundle envelope
+
+_KNOW-104 addendum._
+
+`llm-wiki-knowledge/v1` and its existing `BundleRecord` wire shape remain
+unchanged. The builder produces the existing `repository`, `snapshot`, and
+`producer` records and validates them through the v1 typed contract. The
+normalized extracted-inventory commitment, for which v1 has no unqualified
+core field, is stored at
+`bundle.snapshot.extensions["llm-wiki/inventory-hash"]`. It is a required
+canonical SHA-256 value on application-built envelopes.
+
+The separately hashable evaluated envelope is
+`llm-wiki-evaluated-envelope/v1` and contains exactly its `schema_version` and
+the validated v1 `bundle`. Its deterministic JSON uses UTF-8, sorted object
+keys, LF line endings, and one trailing newline. The
+`evaluated_envelope_hash` committed by manifest v5 is the SHA-256 of
+those exact serialized bytes.
+
+Structured commitments use compact canonical JSON with sorted object keys,
+UTF-8 encoding, and an explicit top-level `domain` member. Their v1 domain tags
+and payloads are:
+
+| Commitment | Domain tag and framed payload |
+|---|---|
+| Selected source/configuration inputs | `llm-wiki/source-snapshot/v1`; `inputs` records contain `kind`, repository-relative POSIX `path`, and exact `content_hash`, sorted by kind and path |
+| Normalized extracted inventory | `llm-wiki/inventory-snapshot/v1`; `inventory` retains material array order and multiplicity while object keys serialize canonically |
+| Canonical Markdown | `llm-wiki/markdown-snapshot/v1`; `pages` records contain canonical path and the hash of LF-normalized UTF-8 content, sorted by path |
+| Effective generation options | `llm-wiki/generation-options/v1`; `options` contains the complete application allowlist with effective defaults |
+| Producer configuration | `llm-wiki/component-configuration/v1`; `configuration` contains only the complete safe behavior-affecting allowlist |
+| Aggregate evidence | `llm-wiki/aggregate-input/v1`; `inputs` preserves caller-supplied contributor order and multiplicity |
+
+The surface-index commitment remains the raw SHA-256 of its exact generated
+bytes and is not placed in a structured frame. Source/configuration inputs are
+captured before envelope construction and include every selected language,
+Docker, Compose, YAML, package, OpenAPI, plugin, and selection input actually
+consumed by the run. Each physical repository path appears exactly once;
+assigning the same path to multiple input kinds or supplying conflicting
+digests is invalid. Absolute checkout roots, timestamps, caches, completion
+order, and other machine-local state are excluded. Caller extensions fail
+closed on machine-local absolute paths or `file:` URIs. Inventory producers
+must remove machine-local extractor state at their normalization boundary;
+the envelope builder validates repository-relative top-level source keys and
+requires every inventory source to be present in the selected input set while
+retaining valid slash-prefixed semantic values such as API routes and prose.
+
+`consumed_inputs_from_captured_hashes()` is the no-I/O adapter for bootstrap and
+sync orchestration. It requires identical path sets for exact
+captured content hashes and selected-kind candidates. Overlapping candidates
+use the fixed precedence OpenAPI, Compose, Docker, package, plugin, selection,
+generic YAML, then language source, so a Compose YAML file is committed once
+with one stable classification. KNOW-109 and KNOW-110 must populate this
+capture during the existing evaluated run, including `.gitignore` and other
+selection inputs, OpenAPI and package/configuration files, and enabled plugin
+metadata; they may not reconstruct it with a later source scan.
+
+`build_evaluated_envelope()` is pure over supplied repository evidence,
+content commitments, normalized inventory, Markdown content, exact surface
+bytes, effective options, and producer metadata. It performs no scan, file
+read, write, subprocess, network request, helper execution, plugin activation,
+or LLM call. `collect_git_repository_evidence()` is a separate,
+application-selected local collection step. It may invoke local Git but never
+contacts a remote or scans source content; its raw remotes are inert input and
+are never serialized. Collection ignores ambient system/global Git
+configuration and local include files for identity selection, disables
+filesystem-monitor helpers for status, and distinguishes detached HEAD from an
+unevaluable branch lookup so failures cannot silently fall back to `origin`.
+
+Repository identity selection remains configured public identity, then the
+current branch's actually configured tracking remote, then `origin`, then the
+sole configured remote, otherwise `unknown`. An invalid configured public
+identity is an error and never falls through. A selected missing or unusable
+remote produces `unknown` rather than another fallback. HTTPS, SSH, and
+SCP-like remotes remove
+scheme, user information, credentials, query, fragment, default port, trailing
+slash, and one trailing `.git`; local/file remotes, non-default ports,
+backslashes, malformed escapes, and empty or dot path segments are unusable.
+The host is lowercase and later path-segment case is preserved.
+
+The evaluated revision is `git:` plus a complete lowercase 40- or 64-hex
+object ID when available, otherwise `unknown`. Working-tree evaluation is
+independent. After excluding only the three exact application-owned artifact
+paths described above, any remaining staged, tracked, deleted, or non-ignored
+untracked change is `dirty`; a successful empty evaluation is `clean`; and
+non-Git, failed, or otherwise unevaluable state is `unknown`.
+
+Generation options and component configuration are application-owned safe
+allowlists. They must exclude raw secrets; unknown option keys, omitted
+effective defaults, and machine-local absolute paths are rejected rather than
+incorporated. The runtime option allowlist includes data-flow enablement,
+workflow enablement, and dependency-graph detail even though those policies
+are not part of the stable surface-index v1 payload. Bootstrap persists that
+cross-command policy under
+`generation_inputs["llm-wiki/generation-options/v1"]` so later sync and
+migration runs reproduce the same option commitment.
+Unavailable component versions serialize as `version: "unknown"` with the
+stable `version-unknown` limitation. An analyzer whose complete safe
+configuration basis is unavailable omits `configuration_hash` and includes
+`configuration-basis-unknown`.
+
+Plugin producer evidence is projected only from selected installed component
+metadata and explicitly supplied safe settings. Stable plugin ID and version
+are retained; behavior-bearing component fields are hashed canonically. A
+missing per-plugin safe-settings entry means the complete configuration basis
+is unavailable; only an explicit empty object establishes known-empty
+settings.
+Installation source, `plugin_dir`, installation time, raw lock records,
+credentials, and arbitrary settings are excluded. Producer and plugin records
+describe what the application already selected and ran; they never select or
+load code from artifact metadata.
+
+`hash_aggregate_inputs()` exposes the M3 hook for ordered cross-file evidence.
+It is domain-separated, preserves contributor order and duplicates, and is
+not an additional bundle snapshot hash.
 
 ### Manifest-last commit protocol
 
@@ -400,23 +745,38 @@ file cannot be paired with a separately generated surface file. Every reader
 that serves knowledge must validate the manifest marker and both projections
 before returning any knowledge claim.
 
+`build_knowledge_commit_plan()` is the validation boundary: it accepts only
+canonical surface and knowledge bytes, checks their page and evidence parity
+with the supplied next-state manifest, derives the evaluated-envelope hash, and
+plans created, updated, or unchanged results without writing. Active evidence
+sources require canonical current source hashes; inactive legacy source records
+may be preserved without being promoted into the active commitment.
+`commit_knowledge_artifacts()` applies that immutable plan in the order above,
+verifies persisted projection bytes before replacing the marker, and exposes
+fault seams after each actual replacement. Dry-run invokes no write or fault
+seam.
+
 If a writer fails before the final manifest replacement, the old marker remains
 the last committed state. A newly written projection that conflicts with a
 prior knowledge-capable marker loads as `mixed-snapshot`; if no knowledge-capable
 marker exists, the orphan knowledge file is instead `invalid` and uncommitted.
 Neither may be combined with another artifact. Repeating a byte-identical
-commit should write nothing.
+commit writes nothing and preserves all three byte streams.
 
-When both artifacts are written, current bootstrap and normal changed-state
-sync finalization order the surface write before the manifest write. The
-current manifest does not commit projection hashes, and some surface-only
-refresh paths do not rewrite it. That partial ordering is not this protocol.
+Writing either projection or the manifest independently is outside this
+protocol and does not establish a committed knowledge state. Callers that
+produce knowledge must use the shared planning and commit boundary rather than
+compose the older single-artifact writers.
 
 ### Compatibility and rollout
 
 Throughout M0–M2, knowledge-layer work must not change canonical Markdown bytes
 beyond existing bootstrap/sync behavior, and the exact
 `llm-wiki-surface-index/v1` contract remains the compatibility boundary.
+The richer KNOW-105 collector is deliberately parallel to, not a replacement
+for, the surface index's legacy resolved-only, deduplicated link list. Its
+stricter fence and Mermaid observation policy therefore cannot change surface
+index v1 bytes.
 
 - **M0 — Contract:** this ADR changes no runtime, file format, or canonical
   Markdown.
@@ -444,18 +804,20 @@ identities, and missing lifecycle data is `unknown`.
 
 ### Rollback
 
-To roll back the feature, disable knowledge generation and delete the generated
-`.llm-wiki-knowledge.json`. Compatibility consumers classify and ignore the
-resulting `absent` knowledge state and continue with an independently validated
-surface-index-v1 view. Deletion restores pre-feature behavior without changing
+To roll back the feature cleanly, disable knowledge generation, delete the
+generated `.llm-wiki-knowledge.json`, and clear the manifest artifact commitment
+through an authorized writer or migration path. Compatibility consumers then
+classify the result as `absent` and continue with an independently validated
+surface-index-v1 view. This restores pre-feature behavior without changing
 canonical Markdown, `.llm-wiki-surface.json`, or their paths.
 
-If the manifest still contains a prior knowledge commitment, the loader reports
-a structured `declared-artifact-missing` reason while retaining the `absent`
-state. It does not serve knowledge, fabricate freshness, or treat the missing
-optional projection as an empty trustworthy graph. A later writer must remove
-the obsolete commitment before the artifact set is cleanly committed again.
-That cleanup is not required for surface-only rollback consumption.
+If only the knowledge file is deleted while the manifest still contains its
+commitment, the loader reports `invalid` with the structured
+`declared-artifact-missing` reason. It does not serve knowledge, fabricate
+freshness, or treat the missing projection as an empty trustworthy graph. An
+explicit degraded policy may still consume an independently validated,
+page-current surface. A later writer must remove the obsolete commitment before
+the artifact set returns to clean `absent` state.
 
 ## Consequences
 
@@ -473,9 +835,9 @@ the new integrity or evidence semantics.
 ## Deferred and out of scope
 
 Except for the v1 taxonomy, compatibility, and KNOW-004 policy above, exact
-record fields live in the packaged schema rather than prose in this ADR. This
-decision does not implement writers, artifact loaders, a VCS collector, a
-redacting exporter, signatures or attestation, define a stable-ID format,
-define an OKF mapping, add section-level ownership, or provide filesystem-wide
-transactions and cross-process locking. Those decisions require their named
+record fields live in the packaged schema rather than prose in this ADR. The M1
+implementation provides the deterministic writer and validated loader described
+above. It does not provide a redacting exporter, signatures or attestation, a
+stable-ID format, an OKF mapping, section-level ownership, filesystem-wide
+transactions, or cross-process locking. Those capabilities require their named
 later milestones and tests.

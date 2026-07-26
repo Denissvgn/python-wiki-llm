@@ -30,6 +30,8 @@ from urllib.parse import unquote, urlsplit
 
 from . import wiki_surface
 from .contracts import KNOWLEDGE_SCHEMA_FILENAME, KNOWLEDGE_SCHEMA_VERSION
+from .knowledge_evidence import SHA256_PATTERN, is_valid_sha256
+from .wiki_media import contains_uri_authority_userinfo
 from .wiki_surface import (
     PageKind,
     SurfaceRole,
@@ -37,7 +39,6 @@ from .wiki_surface import (
     iter_page_kinds,
 )
 
-SHA256_PATTERN = r"^sha256:[0-9a-f]{64}$"
 QUALIFIED_NAME_PATTERN = r"^[A-Za-z][A-Za-z0-9._-]*/[A-Za-z][A-Za-z0-9._-]*$"
 REPOSITORY_IDENTITY_PATTERN = (
     r"^(?!.*[\u0000-\u001F])(?:unknown|[a-z0-9][a-z0-9._-]*"
@@ -53,7 +54,6 @@ LIMITATION_CODE_PATTERN = (
 )
 REPOSITORY_IDENTITY_SOURCE_EXTENSION = "llm-wiki/identity-source"
 
-_SHA256_RE = re.compile(SHA256_PATTERN)
 _QUALIFIED_NAME_RE = re.compile(QUALIFIED_NAME_PATTERN)
 _REPOSITORY_IDENTITY_RE = re.compile(REPOSITORY_IDENTITY_PATTERN)
 _EVALUATED_REVISION_RE = re.compile(EVALUATED_REVISION_PATTERN)
@@ -1157,12 +1157,14 @@ def _parse_relationship_target(value: object, path: str) -> RelationshipTarget:
             _child(path, "target_class"),
         ),
         raw_target=(
-            _string(data["raw_target"], _child(path, "raw_target"))
+            _link_observation_string(data["raw_target"], _child(path, "raw_target"))
             if "raw_target" in data
             else None
         ),
         normalized_target=(
-            _string(data["normalized_target"], _child(path, "normalized_target"))
+            _link_observation_string(
+                data["normalized_target"], _child(path, "normalized_target")
+            )
             if "normalized_target" in data
             else None
         ),
@@ -1516,7 +1518,9 @@ def _normalize_json_value(value: object, path: str) -> Any:
 def _normalize_json_value_inner(
     value: object, path: str, active_containers: set[int]
 ) -> Any:
-    if value is None or isinstance(value, (str, bool, int)):
+    if isinstance(value, str):
+        return _string(value, path)
+    if value is None or isinstance(value, (bool, int)):
         return value
     if isinstance(value, float):
         if not math.isfinite(value):
@@ -1539,6 +1543,7 @@ def _normalize_json_value_inner(
         for key in keys:
             if not isinstance(key, str):
                 raise KnowledgeModelError(path, "extension object keys must be strings")
+            _string(key, path)
         identity = id(value)
         if identity in active_containers:
             raise KnowledgeModelError(path, "extension value must not be cyclic")
@@ -1562,6 +1567,7 @@ def _object(value: object, path: str) -> dict[str, Any]:
     for key, item in value.items():
         if not isinstance(key, str):
             raise KnowledgeModelError(path, "object keys must be strings")
+        _string(key, path)
         result[key] = item
     return result
 
@@ -1575,6 +1581,13 @@ def _array(value: object, path: str) -> list[Any]:
 def _string(value: object, path: str) -> str:
     if not isinstance(value, str):
         raise KnowledgeModelError(path, "must be a string")
+    try:
+        value.encode("utf-8")
+    except UnicodeEncodeError as exc:
+        raise KnowledgeModelError(
+            path,
+            "must contain only Unicode scalar values encodable as UTF-8",
+        ) from exc
     return value
 
 
@@ -1619,7 +1632,7 @@ def _optional_nonempty_string(value: object, path: str) -> Optional[str]:
 
 def _hash(value: object, path: str) -> str:
     text = _string(value, path)
-    if not _SHA256_RE.fullmatch(text):
+    if not is_valid_sha256(text):
         raise KnowledgeModelError(
             path, "must be 'sha256:' followed by 64 lowercase hexadecimal digits"
         )
@@ -1730,6 +1743,10 @@ def _locator(value: object, path: str) -> str:
 
 def _external_uri(value: object, path: str) -> str:
     text = _nonempty_string(value, path)
+    if contains_uri_authority_userinfo(text):
+        raise KnowledgeModelError(
+            path, "must not contain credential-bearing URI authority userinfo"
+        )
     if (
         any(char.isspace() for char in text)
         or "\\" in text
@@ -1748,6 +1765,10 @@ def _external_uri(value: object, path: str) -> str:
         hostname = parsed.hostname
     except ValueError as exc:
         raise KnowledgeModelError(path, "must be a valid external URI") from exc
+    if parsed.netloc and (parsed.username is not None or parsed.password is not None):
+        raise KnowledgeModelError(
+            path, "must not contain credential-bearing URI authority userinfo"
+        )
     uses_authority = text[len(parsed.scheme) :].startswith("://")
     requires_authority = parsed.scheme in {"http", "https", "ftp", "ftps"}
     if (
@@ -1757,6 +1778,15 @@ def _external_uri(value: object, path: str) -> str:
         or ((uses_authority or requires_authority) and hostname is None)
     ):
         raise KnowledgeModelError(path, "must be an absolute non-llm-wiki external URI")
+    return text
+
+
+def _link_observation_string(value: object, path: str) -> str:
+    text = _string(value, path)
+    if contains_uri_authority_userinfo(text):
+        raise KnowledgeModelError(
+            path, "must not contain credential-bearing URI authority userinfo"
+        )
     return text
 
 
@@ -2037,18 +2067,44 @@ def _relationship_to_payload(
 def _knowledge_index_to_payload_unchecked(
     model: KnowledgeIndex,
 ) -> dict[str, Any]:
+    bundle = _bundle_to_payload(model.bundle)
+    producer = bundle["producer"]
+    producer["extractors"] = sorted(
+        producer["extractors"], key=lambda component: component["id"]
+    )
+    producer["plugins"] = sorted(
+        producer["plugins"], key=lambda component: component["id"]
+    )
+    concepts = sorted(
+        (_concept_to_payload(concept) for concept in model.concepts),
+        key=lambda concept: concept["locator"],
+    )
+    relationships = sorted(
+        (
+            _relationship_to_payload(relationship)
+            for relationship in model.relationships
+        ),
+        key=_canonical_relationship_key,
+    )
     return _emit_extensions(
         {
             "schema_version": model.schema_version,
-            "bundle": _bundle_to_payload(model.bundle),
-            "concepts": [_concept_to_payload(concept) for concept in model.concepts],
-            "relationships": [
-                _relationship_to_payload(relationship)
-                for relationship in model.relationships
-            ],
+            "bundle": bundle,
+            "concepts": concepts,
+            "relationships": relationships,
         },
         model.extensions,
         "extensions",
+    )
+
+
+def _canonical_relationship_key(relationship: dict[str, Any]) -> str:
+    return json.dumps(
+        relationship,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+        allow_nan=False,
     )
 
 

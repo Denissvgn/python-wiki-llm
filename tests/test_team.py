@@ -19,6 +19,19 @@ from llm_wiki_cli.commands import (
 )
 from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.services import plugins, team
+from llm_wiki_cli.services.knowledge_evidence import (
+    MODULE_OBSERVATION_SCOPE,
+    ConceptObservationBasis,
+    sha256_bytes,
+)
+from llm_wiki_cli.services.sync_manifest import (
+    MANIFEST_REPAIR_UNAVAILABLE,
+    TOMBSTONE_SOURCE_MISSING,
+    ManifestEvidenceBaseline,
+    ManifestPageSource,
+    ManifestTombstone,
+    SyncManifest,
+)
 
 
 def _ns(**kwargs):
@@ -370,10 +383,113 @@ class TestTeamConflictResolver:
         assert result["ok"] is True
         assert "<<<<<<<" not in (wiki / "entities/User.md").read_text(encoding="utf-8")
         assert "User" in (wiki / "index.md").read_text(encoding="utf-8")
-        json.loads((wiki / ".llm-wiki-manifest.json").read_text(encoding="utf-8"))
+        manifest_text = (wiki / ".llm-wiki-manifest.json").read_text(encoding="utf-8")
+        json.loads(manifest_text)
+        assert manifest_text.endswith("\n")
+        assert not manifest_text.endswith("\n\n")
         log_text = (wiki / "log.md").read_text(encoding="utf-8")
         assert "- ours" in log_text
         assert "- theirs" in log_text
+
+    def test_agreed_v5_manifest_preserves_known_evidence_and_tombstone(
+        self, tmp_project
+    ):
+        _bootstrap()
+        wiki = Path("docs/llm_wiki")
+        manifest = SyncManifest.load(wiki)
+        active_path = "modules/models.md"
+        active_mapping = manifest.page_source_mappings[active_path]
+        active_basis = ConceptObservationBasis(
+            scope=MODULE_OBSERVATION_SCOPE,
+            source_path=active_mapping.source_path,
+            extractor_ref="python-ast",
+            source_content_hash=manifest.sources[active_mapping.source_path]["hash"],
+            concept_observation_hash=sha256_bytes(b"models observation"),
+        )
+        manifest.evidence_baselines[active_path] = ManifestEvidenceBaseline.from_basis(
+            active_basis
+        )
+
+        stale_path = "modules/retired.md"
+        stale_basis = ConceptObservationBasis(
+            scope=MODULE_OBSERVATION_SCOPE,
+            source_path="retired.py",
+            extractor_ref="python-ast",
+            source_content_hash=sha256_bytes(b"retired source"),
+            concept_observation_hash=sha256_bytes(b"retired observation"),
+        )
+        manifest.page_source_mappings[stale_path] = ManifestPageSource(
+            scope=MODULE_OBSERVATION_SCOPE,
+            source_path="retired.py",
+        )
+        manifest.tombstones[stale_path] = ManifestTombstone(
+            reason=TOMBSTONE_SOURCE_MISSING,
+            last_valid_basis=stale_basis,
+        )
+        (wiki / stale_path).write_text("# Retired\n", encoding="utf-8")
+        manifest.surfaces = {"flows": {"enabled": True, "categories": ["api"]}}
+        manifest.generation_inputs = {"openapi_file": "openapi.json"}
+        manifest = manifest.with_artifact_hashes(
+            surface_index_hash=sha256_bytes(b"surface"),
+            knowledge_index_hash=sha256_bytes(b"knowledge"),
+            evaluated_envelope_hash=sha256_bytes(b"envelope"),
+        )
+        theirs = manifest.with_artifact_hashes(
+            surface_index_hash=sha256_bytes(b"other surface"),
+            knowledge_index_hash=sha256_bytes(b"other knowledge"),
+            evaluated_envelope_hash=sha256_bytes(b"other envelope"),
+        )
+        manifest_path = wiki / ".llm-wiki-manifest.json"
+        manifest_path.write_text(
+            _conflicted(manifest.to_json(), theirs.to_json()),
+            encoding="utf-8",
+        )
+
+        result = team.resolve_conflicts(wiki, ".", write=True)
+
+        assert result["ok"] is True
+        resolved = SyncManifest.load(wiki)
+        assert resolved.evidence_baselines[active_path] == (
+            ManifestEvidenceBaseline.from_basis(active_basis)
+        )
+        assert (
+            resolved.page_source_mappings[stale_path]
+            == (manifest.page_source_mappings[stale_path])
+        )
+        assert resolved.tombstones[stale_path] == manifest.tombstones[stale_path]
+        assert resolved.surfaces == manifest.surfaces
+        assert resolved.generation_inputs == manifest.generation_inputs
+        assert resolved.artifact_hashes is None
+
+    def test_differing_v5_operational_state_requires_manual_resolution(
+        self, tmp_project
+    ):
+        _bootstrap()
+        wiki = Path("docs/llm_wiki")
+        ours = SyncManifest.load(wiki)
+        theirs = SyncManifest.from_payload(ours.to_payload())
+        theirs.evidence_baselines["modules/models.md"] = (
+            ManifestEvidenceBaseline.unknown(MANIFEST_REPAIR_UNAVAILABLE)
+        )
+        manifest_path = wiki / ".llm-wiki-manifest.json"
+        manifest_path.write_text(
+            _conflicted(ours.to_json(), theirs.to_json()),
+            encoding="utf-8",
+        )
+
+        result = team.resolve_conflicts(wiki, ".", write=True)
+
+        assert result["ok"] is False
+        assert result["unresolved"] == [
+            {
+                "path": ".llm-wiki-manifest.json",
+                "reason": (
+                    "manifest v5 operational state differs and requires "
+                    "manual resolution"
+                ),
+            }
+        ]
+        assert "<<<<<<<" in manifest_path.read_text(encoding="utf-8")
 
     def test_workflow_conflict_is_left_unresolved(self, tmp_project):
         _bootstrap()

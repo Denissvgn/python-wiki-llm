@@ -1,0 +1,229 @@
+{
+  "haskell": {
+    "classes": [
+      {
+        "kind": "data",
+        "line": 8,
+        "name": "User"
+      },
+      {
+        "kind": "newtype",
+        "line": 12,
+        "name": "Token"
+      }
+    ],
+    "functions": [
+      {
+        "kind": "signature",
+        "line": 18,
+        "name": "loadUser",
+        "signature": "UserId -> Maybe User"
+      },
+      {
+        "kind": "function",
+        "line": 19,
+        "name": "loadUser"
+      }
+    ],
+    "imports": [
+      {
+        "alias": null,
+        "line": 4,
+        "module": "Data.Text",
+        "qualified": false
+      }
+    ],
+    "language": "haskell",
+    "language_pragmas": [
+      "FlexibleInstances"
+    ],
+    "module": "HLSAnalysis.API"
+  },
+  "python": {
+    "classes": [
+      {
+        "attributes": [
+          {
+            "description": "Stable user identifier.",
+            "line": 8,
+            "name": "id",
+            "required": true,
+            "type": "int"
+          }
+        ],
+        "bases": [],
+        "decorators": [],
+        "docstring": "A user account.",
+        "kind": "class",
+        "line": 6,
+        "methods": [
+          {
+            "calls": [
+              {
+                "line": 12,
+                "name": "str"
+              }
+            ],
+            "decorators": [],
+            "docstring": "Render the identifier.",
+            "is_async": false,
+            "line": 11,
+            "name": "render",
+            "params": [],
+            "return_type": "str"
+          }
+        ],
+        "name": "User"
+      },
+      {
+        "attributes": [
+          {
+            "line": 18,
+            "name": "repository",
+            "required": true,
+            "type": "Repository"
+          }
+        ],
+        "bases": [
+          "Service"
+        ],
+        "decorators": [],
+        "docstring": "Coordinates account work.",
+        "kind": "class",
+        "line": 16,
+        "methods": [
+          {
+            "decorators": [],
+            "docstring": "",
+            "is_async": false,
+            "line": 20,
+            "name": "load",
+            "params": [
+              {
+                "kind": "positional_or_keyword",
+                "name": "user_id",
+                "type": "int"
+              }
+            ],
+            "return_type": "User"
+          }
+        ],
+        "name": "AccountService"
+      }
+    ],
+    "functions": [
+      {
+        "calls": [
+          {
+            "line": 27,
+            "name": "AccountService"
+          }
+        ],
+        "decorators": [
+          "command"
+        ],
+        "docstring": "Run the account command.",
+        "is_async": false,
+        "line": 26,
+        "name": "run",
+        "params": [
+          {
+            "kind": "positional_or_keyword",
+            "name": "user_id",
+            "type": "int"
+          }
+        ],
+        "return_type": "User"
+      }
+    ],
+    "imports": [
+      {
+        "line": 2,
+        "module": "domain",
+        "name": "Service"
+      }
+    ],
+    "language": "python",
+    "module_docstring": "Account orchestration."
+  },
+  "typescript": {
+    "classes": [
+      {
+        "attributes": [
+          {
+            "name": "id",
+            "type": "number"
+          }
+        ],
+        "bases": [
+          "Renderable"
+        ],
+        "decorators": [],
+        "docstring": "A client.",
+        "kind": "class",
+        "line": 5,
+        "methods": [
+          {
+            "decorators": [],
+            "docstring": "",
+            "is_async": false,
+            "line": 8,
+            "name": "render",
+            "params": [],
+            "return_type": "string"
+          }
+        ],
+        "name": "Client"
+      }
+    ],
+    "constants": [
+      {
+        "exported": true,
+        "line": 3,
+        "name": "DEFAULT_PORT"
+      }
+    ],
+    "exports": [
+      "Client",
+      "start"
+    ],
+    "functions": [
+      {
+        "decorators": [],
+        "docstring": "",
+        "end_line": 18,
+        "is_async": false,
+        "line": 16,
+        "name": "start",
+        "params": [
+          {
+            "default": "DEFAULT_PORT",
+            "name": "port",
+            "type": "number"
+          }
+        ],
+        "return_type": "Server"
+      }
+    ],
+    "imports": [
+      {
+        "alias": null,
+        "module": "node:http",
+        "name": "createServer",
+        "type": "named"
+      }
+    ],
+    "language": "typescript",
+    "module_calls": [
+      {
+        "args": [
+          "start"
+        ],
+        "line": 20,
+        "name": "createServer",
+        "target": "server"
+      }
+    ],
+    "module_docstring": "/** HTTP client module. */"
+  }
+}

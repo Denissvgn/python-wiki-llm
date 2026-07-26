@@ -8,14 +8,51 @@ content is preserved under a Legacy Notes section.
 
 from __future__ import annotations
 
+import io
 import json
 import os
 import re
+import shutil
 import sys
-from dataclasses import dataclass, field
+import tempfile
+from contextlib import redirect_stdout
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from pathlib import Path
 
+from .. import __version__
+from ..config import DEFAULT_WIKI_DIR, validate_path
+from ..services.io import read_md, write_json_atomic, write_md
+from ..services.knowledge_artifacts import (
+    KNOWLEDGE_INDEX_FILENAME,
+    ArtifactWriteState,
+)
+from ..services.knowledge_envelope import RepositoryEvidence
+from ..services.knowledge_evidence import is_valid_sha256, sha256_bytes
+from ..services.knowledge_loader import (
+    KnowledgeStateLoadError,
+    load_knowledge_state,
+)
+from ..services.knowledge_orchestration import (
+    RUNTIME_GENERATION_OPTION_DEFAULTS,
+    RuntimeKnowledgeInputs,
+    build_runtime_knowledge_plan,
+    collect_runtime_repository_evidence,
+    finalize_runtime_knowledge,
+    runtime_generation_options,
+)
+from ..services.paths import normalize_source_path
+from ..services.source_snapshot import SourceSnapshot, build_source_snapshot
+from ..services.sync_manifest import (
+    MANIFEST_FILENAME,
+    MANIFEST_STATE_UNAVAILABLE,
+    SyncManifest,
+)
+from ..services.wiki_surface import PageKind
+from ..services.wiki_surface_index import (
+    SURFACE_INDEX_FILENAME,
+    evaluate_surface_index,
+)
 from .bootstrap_cmd import (
     _build_relationships,
     _generate_docker_md,
@@ -23,23 +60,19 @@ from .bootstrap_cmd import (
     _generate_index_md,
     _generate_module_md,
     build_entity_occurrence_page_map,
-    build_entity_page_map,
     build_module_page_map,
 )
 from .extract_cmd import (
+    InventoryResult,
     get_call_graph,
     get_docker_inventory,
     get_inventory_result,
     print_inventory_failures,
 )
-from .sync_cmd import MANIFEST_FILENAME, SyncManifest
-from ..config import DEFAULT_WIKI_DIR, validate_path
-from ..services.io import read_md, write_md
-from ..services.paths import normalize_source_path
-from ..services.source_snapshot import build_source_snapshot
-from ..services.wiki_surface import PageKind
 
 LEGACY_MARKER = "<!-- llm-wiki-migrate:legacy-notes -->"
+MIGRATION_PROGRESS_FILENAME = ".llm-wiki-migration-progress.json"
+_MIGRATION_PROGRESS_VERSION = 1
 _MANAGED_DIRS = ("entities", "modules", "infrastructure")
 _CANONICAL_SURFACE_DIRS = _MANAGED_DIRS + ("workflows", "flows")
 _ARCHITECTURE_PAGES: tuple[tuple[str, str], ...] = (
@@ -100,6 +133,15 @@ class MigrationPlan:
     page_link_maps: dict[str, dict[str, str]] = field(default_factory=dict)
     index_content: str = ""
     manifest: SyncManifest | None = None
+    inventory: dict = field(default_factory=dict)
+    source_snapshot: SourceSnapshot | None = None
+    module_page_map: dict[str, str] = field(default_factory=dict)
+    entity_occurrence_page_map: dict[tuple[str, str, int], str] = field(
+        default_factory=dict
+    )
+    inventory_result: InventoryResult | None = None
+    regenerated_structural_page_paths: set[str] = field(default_factory=set)
+    repository_evidence: RepositoryEvidence | None = None
 
 
 @dataclass(frozen=True)
@@ -306,12 +348,11 @@ def _build_targets(
     src_dir: str,
     inventory: dict,
     docker_inventory: dict,
-) -> tuple[list[TargetPage], str, SyncManifest]:
+) -> tuple[list[TargetPage], str]:
     module_page_map = build_module_page_map(inventory)
     entity_occurrence_page_map = build_entity_occurrence_page_map(
         inventory, module_page_map
     )
-    entity_page_map = build_entity_page_map(inventory)
     relationships = _build_relationships(inventory, module_page_map)
 
     targets: list[TargetPage] = []
@@ -399,20 +440,7 @@ def _build_targets(
         architecture_entries=_list_architecture_pages(wiki_dir) or None,
         api_contracts_present=(wiki_dir / "api-contracts.md").is_file(),
     )
-    try:
-        existing_manifest = SyncManifest.load(wiki_dir)
-    except (FileNotFoundError, json.JSONDecodeError, TypeError, ValueError):
-        existing_manifest = SyncManifest()
-    manifest = SyncManifest.build_from_inventory(
-        inventory,
-        src_dir,
-        entity_page_map,
-        module_page_map,
-        entity_occurrence_page_cache=entity_occurrence_page_map,
-        surfaces=existing_manifest.surfaces,
-        generation_inputs=existing_manifest.generation_inputs,
-    )
-    return targets, _append_additional_docs_index(index_content, wiki_dir), manifest
+    return targets, _append_additional_docs_index(index_content, wiki_dir)
 
 
 def _list_workflows(wiki_dir: Path) -> list[dict]:
@@ -560,10 +588,19 @@ def _build_migration_plan(wiki_dir: Path, src_dir: str) -> MigrationPlan:
     if inventory_result.failed:
         print_inventory_failures(inventory_result)
         sys.exit(1)
+    source_snapshot = inventory_result.source_snapshot or source_snapshot
     inventory = inventory_result.inventory
     docker_inventory = get_docker_inventory(src_dir, source_snapshot=source_snapshot)
     module_page_map = build_module_page_map(inventory)
-    targets, index_content, manifest = _build_targets(
+    entity_occurrence_page_map = build_entity_occurrence_page_map(
+        inventory,
+        module_page_map,
+    )
+    try:
+        previous_manifest = SyncManifest.load(wiki_dir)
+    except (FileNotFoundError, json.JSONDecodeError, TypeError, ValueError):
+        previous_manifest = None
+    targets, index_content = _build_targets(
         wiki_dir,
         src_dir,
         inventory,
@@ -576,7 +613,13 @@ def _build_migration_plan(wiki_dir: Path, src_dir: str) -> MigrationPlan:
         targets=targets,
         page_link_maps=_build_workflow_link_maps(wiki_dir, inventory, module_page_map),
         index_content=index_content,
-        manifest=manifest,
+        manifest=previous_manifest,
+        inventory=inventory,
+        source_snapshot=source_snapshot,
+        module_page_map=module_page_map,
+        entity_occurrence_page_map=entity_occurrence_page_map,
+        inventory_result=inventory_result,
+        repository_evidence=collect_runtime_repository_evidence(src_dir, wiki_dir),
     )
 
     active_pages = _active_managed_pages(wiki_dir, src_dir)
@@ -604,7 +647,123 @@ def _build_migration_plan(wiki_dir: Path, src_dir: str) -> MigrationPlan:
             archive_rel = _page_rel(page.path, wiki_dir)
             plan.link_map.setdefault(page.rel, archive_rel)
 
+    plan.regenerated_structural_page_paths.update(
+        _validated_migration_progress_pages(wiki_dir, plan)
+    )
     return plan
+
+
+def _validated_migration_progress_pages(
+    wiki_dir: Path,
+    plan: MigrationPlan,
+) -> frozenset[str]:
+    """Load durable receipts for pages written by an earlier migration chunk.
+
+    Receipts are only accepted when the exact current page bytes still match
+    the recorded write and the page also equals the current deterministic
+    migration output. This prevents a stale or edited receipt from promoting
+    retained Markdown to known evidence.
+    """
+
+    path = wiki_dir / MIGRATION_PROGRESS_FILENAME
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (FileNotFoundError, OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return frozenset()
+    if (
+        not isinstance(payload, dict)
+        or set(payload) != {"pages", "tool_version", "version"}
+        or payload.get("version") != _MIGRATION_PROGRESS_VERSION
+        or not isinstance(payload.get("tool_version"), str)
+        or not isinstance(payload.get("pages"), dict)
+    ):
+        return frozenset()
+
+    targets = {target.rel: target for target in plan.targets}
+    accepted: set[str] = set()
+    for page_path, raw_receipt in payload["pages"].items():
+        target = targets.get(page_path) if isinstance(page_path, str) else None
+        if (
+            target is None
+            or target.kind not in {PageKind.ENTITIES.value, PageKind.MODULES.value}
+            or target.source_path is None
+            or not isinstance(raw_receipt, dict)
+            or set(raw_receipt)
+            != {
+                "content_hash",
+                "kind",
+                "source_content_hash",
+                "source_path",
+            }
+            or raw_receipt.get("kind") != target.kind
+            or raw_receipt.get("source_path") != target.source_path
+            or not is_valid_sha256(raw_receipt.get("source_content_hash"))
+            or not is_valid_sha256(raw_receipt.get("content_hash"))
+        ):
+            continue
+        current_path = wiki_dir / page_path
+        try:
+            current_bytes = current_path.read_bytes()
+        except OSError:
+            continue
+        if sha256_bytes(current_bytes) != raw_receipt["content_hash"]:
+            continue
+        expected = _merge_legacy_notes(
+            target,
+            plan.matches.get(page_path, []),
+        )
+        if read_md(current_path) == expected:
+            accepted.add(page_path)
+    return frozenset(accepted)
+
+
+def _save_migration_progress(wiki_dir: Path, plan: MigrationPlan) -> None:
+    """Atomically persist exact evidence receipts before a chunk can return."""
+
+    if plan.source_snapshot is None:
+        raise ValueError("migration plan is missing its evaluated source snapshot")
+    targets = {target.rel: target for target in plan.targets}
+    pages: dict[str, dict[str, str]] = {}
+    for page_path in sorted(plan.regenerated_structural_page_paths):
+        target = targets.get(page_path)
+        if target is None or target.source_path is None:
+            continue
+        source_hash = plan.source_snapshot.captured_content_hashes.get(
+            target.source_path
+        )
+        if not isinstance(source_hash, str) or not is_valid_sha256(source_hash):
+            continue
+        current_path = wiki_dir / page_path
+        try:
+            current_bytes = current_path.read_bytes()
+        except OSError:
+            continue
+        expected = _merge_legacy_notes(
+            target,
+            plan.matches.get(page_path, []),
+        )
+        if read_md(current_path) != expected:
+            continue
+        pages[page_path] = {
+            "content_hash": sha256_bytes(current_bytes),
+            "kind": target.kind,
+            "source_content_hash": source_hash,
+            "source_path": target.source_path,
+        }
+    if not pages:
+        return
+    write_json_atomic(
+        wiki_dir / MIGRATION_PROGRESS_FILENAME,
+        {
+            "pages": pages,
+            "tool_version": __version__,
+            "version": _MIGRATION_PROGRESS_VERSION,
+        },
+    )
+
+
+def _clear_migration_progress(wiki_dir: Path) -> None:
+    (wiki_dir / MIGRATION_PROGRESS_FILENAME).unlink(missing_ok=True)
 
 
 def _existing_legacy_payload(page: ExistingPage, generated_content: str) -> str:
@@ -677,17 +836,18 @@ def _remove_old_page(page: ExistingPage, dry_run: bool) -> None:
     page.path.unlink(missing_ok=True)
 
 
-def _write_page(wiki_dir: Path, rel: str, content: str, dry_run: bool) -> None:
+def _write_page(wiki_dir: Path, rel: str, content: str, dry_run: bool) -> bool:
     path = wiki_dir / rel
     if path.exists() and read_md(path) == content:
         print(f"  SKIP unchanged {rel}")
-        return
+        return False
 
     print(f"  WRITE {rel}")
     if dry_run:
-        return
+        return True
     path.parent.mkdir(parents=True, exist_ok=True)
     write_md(path, content)
+    return True
 
 
 def _is_legacy_path(path: Path, wiki_dir: Path) -> bool:
@@ -834,6 +994,14 @@ def _manifest_needs_write(wiki_dir: Path, manifest: SyncManifest | None) -> bool
     )
 
 
+def _knowledge_artifacts_need_backfill(wiki_dir: Path) -> bool:
+    try:
+        state = load_knowledge_state(wiki_dir)
+    except (KnowledgeStateLoadError, OSError, TypeError, ValueError):
+        return True
+    return state.knowledge is None
+
+
 def _pending_link_rewrite_count(
     wiki_dir: Path,
     link_map: dict[str, str],
@@ -858,7 +1026,7 @@ def _finalizers_pending(wiki_dir: Path, plan: MigrationPlan) -> bool:
     index_pending = not index_path.exists() or read_md(index_path) != plan.index_content
     return (
         index_pending
-        or _manifest_needs_write(wiki_dir, plan.manifest)
+        or _knowledge_artifacts_need_backfill(wiki_dir)
         or _pending_link_rewrite_count(wiki_dir, plan.link_map, plan.page_link_maps) > 0
         or (
             _legacy_archive_ignore_applicable(wiki_dir, plan)
@@ -972,8 +1140,205 @@ def _print_chunk_plan(chunks: list[MigrationChunk], chunk_size: int) -> None:
         )
 
 
+def _migration_runtime_inputs(
+    wiki_dir: Path,
+    plan: MigrationPlan,
+    *,
+    repository_wiki_dir: Path | None = None,
+) -> RuntimeKnowledgeInputs:
+    if plan.source_snapshot is None:
+        raise ValueError("migration plan is missing its evaluated source snapshot")
+    flow_entries = _list_flows(wiki_dir)
+    source_root = str(plan.source_snapshot.root)
+    surface = evaluate_surface_index(
+        wiki_dir,
+        plan.inventory,
+        src_dir=source_root,
+        module_page_map=plan.module_page_map,
+        entity_occurrence_page_cache=plan.entity_occurrence_page_map,
+        entry_points=flow_entries,
+    )
+    previous = plan.manifest
+    repository_evidence = (
+        plan.repository_evidence
+        or collect_runtime_repository_evidence(
+            source_root,
+            repository_wiki_dir or wiki_dir,
+        )
+    )
+    return RuntimeKnowledgeInputs(
+        target_wiki_dir=wiki_dir,
+        inventory=plan.inventory,
+        surface=surface,
+        source_snapshot=plan.source_snapshot,
+        module_page_map=plan.module_page_map,
+        entity_occurrence_page_map=plan.entity_occurrence_page_map,
+        repository_evidence=repository_evidence,
+        inventory_complete=True,
+        previous_manifest=previous,
+        manifest_surfaces=previous.surfaces if previous is not None else {},
+        manifest_generation_inputs=(
+            previous.generation_inputs if previous is not None else {}
+        ),
+        unknown_evidence_reason=MANIFEST_STATE_UNAVAILABLE,
+        regenerated_evidence_page_paths=frozenset(
+            plan.regenerated_structural_page_paths
+        ),
+        extractor_registry=(
+            plan.inventory_result.extractor_registry
+            if plan.inventory_result is not None
+            else {}
+        ),
+        plugin_extractor_components=(
+            plan.inventory_result.plugin_components
+            if plan.inventory_result is not None
+            else ()
+        ),
+        plugin_components=(
+            plan.inventory_result.producer_plugin_components
+            if plan.inventory_result is not None
+            else ()
+        ),
+        plugin_lock_path=(
+            plan.inventory_result.plugin_lock_path
+            if plan.inventory_result is not None
+            else None
+        ),
+        plugin_lock_hash=(
+            plan.inventory_result.plugin_lock_hash
+            if plan.inventory_result is not None
+            else None
+        ),
+        generation_options=runtime_generation_options(
+            surfaces=previous.surfaces if previous is not None else {},
+            generation_inputs=(
+                previous.generation_inputs if previous is not None else {}
+            ),
+            include_tests=None,
+            preserve_semantic=True,
+        ),
+        generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS,
+        generation_option_allowlist=tuple(RUNTIME_GENERATION_OPTION_DEFAULTS),
+    )
+
+
+def _finalize_migration_artifacts(
+    wiki_dir: Path,
+    plan: MigrationPlan,
+) -> None:
+    result = finalize_runtime_knowledge(_migration_runtime_inputs(wiki_dir, plan))
+    for label, artifact in (
+        ("surface index", result.surface_index),
+        ("knowledge index", result.knowledge_index),
+        ("manifest", result.manifest),
+    ):
+        action = (
+            "unchanged"
+            if artifact.state is ArtifactWriteState.UNCHANGED
+            else artifact.state.value
+        )
+        print(f"  {label.upper()} {action}: {artifact.path}")
+
+
+def _staged_existing_page(
+    page: ExistingPage,
+    *,
+    staged_wiki_dir: Path,
+) -> ExistingPage:
+    return replace(page, path=staged_wiki_dir / page.rel)
+
+
+def _staged_migration_plan(
+    plan: MigrationPlan,
+    *,
+    staged_wiki_dir: Path,
+) -> MigrationPlan:
+    return replace(
+        plan,
+        matches={
+            target: [
+                _staged_existing_page(page, staged_wiki_dir=staged_wiki_dir)
+                for page in pages
+            ]
+            for target, pages in plan.matches.items()
+        },
+        unmatched=[
+            _staged_existing_page(page, staged_wiki_dir=staged_wiki_dir)
+            for page in plan.unmatched
+        ],
+        regenerated_structural_page_paths=set(plan.regenerated_structural_page_paths),
+    )
+
+
+def _assert_migration_preview_tree_safe(wiki_dir: Path) -> None:
+    for current, directories, filenames in os.walk(
+        wiki_dir,
+        followlinks=False,
+    ):
+        current_path = Path(current)
+        for name in (*directories, *filenames):
+            path = current_path / name
+            if path.is_symlink():
+                raise ValueError(
+                    "Migration dry-run cannot stage a wiki containing "
+                    f"symbolic links: {path}"
+                )
+
+
+def _preview_migration_artifact_plan(
+    wiki_dir: Path,
+    plan: MigrationPlan,
+):
+    _assert_migration_preview_tree_safe(wiki_dir)
+    with tempfile.TemporaryDirectory(prefix="llm-wiki-migrate-preview-") as raw:
+        preview_root = Path(raw)
+        staged_wiki = preview_root / "wiki"
+        shutil.copytree(wiki_dir, staged_wiki)
+        staged_plan = _staged_migration_plan(
+            plan,
+            staged_wiki_dir=staged_wiki,
+        )
+        previous_cwd = Path.cwd()
+        try:
+            os.chdir(preview_root)
+            with redirect_stdout(io.StringIO()):
+                _apply_plan(
+                    staged_wiki,
+                    staged_plan,
+                    False,
+                    finalize_artifacts=False,
+                )
+        finally:
+            os.chdir(previous_cwd)
+        return build_runtime_knowledge_plan(
+            _migration_runtime_inputs(
+                staged_wiki,
+                staged_plan,
+                repository_wiki_dir=wiki_dir,
+            )
+        )
+
+
+def _print_migration_artifact_preview(
+    wiki_dir: Path,
+    plan: MigrationPlan,
+) -> None:
+    preview = _preview_migration_artifact_plan(wiki_dir, plan)
+    for label, filename, artifact in (
+        ("surface index", SURFACE_INDEX_FILENAME, preview.surface_index),
+        ("knowledge index", KNOWLEDGE_INDEX_FILENAME, preview.knowledge_index),
+        ("manifest", MANIFEST_FILENAME, preview.manifest),
+    ):
+        print(f"  DRY-RUN: {label} {artifact.state.value} ({filename})")
+
+
 def _apply_chunk(
-    wiki_dir: Path, plan: MigrationPlan, chunk: MigrationChunk, dry_run: bool
+    wiki_dir: Path,
+    plan: MigrationPlan,
+    chunk: MigrationChunk,
+    dry_run: bool,
+    *,
+    finalize_artifacts: bool = True,
 ) -> None:
     archive_root = wiki_dir / "legacy" / plan.archive_name
     if _chunk_has_archive_work(plan, chunk) or (
@@ -989,9 +1354,14 @@ def _apply_chunk(
             _archive_page(page, wiki_dir, archive_root, dry_run)
             if page.rel != target.rel:
                 _remove_old_page(page, dry_run)
-        _write_page(
+        wrote_target = _write_page(
             wiki_dir, target.rel, _merge_legacy_notes(target, matched_pages), dry_run
         )
+        if wrote_target and target.kind in {
+            PageKind.ENTITIES.value,
+            PageKind.MODULES.value,
+        }:
+            plan.regenerated_structural_page_paths.add(target.rel)
 
     for page in chunk.unmatched:
         _archive_page(page, wiki_dir, archive_root, dry_run)
@@ -1013,14 +1383,22 @@ def _apply_chunk(
             f"  Link mappings: {total_link_count} path(s); pages rewritten: {rewritten}"
         )
 
-    if chunk.include_finalizers and not dry_run and plan.manifest is not None:
-        plan.manifest.save(wiki_dir)
-        print(f"  WRITE {wiki_dir / '.llm-wiki-manifest.json'}")
+    if not dry_run:
+        _save_migration_progress(wiki_dir, plan)
+    if chunk.include_finalizers and not dry_run and finalize_artifacts:
+        _finalize_migration_artifacts(wiki_dir, plan)
+        _clear_migration_progress(wiki_dir)
     elif chunk.include_finalizers and dry_run:
-        print("  DRY-RUN: manifest refresh skipped")
+        _print_migration_artifact_preview(wiki_dir, plan)
 
 
-def _apply_plan(wiki_dir: Path, plan: MigrationPlan, dry_run: bool) -> None:
+def _apply_plan(
+    wiki_dir: Path,
+    plan: MigrationPlan,
+    dry_run: bool,
+    *,
+    finalize_artifacts: bool = True,
+) -> None:
     chunk = MigrationChunk(
         number=1,
         total=1,
@@ -1028,7 +1406,13 @@ def _apply_plan(wiki_dir: Path, plan: MigrationPlan, dry_run: bool) -> None:
         unmatched=plan.unmatched,
         include_finalizers=True,
     )
-    _apply_chunk(wiki_dir, plan, chunk, dry_run)
+    _apply_chunk(
+        wiki_dir,
+        plan,
+        chunk,
+        dry_run,
+        finalize_artifacts=finalize_artifacts,
+    )
 
 
 def run(args) -> None:
@@ -1061,10 +1445,13 @@ def run(args) -> None:
         _print_chunk_plan(chunks, chunk_size)
 
         if plan_chunks or (dry_run and chunk_number is None):
+            _print_migration_artifact_preview(wiki_dir, plan)
             print("PLAN: no files modified.")
             return
 
         if not chunks:
+            if not dry_run:
+                _clear_migration_progress(wiki_dir)
             print("\nNo pending migration changes.")
             return
 

@@ -295,39 +295,46 @@ def _normalize_gitignore_trailing_spaces(line: str) -> str:
     return "".join(normalized)
 
 
+def _parse_gitignore_text(raw_text: str, base: str = "") -> list[_GitignoreRule]:
+    """Parse already captured gitignore text without performing file I/O."""
+    rules: list[_GitignoreRule] = []
+    for raw in raw_text.splitlines():
+        line = _normalize_gitignore_trailing_spaces(raw)
+        if not line or line.startswith("#"):
+            continue
+        negated = line.startswith("!")
+        if negated:
+            line = line[1:]
+        anchored = line.startswith("/")
+        if anchored:
+            line = line[1:]
+        directory_only = line.endswith("/")
+        line = line.rstrip("/")
+        if line:
+            rules.append(
+                _GitignoreRule(
+                    base=base.strip("/"),
+                    pattern=line.replace("\\", "/"),
+                    negated=negated,
+                    directory_only=directory_only,
+                    anchored=anchored,
+                )
+            )
+    return rules
+
+
 def _parse_gitignore_file(gitignore_path: Path, base: str = "") -> list[_GitignoreRule]:
     rules: list[_GitignoreRule] = []
     if not gitignore_path.exists():
         return rules
 
     try:
-        with open(gitignore_path, "r", encoding="utf-8") as f:
-            for raw in f:
-                line = raw.rstrip("\n\r")
-                line = _normalize_gitignore_trailing_spaces(line)
-                if not line or line.startswith("#"):
-                    continue
-                negated = line.startswith("!")
-                if negated:
-                    line = line[1:]
-                anchored = line.startswith("/")
-                if anchored:
-                    line = line[1:]
-                directory_only = line.endswith("/")
-                line = line.rstrip("/")
-                if line:
-                    rules.append(
-                        _GitignoreRule(
-                            base=base.strip("/"),
-                            pattern=line.replace("\\", "/"),
-                            negated=negated,
-                            directory_only=directory_only,
-                            anchored=anchored,
-                        )
-                    )
+        return _parse_gitignore_text(
+            gitignore_path.read_text(encoding="utf-8"),
+            base,
+        )
     except OSError:
-        pass
-    return rules
+        return rules
 
 
 def _match_gitignore_pattern(

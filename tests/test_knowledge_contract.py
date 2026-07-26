@@ -864,7 +864,7 @@ def test_fixture_builders_return_equal_but_independent_mutable_payloads():
     first.inventory[FIXTURE_SOURCE_PATH]["classes"][0]["name"] = "Mutated"
     first.knowledge_payload["concepts"][0]["title"] = "Mutated"
     assert second.inventory[FIXTURE_SOURCE_PATH]["classes"][0]["name"] == "User"
-    assert second.knowledge_payload["concepts"][0]["title"] == "accounts"
+    assert second.knowledge_payload["concepts"][0]["title"] == "AccountService"
 
 
 def test_materialized_trees_normalize_identically_without_hiding_payload_paths(

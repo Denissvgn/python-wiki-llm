@@ -24,6 +24,7 @@ from llm_wiki_cli.services.knowledge_model import (
     KnowledgeLoadState,
     KnowledgeProjectionProfile,
     RepositoryIdentitySource,
+    knowledge_index_to_payload,
     parse_knowledge_index,
     serialize_knowledge_index,
 )
@@ -757,6 +758,7 @@ def _evaluated_fixture(
         links=links,
     )
     model = parse_knowledge_index(knowledge_payload)
+    knowledge_payload = knowledge_index_to_payload(model)
     knowledge_bytes = serialize_knowledge_index(model).encode("utf-8")
     return EvaluatedKnowledgeFixture(
         name=name,

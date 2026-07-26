@@ -27,13 +27,19 @@ canonical wiki surface registry:
 | `dependencies.md` | mixed | Optional internal and external dependency architecture page. |
 | `load-order.md` | mixed | Optional load-order, cycle, and startup-caveat architecture page. |
 
-The wiki also contains `.llm-wiki-manifest.json`, the source hash manifest used
-by incremental sync and strict linting, and `.llm-wiki-surface.json`, a
-deterministic machine-readable index of canonical pages, source mappings,
-surface counts, flow metadata, dependency-page presence, and internal wiki
-links. Authority, load-state, commit, compatibility, and rollout semantics for
-the planned native knowledge layer are recorded in
+The wiki also contains `.llm-wiki-manifest.json`, the operational source,
+evidence, and artifact-commit state used by incremental sync and strict
+linting; `.llm-wiki-surface.json`, the deterministic machine-readable index of
+canonical pages, source mappings, surface counts, flow metadata,
+dependency-page presence, and internal wiki links; and the experimental
+`.llm-wiki-knowledge.json`, a deterministic evidence-aware projection of those
+canonical pages. The knowledge projection is generated and must not be edited
+as an authority. Authority, load-state, commit, compatibility, and rollout
+semantics for the native knowledge layer are recorded in
 [ADR-0001](docs/architecture/0001-native-knowledge-authority-state-and-rollout.md).
+The experimental generated knowledge artifact, accepted M1 performance
+budgets, privacy boundary, and rollback procedure are documented in
+[Native knowledge M1 operations](docs/native-knowledge-m1.md).
 Generated Mermaid diagrams, including bounded call-sequence, data-flow,
 dependency, and relationship diagrams when present, plus generated tables,
 links, headings, canonical filenames, and machine-readable artifacts are
@@ -382,6 +388,7 @@ llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki sync --jobs 1 --cache-stats --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki sync --cache-dir .cache/llm-wiki-inventory --helper-cache-dir .cache/llm-wiki-helpers
 llm-wiki sync --include-tests go --src-dir . --wiki-dir docs/llm_wiki
+llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --dry-run
 llm-wiki sync --initialize-surfaces flows,dependencies --flow-category http --exclude-tests --dry-run
 llm-wiki sync --initialize-surfaces api-contracts --openapi-file openapi.yaml --dry-run
 llm-wiki sync --src-dir /path/to/repo --wiki-dir docs/llm_wiki --allow-external-src
@@ -405,9 +412,10 @@ broad diffs unless `--force` is used.
 `dependencies`, and/or `api-contracts`: ordinary entity/module source changes
 are reported but deferred. `--flow-category` is repeatable, `--exclude-tests`
 uses a cross-platform test-path classifier for the selected flow/dependency
-analysis, and `--dry-run` previews exact page counts and safety-guard results
-without writing the wiki, manifest, log, index, surface index, or cache.
-Selected flow categories and test filtering are persisted in manifest v4 so a
+analysis. `--dry-run` previews ordinary source changes or optional-surface
+initialization, including the surface/knowledge/manifest artifact actions,
+without writing the wiki, manifest, log, index, projections, or cache.
+Selected flow categories and test filtering are persisted in manifest v5 so a
 later ordinary sync cannot silently expand an HTTP-only backfill to every flow.
 Pass `--include-tests go` to include Go `_test.go` files in the synced
 inventory and generated module pages; the default remains production Go source
@@ -857,7 +865,10 @@ Example `bootstrap --format json --source-adapter` summary:
   "created_files": ["sources/code_wikis/repo/index.md"],
   "updated_files": [],
   "skipped_files": [],
-  "manifest_path": "sources/code_wikis/repo/.llm-wiki-manifest.json"
+  "manifest_path": "sources/code_wikis/repo/.llm-wiki-manifest.json",
+  "knowledge_path": "sources/code_wikis/repo/.llm-wiki-knowledge.json",
+  "knowledge_status": "created",
+  "knowledge_schema_version": "llm-wiki-knowledge/v1"
 }
 ```
 

@@ -1013,6 +1013,266 @@ def test_mail_and_external_target_classes_match_uri_scheme(
 
 
 @pytest.mark.parametrize(
+    "uri",
+    [
+        "http://user@example.invalid/docs",
+        "https://user:password@example.invalid/docs",
+        "ftp://user:password@example.invalid/archive",
+        "https://user@[bad",
+    ],
+)
+def test_schema_and_model_reject_external_uri_authority_userinfo(uri: str):
+    payload = _full_payload()
+    payload["relationships"][1].update(
+        {
+            "target": {
+                "target_class": "external",
+                "external_uri": uri,
+                "raw_target": uri,
+                "normalized_target": uri,
+                "label": "documentation",
+                "location": {"start": 20, "end": 58},
+            },
+            "resolution": "external",
+        }
+    )
+
+    error = _assert_model_error(payload, "relationships[1].target.external_uri")
+    assert "credential-bearing URI authority userinfo" in error.reason
+    assert list(_knowledge_schema_validator().iter_errors(payload))
+
+
+@pytest.mark.parametrize(
+    ("field", "credentialed_target"),
+    [
+        ("raw_target", "http://user@example.invalid/docs"),
+        (
+            "normalized_target",
+            "ftp://user:password@example.invalid/archive",
+        ),
+        (
+            "raw_target",
+            '<https://user:password@example.invalid/docs> "Documentation"',
+        ),
+        (
+            "raw_target",
+            "<https://user:secret@example.invalid/path>",
+        ),
+        (
+            "normalized_target",
+            "<//user@example.invalid/docs>",
+        ),
+        (
+            "normalized_target",
+            "<https://user:secret@example.invalid/path>",
+        ),
+        (
+            "raw_target",
+            'docs/reference.md "https://user:password@example.invalid/private"',
+        ),
+        (
+            "raw_target",
+            'docs/reference.md "<https://user:password@example.invalid/private>"',
+        ),
+        (
+            "raw_target",
+            'docs/reference.md "see https://user:password@example.invalid/private"',
+        ),
+        (
+            "raw_target",
+            "docs/reference.md (https://user:password@example.invalid/private)",
+        ),
+        (
+            "raw_target",
+            "docs/reference.md see https://user:password@example.invalid/private",
+        ),
+        ("raw_target", "//user@example.invalid/docs"),
+        ("normalized_target", "//user:password@example.invalid/docs"),
+        ("raw_target", "https://user@[bad"),
+        ("normalized_target", "//user@[bad"),
+    ],
+)
+def test_schema_and_model_reject_observation_uri_authority_userinfo(
+    field: str, credentialed_target: str
+):
+    payload = _full_payload()
+    target = {
+        "target_class": "unknown",
+        "raw_target": "docs/reference.md",
+        "normalized_target": "docs/reference.md",
+        "label": "documentation",
+        "location": {"start": 20, "end": 58},
+    }
+    target[field] = credentialed_target
+    payload["relationships"][1].update(
+        {
+            "target": target,
+            "resolution": "unresolved",
+        }
+    )
+
+    error = _assert_model_error(payload, f"relationships[1].target.{field}")
+    assert "credential-bearing URI authority userinfo" in error.reason
+    assert list(_knowledge_schema_validator().iter_errors(payload))
+
+
+@pytest.mark.parametrize(
+    ("mutate", "field"),
+    [
+        (
+            lambda payload: payload["concepts"][0].__setitem__(
+                "title", "broken\ud800title"
+            ),
+            "concepts[0].title",
+        ),
+        (
+            lambda payload: payload["relationships"][1]["target"].__setitem__(
+                "label", "broken\udfff-label"
+            ),
+            "relationships[1].target.label",
+        ),
+        (
+            lambda payload: payload.__setitem__(
+                "extensions",
+                {"example.com/custom": {"nested": ["broken\ud800value"]}},
+            ),
+            "extensions.example.com/custom.nested[0]",
+        ),
+        (
+            lambda payload: payload.__setitem__(
+                "extensions",
+                {"example.com/custom": {"nested": {"broken\udfffkey": "value"}}},
+            ),
+            "extensions.example.com/custom.nested",
+        ),
+    ],
+)
+def test_schema_and_model_reject_unpaired_surrogate_strings(
+    mutate: Callable[[dict[str, Any]], None], field: str
+):
+    payload = _full_payload()
+    mutate(payload)
+
+    error = _assert_model_error(payload, field)
+    assert "encodable as UTF-8" in error.reason
+    assert list(_knowledge_schema_validator().iter_errors(payload))
+
+
+def test_schema_and_model_allow_valid_non_bmp_unicode_strings():
+    payload = _full_payload()
+    payload["concepts"][0]["title"] = "Sync \U0001f600"
+    payload["extensions"] = {"example.com/custom": {"nested": ["valid \U0001f680"]}}
+
+    assert list(_knowledge_schema_validator().iter_errors(payload)) == []
+    model = parse_knowledge_index(payload)
+    assert serialize_knowledge_index(model).encode("utf-8")
+
+
+@pytest.mark.parametrize(
+    ("target", "resolution"),
+    [
+        (
+            {
+                "target_class": "mail",
+                "external_uri": "mailto:user@example.invalid",
+                "raw_target": "mailto:user@example.invalid",
+                "normalized_target": "mailto:user@example.invalid",
+                "label": "email",
+                "location": {"start": 20, "end": 58},
+            },
+            "external",
+        ),
+        (
+            {
+                "target_class": "unknown",
+                "raw_target": "docs/user@example.invalid.md",
+                "normalized_target": "docs/user@example.invalid.md",
+                "label": "documentation",
+                "location": {"start": 20, "end": 58},
+            },
+            "unresolved",
+        ),
+        (
+            {
+                "target_class": "unknown",
+                "raw_target": 'docs/reference.md "mailto:user@example.invalid"',
+                "normalized_target": "docs/reference.md",
+                "label": "documentation",
+                "location": {"start": 20, "end": 58},
+            },
+            "unresolved",
+        ),
+        (
+            {
+                "target_class": "unknown",
+                "raw_target": "docs//user@example.invalid.md",
+                "normalized_target": "docs//user@example.invalid.md",
+                "label": "documentation",
+                "location": {"start": 20, "end": 58},
+            },
+            "unresolved",
+        ),
+        (
+            {
+                "target_class": "external",
+                "external_uri": (
+                    "https://example.invalid/?next=https://user@example.invalid/path"
+                ),
+                "raw_target": (
+                    "https://example.invalid/?next=https://user@example.invalid/path"
+                ),
+                "normalized_target": (
+                    "https://example.invalid/?next=https://user@example.invalid/path"
+                ),
+                "label": "documentation",
+                "location": {"start": 20, "end": 58},
+            },
+            "external",
+        ),
+        (
+            {
+                "target_class": "unknown",
+                "raw_target": (
+                    'docs/reference.md "https://example.invalid/'
+                    '?next=https://user@example.invalid/path"'
+                ),
+                "normalized_target": "docs/reference.md",
+                "label": "documentation",
+                "location": {"start": 20, "end": 58},
+            },
+            "unresolved",
+        ),
+        (
+            {
+                "target_class": "unknown",
+                "raw_target": (
+                    'docs/reference.md "see https://example.invalid/'
+                    '?next=https://user@example.invalid/path"'
+                ),
+                "normalized_target": "docs/reference.md",
+                "label": "documentation",
+                "location": {"start": 20, "end": 58},
+            },
+            "unresolved",
+        ),
+    ],
+)
+def test_schema_and_model_allow_at_outside_uri_authority(
+    target: dict[str, object], resolution: str
+):
+    payload = _full_payload()
+    payload["relationships"][1].update(
+        {
+            "target": target,
+            "resolution": resolution,
+        }
+    )
+
+    assert list(_knowledge_schema_validator().iter_errors(payload)) == []
+    parse_knowledge_index(payload)
+
+
+@pytest.mark.parametrize(
     ("resolution", "target_class"),
     [
         ("ambiguous", "concept"),
@@ -1263,6 +1523,115 @@ def test_serialization_is_sorted_deterministic_and_has_one_trailing_newline():
     )
     assert first.endswith("\n")
     assert not first.endswith("\n\n")
+
+
+def test_canonical_payload_ignores_core_collection_input_order():
+    payload = _full_payload()
+    second_concept = deepcopy(payload["concepts"][0])
+    second_concept.update(
+        {
+            "locator": "llm-wiki://modules/alpha",
+            "title": "alpha",
+        }
+    )
+    second_concept["document"].update(
+        {
+            "page_id": "alpha",
+            "canonical_path": "modules/alpha.md",
+        }
+    )
+    second_concept["facets"]["structure"]["basis"].update(
+        {
+            "source_path": "src/llm_wiki_cli/alpha.py",
+            "concept_observation_hash": _hash("9"),
+        }
+    )
+    second_concept["facets"]["semantics"]["page_hash"] = _hash("a")
+    payload["concepts"].append(second_concept)
+    payload["bundle"]["producer"]["extractors"].append(
+        {
+            "id": "alpha-extractor",
+            "version": "builtin",
+            "configuration_hash": _hash("b"),
+        }
+    )
+    payload["bundle"]["producer"]["plugins"] = [
+        {
+            "id": "zeta-plugin",
+            "version": "1",
+            "configuration_hash": _hash("c"),
+        },
+        {
+            "id": "alpha-plugin",
+            "version": "1",
+            "configuration_hash": _hash("d"),
+        },
+    ]
+    extension_order = ["z-last", {"nested": [3, 1, 2]}, "a-first"]
+    payload["extensions"] = {"example.com/ordered": extension_order}
+    payload["relationships"][0]["extensions"] = {"example.com/ordered": extension_order}
+    payload["relationships"].reverse()
+
+    baseline_model = parse_knowledge_index(payload)
+    baseline_payload = knowledge_index_to_payload(baseline_model)
+    baseline_bytes = serialize_knowledge_index(baseline_model)
+    collection_paths = {
+        "concepts": ("concepts",),
+        "relationships": ("relationships",),
+        "extractors": ("bundle", "producer", "extractors"),
+        "plugins": ("bundle", "producer", "plugins"),
+    }
+
+    for path in collection_paths.values():
+        permuted = deepcopy(payload)
+        collection = permuted
+        for segment in path:
+            collection = collection[segment]
+        collection.reverse()
+
+        permuted_model = parse_knowledge_index(permuted)
+        assert knowledge_index_to_payload(permuted_model) == baseline_payload
+        assert serialize_knowledge_index(permuted_model) == baseline_bytes
+
+    assert [concept.locator for concept in baseline_model.concepts] == [
+        concept["locator"] for concept in payload["concepts"]
+    ]
+    assert [
+        relationship.kind.value for relationship in baseline_model.relationships
+    ] == [relationship["kind"] for relationship in payload["relationships"]]
+    assert [
+        component.component_id
+        for component in baseline_model.bundle.producer.extractors
+    ] == [component["id"] for component in payload["bundle"]["producer"]["extractors"]]
+    assert [
+        component.component_id for component in baseline_model.bundle.producer.plugins
+    ] == [component["id"] for component in payload["bundle"]["producer"]["plugins"]]
+    assert [
+        component["id"]
+        for component in baseline_payload["bundle"]["producer"]["extractors"]
+    ] == ["alpha-extractor", "python-ast"]
+    assert [
+        component["id"]
+        for component in baseline_payload["bundle"]["producer"]["plugins"]
+    ] == ["alpha-plugin", "zeta-plugin"]
+    assert [concept["locator"] for concept in baseline_payload["concepts"]] == [
+        "llm-wiki://modules/alpha",
+        "llm-wiki://modules/sync_cmd",
+    ]
+    assert baseline_payload["relationships"] == sorted(
+        baseline_payload["relationships"],
+        key=lambda relationship: json.dumps(
+            relationship,
+            ensure_ascii=False,
+            separators=(",", ":"),
+            sort_keys=True,
+        ),
+    )
+    assert baseline_payload["extensions"]["example.com/ordered"] == extension_order
+    assert (
+        baseline_payload["relationships"][0]["extensions"]["example.com/ordered"]
+        == extension_order
+    )
 
 
 def test_manual_dataclass_enum_wire_values_are_revalidated_and_normalized():

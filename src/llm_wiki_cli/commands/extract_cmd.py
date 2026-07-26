@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import importlib
 import json
 import re
@@ -25,6 +26,10 @@ from ..extractors.common import (
 )
 from ..extractors.go_extractor import GoExtractionRequest
 from ..extractors.haskell_extractor import HaskellExtractionRequest
+
+# Re-export ComponentVisitor so existing callers that import it from here
+# continue to work without modification.
+from ..extractors.python_extractor import ComponentVisitor  # noqa: F401
 from ..extractors.rust_extractor import RustExtractionRequest
 from ..services.api_contracts import (
     attach_routes_to_entry_points,
@@ -36,35 +41,33 @@ from ..services.dependencies import analyze_dependencies
 from ..services.entrypoints import build_flow, detect_entry_points, read_console_scripts
 from ..services.entrypoints import get_entry_points as get_entry_points  # noqa: F401
 from ..services.extraction_jobs import ExtractionJobPlan, ExtractionJobRequest
+from ..services.imports import build_module_path_resolver
 from ..services.inventory_cache import (
     InventoryCache,
     InventoryCacheOptions,
     InventoryCacheStats,
     build_inventory_cache_key,
-    hash_source_file,
     is_valid_cache_entry,
     make_cache_entry,
 )
-from ..services.imports import build_module_path_resolver
+from ..services.io import write_text_output
 from ..services.packages import discover_packages, stamp_inventory_packages
 from ..services.plugins import (
     get_extractor_registry,
+    iter_components,
     load_entry_point,
+    lock_path,
     parallel_safe_extractor_entry_points,
 )
 from ..services.resource_diagnostics import format_resource_failure
-from ..services.io import write_text_output
 from ..services.source_snapshot import (
     SourceFile,
     SourceSnapshot,
+    SourceSnapshotError,
     build_source_snapshot,
     format_unsupported_source_summary,
     unsupported_source_summary,
 )
-
-# Re-export ComponentVisitor so existing callers that import it from here
-# continue to work without modification.
-from ..extractors.python_extractor import ComponentVisitor  # noqa: F401
 
 # ── Extractor loader ─────────────────────────────────────────────────
 
@@ -118,6 +121,12 @@ class InventoryResult:
     statuses: dict[str, ExtractorStatus]
     cache_stats: InventoryCacheStats | None = None
     extraction_job_plan: ExtractionJobPlan = field(default_factory=ExtractionJobPlan)
+    extractor_registry: dict[str, str] = field(default_factory=dict)
+    plugin_components: tuple[dict, ...] = ()
+    producer_plugin_components: tuple[dict, ...] = ()
+    plugin_lock_path: str | None = None
+    plugin_lock_hash: str | None = None
+    source_snapshot: SourceSnapshot | None = None
 
     @property
     def job_plan(self) -> ExtractionJobPlan:
@@ -195,6 +204,9 @@ class _InventoryBuildContext:
     source_file_by_path: dict[str, SourceFile]
     source_hashes: dict[str, str]
     parallel_safe_plugin_entry_points: set[str]
+    plugin_components: tuple[dict, ...]
+    plugin_lock_path: str | None
+    plugin_lock_hash: str | None
 
 
 @dataclass
@@ -366,13 +378,89 @@ def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
     statuses = _ordered_inventory_statuses(
         context.registry, planning.status_by_language
     )
+    (
+        selected_plugin_components,
+        producer_plugin_components,
+        evaluated_source_snapshot,
+    ) = _inventory_plugin_state(
+        context,
+        statuses,
+        inventory,
+    )
     _save_inventory_cache(context, statuses)
     return InventoryResult(
         inventory=inventory,
         statuses=statuses,
         cache_stats=context.cache.stats if context.cache is not None else None,
         extraction_job_plan=extraction_job_plan,
+        extractor_registry=dict(context.registry),
+        plugin_components=selected_plugin_components,
+        producer_plugin_components=producer_plugin_components,
+        plugin_lock_path=(
+            context.plugin_lock_path if producer_plugin_components else None
+        ),
+        plugin_lock_hash=(
+            context.plugin_lock_hash if producer_plugin_components else None
+        ),
+        source_snapshot=evaluated_source_snapshot,
     )
+
+
+def _inventory_plugin_state(
+    context: _InventoryBuildContext,
+    statuses: dict[str, ExtractorStatus],
+    inventory: dict,
+) -> tuple[tuple[dict, ...], tuple[dict, ...], SourceSnapshot]:
+    extractors = _selected_extractor_plugin_components(context, statuses)
+    producers = extractors + tuple(
+        component
+        for component in context.plugin_components
+        if component.get("type") in {"diagram_style", "entrypoint_detector"}
+    )
+    return (
+        extractors,
+        producers,
+        _snapshot_with_plugin_inventory_paths(
+            context.source_snapshot,
+            inventory,
+            extractors,
+        ),
+    )
+
+
+def _selected_extractor_plugin_components(
+    context: _InventoryBuildContext,
+    statuses: dict[str, ExtractorStatus],
+) -> tuple[dict, ...]:
+    return tuple(
+        component
+        for component in context.plugin_components
+        if component.get("type") == "extractor"
+        and isinstance(component.get("language"), str)
+        and (status := statuses.get(component["language"])) is not None
+        and status.state == "ok"
+        and context.registry.get(component["language"]) == component.get("entry_point")
+    )
+
+
+def _snapshot_with_plugin_inventory_paths(
+    snapshot: SourceSnapshot,
+    inventory: dict,
+    components: tuple[dict, ...],
+) -> SourceSnapshot:
+    if not components:
+        return snapshot
+    plugin_languages = {str(component["language"]) for component in components}
+    try:
+        return snapshot.with_captured_inventory_paths(
+            source_path
+            for source_path, file_data in inventory.items()
+            if str(file_data.get("language", "")) in plugin_languages
+        )
+    except SourceSnapshotError:
+        # Extract remains backward compatible with virtual plugin records.
+        # Knowledge generation will reject any uncommitted source path.
+        return snapshot
 
 
 def _build_extraction_job_plan(
@@ -422,6 +510,13 @@ def _prepare_inventory_build_context(
         include_tests=request.include_tests,
     )
     registry = get_extractor_registry()
+    plugin_components, plugin_root = _selected_runtime_plugin_components(
+        request.src_dir
+    )
+    plugin_lock_path, plugin_lock_hash = _captured_plugin_lock(
+        request.src_dir,
+        plugin_root=plugin_root,
+    )
     cache = (
         InventoryCache(request.src_dir, request.cache_options)
         if request.cache_options is not None
@@ -443,7 +538,64 @@ def _prepare_inventory_build_context(
         source_file_by_path=source_file_by_path,
         source_hashes=source_hashes,
         parallel_safe_plugin_entry_points=parallel_safe_extractor_entry_points(),
+        plugin_components=plugin_components,
+        plugin_lock_path=plugin_lock_path,
+        plugin_lock_hash=plugin_lock_hash,
     )
+
+
+def _captured_plugin_lock(
+    source_root: str | Path,
+    *,
+    plugin_root: str | Path = ".",
+) -> tuple[str | None, str | None]:
+    """Capture the exact applicable project-local plugin lock without leaking it."""
+
+    path = lock_path(plugin_root)
+    if not path.is_file():
+        return None, None
+    try:
+        content = path.read_bytes()
+        relative_path = (
+            path.resolve().relative_to(Path(source_root).resolve()).as_posix()
+        )
+    except (OSError, ValueError):
+        return None, None
+    return (
+        relative_path,
+        f"sha256:{hashlib.sha256(content).hexdigest()}",
+    )
+
+
+def _selected_runtime_plugin_components(
+    source_root: str | Path,
+) -> tuple[tuple[dict, ...], str | Path]:
+    """Mirror source-root-first documentation-hook selection without loading it."""
+
+    ambient = tuple(iter_components())
+    source = (
+        ambient
+        if Path(source_root).resolve() == Path.cwd().resolve()
+        else tuple(iter_components(root=source_root))
+    )
+    extractors = tuple(
+        component for component in ambient if component.get("type") == "extractor"
+    )
+    generation: list[dict] = []
+    source_selected = False
+    for component_type in ("diagram_style", "entrypoint_detector"):
+        primary = [
+            component for component in source if component.get("type") == component_type
+        ]
+        fallback = [
+            component
+            for component in ambient
+            if component.get("type") == component_type
+        ]
+        selected = primary or fallback
+        generation.extend(selected)
+        source_selected = source_selected or bool(primary)
+    return extractors + tuple(generation), (source_root if source_selected else ".")
 
 
 def _source_files_by_path(source_snapshot: SourceSnapshot) -> dict[str, SourceFile]:
@@ -473,11 +625,7 @@ def _load_inventory_cache_state(
     )
     cache_files = cache.load(cache_key)
     cache.stats.deleted = len(set(cache_files) - set(source_file_by_path))
-    source_hashes = {
-        rel_path: file_hash
-        for rel_path, source_file in source_file_by_path.items()
-        if (file_hash := hash_source_file(source_file)) is not None
-    }
+    source_hashes = source_snapshot.hashes_for(source_file_by_path)
     return cache_key, cache_files, source_hashes
 
 
@@ -1036,17 +1184,17 @@ def build_extract_payload(
         only_files = paths
 
     if no_changed_files:
-        output = {"schema_version": EXTRACT_SCHEMA_VERSION, "inventory": {}}
+        empty_output = {"schema_version": EXTRACT_SCHEMA_VERSION, "inventory": {}}
         if deep:
-            output["api_contracts"] = build_api_contracts(
+            empty_output["api_contracts"] = build_api_contracts(
                 {}, openapi_file=openapi_file, source_root=src_root
             )
-            output["dependencies"] = _dependency_extract_block(
+            empty_output["dependencies"] = _dependency_extract_block(
                 analyze_dependencies({}, str(src_root))
             )
-            output["data_flows"] = []
+            empty_output["data_flows"] = []
         return ExtractPayloadResult(
-            output,
+            empty_output,
             inventory_count=0,
             docker_count=0,
             changed_file_count=0,
