@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import importlib.util
+import json
 import sys
 import types
 from pathlib import Path
@@ -15,6 +16,17 @@ from llm_wiki_cli.commands import context_cmd, mcp_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.config import write_config
 from llm_wiki_cli.services import mcp_server
+from llm_wiki_cli.services.documentation_queries import (
+    DocumentationGraphQueryService,
+    DocumentationQueryError,
+)
+from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
+from llm_wiki_cli.services.knowledge_loader import KnowledgeLoadResult
+from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
+from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
+from tests.knowledge_fixtures import fail_if_extraction_runs
+from tests.test_knowledge_loader import _committed_state
 
 
 def _args(**overrides):
@@ -75,6 +87,24 @@ def _write_legacy_wiki(root: Path) -> Path:
     (wiki / "log.md").write_text("# Log\n\n", encoding="utf-8")
     (wiki / "entities" / "User.md").write_text("# User\n\n", encoding="utf-8")
     return wiki
+
+
+def _guard_status_extraction(monkeypatch) -> None:
+    monkeypatch.setattr(
+        mcp_server,
+        "build_documentation_query_service",
+        fail_if_extraction_runs,
+    )
+    monkeypatch.setattr(
+        mcp_server,
+        "get_inventory",
+        fail_if_extraction_runs,
+    )
+    monkeypatch.setattr(
+        mcp_server.context_cmd,
+        "get_inventory_result",
+        fail_if_extraction_runs,
+    )
 
 
 class TestMcpWikiService:
@@ -583,6 +613,160 @@ class TestMcpWikiService:
         assert result["pages"]["architecture_pages"] == 2
         assert result["hooks"] == ["post-commit"]
 
+    def test_get_status_reports_ready_snapshot_without_live_extraction(
+        self,
+        tmp_project,
+        monkeypatch,
+    ):
+        wiki = tmp_project / "docs" / "llm_wiki"
+        _committed_state(wiki)
+        _guard_status_extraction(monkeypatch)
+        service = mcp_server.McpWikiService(
+            src_dir=".",
+            wiki_dir="docs/llm_wiki",
+        )
+
+        result = service.get_status()
+
+        assert result["knowledge"] == {
+            "availability": "ready",
+            "reason": "all-projection-commitments-match",
+            "freshness_evaluated": False,
+        }
+
+    def test_get_status_reports_legacy_absence_without_extraction(
+        self,
+        tmp_project,
+        monkeypatch,
+    ):
+        _write_legacy_wiki(tmp_project)
+        _guard_status_extraction(monkeypatch)
+        service = mcp_server.McpWikiService(
+            src_dir=".",
+            wiki_dir="docs/llm_wiki",
+        )
+
+        result = service.get_status()
+
+        assert result["knowledge"] == {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "freshness_evaluated": False,
+        }
+
+    def test_get_status_does_not_read_legacy_markdown_for_knowledge(
+        self,
+        tmp_project,
+        monkeypatch,
+    ):
+        wiki = _write_legacy_wiki(tmp_project)
+        (wiki / "entities" / "User.md").write_bytes(b"\xff")
+        _guard_status_extraction(monkeypatch)
+        service = mcp_server.McpWikiService(
+            src_dir=".",
+            wiki_dir="docs/llm_wiki",
+        )
+
+        result = service.get_status()
+
+        assert result["knowledge"] == {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "freshness_evaluated": False,
+        }
+
+    def test_get_status_preserves_missing_wiki_status_without_extraction(
+        self,
+        tmp_project,
+        monkeypatch,
+    ):
+        _guard_status_extraction(monkeypatch)
+        service = mcp_server.McpWikiService(
+            src_dir=".",
+            wiki_dir="docs/missing_wiki",
+        )
+
+        result = service.get_status()
+
+        assert result["wiki_exists"] is False
+        assert result["knowledge"] == {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "freshness_evaluated": False,
+        }
+
+    def test_get_status_reports_degraded_snapshot_without_extraction(
+        self,
+        tmp_project,
+        monkeypatch,
+    ):
+        wiki = tmp_project / "docs" / "llm_wiki"
+        _committed_state(wiki)
+        (wiki / KNOWLEDGE_INDEX_FILENAME).write_bytes(b"{not-json\n")
+        _guard_status_extraction(monkeypatch)
+        service = mcp_server.McpWikiService(
+            src_dir=".",
+            wiki_dir="docs/llm_wiki",
+        )
+
+        result = service.get_status()
+
+        assert result["knowledge"] == {
+            "availability": "degraded",
+            "reason": "policy-selected-surface-only-fallback-after-invalid",
+            "freshness_evaluated": False,
+        }
+
+    def test_get_status_reports_unsupported_snapshot_without_extraction(
+        self,
+        tmp_project,
+        monkeypatch,
+    ):
+        wiki = tmp_project / "docs" / "llm_wiki"
+        _committed_state(wiki)
+        knowledge_path = wiki / KNOWLEDGE_INDEX_FILENAME
+        payload = json.loads(knowledge_path.read_text(encoding="utf-8"))
+        payload["schema_version"] = "llm-wiki-knowledge/v999"
+        knowledge_path.write_text(
+            json.dumps(payload, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        _guard_status_extraction(monkeypatch)
+        service = mcp_server.McpWikiService(
+            src_dir=".",
+            wiki_dir="docs/llm_wiki",
+        )
+
+        result = service.get_status()
+
+        assert result["knowledge"] == {
+            "availability": "unsupported",
+            "reason": "knowledge-schema-version-unsupported",
+            "freshness_evaluated": False,
+        }
+
+    def test_get_status_uses_live_surface_fallback_for_missing_projection_surface(
+        self,
+        tmp_project,
+        monkeypatch,
+    ):
+        wiki = tmp_project / "docs" / "llm_wiki"
+        _committed_state(wiki)
+        (wiki / SURFACE_INDEX_FILENAME).unlink()
+        _guard_status_extraction(monkeypatch)
+        service = mcp_server.McpWikiService(
+            src_dir=".",
+            wiki_dir="docs/llm_wiki",
+        )
+
+        result = service.get_status()
+
+        assert result["knowledge"] == {
+            "availability": "degraded",
+            "reason": "policy-selected-surface-only-fallback-after-invalid",
+            "freshness_evaluated": False,
+        }
+
     def test_get_status_adds_issue_reporting_preference(self, tmp_project):
         _write_wiki(tmp_project)
         write_config(
@@ -670,6 +854,305 @@ class TestMcpWikiService:
         with pytest.raises(mcp_server.McpWikiError, match="bad graph request"):
             service.query_graph({"type": "callers", "value": "run"})
 
+    def test_knowledge_methods_delegate_once_and_cap_external_limit(
+        self,
+        monkeypatch,
+    ):
+        calls = {"builder": [], "query": []}
+        concept_result = {
+            "query": "llm-wiki://entities/User",
+            "found": True,
+        }
+        bounded_result = {
+            "total": 101,
+            "returned": 100,
+            "truncated": True,
+        }
+
+        class FakeQueryService:
+            def get_concept(self, locator):
+                calls["query"].append(("get_concept", locator))
+                return concept_result
+
+            def related_concepts(
+                self,
+                locator,
+                *,
+                direction,
+                kinds,
+            ):
+                calls["query"].append(
+                    ("related_concepts", locator, direction, kinds)
+                )
+                return bounded_result
+
+            def explain_evidence(self, locator):
+                calls["query"].append(("explain_evidence", locator))
+                return bounded_result
+
+        query_service = FakeQueryService()
+
+        def fake_builder(src_dir, *, wiki_dir, limit, read_only):
+            calls["builder"].append((src_dir, wiki_dir, limit, read_only))
+            return query_service
+
+        monkeypatch.setattr(
+            mcp_server,
+            "build_documentation_query_service",
+            fake_builder,
+        )
+        monkeypatch.setattr(
+            mcp_server,
+            "get_inventory",
+            fail_if_extraction_runs,
+        )
+        service = mcp_server.McpWikiService(
+            src_dir="source-root",
+            wiki_dir="agent_wiki",
+        )
+
+        concept = service.get_concept(
+            "  llm-wiki://entities/User  ",
+            limit=250,
+        )
+        related = service.related_concepts(
+            " entities/User.md ",
+            direction="outbound",
+            kinds=["links_to"],
+            limit=250,
+        )
+        evidence = service.explain_evidence(
+            " llm-wiki://entities/User ",
+            limit=250,
+        )
+
+        assert concept is concept_result
+        assert related is bounded_result
+        assert evidence is bounded_result
+        assert calls["builder"] == [
+            ("source-root", "agent_wiki", 100, True),
+            ("source-root", "agent_wiki", 100, True),
+            ("source-root", "agent_wiki", 100, True),
+        ]
+        assert calls["query"] == [
+            ("get_concept", "llm-wiki://entities/User"),
+            (
+                "related_concepts",
+                "entities/User.md",
+                "outbound",
+                ["links_to"],
+            ),
+            ("explain_evidence", "llm-wiki://entities/User"),
+        ]
+        assert related == {
+            "total": 101,
+            "returned": 100,
+            "truncated": True,
+        }
+
+    @pytest.mark.parametrize(
+        ("method_name", "args", "kwargs", "message"),
+        [
+            (
+                "get_concept",
+                (None,),
+                {},
+                "locator_or_exact_route must be a non-empty string",
+            ),
+            (
+                "get_concept",
+                ("llm-wiki://entities/User",),
+                {"limit": True},
+                "limit must be a positive integer",
+            ),
+            (
+                "related_concepts",
+                ("llm-wiki://entities/User",),
+                {"direction": "sideways"},
+                "direction must be one of",
+            ),
+            (
+                "related_concepts",
+                ("llm-wiki://entities/User",),
+                {"kinds": "links_to"},
+                "kinds",
+            ),
+            (
+                "related_concepts",
+                ("llm-wiki://entities/User",),
+                {"kinds": [1]},
+                "kinds",
+            ),
+            (
+                "related_concepts",
+                ("llm-wiki://entities/User",),
+                {"kinds": ["structural"]},
+                "unsupported relationship kind",
+            ),
+            (
+                "explain_evidence",
+                ("llm-wiki://entities/User",),
+                {"limit": 0},
+                "limit must be a positive integer",
+            ),
+        ],
+    )
+    def test_knowledge_methods_validate_before_building_query_service(
+        self,
+        monkeypatch,
+        method_name,
+        args,
+        kwargs,
+        message,
+    ):
+        monkeypatch.setattr(
+            mcp_server,
+            "build_documentation_query_service",
+            fail_if_extraction_runs,
+        )
+        service = mcp_server.McpWikiService()
+
+        with pytest.raises(mcp_server.McpWikiError, match=message):
+            getattr(service, method_name)(*args, **kwargs)
+
+    @pytest.mark.parametrize(
+        "method_name",
+        ["get_concept", "related_concepts", "explain_evidence"],
+    )
+    @pytest.mark.parametrize("failure_point", ["builder", "query"])
+    def test_knowledge_methods_map_api_and_query_errors(
+        self,
+        monkeypatch,
+        method_name,
+        failure_point,
+    ):
+        class FailingQueryService:
+            def get_concept(self, _locator):
+                raise DocumentationQueryError("bad knowledge query")
+
+            def related_concepts(
+                self,
+                _locator,
+                *,
+                direction,
+                kinds,
+            ):
+                del direction, kinds
+                raise DocumentationQueryError("bad knowledge query")
+
+            def explain_evidence(self, _locator):
+                raise DocumentationQueryError("bad knowledge query")
+
+        def fake_builder(*_args, **_kwargs):
+            if failure_point == "builder":
+                raise mcp_server.LlmWikiApiError("bad knowledge query")
+            return FailingQueryService()
+
+        monkeypatch.setattr(
+            mcp_server,
+            "build_documentation_query_service",
+            fake_builder,
+        )
+        service = mcp_server.McpWikiService()
+        kwargs = (
+            {"direction": "both", "kinds": None}
+            if method_name == "related_concepts"
+            else {}
+        )
+
+        with pytest.raises(
+            mcp_server.McpWikiError,
+            match="bad knowledge query",
+        ):
+            getattr(service, method_name)(
+                "llm-wiki://entities/User",
+                **kwargs,
+            )
+
+    @pytest.mark.parametrize(
+        ("load_result", "availability", "reason"),
+        [
+            (
+                KnowledgeLoadResult(
+                    status=KnowledgeLoadState.ABSENT,
+                    surface={},
+                    knowledge=None,
+                    manifest_basis=None,
+                ),
+                "absent",
+                "knowledge-projection-not-present",
+            ),
+            (
+                KnowledgeLoadResult(
+                    status=KnowledgeLoadState.DEGRADED,
+                    surface={},
+                    knowledge=None,
+                    manifest_basis=None,
+                    underlying_status=KnowledgeLoadState.INVALID,
+                ),
+                "degraded",
+                "policy-selected-surface-only-fallback-after-invalid",
+            ),
+        ],
+    )
+    def test_knowledge_methods_preserve_non_ready_status_without_extraction(
+        self,
+        monkeypatch,
+        load_result,
+        availability,
+        reason,
+    ):
+        view = build_knowledge_read_view(load_result)
+        query_service = DocumentationGraphQueryService(
+            {},
+            knowledge_view=view,
+        )
+        calls = []
+
+        def fake_builder(src_dir, *, wiki_dir, limit, read_only):
+            calls.append((src_dir, wiki_dir, limit, read_only))
+            return query_service
+
+        monkeypatch.setattr(
+            mcp_server,
+            "build_documentation_query_service",
+            fake_builder,
+        )
+        monkeypatch.setattr(
+            mcp_server,
+            "get_inventory",
+            fail_if_extraction_runs,
+        )
+        service = mcp_server.McpWikiService()
+
+        concept = service.get_concept("llm-wiki://entities/User")
+        related = service.related_concepts(
+            "llm-wiki://entities/User",
+            direction="outbound",
+            kinds=["links_to"],
+        )
+        evidence = service.explain_evidence("llm-wiki://entities/User")
+
+        status = {
+            "availability": availability,
+            "reason": reason,
+            "freshness_evaluated": False,
+        }
+        assert concept["knowledge"] == status
+        assert concept["found"] is False
+        assert concept["concept"] is None
+        assert related["knowledge"] == status
+        assert related["found"] is False
+        assert related["relationships"] == []
+        assert evidence["knowledge"] == status
+        assert evidence["found"] is False
+        assert evidence["evidence"] is None
+        assert calls == [
+            (".", "docs/llm_wiki", 20, True),
+            (".", "docs/llm_wiki", 20, True),
+            (".", "docs/llm_wiki", 20, True),
+        ]
+
 
 class RecordingMcpServer:
     def __init__(self):
@@ -703,6 +1186,9 @@ def test_tool_registration_names_without_sdk(tmp_project):
         "get_flow",
         "get_architecture_page",
         "query_graph",
+        "get_concept",
+        "related_concepts",
+        "explain_evidence",
         "search_wiki",
         "get_context",
         "check_wiki",
@@ -725,6 +1211,9 @@ def test_tool_registration_preserves_legacy_tools_and_adds_m4_tools(tmp_project)
         "get_status",
     } <= set(server.tool_names)
     assert {"get_flow", "get_architecture_page", "query_graph"} <= set(
+        server.tool_names
+    )
+    assert {"get_concept", "related_concepts", "explain_evidence"} <= set(
         server.tool_names
     )
 

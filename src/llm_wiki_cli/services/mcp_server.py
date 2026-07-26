@@ -10,9 +10,9 @@ from __future__ import annotations
 import ipaddress
 import json
 import sys
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
-from typing import Mapping
 from urllib.parse import unquote, urlparse
 
 from ..api import LlmWikiApiError, build_documentation_query_service
@@ -23,6 +23,8 @@ from ..commands.extract_cmd import get_inventory
 from . import circuit_breaker, wiki_surface
 from .documentation_queries import DocumentationQueryError
 from .io import read_md
+from .knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from .wiki_surface_index import SURFACE_INDEX_FILENAME, evaluate_surface_index
 
 
 MCP_PACKAGE_HINT = "Install it with: pip install 'agent-wiki-cli[mcp]'"
@@ -40,6 +42,7 @@ _ROOT_RESOURCES = {
 }
 _SEARCH_KINDS = set(_PAGE_KINDS_BY_MCP_KIND)
 _ARCHITECTURE_PAGE_KINDS = {"api-contracts", "dependencies", "load-order"}
+_MAX_QUERY_LIMIT = 100
 _GRAPH_QUERY_METHODS = {
     "flow_for_entrypoint": "flow_for_entrypoint",
     "data_flow_for_entrypoint": "data_flow_for_entrypoint",
@@ -48,6 +51,8 @@ _GRAPH_QUERY_METHODS = {
     "dependency_neighborhood": "dependency_neighborhood",
     "pages_for_symbol": "pages_for_symbol",
 }
+_KNOWLEDGE_DIRECTIONS = ("inbound", "outbound", "both")
+_KNOWLEDGE_RELATIONSHIP_KINDS = ("derived_from", "links_to")
 
 
 class MCPDependencyError(RuntimeError):
@@ -238,6 +243,54 @@ class McpWikiService:
         except (LlmWikiApiError, DocumentationQueryError) as exc:
             raise McpWikiError(str(exc)) from exc
 
+    def get_concept(
+        self,
+        locator_or_exact_route: str,
+        limit: int = 20,
+    ) -> dict:
+        """Return one exact compact knowledge concept through the shared service."""
+        locator = _knowledge_locator(locator_or_exact_route)
+        bounded_limit = _bounded_query_limit(limit)
+        return self._run_documentation_query(
+            "get_concept",
+            locator,
+            limit=bounded_limit,
+        )
+
+    def related_concepts(
+        self,
+        locator_or_exact_route: str,
+        direction: str = "both",
+        kinds: list[str] | None = None,
+        limit: int = 20,
+    ) -> dict:
+        """Return bounded relationships for one exact knowledge concept."""
+        locator = _knowledge_locator(locator_or_exact_route)
+        selected_direction = _knowledge_direction(direction)
+        selected_kinds = _knowledge_kinds(kinds)
+        bounded_limit = _bounded_query_limit(limit)
+        return self._run_documentation_query(
+            "related_concepts",
+            locator,
+            limit=bounded_limit,
+            direction=selected_direction,
+            kinds=selected_kinds,
+        )
+
+    def explain_evidence(
+        self,
+        locator_or_exact_route: str,
+        limit: int = 20,
+    ) -> dict:
+        """Return bounded stored and computed evidence for one exact concept."""
+        locator = _knowledge_locator(locator_or_exact_route)
+        bounded_limit = _bounded_query_limit(limit)
+        return self._run_documentation_query(
+            "explain_evidence",
+            locator,
+            limit=bounded_limit,
+        )
+
     def search_wiki(
         self,
         query: str,
@@ -246,9 +299,7 @@ class McpWikiService:
     ) -> dict:
         if not isinstance(query, str) or not query.strip():
             raise McpWikiError("query must be a non-empty string.")
-        if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
-            raise McpWikiError("limit must be a positive integer.")
-        limit = min(limit, 100)
+        limit = _bounded_query_limit(limit)
 
         requested = set(kinds or _SEARCH_KINDS)
         unknown = requested - _SEARCH_KINDS
@@ -333,6 +384,7 @@ class McpWikiService:
             "wiki_dir": _posix_string(wiki),
             "wiki_exists": wiki.exists(),
             "pages": pages,
+            "knowledge": _snapshot_knowledge_status(wiki, self.src_dir),
         }
 
         agent_config = get_agent_config_path(wiki)
@@ -363,6 +415,26 @@ class McpWikiService:
             "consecutive_failures": state.get("consecutive_failures", 0),
         }
         return status
+
+    def _run_documentation_query(
+        self,
+        method_name: str,
+        value: str,
+        *,
+        limit: int,
+        **query_options,
+    ) -> dict:
+        try:
+            query_service = build_documentation_query_service(
+                self.src_dir,
+                wiki_dir=str(self.wiki_dir),
+                limit=limit,
+                read_only=True,
+            )
+            method = getattr(query_service, method_name)
+            return method(value, **query_options)
+        except (LlmWikiApiError, DocumentationQueryError) as exc:
+            raise McpWikiError(str(exc)) from exc
 
     def read_resource(self, uri: str) -> dict:
         page = self._page_from_uri(uri)
@@ -496,8 +568,8 @@ def create_mcp_server(config: McpServerConfig):
         "llm-wiki",
         instructions=(
             "Read-only access to the local LLM Wiki. Use tools to fetch wiki pages, "
-            "search documentation, query documentation graphs, request generated "
-            "context, and run checks."
+            "search documentation, query documentation and knowledge graphs, "
+            "request generated context, and run checks."
         ),
     )
 
@@ -532,6 +604,37 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
     def query_graph(query: dict) -> dict:
         """Run a bounded read-only documentation graph query."""
         return service.query_graph(query)
+
+    @server.tool()
+    def get_concept(
+        locator_or_exact_route: str,
+        limit: int = 20,
+    ) -> dict:
+        """Return one exact compact knowledge concept."""
+        return service.get_concept(locator_or_exact_route, limit=limit)
+
+    @server.tool()
+    def related_concepts(
+        locator_or_exact_route: str,
+        direction: str = "both",
+        kinds: list[str] | None = None,
+        limit: int = 20,
+    ) -> dict:
+        """Return bounded knowledge relationships for one exact concept."""
+        return service.related_concepts(
+            locator_or_exact_route,
+            direction=direction,
+            kinds=kinds,
+            limit=limit,
+        )
+
+    @server.tool()
+    def explain_evidence(
+        locator_or_exact_route: str,
+        limit: int = 20,
+    ) -> dict:
+        """Return bounded evidence for one exact knowledge concept."""
+        return service.explain_evidence(locator_or_exact_route, limit=limit)
 
     @server.tool()
     def search_wiki(
@@ -656,11 +759,100 @@ def _graph_query_args(query: Mapping[str, object]) -> tuple[str, str, int]:
     if not isinstance(value, str) or not value.strip():
         raise McpWikiError("value must be a non-empty string.")
 
-    limit = query.get("limit", 20)
-    if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
-        raise McpWikiError("limit must be a positive integer.")
+    limit = _bounded_query_limit(query.get("limit", 20))
 
-    return query_type, value.strip(), min(limit, 100)
+    return query_type, value.strip(), limit
+
+
+def _knowledge_locator(value: object) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise McpWikiError(
+            "locator_or_exact_route must be a non-empty string."
+        )
+    return value.strip()
+
+
+def _knowledge_direction(value: object) -> str:
+    if not isinstance(value, str) or value not in _KNOWLEDGE_DIRECTIONS:
+        choices = ", ".join(repr(item) for item in _KNOWLEDGE_DIRECTIONS)
+        raise McpWikiError(f"direction must be one of {choices}.")
+    return value
+
+
+def _knowledge_kinds(values: object) -> list[str] | None:
+    if values is None:
+        return None
+    if isinstance(values, (str, bytes, Mapping)):
+        raise McpWikiError(
+            "kinds must be an iterable of relationship kind strings."
+        )
+    if not isinstance(values, Iterable):
+        raise McpWikiError(
+            "kinds must be an iterable of relationship kind strings."
+        )
+    requested = list(values)
+    if any(not isinstance(value, str) for value in requested):
+        raise McpWikiError(
+            "kinds must contain only relationship kind strings."
+        )
+    unsupported = sorted(
+        set(requested) - set(_KNOWLEDGE_RELATIONSHIP_KINDS)
+    )
+    if unsupported:
+        raise McpWikiError(
+            f"unsupported relationship kind: {unsupported[0]!r}."
+        )
+    selected = set(requested)
+    return [
+        kind for kind in _KNOWLEDGE_RELATIONSHIP_KINDS if kind in selected
+    ]
+
+
+def _bounded_query_limit(value: object) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+        raise McpWikiError("limit must be a positive integer.")
+    return min(value, _MAX_QUERY_LIMIT)
+
+
+def _snapshot_knowledge_status(
+    wiki_dir: Path,
+    src_dir: str,
+) -> dict[str, object]:
+    surface_path = wiki_dir / SURFACE_INDEX_FILENAME
+    knowledge_path = wiki_dir / KNOWLEDGE_INDEX_FILENAME
+    if not context_cmd._context_knowledge_projection_declared(
+        wiki_dir,
+        surface_path,
+        knowledge_path,
+    ):
+        return {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "freshness_evaluated": False,
+        }
+
+    try:
+        surface_evaluation = evaluate_surface_index(
+            wiki_dir,
+            {},
+            src_dir=src_dir,
+            entry_points=(),
+        )
+        view = context_cmd._build_context_knowledge_view(
+            wiki_dir,
+            surface_evaluation,
+            {},
+            None,
+        )
+    except (OSError, TypeError, UnicodeError, ValueError) as exc:
+        raise McpWikiError(
+            f"knowledge status could not be evaluated: {exc}"
+        ) from exc
+    return {
+        "availability": view.availability.value,
+        "reason": view.reason_code,
+        "freshness_evaluated": view.freshness_evaluated,
+    }
 
 
 def _validate_page_id(page_id: str) -> str:
