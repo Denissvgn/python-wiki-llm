@@ -47,9 +47,10 @@ _CONCEPT_PAGE_RE = re.compile(r"^(modules|entities)/([^/]+)\.md$")
 class SyncManifestError(ValueError):
     """Field-specific validation failure for decoded manifest state."""
 
-    def __init__(self, field: str, message: str):
+    def __init__(self, field: str, message: str, *, code: str | None = None):
         self.field = field
         self.message = message
+        self.code = code
         super().__init__(f"{field}: {message}")
 
 
@@ -922,6 +923,7 @@ class SyncManifest:
             raise SyncManifestError(
                 "version",
                 f"unsupported future manifest version {version}",
+                code="unsupported-version",
             )
 
         sources = _copy_sources(data.get("sources", {}), "sources")

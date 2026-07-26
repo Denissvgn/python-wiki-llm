@@ -18,6 +18,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
+from .contracts import KNOWLEDGE_SCHEMA_VERSION
 from .io import write_bytes_atomic
 from .knowledge_envelope import EvaluatedEnvelope
 from .knowledge_evidence import formatted_json_bytes, is_valid_sha256, sha256_bytes
@@ -44,14 +45,21 @@ from .wiki_surface_index import (
 
 KNOWLEDGE_INDEX_FILENAME = ".llm-wiki-knowledge.json"
 _WINDOWS_DRIVE_PREFIX_RE = re.compile(r"^[A-Za-z]:")
+_KNOWLEDGE_SCHEMA_VERSION_RE = re.compile(
+    r"^llm-wiki-knowledge/v([1-9][0-9]*)$"
+)
+_SURFACE_SCHEMA_VERSION_RE = re.compile(
+    r"^llm-wiki-surface-index/v([1-9][0-9]*)$"
+)
 
 
 class KnowledgeArtifactError(ValueError):
     """Field-specific failure while planning a generated artifact commit."""
 
-    def __init__(self, field: str, message: str):
+    def __init__(self, field: str, message: str, *, code: str | None = None):
         self.field = field
         self.message = message
+        self.code = code
         super().__init__(f"{field}: {message}")
 
 
@@ -184,12 +192,29 @@ def validate_knowledge_artifacts(
         knowledge_index_bytes,
         "knowledge_index_bytes",
     )
+    schema_version = knowledge_payload.get("schema_version")
+    if _is_future_schema_version(
+        schema_version,
+        KNOWLEDGE_SCHEMA_VERSION,
+        _KNOWLEDGE_SCHEMA_VERSION_RE,
+    ):
+        raise KnowledgeArtifactError(
+            "knowledge_index_bytes.schema_version",
+            "uses a recognized future knowledge schema version",
+            code="unsupported-schema-version",
+        )
     try:
         knowledge = validate_knowledge_index(knowledge_payload)
         expected_knowledge_bytes = serialize_knowledge_index(knowledge).encode("utf-8")
     except (TypeError, ValueError) as exc:
+        nested_field = getattr(exc, "field", None)
+        artifact_field = (
+            f"knowledge_index_bytes.{nested_field}"
+            if isinstance(nested_field, str) and nested_field
+            else "knowledge_index_bytes"
+        )
         raise KnowledgeArtifactError(
-            "knowledge_index_bytes",
+            artifact_field,
             f"does not contain a valid knowledge index: {exc}",
         ) from exc
     if knowledge_index_bytes != expected_knowledge_bytes:
@@ -425,8 +450,45 @@ def _reject_json_constant(value: str, field: str) -> None:
     raise KnowledgeArtifactError(field, f"contains non-finite number {value!r}")
 
 
+def _is_future_schema_version(
+    value: object,
+    current: str,
+    pattern: re.Pattern[str],
+) -> bool:
+    if not isinstance(value, str):
+        return False
+    candidate_match = pattern.fullmatch(value)
+    current_match = pattern.fullmatch(current)
+    if candidate_match is None or current_match is None:
+        return False
+    candidate_number = candidate_match.group(1)
+    current_number = current_match.group(1)
+    return (
+        len(candidate_number) > len(current_number)
+        or (
+            len(candidate_number) == len(current_number)
+            and candidate_number > current_number
+        )
+    )
+
+
 def _validate_surface_payload(payload: Mapping[str, Any]) -> None:
     _validate_utf8_json(payload, "surface_index")
+    schema_version = payload.get("schema_version")
+    if schema_version != WIKI_SURFACE_INDEX_SCHEMA_VERSION:
+        raise KnowledgeArtifactError(
+            "surface_index.schema_version",
+            f"must be {WIKI_SURFACE_INDEX_SCHEMA_VERSION!r}",
+            code=(
+                "unsupported-schema-version"
+                if _is_future_schema_version(
+                    schema_version,
+                    WIKI_SURFACE_INDEX_SCHEMA_VERSION,
+                    _SURFACE_SCHEMA_VERSION_RE,
+                )
+                else None
+            ),
+        )
     required = {
         "schema_version",
         "counts",
@@ -440,11 +502,6 @@ def _validate_surface_payload(payload: Mapping[str, Any]) -> None:
     if missing:
         name = min(missing)
         raise KnowledgeArtifactError(f"surface_index.{name}", "is required")
-    if payload.get("schema_version") != WIKI_SURFACE_INDEX_SCHEMA_VERSION:
-        raise KnowledgeArtifactError(
-            "surface_index.schema_version",
-            f"must be {WIKI_SURFACE_INDEX_SCHEMA_VERSION!r}",
-        )
     pages = payload.get("pages")
     if not isinstance(pages, list):
         raise KnowledgeArtifactError("surface_index.pages", "must be an array")

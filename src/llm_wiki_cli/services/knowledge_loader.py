@@ -159,7 +159,11 @@ def _load_once(
         surface = validate_surface_index_bytes(surface_bytes)
     except KnowledgeArtifactError as exc:
         issue = _issue_from_artifact_error(
-            "surface-invalid",
+            (
+                "surface-schema-version-unsupported"
+                if exc.code == "unsupported-schema-version"
+                else "surface-invalid"
+            ),
             SURFACE_INDEX_FILENAME,
             exc,
         )
@@ -225,6 +229,17 @@ def _load_once(
         issues = tuple(
             issue for issue in (manifest_issue, page_issue) if issue is not None
         )
+        if manifest_issue is not None and manifest_issue.code != "manifest-absent":
+            return (
+                KnowledgeLoadResult(
+                    status=KnowledgeLoadState.INVALID,
+                    surface=surface,
+                    knowledge=None,
+                    manifest_basis=None,
+                    issues=issues,
+                ),
+                surface_is_current,
+            )
         if manifest is not None and manifest.artifact_hashes is not None:
             issues += (
                 KnowledgeLoadIssue(
@@ -328,13 +343,20 @@ def _load_once(
         )
     except KnowledgeArtifactError as exc:
         is_invalid = exc.field.startswith("knowledge_index_bytes")
+        is_unsupported = exc.code == "unsupported-schema-version"
         status = (
             KnowledgeLoadState.INVALID
             if is_invalid
             else KnowledgeLoadState.MIXED_SNAPSHOT
         )
         issue = _issue_from_artifact_error(
-            "knowledge-invalid" if is_invalid else "artifact-parity-mismatch",
+            (
+                "knowledge-schema-version-unsupported"
+                if is_unsupported
+                else "knowledge-invalid"
+                if is_invalid
+                else "artifact-parity-mismatch"
+            ),
             (
                 KNOWLEDGE_INDEX_FILENAME
                 if is_invalid or exc.field.startswith("knowledge_index")
@@ -474,7 +496,11 @@ def _load_manifest(
         )
     except SyncManifestError as exc:
         return None, KnowledgeLoadIssue(
-            code="manifest-invalid",
+            code=(
+                "manifest-version-unsupported"
+                if exc.code == "unsupported-version"
+                else "manifest-invalid"
+            ),
             artifact_path=MANIFEST_FILENAME,
             field=exc.field,
             message=exc.message,

@@ -1453,7 +1453,7 @@ def load_state_fixtures() -> tuple[ProjectionFixture, ...]:
             knowledge_bytes=None,
             committed_surface_hash=_projection_hash(surface),
             committed_knowledge_hash=fixture_hash("projection:declared-knowledge"),
-            expected_state=KnowledgeLoadState.ABSENT,
+            expected_state=KnowledgeLoadState.INVALID,
             reason="declared-artifact-missing",
         ),
         ProjectionFixture(

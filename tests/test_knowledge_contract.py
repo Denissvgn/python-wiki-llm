@@ -672,6 +672,8 @@ def test_load_fixture_matrix_covers_every_load_state_and_policy_boundary():
         by_name["absent-declared-artifact-missing"].knowledge_bytes is None
         and by_name["absent-declared-artifact-missing"].committed_knowledge_hash
         is not None
+        and by_name["absent-declared-artifact-missing"].expected_state
+        is KnowledgeLoadState.INVALID
     )
     unsupported = by_name["invalid-unsupported-version"]
     assert unsupported.knowledge_bytes is not None

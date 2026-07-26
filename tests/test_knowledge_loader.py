@@ -155,7 +155,39 @@ def test_unsupported_knowledge_version_is_invalid(tmp_path):
         load_knowledge_state(tmp_path)
 
     assert exc_info.value.status is KnowledgeLoadState.INVALID
-    assert any(issue.code == "knowledge-invalid" for issue in exc_info.value.issues)
+    assert any(
+        issue.code == "knowledge-schema-version-unsupported"
+        and issue.field == "knowledge_index_bytes.schema_version"
+        for issue in exc_info.value.issues
+    )
+
+
+@pytest.mark.parametrize(
+    "schema_version",
+    [
+        999,
+        "not-a-version",
+        "llm-wiki-knowledge/v0",
+    ],
+)
+def test_malformed_schema_version_is_invalid_but_not_unsupported(
+    tmp_path,
+    schema_version,
+):
+    _fixture, plan, _result = _committed_state(tmp_path)
+    payload = json.loads(plan.knowledge_index.content)
+    payload["schema_version"] = schema_version
+    (tmp_path / KNOWLEDGE_INDEX_FILENAME).write_bytes(formatted_json_bytes(payload))
+
+    with pytest.raises(KnowledgeStateLoadError) as exc_info:
+        load_knowledge_state(tmp_path)
+
+    assert exc_info.value.status is KnowledgeLoadState.INVALID
+    assert any(
+        issue.code == "knowledge-invalid"
+        and issue.field == "knowledge_index_bytes.schema_version"
+        for issue in exc_info.value.issues
+    )
 
 
 @pytest.mark.parametrize("manifest_mode", ["missing", "markerless"])
@@ -172,6 +204,63 @@ def test_present_knowledge_requires_a_capable_manifest(tmp_path, manifest_mode):
     assert exc_info.value.status is KnowledgeLoadState.INVALID
     assert any(
         issue.code in {"manifest-absent", "manifest-marker-missing"}
+        for issue in exc_info.value.issues
+    )
+
+
+@pytest.mark.parametrize("knowledge_present", [True, False])
+def test_future_manifest_version_is_unsupported_and_never_absent(
+    tmp_path,
+    knowledge_present,
+):
+    _fixture, _plan_value, _result = _committed_state(tmp_path)
+    manifest_path = tmp_path / MANIFEST_FILENAME
+    payload = json.loads(manifest_path.read_bytes())
+    payload["version"] = 999
+    manifest_path.write_bytes(formatted_json_bytes(payload))
+    if not knowledge_present:
+        (tmp_path / KNOWLEDGE_INDEX_FILENAME).unlink()
+
+    with pytest.raises(KnowledgeStateLoadError) as exc_info:
+        load_knowledge_state(tmp_path)
+
+    assert exc_info.value.status is KnowledgeLoadState.INVALID
+    assert exc_info.value.status is not KnowledgeLoadState.ABSENT
+    assert any(
+        issue.code == "manifest-version-unsupported"
+        and issue.artifact_path == MANIFEST_FILENAME
+        and issue.field == "version"
+        for issue in exc_info.value.issues
+    )
+
+
+@pytest.mark.parametrize("manifest_case", ["malformed-json", "noninteger-version"])
+def test_invalid_manifest_without_knowledge_is_not_absent(
+    tmp_path,
+    manifest_case,
+):
+    _fixture, _plan_value, _result = _committed_state(tmp_path)
+    manifest_path = tmp_path / MANIFEST_FILENAME
+    if manifest_case == "malformed-json":
+        manifest_path.write_bytes(b"{not-json\n")
+    else:
+        payload = json.loads(manifest_path.read_bytes())
+        payload["version"] = "5"
+        manifest_path.write_bytes(formatted_json_bytes(payload))
+    (tmp_path / KNOWLEDGE_INDEX_FILENAME).unlink()
+
+    with pytest.raises(KnowledgeStateLoadError) as exc_info:
+        load_knowledge_state(tmp_path)
+
+    assert exc_info.value.status is KnowledgeLoadState.INVALID
+    assert exc_info.value.status is not KnowledgeLoadState.ABSENT
+    assert any(
+        issue.code == "manifest-invalid"
+        and issue.artifact_path == MANIFEST_FILENAME
+        for issue in exc_info.value.issues
+    )
+    assert all(
+        issue.code != "manifest-version-unsupported"
         for issue in exc_info.value.issues
     )
 
@@ -385,6 +474,60 @@ def test_invalid_surface_cannot_be_selected_as_degraded_fallback(tmp_path):
 
     assert exc_info.value.status is KnowledgeLoadState.INVALID
     assert any(issue.code == "surface-invalid" for issue in exc_info.value.issues)
+
+
+def test_future_surface_schema_version_is_unsupported(tmp_path):
+    _fixture, plan, _result = _committed_state(tmp_path)
+    surface = json.loads(plan.surface_index.content)
+    surface["schema_version"] = "llm-wiki-surface-index/v999"
+    (tmp_path / SURFACE_INDEX_FILENAME).write_bytes(formatted_json_bytes(surface))
+
+    with pytest.raises(KnowledgeStateLoadError) as exc_info:
+        load_knowledge_state(tmp_path)
+
+    assert exc_info.value.status is KnowledgeLoadState.INVALID
+    assert any(
+        issue.code == "surface-schema-version-unsupported"
+        and issue.artifact_path == SURFACE_INDEX_FILENAME
+        and issue.field == "surface_index.schema_version"
+        for issue in exc_info.value.issues
+    )
+
+
+@pytest.mark.parametrize(
+    "schema_case",
+    ["nonstring", "missing", "unrecognized", "zero"],
+)
+def test_malformed_surface_schema_is_invalid_not_unsupported(
+    tmp_path,
+    schema_case,
+):
+    _fixture, plan, _result = _committed_state(tmp_path)
+    surface = json.loads(plan.surface_index.content)
+    if schema_case == "nonstring":
+        surface["schema_version"] = 999
+    elif schema_case == "missing":
+        surface.pop("schema_version")
+    elif schema_case == "unrecognized":
+        surface["schema_version"] = "not-a-version"
+    else:
+        surface["schema_version"] = "llm-wiki-surface-index/v0"
+    (tmp_path / SURFACE_INDEX_FILENAME).write_bytes(formatted_json_bytes(surface))
+
+    with pytest.raises(KnowledgeStateLoadError) as exc_info:
+        load_knowledge_state(tmp_path)
+
+    assert exc_info.value.status is KnowledgeLoadState.INVALID
+    assert any(
+        issue.code == "surface-invalid"
+        and issue.artifact_path == SURFACE_INDEX_FILENAME
+        and issue.field == "surface_index.schema_version"
+        for issue in exc_info.value.issues
+    )
+    assert all(
+        issue.code != "surface-schema-version-unsupported"
+        for issue in exc_info.value.issues
+    )
 
 
 def test_rebuild_policy_calls_callback_once_and_revalidates(tmp_path):

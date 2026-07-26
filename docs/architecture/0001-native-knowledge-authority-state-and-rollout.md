@@ -158,6 +158,43 @@ The `current` result is described only as "unchanged since observation."
 Freshness results are consumer-side values and are never written back into the
 knowledge index, manifest, lifecycle, verification, or review state.
 
+### Shared native read view (KNOW-202 addendum)
+
+Each native read operation creates one shared read view and passes that same
+view to its downstream consumers. The view invokes the validated loader exactly
+once under the explicit read-only `degraded` policy. It never selects rebuild,
+and it performs no source discovery, extraction, subprocess or network access,
+write, or repair.
+
+The view maps loader outcomes to stable consumer availability and reason codes:
+
+| Loader outcome | Availability | Reason |
+|---|---|---|
+| `valid` | `ready` | `all-projection-commitments-match` |
+| `absent` | `absent` | `knowledge-projection-not-present` |
+| degraded from `invalid` | `degraded` | `policy-selected-surface-only-fallback-after-invalid` |
+| degraded from `mixed-snapshot` | `degraded` | `policy-selected-surface-only-fallback-after-mixed-snapshot` |
+| recognized unsupported knowledge, manifest, or surface schema | `unsupported` | The corresponding stable `*-version-unsupported` reason |
+
+`absent` retains the independently validated surface and may retain a
+successfully validated compatibility manifest basis; `degraded` retains only
+the independently validated surface. Both include structured projection
+findings permitted by the loader. `unsupported` exposes no unvalidated payload.
+None of these states fabricates an empty knowledge graph, evidence, freshness,
+or aggregate counts.
+
+For a `ready` view, the default mode invokes the pure freshness evaluator
+exactly once using an already-collected `LiveKnowledgeEvaluation`; when no live
+evaluation was collected, the resulting concept states are explicitly
+`unknown`. Snapshot-only mode deliberately skips that invocation, retains the
+validated persisted knowledge snapshot, and reports freshness and its counts as
+unavailable rather than as zero. Ready-view concept and evidence counts cover
+the complete validated projection: concept-kind keys retain the observed open
+vocabulary, while evidence counts include every closed state, including zeroes.
+Freshness counts likewise include every closed state only when freshness was
+evaluated. The view is an operation-scoped snapshot and is not cached across
+later filesystem changes.
+
 ### V1 vocabulary and forward compatibility (KNOW-002 addendum)
 
 The packaged
