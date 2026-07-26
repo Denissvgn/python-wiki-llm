@@ -362,6 +362,7 @@ class TestMcpWikiService:
         result = service.search_wiki("Primary account", limit=10)
 
         assert result["count"] == 1
+        assert result["truncated"] is False
         assert result["results"][0]["uri"] == "llm-wiki://entities/User"
         assert "Primary account" in result["results"][0]["snippet"]
 
@@ -407,6 +408,35 @@ class TestMcpWikiService:
 
         with pytest.raises(mcp_server.McpWikiError, match="Unknown wiki search kind"):
             service.search_wiki("User", kinds=["unknown"], limit=10)
+
+    @pytest.mark.parametrize(
+        ("requested_limit", "expected_count"),
+        [(None, 20), (250, 100)],
+    )
+    def test_search_wiki_bounds_results_and_discloses_truncation(
+        self,
+        tmp_project,
+        requested_limit,
+        expected_count,
+    ):
+        wiki = _write_wiki(tmp_project)
+        for index in range(101):
+            (wiki / "entities" / f"Match{index:03}.md").write_text(
+                f"# Match {index}\n\nBounded search fixture.\n",
+                encoding="utf-8",
+            )
+        service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+        options = {} if requested_limit is None else {"limit": requested_limit}
+        result = service.search_wiki(
+            "Bounded search fixture",
+            kinds=["entities"],
+            **options,
+        )
+
+        assert result["count"] == expected_count
+        assert len(result["results"]) == expected_count
+        assert result["truncated"] is True
 
     def test_list_resources_includes_registry_pages(self, tmp_project):
         _write_wiki(tmp_project)

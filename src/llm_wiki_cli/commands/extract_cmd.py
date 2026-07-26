@@ -150,6 +150,12 @@ class ExtractPayloadResult:
         compare=False,
         kw_only=True,
     )
+    dependency_analysis: dict | None = field(
+        default=None,
+        repr=False,
+        compare=False,
+        kw_only=True,
+    )
 
 
 class ExtractorFailureError(RuntimeError):
@@ -1191,12 +1197,23 @@ def build_extract_payload(
 
     if no_changed_files:
         empty_output = {"schema_version": EXTRACT_SCHEMA_VERSION, "inventory": {}}
+        dependency_analysis = None
         if deep:
+            source_snapshot = build_source_snapshot(
+                str(src_root),
+                only_files=(),
+                include_tests=normalize_include_tests(include_tests),
+            )
+            dependency_analysis = analyze_dependencies(
+                {},
+                str(src_root),
+                source_snapshot=source_snapshot,
+            )
             empty_output["api_contracts"] = build_api_contracts(
                 {}, openapi_file=openapi_file, source_root=src_root
             )
             empty_output["dependencies"] = _dependency_extract_block(
-                analyze_dependencies({}, str(src_root))
+                dependency_analysis
             )
             empty_output["data_flows"] = []
         return ExtractPayloadResult(
@@ -1205,6 +1222,7 @@ def build_extract_payload(
             docker_count=0,
             changed_file_count=0,
             no_changed_files=True,
+            dependency_analysis=dependency_analysis,
         )
 
     include_test_languages = normalize_include_tests(include_tests)
@@ -1279,13 +1297,18 @@ def build_extract_payload(
         if deep
         else None
     )
-    dependencies = (
-        _dependency_extract_block(
-            analyze_dependencies(
-                inventory, str(src_root), source_snapshot=source_snapshot
-            )
+    dependency_analysis = (
+        analyze_dependencies(
+            inventory,
+            str(src_root),
+            source_snapshot=source_snapshot,
         )
         if deep
+        else None
+    )
+    dependencies = (
+        _dependency_extract_block(dependency_analysis)
+        if dependency_analysis is not None
         else None
     )
 
@@ -1323,6 +1346,7 @@ def build_extract_payload(
         changed_file_count=changed_file_count,
         no_changed_files=False,
         inventory_result=result,
+        dependency_analysis=dependency_analysis,
     )
 
 

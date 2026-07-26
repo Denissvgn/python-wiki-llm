@@ -1391,14 +1391,15 @@ def _reliably_missing_source_paths(
     if knowledge is None:
         return frozenset()
     captured = source_snapshot.captured_content_hashes
+    uncaptured = {
+        basis.source_path
+        for concept in knowledge.concepts
+        if (basis := concept.facets.structure.basis) is not None
+        and basis.source_path is not None
+        and basis.source_path not in captured
+    }
     missing: set[str] = set()
-    for concept in knowledge.concepts:
-        basis = concept.facets.structure.basis
-        if basis is None or basis.source_path is None:
-            continue
-        source_path = basis.source_path
-        if source_path in captured:
-            continue
+    for source_path in sorted(uncaptured):
         candidate = source_snapshot.root / source_path
         try:
             candidate.lstat()

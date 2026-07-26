@@ -106,7 +106,10 @@ def _resolve_internal_targets(
 
 
 def build_dependency_graph(
-    inventory: dict, project_root: str | Path | None = None
+    inventory: dict,
+    project_root: str | Path | None = None,
+    *,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> dict:
     """Resolve each file's imports into an internal module-dependency graph.
 
@@ -121,7 +124,11 @@ def build_dependency_graph(
     node. Slim/non-Python entries (no ``imports``) contribute no edges and never
     raise.
     """
-    resolver = build_module_path_resolver(inventory, project_root=project_root)
+    resolver = build_module_path_resolver(
+        inventory,
+        project_root=project_root,
+        source_snapshot=source_snapshot,
+    )
     symbol_index = _build_symbol_file_index(inventory)
 
     edges: set[tuple[str, str]] = set()
@@ -2155,9 +2162,12 @@ def _lockfile_dirs(root: Path, excluded_dirs: frozenset[str]) -> list[Path]:
     return dirs
 
 
-def _go_sum_versions(project_root: Path) -> dict[str, dict[str, str]]:
+def _go_sum_versions(
+    project_root: Path,
+    source_snapshot: SourceSnapshot | None = None,
+) -> dict[str, dict[str, str]]:
     versions: dict[str, dict[str, str]] = {}
-    for go_mod in _walk_go_manifest_files(project_root):
+    for go_mod in _walk_go_manifest_files(project_root, source_snapshot):
         go_sum = go_mod.parent / "go.sum"
         try:
             lines = go_sum.read_text(encoding="utf-8").splitlines()
@@ -2197,9 +2207,12 @@ def _cargo_lock_versions(project_root: Path) -> dict[str, dict[str, str]]:
 _REQUIREMENTS_PIN_RE = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)\s*==\s*([^;\s]+)")
 
 
-def _requirements_pin_versions(project_root: Path) -> dict[str, dict[str, str]]:
+def _requirements_pin_versions(
+    project_root: Path,
+    source_snapshot: SourceSnapshot | None = None,
+) -> dict[str, dict[str, str]]:
     versions: dict[str, dict[str, str]] = {}
-    for path in _walk_python_manifest_files(project_root):
+    for path in _walk_python_manifest_files(project_root, source_snapshot):
         if not _is_python_requirements_manifest_name(path.name):
             continue
         try:
@@ -2221,9 +2234,25 @@ def _requirements_pin_versions(project_root: Path) -> dict[str, dict[str, str]]:
     return versions
 
 
-def _poetry_lock_versions(project_root: Path) -> dict[str, dict[str, str]]:
+def _poetry_lock_versions(
+    project_root: Path,
+    source_snapshot: SourceSnapshot | None = None,
+) -> dict[str, dict[str, str]]:
     versions: dict[str, dict[str, str]] = {}
-    for directory in _lockfile_dirs(project_root, _PYTHON_MANIFEST_EXCLUDED_DIRS):
+    if source_snapshot is None:
+        directories = _lockfile_dirs(project_root, _PYTHON_MANIFEST_EXCLUDED_DIRS)
+    else:
+        directories = sorted(
+            {
+                path.parent
+                for path in _walk_python_manifest_files(
+                    project_root,
+                    source_snapshot,
+                )
+            },
+            key=lambda path: path.relative_to(project_root).as_posix(),
+        )
+    for directory in directories:
         data = _load_toml(directory / "poetry.lock")
         if data is None:
             continue
@@ -2242,9 +2271,12 @@ def _poetry_lock_versions(project_root: Path) -> dict[str, dict[str, str]]:
     return versions
 
 
-def _python_lock_versions(project_root: Path) -> dict[str, dict[str, str]]:
-    versions = _requirements_pin_versions(project_root)
-    versions.update(_poetry_lock_versions(project_root))
+def _python_lock_versions(
+    project_root: Path,
+    source_snapshot: SourceSnapshot | None = None,
+) -> dict[str, dict[str, str]]:
+    versions = _requirements_pin_versions(project_root, source_snapshot)
+    versions.update(_poetry_lock_versions(project_root, source_snapshot))
     return versions
 
 
@@ -2254,9 +2286,12 @@ def _package_lock_name(package_path: str) -> str:
     return package_path.rsplit("node_modules/", 1)[1].strip("/").lower()
 
 
-def _package_lock_versions(project_root: Path) -> dict[str, dict[str, str]]:
+def _package_lock_versions(
+    project_root: Path,
+    source_snapshot: SourceSnapshot | None = None,
+) -> dict[str, dict[str, str]]:
     versions: dict[str, dict[str, str]] = {}
-    for package_json in _walk_ts_manifest_files(project_root):
+    for package_json in _walk_ts_manifest_files(project_root, source_snapshot):
         lockfile = package_json.parent / "package-lock.json"
         try:
             data = json.loads(lockfile.read_text(encoding="utf-8"))
@@ -2291,9 +2326,12 @@ def _pnpm_package_key(line: str) -> tuple[str, str]:
     return name.lower(), version
 
 
-def _pnpm_lock_versions(project_root: Path) -> dict[str, dict[str, str]]:
+def _pnpm_lock_versions(
+    project_root: Path,
+    source_snapshot: SourceSnapshot | None = None,
+) -> dict[str, dict[str, str]]:
     versions: dict[str, dict[str, str]] = {}
-    for package_json in _walk_ts_manifest_files(project_root):
+    for package_json in _walk_ts_manifest_files(project_root, source_snapshot):
         lockfile = package_json.parent / "pnpm-lock.yaml"
         try:
             lines = lockfile.read_text(encoding="utf-8").splitlines()
@@ -2315,19 +2353,28 @@ def _pnpm_lock_versions(project_root: Path) -> dict[str, dict[str, str]]:
     return versions
 
 
-def _typescript_lock_versions(project_root: Path) -> dict[str, dict[str, str]]:
-    versions = _package_lock_versions(project_root)
-    for package, record in _pnpm_lock_versions(project_root).items():
+def _typescript_lock_versions(
+    project_root: Path,
+    source_snapshot: SourceSnapshot | None = None,
+) -> dict[str, dict[str, str]]:
+    versions = _package_lock_versions(project_root, source_snapshot)
+    for package, record in _pnpm_lock_versions(
+        project_root,
+        source_snapshot,
+    ).items():
         versions.setdefault(package, record)
     return versions
 
 
-def _lockfile_versions(project_root: Path) -> dict[str, dict[str, dict[str, str]]]:
+def _lockfile_versions(
+    project_root: Path,
+    source_snapshot: SourceSnapshot | None = None,
+) -> dict[str, dict[str, dict[str, str]]]:
     return {
-        "go": _go_sum_versions(project_root),
+        "go": _go_sum_versions(project_root, source_snapshot),
         "rust": _cargo_lock_versions(project_root),
-        "python": _python_lock_versions(project_root),
-        "typescript": _typescript_lock_versions(project_root),
+        "python": _python_lock_versions(project_root, source_snapshot),
+        "typescript": _typescript_lock_versions(project_root, source_snapshot),
     }
 
 
@@ -2387,7 +2434,11 @@ def reconcile_dependencies(
     imports (all required → unused); never raises.
     """
     if graph is None:
-        graph = build_dependency_graph(inventory, project_root)
+        graph = build_dependency_graph(
+            inventory,
+            project_root,
+            source_snapshot=source_snapshot,
+        )
     manifests = _parse_manifests(Path(project_root), source_snapshot=source_snapshot)
     used = classify_imports(inventory, graph=graph, manifests=manifests)
     _merge_used_packages(
@@ -2396,7 +2447,10 @@ def reconcile_dependencies(
         _python_internal_distribution_uses(inventory, graph, manifests.get("python")),
     )
     path_aliases = _unresolved_path_aliases_by_language(inventory, graph)
-    versions_by_language = _lockfile_versions(Path(project_root).resolve())
+    versions_by_language = _lockfile_versions(
+        Path(project_root).resolve(),
+        source_snapshot,
+    )
 
     languages: dict[str, dict] = {}
     for key in sorted(set(used) | set(manifests) | set(path_aliases)):
@@ -2450,7 +2504,11 @@ def analyze_dependencies(
     ``{"graph", "cycles", "metrics", "load_order", "side_effects",
     "reconciliation"}``; deterministic and never raises on slim inventories.
     """
-    graph = build_dependency_graph(inventory, project_root)
+    graph = build_dependency_graph(
+        inventory,
+        project_root,
+        source_snapshot=source_snapshot,
+    )
     return {
         "graph": graph,
         "cycles": detect_cycles(graph),

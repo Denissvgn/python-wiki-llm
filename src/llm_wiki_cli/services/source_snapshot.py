@@ -40,6 +40,7 @@ _PACKAGE_MARKER_NAMES = {
     "pyproject.toml",
     "setup.py",
     "stack.yaml",
+    "tsconfig.json",
 }
 _PACKAGE_MARKER_SUFFIXES = {".cabal"}
 KNOWN_UNSUPPORTED_LANGUAGE_EXTENSIONS: dict[str, tuple[str, ...]] = {

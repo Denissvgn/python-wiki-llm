@@ -328,12 +328,13 @@ class DocumentationGraphQueryService:
             for summary in self.callable_summaries
         }
         self.raw_callers, self.raw_callees = self._raw_function_links()
+        self._build_graph_query_indexes()
         self._build_knowledge_indexes(knowledge_view)
 
     def flow_for_entrypoint(self, id_or_symbol: object) -> dict[str, Any]:
         """Return a bounded user-flow payload for an entry-point id or symbol."""
         query = _require_query(id_or_symbol, "id_or_symbol")
-        matches = self._flow_matches(query, self.flows)
+        matches = self._flow_matches(query, self._flows_by_identifier)
         result = self._selection_result(query, matches, "flow", None)
         if not result["found"]:
             result["flow"] = None
@@ -391,8 +392,6 @@ class DocumentationGraphQueryService:
     def dependency_neighborhood(self, path: object) -> dict[str, Any]:
         """Return bounded inbound/outbound dependency neighbors for a source path."""
         query = _normalise_source_path(path, field="path", required=True)
-        graph = self.dependency["graph"]
-        nodes = set(graph.get("nodes", [])) | set(self.inventory)
         empty = {
             "query": query,
             "found": False,
@@ -407,32 +406,24 @@ class DocumentationGraphQueryService:
             "load_order_index": None,
             "pages": [],
         }
-        if query not in nodes:
+        if query not in self._dependency_nodes:
             return empty
 
-        inbound = []
-        outbound = []
-        for source, target in self._dependency_edges():
-            if target == query:
-                inbound.append(source)
-            if source == query:
-                outbound.append(target)
-
-        inbound, inbound_truncated = self._bounded_strings(inbound)
-        outbound, outbound_truncated = self._bounded_strings(outbound)
+        inbound, inbound_truncated = self._bounded_strings(
+            self._dependency_inbound.get(query, ())
+        )
+        outbound, outbound_truncated = self._bounded_strings(
+            self._dependency_outbound.get(query, ())
+        )
         pages, pages_truncated = self._pages_for_source(query)
-        order = self.dependency.get("load_order", {}).get("order", []) or []
         metrics = (
             self.dependency.get("metrics", {})
             .get("metrics", {})
             .get(query, {"fan_in": 0, "fan_out": 0})
         )
-        cycle_groups = [
-            list(group)
-            for group in self.dependency.get("cycles", [])
-            if query in set(group)
-        ]
-        cycle_groups, cycles_truncated = self._bounded(cycle_groups)
+        cycle_groups, cycles_truncated = self._bounded(
+            self._dependency_cycles_by_path.get(query, ())
+        )
 
         return {
             "query": query,
@@ -452,14 +443,14 @@ class DocumentationGraphQueryService:
             "outbound": outbound,
             "metrics": dict(metrics),
             "cycle_groups": cycle_groups,
-            "load_order_index": order.index(query) if query in order else None,
+            "load_order_index": self._dependency_order_index.get(query),
             "pages": pages,
         }
 
     def data_flow_for_entrypoint(self, id_or_symbol: object) -> dict[str, Any]:
         """Return a bounded data-flow payload for an entry-point id or symbol."""
         query = _require_query(id_or_symbol, "id_or_symbol")
-        matches = self._flow_matches(query, self.data_flows)
+        matches = self._flow_matches(query, self._data_flows_by_identifier)
         result = self._selection_result(query, matches, "data_flow", None)
         if not result["found"]:
             result["data_flow"] = None
@@ -540,8 +531,7 @@ class DocumentationGraphQueryService:
                 locator,
                 selected_direction,
             )
-            if self._knowledge_relationships[item[0]].get("kind")
-            in selected_kinds
+            if self._knowledge_relationship_kinds[item[0]] in selected_kinds
         ]
         total = len(observations)
         returned = observations[: self.limit]
@@ -606,7 +596,7 @@ class DocumentationGraphQueryService:
         observations = [
             item
             for item in self._incident_knowledge_relationships(locator, "both")
-            if self._knowledge_relationships[item[0]].get("kind")
+            if self._knowledge_relationship_kinds[item[0]]
             in _KNOWLEDGE_RELATIONSHIP_KINDS
         ]
         total = len(observations)
@@ -648,6 +638,9 @@ class DocumentationGraphQueryService:
         self.outbound_relationships: dict[str, tuple[int, ...]] = {}
         self.inbound_relationships: dict[str, tuple[int, ...]] = {}
         self._knowledge_relationships: tuple[dict[str, Any], ...] = ()
+        self._knowledge_relationship_kinds: tuple[object, ...] = ()
+        self._knowledge_relationship_order: tuple[int, ...] = ()
+        self._knowledge_target_locators: tuple[Optional[str], ...] = ()
 
         if knowledge_view is None:
             self.knowledge_status = {
@@ -720,7 +713,9 @@ class DocumentationGraphQueryService:
         outbound: dict[str, list[int]] = defaultdict(list)
         inbound: dict[str, list[int]] = defaultdict(list)
         relationships_by_source: dict[str, list[int]] = defaultdict(list)
+        target_locators: list[Optional[str]] = []
         for index, relationship in enumerate(relationships):
+            target_locators.append(None)
             source_locator = relationship.get("from")
             if isinstance(source_locator, str):
                 outbound[source_locator].append(index)
@@ -740,16 +735,53 @@ class DocumentationGraphQueryService:
                     source_concepts[source_path][source_locator] = source_concept
 
             target_locator = self._resolved_target_locator(relationship)
+            target_locators[-1] = target_locator
             if target_locator is not None:
                 inbound[target_locator].append(index)
 
         self._knowledge_relationships = relationships
+        kind_order = {
+            kind: index for index, kind in enumerate(_KNOWLEDGE_RELATIONSHIP_KINDS)
+        }
+        self._knowledge_relationship_kinds = tuple(
+            relationship.get("kind") for relationship in relationships
+        )
+        relationship_sort_keys = tuple(
+            (
+                kind_order.get(
+                    cast(str, relationship.get("kind")),
+                    len(kind_order),
+                ),
+                str(relationship.get("from", "")),
+                str(relationship.get("resolution", "")),
+                _canonical_json(relationship),
+                index,
+            )
+            for index, relationship in enumerate(relationships)
+        )
+        relationship_order = [0] * len(relationships)
+        for rank, index in enumerate(
+            sorted(range(len(relationships)), key=relationship_sort_keys.__getitem__)
+        ):
+            relationship_order[index] = rank
+        self._knowledge_relationship_order = tuple(relationship_order)
+        self._knowledge_target_locators = tuple(target_locators)
         self.outbound_relationships = {
-            locator: tuple(indexes)
+            locator: tuple(
+                sorted(
+                    indexes,
+                    key=self._knowledge_relationship_order.__getitem__,
+                )
+            )
             for locator, indexes in sorted(outbound.items())
         }
         self.inbound_relationships = {
-            locator: tuple(indexes)
+            locator: tuple(
+                sorted(
+                    indexes,
+                    key=self._knowledge_relationship_order.__getitem__,
+                )
+            )
             for locator, indexes in sorted(inbound.items())
         }
         self.relationships_by_source_path = {
@@ -929,22 +961,11 @@ class DocumentationGraphQueryService:
                 selected[index] = "both" if previous == "outbound" else "inbound"
 
         direction_order = {"inbound": 0, "outbound": 1, "both": 2}
-        kind_order = {
-            kind: index
-            for index, kind in enumerate(_KNOWLEDGE_RELATIONSHIP_KINDS)
-        }
         return sorted(
             selected.items(),
             key=lambda item: (
                 direction_order[item[1]],
-                kind_order.get(
-                    cast(str, self._knowledge_relationships[item[0]].get("kind")),
-                    len(kind_order),
-                ),
-                str(self._knowledge_relationships[item[0]].get("from", "")),
-                str(self._knowledge_relationships[item[0]].get("resolution", "")),
-                _canonical_json(self._knowledge_relationships[item[0]]),
-                item[0],
+                self._knowledge_relationship_order[item[0]],
             ),
         )
 
@@ -957,7 +978,7 @@ class DocumentationGraphQueryService:
         target = cast(Mapping[str, Any], relationship.get("target", {}))
         evidence = cast(Mapping[str, Any], relationship.get("evidence", {}))
         source_locator = cast(str, relationship["from"])
-        target_locator = self._resolved_target_locator(relationship)
+        target_locator = self._knowledge_target_locators[index]
         related_locator = (
             source_locator if direction == "inbound" else target_locator
         )
@@ -1030,15 +1051,120 @@ class DocumentationGraphQueryService:
         pages = [_page_ref(page) for page in surface_index.get("pages", []) or []]
         return sorted(pages, key=_record_sort_key)
 
-    def _dependency_edges(self) -> list[tuple[str, str]]:
+    def _build_graph_query_indexes(self) -> None:
+        """Index exact graph coordinates once for local query-time work."""
+
+        callables_by_identifier: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        callables_by_route: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(
+            list
+        )
+        for ref in self.callables:
+            identifiers = {str(ref.get("symbol")), str(ref.get("name"))}
+            for identifier in identifiers:
+                callables_by_identifier[identifier].append(ref)
+                filepath = ref.get("file")
+                if isinstance(filepath, str):
+                    callables_by_route[(filepath, identifier)].append(ref)
+        self._callables_by_identifier = {
+            identifier: tuple(sorted(records, key=_record_sort_key))
+            for identifier, records in callables_by_identifier.items()
+        }
+        self._callables_by_route = {
+            route: tuple(sorted(records, key=_record_sort_key))
+            for route, records in callables_by_route.items()
+        }
+
+        classes_by_name: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        for ref in self.classes:
+            classes_by_name[str(ref.get("name"))].append(ref)
+        self._classes_by_name = {
+            name: tuple(sorted(records, key=_record_sort_key))
+            for name, records in classes_by_name.items()
+        }
+
+        def flow_index(
+            records: Iterable[Mapping[str, Any]],
+        ) -> dict[str, tuple[dict[str, Any], ...]]:
+            by_identifier: dict[str, list[dict[str, Any]]] = defaultdict(list)
+            for record in records:
+                ref = _flow_ref(record)
+                identifiers = {
+                    str(ref.get("id")),
+                    str(ref.get("symbol")),
+                    str(ref.get("label")),
+                }
+                for identifier in identifiers:
+                    by_identifier[identifier].append(cast(dict[str, Any], record))
+            return {
+                identifier: tuple(
+                    sorted(
+                        matches,
+                        key=lambda item: _record_sort_key(_flow_ref(item)),
+                    )
+                )
+                for identifier, matches in by_identifier.items()
+            }
+
+        self._flows_by_identifier = flow_index(self.flows)
+        self._data_flows_by_identifier = flow_index(self.data_flows)
+
+        pages_by_source: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        for page in self.pages:
+            source_path = page.get("source_path")
+            if isinstance(source_path, str):
+                pages_by_source[source_path].append(page)
+        self._pages_by_source = {
+            source_path: tuple(pages) for source_path, pages in pages_by_source.items()
+        }
+
         pairs = []
         for edge in self.dependency.get("graph", {}).get("edges", []) or []:
             pair = _edge_pair(edge)
             if pair is not None:
                 pairs.append(pair)
-        return sorted(
-            set(pairs), key=lambda item: (_text_key(item[0]), _text_key(item[1]))
+        self._dependency_edge_pairs = tuple(
+            sorted(
+                set(pairs),
+                key=lambda item: (_text_key(item[0]), _text_key(item[1])),
+            )
         )
+        inbound: dict[str, list[str]] = defaultdict(list)
+        outbound: dict[str, list[str]] = defaultdict(list)
+        for source, target in self._dependency_edge_pairs:
+            outbound[source].append(target)
+            inbound[target].append(source)
+        self._dependency_inbound = {
+            path: tuple(sorted(neighbors, key=_text_key))
+            for path, neighbors in inbound.items()
+        }
+        self._dependency_outbound = {
+            path: tuple(sorted(neighbors, key=_text_key))
+            for path, neighbors in outbound.items()
+        }
+
+        graph_nodes = self.dependency.get("graph", {}).get("nodes", []) or []
+        self._dependency_nodes = frozenset(graph_nodes) | frozenset(self.inventory)
+
+        cycles_by_path: dict[str, list[list[Any]]] = defaultdict(list)
+        for group in self.dependency.get("cycles", []) or []:
+            copied_group = list(group)
+            seen_paths: set[str] = set()
+            for member in copied_group:
+                if isinstance(member, str) and member not in seen_paths:
+                    cycles_by_path[member].append(copied_group)
+                    seen_paths.add(member)
+        self._dependency_cycles_by_path = {
+            path: tuple(groups) for path, groups in cycles_by_path.items()
+        }
+
+        self._dependency_order_index: dict[str, int] = {}
+        order = self.dependency.get("load_order", {}).get("order", []) or []
+        for index, path in enumerate(order):
+            if isinstance(path, str):
+                self._dependency_order_index.setdefault(path, index)
+
+    def _dependency_edges(self) -> list[tuple[str, str]]:
+        return list(self._dependency_edge_pairs)
 
     def _raw_function_links(
         self,
@@ -1063,13 +1189,9 @@ class DocumentationGraphQueryService:
         )
 
     def _callable_matches(self, query: str) -> list[dict[str, Any]]:
-        matches = [
-            ref
-            for ref in self.callables
-            if query in {str(ref.get("symbol")), str(ref.get("name"))}
-        ]
+        matches = self._callables_by_identifier.get(query, ())
         if matches:
-            return sorted(matches, key=_record_sort_key)
+            return list(matches)
 
         if ":" not in query:
             return []
@@ -1077,35 +1199,19 @@ class DocumentationGraphQueryService:
         filepath = _normalise_source_path(raw_file, field="symbol file", required=False)
         if not filepath or not raw_symbol:
             return []
-        return sorted(
-            [
-                ref
-                for ref in self.callables
-                if ref.get("file") == filepath
-                and raw_symbol in {str(ref.get("symbol")), str(ref.get("name"))}
-            ],
-            key=_record_sort_key,
-        )
+        return list(self._callables_by_route.get((filepath, raw_symbol), ()))
 
     def _symbol_matches(self, query: str) -> list[dict[str, Any]]:
         callables = self._callable_matches(query)
-        classes = [ref for ref in self.classes if query in {str(ref.get("name"))}]
+        classes = list(self._classes_by_name.get(query, ()))
         return sorted(callables + classes, key=_record_sort_key)
 
     def _flow_matches(
-        self, query: str, records: Iterable[Mapping[str, Any]]
+        self,
+        query: str,
+        index: Mapping[str, Sequence[dict[str, Any]]],
     ) -> list[dict[str, Any]]:
-        matches = []
-        for record in records:
-            ref = _flow_ref(record)
-            identifiers = {
-                str(ref.get("id")),
-                str(ref.get("symbol")),
-                str(ref.get("label")),
-            }
-            if query in identifiers:
-                matches.append(record)
-        return sorted(matches, key=lambda item: _record_sort_key(_flow_ref(item)))
+        return list(index.get(query, ()))
 
     def _selection_result(
         self,
@@ -1154,9 +1260,7 @@ class DocumentationGraphQueryService:
         )
         if normalised is None:
             return [], False
-        return self._bounded(
-            page for page in self.pages if page.get("source_path") == normalised
-        )
+        return self._bounded(self._pages_by_source.get(normalised, ()))
 
     def _bounded_payload(
         self, payload: object, list_keys: tuple[str, ...]

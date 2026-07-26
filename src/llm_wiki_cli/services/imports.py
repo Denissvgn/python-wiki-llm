@@ -6,8 +6,12 @@ import posixpath
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
+from typing import TYPE_CHECKING
 
 from ..config import is_agent_worktree_path
+
+if TYPE_CHECKING:
+    from .source_snapshot import SourceSnapshot
 
 
 @dataclass(frozen=True)
@@ -43,8 +47,12 @@ class ModulePathResolver:
 
     @classmethod
     def build(
-        cls, inventory: dict, project_root: str | Path | None = None
-    ) -> "ModulePathResolver":
+        cls,
+        inventory: dict,
+        project_root: str | Path | None = None,
+        *,
+        source_snapshot: SourceSnapshot | None = None,
+    ) -> ModulePathResolver:
         lookup: defaultdict[str, set[str]] = defaultdict(set)
         language_lookup: defaultdict[str, defaultdict[str, set[str]]] = defaultdict(
             lambda: defaultdict(set)
@@ -110,8 +118,14 @@ class ModulePathResolver:
             haskell_module_lookup={
                 key: frozenset(value) for key, value in haskell_module_lookup.items()
             },
-            go_module_scopes=_read_go_module_scopes(project_root),
-            ts_path_aliases=_read_ts_path_aliases(project_root),
+            go_module_scopes=_read_go_module_scopes(
+                project_root,
+                source_snapshot,
+            ),
+            ts_path_aliases=_read_ts_path_aliases(
+                project_root,
+                source_snapshot,
+            ),
         )
 
     def candidates(self, module: str, importer_filepath: str) -> set[str]:
@@ -381,29 +395,40 @@ _GO_MODULE_EXCLUDED_DIRS: frozenset[str] = frozenset(
 
 def _read_go_module_scopes(
     project_root: str | Path | None,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> tuple[_GoModuleScope, ...]:
     if project_root is None:
         return ()
-    root = Path(project_root)
+    root = Path(project_root).resolve()
     if not root.exists():
         return ()
 
+    if source_snapshot is None:
+        module_paths: list[Path] = []
+        for current, dirs, files in os.walk(root):
+            current_path = Path(current)
+            dirs[:] = [
+                d
+                for d in dirs
+                if d not in _GO_MODULE_EXCLUDED_DIRS
+                and not _go_module_dir_is_agent_worktree(root, current_path, d)
+            ]
+            if "go.mod" in files:
+                module_paths.append(current_path / "go.mod")
+    else:
+        module_paths = _snapshot_marker_paths(
+            root,
+            source_snapshot,
+            "go.mod",
+        )
+
     scopes: list[_GoModuleScope] = []
-    for current, dirs, files in os.walk(root):
-        current_path = Path(current)
-        dirs[:] = [
-            d
-            for d in dirs
-            if d not in _GO_MODULE_EXCLUDED_DIRS
-            and not _go_module_dir_is_agent_worktree(root, current_path, d)
-        ]
-        if "go.mod" not in files:
-            continue
-        module = _read_go_module_path(current_path / "go.mod")
+    for module_path in module_paths:
+        module = _read_go_module_path(module_path)
         if module:
             scopes.append(
                 _GoModuleScope(
-                    root=_project_relative_dir(root, current_path),
+                    root=_project_relative_dir(root, module_path.parent),
                     module=module,
                 )
             )
@@ -489,19 +514,29 @@ _TS_SOURCE_SUFFIXES: tuple[str, ...] = (
 
 def _read_ts_path_aliases(
     project_root: str | Path | None,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> tuple[_TsPathAliasRule, ...]:
     if project_root is None:
         return ()
-    root = Path(project_root)
+    root = Path(project_root).resolve()
     if not root.exists():
         return ()
 
+    if source_snapshot is None:
+        tsconfig_paths: list[Path] = []
+        for current, dirs, files in os.walk(root):
+            dirs[:] = [d for d in dirs if d not in _TS_CONFIG_EXCLUDED_DIRS]
+            if "tsconfig.json" in files:
+                tsconfig_paths.append(Path(current) / "tsconfig.json")
+    else:
+        tsconfig_paths = _snapshot_marker_paths(
+            root,
+            source_snapshot,
+            "tsconfig.json",
+        )
+
     rules: list[_TsPathAliasRule] = []
-    for current, dirs, files in os.walk(root):
-        dirs[:] = [d for d in dirs if d not in _TS_CONFIG_EXCLUDED_DIRS]
-        if "tsconfig.json" not in files:
-            continue
-        tsconfig = Path(current) / "tsconfig.json"
+    for tsconfig in tsconfig_paths:
         rules.extend(_parse_tsconfig_aliases(root, tsconfig))
     return tuple(
         sorted(
@@ -515,6 +550,26 @@ def _read_ts_path_aliases(
                 rule.targets,
             ),
         )
+    )
+
+
+def _snapshot_marker_paths(
+    project_root: Path,
+    source_snapshot: SourceSnapshot,
+    filename: str,
+) -> list[Path]:
+    paths: list[Path] = []
+    for marker in source_snapshot.package_markers:
+        if marker.abs_path.name != filename:
+            continue
+        try:
+            marker.abs_path.relative_to(project_root)
+        except ValueError:
+            continue
+        paths.append(marker.abs_path)
+    return sorted(
+        paths,
+        key=lambda path: path.relative_to(project_root).as_posix(),
     )
 
 
@@ -626,7 +681,14 @@ def _strip_ts_source_suffix(path: str) -> str:
 
 
 def build_module_path_resolver(
-    inventory: dict, project_root: str | Path | None = None
+    inventory: dict,
+    project_root: str | Path | None = None,
+    *,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> ModulePathResolver:
     """Build an indexed import resolver for repeated lookups."""
-    return ModulePathResolver.build(inventory, project_root=project_root)
+    return ModulePathResolver.build(
+        inventory,
+        project_root=project_root,
+        source_snapshot=source_snapshot,
+    )

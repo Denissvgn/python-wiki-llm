@@ -2447,6 +2447,48 @@ class TestExtractDataFlows:
         assert result.payload["inventory"] == {}
         assert result.payload["data_flows"] == []
 
+    def test_empty_changed_deep_reuses_one_snapshot_for_dependencies(
+        self,
+        tmp_path,
+        monkeypatch,
+    ):
+        snapshot = object()
+        analysis = {
+            "graph": {"edges": []},
+            "cycles": [],
+            "load_order": {"order": [], "cycle_groups": []},
+            "reconciliation": {"languages": {}},
+        }
+        calls = {"snapshot": 0, "dependencies": 0}
+
+        def fake_snapshot(src_dir, *, only_files, include_tests):
+            calls["snapshot"] += 1
+            assert src_dir == str(tmp_path.resolve())
+            assert only_files == ()
+            assert include_tests == frozenset()
+            return snapshot
+
+        def fake_dependencies(inventory, project_root, *, source_snapshot):
+            calls["dependencies"] += 1
+            assert inventory == {}
+            assert project_root == str(tmp_path.resolve())
+            assert source_snapshot is snapshot
+            return analysis
+
+        monkeypatch.setattr(extract_cmd, "_git_changed_files", lambda _root: [])
+        monkeypatch.setattr(extract_cmd, "build_source_snapshot", fake_snapshot)
+        monkeypatch.setattr(extract_cmd, "analyze_dependencies", fake_dependencies)
+        monkeypatch.chdir(tmp_path)
+
+        result = extract_cmd.build_extract_payload(
+            ".",
+            changed=True,
+            deep=True,
+        )
+
+        assert calls == {"snapshot": 1, "dependencies": 1}
+        assert result.dependency_analysis is analysis
+
 
 class TestExtractDependencies:
     def _write_dependency_project(self, tmp_path):

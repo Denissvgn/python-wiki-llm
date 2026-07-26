@@ -309,12 +309,16 @@ class McpWikiService:
 
         needle = query.casefold()
         matches: list[dict] = []
+        truncated = False
         for page in self._iter_pages(requested):
             content = read_md(page.path)
             haystack = content.casefold()
             idx = haystack.find(needle)
             if idx == -1:
                 continue
+            if len(matches) == limit:
+                truncated = True
+                break
             matches.append(
                 {
                     "kind": page.kind,
@@ -325,10 +329,13 @@ class McpWikiService:
                     "snippet": _snippet(content, idx, len(query)),
                 }
             )
-            if len(matches) >= limit:
-                break
 
-        return {"query": query, "count": len(matches), "results": matches}
+        return {
+            "query": query,
+            "count": len(matches),
+            "truncated": truncated,
+            "results": matches,
+        }
 
     def get_context(
         self,

@@ -5,6 +5,7 @@ from __future__ import annotations
 import types
 from contextlib import contextmanager
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 
@@ -74,6 +75,53 @@ def _loaded_knowledge(tmp_path):
     loaded = load_knowledge_state(tmp_path)
     assert loaded.knowledge is not None
     return loaded, loaded.knowledge
+
+
+def test_missing_lint_source_probes_are_unique_and_deterministic(
+    tmp_path,
+    monkeypatch,
+):
+    def concept(source_path):
+        basis = (
+            None
+            if source_path is None
+            else types.SimpleNamespace(source_path=source_path)
+        )
+        return types.SimpleNamespace(
+            facets=types.SimpleNamespace(structure=types.SimpleNamespace(basis=basis))
+        )
+
+    knowledge = types.SimpleNamespace(
+        concepts=[
+            concept("missing.py"),
+            concept("present.py"),
+            concept("missing.py"),
+            concept("captured.py"),
+            concept(None),
+        ]
+    )
+    load_result = types.SimpleNamespace(knowledge=knowledge)
+    snapshot = types.SimpleNamespace(
+        root=tmp_path,
+        captured_content_hashes={"captured.py": "sha256:" + ("0" * 64)},
+    )
+    probed = []
+
+    def fake_lstat(path):
+        probed.append(path.relative_to(tmp_path).as_posix())
+        if path.name == "missing.py":
+            raise FileNotFoundError(path)
+        return types.SimpleNamespace()
+
+    monkeypatch.setattr(Path, "lstat", fake_lstat)
+
+    missing = lint_cmd._reliably_missing_source_paths(
+        load_result,
+        snapshot,
+    )
+
+    assert probed == ["missing.py", "present.py"]
+    assert missing == frozenset({"missing.py"})
 
 
 @pytest.mark.parametrize(

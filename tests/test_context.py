@@ -131,6 +131,52 @@ def _knowledge_page_fixture(
     return page, concept
 
 
+def test_missing_context_source_probes_are_unique_and_deterministic(
+    tmp_path,
+    monkeypatch,
+):
+    def concept(source_path):
+        basis = (
+            None
+            if source_path is None
+            else types.SimpleNamespace(source_path=source_path)
+        )
+        return types.SimpleNamespace(
+            facets=types.SimpleNamespace(structure=types.SimpleNamespace(basis=basis))
+        )
+
+    knowledge = types.SimpleNamespace(
+        concepts=[
+            concept("missing.py"),
+            concept("present.py"),
+            concept("missing.py"),
+            concept("captured.py"),
+            concept(None),
+        ]
+    )
+    snapshot = types.SimpleNamespace(
+        root=tmp_path,
+        captured_content_hashes={"captured.py": "sha256:" + ("0" * 64)},
+    )
+    probed = []
+
+    def fake_lstat(path):
+        probed.append(path.relative_to(tmp_path).as_posix())
+        if path.name == "missing.py":
+            raise FileNotFoundError(path)
+        return types.SimpleNamespace()
+
+    monkeypatch.setattr(Path, "lstat", fake_lstat)
+
+    missing = context_cmd._reliably_missing_context_sources(
+        knowledge,
+        snapshot,
+    )
+
+    assert probed == ["missing.py", "present.py"]
+    assert missing == frozenset({"missing.py"})
+
+
 class _KnowledgeQueryStub:
     def __init__(
         self,

@@ -13,6 +13,7 @@ from .config import (
     validate_path,
     validate_source_root,
 )
+from .services import wiki_surface
 from .services.contracts import (
     BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
     EXTRACT_SCHEMA_VERSION,
@@ -23,7 +24,6 @@ from .services.documentation_queries import (
     DocumentationQueryError,
 )
 from .services.entrypoints import build_flow
-from .services import wiki_surface
 from .services.wiki_surface_index import evaluate_surface_index
 
 
@@ -194,20 +194,21 @@ def build_documentation_query_service(
             knowledge_view,
         )
         source_snapshot = (
-            inventory_result.source_snapshot
-            if inventory_result is not None
-            else None
+            inventory_result.source_snapshot if inventory_result is not None else None
         )
+        dependency_analysis = getattr(result, "dependency_analysis", None)
+        if dependency_analysis is None:
+            dependency_analysis = analyze_dependencies(
+                inventory,
+                str(src_root),
+                source_snapshot=source_snapshot,
+            )
         return DocumentationGraphQueryService(
             inventory,
             call_edges=call_edges,
             flows=flows,
             data_flows=result.payload.get("data_flows") or [],
-            dependency_analysis=analyze_dependencies(
-                inventory,
-                str(src_root),
-                source_snapshot=source_snapshot,
-            ),
+            dependency_analysis=dependency_analysis,
             surface_index=query_surface,
             limit=limit,
             knowledge_view=knowledge_view,

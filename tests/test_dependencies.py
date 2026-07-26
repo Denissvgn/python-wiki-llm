@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from llm_wiki_cli.services import dependencies
 from llm_wiki_cli.services.dependencies import (
     analyze_dependencies,
     build_dependency_graph,
@@ -12,6 +13,7 @@ from llm_wiki_cli.services.dependencies import (
     top_level_package,
     topological_order,
 )
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
 
 def _imp(module, name=None):
@@ -1382,6 +1384,43 @@ class TestAnalyzeDependencies:
         }
         assert "click" not in python["versions"]
         assert "local-pkg" not in python["versions"]
+
+    def test_dependency_analysis_reuses_snapshot_for_lockfile_discovery(
+        self,
+        tmp_path,
+        monkeypatch,
+    ):
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\ndependencies = ["requests>=2"]\n',
+            encoding="utf-8",
+        )
+        (tmp_path / "requirements.txt").write_text(
+            "requests==2.31.0\n",
+            encoding="utf-8",
+        )
+        (tmp_path / "app.py").write_text(
+            "import requests\n",
+            encoding="utf-8",
+        )
+        snapshot = build_source_snapshot(tmp_path)
+
+        def fail_if_walked(*_args, **_kwargs):
+            raise AssertionError("dependency analysis must reuse the source snapshot")
+
+        monkeypatch.setattr(dependencies.os, "walk", fail_if_walked)
+
+        result = analyze_dependencies(
+            {"app.py": _pymod(_imp("requests", "requests"))},
+            str(tmp_path),
+            source_snapshot=snapshot,
+        )
+
+        assert result["reconciliation"]["languages"]["python"]["versions"] == {
+            "requests": {
+                "version": "2.31.0",
+                "resolved_from": "requirements.txt",
+            }
+        }
 
     def test_javascript_package_lock_and_pnpm_versions_resolve_metadata(self, tmp_path):
         (tmp_path / "package.json").write_text(

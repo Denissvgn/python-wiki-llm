@@ -407,6 +407,35 @@ def test_default_limit_reports_raw_caller_truncation_past_relationship_page_cap(
     )[:20]
 
 
+def test_query_methods_use_indexes_built_during_service_construction():
+    service = _service()
+
+    class NoIterationList(list):
+        def __iter__(self):
+            raise AssertionError("query attempted to rescan constructor input")
+
+    service.callables = NoIterationList(service.callables)
+    service.classes = NoIterationList(service.classes)
+    service.flows = NoIterationList(service.flows)
+    service.data_flows = NoIterationList(service.data_flows)
+    service.pages = NoIterationList(service.pages)
+    service.dependency["graph"]["edges"] = NoIterationList(
+        service.dependency["graph"]["edges"]
+    )
+    service.dependency["cycles"] = NoIterationList(service.dependency["cycles"])
+    service.dependency["load_order"]["order"] = NoIterationList(
+        service.dependency["load_order"]["order"]
+    )
+
+    assert service.flow_for_entrypoint("api-run")["found"] is True
+    assert service.callers("save")["found"] is True
+    assert service.callers("repo.py:save")["found"] is True
+    assert service.callees("run")["found"] is True
+    assert service.data_flow_for_entrypoint("run")["found"] is True
+    assert service.pages_for_symbol("run")["found"] is True
+    assert service.dependency_neighborhood("api.py")["found"] is True
+
+
 @pytest.mark.parametrize("query", ["", "   ", None, 3])
 def test_empty_or_non_string_symbol_query_is_invalid(query):
     with pytest.raises(DocumentationQueryError):
