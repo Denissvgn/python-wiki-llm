@@ -14,7 +14,12 @@ import pytest
 from llm_wiki_cli.commands import context_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
-
+from llm_wiki_cli.services.knowledge_artifacts import commit_knowledge_artifacts
+from tests.knowledge_fixtures import (
+    materialize_fixture_tree,
+    one_module_two_entities_fixture,
+)
+from tests.test_knowledge_artifacts import _plan as _knowledge_commit_plan
 
 # ── Helpers ───────────────────────────────────────────────────────────
 
@@ -91,6 +96,57 @@ def _write_query_wiki(root: Path, rel_path: str = "docs/llm_wiki") -> Path:
     (wiki / "dependencies.md").write_text("# Dependencies\n\n", encoding="utf-8")
     (wiki / "load-order.md").write_text("# Load order\n\n", encoding="utf-8")
     return wiki
+
+
+def _knowledge_page_fixture(
+    canonical_path: str,
+    *,
+    freshness: str,
+    evidence: str = "present",
+) -> tuple[dict, dict]:
+    page_id = Path(canonical_path).stem
+    page = {
+        "kind": "entities",
+        "id": page_id,
+        "title": page_id,
+        "canonical_path": canonical_path,
+        "source_path": f"src/{page_id}.py",
+        "role": "semantic",
+        "mcp_uri": f"llm-wiki://entities/{page_id}",
+    }
+    concept = {
+        "origin": "extracted",
+        "evidence": evidence,
+        "verification": "untracked",
+        "freshness": {
+            "state": freshness,
+            "reason": f"fixture-{freshness}",
+            "live_comparison_performed": True,
+        },
+    }
+    return page, concept
+
+
+class _KnowledgeQueryStub:
+    def __init__(
+        self,
+        concepts: dict[str, dict] | None = None,
+        *,
+        availability: str = "ready",
+        reason: str = "all-projection-commitments-match",
+        freshness_evaluated: bool = True,
+    ):
+        self.concepts = concepts or {}
+        self.knowledge_status = {
+            "availability": availability,
+            "reason": reason,
+            "freshness_evaluated": freshness_evaluated,
+        }
+        self.lookups: list[str] = []
+
+    def get_concept(self, canonical_path: str) -> dict:
+        self.lookups.append(canonical_path)
+        return {"concept": self.concepts.get(canonical_path)}
 
 
 # ── Token estimation ──────────────────────────────────────────────────
@@ -489,6 +545,545 @@ class TestProtocolValidation:
             "entrypoint": "api-run",
             "surface": "flows",
         }
+
+    @pytest.mark.parametrize(
+        "freshness",
+        [
+            "current",
+            "nonsemantic-source-change",
+            "unknown",
+            "source-changed",
+            "source-missing",
+            "basis-incompatible",
+        ],
+    )
+    def test_validation_accepts_every_freshness_refinement(self, freshness):
+        result = context_cmd._validate_protocol_request(
+            _protocol_request(
+                filters={"surface": "entities", "freshness": freshness}
+            )
+        )
+
+        assert result["filters"] == {
+            "surface": "entities",
+            "freshness": freshness,
+        }
+
+    @pytest.mark.parametrize(
+        "evidence",
+        ["unknown", "present", "missing", "invalid", "not-applicable"],
+    )
+    def test_validation_accepts_every_evidence_refinement(self, evidence):
+        result = context_cmd._validate_protocol_request(
+            _protocol_request(
+                filters={
+                    "symbol": "src/accounts.py:User",
+                    "evidence": evidence,
+                }
+            )
+        )
+
+        assert result["filters"] == {
+            "symbol": "src/accounts.py:User",
+            "evidence": evidence,
+        }
+
+    @pytest.mark.parametrize(
+        ("filters", "field"),
+        [
+            ({"freshness": "current"}, "filters.freshness"),
+            (
+                {"entrypoint": "api-run", "freshness": "current"},
+                "filters.freshness",
+            ),
+            ({"language": "python", "evidence": "present"}, "filters.evidence"),
+            ({"module": "api/*", "evidence": "present"}, "filters.evidence"),
+        ],
+    )
+    def test_knowledge_refinement_requires_a_concept_producing_filter(
+        self, filters, field
+    ):
+        with pytest.raises(context_cmd.ProtocolRequestError) as exc_info:
+            context_cmd._validate_protocol_request(
+                _protocol_request(filters=filters)
+            )
+
+        assert exc_info.value.field == field
+        assert "requires filters.surface or filters.symbol" in str(exc_info.value)
+
+    @pytest.mark.parametrize(
+        ("filters", "field"),
+        [
+            (
+                {"surface": "entities", "freshness": "stale"},
+                "filters.freshness",
+            ),
+            (
+                {"symbol": "User", "freshness": 1},
+                "filters.freshness",
+            ),
+            (
+                {"surface": "entities", "evidence": "trusted"},
+                "filters.evidence",
+            ),
+            (
+                {"symbol": "User", "evidence": None},
+                "filters.evidence",
+            ),
+        ],
+    )
+    def test_validation_rejects_invalid_knowledge_refinements(
+        self, filters, field
+    ):
+        with pytest.raises(context_cmd.ProtocolRequestError) as exc_info:
+            context_cmd._validate_protocol_request(
+                _protocol_request(filters=filters)
+            )
+
+        assert exc_info.value.field == field
+
+
+class TestKnowledgePageSelection:
+    def test_orders_by_freshness_then_evidence_presence_then_path(self):
+        specs = [
+            ("entities/basis.md", "basis-incompatible", "present"),
+            ("entities/missing.md", "source-missing", "present"),
+            ("entities/changed.md", "source-changed", "present"),
+            ("entities/unknown.md", "unknown", "present"),
+            ("entities/nonsemantic.md", "nonsemantic-source-change", "present"),
+            ("entities/current-missing.md", "current", "missing"),
+            ("entities/current-z.md", "current", "present"),
+            ("entities/current-a.md", "current", "present"),
+        ]
+        fixtures = [
+            _knowledge_page_fixture(path, freshness=state, evidence=evidence)
+            for path, state, evidence in reversed(specs)
+        ]
+        pages = [page for page, _concept in fixtures]
+        service = _KnowledgeQueryStub(
+            {
+                page["canonical_path"]: concept
+                for page, concept in fixtures
+            }
+        )
+
+        selected, counts = context_cmd._select_knowledge_page_refs(
+            pages,
+            {},
+            service,
+            limit=20,
+            observed=[],
+        )
+
+        assert [page["canonical_path"] for page in selected] == [
+            "entities/current-a.md",
+            "entities/current-z.md",
+            "entities/current-missing.md",
+            "entities/nonsemantic.md",
+            "entities/unknown.md",
+            "entities/changed.md",
+            "entities/missing.md",
+            "entities/basis.md",
+        ]
+        assert counts == {
+            "unfiltered_total": 8,
+            "filtered_total": 8,
+            "returned": 8,
+            "truncated": False,
+        }
+
+    def test_filters_before_limit_and_reports_both_candidate_totals(self):
+        fixtures = [
+            _knowledge_page_fixture(
+                f"entities/current-{index:02d}.md",
+                freshness="current",
+            )
+            for index in range(21)
+        ]
+        fixtures.append(
+            _knowledge_page_fixture(
+                "entities/target.md",
+                freshness="source-changed",
+                evidence="missing",
+            )
+        )
+        pages = [page for page, _concept in fixtures]
+        service = _KnowledgeQueryStub(
+            {
+                page["canonical_path"]: concept
+                for page, concept in fixtures
+            }
+        )
+        observed = []
+
+        selected, counts = context_cmd._select_knowledge_page_refs(
+            pages,
+            {"freshness": "source-changed", "evidence": "missing"},
+            service,
+            limit=20,
+            observed=observed,
+        )
+
+        assert [page["canonical_path"] for page in selected] == [
+            "entities/target.md"
+        ]
+        assert counts == {
+            "unfiltered_total": 22,
+            "filtered_total": 1,
+            "returned": 1,
+            "truncated": False,
+        }
+        assert len(observed) == 22
+
+        current, current_counts = context_cmd._select_knowledge_page_refs(
+            pages,
+            {"freshness": "current"},
+            service,
+            limit=20,
+            observed=None,
+        )
+        assert len(current) == 20
+        assert current_counts == {
+            "unfiltered_total": 22,
+            "filtered_total": 21,
+            "returned": 20,
+            "truncated": True,
+        }
+
+    @pytest.mark.parametrize(
+        ("availability", "reason"),
+        [
+            ("absent", "knowledge-projection-not-present"),
+            (
+                "degraded",
+                "policy-selected-surface-only-fallback-after-invalid",
+            ),
+            ("unsupported", "knowledge-schema-version-unsupported"),
+        ],
+    )
+    def test_unavailable_knowledge_is_explicit_and_never_matches_unknown(
+        self, availability, reason
+    ):
+        pages = [
+            _knowledge_page_fixture(
+                "entities/Zed.md",
+                freshness="unknown",
+            )[0],
+            _knowledge_page_fixture(
+                "entities/Alpha.md",
+                freshness="current",
+            )[0],
+        ]
+        service = _KnowledgeQueryStub(
+            availability=availability,
+            reason=reason,
+            freshness_evaluated=False,
+        )
+
+        selected, counts = context_cmd._select_knowledge_page_refs(
+            pages,
+            {},
+            service,
+            limit=20,
+            observed=[],
+        )
+
+        assert [page["canonical_path"] for page in selected] == [
+            "entities/Alpha.md",
+            "entities/Zed.md",
+        ]
+        assert all(
+            page["knowledge"]
+            == {
+                "availability": availability,
+                "reason": reason,
+                "freshness_evaluated": False,
+            }
+            for page in selected
+        )
+        assert service.lookups == []
+        assert counts["filtered_total"] == 2
+
+        refined, refined_counts = context_cmd._select_knowledge_page_refs(
+            pages,
+            {"freshness": "unknown"},
+            service,
+            limit=20,
+            observed=None,
+        )
+        assert refined == []
+        assert refined_counts == {
+            "unfiltered_total": 2,
+            "filtered_total": 0,
+            "returned": 0,
+            "truncated": False,
+        }
+
+    def test_default_selection_warns_once_for_unique_stale_or_unknown_pages(self):
+        fixtures = [
+            _knowledge_page_fixture(
+                "entities/Unknown.md",
+                freshness="unknown",
+            ),
+            _knowledge_page_fixture(
+                "entities/Changed.md",
+                freshness="source-changed",
+            ),
+            _knowledge_page_fixture(
+                "entities/Current.md",
+                freshness="current",
+            ),
+        ]
+        service = _KnowledgeQueryStub(
+            {
+                page["canonical_path"]: concept
+                for page, concept in fixtures
+            }
+        )
+        selected, _counts = context_cmd._select_knowledge_page_refs(
+            [page for page, _concept in fixtures],
+            {},
+            service,
+            limit=20,
+            observed=[],
+        )
+        candidates = selected + [selected[-1]]
+        warnings = []
+
+        context_cmd._append_knowledge_context_warning(
+            service.knowledge_status,
+            candidates,
+            {},
+            warnings,
+        )
+        context_cmd._append_knowledge_context_warning(
+            service.knowledge_status,
+            candidates,
+            {},
+            warnings,
+        )
+
+        assert len(warnings) == 1
+        assert warnings[0].startswith(
+            "Knowledge context includes stale or unknown concept references "
+        )
+        assert "(unknown=1, source-changed=1)" in warnings[0]
+        assert "retained" in warnings[0]
+
+    def test_unavailable_refinement_warns_without_claiming_a_match(self):
+        page, _concept = _knowledge_page_fixture(
+            "entities/User.md",
+            freshness="unknown",
+        )
+        service = _KnowledgeQueryStub(
+            availability="degraded",
+            reason="policy-selected-surface-only-fallback-after-invalid",
+            freshness_evaluated=False,
+        )
+        candidates, _counts = context_cmd._select_knowledge_page_refs(
+            [page],
+            {},
+            service,
+            limit=20,
+            observed=None,
+        )
+        warnings = []
+
+        context_cmd._append_knowledge_context_warning(
+            service.knowledge_status,
+            candidates,
+            {"freshness": "unknown"},
+            warnings,
+        )
+
+        assert warnings == [
+            (
+                "Knowledge context is degraded "
+                "(policy-selected-surface-only-fallback-after-invalid); concept "
+                "ranking and requested refinements are unavailable."
+            )
+        ]
+
+
+def test_committed_surface_mapping_preserves_collision_page_symbol_lookup():
+    live_surface = {
+        "pages": [
+            {
+                "kind": "modules",
+                "id": "web_client",
+                "title": "web/client",
+                "canonical_path": "modules/web_client.md",
+                "source_path": None,
+                "role": "semantic",
+                "mcp_uri": "llm-wiki://modules/web_client",
+            },
+            {
+                "kind": "modules",
+                "id": "admin_client",
+                "title": "admin/client",
+                "canonical_path": "modules/admin_client.md",
+                "source_path": None,
+                "role": "semantic",
+                "mcp_uri": "llm-wiki://modules/admin_client",
+            },
+        ]
+    }
+    committed_surface = {
+        "pages": [
+            {
+                "canonical_path": "modules/web_client.md",
+                "source_path": "web/client.ts",
+            },
+            {
+                "canonical_path": "modules/admin_client.md",
+                "source_path": "admin/client.ts",
+            },
+        ]
+    }
+    query_surface = context_cmd._context_query_surface(
+        live_surface,
+        types.SimpleNamespace(surface=committed_surface),
+    )
+    inventory = {
+        path: {
+            "language": "typescript",
+            "module": path.removesuffix(".ts").replace("/", "."),
+            "classes": [],
+            "functions": [{"name": "run", "line": 1, "params": []}],
+        }
+        for path in ("web/client.ts", "admin/client.ts")
+    }
+    service = context_cmd.DocumentationGraphQueryService(
+        inventory,
+        surface_index=query_surface,
+    )
+
+    result = context_cmd._symbol_pages_payload(
+        service,
+        query_surface,
+        "web/client.ts:run",
+        {},
+        observed=[],
+    )
+
+    assert result["found"] is True
+    assert [page["canonical_path"] for page in result["pages"]] == [
+        "modules/web_client.md"
+    ]
+    assert result["pages"][0]["source_path"] == "web/client.ts"
+
+
+def test_knowledge_enrichment_reuses_one_live_inventory_and_read_view(
+    tmp_path,
+    monkeypatch,
+):
+    fixture = one_module_two_entities_fixture()
+    tree = materialize_fixture_tree(fixture, tmp_path / "checkout")
+    commit_knowledge_artifacts(
+        _knowledge_commit_plan(tree["wiki_root"], fixture)
+    )
+    monkeypatch.chdir(tree["root"])
+
+    calls = {
+        "inventory": 0,
+        "surface": 0,
+        "load": 0,
+        "live": 0,
+        "query_service": 0,
+    }
+    real_inventory = context_cmd.get_inventory_result
+    real_surface = context_cmd.evaluate_surface_index
+    real_load = context_cmd.load_knowledge_state
+    real_live = context_cmd.build_runtime_live_evaluation
+    real_query_service = context_cmd.DocumentationGraphQueryService
+
+    def counted_inventory(*args, **kwargs):
+        calls["inventory"] += 1
+        return real_inventory(*args, **kwargs)
+
+    def counted_surface(*args, **kwargs):
+        calls["surface"] += 1
+        return real_surface(*args, **kwargs)
+
+    def counted_load(*args, **kwargs):
+        calls["load"] += 1
+        return real_load(*args, **kwargs)
+
+    def counted_live(inputs):
+        calls["live"] += 1
+        assert set(inputs.inventory) == set(fixture.inventory)
+        assert [
+            item["name"]
+            for item in inputs.inventory["src/accounts.py"]["classes"]
+        ] == ["User", "AccountService"]
+        return real_live(inputs)
+
+    def counted_query_service(*args, **kwargs):
+        calls["query_service"] += 1
+        return real_query_service(*args, **kwargs)
+
+    monkeypatch.setattr(context_cmd, "get_inventory_result", counted_inventory)
+    monkeypatch.setattr(context_cmd, "evaluate_surface_index", counted_surface)
+    monkeypatch.setattr(context_cmd, "load_knowledge_state", counted_load)
+    monkeypatch.setattr(
+        context_cmd,
+        "build_runtime_live_evaluation",
+        counted_live,
+    )
+    monkeypatch.setattr(
+        context_cmd,
+        "DocumentationGraphQueryService",
+        counted_query_service,
+    )
+
+    payload, warnings = context_cmd._build_context(
+        ".",
+        32_000,
+        "json",
+        ["all"],
+        {"surface": "entities", "symbol": "User"},
+        emit_warnings=False,
+        wiki_dir="docs/llm_wiki",
+    )
+
+    assert calls == {
+        "inventory": 1,
+        "surface": 1,
+        "load": 1,
+        "live": 1,
+        "query_service": 1,
+    }
+    assert payload["knowledge"] == {
+        "availability": "ready",
+        "reason": "all-projection-commitments-match",
+        "freshness_evaluated": True,
+    }
+    assert payload["surface"]["knowledge_selection"] == {
+        "unfiltered_total": 2,
+        "filtered_total": 2,
+        "returned": 2,
+        "truncated": False,
+    }
+    summaries = [page["knowledge"] for page in payload["surface"]["pages"]]
+    assert all(
+        set(summary)
+        == {
+            "availability",
+            "reason",
+            "freshness_evaluated",
+            "origin",
+            "evidence",
+            "verification",
+            "freshness",
+        }
+        for summary in summaries
+    )
+    assert all(
+        set(summary["freshness"])
+        == {"state", "reason", "live_comparison_performed"}
+        for summary in summaries
+    )
+    assert any("retained by default" in warning for warning in warnings)
 
 
 class TestProtocolRun:

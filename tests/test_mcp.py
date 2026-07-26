@@ -329,6 +329,208 @@ class TestMcpWikiService:
         assert seen["wiki_dir"] == "agent_wiki"
         assert result["graphs"]["symbol"]["callers"]["query"] == "run"
 
+    def test_get_context_passes_knowledge_refinements_and_preserves_results(
+        self,
+        monkeypatch,
+    ):
+        refinements = {
+            "surface": "entities",
+            "freshness": "source-changed",
+            "evidence": "present",
+        }
+        status = {
+            "availability": "ready",
+            "reason": "all-projection-commitments-match",
+            "freshness_evaluated": True,
+        }
+        seen = {}
+
+        def fake_build_context(
+            src_dir,
+            budget,
+            fmt,
+            focus,
+            filters,
+            **kwargs,
+        ):
+            seen.update(
+                {
+                    "src_dir": src_dir,
+                    "budget": budget,
+                    "format": fmt,
+                    "focus": focus,
+                    "filters": filters,
+                    "wiki_dir": kwargs["wiki_dir"],
+                }
+            )
+            return (
+                {
+                    "budget": budget,
+                    "used": 0,
+                    "files": {},
+                    "knowledge": status,
+                    "surface": {
+                        "kind": "entities",
+                        "count": 1,
+                        "total": 1,
+                        "truncated": False,
+                        "knowledge_selection": {
+                            "unfiltered_total": 2,
+                            "filtered_total": 1,
+                            "returned": 1,
+                            "truncated": False,
+                        },
+                        "pages": [
+                            {
+                                "canonical_path": "entities/User.md",
+                                "mcp_uri": "llm-wiki://entities/User",
+                                "knowledge": {
+                                    **status,
+                                    "evidence": "present",
+                                    "freshness": {
+                                        "state": "source-changed",
+                                        "reason": "concept-observation-changed",
+                                        "live_comparison_performed": True,
+                                    },
+                                },
+                            }
+                        ],
+                    },
+                },
+                ["Knowledge context includes stale concept references."],
+            )
+
+        monkeypatch.setattr(context_cmd, "_build_context", fake_build_context)
+        service = mcp_server.McpWikiService(
+            src_dir="source-root",
+            wiki_dir="agent_wiki",
+        )
+
+        result = service.get_context(
+            budget_tokens=4096,
+            focus=["all"],
+            format="json",
+            filters=refinements,
+        )
+
+        assert seen == {
+            "src_dir": "source-root",
+            "budget": 4096,
+            "format": "json",
+            "focus": ["all"],
+            "filters": refinements,
+            "wiki_dir": "agent_wiki",
+        }
+        assert result["protocol"] == "llm-wiki-context/v1"
+        assert result["filters"] == refinements
+        assert result["knowledge"] == status
+        assert result["surface"]["knowledge_selection"]["unfiltered_total"] == 2
+        assert result["surface"]["knowledge_selection"]["filtered_total"] == 1
+        assert result["surface"]["pages"][0]["knowledge"]["freshness"]["state"] == (
+            "source-changed"
+        )
+        assert result["warnings"] == [
+            "Knowledge context includes stale concept references."
+        ]
+
+    @pytest.mark.parametrize(
+        ("filters", "field"),
+        [
+            ({"freshness": "current"}, "freshness"),
+            ({"evidence": "present"}, "evidence"),
+        ],
+    )
+    def test_get_context_maps_knowledge_refinement_dependency_errors(
+        self,
+        filters,
+        field,
+    ):
+        service = mcp_server.McpWikiService()
+
+        with pytest.raises(
+            mcp_server.McpWikiError,
+            match=rf"filters\.{field} requires filters\.surface or filters\.symbol",
+        ):
+            service.get_context(filters=filters)
+
+    def test_get_context_markdown_preserves_knowledge_status_and_warnings(
+        self,
+        monkeypatch,
+    ):
+        status = {
+            "availability": "degraded",
+            "reason": "policy-selected-surface-only-fallback-after-invalid",
+            "freshness_evaluated": False,
+        }
+
+        def fake_build_context(
+            _src_dir,
+            budget,
+            _fmt,
+            _focus,
+            _filters,
+            **_kwargs,
+        ):
+            return (
+                {
+                    "budget": budget,
+                    "used": 0,
+                    "files": {},
+                    "knowledge": status,
+                },
+                ["Knowledge context is degraded; no candidates were dropped."],
+            )
+
+        monkeypatch.setattr(context_cmd, "_build_context", fake_build_context)
+        service = mcp_server.McpWikiService()
+
+        result = service.get_context(
+            format="markdown",
+            filters={"surface": "entities"},
+        )
+
+        assert result["protocol"] == "llm-wiki-context/v1"
+        assert result["knowledge"] == status
+        assert result["warnings"] == [
+            "Knowledge context is degraded; no candidates were dropped."
+        ]
+        assert "## Knowledge" in result["content"]
+        assert "- availability: degraded" in result["content"]
+
+    def test_get_context_legacy_response_remains_context_v1(
+        self,
+        monkeypatch,
+    ):
+        def fake_build_context(_src_dir, budget, _fmt, _focus, _filters, **_kwargs):
+            return (
+                {
+                    "budget": budget,
+                    "used": 0,
+                    "files": {},
+                },
+                [],
+            )
+
+        monkeypatch.setattr(context_cmd, "_build_context", fake_build_context)
+        service = mcp_server.McpWikiService()
+
+        result = service.get_context(
+            budget_tokens=1000,
+            focus=["all"],
+            format="json",
+        )
+
+        assert result == {
+            "protocol": "llm-wiki-context/v1",
+            "ok": True,
+            "budget_tokens": 1000,
+            "used_tokens": 0,
+            "format": "json",
+            "focus": ["all"],
+            "filters": {},
+            "files": {},
+        }
+
     def test_get_context_raises_mcp_error_on_extractor_failure(
         self, tmp_project, monkeypatch
     ):

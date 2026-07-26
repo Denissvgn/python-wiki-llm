@@ -16,22 +16,13 @@ Usage::
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from fnmatch import fnmatch
 import json
 import sys
+from collections.abc import Callable, Mapping
+from fnmatch import fnmatch
 from pathlib import Path, PurePosixPath
+from typing import Any
 
-from .extract_cmd import (
-    _git_changed_files,
-    analyze_data_flow,
-    build_data_flow_context,
-    build_flow,
-    get_entry_points,
-    get_inventory_result,
-    read_console_scripts,
-    resolve_call_edges,
-)
 from ..config import (
     DEFAULT_WIKI_DIR,
     PathValidationError,
@@ -50,16 +41,78 @@ from ..services.extraction_jobs import (
     print_extraction_job_plan,
 )
 from ..services.io import write_text_output
-from ..services.wiki_surface_index import build_surface_index
-
+from ..services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from ..services.knowledge_consumption import (
+    KnowledgeAvailability,
+    KnowledgeReadView,
+    build_knowledge_read_view,
+)
+from ..services.knowledge_loader import (
+    KnowledgeLoadResult,
+    KnowledgeMismatchPolicy,
+    KnowledgeStateLoadError,
+    load_knowledge_state,
+)
+from ..services.knowledge_model import (
+    ComputedFreshness,
+    EvidenceState,
+    KnowledgeLoadState,
+)
+from ..services.knowledge_orchestration import (
+    RuntimeLiveEvaluationInputs,
+    build_runtime_live_evaluation,
+)
+from ..services.sync_manifest import SyncManifest
+from ..services.wiki_surface_index import (
+    SURFACE_INDEX_FILENAME,
+    SurfaceIndexEvaluation,
+    evaluate_surface_index,
+)
+from .extract_cmd import (
+    InventoryResult,
+    _git_changed_files,
+    analyze_data_flow,
+    build_data_flow_context,
+    build_flow,
+    get_entry_points,
+    get_inventory_result,
+    read_console_scripts,
+    resolve_call_edges,
+)
 
 PROTOCOL_VERSION = "llm-wiki-context/v1"
 
 _REQUEST_KEYS = {"protocol", "budget_tokens", "focus", "format", "filters"}
-_FILTER_KEYS = {"language", "module", "symbol", "entrypoint", "surface"}
+_FILTER_KEYS = {
+    "language",
+    "module",
+    "symbol",
+    "entrypoint",
+    "surface",
+    "freshness",
+    "evidence",
+}
 _FOCUS_VALUES = {"changed", "neighbors", "all"}
 _FORMATS = {"json", "markdown"}
 _CONTEXT_QUERY_LIMIT = 20
+_CONCEPT_FILTER_KEYS = {"surface", "symbol"}
+_KNOWLEDGE_REFINEMENT_KEYS = {"freshness", "evidence"}
+_FRESHNESS_FILTER_VALUES = {item.value for item in ComputedFreshness}
+_EVIDENCE_FILTER_VALUES = {item.value for item in EvidenceState}
+_FRESHNESS_ORDER = {
+    ComputedFreshness.CURRENT.value: 0,
+    ComputedFreshness.NONSEMANTIC_SOURCE_CHANGE.value: 1,
+    ComputedFreshness.UNKNOWN.value: 2,
+    ComputedFreshness.SOURCE_CHANGED.value: 3,
+    ComputedFreshness.SOURCE_MISSING.value: 4,
+    ComputedFreshness.BASIS_INCOMPATIBLE.value: 5,
+}
+_STALE_OR_UNKNOWN_FRESHNESS = {
+    ComputedFreshness.UNKNOWN.value,
+    ComputedFreshness.SOURCE_CHANGED.value,
+    ComputedFreshness.SOURCE_MISSING.value,
+    ComputedFreshness.BASIS_INCOMPATIBLE.value,
+}
 
 
 class ProtocolRequestError(ValueError):
@@ -83,9 +136,10 @@ def get_inventory(
     src_dir: str,
     *,
     deep: bool = False,
+    return_result: bool = False,
     job_request: ExtractionJobRequest | None = None,
     plan_reporter: Callable[[ExtractionJobPlan], None] | None = None,
-) -> dict:
+) -> dict | InventoryResult:
     """Context-local inventory helper kept patchable for protocol tests."""
     inventory_result = get_inventory_result(
         src_dir,
@@ -98,7 +152,7 @@ def get_inventory(
         raise ProtocolRequestError(
             _extractor_failure_message(inventory_result), "src_dir"
         )
-    return inventory_result.inventory
+    return inventory_result if return_result else inventory_result.inventory
 
 
 # ── Token estimation ──────────────────────────────────────────────────
@@ -431,6 +485,18 @@ def _render_markdown(payload: dict) -> str:
             lines.append(f"- `{fp}`")
         lines.append("")
 
+    knowledge = payload.get("knowledge")
+    if knowledge:
+        lines.append("## Knowledge")
+        lines.append("")
+        lines.append(f"- availability: {knowledge.get('availability')}")
+        lines.append(f"- reason: {knowledge.get('reason')}")
+        lines.append(
+            "- freshness evaluated: "
+            + ("yes" if knowledge.get("freshness_evaluated") else "no")
+        )
+        lines.append("")
+
     graphs = payload.get("graphs", {})
     if graphs:
         lines.append("## Documentation Graphs")
@@ -476,8 +542,28 @@ def _render_markdown(payload: dict) -> str:
         lines.append("")
         for page in surface.get("pages", []):
             title = page.get("title") or page.get("id") or page.get("canonical_path")
+            summary = page.get("knowledge")
+            badge = ""
+            if isinstance(summary, dict):
+                freshness = summary.get("freshness")
+                state = (
+                    freshness.get("state")
+                    if isinstance(freshness, dict)
+                    else None
+                )
+                evidence = summary.get("evidence")
+                values = [
+                    value
+                    for value in (state, evidence)
+                    if isinstance(value, str) and value
+                ]
+                if values:
+                    badge = f" [{', '.join(values)}]"
+                elif summary.get("availability") != KnowledgeAvailability.READY.value:
+                    badge = f" [{summary.get('availability')}]"
             lines.append(
                 f"- `{page.get('canonical_path')}` - {title} ({page.get('mcp_uri')})"
+                f"{badge}"
             )
         lines.append("")
 
@@ -615,7 +701,15 @@ def _normalise_protocol_filters(raw_filters: object) -> dict:
         )
 
     filters: dict[str, str] = {}
-    for key in ("language", "module", "symbol", "entrypoint", "surface"):
+    for key in (
+        "language",
+        "module",
+        "symbol",
+        "entrypoint",
+        "surface",
+        "freshness",
+        "evidence",
+    ):
         if key not in raw_filters:
             continue
         value = raw_filters[key]
@@ -625,7 +719,27 @@ def _normalise_protocol_filters(raw_filters: object) -> dict:
             )
         if key == "surface":
             _validate_surface_filter(value)
+        elif key == "freshness":
+            _validate_enum_filter(
+                key,
+                value,
+                _FRESHNESS_FILTER_VALUES,
+            )
+        elif key == "evidence":
+            _validate_enum_filter(
+                key,
+                value,
+                _EVIDENCE_FILTER_VALUES,
+            )
         filters[key] = value
+
+    refinements = _KNOWLEDGE_REFINEMENT_KEYS & set(filters)
+    if refinements and not (_CONCEPT_FILTER_KEYS & set(filters)):
+        field = "freshness" if "freshness" in refinements else "evidence"
+        raise ProtocolRequestError(
+            f"filters.{field} requires filters.surface or filters.symbol.",
+            f"filters.{field}",
+        )
     return filters
 
 
@@ -638,8 +752,16 @@ def _validate_surface_filter(value: str) -> None:
         )
 
 
+def _validate_enum_filter(key: str, value: str, known: set[str]) -> None:
+    if value not in known:
+        raise ProtocolRequestError(
+            f"filters.{key} must be one of: {', '.join(sorted(known))}.",
+            f"filters.{key}",
+        )
+
+
 def _protocol_error_payload(error: ProtocolRequestError) -> dict:
-    payload = {
+    payload: dict[str, Any] = {
         "protocol": PROTOCOL_VERSION,
         "ok": False,
         "error": {
@@ -693,6 +815,8 @@ def _build_protocol_enrichment(
     *,
     src_root: Path,
     wiki_dir: str,
+    inventory_result: InventoryResult | None = None,
+    warnings: list[str] | None = None,
 ) -> dict:
     if not any(key in filters for key in ("symbol", "entrypoint", "surface")):
         return {}
@@ -719,20 +843,44 @@ def _build_protocol_enrichment(
             )
             for flow in flows
         ]
-        surface_index = build_surface_index(
+        surface_evaluation = evaluate_surface_index(
             wiki_root,
             inventory,
             src_dir=src_root,
             entry_points=entrypoints,
+        )
+        concept_filter_requested = bool(_CONCEPT_FILTER_KEYS & set(filters))
+        knowledge_view = (
+            _build_context_knowledge_view(
+                wiki_root,
+                surface_evaluation,
+                inventory,
+                inventory_result,
+            )
+            if concept_filter_requested
+            else None
+        )
+        query_surface = _context_query_surface(
+            surface_evaluation.payload,
+            knowledge_view,
         )
         query_service = DocumentationGraphQueryService(
             inventory,
             call_edges=call_edges,
             flows=flows,
             data_flows=data_flows,
-            dependency_analysis=analyze_dependencies(inventory, str(src_root)),
-            surface_index=surface_index,
+            dependency_analysis=analyze_dependencies(
+                inventory,
+                str(src_root),
+                source_snapshot=(
+                    inventory_result.source_snapshot
+                    if inventory_result is not None
+                    else None
+                ),
+            ),
+            surface_index=query_surface,
             limit=_CONTEXT_QUERY_LIMIT,
+            knowledge_view=knowledge_view,
         )
     except PathValidationError as exc:
         raise ProtocolRequestError(str(exc), "wiki_dir") from exc
@@ -745,12 +893,19 @@ def _build_protocol_enrichment(
 
     enrichment: dict = {}
     graphs: dict = {}
+    knowledge_candidates: list[dict[str, Any]] = []
     if "symbol" in filters:
         symbol = filters["symbol"]
         graphs["symbol"] = {
             "callers": query_service.callers(symbol),
             "callees": query_service.callees(symbol),
-            "pages": query_service.pages_for_symbol(symbol),
+            "pages": _symbol_pages_payload(
+                query_service,
+                query_surface,
+                symbol,
+                filters,
+                observed=knowledge_candidates,
+            ),
         }
     if "entrypoint" in filters:
         entrypoint = filters["entrypoint"]
@@ -762,30 +917,175 @@ def _build_protocol_enrichment(
         enrichment["graphs"] = graphs
     if "surface" in filters:
         enrichment["surface"] = _surface_filter_payload(
-            surface_index,
+            query_surface,
             filters["surface"],
             limit=_CONTEXT_QUERY_LIMIT,
+            query_service=query_service,
+            filters=filters,
+            observed=knowledge_candidates,
+        )
+    if concept_filter_requested:
+        knowledge_status = dict(query_service.knowledge_status)
+        enrichment["knowledge"] = knowledge_status
+        _append_knowledge_context_warning(
+            knowledge_status,
+            knowledge_candidates,
+            filters,
+            warnings,
         )
     return enrichment
 
 
-def _surface_filter_payload(surface_index: dict, surface: str, *, limit: int) -> dict:
+def _context_query_surface(
+    live_surface: Mapping[str, Any],
+    knowledge_view: KnowledgeReadView | None,
+) -> dict[str, Any]:
+    payload = dict(live_surface)
+    committed_surface = (
+        knowledge_view.surface
+        if knowledge_view is not None
+        and isinstance(knowledge_view.surface, Mapping)
+        else None
+    )
+    if committed_surface is None:
+        return payload
+
+    committed_sources = {
+        page.get("canonical_path"): page.get("source_path")
+        for page in committed_surface.get("pages", []) or []
+        if isinstance(page, Mapping)
+        and isinstance(page.get("canonical_path"), str)
+    }
+    payload["pages"] = [
+        _page_with_committed_source(page, committed_sources)
+        for page in live_surface.get("pages", []) or []
+        if isinstance(page, Mapping)
+    ]
+    return payload
+
+
+def _page_with_committed_source(
+    page: Mapping[str, Any],
+    committed_sources: Mapping[object, object],
+) -> dict[str, Any]:
+    copied = dict(page)
+    canonical_path = copied.get("canonical_path")
+    if canonical_path in committed_sources:
+        copied["source_path"] = committed_sources[canonical_path]
+    return copied
+
+
+def _surface_filter_payload(
+    surface_index: Mapping[str, Any],
+    surface: str,
+    *,
+    limit: int,
+    query_service: DocumentationGraphQueryService | None = None,
+    filters: dict | None = None,
+    observed: list[dict[str, Any]] | None = None,
+) -> dict:
     pages = [
         _surface_page_ref(page)
         for page in surface_index.get("pages", []) or []
         if page.get("kind") == surface
     ]
-    capped = pages[:limit]
+    if query_service is None:
+        capped = pages[:limit]
+        return {
+            "kind": surface,
+            "count": len(capped),
+            "total": len(pages),
+            "truncated": len(pages) > limit,
+            "pages": capped,
+        }
+
+    capped, selection = _select_knowledge_page_refs(
+        pages,
+        filters or {},
+        query_service,
+        limit=limit,
+        observed=observed,
+    )
     return {
         "kind": surface,
         "count": len(capped),
-        "total": len(pages),
-        "truncated": len(pages) > limit,
+        "total": selection["filtered_total"],
+        "truncated": selection["truncated"],
+        "knowledge_selection": selection,
         "pages": capped,
     }
 
 
-def _surface_page_ref(page: dict) -> dict:
+def _symbol_pages_payload(
+    query_service: DocumentationGraphQueryService,
+    surface_index: Mapping[str, Any],
+    symbol: str,
+    filters: dict,
+    *,
+    observed: list[dict[str, Any]],
+) -> dict:
+    result = query_service.pages_for_symbol(symbol)
+    pages: list[dict] = []
+    if result.get("found"):
+        selected = result.get("symbol")
+        source_path = selected.get("file") if isinstance(selected, dict) else None
+        if isinstance(source_path, str):
+            source_path = source_path.replace("\\", "/")
+            pages = [
+                _surface_page_ref(page)
+                for page in surface_index.get("pages", []) or []
+                if str(page.get("source_path", "")).replace("\\", "/")
+                == source_path
+            ]
+
+    capped, selection = _select_knowledge_page_refs(
+        pages,
+        filters,
+        query_service,
+        limit=_CONTEXT_QUERY_LIMIT,
+        observed=observed,
+    )
+    result["pages"] = capped
+    result["knowledge_selection"] = selection
+    if result.get("found"):
+        result["truncated"] = selection["truncated"]
+    return result
+
+
+def _select_knowledge_page_refs(
+    pages: list[dict],
+    filters: dict,
+    query_service: DocumentationGraphQueryService,
+    *,
+    limit: int,
+    observed: list[dict[str, Any]] | None,
+) -> tuple[list[dict], dict[str, int | bool]]:
+    enriched = [
+        _knowledge_enriched_page_ref(page, query_service) for page in pages
+    ]
+    if observed is not None:
+        observed.extend(enriched)
+    ordered = sorted(
+        enriched,
+        key=lambda page: _knowledge_page_sort_key(
+            page,
+            query_service.knowledge_status,
+        ),
+    )
+    filtered = [
+        page for page in ordered if _matches_knowledge_refinement(page, filters)
+    ]
+    capped = filtered[:limit]
+    selection: dict[str, int | bool] = {
+        "unfiltered_total": len(enriched),
+        "filtered_total": len(filtered),
+        "returned": len(capped),
+        "truncated": len(filtered) > limit,
+    }
+    return capped, selection
+
+
+def _surface_page_ref(page: Mapping[str, Any]) -> dict:
     return {
         "kind": page.get("kind"),
         "id": page.get("id"),
@@ -795,6 +1095,314 @@ def _surface_page_ref(page: dict) -> dict:
         "role": page.get("role"),
         "mcp_uri": page.get("mcp_uri"),
     }
+
+
+def _knowledge_enriched_page_ref(
+    page: dict,
+    query_service: DocumentationGraphQueryService,
+) -> dict:
+    enriched = dict(page)
+    status = {
+        "availability": query_service.knowledge_status["availability"],
+        "reason": query_service.knowledge_status["reason"],
+        "freshness_evaluated": query_service.knowledge_status[
+            "freshness_evaluated"
+        ],
+    }
+    canonical_path = page.get("canonical_path")
+    if (
+        status["availability"] == KnowledgeAvailability.READY.value
+        and isinstance(canonical_path, str)
+        and canonical_path
+    ):
+        result = query_service.get_concept(canonical_path)
+        concept = result.get("concept")
+        if isinstance(concept, dict):
+            status.update(
+                {
+                    "origin": concept.get("origin"),
+                    "evidence": concept.get("evidence"),
+                    "verification": concept.get("verification"),
+                    "freshness": _compact_context_freshness(
+                        concept.get("freshness")
+                    ),
+                }
+            )
+    enriched["knowledge"] = status
+    return enriched
+
+
+def _compact_context_freshness(value: object) -> dict[str, Any]:
+    freshness = value if isinstance(value, dict) else {}
+    return {
+        "state": freshness.get("state"),
+        "reason": freshness.get("reason"),
+        "live_comparison_performed": bool(
+            freshness.get("live_comparison_performed", False)
+        ),
+    }
+
+
+def _matches_knowledge_refinement(page: dict, filters: dict) -> bool:
+    summary = page.get("knowledge")
+    if not isinstance(summary, dict):
+        return not (_KNOWLEDGE_REFINEMENT_KEYS & set(filters))
+    if (
+        "evidence" in filters
+        and summary.get("evidence") != filters["evidence"]
+    ):
+        return False
+    if "freshness" in filters:
+        freshness = summary.get("freshness")
+        if (
+            not isinstance(freshness, dict)
+            or freshness.get("state") != filters["freshness"]
+        ):
+            return False
+    return True
+
+
+def _knowledge_page_sort_key(page: dict, status: dict) -> tuple:
+    canonical_path = str(page.get("canonical_path") or "")
+    path_key = (canonical_path.casefold(), canonical_path)
+    if (
+        status.get("availability") != KnowledgeAvailability.READY.value
+        or not status.get("freshness_evaluated")
+    ):
+        return (0, 0, *path_key)
+
+    summary = page.get("knowledge")
+    freshness = summary.get("freshness") if isinstance(summary, dict) else None
+    raw_state = freshness.get("state") if isinstance(freshness, dict) else None
+    state = raw_state if isinstance(raw_state, str) else None
+    evidence = summary.get("evidence") if isinstance(summary, dict) else None
+    freshness_rank = (
+        len(_FRESHNESS_ORDER)
+        if state is None
+        else _FRESHNESS_ORDER.get(state, len(_FRESHNESS_ORDER))
+    )
+    return (
+        freshness_rank,
+        0 if evidence == EvidenceState.PRESENT.value else 1,
+        *path_key,
+    )
+
+
+def _append_knowledge_context_warning(
+    status: dict,
+    candidates: list[dict[str, Any]],
+    filters: dict,
+    warnings: list[str] | None,
+) -> None:
+    if warnings is None:
+        return
+    unique_candidates = {
+        str(page.get("canonical_path") or ""): page for page in candidates
+    }
+    availability = status.get("availability")
+    reason = status.get("reason")
+    refinements = _KNOWLEDGE_REFINEMENT_KEYS & set(filters)
+    if not candidates and not refinements:
+        return
+    message: str | None = None
+    if availability != KnowledgeAvailability.READY.value:
+        message = (
+            f"Knowledge context is {availability} ({reason}); concept ranking"
+            " and requested refinements are unavailable."
+            if refinements
+            else (
+                f"Knowledge context is {availability} ({reason}); concept"
+                " freshness ranking is unavailable and no candidates were dropped."
+            )
+        )
+    elif "freshness" in filters and not status.get("freshness_evaluated"):
+        message = (
+            "Knowledge freshness was not evaluated; the requested freshness "
+            "refinement matched no concept references."
+        )
+    elif "freshness" not in filters and not status.get("freshness_evaluated"):
+        message = (
+            "Knowledge freshness was not evaluated; concept references remain "
+            "in deterministic path order and no freshness candidates were dropped."
+        )
+    elif "freshness" not in filters:
+        stale_states: dict[str, int] = {}
+        for page in unique_candidates.values():
+            if not _matches_knowledge_refinement(page, filters):
+                continue
+            summary = page.get("knowledge")
+            freshness = (
+                summary.get("freshness") if isinstance(summary, dict) else None
+            )
+            state = (
+                freshness.get("state") if isinstance(freshness, dict) else None
+            )
+            if state in _STALE_OR_UNKNOWN_FRESHNESS:
+                stale_states[state] = stale_states.get(state, 0) + 1
+        if stale_states:
+            detail = ", ".join(
+                f"{state}={stale_states[state]}"
+                for state in _FRESHNESS_ORDER
+                if state in stale_states
+            )
+            message = (
+                "Knowledge context includes stale or unknown concept references "
+                f"({detail}); they were retained by default."
+            )
+    if message is not None and message not in warnings:
+        warnings.append(message)
+
+
+def _build_context_knowledge_view(
+    wiki_root: Path,
+    surface_evaluation: SurfaceIndexEvaluation,
+    inventory: dict,
+    inventory_result: InventoryResult | None,
+) -> KnowledgeReadView:
+    surface_path = wiki_root / SURFACE_INDEX_FILENAME
+    knowledge_path = wiki_root / KNOWLEDGE_INDEX_FILENAME
+    if not _context_knowledge_projection_declared(
+        wiki_root,
+        surface_path,
+        knowledge_path,
+    ):
+        return build_knowledge_read_view(
+            KnowledgeLoadResult(
+                status=KnowledgeLoadState.ABSENT,
+                surface=surface_evaluation.payload,
+                knowledge=None,
+                manifest_basis=None,
+            ),
+            snapshot_only=True,
+        )
+
+    try:
+        load_result = load_knowledge_state(
+            wiki_root,
+            policy=KnowledgeMismatchPolicy.DEGRADED,
+            markdown_pages=surface_evaluation.content_by_path,
+        )
+    except KnowledgeStateLoadError as exc:
+        return _knowledge_error_view(surface_evaluation.payload, exc)
+
+    live_evaluation = None
+    snapshot_only = False
+    if load_result.status is KnowledgeLoadState.VALID:
+        source_snapshot = (
+            inventory_result.source_snapshot
+            if inventory_result is not None
+            else None
+        )
+        if source_snapshot is None:
+            snapshot_only = True
+        else:
+            assert inventory_result is not None
+            assert load_result.knowledge is not None
+            assert load_result.manifest_basis is not None
+            try:
+                live_evaluation = build_runtime_live_evaluation(
+                    RuntimeLiveEvaluationInputs(
+                        knowledge=load_result.knowledge,
+                        manifest=load_result.manifest_basis,
+                        inventory=inventory,
+                        source_snapshot=source_snapshot,
+                        missing_source_paths=_reliably_missing_context_sources(
+                            load_result.knowledge,
+                            source_snapshot,
+                        ),
+                        inventory_complete=True,
+                        extractor_registry=inventory_result.extractor_registry,
+                        plugin_extractor_components=(
+                            inventory_result.plugin_components
+                        ),
+                        plugin_components=(
+                            inventory_result.producer_plugin_components
+                        ),
+                    )
+                )
+            except (OSError, TypeError, UnicodeError, ValueError):
+                snapshot_only = True
+    return build_knowledge_read_view(
+        load_result,
+        live_evaluation=live_evaluation,
+        snapshot_only=snapshot_only,
+    )
+
+
+def _context_knowledge_projection_declared(
+    wiki_root: Path,
+    surface_path: Path,
+    knowledge_path: Path,
+) -> bool:
+    if any(
+        path.exists() or path.is_symlink()
+        for path in (surface_path, knowledge_path)
+    ):
+        return True
+    try:
+        manifest = SyncManifest.load(wiki_root)
+    except (FileNotFoundError, OSError, UnicodeError, ValueError):
+        return False
+    return manifest.artifact_hashes is not None
+
+
+def _reliably_missing_context_sources(
+    knowledge,
+    source_snapshot,
+) -> frozenset[str]:
+    captured = source_snapshot.captured_content_hashes
+    missing: set[str] = set()
+    for concept in knowledge.concepts:
+        basis = concept.facets.structure.basis
+        if basis is None or basis.source_path is None:
+            continue
+        source_path = basis.source_path
+        if source_path in captured:
+            continue
+        try:
+            (source_snapshot.root / source_path).lstat()
+        except FileNotFoundError:
+            missing.add(source_path)
+        except OSError:
+            continue
+    return frozenset(missing)
+
+
+def _knowledge_error_view(
+    surface: Mapping[str, Any],
+    error: KnowledgeStateLoadError,
+) -> KnowledgeReadView:
+    unsupported = any(
+        issue.code
+        in {
+            "knowledge-schema-version-unsupported",
+            "manifest-version-unsupported",
+            "surface-schema-version-unsupported",
+        }
+        for issue in error.issues
+    )
+    load_result = (
+        KnowledgeLoadResult(
+            status=KnowledgeLoadState.INVALID,
+            surface=None,
+            knowledge=None,
+            manifest_basis=None,
+            issues=error.issues,
+        )
+        if unsupported
+        else KnowledgeLoadResult(
+            status=KnowledgeLoadState.DEGRADED,
+            surface=surface,
+            knowledge=None,
+            manifest_basis=None,
+            issues=error.issues,
+            underlying_status=error.status,
+        )
+    )
+    return build_knowledge_read_view(
+        load_result,
+        snapshot_only=True,
+    )
 
 
 def _build_context(
@@ -818,12 +1426,27 @@ def _build_context(
         allow_external=allow_external_src,
     )
 
-    raw_inventory = get_inventory(
+    collected_inventory = get_inventory(
         str(src_root),
         deep=True,
+        return_result=True,
         job_request=job_request,
         plan_reporter=plan_reporter,
     )
+    inventory_result = (
+        collected_inventory
+        if isinstance(collected_inventory, InventoryResult)
+        else None
+    )
+    raw_inventory = (
+        inventory_result.inventory
+        if inventory_result is not None
+        else collected_inventory
+    )
+    if not isinstance(raw_inventory, dict):
+        raise ProtocolRequestError(
+            "Source extraction returned an invalid inventory.", "src_dir"
+        )
     filters = filters or {}
     inventory = _apply_protocol_filters(raw_inventory, filters)
     warnings: list[str] = []
@@ -836,8 +1459,11 @@ def _build_context(
                 filters,
                 src_root=src_root,
                 wiki_dir=wiki_dir,
+                inventory_result=inventory_result,
+                warnings=warnings,
             )
         )
+        _emit_context_warnings(warnings, enabled=emit_warnings)
         return payload, warnings
 
     changed: list[str] | None = None
@@ -859,10 +1485,6 @@ def _build_context(
         else:
             changed = _normalise_changed_paths(changed, inventory)
 
-    if emit_warnings:
-        for warning in warnings:
-            print(f"Warning: {warning}", file=sys.stderr, flush=True)
-
     import_graph = _build_import_graph(inventory)
     classification = _classify_files(
         list(inventory.keys()),
@@ -879,9 +1501,19 @@ def _build_context(
             filters,
             src_root=src_root,
             wiki_dir=wiki_dir,
+            inventory_result=inventory_result,
+            warnings=warnings,
         )
     )
+    _emit_context_warnings(warnings, enabled=emit_warnings)
     return payload, warnings
+
+
+def _emit_context_warnings(warnings: list[str], *, enabled: bool) -> None:
+    if not enabled:
+        return
+    for warning in warnings:
+        print(f"Warning: {warning}", file=sys.stderr, flush=True)
 
 
 def _protocol_success_payload(
@@ -902,6 +1534,8 @@ def _protocol_success_payload(
         response["graphs"] = payload["graphs"]
     if "surface" in payload:
         response["surface"] = payload["surface"]
+    if "knowledge" in payload:
+        response["knowledge"] = payload["knowledge"]
 
     if request["format"] == "markdown":
         response["content"] = _render_markdown(payload)
@@ -913,7 +1547,7 @@ def _protocol_success_payload(
 def _run_protocol(args) -> None:
     output_path: str | None = getattr(args, "output", None)
     try:
-        request = _read_protocol_request(getattr(args, "request"))
+        request = _read_protocol_request(args.request)
         payload, warnings = _build_context(
             getattr(args, "src_dir", "."),
             request["budget_tokens"],
@@ -956,6 +1590,7 @@ def run(args) -> None:
     output_path: str | None = getattr(args, "output", None)
     allow_external_src: bool = getattr(args, "allow_external_src", False)
     read_only: bool = getattr(args, "read_only", False)
+    wiki_dir: str = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
 
     if budget is None:
         print("Error: --budget is required unless --request is used.", file=sys.stderr)
@@ -974,6 +1609,7 @@ def run(args) -> None:
             emit_warnings=True,
             allow_external_src=allow_external_src,
             read_only=read_only,
+            wiki_dir=wiki_dir,
             job_request=ExtractionJobRequest.resolved(1),
             plan_reporter=print_extraction_job_plan,
         )

@@ -261,6 +261,180 @@ def test_build_context_graph_sections_are_optional_additions(tmp_project):
     )
 
 
+def test_build_context_passes_knowledge_refinements_and_preserves_results(
+    monkeypatch,
+):
+    refinements = {
+        "surface": "entities",
+        "freshness": "source-changed",
+        "evidence": "present",
+    }
+    knowledge_status = {
+        "availability": "ready",
+        "reason": "all-projection-commitments-match",
+        "freshness_evaluated": True,
+    }
+    seen = {}
+
+    def fake_build_context(
+        src_dir,
+        budget,
+        fmt,
+        focus,
+        filters,
+        **kwargs,
+    ):
+        seen.update(
+            {
+                "src_dir": src_dir,
+                "budget": budget,
+                "format": fmt,
+                "focus": focus,
+                "filters": filters,
+                "wiki_dir": kwargs["wiki_dir"],
+            }
+        )
+        return (
+            {
+                "budget": budget,
+                "used": 0,
+                "files": {},
+                "knowledge": knowledge_status,
+                "surface": {
+                    "kind": "entities",
+                    "count": 1,
+                    "total": 1,
+                    "truncated": False,
+                    "knowledge_selection": {
+                        "unfiltered_total": 2,
+                        "filtered_total": 1,
+                        "returned": 1,
+                        "truncated": False,
+                    },
+                    "pages": [
+                        {
+                            "canonical_path": "entities/User.md",
+                            "mcp_uri": "llm-wiki://entities/User",
+                            "knowledge": {
+                                **knowledge_status,
+                                "evidence": "present",
+                                "freshness": {
+                                    "state": "source-changed",
+                                    "reason": "concept-observation-changed",
+                                    "live_comparison_performed": True,
+                                },
+                            },
+                        }
+                    ],
+                },
+            },
+            ["Knowledge context includes stale concept references."],
+        )
+
+    monkeypatch.setattr(api.context_cmd, "_build_context", fake_build_context)
+
+    result = build_context(
+        "source-root",
+        budget=4096,
+        focus="all",
+        format="json",
+        filters=refinements,
+        wiki_dir="agent_wiki",
+    )
+
+    assert seen == {
+        "src_dir": "source-root",
+        "budget": 4096,
+        "format": "json",
+        "focus": ["all"],
+        "filters": refinements,
+        "wiki_dir": "agent_wiki",
+    }
+    assert result["knowledge"] == knowledge_status
+    assert result["surface"]["knowledge_selection"]["unfiltered_total"] == 2
+    assert result["surface"]["knowledge_selection"]["filtered_total"] == 1
+    assert result["surface"]["pages"][0]["knowledge"]["freshness"]["state"] == (
+        "source-changed"
+    )
+    assert result["warnings"] == [
+        "Knowledge context includes stale concept references."
+    ]
+    assert api.context_cmd.PROTOCOL_VERSION == "llm-wiki-context/v1"
+
+
+@pytest.mark.parametrize(
+    ("filters", "field"),
+    [
+        ({"freshness": "current"}, "freshness"),
+        ({"evidence": "present"}, "evidence"),
+    ],
+)
+def test_build_context_maps_knowledge_refinement_dependency_errors(filters, field):
+    with pytest.raises(
+        LlmWikiApiError,
+        match=rf"filters\.{field} requires filters\.surface or filters\.symbol",
+    ):
+        build_context(".", filters=filters)
+
+
+def test_build_context_markdown_preserves_knowledge_status_and_warnings(
+    monkeypatch,
+):
+    status = {
+        "availability": "degraded",
+        "reason": "policy-selected-surface-only-fallback-after-invalid",
+        "freshness_evaluated": False,
+    }
+
+    def fake_build_context(_src_dir, budget, _fmt, _focus, _filters, **_kwargs):
+        return (
+            {
+                "budget": budget,
+                "used": 0,
+                "files": {},
+                "knowledge": status,
+            },
+            ["Knowledge context is degraded; no candidates were dropped."],
+        )
+
+    monkeypatch.setattr(api.context_cmd, "_build_context", fake_build_context)
+
+    result = build_context(
+        ".",
+        format="markdown",
+        filters={"surface": "entities"},
+    )
+
+    assert result["payload"]["knowledge"] == status
+    assert result["warnings"] == [
+        "Knowledge context is degraded; no candidates were dropped."
+    ]
+    assert "## Knowledge" in result["content"]
+    assert "- availability: degraded" in result["content"]
+
+
+def test_build_context_legacy_json_shape_remains_context_v1(monkeypatch):
+    legacy_payload = {
+        "budget": 1000,
+        "used": 0,
+        "truncated": False,
+        "omitted_files": [],
+        "downgraded_files": {},
+        "files": {},
+    }
+
+    def fake_build_context(*_args, **_kwargs):
+        return dict(legacy_payload), []
+
+    monkeypatch.setattr(api.context_cmd, "_build_context", fake_build_context)
+
+    result = build_context(".", budget=1000, focus="all")
+
+    assert result == legacy_payload
+    assert "knowledge" not in result
+    assert api.context_cmd.PROTOCOL_VERSION == "llm-wiki-context/v1"
+
+
 def test_list_wiki_pages_returns_registry_metadata_without_running_extraction(
     tmp_project, monkeypatch
 ):
