@@ -333,6 +333,11 @@ def test_build_context_returns_json_payload(tmp_project):
 
     assert payload["budget"] == 100000
     assert payload["files"]
+    assert payload["bounds"]["files"] == {
+        "total": len(payload["files"]),
+        "returned": len(payload["files"]),
+        "truncated": False,
+    }
 
 
 def test_build_context_returns_markdown_content_and_raw_payload(tmp_project):
@@ -340,6 +345,9 @@ def test_build_context_returns_markdown_content_and_raw_payload(tmp_project):
 
     assert "Context Budget" in payload["content"]
     assert payload["payload"]["files"]
+    assert payload["payload"]["bounds"]["files"]["returned"] == len(
+        payload["payload"]["files"]
+    )
 
 
 def test_build_context_accepts_graph_filters_and_wiki_dir(tmp_project):
@@ -358,6 +366,10 @@ def test_build_context_accepts_graph_filters_and_wiki_dir(tmp_project):
     assert payload["graphs"]["symbol"]["callees"]["found"] is True
     assert payload["graphs"]["symbol"]["pages"]["pages"]
     assert payload["surface"]["kind"] == "flows"
+    assert payload["surface"]["count"] == payload["surface"]["returned"]
+    assert payload["surface"]["bounds"]["pages"]["returned"] == len(
+        payload["surface"]["pages"]
+    )
     assert "files" in payload
     assert [page["canonical_path"] for page in payload["surface"]["pages"]] == [
         "flows/api-run.md"
@@ -810,6 +822,49 @@ def test_query_service_builder_exposes_committed_knowledge_end_to_end(
     }
     assert result["found"] is True
     assert result["concept"]["locator"] == "llm-wiki://entities/User"
+    assert result["concept"]["freshness"]["state"] == "current"
+
+
+def test_query_service_builder_uses_snapshot_only_on_live_option_failure(
+    tmp_path,
+    monkeypatch,
+):
+    fixture = one_module_two_entities_fixture()
+    tree = materialize_fixture_tree(
+        fixture,
+        tmp_path / "checkout",
+        consumer="api",
+    )
+    commit_knowledge_artifacts(
+        _knowledge_commit_plan(tree["wiki_root"], fixture)
+    )
+    monkeypatch.chdir(tree["root"])
+
+    def fail_live_options(**_kwargs):
+        raise ValueError("invalid runtime generation policy")
+
+    monkeypatch.setattr(
+        api.context_cmd,
+        "runtime_generation_options",
+        fail_live_options,
+    )
+
+    result = api.get_concept(
+        "llm-wiki://entities/User",
+        src_dir=".",
+        wiki_dir="docs/llm_wiki",
+    )
+
+    assert result["knowledge"] == {
+        "availability": "ready",
+        "reason": "all-projection-commitments-match",
+        "freshness_evaluated": False,
+    }
+    assert result["concept"]["freshness"] == {
+        "state": None,
+        "reason": "not-evaluated",
+        "live_comparison_performed": False,
+    }
 
 
 def test_graph_query_service_and_wrappers_return_documentation_answers(tmp_project):

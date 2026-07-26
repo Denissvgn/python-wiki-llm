@@ -227,6 +227,11 @@ applied before the 20-item concept-reference limit. The
 `knowledge_selection` object discloses `unfiltered_total`, `filtered_total`,
 `returned`, and `truncated`.
 
+The source-file budget discloses `bounds.files` with exact candidate and
+returned counts. `bounds.files.truncated` means a file was omitted; the
+top-level context `truncated` field can also report a returned file whose detail
+was downgraded to fit the token budget.
+
 Without an explicit freshness filter, stale and unknown concept references
 remain eligible and the response warns about them. Ready live results rank
 `current`, `nonsemantic-source-change`, `unknown`, `source-changed`,
@@ -254,7 +259,9 @@ JSON-serializable query contract through the Python API and MCP adapters:
   was evaluated. Absence or degradation is explicit rather than represented
   as an empty trustworthy graph.
 - Selection fields include `query`, `found`, `ambiguous`, and `matches`.
-  Knowledge collections disclose `total`, `returned`, and `truncated`.
+  Every limited collection has a `bounds` entry keyed by its response path,
+  containing exact `total`, `returned`, and `truncated` values. Knowledge
+  collections retain their top-level count aliases.
 - `related_concepts` additionally reports direction, selected kinds, compact
   relationships/concepts, and unresolved or external targets.
 - Ordinary concept/context results carry compact evidence and freshness.
@@ -264,7 +271,10 @@ JSON-serializable query contract through the Python API and MCP adapters:
 The default query/list limit is 20. MCP validates positive limits, caps
 external requests at 100, and reports truncation instead of silently dropping
 additional results. MCP Markdown search follows the same default/cap and
-returns an explicit `truncated` flag. Python callers may construct one
+returns exact `total` and `returned` values, retains `count` as the returned
+alias, and exposes `bounds.results`. MCP rejects malformed or noncanonical
+knowledge coordinates before constructing the live service; a canonical but
+absent coordinate returns `found: false`. Python callers may construct one
 `DocumentationGraphQueryService` and pass it as `service=` to reuse the same
 validated read view; query methods on that constructed service perform no file
 I/O, extraction, network access, writes, or adapter registration.

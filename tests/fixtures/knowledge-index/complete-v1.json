@@ -3,17 +3,14 @@
     "producer": {
       "extractors": [
         {
-          "configuration_hash": "sha256:4b28c82d9a74fc608037d4861ac11058a655fa3261ddb5f8aa895f6a9ecdc18b",
-          "id": "python-ast",
-          "limitations": [
-            "syntax-only"
-          ],
-          "version": "stdlib"
+          "configuration_hash": "sha256:7109dd992fe5fb5a692c53ba340dc344741cb77cd71082fbf28e97d69e802dc7",
+          "id": "llm-wiki/extractor/python",
+          "version": "1.4.0"
         }
       ],
       "plugins": [],
       "tool": {
-        "configuration_hash": "sha256:6d64864a5ba22c6c3176a2c8b5c7d8a09c1025a64b19d5e26f1bb4a749672d9f",
+        "configuration_hash": "sha256:a80e5eb5cfa0c29d9c66529b073c46169c3869f4ccfa3852bb44b5a88e6bd950",
         "id": "agent-wiki-cli",
         "version": "1.4.0"
       }
@@ -30,7 +27,7 @@
       "extensions": {
         "llm-wiki/inventory-hash": "sha256:453cf516b1c34a87fba6532789851e133c08f3ee4d0ed8332b153c0f28cb31e5"
       },
-      "generation_options_hash": "sha256:d6657ce8a41c7863c75320c0a3065473392417e860c708f1796e5923892fced2",
+      "generation_options_hash": "sha256:45fc4f49f4dc762b03917464de135c8c14735cfbc342504e353a6ce1cc897d20",
       "markdown_snapshot_hash": "sha256:77eea3041e54b014d12705aa672b288d2bb44c6080442a4930ee9c074e135105",
       "source_snapshot_hash": "sha256:636170023b50cc4f8f4841dc6d4e9b0bb8505c0548bc6574662f2234e0090da5",
       "surface_index_hash": "sha256:632e44fcc87ee5ae85ddc9cbf175dcda660dee9f31bee92c0cec0644c7638e52"
@@ -57,7 +54,7 @@
         "structure": {
           "basis": {
             "concept_observation_hash": "sha256:9fed76bcca61180ca26a0763e7edd43b5f84679ae0fdfdc7dc38a1b8376f9097",
-            "extractor_ref": "python-ast",
+            "extractor_ref": "llm-wiki/extractor/python",
             "scope": "entity",
             "source_content_hash": "sha256:f0b34a588d21c2dab7508e4f6557a411b8a5035afe8f79cc94dc7e669167e6d3",
             "source_path": "src/accounts.py"
@@ -90,7 +87,7 @@
         "structure": {
           "basis": {
             "concept_observation_hash": "sha256:169f7c3cf114a7158caf5347329aa7b0eb0a00278a0bbe2699fd27b2ef100c85",
-            "extractor_ref": "python-ast",
+            "extractor_ref": "llm-wiki/extractor/python",
             "scope": "entity",
             "source_content_hash": "sha256:f0b34a588d21c2dab7508e4f6557a411b8a5035afe8f79cc94dc7e669167e6d3",
             "source_path": "src/accounts.py"
@@ -175,7 +172,7 @@
         "structure": {
           "basis": {
             "concept_observation_hash": "sha256:c5aca1b4baa3afc794a436a56c6dfb4263c07a31c635c4a4cc35f3766b69ccef",
-            "extractor_ref": "python-ast",
+            "extractor_ref": "llm-wiki/extractor/python",
             "scope": "module",
             "source_content_hash": "sha256:f0b34a588d21c2dab7508e4f6557a411b8a5035afe8f79cc94dc7e669167e6d3",
             "source_path": "src/accounts.py"

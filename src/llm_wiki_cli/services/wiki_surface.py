@@ -11,8 +11,7 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Optional, Union
-from urllib.parse import quote
-
+from urllib.parse import quote, unquote
 
 RESOURCE_SCHEME = "llm-wiki"
 _PAGE_ID_RE = re.compile(r"^[A-Za-z0-9_.()-]+$")
@@ -241,6 +240,31 @@ def mcp_uri(kind: Union[PageKind, str], page_id: Optional[str] = None) -> str:
     return f"{RESOURCE_SCHEME}://{entry.mcp_uri_kind}"
 
 
+def validate_exact_page_coordinate(value: object) -> str:
+    """Validate and return one canonical wiki path or MCP URI coordinate."""
+    if not isinstance(value, str) or not value.strip():
+        raise WikiSurfaceError("Exact wiki page coordinate must be a non-empty string.")
+
+    coordinate = value.strip()
+    if any(ord(character) < 32 or ord(character) == 127 for character in coordinate):
+        raise WikiSurfaceError("Invalid exact wiki page coordinate.")
+
+    for entry in _PAGE_KINDS:
+        if entry.requires_page_id:
+            if _matches_directory_path(coordinate, entry) or _matches_directory_uri(
+                coordinate, entry
+            ):
+                return coordinate
+            continue
+        if coordinate in {
+            canonical_path(entry.kind),
+            mcp_uri(entry.kind),
+        }:
+            return coordinate
+
+    raise WikiSurfaceError("Invalid exact wiki page coordinate.")
+
+
 def collect_wiki_pages(wiki_dir: Union[str, Path]) -> list[WikiSurfacePage]:
     """Collect active canonical wiki pages in deterministic registry order."""
     wiki = Path(wiki_dir)
@@ -318,6 +342,41 @@ def _validate_page_id(page_id: Optional[str], *, required: bool) -> str:
     if not is_safe_page_id(page_id):
         raise WikiSurfaceError(f"Unsafe wiki page id: {page_id}")
     return page_id
+
+
+def _matches_directory_path(coordinate: str, entry: WikiSurfaceKind) -> bool:
+    directory = entry.directory
+    if directory is None:
+        return False
+    prefix = f"{directory}/"
+    if not coordinate.startswith(prefix) or not coordinate.endswith(".md"):
+        return False
+    page_id = coordinate[len(prefix) : -len(".md")]
+    return bool(
+        is_safe_page_id(page_id)
+        and coordinate == canonical_path(entry.kind, page_id)
+    )
+
+
+def _matches_directory_uri(coordinate: str, entry: WikiSurfaceKind) -> bool:
+    prefix = f"{RESOURCE_SCHEME}://{entry.mcp_uri_kind}/"
+    if not coordinate.startswith(prefix):
+        return False
+    encoded_page_id = coordinate[len(prefix) :]
+    if (
+        not encoded_page_id
+        or re.search(r"%(?![0-9A-Fa-f]{2})", encoded_page_id)
+        or "/" in encoded_page_id
+    ):
+        return False
+    try:
+        page_id = unquote(encoded_page_id, encoding="utf-8", errors="strict")
+    except UnicodeDecodeError:
+        return False
+    return bool(
+        is_safe_page_id(page_id)
+        and coordinate == mcp_uri(entry.kind, page_id)
+    )
 
 
 def _is_legacy_path(path: Path, wiki: Path) -> bool:

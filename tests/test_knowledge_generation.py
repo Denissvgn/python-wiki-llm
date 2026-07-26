@@ -21,12 +21,14 @@ from llm_wiki_cli.services.knowledge_envelope import (
     hash_generation_options,
 )
 from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
+from llm_wiki_cli.services.knowledge_freshness import evaluate_knowledge_freshness
 from llm_wiki_cli.services.knowledge_generation import (
     KnowledgeGenerationError,
     KnowledgeGenerationInputs,
     build_knowledge_generation_plan,
 )
 from llm_wiki_cli.services.knowledge_model import (
+    ComputedFreshness,
     RelationshipKind,
     WorkingTreeState,
     parse_knowledge_index,
@@ -34,8 +36,11 @@ from llm_wiki_cli.services.knowledge_model import (
 from llm_wiki_cli.services.knowledge_orchestration import (
     RUNTIME_GENERATION_OPTION_DEFAULTS,
     RuntimeKnowledgeInputs,
+    RuntimeLiveEvaluationInputs,
     build_runtime_knowledge_plan,
+    build_runtime_live_evaluation,
     persist_runtime_generation_policy,
+    prepare_runtime_generation_options,
     runtime_generation_options,
 )
 from llm_wiki_cli.services.source_snapshot import SourceSnapshot
@@ -102,6 +107,75 @@ def _planner_inputs(
         asset_paths=frozenset(selected.assets),
         manifest_surfaces={"flows": {"enabled": True}},
         manifest_generation_inputs={"options": {"deep": True}},
+    )
+
+
+def _runtime_input_case(
+    tmp_path: Path,
+    *,
+    inventory_complete: bool,
+) -> tuple[
+    RuntimeKnowledgeInputs,
+    SourceSnapshot,
+    EvaluatedKnowledgeFixture,
+]:
+    fixture = one_module_two_entities_fixture()
+    source_hashes = {
+        path: sha256_bytes(content.encode("utf-8"))
+        for path, content in fixture.source_files.items()
+    }
+    source_snapshot = SourceSnapshot(
+        root=tmp_path,
+        files_by_language={},
+        dockerfile_candidates=(),
+        compose_candidates=(),
+        yaml_candidates=(),
+        package_markers=(),
+        unsupported_files_by_language={},
+        all_source_paths=tuple(source_hashes),
+        gitignore_fingerprint=sha256_bytes(b""),
+        captured_content_hashes=source_hashes,
+        captured_input_kinds={
+            path: (ConsumedInputKind.SOURCE.value,) for path in source_hashes
+        },
+    )
+    surface = SurfaceIndexEvaluation(
+        pages=_surface_pages(fixture),
+        content_by_path={
+            page.canonical_path: page.content for page in fixture.pages
+        },
+        payload=fixture.surface_payload,
+        serialized_bytes=fixture.surface_bytes,
+        existing_asset_paths=frozenset(fixture.assets),
+    )
+    generation_options = runtime_generation_options(
+        surfaces={},
+        include_tests=None,
+        preserve_semantic=True,
+    )
+    return (
+        RuntimeKnowledgeInputs(
+            target_wiki_dir=tmp_path,
+            inventory=fixture.inventory,
+            surface=surface,
+            source_snapshot=source_snapshot,
+            module_page_map=fixture.module_page_map,
+            entity_occurrence_page_map=fixture.entity_occurrence_page_map,
+            repository_evidence=RepositoryEvidence(),
+            inventory_complete=inventory_complete,
+            extractor_registry={
+                "python": (
+                    "llm_wiki_cli.extractors.python_extractor:PythonExtractor"
+                )
+            },
+            generation_options=generation_options,
+            generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS,
+            generation_option_allowlist=tuple(
+                RUNTIME_GENERATION_OPTION_DEFAULTS
+            ),
+        ),
+        source_snapshot,
+        fixture,
     )
 
 
@@ -301,6 +375,152 @@ def test_runtime_generation_hash_covers_complete_persisted_policy():
 
     assert baseline not in changed
     assert len(changed) == 3
+
+
+@pytest.mark.parametrize(
+    ("inventory_complete", "inventory_mode"),
+    [(True, "deep"), (False, "shallow")],
+)
+def test_runtime_writer_and_live_reader_share_generation_option_commitment(
+    tmp_path,
+    inventory_complete,
+    inventory_mode,
+):
+    runtime, source_snapshot, fixture = _runtime_input_case(
+        tmp_path,
+        inventory_complete=inventory_complete,
+    )
+    prepared = prepare_runtime_generation_options(
+        runtime.generation_options,
+        generation_option_defaults=runtime.generation_option_defaults,
+        generation_option_allowlist=runtime.generation_option_allowlist,
+        inventory_complete=inventory_complete,
+    )
+    plan = build_runtime_knowledge_plan(runtime)
+    knowledge = parse_knowledge_index(json.loads(plan.knowledge_index.content))
+
+    live = build_runtime_live_evaluation(
+        RuntimeLiveEvaluationInputs(
+            knowledge=knowledge,
+            manifest=plan.committed_manifest,
+            inventory=fixture.inventory,
+            source_snapshot=source_snapshot,
+            generation_options=runtime.generation_options,
+            generation_option_defaults=runtime.generation_option_defaults,
+            generation_option_allowlist=runtime.generation_option_allowlist,
+            inventory_complete=inventory_complete,
+            extractor_registry=runtime.extractor_registry,
+        )
+    )
+
+    assert prepared.values["inventory_mode"] == inventory_mode
+    assert prepared.defaults["inventory_mode"] == "deep"
+    assert prepared.allowlist[0] == "inventory_mode"
+    assert live.generation_options_hash == hash_generation_options(
+        prepared.values,
+        defaults=prepared.defaults,
+        allowlist=prepared.allowlist,
+    )
+    assert live.generation_options_hash == (
+        knowledge.bundle.snapshot.generation_options_hash
+    )
+
+
+def test_runtime_live_generation_hash_is_independent_of_recorded_hash(tmp_path):
+    runtime, source_snapshot, fixture = _runtime_input_case(
+        tmp_path,
+        inventory_complete=True,
+    )
+    plan = build_runtime_knowledge_plan(runtime)
+    knowledge = parse_knowledge_index(json.loads(plan.knowledge_index.content))
+    tampered = replace(
+        knowledge,
+        bundle=replace(
+            knowledge.bundle,
+            snapshot=replace(
+                knowledge.bundle.snapshot,
+                generation_options_hash=sha256_bytes(b"recorded-only-value"),
+            ),
+        ),
+    )
+
+    live = build_runtime_live_evaluation(
+        RuntimeLiveEvaluationInputs(
+            knowledge=tampered,
+            manifest=plan.committed_manifest,
+            inventory=fixture.inventory,
+            source_snapshot=source_snapshot,
+            generation_options=runtime.generation_options,
+            generation_option_defaults=runtime.generation_option_defaults,
+            generation_option_allowlist=runtime.generation_option_allowlist,
+            extractor_registry=runtime.extractor_registry,
+        )
+    )
+
+    assert live.generation_options_hash == (
+        knowledge.bundle.snapshot.generation_options_hash
+    )
+    assert live.generation_options_hash != (
+        tampered.bundle.snapshot.generation_options_hash
+    )
+
+
+@pytest.mark.parametrize(
+    "changed_options",
+    [
+        runtime_generation_options(
+            surfaces={},
+            include_tests=("go",),
+            preserve_semantic=True,
+        ),
+        runtime_generation_options(
+            surfaces={},
+            include_tests=None,
+            preserve_semantic=False,
+        ),
+    ],
+    ids=["include-tests", "preserve-semantic"],
+)
+def test_runtime_live_generation_option_drift_is_basis_incompatible(
+    tmp_path,
+    changed_options,
+):
+    runtime, source_snapshot, fixture = _runtime_input_case(
+        tmp_path,
+        inventory_complete=True,
+    )
+    plan = build_runtime_knowledge_plan(runtime)
+    knowledge = parse_knowledge_index(json.loads(plan.knowledge_index.content))
+
+    live = build_runtime_live_evaluation(
+        RuntimeLiveEvaluationInputs(
+            knowledge=knowledge,
+            manifest=plan.committed_manifest,
+            inventory=fixture.inventory,
+            source_snapshot=source_snapshot,
+            generation_options=changed_options,
+            generation_option_defaults=runtime.generation_option_defaults,
+            generation_option_allowlist=runtime.generation_option_allowlist,
+            extractor_registry=runtime.extractor_registry,
+        )
+    )
+    report = evaluate_knowledge_freshness(knowledge, live)
+    evaluated = [
+        result
+        for result in report.by_locator.values()
+        if result.live_comparison_performed
+    ]
+
+    assert live.generation_options_hash != (
+        knowledge.bundle.snapshot.generation_options_hash
+    )
+    assert evaluated
+    assert {result.state for result in evaluated} == {
+        ComputedFreshness.BASIS_INCOMPATIBLE
+    }
+    assert {result.reason_code for result in evaluated} == {
+        "generation-options-changed"
+    }
 
 
 def test_planner_preserves_exact_surface_bytes_and_payload_uses_v1_wire_format(

@@ -788,7 +788,9 @@ limit. Without an explicit freshness filter, stale and unknown concepts remain
 visible and produce a warning; when live freshness is available, concepts rank
 from `current` through `nonsemantic-source-change`, `unknown`,
 `source-changed`, `source-missing`, and `basis-incompatible`. Selection output
-reports unfiltered, filtered, returned, and truncated counts. See
+reports unfiltered, filtered, returned, and truncated counts. Source-file
+budgeting also reports exact `bounds.files` totals; its top-level `truncated`
+field additionally covers files returned at downgraded detail. See
 [Native knowledge reads][native-knowledge-context].
 `--wiki-dir` selects the wiki surface metadata used for graph page references.
 
@@ -845,6 +847,9 @@ Example `context --format json` payload:
   "truncated": false,
   "omitted_files": [],
   "downgraded_files": {},
+  "bounds": {
+    "files": {"total": 1, "returned": 1, "truncated": false}
+  },
   "files": {
     "models.py": {
       "priority": "high",
@@ -920,7 +925,9 @@ and load order. It also exposes direct page tools including `get_flow(flow_id)` 
 Use `query_graph({"type": "callers", "value": "run", "limit": 20})` for
 bounded graph queries; supported types are `flow_for_entrypoint`,
 `data_flow_for_entrypoint`, `callers`, `callees`, `dependency_neighborhood`,
-and `pages_for_symbol`. Context payloads, lint summaries, and status
+and `pages_for_symbol`. Bounded query collections expose exact
+`bounds.<response-path>` totals, returned counts, and truncation. Context
+payloads, lint summaries, and status
 information report the same canonical surfaces. HTTP mode is intended for local
 use and defaults to loopback.
 
@@ -928,7 +935,9 @@ Knowledge-aware MCP clients can call `get_concept`, `related_concepts`, and
 `explain_evidence`. These tools use the shared read-only query envelope,
 including knowledge availability, exact-match state, totals, returned counts,
 and explicit truncation. Their default limit is 20 and externally supplied
-limits are capped at 100. `get_status` is snapshot-only and never claims that
+limits are capped at 100. Malformed or noncanonical knowledge coordinates fail
+before source extraction; valid but absent coordinates return `found: false`.
+`get_status` is snapshot-only and never claims that
 freshness is current. See
 [Native knowledge reads][native-knowledge-api] for the shared
 envelope and [MCP tools][native-knowledge-mcp] for adapter

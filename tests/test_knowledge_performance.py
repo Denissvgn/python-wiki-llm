@@ -344,6 +344,11 @@ def test_default_and_mcp_bounds_disclose_stress_truncation(stress_views):
     assert related["total"] == _STRESS_CONCEPT_COUNT + 1
     assert related["returned"] == 20
     assert related["truncated"] is True
+    assert related["bounds"]["relationships"] == {
+        "total": _STRESS_CONCEPT_COUNT + 1,
+        "returned": 20,
+        "truncated": True,
+    }
     assert len(related["matches"]) <= 20
     assert len(related["relationships"]) == related["returned"]
     assert len(related["related_concepts"]) <= 20
@@ -354,6 +359,11 @@ def test_default_and_mcp_bounds_disclose_stress_truncation(stress_views):
     assert evidence["total"] == related["total"]
     assert evidence["returned"] == 20
     assert evidence["truncated"] is True
+    assert evidence["bounds"]["evidence.relationships"] == {
+        "total": _STRESS_CONCEPT_COUNT + 1,
+        "returned": 20,
+        "truncated": True,
+    }
     assert len(evidence["matches"]) <= 20
     assert len(evidence["evidence"]["relationships"]) == evidence["returned"]
 

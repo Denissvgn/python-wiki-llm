@@ -427,6 +427,11 @@ class TestBuildContextPayload:
         assert result["truncated"] is False
         assert result["omitted_files"] == []
         assert result["downgraded_files"] == {}
+        assert result["bounds"]["files"] == {
+            "total": 1,
+            "returned": 1,
+            "truncated": False,
+        }
 
     def test_high_downgraded_before_omit(self):
         inventory = {
@@ -456,6 +461,11 @@ class TestBuildContextPayload:
         assert result["omitted_files"] == []
         assert result["used"] <= result["budget"]
         assert result["truncated"] is True
+        assert result["bounds"]["files"] == {
+            "total": 1,
+            "returned": 1,
+            "truncated": False,
+        }
 
     def test_high_omitted_when_summary_does_not_fit(self):
         inventory = {
@@ -470,6 +480,11 @@ class TestBuildContextPayload:
         assert result["downgraded_files"] == {}
         assert result["used"] == 0
         assert result["truncated"] is True
+        assert result["bounds"]["files"] == {
+            "total": 1,
+            "returned": 0,
+            "truncated": True,
+        }
 
     def test_medium_and_low_omitted_on_tight_budget(self):
         inventory = {
@@ -488,6 +503,11 @@ class TestBuildContextPayload:
         assert "c.py" not in result["files"]
         assert result["omitted_files"] == ["b.py", "c.py"]
         assert result["used"] <= result["budget"]
+        assert result["bounds"]["files"] == {
+            "total": 3,
+            "returned": 1,
+            "truncated": True,
+        }
 
     def test_later_smaller_file_included_after_large_omitted_file(self):
         inventory = {
@@ -506,6 +526,11 @@ class TestBuildContextPayload:
         assert result["omitted_files"] == ["a.py"]
         assert result["downgraded_files"] == {"b.py": "summary"}
         assert result["used"] <= result["budget"]
+        assert result["bounds"]["files"] == {
+            "total": 2,
+            "returned": 1,
+            "truncated": True,
+        }
 
     def test_output_has_priority_field(self):
         inventory = {
@@ -1081,6 +1106,11 @@ def test_committed_surface_mapping_preserves_collision_page_symbol_lookup():
         "modules/web_client.md"
     ]
     assert result["pages"][0]["source_path"] == "web/client.ts"
+    assert result["bounds"]["pages"] == {
+        "total": 1,
+        "returned": 1,
+        "truncated": False,
+    }
 
 
 def test_knowledge_enrichment_reuses_one_live_inventory_and_read_view(
@@ -1193,7 +1223,81 @@ def test_knowledge_enrichment_reuses_one_live_inventory_and_read_view(
         == {"state", "reason", "live_comparison_performed"}
         for summary in summaries
     )
-    assert any("retained by default" in warning for warning in warnings)
+    assert {
+        summary["freshness"]["state"] for summary in summaries
+    } == {"current"}
+    assert not any("retained by default" in warning for warning in warnings)
+
+
+@pytest.mark.parametrize(
+    ("live_policy", "freshness_evaluated", "state", "reason"),
+    [
+        (
+            "mismatch",
+            True,
+            "basis-incompatible",
+            "generation-options-changed",
+        ),
+        ("invalid", False, None, "not-evaluated"),
+    ],
+)
+def test_context_generation_option_evaluation_fails_closed(
+    tmp_path,
+    monkeypatch,
+    live_policy,
+    freshness_evaluated,
+    state,
+    reason,
+):
+    fixture = one_module_two_entities_fixture()
+    tree = materialize_fixture_tree(fixture, tmp_path / "checkout")
+    commit_knowledge_artifacts(
+        _knowledge_commit_plan(tree["wiki_root"], fixture)
+    )
+    monkeypatch.chdir(tree["root"])
+    real_options = context_cmd.runtime_generation_options
+
+    if live_policy == "mismatch":
+
+        def evaluated_options(**kwargs):
+            options = real_options(**kwargs)
+            options["preserve_semantic"] = False
+            return options
+
+    else:
+
+        def evaluated_options(**_kwargs):
+            raise ValueError("invalid runtime generation policy")
+
+    monkeypatch.setattr(
+        context_cmd,
+        "runtime_generation_options",
+        evaluated_options,
+    )
+
+    payload, _warnings = context_cmd._build_context(
+        ".",
+        32_000,
+        "json",
+        ["all"],
+        {"surface": "entities"},
+        emit_warnings=False,
+        wiki_dir="docs/llm_wiki",
+    )
+
+    assert payload["knowledge"] == {
+        "availability": "ready",
+        "reason": "all-projection-commitments-match",
+        "freshness_evaluated": freshness_evaluated,
+    }
+    freshness = [
+        page["knowledge"]["freshness"] for page in payload["surface"]["pages"]
+    ]
+    assert {item["state"] for item in freshness} == {state}
+    assert {item["reason"] for item in freshness} == {reason}
+    assert {item["live_comparison_performed"] for item in freshness} == {
+        freshness_evaluated
+    }
 
 
 class TestProtocolRun:
@@ -1273,6 +1377,25 @@ class TestProtocolRun:
         assert "content" in data
         assert "files" not in data
         assert "Context Budget" in data["content"]
+
+    def test_request_empty_inventory_reports_zero_file_bounds(
+        self, tmp_path, capsys, monkeypatch
+    ):
+        monkeypatch.setattr(context_cmd, "get_inventory", lambda *args, **kwargs: {})
+        request = _write_request(tmp_path, _protocol_request())
+
+        context_cmd.run(_make_args(request=request, budget=None))
+
+        data = json.loads(capsys.readouterr().out)
+        assert data["files"] == {}
+        assert data["bounds"]["files"] == {
+            "total": 0,
+            "returned": 0,
+            "truncated": False,
+        }
+        assert data["truncated"] is False
+        assert data["omitted_files"] == []
+        assert data["downgraded_files"] == {}
 
     def test_request_language_filter_excludes_nonmatching_inventory(
         self, tmp_path, capsys, monkeypatch
@@ -1362,11 +1485,26 @@ class TestProtocolRun:
         data = json.loads(capsys.readouterr().out)
         assert data["ok"] is True
         assert "files" in data
+        assert data["bounds"]["files"] == {
+            "total": 5,
+            "returned": 5,
+            "truncated": False,
+        }
+        assert data["truncated"] is False
+        assert data["omitted_files"] == []
+        assert data["downgraded_files"] == {}
         assert data["graphs"]["symbol"]["callees"]["found"] is True
         assert data["graphs"]["symbol"]["pages"]["pages"]
         assert data["graphs"]["entrypoint"]["flow"]["found"] is True
         assert data["graphs"]["entrypoint"]["data_flow"]["found"] is True
         assert data["surface"]["kind"] == "flows"
+        assert data["surface"]["returned"] == 1
+        assert data["surface"]["count"] == data["surface"]["returned"]
+        assert data["surface"]["bounds"]["pages"] == {
+            "total": 1,
+            "returned": 1,
+            "truncated": False,
+        }
         assert [page["canonical_path"] for page in data["surface"]["pages"]] == [
             "flows/api-run.md"
         ]
@@ -1393,6 +1531,11 @@ class TestProtocolRun:
         data = json.loads(capsys.readouterr().out)
         assert data["used_tokens"] == 0
         assert data["files"] == {}
+        assert data["bounds"]["files"]["total"] == 5
+        assert data["bounds"]["files"]["returned"] == 0
+        assert data["bounds"]["files"]["truncated"] is True
+        assert data["truncated"] is True
+        assert data["omitted_files"]
         assert data["graphs"]["symbol"]["callees"]["found"] is True
         assert data["graphs"]["entrypoint"]["flow"]["found"] is True
         assert data["surface"]["pages"]
@@ -1441,6 +1584,14 @@ class TestProtocolRun:
 
         data = json.loads(capsys.readouterr().out)
         assert "Documentation Graphs" in data["content"]
+        assert data["bounds"]["files"] == {
+            "total": 5,
+            "returned": 5,
+            "truncated": False,
+        }
+        assert data["truncated"] is False
+        assert data["omitted_files"] == []
+        assert data["downgraded_files"] == {}
         assert "Symbol `run`" in data["content"]
         assert "Entry point `api-run`" in data["content"]
         assert "Surface `flows`" in data["content"]

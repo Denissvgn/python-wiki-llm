@@ -32,6 +32,10 @@ Response shape (relevant slice):
     "symbol": {
       "callers": {"query": "build_context", "found": true, "ambiguous": false,
                   "matches": [...], "truncated": false,
+                  "bounds": {
+                    "matches": {"total": 1, "returned": 1, "truncated": false},
+                    "callers": {"total": 3, "returned": 3, "truncated": false}
+                  },
                   "callable": {"file": "...", "symbol": "build_context"},
                   "callers": [...]},
       "callees": {"...": "same shape, key is callees"},
@@ -45,7 +49,7 @@ Response shape (relevant slice):
 }
 ```
 
-Every one of `callers`/`callees`/`pages_for_symbol`/`dependency_neighborhood`/ `flow_for_entrypoint`/`data_flow_for_entrypoint` shares the same envelope fields via the query service's common selection result: `query`, `found`, `ambiguous`, `matches`, `truncated`. Always check `found` first — an unresolved query returns an empty result, not an error — and `ambiguous` before trusting a single match when multiple candidates exist.
+Every one of `callers`/`callees`/`pages_for_symbol`/`dependency_neighborhood`/ `flow_for_entrypoint`/`data_flow_for_entrypoint` shares the same envelope fields via the query service's common selection result: `query`, `found`, `ambiguous`, `matches`, `bounds`, `truncated`. Each limited response path has exact `total`, `returned`, and `truncated` values under `bounds`. Always check `found` first — an unresolved query returns an empty result, not an error — and `ambiguous` before trusting a single match when multiple candidates exist.
 
 ## `dependency_neighborhood` result shape (MCP-only)
 
@@ -55,7 +59,14 @@ Every one of `callers`/`callees`/`pages_for_symbol`/`dependency_neighborhood`/ `
   "inbound": ["src/main.py"], "outbound": ["src/db.py"],
   "metrics": {"fan_in": 3, "fan_out": 1},
   "cycle_groups": [], "load_order_index": 4,
-  "pages": [{"kind": "modules", "path": "modules/api.md"}]
+  "pages": [{"kind": "modules", "path": "modules/api.md"}],
+  "bounds": {
+    "matches": {"total": 1, "returned": 1, "truncated": false},
+    "inbound": {"total": 1, "returned": 1, "truncated": false},
+    "outbound": {"total": 1, "returned": 1, "truncated": false},
+    "cycle_groups": {"total": 0, "returned": 0, "truncated": false},
+    "pages": {"total": 1, "returned": 1, "truncated": false}
+  }
 }
 ```
 
@@ -98,5 +109,5 @@ Do not add statuses beyond these three — a `doc-review` pass consuming this ch
 |---|---|---|
 | Query returns `found: false` | Symbol/file/entrypoint name doesn't match any indexed entry | Re-check spelling/path; do not assume "not found" means "not called anywhere." |
 | `ambiguous: true` | Multiple symbols share the name across files | List `matches` and ask the user which one, or analyze each separately. |
-| `truncated: true` on callers/callees | More results exist than the query limit | State the true count is unknown beyond the limit; do not report the blast radius as complete. |
+| `truncated: true` on callers/callees | More results exist than the query limit | Report the exact `bounds.callers` or `bounds.callees` total and do not describe the emitted list as complete. |
 | Need file-level fan-in, only have a symbol | `dependency_neighborhood` takes a path, not a symbol | Resolve the symbol's owning file first (via `pages_for_symbol` or the callable's `file` field), then query the file. |

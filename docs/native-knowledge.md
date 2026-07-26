@@ -32,6 +32,15 @@ with an already-collected live source and producer basis:
 | `source-missing` | A reliably mapped source is confirmed missing. |
 | `basis-incompatible` | The producer, configuration, schema, mapping, or observation basis cannot support a positive comparison. |
 
+The live generation-options commitment is recomputed from the validated
+manifest policy, the reader's active options and defaults, and the actual
+inventory mode. Readers never reuse the recorded hash as the live value. A
+different effective option basis reports `basis-incompatible`; an option basis
+that cannot be evaluated leaves freshness unavailable. When strict lint opts
+into test-language extraction, use the same `--include-tests` selection that
+was used to generate the projection if a positive freshness comparison is
+required.
+
 Freshness does not imply truth, human review, lifecycle, or authorization. A
 hash match means only that the compared observation basis is unchanged. It
 does not make an unverified concept verified or an active concept approved.
@@ -150,6 +159,13 @@ discloses:
 - `returned`;
 - `truncated`.
 
+The context source-file budget also returns
+`bounds.files = {total, returned, truncated}`. Here `truncated` means files were
+omitted. The existing top-level context `truncated` field is broader and can
+also be true when a returned file was downgraded to a smaller detail level.
+JSON and Markdown protocol envelopes retain these bounds together with the
+omitted- and downgraded-file summaries.
+
 The `knowledge` object reports `availability`, `reason`, and
 `freshness_evaluated`. Enriched page references use compact origin, evidence,
 verification, and freshness summaries; they do not embed full evidence or
@@ -212,6 +228,13 @@ abbreviated here):
       "canonical_path": "entities/User.md"
     }
   ],
+  "bounds": {
+    "matches": {
+      "total": 1,
+      "returned": 1,
+      "truncated": false
+    }
+  },
   "total": 1,
   "returned": 1,
   "truncated": false
@@ -244,9 +267,16 @@ Their result envelopes and degraded behavior match the Python query service.
 MCP accepts positive limits, caps them at 100, and reports truncation. Existing
 Markdown resources and `llm-wiki://...` resource URIs are unchanged.
 
+MCP validates knowledge coordinates before constructing the live query service.
+It accepts only canonical wiki paths and their exact `llm-wiki://` URI forms.
+Malformed, unsafe, unknown-kind, or noncanonical coordinates fail before source
+extraction. A syntactically valid coordinate whose concept is absent still
+returns the standard `found: false` query envelope.
+
 `query_graph` provides bounded flow, call, dependency-neighborhood, and
 page-for-symbol queries. `search_wiki` defaults to 20 results, applies the same
-MCP cap of 100, and returns `count`, `truncated`, and `results`.
+MCP cap of 100, and returns exact `total`, `returned`, `truncated`, and
+`results`; legacy `count` remains an alias for `returned`.
 
 MCP `get_status` is snapshot-only. Its `knowledge` object contains
 `availability`, `reason`, and `freshness_evaluated: false`; when a projection
@@ -259,12 +289,19 @@ Bounded query collections default to 20 items. For Python callers, the service
 limit controls the bound; externally supplied MCP limits never exceed 100.
 Filtering is applied before limiting, and results are ordered deterministically.
 
-For knowledge relationship and evidence queries:
+Every bounded query envelope includes a `bounds` mapping keyed by the response
+path of the limited collection, for example `matches`, `callers`, `flow.steps`,
+`pages`, `relationships`, or `evidence.relationships`. Each entry contains:
 
-- `total` is the number of matching relationship observations before the
-  limit;
+- `total`, the exact post-filter and post-deduplication candidate count before
+  the response limit;
 - `returned` is the number emitted;
 - `truncated` is `true` when `total > returned`.
+
+Knowledge relationship and evidence queries retain their top-level
+`total`/`returned` aliases. Surface and MCP search responses retain `count` as
+an alias for `returned`. These counts describe response-layer limiting, not
+whether an upstream analyzer stopped at its own depth boundary.
 
 Treat `truncated: true` as an incomplete graph. Increase the limit within the
 supported boundary or narrow the direction/kind/filter; never infer that an

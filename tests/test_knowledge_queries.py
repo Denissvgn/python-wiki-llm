@@ -104,6 +104,9 @@ def test_ready_concept_lookup_is_exact_compact_and_fresh(tmp_path):
     assert by_locator["total"] == 1
     assert by_locator["returned"] == 1
     assert by_locator["truncated"] is False
+    assert by_locator["bounds"] == {
+        "matches": {"total": 1, "returned": 1, "truncated": False}
+    }
     assert by_locator["concept"] == {
         "locator": USER_LOCATOR,
         "concept_kind": "code-entity",
@@ -330,10 +333,25 @@ def test_loader_selected_non_ready_view_never_exposes_a_trustworthy_empty_graph(
     }
     assert concept["found"] is False
     assert concept["concept"] is None
+    assert concept["bounds"] == {
+        "matches": {"total": 0, "returned": 0, "truncated": False}
+    }
     assert related["found"] is False
     assert related["relationships"] == []
+    assert related["bounds"] == {
+        "matches": {"total": 0, "returned": 0, "truncated": False},
+        "relationships": {"total": 0, "returned": 0, "truncated": False},
+    }
     assert explained["found"] is False
     assert explained["evidence"] is None
+    assert explained["bounds"] == {
+        "matches": {"total": 0, "returned": 0, "truncated": False},
+        "evidence.relationships": {
+            "total": 0,
+            "returned": 0,
+            "truncated": False,
+        },
+    }
 
 
 def test_no_view_reports_absent_instead_of_claiming_an_empty_graph():
@@ -352,6 +370,7 @@ def test_no_view_reports_absent_instead_of_claiming_an_empty_graph():
         "total": 0,
         "returned": 0,
         "truncated": False,
+        "bounds": {"matches": {"total": 0, "returned": 0, "truncated": False}},
         "concept": None,
     }
 
@@ -370,6 +389,10 @@ def test_related_concepts_preserves_phase_one_target_states(tmp_path):
     assert result["total"] == 8
     assert result["returned"] == 8
     assert result["truncated"] is False
+    assert result["bounds"] == {
+        "matches": {"total": 1, "returned": 1, "truncated": False},
+        "relationships": {"total": 8, "returned": 8, "truncated": False},
+    }
     assert [item["kind"] for item in result["relationships"]].count(
         "derived_from"
     ) == 1
@@ -481,6 +504,11 @@ def test_related_filters_before_bounding_and_discloses_counts(tmp_path):
     assert result["returned"] == 2
     assert result["truncated"] is True
     assert len(result["relationships"]) == 2
+    assert result["bounds"]["relationships"] == {
+        "total": 8,
+        "returned": 2,
+        "truncated": True,
+    }
     assert len(result["related_concepts"]) <= 2
     assert len(result["unresolved_targets"]) <= 2
     assert len(result["external_targets"]) <= 2
@@ -499,6 +527,14 @@ def test_related_filters_before_bounding_and_discloses_counts(tmp_path):
     assert explained["returned"] == 2
     assert explained["truncated"] is True
     assert len(explained["evidence"]["relationships"]) == 2
+    assert explained["bounds"] == {
+        "matches": {"total": 1, "returned": 1, "truncated": False},
+        "evidence.relationships": {
+            "total": 8,
+            "returned": 2,
+            "truncated": True,
+        },
+    }
 
 
 @pytest.mark.parametrize("direction", ["", "incoming", "out", None, 3])

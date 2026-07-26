@@ -309,16 +309,16 @@ class McpWikiService:
 
         needle = query.casefold()
         matches: list[dict] = []
-        truncated = False
+        total = 0
         for page in self._iter_pages(requested):
             content = read_md(page.path)
             haystack = content.casefold()
             idx = haystack.find(needle)
             if idx == -1:
                 continue
+            total += 1
             if len(matches) == limit:
-                truncated = True
-                break
+                continue
             matches.append(
                 {
                     "kind": page.kind,
@@ -330,10 +330,19 @@ class McpWikiService:
                 }
             )
 
+        returned = len(matches)
+        bounds = {
+            "total": total,
+            "returned": returned,
+            "truncated": total > returned,
+        }
         return {
             "query": query,
-            "count": len(matches),
-            "truncated": truncated,
+            "total": total,
+            "returned": returned,
+            "count": returned,
+            "truncated": bounds["truncated"],
+            "bounds": {"results": bounds},
             "results": matches,
         }
 
@@ -784,7 +793,13 @@ def _knowledge_locator(value: object) -> str:
         raise McpWikiError(
             "locator_or_exact_route must be a non-empty string."
         )
-    return value.strip()
+    try:
+        return wiki_surface.validate_exact_page_coordinate(value)
+    except wiki_surface.WikiSurfaceError as exc:
+        raise McpWikiError(
+            "locator_or_exact_route must be an exact canonical wiki path "
+            "or llm-wiki URI."
+        ) from exc
 
 
 def _knowledge_direction(value: object) -> str:

@@ -123,6 +123,12 @@ hash map is not evidence that a source is missing. The evaluator performs no
 filesystem access, source discovery, extraction, subprocess, network, clock,
 or write operation.
 
+The application adapter independently recomputes the live generation-options
+hash from the active allowlisted values, effective defaults, and inventory
+mode. It must not copy the recorded snapshot hash into the live input. If that
+effective live basis cannot be constructed, freshness is not evaluated and no
+concept can receive a positive `current` result.
+
 Every recorded concept receives exactly one locator-indexed result containing
 the computed state, a stable reason code, safe recorded/live basis details,
 and whether a live comparison occurred. Counts contain all computed-freshness
@@ -869,7 +875,9 @@ index v1 bytes.
   run and commit the new projection through the manifest-last protocol.
 - **M2 — Native consumption:** add evidence-aware lint, query, context, API,
   and MCP behavior additively. Legacy and absent knowledge remain usable in
-  surface-only mode, and all bounded responses disclose totals and truncation.
+  surface-only mode. Every response-layer bounded collection discloses its
+  exact post-filter, pre-limit total, returned count, and truncation state;
+  upstream analyzer-depth truncation remains a separate signal.
   M2 is a stop/go gate: do not promote or continue merely because more JSON can
   be generated. At least two native consumers must materially improve behavior
   using the new evidence signals.

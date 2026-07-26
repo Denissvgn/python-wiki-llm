@@ -11,6 +11,7 @@ from enum import Enum
 from pathlib import Path
 
 from ..config import validate_path, validate_source_root
+from ..extractors.common import normalize_include_tests
 from ..services import wiki_media
 from ..services.data_flow import analyze_data_flow
 from ..services.dependencies import analyze_dependencies
@@ -61,8 +62,10 @@ from ..services.knowledge_observability import (
     summarize_knowledge_view,
 )
 from ..services.knowledge_orchestration import (
+    RUNTIME_GENERATION_OPTION_DEFAULTS,
     RuntimeLiveEvaluationInputs,
     build_runtime_live_evaluation,
+    runtime_generation_options,
 )
 from ..services.plugins import PluginError, iter_components, load_entry_point
 from ..services.source_snapshot import (
@@ -262,6 +265,7 @@ class _LintInputs:
     unsupported_sources: dict[str, dict[str, object]]
     source_snapshot: SourceSnapshot
     inventory_result: InventoryResult
+    include_tests: frozenset[str]
 
 
 @dataclass(frozen=True)
@@ -604,8 +608,12 @@ def _collect_lint_inputs(
     job_request: ExtractionJobRequest | None,
     plan_reporter: Callable[[ExtractionJobPlan], None] | None,
 ) -> _LintInputs | None:
+    normalized_include_tests = normalize_include_tests(include_tests)
     with _profile_phase(profiler, "inventory"):
-        source_snapshot = build_source_snapshot(src_dir, include_tests=include_tests)
+        source_snapshot = build_source_snapshot(
+            src_dir,
+            include_tests=normalized_include_tests,
+        )
         inventory_result = get_inventory_result(
             src_dir,
             deep=True,
@@ -613,7 +621,7 @@ def _collect_lint_inputs(
             cache_options=cache_options,
             parallel_jobs=parallel_jobs,
             helper_cache_dir=helper_cache_dir,
-            include_tests=include_tests,
+            include_tests=normalized_include_tests,
             job_request=job_request,
             plan_reporter=plan_reporter,
         )
@@ -648,6 +656,7 @@ def _collect_lint_inputs(
         unsupported_sources=unsupported_sources,
         source_snapshot=source_snapshot,
         inventory_result=inventory_result,
+        include_tests=normalized_include_tests,
     )
 
 
@@ -1429,12 +1438,23 @@ def _evaluate_knowledge_lint_state(
     assert load_result.knowledge is not None
     assert load_result.manifest_basis is not None
     try:
+        generation_options = runtime_generation_options(
+            surfaces=load_result.manifest_basis.surfaces,
+            generation_inputs=load_result.manifest_basis.generation_inputs,
+            include_tests=inputs.include_tests,
+            preserve_semantic=True,
+        )
         live_evaluation = build_runtime_live_evaluation(
             RuntimeLiveEvaluationInputs(
                 knowledge=load_result.knowledge,
                 manifest=load_result.manifest_basis,
                 inventory=inputs.deep_inventory,
                 source_snapshot=inputs.source_snapshot,
+                generation_options=generation_options,
+                generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS,
+                generation_option_allowlist=tuple(
+                    RUNTIME_GENERATION_OPTION_DEFAULTS
+                ),
                 missing_source_paths=_reliably_missing_source_paths(
                     load_result,
                     inputs.source_snapshot,

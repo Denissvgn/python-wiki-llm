@@ -14,6 +14,8 @@ from typing import Any
 
 import pytest
 
+from llm_wiki_cli import __version__
+from llm_wiki_cli.config import EXTRACTOR_REGISTRY
 from llm_wiki_cli.services.contracts import KNOWLEDGE_SCHEMA_VERSION
 from llm_wiki_cli.services.knowledge_envelope import (
     ConsumedInput,
@@ -50,6 +52,11 @@ from llm_wiki_cli.services.knowledge_model import (
 from llm_wiki_cli.services.knowledge_model import (
     knowledge_index_to_payload as model_to_payload,
 )
+from llm_wiki_cli.services.knowledge_orchestration import (
+    RUNTIME_GENERATION_OPTION_DEFAULTS,
+    prepare_runtime_generation_options,
+    runtime_generation_options,
+)
 from llm_wiki_cli.services.sync_manifest import (
     TOMBSTONE_SOURCE_MISSING,
     TOMBSTONE_UNKNOWN_PROVENANCE,
@@ -62,6 +69,9 @@ from llm_wiki_cli.services.wiki_surface import (
     SurfaceRole,
     WikiSurfacePage,
     mcp_uri,
+)
+from llm_wiki_cli.services.wiki_surface_index import (
+    WIKI_SURFACE_INDEX_SCHEMA_VERSION,
 )
 from tests.knowledge_fixtures import (
     EvaluatedKnowledgeFixture,
@@ -122,6 +132,16 @@ def _real_envelope(
         for source_path, content in fixture.source_files.items()
     )
     repository = parse_knowledge_index(fixture.knowledge_payload).bundle.repository
+    prepared_generation_options = prepare_runtime_generation_options(
+        runtime_generation_options(
+            surfaces={},
+            include_tests=(),
+            preserve_semantic=True,
+        ),
+        generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS,
+        generation_option_allowlist=tuple(RUNTIME_GENERATION_OPTION_DEFAULTS),
+        inventory_complete=True,
+    )
     return build_evaluated_envelope(
         EnvelopeInputs(
             repository=repository,
@@ -129,20 +149,26 @@ def _real_envelope(
             inventory=fixture.inventory,
             markdown_pages=content_by_page,
             surface_index_bytes=fixture.surface_bytes,
-            generation_options={},
-            generation_option_defaults={},
-            generation_option_allowlist=(),
+            generation_options=prepared_generation_options.values,
+            generation_option_defaults=prepared_generation_options.defaults,
+            generation_option_allowlist=prepared_generation_options.allowlist,
             tool=ProducerComponentInput(
                 component_id="agent-wiki-cli",
-                version="1.4.0",
-                configuration={"knowledge_schema": KNOWLEDGE_SCHEMA_VERSION},
+                version=__version__,
+                configuration={
+                    "knowledge_schema": KNOWLEDGE_SCHEMA_VERSION,
+                    "surface_schema": WIKI_SURFACE_INDEX_SCHEMA_VERSION,
+                },
             ),
             extractors=(
                 ProducerComponentInput(
-                    component_id="python-ast",
-                    version="stdlib",
-                    configuration={"inventory_mode": "deep"},
-                    limitations=("syntax-only",),
+                    component_id="llm-wiki/extractor/python",
+                    version=__version__,
+                    configuration={
+                        "entry_point": EXTRACTOR_REGISTRY["python"],
+                        "inventory_mode": "deep",
+                        "language": "python",
+                    },
                 ),
             ),
         )
@@ -173,7 +199,7 @@ def _manifest_evidence(
             source_path=source_path,
             file_data=file_data,
             source_content_hash=source_hash,
-            extractor_ref="python-ast",
+            extractor_ref="llm-wiki/extractor/python",
             inventory_complete=True,
         )
     )
@@ -197,7 +223,7 @@ def _manifest_evidence(
                 entity_name=entity_name,
                 occurrence=occurrence,
                 source_content_hash=source_hash,
-                extractor_ref="python-ast",
+                extractor_ref="llm-wiki/extractor/python",
                 inventory_complete=True,
             )
         )

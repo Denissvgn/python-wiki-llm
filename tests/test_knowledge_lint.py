@@ -19,6 +19,9 @@ from llm_wiki_cli.services.knowledge_model import (
     ComputedFreshness,
     EvidenceState,
 )
+from llm_wiki_cli.services.knowledge_orchestration import (
+    RUNTIME_GENERATION_INPUT_KEY,
+)
 from llm_wiki_cli.services.sync_manifest import (
     MANIFEST_STATE_UNAVAILABLE,
     TOMBSTONE_UNKNOWN_PROVENANCE,
@@ -433,6 +436,124 @@ def test_bootstrap_lint_reuses_live_basis_and_allows_nonsemantic_change(
         "[reason=source-bytes-changed-concept-observation-unchanged]" in warning.message
         for warning in warnings
     )
+
+
+def test_strict_lint_reports_live_generation_option_drift(tmp_path, monkeypatch):
+    source = tmp_path / "app.py"
+    source.write_text("class User:\n    pass\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    bootstrap_cmd.run(
+        types.SimpleNamespace(
+            src_dir=".",
+            wiki_dir="docs/llm_wiki",
+            overwrite=False,
+            depth="full",
+            skip_workflows=True,
+        )
+    )
+
+    report = lint_cmd.build_report(
+        "docs/llm_wiki",
+        ".",
+        strict=True,
+        include_tests=[" GO ", "go"],
+    )
+
+    findings = [
+        issue
+        for issue in report.issues
+        if issue.category == "knowledge_freshness"
+        and "[reason=generation-options-changed]" in issue.message
+    ]
+    assert not report.passed
+    assert {finding.target for finding in findings} == {
+        "llm-wiki://entities/User",
+        "llm-wiki://modules/app",
+    }
+    assert report.knowledge_summary is not None
+    assert report.knowledge_summary.freshness_by_state["basis-incompatible"] == 2
+
+
+def test_strict_lint_fails_closed_for_invalid_live_generation_policy(
+    tmp_path,
+    monkeypatch,
+):
+    source = tmp_path / "app.py"
+    source.write_text("class User:\n    pass\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    bootstrap_cmd.run(
+        types.SimpleNamespace(
+            src_dir=".",
+            wiki_dir="docs/llm_wiki",
+            overwrite=False,
+            depth="full",
+            skip_workflows=True,
+        )
+    )
+    wiki = tmp_path / "docs" / "llm_wiki"
+    manifest = SyncManifest.load(wiki)
+    manifest.generation_inputs[RUNTIME_GENERATION_INPUT_KEY] = {
+        "data_flow_enabled": True,
+        "dependency_graph_detail": "unsupported",
+        "workflows_enabled": True,
+    }
+    manifest.save(wiki)
+
+    report = lint_cmd.build_report(wiki, str(tmp_path), strict=True)
+
+    findings = [
+        issue
+        for issue in report.issues
+        if "[reason=live-evaluation-invalid]" in issue.message
+    ]
+    assert len(findings) == 1
+    assert findings[0].category == "knowledge_freshness"
+    assert findings[0].target == (
+        "manifest_generation_inputs."
+        f"{RUNTIME_GENERATION_INPUT_KEY}.dependency_graph_detail"
+    )
+    assert report.knowledge_summary is not None
+    assert report.knowledge_summary.freshness_evaluated is False
+
+
+def test_strict_lint_fails_closed_when_live_option_hashing_fails(
+    tmp_path,
+    monkeypatch,
+):
+    source = tmp_path / "app.py"
+    source.write_text("class User:\n    pass\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    bootstrap_cmd.run(
+        types.SimpleNamespace(
+            src_dir=".",
+            wiki_dir="docs/llm_wiki",
+            overwrite=False,
+            depth="full",
+            skip_workflows=True,
+        )
+    )
+    monkeypatch.setattr(
+        lint_cmd,
+        "RUNTIME_GENERATION_OPTION_DEFAULTS",
+        {"api_contracts_enabled": False},
+    )
+
+    report = lint_cmd.build_report(
+        "docs/llm_wiki",
+        ".",
+        strict=True,
+    )
+
+    findings = [
+        issue
+        for issue in report.issues
+        if "[reason=live-evaluation-invalid]" in issue.message
+    ]
+    assert len(findings) == 1
+    assert findings[0].category == "knowledge_freshness"
+    assert findings[0].target == "generation_options.data_flow_enabled"
+    assert report.knowledge_summary is not None
+    assert report.knowledge_summary.freshness_evaluated is False
 
 
 def test_projection_failures_have_stable_strict_categories_and_locations():

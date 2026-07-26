@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import re
 from collections import defaultdict
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import PurePosixPath
 from typing import Any, Iterable, Mapping, Optional, Sequence, cast
@@ -38,6 +39,29 @@ _NOT_EVALUATED_REASON = "not-evaluated"
 
 class DocumentationQueryError(ValueError):
     """Raised when a documentation graph query request is invalid."""
+
+
+@dataclass(frozen=True)
+class _BoundedResult:
+    """One deterministic collection plus its exact response bounds."""
+
+    items: list[Any]
+    total: int
+
+    @property
+    def returned(self) -> int:
+        return len(self.items)
+
+    @property
+    def truncated(self) -> bool:
+        return self.total > self.returned
+
+    def metadata(self) -> dict[str, Any]:
+        return {
+            "total": self.total,
+            "returned": self.returned,
+            "truncated": self.truncated,
+        }
 
 
 def _text_key(value: object) -> tuple[str, str]:
@@ -338,11 +362,13 @@ class DocumentationGraphQueryService:
         result = self._selection_result(query, matches, "flow", None)
         if not result["found"]:
             result["flow"] = None
+            self._record_bound(result, "flow.steps", self._bounded(()))
             return result
 
-        flow, truncated = self._bounded_payload(result.pop("_selected"), ("steps",))
+        flow, bounds = self._bounded_payload(result.pop("_selected"), ("steps",))
         result["flow"] = flow
-        result["truncated"] = result["truncated"] or truncated
+        for path, bounded in bounds.items():
+            self._record_bound(result, f"flow.{path}", bounded)
         return result
 
     def callers(self, symbol: object) -> dict[str, Any]:
@@ -353,6 +379,7 @@ class DocumentationGraphQueryService:
         if not result["found"]:
             result["callable"] = None
             result["callers"] = []
+            self._record_bound(result, "callers", self._bounded(()))
             return result
 
         selected = result.pop("_selected")
@@ -361,10 +388,10 @@ class DocumentationGraphQueryService:
         caller_records = self.raw_callers.get(key)
         if caller_records is None:
             caller_records = _summary_relationship_records(summary, "callers")
-        callers, truncated = self._bounded(caller_records)
+        callers = self._bounded(caller_records)
         result["callable"] = selected
-        result["callers"] = callers
-        result["truncated"] = result["truncated"] or truncated
+        result["callers"] = callers.items
+        self._record_bound(result, "callers", callers)
         return result
 
     def callees(self, symbol: object) -> dict[str, Any]:
@@ -375,6 +402,7 @@ class DocumentationGraphQueryService:
         if not result["found"]:
             result["callable"] = None
             result["callees"] = []
+            self._record_bound(result, "callees", self._bounded(()))
             return result
 
         selected = result.pop("_selected")
@@ -383,21 +411,37 @@ class DocumentationGraphQueryService:
         callee_records = self.raw_callees.get(key)
         if callee_records is None:
             callee_records = _summary_relationship_records(summary, "callees")
-        callees, truncated = self._bounded(callee_records)
+        callees = self._bounded(callee_records)
         result["callable"] = selected
-        result["callees"] = callees
-        result["truncated"] = result["truncated"] or truncated
+        result["callees"] = callees.items
+        self._record_bound(result, "callees", callees)
         return result
 
     def dependency_neighborhood(self, path: object) -> dict[str, Any]:
         """Return bounded inbound/outbound dependency neighbors for a source path."""
-        query = _normalise_source_path(path, field="path", required=True)
-        empty = {
+        query = cast(
+            str,
+            _normalise_source_path(path, field="path", required=True),
+        )
+        empty_bounds = {
+            response_path: self._bounded(())
+            for response_path in (
+                "matches",
+                "inbound",
+                "outbound",
+                "cycle_groups",
+                "pages",
+            )
+        }
+        empty: dict[str, Any] = {
             "query": query,
             "found": False,
             "ambiguous": False,
             "matches": [],
             "truncated": False,
+            "bounds": {
+                path: bounded.metadata() for path, bounded in empty_bounds.items()
+            },
             "path": None,
             "inbound": [],
             "outbound": [],
@@ -409,42 +453,38 @@ class DocumentationGraphQueryService:
         if query not in self._dependency_nodes:
             return empty
 
-        inbound, inbound_truncated = self._bounded_strings(
-            self._dependency_inbound.get(query, ())
-        )
-        outbound, outbound_truncated = self._bounded_strings(
-            self._dependency_outbound.get(query, ())
-        )
-        pages, pages_truncated = self._pages_for_source(query)
+        inbound = self._bounded_strings(self._dependency_inbound.get(query, ()))
+        outbound = self._bounded_strings(self._dependency_outbound.get(query, ()))
+        pages = self._pages_for_source(query)
         metrics = (
             self.dependency.get("metrics", {})
             .get("metrics", {})
             .get(query, {"fan_in": 0, "fan_out": 0})
         )
-        cycle_groups, cycles_truncated = self._bounded(
-            self._dependency_cycles_by_path.get(query, ())
-        )
+        cycle_groups = self._bounded(self._dependency_cycles_by_path.get(query, ()))
+        match_bounds = self._bounded(({"path": query},))
+        bounds = {
+            "matches": match_bounds.metadata(),
+            "inbound": inbound.metadata(),
+            "outbound": outbound.metadata(),
+            "cycle_groups": cycle_groups.metadata(),
+            "pages": pages.metadata(),
+        }
 
         return {
             "query": query,
             "found": True,
             "ambiguous": False,
-            "matches": [{"path": query}],
-            "truncated": any(
-                [
-                    inbound_truncated,
-                    outbound_truncated,
-                    pages_truncated,
-                    cycles_truncated,
-                ]
-            ),
+            "matches": match_bounds.items,
+            "truncated": any(bound["truncated"] for bound in bounds.values()),
+            "bounds": bounds,
             "path": query,
-            "inbound": inbound,
-            "outbound": outbound,
+            "inbound": inbound.items,
+            "outbound": outbound.items,
             "metrics": dict(metrics),
-            "cycle_groups": cycle_groups,
+            "cycle_groups": cycle_groups.items,
             "load_order_index": self._dependency_order_index.get(query),
-            "pages": pages,
+            "pages": pages.items,
         }
 
     def data_flow_for_entrypoint(self, id_or_symbol: object) -> dict[str, Any]:
@@ -454,14 +494,21 @@ class DocumentationGraphQueryService:
         result = self._selection_result(query, matches, "data_flow", None)
         if not result["found"]:
             result["data_flow"] = None
+            for key in ("steps", "transfers", "boundaries", "gaps"):
+                self._record_bound(
+                    result,
+                    f"data_flow.{key}",
+                    self._bounded(()),
+                )
             return result
 
-        data_flow, truncated = self._bounded_payload(
+        data_flow, bounds = self._bounded_payload(
             result.pop("_selected"),
             ("steps", "transfers", "boundaries", "gaps"),
         )
         result["data_flow"] = data_flow
-        result["truncated"] = result["truncated"] or truncated
+        for path, bounded in bounds.items():
+            self._record_bound(result, f"data_flow.{path}", bounded)
         return result
 
     def pages_for_symbol(self, symbol: object) -> dict[str, Any]:
@@ -472,13 +519,14 @@ class DocumentationGraphQueryService:
         if not result["found"]:
             result["symbol"] = None
             result["pages"] = []
+            self._record_bound(result, "pages", self._bounded(()))
             return result
 
         selected = result.pop("_selected")
-        pages, pages_truncated = self._pages_for_source(selected.get("file"))
+        pages = self._pages_for_source(selected.get("file"))
         result["symbol"] = selected
-        result["pages"] = pages
-        result["truncated"] = result["truncated"] or pages_truncated
+        result["pages"] = pages.items
+        self._record_bound(result, "pages", pages)
         return result
 
     def get_concept(self, locator_or_exact_route: object) -> dict[str, Any]:
@@ -521,8 +569,11 @@ class DocumentationGraphQueryService:
                 "external_targets": [],
             }
         )
+        relationship_bounds = self._bounded(())
+        self._record_bound(result, "relationships", relationship_bounds)
         if locator is None:
             result.update({"total": 0, "returned": 0, "truncated": False})
+            self._sync_truncated(result)
             return result
 
         observations = [
@@ -533,10 +584,13 @@ class DocumentationGraphQueryService:
             )
             if self._knowledge_relationship_kinds[item[0]] in selected_kinds
         ]
-        total = len(observations)
-        returned = observations[: self.limit]
+        bounded_observations = self._bounded(observations)
+        returned = bounded_observations.items
         compact_relationships = [
-            self._compact_knowledge_relationship(index, edge_direction)
+            self._compact_knowledge_relationship(
+                cast(int, index),
+                cast(str, edge_direction),
+            )
             for index, edge_direction in returned
         ]
 
@@ -568,11 +622,11 @@ class DocumentationGraphQueryService:
                 ],
                 "unresolved_targets": unresolved_targets,
                 "external_targets": external_targets,
-                "total": total,
-                "returned": len(returned),
-                "truncated": total > self.limit,
+                "total": bounded_observations.total,
+                "returned": bounded_observations.returned,
             }
         )
+        self._record_bound(result, "relationships", bounded_observations)
         return result
 
     def explain_evidence(
@@ -588,8 +642,11 @@ class DocumentationGraphQueryService:
             None if locator is None else self._compact_knowledge_concept(locator)
         )
         result["evidence"] = None
+        relationship_bounds = self._bounded(())
+        self._record_bound(result, "evidence.relationships", relationship_bounds)
         if locator is None:
             result.update({"total": 0, "returned": 0, "truncated": False})
+            self._sync_truncated(result)
             return result
 
         concept = self.concept_by_locator[locator]
@@ -599,11 +656,13 @@ class DocumentationGraphQueryService:
             if self._knowledge_relationship_kinds[item[0]]
             in _KNOWLEDGE_RELATIONSHIP_KINDS
         ]
-        total = len(observations)
-        returned = observations[: self.limit]
+        bounded_observations = self._bounded(observations)
+        returned = bounded_observations.items
         relationships = []
         for index, edge_direction in returned:
-            relationship = _jsonable_mapping(self._knowledge_relationships[index])
+            relationship = _jsonable_mapping(
+                self._knowledge_relationships[cast(int, index)]
+            )
             relationship["direction"] = edge_direction
             relationships.append(relationship)
 
@@ -616,10 +675,14 @@ class DocumentationGraphQueryService:
                     "freshness": self._full_knowledge_freshness(locator),
                     "relationships": relationships,
                 },
-                "total": total,
-                "returned": len(returned),
-                "truncated": total > self.limit,
+                "total": bounded_observations.total,
+                "returned": bounded_observations.returned,
             }
+        )
+        self._record_bound(
+            result,
+            "evidence.relationships",
+            bounded_observations,
         )
         return result
 
@@ -808,18 +871,21 @@ class DocumentationGraphQueryService:
 
         total = len(candidates)
         capped = candidates[: self.limit]
+        matches = [
+            self._compact_knowledge_concept(cast(str, concept["locator"]))
+            for concept in capped
+        ]
+        match_bounds = _BoundedResult(items=matches, total=total)
         result: dict[str, Any] = {
             "knowledge": dict(self.knowledge_status),
             "query": query,
             "found": total == 1,
             "ambiguous": total > 1,
-            "matches": [
-                self._compact_knowledge_concept(cast(str, concept["locator"]))
-                for concept in capped
-            ],
+            "matches": matches,
             "total": total,
-            "returned": len(capped),
-            "truncated": total > self.limit,
+            "returned": match_bounds.returned,
+            "truncated": match_bounds.truncated,
+            "bounds": {"matches": match_bounds.metadata()},
         }
         if total == 1:
             result["_selected_locator"] = candidates[0]["locator"]
@@ -1224,7 +1290,7 @@ class DocumentationGraphQueryService:
             _flow_ref(match) if payload_key in {"flow", "data_flow"} else match
             for match in matches
         ]
-        capped, truncated = self._bounded(refs)
+        bounded_matches = self._bounded(refs)
         if not matches:
             return {
                 "query": query,
@@ -1232,6 +1298,7 @@ class DocumentationGraphQueryService:
                 "ambiguous": False,
                 "matches": [],
                 "truncated": False,
+                "bounds": {"matches": bounded_matches.metadata()},
                 payload_key: empty_payload,
             }
         if len(matches) > 1:
@@ -1239,51 +1306,71 @@ class DocumentationGraphQueryService:
                 "query": query,
                 "found": False,
                 "ambiguous": True,
-                "matches": capped,
-                "truncated": truncated,
+                "matches": bounded_matches.items,
+                "truncated": bounded_matches.truncated,
+                "bounds": {"matches": bounded_matches.metadata()},
                 payload_key: empty_payload,
             }
         return {
             "query": query,
             "found": True,
             "ambiguous": False,
-            "matches": capped,
-            "truncated": truncated,
+            "matches": bounded_matches.items,
+            "truncated": bounded_matches.truncated,
+            "bounds": {"matches": bounded_matches.metadata()},
             "_selected": _jsonable(matches[0]),
         }
 
-    def _pages_for_source(
-        self, source_path: object
-    ) -> tuple[list[dict[str, Any]], bool]:
+    def _pages_for_source(self, source_path: object) -> _BoundedResult:
         normalised = _normalise_source_path(
             source_path, field="source_path", required=False
         )
         if normalised is None:
-            return [], False
+            return self._bounded(())
         return self._bounded(self._pages_by_source.get(normalised, ()))
 
     def _bounded_payload(
         self, payload: object, list_keys: tuple[str, ...]
-    ) -> tuple[dict[str, Any], bool]:
+    ) -> tuple[dict[str, Any], dict[str, _BoundedResult]]:
         copied = _jsonable(payload)
         if not isinstance(copied, dict):
-            return {}, False
-        truncated = False
+            return {}, {key: self._bounded(()) for key in list_keys}
+        bounds: dict[str, _BoundedResult] = {}
         for key in list_keys:
             if not isinstance(copied.get(key), list):
+                bounds[key] = self._bounded(())
                 continue
-            copied[key], was_truncated = self._bounded(copied[key])
-            truncated = truncated or was_truncated
-        return copied, truncated
+            bounded = self._bounded(copied[key])
+            copied[key] = bounded.items
+            bounds[key] = bounded
+        return copied, bounds
 
-    def _bounded(self, records: Iterable[object]) -> tuple[list[Any], bool]:
+    def _bounded(self, records: Iterable[object]) -> _BoundedResult:
         items = [_jsonable(record) for record in records]
         if all(isinstance(item, Mapping) for item in items):
-            items = sorted(cast(list[Mapping[str, Any]], items), key=_record_sort_key)
-        truncated = len(items) > self.limit
-        return items[: self.limit], truncated
+            items.sort(key=lambda item: _record_sort_key(cast(Mapping[str, Any], item)))
+        return _BoundedResult(items=items[: self.limit], total=len(items))
 
-    def _bounded_strings(self, values: Iterable[object]) -> tuple[list[str], bool]:
+    def _bounded_strings(self, values: Iterable[object]) -> _BoundedResult:
         ordered = sorted({str(value) for value in values}, key=_text_key)
-        truncated = len(ordered) > self.limit
-        return ordered[: self.limit], truncated
+        return _BoundedResult(items=ordered[: self.limit], total=len(ordered))
+
+    def _record_bound(
+        self,
+        result: dict[str, Any],
+        path: str,
+        bounded: _BoundedResult,
+    ) -> None:
+        bounds = result.setdefault("bounds", {})
+        if not isinstance(bounds, dict):
+            raise DocumentationQueryError("query response bounds must be a mapping.")
+        bounds[path] = bounded.metadata()
+        self._sync_truncated(result)
+
+    @staticmethod
+    def _sync_truncated(result: dict[str, Any]) -> None:
+        bounds = result.get("bounds", {})
+        result["truncated"] = isinstance(bounds, Mapping) and any(
+            isinstance(bound, Mapping) and bool(bound.get("truncated"))
+            for bound in bounds.values()
+        )

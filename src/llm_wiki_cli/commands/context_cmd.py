@@ -59,8 +59,10 @@ from ..services.knowledge_model import (
     KnowledgeLoadState,
 )
 from ..services.knowledge_orchestration import (
+    RUNTIME_GENERATION_OPTION_DEFAULTS,
     RuntimeLiveEvaluationInputs,
     build_runtime_live_evaluation,
+    runtime_generation_options,
 )
 from ..services.sync_manifest import SyncManifest
 from ..services.wiki_surface_index import (
@@ -394,7 +396,23 @@ def _build_context_payload(
         "truncated": bool(omitted_files or downgraded_files),
         "omitted_files": omitted_files,
         "downgraded_files": downgraded_files,
+        "bounds": {
+            "files": _bounds_metadata(
+                total=len(classification),
+                returned=len(files_out),
+            )
+        },
         "files": files_out,
+    }
+
+
+def _bounds_metadata(*, total: int, returned: int) -> dict[str, int | bool]:
+    """Return exact response-layer collection bounds."""
+
+    return {
+        "total": total,
+        "returned": returned,
+        "truncated": total > returned,
     }
 
 
@@ -991,11 +1009,14 @@ def _surface_filter_payload(
     ]
     if query_service is None:
         capped = pages[:limit]
+        bounds = _bounds_metadata(total=len(pages), returned=len(capped))
         return {
             "kind": surface,
             "count": len(capped),
+            "returned": len(capped),
             "total": len(pages),
-            "truncated": len(pages) > limit,
+            "truncated": bounds["truncated"],
+            "bounds": {"pages": bounds},
             "pages": capped,
         }
 
@@ -1006,11 +1027,17 @@ def _surface_filter_payload(
         limit=limit,
         observed=observed,
     )
+    bounds = _bounds_metadata(
+        total=int(selection["filtered_total"]),
+        returned=len(capped),
+    )
     return {
         "kind": surface,
         "count": len(capped),
+        "returned": len(capped),
         "total": selection["filtered_total"],
-        "truncated": selection["truncated"],
+        "truncated": bounds["truncated"],
+        "bounds": {"pages": bounds},
         "knowledge_selection": selection,
         "pages": capped,
     }
@@ -1045,10 +1072,16 @@ def _symbol_pages_payload(
         limit=_CONTEXT_QUERY_LIMIT,
         observed=observed,
     )
+    response_truncated = bool(result.get("truncated"))
+    bounds = dict(result.get("bounds", {}))
+    bounds["pages"] = _bounds_metadata(
+        total=int(selection["filtered_total"]),
+        returned=len(capped),
+    )
     result["pages"] = capped
+    result["bounds"] = bounds
     result["knowledge_selection"] = selection
-    if result.get("found"):
-        result["truncated"] = selection["truncated"]
+    result["truncated"] = response_truncated or bool(selection["truncated"])
     return result
 
 
@@ -1318,6 +1351,20 @@ def _build_context_knowledge_view(
                         plugin_components=(
                             inventory_result.producer_plugin_components
                         ),
+                        generation_options=runtime_generation_options(
+                            surfaces=load_result.manifest_basis.surfaces,
+                            generation_inputs=(
+                                load_result.manifest_basis.generation_inputs
+                            ),
+                            include_tests=(),
+                            preserve_semantic=True,
+                        ),
+                        generation_option_defaults=(
+                            RUNTIME_GENERATION_OPTION_DEFAULTS
+                        ),
+                        generation_option_allowlist=tuple(
+                            RUNTIME_GENERATION_OPTION_DEFAULTS
+                        ),
                     )
                 )
             except (OSError, TypeError, UnicodeError, ValueError):
@@ -1453,7 +1500,17 @@ def _build_context(
     warnings: list[str] = []
 
     if not inventory:
-        payload = {"budget": budget, "used": 0, "files": {}}
+        payload = {
+            "budget": budget,
+            "used": 0,
+            "truncated": False,
+            "omitted_files": [],
+            "downgraded_files": {},
+            "bounds": {
+                "files": _bounds_metadata(total=0, returned=0),
+            },
+            "files": {},
+        }
         payload.update(
             _build_protocol_enrichment(
                 raw_inventory,
@@ -1529,6 +1586,14 @@ def _protocol_success_payload(
         "focus": request["focus"],
         "filters": request["filters"],
     }
+    for field_name in (
+        "truncated",
+        "omitted_files",
+        "downgraded_files",
+        "bounds",
+    ):
+        if field_name in payload:
+            response[field_name] = payload[field_name]
     if warnings:
         response["warnings"] = warnings
     if "graphs" in payload:

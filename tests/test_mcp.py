@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import importlib.util
 import json
+import os
 import sys
 import types
 from pathlib import Path
@@ -20,12 +21,20 @@ from llm_wiki_cli.services.documentation_queries import (
     DocumentationGraphQueryService,
     DocumentationQueryError,
 )
-from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from llm_wiki_cli.services.knowledge_artifacts import (
+    KNOWLEDGE_INDEX_FILENAME,
+    commit_knowledge_artifacts,
+)
 from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
 from llm_wiki_cli.services.knowledge_loader import KnowledgeLoadResult
 from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
-from tests.knowledge_fixtures import fail_if_extraction_runs
+from tests.knowledge_fixtures import (
+    fail_if_extraction_runs,
+    materialize_fixture_tree,
+    one_module_two_entities_fixture,
+)
+from tests.test_knowledge_artifacts import _plan as _knowledge_commit_plan
 from tests.test_knowledge_compatibility import (
     COMPATIBILITY_CASES,
     _materialize_case,
@@ -361,8 +370,15 @@ class TestMcpWikiService:
 
         result = service.search_wiki("Primary account", limit=10)
 
+        assert result["total"] == 1
+        assert result["returned"] == 1
         assert result["count"] == 1
         assert result["truncated"] is False
+        assert result["bounds"]["results"] == {
+            "total": 1,
+            "returned": 1,
+            "truncated": False,
+        }
         assert result["results"][0]["uri"] == "llm-wiki://entities/User"
         assert "Primary account" in result["results"][0]["snippet"]
 
@@ -409,6 +425,25 @@ class TestMcpWikiService:
         with pytest.raises(mcp_server.McpWikiError, match="Unknown wiki search kind"):
             service.search_wiki("User", kinds=["unknown"], limit=10)
 
+    def test_search_wiki_empty_result_has_exact_zero_bounds(self, tmp_project):
+        _write_wiki(tmp_project)
+        service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+        result = service.search_wiki(
+            "phrase absent from every page",
+            kinds=["entities"],
+            limit=10,
+        )
+
+        assert result["results"] == []
+        assert result["total"] == result["returned"] == result["count"] == 0
+        assert result["truncated"] is False
+        assert result["bounds"]["results"] == {
+            "total": 0,
+            "returned": 0,
+            "truncated": False,
+        }
+
     @pytest.mark.parametrize(
         ("requested_limit", "expected_count"),
         [(None, 20), (250, 100)],
@@ -434,9 +469,70 @@ class TestMcpWikiService:
             **options,
         )
 
+        assert result["total"] == 101
+        assert result["returned"] == expected_count
         assert result["count"] == expected_count
         assert len(result["results"]) == expected_count
         assert result["truncated"] is True
+        assert result["bounds"]["results"] == {
+            "total": 101,
+            "returned": expected_count,
+            "truncated": True,
+        }
+
+    def test_search_wiki_exact_limit_is_not_truncated(self, tmp_project):
+        wiki = _write_wiki(tmp_project)
+        for index in range(3):
+            (wiki / "entities" / f"Exact{index}.md").write_text(
+                f"# Exact {index}\n\nExact bound fixture.\n",
+                encoding="utf-8",
+            )
+        service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+        result = service.search_wiki(
+            "Exact bound fixture",
+            kinds=["entities"],
+            limit=3,
+        )
+
+        assert result["total"] == result["returned"] == result["count"] == 3
+        assert result["truncated"] is False
+        assert result["bounds"]["results"] == {
+            "total": 3,
+            "returned": 3,
+            "truncated": False,
+        }
+
+    def test_search_wiki_scans_after_limit_and_surfaces_late_read_errors(
+        self,
+        tmp_project,
+        monkeypatch,
+    ):
+        wiki = _write_wiki(tmp_project)
+        (wiki / "entities" / "AFirst.md").write_text(
+            "# First\n\nLate read fixture.\n",
+            encoding="utf-8",
+        )
+        (wiki / "entities" / "BSecond.md").write_text(
+            "# Second\n\nLate read fixture.\n",
+            encoding="utf-8",
+        )
+        original_read_md = mcp_server.read_md
+
+        def read_with_late_failure(path):
+            if path.name == "BSecond.md":
+                raise OSError("late read failed")
+            return original_read_md(path)
+
+        monkeypatch.setattr(mcp_server, "read_md", read_with_late_failure)
+        service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+        with pytest.raises(OSError, match="late read failed"):
+            service.search_wiki(
+                "Late read fixture",
+                kinds=["entities"],
+                limit=1,
+            )
 
     def test_list_resources_includes_registry_pages(self, tmp_project):
         _write_wiki(tmp_project)
@@ -1044,6 +1140,85 @@ class TestMcpWikiService:
         with pytest.raises(mcp_server.McpWikiError, match="bad graph request"):
             service.query_graph({"type": "callers", "value": "run"})
 
+    @pytest.mark.parametrize(
+        ("live_policy", "freshness_evaluated", "state", "reason"),
+        [
+            (
+                "current",
+                True,
+                "current",
+                "recorded-basis-matches-live-evaluation",
+            ),
+            (
+                "mismatch",
+                True,
+                "basis-incompatible",
+                "generation-options-changed",
+            ),
+            ("invalid", False, None, "not-evaluated"),
+        ],
+    )
+    def test_knowledge_methods_evaluate_live_options_conservatively(
+        self,
+        tmp_path,
+        monkeypatch,
+        live_policy,
+        freshness_evaluated,
+        state,
+        reason,
+    ):
+        fixture = one_module_two_entities_fixture()
+        tree = materialize_fixture_tree(
+            fixture,
+            tmp_path / "checkout",
+            consumer="mcp",
+        )
+        commit_knowledge_artifacts(
+            _knowledge_commit_plan(tree["wiki_root"], fixture)
+        )
+        monkeypatch.chdir(tree["root"])
+        real_options = context_cmd.runtime_generation_options
+
+        if live_policy == "mismatch":
+
+            def evaluated_options(**kwargs):
+                options = real_options(**kwargs)
+                options["preserve_semantic"] = False
+                return options
+
+            monkeypatch.setattr(
+                context_cmd,
+                "runtime_generation_options",
+                evaluated_options,
+            )
+        elif live_policy == "invalid":
+
+            def evaluated_options(**_kwargs):
+                raise ValueError("invalid runtime generation policy")
+
+            monkeypatch.setattr(
+                context_cmd,
+                "runtime_generation_options",
+                evaluated_options,
+            )
+
+        service = mcp_server.McpWikiService(
+            src_dir=".",
+            wiki_dir="docs/llm_wiki",
+        )
+        result = service.get_concept("llm-wiki://entities/User")
+
+        assert result["knowledge"] == {
+            "availability": "ready",
+            "reason": "all-projection-commitments-match",
+            "freshness_evaluated": freshness_evaluated,
+        }
+        assert result["concept"]["freshness"] == {
+            "state": state,
+            "reason": reason,
+            "live_comparison_performed": freshness_evaluated,
+        }
+
     def test_knowledge_methods_delegate_once_and_cap_external_limit(
         self,
         monkeypatch,
@@ -1204,6 +1379,86 @@ class TestMcpWikiService:
 
         with pytest.raises(mcp_server.McpWikiError, match=message):
             getattr(service, method_name)(*args, **kwargs)
+
+    @pytest.mark.parametrize(
+        "locator",
+        [
+            "/entities/User.md",
+            "../entities/User.md",
+            "entities/../User.md",
+            "entities//User.md",
+            "entities/nested/User.md",
+            "entities\\User.md",
+            "unknown/User.md",
+            "https://example.test/entities/User",
+            "llm-wiki://user@entities/User",
+            "llm-wiki://entities:80/User",
+            "llm-wiki://entities/User?view=full",
+            "llm-wiki://entities/User#details",
+            "llm-wiki://entities/User/",
+            "llm-wiki://entities/%",
+            "llm-wiki://entities/%2FUser",
+            "llm-wiki://entities/%2E%2E",
+            "llm-wiki://entities/%55ser",
+        ],
+    )
+    @pytest.mark.parametrize(
+        "method_name",
+        ["get_concept", "related_concepts", "explain_evidence"],
+    )
+    def test_knowledge_methods_reject_invalid_coordinates_before_extraction(
+        self,
+        monkeypatch,
+        method_name,
+        locator,
+    ):
+        monkeypatch.setattr(
+            mcp_server,
+            "build_documentation_query_service",
+            fail_if_extraction_runs,
+        )
+        service = mcp_server.McpWikiService()
+
+        with pytest.raises(
+            mcp_server.McpWikiError,
+            match="must be an exact canonical wiki path or llm-wiki URI",
+        ):
+            getattr(service, method_name)(locator)
+
+    @pytest.mark.parametrize(
+        "locator",
+        [
+            "index.md",
+            "llm-wiki://index",
+            "entities/Missing.md",
+            "llm-wiki://entities/Missing",
+            "entities/Page(1).md",
+            "llm-wiki://entities/Page%281%29",
+        ],
+    )
+    def test_valid_missing_coordinates_delegate_to_normal_lookup(
+        self,
+        monkeypatch,
+        locator,
+    ):
+        calls = []
+
+        class FakeQueryService:
+            def get_concept(self, value):
+                calls.append(value)
+                return {"query": value, "found": False}
+
+        monkeypatch.setattr(
+            mcp_server,
+            "build_documentation_query_service",
+            lambda *_args, **_kwargs: FakeQueryService(),
+        )
+        service = mcp_server.McpWikiService()
+
+        result = service.get_concept(locator)
+
+        assert result == {"query": locator, "found": False}
+        assert calls == [locator]
 
     @pytest.mark.parametrize(
         "method_name",
@@ -1521,9 +1776,48 @@ class TestMcpCli:
 
     def test_optional_sdk_registration_when_installed(self, tmp_project):
         if importlib.util.find_spec("mcp") is None:
+            if os.environ.get("LLM_WIKI_REQUIRE_MCP_SDK") == "1":
+                pytest.fail("MCP SDK is required by this test environment.")
             pytest.skip("MCP SDK is not installed.")
         _write_wiki(tmp_project)
 
         server = mcp_server.create_mcp_server(mcp_server.McpServerConfig())
 
-        assert server is not None
+        async def list_registrations():
+            return (
+                await server.list_tools(),
+                await server.list_resources(),
+                await server.list_resource_templates(),
+            )
+
+        tools, resources, templates = asyncio.run(list_registrations())
+        tools_by_name = {tool.name: tool for tool in tools}
+        for name, expected_fields in {
+            "get_concept": {"locator_or_exact_route", "limit"},
+            "related_concepts": {
+                "locator_or_exact_route",
+                "direction",
+                "kinds",
+                "limit",
+            },
+            "explain_evidence": {"locator_or_exact_route", "limit"},
+        }.items():
+            schema = tools_by_name[name].inputSchema
+            assert set(schema["properties"]) == expected_fields
+            assert schema["required"] == ["locator_or_exact_route"]
+
+        assert {
+            "llm-wiki://index",
+            "llm-wiki://log",
+            "llm-wiki://api-contracts",
+            "llm-wiki://dependencies",
+            "llm-wiki://load-order",
+        } <= {str(resource.uri) for resource in resources}
+        assert {
+            "llm-wiki://entities/{page_id}",
+            "llm-wiki://modules/{page_id}",
+            "llm-wiki://workflows/{page_id}",
+            "llm-wiki://guides/{page_id}",
+            "llm-wiki://flows/{page_id}",
+            "llm-wiki://infrastructure/{page_id}",
+        } <= {template.uriTemplate for template in templates}

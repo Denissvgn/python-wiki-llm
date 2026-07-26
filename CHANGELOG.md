@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Native context, graph, knowledge, and MCP search responses now disclose exact
+  response-layer totals, returned counts, and truncation through additive
+  `bounds` metadata.
+
+### Fixed
+- Live knowledge freshness now recomputes the effective generation-options
+  commitment instead of assuming the recorded snapshot hash is still current.
+- MCP knowledge tools reject malformed or noncanonical concept coordinates
+  before constructing the source-backed query service.
+
 ## [1.4.0] - 2026-07-12
 
 ### Added

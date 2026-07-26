@@ -127,6 +127,57 @@ def test_canonical_paths_and_mcp_uris_are_posix():
     )
 
 
+def test_exact_page_coordinate_accepts_all_registered_canonical_forms():
+    for entry in wiki_surface.iter_root_pages():
+        assert wiki_surface.validate_exact_page_coordinate(
+            f"  {wiki_surface.canonical_path(entry.kind)}  "
+        ) == wiki_surface.canonical_path(entry.kind)
+        assert wiki_surface.validate_exact_page_coordinate(
+            f"  {wiki_surface.mcp_uri(entry.kind)}  "
+        ) == wiki_surface.mcp_uri(entry.kind)
+
+    for entry in wiki_surface.iter_directory_kinds():
+        assert wiki_surface.validate_exact_page_coordinate(
+            wiki_surface.canonical_path(entry.kind, "Page(1)")
+        ) == wiki_surface.canonical_path(entry.kind, "Page(1)")
+        assert wiki_surface.validate_exact_page_coordinate(
+            wiki_surface.mcp_uri(entry.kind, "Page(1)")
+        ) == wiki_surface.mcp_uri(entry.kind, "Page(1)")
+
+
+@pytest.mark.parametrize(
+    "coordinate",
+    [
+        None,
+        "",
+        "/entities/User.md",
+        "../entities/User.md",
+        "entities/../User.md",
+        "entities//User.md",
+        "entities/nested/User.md",
+        "entities\\User.md",
+        "entities/User.md\nignored",
+        "unknown/User.md",
+        "https://example.test/entities/User",
+        "llm-wiki://user@entities/User",
+        "llm-wiki://entities:80/User",
+        "llm-wiki://entities/User?view=full",
+        "llm-wiki://entities/User#details",
+        "llm-wiki://entities/User/",
+        "llm-wiki://entities/%",
+        "llm-wiki://entities/%2FUser",
+        "llm-wiki://entities/%2E%2E",
+        "llm-wiki://entities/%55ser",
+    ],
+)
+def test_exact_page_coordinate_rejects_unsafe_or_noncanonical_forms(coordinate):
+    with pytest.raises(
+        wiki_surface.WikiSurfaceError,
+        match="wiki page coordinate",
+    ):
+        wiki_surface.validate_exact_page_coordinate(coordinate)
+
+
 def test_page_id_validation_rejects_unsafe_ids():
     for page_id in ["User", "pkg.module", "docker_Dockerfile", "api-run", "flow_1"]:
         assert wiki_surface.is_safe_page_id(page_id)

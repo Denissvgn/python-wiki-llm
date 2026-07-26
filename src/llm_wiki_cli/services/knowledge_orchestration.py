@@ -34,6 +34,7 @@ from .knowledge_envelope import (
     RepositoryEvidence,
     build_producer_record,
     collect_git_repository_evidence,
+    hash_generation_options,
     plugin_producer_inputs,
 )
 from .knowledge_evidence import (
@@ -122,11 +123,48 @@ class RuntimeLiveEvaluationInputs:
     manifest: SyncManifest
     inventory: Mapping[str, Mapping[str, Any]]
     source_snapshot: SourceSnapshot
+    generation_options: Mapping[str, Any]
+    generation_option_defaults: Mapping[str, Any]
+    generation_option_allowlist: Sequence[str]
     missing_source_paths: AbstractSet[str] = frozenset()
     inventory_complete: bool = True
     extractor_registry: Mapping[str, str] = field(default_factory=dict)
     plugin_extractor_components: Sequence[Mapping[str, Any]] = ()
     plugin_components: Sequence[Mapping[str, Any]] = ()
+
+
+@dataclass(frozen=True)
+class PreparedRuntimeGenerationOptions:
+    """Canonical writer/reader inputs for the generation-options commitment."""
+
+    values: Mapping[str, Any]
+    defaults: Mapping[str, Any]
+    allowlist: tuple[str, ...]
+
+
+def prepare_runtime_generation_options(
+    generation_options: Mapping[str, Any],
+    *,
+    generation_option_defaults: Mapping[str, Any],
+    generation_option_allowlist: Sequence[str],
+    inventory_complete: bool,
+) -> PreparedRuntimeGenerationOptions:
+    """Add the evaluated inventory mode to one generation-options projection."""
+
+    if not isinstance(inventory_complete, bool):
+        raise TypeError("inventory_complete must be a boolean")
+    values = dict(generation_options)
+    values["inventory_mode"] = "deep" if inventory_complete else "shallow"
+    defaults = dict(generation_option_defaults)
+    defaults["inventory_mode"] = "deep"
+    allowlist = tuple(
+        dict.fromkeys(("inventory_mode", *generation_option_allowlist))
+    )
+    return PreparedRuntimeGenerationOptions(
+        values=values,
+        defaults=defaults,
+        allowlist=allowlist,
+    )
 
 
 def build_runtime_knowledge_plan(
@@ -150,17 +188,11 @@ def build_runtime_knowledge_plan(
         plugin_extractor_components=inputs.plugin_extractor_components,
         plugin_components=inputs.plugin_components,
     )
-    inventory_mode = "deep" if inputs.inventory_complete else "shallow"
-    generation_options = {
-        "inventory_mode": inventory_mode,
-        **inputs.generation_options,
-    }
-    generation_option_defaults = {
-        "inventory_mode": "deep",
-        **inputs.generation_option_defaults,
-    }
-    generation_option_allowlist = tuple(
-        dict.fromkeys(("inventory_mode", *inputs.generation_option_allowlist))
+    prepared_generation_options = prepare_runtime_generation_options(
+        inputs.generation_options,
+        generation_option_defaults=inputs.generation_option_defaults,
+        generation_option_allowlist=inputs.generation_option_allowlist,
+        inventory_complete=inputs.inventory_complete,
     )
     return build_knowledge_generation_plan(
         KnowledgeGenerationInputs(
@@ -177,9 +209,9 @@ def build_runtime_knowledge_plan(
             extractor_ref_by_source=extractor_ref_by_source,
             inventory_complete_by_source=completeness_by_source,
             repository_evidence=inputs.repository_evidence,
-            generation_options=generation_options,
-            generation_option_defaults=generation_option_defaults,
-            generation_option_allowlist=generation_option_allowlist,
+            generation_options=prepared_generation_options.values,
+            generation_option_defaults=prepared_generation_options.defaults,
+            generation_option_allowlist=prepared_generation_options.allowlist,
             tool=ProducerComponentInput(
                 component_id="agent-wiki-cli",
                 version=__version__,
@@ -214,8 +246,9 @@ def build_runtime_live_evaluation(
 
     The caller supplies reliably missing source paths explicitly. This adapter
     performs no source discovery, extraction, filesystem read, or write.
-    Generation options retain the committed hash because a read operation does
-    not select a new generation policy.
+    The caller supplies the effective live generation policy. This adapter
+    commits that policy independently through the same canonical hashing path
+    as artifact generation.
     """
 
     if not isinstance(inputs, RuntimeLiveEvaluationInputs):
@@ -255,11 +288,19 @@ def build_runtime_live_evaluation(
         extractors=extractor_components,
         plugins=plugin_components,
     )
+    prepared_generation_options = prepare_runtime_generation_options(
+        inputs.generation_options,
+        generation_option_defaults=inputs.generation_option_defaults,
+        generation_option_allowlist=inputs.generation_option_allowlist,
+        inventory_complete=inputs.inventory_complete,
+    )
     return LiveKnowledgeEvaluation(
         schema_version=KNOWLEDGE_SCHEMA_VERSION,
         producer=producer,
-        generation_options_hash=(
-            inputs.knowledge.bundle.snapshot.generation_options_hash
+        generation_options_hash=hash_generation_options(
+            prepared_generation_options.values,
+            defaults=prepared_generation_options.defaults,
+            allowlist=prepared_generation_options.allowlist,
         ),
         source_content_hashes=source_hashes,
         missing_source_paths=frozenset(inputs.missing_source_paths),
@@ -778,6 +819,7 @@ def _merge_explicit_consumed_input(
 __all__ = [
     "RUNTIME_GENERATION_INPUT_KEY",
     "RUNTIME_GENERATION_OPTION_DEFAULTS",
+    "PreparedRuntimeGenerationOptions",
     "RuntimeKnowledgeInputs",
     "RuntimeLiveEvaluationInputs",
     "build_runtime_knowledge_plan",
@@ -785,5 +827,6 @@ __all__ = [
     "collect_runtime_repository_evidence",
     "finalize_runtime_knowledge",
     "persist_runtime_generation_policy",
+    "prepare_runtime_generation_options",
     "runtime_generation_options",
 ]
