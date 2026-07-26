@@ -5,7 +5,9 @@ POSIX callers should prefer descriptor-relative operations.  Windows does not
 expose ``openat`` through the Python standard library, so pathname writers pin
 every directory in the destination chain with native handles opened without
 ``FILE_SHARE_DELETE``.  A pinned chain cannot be renamed or replaced by a
-junction while the guarded write is in progress.
+junction while the guarded write is in progress.  That rename guarantee
+requires ordinary ``FILE_LIST_DIRECTORY`` access; if Windows denies it, the
+guard fails closed instead of falling back to an attribute-only handle.
 """
 
 from __future__ import annotations
@@ -20,8 +22,26 @@ from pathlib import Path
 from typing import BinaryIO, Iterator, Sequence
 
 
+_FILE_LIST_DIRECTORY = 0x00000001
+_FILE_READ_ATTRIBUTES = 0x00000080
+_DELETE = 0x00010000
+_READ_CONTROL = 0x00020000
+_GENERIC_WRITE = 0x40000000
+_FILE_SHARE_READ = 0x00000001
+_FILE_SHARE_WRITE = 0x00000002
+_FILE_SHARE_DELETE = 0x00000004
+_OPEN_EXISTING = 3
+_FILE_FLAG_OPEN_REPARSE_POINT = 0x00200000
+_FILE_FLAG_BACKUP_SEMANTICS = 0x02000000
+_ERROR_ACCESS_DENIED = 5
+
+
 class WindowsDirectoryGuardError(OSError):
     """Raised when a Windows directory chain cannot be pinned safely."""
+
+
+class _WindowsDirectoryGuardUnavailableError(WindowsDirectoryGuardError):
+    """Raised when Windows denies access required to pin a directory."""
 
 
 class WindowsFileGuardError(OSError):
@@ -52,6 +72,14 @@ class WindowsObjectIdentity:
             raise WindowsIdentityUnavailableError(
                 "Windows object identity components must both be non-zero."
             )
+
+
+@dataclass(frozen=True)
+class _WindowsPathHandleMetadata:
+    """Metadata with consistent semantics across Windows path and handle stats."""
+
+    size: int
+    mtime_ns: int
 
 
 def fresh_no_follow_stat(path: str | Path) -> os.stat_result:
@@ -94,6 +122,26 @@ def windows_object_identity_from_values(
     return WindowsObjectIdentity(
         device=int(device),
         file_id=file_id,
+    )
+
+
+def _windows_path_handle_metadata(
+    result: os.stat_result,
+) -> _WindowsPathHandleMetadata:
+    """Return metadata safe to compare between Windows path and handle stats.
+
+    On supported Python versions, a Windows pathname ``stat`` and an ``fstat``
+    can expose different meanings for ``st_ctime``.  Size and last-write time
+    retain matching semantics across those two observation channels.  Callers
+    must separately validate safe file kind, reparse-point status, and
+    ``WindowsObjectIdentity`` before comparing this metadata.
+    """
+
+    return _WindowsPathHandleMetadata(
+        size=int(result.st_size),
+        mtime_ns=int(
+            getattr(result, "st_mtime_ns", int(result.st_mtime * 1_000_000_000))
+        ),
     )
 
 
@@ -196,20 +244,31 @@ def _open_windows_directory_guard(
     get_information.argtypes = (wintypes.HANDLE, wintypes.LPVOID)
     get_information.restype = wintypes.BOOL
 
-    # Read attributes only.  Share ordinary reads/writes, but deliberately omit
-    # FILE_SHARE_DELETE so the directory cannot be renamed or replaced.
+    # FILE_LIST_DIRECTORY is intentionally requested in addition to attribute
+    # access.  Attribute-only opens do not establish a sharing barrier, so
+    # omitting FILE_SHARE_DELETE would otherwise fail to prevent rename or
+    # replacement of this directory.
+    desired_access = _FILE_LIST_DIRECTORY | _FILE_READ_ATTRIBUTES
+    if require_restrictive_dacl:
+        desired_access |= _READ_CONTROL
     handle = create_file(
         _windows_api_path(path),
-        0x0080 | (0x00020000 if require_restrictive_dacl else 0),  # + READ_CONTROL
-        0x00000001 | 0x00000002,  # FILE_SHARE_READ | FILE_SHARE_WRITE
+        desired_access,
+        _FILE_SHARE_READ | _FILE_SHARE_WRITE,
         None,
-        3,  # OPEN_EXISTING
-        0x02000000 | 0x00200000,  # BACKUP_SEMANTICS | OPEN_REPARSE_POINT
+        _OPEN_EXISTING,
+        _FILE_FLAG_BACKUP_SEMANTICS | _FILE_FLAG_OPEN_REPARSE_POINT,
         None,
     )
     invalid_handle = wintypes.HANDLE(-1).value
     if handle == invalid_handle:
-        error = ctypes.WinError(ctypes.get_last_error())
+        error_number = ctypes.get_last_error()
+        error = ctypes.WinError(error_number)
+        if error_number == _ERROR_ACCESS_DENIED:
+            raise _WindowsDirectoryGuardUnavailableError(
+                "Windows denied the list-directory access required to pin "
+                f"{path}: {error}"
+            ) from error
         raise WindowsDirectoryGuardError(
             f"Cannot pin Windows directory {path}: {error}"
         ) from error

@@ -23,14 +23,17 @@ from urllib.parse import urlsplit
 
 from .filesystem_guard import (
     WindowsDirectoryGuardError,
+    _WindowsDirectoryGuardUnavailableError,
     WindowsFileGuardError,
     WindowsIdentityUnavailableError,
     WindowsObjectIdentity,
+    _WindowsPathHandleMetadata,
     fresh_no_follow_stat,
     guard_windows_directory_chain,
     open_windows_readonly_file,
     windows_object_identity,
     windows_object_identity_from_values,
+    _windows_path_handle_metadata,
 )
 from .source_snapshot import build_source_snapshot
 from .wiki_media import (
@@ -296,6 +299,12 @@ class _InputFile:
     device: int
     inode: int
     root_descriptor: int | None = None
+
+
+@dataclass(frozen=True)
+class _HashedInputFile:
+    sha256: str
+    opened_stat: os.stat_result
 
 
 @dataclass(frozen=True)
@@ -924,6 +933,12 @@ def _open_input_root_descriptor(
         with ExitStack() as guard_stack:
             try:
                 guard_stack.enter_context(guard_windows_directory_chain(root, ()))
+            except _WindowsDirectoryGuardUnavailableError as exc:
+                raise DocumentationWikiInputError(
+                    f"Cannot securely pin Windows input wiki root {root}: {exc}",
+                    category="secure_input_traversal_unavailable",
+                    path=".",
+                ) from exc
             except OSError as exc:
                 raise DocumentationWikiInputError(
                     f"Cannot pin Windows input wiki root {root}: {exc}",
@@ -1093,6 +1108,21 @@ def _assert_stable_input_metadata(
         )
 
 
+def _assert_windows_path_handle_metadata(
+    path_metadata: _WindowsPathHandleMetadata,
+    handle_metadata: _WindowsPathHandleMetadata,
+    *,
+    path: str,
+    operation: str,
+) -> None:
+    if path_metadata != handle_metadata:
+        raise DocumentationWikiInputError(
+            f"Input wiki file changed during {operation}: {path}",
+            category="input_changed_during_snapshot",
+            path=path,
+        )
+
+
 def _collect_input_tree(
     root: Path,
     *,
@@ -1166,7 +1196,7 @@ def _collect_input_tree(
             budget.account_file(relative_text, entry_stat.st_size)
             path = Path(entry_path)
             _ensure_resolved_inside(path, root, relative_text)
-            digest = _hash_regular_file(
+            hashed = _hash_regular_file(
                 path,
                 relative_text,
                 expected_size=entry_stat.st_size,
@@ -1174,16 +1204,17 @@ def _collect_input_tree(
                 expected_stat=entry_stat,
                 windows_guarded=_uses_windows_guarded_input_fallback(),
             )
+            inventory_stat = hashed.opened_stat
             files.append(
                 _InputFile(
                     path=path,
                     relative_path=relative_text,
-                    sha256=digest,
-                    size=entry_stat.st_size,
-                    mtime_ns=entry_stat.st_mtime_ns,
-                    ctime_ns=entry_stat.st_ctime_ns,
-                    device=entry_stat.st_dev,
-                    inode=entry_stat.st_ino,
+                    sha256=hashed.sha256,
+                    size=inventory_stat.st_size,
+                    mtime_ns=inventory_stat.st_mtime_ns,
+                    ctime_ns=inventory_stat.st_ctime_ns,
+                    device=inventory_stat.st_dev,
+                    inode=inventory_stat.st_ino,
                 )
             )
 
@@ -1323,22 +1354,23 @@ def _collect_input_tree_descriptor(
                 continue
 
             budget.account_file(relative_text, entry_stat.st_size)
-            digest = _hash_input_file_at(
+            hashed = _hash_input_file_at(
                 directory_descriptor,
                 name,
                 relative_text,
                 inspected=entry_stat,
             )
+            inventory_stat = hashed.opened_stat
             files.append(
                 _InputFile(
                     path=root.joinpath(*relative.parts),
                     relative_path=relative_text,
-                    sha256=digest,
-                    size=entry_stat.st_size,
-                    mtime_ns=entry_stat.st_mtime_ns,
-                    ctime_ns=entry_stat.st_ctime_ns,
-                    device=entry_stat.st_dev,
-                    inode=entry_stat.st_ino,
+                    sha256=hashed.sha256,
+                    size=inventory_stat.st_size,
+                    mtime_ns=inventory_stat.st_mtime_ns,
+                    ctime_ns=inventory_stat.st_ctime_ns,
+                    device=inventory_stat.st_dev,
+                    inode=inventory_stat.st_ino,
                     root_descriptor=root_descriptor,
                 )
             )
@@ -1485,7 +1517,7 @@ def _hash_input_file_at(
     relative_path: str,
     *,
     inspected: os.stat_result,
-) -> str:
+) -> _HashedInputFile:
     descriptor, opened = _open_input_regular_at(
         parent_descriptor,
         name,
@@ -1526,7 +1558,10 @@ def _hash_input_file_at(
         _assert_stable_input_metadata(opened, after, path=relative_path)
     finally:
         os.close(descriptor)
-    return "sha256:" + digest.hexdigest()
+    return _HashedInputFile(
+        sha256="sha256:" + digest.hexdigest(),
+        opened_stat=opened,
+    )
 
 
 @contextmanager
@@ -1549,10 +1584,11 @@ def _open_windows_input_leaf(
                     path=relative_path,
                     operation="Windows guarded file open",
                 )
-                _assert_stable_input_metadata(
-                    expected_stat,
-                    opened,
+                _assert_windows_path_handle_metadata(
+                    _windows_path_handle_metadata(expected_stat),
+                    _windows_path_handle_metadata(opened),
                     path=relative_path,
+                    operation="Windows guarded file open",
                 )
             if expected_entry is not None:
                 try:
@@ -1592,6 +1628,28 @@ def _open_windows_input_leaf(
                 operation="Windows guarded file read",
             )
             _assert_stable_input_metadata(opened, after, path=relative_path)
+            try:
+                rebound = fresh_no_follow_stat(path)
+            except OSError as exc:
+                raise DocumentationWikiInputError(
+                    "Windows input file disappeared before its guarded path "
+                    f"could be rebound: {relative_path}: {exc}",
+                    category="input_changed_during_snapshot",
+                    path=relative_path,
+                ) from exc
+            _assert_input_regular(rebound, path=relative_path)
+            _assert_windows_input_identity(
+                opened,
+                rebound,
+                path=relative_path,
+                operation="Windows guarded file path rebind",
+            )
+            _assert_windows_path_handle_metadata(
+                _windows_path_handle_metadata(rebound),
+                _windows_path_handle_metadata(after),
+                path=relative_path,
+                operation="Windows guarded file path rebind",
+            )
     except WindowsFileGuardError as exc:
         raise DocumentationWikiInputError(
             f"Cannot safely open Windows input file {relative_path!r}: {exc}",
@@ -1822,9 +1880,10 @@ def _hash_regular_file(
     maximum_bytes: int | None = None,
     expected_stat: os.stat_result | None = None,
     windows_guarded: bool = False,
-) -> str:
+) -> _HashedInputFile:
     hasher = hashlib.sha256()
     bytes_read = 0
+    opened_stat: os.stat_result | None = None
     try:
         opener = (
             _open_windows_input_leaf(
@@ -1836,6 +1895,7 @@ def _hash_regular_file(
             else _open_regular_file(path, relative_path)
         )
         with opener as handle:
+            opened_stat = os.fstat(handle.fileno())
             while True:
                 read_size = _INPUT_READ_CHUNK_BYTES
                 if expected_size is not None:
@@ -1882,7 +1942,12 @@ def _hash_regular_file(
             category="input_unreadable",
             path=relative_path,
         ) from exc
-    return "sha256:" + hasher.hexdigest()
+    if opened_stat is None:  # pragma: no cover - the opener either yields or raises
+        raise AssertionError("Input file opener yielded no handle metadata.")
+    return _HashedInputFile(
+        sha256="sha256:" + hasher.hexdigest(),
+        opened_stat=opened_stat,
+    )
 
 
 def _open_regular_file(path: Path, relative_path: str):
@@ -2610,7 +2675,7 @@ def _compare_source_file(
         candidate.resolve(strict=True).relative_to(source_root)
     except (OSError, ValueError):
         return f"path_escape:{relative_path}"
-    actual_hash = _hash_regular_file(candidate, relative_path)
+    actual_hash = _hash_regular_file(candidate, relative_path).sha256
     if actual_hash != expected_hash:
         return f"changed:{relative_path}"
     return None

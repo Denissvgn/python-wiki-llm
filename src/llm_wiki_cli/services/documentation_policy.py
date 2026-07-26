@@ -25,6 +25,7 @@ from .filesystem_guard import (
     guard_windows_directory_chain,
     open_windows_readonly_file,
     windows_object_identity,
+    _windows_path_handle_metadata,
 )
 
 
@@ -553,7 +554,11 @@ def _hash_windows_file(
                 path=path,
                 operation="guarded file open",
             )
-            _assert_stable_file_metadata(before, opened_before, path=path)
+            _assert_stable_windows_path_handle_metadata(
+                before,
+                opened_before,
+                path=path,
+            )
 
             bytes_read = 0
             while True:
@@ -584,7 +589,11 @@ def _hash_windows_file(
                 path=path,
                 operation="post-hash verification",
             )
-            _assert_stable_file_metadata(opened_after, after, path=path)
+            _assert_stable_windows_path_handle_metadata(
+                after,
+                opened_after,
+                path=path,
+            )
     except WindowsFileGuardError as exc:
         raise DocumentationPolicyError(
             f"Cannot safely hash Windows baselined file {path}: {exc}"
@@ -691,6 +700,20 @@ def _assert_stable_file_metadata(
     path: Path,
 ) -> None:
     if _stable_metadata_signature(before) != _stable_metadata_signature(after):
+        raise DocumentationPolicyError(
+            f"Baselined content changed while it was being hashed: {path}"
+        )
+
+
+def _assert_stable_windows_path_handle_metadata(
+    path_result: os.stat_result,
+    handle_result: os.stat_result,
+    *,
+    path: Path,
+) -> None:
+    if _windows_path_handle_metadata(path_result) != _windows_path_handle_metadata(
+        handle_result
+    ):
         raise DocumentationPolicyError(
             f"Baselined content changed while it was being hashed: {path}"
         )

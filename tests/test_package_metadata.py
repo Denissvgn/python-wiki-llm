@@ -151,7 +151,7 @@ def test_project_requires_python_3_10_or_newer():
 
 
 def test_ci_python_matrix_matches_supported_boundary_versions():
-    assert _ci_python_versions() == ["3.10", "3.13"]
+    assert _ci_python_versions() == ["3.10", "3.13", "3.14"]
 
 
 def test_readme_current_support_table_mentions_python_3_10_plus():

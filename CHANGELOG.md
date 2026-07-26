@@ -69,6 +69,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   result schemas, low-cost routing, Python APIs, refresh/resume behavior,
   builders, limitations, and troubleshooting.
 
+### Changed
+
+- CI now qualifies Python 3.10, 3.13, and 3.14 on Ubuntu, macOS, and Windows.
+
+### Fixed
+
+- Windows guarded reads now hold rename-blocking directory handles throughout
+  traversal and compare path/handle metadata using values with stable semantics
+  across supported Python versions.
+- Case-only protected-artifact collisions consistently preserve the original
+  artifact on case-insensitive filesystems.
+
 ### Security
 
 - Calibration state uses a dedicated protected root with immutable numbered

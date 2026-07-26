@@ -8,6 +8,7 @@ import sys
 from contextlib import contextmanager
 from pathlib import Path, PurePosixPath
 from types import SimpleNamespace
+from typing import cast
 
 import pytest
 
@@ -39,6 +40,21 @@ def _tree_bytes(root: Path) -> dict[str, bytes]:
         for path in sorted(root.rglob("*"))
         if path.is_file() and not path.is_symlink()
     }
+
+
+def _stat_with(result: os.stat_result, **changes: int) -> os.stat_result:
+    values = {
+        "st_mode": result.st_mode,
+        "st_size": result.st_size,
+        "st_mtime": result.st_mtime,
+        "st_mtime_ns": result.st_mtime_ns,
+        "st_ctime_ns": result.st_ctime_ns,
+        "st_dev": result.st_dev,
+        "st_ino": result.st_ino,
+        "st_file_attributes": getattr(result, "st_file_attributes", 0),
+    }
+    values.update(changes)
+    return cast(os.stat_result, SimpleNamespace(**values))
 
 
 def _write_current_metadata(
@@ -292,12 +308,12 @@ def test_semantic_file_budget_accepts_boundary_and_rejects_before_full_read(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     exact_wiki = tmp_path / "exact-wiki"
-    exact_content = "# Index\n"
+    exact_content = b"# Index\n"
     _write(exact_wiki / "index.md", exact_content)
     monkeypatch.setattr(
         wiki_input_module,
         "MAX_INPUT_WIKI_SEMANTIC_FILE_BYTES",
-        len(exact_content.encode("utf-8")),
+        len(exact_content),
     )
 
     snapshot = adopt_documentation_wiki_snapshot(
@@ -305,12 +321,10 @@ def test_semantic_file_budget_accepts_boundary_and_rejects_before_full_read(
         tmp_path / "exact-workspace",
         freshness_policy="allow-unverified",
     )
-    assert snapshot.resource_usage["semantic_total_bytes"] == len(
-        exact_content.encode("utf-8")
-    )
+    assert snapshot.resource_usage["semantic_total_bytes"] == len(exact_content)
 
     oversized_wiki = tmp_path / "oversized-wiki"
-    _write(oversized_wiki / "index.md", exact_content + "x")
+    _write(oversized_wiki / "index.md", exact_content + b"x")
     reads: list[str] = []
     original_read = wiki_input_module._read_verified_bytes
 
@@ -337,9 +351,11 @@ def test_semantic_aggregate_budget_accepts_boundary_and_rejects_one_byte_lower(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     wiki = tmp_path / "wiki"
-    _write(wiki / "index.md", "#\n")
-    _write(wiki / "guides" / "one.md", "1\n")
-    total_bytes = 4
+    index_content = b"#\n"
+    guide_content = b"1\n"
+    _write(wiki / "index.md", index_content)
+    _write(wiki / "guides" / "one.md", guide_content)
+    total_bytes = len(index_content) + len(guide_content)
     monkeypatch.setattr(
         wiki_input_module,
         "MAX_INPUT_WIKI_SEMANTIC_TOTAL_BYTES",
@@ -1291,6 +1307,278 @@ def test_mocked_windows_input_fallback_pins_root_parents_and_leaves(
     assert cached_stat_calls == []
 
 
+def test_mocked_windows_inventory_accepts_path_ctime_difference_and_uses_handle(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    wiki = tmp_path / "wiki"
+    source_path = wiki / "index.md"
+    _write(source_path, b"# Index\n")
+    handle_stat = source_path.stat()
+    path_stat = _stat_with(
+        handle_stat,
+        st_ctime_ns=handle_stat.st_ctime_ns + 1,
+    )
+    real_fresh_stat = wiki_input_module.fresh_no_follow_stat
+
+    @contextmanager
+    def fake_directory_guard(root, components, *, create_missing=False):
+        assert root == wiki
+        assert create_missing is False
+        yield root.joinpath(*components)
+
+    @contextmanager
+    def fake_file_guard(path):
+        with path.open("rb") as handle:
+            yield handle, handle_stat
+
+    def fake_fresh_stat(path):
+        if Path(path) == source_path:
+            return path_stat
+        return real_fresh_stat(path)
+
+    monkeypatch.setattr(
+        wiki_input_module,
+        "_uses_windows_guarded_input_fallback",
+        lambda: True,
+    )
+    monkeypatch.setattr(
+        wiki_input_module,
+        "guard_windows_directory_chain",
+        fake_directory_guard,
+    )
+    monkeypatch.setattr(
+        wiki_input_module,
+        "open_windows_readonly_file",
+        fake_file_guard,
+    )
+    monkeypatch.setattr(
+        wiki_input_module,
+        "fresh_no_follow_stat",
+        fake_fresh_stat,
+    )
+
+    tree = wiki_input_module._collect_input_tree(
+        wiki,
+        enforce_content_policy=True,
+    )
+
+    assert len(tree.files) == 1
+    entry = tree.files[0]
+    assert entry.ctime_ns == handle_stat.st_ctime_ns
+    assert entry.ctime_ns != path_stat.st_ctime_ns
+    assert (entry.device, entry.inode) == (handle_stat.st_dev, handle_stat.st_ino)
+    assert wiki_input_module._read_verified_bytes(entry) == b"# Index\n"
+
+
+@pytest.mark.parametrize("changed_field", ("st_size", "st_mtime_ns"))
+def test_mocked_windows_leaf_guard_rejects_path_handle_metadata_change(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    changed_field: str,
+) -> None:
+    source_path = tmp_path / "wiki" / "index.md"
+    _write(source_path, b"# Index\n")
+    expected = source_path.stat()
+    opened = _stat_with(
+        expected,
+        **{changed_field: getattr(expected, changed_field) + 1},
+    )
+
+    @contextmanager
+    def fake_file_guard(path):
+        with path.open("rb") as handle:
+            yield handle, opened
+
+    monkeypatch.setattr(
+        wiki_input_module,
+        "open_windows_readonly_file",
+        fake_file_guard,
+    )
+
+    with pytest.raises(DocumentationWikiInputError) as exc_info:
+        with wiki_input_module._open_windows_input_leaf(
+            source_path,
+            "index.md",
+            expected_stat=expected,
+        ):
+            pass
+
+    assert exc_info.value.category == "input_changed_during_snapshot"
+
+
+def test_mocked_windows_leaf_guard_rejects_same_handle_ctime_change(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source_path = tmp_path / "wiki" / "index.md"
+    _write(source_path, b"# Index\n")
+    opened = source_path.stat()
+    changed = _stat_with(opened, st_ctime_ns=opened.st_ctime_ns + 1)
+
+    class _OsProxy:
+        def __getattr__(self, name):
+            return getattr(os, name)
+
+        def fstat(self, _descriptor):
+            return changed
+
+    @contextmanager
+    def fake_file_guard(path):
+        with path.open("rb") as handle:
+            yield handle, opened
+
+    monkeypatch.setattr(wiki_input_module, "os", _OsProxy())
+    monkeypatch.setattr(
+        wiki_input_module,
+        "open_windows_readonly_file",
+        fake_file_guard,
+    )
+
+    with pytest.raises(DocumentationWikiInputError) as exc_info:
+        with wiki_input_module._open_windows_input_leaf(
+            source_path,
+            "index.md",
+            expected_stat=opened,
+        ):
+            pass
+
+    assert exc_info.value.category == "input_changed_during_snapshot"
+
+
+def test_mocked_windows_reopen_rejects_handle_ctime_change_with_same_bytes(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source_path = tmp_path / "wiki" / "index.md"
+    contents = b"# Index\n"
+    _write(source_path, contents)
+    inventoried = source_path.stat()
+    reopened = _stat_with(
+        inventoried,
+        st_ctime_ns=inventoried.st_ctime_ns + 1,
+    )
+    entry = wiki_input_module._InputFile(
+        path=source_path,
+        relative_path="index.md",
+        sha256=_sha256(contents),
+        size=inventoried.st_size,
+        mtime_ns=inventoried.st_mtime_ns,
+        ctime_ns=inventoried.st_ctime_ns,
+        device=inventoried.st_dev,
+        inode=inventoried.st_ino,
+    )
+
+    @contextmanager
+    def fake_directory_guard(root, components, *, create_missing=False):
+        assert root == source_path.parent
+        assert components == ()
+        assert create_missing is False
+        yield root
+
+    @contextmanager
+    def fake_file_guard(path):
+        with path.open("rb") as handle:
+            yield handle, reopened
+
+    monkeypatch.setattr(
+        wiki_input_module,
+        "_uses_windows_guarded_input_fallback",
+        lambda: True,
+    )
+    monkeypatch.setattr(
+        wiki_input_module,
+        "guard_windows_directory_chain",
+        fake_directory_guard,
+    )
+    monkeypatch.setattr(
+        wiki_input_module,
+        "open_windows_readonly_file",
+        fake_file_guard,
+    )
+
+    with pytest.raises(DocumentationWikiInputError) as exc_info:
+        wiki_input_module._read_verified_bytes(entry)
+
+    assert exc_info.value.category == "input_changed_during_snapshot"
+
+
+def test_mocked_windows_leaf_guard_rejects_post_read_path_rebind(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source_path = tmp_path / "wiki" / "index.md"
+    _write(source_path, b"# Index\n")
+    opened = source_path.stat()
+    rebound = _stat_with(opened, st_ino=opened.st_ino + 1)
+    body_entered = False
+
+    @contextmanager
+    def fake_file_guard(path):
+        with path.open("rb") as handle:
+            yield handle, opened
+
+    monkeypatch.setattr(
+        wiki_input_module,
+        "open_windows_readonly_file",
+        fake_file_guard,
+    )
+    monkeypatch.setattr(
+        wiki_input_module,
+        "fresh_no_follow_stat",
+        lambda _path: rebound,
+    )
+
+    with pytest.raises(DocumentationWikiInputError) as exc_info:
+        with wiki_input_module._open_windows_input_leaf(
+            source_path,
+            "index.md",
+            expected_stat=opened,
+        ):
+            body_entered = True
+
+    assert body_entered is True
+    assert exc_info.value.category == "input_changed_during_snapshot"
+
+
+def test_mocked_windows_leaf_guard_maps_post_read_path_disappearance(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source_path = tmp_path / "wiki" / "index.md"
+    _write(source_path, b"# Index\n")
+    opened = source_path.stat()
+
+    @contextmanager
+    def fake_file_guard(path):
+        with path.open("rb") as handle:
+            yield handle, opened
+
+    def missing_path(_path):
+        raise FileNotFoundError("injected post-read disappearance")
+
+    monkeypatch.setattr(
+        wiki_input_module,
+        "open_windows_readonly_file",
+        fake_file_guard,
+    )
+    monkeypatch.setattr(
+        wiki_input_module,
+        "fresh_no_follow_stat",
+        missing_path,
+    )
+
+    with pytest.raises(DocumentationWikiInputError) as exc_info:
+        with wiki_input_module._open_windows_input_leaf(
+            source_path,
+            "index.md",
+            expected_stat=opened,
+        ):
+            pass
+
+    assert exc_info.value.category == "input_changed_during_snapshot"
+
+
 def test_mocked_windows_file_guard_preserves_body_oserror(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -1480,6 +1768,47 @@ def test_mocked_windows_root_guard_rejects_replacement_before_pin_validation(
     assert exc_info.value.category == "input_changed_during_snapshot"
 
 
+def test_mocked_windows_root_guard_unavailable_fails_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    wiki = tmp_path / "wiki"
+    _write(wiki / "index.md", "trusted\n")
+
+    @contextmanager
+    def unavailable_guard(_root, _components, *, create_missing=False):
+        assert create_missing is False
+        raise filesystem_guard_module._WindowsDirectoryGuardUnavailableError(
+            "list-directory access denied"
+        )
+        yield  # pragma: no cover
+
+    monkeypatch.setattr(
+        wiki_input_module,
+        "_supports_secure_input_fd_traversal",
+        lambda: False,
+    )
+    monkeypatch.setattr(
+        wiki_input_module,
+        "_uses_windows_guarded_input_fallback",
+        lambda: True,
+    )
+    monkeypatch.setattr(
+        wiki_input_module,
+        "guard_windows_directory_chain",
+        unavailable_guard,
+    )
+
+    with pytest.raises(DocumentationWikiInputError) as exc_info:
+        with wiki_input_module._open_input_root_descriptor(
+            wiki,
+            expected_identity=wiki.lstat(),
+        ):
+            pass
+
+    assert exc_info.value.category == "secure_input_traversal_unavailable"
+
+
 @pytest.mark.skipif(os.name != "nt", reason="Windows guard semantics only")
 def test_windows_input_root_guard_blocks_replacement(tmp_path: Path) -> None:
     wiki = tmp_path / "wiki"
@@ -1493,8 +1822,9 @@ def test_windows_input_root_guard_blocks_replacement(tmp_path: Path) -> None:
         with pytest.raises(OSError):
             wiki.replace(held)
 
-    assert wiki.is_dir()
-    assert not held.exists()
+    wiki.replace(held)
+    assert held.is_dir()
+    assert not wiki.exists()
 
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows junction semantics only")

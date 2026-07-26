@@ -2,14 +2,19 @@
 
 from __future__ import annotations
 
+import io
 import os
+import stat
 import subprocess
 from contextlib import contextmanager
 from pathlib import Path
+from types import SimpleNamespace
+from typing import cast
 
 import pytest
 
 from llm_wiki_cli.services import documentation_policy as documentation_policy_module
+from llm_wiki_cli.services import filesystem_guard as filesystem_guard_module
 from llm_wiki_cli.services.documentation_policy import (
     DocumentationPolicyError,
     capture_tree_baseline,
@@ -18,9 +23,42 @@ from llm_wiki_cli.services.documentation_policy import (
     source_tree_baseline,
 )
 from llm_wiki_cli.services.filesystem_guard import (
+    _WindowsDirectoryGuardUnavailableError,
     WindowsIdentityUnavailableError,
+    _WindowsPathHandleMetadata,
+    guard_windows_directory_chain,
     windows_object_identity_from_values,
+    _windows_path_handle_metadata,
 )
+
+
+def _windows_regular_stat(
+    *,
+    size: int = 7,
+    mtime_ns: int = 2_000,
+    ctime_ns: int = 3_000,
+    device: int = 11,
+    file_id: int = 17,
+) -> os.stat_result:
+    return cast(
+        os.stat_result,
+        SimpleNamespace(
+            st_mode=stat.S_IFREG | 0o600,
+            st_size=size,
+            st_mtime_ns=mtime_ns,
+            st_mtime=mtime_ns / 1_000_000_000,
+            st_ctime_ns=ctime_ns,
+            st_ctime=ctime_ns / 1_000_000_000,
+            st_dev=device,
+            st_ino=file_id,
+            st_file_attributes=0,
+        ),
+    )
+
+
+class _GuardedBytes(io.BytesIO):
+    def fileno(self) -> int:
+        return 101
 
 
 def _write_source(root: Path) -> None:
@@ -312,6 +350,227 @@ def test_windows_identity_fails_closed_when_a_component_is_zero(
             file_id=file_id,
             context="test handle",
         )
+
+
+def test_windows_path_handle_metadata_excludes_ctime() -> None:
+    metadata = _windows_path_handle_metadata(
+        _windows_regular_stat(size=23, mtime_ns=41, ctime_ns=59)
+    )
+
+    assert metadata == _WindowsPathHandleMetadata(size=23, mtime_ns=41)
+
+
+def _configure_windows_policy_hash(
+    monkeypatch,
+    *,
+    path_stats: list[os.stat_result],
+    opened_before: os.stat_result,
+    opened_after: os.stat_result,
+    payload: bytes = b"content",
+) -> None:
+    observations = iter(path_stats)
+
+    class _WindowsOsProxy:
+        name = "nt"
+
+        def __getattr__(self, name):
+            return getattr(os, name)
+
+        def fstat(self, _descriptor):
+            return opened_after
+
+    @contextmanager
+    def fake_file_guard(_path):
+        yield _GuardedBytes(payload), opened_before
+
+    monkeypatch.setattr(documentation_policy_module, "os", _WindowsOsProxy())
+    monkeypatch.setattr(
+        documentation_policy_module,
+        "fresh_no_follow_stat",
+        lambda _path: next(observations),
+    )
+    monkeypatch.setattr(
+        documentation_policy_module,
+        "open_windows_readonly_file",
+        fake_file_guard,
+    )
+
+
+def test_windows_hash_accepts_path_handle_ctime_difference(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    path = tmp_path / "source.txt"
+    opened = _windows_regular_stat(ctime_ns=200)
+    _configure_windows_policy_hash(
+        monkeypatch,
+        path_stats=[
+            _windows_regular_stat(ctime_ns=100),
+            _windows_regular_stat(ctime_ns=300),
+        ],
+        opened_before=opened,
+        opened_after=opened,
+    )
+
+    digest = documentation_policy_module._hash_windows_file(
+        path,
+        inspected=None,
+        max_bytes=None,
+    )
+
+    assert (
+        digest
+        == "sha256:"
+        + documentation_policy_module.hashlib.sha256(b"content").hexdigest()
+    )
+
+
+@pytest.mark.parametrize(
+    ("size", "mtime_ns"),
+    ((8, 2_000), (7, 2_001)),
+)
+def test_windows_hash_rejects_path_handle_size_or_mtime_difference(
+    tmp_path,
+    monkeypatch,
+    size,
+    mtime_ns,
+) -> None:
+    path = tmp_path / "source.txt"
+    opened = _windows_regular_stat(size=size, mtime_ns=mtime_ns)
+    _configure_windows_policy_hash(
+        monkeypatch,
+        path_stats=[_windows_regular_stat()],
+        opened_before=opened,
+        opened_after=opened,
+    )
+
+    with pytest.raises(DocumentationPolicyError, match="changed while"):
+        documentation_policy_module._hash_windows_file(
+            path,
+            inspected=None,
+            max_bytes=None,
+        )
+
+
+def test_windows_hash_rejects_same_handle_ctime_change(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    path = tmp_path / "source.txt"
+    _configure_windows_policy_hash(
+        monkeypatch,
+        path_stats=[_windows_regular_stat(ctime_ns=100)],
+        opened_before=_windows_regular_stat(ctime_ns=200),
+        opened_after=_windows_regular_stat(ctime_ns=201),
+    )
+
+    with pytest.raises(DocumentationPolicyError, match="changed while"):
+        documentation_policy_module._hash_windows_file(
+            path,
+            inspected=None,
+            max_bytes=None,
+        )
+
+
+@pytest.mark.parametrize("require_restrictive_dacl", [False, True])
+def test_windows_directory_guard_requests_rename_barrier_access(
+    tmp_path,
+    monkeypatch,
+    require_restrictive_dacl,
+) -> None:
+    from ctypes import wintypes
+
+    create_calls: list[tuple[object, ...]] = []
+    invalid_handle = wintypes.HANDLE(-1).value
+
+    class _FakeFunction:
+        argtypes = None
+        restype = None
+
+        def __init__(self, callback):
+            self._callback = callback
+
+        def __call__(self, *args):
+            return self._callback(*args)
+
+    def fake_create_file(*args):
+        create_calls.append(args)
+        return invalid_handle
+
+    kernel32 = SimpleNamespace(
+        CreateFileW=_FakeFunction(fake_create_file),
+        GetFileInformationByHandle=_FakeFunction(lambda *_args: 0),
+    )
+    monkeypatch.setattr(
+        filesystem_guard_module.ctypes,
+        "WinDLL",
+        lambda *_args, **_kwargs: kernel32,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        filesystem_guard_module.ctypes,
+        "get_last_error",
+        lambda: filesystem_guard_module._ERROR_ACCESS_DENIED,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        filesystem_guard_module.ctypes,
+        "WinError",
+        lambda code: PermissionError(code, "Access is denied"),
+        raising=False,
+    )
+
+    with pytest.raises(
+        _WindowsDirectoryGuardUnavailableError,
+        match="list-directory access",
+    ):
+        filesystem_guard_module._open_windows_directory_guard(
+            tmp_path,
+            require_restrictive_dacl=require_restrictive_dacl,
+        )
+
+    assert len(create_calls) == 1
+    desired_access = cast(int, create_calls[0][1])
+    expected_access = (
+        filesystem_guard_module._FILE_LIST_DIRECTORY
+        | filesystem_guard_module._FILE_READ_ATTRIBUTES
+    )
+    if require_restrictive_dacl:
+        expected_access |= filesystem_guard_module._READ_CONTROL
+    assert desired_access == expected_access
+    assert not desired_access & filesystem_guard_module._DELETE
+    assert not desired_access & filesystem_guard_module._GENERIC_WRITE
+    sharing = cast(int, create_calls[0][2])
+    assert sharing == (
+        filesystem_guard_module._FILE_SHARE_READ
+        | filesystem_guard_module._FILE_SHARE_WRITE
+    )
+    assert not sharing & filesystem_guard_module._FILE_SHARE_DELETE
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows rename sharing semantics only")
+@pytest.mark.parametrize("guarded_target", ["root", "child"])
+def test_windows_directory_guard_blocks_rename_until_release(
+    tmp_path,
+    guarded_target,
+) -> None:
+    root = tmp_path / "root"
+    child = root / "child"
+    child.mkdir(parents=True)
+    target = root if guarded_target == "root" else child
+    renamed = (
+        tmp_path / "renamed-root"
+        if guarded_target == "root"
+        else root / "renamed-child"
+    )
+
+    with guard_windows_directory_chain(root, ("child",)):
+        with pytest.raises(OSError):
+            target.rename(renamed)
+        assert target.is_dir()
+
+    target.rename(renamed)
+    assert renamed.is_dir()
 
 
 def test_relative_windows_hash_path_is_made_absolute_before_guarding(

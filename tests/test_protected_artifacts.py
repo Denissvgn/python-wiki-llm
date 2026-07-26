@@ -31,14 +31,12 @@ def test_create_requires_new_or_empty_regular_root(tmp_path: Path):
     assert store.root == new_root.resolve()
 
     empty_root = tmp_path / "empty"
-    empty_root.mkdir(mode=0o700)
-    empty_root.chmod(0o700)
+    ProtectedArtifactStore(empty_root, create=True)
     assert ProtectedArtifactStore(empty_root, create=True).root == empty_root
 
     nonempty = tmp_path / "nonempty"
-    nonempty.mkdir(mode=0o700)
-    nonempty.chmod(0o700)
-    (nonempty / "unknown").write_text("keep", encoding="utf-8")
+    nonempty_store = ProtectedArtifactStore(nonempty, create=True)
+    nonempty_store._write_bytes("unknown", b"keep", immutable=True)
     with pytest.raises(ProtectedArtifactIntegrityError, match="must be empty"):
         ProtectedArtifactStore(nonempty, create=True)
     assert (nonempty / "unknown").read_text(encoding="utf-8") == "keep"
@@ -432,11 +430,13 @@ def test_snapshot_and_projection_replace_atomically(tmp_path: Path):
 def test_reads_require_bounded_canonical_utf8(tmp_path: Path):
     root = tmp_path / "root"
     store = ProtectedArtifactStore(root, create=True)
-    (root / "pretty.json").write_text('{\n  "value": 1\n}\n', encoding="utf-8")
-    (root / "large.txt").write_text("12345", encoding="utf-8")
-    (root / "binary.txt").write_bytes(b"\xff")
-    for artifact in ("pretty.json", "large.txt", "binary.txt"):
-        (root / artifact).chmod(0o600)
+    store._write_bytes(
+        "pretty.json",
+        b'{\n  "value": 1\n}\n',
+        immutable=True,
+    )
+    store._write_bytes("large.txt", b"12345", immutable=True)
+    store._write_bytes("binary.txt", b"\xff", immutable=True)
 
     with pytest.raises(ProtectedArtifactIntegrityError, match="not canonical"):
         store.read_json("pretty.json")
@@ -496,7 +496,10 @@ def test_casefold_collision_is_rejected_before_second_write(tmp_path: Path):
 
     with pytest.raises(ProtectedArtifactIntegrityError, match="collid"):
         store.write_immutable_json("events/alpha.json", {"value": 2})
-    assert not (store.root / "events" / "alpha.json").exists()
+    events = store.root / "events"
+    assert {entry.name for entry in events.iterdir()} == {"Alpha.json"}
+    assert (events / "Alpha.json").read_bytes() == canonical_json_bytes({"value": 1})
+    assert not list(events.glob("*.protected-tmp"))
 
 
 def test_nonblocking_controller_lock_is_dedicated_to_root(tmp_path: Path):
@@ -504,13 +507,13 @@ def test_nonblocking_controller_lock_is_dedicated_to_root(tmp_path: Path):
     second = ProtectedArtifactStore(store.root)
 
     with store.lock():
-        assert (store.root / "controller.lock").read_text(
-            encoding="ascii"
-        ) == f"{os.getpid()}\n"
         with pytest.raises(ProtectedArtifactLockError, match="already holds"):
             with second.lock():
                 pass
 
+    assert (store.root / "controller.lock").read_text(
+        encoding="ascii"
+    ) == f"{os.getpid()}\n"
     with second.lock():
         pass
 
@@ -687,7 +690,14 @@ def test_failed_atomic_replace_cleans_only_its_owned_temporary(
     def failed_rename(*_args, **_kwargs):
         raise OSError(errno.EIO, "replace failed")
 
-    monkeypatch.setattr(protected_artifacts.os, "rename", failed_rename)
+    if os.name == "nt":
+        monkeypatch.setattr(
+            protected_artifacts,
+            "replace_windows_file_write_through",
+            failed_rename,
+        )
+    else:
+        monkeypatch.setattr(protected_artifacts.os, "rename", failed_rename)
     with pytest.raises(ProtectedArtifactIntegrityError, match="replace failed"):
         store.write_snapshot_json("run.json", {"generation": 1})
 
@@ -702,14 +712,32 @@ def test_metadata_durability_failure_is_reported_after_atomic_commit(
 ):
     store = ProtectedArtifactStore(tmp_path / "root", create=True)
 
-    def failed_directory_sync(_descriptor: int) -> None:
-        raise ProtectedArtifactDurabilityError("directory metadata flush failed")
+    if os.name == "nt":
+        original_windows_replace = (
+            protected_artifacts.replace_windows_file_write_through
+        )
 
-    monkeypatch.setattr(
-        protected_artifacts,
-        "_fsync_directory",
-        failed_directory_sync,
-    )
+        def failed_windows_replace(source: Path, target: Path) -> None:
+            original_windows_replace(source, target)
+            raise protected_artifacts.WindowsDurabilityError(
+                "directory metadata flush failed"
+            )
+
+        monkeypatch.setattr(
+            protected_artifacts,
+            "replace_windows_file_write_through",
+            failed_windows_replace,
+        )
+    else:
+
+        def failed_directory_sync(_descriptor: int) -> None:
+            raise ProtectedArtifactDurabilityError("directory metadata flush failed")
+
+        monkeypatch.setattr(
+            protected_artifacts,
+            "_fsync_directory",
+            failed_directory_sync,
+        )
     with pytest.raises(ProtectedArtifactDurabilityError, match="metadata flush"):
         store.write_snapshot_json("run.json", {"generation": 1})
 
