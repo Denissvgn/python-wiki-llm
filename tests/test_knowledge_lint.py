@@ -24,6 +24,10 @@ from llm_wiki_cli.services.sync_manifest import (
     SyncManifest,
 )
 from tests.knowledge_fixtures import FIXTURE_SOURCE_PATH, fixture_hash
+from tests.test_knowledge_compatibility import (
+    COMPATIBILITY_CASES,
+    _materialize_case,
+)
 from tests.test_knowledge_freshness import (
     MODULE_LOCATOR,
     USER_LOCATOR,
@@ -69,6 +73,72 @@ def _loaded_knowledge(tmp_path):
     loaded = load_knowledge_state(tmp_path)
     assert loaded.knowledge is not None
     return loaded, loaded.knowledge
+
+
+@pytest.mark.parametrize(
+    "case",
+    COMPATIBILITY_CASES,
+    ids=lambda case: case.id,
+)
+def test_strict_lint_applies_shared_compatibility_policy_only_when_enabled(
+    tmp_path,
+    monkeypatch,
+    case,
+):
+    source_root = tmp_path / "checkout"
+    wiki = source_root / "docs" / "llm_wiki"
+    wiki.mkdir(parents=True)
+    fixture = _materialize_case(wiki, case)
+    _write_fixture_sources(source_root, fixture)
+    monkeypatch.setattr(
+        lint_cmd,
+        "build_runtime_live_evaluation",
+        lambda inputs: _live_evaluation(inputs.knowledge),
+    )
+
+    non_strict = lint_cmd.build_report(
+        wiki,
+        str(source_root),
+        strict=False,
+    )
+    strict = lint_cmd.build_report(
+        wiki,
+        str(source_root),
+        strict=True,
+    )
+
+    assert _knowledge_findings(non_strict) == []
+    assert non_strict.knowledge_summary is None
+    findings = _knowledge_findings(strict)
+    if not case.expected_issue_codes:
+        assert findings == []
+        if case.serves_knowledge:
+            assert strict.knowledge_summary is not None
+            assert strict.knowledge_summary.availability == "ready"
+            assert strict.knowledge_summary.freshness_by_state["current"] == 3
+        else:
+            assert strict.knowledge_summary is None
+        return
+
+    assert strict.knowledge_summary is None
+    assert all(finding.severity == "error" for finding in findings)
+    for reason in case.expected_issue_codes:
+        matching = [
+            finding
+            for finding in findings
+            if f"[reason={reason}]" in finding.message
+        ]
+        assert len(matching) == 1
+        expected_category = (
+            "knowledge_schema"
+            if reason
+            in {
+                "knowledge-invalid",
+                "knowledge-schema-version-unsupported",
+            }
+            else "knowledge_projection"
+        )
+        assert matching[0].category == expected_category
 
 
 def test_strict_ready_state_reports_current_summary_and_optional_json(

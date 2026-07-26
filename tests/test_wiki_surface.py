@@ -212,3 +212,31 @@ def test_collect_wiki_pages_accepts_legacy_layout_without_optional_surfaces(tmp_
         (PageKind.ENTITIES, "entities/User.md"),
         (PageKind.MODULES, "modules/models.md"),
     ]
+
+
+def test_knowledge_sidecars_do_not_change_page_ids_paths_or_mcp_uris(tmp_path):
+    wiki = tmp_path / "docs" / "llm_wiki"
+    _write(wiki / "index.md")
+    _write(wiki / "entities" / "User.md")
+    _write(wiki / "modules" / "models.md")
+
+    before = [
+        (page.page_id, page.relative_path, page.mcp_uri)
+        for page in wiki_surface.collect_wiki_pages(wiki)
+    ]
+    for name in (
+        ".llm-wiki-manifest.json",
+        ".llm-wiki-surface.json",
+        ".llm-wiki-knowledge.json",
+    ):
+        _write(wiki / name, "{}\n")
+    after = [
+        (page.page_id, page.relative_path, page.mcp_uri)
+        for page in wiki_surface.collect_wiki_pages(wiki)
+    ]
+
+    assert after == before == [
+        ("index", "index.md", "llm-wiki://index"),
+        ("User", "entities/User.md", "llm-wiki://entities/User"),
+        ("models", "modules/models.md", "llm-wiki://modules/models"),
+    ]

@@ -26,6 +26,10 @@ from llm_wiki_cli.services.knowledge_loader import KnowledgeLoadResult
 from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 from tests.knowledge_fixtures import fail_if_extraction_runs
+from tests.test_knowledge_compatibility import (
+    COMPATIBILITY_CASES,
+    _materialize_case,
+)
 from tests.test_knowledge_loader import _committed_state
 
 
@@ -105,6 +109,72 @@ def _guard_status_extraction(monkeypatch) -> None:
         "get_inventory_result",
         fail_if_extraction_runs,
     )
+
+
+@pytest.mark.parametrize(
+    "case",
+    COMPATIBILITY_CASES,
+    ids=lambda case: case.id,
+)
+def test_mcp_knowledge_tools_and_status_share_compatibility_policy(
+    tmp_path,
+    monkeypatch,
+    case,
+):
+    root = tmp_path / "checkout"
+    wiki = root / "docs" / "llm_wiki"
+    wiki.mkdir(parents=True)
+    fixture = _materialize_case(wiki, case)
+    for relative_path, content in fixture.source_files.items():
+        source = root / relative_path
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text(content, encoding="utf-8")
+    monkeypatch.chdir(root)
+    query_service = mcp_server.build_documentation_query_service(
+        ".",
+        wiki_dir="docs/llm_wiki",
+    )
+    calls = []
+
+    def fake_builder(src_dir, *, wiki_dir, limit, read_only):
+        calls.append((src_dir, wiki_dir, limit, read_only))
+        return query_service
+
+    monkeypatch.setattr(
+        mcp_server,
+        "build_documentation_query_service",
+        fake_builder,
+    )
+    service = mcp_server.McpWikiService(
+        src_dir=".",
+        wiki_dir="docs/llm_wiki",
+    )
+
+    concept = service.get_concept("llm-wiki://entities/User")
+    related = service.related_concepts("llm-wiki://entities/User")
+    evidence = service.explain_evidence("llm-wiki://entities/User")
+    status = service.get_status()["knowledge"]
+
+    expected_status = {
+        "availability": case.expected_availability.value,
+        "reason": case.expected_reason.value,
+        "freshness_evaluated": case.serves_knowledge,
+    }
+    assert concept["knowledge"] == expected_status
+    assert related["knowledge"] == expected_status
+    assert evidence["knowledge"] == expected_status
+    assert concept["found"] is case.serves_knowledge
+    assert related["found"] is case.serves_knowledge
+    assert evidence["found"] is case.serves_knowledge
+    assert status == {
+        **expected_status,
+        "freshness_evaluated": False,
+    }
+    assert calls == [
+        (".", "docs/llm_wiki", 20, True),
+        (".", "docs/llm_wiki", 20, True),
+        (".", "docs/llm_wiki", 20, True),
+    ]
 
 
 class TestMcpWikiService:

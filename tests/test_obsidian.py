@@ -227,6 +227,45 @@ class TestObsidianMirror:
         assert any(op.action == "would_write" for op in report.operations)
         assert not (vault / "LLM Wiki").exists()
 
+    def test_knowledge_sidecars_do_not_change_obsidian_output(self, tmp_project):
+        wiki = _write_wiki(tmp_project)
+        before_vault = tmp_project / "vault-before"
+        after_vault = tmp_project / "vault-after"
+
+        before_report = obsidian.export_obsidian_vault(
+            src_dir=str(tmp_project),
+            wiki_dir=wiki,
+            vault_dir=before_vault,
+        )
+        before = {
+            path.relative_to(before_vault).as_posix(): path.read_bytes()
+            for path in sorted(before_vault.rglob("*"))
+            if path.is_file()
+        }
+
+        (wiki / ".llm-wiki-knowledge.json").write_text(
+            '{"schema_version": "future"}\n',
+            encoding="utf-8",
+        )
+        (wiki / ".llm-wiki-manifest.json").write_text(
+            '{"artifact_hashes": {}}\n',
+            encoding="utf-8",
+        )
+        after_report = obsidian.export_obsidian_vault(
+            src_dir=str(tmp_project),
+            wiki_dir=wiki,
+            vault_dir=after_vault,
+        )
+        after = {
+            path.relative_to(after_vault).as_posix(): path.read_bytes()
+            for path in sorted(after_vault.rglob("*"))
+            if path.is_file()
+        }
+
+        assert after_report.page_count == before_report.page_count
+        assert after == before
+        assert not any("llm-wiki-knowledge" in path for path in after)
+
     def test_check_detects_missing_mirror_and_broken_wikilinks(self, tmp_project):
         wiki = _write_wiki(tmp_project)
         vault = tmp_project / "vault"

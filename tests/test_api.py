@@ -35,6 +35,10 @@ from tests.knowledge_fixtures import (
     one_module_two_entities_fixture,
 )
 from tests.test_knowledge_artifacts import _plan as _knowledge_commit_plan
+from tests.test_knowledge_compatibility import (
+    COMPATIBILITY_CASES,
+    _materialize_case,
+)
 
 
 def test_supported_api_exports_are_additive_contract():
@@ -159,6 +163,62 @@ def test_knowledge_api_signatures_are_explicit_and_builder_stays_compatible():
 def test_api_error_types_remain_structured_subclasses():
     assert issubclass(PathPolicyError, LlmWikiApiError)
     assert issubclass(ExtractionError, LlmWikiApiError)
+
+
+@pytest.mark.parametrize(
+    "case",
+    COMPATIBILITY_CASES,
+    ids=lambda case: case.id,
+)
+def test_python_knowledge_api_uses_shared_compatibility_policy(
+    tmp_path,
+    monkeypatch,
+    case,
+):
+    root = tmp_path / "checkout"
+    wiki = root / "docs" / "llm_wiki"
+    wiki.mkdir(parents=True)
+    fixture = _materialize_case(wiki, case)
+    for relative_path, content in fixture.source_files.items():
+        source = root / relative_path
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text(content, encoding="utf-8")
+    monkeypatch.chdir(root)
+    service = build_documentation_query_service(
+        ".",
+        wiki_dir="docs/llm_wiki",
+    )
+
+    concept = api.get_concept(
+        "llm-wiki://entities/User",
+        service=service,
+    )
+    related = api.related_concepts(
+        "llm-wiki://entities/User",
+        service=service,
+    )
+    evidence = api.explain_evidence(
+        "llm-wiki://entities/User",
+        service=service,
+    )
+
+    expected_status = {
+        "availability": case.expected_availability.value,
+        "reason": case.expected_reason.value,
+        "freshness_evaluated": case.serves_knowledge,
+    }
+    assert concept["knowledge"] == expected_status
+    assert related["knowledge"] == expected_status
+    assert evidence["knowledge"] == expected_status
+    assert concept["found"] is case.serves_knowledge
+    assert related["found"] is case.serves_knowledge
+    assert evidence["found"] is case.serves_knowledge
+    if case.serves_knowledge:
+        assert concept["concept"]["locator"] == "llm-wiki://entities/User"
+    else:
+        assert concept["concept"] is None
+        assert related["relationships"] == []
+        assert evidence["evidence"] is None
 
 
 def _write_query_project(root):

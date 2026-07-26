@@ -393,6 +393,29 @@ class TestNoManifest:
 
 
 class TestSyncSurfaceIndex:
+    def test_noop_sync_preserves_canonical_markdown_with_knowledge_sidecars(
+        self, bootstrapped_project, capsys
+    ):
+        proj, wiki_dir = bootstrapped_project
+        before = {
+            path.relative_to(wiki_dir).as_posix(): path.read_bytes()
+            for path in sorted(wiki_dir.rglob("*.md"))
+        }
+        capsys.readouterr()
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
+        after = {
+            path.relative_to(wiki_dir).as_posix(): path.read_bytes()
+            for path in sorted(wiki_dir.rglob("*.md"))
+        }
+        assert after == before
+        assert (wiki_dir / ".llm-wiki-knowledge.json").is_file()
+        surface = json.loads(
+            (wiki_dir / SURFACE_INDEX_FILENAME).read_text(encoding="utf-8")
+        )
+        assert surface["schema_version"] == "llm-wiki-surface-index/v1"
+
     def test_sync_regenerates_missing_surface_index_without_source_changes(
         self, bootstrapped_project, capsys
     ):

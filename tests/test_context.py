@@ -20,6 +20,10 @@ from tests.knowledge_fixtures import (
     one_module_two_entities_fixture,
 )
 from tests.test_knowledge_artifacts import _plan as _knowledge_commit_plan
+from tests.test_knowledge_compatibility import (
+    COMPATIBILITY_CASES,
+    _materialize_case,
+)
 
 # ── Helpers ───────────────────────────────────────────────────────────
 
@@ -147,6 +151,66 @@ class _KnowledgeQueryStub:
     def get_concept(self, canonical_path: str) -> dict:
         self.lookups.append(canonical_path)
         return {"concept": self.concepts.get(canonical_path)}
+
+
+@pytest.mark.parametrize(
+    "case",
+    COMPATIBILITY_CASES,
+    ids=lambda case: case.id,
+)
+def test_context_v1_uses_shared_knowledge_compatibility_policy(
+    tmp_path,
+    monkeypatch,
+    case,
+):
+    root = tmp_path / "checkout"
+    wiki = root / "docs" / "llm_wiki"
+    wiki.mkdir(parents=True)
+    fixture = _materialize_case(wiki, case)
+    for relative_path, content in fixture.source_files.items():
+        source = root / relative_path
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text(content, encoding="utf-8")
+    monkeypatch.chdir(root)
+
+    payload, warnings = context_cmd._build_context(
+        ".",
+        32_000,
+        "json",
+        ["all"],
+        {"surface": "entities"},
+        emit_warnings=False,
+        wiki_dir="docs/llm_wiki",
+    )
+
+    expected_status = {
+        "availability": case.expected_availability.value,
+        "reason": case.expected_reason.value,
+        "freshness_evaluated": case.serves_knowledge,
+    }
+    assert context_cmd.PROTOCOL_VERSION == "llm-wiki-context/v1"
+    assert payload["knowledge"] == expected_status
+    assert [
+        (page["canonical_path"], page["mcp_uri"])
+        for page in payload["surface"]["pages"]
+    ] == [
+        ("entities/AccountService.md", "llm-wiki://entities/AccountService"),
+        ("entities/User.md", "llm-wiki://entities/User"),
+    ]
+    if case.serves_knowledge:
+        assert all(
+            page["knowledge"]["availability"] == "ready"
+            and "freshness" in page["knowledge"]
+            for page in payload["surface"]["pages"]
+        )
+    else:
+        assert all(
+            page["knowledge"] == expected_status
+            for page in payload["surface"]["pages"]
+        )
+        assert any(
+            case.expected_availability.value in warning for warning in warnings
+        )
 
 
 # ── Token estimation ──────────────────────────────────────────────────

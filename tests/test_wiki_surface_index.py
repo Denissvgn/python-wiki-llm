@@ -154,6 +154,29 @@ def test_write_surface_index_is_deterministic_and_skips_unchanged_payload(tmp_pa
     assert first_content == second_content
 
 
+def test_knowledge_sidecars_do_not_change_surface_index_v1(tmp_path):
+    wiki = tmp_path / "wiki"
+    _write(wiki / "index.md", "# Index\n\n[User](entities/User.md)\n")
+    _write(wiki / "entities" / "User.md", "# User\n")
+
+    before = build_surface_index(wiki, {}, src_dir=str(tmp_path))
+    _write(wiki / ".llm-wiki-knowledge.json", '{"malformed-for-loader": true}\n')
+    _write(wiki / ".llm-wiki-manifest.json", '{"artifact_hashes": null}\n')
+    after = build_surface_index(wiki, {}, src_dir=str(tmp_path))
+
+    assert after == before
+    assert after["schema_version"] == WIKI_SURFACE_INDEX_SCHEMA_VERSION
+    assert [
+        (page["canonical_path"], page["id"], page["mcp_uri"])
+        for page in after["pages"]
+    ] == [
+        ("index.md", "index", "llm-wiki://index"),
+        ("entities/User.md", "User", "llm-wiki://entities/User"),
+    ]
+    assert "generated_at" not in after
+    assert "timestamp" not in after
+
+
 def test_surface_index_records_asset_counts_and_page_reference_map(tmp_path):
     wiki = tmp_path / "wiki"
     _write(wiki / "index.md", "# Index\n\n- [Guide](guides/tour.md)\n")

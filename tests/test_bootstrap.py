@@ -1904,6 +1904,47 @@ class TestBootstrapCreatesManifest:
         assert all(
             not Path(page["source_path"] or "").is_absolute() for page in data["pages"]
         )
+        by_path = {page["canonical_path"]: page for page in data["pages"]}
+        assert (
+            by_path["entities/User.md"]["id"],
+            by_path["entities/User.md"]["mcp_uri"],
+        ) == ("User", "llm-wiki://entities/User")
+        assert (
+            by_path["modules/models.md"]["id"],
+            by_path["modules/models.md"]["mcp_uri"],
+        ) == ("models", "llm-wiki://modules/models")
+
+        deterministic_payloads = [
+            data,
+            json.loads(
+                (wiki_dir / ".llm-wiki-knowledge.json").read_text(encoding="utf-8")
+            ),
+            json.loads(
+                (wiki_dir / ".llm-wiki-manifest.json").read_text(encoding="utf-8")
+            ),
+        ]
+
+        def nested_keys(value):
+            if isinstance(value, dict):
+                return set(value).union(
+                    *(nested_keys(item) for item in value.values())
+                )
+            if isinstance(value, list):
+                return set().union(*(nested_keys(item) for item in value))
+            return set()
+
+        forbidden_time_keys = {
+            "created_at",
+            "generated_at",
+            "mtime",
+            "mtime_ns",
+            "timestamp",
+            "updated_at",
+        }
+        assert all(
+            nested_keys(payload).isdisjoint(forbidden_time_keys)
+            for payload in deterministic_payloads
+        )
 
     def test_sync_succeeds_after_bootstrap(self, tmp_project, capsys):
         """After bootstrap, running sync should not fail with 'no manifest'."""

@@ -315,6 +315,32 @@ def test_dry_run_reports_planned_writes_without_mutating(tmp_path):
     assert not out.exists()
 
 
+def test_knowledge_sidecars_do_not_change_site_output(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    before_dir = tmp_path / "site-before"
+    after_dir = tmp_path / "site-after"
+
+    before_report = export_site_mirror(wiki_dir=wiki, out_dir=before_dir)
+    before = {
+        path.relative_to(before_dir).as_posix(): path.read_bytes()
+        for path in sorted(before_dir.rglob("*"))
+        if path.is_file()
+    }
+
+    _write(wiki / ".llm-wiki-knowledge.json", '{"schema_version": "future"}\n')
+    _write(wiki / ".llm-wiki-manifest.json", '{"artifact_hashes": {}}\n')
+    after_report = export_site_mirror(wiki_dir=wiki, out_dir=after_dir)
+    after = {
+        path.relative_to(after_dir).as_posix(): path.read_bytes()
+        for path in sorted(after_dir.rglob("*"))
+        if path.is_file()
+    }
+
+    assert after_report.page_count == before_report.page_count
+    assert after == before
+    assert not any("llm-wiki-knowledge" in path for path in after)
+
+
 def test_rejects_source_overlap_unless_explicitly_allowed(tmp_path):
     wiki = _write_wiki(tmp_path)
 

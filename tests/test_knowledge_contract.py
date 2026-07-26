@@ -42,6 +42,7 @@ from tests.knowledge_fixtures import (
     bundle_envelope_fixtures,
     duplicate_entity_occurrences_fixture,
     fail_if_extraction_runs,
+    fixture_hash,
     freshness_fixtures,
     inert_metadata_fixture,
     link_outcome_fixtures,
@@ -715,9 +716,10 @@ def test_projection_mismatch_fixtures_hash_exact_persisted_bytes():
     cases = {case.name: case for case in projection_integrity_fixtures()}
 
     assert set(cases) == {
+        "envelope-projection-hash-mismatch",
         "interrupted-before-manifest-commit",
-        "surface-projection-hash-mismatch",
         "knowledge-projection-hash-mismatch",
+        "surface-projection-hash-mismatch",
     }
     for case in cases.values():
         assert case.expected_state is KnowledgeLoadState.MIXED_SNAPSHOT
@@ -746,6 +748,17 @@ def test_projection_mismatch_fixtures_hash_exact_persisted_bytes():
     assert (
         _sha256(knowledge_mismatch.knowledge_bytes)
         != knowledge_mismatch.committed_knowledge_hash
+    )
+
+    envelope_mismatch = cases["envelope-projection-hash-mismatch"]
+    assert _sha256(envelope_mismatch.surface_bytes) == (
+        envelope_mismatch.committed_surface_hash
+    )
+    assert _sha256(envelope_mismatch.knowledge_bytes) == (
+        envelope_mismatch.committed_knowledge_hash
+    )
+    assert envelope_mismatch.committed_envelope_hash == fixture_hash(
+        "projection:wrong-envelope"
     )
 
 

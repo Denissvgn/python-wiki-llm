@@ -249,6 +249,7 @@ class ProjectionFixture:
     reason: str
     fallback_selected: bool = False
     underlying_state: Optional[KnowledgeLoadState] = None
+    committed_envelope_hash: Optional[str] = None
 
 
 def _repository(
@@ -1416,6 +1417,16 @@ def projection_integrity_fixtures() -> tuple[ProjectionFixture, ...]:
             expected_state=KnowledgeLoadState.MIXED_SNAPSHOT,
             reason="knowledge-projection-hash-mismatch",
         ),
+        ProjectionFixture(
+            name="envelope-projection-hash-mismatch",
+            surface_bytes=surface,
+            knowledge_bytes=knowledge,
+            committed_surface_hash=_projection_hash(surface),
+            committed_knowledge_hash=_projection_hash(knowledge),
+            expected_state=KnowledgeLoadState.MIXED_SNAPSHOT,
+            reason="manifest-envelope-hash-mismatch",
+            committed_envelope_hash=fixture_hash("projection:wrong-envelope"),
+        ),
     )
 
 
@@ -1425,6 +1436,9 @@ def load_state_fixtures() -> tuple[ProjectionFixture, ...]:
     surface, knowledge = _projection_bytes()
     mixed = projection_integrity_fixtures()[0]
     malformed = b"{not-json}\n"
+    schema_invalid_payload = json.loads(knowledge)
+    schema_invalid_payload["concepts"] = "not-an-array"
+    schema_invalid = _canonical_json_bytes(schema_invalid_payload)
     unsupported = knowledge.replace(
         b'"llm-wiki-knowledge/v1"', b'"llm-wiki-knowledge/v2"', 1
     )
@@ -1464,6 +1478,15 @@ def load_state_fixtures() -> tuple[ProjectionFixture, ...]:
             committed_knowledge_hash=_projection_hash(malformed),
             expected_state=KnowledgeLoadState.INVALID,
             reason="knowledge-projection-malformed",
+        ),
+        ProjectionFixture(
+            name="invalid-schema",
+            surface_bytes=surface,
+            knowledge_bytes=schema_invalid,
+            committed_surface_hash=_projection_hash(surface),
+            committed_knowledge_hash=_projection_hash(schema_invalid),
+            expected_state=KnowledgeLoadState.INVALID,
+            reason="knowledge-projection-schema-invalid",
         ),
         ProjectionFixture(
             name="invalid-unsupported-version",
