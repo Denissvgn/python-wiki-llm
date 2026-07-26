@@ -32,16 +32,25 @@ from .knowledge_envelope import (
     ConsumedInputKind,
     ProducerComponentInput,
     RepositoryEvidence,
+    build_producer_record,
     collect_git_repository_evidence,
     plugin_producer_inputs,
 )
-from .knowledge_evidence import is_valid_sha256
+from .knowledge_evidence import (
+    ENTITY_OBSERVATION_SCOPE,
+    MODULE_OBSERVATION_SCOPE,
+    ConceptObservationBasis,
+    build_entity_observation_basis,
+    build_module_observation_basis,
+    is_valid_sha256,
+)
+from .knowledge_freshness import LiveKnowledgeEvaluation
 from .knowledge_generation import (
     KnowledgeGenerationError,
     KnowledgeGenerationInputs,
     build_knowledge_generation_plan,
 )
-from .knowledge_model import ProducerRecord
+from .knowledge_model import KnowledgeIndex, ProducerRecord
 from .source_snapshot import SourceSnapshot
 from .sync_manifest import EVIDENCE_NOT_RECORDED, MANIFEST_FILENAME, SyncManifest
 from .wiki_surface_index import (
@@ -103,6 +112,21 @@ class RuntimeKnowledgeInputs:
     generation_options: Mapping[str, Any] = field(default_factory=dict)
     generation_option_defaults: Mapping[str, Any] = field(default_factory=dict)
     generation_option_allowlist: Sequence[str] = ()
+
+
+@dataclass(frozen=True)
+class RuntimeLiveEvaluationInputs:
+    """Already evaluated runtime values for one live freshness comparison."""
+
+    knowledge: KnowledgeIndex
+    manifest: SyncManifest
+    inventory: Mapping[str, Mapping[str, Any]]
+    source_snapshot: SourceSnapshot
+    missing_source_paths: AbstractSet[str] = frozenset()
+    inventory_complete: bool = True
+    extractor_registry: Mapping[str, str] = field(default_factory=dict)
+    plugin_extractor_components: Sequence[Mapping[str, Any]] = ()
+    plugin_components: Sequence[Mapping[str, Any]] = ()
 
 
 def build_runtime_knowledge_plan(
@@ -181,6 +205,119 @@ def build_runtime_knowledge_plan(
             regenerated_evidence_page_paths=(inputs.regenerated_evidence_page_paths),
         )
     )
+
+
+def build_runtime_live_evaluation(
+    inputs: RuntimeLiveEvaluationInputs,
+) -> LiveKnowledgeEvaluation:
+    """Adapt one existing inventory/snapshot run to the freshness boundary.
+
+    The caller supplies reliably missing source paths explicitly. This adapter
+    performs no source discovery, extraction, filesystem read, or write.
+    Generation options retain the committed hash because a read operation does
+    not select a new generation policy.
+    """
+
+    if not isinstance(inputs, RuntimeLiveEvaluationInputs):
+        raise TypeError("inputs must be a RuntimeLiveEvaluationInputs")
+    if not isinstance(inputs.knowledge, KnowledgeIndex):
+        raise TypeError("inputs.knowledge must be a KnowledgeIndex")
+    if not isinstance(inputs.manifest, SyncManifest):
+        raise TypeError("inputs.manifest must be a SyncManifest")
+    if not isinstance(inputs.source_snapshot, SourceSnapshot):
+        raise TypeError("inputs.source_snapshot must be a SourceSnapshot")
+    if not isinstance(inputs.inventory, Mapping):
+        raise TypeError("inputs.inventory must be a mapping")
+
+    inventory = dict(inputs.inventory)
+    source_hashes = inputs.source_snapshot.hashes_for(inventory)
+    (
+        extractor_ref_by_source,
+        _completeness_by_source,
+        extractor_components,
+        plugin_components,
+    ) = _producer_evidence(
+        inventory,
+        inventory_complete=inputs.inventory_complete,
+        extractor_registry=inputs.extractor_registry,
+        plugin_extractor_components=inputs.plugin_extractor_components,
+        plugin_components=inputs.plugin_components,
+    )
+    producer = build_producer_record(
+        tool=ProducerComponentInput(
+            component_id="agent-wiki-cli",
+            version=__version__,
+            configuration={
+                "knowledge_schema": KNOWLEDGE_SCHEMA_VERSION,
+                "surface_schema": WIKI_SURFACE_INDEX_SCHEMA_VERSION,
+            },
+        ),
+        extractors=extractor_components,
+        plugins=plugin_components,
+    )
+    return LiveKnowledgeEvaluation(
+        schema_version=KNOWLEDGE_SCHEMA_VERSION,
+        producer=producer,
+        generation_options_hash=(
+            inputs.knowledge.bundle.snapshot.generation_options_hash
+        ),
+        source_content_hashes=source_hashes,
+        missing_source_paths=frozenset(inputs.missing_source_paths),
+        concept_bases=_runtime_live_concept_bases(
+            inputs.knowledge,
+            inputs.manifest,
+            inventory,
+            source_hashes,
+            extractor_ref_by_source,
+            inventory_complete=inputs.inventory_complete,
+        ),
+    )
+
+
+def _runtime_live_concept_bases(
+    knowledge: KnowledgeIndex,
+    manifest: SyncManifest,
+    inventory: Mapping[str, Mapping[str, Any]],
+    source_hashes: Mapping[str, str],
+    extractor_ref_by_source: Mapping[str, str],
+    *,
+    inventory_complete: bool,
+) -> dict[str, ConceptObservationBasis]:
+    bases: dict[str, ConceptObservationBasis] = {}
+    for concept in knowledge.concepts:
+        mapping = manifest.page_source_mappings.get(concept.document.canonical_path)
+        if mapping is None:
+            continue
+        source_path = mapping.source_path
+        file_data = inventory.get(source_path)
+        source_hash = source_hashes.get(source_path)
+        extractor_ref = extractor_ref_by_source.get(source_path)
+        if file_data is None or source_hash is None or extractor_ref is None:
+            continue
+        if mapping.scope == MODULE_OBSERVATION_SCOPE:
+            basis = build_module_observation_basis(
+                source_path=source_path,
+                file_data=file_data,
+                source_content_hash=source_hash,
+                extractor_ref=extractor_ref,
+                inventory_complete=inventory_complete,
+            )
+        elif mapping.scope == ENTITY_OBSERVATION_SCOPE:
+            assert mapping.entity_name is not None
+            assert mapping.occurrence is not None
+            basis = build_entity_observation_basis(
+                source_path=source_path,
+                file_data=file_data,
+                entity_name=mapping.entity_name,
+                occurrence=mapping.occurrence,
+                source_content_hash=source_hash,
+                extractor_ref=extractor_ref,
+                inventory_complete=inventory_complete,
+            )
+        else:
+            continue
+        bases[concept.locator] = basis
+    return bases
 
 
 def _previous_committed_producer(
@@ -642,7 +779,9 @@ __all__ = [
     "RUNTIME_GENERATION_INPUT_KEY",
     "RUNTIME_GENERATION_OPTION_DEFAULTS",
     "RuntimeKnowledgeInputs",
+    "RuntimeLiveEvaluationInputs",
     "build_runtime_knowledge_plan",
+    "build_runtime_live_evaluation",
     "collect_runtime_repository_evidence",
     "finalize_runtime_knowledge",
     "persist_runtime_generation_policy",

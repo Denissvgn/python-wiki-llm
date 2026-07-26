@@ -4,18 +4,14 @@ import json
 import re
 import sys
 import time
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
-from collections.abc import Callable, Iterable, Iterator
+from enum import Enum
 from pathlib import Path
 
-from .extract_cmd import get_call_graph, get_docker_inventory, get_inventory_result
-from .extract_cmd import resolve_call_edges
-from .bootstrap_cmd import (
-    build_entity_occurrence_page_map,
-    build_module_page_map,
-)
 from ..config import validate_path, validate_source_root
+from ..services import wiki_media
 from ..services.data_flow import analyze_data_flow
 from ..services.dependencies import analyze_dependencies
 from ..services.entrypoints import (
@@ -30,16 +26,39 @@ from ..services.extraction_jobs import (
     extraction_job_request_from_args,
     print_extraction_job_plan,
 )
+from ..services.infrastructure_inventory import (
+    get_yaml_infrastructure_inventory,
+    infrastructure_page_name,
+)
 from ..services.inventory_cache import (
     InventoryCacheOptions,
     InventoryCacheStats,
     format_cache_stats,
 )
-from ..services.infrastructure_inventory import (
-    get_yaml_infrastructure_inventory,
-    infrastructure_page_name,
-)
 from ..services.io import read_md
+from ..services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from ..services.knowledge_consumption import (
+    KnowledgeAvailability,
+    KnowledgeReadView,
+    build_knowledge_read_view,
+)
+from ..services.knowledge_loader import (
+    KnowledgeLoadIssue,
+    KnowledgeLoadResult,
+    KnowledgeMismatchPolicy,
+    KnowledgeStateLoadError,
+    load_knowledge_state,
+)
+from ..services.knowledge_model import (
+    ComputedFreshness,
+    EvidenceState,
+    KnowledgeLoadState,
+    ObservationScope,
+)
+from ..services.knowledge_orchestration import (
+    RuntimeLiveEvaluationInputs,
+    build_runtime_live_evaluation,
+)
 from ..services.plugins import PluginError, iter_components, load_entry_point
 from ..services.source_snapshot import (
     SourceSnapshot,
@@ -48,8 +67,21 @@ from ..services.source_snapshot import (
     unsupported_source_label,
     unsupported_source_summary,
 )
+from ..services.sync_manifest import MANIFEST_FILENAME, SyncManifest
 from ..services.team import build_team_issues
-from ..services import wiki_media
+from ..services.wiki_surface import PageKind, is_safe_page_id, iter_page_kinds
+from ..services.wiki_surface_index import SURFACE_INDEX_FILENAME
+from .bootstrap_cmd import (
+    build_entity_occurrence_page_map,
+    build_module_page_map,
+)
+from .extract_cmd import (
+    InventoryResult,
+    get_call_graph,
+    get_docker_inventory,
+    get_inventory_result,
+    resolve_call_edges,
+)
 
 MERMAID_CLICK_RE = re.compile(r'^\s*click\s+\S+\s+"([^"]+)"', re.MULTILINE)
 MERMAID_NODE_RE = re.compile(r'^\s*[A-Za-z][A-Za-z0-9_]*\s*\["')
@@ -83,6 +115,9 @@ _PROFILE_PHASES = [
     "javascript_flow",
     "dependencies",
     "infrastructure",
+    "knowledge_load",
+    "knowledge_freshness",
+    "knowledge_checks",
     "strict",
     "plugins",
     "team",
@@ -135,6 +170,18 @@ class LintIssue:
     target: str | None = None
 
 
+@dataclass(frozen=True)
+class KnowledgeLintSummary:
+    """Aggregate strict-lint knowledge status without exposing evidence."""
+
+    availability: str
+    reason: str
+    concepts_total: int
+    concepts_by_kind: dict[str, int]
+    evidence_by_state: dict[str, int]
+    freshness_by_state: dict[str, int]
+
+
 @dataclass
 class LintReport:
     wiki_dir: str
@@ -144,6 +191,7 @@ class LintReport:
     diagnostics: list[LintIssue] = field(default_factory=list)
     cache_stats: InventoryCacheStats | None = None
     extraction_job_plan: ExtractionJobPlan = field(default_factory=ExtractionJobPlan)
+    knowledge_summary: KnowledgeLintSummary | None = None
 
     @property
     def job_plan(self) -> ExtractionJobPlan:
@@ -182,6 +230,17 @@ class _LintInputs:
     page_index: _WikiPageIndex
     unsupported_sources: dict[str, dict[str, object]]
     source_snapshot: SourceSnapshot
+    inventory_result: InventoryResult
+
+
+@dataclass(frozen=True)
+class _KnowledgeLintState:
+    enabled: bool = False
+    load_result: KnowledgeLoadResult | None = None
+    view: KnowledgeReadView | None = None
+    load_issues: tuple[KnowledgeLoadIssue, ...] = ()
+    freshness_error_field: str | None = None
+    freshness_error_message: str | None = None
 
 
 def _local_link_path(link: str) -> str | None:
@@ -414,8 +473,10 @@ def _check_sync_manifest(
     wiki_dir: Path,
     src_dir: str,
     inventory: dict | None = None,
+    *,
+    source_snapshot: SourceSnapshot | None = None,
+    proven_nonsemantic_paths: frozenset[str] = frozenset(),
 ) -> None:
-    from ..services.sync_manifest import MANIFEST_FILENAME, SyncManifest
     from .sync_cmd import _compute_diff
 
     try:
@@ -447,7 +508,18 @@ def _check_sync_manifest(
                 )
                 raise RuntimeError(messages)
             inventory = inventory_result.inventory
-        diff = _compute_diff(manifest, inventory, src_dir)
+            source_snapshot = inventory_result.source_snapshot
+        source_content_hashes = (
+            source_snapshot.hashes_for(inventory)
+            if source_snapshot is not None
+            else None
+        )
+        diff = _compute_diff(
+            manifest,
+            inventory,
+            src_dir,
+            source_content_hashes=source_content_hashes,
+        )
     except Exception as exc:
         _add(
             report,
@@ -457,10 +529,23 @@ def _check_sync_manifest(
         )
         return
 
-    if diff.has_changes:
+    unproven_metadata = sorted(
+        set(diff.metadata_only_files) - set(proven_nonsemantic_paths)
+    )
+    has_hard_changes = bool(
+        diff.new_files
+        or diff.changed_files
+        or unproven_metadata
+        or diff.removed_files
+        or diff.moved_entities
+        or diff.renamed_entity_pages
+        or diff.renamed_module_pages
+    )
+    if has_hard_changes:
         parts = [
             f"{len(diff.new_files)} new",
             f"{len(diff.changed_files)} changed",
+            f"{len(unproven_metadata)} metadata-only",
             f"{len(diff.removed_files)} removed",
             f"{len(diff.moved_entities)} moved",
             f"{len(diff.renamed_entity_pages)} renamed entity pages",
@@ -507,6 +592,7 @@ def _collect_lint_inputs(
         if inventory_result.failed:
             _add_extractor_failures(report, inventory_result)
             return None
+        source_snapshot = inventory_result.source_snapshot or source_snapshot
         deep_inventory = inventory_result.inventory
         unsupported_sources = unsupported_source_summary(
             source_snapshot, supported_languages=inventory_result.statuses
@@ -524,12 +610,13 @@ def _collect_lint_inputs(
         page_index = _build_page_index(wiki_path)
 
     return _LintInputs(
-        deep_inventory,
-        docker_inventory,
-        yaml_infrastructure_inventory,
-        page_index,
-        unsupported_sources,
-        source_snapshot,
+        deep_inventory=deep_inventory,
+        docker_inventory=docker_inventory,
+        yaml_infrastructure_inventory=yaml_infrastructure_inventory,
+        page_index=page_index,
+        unsupported_sources=unsupported_sources,
+        source_snapshot=source_snapshot,
+        inventory_result=inventory_result,
     )
 
 
@@ -1189,6 +1276,394 @@ def _check_team_issues(
         report.issues.append(_coerce_plugin_issue(issue, "team"))
 
 
+def _canonical_markdown_content(
+    page_index: _WikiPageIndex,
+    wiki_path: Path,
+) -> dict[str, str]:
+    """Reuse the page-index bytes for only the versioned canonical surface."""
+
+    content_by_path = _content_by_relative_path(page_index, wiki_path)
+    root_paths = {
+        entry.path_pattern for entry in iter_page_kinds() if not entry.requires_page_id
+    }
+    directories = {
+        entry.directory
+        for entry in iter_page_kinds()
+        if entry.requires_page_id and entry.directory is not None
+    }
+    canonical: dict[str, str] = {}
+    for relative_path, content in content_by_path.items():
+        if relative_path in root_paths:
+            canonical[relative_path] = content
+            continue
+        parts = relative_path.split("/")
+        if (
+            len(parts) == 2
+            and parts[0] in directories
+            and parts[1].endswith(".md")
+            and is_safe_page_id(parts[1][:-3])
+        ):
+            canonical[relative_path] = content
+    return canonical
+
+
+def _knowledge_lint_enabled(wiki_path: Path) -> bool:
+    """Recognize generated or manifest-declared knowledge without taxing legacy."""
+
+    for filename in (SURFACE_INDEX_FILENAME, KNOWLEDGE_INDEX_FILENAME):
+        artifact = wiki_path / filename
+        if artifact.exists() or artifact.is_symlink():
+            return True
+    try:
+        manifest = SyncManifest.load(wiki_path)
+    except (FileNotFoundError, OSError, UnicodeError, ValueError):
+        return False
+    return manifest.artifact_hashes is not None
+
+
+def _load_knowledge_lint_state(
+    wiki_path: Path,
+    inputs: _LintInputs,
+) -> _KnowledgeLintState:
+    if not _knowledge_lint_enabled(wiki_path):
+        return _KnowledgeLintState()
+    try:
+        load_result = load_knowledge_state(
+            wiki_path,
+            policy=KnowledgeMismatchPolicy.DEGRADED,
+            markdown_pages=_canonical_markdown_content(
+                inputs.page_index,
+                wiki_path,
+            ),
+        )
+    except KnowledgeStateLoadError as exc:
+        return _KnowledgeLintState(enabled=True, load_issues=exc.issues)
+    except (OSError, TypeError, UnicodeError, ValueError) as exc:
+        return _KnowledgeLintState(
+            enabled=True,
+            load_issues=(
+                KnowledgeLoadIssue(
+                    code="knowledge-load-failed",
+                    artifact_path=KNOWLEDGE_INDEX_FILENAME,
+                    message=str(exc),
+                ),
+            ),
+        )
+    return _KnowledgeLintState(enabled=True, load_result=load_result)
+
+
+def _reliably_missing_source_paths(
+    load_result: KnowledgeLoadResult,
+    source_snapshot: SourceSnapshot,
+) -> frozenset[str]:
+    knowledge = load_result.knowledge
+    if knowledge is None:
+        return frozenset()
+    captured = source_snapshot.captured_content_hashes
+    missing: set[str] = set()
+    for concept in knowledge.concepts:
+        basis = concept.facets.structure.basis
+        if basis is None or basis.source_path is None:
+            continue
+        source_path = basis.source_path
+        if source_path in captured:
+            continue
+        candidate = source_snapshot.root / source_path
+        try:
+            candidate.lstat()
+        except FileNotFoundError:
+            missing.add(source_path)
+        except OSError:
+            # Unreadable, excluded, or otherwise indeterminate paths are not
+            # reliable source-missing evidence.
+            continue
+    return frozenset(missing)
+
+
+def _evaluate_knowledge_lint_state(
+    state: _KnowledgeLintState,
+    inputs: _LintInputs,
+) -> _KnowledgeLintState:
+    load_result = state.load_result
+    if not state.enabled or load_result is None:
+        return state
+    if load_result.status is not KnowledgeLoadState.VALID:
+        return _KnowledgeLintState(
+            enabled=True,
+            load_result=load_result,
+            view=build_knowledge_read_view(load_result),
+        )
+
+    assert load_result.knowledge is not None
+    assert load_result.manifest_basis is not None
+    try:
+        live_evaluation = build_runtime_live_evaluation(
+            RuntimeLiveEvaluationInputs(
+                knowledge=load_result.knowledge,
+                manifest=load_result.manifest_basis,
+                inventory=inputs.deep_inventory,
+                source_snapshot=inputs.source_snapshot,
+                missing_source_paths=_reliably_missing_source_paths(
+                    load_result,
+                    inputs.source_snapshot,
+                ),
+                inventory_complete=True,
+                extractor_registry=inputs.inventory_result.extractor_registry,
+                plugin_extractor_components=(inputs.inventory_result.plugin_components),
+                plugin_components=(inputs.inventory_result.producer_plugin_components),
+            )
+        )
+        view = build_knowledge_read_view(
+            load_result,
+            live_evaluation=live_evaluation,
+        )
+    except (OSError, TypeError, UnicodeError, ValueError) as exc:
+        field_name = str(getattr(exc, "field", "live_evaluation"))
+        message = str(getattr(exc, "message", exc))
+        view = build_knowledge_read_view(load_result, snapshot_only=True)
+        return _KnowledgeLintState(
+            enabled=True,
+            load_result=load_result,
+            view=view,
+            freshness_error_field=field_name,
+            freshness_error_message=message,
+        )
+    return _KnowledgeLintState(
+        enabled=True,
+        load_result=load_result,
+        view=view,
+    )
+
+
+def _projection_issue_category(issue: KnowledgeLoadIssue) -> str:
+    if issue.code.endswith("-version-unsupported") or issue.code in {
+        "knowledge-invalid",
+        "manifest-invalid",
+        "surface-invalid",
+    }:
+        return "knowledge_schema"
+    if issue.code in {
+        "markdown-snapshot-invalid",
+        "markdown-snapshot-mismatch",
+        "page-parity-mismatch",
+    }:
+        return "knowledge_snapshot"
+    return "knowledge_projection"
+
+
+def _enum_count_payload(values: Mapping[object, int]) -> dict[str, int]:
+    normalized = {
+        key.value if isinstance(key, Enum) else str(key): value
+        for key, value in values.items()
+    }
+    return dict(sorted(normalized.items()))
+
+
+def _set_knowledge_summary(
+    report: LintReport,
+    view: KnowledgeReadView,
+) -> None:
+    counts = view.counts
+    if (
+        view.availability is not KnowledgeAvailability.READY
+        or view.freshness is None
+        or counts is None
+        or counts.freshness_by_state is None
+    ):
+        return
+    report.knowledge_summary = KnowledgeLintSummary(
+        availability=view.availability.value,
+        reason=view.reason_code,
+        concepts_total=counts.concepts_total,
+        concepts_by_kind=dict(counts.concepts_by_kind),
+        evidence_by_state=_enum_count_payload(counts.evidence_by_state),
+        freshness_by_state=_enum_count_payload(counts.freshness_by_state),
+    )
+
+
+def _promised_structural_scope(concept) -> ObservationScope | None:
+    return {
+        PageKind.MODULES: ObservationScope.MODULE,
+        PageKind.ENTITIES: ObservationScope.ENTITY,
+    }.get(concept.document.page_kind)
+
+
+def _promised_evidence_reason(
+    concept,
+    expected_scope: ObservationScope,
+) -> str | None:
+    structure = concept.facets.structure
+    if structure.evidence is not EvidenceState.PRESENT:
+        return f"promised-evidence-{structure.evidence.value}"
+    basis = structure.basis
+    if basis is None:
+        return "promised-evidence-basis-missing"
+    if basis.scope is not expected_scope:
+        return "promised-evidence-scope-mismatch"
+    if (
+        basis.source_path is None
+        or basis.extractor_ref is None
+        or basis.source_content_hash is None
+        or basis.concept_observation_hash is None
+    ):
+        return "promised-evidence-basis-invalid"
+    return None
+
+
+def _check_knowledge_concepts(
+    report: LintReport,
+    view: KnowledgeReadView,
+) -> None:
+    knowledge = view.knowledge
+    manifest = view.manifest_basis
+    if knowledge is None or manifest is None:
+        return
+    for concept in sorted(knowledge.concepts, key=lambda item: item.locator):
+        expected_scope = _promised_structural_scope(concept)
+        if expected_scope is None:
+            continue
+        evidence_reason = _promised_evidence_reason(concept, expected_scope)
+        if evidence_reason is not None:
+            _add(
+                report,
+                "knowledge_evidence",
+                (
+                    f"Promised structural evidence for {concept.locator!r} is "
+                    f"not valid [reason={evidence_reason}]."
+                ),
+                path=concept.document.canonical_path,
+                target=concept.locator,
+            )
+            continue
+        if view.freshness is None:
+            continue
+        freshness = view.freshness.by_locator.get(concept.locator)
+        if freshness is None:
+            _add(
+                report,
+                "knowledge_freshness",
+                (
+                    f"Knowledge freshness is unavailable for {concept.locator!r} "
+                    "[reason=freshness-result-missing]."
+                ),
+                path=concept.document.canonical_path,
+                target=concept.locator,
+            )
+            continue
+        message = (
+            f"Knowledge freshness for {concept.locator!r} is "
+            f"{freshness.state.value} [reason={freshness.reason_code}]: "
+            f"{freshness.description}."
+        )
+        if freshness.state is ComputedFreshness.NONSEMANTIC_SOURCE_CHANGE:
+            _diagnose(
+                report,
+                "knowledge_freshness",
+                message,
+                path=concept.document.canonical_path,
+                target=concept.locator,
+            )
+        elif freshness.state in {
+            ComputedFreshness.UNKNOWN,
+            ComputedFreshness.SOURCE_CHANGED,
+            ComputedFreshness.SOURCE_MISSING,
+            ComputedFreshness.BASIS_INCOMPATIBLE,
+        }:
+            _add(
+                report,
+                "knowledge_freshness",
+                message,
+                path=concept.document.canonical_path,
+                target=concept.locator,
+            )
+
+
+def _check_knowledge_lint(
+    report: LintReport,
+    state: _KnowledgeLintState,
+) -> None:
+    if not state.enabled:
+        return
+    if state.load_issues:
+        findings = state.load_issues
+    elif state.view is None or state.view.availability is KnowledgeAvailability.ABSENT:
+        findings = ()
+    else:
+        findings = state.view.projection_findings
+    for issue in sorted(
+        findings,
+        key=lambda item: (
+            _projection_issue_category(item),
+            item.artifact_path,
+            item.field or "",
+            item.code,
+        ),
+    ):
+        _add(
+            report,
+            _projection_issue_category(issue),
+            (
+                "Knowledge projection validation failed "
+                f"[reason={issue.code}]: {issue.message}."
+            ),
+            path=issue.artifact_path,
+            target=issue.field or issue.code,
+        )
+    if state.freshness_error_message is not None:
+        _add(
+            report,
+            "knowledge_freshness",
+            (
+                "Live knowledge evaluation could not be constructed "
+                f"[reason=live-evaluation-invalid]: "
+                f"{state.freshness_error_message}."
+            ),
+            path=KNOWLEDGE_INDEX_FILENAME,
+            target=state.freshness_error_field or "live-evaluation-invalid",
+        )
+    if state.view is None or not state.view.ready:
+        return
+    _check_knowledge_concepts(report, state.view)
+    _set_knowledge_summary(report, state.view)
+
+
+def _proven_nonsemantic_source_paths(
+    view: KnowledgeReadView | None,
+) -> frozenset[str]:
+    if (
+        view is None
+        or not view.ready
+        or view.knowledge is None
+        or view.manifest_basis is None
+        or view.freshness is None
+    ):
+        return frozenset()
+    states_by_path: dict[str, list[ComputedFreshness]] = {}
+    for concept in view.knowledge.concepts:
+        expected_scope = _promised_structural_scope(concept)
+        if (
+            expected_scope is None
+            or _promised_evidence_reason(concept, expected_scope) is not None
+        ):
+            continue
+        mapping = view.manifest_basis.page_source_mappings.get(
+            concept.document.canonical_path
+        )
+        if mapping is None or mapping.scope != expected_scope.value:
+            continue
+        freshness = view.freshness.by_locator.get(concept.locator)
+        if freshness is not None:
+            states_by_path.setdefault(mapping.source_path, []).append(freshness.state)
+    return frozenset(
+        source_path
+        for source_path, states in states_by_path.items()
+        if states
+        and all(
+            state is ComputedFreshness.NONSEMANTIC_SOURCE_CHANGE for state in states
+        )
+    )
+
+
 def _run_report_checks(
     report: LintReport,
     wiki_path: Path,
@@ -1241,10 +1716,30 @@ def _run_report_checks(
             inputs.docker_inventory,
             inputs.yaml_infrastructure_inventory,
         )
+    knowledge_state = _KnowledgeLintState()
+    if strict:
+        with _profile_phase(profiler, "knowledge_load"):
+            knowledge_state = _load_knowledge_lint_state(wiki_path, inputs)
+        with _profile_phase(profiler, "knowledge_freshness"):
+            knowledge_state = _evaluate_knowledge_lint_state(
+                knowledge_state,
+                inputs,
+            )
+        with _profile_phase(profiler, "knowledge_checks"):
+            _check_knowledge_lint(report, knowledge_state)
     with _profile_phase(profiler, "strict"):
         if strict:
             _check_required_structure(report, wiki_path)
-            _check_sync_manifest(report, wiki_path, src_dir, inputs.deep_inventory)
+            _check_sync_manifest(
+                report,
+                wiki_path,
+                src_dir,
+                inputs.deep_inventory,
+                source_snapshot=inputs.source_snapshot,
+                proven_nonsemantic_paths=_proven_nonsemantic_source_paths(
+                    knowledge_state.view
+                ),
+            )
     with _profile_phase(profiler, "plugins"):
         _run_plugin_lint_rules(
             report,
@@ -1318,6 +1813,8 @@ def report_to_dict(report: LintReport, *, include_execution: bool = False) -> di
         "issues": [asdict(issue) for issue in report.issues],
         "diagnostics": [asdict(diagnostic) for diagnostic in report.diagnostics],
     }
+    if report.knowledge_summary is not None:
+        payload["knowledge_summary"] = asdict(report.knowledge_summary)
     if include_execution:
         payload["execution"] = {"extractor_jobs": report.extraction_job_plan.to_dict()}
     return payload
@@ -1375,6 +1872,19 @@ def render_text(report: LintReport) -> str:
         elif not only_if_present:
             lines.append(f"  ✅ {empty}")
             lines.append("")
+
+    def emit_knowledge_group(category: str, found: str) -> None:
+        issues = grouped.get(category, [])
+        diagnostics = diagnostic_groups.get(category, [])
+        if not issues and not diagnostics:
+            return
+        for issue in issues:
+            lines.append(f"  ❌ {issue.message}")
+        for diagnostic in diagnostics:
+            marker = "INFO" if diagnostic.severity == "info" else "⚠️ "
+            lines.append(f"  {marker} {diagnostic.message}")
+        lines.append(f"  {found.format(count=len(issues) + len(diagnostics))}")
+        lines.append("")
 
     if grouped.get("extractor_failure"):
         emit_group(
@@ -1519,6 +2029,26 @@ def render_text(report: LintReport) -> str:
     )
 
     if report.strict:
+        emit_knowledge_group(
+            "knowledge_schema",
+            "Found {count} knowledge schema issue(s).",
+        )
+        emit_knowledge_group(
+            "knowledge_projection",
+            "Found {count} knowledge projection issue(s).",
+        )
+        emit_knowledge_group(
+            "knowledge_snapshot",
+            "Found {count} knowledge snapshot issue(s).",
+        )
+        emit_knowledge_group(
+            "knowledge_evidence",
+            "Found {count} knowledge evidence issue(s).",
+        )
+        emit_knowledge_group(
+            "knowledge_freshness",
+            "Found {count} knowledge freshness finding(s).",
+        )
         emit_group(
             "wiki_structure",
             "Required wiki structure present.",
