@@ -29,6 +29,7 @@ from .filesystem_guard import (
     WindowsFileGuardError,
     WindowsSecurityGuardError,
     create_private_windows_directory,
+    fresh_no_follow_stat,
     guard_windows_directory_chain,
     move_windows_path_write_through,
     open_windows_guarded_lock_file,
@@ -433,7 +434,7 @@ class ProtectedArtifactStore:
                     entries = list(os.scandir(directory))
                     _assert_portable_entry_names(entry.name for entry in entries)
                     for entry in entries:
-                        payload = entry.stat(follow_symlinks=False)
+                        payload = fresh_no_follow_stat(entry.path)
                         if stat.S_ISDIR(payload.st_mode):
                             _assert_regular_directory_stat(
                                 payload,

@@ -78,6 +78,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Windows guarded reads now hold rename-blocking directory handles throughout
   traversal and compare path/handle metadata using values with stable semantics
   across supported Python versions.
+- Windows protected-tree verification now uses fresh, identity-bearing pathname
+  metadata instead of incomplete directory-entry metadata while preserving
+  strict single-link checks.
+- Run-local documentation skill hashes now use platform-independent relative
+  path ordering and canonical UTF-8/LF bytes, avoiding false integrity failures
+  on Windows, and reject ambiguous NUL-delimited content. Existing affected
+  workspaces require an explicit `docs prepare --refresh`; recorded hashes are
+  never rewritten silently.
 - Case-only protected-artifact collisions consistently preserve the original
   artifact on case-insensitive filesystems.
 

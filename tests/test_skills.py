@@ -1021,6 +1021,55 @@ class TestSkillExport:
         assert "overwrite" in {op.action for op in report.operations}
         assert "local edit" not in target.read_text(encoding="utf-8")
 
+    def test_export_force_canonicalizes_semantically_equal_crlf(self, tmp_path):
+        root = tmp_path / "bundled"
+        _write_custom_skill(root)
+        destination = tmp_path / "out"
+        skills.export_skills(destination, skills_root=root)
+        target = destination / "demo" / "SKILL.md"
+        canonical_bytes = target.read_bytes()
+        crlf_bytes = canonical_bytes.replace(b"\n", b"\r\n")
+        target.write_bytes(crlf_bytes)
+
+        preserved = skills.export_skills(destination, skills_root=root)
+
+        assert preserved.ok
+        assert target.read_bytes() == crlf_bytes
+        assert (
+            next(
+                operation.action
+                for operation in preserved.operations
+                if Path(operation.path) == target
+            )
+            == "keep"
+        )
+
+        refreshed = skills.export_skills(destination, skills_root=root, force=True)
+
+        assert refreshed.ok
+        assert target.read_bytes() == canonical_bytes
+        assert (
+            next(
+                operation.action
+                for operation in refreshed.operations
+                if Path(operation.path) == target
+            )
+            == "overwrite"
+        )
+
+    def test_export_normalizes_crlf_bundled_source(self, tmp_path):
+        root = tmp_path / "bundled"
+        skill_dir = _write_custom_skill(root)
+        source = skill_dir / "SKILL.md"
+        source.write_bytes(source.read_bytes().replace(b"\n", b"\r\n"))
+
+        report = skills.export_skills(tmp_path / "out", skills_root=root)
+
+        assert report.ok
+        exported = (tmp_path / "out" / "demo" / "SKILL.md").read_bytes()
+        assert b"\r" not in exported
+        assert exported == source.read_bytes().replace(b"\r\n", b"\n")
+
     def test_export_unknown_skill_rejected(self, tmp_path):
         with pytest.raises(skills.SkillsError, match="Unknown skill 'nope'"):
             skills.export_skills(tmp_path / "out", skills=["nope"])

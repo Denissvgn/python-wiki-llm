@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 
 import llm_wiki_cli.services.documentation_run as documentation_run_service
+import llm_wiki_cli.services.skills as skills_service
 from llm_wiki_cli.services.contracts import (
     DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION,
 )
@@ -69,6 +70,191 @@ def _rewrite_json(path: Path, payload: dict) -> None:
     path.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
+
+
+def test_skill_tree_hash_uses_ordinal_posix_name_order():
+    entries = [
+        ("reference.md", b"reference\n"),
+        ("SKILL.md", b"manifest\n"),
+    ]
+
+    assert documentation_run_service._hash_skill_tree(
+        entries
+    ) == documentation_run_service._hash_skill_tree(reversed(entries))
+
+
+def test_skill_tree_hash_rejects_ambiguous_nul_framing():
+    baseline = [
+        ("SKILL.md", b"manifest\n"),
+        ("reference.md", b"reference\n"),
+    ]
+    consolidated = [
+        ("SKILL.md", b"manifest\n\0reference.md\0reference\n"),
+    ]
+
+    assert documentation_run_service._hash_skill_tree(baseline).startswith("sha256:")
+    with pytest.raises(DocumentationIntegrityError, match="NUL"):
+        documentation_run_service._hash_skill_tree(consolidated)
+
+
+def test_documentation_skill_export_hashes_canonical_crlf_source(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    bundled_root = tmp_path / "bundled"
+    skill_root = bundled_root / "demo"
+    skill_root.mkdir(parents=True)
+    (skill_root / "SKILL.md").write_bytes(
+        b"---\r\nname: demo\r\ndescription: Demo.\r\n---\r\n"
+    )
+    (skill_root / "reference.md").write_bytes(b"# Reference\r\n")
+    bundled = skills_service.list_bundled_skills(bundled_root)
+    monkeypatch.setattr(
+        documentation_run_service,
+        "DEFAULT_DOCUMENTATION_SKILLS",
+        ("demo",),
+    )
+    monkeypatch.setattr(
+        documentation_run_service,
+        "list_bundled_skills",
+        lambda: bundled,
+    )
+
+    def export_custom(destination, *, skills, force):
+        return skills_service.export_skills(
+            destination,
+            skills=skills,
+            force=force,
+            skills_root=bundled_root,
+        )
+
+    monkeypatch.setattr(
+        documentation_run_service,
+        "export_skills",
+        export_custom,
+    )
+    workspace = tmp_path / "workspace"
+
+    exported = documentation_run_service._export_documentation_skills(workspace)
+
+    expected = documentation_run_service._hash_skill_tree(
+        [
+            ("reference.md", b"# Reference\n"),
+            (
+                "SKILL.md",
+                b"---\nname: demo\ndescription: Demo.\n---\n",
+            ),
+        ]
+    )
+    assert exported == [
+        {
+            "id": "demo",
+            "package_version": documentation_run_service.__version__,
+            "hash": expected,
+            "path": ".llm-wiki-docs/skills/demo",
+        }
+    ]
+    assert (
+        documentation_run_service._hash_exported_skill(
+            workspace,
+            ".llm-wiki-docs/skills/demo",
+        )
+        == expected
+    )
+    assert (
+        b"\r"
+        not in (
+            workspace / ".llm-wiki-docs" / "skills" / "demo" / "SKILL.md"
+        ).read_bytes()
+    )
+
+
+def test_documentation_skill_export_rejects_unexpected_existing_file(
+    tmp_path: Path,
+):
+    workspace = tmp_path / "workspace"
+    unexpected = (
+        workspace
+        / ".llm-wiki-docs"
+        / "skills"
+        / documentation_run_service.DEFAULT_DOCUMENTATION_SKILLS[0]
+        / "unexpected.md"
+    )
+    unexpected.parent.mkdir(parents=True)
+    unexpected.write_text("unexpected\n", encoding="utf-8")
+
+    with pytest.raises(
+        DocumentationRunError,
+        match="differs from its canonical bundled content",
+    ):
+        documentation_run_service._export_documentation_skills(workspace)
+
+
+def test_exported_skill_hash_remains_bound_to_exact_tree(tmp_path: Path):
+    workspace = tmp_path / "workspace"
+    root = workspace / ".llm-wiki-docs" / "skills" / "demo"
+    root.mkdir(parents=True)
+    manifest = root / "SKILL.md"
+    reference = root / "reference.md"
+    manifest.write_bytes(b"manifest\n")
+    reference.write_bytes(b"reference\n")
+    relative = ".llm-wiki-docs/skills/demo"
+    baseline = documentation_run_service._hash_exported_skill(workspace, relative)
+
+    manifest.write_bytes(b"changed\n")
+    assert (
+        documentation_run_service._hash_exported_skill(workspace, relative) != baseline
+    )
+    manifest.write_bytes(b"manifest\n")
+    (root / "extra.md").write_bytes(b"extra\n")
+    assert (
+        documentation_run_service._hash_exported_skill(workspace, relative) != baseline
+    )
+    (root / "extra.md").unlink()
+    reference.unlink()
+    assert (
+        documentation_run_service._hash_exported_skill(workspace, relative) != baseline
+    )
+
+
+def test_exported_skill_hash_rejects_links(tmp_path: Path):
+    workspace = tmp_path / "workspace"
+    root = workspace / ".llm-wiki-docs" / "skills" / "demo"
+    root.mkdir(parents=True)
+    (root / "SKILL.md").write_bytes(b"manifest\n")
+    outside = tmp_path / "outside.md"
+    outside.write_bytes(b"outside\n")
+    link = root / "reference.md"
+    try:
+        link.symlink_to(outside)
+    except OSError as exc:
+        pytest.skip(f"file symlinks are unavailable: {exc}")
+
+    with pytest.raises(DocumentationIntegrityError, match="contains a link"):
+        documentation_run_service._hash_exported_skill(
+            workspace,
+            ".llm-wiki-docs/skills/demo",
+        )
+
+
+@pytest.mark.parametrize("change", ["content", "extra"])
+def test_packet_rejects_exported_skill_tree_change(
+    tmp_path: Path,
+    change: str,
+):
+    workspace, _ = _prepare(tmp_path)
+    skill_root = workspace / ".llm-wiki-docs" / "skills" / "agent-docs"
+    if change == "content":
+        manifest = skill_root / "SKILL.md"
+        manifest.write_bytes(manifest.read_bytes() + b"\nchanged\n")
+    else:
+        (skill_root / "unexpected.md").write_bytes(b"unexpected\n")
+
+    with pytest.raises(
+        DocumentationIntegrityError,
+        match="Exported documentation skill changed before dispatch",
+    ):
+        build_documentation_agent_packet(workspace, stage="wiki-enrichment")
 
 
 @pytest.mark.parametrize(

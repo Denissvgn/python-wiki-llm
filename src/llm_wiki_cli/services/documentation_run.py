@@ -63,7 +63,7 @@ from .filesystem_guard import (
     WindowsDirectoryGuardError,
     guard_windows_directory_chain,
 )
-from .io import write_text_output
+from .io import read_md, write_text_output
 from .skills import export_skills, list_bundled_skills
 from .wiki_media import (
     iter_markdown_link_targets,
@@ -3700,18 +3700,26 @@ def _export_documentation_skills(workspace_root: Path) -> list[dict[str, Any]]:
     result = []
     for skill_id in DEFAULT_DOCUMENTATION_SKILLS:
         skill = bundled[skill_id]
-        digest = hashlib.sha256()
-        for relative in skill.files:
-            digest.update(relative.encode("utf-8"))
-            digest.update(b"\0")
-            digest.update((skill.path / relative).read_bytes())
-            digest.update(b"\0")
+        expected_hash = _hash_skill_tree(
+            (
+                relative,
+                read_md(skill.path / relative).encode("utf-8"),
+            )
+            for relative in skill.files
+        )
+        relative_path = f"{RUN_CONTROL_DIR}/skills/{skill_id}"
+        actual_hash = _hash_exported_skill(workspace_root, relative_path)
+        if actual_hash != expected_hash:
+            raise DocumentationRunError(
+                "Exported documentation skill differs from its canonical "
+                f"bundled content: {skill_id}"
+            )
         result.append(
             {
                 "id": skill_id,
                 "package_version": __version__,
-                "hash": "sha256:" + digest.hexdigest(),
-                "path": f"{RUN_CONTROL_DIR}/skills/{skill_id}",
+                "hash": actual_hash,
+                "path": relative_path,
             }
         )
     return result
@@ -4072,21 +4080,33 @@ def _hash_exported_skill(workspace_root: Path, relative: str) -> str:
         raise DocumentationIntegrityError(
             f"Exported documentation skill is not a regular directory: {relative}"
         )
-    digest = hashlib.sha256()
-    files = sorted(path for path in root.rglob("*") if path.is_file())
-    if not files:
-        raise DocumentationIntegrityError(
-            f"Exported documentation skill contains no files: {relative}"
-        )
-    for path in files:
+    descendants = list(root.rglob("*"))
+    for path in descendants:
         if path.is_symlink():
             raise DocumentationIntegrityError(
                 f"Exported documentation skill contains a link: {relative}"
             )
-        file_relative = path.relative_to(root).as_posix()
-        digest.update(file_relative.encode("utf-8"))
+    files = [path for path in descendants if path.is_file()]
+    if not files:
+        raise DocumentationIntegrityError(
+            f"Exported documentation skill contains no files: {relative}"
+        )
+    return _hash_skill_tree(
+        (path.relative_to(root).as_posix(), path.read_bytes()) for path in files
+    )
+
+
+def _hash_skill_tree(entries: Iterable[tuple[str, bytes]]) -> str:
+    """Hash a skill tree by case-sensitive POSIX relative-name order."""
+    digest = hashlib.sha256()
+    for relative, content in sorted(entries, key=lambda entry: entry[0]):
+        if "\0" in relative or b"\0" in content:
+            raise DocumentationIntegrityError(
+                "Documentation skill paths and content must not contain NUL bytes."
+            )
+        digest.update(relative.encode("utf-8"))
         digest.update(b"\0")
-        digest.update(path.read_bytes())
+        digest.update(content)
         digest.update(b"\0")
     return "sha256:" + digest.hexdigest()
 

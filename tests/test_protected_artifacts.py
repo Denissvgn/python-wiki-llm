@@ -490,6 +490,115 @@ def test_hard_link_leaf_is_rejected(tmp_path: Path):
         store.read_json("linked.json")
 
 
+def test_windows_tree_uses_fresh_metadata_instead_of_cached_direntry_stat(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    store = ProtectedArtifactStore(tmp_path / "root", create=True)
+    target = store.write_snapshot_json("run.json", {"generation": 1})
+    cached_stat_calls = 0
+    fresh_stat_paths: list[Path] = []
+    real_fresh_no_follow_stat = protected_artifacts.fresh_no_follow_stat
+
+    class EmulatedWindowsDirEntry:
+        name = target.name
+        path = os.fspath(target)
+
+        def stat(self, *, follow_symlinks: bool = True):
+            nonlocal cached_stat_calls
+            cached_stat_calls += 1
+            raise AssertionError("Windows DirEntry.stat() metadata must not be trusted")
+
+    @contextmanager
+    def guarded(root: Path, components, **options):
+        assert root == store.root
+        assert tuple(components) == ()
+        assert options["require_restrictive_dacl"] is True
+        yield root
+
+    @contextmanager
+    def open_readonly(path: Path, **options):
+        assert path == target
+        assert options["require_restrictive_dacl"] is True
+        with path.open("rb") as stream:
+            yield stream, os.fstat(stream.fileno())
+
+    def fresh_stat(path: str | Path) -> os.stat_result:
+        fresh_stat_paths.append(Path(path))
+        return real_fresh_no_follow_stat(path)
+
+    monkeypatch.setattr(
+        protected_artifacts.os,
+        "scandir",
+        lambda _directory: [EmulatedWindowsDirEntry()],
+    )
+    monkeypatch.setattr(
+        protected_artifacts,
+        "guard_windows_directory_chain",
+        guarded,
+    )
+    monkeypatch.setattr(
+        protected_artifacts,
+        "open_windows_readonly_file",
+        open_readonly,
+    )
+    monkeypatch.setattr(
+        protected_artifacts,
+        "fresh_no_follow_stat",
+        fresh_stat,
+    )
+
+    store._verify_windows_tree()
+
+    assert cached_stat_calls == 0
+    assert fresh_stat_paths == [target]
+
+
+@pytest.mark.skipif(os.name != "nt", reason="native Windows protected-tree checks")
+def test_native_windows_reopens_store_with_lock_and_artifact(tmp_path: Path):
+    store = ProtectedArtifactStore(tmp_path / "root", create=True)
+    store.write_snapshot_json("nested/run.json", {"generation": 1})
+    with store.lock():
+        pass
+
+    reopened = ProtectedArtifactStore(store.root)
+
+    assert reopened.read_json("nested/run.json") == {"generation": 1}
+    with reopened.lock():
+        pass
+
+
+@pytest.mark.skipif(os.name != "nt", reason="native Windows protected-tree checks")
+def test_native_windows_reopen_rejects_hard_linked_artifact(tmp_path: Path):
+    store = ProtectedArtifactStore(tmp_path / "root", create=True)
+    target = store.write_snapshot_json("run.json", {"generation": 1})
+    outside = tmp_path / "outside-link.json"
+    try:
+        os.link(target, outside)
+    except OSError as exc:
+        pytest.skip(f"hard links are unavailable: {exc}")
+
+    with pytest.raises(ProtectedArtifactIntegrityError, match="hard links"):
+        ProtectedArtifactStore(store.root)
+
+
+@pytest.mark.skipif(os.name != "nt", reason="native Windows protected-tree checks")
+def test_native_windows_reopen_rejects_hard_linked_controller_lock(
+    tmp_path: Path,
+):
+    store = ProtectedArtifactStore(tmp_path / "root", create=True)
+    with store.lock():
+        pass
+    outside = tmp_path / "outside-lock"
+    try:
+        os.link(store.root / "controller.lock", outside)
+    except OSError as exc:
+        pytest.skip(f"hard links are unavailable: {exc}")
+
+    with pytest.raises(ProtectedArtifactIntegrityError, match="hard links"):
+        ProtectedArtifactStore(store.root)
+
+
 def test_casefold_collision_is_rejected_before_second_write(tmp_path: Path):
     store = ProtectedArtifactStore(tmp_path / "root", create=True)
     store.write_immutable_json("events/Alpha.json", {"value": 1})
