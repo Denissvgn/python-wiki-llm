@@ -112,6 +112,52 @@ separate dimensions. If the source bytes differ but the concept-scoped
 observation still matches, the result is a nonsemantic source change rather
 than `current`.
 
+### Live freshness evaluation (KNOW-201 addendum)
+
+Live freshness is computed by one pure comparison service over a validated
+knowledge index and already evaluated live values. The live input explicitly
+separates present source-content hashes from reliably missing source paths and
+supplies locator-scoped observation bases, the effective generation-options
+hash, schema version, and normalized producer record. Absence from a supplied
+hash map is not evidence that a source is missing. The evaluator performs no
+filesystem access, source discovery, extraction, subprocess, network, clock,
+or write operation.
+
+Every recorded concept receives exactly one locator-indexed result containing
+the computed state, a stable reason code, safe recorded/live basis details,
+and whether a live comparison occurred. Counts contain all computed-freshness
+states, including zero-valued states. Navigation, change-log, aggregate, and
+other structurally unmodeled concepts remain `unknown`.
+
+For a reliable module/entity observation, comparison uses this precedence:
+
+1. missing live evaluation or an unreliable recorded/live observation basis is
+   `unknown`;
+2. an explicitly and reliably absent mapped source is `source-missing`;
+3. incompatible schema, tool, referenced extractor, contributing plugin, or
+   generation-options bases are `basis-incompatible`;
+4. matching source and concept hashes are `current`;
+5. changed source bytes with a matching concept hash are
+   `nonsemantic-source-change`;
+6. changed source bytes with a changed concept hash are `source-changed`; and
+7. identical source bytes producing a different concept hash under an
+   otherwise identical basis are `basis-incompatible`, because the record or
+   producer may be corrupt or nondeterministic.
+
+Only the concept's referenced extractor is compared, so a change to an
+unrelated language extractor does not stale that concept. M1 does not record
+per-concept plugin or generation-option attribution, so the complete declared
+contributing plugin set and effective generation-options hash are compared
+conservatively. Component extensions do not silently redefine compatibility;
+core identity, version, safe configuration hash, and limitations do.
+An applicable component carrying `version-unknown` or
+`configuration-basis-unknown` cannot support a positive freshness result even
+when the same unknown marker appears on both sides.
+
+The `current` result is described only as "unchanged since observation."
+Freshness results are consumer-side values and are never written back into the
+knowledge index, manifest, lifecycle, verification, or review state.
+
 ### V1 vocabulary and forward compatibility (KNOW-002 addendum)
 
 The packaged
