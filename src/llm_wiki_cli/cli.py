@@ -1614,6 +1614,118 @@ def _add_docs_command(subparsers):
         ),
     )
 
+    calibration = docs_sub.add_parser(
+        "calibration",
+        help="Supervise an evidence-backed P0 calibration cohort",
+    )
+    calibration_sub = calibration.add_subparsers(
+        dest="calibration_action",
+        required=True,
+    )
+
+    calibration_prepare = calibration_sub.add_parser(
+        "prepare",
+        help="Freeze two independently prepared documentation controls",
+    )
+    calibration_prepare.add_argument("--root", required=True)
+    calibration_prepare.add_argument(
+        "--control-workspace",
+        action="append",
+        required=True,
+        metavar="PATH",
+        help="Prepared documentation control workspace; specify exactly twice",
+    )
+    calibration_prepare.add_argument(
+        "--execution-manifest",
+        required=True,
+        metavar="FILE|-",
+        help="Versioned execution-manifest JSON file, or - for stdin",
+    )
+
+    calibration_admit = calibration_sub.add_parser(
+        "admit",
+        help="Authorize the frozen cohort after isolation evidence is verified",
+    )
+    calibration_admit.add_argument("--root", required=True)
+    calibration_admit.add_argument(
+        "--authority-grant",
+        required=True,
+        metavar="FILE|-",
+        help="Versioned authority-grant JSON file, or - for stdin",
+    )
+    calibration_admit.add_argument(
+        "--broker-attestation",
+        default=None,
+        metavar="FILE|-",
+        help=(
+            "External-broker attestation JSON; qualification also requires a "
+            "separately established embedding-host authenticator"
+        ),
+    )
+
+    calibration_status = calibration_sub.add_parser(
+        "status",
+        help="Show the current cohort state as JSON",
+    )
+    calibration_status.add_argument("--root", required=True)
+
+    calibration_packet = calibration_sub.add_parser(
+        "packet",
+        help="Write one bounded provider-neutral role packet as JSON",
+    )
+    calibration_packet.add_argument("--root", required=True)
+    calibration_packet.add_argument(
+        "--role",
+        choices=["intake-a", "intake-b", "intake-c", "verifier"],
+        required=True,
+    )
+    calibration_packet.add_argument(
+        "--output",
+        required=True,
+        metavar="FILE",
+        help="Explicit packet JSON output path; packet content is never printed",
+    )
+
+    calibration_dispatch = calibration_sub.add_parser(
+        "dispatch",
+        help="Dispatch one role through the frozen broker",
+    )
+    calibration_dispatch.add_argument("--root", required=True)
+    calibration_dispatch.add_argument(
+        "--role",
+        choices=["intake-a", "intake-b", "intake-c", "verifier"],
+        required=True,
+    )
+
+    calibration_result = calibration_sub.add_parser(
+        "record-result",
+        help="Import a separately executed broker receipt and agent result",
+    )
+    calibration_result.add_argument("--root", required=True)
+    calibration_result.add_argument(
+        "--dispatch-receipt",
+        required=True,
+        metavar="FILE|-",
+        help="Versioned dispatch-receipt JSON file, or - for stdin",
+    )
+    calibration_result.add_argument(
+        "--result",
+        required=True,
+        metavar="FILE|-",
+        help="Versioned calibration agent-result JSON file, or - for stdin",
+    )
+
+    calibration_verify = calibration_sub.add_parser(
+        "verify",
+        help="Recompute cohort evidence and advance only when eligible",
+    )
+    calibration_verify.add_argument("--root", required=True)
+    calibration_verify.add_argument(
+        "--no-advance",
+        action="store_true",
+        help="Report verification without advancing an eligible cohort",
+    )
+
 
 def _dispatch_command(args):
     _COMMAND_MODULES[args.command].run(args)

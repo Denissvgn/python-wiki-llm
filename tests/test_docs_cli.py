@@ -51,6 +51,7 @@ def test_docs_help_lists_all_lifecycle_actions(monkeypatch, capsys):
         "record-result",
         "verify",
         "export",
+        "calibration",
     ):
         assert action in help_text
 
@@ -253,10 +254,10 @@ def test_docs_prepare_rejects_intake_file_mixed_with_direct_answers(tmp_path, ca
 
 
 def test_docs_text_input_is_read_with_the_declared_byte_bound(monkeypatch):
-    reads: list[int] = []
+    reads: list[int | None] = []
 
     class RecordingStream(io.BytesIO):
-        def read(self, size=-1):
+        def read(self, size: int | None = -1) -> bytes:
             reads.append(size)
             return super().read(size)
 

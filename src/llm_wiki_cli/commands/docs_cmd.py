@@ -19,9 +19,12 @@ from ..services.documentation_run import (
     record_documentation_agent_result,
     verify_documentation_run,
 )
+from ..services.filesystem_guard import atomic_write_private_bytes
 
 
 _MAX_INTAKE_BYTES = 1_000_000
+_MAX_CALIBRATION_JSON_BYTES = 4 * 1024 * 1024
+_MAX_CALIBRATION_PACKET_BYTES = 16 * 1024 * 1024
 _BASELINE_STRATEGIES = {
     "bootstrap-source": "bootstrap_source",
     "existing-wiki": "adopt_existing_wiki",
@@ -67,6 +70,56 @@ def _read_json_object(path: str, *, label: str) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise DocumentationRunError(f"{label} must contain one JSON object.")
     return payload
+
+
+def _read_calibration_json_object(path: str, *, label: str) -> dict[str, Any]:
+    if path == "-":
+        text = sys.stdin.read(_MAX_CALIBRATION_JSON_BYTES + 1)
+        if len(text.encode("utf-8")) > _MAX_CALIBRATION_JSON_BYTES:
+            raise DocumentationRunError(
+                f"{label} exceeds the {_MAX_CALIBRATION_JSON_BYTES}-byte input limit."
+            )
+    else:
+        source = Path(path).expanduser()
+        try:
+            with source.open("rb") as stream:
+                data = stream.read(_MAX_CALIBRATION_JSON_BYTES + 1)
+        except OSError as exc:
+            raise DocumentationRunError(f"Cannot read {label} {source}: {exc}") from exc
+        if len(data) > _MAX_CALIBRATION_JSON_BYTES:
+            raise DocumentationRunError(
+                f"{label} exceeds the {_MAX_CALIBRATION_JSON_BYTES}-byte input limit."
+            )
+        try:
+            text = data.decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise DocumentationRunError(
+                f"{label} must be UTF-8 text: {source}"
+            ) from exc
+    try:
+        payload = json.loads(
+            text,
+            object_pairs_hook=_unique_json_object,
+            parse_constant=_reject_json_constant,
+        )
+    except json.JSONDecodeError as exc:
+        raise DocumentationRunError(f"Invalid {label} JSON: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise DocumentationRunError(f"{label} must contain one JSON object.")
+    return payload
+
+
+def _unique_json_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    payload: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in payload:
+            raise DocumentationRunError(f"Duplicate JSON object key: {key!r}.")
+        payload[key] = value
+    return payload
+
+
+def _reject_json_constant(value: str) -> None:
+    raise DocumentationRunError(f"Non-finite JSON number is forbidden: {value}.")
 
 
 def _parse_audiences(values: list[str] | None) -> list[str] | None:
@@ -303,6 +356,216 @@ def _verify(args) -> None:
         raise SystemExit(1)
 
 
+def _calibration_controller():
+    # Keep the controller dependency scoped to the nested lifecycle handlers.
+    from ..services import documentation_calibration_controller
+
+    return documentation_calibration_controller
+
+
+def _calibration_error_type() -> type[RuntimeError]:
+    from ..services.documentation_calibration_controller import P0CalibrationError
+
+    return P0CalibrationError
+
+
+def _calibration_json_payload(value: object, *, label: str) -> dict[str, Any]:
+    if isinstance(value, Mapping):
+        payload = dict(value)
+    else:
+        to_dict = getattr(value, "to_dict", None)
+        if not callable(to_dict):
+            raise DocumentationRunError(f"{label} did not produce a JSON object.")
+        payload = to_dict()
+    if not isinstance(payload, dict):
+        raise DocumentationRunError(f"{label} did not produce a JSON object.")
+    return payload
+
+
+def _bounded_calibration_json(
+    value: object,
+    *,
+    label: str,
+    max_bytes: int | None = None,
+    canonical: bool = False,
+) -> str:
+    payload = _calibration_json_payload(value, label=label)
+    try:
+        rendered = (
+            json.dumps(
+                payload,
+                allow_nan=False,
+                ensure_ascii=False,
+                indent=None if canonical else 2,
+                separators=(",", ":") if canonical else None,
+                sort_keys=True,
+            )
+            + "\n"
+        )
+    except (TypeError, ValueError) as exc:
+        raise DocumentationRunError(f"{label} is not valid JSON: {exc}") from exc
+    limit = _MAX_CALIBRATION_JSON_BYTES if max_bytes is None else max_bytes
+    if len(rendered.encode("utf-8")) > limit:
+        raise DocumentationRunError(f"{label} exceeds the {limit}-byte output limit.")
+    return rendered
+
+
+def _print_calibration_json(value: object, *, label: str) -> None:
+    print(_bounded_calibration_json(value, label=label), end="")
+
+
+def _require_distinct_stdin_inputs(*paths: str | None) -> None:
+    if sum(path == "-" for path in paths) > 1:
+        raise DocumentationRunError(
+            "Only one calibration JSON input may read from stdin."
+        )
+
+
+def _calibration_prepare(args) -> None:
+    controls = tuple(getattr(args, "control_workspace", ()) or ())
+    if len(controls) != 2:
+        raise DocumentationRunError(
+            "--control-workspace must be specified exactly twice."
+        )
+    manifest = _read_calibration_json_object(
+        args.execution_manifest,
+        label="execution manifest",
+    )
+    controller = _calibration_controller()
+    run = controller.prepare_p0_calibration_run(
+        args.root,
+        control_workspaces=controls,
+        execution_manifest=manifest,
+    )
+    _print_calibration_json(run, label="calibration run")
+
+
+def _calibration_admit(args) -> None:
+    _require_distinct_stdin_inputs(args.authority_grant, args.broker_attestation)
+    authority = _read_calibration_json_object(
+        args.authority_grant,
+        label="authority grant",
+    )
+    attestation = (
+        _read_calibration_json_object(
+            args.broker_attestation,
+            label="broker attestation",
+        )
+        if args.broker_attestation is not None
+        else None
+    )
+    controller = _calibration_controller()
+    run = controller.admit_p0_calibration_run(
+        args.root,
+        authority_grant=authority,
+        broker_attestation=attestation,
+    )
+    payload = _calibration_json_payload(run, label="calibration run")
+    _print_calibration_json(payload, label="calibration run")
+    if payload.get("state") in {"BLOCKED_NO_SHIP", "REJECT"}:
+        raise SystemExit(1)
+
+
+def _calibration_status(args) -> None:
+    status = _calibration_controller().get_p0_calibration_run_status(args.root)
+    _print_calibration_json(status, label="calibration status")
+
+
+def _calibration_packet(args) -> None:
+    if args.output == "-":
+        raise DocumentationRunError(
+            "Calibration packets require an explicit file path, not stdout."
+        )
+    controller = _calibration_controller()
+    output = controller.validate_p0_calibration_packet_output(
+        args.root,
+        args.output,
+    )
+    packet = controller.build_p0_calibration_agent_packet(
+        args.root,
+        role=args.role,
+    )
+    rendered = _bounded_calibration_json(
+        packet,
+        label="calibration agent packet",
+        max_bytes=_MAX_CALIBRATION_PACKET_BYTES,
+        canonical=True,
+    )
+    output = controller.validate_p0_calibration_packet_output(args.root, output)
+    try:
+        atomic_write_private_bytes(output, rendered.encode("utf-8"))
+    except OSError as exc:
+        raise DocumentationRunError(
+            f"Cannot write calibration agent packet {output}: {exc}"
+        ) from exc
+
+
+def _calibration_dispatch(args) -> None:
+    receipt = _calibration_controller().dispatch_p0_calibration_agent(
+        args.root,
+        role=args.role,
+    )
+    payload = _calibration_json_payload(receipt, label="calibration dispatch receipt")
+    _print_calibration_json(payload, label="calibration dispatch receipt")
+    if payload.get("status") != "complete":
+        raise SystemExit(1)
+
+
+def _calibration_record_result(args) -> None:
+    _require_distinct_stdin_inputs(args.dispatch_receipt, args.result)
+    receipt_payload = _read_calibration_json_object(
+        args.dispatch_receipt,
+        label="calibration dispatch receipt",
+    )
+    result_payload = _read_calibration_json_object(
+        args.result,
+        label="calibration agent result",
+    )
+    controller = _calibration_controller()
+    receipt = controller.P0CalibrationDispatchReceipt.from_dict(receipt_payload)
+    result = controller.P0CalibrationAgentResult.from_dict(result_payload)
+    run = controller.record_p0_calibration_agent_result(
+        args.root,
+        dispatch_receipt=receipt,
+        result=result,
+    )
+    _print_calibration_json(run, label="calibration run")
+
+
+def _calibration_verify(args) -> None:
+    report = _calibration_controller().verify_p0_calibration_run(
+        args.root,
+        advance=not bool(args.no_advance),
+    )
+    payload = _calibration_json_payload(report, label="calibration verification")
+    print(
+        _bounded_calibration_json(payload, label="calibration verification"),
+        end="",
+    )
+    if not bool(payload.get("ok", False)):
+        raise SystemExit(1)
+
+
+def _calibration(args) -> None:
+    handlers = {
+        "prepare": _calibration_prepare,
+        "admit": _calibration_admit,
+        "status": _calibration_status,
+        "packet": _calibration_packet,
+        "dispatch": _calibration_dispatch,
+        "record-result": _calibration_record_result,
+        "verify": _calibration_verify,
+    }
+    action = getattr(args, "calibration_action", None)
+    handler = handlers.get(action) if isinstance(action, str) else None
+    if handler is None:
+        raise DocumentationRunError("Missing calibration action.")
+    try:
+        handler(args)
+    except _calibration_error_type() as exc:
+        raise DocumentationRunError(str(exc)) from exc
+
+
 def _assert_export_options(args) -> None:
     if args.builder_command is not None and not args.builder_command:
         raise DocumentationRunError("--builder-command requires at least one argument.")
@@ -355,8 +618,9 @@ def run(args) -> None:
         "record-result": _record_result,
         "verify": _verify,
         "export": _export,
+        "calibration": _calibration,
     }
-    handler = handlers.get(action)
+    handler = handlers.get(action) if isinstance(action, str) else None
     if handler is None:
         raise DocumentationRunError("Missing documentation action.")
     try:

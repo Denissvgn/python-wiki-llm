@@ -37,6 +37,12 @@ def test_supported_api_exports_are_additive_contract():
         "DOCUMENTATION_RUN_SCHEMA_VERSION",
         "DOCUMENTATION_VERIFICATION_SCHEMA_VERSION",
         "EXTRACT_SCHEMA_VERSION",
+        "P0_CALIBRATION_AGENT_PACKET_SCHEMA_VERSION",
+        "P0_CALIBRATION_AGENT_RESULT_SCHEMA_VERSION",
+        "P0_CALIBRATION_DECISION_SCOPE",
+        "P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION",
+        "P0_CALIBRATION_RUN_SCHEMA_VERSION",
+        "P0_CALIBRATION_VERIFICATION_REPORT_SCHEMA_VERSION",
         "DocumentationGraphQueryService",
         "DocumentationAgentPacket",
         "DocumentationAgentResult",
@@ -48,9 +54,26 @@ def test_supported_api_exports_are_additive_contract():
         "DocumentationVerificationReport",
         "DocumentationWikiSnapshot",
         "ExtractionError",
+        "HostBrokerAuthenticationError",
+        "HostBrokerAuthenticationProof",
+        "HostBrokerAuthenticationUnavailable",
+        "HostBrokerAuthenticator",
         "LlmWikiApiError",
+        "P0CalibrationAgentPacket",
+        "P0CalibrationAgentResult",
+        "P0CalibrationDispatchReceipt",
+        "P0CalibrationError",
+        "P0CalibrationIntegrityError",
+        "P0CalibrationRecoveryError",
+        "P0CalibrationRun",
+        "P0CalibrationSchemaError",
+        "P0CalibrationStatus",
+        "P0CalibrationTransitionError",
+        "P0CalibrationVerificationReport",
         "PathPolicyError",
+        "admit_p0_calibration_run",
         "adopt_documentation_wiki_snapshot",
+        "build_p0_calibration_agent_packet",
         "build_documentation_agent_packet",
         "build_context",
         "build_documentation_query_service",
@@ -58,17 +81,23 @@ def test_supported_api_exports_are_additive_contract():
         "callers",
         "data_flow_for_entrypoint",
         "dependency_neighborhood",
+        "dispatch_p0_calibration_agent",
         "export_documentation_run",
         "extract_source",
         "flow_for_entrypoint",
         "fingerprint_documentation_wiki_input",
         "get_documentation_run_status",
+        "get_p0_calibration_run_status",
         "list_wiki_pages",
         "pages_for_symbol",
         "prepare_documentation_run",
+        "prepare_p0_calibration_run",
+        "record_p0_calibration_agent_result",
         "record_documentation_agent_result",
         "select_documentation_model",
         "verify_documentation_run",
+        "verify_p0_calibration_run",
+        "use_p0_calibration_host_broker_authenticator",
     }
 
     assert expected_exports <= set(api.__all__)
@@ -146,10 +175,135 @@ def test_documentation_lifecycle_api_signatures_match_cli_contract():
     for name, parameters in expected.items():
         assert list(inspect.signature(getattr(api, name)).parameters) == parameters
 
+    exact_signatures = {
+        "prepare_documentation_run": (
+            "(workspace: 'str | Path', *, baseline_strategy: 'str' = "
+            "'bootstrap_source', source_root: 'str | Path | None' = None, "
+            "input_wiki_root: 'str | Path | None' = None, freshness_policy: "
+            "'str' = 'require-current', site_name: 'str', audiences: "
+            "'Iterable[str] | None' = None, project_purpose: 'str | None' = "
+            "None, audience_intent: 'Mapping[str, str] | None' = None, "
+            "live_service_url: 'str | None' = None, live_service_access_mode: "
+            "'str' = 'unspecified', live_service_observation_allowed: 'bool' = "
+            "False, helper_cache_root: 'str | Path | None' = None, "
+            "capture_root: 'str | Path | None' = None, trust_source_plugins: "
+            "'bool' = False, semantic_budget: 'int' = 30, "
+            "adjustment_loop_limit: 'int' = 3, distribution_format: 'str' = "
+            "'mkdocs', link_mode: 'str' = 'http', refresh: 'bool' = False) -> "
+            "'DocumentationRun'"
+        ),
+        "get_documentation_run_status": (
+            "(workspace: 'str | Path') -> 'DocumentationRunStatus'"
+        ),
+        "build_documentation_agent_packet": (
+            "(workspace: 'str | Path', *, stage: 'str') -> 'DocumentationAgentPacket'"
+        ),
+        "record_documentation_agent_result": (
+            "(workspace: 'str | Path', result: 'DocumentationAgentResult | "
+            "Mapping[str, Any]') -> 'DocumentationRun'"
+        ),
+        "verify_documentation_run": (
+            "(workspace: 'str | Path', *, advance: 'bool' = True) -> "
+            "'DocumentationVerificationReport'"
+        ),
+        "export_documentation_run": (
+            "(workspace: 'str | Path', *, build: 'bool' = False, "
+            "builder_command: 'Iterable[str] | None' = None) -> "
+            "'dict[str, Any]'"
+        ),
+    }
+    for name, expected_signature in exact_signatures.items():
+        assert str(inspect.signature(getattr(api, name))) == expected_signature
+
+
+def test_p0_calibration_lifecycle_api_signatures_are_supported():
+    expected = {
+        "prepare_p0_calibration_run": [
+            "root",
+            "control_workspaces",
+            "execution_manifest",
+        ],
+        "admit_p0_calibration_run": [
+            "root",
+            "authority_grant",
+            "broker_attestation",
+        ],
+        "get_p0_calibration_run_status": ["root"],
+        "build_p0_calibration_agent_packet": ["root", "role"],
+        "dispatch_p0_calibration_agent": ["root", "role"],
+        "record_p0_calibration_agent_result": [
+            "root",
+            "dispatch_receipt",
+            "result",
+        ],
+        "verify_p0_calibration_run": ["root", "advance"],
+    }
+
+    for name, parameters in expected.items():
+        signature = inspect.signature(getattr(api, name))
+        assert list(signature.parameters) == parameters
+        assert signature.parameters["root"].kind is (
+            inspect.Parameter.POSITIONAL_OR_KEYWORD
+        )
+        for parameter in parameters[1:]:
+            assert (
+                signature.parameters[parameter].kind is inspect.Parameter.KEYWORD_ONLY
+            )
+
+    assert (
+        inspect.signature(api.admit_p0_calibration_run)
+        .parameters["broker_attestation"]
+        .default
+        is None
+    )
+    assert (
+        inspect.signature(api.verify_p0_calibration_run).parameters["advance"].default
+        is True
+    )
+
+    exact_signatures = {
+        "prepare_p0_calibration_run": (
+            "(root: 'str | Path', *, control_workspaces: 'Sequence[str | Path]', "
+            "execution_manifest: 'Mapping[str, Any]') -> 'P0CalibrationRun'"
+        ),
+        "admit_p0_calibration_run": (
+            "(root: 'str | Path', *, authority_grant: 'Mapping[str, Any]', "
+            "broker_attestation: 'Mapping[str, Any] | None' = None) -> "
+            "'P0CalibrationRun'"
+        ),
+        "get_p0_calibration_run_status": (
+            "(root: 'str | Path') -> 'P0CalibrationStatus'"
+        ),
+        "build_p0_calibration_agent_packet": (
+            "(root: 'str | Path', *, role: 'str') -> 'P0CalibrationAgentPacket'"
+        ),
+        "dispatch_p0_calibration_agent": (
+            "(root: 'str | Path', *, role: 'str') -> 'P0CalibrationDispatchReceipt'"
+        ),
+        "record_p0_calibration_agent_result": (
+            "(root: 'str | Path', *, dispatch_receipt: "
+            "'P0CalibrationDispatchReceipt | Mapping[str, Any]', result: "
+            "'P0CalibrationAgentResult | Mapping[str, Any]') -> 'P0CalibrationRun'"
+        ),
+        "verify_p0_calibration_run": (
+            "(root: 'str | Path', *, advance: 'bool' = True) -> "
+            "'P0CalibrationVerificationReport'"
+        ),
+        "use_p0_calibration_host_broker_authenticator": (
+            "(authenticator: 'HostBrokerAuthenticator') -> 'Iterator[None]'"
+        ),
+    }
+    for name, expected_signature in exact_signatures.items():
+        assert str(inspect.signature(getattr(api, name))) == expected_signature
+
 
 def test_api_error_types_remain_structured_subclasses():
     assert issubclass(PathPolicyError, LlmWikiApiError)
     assert issubclass(ExtractionError, LlmWikiApiError)
+    assert issubclass(api.P0CalibrationSchemaError, api.P0CalibrationError)
+    assert issubclass(api.P0CalibrationIntegrityError, api.P0CalibrationError)
+    assert issubclass(api.P0CalibrationTransitionError, api.P0CalibrationError)
+    assert issubclass(api.P0CalibrationRecoveryError, api.P0CalibrationError)
 
 
 def _write_query_project(root):
