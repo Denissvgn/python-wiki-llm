@@ -144,6 +144,12 @@ class ExtractPayloadResult:
     docker_count: int
     changed_file_count: int | None = None
     no_changed_files: bool = False
+    inventory_result: InventoryResult | None = field(
+        default=None,
+        repr=False,
+        compare=False,
+        kw_only=True,
+    )
 
 
 class ExtractorFailureError(RuntimeError):
@@ -1316,6 +1322,7 @@ def build_extract_payload(
         docker_count=len(docker_inv),
         changed_file_count=changed_file_count,
         no_changed_files=False,
+        inventory_result=result,
     )
 
 

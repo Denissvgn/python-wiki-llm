@@ -1,8 +1,8 @@
-"""Supported Python API for source-adapter extraction and context payloads."""
+"""Supported Python API for extraction, context, and documentation queries."""
 
 from __future__ import annotations
 
-import json
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
@@ -24,11 +24,7 @@ from .services.documentation_queries import (
 )
 from .services.entrypoints import build_flow
 from .services import wiki_surface
-from .services.wiki_surface_index import (
-    SURFACE_INDEX_FILENAME,
-    WIKI_SURFACE_INDEX_SCHEMA_VERSION,
-    build_surface_index,
-)
+from .services.wiki_surface_index import evaluate_surface_index
 
 
 class LlmWikiApiError(RuntimeError):
@@ -180,20 +176,41 @@ def build_documentation_query_service(
         entrypoints = result.payload.get("entrypoints", [])
         call_edges = extract_cmd.resolve_call_edges(inventory)
         flows = [build_flow(entrypoint, call_edges) for entrypoint in entrypoints]
-        surface_index = _load_or_build_surface_index(
+        inventory_result = getattr(result, "inventory_result", None)
+        surface_evaluation = evaluate_surface_index(
             wiki_root,
             inventory,
-            src_root=src_root,
-            entrypoints=entrypoints,
+            src_dir=src_root,
+            entry_points=entrypoints,
+        )
+        knowledge_view = context_cmd._build_context_knowledge_view(
+            wiki_root,
+            surface_evaluation,
+            inventory,
+            inventory_result,
+        )
+        query_surface = context_cmd._context_query_surface(
+            surface_evaluation.payload,
+            knowledge_view,
+        )
+        source_snapshot = (
+            inventory_result.source_snapshot
+            if inventory_result is not None
+            else None
         )
         return DocumentationGraphQueryService(
             inventory,
             call_edges=call_edges,
             flows=flows,
             data_flows=result.payload.get("data_flows") or [],
-            dependency_analysis=analyze_dependencies(inventory, str(src_root)),
-            surface_index=surface_index,
+            dependency_analysis=analyze_dependencies(
+                inventory,
+                str(src_root),
+                source_snapshot=source_snapshot,
+            ),
+            surface_index=query_surface,
             limit=limit,
+            knowledge_view=knowledge_view,
         )
     except PathValidationError as exc:
         raise PathPolicyError(str(exc)) from exc
@@ -345,6 +362,81 @@ def pages_for_symbol(
     )
 
 
+def get_concept(
+    locator_or_exact_route: object,
+    *,
+    service: DocumentationGraphQueryService | None = None,
+    src_dir: str = ".",
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    limit: int = 20,
+    allow_external_src: bool = False,
+    read_only: bool = True,
+) -> dict[str, Any]:
+    """Return one compact knowledge concept by locator or exact route."""
+    return _run_query(
+        lambda: _query_service(
+            service,
+            src_dir=src_dir,
+            wiki_dir=wiki_dir,
+            limit=limit,
+            allow_external_src=allow_external_src,
+            read_only=read_only,
+        ).get_concept(locator_or_exact_route)
+    )
+
+
+def related_concepts(
+    locator_or_exact_route: object,
+    *,
+    direction: str = "both",
+    kinds: Iterable[str] | None = None,
+    service: DocumentationGraphQueryService | None = None,
+    src_dir: str = ".",
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    limit: int = 20,
+    allow_external_src: bool = False,
+    read_only: bool = True,
+) -> dict[str, Any]:
+    """Return bounded knowledge relationships for one concept."""
+    return _run_query(
+        lambda: _query_service(
+            service,
+            src_dir=src_dir,
+            wiki_dir=wiki_dir,
+            limit=limit,
+            allow_external_src=allow_external_src,
+            read_only=read_only,
+        ).related_concepts(
+            locator_or_exact_route,
+            direction=direction,
+            kinds=kinds,
+        )
+    )
+
+
+def explain_evidence(
+    locator_or_exact_route: object,
+    *,
+    service: DocumentationGraphQueryService | None = None,
+    src_dir: str = ".",
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    limit: int = 20,
+    allow_external_src: bool = False,
+    read_only: bool = True,
+) -> dict[str, Any]:
+    """Return stored and computed evidence for one knowledge concept."""
+    return _run_query(
+        lambda: _query_service(
+            service,
+            src_dir=src_dir,
+            wiki_dir=wiki_dir,
+            limit=limit,
+            allow_external_src=allow_external_src,
+            read_only=read_only,
+        ).explain_evidence(locator_or_exact_route)
+    )
+
+
 def _normalise_focus(focus: str | list[str]) -> list[str]:
     if isinstance(focus, str):
         if focus == "all":
@@ -394,34 +486,6 @@ def _wiki_page_counts(pages: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _load_or_build_surface_index(
-    wiki_root: Path,
-    inventory: dict[str, Any],
-    *,
-    src_root: Path,
-    entrypoints: list[dict[str, Any]],
-) -> dict[str, Any]:
-    index_path = wiki_root / SURFACE_INDEX_FILENAME
-    if index_path.is_file():
-        try:
-            payload = json.loads(index_path.read_text(encoding="utf-8"))
-        except json.JSONDecodeError as exc:
-            raise LlmWikiApiError(f"Invalid wiki surface index: {index_path}") from exc
-        if payload.get(
-            "schema_version"
-        ) == WIKI_SURFACE_INDEX_SCHEMA_VERSION and isinstance(
-            payload.get("pages"), list
-        ):
-            return payload
-
-    return build_surface_index(
-        wiki_root,
-        inventory,
-        src_dir=src_root,
-        entry_points=entrypoints,
-    )
-
-
 def _query_service(
     service: DocumentationGraphQueryService | None,
     *,
@@ -462,8 +526,11 @@ __all__ = [
     "callers",
     "data_flow_for_entrypoint",
     "dependency_neighborhood",
+    "explain_evidence",
     "extract_source",
     "flow_for_entrypoint",
+    "get_concept",
     "list_wiki_pages",
     "pages_for_symbol",
+    "related_concepts",
 ]

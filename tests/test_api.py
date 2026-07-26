@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import inspect
 import textwrap
+import types
 
 import pytest
 
@@ -24,6 +25,16 @@ from llm_wiki_cli.api import (
     list_wiki_pages,
     pages_for_symbol,
 )
+from llm_wiki_cli.services.knowledge_artifacts import commit_knowledge_artifacts
+from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
+from llm_wiki_cli.services.knowledge_loader import KnowledgeLoadResult
+from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
+from tests.knowledge_fixtures import (
+    fail_if_extraction_runs,
+    materialize_fixture_tree,
+    one_module_two_entities_fixture,
+)
+from tests.test_knowledge_artifacts import _plan as _knowledge_commit_plan
 
 
 def test_supported_api_exports_are_additive_contract():
@@ -41,9 +52,12 @@ def test_supported_api_exports_are_additive_contract():
         "data_flow_for_entrypoint",
         "dependency_neighborhood",
         "extract_source",
+        "explain_evidence",
         "flow_for_entrypoint",
+        "get_concept",
         "list_wiki_pages",
         "pages_for_symbol",
+        "related_concepts",
     }
 
     assert expected_exports <= set(api.__all__)
@@ -82,6 +96,64 @@ def test_supported_api_signatures_preserve_existing_callers():
     assert context_params["budget"].default == 32000
     assert context_params["filters"].default is None
     assert context_params["wiki_dir"].kind is inspect.Parameter.KEYWORD_ONLY
+
+
+def test_knowledge_api_signatures_are_explicit_and_builder_stays_compatible():
+    builder_params = inspect.signature(
+        build_documentation_query_service
+    ).parameters
+    assert list(builder_params) == [
+        "src_dir",
+        "wiki_dir",
+        "limit",
+        "allow_external_src",
+        "read_only",
+    ]
+    assert builder_params["src_dir"].default == "."
+    assert builder_params["wiki_dir"].kind is inspect.Parameter.KEYWORD_ONLY
+    assert builder_params["limit"].default == 20
+    assert builder_params["read_only"].default is True
+
+    common = [
+        "locator_or_exact_route",
+        "service",
+        "src_dir",
+        "wiki_dir",
+        "limit",
+        "allow_external_src",
+        "read_only",
+    ]
+    assert list(inspect.signature(api.get_concept).parameters) == common
+    assert list(inspect.signature(api.explain_evidence).parameters) == common
+    assert list(inspect.signature(api.related_concepts).parameters) == [
+        "locator_or_exact_route",
+        "direction",
+        "kinds",
+        "service",
+        "src_dir",
+        "wiki_dir",
+        "limit",
+        "allow_external_src",
+        "read_only",
+    ]
+
+    for function in (
+        api.get_concept,
+        api.related_concepts,
+        api.explain_evidence,
+    ):
+        params = inspect.signature(function).parameters
+        assert (
+            params["locator_or_exact_route"].kind
+            is inspect.Parameter.POSITIONAL_OR_KEYWORD
+        )
+        assert params["service"].kind is inspect.Parameter.KEYWORD_ONLY
+        assert params["service"].default is None
+        assert params["limit"].default == 20
+        assert params["read_only"].default is True
+    related_params = inspect.signature(api.related_concepts).parameters
+    assert related_params["direction"].default == "both"
+    assert related_params["kinds"].default is None
 
 
 def test_api_error_types_remain_structured_subclasses():
@@ -498,6 +570,188 @@ def test_list_wiki_pages_exposes_api_contract_root_surface(
     assert page["mcp_uri"] == "llm-wiki://api-contracts"
 
 
+def test_query_service_builder_reuses_one_inventory_snapshot_surface_and_view(
+    tmp_project,
+    monkeypatch,
+):
+    wiki = _write_api_wiki(tmp_project)
+    inventory = {
+        "api.py": {
+            "language": "python",
+            "classes": [],
+            "functions": [],
+            "imports": [],
+        }
+    }
+    source_snapshot = object()
+    retained_inventory = api.extract_cmd.InventoryResult(
+        inventory=inventory,
+        statuses={},
+        source_snapshot=source_snapshot,
+    )
+    extract_result = api.extract_cmd.ExtractPayloadResult(
+        payload={
+            "inventory": inventory,
+            "entrypoints": [],
+            "data_flows": [],
+        },
+        inventory_count=1,
+        docker_count=0,
+        inventory_result=retained_inventory,
+    )
+    surface_payload = {"schema_version": "surface-fixture", "pages": []}
+    surface_evaluation = types.SimpleNamespace(payload=surface_payload)
+    knowledge_view = object()
+    query_surface = {"schema_version": "query-surface", "pages": []}
+    dependency_analysis = {"graph": {"nodes": [], "edges": []}}
+    call_edges = []
+    built_service = object()
+    calls = {
+        "extract": 0,
+        "surface": 0,
+        "view": 0,
+        "query_surface": 0,
+        "dependencies": 0,
+        "service": 0,
+    }
+
+    def fake_extract(src_dir, **kwargs):
+        calls["extract"] += 1
+        assert src_dir == str(tmp_project.resolve())
+        assert kwargs == {
+            "deep": True,
+            "allow_external_src": True,
+            "read_only": True,
+        }
+        return extract_result
+
+    def fake_surface(wiki_root, selected_inventory, **kwargs):
+        calls["surface"] += 1
+        assert wiki_root == wiki.resolve()
+        assert selected_inventory is inventory
+        assert kwargs == {
+            "src_dir": tmp_project.resolve(),
+            "entry_points": [],
+        }
+        return surface_evaluation
+
+    def fake_view(wiki_root, evaluation, selected_inventory, inventory_result):
+        calls["view"] += 1
+        assert wiki_root == wiki.resolve()
+        assert evaluation is surface_evaluation
+        assert selected_inventory is inventory
+        assert inventory_result is retained_inventory
+        return knowledge_view
+
+    def fake_query_surface(payload, view):
+        calls["query_surface"] += 1
+        assert payload is surface_payload
+        assert view is knowledge_view
+        return query_surface
+
+    def fake_dependencies(
+        selected_inventory,
+        src_root,
+        *,
+        source_snapshot,
+    ):
+        calls["dependencies"] += 1
+        assert selected_inventory is inventory
+        assert src_root == str(tmp_project.resolve())
+        assert source_snapshot is retained_inventory.source_snapshot
+        return dependency_analysis
+
+    def fake_service(selected_inventory, **kwargs):
+        calls["service"] += 1
+        assert selected_inventory is inventory
+        assert kwargs["call_edges"] is call_edges
+        assert kwargs["flows"] == []
+        assert kwargs["data_flows"] == []
+        assert kwargs["dependency_analysis"] is dependency_analysis
+        assert kwargs["surface_index"] is query_surface
+        assert kwargs["knowledge_view"] is knowledge_view
+        assert kwargs["limit"] == 7
+        return built_service
+
+    monkeypatch.setattr(
+        api.extract_cmd,
+        "build_extract_payload",
+        fake_extract,
+    )
+    monkeypatch.setattr(
+        api.extract_cmd,
+        "resolve_call_edges",
+        lambda selected_inventory: (
+            call_edges
+            if selected_inventory is inventory
+            else pytest.fail("builder replaced the retained inventory")
+        ),
+    )
+    monkeypatch.setattr(api, "evaluate_surface_index", fake_surface)
+    monkeypatch.setattr(
+        api.context_cmd,
+        "_build_context_knowledge_view",
+        fake_view,
+    )
+    monkeypatch.setattr(
+        api.context_cmd,
+        "_context_query_surface",
+        fake_query_surface,
+    )
+    monkeypatch.setattr(api, "analyze_dependencies", fake_dependencies)
+    monkeypatch.setattr(api, "DocumentationGraphQueryService", fake_service)
+
+    result = build_documentation_query_service(
+        ".",
+        wiki_dir="docs/llm_wiki",
+        limit=7,
+        read_only=True,
+    )
+
+    assert result is built_service
+    assert calls == {
+        "extract": 1,
+        "surface": 1,
+        "view": 1,
+        "query_surface": 1,
+        "dependencies": 1,
+        "service": 1,
+    }
+
+
+def test_query_service_builder_exposes_committed_knowledge_end_to_end(
+    tmp_path,
+    monkeypatch,
+):
+    fixture = one_module_two_entities_fixture()
+    tree = materialize_fixture_tree(
+        fixture,
+        tmp_path / "checkout",
+        consumer="api",
+    )
+    commit_knowledge_artifacts(
+        _knowledge_commit_plan(tree["wiki_root"], fixture)
+    )
+    monkeypatch.chdir(tree["root"])
+
+    service = build_documentation_query_service(
+        ".",
+        wiki_dir="docs/llm_wiki",
+    )
+    result = api.get_concept(
+        "llm-wiki://entities/User",
+        service=service,
+    )
+
+    assert result["knowledge"] == {
+        "availability": "ready",
+        "reason": "all-projection-commitments-match",
+        "freshness_evaluated": True,
+    }
+    assert result["found"] is True
+    assert result["concept"]["locator"] == "llm-wiki://entities/User"
+
+
 def test_graph_query_service_and_wrappers_return_documentation_answers(tmp_project):
     _write_query_project(tmp_project)
     _write_api_wiki(tmp_project)
@@ -542,6 +796,14 @@ def test_graph_query_service_and_wrappers_return_documentation_answers(tmp_proje
         "flows/api-run.md",
         "modules/api.md",
     }
+    concept = api.get_concept("llm-wiki://modules/api", service=service)
+    assert concept["knowledge"] == {
+        "availability": "absent",
+        "reason": "knowledge-projection-not-present",
+        "freshness_evaluated": False,
+    }
+    assert concept["found"] is False
+    assert concept["concept"] is None
 
 
 def test_api_wrappers_map_path_and_query_errors(tmp_project):
@@ -551,3 +813,232 @@ def test_api_wrappers_map_path_and_query_errors(tmp_project):
     service = build_documentation_query_service(".", wiki_dir="docs/llm_wiki")
     with pytest.raises(LlmWikiApiError, match="symbol must be a non-empty string"):
         callers("", service=service)
+
+
+class _RecordingKnowledgeService:
+    def __init__(self):
+        self.calls = []
+        self.concept_result = {"operation": "get_concept"}
+        self.related_result = {"operation": "related_concepts"}
+        self.evidence_result = {"operation": "explain_evidence"}
+
+    def get_concept(self, locator_or_exact_route):
+        self.calls.append(("get_concept", locator_or_exact_route))
+        return self.concept_result
+
+    def related_concepts(
+        self,
+        locator_or_exact_route,
+        *,
+        direction="both",
+        kinds=None,
+    ):
+        self.calls.append(
+            (
+                "related_concepts",
+                locator_or_exact_route,
+                direction,
+                kinds,
+            )
+        )
+        return self.related_result
+
+    def explain_evidence(self, locator_or_exact_route):
+        self.calls.append(("explain_evidence", locator_or_exact_route))
+        return self.evidence_result
+
+
+def test_knowledge_wrappers_reuse_supplied_service_without_building_or_extracting(
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        api,
+        "build_documentation_query_service",
+        fail_if_extraction_runs,
+    )
+    monkeypatch.setattr(
+        api.extract_cmd,
+        "build_extract_payload",
+        fail_if_extraction_runs,
+    )
+    monkeypatch.setattr(
+        api,
+        "evaluate_surface_index",
+        fail_if_extraction_runs,
+    )
+    monkeypatch.setattr(
+        api.context_cmd,
+        "_build_context_knowledge_view",
+        fail_if_extraction_runs,
+    )
+    service = _RecordingKnowledgeService()
+    common = {
+        "service": service,
+        "src_dir": "../unused-source",
+        "wiki_dir": "../unused-wiki",
+        "limit": 0,
+        "allow_external_src": False,
+        "read_only": True,
+    }
+
+    concept = api.get_concept("llm-wiki://entities/User", **common)
+    related = api.related_concepts(
+        "entities/User.md",
+        direction="outbound",
+        kinds=["links_to"],
+        **common,
+    )
+    evidence = api.explain_evidence("llm-wiki://entities/User", **common)
+
+    assert concept is service.concept_result
+    assert related is service.related_result
+    assert evidence is service.evidence_result
+    assert service.calls == [
+        ("get_concept", "llm-wiki://entities/User"),
+        (
+            "related_concepts",
+            "entities/User.md",
+            "outbound",
+            ["links_to"],
+        ),
+        ("explain_evidence", "llm-wiki://entities/User"),
+    ]
+
+
+class _FailingKnowledgeService:
+    @staticmethod
+    def _fail():
+        raise api.DocumentationQueryError("knowledge query failed")
+
+    def get_concept(self, _locator_or_exact_route):
+        self._fail()
+
+    def related_concepts(
+        self,
+        _locator_or_exact_route,
+        *,
+        direction="both",
+        kinds=None,
+    ):
+        del direction, kinds
+        self._fail()
+
+    def explain_evidence(self, _locator_or_exact_route):
+        self._fail()
+
+
+@pytest.mark.parametrize(
+    ("function_name", "kwargs"),
+    [
+        ("get_concept", {}),
+        (
+            "related_concepts",
+            {"direction": "outbound", "kinds": ["derived_from"]},
+        ),
+        ("explain_evidence", {}),
+    ],
+)
+def test_knowledge_wrappers_map_query_errors_without_building_service(
+    monkeypatch,
+    function_name,
+    kwargs,
+):
+    monkeypatch.setattr(
+        api,
+        "build_documentation_query_service",
+        fail_if_extraction_runs,
+    )
+    service = _FailingKnowledgeService()
+
+    with pytest.raises(
+        LlmWikiApiError,
+        match="knowledge query failed",
+    ) as exc_info:
+        getattr(api, function_name)(
+            "llm-wiki://entities/User",
+            service=service,
+            **kwargs,
+        )
+
+    assert isinstance(exc_info.value.__cause__, api.DocumentationQueryError)
+
+
+@pytest.mark.parametrize(
+    ("load_result", "availability", "reason"),
+    [
+        (
+            KnowledgeLoadResult(
+                status=KnowledgeLoadState.ABSENT,
+                surface={},
+                knowledge=None,
+                manifest_basis=None,
+            ),
+            "absent",
+            "knowledge-projection-not-present",
+        ),
+        (
+            KnowledgeLoadResult(
+                status=KnowledgeLoadState.DEGRADED,
+                surface={},
+                knowledge=None,
+                manifest_basis=None,
+                underlying_status=KnowledgeLoadState.INVALID,
+            ),
+            "degraded",
+            "policy-selected-surface-only-fallback-after-invalid",
+        ),
+    ],
+)
+def test_knowledge_wrappers_preserve_structured_non_ready_state_without_extraction(
+    monkeypatch,
+    load_result,
+    availability,
+    reason,
+):
+    view = build_knowledge_read_view(load_result)
+    service = api.DocumentationGraphQueryService(
+        {},
+        knowledge_view=view,
+    )
+    monkeypatch.setattr(
+        api,
+        "build_documentation_query_service",
+        fail_if_extraction_runs,
+    )
+    monkeypatch.setattr(
+        api.extract_cmd,
+        "build_extract_payload",
+        fail_if_extraction_runs,
+    )
+
+    concept = api.get_concept(
+        "llm-wiki://entities/User",
+        service=service,
+    )
+    related = api.related_concepts(
+        "llm-wiki://entities/User",
+        direction="outbound",
+        kinds=["links_to"],
+        service=service,
+    )
+    evidence = api.explain_evidence(
+        "llm-wiki://entities/User",
+        service=service,
+    )
+
+    status = {
+        "availability": availability,
+        "reason": reason,
+        "freshness_evaluated": False,
+    }
+    assert concept["knowledge"] == status
+    assert concept["found"] is False
+    assert concept["concept"] is None
+    assert related["knowledge"] == status
+    assert related["found"] is False
+    assert related["direction"] == "outbound"
+    assert related["kinds"] == ["links_to"]
+    assert related["relationships"] == []
+    assert evidence["knowledge"] == status
+    assert evidence["found"] is False
+    assert evidence["evidence"] is None
