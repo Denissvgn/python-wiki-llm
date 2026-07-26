@@ -100,6 +100,141 @@ llm-wiki docs status --workspace ./project-docs --format json
 Do not advance merely because `record-result` accepts a file. `verify` owns the
 filesystem, ownership, provenance, freshness, and deterministic-check gates.
 
+## Protected calibration commands
+
+Calibration consumes two matching documentation controls without changing
+either control's run. The paths below assume
+`/path/to/operator-calibration` is a dedicated operator directory outside the
+source and implementation checkout. Its controller, controls, manifests, and
+pre-created packet directory are siblings; use equivalent absolute paths on
+Windows.
+
+```bash
+llm-wiki docs calibration prepare \
+  --root /path/to/operator-calibration/controller \
+  --control-workspace /path/to/operator-calibration/control-a \
+  --control-workspace /path/to/operator-calibration/control-b \
+  --execution-manifest /path/to/operator-calibration/execution-manifest.json
+llm-wiki docs calibration admit \
+  --root /path/to/operator-calibration/controller \
+  --authority-grant /path/to/operator-calibration/authority-grant.json
+llm-wiki docs calibration status \
+  --root /path/to/operator-calibration/controller
+llm-wiki docs calibration packet \
+  --root /path/to/operator-calibration/controller \
+  --role intake-a \
+  --output /path/to/operator-calibration/packets/intake-a.json
+llm-wiki docs calibration dispatch \
+  --root /path/to/operator-calibration/controller \
+  --role intake-a
+llm-wiki docs calibration verify \
+  --root /path/to/operator-calibration/controller \
+  --no-advance
+```
+
+The local execution manifest is exact-field and must have this shape. Replace
+the schematic executable, hashes, and image identities with canonical
+host-specific values; mutable image tags are rejected:
+
+```json
+{
+  "schema_version": "llm-wiki-p0-calibration-execution-manifest/v1",
+  "profile": "local_no_egress",
+  "roles": ["intake-a", "intake-b", "intake-c", "verifier"],
+  "budgets": {
+    "max_concurrent_workers": 3,
+    "max_attempts_per_role": 2,
+    "max_total_calls": 8,
+    "max_packet_bytes": 1048576,
+    "max_result_bytes": 1048576
+  },
+  "oci": {
+    "runtime": "docker",
+    "executable": "/absolute/path/to/docker",
+    "executable_sha256": "sha256:<64 lowercase hex characters>",
+    "worker": {
+      "image": "registry.example/worker@sha256:<64 lowercase hex characters>",
+      "entrypoint": ["/opt/calibration-worker"]
+    },
+    "probe": {
+      "image": "registry.example/probe@sha256:<64 lowercase hex characters>",
+      "entrypoint": ["/opt/calibration-probe"]
+    },
+    "user": "1000:1000",
+    "resources": {
+      "pids_limit": 32,
+      "memory_bytes": 536870912,
+      "cpu_millis": 750,
+      "tmpfs_bytes": 16777216
+    },
+    "timeout_seconds": 120,
+    "termination_grace_seconds": 5,
+    "max_packet_bytes": 1048576,
+    "output_limits": {
+      "stdout_bytes": 8192,
+      "stderr_bytes": 4096,
+      "result_bytes": 1048576
+    }
+  },
+  "external_routes": []
+}
+```
+
+After `prepare`, copy its exact `cohort_id`, `execution_manifest_hash`, and
+`evidence_bundle_hash` into the grant. Copy `budgets` and `external_routes`
+unchanged from the frozen manifest:
+
+```json
+{
+  "schema_version": "llm-wiki-p0-calibration-authority-grant/v1",
+  "grant_id": "operator-grant-001",
+  "cohort_id": "<prepare output cohort_id>",
+  "decision_scope": "p0_policy_default",
+  "profile": "local_no_egress",
+  "evidence_bundle_hash": "<prepare output evidence_bundle_hash>",
+  "execution_manifest_hash": "<prepare output execution_manifest_hash>",
+  "allowed_roles": ["intake-a", "intake-b", "intake-c", "verifier"],
+  "budgets": {
+    "max_concurrent_workers": 3,
+    "max_attempts_per_role": 2,
+    "max_total_calls": 8,
+    "max_packet_bytes": 1048576,
+    "max_result_bytes": 1048576
+  },
+  "external_routes": [],
+  "issued_at": "<current UTC RFC 3339 timestamp>",
+  "expires_at": "<later UTC RFC 3339 timestamp>",
+  "revocation": {
+    "reference": "operator-revocations/001",
+    "revoked": false
+  },
+  "authentication": {
+    "method": "host-protected-operator",
+    "principal": "<operator audit identity>",
+    "reference": "<approval reference>",
+    "verified_by_host": true
+  }
+}
+```
+
+The authentication object is audit metadata, not proof supplied by JSON. The
+controller independently binds the grant to the current owner-only protected
+root. Missing authority, invalid bindings, or unavailable enforcement is
+terminal `BLOCKED_NO_SHIP`.
+
+Use `dispatch` for the frozen local OCI backend. Use `record-result` only for a
+separately authenticated host broker whose identity is established outside its
+JSON receipt. The ordinary CLI remains fail-closed without a host authenticator;
+an embedding Python host scopes authenticated calls with
+`use_p0_calibration_host_broker_authenticator`. Local OCI entrypoints overwrite
+the supplied pre-created result file; its parent is not writable, its exact
+byte ceiling is enforced during execution, and admission must deny both an
+over-limit extension and sibling creation. Unavailable enforcement blocks the
+cohort. Never print private packet content. Issue the three intake roles
+independently, then the verifier, and stop at `INTAKE_FROZEN`; that state
+contains contracts for later work but no labels, scores, weights, candidate
+policy, or publication decision.
+
 ## Stage gates
 
 | Stage | Entry | Exit |

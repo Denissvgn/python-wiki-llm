@@ -33,6 +33,13 @@ packet/result fields, stage gates, and failure matrix.
   cryptographic boundary against a worker that shares the supervisor's
   principal and can replace the entire workspace. Stop when the host cannot
   enforce the split. Apply the same boundary to every provider and runner.
+- Treat protected calibration as a separate sibling lifecycle. Start it only
+  from a new protected root with exactly two matching controls. The qualifying
+  local profile requires a digest-pinned OCI runtime/image contract and live
+  denial probes, including proof that its single pre-created result-file bind
+  rejects over-limit and sibling writes; an external profile requires
+  authentication established by a separate host broker, not a boolean
+  supplied inside JSON.
 - Route routine wiki updates through a host-owned `low-cost` model route in
   both `generic-agent` and `handoff` modes. OpenAI-compatible, Anthropic,
   Google Gemini, local/self-hosted, and other providers are equally valid;
@@ -70,7 +77,10 @@ packet/result fields, stage gates, and failure matrix.
    semantic worklist. Verify that the P0 census remains priority-blind and its
    shadow is `evidence_only` unless a separately authorized, isolated
    calibration supplied a complete candidate. Preliminary family hints are
-   unadjudicated and do not change v1 priorities. Stop on a symlink/path escape, forbidden write, corrupt
+   unadjudicated and do not change v1 priorities. If calibration intake is
+   explicitly requested, use `llm-wiki docs calibration`; never reinterpret
+   the diagnostic preflight or `candidate_evaluated=true` shadow field as
+   admission evidence. Stop on a symlink/path escape, forbidden write, corrupt
    input, unexplained skip, or unresolved freshness decision.
 
 4. **Run wiki enrichment from an explicit packet.** Build the
@@ -120,3 +130,6 @@ packet/result fields, stage gates, and failure matrix.
   budget, tooling, authorization, or freshness is insufficient. Never fabricate
   completion, examples, source verification, calibration labels, holdout
   results, candidate evaluation, or `publish_ready`.
+- A protected calibration run ends at a frozen pre-labeling intake. Do not
+  continue into labeling, candidate selection, default adoption, release, or
+  publication as part of this workflow.

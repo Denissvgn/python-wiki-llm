@@ -90,6 +90,203 @@ holdout custody, real-agent comparison, and the declared compatibility gates.
 Missing authorization or enforceable role/holdout isolation is a fail-closed
 `BLOCKED_NO_SHIP` result, not permission to infer labels in-process.
 
+### Protected calibration admission and intake
+
+The calibration controller is a sibling lifecycle, not another state of the
+documentation run. It consumes exactly two independently prepared controls
+whose source identity, worklist, complete census, and read-only-source evidence
+match. It then freezes a deterministic, priority-blind evidence bundle in a
+new protected root. The controls and their `llm-wiki-documentation-run/v1`
+state remain unchanged.
+
+The examples in this section assume `/path/to/operator-calibration` is a
+dedicated operator directory outside the source and implementation checkout.
+Its controller, two controls, manifests, and pre-created packet directory are
+siblings. Substitute equivalent absolute paths on Windows.
+
+```bash
+llm-wiki docs calibration prepare \
+  --root /path/to/operator-calibration/controller \
+  --control-workspace /path/to/operator-calibration/control-a \
+  --control-workspace /path/to/operator-calibration/control-b \
+  --execution-manifest /path/to/operator-calibration/execution-manifest.json
+
+llm-wiki docs calibration admit \
+  --root /path/to/operator-calibration/controller \
+  --authority-grant /path/to/operator-calibration/authority-grant.json
+
+llm-wiki docs calibration status \
+  --root /path/to/operator-calibration/controller
+```
+
+For the local profile, start from this manifest shape and replace every
+placeholder with a real absolute executable identity and digest-pinned image:
+
+```json
+{
+  "schema_version": "llm-wiki-p0-calibration-execution-manifest/v1",
+  "profile": "local_no_egress",
+  "roles": ["intake-a", "intake-b", "intake-c", "verifier"],
+  "budgets": {
+    "max_concurrent_workers": 3,
+    "max_attempts_per_role": 2,
+    "max_total_calls": 8,
+    "max_packet_bytes": 1048576,
+    "max_result_bytes": 1048576
+  },
+  "oci": {
+    "runtime": "docker",
+    "executable": "<absolute canonical docker-or-podman path>",
+    "executable_sha256": "sha256:<64 lowercase hex characters>",
+    "worker": {
+      "image": "<registry/name>@sha256:<64 lowercase hex characters>",
+      "entrypoint": ["/opt/calibration-worker"]
+    },
+    "probe": {
+      "image": "<registry/name>@sha256:<64 lowercase hex characters>",
+      "entrypoint": ["/opt/calibration-probe"]
+    },
+    "user": "1000:1000",
+    "resources": {
+      "pids_limit": 32,
+      "memory_bytes": 536870912,
+      "cpu_millis": 750,
+      "tmpfs_bytes": 16777216
+    },
+    "timeout_seconds": 120,
+    "termination_grace_seconds": 5,
+    "max_packet_bytes": 1048576,
+    "output_limits": {
+      "stdout_bytes": 8192,
+      "stderr_bytes": 4096,
+      "result_bytes": 1048576
+    }
+  },
+  "external_routes": []
+}
+```
+
+The executable path must already be fully resolved, its basename must match
+`docker` or `podman`, and its hash must cover that exact file. An image may not
+carry a mutable tag beside its digest. The configured non-root UID/GID must be
+able to write the role output mount.
+
+`prepare` returns the new `cohort_id`, `execution_manifest_hash`, and
+`evidence_bundle_hash`. Copy those exact values into the authority grant;
+copy `budgets` and `external_routes` byte-for-byte from the frozen manifest:
+
+```json
+{
+  "schema_version": "llm-wiki-p0-calibration-authority-grant/v1",
+  "grant_id": "operator-grant-001",
+  "cohort_id": "<prepare output cohort_id>",
+  "decision_scope": "p0_policy_default",
+  "profile": "local_no_egress",
+  "evidence_bundle_hash": "<prepare output evidence_bundle_hash>",
+  "execution_manifest_hash": "<prepare output execution_manifest_hash>",
+  "allowed_roles": ["intake-a", "intake-b", "intake-c", "verifier"],
+  "budgets": {
+    "max_concurrent_workers": 3,
+    "max_attempts_per_role": 2,
+    "max_total_calls": 8,
+    "max_packet_bytes": 1048576,
+    "max_result_bytes": 1048576
+  },
+  "external_routes": [],
+  "issued_at": "<current UTC RFC 3339 timestamp>",
+  "expires_at": "<later UTC RFC 3339 timestamp>",
+  "revocation": {
+    "reference": "operator-revocations/001",
+    "revoked": false
+  },
+  "authentication": {
+    "method": "host-protected-operator",
+    "principal": "<operator audit identity>",
+    "reference": "<approval reference>",
+    "verified_by_host": true
+  }
+}
+```
+
+The authentication object is audit metadata, not a self-authenticating grant.
+Admission independently derives the current host principal and access
+mechanism from the protected controller root and binds that evidence to the
+grant, manifest, evidence bundle, and cohort. A root whose ownership, POSIX
+mode, or Windows DACL is not restrictive fails closed.
+
+The root must be new or empty and must not overlap a source, documentation
+control, worker output, packet output, or implementation worktree. Immutable
+numbered artifacts and transition records are canonical; `run.json` is a
+rebuildable current-state snapshot. A dedicated controller lock, generation
+and transition-head comparisons, guarded no-follow I/O, and crash recovery
+protect state changes. Unknown files, ambiguous recovery, an indeterminate
+dispatch, or unavailable enforcement blocks the cohort without erasing
+evidence. Source/control mutation or ledger tampering rejects it.
+
+For `local_no_egress`, the frozen manifest supplies the Docker or Podman
+executable identity, digest-pinned worker and probe images, fixed entrypoints,
+resource limits, and timeouts. Admission runs the probe image with a read-only
+root filesystem, no capabilities, no new privileges, a non-root identity,
+bounded resources, a temporary `/tmp`, no engine socket, and `--network none`.
+The probe must demonstrate that controller, source, credential, other-role,
+holdout-sentinel, network, and engine-socket access are denied.
+
+The only persistent writable container target is a private, pre-created result
+file. The broker mounts that file—not its host directory—read-write and sets
+the `fsize` soft and hard limits to the exact frozen result-byte budget. Worker
+and probe entrypoints must overwrite the supplied result path; they cannot
+depend on creating a temporary sibling and renaming it into place. Admission
+also attempts a one-byte-over-limit extension and sibling creation. Both must
+be denied. Podman uses a keep-ID user namespace for this file handoff. If
+Docker or Podman cannot enforce the file bind, identity mapping, read-only
+parent, or file-size limit on the current host, admission is
+`BLOCKED_NO_SHIP`. Treat this as host-specific evidence and do not infer the
+same enforcement on another operating system or runtime installation.
+
+`external_authorized` remains a credential-free protocol contract. It can
+qualify only when a separately authenticated host broker establishes the
+attestation and matching dispatch receipts outside the submitted JSON. The
+package ships no provider credential, SDK, external-provider adapter, or
+self-authenticating receipt path. The ordinary CLI exposes no authenticator
+selector and remains fail-closed. An embedding Python host that has already
+authenticated the broker scopes lifecycle calls with
+`use_p0_calibration_host_broker_authenticator`.
+
+After admission, write each private packet to an explicit path:
+
+```bash
+llm-wiki docs calibration packet \
+  --root /path/to/operator-calibration/controller \
+  --role intake-a \
+  --output /path/to/operator-calibration/packets/intake-a.json
+llm-wiki docs calibration dispatch \
+  --root /path/to/operator-calibration/controller \
+  --role intake-a
+
+# Only for a separately executed authenticated broker:
+llm-wiki docs calibration record-result \
+  --root /path/to/operator-calibration/controller \
+  --dispatch-receipt /path/to/operator-calibration/broker/dispatch-receipt.json \
+  --result /path/to/operator-calibration/broker/agent-result.json
+
+llm-wiki docs calibration verify \
+  --root /path/to/operator-calibration/controller \
+  --no-advance
+```
+
+Issue `intake-a`, `intake-b`, and `intake-c` independently before issuing the
+verifier. Every proposal and verifier disposition must cite the frozen source
+evidence. The verifier must account for all proposal claims and retain a
+coherent source-supported purpose, audience/task set, and primary journey.
+Each role receives at most two attempts, and ambiguous or exhausted dispatches
+fail closed.
+
+Successful verification ends at `INTAKE_FROZEN`. The frozen task oracle,
+label-field contract, and optimizer-search contract define fields, objectives,
+constraints, seeds, and deterministic tie-breaking only. They contain no
+labels, scores, weights, candidate policy, adoption decision, release
+authority, or publication authority.
+
 Only the workspace, an explicit helper cache, and an explicit disposable
 capture root are eligible write roots. The source and adopted input wiki remain
 forbidden write roots throughout the run.
@@ -708,6 +905,72 @@ status = get_documentation_run_status(workspace)
 final_report = export_documentation_run(workspace, build=False)
 verification = verify_documentation_run(workspace, advance=False)
 ```
+
+The protected calibration lifecycle is also available through the same module:
+
+```python
+from llm_wiki_cli.api import (
+    HostBrokerAuthenticator,
+    P0CalibrationAgentResult,
+    P0CalibrationDispatchReceipt,
+    admit_p0_calibration_run,
+    build_p0_calibration_agent_packet,
+    dispatch_p0_calibration_agent,
+    get_p0_calibration_run_status,
+    prepare_p0_calibration_run,
+    record_p0_calibration_agent_result,
+    use_p0_calibration_host_broker_authenticator,
+    verify_p0_calibration_run,
+)
+
+calibration_root = Path("/path/to/operator-calibration/controller")
+calibration = prepare_p0_calibration_run(
+    calibration_root,
+    control_workspaces=(
+        "/path/to/operator-calibration/control-a",
+        "/path/to/operator-calibration/control-b",
+    ),
+    execution_manifest=execution_manifest,
+)
+calibration = admit_p0_calibration_run(
+    calibration_root,
+    authority_grant=authority_grant,
+)
+packet = build_p0_calibration_agent_packet(
+    calibration_root,
+    role="intake-a",
+)
+status = get_p0_calibration_run_status(calibration_root)
+```
+
+For the local profile, call `dispatch_p0_calibration_agent`; for an
+independently authenticated external broker, construct the versioned
+`P0CalibrationDispatchReceipt` and `P0CalibrationAgentResult` types before
+calling `record_p0_calibration_agent_result`. Use
+`verify_p0_calibration_run(..., advance=False)` for a read-only eligibility
+report.
+
+An embedding host supplies an object implementing `HostBrokerAuthenticator`
+only after authenticating the external broker through its own protected
+mechanism. Scope admission and receipt imports explicitly:
+
+```python
+with use_p0_calibration_host_broker_authenticator(authenticated_host_broker):
+    admitted = admit_p0_calibration_run(
+        calibration_root,
+        authority_grant=authority_grant,
+        broker_attestation=broker_attestation,
+    )
+    record_p0_calibration_agent_result(
+        calibration_root,
+        dispatch_receipt=dispatch_receipt,
+        result=agent_result,
+    )
+```
+
+The context is process-local, does not dynamically load code, and persists
+only bounded secret-free proofs. The stock CLI remains fail-closed unless an
+embedding host invokes it inside the same authenticated context.
 
 For existing-wiki adoption, use:
 

@@ -101,6 +101,12 @@ class TestBundledAgentDocsSkill:
         assert "not a cryptographic boundary" in normalized
         assert "shares the supervisor's principal" in normalized
         assert "same boundary to every provider and runner" in normalized
+        assert "llm-wiki docs calibration" in combined
+        assert "digest-pinned" in combined
+        assert "separately authenticated host broker" in combined
+        assert "`candidate_evaluated=true`" in combined
+        assert "`INTAKE_FROZEN`" in combined
+        assert "use_p0_calibration_host_broker_authenticator" in combined
 
 
 class TestBundledWikiSyncSkill:

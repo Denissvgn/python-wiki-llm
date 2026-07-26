@@ -258,6 +258,14 @@ The workspace and any helper-cache or capture root must not overlap the source
 project or adopted input wiki. The example assumes `./project-docs` is a
 parent/sibling workspace, not a directory inside `/path/to/project`.
 
+Protected calibration is a separate sibling lifecycle. It freezes evidence
+from exactly two matching documentation controls in a new controller root and
+does not alter their worklists, priorities, or resume state. The qualifying
+local profile runs digest-pinned workers with no container network and records
+live denial probes before any intake packet can be issued. The lifecycle stops
+at a frozen pre-labeling intake; it does not create labels, candidate policy,
+publication approval, or a new default.
+
 ## Automation
 
 `llm-wiki install-hook` installs a `post-commit` hook that generates
@@ -1088,6 +1096,68 @@ boundary-confidence, gap, and dependency evidence without changing the v1
 worklist. Candidate fields remain unevaluated unless a separate qualified
 calibration runner supplies a complete policy result; the core never treats
 diagnostic family hints as semantic equivalence or a new default.
+
+Run protected calibration only from a fresh controller root outside the source,
+both documentation controls, packet outputs, and implementation worktrees. The
+paths below assume `/path/to/operator-calibration` is a dedicated operator
+directory outside the source and implementation checkout; its controller,
+controls, manifests, and pre-created packet directory are siblings. Substitute
+equivalent absolute paths on Windows:
+
+```bash
+llm-wiki docs calibration prepare \
+  --root /path/to/operator-calibration/controller \
+  --control-workspace /path/to/operator-calibration/control-a \
+  --control-workspace /path/to/operator-calibration/control-b \
+  --execution-manifest /path/to/operator-calibration/execution-manifest.json
+
+llm-wiki docs calibration admit \
+  --root /path/to/operator-calibration/controller \
+  --authority-grant /path/to/operator-calibration/authority-grant.json
+
+llm-wiki docs calibration status \
+  --root /path/to/operator-calibration/controller
+llm-wiki docs calibration packet \
+  --root /path/to/operator-calibration/controller \
+  --role intake-a \
+  --output /path/to/operator-calibration/packets/intake-a.json
+llm-wiki docs calibration dispatch \
+  --root /path/to/operator-calibration/controller \
+  --role intake-a
+llm-wiki docs calibration verify \
+  --root /path/to/operator-calibration/controller \
+  --no-advance
+```
+
+`local_no_egress` is the reference qualification profile. It reads the OCI
+runtime, digest-pinned images, entrypoints, limits, and timeouts only from the
+frozen manifest, invokes Docker or Podman without a shell, and admits the
+cohort only when all required denial probes pass. Persistent worker output is
+restricted to one pre-created private result file mounted read-write into an
+otherwise read-only container filesystem. A hard file-size limit matches the
+frozen result-byte budget, and admission must prove that an over-limit write
+and creation of a sibling output are both denied. A host whose runtime,
+filesystem sharing, user mapping, or resource-limit implementation cannot
+enforce those checks blocks admission; qualification on one host or platform
+does not establish it on another. The
+`external_authorized` contract is provider-neutral, but a self-asserted
+attestation is insufficient: a separately authenticated host broker must
+establish the attestation and every imported receipt. No provider credential,
+SDK, external-broker adapter, dynamic authenticator loader, or CLI
+authenticator selector is included; an embedding host must establish that
+same-process trust boundary with
+`use_p0_calibration_host_broker_authenticator`.
+The strict local execution-manifest and authority-grant templates, including
+the prepare-then-bind hash sequence, are in the
+[standalone documentation guide](docs/standalone-documentation.md#protected-calibration-admission-and-intake).
+
+Packets are always written to an explicit file and are never printed to
+standard output. Run the three intake roles independently, then the verifier;
+each role has at most two attempts. `record-result` is reserved for a
+separately executed authenticated broker. Local OCI results enter through the
+controller-owned `dispatch` path. A successful verification ends at
+`INTAKE_FROZEN` with deterministic task-oracle, label-field, and optimizer
+contracts that contain no labels, weights, scores, or candidate policy.
 
 For an adopted wiki, `require-current` builds the current supported-source
 inventory and compares its path set and hashes with the imported manifest,

@@ -9,10 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- A protected calibration sibling lifecycle through `llm-wiki docs calibration`
+  and matching typed Python APIs. It freezes matching evidence from two
+  independent documentation controls, admits a fresh cohort only after
+  authority and isolation gates, runs three independent intake roles plus a
+  source-cited verifier, and stops at a deterministic pre-labeling intake
+  without changing the documentation-run contract or default priority policy.
+- A provider-neutral OCI broker for the qualifying local profile. It invokes
+  digest-pinned Docker or Podman images with fixed argument vectors, a
+  sanitized environment, no network, a read-only root filesystem, dropped
+  capabilities, bounded resources, a single size-limited result-file bind, and
+  live adversarial denial probes that include over-limit and sibling-output
+  attempts. External-broker contracts remain credential-free and require
+  separately established host authentication; no provider SDK or adapter is
+  included.
 - Priority-blind standalone P0 calibration evidence: bootstrap and surface
   artifacts now preserve detector/language provenance, routes, bounded
   call/data-flow details, boundary confidence and gaps, and dependency metrics;
-  `docs prepare` records a source-cited 381-scale census and an evidence-only
+  `docs prepare` records a source-cited complete census and an evidence-only
   shadow without changing the v1 priority rule. Fail-closed preflight and
   mechanical verdict helpers support an external isolated calibration runner,
   while missing labels, holdout custody, or isolation cannot be represented as
@@ -57,6 +71,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Calibration state uses a dedicated protected root with immutable numbered
+  artifacts, guarded no-follow writes, atomic snapshots, a cross-platform
+  controller lock, generation/head compare-and-swap checks, bounded canonical
+  JSON, replay detection, and fail-closed crash recovery. Intake-role packets
+  exclude priorities, credentials, host paths, and other-role outputs; the
+  verifier receives only the three frozen, sanitized proposals.
 - Standalone runs treat source trees, adopted wikis, target instructions, and
   live-service responses as untrusted evidence. Source plugins are disabled by
   default, helper/build preparation is explicit, symlink/non-regular/path-escape
