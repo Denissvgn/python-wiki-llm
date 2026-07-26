@@ -59,6 +59,9 @@ P0_CALIBRATION_EXECUTION_MANIFEST_SCHEMA_VERSION = (
 P0_CALIBRATION_CONTROL_RECORD_SCHEMA_VERSION = (
     "llm-wiki-p0-calibration-control-record/v1"
 )
+P0_CALIBRATION_RUNTIME_BINDINGS_SCHEMA_VERSION = (
+    "llm-wiki-p0-calibration-runtime-bindings/v1"
+)
 P0_CALIBRATION_ADMISSION_SCHEMA_VERSION = "llm-wiki-p0-calibration-admission/v1"
 P0_CALIBRATION_EVIDENCE_BUNDLE_SCHEMA_VERSION = (
     "llm-wiki-p0-calibration-evidence-bundle/v1"
@@ -72,6 +75,9 @@ P0_CALIBRATION_ISOLATION_ATTESTATION_SCHEMA_VERSION = (
 P0_CALIBRATION_ROLE_CAPABILITY_MATRIX_SCHEMA_VERSION = (
     "llm-wiki-p0-calibration-role-capability-matrix/v1"
 )
+P0_CALIBRATION_ISOLATION_PROBE_REQUEST_SCHEMA_VERSION = (
+    "llm-wiki-p0-calibration-isolation-probe-request/v1"
+)
 P0_CALIBRATION_ISOLATION_PROBE_RESULT_SCHEMA_VERSION = (
     "llm-wiki-p0-calibration-isolation-probe-result/v1"
 )
@@ -82,6 +88,13 @@ P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION = (
 )
 P0_CALIBRATION_ACCESS_EVENT_SCHEMA_VERSION = "llm-wiki-p0-calibration-access-event/v1"
 P0_CALIBRATION_TRANSITION_SCHEMA_VERSION = "llm-wiki-p0-calibration-transition/v1"
+P0_CALIBRATION_TRANSACTION_SCHEMA_VERSION = "llm-wiki-p0-calibration-transaction/v1"
+P0_CALIBRATION_AMBIGUOUS_RECOVERY_SCHEMA_VERSION = (
+    "llm-wiki-p0-calibration-ambiguous-recovery/v1"
+)
+P0_CALIBRATION_EMERGENCY_REJECTION_SCHEMA_VERSION = (
+    "llm-wiki-p0-calibration-emergency-rejection/v1"
+)
 P0_CALIBRATION_VERIFICATION_REPORT_SCHEMA_VERSION = (
     "llm-wiki-p0-calibration-verification-report/v1"
 )
