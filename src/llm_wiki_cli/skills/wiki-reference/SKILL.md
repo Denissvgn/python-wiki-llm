@@ -1,6 +1,6 @@
 ---
 name: wiki-reference
-description: Deep reference for llm-wiki extraction contracts (Haskell/Go/Rust/TypeScript/JavaScript), helper toolchains and caches, dependency reconciliation and lockfile metadata, static-site export profiles, resource-aware execution, and `llm-wiki context` budgeting. Read the section that matches the command or diagnostic in front of you — not upfront.
+description: Deep reference for llm-wiki extraction contracts, helper toolchains and caches, knowledge observations/freshness/availability, strict knowledge lint, bounded context/API/MCP consumption, dependency reconciliation, static-site export, resource-aware execution, and context budgeting. Read only the section that matches the command or diagnostic in front of you.
 ---
 
 # wiki-reference
@@ -17,6 +17,12 @@ a task actually needs:
   guarantees, Cabal reconciliation, the `llm-wiki-extract/v1` inventory schema.
 - **Dependency reconciliation** — monorepo manifest scoping, import aliases,
   Go `// indirect`, lockfile-backed `versions` metadata.
+- **Knowledge observations and freshness** — persisted evidence versus
+  read-time freshness, availability/degraded states, and snapshot-only status.
+- **Knowledge lint and context** — strict failure policy, concept refinements,
+  deterministic ranking, warnings, and filtered/truncated counts.
+- **Knowledge query/API/MCP contract** — exact indexed lookups, response
+  envelopes, default and external limits, and metadata no-exec rules.
 - **JavaScript and TypeScript flows** — `.js`/`.jsx` extraction, raw Node
   `createServer` entry points, `javascript_flow_unsupported` scope.
 - **Static-site export** — `reference`/`user` profiles, MkDocs and Docusaurus

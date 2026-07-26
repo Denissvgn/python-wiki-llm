@@ -33,13 +33,13 @@ linting; `.llm-wiki-surface.json`, the deterministic machine-readable index of
 canonical pages, source mappings, surface counts, flow metadata,
 dependency-page presence, and internal wiki links; and the experimental
 `.llm-wiki-knowledge.json`, a deterministic evidence-aware projection of those
-canonical pages. The knowledge projection is generated and must not be edited
-as an authority. Authority, load-state, commit, compatibility, and rollout
-semantics for the native knowledge layer are recorded in
+canonical pages. The experimental knowledge projection is generated and must
+not be edited as an authority. Its observation-versus-freshness model,
+availability states, strict-lint policy, context filters, API/MCP envelopes,
+bounds, and no-execution rules are documented in
+[Native knowledge reads][native-knowledge]. The detailed authority,
+load-state, commit, and compatibility decisions are recorded in
 [ADR-0001](docs/architecture/0001-native-knowledge-authority-state-and-rollout.md).
-The experimental generated knowledge artifact, accepted M1 performance
-budgets, privacy boundary, and rollback procedure are documented in
-[Native knowledge M1 operations](docs/native-knowledge-m1.md).
 Generated Mermaid diagrams, including bounded call-sequence, data-flow,
 dependency, and relationship diagrams when present, plus generated tables,
 links, headings, canonical filenames, and machine-readable artifacts are
@@ -603,6 +603,14 @@ llm-wiki lint --wiki-dir docs/llm_wiki --src-dir /path/to/repo --allow-external-
 ```
 
 Strict mode also requires the core wiki structure and a fresh sync manifest.
+For a knowledge-capable wiki, it validates the committed
+surface/knowledge/manifest set, promised module/entity evidence, and live
+concept freshness. Invalid or mixed projections, invalid promised evidence,
+and `unknown`, `source-changed`, `source-missing`, or `basis-incompatible`
+freshness are hard issues. `nonsemantic-source-change` remains a warning.
+Legacy wikis with no declared knowledge projection continue in surface-only
+mode. See [Native knowledge reads][native-knowledge-strict]
+for the complete policy.
 `--profile` suppresses the human-readable lint text and prints one JSON object
 to stdout containing the normal lint report, diagnostics, and phase timings.
 The JSON contract is preserved for extractor failures as well; lint still exits
@@ -774,6 +782,14 @@ Example request:
 `filters.language` and `filters.module` scope the budgeted `files` payload.
 `filters.symbol`, `filters.entrypoint`, and `filters.surface` add bounded
 `graphs` and `surface` sections without changing the file-priority budget.
+`filters.freshness` and `filters.evidence` refine concept references and require
+either `filters.surface` or `filters.symbol`. Refinements are applied before the
+limit. Without an explicit freshness filter, stale and unknown concepts remain
+visible and produce a warning; when live freshness is available, concepts rank
+from `current` through `nonsemantic-source-change`, `unknown`,
+`source-changed`, `source-missing`, and `basis-incompatible`. Selection output
+reports unfiltered, filtered, returned, and truncated counts. See
+[Native knowledge reads][native-knowledge-context].
 `--wiki-dir` selects the wiki surface metadata used for graph page references.
 
 `--output PATH` writes the generated JSON or Markdown directly instead of
@@ -907,6 +923,16 @@ bounded graph queries; supported types are `flow_for_entrypoint`,
 and `pages_for_symbol`. Context payloads, lint summaries, and status
 information report the same canonical surfaces. HTTP mode is intended for local
 use and defaults to loopback.
+
+Knowledge-aware MCP clients can call `get_concept`, `related_concepts`, and
+`explain_evidence`. These tools use the shared read-only query envelope,
+including knowledge availability, exact-match state, totals, returned counts,
+and explicit truncation. Their default limit is 20 and externally supplied
+limits are capped at 100. `get_status` is snapshot-only and never claims that
+freshness is current. See
+[Native knowledge reads][native-knowledge-api] for the shared
+envelope and [MCP tools][native-knowledge-mcp] for adapter
+behavior.
 
 ### `install` and `plugins`
 
@@ -1255,6 +1281,10 @@ llm-wiki uninstall --dry-run
 llm-wiki uninstall --remove-wiki
 ```
 
+`status` reports knowledge availability from the committed wiki snapshot. It
+does not run source extraction or live freshness evaluation; a ready snapshot
+therefore reports freshness as not evaluated rather than current.
+
 `uninstall` removes project integration artifacts. It does not uninstall the
 CLI itself. To remove the Python package, run `pip uninstall agent-wiki-cli`.
 
@@ -1268,6 +1298,15 @@ supports that mode.
 Manual CLI triggers can edit files and run commands according to the selected
 agent's own permission model. Review generated prompt files and wiki diffs
 before trusting agent-produced changes in a shared repository.
+
+Native knowledge data is inert: loaders, status, freshness comparison, and
+query methods never execute commands, hooks, plugins, URLs, or extension values
+obtained from `.llm-wiki-knowledge.json`. Live service construction performs
+static analysis through application configuration. Built-in extractors and
+prepared helpers do not import or execute the target application. Installed
+extractor plugins remain trusted, unsandboxed project-local Python and can have
+effects outside the core read contract; artifact metadata never selects them.
+See [Read-only and no-execution rules][native-knowledge-no-exec].
 
 The repository includes community health files:
 
@@ -1317,3 +1356,10 @@ copying the checkout to a temp project, bootstrapping a full wiki, running
 This project does not maintain a formal contribution process. You are welcome to
 freely fork it, adapt it to your workflow, and publish your own changes under
 the license terms.
+
+[native-knowledge]: https://github.com/Denissvgn/python-wiki-llm/blob/main/docs/native-knowledge.md
+[native-knowledge-strict]: https://github.com/Denissvgn/python-wiki-llm/blob/main/docs/native-knowledge.md#strict-lint-policy
+[native-knowledge-context]: https://github.com/Denissvgn/python-wiki-llm/blob/main/docs/native-knowledge.md#context-filters-and-ranking
+[native-knowledge-api]: https://github.com/Denissvgn/python-wiki-llm/blob/main/docs/native-knowledge.md#python-api
+[native-knowledge-mcp]: https://github.com/Denissvgn/python-wiki-llm/blob/main/docs/native-knowledge.md#mcp-tools
+[native-knowledge-no-exec]: https://github.com/Denissvgn/python-wiki-llm/blob/main/docs/native-knowledge.md#read-only-and-no-execution-rules
