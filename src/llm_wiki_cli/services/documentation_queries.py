@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import re
 from collections import defaultdict
+from enum import Enum
 from pathlib import PurePosixPath
 from typing import Any, Iterable, Mapping, Optional, Sequence, cast
 
@@ -20,10 +21,19 @@ from .dependencies import (
     detect_cycles,
     topological_order,
 )
+from .knowledge_consumption import (
+    KnowledgeAvailability,
+    KnowledgeReadReason,
+    KnowledgeReadView,
+)
+from .knowledge_model import knowledge_index_to_payload
 from .relationships import build_entity_relationship_summaries
 
 _DEFAULT_LIMIT = 20
 _WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:/")
+_KNOWLEDGE_RELATIONSHIP_KINDS = ("derived_from", "links_to")
+_KNOWLEDGE_DIRECTIONS = ("inbound", "outbound", "both")
+_NOT_EVALUATED_REASON = "not-evaluated"
 
 
 class DocumentationQueryError(ValueError):
@@ -211,6 +221,63 @@ def _summary_relationship_records(
     ]
 
 
+def _wire_value(value: object) -> object:
+    return value.value if isinstance(value, Enum) else value
+
+
+def _canonical_json(value: object) -> str:
+    return json.dumps(
+        _jsonable(value),
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    )
+
+
+def _knowledge_target_ref(
+    target: Mapping[str, Any],
+    resolution: object,
+) -> dict[str, Any]:
+    """Return only the coordinates needed to understand a compact target."""
+
+    fields = [
+        "target_class",
+        "locator",
+        "canonical_path",
+        "source_path",
+        "external_uri",
+    ]
+    if resolution in {"ambiguous", "unresolved"}:
+        fields.extend(("raw_target", "normalized_target"))
+    elif target.get("target_class") in {"anchor", "asset"}:
+        fields.append("normalized_target")
+    return {
+        field: _jsonable(target[field])
+        for field in fields
+        if field in target and target[field] is not None
+    }
+
+
+def _freshness_basis_payload(value: object) -> Optional[dict[str, Any]]:
+    if value is None:
+        return None
+    fields = (
+        "scope",
+        "source_path",
+        "extractor_ref",
+        "source_content_hash",
+        "concept_observation_hash",
+        "analysis_basis_hash",
+        "unknown_reason",
+    )
+    payload: dict[str, Any] = {}
+    for field in fields:
+        item = getattr(value, field, None)
+        if item is not None:
+            payload[field] = _wire_value(item)
+    return payload
+
+
 class DocumentationGraphQueryService:
     """Read-only graph query service over already-derived documentation payloads."""
 
@@ -224,6 +291,7 @@ class DocumentationGraphQueryService:
         dependency_analysis: Optional[Mapping[str, Any]] = None,
         surface_index: Optional[Mapping[str, Any]] = None,
         limit: int = _DEFAULT_LIMIT,
+        knowledge_view: Optional[KnowledgeReadView] = None,
     ):
         if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
             raise DocumentationQueryError("limit must be a positive integer.")
@@ -260,6 +328,7 @@ class DocumentationGraphQueryService:
             for summary in self.callable_summaries
         }
         self.raw_callers, self.raw_callees = self._raw_function_links()
+        self._build_knowledge_indexes(knowledge_view)
 
     def flow_for_entrypoint(self, id_or_symbol: object) -> dict[str, Any]:
         """Return a bounded user-flow payload for an entry-point id or symbol."""
@@ -420,6 +489,497 @@ class DocumentationGraphQueryService:
         result["pages"] = pages
         result["truncated"] = result["truncated"] or pages_truncated
         return result
+
+    def get_concept(self, locator_or_exact_route: object) -> dict[str, Any]:
+        """Return one compact concept selected by an exact indexed coordinate."""
+
+        query = _require_query(locator_or_exact_route, "locator_or_exact_route")
+        result = self._knowledge_selection_result(query)
+        locator = result.pop("_selected_locator", None)
+        result["concept"] = (
+            None if locator is None else self._compact_knowledge_concept(locator)
+        )
+        return result
+
+    def related_concepts(
+        self,
+        locator_or_exact_route: object,
+        *,
+        direction: str = "both",
+        kinds: Optional[Iterable[str]] = None,
+    ) -> dict[str, Any]:
+        """Return bounded Phase 1 relationship observations for one concept."""
+
+        query = _require_query(locator_or_exact_route, "locator_or_exact_route")
+        selected_direction = self._knowledge_direction(direction)
+        selected_kinds = self._knowledge_kinds(kinds)
+        result = self._knowledge_selection_result(query)
+        locator = result.pop("_selected_locator", None)
+        result.update(
+            {
+                "concept": (
+                    None
+                    if locator is None
+                    else self._compact_knowledge_concept(locator)
+                ),
+                "direction": selected_direction,
+                "kinds": list(selected_kinds),
+                "relationships": [],
+                "related_concepts": [],
+                "unresolved_targets": [],
+                "external_targets": [],
+            }
+        )
+        if locator is None:
+            result.update({"total": 0, "returned": 0, "truncated": False})
+            return result
+
+        observations = [
+            item
+            for item in self._incident_knowledge_relationships(
+                locator,
+                selected_direction,
+            )
+            if self._knowledge_relationships[item[0]].get("kind")
+            in selected_kinds
+        ]
+        total = len(observations)
+        returned = observations[: self.limit]
+        compact_relationships = [
+            self._compact_knowledge_relationship(index, edge_direction)
+            for index, edge_direction in returned
+        ]
+
+        related_by_locator: dict[str, dict[str, Any]] = {}
+        unresolved_targets: list[dict[str, Any]] = []
+        external_targets: list[dict[str, Any]] = []
+        for relationship in compact_relationships:
+            related = relationship.get("related_concept")
+            if isinstance(related, Mapping):
+                related_locator = related.get("locator")
+                if isinstance(related_locator, str):
+                    related_by_locator[related_locator] = _jsonable_mapping(related)
+
+            target_summary = {
+                "kind": relationship["kind"],
+                "resolution": relationship["resolution"],
+                "target": _jsonable(relationship["target"]),
+            }
+            if relationship["resolution"] in {"ambiguous", "unresolved"}:
+                unresolved_targets.append(target_summary)
+            if relationship["resolution"] == "external":
+                external_targets.append(target_summary)
+
+        result.update(
+            {
+                "relationships": compact_relationships,
+                "related_concepts": [
+                    related_by_locator[key] for key in sorted(related_by_locator)
+                ],
+                "unresolved_targets": unresolved_targets,
+                "external_targets": external_targets,
+                "total": total,
+                "returned": len(returned),
+                "truncated": total > self.limit,
+            }
+        )
+        return result
+
+    def explain_evidence(
+        self,
+        locator_or_exact_route: object,
+    ) -> dict[str, Any]:
+        """Return full stored and computed evidence for one exact concept."""
+
+        query = _require_query(locator_or_exact_route, "locator_or_exact_route")
+        result = self._knowledge_selection_result(query)
+        locator = result.pop("_selected_locator", None)
+        result["concept"] = (
+            None if locator is None else self._compact_knowledge_concept(locator)
+        )
+        result["evidence"] = None
+        if locator is None:
+            result.update({"total": 0, "returned": 0, "truncated": False})
+            return result
+
+        concept = self.concept_by_locator[locator]
+        observations = [
+            item
+            for item in self._incident_knowledge_relationships(locator, "both")
+            if self._knowledge_relationships[item[0]].get("kind")
+            in _KNOWLEDGE_RELATIONSHIP_KINDS
+        ]
+        total = len(observations)
+        returned = observations[: self.limit]
+        relationships = []
+        for index, edge_direction in returned:
+            relationship = _jsonable_mapping(self._knowledge_relationships[index])
+            relationship["direction"] = edge_direction
+            relationships.append(relationship)
+
+        facets = cast(Mapping[str, Any], concept.get("facets", {}))
+        result.update(
+            {
+                "evidence": {
+                    "structure": _jsonable(facets.get("structure", {})),
+                    "semantics": _jsonable(facets.get("semantics", {})),
+                    "freshness": self._full_knowledge_freshness(locator),
+                    "relationships": relationships,
+                },
+                "total": total,
+                "returned": len(returned),
+                "truncated": total > self.limit,
+            }
+        )
+        return result
+
+    def _build_knowledge_indexes(
+        self,
+        knowledge_view: Optional[KnowledgeReadView],
+    ) -> None:
+        self.knowledge_view = knowledge_view
+        self.concept_by_locator: dict[str, dict[str, Any]] = {}
+        self.concept_by_canonical_path: dict[str, dict[str, Any]] = {}
+        self.concept_by_mcp_uri: dict[str, dict[str, Any]] = {}
+        self.concepts_by_source_path: dict[
+            str, tuple[dict[str, Any], ...]
+        ] = {}
+        self.relationships_by_source_path: dict[str, tuple[int, ...]] = {}
+        self.outbound_relationships: dict[str, tuple[int, ...]] = {}
+        self.inbound_relationships: dict[str, tuple[int, ...]] = {}
+        self._knowledge_relationships: tuple[dict[str, Any], ...] = ()
+
+        if knowledge_view is None:
+            self.knowledge_status = {
+                "availability": KnowledgeAvailability.ABSENT.value,
+                "reason": KnowledgeReadReason.ABSENT.value,
+                "freshness_evaluated": False,
+            }
+            return
+        if not isinstance(knowledge_view, KnowledgeReadView):
+            raise DocumentationQueryError(
+                "knowledge_view must be a KnowledgeReadView or None."
+            )
+        if not isinstance(knowledge_view.availability, KnowledgeAvailability):
+            raise DocumentationQueryError(
+                "knowledge_view.availability must be a KnowledgeAvailability."
+            )
+        if not isinstance(knowledge_view.reason, KnowledgeReadReason):
+            raise DocumentationQueryError(
+                "knowledge_view.reason must be a KnowledgeReadReason."
+            )
+
+        self.knowledge_status = {
+            "availability": knowledge_view.availability.value,
+            "reason": knowledge_view.reason_code,
+            "freshness_evaluated": knowledge_view.freshness is not None,
+        }
+        if knowledge_view.availability is not KnowledgeAvailability.READY:
+            if knowledge_view.knowledge is not None:
+                raise DocumentationQueryError(
+                    "a non-ready knowledge_view must not expose knowledge."
+                )
+            return
+        if knowledge_view.knowledge is None:
+            raise DocumentationQueryError(
+                "a ready knowledge_view must contain validated knowledge."
+            )
+
+        try:
+            payload = knowledge_index_to_payload(knowledge_view.knowledge)
+        except (TypeError, ValueError) as exc:
+            raise DocumentationQueryError(
+                f"knowledge_view.knowledge is invalid: {exc}"
+            ) from exc
+
+        concepts = [
+            _jsonable_mapping(cast(Mapping[str, Any], concept))
+            for concept in payload["concepts"]
+        ]
+        source_concepts: dict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
+        for concept in concepts:
+            locator = cast(str, concept["locator"])
+            document = cast(Mapping[str, Any], concept["document"])
+            canonical_path = cast(str, document["canonical_path"])
+            self.concept_by_locator[locator] = concept
+            self.concept_by_mcp_uri[locator] = concept
+            self.concept_by_canonical_path[canonical_path] = concept
+
+            facets = cast(Mapping[str, Any], concept.get("facets", {}))
+            structure = cast(Mapping[str, Any], facets.get("structure", {}))
+            basis = structure.get("basis")
+            if isinstance(basis, Mapping):
+                source_path = basis.get("source_path")
+                if isinstance(source_path, str):
+                    source_concepts[source_path][locator] = concept
+
+        relationships = tuple(
+            _jsonable_mapping(cast(Mapping[str, Any], relationship))
+            for relationship in payload["relationships"]
+        )
+        outbound: dict[str, list[int]] = defaultdict(list)
+        inbound: dict[str, list[int]] = defaultdict(list)
+        relationships_by_source: dict[str, list[int]] = defaultdict(list)
+        for index, relationship in enumerate(relationships):
+            source_locator = relationship.get("from")
+            if isinstance(source_locator, str):
+                outbound[source_locator].append(index)
+
+            target = relationship.get("target")
+            if not isinstance(target, Mapping):
+                continue
+            source_path = target.get("source_path")
+            if (
+                relationship.get("kind") == "derived_from"
+                and isinstance(source_locator, str)
+                and isinstance(source_path, str)
+            ):
+                relationships_by_source[source_path].append(index)
+                source_concept = self.concept_by_locator.get(source_locator)
+                if source_concept is not None:
+                    source_concepts[source_path][source_locator] = source_concept
+
+            target_locator = self._resolved_target_locator(relationship)
+            if target_locator is not None:
+                inbound[target_locator].append(index)
+
+        self._knowledge_relationships = relationships
+        self.outbound_relationships = {
+            locator: tuple(indexes)
+            for locator, indexes in sorted(outbound.items())
+        }
+        self.inbound_relationships = {
+            locator: tuple(indexes)
+            for locator, indexes in sorted(inbound.items())
+        }
+        self.relationships_by_source_path = {
+            source_path: tuple(indexes)
+            for source_path, indexes in sorted(relationships_by_source.items())
+        }
+        self.concepts_by_source_path = {
+            source_path: tuple(
+                by_locator[locator] for locator in sorted(by_locator)
+            )
+            for source_path, by_locator in sorted(source_concepts.items())
+        }
+
+    def _knowledge_selection_result(self, query: str) -> dict[str, Any]:
+        candidates: tuple[dict[str, Any], ...] = ()
+        if self.knowledge_status["availability"] == KnowledgeAvailability.READY.value:
+            direct = self.concept_by_locator.get(query)
+            if direct is None:
+                direct = self.concept_by_mcp_uri.get(query)
+            if direct is None:
+                direct = self.concept_by_canonical_path.get(query)
+            if direct is not None:
+                candidates = (direct,)
+
+        total = len(candidates)
+        capped = candidates[: self.limit]
+        result: dict[str, Any] = {
+            "knowledge": dict(self.knowledge_status),
+            "query": query,
+            "found": total == 1,
+            "ambiguous": total > 1,
+            "matches": [
+                self._compact_knowledge_concept(cast(str, concept["locator"]))
+                for concept in capped
+            ],
+            "total": total,
+            "returned": len(capped),
+            "truncated": total > self.limit,
+        }
+        if total == 1:
+            result["_selected_locator"] = candidates[0]["locator"]
+        return result
+
+    def _compact_knowledge_concept(self, locator: str) -> dict[str, Any]:
+        concept = self.concept_by_locator[locator]
+        document = cast(Mapping[str, Any], concept["document"])
+        facets = cast(Mapping[str, Any], concept.get("facets", {}))
+        structure = cast(Mapping[str, Any], facets.get("structure", {}))
+        semantics = cast(Mapping[str, Any], facets.get("semantics", {}))
+        basis = structure.get("basis")
+        source_path = (
+            basis.get("source_path") if isinstance(basis, Mapping) else None
+        )
+        return {
+            "locator": locator,
+            "concept_kind": concept.get("concept_kind"),
+            "title": concept.get("title"),
+            "page_kind": document.get("page_kind"),
+            "page_id": document.get("page_id"),
+            "canonical_path": document.get("canonical_path"),
+            "mcp_uri": locator,
+            "source_path": source_path,
+            "role": document.get("role"),
+            "origin": structure.get("origin"),
+            "evidence": structure.get("evidence"),
+            "verification": semantics.get("verification"),
+            "lifecycle": concept.get("lifecycle"),
+            "freshness": self._compact_knowledge_freshness(locator),
+        }
+
+    def _compact_knowledge_freshness(self, locator: str) -> dict[str, Any]:
+        view = self.knowledge_view
+        if view is None or view.freshness is None:
+            return {
+                "state": None,
+                "reason": _NOT_EVALUATED_REASON,
+                "live_comparison_performed": False,
+            }
+        freshness = view.freshness.by_locator.get(locator)
+        if freshness is None:
+            return {
+                "state": None,
+                "reason": _NOT_EVALUATED_REASON,
+                "live_comparison_performed": False,
+            }
+        return {
+            "state": _wire_value(freshness.state),
+            "reason": freshness.reason_code,
+            "live_comparison_performed": freshness.live_comparison_performed,
+        }
+
+    def _full_knowledge_freshness(self, locator: str) -> Optional[dict[str, Any]]:
+        view = self.knowledge_view
+        if view is None or view.freshness is None:
+            return None
+        freshness = view.freshness.by_locator.get(locator)
+        if freshness is None:
+            return None
+        return {
+            "state": _wire_value(freshness.state),
+            "reason": freshness.reason_code,
+            "description": freshness.description,
+            "live_comparison_performed": freshness.live_comparison_performed,
+            "recorded_basis": _freshness_basis_payload(
+                freshness.recorded_basis
+            ),
+            "live_basis": _freshness_basis_payload(freshness.live_basis),
+        }
+
+    def _knowledge_direction(self, value: object) -> str:
+        if not isinstance(value, str) or value not in _KNOWLEDGE_DIRECTIONS:
+            choices = ", ".join(repr(item) for item in _KNOWLEDGE_DIRECTIONS)
+            raise DocumentationQueryError(f"direction must be one of {choices}.")
+        return value
+
+    def _knowledge_kinds(
+        self,
+        values: Optional[Iterable[str]],
+    ) -> tuple[str, ...]:
+        if values is None:
+            return _KNOWLEDGE_RELATIONSHIP_KINDS
+        if isinstance(values, (str, bytes, Mapping)):
+            raise DocumentationQueryError(
+                "kinds must be an iterable of relationship kind strings."
+            )
+        try:
+            requested = list(values)
+        except TypeError as exc:
+            raise DocumentationQueryError(
+                "kinds must be an iterable of relationship kind strings."
+            ) from exc
+        if any(not isinstance(value, str) for value in requested):
+            raise DocumentationQueryError(
+                "kinds must contain only relationship kind strings."
+            )
+        unsupported = sorted(set(requested) - set(_KNOWLEDGE_RELATIONSHIP_KINDS))
+        if unsupported:
+            raise DocumentationQueryError(
+                f"unsupported relationship kind: {unsupported[0]!r}."
+            )
+        selected = set(requested)
+        return tuple(
+            kind for kind in _KNOWLEDGE_RELATIONSHIP_KINDS if kind in selected
+        )
+
+    def _resolved_target_locator(
+        self,
+        relationship: Mapping[str, Any],
+    ) -> Optional[str]:
+        if relationship.get("resolution") != "resolved":
+            return None
+        target = relationship.get("target")
+        if not isinstance(target, Mapping):
+            return None
+        locator = target.get("locator")
+        if isinstance(locator, str) and locator in self.concept_by_locator:
+            return locator
+        canonical_path = target.get("canonical_path")
+        if isinstance(canonical_path, str):
+            concept = self.concept_by_canonical_path.get(canonical_path)
+            if concept is not None:
+                return cast(str, concept["locator"])
+        return None
+
+    def _incident_knowledge_relationships(
+        self,
+        locator: str,
+        direction: str,
+    ) -> list[tuple[int, str]]:
+        selected: dict[int, str] = {}
+        if direction in {"outbound", "both"}:
+            for index in self.outbound_relationships.get(locator, ()):
+                selected[index] = "outbound"
+        if direction in {"inbound", "both"}:
+            for index in self.inbound_relationships.get(locator, ()):
+                previous = selected.get(index)
+                selected[index] = "both" if previous == "outbound" else "inbound"
+
+        direction_order = {"inbound": 0, "outbound": 1, "both": 2}
+        kind_order = {
+            kind: index
+            for index, kind in enumerate(_KNOWLEDGE_RELATIONSHIP_KINDS)
+        }
+        return sorted(
+            selected.items(),
+            key=lambda item: (
+                direction_order[item[1]],
+                kind_order.get(
+                    cast(str, self._knowledge_relationships[item[0]].get("kind")),
+                    len(kind_order),
+                ),
+                str(self._knowledge_relationships[item[0]].get("from", "")),
+                str(self._knowledge_relationships[item[0]].get("resolution", "")),
+                _canonical_json(self._knowledge_relationships[item[0]]),
+                item[0],
+            ),
+        )
+
+    def _compact_knowledge_relationship(
+        self,
+        index: int,
+        direction: str,
+    ) -> dict[str, Any]:
+        relationship = self._knowledge_relationships[index]
+        target = cast(Mapping[str, Any], relationship.get("target", {}))
+        evidence = cast(Mapping[str, Any], relationship.get("evidence", {}))
+        source_locator = cast(str, relationship["from"])
+        target_locator = self._resolved_target_locator(relationship)
+        related_locator = (
+            source_locator if direction == "inbound" else target_locator
+        )
+        if direction == "both":
+            related_locator = target_locator or source_locator
+        return {
+            "kind": relationship.get("kind"),
+            "direction": direction,
+            "from": source_locator,
+            "resolution": relationship.get("resolution"),
+            "origin": relationship.get("origin"),
+            "evidence": {"state": evidence.get("state")},
+            "related_concept": (
+                None
+                if related_locator is None
+                else self._compact_knowledge_concept(related_locator)
+            ),
+            "target": _knowledge_target_ref(
+                target,
+                relationship.get("resolution"),
+            ),
+        }
 
     def _normalise_data_flows(
         self, data_flows: Optional[object]
