@@ -1,11 +1,13 @@
 """Deterministic evidence contracts for standalone-documentation P0 calibration.
 
-This module deliberately does not classify, label, rank, or promote flows.  It
-preserves bounded source-backed evidence in a portable census, emits an
-evidence-only shadow record beside the frozen v1 worklist, and applies the
-calibration plan's terminal decision precedence to already-produced gate
-records.  Agent inference, holdout custody, and provider execution remain
-runner responsibilities outside the core package.
+This module deliberately does not classify, label, rank, or promote flows.  Its
+v1 preflight, shadow, and verdict records are diagnostic-only: they cannot admit
+or qualify a calibration cohort.  The module preserves bounded source-backed
+evidence in a portable census, emits an evidence-only shadow record beside the
+frozen v1 worklist, and applies the calibration plan's terminal decision
+precedence to already-produced gate records.  Agent inference, holdout custody,
+admission authority, enforced isolation, and provider execution remain runner
+responsibilities outside the core package.
 """
 
 from __future__ import annotations
@@ -18,14 +20,15 @@ from collections import Counter, defaultdict
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping, Optional, Sequence
 
+from .contracts import (
+    P0_CALIBRATION_PREFLIGHT_SCHEMA_VERSION,
+    P0_CALIBRATION_SHADOW_SCHEMA_VERSION,
+    P0_CALIBRATION_VERDICT_SCHEMA_VERSION,
+    P0_FLOW_CENSUS_SCHEMA_VERSION,
+)
 from .wiki_surface import is_safe_page_id
 from .wiki_surface_index import SURFACE_INDEX_FILENAME
 
-
-P0_FLOW_CENSUS_SCHEMA_VERSION = "llm-wiki-p0-flow-census/v1"
-P0_CALIBRATION_SHADOW_SCHEMA_VERSION = "llm-wiki-p0-calibration-shadow/v1"
-P0_CALIBRATION_PREFLIGHT_SCHEMA_VERSION = "llm-wiki-p0-calibration-preflight/v1"
-P0_CALIBRATION_VERDICT_SCHEMA_VERSION = "llm-wiki-p0-calibration-verdict/v1"
 
 CALIBRATION_TERMINAL_OUTCOMES = (
     "ADOPT_DEFAULT",
@@ -465,7 +468,12 @@ def build_p0_calibration_shadow(
 
 
 def evaluate_calibration_preflight(checks: Mapping[str, bool]) -> dict[str, Any]:
-    """Evaluate the immutable P0C-000 preflight without discretionary waivers."""
+    """Evaluate diagnostic-only P0C-000 v1 checks without discretionary waivers.
+
+    This legacy boolean contract reproduces baseline diagnostics but cannot
+    authorize admission.  A qualifying cohort requires separate, evidence-backed
+    authority and isolation contracts.
+    """
 
     required = (
         "source_revision_matches",
@@ -503,7 +511,12 @@ def mechanical_calibration_verdict(
     mandatory_gates_complete: bool,
     diversity_complete: bool,
 ) -> dict[str, Any]:
-    """Apply the frozen closeout precedence to already-audited gate reasons."""
+    """Apply diagnostic v1 precedence to already-audited gate reasons.
+
+    ``OPT_IN_ONLY`` is reachable only after every mandatory gate is complete;
+    missing authority or enforced isolation must therefore be represented as an
+    incomplete mandatory gate and remains ``BLOCKED_NO_SHIP``.
+    """
 
     for value, label in (
         (mandatory_gates_complete, "mandatory_gates_complete"),
