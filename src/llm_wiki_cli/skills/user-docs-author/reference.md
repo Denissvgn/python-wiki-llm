@@ -52,10 +52,29 @@ Use the project-specific paths when they differ from these examples.
 | Whole-wiki gate | `llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki --format json` |
 | User export | `llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user --format mkdocs --profile user --site-name <project> --front-matter --output-format json` |
 | User check | `llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user --profile user --site-name <project> --output-format json` |
+| Direct-file re-export | `llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user --format mkdocs --profile user --site-name <project> --file-friendly --front-matter --output-format json` |
+| Real MkDocs rebuild | `mkdocs build --strict -f site-user/mkdocs.yml` |
 | Hosted built-link check | `llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user --built-site-dir _site --link-mode http --profile user --site-name <project> --output-format json` |
 | File handoff built-link check | `llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user --built-site-dir _site --link-mode file --profile user --site-name <project> --output-format json` |
 
-For a direct-file handoff, pair the file-mode check with `site export --profile user --file-friendly`. For hosted docs, prefer `--link-mode http` after the real builder succeeds. The shorthand for both built-site modes is `site check --built-site-dir <built> --link-mode http|file` after export/check and the real builder succeed.
+For a direct-file handoff, the complete order is file-friendly re-export,
+matching user-profile check, real MkDocs rebuild, then file-mode built-link
+check. Reusing `_site` from a previous HTTP-mode build is invalid evidence. For
+hosted docs, prefer `--link-mode http` after the real builder succeeds.
+
+## External documentation workspace
+
+- Enter only when `llm-wiki-documentation-semantic-readiness/v1` records
+  `ready_for_user_docs: true` and supervisor verification agrees.
+- Use the packet's recorded project purpose, audiences, per-audience jobs, site
+  name, source availability, and freshness. Do not conduct a second intake.
+- A grounded imported enrichment can satisfy work as `reused`; unverified or
+  stale important claims become deferred-docs items and stay out of primary
+  pages.
+- Wiki-only runs read the workspace snapshot and linked wiki evidence. They do
+  not invent source claims or silently upgrade freshness.
+- Write only semantic workspace-wiki pages and the assigned result. Export and
+  `_site` remain derived; source and input wiki remain byte-identical.
 
 ## Adjustment Loop
 

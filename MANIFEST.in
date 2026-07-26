@@ -1,1 +1,2 @@
 recursive-include examples/plugins/m4-documentation-hooks *.py *.json
+include docs/standalone-documentation.md

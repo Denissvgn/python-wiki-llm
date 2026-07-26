@@ -1256,6 +1256,28 @@ def test_check_built_site_html_accepts_mkdocs_directory_urls_in_http_mode(tmp_pa
     assert report.issues == []
 
 
+def test_check_built_site_html_rejects_empty_build_directory(tmp_path):
+    wiki = _write_wiki(tmp_path)
+    out = tmp_path / "site"
+    built = tmp_path / "_site"
+    export_site_mirror(wiki_dir=wiki, out_dir=out)
+    built.mkdir()
+
+    report = check_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        built_site_dir=built,
+        link_mode="http",
+    )
+
+    assert report.ok is False
+    assert any(
+        issue["category"] == "missing_built_html_target"
+        and "contains no HTML" in issue["message"]
+        for issue in report.issues
+    )
+
+
 def test_check_built_site_html_rejects_directory_urls_in_file_mode(tmp_path):
     wiki = _write_wiki(tmp_path)
     out = tmp_path / "site"

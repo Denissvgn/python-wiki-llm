@@ -66,6 +66,8 @@ where = ["src"]
     "examples/plugins/m4-documentation-hooks/detectors.py",
     "examples/plugins/m4-documentation-hooks/llm-wiki-plugin.json",
     "examples/plugins/m4-documentation-hooks/styles.py",
+    "skills/agent-docs/SKILL.md",
+    "skills/agent-docs/reference.md",
     "skills/attack-surface/SKILL.md",
     "skills/attack-surface/reference.md",
     "skills/dep-audit/SKILL.md",
@@ -92,6 +94,8 @@ where = ["src"]
     "skills/wiki-bootstrap/reference.md",
     "skills/wiki-reference/SKILL.md",
     "skills/wiki-reference/reference.md",
+    "skills/wiki-semantic-enhance/SKILL.md",
+    "skills/wiki-semantic-enhance/reference.md",
     "skills/wiki-sync/SKILL.md",
     "skills/wiki-sync/reference.md",
 ]
@@ -102,4 +106,5 @@ pythonpath = ["src"]
 markers = [
     "slow: tests that exercise large real repositories or helper toolchains",
     "network: tests or utilities that require live network access",
+    "oci_integration: dedicated real-OCI qualification using public synthetic evidence",
 ]

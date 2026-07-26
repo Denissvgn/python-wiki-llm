@@ -39,3 +39,9 @@ Rule of thumb: if a section is bounded by an explicit "Do not edit by hand" comm
 - **Oversized diff.** Bound how much diff text is read into context — large diffs should lean on `extract --changed --summary` instead of full `git diff` text.
 - **No machine-readable sync summary.** Unlike `bootstrap --format json`, `sync` prints text lines with fixed prefixes (`CREATE` / `UPDATE` / `METADATA` / `SKIP` / `DEPRECATE` / `RENAME`, plus the tally and `APPEND log.md`); parse those rather than expecting JSON.
 - **Source-adapter / multi-repo wikis.** `--allow-external-src` must be passed to `sync`, `lint`, `ci-check`, and `team check` consistently. For example: `llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki`. `--wiki-dir` itself always stays inside the current project root.
+- **External documentation workspace.** Treat this as a packet-driven refresh of
+  the workspace copy, not the managed repo-local commit workflow. Verify the
+  recorded source revision first, preserve the immutable adopted-input hash,
+  write no target integration files, and hand the refreshed deterministic
+  worklist to `wiki-semantic-enhance`. When source is unavailable, do not run
+  sync; resume from the recorded wiki snapshot and keep freshness `unverified`.

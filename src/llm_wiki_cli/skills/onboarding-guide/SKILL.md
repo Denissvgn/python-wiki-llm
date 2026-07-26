@@ -14,6 +14,10 @@ When a guide needs screenshots, terminal recordings, or other usage media, finis
 - A maintained wiki exists (`.llm-wiki-manifest.json` present). If not, run the `wiki-bootstrap` skill first; guides written against a stale or structurally broken wiki link to pages that lint will reject.
 - The wiki directory is writable inside the current project root. Guide writing is a wiki mutation: it does not fit read-only external-source reviews. For source-adapter wikis, the wiki under `sources/code_wikis/<source_id>` is still inside the current project, so guides are allowed there; only the *source* is external and source-reading commands then take `--allow-external-src`.
 - Persona targets are known. Default to contributor / operator / reviewer, plus a product/user reader when the repository exposes user-facing workflows; ask the user only when the repository's audience makes the defaults meaningless.
+- In `external_agent_docs`, the writable wiki is the workspace snapshot and the
+  semantic-readiness gate has passed. Use the packet's recorded audiences and per-audience intent instead of defaults or another interview. A wiki-only run
+  uses its snapshot hash and visible freshness limitation; source and adopted
+  input wiki remain read-only.
 
 ## Execution budget
 
@@ -29,7 +33,7 @@ When a guide needs screenshots, terminal recordings, or other usage media, finis
 
 ## Steps
 
-1. **Verify the wiki is current.**
+1. **Verify the wiki is current.** In `external_agent_docs`, use the supervisor-verified readiness/snapshot evidence. Run sync only for a source-backed workspace refresh assigned by the packet; do not run it for a wiki-only snapshot.
 
    ```bash
    llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs 1
@@ -64,7 +68,7 @@ When a guide needs screenshots, terminal recordings, or other usage media, finis
 
    Run `sync` first, not after: new guide pages touch no source file, so lint would otherwise report them as `orphan_pages` before sync has had a chance to add their index links. Sync refreshes the index `## Guides` section on every run, including when source hasn't changed — that invariant is what makes this ordering safe. Strict lint then validates the new pages and their links; ci-check confirms the wiki as a whole still gates green. Loop on failures.
 
-8. **Review the diff, then commit.** The diff should contain only the new guide pages, the regenerated index link section, and optional remainder updates. Commit separately from code changes with a `docs(wiki): add onboarding guides` style message. Never reuse the hook path's literal `auto-update [bot]` message and never set `LLM_WIKI_AUTO_COMMIT` — both are reserved for the post-commit hook path.
+8. **Review the diff, then commit in managed mode only.** The diff should contain only the new guide pages, the regenerated index link section, and optional remainder updates. Commit separately from code changes with a `docs(wiki): add onboarding guides` style message. Never reuse the hook path's literal `auto-update [bot]` message and never set `LLM_WIKI_AUTO_COMMIT` — both are reserved for the post-commit hook path. In `external_agent_docs`, return changed workspace paths and deferrals in the assigned result; never stage or commit the source or input wiki.
 
 ## Context budget
 
