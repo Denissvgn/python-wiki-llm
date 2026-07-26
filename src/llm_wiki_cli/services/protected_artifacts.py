@@ -1204,19 +1204,35 @@ def _assert_darwin_no_extended_acl_path(
         opened = os.fstat(descriptor)
         if directory:
             _assert_regular_directory_stat(opened, context=context)
-            identity_matches = expected is None or _directory_stat_identity(
-                opened
-            ) == _directory_stat_identity(expected)
+            identity = _directory_stat_identity
         else:
             _assert_regular_file_stat(opened, context=context)
-            identity_matches = expected is None or _file_identity(
-                opened
-            ) == _file_identity(expected)
-        if not identity_matches:
+            identity = _file_identity
+        opened_identity = identity(opened)
+        expected_identity = identity(expected) if expected is not None else None
+        if expected_identity is not None and opened_identity != expected_identity:
             raise ProtectedArtifactIntegrityError(
                 f"{context} changed while its macOS extended ACL was inspected."
             )
         _assert_darwin_no_extended_acl_fd(descriptor, context=context)
+        try:
+            rebound = os.stat(path, follow_symlinks=False)
+        except OSError as exc:
+            raise ProtectedArtifactIntegrityError(
+                f"Cannot re-inspect {context} after its macOS extended ACL "
+                f"was inspected: {exc}"
+            ) from exc
+        if directory:
+            _assert_regular_directory_stat(rebound, context=context)
+        else:
+            _assert_regular_file_stat(rebound, context=context)
+        rebound_identity = identity(rebound)
+        if rebound_identity != opened_identity or (
+            expected_identity is not None and rebound_identity != expected_identity
+        ):
+            raise ProtectedArtifactIntegrityError(
+                f"{context} changed while its macOS extended ACL was inspected."
+            )
     finally:
         os.close(descriptor)
 
@@ -1234,12 +1250,11 @@ def _assert_darwin_no_extended_acl_fd(descriptor: int, *, context: str) -> None:
 
 
 def _darwin_extended_acl_entry_count(descriptor: int) -> int:
-    """Return zero when a descriptor has no macOS extended ACL entry."""
+    """Return zero only when a descriptor has no macOS extended ACL object."""
 
     try:
         libc = ctypes.CDLL(None, use_errno=True)
         acl_get_fd_np = libc.acl_get_fd_np
-        acl_get_entry = libc.acl_get_entry
         acl_free = libc.acl_free
     except (AttributeError, OSError) as exc:
         raise ProtectedArtifactIntegrityError(
@@ -1248,12 +1263,6 @@ def _darwin_extended_acl_entry_count(descriptor: int) -> int:
 
     acl_get_fd_np.argtypes = [ctypes.c_int, ctypes.c_int]
     acl_get_fd_np.restype = ctypes.c_void_p
-    acl_get_entry.argtypes = [
-        ctypes.c_void_p,
-        ctypes.c_int,
-        ctypes.POINTER(ctypes.c_void_p),
-    ]
-    acl_get_entry.restype = ctypes.c_int
     acl_free.argtypes = [ctypes.c_void_p]
     acl_free.restype = ctypes.c_int
 
@@ -1261,22 +1270,13 @@ def _darwin_extended_acl_entry_count(descriptor: int) -> int:
     acl = acl_get_fd_np(descriptor, _DARWIN_ACL_TYPE_EXTENDED)
     if not acl:
         error = ctypes.get_errno()
+        if error == errno.ENOENT:
+            return 0
         raise ProtectedArtifactIntegrityError(
             f"Cannot inspect the macOS extended ACL (errno {error or 'unknown'})."
         )
     try:
-        entry = ctypes.c_void_p()
-        ctypes.set_errno(0)
-        result = acl_get_entry(acl, 0, ctypes.byref(entry))
-        if result == 1:
-            return 1
-        if result == 0:
-            return 0
-        error = ctypes.get_errno()
-        raise ProtectedArtifactIntegrityError(
-            "Cannot inspect the first macOS extended ACL entry "
-            f"(result {result}, errno {error or 'unknown'})."
-        )
+        return 1
     finally:
         acl_free(acl)
 

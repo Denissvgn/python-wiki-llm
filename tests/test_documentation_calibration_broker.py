@@ -1275,7 +1275,7 @@ def test_bounded_process_runner_hashes_full_output_but_retains_only_limit():
 
     result = run_bounded_process(
         command,
-        env=sanitized_oci_environment({}),
+        env=sanitized_oci_environment(),
         timeout_seconds=10,
         termination_grace_seconds=1,
         stdout_limit=4,

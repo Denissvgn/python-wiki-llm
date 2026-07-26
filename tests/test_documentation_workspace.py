@@ -4,16 +4,22 @@ from __future__ import annotations
 
 import os
 import subprocess
+from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
 
+from llm_wiki_cli.services import documentation_policy as documentation_policy_module
 from llm_wiki_cli.services.documentation_policy import (
     DocumentationPolicyError,
     capture_tree_baseline,
     compare_tree_baseline,
     resolve_documentation_policy,
     source_tree_baseline,
+)
+from llm_wiki_cli.services.filesystem_guard import (
+    WindowsIdentityUnavailableError,
+    windows_object_identity_from_values,
 )
 
 
@@ -165,23 +171,194 @@ def test_tree_baseline_rejects_file_replaced_between_inspection_and_open(
     target = source / "module.py"
     replacement = source / "replacement.tmp"
     replacement.write_text("replacement\n", encoding="utf-8")
-    real_open = os.open
     swapped = False
 
-    def swap_before_open(path, flags, mode=0o777, *, dir_fd=None):
+    def swap_target() -> None:
         nonlocal swapped
-        if Path(path) == target and not swapped:
+        if not swapped:
             swapped = True
             target.replace(source / "module.original")
             replacement.replace(target)
-        if dir_fd is None:
-            return real_open(path, flags, mode)
-        return real_open(path, flags, mode, dir_fd=dir_fd)
 
-    monkeypatch.setattr(os, "open", swap_before_open)
+    if os.name == "nt":
+        real_guarded_open = documentation_policy_module.open_windows_readonly_file
+
+        @contextmanager
+        def swap_before_guarded_open(path):
+            if Path(path) == target:
+                with replacement.open("rb") as handle:
+                    yield handle, os.fstat(handle.fileno())
+                return
+            with real_guarded_open(path) as opened:
+                yield opened
+
+        monkeypatch.setattr(
+            documentation_policy_module,
+            "open_windows_readonly_file",
+            swap_before_guarded_open,
+        )
+    else:
+        real_open = os.open
+
+        def swap_before_open(path, flags, mode=0o777, *, dir_fd=None):
+            if Path(path) == target:
+                swap_target()
+            if dir_fd is None:
+                return real_open(path, flags, mode)
+            return real_open(path, flags, mode, dir_fd=dir_fd)
+
+        monkeypatch.setattr(os, "open", swap_before_open)
 
     with pytest.raises(DocumentationPolicyError, match="changed identity"):
         source_tree_baseline(source)
+
+
+def test_tree_baseline_uses_fresh_identity_for_nested_entries(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    source = tmp_path / "source"
+    _write_source(source)
+    cached_stat_calls: list[Path] = []
+    guarded_directories: list[tuple[Path, tuple[str, ...]]] = []
+    real_scandir = os.scandir
+
+    class _ZeroIdentityEntry:
+        def __init__(self, entry):
+            self._entry = entry
+            self.name = entry.name
+            self.path = entry.path
+
+        def stat(self, *, follow_symlinks=True):
+            cached_stat_calls.append(Path(self.path))
+            values = list(self._entry.stat(follow_symlinks=follow_symlinks))
+            values[1] = 0
+            values[2] = 0
+            values[3] = 0
+            return os.stat_result(values)
+
+    class _ZeroIdentityScandir:
+        def __init__(self, path):
+            self._iterator = real_scandir(path)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, _exc_type, _exc, _traceback):
+            self._iterator.close()
+
+        def __iter__(self):
+            return (_ZeroIdentityEntry(entry) for entry in self._iterator)
+
+    class _WindowsOsProxy:
+        name = "nt"
+
+        def __getattr__(self, name):
+            return getattr(os, name)
+
+        def scandir(self, path):
+            return _ZeroIdentityScandir(path)
+
+    @contextmanager
+    def fake_directory_guard(root, components):
+        guarded_directories.append((root, tuple(components)))
+        yield root.joinpath(*components)
+
+    @contextmanager
+    def fake_file_guard(path):
+        with path.open("rb") as handle:
+            yield handle, os.fstat(handle.fileno())
+
+    monkeypatch.setattr(
+        documentation_policy_module,
+        "os",
+        _WindowsOsProxy(),
+    )
+    monkeypatch.setattr(
+        documentation_policy_module,
+        "guard_windows_directory_chain",
+        fake_directory_guard,
+    )
+    monkeypatch.setattr(
+        documentation_policy_module,
+        "open_windows_readonly_file",
+        fake_file_guard,
+    )
+
+    baseline = source_tree_baseline(source)
+
+    assert baseline.file_count == 4
+    assert cached_stat_calls == []
+    assert (
+        source.resolve(),
+        (".llm-wiki", "plugins", "hostile"),
+    ) in guarded_directories
+
+
+@pytest.mark.parametrize(
+    ("device", "file_id"),
+    ((0, 17), (23, 0)),
+)
+def test_windows_identity_fails_closed_when_a_component_is_zero(
+    device,
+    file_id,
+) -> None:
+    with pytest.raises(
+        WindowsIdentityUnavailableError,
+        match="identity is unavailable",
+    ):
+        windows_object_identity_from_values(
+            device=device,
+            file_id=file_id,
+            context="test handle",
+        )
+
+
+def test_relative_windows_hash_path_is_made_absolute_before_guarding(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    source = tmp_path / "relative.txt"
+    source.write_bytes(b"content")
+    guarded_parents: list[Path] = []
+    hashed_paths: list[Path] = []
+
+    class _WindowsOsProxy:
+        name = "nt"
+
+        def __getattr__(self, name):
+            return getattr(os, name)
+
+    @contextmanager
+    def fake_directory_guard(root, components):
+        guarded_parents.append(root)
+        assert components == ()
+        yield root
+
+    def fake_hash(path, *, inspected, max_bytes):
+        hashed_paths.append(path)
+        assert inspected is None
+        assert max_bytes is None
+        return "sha256:" + ("0" * 64)
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(documentation_policy_module, "os", _WindowsOsProxy())
+    monkeypatch.setattr(
+        documentation_policy_module,
+        "guard_windows_directory_chain",
+        fake_directory_guard,
+    )
+    monkeypatch.setattr(
+        documentation_policy_module,
+        "_hash_windows_file",
+        fake_hash,
+    )
+
+    result = documentation_policy_module.hash_file("relative.txt")
+
+    assert result == "sha256:" + ("0" * 64)
+    assert hashed_paths == [source]
+    assert guarded_parents == [tmp_path]
 
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows junction semantics only")

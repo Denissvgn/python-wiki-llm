@@ -5,6 +5,7 @@ from __future__ import annotations
 import errno
 import os
 import stat
+import subprocess
 from contextlib import contextmanager
 from pathlib import Path
 from types import SimpleNamespace
@@ -155,7 +156,6 @@ def test_emulated_darwin_present_extended_acl_is_rejected(
     tmp_path: Path,
     monkeypatch,
 ):
-    store = ProtectedArtifactStore(tmp_path / "root", create=True)
     monkeypatch.setattr(protected_artifacts.sys, "platform", "darwin")
     monkeypatch.setattr(
         protected_artifacts,
@@ -164,7 +164,7 @@ def test_emulated_darwin_present_extended_acl_is_rejected(
     )
 
     with pytest.raises(ProtectedArtifactIntegrityError, match="extended ACL"):
-        store.verify_host_protection()
+        ProtectedArtifactStore(tmp_path / "root", create=True)
 
 
 @pytest.mark.skipif(os.name == "nt", reason="Darwin descriptor ACL emulation")
@@ -172,8 +172,6 @@ def test_emulated_darwin_unavailable_acl_inspection_fails_closed(
     tmp_path: Path,
     monkeypatch,
 ):
-    store = ProtectedArtifactStore(tmp_path / "root", create=True)
-
     def unavailable(_descriptor: int) -> int:
         raise ProtectedArtifactIntegrityError(
             "Cannot load the macOS extended-ACL inspection functions."
@@ -187,18 +185,92 @@ def test_emulated_darwin_unavailable_acl_inspection_fails_closed(
     )
 
     with pytest.raises(ProtectedArtifactIntegrityError, match="Cannot load"):
-        store.verify_host_protection()
+        ProtectedArtifactStore(tmp_path / "root", create=True)
 
 
-@pytest.mark.parametrize(
-    ("native_result", "expected"),
-    [(1, 1), (0, 0)],
-)
-def test_darwin_acl_native_entry_result_mapping(
+@pytest.mark.skipif(os.name == "nt", reason="Darwin descriptor ACL emulation")
+def test_emulated_darwin_replacement_during_acl_inspection_fails_closed(
+    tmp_path: Path,
     monkeypatch,
-    native_result: int,
-    expected: int,
 ):
+    target = tmp_path / "protected"
+    replacement = tmp_path / "replacement"
+    target.write_bytes(b"original")
+    replacement.write_bytes(b"replacement")
+    target.chmod(0o600)
+    replacement.chmod(0o600)
+    expected = target.lstat()
+
+    def replace_after_open(_descriptor: int) -> int:
+        os.replace(replacement, target)
+        return 0
+
+    monkeypatch.setattr(protected_artifacts.sys, "platform", "darwin")
+    monkeypatch.setattr(
+        protected_artifacts,
+        "_darwin_extended_acl_entry_count",
+        replace_after_open,
+    )
+
+    with pytest.raises(
+        ProtectedArtifactIntegrityError,
+        match="changed while its macOS extended ACL was inspected",
+    ):
+        protected_artifacts._assert_darwin_no_extended_acl_path(
+            target,
+            context="emulated protected file",
+            expected=expected,
+        )
+
+
+@pytest.mark.skipif(
+    protected_artifacts.sys.platform != "darwin",
+    reason="native Darwin extended ACL inspection",
+)
+def test_darwin_native_new_private_file_has_no_extended_acl(tmp_path: Path):
+    target = tmp_path / "private"
+    descriptor = os.open(target, os.O_CREAT | os.O_EXCL | os.O_RDWR, 0o600)
+    try:
+        assert protected_artifacts._darwin_extended_acl_entry_count(descriptor) == 0
+    finally:
+        os.close(descriptor)
+
+
+@pytest.mark.skipif(
+    protected_artifacts.sys.platform != "darwin",
+    reason="native Darwin extended ACL inspection",
+)
+def test_darwin_native_non_empty_extended_acl_is_rejected(tmp_path: Path):
+    target = tmp_path / "acl-bearing"
+    target.write_bytes(b"protected")
+    target.chmod(0o600)
+    subprocess.run(
+        [
+            "/bin/chmod",
+            "+a",
+            f"user:{target.owner()} allow read",
+            os.fspath(target),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    descriptor = os.open(target, os.O_RDONLY | os.O_NOFOLLOW)
+    try:
+        assert protected_artifacts._darwin_extended_acl_entry_count(descriptor) == 1
+        with pytest.raises(ProtectedArtifactIntegrityError, match="extended ACL"):
+            protected_artifacts._assert_darwin_no_extended_acl_fd(
+                descriptor,
+                context="native ACL-bearing file",
+            )
+    finally:
+        os.close(descriptor)
+
+
+def test_darwin_acl_native_non_null_acl_is_present_and_freed_once(monkeypatch):
+    freed: list[int] = []
+
     class FakeFunction:
         def __init__(self, implementation):
             self.implementation = implementation
@@ -210,8 +282,7 @@ def test_darwin_acl_native_entry_result_mapping(
 
     class FakeLibc:
         acl_get_fd_np = FakeFunction(lambda _descriptor, _kind: 123)
-        acl_get_entry = FakeFunction(lambda _acl, _entry_id, _entry: native_result)
-        acl_free = FakeFunction(lambda _acl: 0)
+        acl_free = FakeFunction(lambda acl: freed.append(acl) or 0)
 
     monkeypatch.setattr(
         protected_artifacts.ctypes,
@@ -219,11 +290,14 @@ def test_darwin_acl_native_entry_result_mapping(
         lambda *_args, **_kwargs: FakeLibc(),
     )
 
-    assert protected_artifacts._darwin_extended_acl_entry_count(5) == expected
+    assert protected_artifacts._darwin_extended_acl_entry_count(5) == 1
+    assert freed == [123]
     assert protected_artifacts._DARWIN_ACL_TYPE_EXTENDED == 0x00000100
 
 
-def test_darwin_acl_native_failures_are_not_treated_as_absence(monkeypatch):
+def test_darwin_acl_native_enoent_is_absent_and_not_freed(monkeypatch):
+    freed: list[int] = []
+
     class FakeFunction:
         def __init__(self, implementation):
             self.implementation = implementation
@@ -233,14 +307,13 @@ def test_darwin_acl_native_failures_are_not_treated_as_absence(monkeypatch):
         def __call__(self, *args):
             return self.implementation(*args)
 
-    def failed_entry(*_args):
-        protected_artifacts.ctypes.set_errno(errno.EIO)
-        return -1
+    def absent_acl(*_args):
+        protected_artifacts.ctypes.set_errno(errno.ENOENT)
+        return 0
 
     class FakeLibc:
-        acl_get_fd_np = FakeFunction(lambda _descriptor, _kind: 123)
-        acl_get_entry = FakeFunction(failed_entry)
-        acl_free = FakeFunction(lambda _acl: 0)
+        acl_get_fd_np = FakeFunction(absent_acl)
+        acl_free = FakeFunction(lambda acl: freed.append(acl) or 0)
 
     monkeypatch.setattr(
         protected_artifacts.ctypes,
@@ -248,8 +321,51 @@ def test_darwin_acl_native_failures_are_not_treated_as_absence(monkeypatch):
         lambda *_args, **_kwargs: FakeLibc(),
     )
 
-    with pytest.raises(ProtectedArtifactIntegrityError, match="errno 5"):
+    assert protected_artifacts._darwin_extended_acl_entry_count(5) == 0
+    assert freed == []
+
+
+@pytest.mark.parametrize(
+    ("native_errno", "message"),
+    [
+        (0, "errno unknown"),
+        (errno.EACCES, f"errno {errno.EACCES}"),
+        (errno.EIO, f"errno {errno.EIO}"),
+    ],
+)
+def test_darwin_acl_native_failures_are_not_treated_as_absence(
+    monkeypatch,
+    native_errno: int,
+    message: str,
+):
+    freed: list[int] = []
+
+    class FakeFunction:
+        def __init__(self, implementation):
+            self.implementation = implementation
+            self.argtypes = None
+            self.restype = None
+
+        def __call__(self, *args):
+            return self.implementation(*args)
+
+    def failed_acl(*_args):
+        protected_artifacts.ctypes.set_errno(native_errno)
+        return 0
+
+    class FakeLibc:
+        acl_get_fd_np = FakeFunction(failed_acl)
+        acl_free = FakeFunction(lambda acl: freed.append(acl) or 0)
+
+    monkeypatch.setattr(
+        protected_artifacts.ctypes,
+        "CDLL",
+        lambda *_args, **_kwargs: FakeLibc(),
+    )
+
+    with pytest.raises(ProtectedArtifactIntegrityError, match=message):
         protected_artifacts._darwin_extended_acl_entry_count(5)
+    assert freed == []
 
 
 @pytest.mark.parametrize(

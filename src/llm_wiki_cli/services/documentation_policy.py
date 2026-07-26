@@ -11,10 +11,21 @@ from __future__ import annotations
 import hashlib
 import os
 import stat
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Iterator
 from urllib.parse import urlsplit
+
+from .filesystem_guard import (
+    WindowsDirectoryGuardError,
+    WindowsFileGuardError,
+    WindowsIdentityUnavailableError,
+    fresh_no_follow_stat,
+    guard_windows_directory_chain,
+    open_windows_readonly_file,
+    windows_object_identity,
+)
 
 
 AGENT_POLICY_FILENAMES = frozenset(
@@ -347,55 +358,88 @@ def _walk_regular_files(
     stack: list[tuple[Path, Path, os.stat_result]] = [(Path(), root, root_stat)]
     while stack:
         rel_dir, abs_dir, inspected_dir = stack.pop()
-        try:
-            current_dir = os.lstat(abs_dir)
-            _assert_safe_directory(abs_dir, current_dir, context="baseline directory")
-            _assert_same_file_identity(
-                inspected_dir,
-                current_dir,
-                path=abs_dir,
-                operation="directory traversal",
-            )
-            with os.scandir(abs_dir) as iterator:
-                entries = sorted(iterator, key=lambda entry: entry.name)
-            after_scan = os.lstat(abs_dir)
-            _assert_safe_directory(abs_dir, after_scan, context="baseline directory")
-            _assert_same_file_identity(
-                current_dir,
-                after_scan,
-                path=abs_dir,
-                operation="directory traversal",
-            )
-        except OSError as exc:
-            raise DocumentationPolicyError(f"Cannot inspect {abs_dir}: {exc}") from exc
-        child_dirs: list[tuple[Path, Path, os.stat_result]] = []
-        for entry in entries:
-            rel = rel_dir / entry.name
+        with _guard_baseline_directory(root, rel_dir):
             try:
-                inspected = entry.stat(follow_symlinks=False)
+                current_dir = fresh_no_follow_stat(abs_dir)
+                _assert_safe_directory(
+                    abs_dir,
+                    current_dir,
+                    context="baseline directory",
+                )
+                _assert_same_file_identity(
+                    inspected_dir,
+                    current_dir,
+                    path=abs_dir,
+                    operation="directory traversal",
+                )
+                with os.scandir(abs_dir) as iterator:
+                    entries = sorted(iterator, key=lambda entry: entry.name)
+                after_scan = fresh_no_follow_stat(abs_dir)
+                _assert_safe_directory(
+                    abs_dir,
+                    after_scan,
+                    context="baseline directory",
+                )
+                _assert_same_file_identity(
+                    current_dir,
+                    after_scan,
+                    path=abs_dir,
+                    operation="directory traversal",
+                )
             except OSError as exc:
                 raise DocumentationPolicyError(
-                    f"Cannot inspect {entry.path}: {exc}"
+                    f"Cannot inspect {abs_dir}: {exc}"
                 ) from exc
-            if stat.S_ISLNK(inspected.st_mode):
-                raise DocumentationPolicyError(
-                    f"Symlinked content is not allowed in a baselined evidence tree: {rel.as_posix()}"
-                )
-            if _is_windows_reparse_point(inspected):
-                raise DocumentationPolicyError(
-                    "Windows reparse-point content is not allowed in a baselined "
-                    f"evidence tree: {rel.as_posix()}"
-                )
-            if stat.S_ISDIR(inspected.st_mode):
-                if entry.name not in excluded:
-                    child_dirs.append((rel, Path(entry.path), inspected))
-                continue
-            if not stat.S_ISREG(inspected.st_mode):
-                raise DocumentationPolicyError(
-                    f"Non-regular content is not allowed in a baselined evidence tree: {rel.as_posix()}"
-                )
-            yield rel.as_posix(), Path(entry.path), inspected
-        stack.extend(reversed(child_dirs))
+            child_dirs: list[tuple[Path, Path, os.stat_result]] = []
+            for entry in entries:
+                rel = rel_dir / entry.name
+                try:
+                    inspected = fresh_no_follow_stat(entry.path)
+                except OSError as exc:
+                    raise DocumentationPolicyError(
+                        f"Cannot inspect {entry.path}: {exc}"
+                    ) from exc
+                if stat.S_ISLNK(inspected.st_mode):
+                    raise DocumentationPolicyError(
+                        "Symlinked content is not allowed in a baselined evidence "
+                        f"tree: {rel.as_posix()}"
+                    )
+                if _is_windows_reparse_point(inspected):
+                    raise DocumentationPolicyError(
+                        "Windows reparse-point content is not allowed in a baselined "
+                        f"evidence tree: {rel.as_posix()}"
+                    )
+                if stat.S_ISDIR(inspected.st_mode):
+                    if entry.name not in excluded:
+                        child_dirs.append((rel, Path(entry.path), inspected))
+                    continue
+                if not stat.S_ISREG(inspected.st_mode):
+                    raise DocumentationPolicyError(
+                        "Non-regular content is not allowed in a baselined evidence "
+                        f"tree: {rel.as_posix()}"
+                    )
+                yield rel.as_posix(), Path(entry.path), inspected
+            stack.extend(reversed(child_dirs))
+
+
+@contextmanager
+def _guard_baseline_directory(
+    root: Path,
+    relative_directory: Path,
+) -> Iterator[None]:
+    """Pin a Windows baseline directory chain for inspection and leaf reads."""
+
+    if os.name != "nt":
+        yield
+        return
+    try:
+        with guard_windows_directory_chain(root, relative_directory.parts):
+            yield
+    except WindowsDirectoryGuardError as exc:
+        relative = relative_directory.as_posix() or "."
+        raise DocumentationPolicyError(
+            f"Cannot pin Windows baseline directory {relative}: {exc}"
+        ) from exc
 
 
 def _hash_file(
@@ -404,6 +448,21 @@ def _hash_file(
     inspected: os.stat_result | None = None,
     max_bytes: int | None = None,
 ) -> str:
+    if os.name == "nt":
+        absolute_path = Path(os.path.abspath(os.fspath(path)))
+        try:
+            with guard_windows_directory_chain(absolute_path.parent, ()):
+                return _hash_windows_file(
+                    absolute_path,
+                    inspected=inspected,
+                    max_bytes=max_bytes,
+                )
+        except WindowsDirectoryGuardError as exc:
+            raise DocumentationPolicyError(
+                f"Cannot pin the Windows parent of baselined file {absolute_path}: "
+                f"{exc}"
+            ) from exc
+
     digest = hashlib.sha256()
     descriptor: int | None = None
     try:
@@ -466,6 +525,76 @@ def _hash_file(
     return "sha256:" + digest.hexdigest()
 
 
+def _hash_windows_file(
+    path: Path,
+    *,
+    inspected: os.stat_result | None,
+    max_bytes: int | None,
+) -> str:
+    """Hash one Windows leaf through the native no-redirection read guard."""
+
+    digest = hashlib.sha256()
+    try:
+        before = fresh_no_follow_stat(path)
+        _assert_safe_regular_file(path, before)
+        if inspected is not None:
+            _assert_same_file_identity(
+                inspected,
+                before,
+                path=path,
+                operation="file hashing",
+            )
+
+        with open_windows_readonly_file(path) as (handle, opened_before):
+            _assert_safe_regular_file(path, opened_before)
+            _assert_same_file_identity(
+                before,
+                opened_before,
+                path=path,
+                operation="guarded file open",
+            )
+            _assert_stable_file_metadata(before, opened_before, path=path)
+
+            bytes_read = 0
+            while True:
+                chunk = handle.read(1024 * 1024)
+                if not chunk:
+                    break
+                bytes_read += len(chunk)
+                if max_bytes is not None and bytes_read > max_bytes:
+                    raise DocumentationPolicyError(
+                        f"Baselined file exceeded its byte limit while hashing: {path}"
+                    )
+                digest.update(chunk)
+
+            opened_after = os.fstat(handle.fileno())
+            _assert_same_file_identity(
+                opened_before,
+                opened_after,
+                path=path,
+                operation="file hashing",
+            )
+            _assert_stable_file_metadata(opened_before, opened_after, path=path)
+
+            after = fresh_no_follow_stat(path)
+            _assert_safe_regular_file(path, after)
+            _assert_same_file_identity(
+                opened_after,
+                after,
+                path=path,
+                operation="post-hash verification",
+            )
+            _assert_stable_file_metadata(opened_after, after, path=path)
+    except WindowsFileGuardError as exc:
+        raise DocumentationPolicyError(
+            f"Cannot safely hash Windows baselined file {path}: {exc}"
+        ) from exc
+    except OSError as exc:
+        raise DocumentationPolicyError(f"Cannot hash {path}: {exc}") from exc
+
+    return "sha256:" + digest.hexdigest()
+
+
 def _lstat(path: Path, *, context: str) -> os.stat_result:
     try:
         return os.lstat(path)
@@ -520,6 +649,25 @@ def _assert_same_file_identity(
     path: Path,
     operation: str,
 ) -> None:
+    if os.name == "nt":
+        try:
+            same_identity = windows_object_identity(
+                before,
+                context=f"{operation} before {path}",
+            ) == windows_object_identity(
+                after,
+                context=f"{operation} after {path}",
+            )
+        except WindowsIdentityUnavailableError as exc:
+            raise DocumentationPolicyError(
+                f"Windows baseline identity is unavailable during {operation}: {path}"
+            ) from exc
+        if not same_identity:
+            raise DocumentationPolicyError(
+                f"Baselined content changed identity during {operation}: {path}"
+            )
+        return
+
     before_inode = int(getattr(before, "st_ino", 0))
     after_inode = int(getattr(after, "st_ino", 0))
     if before_inode or after_inode:

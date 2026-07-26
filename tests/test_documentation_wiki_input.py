@@ -1190,6 +1190,35 @@ def test_mocked_windows_input_fallback_pins_root_parents_and_leaves(
     _write(wiki / "guides" / "page.md", "# Page\n")
     events: list[tuple[str, tuple[str, ...] | str]] = []
     active_guards = 0
+    cached_stat_calls: list[Path] = []
+    real_scandir = os.scandir
+
+    class _ZeroIdentityEntry:
+        def __init__(self, entry):
+            self._entry = entry
+            self.name = entry.name
+            self.path = entry.path
+
+        def stat(self, *, follow_symlinks=True):
+            cached_stat_calls.append(Path(self.path))
+            values = list(self._entry.stat(follow_symlinks=follow_symlinks))
+            values[1] = 0
+            values[2] = 0
+            values[3] = 0
+            return os.stat_result(values)
+
+    class _ZeroIdentityScandir:
+        def __init__(self, path):
+            self._iterator = real_scandir(path)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, _exc_type, _exc, _traceback):
+            self._iterator.close()
+
+        def __iter__(self):
+            return (_ZeroIdentityEntry(entry) for entry in self._iterator)
 
     @contextmanager
     def fake_directory_guard(root, components, *, create_missing=False):
@@ -1233,6 +1262,11 @@ def test_mocked_windows_input_fallback_pins_root_parents_and_leaves(
         "open_windows_readonly_file",
         fake_file_guard,
     )
+    monkeypatch.setattr(
+        wiki_input_module.os,
+        "scandir",
+        _ZeroIdentityScandir,
+    )
 
     with wiki_input_module._open_input_root_descriptor(
         wiki,
@@ -1254,6 +1288,7 @@ def test_mocked_windows_input_fallback_pins_root_parents_and_leaves(
     assert events[-1] == ("directory-exit", ())
     assert ("directory-enter", ("guides",)) in events
     assert ("file-enter", "guides/page.md") in events
+    assert cached_stat_calls == []
 
 
 def test_mocked_windows_file_guard_preserves_body_oserror(
@@ -1287,6 +1322,46 @@ def test_mocked_windows_file_guard_preserves_body_oserror(
             raise body_error
 
     assert exc_info.value is body_error
+
+
+@pytest.mark.parametrize("zero_component", ("device", "file_id"))
+def test_mocked_windows_file_guard_rejects_zero_handle_identity(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    zero_component: str,
+) -> None:
+    source_path = tmp_path / "page.md"
+    _write(source_path, "# Page\n")
+
+    class _WindowsOsProxy:
+        name = "nt"
+
+        def __getattr__(self, name):
+            return getattr(os, name)
+
+        def fstat(self, descriptor):
+            values = list(os.fstat(descriptor))
+            values[1 if zero_component == "file_id" else 2] = 0
+            return os.stat_result(values)
+
+    monkeypatch.setattr(filesystem_guard_module, "os", _WindowsOsProxy())
+    monkeypatch.setattr(
+        filesystem_guard_module,
+        "_open_windows_readonly_file_handle",
+        lambda path: os.open(path, os.O_RDONLY),
+    )
+    monkeypatch.setitem(
+        sys.modules,
+        "msvcrt",
+        SimpleNamespace(open_osfhandle=lambda handle, _flags: handle),
+    )
+
+    with pytest.raises(
+        filesystem_guard_module.WindowsFileGuardError,
+        match="identity is unavailable",
+    ):
+        with filesystem_guard_module.open_windows_readonly_file(source_path):
+            pass
 
 
 def test_mocked_windows_root_guard_preserves_body_oserror(

@@ -66,11 +66,12 @@ def test_typed_service_rejects_source_nested_under_wiki_output(tmp_path):
     source = wiki / "modules" / "source"
     source.mkdir(parents=True)
     (source / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+    before = _tree(wiki)
 
     with pytest.raises(BootstrapContractError, match="must not overlap"):
         execute_bootstrap(BootstrapRequest(source_root=source, wiki_root=wiki))
 
-    assert _tree(wiki) == {"modules/source/app.py": b"VALUE = 1\n"}
+    assert _tree(wiki) == before
 
 
 @pytest.mark.skipif(not hasattr(os, "symlink"), reason="symlinks unavailable")
@@ -84,11 +85,12 @@ def test_typed_service_resolves_symlink_before_reverse_overlap_check(tmp_path):
         wiki_alias.symlink_to(wiki, target_is_directory=True)
     except OSError as exc:
         pytest.skip(f"directory symlink creation is unavailable: {exc}")
+    before = _tree(wiki)
 
     with pytest.raises(BootstrapContractError, match="must not overlap"):
         execute_bootstrap(BootstrapRequest(source_root=source, wiki_root=wiki_alias))
 
-    assert _tree(wiki) == {"source/app.py": b"VALUE = 1\n"}
+    assert _tree(wiki) == before
 
 
 def test_api_forwards_deterministic_bootstrap_options(monkeypatch, tmp_path):

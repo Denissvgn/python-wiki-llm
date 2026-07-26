@@ -24,8 +24,13 @@ from urllib.parse import urlsplit
 from .filesystem_guard import (
     WindowsDirectoryGuardError,
     WindowsFileGuardError,
+    WindowsIdentityUnavailableError,
+    WindowsObjectIdentity,
+    fresh_no_follow_stat,
     guard_windows_directory_chain,
     open_windows_readonly_file,
+    windows_object_identity,
+    windows_object_identity_from_values,
 )
 from .source_snapshot import build_source_snapshot
 from .wiki_media import (
@@ -750,14 +755,19 @@ def _validate_input_root(path: str | Path) -> tuple[Path, os.stat_result]:
             category="input_changed_during_snapshot",
             path=str(candidate),
         ) from exc
-    if (root_stat.st_dev, root_stat.st_ino) != (
-        resolved_stat.st_dev,
-        resolved_stat.st_ino,
-    ):
-        raise DocumentationWikiInputError(
-            f"Input wiki root changed identity during validation: {candidate}",
-            category="input_changed_during_snapshot",
+    if _uses_windows_guarded_input_fallback():
+        _assert_windows_input_identity(
+            root_stat,
+            resolved_stat,
             path=str(candidate),
+            operation="input-root validation",
+        )
+    else:
+        _assert_same_input_identity(
+            root_stat,
+            resolved_stat,
+            path=str(candidate),
+            operation="input-root validation",
         )
     return resolved, root_stat
 
@@ -889,12 +899,20 @@ def _open_input_root_descriptor(
             path=str(root),
         ) from exc
     _assert_input_directory(inspected, path=".")
-    _assert_same_input_identity(
-        expected_identity,
-        inspected,
-        path=".",
-        operation="pre-open input-root verification",
-    )
+    if _uses_windows_guarded_input_fallback():
+        _assert_windows_input_identity(
+            expected_identity,
+            inspected,
+            path=".",
+            operation="pre-open input-root verification",
+        )
+    else:
+        _assert_same_input_identity(
+            expected_identity,
+            inspected,
+            path=".",
+            operation="pre-open input-root verification",
+        )
 
     if not _supports_secure_input_fd_traversal():
         if not _uses_windows_guarded_input_fallback():
@@ -1029,18 +1047,27 @@ def _assert_windows_input_identity(
     path: str,
     operation: str,
 ) -> None:
-    if not expected.st_ino or not actual.st_ino:
+    try:
+        expected_identity = windows_object_identity(
+            expected,
+            context=f"{operation} before {path}",
+        )
+        actual_identity = windows_object_identity(
+            actual,
+            context=f"{operation} after {path}",
+        )
+    except WindowsIdentityUnavailableError as exc:
         raise DocumentationWikiInputError(
             f"Windows input identity is unavailable during {operation}: {path}",
             category="secure_input_traversal_unavailable",
             path=path,
+        ) from exc
+    if expected_identity != actual_identity:
+        raise DocumentationWikiInputError(
+            f"Input wiki path changed identity during {operation}: {path}",
+            category="input_changed_during_snapshot",
+            path=path,
         )
-    _assert_same_input_identity(
-        expected,
-        actual,
-        path=path,
-        operation=operation,
-    )
 
 
 def _stable_input_metadata(entry_stat: os.stat_result) -> tuple[int, int, int, int]:
@@ -1099,7 +1126,7 @@ def _collect_input_tree(
                         (
                             entry.name,
                             entry.path,
-                            entry.stat(follow_symlinks=False),
+                            fresh_no_follow_stat(entry.path),
                         )
                     )
         except OSError as exc:
@@ -1528,15 +1555,24 @@ def _open_windows_input_leaf(
                     path=relative_path,
                 )
             if expected_entry is not None:
-                if not expected_entry.inode or not opened.st_ino:
+                try:
+                    expected_identity = windows_object_identity_from_values(
+                        device=expected_entry.device,
+                        file_id=expected_entry.inode,
+                        context=f"inventoried input {relative_path}",
+                    )
+                    opened_identity = windows_object_identity(
+                        opened,
+                        context=f"reopened input {relative_path}",
+                    )
+                except WindowsIdentityUnavailableError as exc:
                     raise DocumentationWikiInputError(
                         f"Windows input file identity is unavailable: {relative_path}",
                         category="secure_input_traversal_unavailable",
                         path=relative_path,
-                    )
+                    ) from exc
                 if (
-                    opened.st_dev != expected_entry.device
-                    or opened.st_ino != expected_entry.inode
+                    opened_identity != expected_identity
                     or opened.st_size != expected_entry.size
                     or opened.st_mtime_ns != expected_entry.mtime_ns
                     or opened.st_ctime_ns != expected_entry.ctime_ns
@@ -2678,8 +2714,25 @@ def _uses_windows_guarded_copy_fallback() -> bool:
     return os.name == "nt"
 
 
-def _workspace_identity(entry_stat: os.stat_result) -> tuple[int, int]:
-    return entry_stat.st_dev, entry_stat.st_ino
+def _workspace_identity(
+    entry_stat: os.stat_result,
+    *,
+    path: Path | str,
+    operation: str,
+) -> tuple[int, int] | WindowsObjectIdentity:
+    if os.name != "nt":
+        return entry_stat.st_dev, entry_stat.st_ino
+    try:
+        return windows_object_identity(
+            entry_stat,
+            context=f"{operation} workspace {path}",
+        )
+    except WindowsIdentityUnavailableError as exc:
+        raise DocumentationWikiInputError(
+            f"Windows workspace identity is unavailable during {operation}: {path}",
+            category="workspace_redirection_rejected",
+            path=str(path),
+        ) from exc
 
 
 def _assert_same_workspace_identity(
@@ -2689,7 +2742,15 @@ def _assert_same_workspace_identity(
     path: Path | str,
     operation: str,
 ) -> None:
-    if _workspace_identity(expected) != _workspace_identity(actual):
+    if _workspace_identity(
+        expected,
+        path=path,
+        operation=operation,
+    ) != _workspace_identity(
+        actual,
+        path=path,
+        operation=operation,
+    ):
         raise DocumentationWikiInputError(
             f"Workspace path changed identity during {operation}: {path}",
             category="workspace_redirection_rejected",

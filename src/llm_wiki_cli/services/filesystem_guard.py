@@ -15,6 +15,7 @@ import os
 import stat
 import uuid
 from contextlib import contextmanager
+from dataclasses import dataclass
 from pathlib import Path
 from typing import BinaryIO, Iterator, Sequence
 
@@ -33,6 +34,67 @@ class WindowsSecurityGuardError(OSError):
 
 class WindowsDurabilityError(OSError):
     """Raised when Windows cannot confirm durable filesystem metadata."""
+
+
+class WindowsIdentityUnavailableError(OSError):
+    """Raised when Windows cannot expose a stable filesystem object identity."""
+
+
+@dataclass(frozen=True)
+class WindowsObjectIdentity:
+    """Immutable Windows device and file identifier exposed by a real stat call."""
+
+    device: int
+    file_id: int
+
+    def __post_init__(self) -> None:
+        if not self.device or not self.file_id:
+            raise WindowsIdentityUnavailableError(
+                "Windows object identity components must both be non-zero."
+            )
+
+
+def fresh_no_follow_stat(path: str | Path) -> os.stat_result:
+    """Return uncached metadata for one path without following its leaf."""
+
+    return os.stat(path, follow_symlinks=False)
+
+
+def windows_object_identity(
+    result: os.stat_result,
+    *,
+    context: str,
+) -> WindowsObjectIdentity:
+    """Extract identity from ``os.stat``/``os.fstat`` Windows metadata.
+
+    ``DirEntry.stat()`` deliberately reports zero for ``st_dev`` and ``st_ino``
+    on Windows.  Security-sensitive callers must therefore use a fresh path
+    stat or a guarded handle stat before calling this helper.
+    """
+
+    return windows_object_identity_from_values(
+        device=int(getattr(result, "st_dev", 0)),
+        file_id=int(getattr(result, "st_ino", 0)),
+        context=context,
+    )
+
+
+def windows_object_identity_from_values(
+    *,
+    device: int,
+    file_id: int,
+    context: str,
+) -> WindowsObjectIdentity:
+    """Build a Windows identity, failing closed when either component is absent."""
+
+    if not device or not file_id:
+        raise WindowsIdentityUnavailableError(
+            f"Windows object identity is unavailable for {context}."
+        )
+    return WindowsObjectIdentity(
+        device=int(device),
+        file_id=file_id,
+    )
 
 
 @contextmanager
@@ -239,6 +301,10 @@ def open_windows_readonly_file(
             stream = os.fdopen(descriptor, "rb")
             descriptor = None
             opened = os.fstat(stream.fileno())
+            try:
+                windows_object_identity(opened, context=str(path))
+            except WindowsIdentityUnavailableError as exc:
+                raise WindowsFileGuardError(str(exc)) from exc
         except WindowsFileGuardError:
             raise
         except OSError as exc:
@@ -1228,9 +1294,12 @@ __all__ = [
     "WindowsDirectoryGuardError",
     "WindowsDurabilityError",
     "WindowsFileGuardError",
+    "WindowsIdentityUnavailableError",
+    "WindowsObjectIdentity",
     "WindowsSecurityGuardError",
     "atomic_write_private_bytes",
     "create_private_windows_directory",
+    "fresh_no_follow_stat",
     "guard_windows_directory_chain",
     "move_windows_path_write_through",
     "open_windows_guarded_lock_file",
@@ -1239,4 +1308,6 @@ __all__ = [
     "replace_windows_file_write_through",
     "verify_windows_restrictive_dacl",
     "windows_current_user_sid",
+    "windows_object_identity",
+    "windows_object_identity_from_values",
 ]
