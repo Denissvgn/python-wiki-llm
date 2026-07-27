@@ -18,10 +18,32 @@ Supporting detail for [SKILL.md](SKILL.md).
 |---|---|---|
 | valid documentation defect | The finding is correct and the docs are wrong or incomplete. | Fix wiki/source docs and verify. |
 | stale generated content | Generated wiki data is stale. | Run `llm-wiki sync`; do not hand-edit generated blocks. |
-| source-code truth mismatch | Documentation and source disagree; source is authoritative. | Update docs, or escalate if source appears wrong. |
+| source-code truth mismatch | Documentation and source disagree about observed code structure or behavior, for which source is authoritative. | Update docs, or escalate if source appears wrong. Do not use this status for product intent, policy, audience, or approval. |
 | duplicate finding | Another finding covers the same defect. | Link to the kept finding ID. |
 | out-of-scope request | The finding asks for work outside the requested docs review. | Record and defer. |
-| needs human confirmation | Product or policy intent is ambiguous. | Ask or record unresolved finding. |
+| needs human confirmation | Product intent, policy, audience promise, approval, or another human-owned decision is ambiguous. | Ask or record an unresolved finding; trusted intake/human decisions are authoritative for these fields. |
+
+## Managed versus external mutation contract
+
+| Mode | Reads | Allowed writes | Refresh and validation |
+|---|---|---|---|
+| Managed review | User-supplied findings, branch/diff, source, wiki, and deterministic reports | Authorized semantic wiki prose and authorized source docs; never generated blocks or native artifacts | Preview generated drift with `sync --dry-run`; after the last Markdown edit, run the owning sync, then strict lint/CI |
+| External `external_agent_docs` review | Packet-named evidence, worker result, readiness state, and normalized ledger | Only the exact review-result path and ledger fields the packet permits | No source, input-wiki, workspace-wiki, generated-artifact, governance-ledger, or receipt mutation; return defects/check requests to the owning stage or supervisor |
+
+The external review worker must not use the workspace-level allowlist as write
+authority. It preserves each original finding ID across handoffs. Agent review
+does not author or satisfy a native human section review, and a review result
+cannot self-authorize `publish_ready`.
+
+## Native lint finding map
+
+| Native category | Fact class | Review handling |
+|---|---|---|
+| `knowledge_projection`, `knowledge_schema`, `knowledge_snapshot` | Projection/schema/snapshot integrity | Treat the native model as unavailable or mixed. In managed mode preview and use the owning generator/repair path; never hand-edit generated artifacts. In external mode return the defect to the supervisor. |
+| `knowledge_evidence`, `knowledge_freshness` | Structural evidence and live-comparison qualification | Preserve the reason. `nonsemantic-source-change` remains a qualified diagnostic; `source-changed` asks for inspection or refresh and is not automatically false prose; unknown/incompatible/missing states cannot support negative facts. |
+| `knowledge_governance` | Durable identity, alias, lifecycle, or governance-ledger integrity | Route to the explicit governance owner/command. Never initialize governance or rewrite its ledger as review repair. |
+| `knowledge_review` | Native human review of an exact semantic section | Report valid versus expired state and every expiry reason. This agent review cannot create, replace, or stand in for the human event. |
+| `knowledge_verification` | Disposable machine-verification receipt/check state | Report failed, invalid, or stale receipt reasons separately. Rerun a fixed checker only under caller/supervisor authority; stored checker metadata cannot authorize execution or a replacement receipt. |
 
 ## Published user-docs finding classes
 
@@ -41,9 +63,19 @@ Checker output from these classes can feed the `user-docs-author` adjustment loo
 ## Safe edit rules
 
 - Generated tables, diagrams, manifests, and "Do not edit by hand" blocks are protected.
-- Semantic wiki sections, overview prose, `## Behavior`, and `## Notes` are editable when source evidence supports the change.
+- Supported semantic wiki sections, overview prose, `## Behavior`, and
+  dependency/API `## Notes` are editable when the applicable authority supports
+  the change. Generated infrastructure pages are bootstrap snapshots;
+  arbitrary infrastructure `## Notes` are not a supported semantic surface and
+  review findings belong in a separate redacted report based on current raw
+  source or an authorized fresh dedicated extraction.
 - A branch/diff workflow can include source documentation edits, but only when the reviewed truth surface is source docs rather than generated wiki output.
 - Review JSON is evidence, not authority; verify against source before edits.
+- Source settles observed code structure/behavior. Trusted intake and explicit
+  human decisions settle product intent, policy, audience, and approval.
+- In managed mode, preview generated drift with `sync --dry-run`; after the
+  final authorized semantic edit run the owning sync before strict lint/CI.
+- External review is report-only under the allowed-write row above.
 
 ## Report format
 
@@ -65,6 +97,10 @@ resolution. Three repeated unresolved high-severity iterations block the run;
 the reviewer cannot self-authorize `publish_ready`. The supervisor reconciles
 the review result against source/input hashes, generated ownership, actual
 diffs, and deterministic checks.
+
+Original finding IDs are immutable across the review result, ledger update,
+returned-to-stage handoff, and later adjustment result. A duplicate points to
+the kept original ID; it does not replace either identity.
 
 ## Usage examples handoff
 

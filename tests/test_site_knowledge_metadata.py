@@ -284,6 +284,36 @@ def test_summary_export_is_deterministic_private_safe_and_projection_only(
     assert "source_path:" not in service
 
 
+def test_public_projection_preserves_canonical_prose_and_media_for_review(tmp_path):
+    wiki = _wiki(tmp_path)
+    canonical = (
+        "# Service\n\n"
+        "Canonical prose may contain PRIVATE-BODY-SENTINEL.\n\n"
+        "![Private capture](../assets/service/private-capture.png)\n"
+    )
+    media = b"PRIVATE-MEDIA-SENTINEL"
+    _write(wiki / "modules" / "service.md", canonical)
+    media_path = wiki / "assets" / "service" / "private-capture.png"
+    media_path.parent.mkdir(parents=True)
+    media_path.write_bytes(media)
+    projection = _projection(wiki)
+    out = tmp_path / "public-site"
+
+    report = export_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        knowledge_metadata="summary",
+        knowledge_projection=projection,
+    )
+
+    exported = (out / "modules" / "service.md").read_text(encoding="utf-8")
+    front_matter = exported.split("---", 2)[1]
+    assert report.ok is True
+    assert "PRIVATE-BODY-SENTINEL" not in front_matter
+    assert exported.endswith(canonical)
+    assert (out / "assets" / "service" / "private-capture.png").read_bytes() == media
+
+
 def test_user_profile_attaches_index_concept_to_generated_reference(tmp_path):
     wiki = _wiki(tmp_path)
     projection = _projection(wiki)
@@ -477,6 +507,56 @@ def test_checker_requires_front_matter_when_knowledge_mode_is_selected(tmp_path)
     assert report.ok is False
     assert any(
         issue["category"] == "missing_knowledge_metadata"
+        for issue in report.issues
+    )
+
+
+def test_checker_rejects_enriched_export_when_knowledge_mode_is_omitted(
+    tmp_path,
+):
+    wiki = _wiki(tmp_path)
+    projection = _projection(wiki)
+    out = tmp_path / "site"
+    export_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        knowledge_metadata="summary",
+        knowledge_projection=projection,
+    )
+
+    report = check_site_mirror(wiki_dir=wiki, out_dir=out)
+
+    assert report.ok is False
+    assert any(
+        issue["category"] == "unexpected_knowledge_metadata"
+        and issue["target"] == "llm_wiki.knowledge_projection_schema"
+        for issue in report.issues
+    )
+
+
+def test_checker_rejects_enriched_export_with_mismatched_projection(tmp_path):
+    wiki = _wiki(tmp_path)
+    projection = _projection(wiki)
+    mismatched_projection = _projection(wiki, bundle_id="kb_other")
+    out = tmp_path / "site"
+    export_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        knowledge_metadata="summary",
+        knowledge_projection=projection,
+    )
+
+    report = check_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        knowledge_metadata="summary",
+        knowledge_projection=mismatched_projection,
+    )
+
+    assert report.ok is False
+    assert any(
+        issue["category"] == "front_matter_mismatch"
+        and issue["target"] == "llm_wiki.knowledge_bundle_id"
         for issue in report.issues
     )
 
@@ -940,3 +1020,29 @@ def test_enriched_hub_namespaces_front_matter_ids_by_bundle(tmp_path):
         knowledge_projections=projections,
     )
     assert checked.ok is True
+
+
+def test_checker_rejects_enriched_hub_when_knowledge_mode_is_omitted(tmp_path):
+    root = tmp_path / "sources"
+    alpha = _wiki(root, "alpha")
+    beta = _wiki(root, "beta")
+    out = tmp_path / "hub"
+    projections = {
+        "alpha": _projection(alpha, bundle_id="kb_alpha"),
+        "beta": _projection(beta, bundle_id="kb_beta"),
+    }
+    export_site_hub(
+        wikis=[alpha, beta],
+        out_dir=out,
+        knowledge_metadata="summary",
+        knowledge_projections=projections,
+    )
+
+    report = check_site_hub(wikis=[alpha, beta], out_dir=out)
+
+    assert report.ok is False
+    assert any(
+        issue["category"] == "unexpected_knowledge_metadata"
+        and issue["target"] == "llm_wiki.knowledge_projection_schema"
+        for issue in report.issues
+    )

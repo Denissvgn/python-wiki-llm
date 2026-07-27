@@ -6,10 +6,10 @@ Supporting detail for [SKILL.md](SKILL.md).
 
 | Target | Query | Access path |
 |---|---|---|
-| Callable symbol name | `callers`, `callees` | `context --request` `filters.symbol`, or MCP `query_graph {"query_type": "callers", "symbol": "..."}` |
-| Source file path | `dependency_neighborhood` | MCP `query_graph {"query_type": "dependency_neighborhood", "path": "..."}` only — not exposed through `context`'s `filters` |
-| Entry-point id or symbol | `flow_for_entrypoint`, `data_flow_for_entrypoint` | `context --request` `filters.entrypoint`, or MCP `query_graph` with the matching `query_type` |
-| Symbol → covering wiki pages | `pages_for_symbol` | `context --request` `filters.symbol` (bundled with callers/callees), or MCP `query_graph {"query_type": "pages_for_symbol", "symbol": "..."}` |
+| Callable symbol name | `callers`, `callees` | `context --request` `filters.symbol`, or MCP `query_graph {"type": "callers", "value": "<symbol>", "limit": 20}` |
+| Source file path | `dependency_neighborhood` | MCP `query_graph {"type": "dependency_neighborhood", "value": "<file>", "limit": 20}` only — not exposed through `context`'s `filters` |
+| Entry-point id or symbol | `flow_for_entrypoint`, `data_flow_for_entrypoint` | `context --request` `filters.entrypoint`, or MCP `query_graph {"type": "flow_for_entrypoint", "value": "<entrypoint>", "limit": 20}` (replace `type` with `data_flow_for_entrypoint` for the data-flow query) |
+| Symbol → covering wiki pages | `pages_for_symbol` | `context --request` `filters.symbol` (bundled with callers/callees), or MCP `query_graph {"type": "pages_for_symbol", "value": "<symbol>", "limit": 20}` |
 
 ## `context --request` payload (`llm-wiki-context/v1` protocol)
 

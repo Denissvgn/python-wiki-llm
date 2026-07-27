@@ -6,7 +6,7 @@ Use this reference after the main skill confirms that a full user-docs pass is n
 
 | Evidence | Use for | Notes |
 | --- | --- | --- |
-| `llm-wiki sync --output-format json` or text output | Current generated structure, relinked guide pages, stale source detection | If sync rewrites generated pages, review the diff before authoring on top of it. |
+| `llm-wiki sync` text output | Current generated structure, relinked guide pages, stale source detection | `sync` has no JSON output flag. If it rewrites generated pages, review the diff before authoring on top of it. |
 | `llm-wiki lint --strict` | Broken links, orphan pages, unsafe wiki structure | Lint failures are blocking unless the finding is clearly unrelated and deferred with rationale. |
 | `llm-wiki ci-check --format json` | Whole-wiki gate status | Use after authoring, not as a substitute for reading affected pages. |
 | `llm-wiki site export --profile user` | User-site mirror generation and export metadata | Export output is disposable distribution output, not an authoring surface. |
@@ -14,7 +14,8 @@ Use this reference after the main skill confirms that a full user-docs pass is n
 | `llm-wiki site check --built-site-dir ... --link-mode http` | Hosted built-site link behavior | Use for GitHub Pages or hosted web routing. |
 | `llm-wiki site check --built-site-dir ... --link-mode file` | Direct file handoff link behavior | Use after a file-friendly export/build path. |
 | `index.md` and `.llm-wiki-surface.json` | Canonical page inventory and site profile scope | Start here before reading individual pages. |
-| Generated `flows/`, `modules/`, `entities/`, `dependencies/`, `infrastructure/` pages | Product/workflow facts that guides may cite | Link to the page that supports each claim. |
+| Generated `flows/`, `modules/`, `entities/`, and `dependencies/` pages | Product/workflow facts that guides may cite | Link to the page that supports each claim. |
+| Generated `infrastructure/` pages | Bootstrap-snapshot orientation only | Recent sync does not prove infrastructure freshness. Confirm operational claims from current raw source or a fresh dedicated extraction, and do not copy secrets, private endpoints, or sensitive host details into guide prose. |
 | Source files | Last-resort confirmation for facts missing from wiki evidence | If source evidence is needed, prefer updating the wiki/source docs that should have carried it. |
 
 ## Page Contract

@@ -846,6 +846,10 @@ def _graph_query_args(query: Mapping[str, object]) -> tuple[str, str, int]:
     if not isinstance(query, Mapping):
         raise McpWikiError("query must be an object.")
 
+    unknown = sorted(set(query) - {"type", "value", "limit"})
+    if unknown:
+        raise McpWikiError(f"Unknown query field: {unknown[0]}")
+
     query_type = query.get("type")
     if not isinstance(query_type, str) or not query_type.strip():
         raise McpWikiError("type must be a non-empty string.")

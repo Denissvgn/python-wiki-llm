@@ -2,9 +2,37 @@
 
 Supporting detail for [SKILL.md](SKILL.md).
 
-## Generated page fields by artifact type
+## Bootstrap snapshot and discovery boundary
 
-All artifact types live under the single `infrastructure/` wiki surface; type is distinguished by page shape, not directory.
+All generated artifact types live under the single `infrastructure/` wiki
+surface; type is distinguished by page shape, not directory. These are
+bootstrap-time pages. Ordinary sync does not regenerate them, and lint does not
+compare their complete rendered content with current source.
+
+The coverage table below is bounded to the current
+`services/infrastructure_inventory.py` YAML parsers,
+`commands/extract_cmd.py` Docker/Compose parsers, and
+`commands/bootstrap_cmd.py` renderers. Recheck those seams when implementation
+changes.
+
+Built-in discovery starts at the selected source root, walks recursively, and
+honors ignored/excluded directories:
+
+| Family | Built-in discovery |
+|---|---|
+| Dockerfile | `Dockerfile`, `Dockerfile.*`, and `*.dockerfile` anywhere below the source root |
+| Compose | `docker-compose*.yml`/`.yaml`, `compose*.yml`/`.yaml`, plus any scanned YAML whose content has a recognizable top-level Compose `services` shape |
+| GitHub Actions | `.github/workflows/**/*.yml` and `.github/workflows/**/*.yaml` only |
+| Kubernetes | `k8s/**/*.yml` and `k8s/**/*.yaml` only |
+| Targeted runtime/config YAML | Recognized Prometheus, Prometheus rules, Grafana provisioning, Promtail, Loki, Envoy, Buf, and service-local model config shapes |
+
+Generic YAML and Kubernetes-looking YAML in alternate roots such as `deploy/`,
+`manifests/`, or `charts/` do not become Kubernetes pages. Helm templates,
+anchors/merge keys, custom tags, and other complex YAML may exceed the
+line-oriented parsers even inside a supported root. Disclose those paths as
+unsupported or bounded coverage.
+
+## Page-visible fields versus raw-source checks
 
 ### Dockerfile
 
@@ -20,7 +48,14 @@ All artifact types live under the single `infrastructure/` wiki surface; type is
 | Variable | Default |
 ```
 
-Captured: path, base image(s), exposed ports, build args with defaults, env vars with defaults. Not captured: `USER`/`RUN` instruction bodies (so privilege drop, i.e. running as non-root, is not visible on the page — check the Dockerfile source directly if that matters to the review), and whether the base image tag is pinned to a digest (the page shows whatever tag string is written, e.g. `python:3.11-slim`, which is a mutable tag not a digest).
+Page-visible: path; base image and multi-stage aliases; exposed ports; build
+arguments and environment defaults; volumes; working directory; entrypoint and
+command; `COPY`/`ADD`; labels; and healthcheck. The written `FROM` value lets a
+reviewer screen a mutable tag versus a digest.
+
+Raw-source-only or incomplete: `USER`, `RUN`, `SHELL`, `ONBUILD`, instruction
+semantics, and parser edge cases. Inspect source before concluding that the
+container drops privilege or that no unsafe build/runtime instruction exists.
 
 ### Docker Compose
 
@@ -37,26 +72,39 @@ Captured: path, base image(s), exposed ports, build args with defaults, env vars
 - **Command:** ...
 ```
 
-Captured: per-service build/image, ports, volumes, environment (as written — literal values and `${VAR}` references both appear verbatim), depends_on, command. This is a real, confirmed example from a live dogfood run showing exactly the kind of finding this surface reveals directly on the page:
+Page-visible: service image/build context, ports, volumes, environment as
+written, `depends_on`, command, and top-level network/named-volume names.
+This supports initial screening for host mounts, literal settings, and exposed
+ports:
 
 ```
 rlm-gateway:
   Volumes: /var/run/docker.sock:/var/run/docker.sock, ...
 ```
 
-A service mounting the Docker socket has host-level container-escape potential — this is visible on the generated page with no raw-source read needed, which is why Compose review is the highest-yield, lowest-cost part of this skill.
+Raw-source-only or incomplete: `privileged`, `user`, capabilities,
+`security_opt`, `network_mode`, secrets/configs, healthcheck/restart/deploy
+semantics, and complex YAML anchors/merges. Page evidence may identify a
+candidate finding, but current raw source is required for an assurance
+conclusion.
 
 ### Kubernetes
 
-```json
-{
-  "kind": "...", "name": "...", "namespace": "...", "replicas": "...",
-  "containers": [...], "service_type": "...", "service_ports": [...],
-  "selector": {...}
-}
+```markdown
+| Name | Image | Ports | Requests | Limits |
+|---|---|---|---|---|
+| `api` | `example/api:latest` | `8000` | `cpu=500m`, `memory=512Mi` | `cpu=1`, `memory=1Gi` |
 ```
 
-Captured: kind, name, namespace, replicas, containers list, Service type/ports, selector. **Not captured** (confirmed by reading `services/infrastructure_inventory.py::_fill_kubernetes_spec`): `securityContext`, `privileged`, `hostPath`, `hostNetwork`, resource `limits`/`requests`. Every one of these is a real, common infra-review concern (privileged pods, host networking, missing resource limits causing noisy-neighbor risk) that the wiki page cannot show — always read the raw manifest for workload resources.
+Page-visible: API version, kind, name, namespace, replicas; container
+name/image/ports; container resource `requests` and `limits`; Service
+type/ports; and selector.
+
+Raw-source-only or incomplete: `securityContext`, `privileged`, `hostPath`,
+`hostNetwork`, volumes, environment/secret references, probes, service-account
+and RBAC semantics, and arbitrary workload fields. A dash in Requests/Limits is
+useful screening evidence, but must be confirmed in current raw source because
+templates or unsupported YAML can be omitted.
 
 ### GitHub Actions
 
@@ -67,23 +115,29 @@ Captured: kind, name, namespace, replicas, containers list, Service type/ports, 
 }
 ```
 
-Captured: workflow name, triggers, per-job id/name/runs_on/needs/steps.
-**Not captured** (confirmed by reading `services/infrastructure_inventory.py::parse_github_actions_workflow`): the `permissions:` block, at either workflow or job level. A workflow with no `permissions:` block gets the repository's default token scope, which is often broader than the workflow needs — this can only be assessed by reading the raw YAML.
+Page-visible: workflow name/triggers; job id, display name, `runs-on`, `needs`,
+and step count; and each step's name, `uses`, or `run`. Because `uses` is
+rendered, a mutable third-party ref can be screened from the page.
+
+Raw-source-only or incomplete: workflow- and job-level `permissions:`, job/step
+environment and secrets, `with`, conditions, environments, containers/services,
+reusable-workflow semantics, and other controls. Missing or over-broad
+permissions can only be assessed from current raw YAML.
 
 ## Checklist by artifact type
 
 | Artifact | Check | Source of evidence |
 |---|---|---|
-| Dockerfile | Base image pinned to digest, not mutable tag | Generated page (tag string) + raw source if digest pinning matters |
-| Dockerfile | Secret-shaped env var with a literal default | Generated page |
+| Dockerfile | Base image pinned to digest, not mutable tag | Page screen; current raw source confirms |
+| Dockerfile | Secret-shaped env var with a literal default | Page screen; report only the key with `<redacted>` |
 | Dockerfile | Runs as non-root | Raw source (`USER` instruction) |
-| Compose | Host-path or Docker-socket volume mounts | Generated page |
-| Compose | Literal secret values vs `${VAR}` references | Generated page |
-| Compose | Unnecessarily host-exposed ports | Generated page |
+| Compose | Host-path or Docker-socket volume mounts | Page screen; current raw source confirms |
+| Compose | Literal secret values vs `${VAR}` references | Page screen; redact value; current raw source confirms |
+| Compose | Unnecessarily host-exposed ports | Page screen; current raw source confirms |
 | Kubernetes | `securityContext`/`privileged`/`hostPath`/`hostNetwork` | Raw source only |
-| Kubernetes | Missing resource `limits`/`requests` | Raw source only |
+| Kubernetes | Resource `limits`/`requests` | Page screen (captured and rendered); current raw source confirms absence/presence |
 | GitHub Actions | Missing or over-broad `permissions:` | Raw source only |
-| GitHub Actions | Third-party actions pinned to tag/branch, not commit SHA | Raw source (`uses: owner/action@ref`) |
+| GitHub Actions | Third-party actions pinned to tag/branch, not commit SHA | Page screen (`uses` is rendered); current raw source confirms |
 
 ## Report format
 
@@ -96,12 +150,29 @@ Captured: workflow name, triggers, per-job id/name/runs_on/needs/steps.
 | IR-002 | .github/workflows/ci.yml | No `permissions:` block | Raw source, workflow-level | medium | Add an explicit minimal `permissions:` block |
 ```
 
-Include a coverage row for every artifact type actually present in the repo, even when it produced zero findings — "reviewed, clean" is a different, necessary statement from "not reviewed."
+Do not reproduce literal secrets, private endpoints, internal hostnames, or
+sensitive host paths in evidence. Use the source path plus resource/service/job,
+field, safe line/range, and a placeholder such as `<redacted>`,
+`<private-endpoint>`, or `<sensitive-host-path>`.
+
+Include a coverage row for every supported or candidate artifact:
+
+| Artifact/path | Discovery | Evidence basis | Outcome | Limitation |
+|---|---|---|---|---|
+| `k8s/deployment.yaml` | supported `k8s/` root | current raw source | zero findings | line-oriented page parser used only for orientation |
+| `deploy/api.yaml` | alternate YAML root | raw candidate only | unsupported discovery | no Kubernetes page expected |
+| snapshot pages | page enumeration | bootstrap snapshot only | snapshot-screened only | current source unavailable |
+
+Only the first row can support “zero findings.” “Zero discovered artifacts,”
+“snapshot-screened only,” and “unsupported discovery” are separate outcomes.
+Zero pages by itself supports none of them.
 
 ## Failure modes
 
 | Symptom | Cause | Response |
 |---|---|---|
-| No `infrastructure/` pages at all | No Docker/Compose/K8s/Actions files detected, or wiki not synced | Confirm via `ls .github/workflows k8s` etc. whether the repo genuinely has none, versus the wiki being stale. |
-| K8s/Actions findings feel thin | Generated page genuinely doesn't carry security-context/permissions fields | This is expected — step 4/5 require the raw-source read; don't treat page silence as "nothing to find." |
-| Compose page shows a literal secret | Environment written as a hardcoded value, not `${VAR}` | Flag as a real finding — recommend moving to environment injection, not just noting it. |
+| No `infrastructure/` pages at all | No supported files at bootstrap, stale/missing bootstrap pages, unsupported discovery root, or parser limitation | Inspect current raw discovery roots; choose one explicit outcome instead of “clean.” |
+| Kubernetes/Actions findings feel thin | Pages omit security context/permissions and other controls | Read current raw YAML; page silence is not “nothing to find.” |
+| Compose page shows a literal secret | A value may have been captured into the bootstrap page | Flag the key, redact the value everywhere, and confirm/remediate in current raw source. |
+| Alternate-directory Kubernetes YAML has no page | Only the `k8s/` root is recognized as Kubernetes | Record unsupported discovery and review raw source or use an authorized dedicated extractor. |
+| A dedicated extractor disagrees with pages | Pages and extraction have different source basis or coverage | Prefer the fresh exact-scope result, record both bases, and do not merge them into a stronger claim. |

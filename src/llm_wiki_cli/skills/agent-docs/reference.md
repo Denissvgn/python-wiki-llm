@@ -42,7 +42,10 @@ owns the persisted result, reconciliation evidence, and stage receipts.
 Within `wiki/`, the supervisor also owns `.llm-wiki-manifest.json`,
 `.llm-wiki-surface.json`, and `.llm-wiki-knowledge.json`. It refreshes and
 re-anchors that projection after accepted semantic changes; a worker never
-edits or reports those paths as its changes.
+edits or reports those paths as its changes. The supervisor runs that owning
+refresh before strict lint/CI, then reports expired human section reviews and
+stale machine-verification receipts with their existing reasons. It never
+creates replacement review events or receipts merely to clear a gate.
 
 Control-tree checks and hash/receipt comparisons detect ordinary accidental or
 partial tampering. They do not form a cryptographic boundary against a worker

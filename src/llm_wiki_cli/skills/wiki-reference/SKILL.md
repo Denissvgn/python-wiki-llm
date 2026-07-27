@@ -17,8 +17,9 @@ a task actually needs:
   guarantees, Cabal reconciliation, the `llm-wiki-extract/v1` inventory schema.
 - **Dependency reconciliation** — monorepo manifest scoping, import aliases,
   Go `// indirect`, lockfile-backed `versions` metadata.
-- **Knowledge observations and freshness** — persisted evidence versus
-  read-time freshness, availability/degraded states, and snapshot-only status.
+- **Knowledge observations and freshness** — the normative native preflight,
+  persisted evidence versus read-time freshness, availability/degraded states,
+  snapshot-only status, legacy fallback, and authority boundaries.
 - **Knowledge lint and context** — strict failure policy, concept refinements,
   deterministic ranking, warnings, and filtered/truncated counts.
 - **Knowledge query/API/MCP contract** — exact indexed lookups, response

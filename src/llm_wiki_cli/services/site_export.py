@@ -2350,7 +2350,39 @@ def _check_front_matter_metadata(
                 )
             )
 
-    if knowledge_summary is not None:
+    if knowledge_summary is None:
+        for key in sorted(metadata):
+            if key.startswith("knowledge_") or key.startswith(
+                "source_knowledge_"
+            ):
+                issues.append(
+                    {
+                        "category": "unexpected_knowledge_metadata",
+                        "path": str(page_path),
+                        "target": key,
+                        "message": (
+                            "Knowledge metadata is present, but knowledge "
+                            f"metadata mode was not selected: {key}"
+                        ),
+                    }
+                )
+        for key in sorted(llm_wiki):
+            if key.startswith("knowledge_") or key.startswith(
+                "source_knowledge_"
+            ):
+                issues.append(
+                    {
+                        "category": "unexpected_knowledge_metadata",
+                        "path": str(page_path),
+                        "target": f"llm_wiki.{key}",
+                        "message": (
+                            "Knowledge metadata is present, but knowledge "
+                            "metadata mode was not selected: "
+                            f"llm_wiki.{key}"
+                        ),
+                    }
+                )
+    else:
         for key in sorted(metadata):
             if (
                 key == "source_path"

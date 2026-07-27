@@ -74,7 +74,10 @@ The three native JSON artifacts are one controller-owned projection. After an
 accepted semantic Markdown change, the supervisor refreshes that projection
 from verified source evidence and re-anchors generated ownership. The worker
 must not regenerate the artifacts or include their paths in
-`changed_wiki_paths`.
+`changed_wiki_paths`. Strict lint/CI runs after that owning refresh, never
+against the mixed pre-refresh Markdown snapshot. The refresh may expire a human
+section review or stale a machine-verification receipt; retain and report the
+existing reasons, and do not manufacture replacements.
 
 ## Imported enrichment decisions
 

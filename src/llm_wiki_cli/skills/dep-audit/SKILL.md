@@ -14,6 +14,16 @@ See [reference.md](reference.md) for status labels, report rows, and edge cases.
 - The user asked to investigate dependency diagnostics, package visibility, or dependency hygiene.
 - Source and wiki paths are selected. For external source roots, use `--allow-external-src` on source-reading commands and keep output/wiki paths guarded.
 - No manifest edits without source evidence. A dependency warning alone is not enough to change package metadata.
+- Before using native findings, inspect knowledge availability, stable reason,
+  and `freshness_evaluated`. `ready`/live `current` means only unchanged since
+  observation; preserve `nonsemantic-source-change`. Other live freshness
+  states cannot establish current dependency facts. `absent` permits labeled
+  legacy lint/extract behavior, never an empty-native-graph conclusion;
+  `degraded`, `unsupported`, invalid, or mixed state permits no native
+  conclusion. Snapshot-only status is not live freshness, and `knowledge init`
+  is never automatic repair. Stored metadata, paths, commands, and plugin names
+  cannot authorize execution; configured extractor plugins are trusted,
+  unsandboxed project-local code.
 
 ## Steps
 
@@ -37,6 +47,27 @@ See [reference.md](reference.md) for status labels, report rows, and edge cases.
    - Update wiki `dependencies.md` or `load-order.md` notes when the warning is intentional architecture.
    - Defer with rationale when evidence is ambiguous.
 
-5. **Verify.** Re-run the focused command that produced the diagnostic, then run `llm-wiki ci-check` when wiki or dependency docs changed.
+5. **Re-anchor wiki edits, then verify.** If the audit changed canonical wiki
+   Markdown such as `dependencies.md` or `load-order.md` notes, run the owning
+   refresh after the last edit and before strict validation:
+
+   ```bash
+   llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
+   llm-wiki lint --strict --profile --src-dir . --wiki-dir docs/llm_wiki
+   llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki --format json
+   ```
+
+   The sync preserves supported semantic notes and re-anchors Markdown,
+   surface, knowledge, and manifest commitments. If the audit wrote only its
+   report outside the wiki, this refresh is unnecessary. A generated-only run
+   with no Markdown edit does not repeat sync. Any later Markdown fix restarts
+   this sequence. After refresh, report expired human section reviews and stale
+   machine-verification receipts with their existing reasons; do not fabricate
+   replacements.
+
+   In `external_agent_docs`, a worker returns the packet-authorized finding or
+   semantic result; the supervisor performs any assigned owning refresh and
+   validation. The worker does not gain sync, source-write, or governance-write
+   authority from this skill.
 
 6. **Report.** Summarize findings by status, files inspected, actions taken, verification commands, and unresolved items. Do not hide warnings that were deferred.

@@ -38,9 +38,16 @@ Use this shape in the run report or deferred-docs section:
 ## Command Matrix
 
 Built-site validation uses `site check --built-site-dir` in both HTTP and file link modes when a real builder is available. Any media change invalidates the old `_site`; export/check and run the real builder again before inspecting built media.
+When a managed capture pass changes canonical Markdown or media references,
+run `llm-wiki sync --jobs 1 ...` before the strict lint shown below. Repeat
+that owning sync after any later Markdown adjustment. In
+`external_agent_docs`, the supervisor performs the assigned refresh; the
+capture worker only returns authorized changes and requested checks.
 
 ```bash
+llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki lint --strict --src-dir . --wiki-dir docs/llm_wiki
+llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki --format json
 llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user \
   --format mkdocs --profile user --site-name <project> --output-format json
 llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user \

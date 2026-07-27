@@ -20,9 +20,18 @@ Rule of thumb: if a section is bounded by an explicit "Do not edit by hand" comm
 ## Validation loop details
 
 - Normal `lint` runs the structural checks; `--strict` additionally requires core structure (`index.md`, `log.md`, `entities/`, `modules/`, `workflows/`, `infrastructure/`) and a fresh, non-stale sync manifest.
+- When this skill changes canonical Markdown, its final validation loop begins
+  with a second owning `llm-wiki sync --jobs 1 ...`. That pass preserves
+  supported semantic content and commits the new Markdown/surface/knowledge/
+  manifest snapshot. A generated-only run with no semantic edit does not repeat
+  sync. Any Markdown fix made after validation restarts at the owning sync.
 - Dependency-cycle / undeclared-dependency / unused-dependency diagnostics are non-blocking warnings, not lint failures — they are not part of this skill's exit criteria. Documenting an intentional cycle in `## Notes` answers the warning; it is not required to make lint pass.
 - Use `--profile` for machine-readable `issues[]` / `diagnostics[]` when iterating, rather than parsing the human-readable text report.
 - If the project has team policy configured, resolve `team check` failures before calling the skill done. `team resolve-conflicts` only auto-resolves generated-page conflicts; manual workflow-page conflicts are left for this skill (or a human) to resolve by hand.
+- Treat post-refresh `knowledge_review` and `knowledge_verification` findings as
+  independent lifecycle results. Report expired review reasons and stale
+  receipt reasons; sync never authors a human review or fabricates a new
+  verification receipt.
 
 ## Failure modes and edge cases
 

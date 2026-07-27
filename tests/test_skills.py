@@ -197,7 +197,7 @@ class TestBundledWikiBootstrapSkill:
         assert "auto-update [bot]" in manifest
         # Centrality ranking and the budgeted semantic pass.
         assert "fan_in * 100 + cycle_bonus * 25" in manifest
-        assert "dependencies.metrics.most_depended_on" in manifest
+        assert "dependency_evidence.most_depended_on" in manifest
         # Ranking detail and the remainder-backlog artifact format live in
         # the bundled reference file.
         assert "bootstrap-remainder.md" in reference
@@ -598,9 +598,9 @@ class TestBundledDocHubSkill:
         # Live CLI contract, not invented flags.
         assert "site export --wiki-root" in combined
         assert "site check --wiki-root" in combined
-        # The pilot-confirmed guardrail: never fabricate a cross-repo
-        # relationship when repos are only incidentally co-located.
-        assert "do not write an overview page" in combined.lower()
+        # There is no durable authored hub input/navigation/check surface.
+        assert "no canonical hub-overview input" in combined.lower()
+        assert "do not author a hub overview in derived output" in combined.lower()
         assert "never fabricate" in combined.lower() or "fabricated" in combined.lower()
         assert "genuinely related" in combined.lower()
         assert "doc_hub_pilot_2026-07-04.md" not in combined
@@ -725,7 +725,7 @@ class TestBundledPublishDocsSkill:
         manifest = (skills.BUNDLED_SKILLS_ROOT / "publish-docs" / "SKILL.md").read_text(
             encoding="utf-8"
         )
-        start = manifest.index("Direct-file handoffs use file-friendly export")
+        start = manifest.index("Direct-file handoffs use")
         end = manifest.index("5. **Hand off", start)
         direct = manifest[start:end]
 

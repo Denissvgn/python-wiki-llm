@@ -2,13 +2,37 @@
 
 Supporting detail for [SKILL.md](SKILL.md).
 
-## Overview guardrail
+## Supported hub surface
 
 Hub export/check proves the static-site mechanics: source wiki discovery, namespace layout, generated index links, and mirror validation. It does not prove that the source repositories have an architectural relationship, and it does not create cross-repository evidence by itself.
 
-The generated hub index is deliberately mechanical: it lists source IDs, page counts, and links to each source wiki. Treat any LLM-authored overview as optional and evidence-backed. Write it only when the sources are genuinely related, such as a real multi-service platform, a monorepo split into source-adapter wikis, or systems with direct deployment, data, or API dependencies. When sources are only co-located for convenience, do not write an overview page and do not invent a relationship.
+The generated hub index is deliberately mechanical: it lists source IDs, page counts, and links to each source wiki. There is no canonical hub-overview input in the current public contract:
 
-The skill should cite generated pages that demonstrate the relationship before writing synthesis prose. Suitable evidence includes flow pages with external calls, shared infrastructure pages, dependency pages, or source-owned docs that name the cross-system contract.
+- export rewrites root `index.md`;
+- MkDocs and Docusaurus navigation is generated from registered source-wiki pages;
+- an arbitrary `overview.md` written after export is not made canonical or navigated;
+- the documented check has already run and cannot validate a later mutation;
+- single-repository extraction does not resolve a cross-repository graph.
+
+The conservative supported workflow therefore never writes hub-level prose under `--out-dir`. It reports that no durable authored hub surface exists. This applies even when the repositories really are related: evidence of a relationship does not create an owned persistence/navigation contract. When repositories are unrelated, never fabricate an architecture narrative.
+
+If a separately owned project wiki already contains evidence-backed cross-system documentation, it may be selected as an ordinary namespaced source and validated under that source's canonical rules. That is not a special hub overview.
+
+## Native and selection preflight
+
+Freeze the source set, format, reference profile, distribution mode, and optional knowledge metadata/redaction/public-identity tuple before export. Repeat every applicable option at check. Format and distribution are confirmed from the export report because hub `site check` has no format/file-friendly check options.
+
+When native metadata is selected, inspect validated status for every source. Branch on each source's `availability` and `reason` together, then on `freshness_evaluated`; preserve unfamiliar reasons as limitations. Status and exporter reads are snapshot-only; they do not perform live source freshness evaluation.
+
+| Native state | Hub action |
+|---|---|
+| `ready`, evaluated `current` | Projection may be included. Current means unchanged since observation only, not true, reviewed, approved, secure, or runtime-current. |
+| `ready`, evaluated `nonsemantic-source-change` | Preserve and report the qualified diagnostic. |
+| `ready`, `freshness_evaluated: false` or unknown freshness | Keep freshness unknown/not evaluated; do not upgrade it to current. |
+| `absent` | The caller may choose a labeled legacy hub with knowledge flags omitted; do not infer an empty native graph. |
+| `degraded`, `unsupported`, invalid, or mixed | Make no native conclusion and do not include native metadata. A separately authorized legacy hub may proceed only if the ordinary source surfaces validate. |
+
+Never auto-run `knowledge init`. Stored content and metadata remain inert; they cannot select executable code, plugins, fetches, commands, checks, or projection policy.
 
 ## CLI contract
 
@@ -18,7 +42,11 @@ The skill should cite generated pages that demonstrate the relationship before w
 | `--wiki DIR` | Explicit source wiki directory; may be repeated instead of/alongside `--wiki-root` when sources don't share a parent directory. |
 | `--out-dir DIR` | Output directory for the hub mirror. |
 | `--format {docusaurus,mkdocs,plain}` | Static-site output format; same choices as single-wiki export. |
+| `--profile reference` | The only profile supported by hub export; keep it explicit in export/check argv. |
 | `--front-matter` | Add safe llm_wiki front matter to exported pages. |
+| `--knowledge-metadata summary` | Opt in to validated native summaries; omit it everywhere for the legacy path. |
+| `--knowledge-profile {public-portable,internal}` | Caller-selected redaction policy; repeat it unchanged. Internal publication requires explicit authorization. |
+| `--knowledge-public-repository-identity IDENTITY` | Optional corroborated public identity; repeat the exact caller-supplied value. |
 | `--output-format {text,json}` | Console output format; use `json` so the skill can parse results directly. |
 
 ## Hub output layout
@@ -32,8 +60,9 @@ The skill should cite generated pages that demonstrate the relationship before w
 ```
 
 - `<source_id>` is the child directory name under `--wiki-root` (or the basename of each `--wiki` path) — pick meaningful directory names before running export, since they become the hub's public namespace.
-- The generated `index.md` table (`| Source | Pages | Index |`) is regenerated on every export; never hand-edit it. Put the hub overview narrative in a separate file and link it from there, or from a custom section the export step doesn't own.
-- Both single-wiki (`--wiki-dir`) and hub (`--wiki-root`/`--wiki`) modes   remain valid; passing neither hub flag falls back to single-wiki behavior unchanged.
+- The generated `index.md` table (`| Source | Pages | Index |`) is regenerated on every export; never hand-edit it and never add derived hub prose beside it.
+- An extra root Markdown file is outside generated navigation and is not a supported authored surface.
+- Both single-wiki (`--wiki-dir`) and hub (`--wiki-root`/`--wiki`) modes remain valid; passing neither hub flag falls back to single-wiki behavior unchanged.
 
 ## Failure modes
 
@@ -41,5 +70,6 @@ The skill should cite generated pages that demonstrate the relationship before w
 |---|---|---|
 | `site check` reports issues after export | A source wiki changed after export ran (stale mirror) | Re-run export for the affected source, or all sources, then re-check. |
 | A source's page count looks wrong in the hub index | That source wiki itself is stale (not synced before hub export) | Run that repository's `wiki-sync` first — this skill never regenerates a source wiki's own content. |
-| No real content for the overview page | Sources aren't actually related (see the pilot finding) | Skip the overview page and say so explicitly in the handoff; do not invent a relationship. |
+| User requests hub-level overview prose | No durable authored hub input/navigation/check contract exists | Report the limitation; do not mutate derived output. Propose a separately owned canonical feature or an ordinary source wiki as follow-up. |
+| Existing `site/overview.md` appears to survive | Unowned extra files are not proof of canonical persistence, navigation, or validation | Do not cite or publish it as supported hub evidence; regenerate from the frozen source set and report the limitation. |
 | Hub root has non-wiki subdirectories | `--wiki-root` treats every immediate child as a source wiki | Use repeated `--wiki` flags instead, naming only the real source wikis. |

@@ -26,9 +26,13 @@ assume the project root; substitute the project's configured `--wiki-dir`
   llm-wiki sync --cache-dir .cache/llm-wiki-inventory --helper-cache-dir .cache/llm-wiki-helpers
   ```
 
-  On `sync`, `lint`, `ci-check`, and `extract`, `--helper-cache-dir` selects
-  prepared TypeScript/JavaScript/Go/Rust/Haskell helpers; `--cache-dir` controls only
-  `llm-wiki-inventory-cache.json`.
+  `prepare-extractors --cache-dir <helper-cache>` selects the helper cache.
+  `--helper-cache-dir <same-helper-cache>` selects prepared TypeScript/JavaScript/Go/Rust/Haskell helpers
+  on source-reading commands. In particular, `sync`, `lint`, `ci-check`,
+  `extract`, and `bootstrap` expose `--helper-cache-dir`;
+  `--cache-dir` is a separate inventory-cache option only on `sync`, `lint`,
+  and `extract`. Never copy `--cache-dir` onto a command whose parser does not
+  expose it.
 
 ## Haskell extraction contract
 
@@ -139,44 +143,57 @@ Keep these fields separate when interpreting a result:
 - Lifecycle is also independent. A missing source does not by itself mean a
   concept is deprecated or deleted.
 
-Live freshness states mean:
+### Normative native preflight
 
-| State | Meaning |
+Every skill that consumes native state must inspect the `knowledge`
+availability, stable `reason`, and `freshness_evaluated` before interpreting a
+query result, including `found: false`. Apply this decision table; it is not a
+scalar trust score:
+
+| Native result | Permitted interpretation and action |
 | --- | --- |
-| `current` | Compatible producer and concept bases match; the concept is unchanged since observation. |
-| `nonsemantic-source-change` | Source bytes changed, but the concept-scoped structural observation is unchanged. |
-| `source-changed` | A compatible live comparison produced a different concept-scoped observation. |
-| `source-missing` | A reliably mapped source that had a reliable recorded basis is absent. |
-| `basis-incompatible` | Schema, generation options, producer, extractor/plugin configuration or limitations, source mapping, or another required basis is incompatible. It also covers an identical source producing a different observation under an allegedly identical basis. |
-| `unknown` | No reliable live comparison or recorded basis is available, or structural freshness is not modeled for that aggregate/document-only concept. |
+| `ready`, live `current` | The compatible observation is unchanged since it was recorded. It may support a qualified structural claim, but it does not mean the claim is true, human-reviewed, approved, secure, semantically verified, or current in a running system. |
+| `ready`, live `nonsemantic-source-change` | The concept-scoped structural observation remains comparable and unchanged while source bytes changed. Preserve and report the byte-change diagnostic; do not call the source byte-current. |
+| `ready`, live `source-changed`, `source-missing`, `basis-incompatible`, or `unknown` | Native data remains visible as qualified evidence, not an authoritative current claim. Inspect source, refresh through the owning workflow, defer, or report the limitation according to the task. `source-changed` is not by itself proof that semantic prose is false. |
+| `ready`, `freshness_evaluated: false` | Projection commitments match only for the recorded snapshot. Report snapshot-only availability and do not infer any live freshness state. |
+| `absent` (`knowledge-projection-not-present`) | Continue compatible surface, extract, or legacy-query behavior when useful and label it as a legacy fallback. Report that native qualification is unavailable; never reinterpret no native matches as an empty graph or negative fact. |
+| `degraded` after invalid state (`policy-selected-surface-only-fallback-after-invalid`) | Use only an independently validated surface fallback. Report native knowledge unavailable; do not serve or infer from the rejected model. |
+| `degraded` after a mixed snapshot (`policy-selected-surface-only-fallback-after-mixed-snapshot`) | Treat the manifest, surface, Markdown, and knowledge artifacts as one inconsistent commit. Use only an independently validated surface fallback and require an owning refresh before native conclusions. |
+| `unsupported` (`knowledge-schema-version-unsupported`, `manifest-version-unsupported`, or `surface-schema-version-unsupported`) | Report the unsupported boundary and use no native payload. A missing match cannot establish absence. |
 
-Every native consumer reports one knowledge availability plus a stable
-`reason`:
+Invalid and mixed snapshot are underlying rejected states, not extra optimistic
+availability values; the shared consumer exposes them as `degraded` with the
+distinct reasons above.
 
-- `ready` means the manifest, surface, Markdown, and knowledge commitments
-  form one validated projection. A ready snapshot can still have
-  `freshness_evaluated: false`. Its reason is
-  `all-projection-commitments-match`.
-- `absent` is the compatible legacy/no-projection case. The ordinary wiki
-  surface remains usable, but there is no knowledge graph to trust. Its reason
-  is `knowledge-projection-not-present`.
-- `degraded` means invalid or mixed projection state was rejected. An
-  independently validated surface may be used as a surface-only fallback, but
-  consumers expose no knowledge model or optimistic freshness claim. The
-  reason distinguishes `policy-selected-surface-only-fallback-after-invalid`
-  from `policy-selected-surface-only-fallback-after-mixed-snapshot`.
-- `unsupported` distinguishes an unsupported knowledge, manifest, or surface
-  schema from both absence and malformed current-version data. No unsupported
-  payload is served as knowledge. Its reason identifies the unsupported
-  boundary: `knowledge-schema-version-unsupported`,
-  `manifest-version-unsupported`, or
-  `surface-schema-version-unsupported`.
+Live freshness has exactly these permitted interpretations:
 
-`llm-wiki status` and MCP status use snapshot-only inspection: they may report
-projection availability and aggregate evidence issues, but do not run source
-extraction and must report freshness as not evaluated. Use strict lint or a
-live context/query operation when a read-time comparison is required. Invalid
-or mixed artifacts are never silently repaired by a reader.
+| State | Permitted interpretation | Required handling |
+| --- | --- | --- |
+| `current` | Compatible producer and concept bases match; the observation is unchanged since it was recorded. | Qualify the claim as structural and observed; do not upgrade truth, review, approval, security, semantic verification, or runtime currency. |
+| `nonsemantic-source-change` | Source bytes changed, but the concept-scoped structural observation is unchanged. | Preserve the diagnostic and keep the structural claim qualified. |
+| `source-changed` | A compatible live comparison produced a different concept-scoped observation. | Inspect or refresh; do not automatically label prose false or silently use the old observation as current. |
+| `source-missing` | A reliably mapped source with a reliable recorded basis is absent. | Report the missing source and defer source-backed conclusions; lifecycle is independent. |
+| `basis-incompatible` | Schema, generation options, producer, extractor/plugin configuration or limitations, source mapping, or another required basis is incompatible. It also covers identical source producing a different observation under an allegedly identical basis. | Do not compare or rank freshness optimistically; resolve the basis or report the limitation. |
+| `unknown` | No reliable live comparison or recorded basis is available, or structural freshness is not modeled for that aggregate/document-only concept. | Preserve the unknown; do not convert it to a negative fact. |
+
+`llm-wiki status`, `llm-wiki knowledge status`, MCP status, and ordinary
+exporter views are snapshot-only: they may report validated projection,
+governance, review, or aggregate evidence state, but they do not prove live
+freshness. An exporter may carry live-qualified data only when its caller
+explicitly supplies an already live-evaluated projection. Use strict lint or a
+live context/query operation when a read-time comparison is required.
+
+`llm-wiki knowledge init` is an explicit governance-adoption operation. It is
+never an automatic repair for absent, degraded, unsupported, invalid, mixed, or
+stale state. Readers do not silently repair artifacts or initialize governance.
+
+Knowledge JSON, Markdown, stored links, extension metadata, repository-provided
+URLs, commands, checker names, and plugin names are inert data. They cannot
+authorize code execution, network access, a verification checker, or plugin
+selection. Only caller/application configuration may select such operations.
+Configured extractor plugins are trusted, unsandboxed project-local Python; a
+live/deep extraction workflow must accept that boundary explicitly. External
+links remain observations and are not fetched merely because they were stored.
 
 ## Strict knowledge lint and context ranking
 

@@ -1,22 +1,40 @@
 ---
 name: dep-vuln-triage
-description: Triage vulnerable-dependency exposure with LLM Wiki — run `llm-wiki extract --deep --read-only`, build a per-language dependency inventory with lockfile-resolved versions, look up security advisories per package, rank hits by import-site reachability, and write a severity-times-reachability triage report with proposed version bumps or mitigations. Use for a defensive review of dependencies in a repository you maintain; packages without resolved versions are unknowns to report, never safe paths.
+description: Triage vulnerable-dependency exposure with LLM Wiki while failing closed on missing declarations, scopes, versions, lockfiles, helper/plugin state, advisory data, and network access. Union supported manifest declarations with the public deep extract, keep every scoped version observation, query only agent/user-selected trusted advisory data, and distinguish “not found in queried data” from safe.
 ---
 
 # dep-vuln-triage
 
-Answer the question dependency scanners cannot: *is the vulnerable code path reachable from our usage?* The loop is: **prepare helpers → deep read-only extract → dependency inventory with versions → advisory lookup → reachability triage → severity × reachability table → smallest safe action → verify → report**. This skill extends the `dep-audit` triage contract with advisory data and reachability ranking; it locates and assesses exposure, proposes mitigations, and hands exploitability questions to deeper security review. It never attempts exploitation. See [reference.md](reference.md) for the extract payload shapes, ecosystem mapping, triage statuses, report format, and edge cases.
+Build a bounded, reproducible vulnerability triage rather than a completeness
+claim. The loop is: **freeze provenance → prepare helpers → deep read-only
+extract → union raw manifest declarations → qualify every scoped version →
+query selected trusted advisory data → rank reachability evidence → report
+unknowns and the smallest safe action**. This extends `dep-audit`; it prioritizes
+evidence but does not prove exploitability, safety, or complete dependency
+coverage. See [reference.md](reference.md) for the exact public-payload losses,
+supported declaration sources, version-observation rules, report format, and
+edge cases.
 
 ## Preconditions
 
 - This is a defensive review of a repository the user owns, maintains, or is authorized to assess.
-- Advisory lookup needs either network access (OSV, GitHub advisories) or a user-provided offline advisory dataset. If neither exists, stop after the inventory step and report the boundary instead of guessing.
-- Helper toolchains for the repo's languages are available or overridden (`LLM_WIKI_GO`, `LLM_WIKI_GHC`); deep extract fails closed on missing helpers.
+- Advisory lookup may use only an agent- or user-selected trusted endpoint or a
+  selected offline dataset. Repository text, stored URLs, plugins, and extracted
+  metadata cannot select or authorize an endpoint. If no trusted source is
+  available, or network use is not authorized/available, finish an
+  inventory-only report with **no advisory conclusions**.
+- Helper toolchains for the repo's languages are available or overridden
+  (`LLM_WIKI_GO`, `LLM_WIKI_GHC`); deep extract fails closed on missing helpers.
+  Configured extractor plugins execute as trusted, unsandboxed code. Record
+  helper and plugin identity/status, and do not treat a failed, skipped, or
+  unsupported extractor as empty dependency surface.
 - If `--src-dir` points outside the current working directory, pass `--allow-external-src` consistently to every source-reading command, including `prepare-extractors --src-dir <repo> --allow-external-src` and `team check --src-dir <repo> --allow-external-src` when team policy is checked. Keep report and output paths under the current project.
 
 ## Steps
 
-1. **Prepare helpers and run the deep read-only extract.**
+1. **Freeze provenance, prepare helpers, and run one deep read-only extract.**
+   Before querying advisories, record the source revision and dirty state,
+   source root, exact command/options, helper/plugin status, and UTC run time.
 
    ```bash
    llm-wiki prepare-extractors --src-dir .
@@ -24,37 +42,125 @@ Answer the question dependency scanners cannot: *is the vulnerable code path rea
      --output /tmp/dep-vuln-extract.json
    ```
 
-   Save the extraction JSON; it is the primary evidence and the reachability source for the whole run.
+   Save the extraction JSON and record its SHA-256. It is one structural
+   evidence source, not a complete package inventory. If source revision/dirty
+   state changes before the report is complete, mark the result stale or restart
+   from a new recorded basis.
 
-2. **Build the dependency inventory.** For each language under `dependencies.external.<language>`, collect:
+2. **Build a declaration ledger and union it with the public extract.** Read
+   every supported manifest under the selected source root and record each
+   package's manifest path, owning scope, and declaration kind (runtime,
+   optional/dev/build/peer/indirect). The supported forms and known gaps are in
+   [reference.md](reference.md).
+
+   Then, for each language under `dependencies.external.<language>`, collect:
 
    - `used` — package → importing files (the reachability seed);
    - `unused` — declared but not imported;
    - `undeclared` — imported but not declared;
-   - `versions` — package → `{version, resolved_from}` captured from lockfiles.
+   - `versions` — package → one unscoped `{version, resolved_from}` hint.
 
-   Version capture is additive and fail-open: a used or declared package with **no `versions` record is an unknown-version package**. List it in the report's unknowns section exactly like `attack-surface` reports data-flow gaps — unknown surface, never evidence of safety. Read the manifest yourself only to record the declared range next to the missing resolved version; do not substitute a range for a resolved version in advisory queries without saying so.
+   The public projection omits its internal `required`, `optional`, and
+   declaration-scope details. Therefore, the inventory is the union of the raw
+   declaration ledger with `used`, `unused`, `undeclared`, and `versions`.
+   Optional/dev/build packages must remain rows even when they have no import or
+   public version record. If a supported manifest cannot be read/parsed, list
+   its path and missing declaration scope; never silently omit it.
 
-3. **Look up advisories per package.** Query OSV (or GitHub advisories) with the ecosystem-mapped package name and the resolved version from `versions`. Record for every hit: advisory ID, severity, affected range, fixed version, and the lookup date. Record clean results too — the report must show which packages were checked, not only which matched.
+3. **Qualify versions per package and scope.** Treat an absent resolved/scoped
+   version as unknown. Public `versions` collapses multiple lockfiles and
+   multiple versions to at most one unscoped record, so it cannot establish a
+   monorepo's effective version.
 
-4. **Rank hits by reachability.** For each package with an advisory hit, classify using extract evidence before reading any source:
+   Inspect every reliable manifest/lock/package-manager observation for each
+   owning scope and retain one row per
+   `(scope, package, version, observation source)`. If two lockfiles contain
+   different versions, query both scoped observations; if scope or effective
+   selection cannot be established, keep the package explicitly unknown.
+   Never replace an unknown exact version with a declared range.
+
+   `go.sum` is download/checksum history, not the selected module graph. Label
+   its versions `observed-in-go.sum`, inspect every version relied upon, and
+   keep selected version unknown unless a separately recorded, trustworthy
+   module-selection result establishes it.
+
+4. **Look up advisories with the selected trusted source.** Query by ecosystem,
+   normalized package, and each exact scoped version observation. For an
+   unknown-version package, a name-only query may identify candidates but can
+   never clear the package. Record advisory source/endpoint or offline dataset
+   identity, dataset/advisory date, query date, package/version queried,
+   advisory ID, severity, affected range, fixed version, and any response
+   limitation.
+
+   Phrase an empty response only as **“not found in queried advisory data for
+   package/version/source/date.”** Never generalize it to safe, unaffected,
+   vulnerability-free, or clean.
+
+5. **Rank advisory hits by reachability evidence.** Classify before reading
+   source:
 
    - **reachable-from-entrypoint** — an importing file from `used` appears in an entrypoint's flow (`data_flows`), or graph queries (`callers`, `dependency_neighborhood`) connect it to one;
    - **test-only (not production-reachable)** — importing files are traced, but every hit is on a test path; exclude test paths from the reachable bucket before classifying, or a large test suite will manufacture false "reachable" CVEs for test-only dependencies;
    - **imported-not-traced** — imported somewhere, but no extracted flow reaches the import site (data-flow gaps count as *unknown*, not unreachable);
-   - **declared-only** — in `unused` with zero importing files: before accepting this, grep the source for the package's actual *import* name, which can differ from its *declared* name (`pyjwt`→`jwt`, `python-multipart`→`multipart`, `pyyaml`→`yaml`, and others in [reference.md](reference.md)) — zero matches under the declared name is not proof of zero usage;
+   - **declared-only** — in the raw declaration ledger with no verified
+     importing files (`unused` is one runtime-declaration signal, but does not
+     contain optional/dev/build declarations): before accepting this, grep the
+     source for the package's actual *import* name, which can differ from its
+     *declared* name (`pyjwt`→`jwt`, `python-multipart`→`multipart`,
+     `pyyaml`→`yaml`, and others in [reference.md](reference.md))—zero matches
+     under the declared name is not proof of zero usage;
    - **unknown** — undeclared imports, unknown-version packages, or gap-heavy flows.
 
-   Then read the importing files for the top-ranked hits to confirm which APIs of the package are actually called, and whether they match the advisory's affected functions when the advisory names them.
+   Direct declarations, lockfile-only transitive packages, build/plugin
+   dependencies, and undeclared imports must remain distinguishable. The public
+   extract excludes lockfile-only transitive packages from `versions`, so no
+   complete transitive-coverage claim is permitted. Supplemental
+   package-manager/scanner output is separate evidence with its own provenance
+   and limits.
 
-5. **Build the severity × reachability table.** One `DVT-NNN` row per package/advisory pair, ordered by severity and reachability class, using the format in [reference.md](reference.md).
+   Read importing files for top-ranked hits to identify APIs actually called.
+   A traced import prioritizes review; it does not prove the vulnerable function
+   executes.
 
-6. **Choose the smallest safe action per row.** Version bump when the fixed version is compatible (edit the manifest, then regenerate the lockfile with the package manager — never hand-edit lockfiles); mitigation note when a bump is blocked; removal proposal for `declared-only` hits (route through the `dep-audit` no-manifest-edits-without-source-evidence rule); explicit deferral with rationale otherwise. Do not apply source or manifest edits the user did not ask for — default output is the triage report.
+6. **Build the severity × reachability table.** Write one `DVT-NNN` row per
+   package/advisory/scoped-version observation. Keep unknown-version and
+   unsupported-scope rows visible. Order known hits by severity and
+   reachability, without dropping the explicit unknown/remainder ledger.
 
-7. **Verify.** If manifests changed, re-run the extract or `llm-wiki lint --strict` / `llm-wiki ci-check` so dependency reconciliation confirms the new state; cite the passing command in the report.
+7. **Choose the smallest safe action per row.** Version bump when a fixed
+   version is compatible (edit the manifest, then regenerate the lockfile with
+   the package manager—never hand-edit lockfiles); mitigation when blocked;
+   removal proposal only with `dep-audit` source evidence; explicit deferral or
+   human confirmation otherwise. Do not apply source or manifest edits the user
+   did not ask for.
 
-8. **Report and hand off.** Write `reports/dep_vuln_triage_<YYYY-MM-DD>.md`: inventory counts per language, the triage table, the unknown-version and unresolved-import sections, the advisory source and lookup date, and follow-ups. Hand paths needing exploitability analysis to deeper security review (`attack-surfa ce` output, then `/security-review`); state explicitly that no vulnerability is claimed or excluded unless validated.
+8. **Verify.** If manifests changed, regenerate lockfiles with the owning
+   package manager, then rerun the exact extraction/validation needed for the
+   changed scope. Record commands and results; refresh the revision/dirty-state
+   basis and extract hash.
+
+9. **Report and hand off.** Write
+   `reports/dep_vuln_triage_<YYYY-MM-DD>.md` with:
+
+   - revision/dirty state, source root, exact extraction command/options,
+     extract SHA-256, helper/plugin status, and run time;
+   - declaration and scoped-version ledgers, including missing scopes and every
+     unknown;
+   - direct/transitive/build/test classification and reachability gaps;
+   - selected advisory source/dataset, trust decision, source/advisory/query
+     dates, exact queried tuples, and network/offline limitations;
+   - triage rows, “not found in queried data” rows, verification, and handoffs.
+
+   Hand exploitability questions through `attack-surface` and then
+   `/security-review`; do not claim a vulnerability is exploitable or excluded
+   unless separately validated.
 
 ## Context budget
 
-Query the saved extract JSON instead of re-running extract per package. Read source only for top-ranked advisory hits (the importing files from `used`), not for the whole dependency list. Advisory lookups are per unique package+version, batched where the API allows. On monorepos, triage by severity class first and record the long tail as explicit remainder rather than exhausting the session on low-severity hits.
+Query the saved extract instead of re-running it per package. Read every
+supported manifest/lock scope because omission changes coverage; then limit
+source-code reads to decisive import sites. Batch advisory requests only when
+the trusted source preserves each exact ecosystem/package/version result. On a
+large monorepo, prioritize by severity while retaining all unqueried packages
+as an explicit, scoped remainder—never turn budget exhaustion into a clean
+result.

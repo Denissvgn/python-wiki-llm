@@ -17,7 +17,11 @@ Supporting detail for [SKILL.md](SKILL.md).
 
 Consequences:
 
-- Guide prose is durable: `sync`, `bootstrap --force`, and hook-driven runs will not touch it. There is no generated section to preserve and no `_Auto-generated from ..._` marker to replace.
+- Guide prose is durable: ordinary `sync` and hook-driven runs will not touch
+  it. Bootstrap is an initialization workflow, not a guide-refresh mechanism;
+  do not rerun it over an existing wiki or substitute its destructive
+  `--overwrite` option for sync. There is no generated section to preserve and
+  no `_Auto-generated from ..._` marker to replace.
 - Discovery is automatic: lint validates guide pages and their links, MCP/API search and reads include them, and site/Obsidian exports mirror them. A guide page needs no registration step beyond existing at the path pattern.
 - Because nothing regenerates guides, stale guide prose is a real risk. Add a line to the guide's frontmatter-free header noting the wiki state it was written against (for example the flow pages it links), so `doc-review` passes can judge staleness.
 
@@ -26,7 +30,7 @@ Consequences:
 | Persona | Cares about | Tour skeleton |
 |---|---|---|
 | contributor | Where code lives, how to build/test, what to touch first | core modules → main flow → test/validation gate → first-task suggestion |
-| operator | How it starts, what it touches at runtime, what breaks | entrypoints → load-order/startup caveats → infrastructure pages → failure modes |
+| operator | How it starts, what it touches at runtime, what breaks | entrypoints → load-order/startup caveats → infrastructure snapshot orientation plus current raw-source confirmation → failure modes |
 | reviewer | What gates exist, where risk concentrates | validation flows → dependency/cycle notes → high fan-in entities → review checklist |
 | product/user reader | What the product does and which user-facing workflows matter | overview guide → primary workflow pages → generated reference for details |
 
@@ -76,7 +80,8 @@ persona_match * 100 + fan_in * 10 + boundary_count * 5 + behavior_prose_bonus * 
 ```
 
 - `persona_match`: entrypoint category fits the persona (operator ↔ `process`/service startup, contributor ↔ core `cli`/`api` development loop, reviewer ↔ validation and CI flows).
-- `fan_in`: from `dependencies.metrics.most_depended_on` or `dependency_neighborhood`.
+- `fan_in`: from `dependency_evidence.most_depended_on` in bootstrap output or
+  `dependency_neighborhood`.
 - `boundary_count`: boundary-effect rows on the flow page.
 - `behavior_prose_bonus`: the flow's `## Behavior` section has real prose, not a placeholder.
 
@@ -89,14 +94,14 @@ When personas or topics exceed the run budget, append rows to the wiki's `bootst
 ```markdown
 | ID | Persona | Intended flows | Reason deferred | Suggested context |
 |---|---|---|---|---|
-| WB-20260704-0101 | operator | startup, deploy | run budget (3 pages) | load-order.md + infrastructure/ |
+| WB-20260704-0101 | operator | startup, deploy | run budget (3 pages) | load-order.md + infrastructure snapshot + current raw source |
 ```
 
 ## Failure modes
 
 | Symptom | Cause | Response |
 |---|---|---|
-| Lint rejects guide links | Linked page name drifted or never existed | Link to live pages only; re-run sync first, then fix the link, never suppress. |
+| Lint rejects guide links | Linked page name drifted or never existed | Diagnose against a refreshed surface, fix the link, then run the final owning sync/re-anchor before strict lint; never suppress the finding. |
 | Sync rewrites the guide's index links oddly | Custom index sections collide with the generated `## Guides` section | Keep custom index content in trailing custom sections; let sync own `## Guides`. |
 | No flows exist to link | Wiki bootstrapped without deep extraction or flows are placeholders | Run `wiki-bootstrap`/`wiki-sync` first; a guide is narrative over structure, not a substitute for it. |
 | Guides drift stale over months | Nothing regenerates guide prose | State the written-against baseline in each guide; let `doc-review` passes flag drift; refresh guides when their linked flows change behavior. |

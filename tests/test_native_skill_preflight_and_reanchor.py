@@ -1,0 +1,576 @@
+"""Contract coverage for native preflight and semantic re-anchor workflows."""
+
+from __future__ import annotations
+
+import re
+import types
+from pathlib import Path
+
+import pytest
+
+from llm_wiki_cli import cli
+from llm_wiki_cli.commands import (
+    bootstrap_cmd,
+    generate_prompt_cmd,
+    knowledge_cmd,
+    lint_cmd,
+    sync_cmd,
+)
+from llm_wiki_cli.services import schema, skills
+from llm_wiki_cli.services.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
+from llm_wiki_cli.services.knowledge_governance import (
+    evaluate_review_event,
+    load_governance,
+)
+from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
+
+
+SKILLS_ROOT = skills.BUNDLED_SKILLS_ROOT
+
+
+def _manifest(skill_id: str) -> str:
+    return (SKILLS_ROOT / skill_id / "SKILL.md").read_text(encoding="utf-8")
+
+
+def _reference(skill_id: str) -> str:
+    return (SKILLS_ROOT / skill_id / "reference.md").read_text(encoding="utf-8")
+
+
+def _table_row(text: str, selector: str) -> str:
+    return next(line for line in text.splitlines() if line.startswith(selector))
+
+
+NATIVE_RESPONSE_FIXTURES = (
+    pytest.param(
+        {
+            "availability": "ready",
+            "reason": "all-projection-commitments-match",
+            "freshness_evaluated": True,
+            "freshness": "current",
+        },
+        "| `ready`, live `current` |",
+        "unchanged since",
+        id="ready-current",
+    ),
+    pytest.param(
+        {
+            "availability": "ready",
+            "reason": "all-projection-commitments-match",
+            "freshness_evaluated": True,
+            "freshness": "nonsemantic-source-change",
+        },
+        "| `ready`, live `nonsemantic-source-change` |",
+        "byte-change diagnostic",
+        id="ready-nonsemantic-change",
+    ),
+    pytest.param(
+        {
+            "availability": "ready",
+            "reason": "all-projection-commitments-match",
+            "freshness_evaluated": True,
+            "freshness": "unknown",
+        },
+        "| `ready`, live `source-changed`, `source-missing`, `basis-incompatible`, or `unknown` |",
+        "not an authoritative current claim",
+        id="ready-unknown",
+    ),
+    pytest.param(
+        {
+            "availability": "absent",
+            "reason": "knowledge-projection-not-present",
+            "freshness_evaluated": False,
+        },
+        "| `absent` (`knowledge-projection-not-present`) |",
+        "legacy fallback",
+        id="absent",
+    ),
+    pytest.param(
+        {
+            "availability": "degraded",
+            "reason": "policy-selected-surface-only-fallback-after-invalid",
+            "freshness_evaluated": False,
+        },
+        "| `degraded` after invalid state (`policy-selected-surface-only-fallback-after-invalid`) |",
+        "native knowledge unavailable",
+        id="degraded-invalid",
+    ),
+    pytest.param(
+        {
+            "availability": "unsupported",
+            "reason": "knowledge-schema-version-unsupported",
+            "freshness_evaluated": False,
+        },
+        "| `unsupported` (`knowledge-schema-version-unsupported`, `manifest-version-unsupported`, or `surface-schema-version-unsupported`) |",
+        "unsupported boundary",
+        id="unsupported",
+    ),
+    pytest.param(
+        {
+            "availability": "degraded",
+            "reason": "policy-selected-surface-only-fallback-after-mixed-snapshot",
+            "freshness_evaluated": False,
+        },
+        "| `degraded` after a mixed snapshot (`policy-selected-surface-only-fallback-after-mixed-snapshot`) |",
+        "inconsistent commit",
+        id="mixed-snapshot",
+    ),
+    pytest.param(
+        {
+            "availability": "ready",
+            "reason": "all-projection-commitments-match",
+            "freshness_evaluated": False,
+        },
+        "| `ready`, `freshness_evaluated: false` |",
+        "snapshot-only",
+        id="snapshot-only-ready",
+    ),
+)
+
+
+@pytest.mark.parametrize(
+    ("response", "row_selector", "required_text"),
+    NATIVE_RESPONSE_FIXTURES,
+)
+def test_normative_native_preflight_covers_response_fixture(
+    response: dict[str, object],
+    row_selector: str,
+    required_text: str,
+) -> None:
+    reference = _reference("wiki-reference")
+    row = _table_row(reference, row_selector)
+
+    assert response["availability"] in row
+    assert required_text in row
+
+
+def test_normative_native_preflight_defines_all_freshness_states_and_authority() -> None:
+    reference = _reference("wiki-reference")
+    section = reference[
+        reference.index("### Normative native preflight") :
+        reference.index("## Strict knowledge lint")
+    ]
+    normalized = " ".join(section.split())
+
+    for state in (
+        "current",
+        "nonsemantic-source-change",
+        "source-changed",
+        "source-missing",
+        "basis-incompatible",
+        "unknown",
+    ):
+        assert _table_row(section, f"| `{state}` |")
+
+    assert "not a scalar trust score" in normalized
+    assert "never reinterpret no native matches as an empty graph" in normalized
+    assert (
+        "`llm-wiki knowledge init` is an explicit governance-adoption" in normalized
+    )
+    assert "ordinary exporter views are snapshot-only" in normalized
+    assert "trusted, unsandboxed project-local Python" in normalized
+    assert "cannot authorize code execution" in normalized
+
+
+NATIVE_CONSUMING_SKILLS = (
+    "agent-docs",
+    "dep-audit",
+    "doc-review",
+    "onboarding-guide",
+    "usage-examples",
+    "user-docs-author",
+    "wiki-bootstrap",
+    "wiki-semantic-enhance",
+    "wiki-sync",
+)
+
+
+@pytest.mark.parametrize("skill_id", NATIVE_CONSUMING_SKILLS)
+def test_native_consuming_skill_has_self_contained_preflight(skill_id: str) -> None:
+    manifest = _manifest(skill_id)
+    normalized = " ".join(manifest.split())
+
+    for required in (
+        "availability",
+        "freshness_evaluated",
+        "nonsemantic-source-change",
+        "absent",
+        "degraded",
+        "unsupported",
+        "empty-native-graph",
+        "knowledge init",
+    ):
+        assert required in normalized, f"{skill_id} omits {required!r}"
+    assert "cannot authorize" in normalized
+
+
+MANAGED_SEMANTIC_WORKFLOWS = (
+    pytest.param("wiki-bootstrap", "**Edit semantic surfaces only**", id="bootstrap"),
+    pytest.param("wiki-sync", "**Append the semantic log line.**", id="sync"),
+    pytest.param(
+        "doc-review",
+        "**Apply follow-through under the selected contract.**",
+        id="doc-review",
+    ),
+    pytest.param(
+        "dep-audit",
+        "**Choose the smallest safe action.**",
+        id="dep-audit",
+    ),
+    pytest.param(
+        "usage-examples",
+        "**Attach under the mirrored asset path.**",
+        id="usage-examples",
+    ),
+    pytest.param(
+        "onboarding-guide",
+        "**Write one guide page per persona**",
+        id="onboarding-guide",
+    ),
+    pytest.param(
+        "user-docs-author",
+        "**Author semantic wiki prose only.**",
+        id="user-docs-author",
+    ),
+)
+
+
+@pytest.mark.parametrize(("skill_id", "semantic_marker"), MANAGED_SEMANTIC_WORKFLOWS)
+def test_managed_semantic_workflow_reanchors_before_strict_validation(
+    skill_id: str,
+    semantic_marker: str,
+) -> None:
+    manifest = _manifest(skill_id)
+    semantic_edit = manifest.index(semantic_marker)
+    sync_commands = [
+        match
+        for match in re.finditer(r"(?m)^\s*llm-wiki sync .*--jobs 1.*$", manifest)
+        if match.start() > semantic_edit
+    ]
+    assert sync_commands, f"{skill_id} has no owning sync after semantic editing"
+    final_sync = sync_commands[-1].start()
+    strict_lint = manifest.index("llm-wiki lint --strict", final_sync)
+    ci_check = manifest.index("llm-wiki ci-check", strict_lint)
+
+    assert semantic_edit < final_sync < strict_lint < ci_check
+    assert "re-anchor" in manifest[semantic_edit:]
+    assert any(
+        phrase in manifest
+        for phrase in (
+            "no-op",
+            "no-edit",
+            "no canonical Markdown change",
+            "no Markdown edit",
+            "no wiki change",
+        )
+    )
+
+
+def test_external_semantic_worker_delegates_reanchor_to_supervisor() -> None:
+    for skill_id in (
+        "agent-docs",
+        "doc-review",
+        "usage-examples",
+        "user-docs-author",
+        "wiki-bootstrap",
+        "wiki-semantic-enhance",
+        "wiki-sync",
+    ):
+        manifest = _manifest(skill_id)
+        assert "supervisor" in manifest
+        assert "refresh" in manifest or "re-anchor" in manifest
+
+    semantic = _manifest("wiki-semantic-enhance")
+    normalized = " ".join(semantic.split())
+    assert "The supervisor must accept the last semantic change" in normalized
+    assert "run the owning sync/re-anchor" in normalized
+
+
+def test_doc_review_splits_mutation_contract_before_any_sync_or_edit() -> None:
+    manifest = _manifest("doc-review")
+    reference = _reference("doc-review")
+    mode_split = manifest.index("**Enter one mode before mutation.**")
+    dry_run = manifest.index("llm-wiki sync --dry-run", mode_split)
+    applied_sync = manifest.index(
+        "apply the previewed deterministic `llm-wiki sync`", dry_run
+    )
+    final_sync = manifest.index(
+        "llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki",
+        applied_sync,
+    )
+
+    assert mode_split < dry_run < applied_sync < final_sync
+    external = manifest[
+        manifest.index("- **External `external_agent_docs`:**") :
+        manifest.index("2. **Collect review inputs.**")
+    ]
+    assert "llm-wiki sync" not in external
+    assert "only the packet-named review result" in external
+    for forbidden in (
+        "source",
+        "adopted input wiki",
+        "workspace wiki",
+        "generated artifacts",
+        "native ledgers",
+    ):
+        assert forbidden in external
+
+    assert "Managed versus external mutation contract" in reference
+    assert "Only the exact review-result path and ledger fields" in reference
+    assert "Original finding IDs are immutable" in reference
+
+
+def test_doc_review_maps_native_fact_classes_without_conflating_authority() -> None:
+    manifest = _manifest("doc-review")
+    reference = _reference("doc-review")
+    normalized_manifest = " ".join(manifest.split()).lower()
+    normalized_reference = " ".join(reference.split())
+
+    for category in (
+        "knowledge_projection",
+        "knowledge_schema",
+        "knowledge_snapshot",
+        "knowledge_evidence",
+        "knowledge_freshness",
+        "knowledge_governance",
+        "knowledge_review",
+        "knowledge_verification",
+    ):
+        assert category in reference
+    assert (
+        "source is authoritative for observed code structure and behavior"
+        in normalized_manifest
+    )
+    assert "trusted intake and explicit human decisions" in normalized_manifest
+    assert "source-changed" in reference
+    assert "not automatically false prose" in reference
+    assert "Agent review" in normalized_reference
+    assert (
+        "does not author or satisfy a native human section review"
+        in normalized_reference
+    )
+
+
+def test_doc_review_does_not_treat_infrastructure_snapshots_as_editable_notes() -> None:
+    manifest = " ".join(_manifest("doc-review").split())
+    reference = " ".join(_reference("doc-review").split())
+    shared = schema.build_schema_content("generic", "docs/llm_wiki")
+    edit_targets = shared[
+        shared.index("- Keep semantic edits surgical:") :
+        shared.index("- After the last canonical Markdown edit")
+    ]
+
+    assert "infrastructure/` pages are bootstrap snapshots" in manifest
+    assert "not a supported semantic surface" in manifest
+    assert "Do not edit generated infrastructure pages" in manifest
+    assert "arbitrary infrastructure `## Notes` are not a supported" in reference
+    assert "infrastructure pages in `{wiki_dir}/infrastructure/`" not in edit_targets
+    assert "Do not persist review findings in generated infrastructure pages" in shared
+
+
+def test_shared_agent_instructions_include_native_preflight_and_final_reanchor() -> None:
+    content = schema.build_schema_content("generic", "docs/llm_wiki")
+
+    assert "## Native knowledge preflight" in content
+    assert "ready` with live `current` means only unchanged since observation" in content
+    assert "ordinary exporter views" in content
+    assert "knowledge init` is opt-in governance adoption" in content
+    assert "trusted, unsandboxed project-local code" in content
+
+    changed_code = content[content.index("## When you change code") :]
+    semantic_edit = changed_code.index("Enrich new or generic affected pages")
+    final_reanchor = changed_code.index(
+        "After the last canonical Markdown edit", semantic_edit
+    )
+    quality_checks = changed_code.index("## Quality checks", final_reanchor)
+    assert semantic_edit < final_reanchor < quality_checks
+
+
+def test_generated_update_prompt_reanchors_after_semantic_pass_before_strict_lint() -> None:
+    prompt = generate_prompt_cmd._build_prompt(
+        "docs/llm_wiki",
+        ".",
+        change_type="bugfix",
+        diff_text="diff --git a/app.py b/app.py\n+def changed(): ...\n",
+    )
+    normalized = " ".join(prompt.split())
+    semantic = prompt.index("## Semantic Pass")
+    final_sync = prompt.index("llm-wiki sync --jobs 1", semantic)
+    strict_lint = prompt.index("llm-wiki lint --strict --jobs 1", final_sync)
+
+    assert semantic < final_sync < strict_lint
+    assert "Final owning sync/re-anchor completed after semantic edits" in normalized
+    assert "expired human section reviews" in normalized
+    assert "stale machine-verification receipts" in normalized
+
+
+def test_governed_semantic_edit_reanchors_and_preserves_valid_review(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    (tmp_path / "app.py").write_text(
+        "class User:\n"
+        '    """A documented user."""\n'
+        "    pass\n",
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+    wiki = tmp_path / "docs" / "llm_wiki"
+    bootstrap_cmd.run(
+        types.SimpleNamespace(
+            src_dir=".",
+            wiki_dir=str(wiki),
+            overwrite=False,
+            depth="full",
+            skip_workflows=True,
+        )
+    )
+    capsys.readouterr()
+    knowledge_cmd.run(
+        cli._build_parser().parse_args(
+            [
+                "knowledge",
+                "init",
+                "--wiki-dir",
+                str(wiki),
+                "--bundle-id",
+                "kb_native_skill_reanchor",
+            ]
+        )
+    )
+    capsys.readouterr()
+    governed_state = load_knowledge_state(wiki)
+    assert governed_state.knowledge is not None
+    governed_knowledge = governed_state.knowledge
+    pages = governed_knowledge.extensions[SECTION_OWNERSHIP_EXTENSION_KEY]["pages"]
+    user_sections = next(
+        page["sections"]
+        for page in pages
+        if page["page_locator"] == "llm-wiki://entities/User"
+    )
+    description = next(
+        section for section in user_sections if section["title"] == "Description"
+    )
+    governed_ledger = load_governance(wiki).ledger
+    user_uid = next(
+        uid
+        for uid, allocation in governed_ledger.concepts.items()
+        if allocation.locator == "llm-wiki://entities/User"
+    )
+    knowledge_cmd.run(
+        cli._build_parser().parse_args(
+            [
+                "knowledge",
+                "review",
+                "--wiki-dir",
+                str(wiki),
+                "--uid",
+                user_uid,
+                "--section",
+                description["locator"],
+                "--reviewer-kind",
+                "human",
+                "--reviewer-id",
+                "reviewer",
+                "--method",
+                "manual-review",
+                "--method-version",
+                "1",
+                "--authored-at",
+                "2026-07-27T12:00:00Z",
+            ]
+        )
+    )
+    capsys.readouterr()
+    reviewed_ledger = load_governance(wiki).ledger
+    review_event = next(iter(reviewed_ledger.review_events.values()))
+    assert (
+        evaluate_review_event(
+            review_event,
+            reviewed_ledger,
+            governed_knowledge,
+        ).reasons
+        == ()
+    )
+
+    module = wiki / "modules" / "app.md"
+    placeholder = "_Auto-generated from `app.py`._"
+    authored = "Coordinates the documented user model."
+    original = module.read_text(encoding="utf-8")
+    assert placeholder in original
+    module.write_text(original.replace(placeholder, authored), encoding="utf-8")
+
+    before = lint_cmd.build_report(wiki, ".", strict=True)
+    snapshot_issues = [
+        issue for issue in before.issues if issue.category == "knowledge_snapshot"
+    ]
+    assert not before.passed
+    assert snapshot_issues
+    assert "markdown-snapshot-mismatch" in snapshot_issues[0].message
+
+    sync_cmd.run(
+        types.SimpleNamespace(
+            src_dir=".",
+            wiki_dir=str(wiki),
+            jobs=1,
+            no_cache=True,
+        )
+    )
+    capsys.readouterr()
+
+    assert authored in module.read_text(encoding="utf-8")
+    after = lint_cmd.build_report(wiki, ".", strict=True)
+    assert after.passed, after.by_category()
+    reanchored = load_knowledge_state(wiki)
+    assert reanchored.status is KnowledgeLoadState.VALID
+    assert reanchored.knowledge is not None
+    assert (
+        evaluate_review_event(
+            review_event,
+            load_governance(wiki).ledger,
+            reanchored.knowledge,
+        ).reasons
+        == ()
+    )
+
+    entity = wiki / "entities" / "User.md"
+    entity_before = entity.read_text(encoding="utf-8")
+    changed_reviewed_section = "Explains the user identity boundary."
+    assert "A documented user." in entity_before
+    entity.write_text(
+        entity_before.replace("A documented user.", changed_reviewed_section),
+        encoding="utf-8",
+    )
+    pre_expiry = lint_cmd.build_report(wiki, ".", strict=True)
+    assert any(
+        issue.category == "knowledge_snapshot" for issue in pre_expiry.issues
+    )
+
+    sync_cmd.run(
+        types.SimpleNamespace(
+            src_dir=".",
+            wiki_dir=str(wiki),
+            jobs=1,
+            no_cache=True,
+        )
+    )
+    capsys.readouterr()
+    expired_state = load_knowledge_state(wiki)
+    assert expired_state.status is KnowledgeLoadState.VALID
+    assert expired_state.knowledge is not None
+    assert changed_reviewed_section in entity.read_text(encoding="utf-8")
+    assert evaluate_review_event(
+        review_event,
+        load_governance(wiki).ledger,
+        expired_state.knowledge,
+    ).reasons == ("scope-changed",)
+
+    expired_lint = lint_cmd.build_report(wiki, ".", strict=True)
+    expired_reviews = [
+        issue
+        for issue in expired_lint.issues
+        if issue.category == "knowledge_review"
+    ]
+    assert expired_reviews
+    assert "[reason=scope-changed]" in expired_reviews[0].message

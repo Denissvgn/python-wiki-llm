@@ -15,13 +15,19 @@ Edited before any rank calculation because they define the reader's first experi
 3. `api-contracts.md`: review production-operation filtering, declared wire fields, unknowns, and static/OpenAPI diagnostics; add `## Notes` only for source-backed contract caveats.
 4. `dependencies.md`: fill `## Notes` with intentional cycles, dynamic imports, package-boundary caveats, and dependency-graph interpretation.
 5. `load-order.md`: fill `## Notes` with startup-order caveats and cycle rationale when generated.
-6. High-signal infrastructure/runtime pages: edit prose only when the page is a deployment or operational entry point and the source context is clear.
+6. Infrastructure/runtime pages are bootstrap snapshots for orientation, not
+   agent-owned semantic surfaces. Do not add arbitrary `## Notes` or edit their
+   generated prose. For assurance conclusions, inspect current raw source or
+   run a fresh dedicated extraction and write redacted findings outside the
+   canonical wiki.
 
 ### P1: module and entity pages
 
 Rank pages with deterministic graph data:
 
-1. Start from `dependencies.metrics.most_depended_on` when available — it is already sorted by descending fan-in with a stable path tie-break.
+1. Start from `dependency_evidence.most_depended_on` in the bootstrap JSON
+   summary when available — it is already sorted by descending fan-in with a
+   stable path tie-break.
 2. Working through MCP/API instead of the raw bootstrap summary, call `dependency_neighborhood(<source path>)` and use the returned `metrics`.
 3. Score modules as `fan_in * 100 + cycle_bonus * 25 + fan_out * 5 + entrypoint_bonus * 20`, where `cycle_bonus` is 1 when the module participates in a cycle and `entrypoint_bonus` is 1 when a flow page or entry point maps to that module.
 4. Rank entity pages by their containing module score first; break ties by concrete relationship evidence (callers/callees, references, bases/subclasses), then canonical path.
@@ -59,7 +65,7 @@ Last validation: `llm-wiki lint --strict --profile --src-dir . --wiki-dir docs/l
 
 | ID | Status | Priority | Page | Source | Rank | Reason deferred | Acceptance |
 |---|---|---|---|---|---:|---|---|
-| WB-20260704-0001 | open | P1 | `modules/repo.md` | `src/repo.py` | 180 | Description is placeholder; needs repository role summary. | Replace `## Description`, preserve generated dependency map, rerun lint. |
+| WB-20260704-0001 | open | P1 | `modules/repo.md` | `src/repo.py` | 180 | Description is placeholder; needs repository role summary. | Replace `## Description`, preserve generated dependency map, run the owning sync, then rerun lint. |
 | WB-20260704-0002 | open | P2 | `entities/UserDTO.md` | `src/models.py` | 25 | Leaf DTO; safe to defer. | Add one-sentence responsibility if source context is clear. |
 
 ## Item Details
@@ -73,7 +79,8 @@ Last validation: `llm-wiki lint --strict --profile --src-dir . --wiki-dir docs/l
 - Placeholder evidence: ``_Auto-generated from `src/repo.py`._``
 - Why deferred: semantic budget exhausted before repository-adapter pages.
 - Suggested context: `dependency_neighborhood("src/repo.py")`, `pages_for_symbol("Repository")`, and the source file.
-- Completion check: preserve generated blocks, run `lint --strict`, then change status to `done` with the date.
+- Completion check: preserve generated blocks, run the owning sync/re-anchor,
+  then run `lint --strict` and change status to `done` with the date.
 ```
 
 Required fields for every open item:
@@ -98,6 +105,14 @@ use the owning deterministic sync workflow to refresh the projection after
 semantic Markdown changes and before final strict validation. In an
 `external_agent_docs` run, return only the authorized Markdown changes; the
 supervisor refreshes the trio and re-anchors generated ownership.
+
+The final managed refresh is conditional on an actual canonical Markdown
+change; generated-only bootstrap output does not need a second no-op authoring
+cycle. The refresh preserves supported semantic sections while committing the
+new Markdown tree. Its validation result may expose expired human section
+reviews or stale machine-verification receipts. Preserve and report their
+existing reasons; never create replacement review events or receipts as part
+of bootstrap.
 
 ## Validation expectations
 
