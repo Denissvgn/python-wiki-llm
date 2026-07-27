@@ -7,6 +7,10 @@ Supporting detail for [SKILL.md](SKILL.md).
 - **Branch/diff workflow:** start from `git diff`, PR review comments, or patch review findings. Map each finding to changed source/wiki paths before editing.
 - **Report-file workflow:** start from review JSON saved by `llm-wiki review` or another review pass. Preserve finding IDs, severity, path, line, and recommendation text.
 - **Lint/sync workflow:** start from `llm-wiki lint --strict --profile` or `llm-wiki sync` output when the problem is stale or structurally invalid wiki content.
+- **External documentation review:** start from the explicit review packet,
+  worker result, deterministic evidence paths, semantic-readiness state, and
+  normalized finding ledger. Preserve worker and reviewer packet/result hashes
+  separately, even when one agent performs both roles.
 
 ## Triage statuses
 
@@ -51,6 +55,16 @@ Checker output from these classes can feed the `user-docs-author` adjustment loo
 
 Always include an "Unresolved finding" section when anything remains open.
 Mention duplicate finding IDs and false-positive rationale explicitly.
+
+For `external_agent_docs`, also keep severity, status, evidence hashes,
+originating stage, iteration count, terminal rationale, and returned-to-stage
+target. Low/medium findings close only as fixed, duplicate, false positive, or
+evidence-backed deferred. A high-severity finding remains unresolved when it is
+deferred or superseded and closes only after an affirmative, evidence-backed
+resolution. Three repeated unresolved high-severity iterations block the run;
+the reviewer cannot self-authorize `publish_ready`. The supervisor reconciles
+the review result against source/input hashes, generated ownership, actual
+diffs, and deterministic checks.
 
 ## Usage examples handoff
 

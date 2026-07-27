@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import json
 import re
 import shlex
@@ -24,6 +25,12 @@ from ..services.api_contracts import (
     build_api_contracts,
     render_api_contracts_markdown,
     render_flow_api_contract_section,
+)
+from ..services.bootstrap_service import (
+    BootstrapContractError,
+    BootstrapExtractionError,
+    BootstrapRequest,
+    BootstrapResult,
 )
 from ..services.contracts import (
     BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
@@ -3276,6 +3283,7 @@ class _BootstrapRunOptions:
     source_adapter: bool
     helper_cache_dir: str | None
     include_tests: Iterable[str] | None
+    trust_source_plugins: bool
     progress_stream: TextIO
 
 
@@ -3289,6 +3297,7 @@ class _BootstrapRunState:
     warnings: list[str] = field(default_factory=list)
     unsupported_sources: dict[str, dict[str, object]] = field(default_factory=dict)
     written_structural_page_paths: set[str] = field(default_factory=set)
+    summary: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -3333,6 +3342,7 @@ class _DependencyResult:
     architecture_entries: list[dict]
     created: int
     summary: dict
+    evidence: dict
 
 
 @dataclass(frozen=True)
@@ -3403,7 +3413,54 @@ def _bootstrap_run_options_from_args(args) -> _BootstrapRunOptions:
         source_adapter=getattr(args, "source_adapter", False),
         helper_cache_dir=getattr(args, "helper_cache_dir", None),
         include_tests=getattr(args, "include_tests", None),
+        trust_source_plugins=True,
         progress_stream=sys.stderr if json_mode else sys.stdout,
+    )
+
+
+def _bootstrap_run_options_from_request(
+    request: BootstrapRequest,
+    *,
+    progress_stream: TextIO,
+) -> _BootstrapRunOptions:
+    source_root = Path(request.source_root).expanduser().resolve()
+    if not source_root.is_dir():
+        raise BootstrapContractError(
+            f"Bootstrap source root does not exist: {source_root}"
+        )
+    wiki_root = Path(request.wiki_root).expanduser().resolve()
+    if (
+        wiki_root == source_root
+        or source_root in wiki_root.parents
+        or wiki_root in source_root.parents
+    ):
+        raise BootstrapContractError(
+            "Bootstrap wiki output must not overlap the read-only source root."
+        )
+    if request.depth not in {"shallow", "full"}:
+        raise BootstrapContractError("Bootstrap depth must be shallow or full.")
+    api_contracts = bool(request.api_contracts or request.openapi_file)
+    depth = "full" if api_contracts else request.depth
+    return _BootstrapRunOptions(
+        src_dir=str(source_root),
+        wiki_dir=wiki_root,
+        src_dir_for_scan=str(source_root),
+        depth=depth,
+        deep=depth == "full",
+        skip_workflows=request.skip_workflows,
+        skip_flows=request.skip_flows,
+        skip_data_flow=request.skip_data_flow,
+        skip_dependencies=request.skip_dependencies,
+        api_contracts=api_contracts,
+        openapi_file=request.openapi_file,
+        dependency_graph_detail=request.dependency_graph_detail,
+        overwrite=request.overwrite,
+        json_mode=False,
+        source_adapter=request.source_adapter,
+        helper_cache_dir=request.helper_cache_dir,
+        include_tests=request.include_tests,
+        trust_source_plugins=request.trust_source_plugins,
+        progress_stream=progress_stream,
     )
 
 
@@ -3428,6 +3485,17 @@ def _record_bootstrap_write(
 ) -> None:
     target = state.updated_files if existed else state.created_files
     target.append(_path_text(path))
+
+
+def _bootstrap_plugin_roots(
+    state: _BootstrapRunState,
+) -> tuple[str | Path, str | Path | None]:
+    if state.options.trust_source_plugins:
+        return state.options.src_dir_for_scan, Path.cwd()
+    # A new workspace wiki contains no installed plugins.  Pointing plugin
+    # discovery there keeps the deterministic service path inert without
+    # changing the managed bootstrap default.
+    return state.options.wiki_dir, None
 
 
 def _write_bootstrap_file(state: _BootstrapRunState, path: Path, text: str) -> None:
@@ -3468,10 +3536,15 @@ def _extract_bootstrap_inventory(state: _BootstrapRunState):
         source_snapshot=state.source_snapshot,
         helper_cache_dir=options.helper_cache_dir,
         include_tests=options.include_tests,
+        include_plugins=options.trust_source_plugins,
     )
     if inventory_result.failed:
         print_inventory_failures(inventory_result, file=options.progress_stream)
-        sys.exit(1)
+        details = "; ".join(
+            f"{status.language}: {status.message or 'extraction failed'}"
+            for status in inventory_result.failed
+        )
+        raise BootstrapExtractionError(details or "Source extraction failed.")
     state.source_snapshot = inventory_result.source_snapshot or state.source_snapshot
     state.unsupported_sources = unsupported_source_summary(
         state.source_snapshot, supported_languages=inventory_result.statuses
@@ -3498,36 +3571,32 @@ def _finish_if_empty_bootstrap_inventory(
         state,
         "No supported source files with documentable inventory found. Nothing to bootstrap.",
     )
+    state.summary = _with_unsupported_sources(
+        {
+            "schema_version": BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
+            "src_dir": options.src_dir_for_scan,
+            "generated_wiki_path": _path_text(options.wiki_dir),
+            "depth": options.depth,
+            "source_files": len(state.source_snapshot.all_source_paths),
+            "classes": 0,
+            "functions": 0,
+            "docker_files": 0,
+            "workflows": 0,
+            "flows": 0,
+            "dependencies": {"generated": False},
+            "cross_references": 0,
+            "created_files": state.created_files,
+            "updated_files": state.updated_files,
+            "skipped_files": state.skipped_files,
+            "manifest_path": None,
+            "knowledge_path": None,
+            "knowledge_status": None,
+            "knowledge_schema_version": KNOWLEDGE_SCHEMA_VERSION,
+        },
+        state.unsupported_sources,
+    )
     if options.json_mode:
-        print(
-            json.dumps(
-                _with_unsupported_sources(
-                    {
-                        "schema_version": BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
-                        "src_dir": options.src_dir_for_scan,
-                        "generated_wiki_path": _path_text(options.wiki_dir),
-                        "depth": options.depth,
-                        "source_files": len(state.source_snapshot.all_source_paths),
-                        "classes": 0,
-                        "functions": 0,
-                        "docker_files": 0,
-                        "workflows": 0,
-                        "flows": 0,
-                        "dependencies": {"generated": False},
-                        "cross_references": 0,
-                        "created_files": state.created_files,
-                        "updated_files": state.updated_files,
-                        "skipped_files": state.skipped_files,
-                        "manifest_path": None,
-                        "knowledge_path": None,
-                        "knowledge_status": None,
-                        "knowledge_schema_version": KNOWLEDGE_SCHEMA_VERSION,
-                    },
-                    state.unsupported_sources,
-                ),
-                indent=2,
-            )
-        )
+        print(json.dumps(state.summary, indent=2))
     return True
 
 
@@ -3611,10 +3680,11 @@ def _write_bootstrap_entity_pages(
         )
         diagram_style = None
         if relationship_summary is not None:
+            plugin_root, plugin_fallback = _bootstrap_plugin_roots(state)
             diagram_style = _generated_diagram_style(
                 "relationships",
-                root=state.options.src_dir_for_scan,
-                fallback_root=Path.cwd(),
+                root=plugin_root,
+                fallback_root=plugin_fallback,
                 entity=relationship_summary.get("name"),
                 file=relationship_summary.get("file"),
             )
@@ -3660,6 +3730,7 @@ def _write_bootstrap_module_page(
         _emit_bootstrap(state, f"  SKIP module (exists): {mod_page_name}")
         return False
 
+    plugin_root, plugin_fallback = _bootstrap_plugin_roots(state)
     _write_bootstrap_file(
         state,
         module_path,
@@ -3672,8 +3743,8 @@ def _write_bootstrap_module_page(
             entity_occurrence_page_map=entity_occurrence_page_map,
             diagram_style=_generated_diagram_style(
                 "module_dependency",
-                root=state.options.src_dir_for_scan,
-                fallback_root=Path.cwd(),
+                root=plugin_root,
+                fallback_root=plugin_fallback,
                 file=filepath,
             )
             if module_dependency_map is not None
@@ -3880,6 +3951,8 @@ def _write_bootstrap_flow_pages(
         console_scripts=console_scripts,
         root=state.options.src_dir_for_scan,
         fallback_root=Path.cwd(),
+        include_plugins=state.options.trust_source_plugins,
+        include_provenance=True,
     )
     _emit_bootstrap_warnings(state, entrypoint_result.warnings)
     entry_points = attach_routes_to_entry_points(
@@ -3922,14 +3995,15 @@ def _write_bootstrap_flow_pages(
             state.skipped_files.append(_path_text(flow_path))
             _emit_bootstrap(state, f"  SKIP flow (exists): {entry_point['id']}")
         else:
+            plugin_root, plugin_fallback = _bootstrap_plugin_roots(state)
             flow_markdown = _generate_flow_md(
                 flow,
                 module_page_map,
                 data_flow=data_flow,
                 diagram_style=_generated_diagram_style(
                     "data_flow",
-                    root=state.options.src_dir_for_scan,
-                    fallback_root=Path.cwd(),
+                    root=plugin_root,
+                    fallback_root=plugin_fallback,
                     flow_id=entry_point.get("id"),
                     category=entry_point.get("category"),
                 )
@@ -3956,6 +4030,29 @@ def _write_bootstrap_flow_pages(
             "entry": entry_point["symbol"],
             "file": entry_point.get("file"),
             "label": entry_point.get("label"),
+            "detector": entry_point.get("detector", "unknown"),
+            "language": (
+                inventory.get(entry_point.get("file"), {}).get("language") or "unknown"
+            ),
+            "evidence": {
+                "flow": {
+                    "step_count": len(flow.get("steps", [])),
+                    "truncated": bool(flow.get("truncated")),
+                    "modules_touched": list(flow.get("modules_touched", [])),
+                },
+                "data_flow": (
+                    {
+                        "generated": True,
+                        "step_count": len(data_flow.get("steps", [])),
+                        "transfer_count": len(data_flow.get("transfers", [])),
+                        "truncated": bool(data_flow.get("truncated")),
+                        "boundary_effects": list(data_flow.get("boundaries", [])),
+                        "gaps": list(data_flow.get("gaps", [])),
+                    }
+                    if data_flow is not None
+                    else None
+                ),
+            },
         }
         if entry_point.get("routes"):
             flow_entry["routes"] = entry_point["routes"]
@@ -4079,7 +4176,7 @@ def _write_bootstrap_dependency_pages(
     analysis: dict | None = None,
 ) -> _DependencyResult:
     if not state.options.deep or state.options.skip_dependencies:
-        return _DependencyResult([], 0, {"generated": False})
+        return _DependencyResult([], 0, {"generated": False}, {})
 
     _emit_bootstrap(state, "Generating architecture pages...", flush=True)
     analysis = analysis or analyze_dependencies(
@@ -4097,7 +4194,9 @@ def _write_bootstrap_dependency_pages(
             [],
             0,
             {"generated": False, "pages_created": 0, **_dependency_counts(analysis)},
+            analysis.get("metrics", {}),
         )
+    plugin_root, plugin_fallback = _bootstrap_plugin_roots(state)
     pages = (
         (
             "dependencies",
@@ -4108,8 +4207,8 @@ def _write_bootstrap_dependency_pages(
                 detail=state.options.dependency_graph_detail,
                 diagram_style=_generated_diagram_style(
                     "dependencies",
-                    root=state.options.src_dir_for_scan,
-                    fallback_root=Path.cwd(),
+                    root=plugin_root,
+                    fallback_root=plugin_fallback,
                     detail=state.options.dependency_graph_detail,
                 ),
             ),
@@ -4142,7 +4241,12 @@ def _write_bootstrap_dependency_pages(
         "pages_created": created,
         **_dependency_counts(analysis),
     }
-    return _DependencyResult(architecture_entries, created, summary)
+    return _DependencyResult(
+        architecture_entries,
+        created,
+        summary,
+        analysis.get("metrics", {}),
+    )
 
 
 def _write_bootstrap_index(
@@ -4400,10 +4504,7 @@ def _emit_bootstrap_json_summary(
     api_contract_result: _ApiContractResult,
     cross_reference_count: int,
     artifacts: KnowledgeCommitResult,
-) -> None:
-    if not state.options.json_mode:
-        return
-
+) -> dict[str, Any]:
     summary = _with_unsupported_sources(
         {
             "schema_version": BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
@@ -4429,8 +4530,10 @@ def _emit_bootstrap_json_summary(
             ),
             "workflows": len(workflow_result.entries),
             "flows": len(flow_result.entries),
+            "flow_evidence": flow_result.entries,
             "data_flows": flow_result.data_flow_summary,
             "dependencies": dependency_result.summary,
+            "dependency_evidence": dependency_result.evidence,
             "api_contracts": {
                 "generated": api_contract_result.present,
                 "source": (api_contract_result.contracts or {}).get("source"),
@@ -4451,7 +4554,10 @@ def _emit_bootstrap_json_summary(
     )
     if state.warnings:
         summary["warnings"] = state.warnings
-    print(json.dumps(summary, indent=2))
+    state.summary = summary
+    if state.options.json_mode:
+        print(json.dumps(summary, indent=2))
+    return summary
 
 
 def _generate_bootstrap_content(
@@ -4523,7 +4629,7 @@ def _finalize_bootstrap(
     inventory_result: InventoryResult,
     page_maps: _BootstrapPageMaps,
     result: _BootstrapGenerationResult,
-) -> None:
+) -> BootstrapResult:
     inventory = inventory_result.inventory
     _write_bootstrap_index(
         state,
@@ -4574,10 +4680,22 @@ def _finalize_bootstrap(
         result.cross_reference_count,
         artifacts,
     )
+    return _bootstrap_result(state)
 
 
-def run(args):
-    options = _bootstrap_run_options_from_args(args)
+def _bootstrap_result(state: _BootstrapRunState) -> BootstrapResult:
+    if state.summary is None:
+        raise BootstrapContractError("Bootstrap completed without a summary payload.")
+    return BootstrapResult(
+        summary=dict(state.summary),
+        created_files=tuple(state.created_files),
+        updated_files=tuple(state.updated_files),
+        skipped_files=tuple(state.skipped_files),
+        warnings=tuple(state.warnings),
+    )
+
+
+def _execute_bootstrap_options(options: _BootstrapRunOptions) -> BootstrapResult:
     state = _BootstrapRunState(options)
     _start_bootstrap(state)
 
@@ -4586,15 +4704,37 @@ def run(args):
     if not state.options.openapi_file and _finish_if_empty_bootstrap_inventory(
         state, inventory
     ):
-        return
+        return _bootstrap_result(state)
 
     page_maps = _prepare_bootstrap_page_maps(inventory)
     try:
         result = _generate_bootstrap_content(state, inventory, page_maps)
     except ApiContractError as exc:
-        print(f"Error: {exc}", file=state.options.progress_stream)
-        sys.exit(2)
-    _finalize_bootstrap(state, inventory_result, page_maps, result)
+        raise BootstrapContractError(str(exc)) from exc
+    return _finalize_bootstrap(state, inventory_result, page_maps, result)
+
+
+def execute_bootstrap(
+    request: BootstrapRequest,
+    *,
+    progress_stream: TextIO | None = None,
+) -> BootstrapResult:
+    """Execute deterministic bootstrap without argparse, printing, or exits."""
+
+    stream = progress_stream if progress_stream is not None else io.StringIO()
+    options = _bootstrap_run_options_from_request(request, progress_stream=stream)
+    return _execute_bootstrap_options(options)
+
+
+def run(args):
+    options = _bootstrap_run_options_from_args(args)
+    try:
+        _execute_bootstrap_options(options)
+    except BootstrapExtractionError:
+        raise SystemExit(1)
+    except BootstrapContractError as exc:
+        print(f"Error: {exc}", file=options.progress_stream)
+        raise SystemExit(2) from exc
 
 
 def _update_agent_constraints(wiki_dir: str, *, file=None) -> None:

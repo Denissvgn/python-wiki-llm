@@ -607,6 +607,7 @@ def _collect_lint_inputs(
     include_tests: Iterable[str] | None,
     job_request: ExtractionJobRequest | None,
     plan_reporter: Callable[[ExtractionJobPlan], None] | None,
+    include_plugins: bool,
 ) -> _LintInputs | None:
     normalized_include_tests = normalize_include_tests(include_tests)
     with _profile_phase(profiler, "inventory"):
@@ -624,6 +625,7 @@ def _collect_lint_inputs(
             include_tests=normalized_include_tests,
             job_request=job_request,
             plan_reporter=plan_reporter,
+            include_plugins=include_plugins,
         )
         report.extraction_job_plan = inventory_result.extraction_job_plan
         if cache_options is not None and cache_options.stats_enabled:
@@ -1083,6 +1085,8 @@ def _check_flow_coverage(
     wiki_path: Path,
     deep_inventory: dict,
     src_dir: str,
+    *,
+    include_plugins: bool = True,
 ) -> None:
     """Flag user-flow pages whose entry point no longer exists in the code.
 
@@ -1100,6 +1104,7 @@ def _check_flow_coverage(
             console_scripts=read_console_scripts(src_dir),
             root=src_dir,
             fallback_root=Path.cwd(),
+            include_plugins=include_plugins,
         )
     }
     for name in sorted(documented_flows - detected_flows):
@@ -1116,6 +1121,8 @@ def _check_data_flow_diagnostics(
     wiki_path: Path,
     deep_inventory: dict,
     src_dir: str,
+    *,
+    include_plugins: bool = True,
 ) -> None:
     documented_flows = _collect_documented_flows(wiki_path)
     if not documented_flows:
@@ -1127,6 +1134,7 @@ def _check_data_flow_diagnostics(
         console_scripts=read_console_scripts(src_dir),
         root=src_dir,
         fallback_root=Path.cwd(),
+        include_plugins=include_plugins,
     ):
         if entry_point["id"] not in documented_flows:
             continue
@@ -1151,12 +1159,15 @@ def _check_javascript_flow_diagnostics(
     report: LintReport,
     deep_inventory: dict,
     src_dir: str,
+    *,
+    include_plugins: bool = True,
 ) -> None:
     entry_points = get_entry_points(
         deep_inventory,
         console_scripts=read_console_scripts(src_dir),
         root=src_dir,
         fallback_root=Path.cwd(),
+        include_plugins=include_plugins,
     )
     for limitation in javascript_flow_limitations(deep_inventory, entry_points):
         _diagnose(
@@ -1742,6 +1753,7 @@ def _run_report_checks(
     profiler: _LintProfiler | None,
     inputs: _LintInputs,
     media_size_warn_bytes: int,
+    include_plugins: bool,
 ) -> None:
     with _profile_phase(profiler, "unsupported_sources"):
         _check_unsupported_source_diagnostics(report, inputs.unsupported_sources)
@@ -1766,11 +1778,28 @@ def _run_report_checks(
             report, wiki_path, inputs.deep_inventory, inputs.page_index
         )
     with _profile_phase(profiler, "flows"):
-        _check_flow_coverage(report, wiki_path, inputs.deep_inventory, src_dir)
+        _check_flow_coverage(
+            report,
+            wiki_path,
+            inputs.deep_inventory,
+            src_dir,
+            include_plugins=include_plugins,
+        )
     with _profile_phase(profiler, "data_flow"):
-        _check_data_flow_diagnostics(report, wiki_path, inputs.deep_inventory, src_dir)
+        _check_data_flow_diagnostics(
+            report,
+            wiki_path,
+            inputs.deep_inventory,
+            src_dir,
+            include_plugins=include_plugins,
+        )
     with _profile_phase(profiler, "javascript_flow"):
-        _check_javascript_flow_diagnostics(report, inputs.deep_inventory, src_dir)
+        _check_javascript_flow_diagnostics(
+            report,
+            inputs.deep_inventory,
+            src_dir,
+            include_plugins=include_plugins,
+        )
     with _profile_phase(profiler, "dependencies"):
         _check_dependency_coverage(
             report,
@@ -1831,13 +1860,14 @@ def _run_report_checks(
                 ),
             )
     with _profile_phase(profiler, "plugins"):
-        _run_plugin_lint_rules(
-            report,
-            wiki_path,
-            src_dir,
-            inputs.deep_inventory,
-            inputs.page_index.pages,
-        )
+        if include_plugins:
+            _run_plugin_lint_rules(
+                report,
+                wiki_path,
+                src_dir,
+                inputs.deep_inventory,
+                inputs.page_index.pages,
+            )
     with _profile_phase(profiler, "team"):
         _check_team_issues(report, wiki_path, src_dir, inputs)
 
@@ -1855,6 +1885,7 @@ def build_report(
     media_size_warn_bytes: int = wiki_media.DEFAULT_MEDIA_SIZE_WARN_BYTES,
     job_request: ExtractionJobRequest | None = None,
     plan_reporter: Callable[[ExtractionJobPlan], None] | None = None,
+    include_plugins: bool = True,
 ) -> LintReport:
     """Build a structured lint report without rendering or exiting."""
     wiki_path = Path(wiki_dir)
@@ -1878,6 +1909,7 @@ def build_report(
         include_tests,
         job_request,
         plan_reporter,
+        include_plugins,
     )
     if inputs is None:
         return report
@@ -1889,6 +1921,7 @@ def build_report(
         profiler,
         inputs,
         media_size_warn_bytes,
+        include_plugins,
     )
     return report
 

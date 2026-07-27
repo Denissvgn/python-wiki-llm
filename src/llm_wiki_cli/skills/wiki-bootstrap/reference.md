@@ -88,6 +88,17 @@ Required fields for every open item:
 
 When closing an item, keep the row and change `Status` to `done`; do not delete history. Add a short note in the item detail with the completion date and the validation command.
 
+## Generated native artifact ownership
+
+The current writer emits manifest v5 with
+`.llm-wiki-manifest.json`, `.llm-wiki-surface.json`, and
+`.llm-wiki-knowledge.json` as one CLI-owned generated projection. Never add
+those paths to the semantic edit budget or repair one by hand. In managed mode,
+use the owning deterministic sync workflow to refresh the projection after
+semantic Markdown changes and before final strict validation. In an
+`external_agent_docs` run, return only the authorized Markdown changes; the
+supervisor refreshes the trio and re-anchors generated ownership.
+
 ## Validation expectations
 
 A successful run has:
@@ -114,5 +125,10 @@ A successful run has:
 ## Related workflows
 
 - Incremental post-change refreshes after the first manifest exists belong to the wiki-sync skill, not a re-bootstrap.
+- An external documentation workspace uses this workflow only to materialize
+  the deterministic `bootstrap-source` baseline. Its separate, resumable
+  semantic phase belongs to `wiki-semantic-enhance`, which consumes the same P0
+  definitions and P1 ranking source from this reference and writes readiness
+  evidence inside the workspace. It never commits the source repository.
 - Dependency-warning remediation belongs to the dep-audit workflow; this skill may document obvious intentional cycles in `## Notes` but should not chase every warning.
 - Security attack-path reasoning belongs to the attack-surface workflow; static-site export/publishing belongs to the publish-docs workflow.

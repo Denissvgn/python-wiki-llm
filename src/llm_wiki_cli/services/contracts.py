@@ -36,6 +36,79 @@ BOOTSTRAP_SUMMARY_SCHEMA_VERSION = "llm-wiki-bootstrap-summary/v1"
 KNOWLEDGE_SCHEMA_VERSION = "llm-wiki-knowledge/v1"
 KNOWLEDGE_SCHEMA_FILENAME = "llm-wiki-knowledge-v1.schema.json"
 BOOTSTRAP_SKIP_DATA_FLOW_FLAG = "--skip-data-flow"
+DOCUMENTATION_RUN_SCHEMA_VERSION = "llm-wiki-documentation-run/v1"
+DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION = "llm-wiki-documentation-agent-packet/v1"
+DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION = "llm-wiki-documentation-agent-result/v1"
+DOCUMENTATION_WORKLIST_SCHEMA_VERSION = "llm-wiki-documentation-worklist/v1"
+DOCUMENTATION_SEMANTIC_READINESS_SCHEMA_VERSION = (
+    "llm-wiki-documentation-semantic-readiness/v1"
+)
+DOCUMENTATION_REVIEW_LEDGER_SCHEMA_VERSION = "llm-wiki-documentation-review-ledger/v1"
+DOCUMENTATION_VERIFICATION_SCHEMA_VERSION = "llm-wiki-documentation-verification/v1"
+DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION = "llm-wiki-documentation-final-report/v1"
+DOCUMENTATION_MODEL_ROUTING_SCHEMA_VERSION = "llm-wiki-documentation-model-routing/v1"
+DOCUMENTATION_MODEL_SELECTION_SCHEMA_VERSION = (
+    "llm-wiki-documentation-model-selection/v1"
+)
+P0_FLOW_CENSUS_SCHEMA_VERSION = "llm-wiki-p0-flow-census/v1"
+P0_CALIBRATION_SHADOW_SCHEMA_VERSION = "llm-wiki-p0-calibration-shadow/v1"
+P0_CALIBRATION_PREFLIGHT_SCHEMA_VERSION = "llm-wiki-p0-calibration-preflight/v1"
+P0_CALIBRATION_VERDICT_SCHEMA_VERSION = "llm-wiki-p0-calibration-verdict/v1"
+P0_CALIBRATION_RUN_SCHEMA_VERSION = "llm-wiki-p0-calibration-run/v1"
+P0_CALIBRATION_EXECUTION_MANIFEST_SCHEMA_VERSION = (
+    "llm-wiki-p0-calibration-execution-manifest/v1"
+)
+P0_CALIBRATION_CONTROL_RECORD_SCHEMA_VERSION = (
+    "llm-wiki-p0-calibration-control-record/v1"
+)
+P0_CALIBRATION_RUNTIME_BINDINGS_SCHEMA_VERSION = (
+    "llm-wiki-p0-calibration-runtime-bindings/v1"
+)
+P0_CALIBRATION_ADMISSION_SCHEMA_VERSION = "llm-wiki-p0-calibration-admission/v1"
+P0_CALIBRATION_EVIDENCE_BUNDLE_SCHEMA_VERSION = (
+    "llm-wiki-p0-calibration-evidence-bundle/v1"
+)
+P0_CALIBRATION_AUTHORITY_GRANT_SCHEMA_VERSION = (
+    "llm-wiki-p0-calibration-authority-grant/v1"
+)
+P0_CALIBRATION_ISOLATION_ATTESTATION_SCHEMA_VERSION = (
+    "llm-wiki-p0-calibration-isolation-attestation/v1"
+)
+P0_CALIBRATION_ROLE_CAPABILITY_MATRIX_SCHEMA_VERSION = (
+    "llm-wiki-p0-calibration-role-capability-matrix/v1"
+)
+P0_CALIBRATION_ISOLATION_PROBE_REQUEST_SCHEMA_VERSION = (
+    "llm-wiki-p0-calibration-isolation-probe-request/v1"
+)
+P0_CALIBRATION_ISOLATION_PROBE_RESULT_SCHEMA_VERSION = (
+    "llm-wiki-p0-calibration-isolation-probe-result/v1"
+)
+P0_CALIBRATION_AGENT_PACKET_SCHEMA_VERSION = "llm-wiki-p0-calibration-agent-packet/v1"
+P0_CALIBRATION_AGENT_RESULT_SCHEMA_VERSION = "llm-wiki-p0-calibration-agent-result/v1"
+P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION = (
+    "llm-wiki-p0-calibration-dispatch-receipt/v1"
+)
+P0_CALIBRATION_ACCESS_EVENT_SCHEMA_VERSION = "llm-wiki-p0-calibration-access-event/v1"
+P0_CALIBRATION_TRANSITION_SCHEMA_VERSION = "llm-wiki-p0-calibration-transition/v1"
+P0_CALIBRATION_TRANSACTION_SCHEMA_VERSION = "llm-wiki-p0-calibration-transaction/v1"
+P0_CALIBRATION_AMBIGUOUS_RECOVERY_SCHEMA_VERSION = (
+    "llm-wiki-p0-calibration-ambiguous-recovery/v1"
+)
+P0_CALIBRATION_EMERGENCY_REJECTION_SCHEMA_VERSION = (
+    "llm-wiki-p0-calibration-emergency-rejection/v1"
+)
+P0_CALIBRATION_VERIFICATION_REPORT_SCHEMA_VERSION = (
+    "llm-wiki-p0-calibration-verification-report/v1"
+)
+P0_CALIBRATION_FROZEN_INTAKE_SCHEMA_VERSION = "llm-wiki-p0-calibration-frozen-intake/v1"
+P0_CALIBRATION_TASK_ORACLE_SCHEMA_VERSION = "llm-wiki-p0-calibration-task-oracle/v1"
+P0_CALIBRATION_LABEL_FIELD_CONTRACT_SCHEMA_VERSION = (
+    "llm-wiki-p0-calibration-label-field-contract/v1"
+)
+P0_CALIBRATION_OPTIMIZER_SEARCH_CONTRACT_SCHEMA_VERSION = (
+    "llm-wiki-p0-calibration-optimizer-search-contract/v1"
+)
+P0_CALIBRATION_DECISION_SCOPE = "p0_policy_default"
 EXTRACT_ADDITIVE_FIELDS = {
     "calls[].args",
     "calls[].kwargs",

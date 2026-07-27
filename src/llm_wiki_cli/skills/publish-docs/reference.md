@@ -87,3 +87,12 @@ Add export → check → build as a job step alongside the existing `ci-check` g
 ## Usage examples handoff
 
 Run `usage-examples` before publishing when user docs need screenshots, recordings, or command-output examples. `publish-docs` validates the exported and built media targets but does not capture or attach examples itself.
+
+## External documentation workspace
+
+Enter only after supervisor verification of semantic readiness, user-doc exit
+criteria, and the separately auditable review packet/result. Use the recorded
+site name and distribution mode; an unverified/stale wiki limitation remains in
+the final report and cannot become source-verified `publish_ready`. Export,
+builder output, and checks stay under the workspace. Return deployment as an
+explicit handoff and preserve source/input-wiki byte identity.

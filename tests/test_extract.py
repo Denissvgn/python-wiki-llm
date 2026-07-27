@@ -191,6 +191,44 @@ class TestGetInventory:
 
         assert sorted(result.inventory) == ["app.py"]
 
+    def test_inventory_with_plugins_disabled_has_no_plugin_provenance(
+        self, tmp_path, monkeypatch
+    ):
+        (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
+
+        def unexpected_plugin_call(*_args, **_kwargs):
+            pytest.fail("disabled plugins must not be discovered or inspected")
+
+        monkeypatch.setattr(
+            extract_cmd, "get_extractor_registry", unexpected_plugin_call
+        )
+        monkeypatch.setattr(
+            extract_cmd, "_selected_runtime_plugin_components", unexpected_plugin_call
+        )
+        monkeypatch.setattr(
+            extract_cmd, "_captured_plugin_lock", unexpected_plugin_call
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "parallel_safe_extractor_entry_points",
+            unexpected_plugin_call,
+        )
+
+        result = extract_cmd.get_inventory_result(
+            extract_cmd.InventoryRequest(
+                src_dir=str(tmp_path),
+                deep=True,
+                include_plugins=False,
+            )
+        )
+
+        assert sorted(result.inventory) == ["app.py"]
+        assert result.extractor_registry == extract_cmd.EXTRACTOR_REGISTRY
+        assert result.plugin_components == ()
+        assert result.producer_plugin_components == ()
+        assert result.plugin_lock_path is None
+        assert result.plugin_lock_hash is None
+
     def test_empty_dir(self, tmp_path):
         inventory = get_inventory(str(tmp_path))
         assert inventory == {}

@@ -6,6 +6,7 @@ from .commands import (
     bump_cmd,
     ci_check_cmd,
     context_cmd,
+    docs_cmd,
     extract_cmd,
     generate_prompt_cmd,
     hook_cmd,
@@ -40,6 +41,13 @@ def _positive_int(value: str) -> int:
     parsed = int(value)
     if parsed < 1:
         raise argparse.ArgumentTypeError("must be greater than zero")
+    return parsed
+
+
+def _nonnegative_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 0:
+        raise argparse.ArgumentTypeError("must not be negative")
     return parsed
 
 
@@ -118,6 +126,7 @@ _COMMAND_MODULES = {
     "sync": sync_cmd,
     "migrate": migrate_cmd,
     "context": context_cmd,
+    "docs": docs_cmd,
 }
 
 HELPER_CACHE_HELP = (
@@ -166,6 +175,7 @@ def _register_commands(subparsers):
     _add_sync_command(subparsers)
     _add_migrate_command(subparsers)
     _add_context_command(subparsers)
+    _add_docs_command(subparsers)
 
 
 def _add_init_command(subparsers):
@@ -1353,6 +1363,367 @@ def _add_context_command(subparsers):
         "--allow-external-src",
         action="store_true",
         help="Allow --src-dir to point outside the current working directory",
+    )
+
+
+def _add_docs_command(subparsers):
+    docs_parser = subparsers.add_parser(
+        "docs",
+        help="Prepare and supervise a standalone documentation workspace",
+    )
+    docs_sub = docs_parser.add_subparsers(dest="docs_action", required=True)
+
+    prepare = docs_sub.add_parser(
+        "prepare",
+        help="Create or idempotently resume a deterministic documentation run",
+    )
+    prepare.add_argument(
+        "--workspace",
+        required=True,
+        help="Explicit external documentation workspace",
+    )
+    prepare.add_argument(
+        "--baseline",
+        choices=["bootstrap-source", "existing-wiki"],
+        required=True,
+        help="Build a wiki from source or adopt an existing llm-wiki snapshot",
+    )
+    prepare.add_argument(
+        "--src-dir",
+        default=None,
+        help="Read-only source directory; required by bootstrap-source",
+    )
+    prepare.add_argument(
+        "--input-wiki-dir",
+        default=None,
+        help="Read-only llm-wiki directory; required by existing-wiki",
+    )
+    prepare.add_argument(
+        "--wiki-freshness",
+        choices=["require-current", "refresh-snapshot", "allow-unverified"],
+        default="require-current",
+        help="Freshness policy for an adopted wiki (default: require-current)",
+    )
+    prepare.add_argument(
+        "--site-name",
+        required=True,
+        help="Human-facing documentation site name",
+    )
+    intake_source = prepare.add_mutually_exclusive_group()
+    intake_source.add_argument(
+        "--project-brief",
+        metavar="FILE",
+        help="UTF-8 project-purpose brief supplied by the supervisor",
+    )
+    intake_source.add_argument(
+        "--intake-file",
+        metavar="FILE|-",
+        help="Structured JSON intake object supplied by the supervisor",
+    )
+    prepare.add_argument(
+        "--audience",
+        action="append",
+        help="Audience name or comma-separated audience names; may be repeated",
+    )
+    prepare.add_argument(
+        "--audience-intent",
+        action="append",
+        metavar="AUDIENCE=INTENT",
+        help="Trusted audience job/intent; may be repeated",
+    )
+    prepare.add_argument(
+        "--live-service-url",
+        default=None,
+        help="Caller-owned HTTP(S) staging/demo endpoint to record",
+    )
+    prepare.add_argument(
+        "--live-service-access-mode",
+        choices=["unspecified", "anonymous", "non-secret"],
+        default="unspecified",
+        help="Non-secret access mode for the declared service",
+    )
+    prepare.add_argument(
+        "--observe-live-service",
+        action="store_true",
+        help="Authorize read-only observation; requires --capture-dir",
+    )
+    prepare.add_argument(
+        "--helper-cache-dir",
+        default=None,
+        metavar="PATH",
+        help="Explicit cache containing already-prepared extractor helpers",
+    )
+    prepare.add_argument(
+        "--capture-dir",
+        default=None,
+        metavar="PATH",
+        help="Explicit disposable root for authorized live-service captures",
+    )
+    prepare.add_argument(
+        "--trust-source-plugins",
+        action="store_true",
+        help="Explicitly opt in to executing source-repository extractor plugins",
+    )
+    prepare.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow source/input-wiki evidence roots outside the current directory",
+    )
+    prepare.add_argument(
+        "--semantic-budget",
+        type=_nonnegative_int,
+        default=30,
+        metavar="COUNT",
+        help="Maximum P1 semantic work items (default: 30)",
+    )
+    prepare.add_argument(
+        "--adjustment-loop-limit",
+        type=_positive_int,
+        default=3,
+        metavar="COUNT",
+        help="Maximum review adjustment loops (default: 3)",
+    )
+    prepare.add_argument(
+        "--site-format",
+        choices=["mkdocs", "plain", "docusaurus"],
+        default="mkdocs",
+        help="Persisted distribution format (default: mkdocs)",
+    )
+    prepare_link_mode = prepare.add_mutually_exclusive_group()
+    prepare_link_mode.add_argument(
+        "--link-mode",
+        choices=["http", "file"],
+        default="http",
+        help="Persisted built-link contract (default: http)",
+    )
+    prepare_link_mode.add_argument(
+        "--file-friendly",
+        action="store_true",
+        help="Persist direct-file link mode for local browsing",
+    )
+    prepare.add_argument(
+        "--refresh",
+        action="store_true",
+        help="Archive owned run artifacts and explicitly rebuild the workspace baseline",
+    )
+    prepare.add_argument(
+        "--output-format",
+        "--format",
+        dest="output_format",
+        choices=["text", "json"],
+        default="text",
+        help="Console output format (default: text)",
+    )
+
+    status = docs_sub.add_parser("status", help="Show run state and next actions")
+    status.add_argument("--workspace", required=True)
+    status.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)",
+    )
+
+    packet = docs_sub.add_parser(
+        "packet",
+        help="Build a provider-neutral agent packet for one bounded stage",
+    )
+    packet.add_argument("--workspace", required=True)
+    packet.add_argument(
+        "--stage",
+        choices=["wiki-enrichment", "user-docs", "review"],
+        required=True,
+    )
+    packet.add_argument(
+        "--format",
+        choices=["markdown", "json"],
+        default="markdown",
+        help="Output format (default: markdown)",
+    )
+
+    record_result = docs_sub.add_parser(
+        "record-result",
+        help="Reconcile a versioned agent-result JSON object with workspace changes",
+    )
+    record_result.add_argument("--workspace", required=True)
+    record_result.add_argument(
+        "--result",
+        required=True,
+        metavar="FILE|-",
+        help="Agent-result JSON file, or - for stdin",
+    )
+    record_result.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)",
+    )
+
+    verify = docs_sub.add_parser(
+        "verify",
+        help="Run deterministic integrity and readiness checks",
+    )
+    verify.add_argument("--workspace", required=True)
+    verify.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)",
+    )
+    verify.add_argument(
+        "--no-advance",
+        action="store_true",
+        help="Report verification without advancing an eligible review run",
+    )
+
+    export = docs_sub.add_parser(
+        "export",
+        help="Export/check local user documentation and write a deployment handoff",
+    )
+    export.add_argument("--workspace", required=True)
+    export.add_argument(
+        "--format",
+        choices=["mkdocs", "plain", "docusaurus"],
+        default=None,
+        help="Assert the distribution format selected during prepare",
+    )
+    export.add_argument(
+        "--file-friendly",
+        action="store_true",
+        help="Assert direct-file link mode was selected during prepare",
+    )
+    export.add_argument(
+        "--build",
+        action="store_true",
+        help="Authorize an installed site builder to run locally",
+    )
+    export.add_argument(
+        "--output-format",
+        choices=["text", "json"],
+        default="text",
+        help="Console output format (default: text)",
+    )
+    export.add_argument(
+        "--builder-command",
+        nargs=argparse.REMAINDER,
+        default=None,
+        metavar="ARG",
+        help=(
+            "Explicit builder argv passed directly without a shell; requires --build "
+            "and must be the final CLI option"
+        ),
+    )
+
+    calibration = docs_sub.add_parser(
+        "calibration",
+        help="Supervise an evidence-backed P0 calibration cohort",
+    )
+    calibration_sub = calibration.add_subparsers(
+        dest="calibration_action",
+        required=True,
+    )
+
+    calibration_prepare = calibration_sub.add_parser(
+        "prepare",
+        help="Freeze two independently prepared documentation controls",
+    )
+    calibration_prepare.add_argument("--root", required=True)
+    calibration_prepare.add_argument(
+        "--control-workspace",
+        action="append",
+        required=True,
+        metavar="PATH",
+        help="Prepared documentation control workspace; specify exactly twice",
+    )
+    calibration_prepare.add_argument(
+        "--execution-manifest",
+        required=True,
+        metavar="FILE|-",
+        help="Versioned execution-manifest JSON file, or - for stdin",
+    )
+
+    calibration_admit = calibration_sub.add_parser(
+        "admit",
+        help="Authorize the frozen cohort after isolation evidence is verified",
+    )
+    calibration_admit.add_argument("--root", required=True)
+    calibration_admit.add_argument(
+        "--authority-grant",
+        required=True,
+        metavar="FILE|-",
+        help="Versioned authority-grant JSON file, or - for stdin",
+    )
+    calibration_admit.add_argument(
+        "--broker-attestation",
+        default=None,
+        metavar="FILE|-",
+        help=(
+            "External-broker attestation JSON; qualification also requires a "
+            "separately established embedding-host authenticator"
+        ),
+    )
+
+    calibration_status = calibration_sub.add_parser(
+        "status",
+        help="Show the current cohort state as JSON",
+    )
+    calibration_status.add_argument("--root", required=True)
+
+    calibration_packet = calibration_sub.add_parser(
+        "packet",
+        help="Write one bounded provider-neutral role packet as JSON",
+    )
+    calibration_packet.add_argument("--root", required=True)
+    calibration_packet.add_argument(
+        "--role",
+        choices=["intake-a", "intake-b", "intake-c", "verifier"],
+        required=True,
+    )
+    calibration_packet.add_argument(
+        "--output",
+        required=True,
+        metavar="FILE",
+        help="Explicit packet JSON output path; packet content is never printed",
+    )
+
+    calibration_dispatch = calibration_sub.add_parser(
+        "dispatch",
+        help="Dispatch one role through the frozen broker",
+    )
+    calibration_dispatch.add_argument("--root", required=True)
+    calibration_dispatch.add_argument(
+        "--role",
+        choices=["intake-a", "intake-b", "intake-c", "verifier"],
+        required=True,
+    )
+
+    calibration_result = calibration_sub.add_parser(
+        "record-result",
+        help="Import a separately executed broker receipt and agent result",
+    )
+    calibration_result.add_argument("--root", required=True)
+    calibration_result.add_argument(
+        "--dispatch-receipt",
+        required=True,
+        metavar="FILE|-",
+        help="Versioned dispatch-receipt JSON file, or - for stdin",
+    )
+    calibration_result.add_argument(
+        "--result",
+        required=True,
+        metavar="FILE|-",
+        help="Versioned calibration agent-result JSON file, or - for stdin",
+    )
+
+    calibration_verify = calibration_sub.add_parser(
+        "verify",
+        help="Recompute cohort evidence and advance only when eligible",
+    )
+    calibration_verify.add_argument("--root", required=True)
+    calibration_verify.add_argument(
+        "--no-advance",
+        action="store_true",
+        help="Report verification without advancing an eligible cohort",
     )
 
 

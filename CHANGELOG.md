@@ -8,15 +8,130 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Native context, graph, knowledge, and MCP search responses now disclose exact
   response-layer totals, returned counts, and truncation through additive
   `bounds` metadata.
+- A protected calibration sibling lifecycle through `llm-wiki docs calibration`
+  and matching typed Python APIs. It freezes matching evidence from two
+  independent documentation controls, admits a fresh cohort only after
+  authority and isolation gates, runs three independent intake roles plus a
+  source-cited verifier, and stops at a deterministic pre-labeling intake
+  without changing the documentation-run contract or default priority policy.
+- A provider-neutral OCI broker for the qualifying local profile. It invokes
+  digest-pinned Docker or Podman images with fixed argument vectors, a
+  sanitized environment, no network, a read-only root filesystem, dropped
+  capabilities, bounded resources, a single size-limited result-file bind, and
+  live adversarial denial probes that include over-limit and sibling-output
+  attempts. External-broker contracts remain credential-free and require
+  separately established host authentication; no provider SDK or adapter is
+  included.
+- Priority-blind standalone P0 calibration evidence: bootstrap and surface
+  artifacts now preserve detector/language provenance, routes, bounded
+  call/data-flow details, boundary confidence and gaps, and dependency metrics;
+  `docs prepare` records a source-cited complete census and an evidence-only
+  shadow without changing the v1 priority rule. Fail-closed preflight and
+  mechanical verdict helpers support an external isolated calibration runner,
+  while missing labels, holdout custody, or isolation cannot be represented as
+  a candidate result.
+- Agent-driven standalone documentation workspaces through `llm-wiki docs
+  prepare|status|packet|record-result|verify|export` and matching typed Python
+  APIs. Runs are explicit, resumable, provider-neutral, and isolated from the
+  source project; the core creates deterministic evidence and local publication
+  handoffs but invokes no model, installs no target instructions, and never
+  deploys.
+- Two baseline strategies: deterministic source bootstrap and path-safe
+  adoption of an existing canonical wiki, including pages previously enriched
+  by LLM-backed `llm-wiki` workflows. Adoption preserves legacy index-only
+  inputs, pre-native manifest v4/surface pairs, and manifest v5 inputs while
+  validating a marked v5 manifest/surface/knowledge trio as one committed
+  projection. Runs record a source content-hash baseline and byte-preserving
+  input-wiki snapshot provenance, generated ownership, semantic-page
+  classifications, and explicit `require-current`, workspace-only
+  `refresh-snapshot`, or limited `allow-unverified` freshness decisions.
+- Versioned documentation run, worklist/readiness, agent packet/result, review
+  ledger, verification, final-report, and model-routing contracts. Result
+  reconciliation independently checks reported wiki paths, source/input hashes,
+  and generated ownership; review findings are normalized into a stable ledger,
+  while publication evidence is checked during export and verification.
+- Credential-free host model routing for both `generic-agent` and `handoff`
+  modes. Policies accept OpenAI-compatible, Anthropic, Google Gemini,
+  local/self-hosted, and other provider families, including caller labels for
+  Mistral, DeepSeek, Alibaba/Qwen, gateways, and cloud backends. Policies
+  require low-cost defaults and reserve balanced/capability routes for
+  configured escalation signals or explicit user overrides. The routing API
+  returns serializable host-owned selection metadata and does not invoke a
+  provider. Mistral, DeepSeek, Qwen, gateway, and cloud labels currently use the
+  v1 `other` family; first-class backend/publisher/transport bindings remain
+  proposed. Provider families and tiers are caller-maintained labels: the core
+  includes no native provider adapter, current-price lookup, or proof of the
+  concrete model used.
+- Bundled `agent-docs` and `wiki-semantic-enhance` skills plus external-mode
+  contracts in the user-doc, onboarding, usage, review, and publication skills.
+  Standalone runs export hashed run-local copies rather than installing skills
+  into the target project.
+- A focused [standalone documentation guide](docs/standalone-documentation.md)
+  covering source and enriched-wiki setup, trust/isolation, agent handoffs,
+  result schemas, low-cost routing, Python APIs, refresh/resume behavior,
+  builders, limitations, and troubleshooting.
+
+### Changed
+
+- Manifest v5 is the current native wiki format. Standalone adoption retains
+  manifest v4/surface compatibility, distinguishes markerless v5 surface-only
+  inputs from complete marked v5 trios, and exposes unevaluable inputs as
+  unverified snapshot-only evidence instead of claiming current knowledge.
+- Standalone result reconciliation refreshes the controller-owned native
+  projection after accepted semantic Markdown changes and re-anchors generated
+  ownership before later validation or dispatch.
 
 ### Fixed
+
 - Live knowledge freshness now recomputes the effective generation-options
   commitment instead of assuming the recorded snapshot hash is still current.
 - MCP knowledge tools reject malformed or noncanonical concept coordinates
   before constructing the source-backed query service.
+- Windows guarded reads now hold rename-blocking directory handles throughout
+  traversal and compare path/handle metadata using values with stable semantics
+  across supported Python versions.
+- Windows protected-tree verification now uses fresh, identity-bearing pathname
+  metadata instead of incomplete directory-entry metadata while preserving
+  strict single-link checks.
+- Run-local documentation skill hashes now use platform-independent relative
+  path ordering and canonical UTF-8/LF bytes, avoiding false integrity failures
+  on Windows, and reject ambiguous NUL-delimited content. Existing affected
+  workspaces require an explicit `docs prepare --refresh`; recorded hashes are
+  never rewritten silently.
+- Case-only protected-artifact collisions consistently preserve the original
+  artifact on case-insensitive filesystems.
+
+### Security
+
+- Calibration state uses a dedicated protected root with immutable numbered
+  artifacts, guarded no-follow writes, atomic snapshots, a cross-platform
+  controller lock, generation/head compare-and-swap checks, bounded canonical
+  JSON, replay detection, and fail-closed crash recovery. Intake-role packets
+  exclude priorities, credentials, host paths, and other-role outputs; the
+  verifier receives only the three frozen, sanitized proposals.
+- Standalone runs treat source trees, adopted wikis, target instructions, and
+  live-service responses as untrusted evidence. Source plugins are disabled by
+  default, helper/build preparation is explicit, symlink/non-regular/path-escape
+  inputs and overlapping roots are rejected, writes are constrained to declared
+  roots, live-service flags record permission without making a request or
+  capture, and remote publication remains a separately authorized handoff.
+- Existing-wiki adoption validates descriptor-pinned manifest, surface, and
+  knowledge bytes, their exact marker hashes, cross-artifact commitments, and
+  canonical Markdown snapshot before accepting a native projection. Artifact
+  metadata never selects or executes source plugins.
+- Frozen standalone run contracts now reject coercible trusted-field values,
+  inconsistent intake/policy provenance, unsupported imported schemas,
+  noncanonical source revisions, and missing or id/path-mismatched run-local
+  skills. Compatible resume verifies the anchored baseline evidence before
+  comparing current source/input state.
+- Source-tree baselines now enforce count, 128 MiB per-file, and 2 GiB aggregate
+  limits while streaming. CLI intake/result files are bounded before full
+  allocation, and authorized builder output is spooled to workspace-local
+  temporary files with only 10,000-byte stdout/stderr tails retained.
 
 ## [1.4.0] - 2026-07-12
 

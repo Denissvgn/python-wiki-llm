@@ -145,13 +145,18 @@ def export_skills(
     for skill in selected:
         for rel in skill.files:
             source_text = read_md(skill.path / rel)
+            canonical_source = source_text.encode("utf-8")
             target = dest / skill.skill_id / rel
             if not target.exists():
                 target.parent.mkdir(parents=True, exist_ok=True)
                 write_md(target, source_text)
                 report.operations.append(SkillOperation("write", str(target)))
             elif read_md(target) == source_text:
-                report.operations.append(SkillOperation("keep", str(target)))
+                if force and target.read_bytes() != canonical_source:
+                    write_md(target, source_text)
+                    report.operations.append(SkillOperation("overwrite", str(target)))
+                else:
+                    report.operations.append(SkillOperation("keep", str(target)))
             elif force:
                 write_md(target, source_text)
                 report.operations.append(SkillOperation("overwrite", str(target)))
@@ -223,9 +228,9 @@ def reference_skill_state(
     if not installed_dir.is_dir():
         return "absent"
 
-    bundled = {
-        skill.skill_id: skill for skill in list_bundled_skills(skills_root)
-    }.get(REFERENCE_SKILL_ID)
+    bundled = {skill.skill_id: skill for skill in list_bundled_skills(skills_root)}.get(
+        REFERENCE_SKILL_ID
+    )
     if bundled is None:
         return "modified"
 

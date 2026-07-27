@@ -1,4 +1,5 @@
 from . import (
+    docs_cmd as docs_cmd,
     init_cmd as init_cmd,
     extract_cmd as extract_cmd,
     lint_cmd as lint_cmd,

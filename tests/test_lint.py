@@ -2030,6 +2030,43 @@ class TestLintFlowCoverage:
         assert calls[0]["root"] == str(external_src)
         assert calls[0]["fallback_root"] == Path.cwd()
 
+    def test_flow_checks_propagate_disabled_plugin_policy(self, tmp_path, monkeypatch):
+        wiki = tmp_path / "wiki"
+        (wiki / "flows").mkdir(parents=True)
+        (wiki / "flows" / "api-run.md").write_text("# api-run\n")
+        calls = []
+
+        def spy(_inventory, **kwargs):
+            calls.append(kwargs)
+            return []
+
+        monkeypatch.setattr(lint_cmd, "get_entry_points", spy)
+        report = lint_cmd.LintReport(wiki_dir=str(wiki), src_dir=str(tmp_path))
+
+        lint_cmd._check_flow_coverage(
+            report,
+            wiki,
+            {},
+            str(tmp_path),
+            include_plugins=False,
+        )
+        lint_cmd._check_data_flow_diagnostics(
+            report,
+            wiki,
+            {},
+            str(tmp_path),
+            include_plugins=False,
+        )
+        lint_cmd._check_javascript_flow_diagnostics(
+            report,
+            {},
+            str(tmp_path),
+            include_plugins=False,
+        )
+
+        assert len(calls) == 3
+        assert all(call["include_plugins"] is False for call in calls)
+
 
 class TestLintDependencyCoverage:
     """DL-501: architecture-page cycle / reconciliation warnings + staleness."""

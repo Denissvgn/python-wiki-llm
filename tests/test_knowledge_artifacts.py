@@ -374,6 +374,103 @@ def test_surface_validation_accepts_flow_page_with_matching_summary(tmp_path):
     )
 
 
+def test_surface_validation_accepts_additive_bounded_flow_evidence(tmp_path):
+    plan = _plan(tmp_path / "valid", one_module_two_entities_fixture())
+    surface = _surface_payload_with_flow(plan)
+    surface["flows"][0].update(
+        {
+            "detector": "builtin",
+            "language": "python",
+            "routes": [
+                {
+                    "method": "POST",
+                    "path": "/accounts",
+                    "operation_id": None,
+                }
+            ],
+            "evidence": {
+                "flow": {
+                    "step_count": 2,
+                    "truncated": False,
+                    "modules_touched": ["src/accounts.py"],
+                },
+                "data_flow": {
+                    "generated": True,
+                    "step_count": 2,
+                    "transfer_count": 1,
+                    "truncated": False,
+                    "boundary_effects": [
+                        {
+                            "step": "start_onboarding",
+                            "step_index": 1,
+                            "kind": "database_write",
+                            "target": "accounts",
+                            "line": 7,
+                            "confidence": "high",
+                        }
+                    ],
+                    "gaps": [
+                        {
+                            "kind": "unresolved_call",
+                            "step": "start_onboarding",
+                            "target": "publish",
+                            "line": 8,
+                        }
+                    ],
+                },
+            },
+        }
+    )
+
+    validated = validate_surface_index_bytes(_canonical_surface_bytes(surface))
+
+    assert validated["flows"] == surface["flows"]
+
+
+@pytest.mark.parametrize(
+    ("mutate", "expected_field"),
+    [
+        (
+            lambda flow: flow.__setitem__("detector", None),
+            "surface_index.flows[0].detector",
+        ),
+        (
+            lambda flow: flow.__setitem__(
+                "routes", [{"method": "POST", "path": "/accounts"}]
+            ),
+            "surface_index.flows[0].routes[0].operation_id",
+        ),
+        (
+            lambda flow: flow.__setitem__(
+                "evidence",
+                {
+                    "flow": {
+                        "step_count": 1,
+                        "truncated": False,
+                        "modules_touched": ["../outside.py"],
+                    },
+                    "data_flow": None,
+                },
+            ),
+            "surface_index.flows[0].evidence.flow.modules_touched[0]",
+        ),
+    ],
+)
+def test_surface_validation_rejects_malformed_additive_flow_evidence(
+    tmp_path,
+    mutate,
+    expected_field,
+):
+    plan = _plan(tmp_path / "valid", one_module_two_entities_fixture())
+    surface = _surface_payload_with_flow(plan)
+    mutate(surface["flows"][0])
+
+    with pytest.raises(KnowledgeArtifactError) as exc_info:
+        validate_surface_index_bytes(_canonical_surface_bytes(surface))
+
+    assert exc_info.value.field == expected_field
+
+
 @pytest.mark.parametrize(
     ("mutate", "expected_field"),
     [

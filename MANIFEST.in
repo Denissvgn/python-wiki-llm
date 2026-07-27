@@ -1,2 +1,3 @@
 recursive-include examples/plugins/m4-documentation-hooks *.py *.json
 include src/llm_wiki_cli/schemas/llm-wiki-knowledge-v1.schema.json
+include docs/standalone-documentation.md

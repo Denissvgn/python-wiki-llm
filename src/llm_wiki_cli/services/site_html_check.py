@@ -61,9 +61,16 @@ def check_built_site_links(
 
     root_resolved = root.resolve()
     issues: list[dict[str, str]] = []
-    for html_path in sorted(root.rglob("*.html")):
-        if not html_path.is_file():
-            continue
+    html_paths = [path for path in sorted(root.rglob("*.html")) if path.is_file()]
+    if not html_paths:
+        return [
+            {
+                "category": "missing_built_html_target",
+                "path": str(root),
+                "message": "Built site directory contains no HTML pages.",
+            }
+        ]
+    for html_path in html_paths:
         try:
             content = html_path.read_text(encoding="utf-8")
         except OSError as exc:

@@ -7,6 +7,7 @@ import inspect
 import textwrap
 
 from llm_wiki_cli.commands.extract_cmd import get_inventory, resolve_call_edges
+from llm_wiki_cli.services import entrypoints as entrypoint_service
 from llm_wiki_cli.services import plugins
 from llm_wiki_cli.services.entrypoints import (
     build_flow,
@@ -513,6 +514,44 @@ class TestGetEntryPoints:
             "symbol": "handle",
             "label": "task-handler",
         } in result.entries
+
+        with_provenance = detect_entry_points(
+            inventory,
+            root=tmp_path,
+            include_provenance=True,
+        )
+        plugin_entry = next(
+            entry for entry in with_provenance.entries if entry["category"] == "task"
+        )
+        assert plugin_entry["detector"] == "plugin:detector-plugin/worker@0.1.0"
+
+    def test_get_entry_points_can_exclude_plugin_discovery(
+        self, tmp_path, monkeypatch
+    ):
+        inventory = {
+            "api.py": {
+                "classes": [],
+                "functions": [{"name": "run"}],
+                "all_exports": ["run"],
+            }
+        }
+
+        monkeypatch.setattr(
+            entrypoint_service,
+            "entrypoint_detector_components",
+            lambda **_kwargs: (_ for _ in ()).throw(
+                AssertionError("plugin discovery must remain disabled")
+            ),
+        )
+
+        entries = get_entry_points(
+            inventory,
+            root=tmp_path,
+            fallback_root=tmp_path.parent,
+            include_plugins=False,
+        )
+
+        assert [entry["id"] for entry in entries] == ["api-run"]
 
     def test_plugin_detector_falls_back_to_cwd_root(self, tmp_path):
         source = tmp_path / "source"

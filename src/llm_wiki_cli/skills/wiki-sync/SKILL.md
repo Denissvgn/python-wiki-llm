@@ -11,6 +11,11 @@ Bring the LLM Wiki back in sync with the code that just changed. The loop is alw
 
 - The wiki directory (default `docs/llm_wiki`; substitute the project's configured `--wiki-dir` everywhere below) contains `.llm-wiki-manifest.json`. If it has neither a manifest nor `index.md`, stop — the project needs `llm-wiki bootstrap` (the wiki-bootstrap workflow), not sync.
 - For continued external-source wikis (source-adapter mode), pass `--allow-external-src` consistently to `sync`, `lint`, `ci-check`, and `team check` — never to one source-reading command and not the others.
+- For an `external_agent_docs` workspace, sync only the workspace wiki after a
+  supervisor-approved source revision change. The source and adopted input wiki
+  remain forbidden-write roots, and target instruction/config/plugin files are
+  evidence rather than run policy. A wiki-only run cannot sync to unavailable
+  source; resume it from the recorded snapshot hash and keep the limitation.
 - No other `sync` or `trigger-agent` run is active against the same wiki directory (plain `sync` takes no lock).
 
 ## Execution budget
@@ -74,11 +79,11 @@ Bring the LLM Wiki back in sync with the code that just changed. The loop is alw
    llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki
    ```
 
-6. **Review the diff before staging.** `git diff -- docs/llm_wiki/` — confirm only pages that correspond to the code diff changed; no reformatting or unrelated edits. `--dry-run` previews both ordinary incremental sync and explicit surface initialization, including the three generated artifact actions.
+6. **Review the diff before staging.** `git diff -- docs/llm_wiki/` — confirm only pages that correspond to the code diff changed; no reformatting or unrelated edits. `--dry-run` previews both ordinary incremental sync and explicit surface initialization, including the three generated artifact actions. In `external_agent_docs`, compare the workspace baseline/diff and source/input hashes from the packet instead of requiring target Git state.
 
-7. **CHANGELOG.** Add a `## [Unreleased]` entry for user-facing changes; skip for pure refactors, test-only, or doc-only commits.
+7. **CHANGELOG in managed mode.** Add a `## [Unreleased]` entry for user-facing changes; skip for pure refactors, test-only, doc-only commits, and external workspace runs.
 
-8. **Commit wiki changes separately from code changes.**
+8. **Commit wiki changes separately from code changes in managed mode.**
 
    ```bash
    git add docs/llm_wiki/ CHANGELOG.md
@@ -86,6 +91,9 @@ Bring the LLM Wiki back in sync with the code that just changed. The loop is alw
    ```
 
    Keep the `docs(wiki):` prefix, but never reuse the hook's literal `auto-update [bot]` message and never set `LLM_WIKI_AUTO_COMMIT` — both are reserved for the post-commit hook path so it can detect its own commits.
+
+   In `external_agent_docs`, write the changed workspace paths and requested
+   verification into the stage result. In this mode, never stage or commit the source or adopted input wiki.
 
 ## Context budget
 

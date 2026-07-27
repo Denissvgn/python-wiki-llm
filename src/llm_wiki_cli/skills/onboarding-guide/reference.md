@@ -105,3 +105,15 @@ When personas or topics exceed the run budget, append rows to the wiki's `bootst
 ## Usage examples handoff
 
 After guide prose exists and validates, use `usage-examples` to attach evidence-linked screenshots, recordings, or terminal captures under the wiki `assets/` surface. Do not mix capture policy into onboarding guide drafting.
+
+## External documentation workspace
+
+- Use the recorded intake audiences and jobs as the persona authority. Never re-ask intake on resume or replace `unspecified` intent with an inferred one.
+- Enter only after semantic readiness passes. Reused imported guide prose may
+  satisfy a persona surface when its important claims are grounded; otherwise
+  preserve it as evidence and defer or revise only the workspace copy.
+- For wiki-only runs, cite the snapshot's wiki evidence and retain the
+  `unverified` freshness limitation. Do not claim source-backed prerequisites.
+- Write guide/remainder paths only inside the workspace. Managed mode keeps its
+  normal `docs(wiki):` commit contract; external mode returns a result packet
+  and does not stage or commit source/input paths.

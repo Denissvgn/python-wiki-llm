@@ -1,4 +1,4 @@
-"""Supported Python API for extraction, context, and documentation queries."""
+"""Supported API for extraction, wiki, native knowledge, and documentation."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
-from .commands import context_cmd, extract_cmd
+from .commands import bootstrap_cmd, context_cmd, extract_cmd
 from .config import (
     DEFAULT_WIKI_DIR,
     PathValidationError,
@@ -16,12 +16,93 @@ from .config import (
 from .services import wiki_surface
 from .services.contracts import (
     BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
+    DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION,
+    DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION,
+    DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION,
+    DOCUMENTATION_MODEL_ROUTING_SCHEMA_VERSION,
+    DOCUMENTATION_MODEL_SELECTION_SCHEMA_VERSION,
+    DOCUMENTATION_RUN_SCHEMA_VERSION,
+    DOCUMENTATION_VERIFICATION_SCHEMA_VERSION,
     EXTRACT_SCHEMA_VERSION,
+    P0_CALIBRATION_AGENT_PACKET_SCHEMA_VERSION,
+    P0_CALIBRATION_AGENT_RESULT_SCHEMA_VERSION,
+    P0_CALIBRATION_DECISION_SCOPE,
+    P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION,
+    P0_CALIBRATION_RUN_SCHEMA_VERSION,
+    P0_CALIBRATION_VERIFICATION_REPORT_SCHEMA_VERSION,
+)
+from .services.bootstrap_service import (
+    BootstrapRequest,
+    BootstrapResult,
+    BootstrapServiceError,
 )
 from .services.dependencies import analyze_dependencies
 from .services.documentation_queries import (
     DocumentationGraphQueryService,
     DocumentationQueryError,
+)
+from .services.documentation_model_policy import (
+    DocumentationModelEscalationRule,
+    DocumentationModelOverride,
+    DocumentationModelPolicyError,
+    DocumentationModelRoute,
+    DocumentationModelRoutingPolicy,
+    DocumentationModelRoutingRequest,
+    DocumentationModelSelection,
+    select_documentation_model,
+    validate_documentation_model_selection,
+)
+from .services.documentation_calibration_controller import (
+    P0CalibrationAgentPacket,
+    P0CalibrationAgentResult,
+    P0CalibrationDispatchReceipt,
+    P0CalibrationError,
+    P0CalibrationIntegrityError,
+    P0CalibrationRecoveryError,
+    P0CalibrationRun,
+    P0CalibrationSchemaError,
+    P0CalibrationStatus,
+    P0CalibrationTransitionError,
+    P0CalibrationVerificationReport,
+    admit_p0_calibration_run,
+    build_p0_calibration_agent_packet,
+    dispatch_p0_calibration_agent,
+    get_p0_calibration_run_status,
+    prepare_p0_calibration_run,
+    record_p0_calibration_agent_result,
+    verify_p0_calibration_run,
+)
+from .services.documentation_calibration_host_broker import (
+    HostBrokerAuthenticationError,
+    HostBrokerAuthenticationProof,
+    HostBrokerAuthenticationUnavailable,
+    HostBrokerAuthenticator,
+    use_p0_calibration_host_broker_authenticator,
+)
+from .services.documentation_policy import DocumentationPolicyError
+from .services.documentation_run import (
+    DocumentationAgentPacket,
+    DocumentationAgentResult,
+    DocumentationIntegrityError,
+    DocumentationIntakeBrief,
+    DocumentationRun,
+    DocumentationRunError,
+    DocumentationRunStatus,
+    DocumentationSchemaError,
+    DocumentationTransitionError,
+    DocumentationVerificationReport,
+    build_documentation_agent_packet,
+    export_documentation_run,
+    get_documentation_run_status,
+    prepare_documentation_run,
+    record_documentation_agent_result,
+    verify_documentation_run,
+)
+from .services.documentation_wiki_input import (
+    DocumentationWikiInputError,
+    DocumentationWikiSnapshot,
+    adopt_documentation_wiki_snapshot,
+    fingerprint_documentation_wiki_input,
 )
 from .services.entrypoints import build_flow
 from .services.wiki_surface_index import evaluate_surface_index
@@ -37,6 +118,56 @@ class PathPolicyError(LlmWikiApiError):
 
 class ExtractionError(LlmWikiApiError):
     """Raised when source extraction fails."""
+
+
+class BootstrapError(LlmWikiApiError):
+    """Raised when deterministic library bootstrap fails."""
+
+
+def bootstrap_wiki(
+    source_root: str,
+    wiki_root: str,
+    *,
+    depth: str = "full",
+    skip_workflows: bool = False,
+    skip_flows: bool = False,
+    skip_data_flow: bool = False,
+    skip_dependencies: bool = False,
+    api_contracts: bool = False,
+    openapi_file: str | None = None,
+    dependency_graph_detail: str = "auto",
+    overwrite: bool = False,
+    helper_cache_dir: str | None = None,
+    include_tests: list[str] | None = None,
+    trust_source_plugins: bool = False,
+) -> BootstrapResult:
+    """Build a deterministic wiki through the typed service boundary.
+
+    The library boundary always uses source-adapter behavior and therefore does
+    not install or rewrite target-repository agent instructions.
+    """
+
+    request = BootstrapRequest(
+        source_root=source_root,
+        wiki_root=wiki_root,
+        depth=depth,
+        skip_workflows=skip_workflows,
+        skip_flows=skip_flows,
+        skip_data_flow=skip_data_flow,
+        skip_dependencies=skip_dependencies,
+        api_contracts=api_contracts,
+        openapi_file=openapi_file,
+        dependency_graph_detail=dependency_graph_detail,
+        overwrite=overwrite,
+        source_adapter=True,
+        helper_cache_dir=helper_cache_dir,
+        include_tests=include_tests,
+        trust_source_plugins=trust_source_plugins,
+    )
+    try:
+        return bootstrap_cmd.execute_bootstrap(request)
+    except BootstrapServiceError as exc:
+        raise BootstrapError(str(exc)) from exc
 
 
 def extract_source(
@@ -516,22 +647,93 @@ def _run_query(callback) -> dict[str, Any]:
 
 __all__ = [
     "BOOTSTRAP_SUMMARY_SCHEMA_VERSION",
+    "BootstrapError",
+    "BootstrapRequest",
+    "BootstrapResult",
+    "BootstrapServiceError",
+    "DocumentationAgentPacket",
+    "DocumentationAgentResult",
     "EXTRACT_SCHEMA_VERSION",
     "DocumentationGraphQueryService",
+    "DocumentationIntegrityError",
+    "DocumentationIntakeBrief",
+    "DocumentationModelEscalationRule",
+    "DocumentationModelOverride",
+    "DocumentationModelPolicyError",
+    "DocumentationModelRoute",
+    "DocumentationModelRoutingPolicy",
+    "DocumentationModelRoutingRequest",
+    "DocumentationModelSelection",
+    "DocumentationPolicyError",
+    "DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION",
+    "DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION",
+    "DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION",
+    "DOCUMENTATION_MODEL_ROUTING_SCHEMA_VERSION",
+    "DOCUMENTATION_MODEL_SELECTION_SCHEMA_VERSION",
+    "DOCUMENTATION_RUN_SCHEMA_VERSION",
+    "DOCUMENTATION_VERIFICATION_SCHEMA_VERSION",
+    "P0_CALIBRATION_AGENT_PACKET_SCHEMA_VERSION",
+    "P0_CALIBRATION_AGENT_RESULT_SCHEMA_VERSION",
+    "P0_CALIBRATION_DECISION_SCOPE",
+    "P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION",
+    "P0_CALIBRATION_RUN_SCHEMA_VERSION",
+    "P0_CALIBRATION_VERIFICATION_REPORT_SCHEMA_VERSION",
+    "DocumentationRun",
+    "DocumentationRunError",
+    "DocumentationRunStatus",
+    "DocumentationSchemaError",
+    "DocumentationTransitionError",
+    "DocumentationVerificationReport",
+    "DocumentationWikiInputError",
+    "DocumentationWikiSnapshot",
     "ExtractionError",
     "LlmWikiApiError",
     "PathPolicyError",
+    "P0CalibrationAgentPacket",
+    "P0CalibrationAgentResult",
+    "P0CalibrationDispatchReceipt",
+    "P0CalibrationError",
+    "P0CalibrationIntegrityError",
+    "P0CalibrationRecoveryError",
+    "P0CalibrationRun",
+    "P0CalibrationSchemaError",
+    "P0CalibrationStatus",
+    "P0CalibrationTransitionError",
+    "P0CalibrationVerificationReport",
+    "HostBrokerAuthenticationError",
+    "HostBrokerAuthenticationProof",
+    "HostBrokerAuthenticationUnavailable",
+    "HostBrokerAuthenticator",
+    "admit_p0_calibration_run",
+    "adopt_documentation_wiki_snapshot",
+    "build_p0_calibration_agent_packet",
+    "build_documentation_agent_packet",
     "build_context",
+    "bootstrap_wiki",
     "build_documentation_query_service",
     "callees",
     "callers",
     "data_flow_for_entrypoint",
     "dependency_neighborhood",
+    "dispatch_p0_calibration_agent",
     "explain_evidence",
+    "export_documentation_run",
     "extract_source",
     "flow_for_entrypoint",
+    "fingerprint_documentation_wiki_input",
     "get_concept",
+    "get_documentation_run_status",
+    "get_p0_calibration_run_status",
     "list_wiki_pages",
     "pages_for_symbol",
+    "prepare_documentation_run",
+    "prepare_p0_calibration_run",
+    "record_documentation_agent_result",
+    "record_p0_calibration_agent_result",
     "related_concepts",
+    "select_documentation_model",
+    "use_p0_calibration_host_broker_authenticator",
+    "validate_documentation_model_selection",
+    "verify_documentation_run",
+    "verify_p0_calibration_run",
 ]

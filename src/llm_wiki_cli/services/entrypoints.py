@@ -515,6 +515,7 @@ def _detect_plugin_entries(
     root: str | Path,
     fallback_root: str | Path | None,
     strict_plugin_errors: bool,
+    include_provenance: bool,
 ) -> EntryPointDetectionResult:
     components, warnings = _detector_components(
         root,
@@ -533,7 +534,13 @@ def _detect_plugin_entries(
             continue
         for index, record in enumerate(records, start=1):
             try:
-                entries.append(_normalize_plugin_entry(record))
+                entry = _normalize_plugin_entry(record)
+                if include_provenance:
+                    entry["detector"] = (
+                        f"plugin:{component.get('ref', 'unknown')}"
+                        f"@{component.get('plugin_version', 'unknown')}"
+                    )
+                entries.append(entry)
             except Exception as exc:
                 if strict_plugin_errors:
                     raise
@@ -660,9 +667,18 @@ def detect_entry_points(
     fallback_root: str | Path | None = None,
     include_plugins: bool = True,
     strict_plugin_errors: bool = False,
+    include_provenance: bool = False,
 ) -> EntryPointDetectionResult:
-    """Detect user-reachable entry points and non-fatal plugin warnings."""
+    """Detect user-reachable entry points and non-fatal plugin warnings.
+
+    ``include_provenance`` adds a bounded detector identity for downstream
+    evidence artifacts. It defaults off so the public v1 entry-point shape is
+    unchanged for existing callers.
+    """
     entries = _builtin_entry_points(inventory, console_scripts, root=root)
+    if include_provenance:
+        for entry in entries:
+            entry["detector"] = "builtin"
     warnings: list[str] = []
     if include_plugins:
         plugin_result = _detect_plugin_entries(
@@ -670,6 +686,7 @@ def detect_entry_points(
             root=root,
             fallback_root=fallback_root,
             strict_plugin_errors=strict_plugin_errors,
+            include_provenance=include_provenance,
         )
         entries += plugin_result.entries
         warnings += plugin_result.warnings
@@ -682,18 +699,21 @@ def get_entry_points(
     console_scripts: list[dict] | None = None,
     root: str | Path = ".",
     fallback_root: str | Path | None = None,
+    include_plugins: bool = True,
 ) -> list[dict]:
     """Detect user-reachable entry points from a deep inventory.
 
     Returns a deterministically ordered list of
     ``{"id", "category", "file", "symbol", "label"}`` records. ``console_scripts``
     are the parsed ``[project.scripts]`` entries (see :func:`read_console_scripts`).
+    Plugin detectors can be excluded for untrusted source workspaces.
     """
     return detect_entry_points(
         inventory,
         console_scripts=console_scripts,
         root=root,
         fallback_root=fallback_root,
+        include_plugins=include_plugins,
     ).entries
 
 

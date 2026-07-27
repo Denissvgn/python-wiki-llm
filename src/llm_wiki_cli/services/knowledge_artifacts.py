@@ -1074,10 +1074,11 @@ def _validate_surface_flows(
         field = f"surface_index.flows[{index}]"
         if not isinstance(flow, Mapping):
             raise KnowledgeArtifactError(field, "must be an object")
-        _validate_exact_surface_keys(
+        _validate_surface_keys(
             flow,
             field,
             {"id", "category", "entry_point"},
+            {"detector", "language", "routes", "evidence"},
         )
         flow_id = flow["id"]
         if not isinstance(flow_id, str) or not flow_id:
@@ -1129,6 +1130,7 @@ def _validate_surface_flows(
                 f"{field}.entry_point.source_path",
                 "must match the corresponding flow page source path",
             )
+        _validate_optional_surface_flow_fields(flow, field)
     missing = set(flow_pages) - seen_ids
     if missing:
         raise KnowledgeArtifactError(
@@ -1137,23 +1139,195 @@ def _validate_surface_flows(
         )
 
 
-def _validate_exact_surface_keys(
+def _validate_optional_surface_flow_fields(
+    flow: Mapping[str, Any],
+    field: str,
+) -> None:
+    for key in ("detector", "language"):
+        if key not in flow:
+            continue
+        value = flow[key]
+        if not isinstance(value, str) or not value:
+            raise KnowledgeArtifactError(
+                f"{field}.{key}",
+                "must be a non-empty string",
+            )
+    if "routes" in flow:
+        _validate_surface_flow_routes(flow["routes"], f"{field}.routes")
+    if "evidence" in flow:
+        _validate_surface_flow_evidence(flow["evidence"], f"{field}.evidence")
+
+
+def _validate_surface_flow_routes(value: object, field: str) -> None:
+    if not isinstance(value, list):
+        raise KnowledgeArtifactError(field, "must be an array")
+    for index, route in enumerate(value):
+        route_field = f"{field}[{index}]"
+        if not isinstance(route, Mapping):
+            raise KnowledgeArtifactError(route_field, "must be an object")
+        _validate_exact_surface_keys(
+            route,
+            route_field,
+            {"method", "path", "operation_id"},
+        )
+        for key in ("method", "path"):
+            if not isinstance(route[key], str) or not route[key]:
+                raise KnowledgeArtifactError(
+                    f"{route_field}.{key}",
+                    "must be a non-empty string",
+                )
+        operation_id = route["operation_id"]
+        if operation_id is not None and (
+            not isinstance(operation_id, str) or not operation_id
+        ):
+            raise KnowledgeArtifactError(
+                f"{route_field}.operation_id",
+                "must be null or a non-empty string",
+            )
+
+
+def _validate_surface_flow_evidence(value: object, field: str) -> None:
+    if not isinstance(value, Mapping):
+        raise KnowledgeArtifactError(field, "must be an object")
+    _validate_exact_surface_keys(value, field, {"flow", "data_flow"})
+    flow = value["flow"]
+    if not isinstance(flow, Mapping):
+        raise KnowledgeArtifactError(f"{field}.flow", "must be an object")
+    _validate_exact_surface_keys(
+        flow,
+        f"{field}.flow",
+        {"step_count", "truncated", "modules_touched"},
+    )
+    _nonnegative_integer(flow["step_count"], f"{field}.flow.step_count")
+    if not isinstance(flow["truncated"], bool):
+        raise KnowledgeArtifactError(
+            f"{field}.flow.truncated",
+            "must be a boolean",
+        )
+    modules = flow["modules_touched"]
+    if not isinstance(modules, list):
+        raise KnowledgeArtifactError(
+            f"{field}.flow.modules_touched",
+            "must be an array",
+        )
+    for index, source_path in enumerate(modules):
+        if not _is_safe_relative_path(source_path):
+            raise KnowledgeArtifactError(
+                f"{field}.flow.modules_touched[{index}]",
+                "must be a normalized repository-relative POSIX path",
+            )
+    if len(modules) != len(set(modules)):
+        raise KnowledgeArtifactError(
+            f"{field}.flow.modules_touched",
+            "must not contain duplicates",
+        )
+
+    data_flow = value["data_flow"]
+    if data_flow is None:
+        return
+    if not isinstance(data_flow, Mapping):
+        raise KnowledgeArtifactError(
+            f"{field}.data_flow",
+            "must be null or an object",
+        )
+    _validate_exact_surface_keys(
+        data_flow,
+        f"{field}.data_flow",
+        {
+            "generated",
+            "step_count",
+            "transfer_count",
+            "truncated",
+            "boundary_effects",
+            "gaps",
+        },
+    )
+    if not isinstance(data_flow["generated"], bool):
+        raise KnowledgeArtifactError(
+            f"{field}.data_flow.generated",
+            "must be a boolean",
+        )
+    for key in ("step_count", "transfer_count"):
+        _nonnegative_integer(data_flow[key], f"{field}.data_flow.{key}")
+    if not isinstance(data_flow["truncated"], bool):
+        raise KnowledgeArtifactError(
+            f"{field}.data_flow.truncated",
+            "must be a boolean",
+        )
+    _validate_surface_flow_records(
+        data_flow["boundary_effects"],
+        f"{field}.data_flow.boundary_effects",
+        {
+            "step": str,
+            "step_index": int,
+            "kind": str,
+            "target": str,
+            "line": int,
+            "confidence": str,
+        },
+    )
+    _validate_surface_flow_records(
+        data_flow["gaps"],
+        f"{field}.data_flow.gaps",
+        {
+            "kind": str,
+            "step": str,
+            "target": str,
+            "line": int,
+        },
+    )
+
+
+def _validate_surface_flow_records(
+    value: object,
+    field: str,
+    schema: Mapping[str, type],
+) -> None:
+    if not isinstance(value, list):
+        raise KnowledgeArtifactError(field, "must be an array")
+    for index, record in enumerate(value):
+        record_field = f"{field}[{index}]"
+        if not isinstance(record, Mapping):
+            raise KnowledgeArtifactError(record_field, "must be an object")
+        _validate_exact_surface_keys(record, record_field, set(schema))
+        for key, expected_type in schema.items():
+            item = record[key]
+            item_field = f"{record_field}.{key}"
+            if expected_type is int:
+                _nonnegative_integer(item, item_field)
+            elif not isinstance(item, expected_type) or not item:
+                raise KnowledgeArtifactError(
+                    item_field,
+                    "must be a non-empty string",
+                )
+
+
+def _validate_surface_keys(
     value: Mapping[str, Any],
     field: str,
-    expected: set[str],
+    required: set[str],
+    optional: set[str],
 ) -> None:
-    missing = expected - set(value)
+    missing = required - set(value)
     if missing:
         raise KnowledgeArtifactError(
             f"{field}.{min(missing)}",
             "is required",
         )
-    unknown = set(value) - expected
+    unknown = set(value) - required - optional
     if unknown:
         raise KnowledgeArtifactError(
             f"{field}.{min(unknown)}",
             "is not supported by surface-index v1",
         )
+
+
+def _validate_exact_surface_keys(
+    value: Mapping[str, Any],
+    field: str,
+    expected: set[str],
+) -> None:
+    _validate_surface_keys(value, field, expected, set())
 
 
 def _nonnegative_integer(value: object, field: str) -> int:

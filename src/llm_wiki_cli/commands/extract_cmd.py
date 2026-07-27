@@ -108,6 +108,7 @@ class InventoryRequest:
     include_tests: Iterable[str] | None = None
     job_request: ExtractionJobRequest | None = None
     plan_reporter: Callable[[ExtractionJobPlan], None] | None = None
+    include_plugins: bool = True
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -307,6 +308,7 @@ _LEGACY_INVENTORY_REQUEST_FIELDS = (
     "include_tests",
     "job_request",
     "plan_reporter",
+    "include_plugins",
 )
 
 
@@ -521,14 +523,24 @@ def _prepare_inventory_build_context(
         only_files=request.only_files,
         include_tests=request.include_tests,
     )
-    registry = get_extractor_registry()
-    plugin_components, plugin_root = _selected_runtime_plugin_components(
-        request.src_dir
-    )
-    plugin_lock_path, plugin_lock_hash = _captured_plugin_lock(
-        request.src_dir,
-        plugin_root=plugin_root,
-    )
+    if request.include_plugins:
+        registry = get_extractor_registry()
+        plugin_components, plugin_root = _selected_runtime_plugin_components(
+            request.src_dir
+        )
+        plugin_lock_path, plugin_lock_hash = _captured_plugin_lock(
+            request.src_dir,
+            plugin_root=plugin_root,
+        )
+        parallel_safe_plugin_entry_points = (
+            parallel_safe_extractor_entry_points()
+        )
+    else:
+        registry = dict(EXTRACTOR_REGISTRY)
+        plugin_components = ()
+        plugin_lock_path = None
+        plugin_lock_hash = None
+        parallel_safe_plugin_entry_points = set()
     cache = (
         InventoryCache(request.src_dir, request.cache_options)
         if request.cache_options is not None
@@ -549,7 +561,7 @@ def _prepare_inventory_build_context(
         updated_cache_files={},
         source_file_by_path=source_file_by_path,
         source_hashes=source_hashes,
-        parallel_safe_plugin_entry_points=parallel_safe_extractor_entry_points(),
+        parallel_safe_plugin_entry_points=parallel_safe_plugin_entry_points,
         plugin_components=plugin_components,
         plugin_lock_path=plugin_lock_path,
         plugin_lock_hash=plugin_lock_hash,

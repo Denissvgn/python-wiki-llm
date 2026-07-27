@@ -12,8 +12,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.10", "3.13"]
+        include:
+          - os: ubuntu-latest
+            python-version: "3.10"
+          - os: windows-latest
+            python-version: "3.13"
+          - os: macos-latest
+            python-version: "3.14"
 
     steps:
       - uses: actions/checkout@v6
@@ -62,3 +67,94 @@ jobs:
           PYTHONUTF8: "1"
           PYTHONIOENCODING: "utf-8"
         run: python -m pytest tests/test_mcp.py -v
+
+  p0-oci-integration:
+    name: P0 synthetic OCI isolation
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install focused test dependencies
+        run: python -m pip install --no-cache-dir -e ".[dev]"
+
+      - name: Build digest-pinned public synthetic OCI fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          docker version
+          python_base_tag="python:3.13-alpine"
+          registry_tag="registry:2"
+          fixture_tag="localhost:5000/llm-wiki/p0-oci-fixture:ci"
+          registry_name="llm-wiki-p0-oci-registry"
+
+          # One immutable public image carries separate fixed worker/probe modes,
+          # reducing the qualification supply chain without sharing role outputs.
+          docker pull "${python_base_tag}"
+          python_base_ref="$(docker image inspect \
+            --format='{{index .RepoDigests 0}}' "${python_base_tag}")"
+          case "${python_base_ref}" in
+            *@sha256:*) ;;
+            *) echo "Python fixture base is not digest pinned." >&2; exit 1 ;;
+          esac
+
+          docker pull "${registry_tag}"
+          registry_ref="$(docker image inspect \
+            --format='{{index .RepoDigests 0}}' "${registry_tag}")"
+          case "${registry_ref}" in
+            *@sha256:*) ;;
+            *) echo "Local registry image is not digest pinned." >&2; exit 1 ;;
+          esac
+
+          cleanup_registry() {
+            docker rm --force "${registry_name}" >/dev/null 2>&1 || true
+          }
+          trap cleanup_registry EXIT
+          docker run --detach \
+            --publish 127.0.0.1:5000:5000 \
+            --name "${registry_name}" \
+            "${registry_ref}"
+
+          docker build \
+            --network=none \
+            --pull=false \
+            --build-arg "BASE_IMAGE=${python_base_ref}" \
+            --tag "${fixture_tag}" \
+            tests/fixtures/oci_calibration
+          docker push "${fixture_tag}"
+          docker pull "${fixture_tag}"
+          fixture_ref="$(docker image inspect \
+            --format='{{index .RepoDigests 0}}' "${fixture_tag}")"
+          case "${fixture_ref}" in
+            localhost:5000/llm-wiki/p0-oci-fixture@sha256:*) ;;
+            *) echo "Synthetic OCI fixture is not digest pinned." >&2; exit 1 ;;
+          esac
+
+          cleanup_registry
+          trap - EXIT
+
+          docker_executable="$(readlink -f "$(command -v docker)")"
+          {
+            echo "LLM_WIKI_OCI_DOCKER=${docker_executable}"
+            echo "LLM_WIKI_OCI_TEST_IMAGE=${fixture_ref}"
+          } >> "${GITHUB_ENV}"
+
+      - name: Run real no-egress broker qualification
+        env:
+          LLM_WIKI_RUN_OCI_INTEGRATION: "1"
+          PYTHONUTF8: "1"
+          PYTHONIOENCODING: "utf-8"
+        run: >-
+          python -m pytest
+          tests/test_documentation_calibration_oci_integration.py
+          -m oci_integration
+          -v

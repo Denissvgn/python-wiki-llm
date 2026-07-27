@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-import ast
+import re
 from pathlib import Path
+
+import yaml
 
 try:
     import tomllib  # type: ignore[reportMissingImports]
@@ -25,15 +27,11 @@ def _pyproject() -> dict:
     return tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
 
 
-def _ci_python_versions() -> list[str]:
-    ci = (PROJECT_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
-    matrix_line = next(
-        line.strip()
-        for line in ci.splitlines()
-        if line.strip().startswith("python-version:")
+def _ci_test_matrix() -> dict:
+    ci = yaml.safe_load(
+        (PROJECT_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
     )
-    _, value = matrix_line.split(":", maxsplit=1)
-    return ast.literal_eval(value.strip())
+    return ci["jobs"]["test"]["strategy"]["matrix"]
 
 
 def test_project_description_mentions_multi_language_projects():
@@ -89,6 +87,8 @@ def test_ci_verifies_schema_from_wheel_and_sdist_installations():
 def test_package_data_includes_bundled_skills():
     data = _pyproject()
     package_data = data["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]
+    assert "skills/agent-docs/SKILL.md" in package_data
+    assert "skills/agent-docs/reference.md" in package_data
     assert "skills/wiki-sync/SKILL.md" in package_data
     assert "skills/wiki-sync/reference.md" in package_data
     assert "skills/wiki-bootstrap/SKILL.md" in package_data
@@ -115,6 +115,27 @@ def test_package_data_includes_bundled_skills():
     assert "skills/usage-examples/reference.md" in package_data
     assert "skills/user-docs-author/SKILL.md" in package_data
     assert "skills/user-docs-author/reference.md" in package_data
+    assert "skills/wiki-semantic-enhance/SKILL.md" in package_data
+    assert "skills/wiki-semantic-enhance/reference.md" in package_data
+
+
+def test_core_dependencies_do_not_install_model_provider_sdks():
+    data = _pyproject()
+    dependency_names = {
+        re.split(r"[<>=!~;\[]", value, maxsplit=1)[0].strip().lower()
+        for value in data["project"].get("dependencies", [])
+    }
+    assert dependency_names.isdisjoint(
+        {
+            "anthropic",
+            "dashscope",
+            "deepseek",
+            "google-genai",
+            "google-generativeai",
+            "mistralai",
+            "openai",
+        }
+    )
 
 
 def test_package_data_includes_bundled_m4_plugin_sample():
@@ -135,6 +156,11 @@ def test_sdist_manifest_includes_source_m4_plugin_sample():
     )
 
 
+def test_sdist_manifest_includes_standalone_documentation_guide():
+    manifest = (PROJECT_ROOT / "MANIFEST.in").read_text(encoding="utf-8")
+    assert "include docs/standalone-documentation.md" in manifest
+
+
 def test_project_distribution_name_is_pypi_safe_name():
     data = _pyproject()
     assert data["project"]["name"] == "agent-wiki-cli"
@@ -150,8 +176,14 @@ def test_project_requires_python_3_10_or_newer():
     assert data["project"]["requires-python"] == ">=3.10"
 
 
-def test_ci_python_matrix_matches_supported_boundary_versions():
-    assert _ci_python_versions() == ["3.10", "3.13"]
+def test_ci_pairs_selected_python_versions_with_one_os_each():
+    assert _ci_test_matrix() == {
+        "include": [
+            {"os": "ubuntu-latest", "python-version": "3.10"},
+            {"os": "windows-latest", "python-version": "3.13"},
+            {"os": "macos-latest", "python-version": "3.14"},
+        ]
+    }
 
 
 def test_readme_current_support_table_mentions_python_3_10_plus():
@@ -173,6 +205,7 @@ def test_readme_documents_bundled_skills():
     readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
 
     for skill_id in [
+        "agent-docs",
         "attack-surface",
         "dep-audit",
         "dep-vuln-triage",
@@ -185,6 +218,8 @@ def test_readme_documents_bundled_skills():
         "usage-examples",
         "user-docs-author",
         "wiki-bootstrap",
+        "wiki-reference",
+        "wiki-semantic-enhance",
         "wiki-sync",
     ]:
         assert f"`{skill_id}`" in readme
