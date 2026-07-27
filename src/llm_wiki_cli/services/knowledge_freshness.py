@@ -144,6 +144,7 @@ _REASON_DESCRIPTIONS = MappingProxyType(
         ),
     }
 )
+KNOWN_FRESHNESS_REASON_CODES = frozenset(_REASON_DESCRIPTIONS)
 
 
 class KnowledgeFreshnessError(ValueError):
@@ -842,6 +843,7 @@ def _validate_source_path(value: object, field_name: str) -> None:
 
 
 __all__ = [
+    "KNOWN_FRESHNESS_REASON_CODES",
     "REASON_CONCEPT_OBSERVATION_CHANGED",
     "REASON_EXTRACTOR_CONFIGURATION_CHANGED",
     "REASON_EXTRACTOR_CONFIGURATION_UNKNOWN",

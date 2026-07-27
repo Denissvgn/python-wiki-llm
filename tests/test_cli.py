@@ -360,6 +360,117 @@ def test_site_export_parses_user_profile_and_site_name(monkeypatch):
     }
 
 
+def test_site_export_parses_knowledge_projection_options(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(
+        cli.site_cmd,
+        "run",
+        lambda args: seen.update(
+            {
+                "metadata": args.knowledge_metadata,
+                "profile": args.knowledge_profile,
+                "identity": args.public_repository_identity,
+            }
+        ),
+    )
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "llm-wiki",
+            "site",
+            "export",
+            "--out-dir",
+            "site",
+            "--knowledge-metadata",
+            "summary",
+            "--knowledge-profile",
+            "internal",
+            "--knowledge-public-repository-identity",
+            "example.invalid/acme/wiki",
+        ],
+    )
+
+    cli.main()
+
+    assert seen == {
+        "metadata": "summary",
+        "profile": "internal",
+        "identity": "example.invalid/acme/wiki",
+    }
+
+
+def test_obsidian_check_parses_knowledge_projection_options(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(
+        cli.obsidian_cmd,
+        "run",
+        lambda args: seen.update(
+            {
+                "metadata": args.knowledge_metadata,
+                "profile": args.knowledge_profile,
+                "identity": args.knowledge_public_repository_identity,
+            }
+        ),
+    )
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "llm-wiki",
+            "obsidian",
+            "check",
+            "--vault-dir",
+            "vault",
+            "--knowledge-metadata",
+            "summary",
+            "--knowledge-profile",
+            "public-portable",
+            "--knowledge-public-repository-identity",
+            "example.invalid/acme/wiki",
+        ],
+    )
+
+    cli.main()
+
+    assert seen == {
+        "metadata": "summary",
+        "profile": "public-portable",
+        "identity": "example.invalid/acme/wiki",
+    }
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [
+        [
+            "llm-wiki",
+            "site",
+            "export",
+            "--out-dir",
+            "site",
+            "--knowledge-profile",
+            "internal",
+        ],
+        [
+            "llm-wiki",
+            "obsidian",
+            "check",
+            "--vault-dir",
+            "vault",
+            "--knowledge-public-repository-identity",
+            "example.invalid/acme/wiki",
+        ],
+    ],
+)
+def test_projection_options_require_metadata_mode(argv, monkeypatch, capsys):
+    monkeypatch.setattr("sys.argv", argv)
+
+    with pytest.raises(SystemExit) as exc:
+        cli.main()
+
+    assert exc.value.code == 1
+    assert "require --knowledge-metadata summary" in capsys.readouterr().err
+
+
 def test_site_check_parses_user_profile_and_site_name(monkeypatch):
     seen = {}
     monkeypatch.setattr(

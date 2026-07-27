@@ -1019,6 +1019,7 @@ def test_query_service_builder_reuses_one_inventory_snapshot_surface_and_view(
     surface_payload = {"schema_version": "surface-fixture", "pages": []}
     surface_evaluation = types.SimpleNamespace(payload=surface_payload)
     knowledge_view = object()
+    machine_verification = {}
     query_surface = {"schema_version": "query-surface", "pages": []}
     dependency_analysis = {"graph": {"nodes": [], "edges": []}}
     call_edges = []
@@ -1087,6 +1088,7 @@ def test_query_service_builder_reuses_one_inventory_snapshot_surface_and_view(
         assert kwargs["dependency_analysis"] is dependency_analysis
         assert kwargs["surface_index"] is query_surface
         assert kwargs["knowledge_view"] is knowledge_view
+        assert kwargs["machine_verification"] == machine_verification
         assert kwargs["limit"] == 7
         return built_service
 
@@ -1385,10 +1387,19 @@ def test_api_exposes_machine_receipt_as_separate_read_only_dimension(
     )
     monkeypatch.chdir(tree["root"])
 
-    result = api.get_concept(
-        "llm-wiki://entities/User",
+    service = api.build_documentation_query_service(
         src_dir=".",
         wiki_dir="docs/llm_wiki",
+    )
+    assert service.knowledge_view is not None
+    assert (
+        service.knowledge_view.machine_verification.availability.value
+        == "recorded"
+    )
+
+    result = api.get_concept(
+        "llm-wiki://entities/User",
+        service=service,
     )
 
     assert result["concept"]["verification"] == "untracked"

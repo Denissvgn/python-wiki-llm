@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Opt-in, allowlisted native-knowledge summaries for static-site and Obsidian
+  mirrors, including governed identities, lifecycle, scoped review,
+  verification, and freshness. Obsidian mirrors can additionally render native
+  typed-relationship metadata.
 - Native context, graph, knowledge, and MCP search responses now disclose exact
   response-layer totals, returned counts, and truncation through additive
   `bounds` metadata.
@@ -77,6 +81,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Site and Obsidian enrichment now share a validated snapshot projection. The
+  default remains disabled and byte-compatible, while portable enrichment uses
+  public redaction unless a caller explicitly selects the internal profile.
 - Manifest v5 is the current native wiki format. Standalone adoption retains
   manifest v4/surface compatibility, distinguishes markerless v5 surface-only
   inputs from complete marked v5 trios, and exposes unevaluable inputs as
@@ -87,6 +94,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Public projection output now omits native-only actors, private identities,
+  credentials, absolute paths, source snippets, and unapproved extensions.
 - Live knowledge freshness now recomputes the effective generation-options
   commitment instead of assuming the recorded snapshot hash is still current.
 - MCP knowledge tools reject malformed or noncanonical concept coordinates

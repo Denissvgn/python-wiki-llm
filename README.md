@@ -1081,6 +1081,7 @@ Export and validate an Obsidian-friendly mirror of the canonical wiki.
 
 ```bash
 llm-wiki obsidian export --wiki-dir docs/llm_wiki --vault-dir ~/Vaults/project
+llm-wiki obsidian export --wiki-dir docs/llm_wiki --vault-dir ~/Vaults/project --knowledge-metadata summary
 llm-wiki obsidian check --wiki-dir docs/llm_wiki --vault-dir ~/Vaults/project
 llm-wiki obsidian install-plugin --vault-dir ~/Vaults/project
 ```
@@ -1090,6 +1091,15 @@ Page discovery follows the canonical surface registry, so guides, flows, and
 optional architecture pages are mirrored when present. The canonical source of
 truth remains `docs/llm_wiki/`; generated mirror output is not edited as an
 independent documentation source.
+
+`--knowledge-metadata summary` is an opt-in projection of governed native
+identity, lifecycle, evidence, scoped review, machine-check, and snapshot
+parity fields. It also renders deterministic typed relationship groups without
+running a separate source inventory scan. Only resolved concepts present in
+the vault become wikilinks. The default `public-portable` redaction profile is
+allowlist-only; use `--knowledge-profile internal` only for a private derived
+mirror. See [Safe derived projections][native-knowledge-projections] for the
+identity-disclosure, rollback, checker, and authority rules.
 
 ### `docs`
 
@@ -1268,12 +1278,14 @@ llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site --format mkdocs --p
 llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site --format mkdocs --profile user --site-name "Project Docs"
 llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site --format mkdocs --profile user --site-name "Project Docs" --file-friendly
 llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site --format mkdocs --dry-run --output-format json
+llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site --format mkdocs --knowledge-metadata summary
 llm-wiki site export --wiki-root sources/code_wikis --out-dir site --format docusaurus
 llm-wiki site export --wiki sources/code_wikis/api --wiki sources/code_wikis/web --out-dir site
 llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site
 llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site --profile user --site-name "Project Docs"
 llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site --built-site-dir _site --link-mode http
 llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site --built-site-dir _site --link-mode file --profile user --site-name "Project Docs"
+llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site --knowledge-metadata summary
 llm-wiki site check --wiki-root sources/code_wikis --out-dir site
 llm-wiki site check --out-dir site --output-format json
 ```
@@ -1297,6 +1309,16 @@ same Markdown heading, generated MkDocs and Docusaurus labels include page-id
 context such as `agent / ArtifactStore` so static-site navigation remains
 unambiguous. Plain exports can add `llm_wiki` front matter with
 `--front-matter`.
+
+`--knowledge-metadata summary` enables effective front matter and adds only the
+selected safe native projection. It requires committed governed UIDs, rejects
+invalid or mixed snapshots, and defaults to `--knowledge-profile
+public-portable`. The matching `site check` invocation verifies the exact
+source knowledge hash, values, UIDs, successor references, and hub collisions.
+The user profile attaches the canonical index concept to
+`generated-reference.md`, leaving the human landing page projection-free. See
+[Safe derived projections][native-knowledge-projections] for the complete
+redaction and compatibility contract.
 
 MkDocs defaults target HTTP hosting. `--file-friendly` is an opt-in MkDocs mode
 for direct disk handoffs: it writes `use_directory_urls: false`, a small
@@ -1653,3 +1675,4 @@ the license terms.
 [native-knowledge-api]: https://github.com/Denissvgn/python-wiki-llm/blob/main/docs/native-knowledge.md#python-api
 [native-knowledge-mcp]: https://github.com/Denissvgn/python-wiki-llm/blob/main/docs/native-knowledge.md#mcp-tools
 [native-knowledge-no-exec]: https://github.com/Denissvgn/python-wiki-llm/blob/main/docs/native-knowledge.md#read-only-and-no-execution-rules
+[native-knowledge-projections]: https://github.com/Denissvgn/python-wiki-llm/blob/main/docs/native-knowledge.md#safe-derived-projections

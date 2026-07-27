@@ -1121,7 +1121,14 @@ def _add_obsidian_command(subparsers):
     obs_export = obsidian_sub.add_parser(
         "export", help="Export an Obsidian mirror vault"
     )
-    obs_export.add_argument("--src-dir", default=".", help="Source directory to scan")
+    obs_export.add_argument(
+        "--src-dir",
+        default=".",
+        help=(
+            "Source directory for the legacy unenriched relationship scan; "
+            "knowledge-enriched export does not scan it"
+        ),
+    )
     obs_export.add_argument(
         "--wiki-dir",
         default=DEFAULT_WIKI_DIR,
@@ -1148,6 +1155,10 @@ def _add_obsidian_command(subparsers):
         default="text",
         help="Output format (default: text)",
     )
+    _add_projection_metadata_arguments(
+        obs_export,
+        public_identity_dest="knowledge_public_repository_identity",
+    )
     obs_check = obsidian_sub.add_parser(
         "check", help="Check an Obsidian mirror for missing pages and broken wikilinks"
     )
@@ -1164,6 +1175,10 @@ def _add_obsidian_command(subparsers):
         choices=["text", "json"],
         default="text",
         help="Output format (default: text)",
+    )
+    _add_projection_metadata_arguments(
+        obs_check,
+        public_identity_dest="knowledge_public_repository_identity",
     )
     obs_install = obsidian_sub.add_parser(
         "install-plugin", help="Install the companion Obsidian plugin into a vault"
@@ -1239,6 +1254,10 @@ def _add_site_command(subparsers):
         default="text",
         help="Console output format (default: text)",
     )
+    _add_projection_metadata_arguments(
+        site_export,
+        public_identity_dest="public_repository_identity",
+    )
     site_check = site_sub.add_parser(
         "check", help="Check a static-site mirror for missing pages and links"
     )
@@ -1280,6 +1299,38 @@ def _add_site_command(subparsers):
         choices=["text", "json"],
         default="text",
         help="Console output format (default: text)",
+    )
+    _add_projection_metadata_arguments(
+        site_check,
+        public_identity_dest="public_repository_identity",
+    )
+
+
+def _add_projection_metadata_arguments(parser, *, public_identity_dest: str):
+    parser.add_argument(
+        "--knowledge-metadata",
+        choices=site_cmd.KNOWLEDGE_METADATA_CHOICES,
+        default=None,
+        help=(
+            "Opt in to validated native-knowledge front matter "
+            "(currently: summary)"
+        ),
+    )
+    parser.add_argument(
+        "--knowledge-profile",
+        choices=site_cmd.KNOWLEDGE_PROFILE_CHOICES,
+        default="public-portable",
+        help="Knowledge redaction profile (default: public-portable)",
+    )
+    parser.add_argument(
+        "--knowledge-public-repository-identity",
+        dest=public_identity_dest,
+        default=None,
+        metavar="IDENTITY",
+        help=(
+            "Disclose an exact configured-public repository identity in the "
+            "public projection"
+        ),
     )
 
 

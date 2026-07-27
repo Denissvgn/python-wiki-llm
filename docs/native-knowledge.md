@@ -241,6 +241,122 @@ If generated artifacts alone are damaged, retain the ledger and rerun sync.
 An interrupted ledger-first update is safe to resume; readers reject the
 temporary ledger/projection mismatch.
 
+## Safe derived projections
+
+Static-site and Obsidian mirrors can opt into a bounded knowledge summary after
+durable identity has been initialized and the wiki has been synchronized:
+
+```bash
+llm-wiki site export \
+  --wiki-dir docs/llm_wiki \
+  --out-dir site \
+  --format mkdocs \
+  --knowledge-metadata summary
+
+llm-wiki site check \
+  --wiki-dir docs/llm_wiki \
+  --out-dir site \
+  --knowledge-metadata summary
+
+llm-wiki obsidian export \
+  --wiki-dir docs/llm_wiki \
+  --vault-dir ~/Vaults/project \
+  --knowledge-metadata summary
+
+llm-wiki obsidian check \
+  --wiki-dir docs/llm_wiki \
+  --vault-dir ~/Vaults/project \
+  --knowledge-metadata summary
+```
+
+Enrichment is disabled by default. With no `--knowledge-metadata` option, the
+exporters retain their ordinary output contract and do not load native
+knowledge. Deleting either mirror loses no authority; rerun the corresponding
+export command to rebuild it. Canonical Markdown, repository source, and the
+durable governance ledger remain authoritative for their respective fact
+classes. Non-default projection options are rejected unless
+`--knowledge-metadata summary` is also present.
+
+For byte-compatible legacy behavior, an unenriched Obsidian export retains its
+existing optional source-inventory relationship scan. Knowledge enrichment
+replaces that path with the committed native graph and does not scan source.
+
+Both exporters build from one validated, committed `KnowledgeReadView`. They
+reject absent, invalid, mixed-snapshot, page-mismatched, or ungoverned
+projections instead of publishing optimistic metadata. The command-line export
+uses a snapshot-only view, so `knowledge_freshness` is `not-evaluated`; it does
+not scan source merely to claim current freshness. A separate caller that has
+already collected a complete live evaluation can supply the resulting
+projection through the service API.
+
+The summary is written under `llm_wiki` front matter and contains only:
+
+- the projection schema and selected redaction profile;
+- the bundle-namespaced concept UID and concept kind;
+- the repository identity and identity source, which remain `unknown` in the
+  portable profile unless the caller explicitly corroborates a
+  `configured-public` identity;
+- explicit lifecycle state and an optional namespaced successor UID;
+- structural evidence state and reason;
+- freshness state and reason;
+- bounded section-review state, counts, truncation, and safe section results;
+- a separate disposable machine-check state, reason, recorded result, and
+  aggregate check counts; and
+- the exact committed source knowledge hash used for parity checking.
+
+The default `public-portable` profile is allowlist-only. It omits raw evidence,
+source coordinates, local actors, producer and plugin detail, unknown
+extensions, private repository identities, non-parity hashes, credential-like
+values, environment detail, and absolute paths. Repository identity remains
+`unknown` unless trusted current command configuration supplies
+`--knowledge-public-repository-identity` and that value exactly corroborates a
+`configured-public` identity in the committed artifact. The `internal` profile
+can retain safe repository, producer, actor, evidence, and extension detail,
+but it still rejects or omits credentials, raw private remotes, environment
+dumps, raw plugin settings, and machine-local absolute paths:
+
+```bash
+llm-wiki site export \
+  --wiki-dir docs/llm_wiki \
+  --out-dir private-site \
+  --knowledge-metadata summary \
+  --knowledge-profile internal
+```
+
+These profiles govern added native-knowledge metadata, not the canonical
+Markdown body that the mirrors are designed to preserve. Treat canonical prose
+and media as publication input and review them separately before publishing a
+public site or vault.
+
+Site enrichment enables effective front matter for every projected page. In a
+user-profile site, the canonical wiki `index.md` concept is attached to
+`generated-reference.md`, not to the human landing page. Site checking compares
+every emitted value to the same committed source hash, validates unique UIDs
+and successor references, and checks cross-wiki hub collisions before a hub
+export writes output. Enriched export also refuses unsafe destinations or
+unexpected stale Markdown carrying projected knowledge before its first write;
+checking rejects duplicate front-matter keys, unallowlisted `llm_wiki` fields,
+and knowledge metadata on the user-profile landing page.
+
+Obsidian enrichment renders a deterministic `Typed Relationships` section from
+the same native graph used by query, context, API, and MCP consumers. It reports
+direction, kind, resolution, evidence counts, coverage, totals, limits, and
+truncation. Only a resolved concept that is present in the exported vault
+becomes a wikilink; external, ambiguous, unresolved, absent, and truncated
+relations remain labeled text. The exporter performs no independent source
+inventory scan, and re-export never overwrites a human sidecar note. When a
+caller intentionally keeps sidecar notes outside the vault, enriched pages use
+a path-free label instead of emitting an absolute transclusion. An enriched
+re-export also refuses a stale generated mirror page that still carries
+projected knowledge metadata, while leaving unrelated Markdown and human
+sidecars untouched.
+
+The current interface intentionally has no OKF export command. A one-way OKF
+mapping remains conditional on a named consumer that supplies required fields,
+an approved example bundle and delivery workflow, and a responsible maintainer.
+Native artifacts and canonical Markdown will remain authoritative if such an
+interchange view is added later.
+
 ## Typed graph and section ownership extensions
 
 The knowledge index keeps its closed `llm-wiki-knowledge/v1` core contract.
