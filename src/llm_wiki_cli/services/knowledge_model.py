@@ -533,13 +533,25 @@ def parse_knowledge_index(payload: object) -> KnowledgeIndex:
 
     extensions = _validated_reserved_extensions(extensions, concepts)
     _validate_index_references(bundle, concepts, relationships)
-    return KnowledgeIndex(
+    model = KnowledgeIndex(
         schema_version=schema_version,
         bundle=bundle,
         concepts=concepts,
         relationships=relationships,
         extensions=extensions,
     )
+    # Governance is an independently versioned projection whose authority is
+    # the separate ledger.  Validate its core lifecycle/UID/alias/event parity
+    # only after the enclosing model and the other reserved extensions exist.
+    from .knowledge_governance import validate_governance_projection
+
+    try:
+        validate_governance_projection(model)
+    except ValueError as exc:
+        field = getattr(exc, "field", "extensions")
+        message = getattr(exc, "message", str(exc))
+        raise KnowledgeModelError(str(field), str(message)) from exc
+    return model
 
 
 def _validated_reserved_extensions(

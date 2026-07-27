@@ -12,11 +12,52 @@ UTF-8 JSON staged in a unique same-directory temporary file.
 from __future__ import annotations
 
 import os
+import stat
 import tempfile
 from pathlib import Path
 from typing import Any
 
 from .knowledge_evidence import formatted_json_bytes
+
+
+def first_unsafe_path_component(path: str | Path) -> Path | None:
+    """Return the first traversal, symlink, or reparse component of a path.
+
+    ``Path.resolve`` is deliberately not used: callers need to reject a path
+    escape, not normalize it into an apparently safe leaf. Missing suffix
+    components are permitted so the same helper can guard future targets.
+    """
+
+    lexical = Path(os.fspath(path))
+    if ".." in lexical.parts:
+        return lexical
+    absolute = Path(os.path.abspath(lexical))
+    current = Path(absolute.anchor)
+    for part in absolute.parts[1:]:
+        current /= part
+        try:
+            metadata = current.lstat()
+        except FileNotFoundError:
+            return None
+        except OSError:
+            return current
+        attributes = getattr(metadata, "st_file_attributes", 0)
+        reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+        special_link = stat.S_ISLNK(metadata.st_mode) or (
+            bool(reparse_flag) and bool(attributes & reparse_flag)
+        )
+        if special_link:
+            # Platform-level aliases such as macOS ``/var -> private/var`` are
+            # root-owned entries directly below the filesystem root, outside
+            # a checkout's control. Preserve those aliases while rejecting
+            # every user/project-controlled component beneath them.
+            if (
+                current.parent == Path(absolute.anchor)
+                and getattr(metadata, "st_uid", None) == 0
+            ):
+                continue
+            return current
+    return None
 
 
 def read_md(path: Path) -> str:

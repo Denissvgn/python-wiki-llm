@@ -16,7 +16,10 @@ from collections.abc import Set as AbstractSet
 from dataclasses import dataclass, field
 from types import MappingProxyType
 
-from .contracts import KNOWLEDGE_SCHEMA_VERSION
+from .contracts import (
+    GOVERNANCE_HASH_EXTENSION_KEY,
+    KNOWLEDGE_SCHEMA_VERSION,
+)
 from .knowledge_evidence import (
     UNKNOWN_ENTITY_NOT_FOUND,
     ConceptObservationBasis,
@@ -363,7 +366,11 @@ def _validate_live_producer(
                 markdown_snapshot_hash=snapshot.markdown_snapshot_hash,
                 surface_index_hash=snapshot.surface_index_hash,
                 generation_options_hash=live.generation_options_hash,
-                extensions=snapshot.extensions,
+                extensions={
+                    key: value
+                    for key, value in snapshot.extensions.items()
+                    if key != GOVERNANCE_HASH_EXTENSION_KEY
+                },
             ),
             producer=live.producer,
             extensions=recorded.bundle.extensions,

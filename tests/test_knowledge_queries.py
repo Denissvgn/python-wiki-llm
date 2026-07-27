@@ -28,6 +28,17 @@ from llm_wiki_cli.services.knowledge_loader import (
     KnowledgeMismatchPolicy,
     load_knowledge_state,
 )
+from llm_wiki_cli.services.knowledge_governance import (
+    ALIAS_LOCATOR,
+    ALIAS_NATURAL_KEY,
+    GovernanceActor,
+    GovernanceLedger,
+    add_alias,
+    apply_governance_projection,
+    concept_references_from_knowledge,
+    reconcile_concepts,
+    set_lifecycle,
+)
 from llm_wiki_cli.services.knowledge_model import Resolution, TargetClass
 from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME
 from tests.knowledge_fixtures import fixture_hash
@@ -57,6 +68,60 @@ def _knowledge_service(view, *, limit: int = 20):
         {},
         limit=limit,
         knowledge_view=view,
+    )
+
+
+def _governed_view(tmp_path):
+    view = _ready_view(tmp_path)
+    assert view.knowledge is not None
+    ledger = reconcile_concepts(
+        GovernanceLedger.empty("query-fixture"),
+        concept_references_from_knowledge(view.knowledge),
+    )
+    user_uid = next(
+        uid
+        for uid, allocation in ledger.concepts.items()
+        if allocation.locator == USER_LOCATOR
+    )
+    successor_uid = next(
+        uid
+        for uid, allocation in ledger.concepts.items()
+        if allocation.locator == "llm-wiki://entities/AccountService"
+    )
+    ledger = add_alias(
+        ledger,
+        user_uid,
+        ALIAS_LOCATOR,
+        "llm-wiki://entities/LegacyUser",
+    )
+    ledger = add_alias(
+        ledger,
+        user_uid,
+        ALIAS_NATURAL_KEY,
+        "code-entity:entities/LegacyUser.md",
+    )
+    ledger = set_lifecycle(
+        ledger,
+        user_uid,
+        "active",
+        actor=GovernanceActor("human", "reviewer.example"),
+        authored_at="2026-07-27T10:00:00Z",
+    )
+    ledger = set_lifecycle(
+        ledger,
+        user_uid,
+        "superseded",
+        successor_uid=successor_uid,
+        actor=GovernanceActor("human", "reviewer.example"),
+        authored_at="2026-07-27T11:00:00Z",
+    )
+    return (
+        replace(
+            view,
+            knowledge=apply_governance_projection(view.knowledge, ledger),
+        ),
+        user_uid,
+        successor_uid,
     )
 
 
@@ -130,6 +195,121 @@ def test_ready_concept_lookup_is_exact_compact_and_fresh(tmp_path):
     assert by_locator["matches"] == [by_locator["concept"]]
     _assert_compact(by_locator)
     json.dumps(by_locator, sort_keys=True)
+
+
+def test_governed_concept_lookup_accepts_uid_alias_and_current_locator(tmp_path):
+    view, user_uid, successor_uid = _governed_view(tmp_path)
+    machine = {
+        user_uid: {
+            "availability": "recorded",
+            "valid": True,
+            "recorded_result": "passed",
+        }
+    }
+    service = DocumentationGraphQueryService(
+        {},
+        knowledge_view=view,
+        machine_verification=machine,
+    )
+
+    by_uid = service.get_concept(user_uid)
+    by_alias = service.get_concept("llm-wiki://entities/LegacyUser")
+    by_natural_alias = service.get_concept(
+        "code-entity:entities/LegacyUser.md"
+    )
+    by_locator = service.get_concept(USER_LOCATOR)
+
+    assert (
+        by_uid["concept"]
+        == by_alias["concept"]
+        == by_natural_alias["concept"]
+        == by_locator["concept"]
+    )
+    concept = by_uid["concept"]
+    assert concept["uid"] == user_uid
+    assert concept["lifecycle"] == "superseded"
+    assert concept["successor_uid"] == successor_uid
+    assert concept["aliases"] == [
+        {"type": "locator", "value": "llm-wiki://entities/LegacyUser"},
+        {
+            "type": "natural-key",
+            "value": "code-entity:entities/LegacyUser.md",
+        },
+    ]
+    assert concept["alias_coverage"] == {
+        "total": 2,
+        "returned": 2,
+        "truncated": False,
+    }
+    assert concept["lifecycle_events"] == {
+        "items": [
+            {
+                "event_id": concept["lifecycle_events"]["items"][0]["event_id"],
+                "from": "unknown",
+                "to": "active",
+                "actor": {"kind": "human", "id": "reviewer.example"},
+                "authored_at": "2026-07-27T10:00:00Z",
+                "reason": "explicit-lifecycle-change",
+            },
+            {
+                "event_id": concept["lifecycle_events"]["items"][1]["event_id"],
+                "from": "active",
+                "to": "superseded",
+                "actor": {"kind": "human", "id": "reviewer.example"},
+                "authored_at": "2026-07-27T11:00:00Z",
+                "reason": "explicit-lifecycle-change",
+                "successor_uid": successor_uid,
+            },
+        ],
+        "total": 2,
+        "returned": 2,
+        "limit": 20,
+        "truncated": False,
+    }
+
+    bounded = DocumentationGraphQueryService(
+        {},
+        limit=1,
+        knowledge_view=view,
+    ).get_concept("code-entity:entities/LegacyUser.md")
+    assert bounded["concept"]["aliases"] == [
+        {"type": "locator", "value": "llm-wiki://entities/LegacyUser"}
+    ]
+    assert bounded["concept"]["alias_coverage"] == {
+        "total": 2,
+        "returned": 1,
+        "truncated": True,
+    }
+    assert concept["reviews"] == {
+        "items": [],
+        "total": 0,
+        "returned": 0,
+        "limit": 20,
+        "truncated": False,
+    }
+    assert concept["machine_verification"] == machine[user_uid]
+    assert concept["verification"] == "untracked"
+
+    traversal = service.traverse_typed_graph(
+        user_uid,
+        direction="outgoing",
+        kinds=["supersedes"],
+        origins=["governance"],
+        resolutions=["resolved"],
+    )
+    assert traversal["total"] == 1
+    assert traversal["edges"][0]["from"] == {
+        "kind": "concept",
+        "uid": user_uid,
+    }
+    assert traversal["edges"][0]["target"] == {
+        "kind": "concept",
+        "uid": successor_uid,
+    }
+    assert (
+        traversal["edges"][0]["related_concept"]["uid"]
+        == successor_uid
+    )
 
 
 @pytest.mark.parametrize(

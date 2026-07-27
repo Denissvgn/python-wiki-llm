@@ -10,6 +10,7 @@ import types
 import pytest
 
 import llm_wiki_cli.api as api
+from llm_wiki_cli.services import mcp_server
 from llm_wiki_cli.api import (
     EXTRACT_SCHEMA_VERSION,
     ExtractionError,
@@ -26,12 +27,42 @@ from llm_wiki_cli.api import (
     list_wiki_pages,
     pages_for_symbol,
 )
-from llm_wiki_cli.services.knowledge_artifacts import commit_knowledge_artifacts
+from llm_wiki_cli.services.knowledge_artifacts import (
+    build_knowledge_commit_plan,
+    commit_knowledge_artifacts,
+)
 from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
-from llm_wiki_cli.services.knowledge_loader import KnowledgeLoadResult
-from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
+from llm_wiki_cli.services.knowledge_governance import (
+    ALIAS_LOCATOR,
+    ALIAS_NATURAL_KEY,
+    GovernanceActor,
+    GovernanceLedger,
+    add_alias,
+    add_review_event,
+    apply_governance_projection,
+    concept_references_from_knowledge,
+    current_review_evidence,
+    reconcile_concepts,
+    save_governance,
+    set_lifecycle,
+)
+from llm_wiki_cli.services.knowledge_loader import (
+    KnowledgeLoadResult,
+    load_knowledge_state,
+)
+from llm_wiki_cli.services.knowledge_model import (
+    KnowledgeLoadState,
+    parse_knowledge_index,
+    serialize_knowledge_index,
+)
+from llm_wiki_cli.services.verification_contracts import (
+    ARTIFACT_INTEGRITY_CHECKER_ID,
+    build_artifact_verification_context,
+    verify_and_write_receipt,
+)
 from tests.knowledge_fixtures import (
     fail_if_extraction_runs,
+    fixture_hash,
     materialize_fixture_tree,
     one_module_two_entities_fixture,
 )
@@ -1137,6 +1168,252 @@ def test_query_service_builder_exposes_committed_knowledge_end_to_end(
     assert result["found"] is True
     assert result["concept"]["locator"] == "llm-wiki://entities/User"
     assert result["concept"]["freshness"]["state"] == "current"
+
+
+def test_governed_api_and_mcp_concept_summaries_have_bounded_parity(
+    tmp_path,
+    monkeypatch,
+):
+    fixture = one_module_two_entities_fixture()
+    tree = materialize_fixture_tree(
+        fixture,
+        tmp_path / "checkout",
+        consumer="api",
+    )
+    base_plan = _knowledge_commit_plan(tree["wiki_root"], fixture)
+    knowledge = parse_knowledge_index(
+        json.loads(base_plan.knowledge_index.content)
+    )
+    ledger = reconcile_concepts(
+        GovernanceLedger.empty("kb_consumer-parity"),
+        concept_references_from_knowledge(knowledge),
+    )
+    user_uid = next(
+        uid
+        for uid, allocation in ledger.concepts.items()
+        if allocation.locator == "llm-wiki://entities/User"
+    )
+    successor_uid = next(
+        uid
+        for uid, allocation in ledger.concepts.items()
+        if allocation.locator == "llm-wiki://entities/AccountService"
+    )
+    ledger = add_alias(
+        ledger,
+        user_uid,
+        ALIAS_LOCATOR,
+        "llm-wiki://entities/LegacyUser",
+    )
+    ledger = add_alias(
+        ledger,
+        user_uid,
+        ALIAS_NATURAL_KEY,
+        "code-entity:entities/LegacyUser.md",
+    )
+    reviewer = GovernanceActor("human", "reviewer.example")
+    ledger = set_lifecycle(
+        ledger,
+        user_uid,
+        "active",
+        actor=reviewer,
+        authored_at="2026-07-27T10:00:00Z",
+    )
+    ledger = set_lifecycle(
+        ledger,
+        user_uid,
+        "superseded",
+        successor_uid=successor_uid,
+        actor=reviewer,
+        authored_at="2026-07-27T11:00:00Z",
+    )
+    user = next(
+        concept
+        for concept in knowledge.concepts
+        if concept.locator == "llm-wiki://entities/User"
+    )
+    review_evidence = current_review_evidence(user)
+    assert review_evidence is not None
+    for version, authored_at in (
+        ("1", "2026-07-27T11:30:00Z"),
+        ("2", "2026-07-27T11:40:00Z"),
+    ):
+        ledger = add_review_event(
+            ledger,
+            user_uid,
+            section_locator=(
+                "llm-wiki://entities/User#section/User~1/Review~1"
+            ),
+            scope_hash=fixture_hash("consumer-review"),
+            evidence=review_evidence,
+            reviewer=reviewer,
+            method="manual-review",
+            method_version=version,
+            authored_at=authored_at,
+        )
+
+    projected = apply_governance_projection(
+        knowledge,
+        ledger,
+        event_limit=1,
+    )
+    save_governance(
+        tree["wiki_root"],
+        ledger,
+        expected_hash=None,
+    )
+    commit_knowledge_artifacts(
+        build_knowledge_commit_plan(
+            tree["wiki_root"],
+            surface_index_bytes=fixture.surface_bytes,
+            knowledge_index_bytes=serialize_knowledge_index(
+                projected
+            ).encode("utf-8"),
+            manifest=base_plan.committed_manifest,
+        )
+    )
+    monkeypatch.chdir(tree["root"])
+    mcp = mcp_server.McpWikiService(
+        src_dir=".",
+        wiki_dir="docs/llm_wiki",
+    )
+
+    coordinates = (
+        user_uid,
+        "llm-wiki://entities/LegacyUser",
+        "code-entity:entities/LegacyUser.md",
+        "llm-wiki://entities/User",
+    )
+    concepts = []
+    for coordinate in coordinates:
+        api_result = api.get_concept(
+            coordinate,
+            src_dir=".",
+            wiki_dir="docs/llm_wiki",
+            limit=1,
+        )
+        mcp_result = mcp.get_concept(coordinate, limit=1)
+
+        assert api_result == mcp_result
+        assert api_result["found"] is True
+        concepts.append(api_result["concept"])
+
+    assert all(concept == concepts[0] for concept in concepts)
+    concept = concepts[0]
+    assert concept["uid"] == user_uid
+    assert concept["lifecycle"] == "superseded"
+    assert concept["successor_uid"] == successor_uid
+    assert concept["aliases"] == [
+        {
+            "type": "locator",
+            "value": "llm-wiki://entities/LegacyUser",
+        }
+    ]
+    assert concept["alias_coverage"] == {
+        "total": 2,
+        "returned": 1,
+        "truncated": True,
+    }
+    assert concept["lifecycle_events"] == {
+        "items": [
+            {
+                "event_id": concept["lifecycle_events"]["items"][0][
+                    "event_id"
+                ],
+                "from": "active",
+                "to": "superseded",
+                "actor": {"kind": "human", "id": "reviewer.example"},
+                "authored_at": "2026-07-27T11:00:00Z",
+                "reason": "explicit-lifecycle-change",
+                "successor_uid": successor_uid,
+            }
+        ],
+        "total": 2,
+        "returned": 1,
+        "limit": 1,
+        "truncated": True,
+    }
+    assert concept["reviews"] == {
+        "items": [
+            {
+                "event_id": concept["reviews"]["items"][0]["event_id"],
+                "section_locator": (
+                    "llm-wiki://entities/User#section/User~1/Review~1"
+                ),
+                "state": "expired",
+                "reasons": ["section-missing"],
+                "reviewer": {"kind": "human", "id": "reviewer.example"},
+                "method": {"id": "manual-review", "version": "2"},
+                "authored_at": "2026-07-27T11:40:00Z",
+            }
+        ],
+        "total": 2,
+        "returned": 1,
+        "limit": 1,
+        "truncated": True,
+    }
+
+
+def test_api_exposes_machine_receipt_as_separate_read_only_dimension(
+    tmp_path,
+    monkeypatch,
+):
+    fixture = one_module_two_entities_fixture()
+    tree = materialize_fixture_tree(
+        fixture,
+        tmp_path / "checkout",
+        consumer="api",
+    )
+    commit_knowledge_artifacts(
+        _knowledge_commit_plan(tree["wiki_root"], fixture)
+    )
+    loaded = load_knowledge_state(tree["wiki_root"])
+    assert loaded.knowledge is not None
+    assert loaded.manifest_basis is not None
+    assert loaded.manifest_basis.artifact_hashes is not None
+    hashes = loaded.manifest_basis.artifact_hashes
+    context = build_artifact_verification_context(
+        loaded.knowledge,
+        knowledge_hash=hashes.knowledge_index_hash,
+        surface_index_hash=hashes.surface_index_hash,
+        evaluated_envelope_hash=hashes.evaluated_envelope_hash,
+        governance_hash=hashes.governance_hash,
+    )
+    verify_and_write_receipt(
+        tree["wiki_root"],
+        context,
+        [ARTIFACT_INTEGRITY_CHECKER_ID],
+    )
+    monkeypatch.chdir(tree["root"])
+
+    result = api.get_concept(
+        "llm-wiki://entities/User",
+        src_dir=".",
+        wiki_dir="docs/llm_wiki",
+    )
+
+    assert result["concept"]["verification"] == "untracked"
+    assert result["concept"]["machine_verification"] == {
+        "availability": "recorded",
+        "scope_uid": "bundle:locator-only",
+        "valid": True,
+        "invalidation_reasons": [],
+        "recorded_result": "passed",
+        "passed": True,
+        "checks": {
+            "artifact-integrity": {
+                "version": "1",
+                "result": "passed",
+                "diagnostics": [],
+                "diagnostic_coverage": {
+                    "observed": 0,
+                    "emitted": 0,
+                    "omitted": 0,
+                    "limit": 50,
+                    "truncated": False,
+                },
+            }
+        },
+    }
 
 
 def test_query_service_builder_uses_snapshot_only_on_live_option_failure(

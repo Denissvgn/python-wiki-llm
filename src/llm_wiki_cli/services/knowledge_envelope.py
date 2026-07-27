@@ -15,13 +15,13 @@ import posixpath
 import re
 import subprocess
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import Enum
 from pathlib import Path
 from typing import Any
 from urllib.parse import unquote, urlsplit
 
-from .contracts import KNOWLEDGE_SCHEMA_VERSION
+from .contracts import GOVERNANCE_HASH_EXTENSION_KEY, KNOWLEDGE_SCHEMA_VERSION
 from .knowledge_evidence import (
     canonical_json_bytes,
     formatted_json_text,
@@ -1667,11 +1667,25 @@ def _plugin_metadata_mapping(
 
 
 def _validated_bundle_payload(bundle: BundleRecord) -> dict[str, Any]:
+    # Governance is a separate, non-rebuildable commit input rather than an
+    # evaluated source-envelope input.  The knowledge snapshot and manifest
+    # commit it directly.  Excluding it here also avoids constructing a
+    # deliberately incomplete governance projection merely to validate a
+    # standalone bundle.
+    snapshot_extensions = dict(bundle.snapshot.extensions)
+    snapshot_extensions.pop(GOVERNANCE_HASH_EXTENSION_KEY, None)
+    envelope_bundle = replace(
+        bundle,
+        snapshot=replace(
+            bundle.snapshot,
+            extensions=snapshot_extensions,
+        ),
+    )
     try:
         payload = knowledge_index_to_payload(
             KnowledgeIndex(
                 schema_version=KNOWLEDGE_SCHEMA_VERSION,
-                bundle=bundle,
+                bundle=envelope_bundle,
                 concepts=(),
                 relationships=(),
             )

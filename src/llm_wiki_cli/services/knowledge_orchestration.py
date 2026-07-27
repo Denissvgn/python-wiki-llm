@@ -12,7 +12,7 @@ from __future__ import annotations
 import re
 from collections.abc import Iterable, Mapping, Sequence
 from collections.abc import Set as AbstractSet
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +24,7 @@ from .knowledge_artifacts import (
     KnowledgeArtifactError,
     KnowledgeCommitPlan,
     KnowledgeCommitResult,
+    ValidatedKnowledgeArtifacts,
     commit_knowledge_artifacts,
     validate_knowledge_artifacts,
 )
@@ -46,12 +47,30 @@ from .knowledge_evidence import (
     is_valid_sha256,
 )
 from .knowledge_freshness import LiveKnowledgeEvaluation
+from .knowledge_governance import (
+    GOVERNANCE_FILENAME,
+    ConceptGovernanceReference,
+    GovernanceConflictError,
+    GovernanceError,
+    GovernanceLedger,
+    governance_bundle_id_from_knowledge,
+    governance_lock,
+    load_governance,
+    natural_key_for,
+    reconcile_concepts,
+    save_governance,
+    validate_governance_ledger,
+)
 from .knowledge_generation import (
     KnowledgeGenerationError,
     KnowledgeGenerationInputs,
     build_knowledge_generation_plan,
 )
-from .knowledge_model import KnowledgeIndex, ProducerRecord
+from .knowledge_model import (
+    KnowledgeIndex,
+    ProducerRecord,
+    concept_kind_for_page_kind,
+)
 from .source_snapshot import SourceSnapshot
 from .sync_manifest import EVIDENCE_NOT_RECORDED, MANIFEST_FILENAME, SyncManifest
 from .wiki_surface_index import (
@@ -127,6 +146,8 @@ class RuntimeKnowledgeInputs:
         default_factory=dict
     )
     graph_evidence_limit: int = 20
+    governance: GovernanceLedger | None = None
+    governance_moves: Mapping[str, str] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -188,6 +209,7 @@ def build_runtime_knowledge_plan(
 
     if not isinstance(inputs, RuntimeKnowledgeInputs):
         raise TypeError("inputs must be a RuntimeKnowledgeInputs")
+    governance = _prepared_runtime_governance(inputs)
     source_hashes = inputs.source_snapshot.hashes_for(inputs.inventory)
     (
         extractor_ref_by_source,
@@ -257,6 +279,7 @@ def build_runtime_knowledge_plan(
             external_dependencies=inputs.external_dependencies,
             graph_analyzer_limitations=inputs.graph_analyzer_limitations,
             graph_evidence_limit=inputs.graph_evidence_limit,
+            governance=governance,
         )
     )
 
@@ -383,11 +406,11 @@ def _runtime_live_concept_bases(
     return bases
 
 
-def _previous_committed_producer(
+def _previous_committed_artifacts(
     wiki_dir: str | Path,
     manifest: SyncManifest | None,
-) -> ProducerRecord | None:
-    """Return producer evidence only from the prior committed artifact set.
+) -> ValidatedKnowledgeArtifacts | None:
+    """Return the validated prior artifact set without consulting Markdown.
 
     Markdown may already have been updated by sync, so the full live loader
     would correctly classify the old projections as a mixed snapshot.  This
@@ -411,7 +434,32 @@ def _previous_committed_producer(
         validated.surface_index_hash != marker.surface_index_hash
         or validated.knowledge_index_hash != marker.knowledge_index_hash
         or validated.evaluated_envelope_hash != marker.evaluated_envelope_hash
+        or validated.governance_hash != marker.governance_hash
     ):
+        return None
+    return validated
+
+
+def committed_governance_bundle_id(
+    wiki_dir: str | Path,
+    manifest: SyncManifest | None,
+) -> str | None:
+    """Return a bundle ID only from an intact manifest-committed projection."""
+
+    validated = _previous_committed_artifacts(wiki_dir, manifest)
+    if validated is None:
+        return None
+    return governance_bundle_id_from_knowledge(validated.knowledge)
+
+
+def _previous_committed_producer(
+    wiki_dir: str | Path,
+    manifest: SyncManifest | None,
+) -> ProducerRecord | None:
+    """Return producer evidence only from the prior committed artifact set."""
+
+    validated = _previous_committed_artifacts(wiki_dir, manifest)
+    if validated is None:
         return None
     return validated.knowledge.bundle.producer
 
@@ -424,10 +472,152 @@ def finalize_runtime_knowledge(
 ) -> KnowledgeCommitResult:
     """Plan and commit one generated artifact set through the shared protocol."""
 
-    return commit_knowledge_artifacts(
-        build_runtime_knowledge_plan(inputs),
-        dry_run=dry_run,
-        fault_injector=fault_injector,
+    if not isinstance(inputs, RuntimeKnowledgeInputs):
+        raise TypeError("inputs must be a RuntimeKnowledgeInputs")
+    root = Path(inputs.target_wiki_dir)
+    marker_hash = (
+        getattr(inputs.previous_manifest.artifact_hashes, "governance_hash", None)
+        if (
+            inputs.previous_manifest is not None
+            and inputs.previous_manifest.artifact_hashes is not None
+        )
+        else None
+    )
+    governance_requested = (
+        inputs.governance is not None
+        or (root / GOVERNANCE_FILENAME).exists()
+        or marker_hash is not None
+    )
+    if not governance_requested:
+        return commit_knowledge_artifacts(
+            build_runtime_knowledge_plan(inputs),
+            dry_run=dry_run,
+            fault_injector=fault_injector,
+        )
+    if dry_run:
+        if inputs.governance is not None and (
+            (root / GOVERNANCE_FILENAME).exists()
+            or (root / GOVERNANCE_FILENAME).is_symlink()
+        ):
+            loaded = load_governance(root)
+            if inputs.governance.content_hash() != loaded.content_hash:
+                raise GovernanceConflictError(
+                    GOVERNANCE_FILENAME,
+                    "supplied governance does not match the live ledger",
+                )
+        effective = _prepared_runtime_governance(inputs)
+        if effective is None:
+            raise GovernanceError(
+                GOVERNANCE_FILENAME,
+                "governance was requested without a ledger",
+            )
+        return commit_knowledge_artifacts(
+            build_runtime_knowledge_plan(
+                replace(inputs, governance=effective)
+            ),
+            dry_run=True,
+            fault_injector=fault_injector,
+        )
+
+    with governance_lock(root):
+        try:
+            loaded = load_governance(root)
+        except FileNotFoundError:
+            loaded = None
+        if loaded is None and marker_hash is not None and inputs.governance is None:
+            raise GovernanceError(
+                GOVERNANCE_FILENAME,
+                "is missing but the committed manifest records prior governance; "
+                "restore the ledger from version control",
+                code="governance-missing",
+            )
+        if (
+            loaded is not None
+            and inputs.governance is not None
+            and inputs.governance.content_hash() != loaded.content_hash
+        ):
+            raise GovernanceConflictError(
+                GOVERNANCE_FILENAME,
+                "supplied governance does not match the live ledger",
+            )
+        base = inputs.governance or (loaded.ledger if loaded is not None else None)
+        if base is None:
+            raise GovernanceError(
+                GOVERNANCE_FILENAME,
+                "governance was requested without a ledger",
+            )
+        effective = _prepared_runtime_governance(
+            replace(inputs, governance=base),
+        )
+        assert effective is not None
+        prepared_inputs = replace(inputs, governance=effective)
+        plan = build_runtime_knowledge_plan(prepared_inputs)
+        save_governance(
+            root,
+            effective,
+            expected_hash=(
+                loaded.content_hash if loaded is not None else None
+            ),
+        )
+        return commit_knowledge_artifacts(
+            plan,
+            dry_run=False,
+            fault_injector=fault_injector,
+        )
+
+
+def _prepared_runtime_governance(
+    inputs: RuntimeKnowledgeInputs,
+) -> GovernanceLedger | None:
+    """Load/reconcile governance without writing or inventing recovery state."""
+
+    root = Path(inputs.target_wiki_dir)
+    expected_bundle_id = committed_governance_bundle_id(
+        root,
+        inputs.previous_manifest,
+    )
+    if inputs.governance is not None:
+        ledger = validate_governance_ledger(
+            inputs.governance,
+            expected_bundle_id=expected_bundle_id,
+        )
+    else:
+        try:
+            ledger = load_governance(
+                root,
+                expected_bundle_id=expected_bundle_id,
+            ).ledger
+        except FileNotFoundError:
+            marker = (
+                inputs.previous_manifest.artifact_hashes
+                if inputs.previous_manifest is not None
+                else None
+            )
+            if getattr(marker, "governance_hash", None) is not None:
+                raise GovernanceError(
+                    GOVERNANCE_FILENAME,
+                    "is missing but prior artifacts were governed; restore it "
+                    "instead of allocating replacement identities",
+                    code="governance-missing",
+                )
+            return None
+    references = []
+    for page in inputs.surface.pages:
+        concept_kind = concept_kind_for_page_kind(page.kind).value
+        references.append(
+            ConceptGovernanceReference(
+                locator=page.mcp_uri,
+                concept_kind=concept_kind,
+                natural_key=natural_key_for(
+                    concept_kind,
+                    page.relative_path,
+                ),
+            )
+        )
+    return reconcile_concepts(
+        ledger,
+        references,
+        moves=inputs.governance_moves,
     )
 
 
@@ -847,6 +1037,7 @@ __all__ = [
     "build_runtime_knowledge_plan",
     "build_runtime_live_evaluation",
     "collect_runtime_repository_evidence",
+    "committed_governance_bundle_id",
     "finalize_runtime_knowledge",
     "persist_runtime_generation_policy",
     "prepare_runtime_generation_options",

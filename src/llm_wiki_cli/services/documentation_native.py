@@ -770,6 +770,7 @@ def _validate_refresh_artifact_basis(
         marker.surface_index_hash != validated.surface_index_hash
         or marker.knowledge_index_hash != validated.knowledge_index_hash
         or marker.evaluated_envelope_hash != validated.evaluated_envelope_hash
+        or marker.governance_hash != validated.governance_hash
     ):
         raise DocumentationNativeError(
             "The manifest marker does not match the native artifact set before refresh."

@@ -22,6 +22,11 @@ from ..commands.bootstrap_cmd import build_module_page_map
 from ..commands.extract_cmd import get_inventory
 from ..config import IDE_AGENTS, get_agent_config_path, read_config, validate_path
 from . import circuit_breaker, wiki_surface
+from .concept_identity import (
+    ConceptIdentityError,
+    validate_concept_uid,
+    validate_natural_key,
+)
 from .documentation_queries import DocumentationQueryError
 from .io import read_md
 from .knowledge_graph import (
@@ -259,7 +264,7 @@ class McpWikiService:
         locator_or_exact_route: str,
         limit: int = 20,
     ) -> dict:
-        """Return one exact compact knowledge concept through the shared service."""
+        """Return one concept by current coordinate, durable UID, or alias."""
         locator = _knowledge_locator(locator_or_exact_route)
         bounded_limit = _bounded_query_limit(limit)
         return self._run_documentation_query(
@@ -275,7 +280,7 @@ class McpWikiService:
         kinds: list[str] | None = None,
         limit: int = 20,
     ) -> dict:
-        """Return bounded relationships for one exact knowledge concept."""
+        """Return bounded relationships for one exact concept identity."""
         locator = _knowledge_locator(locator_or_exact_route)
         selected_direction = _knowledge_direction(direction)
         selected_kinds = _knowledge_kinds(kinds)
@@ -331,7 +336,7 @@ class McpWikiService:
         locator_or_exact_route: str,
         limit: int = 20,
     ) -> dict:
-        """Return bounded stored and computed evidence for one exact concept."""
+        """Return bounded evidence for one exact concept identity."""
         locator = _knowledge_locator(locator_or_exact_route)
         bounded_limit = _bounded_query_limit(limit)
         return self._run_documentation_query(
@@ -682,7 +687,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         locator_or_exact_route: str,
         limit: int = 20,
     ) -> dict:
-        """Return one exact compact knowledge concept."""
+        """Return one concept by current coordinate, durable UID, or alias."""
         return service.get_concept(locator_or_exact_route, limit=limit)
 
     @server.tool()
@@ -692,7 +697,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         kinds: list[str] | None = None,
         limit: int = 20,
     ) -> dict:
-        """Return bounded knowledge relationships for one exact concept."""
+        """Return bounded relationships for one exact concept identity."""
         return service.related_concepts(
             locator_or_exact_route,
             direction=direction,
@@ -726,7 +731,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         locator_or_exact_route: str,
         limit: int = 20,
     ) -> dict:
-        """Return bounded evidence for one exact knowledge concept."""
+        """Return bounded evidence for one exact concept identity."""
         return service.explain_evidence(locator_or_exact_route, limit=limit)
 
     @server.tool()
@@ -862,13 +867,20 @@ def _knowledge_locator(value: object) -> str:
         raise McpWikiError(
             "locator_or_exact_route must be a non-empty string."
         )
+    selected = value.strip()
     try:
-        return wiki_surface.validate_exact_page_coordinate(value)
-    except wiki_surface.WikiSurfaceError as exc:
-        raise McpWikiError(
-            "locator_or_exact_route must be an exact canonical wiki path "
-            "or llm-wiki URI."
-        ) from exc
+        return wiki_surface.validate_exact_page_coordinate(selected)
+    except wiki_surface.WikiSurfaceError:
+        pass
+    for validator in (validate_concept_uid, validate_natural_key):
+        try:
+            return validator(selected)
+        except ConceptIdentityError:
+            continue
+    raise McpWikiError(
+        "locator_or_exact_route must be an exact canonical wiki path or "
+        "llm-wiki URI, durable concept UID, or natural-key alias."
+    )
 
 
 def _knowledge_direction(value: object) -> str:

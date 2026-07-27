@@ -50,6 +50,10 @@ from .knowledge_graph import (
     KnowledgeGraphInputs,
     materialize_typed_graph,
 )
+from .knowledge_governance import (
+    GovernanceLedger,
+    apply_governance_projection,
+)
 from .knowledge_links import (
     KnowledgeLinkError,
     collect_link_observations,
@@ -144,6 +148,7 @@ class KnowledgeGenerationInputs:
         default_factory=dict
     )
     graph_evidence_limit: int = DEFAULT_EVIDENCE_LIMIT
+    governance: GovernanceLedger | None = None
 
 
 def build_knowledge_generation_plan(
@@ -369,6 +374,11 @@ def _build_knowledge_generation_plan(
             extensions=knowledge_extensions,
         )
     )
+    if inputs.governance is not None:
+        knowledge = apply_governance_projection(
+            knowledge,
+            inputs.governance,
+        )
     knowledge_bytes = serialize_knowledge_index(knowledge).encode("utf-8")
     return build_knowledge_commit_plan(
         inputs.wiki_dir,

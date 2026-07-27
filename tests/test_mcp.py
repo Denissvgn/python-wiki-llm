@@ -1525,6 +1525,8 @@ class TestMcpWikiService:
             "llm-wiki://entities/Missing",
             "entities/Page(1).md",
             "llm-wiki://entities/Page%281%29",
+            "lw:entity:0123456789abcdef0123456789abcdef",
+            "code-entity:entities/LegacyUser.md",
         ],
     )
     def test_valid_missing_coordinates_delegate_to_normal_lookup(

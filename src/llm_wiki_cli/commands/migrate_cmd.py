@@ -22,6 +22,7 @@ from pathlib import Path
 
 from .. import __version__
 from ..config import DEFAULT_WIKI_DIR, validate_path
+from ..services.concept_identity import AliasType, identity_coordinate_key
 from ..services.io import read_md, write_json_atomic, write_md
 from ..services.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
@@ -29,6 +30,11 @@ from ..services.knowledge_artifacts import (
 )
 from ..services.knowledge_envelope import RepositoryEvidence
 from ..services.knowledge_evidence import is_valid_sha256, sha256_bytes
+from ..services.knowledge_governance import (
+    GOVERNANCE_FILENAME,
+    GovernanceError,
+    load_governance,
+)
 from ..services.knowledge_loader import (
     KnowledgeStateLoadError,
     load_knowledge_state,
@@ -38,6 +44,7 @@ from ..services.knowledge_orchestration import (
     RuntimeKnowledgeInputs,
     build_runtime_knowledge_plan,
     collect_runtime_repository_evidence,
+    committed_governance_bundle_id,
     finalize_runtime_knowledge,
     runtime_generation_options,
 )
@@ -48,7 +55,7 @@ from ..services.sync_manifest import (
     MANIFEST_STATE_UNAVAILABLE,
     SyncManifest,
 )
-from ..services.wiki_surface import PageKind
+from ..services.wiki_surface import PageKind, WikiSurfaceError, mcp_uri
 from ..services.wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     evaluate_surface_index,
@@ -142,6 +149,11 @@ class MigrationPlan:
     inventory_result: InventoryResult | None = None
     regenerated_structural_page_paths: set[str] = field(default_factory=set)
     repository_evidence: RepositoryEvidence | None = None
+    governance_moves: dict[str, str] = field(default_factory=dict)
+    governance_enabled: bool = False
+    governance_uid_reuses: int = 0
+    governance_new_allocations: int = 0
+    governance_ambiguous_moves: int = 0
 
 
 @dataclass(frozen=True)
@@ -647,10 +659,142 @@ def _build_migration_plan(wiki_dir: Path, src_dir: str) -> MigrationPlan:
             archive_rel = _page_rel(page.path, wiki_dir)
             plan.link_map.setdefault(page.rel, archive_rel)
 
+    _prepare_migration_governance_plan(wiki_dir, plan)
     plan.regenerated_structural_page_paths.update(
         _validated_migration_progress_pages(wiki_dir, plan)
     )
     return plan
+
+
+def _prepare_migration_governance_plan(
+    wiki_dir: Path,
+    plan: MigrationPlan,
+) -> None:
+    """Derive UID carry-forward strictly from the migration's exact matches."""
+
+    plan.governance_enabled = False
+    plan.governance_uid_reuses = 0
+    plan.governance_new_allocations = 0
+    plan.governance_ambiguous_moves = 0
+    targets = {target.rel: target for target in plan.targets}
+    candidates: dict[str, set[str]] = {}
+    for target_rel, pages in sorted(plan.matches.items()):
+        target = targets.get(target_rel)
+        if target is None:
+            continue
+        try:
+            target_locator = mcp_uri(PageKind(target.kind), target.stem)
+        except (ValueError, WikiSurfaceError):
+            continue
+        for page in pages:
+            if (
+                page.rel != target.rel
+                and plan.link_map.get(page.rel) != target.rel
+            ):
+                continue
+            try:
+                old_locator = mcp_uri(PageKind(page.kind), page.stem)
+            except (ValueError, WikiSurfaceError):
+                continue
+            if old_locator != target_locator:
+                candidates.setdefault(old_locator, set()).add(target_locator)
+    plan.governance_moves = {
+        old_locator: next(iter(target_locators))
+        for old_locator, target_locators in sorted(candidates.items())
+        if len(target_locators) == 1
+    }
+
+    try:
+        ledger = load_governance(
+            wiki_dir,
+            expected_bundle_id=committed_governance_bundle_id(
+                wiki_dir,
+                plan.manifest,
+            ),
+        ).ledger
+    except FileNotFoundError:
+        marker = (
+            plan.manifest.artifact_hashes
+            if plan.manifest is not None
+            else None
+        )
+        if getattr(marker, "governance_hash", None) is not None:
+            raise GovernanceError(
+                GOVERNANCE_FILENAME,
+                "is missing but prior migration inputs were governed; restore "
+                "the ledger from version control before migrating",
+                code="governance-missing",
+            )
+        plan.governance_moves = {}
+        return
+
+    plan.governance_enabled = True
+    owner_by_locator = {
+        identity_coordinate_key(AliasType.LOCATOR, allocation.locator): uid
+        for uid, allocation in ledger.concepts.items()
+    }
+    plan.governance_ambiguous_moves = sum(
+        identity_coordinate_key(AliasType.LOCATOR, old_locator)
+        in owner_by_locator
+        and len(target_locators) != 1
+        for old_locator, target_locators in candidates.items()
+    )
+    owners_by_target: dict[str, set[str]] = {}
+    for old_locator, target_locator in plan.governance_moves.items():
+        old_key = identity_coordinate_key(AliasType.LOCATOR, old_locator)
+        target_key = identity_coordinate_key(
+            AliasType.LOCATOR,
+            target_locator,
+        )
+        old_owner = owner_by_locator.get(old_key)
+        target_owner = owner_by_locator.get(target_key)
+        owners = owners_by_target.setdefault(target_key, set())
+        if old_owner is not None:
+            owners.add(old_owner)
+        if target_owner is not None:
+            owners.add(target_owner)
+    ambiguous_target_keys = {
+        target_key
+        for target_key, owners in owners_by_target.items()
+        if len(owners) > 1
+    }
+    if ambiguous_target_keys:
+        plan.governance_ambiguous_moves += sum(
+            identity_coordinate_key(AliasType.LOCATOR, target_locator)
+            in ambiguous_target_keys
+            for target_locator in plan.governance_moves.values()
+        )
+        plan.governance_moves = {
+            old_locator: target_locator
+            for old_locator, target_locator in plan.governance_moves.items()
+            if identity_coordinate_key(AliasType.LOCATOR, target_locator)
+            not in ambiguous_target_keys
+        }
+    carried_target_keys: set[str] = set()
+    reused_uids: set[str] = set()
+    for old_locator, target_locator in plan.governance_moves.items():
+        uid = owner_by_locator.get(
+            identity_coordinate_key(AliasType.LOCATOR, old_locator)
+        )
+        if uid is None:
+            continue
+        reused_uids.add(uid)
+        carried_target_keys.add(
+            identity_coordinate_key(AliasType.LOCATOR, target_locator)
+        )
+    target_locator_keys = {
+        identity_coordinate_key(
+            AliasType.LOCATOR,
+            mcp_uri(PageKind(target.kind), target.stem),
+        )
+        for target in plan.targets
+    }
+    plan.governance_uid_reuses = len(reused_uids)
+    plan.governance_new_allocations = len(
+        target_locator_keys
+        - set(owner_by_locator)
+        - carried_target_keys
+    )
 
 
 def _validated_migration_progress_pages(
@@ -1140,6 +1284,23 @@ def _print_chunk_plan(chunks: list[MigrationChunk], chunk_size: int) -> None:
         )
 
 
+def _print_migration_governance_plan(plan: MigrationPlan) -> None:
+    if not plan.governance_enabled:
+        print("\nGovernance identity plan: inactive (locator-only migration).")
+        return
+    print(
+        "\nGovernance identity plan: "
+        f"{plan.governance_uid_reuses} UID carry-forward(s), "
+        f"{plan.governance_uid_reuses} prior route alias(es), "
+        f"{plan.governance_new_allocations} new target allocation(s), "
+        f"{plan.governance_ambiguous_moves} ambiguous move(s) deferred."
+    )
+    print(
+        "  Identity changes commit with the final artifact refresh; "
+        "earlier chunks retain only resumable page receipts."
+    )
+
+
 def _migration_runtime_inputs(
     wiki_dir: Path,
     plan: MigrationPlan,
@@ -1219,6 +1380,7 @@ def _migration_runtime_inputs(
         ),
         generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS,
         generation_option_allowlist=tuple(RUNTIME_GENERATION_OPTION_DEFAULTS),
+        governance_moves=plan.governance_moves,
     )
 
 
@@ -1437,6 +1599,7 @@ def run(args) -> None:
     print(f"Source directory: {src_dir}")
 
     plan = _build_migration_plan(wiki_dir, src_dir)
+    _print_migration_governance_plan(plan)
     if dry_run:
         print("DRY-RUN: no files will be modified.")
 

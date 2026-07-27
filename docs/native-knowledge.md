@@ -73,6 +73,174 @@ that no concept exists. In degraded, unsupported, and absent states, native
 queries return explicit status and do not fabricate empty knowledge,
 evidence, or freshness.
 
+## Durable identity and governance
+
+Projects can opt into durable concept identity with:
+
+```bash
+llm-wiki knowledge init --wiki-dir docs/llm_wiki
+```
+
+Initialization creates the version-controlled
+`.llm-wiki-governance.json` ledger, establishes a checkout-independent bundle
+identity, and allocates a stable UID for each current concept. Repeating the
+command is idempotent. Once allocated, a UID comes from the ledger rather than
+being recomputed from the current path. Sync and migration allocate only
+genuinely new concepts and keep older allocations even when their source or
+page is temporarily absent. The bundle ID is immutable after its first
+committed projection; a different live ledger namespace is a conflict, not an
+implicit reinitialization.
+
+The ledger is the authority for stable allocations, historical locator and
+natural-key aliases, explicit lifecycle events, and section-scoped human
+reviews. The governance data joined into `.llm-wiki-knowledge.json` is a
+disposable query projection. The manifest commits the exact governance input
+hash, but neither the manifest nor the generated projection can recreate or
+override the ledger.
+
+Inspect current state with:
+
+```bash
+llm-wiki knowledge status --wiki-dir docs/llm_wiki
+llm-wiki knowledge status --wiki-dir docs/llm_wiki --format json
+```
+
+Exact UID, locator-alias, and natural-key-alias lookup is available through the
+Python and MCP concept queries. Locator-only projects remain compatible when
+no ledger exists; their locators are not described as stable IDs.
+
+### Moves and aliases
+
+Supported sync and migration renames carry the existing UID and retain prior
+coordinates as aliases. For an ambiguous manual rename, stage the identity
+move between the content rename and sync:
+
+```bash
+# Rename the page or source first.
+llm-wiki knowledge move \
+  --wiki-dir docs/llm_wiki \
+  --uid lw:guide:0123456789abcdef0123456789abcdef \
+  --to-locator llm-wiki://guides/new-name \
+  --to-natural-key guide:guides/new-name.md
+llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki
+```
+
+The staged boundary is intentionally degraded: the ledger has moved while the
+last generated projection still names the previous locator. Readers do not
+serve that mixed state. The following sync restores parity without changing
+the UID. If the target is already owned by another UID, the move fails and no
+automatic merge occurs.
+
+Add a known historical coordinate without moving the current concept:
+
+```bash
+llm-wiki knowledge alias \
+  --wiki-dir docs/llm_wiki \
+  --uid lw:guide:0123456789abcdef0123456789abcdef \
+  --type locator \
+  --value llm-wiki://guides/older-name
+```
+
+All governance mutations support `--dry-run`.
+
+### Lifecycle and human review
+
+Lifecycle is explicit and independent of evidence freshness. Source removal
+does not deprecate a concept. Every lifecycle command requires an actor and a
+real authored event time:
+
+```bash
+llm-wiki knowledge lifecycle set \
+  --wiki-dir docs/llm_wiki \
+  --uid lw:module:0123456789abcdef0123456789abcdef \
+  --state active \
+  --actor-kind human \
+  --actor-id maintainer.example \
+  --authored-at 2026-07-27T12:00:00Z
+
+llm-wiki knowledge supersede \
+  --wiki-dir docs/llm_wiki \
+  --uid lw:module:0123456789abcdef0123456789abcdef \
+  --successor-uid lw:module:fedcba9876543210fedcba9876543210 \
+  --actor-kind human \
+  --actor-id maintainer.example \
+  --authored-at 2026-07-27T12:30:00Z
+```
+
+Allowed transitions are `unknown` to `draft`, `active`, or `deprecated`;
+`draft` to `active` or `deprecated`; `active` to `deprecated` or
+`superseded`; and `deprecated` to `active` or `superseded`. A superseded
+concept is terminal. Supersession requires a different existing UID and cycles
+are rejected.
+
+Human review binds one semantic section, not an entire page:
+
+```bash
+llm-wiki knowledge review \
+  --wiki-dir docs/llm_wiki \
+  --uid lw:module:0123456789abcdef0123456789abcdef \
+  --section 'llm-wiki://modules/accounts#section/accounts%20Module~1/Description~1' \
+  --reviewer-kind human \
+  --reviewer-id reviewer.example \
+  --method manual-review \
+  --method-version 1 \
+  --authored-at 2026-07-27T13:00:00Z
+```
+
+Review validity is computed from the current semantic section hash and its
+declared evidence basis. An expired review reports `scope-changed`,
+`evidence-changed`, `basis-incompatible`, `section-missing`, or
+`concept-missing`. Generated-only churn does not expire a review when the
+semantic projection and evidence basis are unchanged.
+
+### Safe machine verification
+
+Machine checks are separate from human review and semantic authorship. They run
+only through the explicit command:
+
+```bash
+llm-wiki knowledge verify \
+  --wiki-dir docs/llm_wiki \
+  --checker artifact-integrity \
+  --checker internal-links
+```
+
+The application owns the checker registry. Knowledge or Markdown can name
+neither a command, arguments, executable, helper, URL, environment, container,
+plugin, subprocess, network operation, nor language-model instruction.
+Verification writes the disposable deterministic
+`.llm-wiki-verification.json` receipt, bound to the selected scope, current
+knowledge hash, surface/envelope commitments, optional governance hash, and
+checker versions. Consumers that inspect the receipt, including API queries
+and lint, only validate and compare it; they never run a checker. Unknown
+checker IDs fail closed, and a failed check remains failed machine evidence
+rather than becoming a review or truth claim.
+
+Receipts are unsigned, repository-local, disposable evidence rather than
+remote attestations. Repository permissions and version-control review supply
+their provenance.
+
+### Conflict resolution and recovery
+
+The ledger uses map-keyed records plus predecessor-linked lifecycle events so
+ordinary independent additions merge predictably and conflicting ownership or
+event forks remain visible. Resolve ledger conflicts manually:
+
+1. preserve every previously allocated UID;
+2. keep both non-conflicting additions;
+3. ensure each UID, locator, natural key, and alias has one owner;
+4. resolve lifecycle forks rather than choosing by timestamp or branch order;
+5. retain digest-bound review events that still reference allocated UIDs;
+6. run sync, which validates the resolved ledger before page mutation and
+   regenerates its projection, then run `knowledge status`.
+
+If a governed manifest or projection exists but the ledger is missing, restore
+`.llm-wiki-governance.json` from version control or backup. Do not run
+`knowledge init`: the command fails closed rather than reallocating identities.
+If generated artifacts alone are damaged, retain the ledger and rerun sync.
+An interrupted ledger-first update is safe to resume; readers reject the
+temporary ledger/projection mismatch.
+
 ## Typed graph and section ownership extensions
 
 The knowledge index keeps its closed `llm-wiki-knowledge/v1` core contract.
@@ -83,6 +251,7 @@ two reserved, independently versioned extensions:
 |---|---|---|
 | `llm-wiki/typed-graph-v1` | `llm-wiki-typed-graph/v1` | Evidence-backed structural relationships and analyzer coverage. |
 | `llm-wiki/section-ownership-v1` | `llm-wiki-section-ownership/v1` | Ordered Markdown sections, ownership, and scoped hashes. |
+| `llm-wiki/governance-v1` | `llm-wiki-governance/v1` | Disposable stable-identity, alias, lifecycle, successor, and computed review projection. |
 
 This keeps the existing `derived_from` and `links_to` records and their query
 behavior unchanged. A v1 consumer that does not use these extensions can
@@ -190,6 +359,12 @@ Strict validation treats these conditions as hard issues:
 - `unknown`, `source-changed`, `source-missing`, or `basis-incompatible`
   freshness for promised structural evidence;
 - failure to construct a reliable live evaluation.
+- invalid, missing, conflicting, bundle-mismatched, or projection-mismatched
+  governance when a ledger or governance commitment is present;
+- missing governed UIDs, invalid lifecycle history, supersession cycles, or
+  malformed and expired review summaries;
+- a present verification receipt that is malformed, stale, references an
+  unknown checker version, or records a failed check.
 
 `nonsemantic-source-change` is a warning diagnostic rather than a hard issue:
 the source bytes changed, but the concept-scoped structural observation did
@@ -332,8 +507,9 @@ evidence = explain_evidence(
 )
 ```
 
-The identity lookup is exact. Accepted coordinates are a concept locator/MCP
-URI or exact canonical wiki path; there is no fuzzy identity match.
+The identity lookup is exact. Accepted coordinates are a durable UID, current
+concept locator/MCP URI, exact canonical wiki path, or a persisted locator or
+natural-key alias; there is no fuzzy identity match.
 
 Knowledge query results share this envelope (compact concept fields are
 abbreviated here):
@@ -404,10 +580,11 @@ MCP accepts positive limits, caps them at 100, and reports truncation. Existing
 Markdown resources and `llm-wiki://...` resource URIs are unchanged.
 
 MCP validates knowledge coordinates before constructing the live query service.
-It accepts only canonical wiki paths and their exact `llm-wiki://` URI forms.
-Malformed, unsafe, unknown-kind, or noncanonical coordinates fail before source
-extraction. A syntactically valid coordinate whose concept is absent still
-returns the standard `found: false` query envelope.
+It accepts canonical wiki paths, exact `llm-wiki://` URI forms, durable UIDs,
+and persisted governance aliases. Malformed, unsafe, or noncanonical
+coordinates fail before source extraction. A syntactically valid coordinate
+whose concept is absent still returns the standard `found: false` query
+envelope.
 
 `query_graph` continues to provide the legacy bounded flow, call,
 dependency-neighborhood, and page-for-symbol queries. Typed traversal is
@@ -425,6 +602,10 @@ not run source extraction and does not claim current freshness.
 Bounded query collections default to 20 items. For Python callers, the service
 limit controls the bound; externally supplied MCP limits never exceed 100.
 Filtering is applied before limiting, and results are ordered deterministically.
+Governance alias lookup indexes every persisted alias, while compact concept
+responses apply the same query limit and report exact `alias_coverage`.
+Governance authoring rejects more than 10,000 aliases for one concept rather
+than generating a projection that violates its schema.
 
 Every bounded query envelope includes a `bounds` mapping keyed by the response
 path of the limited collection, for example `matches`, `callers`, `flow.steps`,
@@ -461,6 +642,11 @@ freshness comparison, status, and query methods never execute a command,
 subprocess, hook, plugin, URL, or extension value obtained from the artifact.
 Artifact contents cannot grant access, authorize an operation, or select a
 projection/redaction policy.
+
+Verification receipts are inert data too. Only `knowledge verify` invokes the
+fixed application-owned pure checker registry. Receipt loading and strict lint
+compare recorded anchors and checker versions without invoking the recorded
+checker.
 
 After a documentation query service is built, its query methods perform no
 filesystem or network I/O. Building a live service performs static source

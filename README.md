@@ -43,7 +43,12 @@ experimental knowledge projection is evidence, not an editable authority. Its
 observation-versus-freshness model,
 availability states, strict-lint policy, context filters, API/MCP envelopes,
 bounds, and no-execution rules are documented in
-[Native knowledge reads][native-knowledge]. The detailed authority,
+[Native knowledge reads][native-knowledge]. Projects that opt into durable
+identity also version `.llm-wiki-governance.json`, the narrow authority for
+stable UIDs, aliases, lifecycle events, and scoped human reviews. Generated
+knowledge and manifest data only commit and project that ledger. Disposable
+machine-check results live separately in `.llm-wiki-verification.json`. The
+detailed authority,
 load-state, commit, and compatibility decisions are recorded in
 [ADR-0001](docs/architecture/0001-native-knowledge-authority-state-and-rollout.md).
 Generated Mermaid diagrams, including bounded call-sequence, data-flow,
@@ -1506,6 +1511,26 @@ llm-wiki migrate --chunk-size 50 --plan-chunks
 llm-wiki migrate --chunk-size 50 --chunk 1
 ```
 
+### `knowledge`
+
+Initialize durable identity, inspect governance, record explicit lifecycle or
+section review events, stage ambiguous moves, and run application-owned pure
+verification checkers:
+
+```bash
+llm-wiki knowledge init --wiki-dir docs/llm_wiki
+llm-wiki knowledge status --wiki-dir docs/llm_wiki
+llm-wiki knowledge lifecycle set --wiki-dir docs/llm_wiki \
+  --uid UID --state active --actor-kind human --actor-id maintainer \
+  --authored-at 2026-07-27T12:00:00Z
+llm-wiki knowledge verify --wiki-dir docs/llm_wiki \
+  --checker artifact-integrity --checker internal-links
+```
+
+Governance mutations support `--dry-run`; actors and event times are explicit.
+For move, alias, review, supersession, conflict-resolution, and recovery
+details, see [Native knowledge reads][native-knowledge].
+
 ### `status`, `release`, `bump`, and `uninstall`
 
 ```bash
@@ -1541,6 +1566,10 @@ static analysis through application configuration. Built-in extractors and
 prepared helpers do not import or execute the target application. Installed
 extractor plugins remain trusted, unsandboxed project-local Python and can have
 effects outside the core read contract; artifact metadata never selects them.
+The explicit `knowledge verify` command can run only fixed application-owned
+pure checker IDs. Loading or linting its receipt never reruns a checker, and
+document content cannot supply checker commands, arguments, helpers, network
+targets, containers, or code.
 See [Read-only and no-execution rules][native-knowledge-no-exec].
 
 Standalone `docs` runs use a stricter external-workspace boundary. Source trees

@@ -56,6 +56,13 @@ from ..services.knowledge_model import (
     KnowledgeLoadState,
     ObservationScope,
 )
+from ..services.knowledge_evidence import hash_json
+from ..services.knowledge_governance import (
+    GOVERNANCE_EXTENSION_KEY,
+    GOVERNANCE_FILENAME,
+    evaluate_review_event,
+    load_governance,
+)
 from ..services.knowledge_observability import (
     KnowledgeAggregateSummary,
     KnowledgePhaseDurations,
@@ -76,6 +83,13 @@ from ..services.source_snapshot import (
     unsupported_source_summary,
 )
 from ..services.sync_manifest import MANIFEST_FILENAME, SyncManifest
+from ..services.verification_contracts import (
+    VERIFICATION_RECEIPT_FILENAME,
+    VerificationResult,
+    build_artifact_verification_context,
+    evaluate_verification_receipt,
+    load_verification_receipt,
+)
 from ..services.team import build_team_issues
 from ..services.wiki_surface import PageKind, is_safe_page_id, iter_page_kinds
 from ..services.wiki_surface_index import SURFACE_INDEX_FILENAME
@@ -1361,7 +1375,12 @@ def _canonical_markdown_content(
 def _knowledge_lint_enabled(wiki_path: Path) -> bool:
     """Recognize generated or manifest-declared knowledge without taxing legacy."""
 
-    for filename in (SURFACE_INDEX_FILENAME, KNOWLEDGE_INDEX_FILENAME):
+    for filename in (
+        SURFACE_INDEX_FILENAME,
+        KNOWLEDGE_INDEX_FILENAME,
+        GOVERNANCE_FILENAME,
+        VERIFICATION_RECEIPT_FILENAME,
+    ):
         artifact = wiki_path / filename
         if artifact.exists() or artifact.is_symlink():
             return True
@@ -1499,6 +1518,19 @@ def _evaluate_knowledge_lint_state(
 
 
 def _projection_issue_category(issue: KnowledgeLoadIssue) -> str:
+    if (
+        issue.field is not None
+        and (
+            "review_events" in issue.field
+            or (
+                GOVERNANCE_EXTENSION_KEY in issue.field
+                and "reviews" in issue.field
+            )
+        )
+    ):
+        return "knowledge_review"
+    if issue.code.startswith("governance-"):
+        return "knowledge_governance"
     if issue.code.endswith("-version-unsupported") or issue.code in {
         "knowledge-invalid",
         "manifest-invalid",
@@ -1645,6 +1677,235 @@ def _check_knowledge_concepts(
             )
 
 
+def _check_knowledge_reviews(
+    report: LintReport,
+    view: KnowledgeReadView,
+) -> None:
+    """Surface computed review expiry without treating it as machine status."""
+
+    if view.knowledge is None:
+        return
+    try:
+        loaded = load_governance(Path(report.wiki_dir))
+    except FileNotFoundError:
+        loaded = None
+    except (OSError, TypeError, UnicodeError, ValueError):
+        _add(
+            report,
+            "knowledge_governance",
+            (
+                "Governance ledger became invalid after the loaded projection "
+                "[reason=governance-invalid]."
+            ),
+            path=GOVERNANCE_FILENAME,
+            target="governance",
+        )
+        return
+    if loaded is not None:
+        artifact_hashes = (
+            None
+            if view.manifest_basis is None
+            else view.manifest_basis.artifact_hashes
+        )
+        committed_hash = (
+            None
+            if artifact_hashes is None
+            else artifact_hashes.governance_hash
+        )
+        if committed_hash != loaded.content_hash:
+            _add(
+                report,
+                "knowledge_governance",
+                (
+                    "Governance ledger changed after the loaded projection "
+                    "[reason=governance-live-hash-mismatch]."
+                ),
+                path=GOVERNANCE_FILENAME,
+                target="artifact_hashes.governance_hash",
+            )
+            return
+        concepts = {
+            concept.locator: concept for concept in view.knowledge.concepts
+        }
+        for event in sorted(
+            loaded.ledger.review_events.values(),
+            key=lambda item: (item.authored_at, item.event_id),
+        ):
+            validity = evaluate_review_event(
+                event,
+                loaded.ledger,
+                view.knowledge,
+            )
+            if validity.valid:
+                continue
+            allocation = loaded.ledger.concepts[event.concept_uid]
+            concept = concepts.get(allocation.locator)
+            _add(
+                report,
+                "knowledge_review",
+                (
+                    f"Human review for {allocation.locator!r} is expired "
+                    f"[reason={','.join(validity.reasons)}]."
+                ),
+                path=(
+                    None
+                    if concept is None
+                    else concept.document.canonical_path
+                ),
+                target=event.event_id,
+            )
+        return
+
+    # A ready locator-only projection has no review authority.  Keeping this
+    # projection fallback supports isolated callers that deliberately supply
+    # an already validated governed read view without its backing directory.
+    for concept in sorted(view.knowledge.concepts, key=lambda item: item.locator):
+        governance = concept.extensions.get(GOVERNANCE_EXTENSION_KEY)
+        if not isinstance(governance, Mapping):
+            continue
+        bounded = governance.get("reviews")
+        items = bounded.get("items") if isinstance(bounded, Mapping) else None
+        if not isinstance(items, list):
+            continue
+        for review in items:
+            if not isinstance(review, Mapping) or review.get("state") != "expired":
+                continue
+            reasons = review.get("reasons")
+            reason_codes = (
+                [str(reason) for reason in reasons]
+                if isinstance(reasons, list) and reasons
+                else ["review-invalid"]
+            )
+            event_id = review.get("event_id")
+            _add(
+                report,
+                "knowledge_review",
+                (
+                    f"Human review for {concept.locator!r} is expired "
+                    f"[reason={','.join(reason_codes)}]."
+                ),
+                path=concept.document.canonical_path,
+                target=(
+                    event_id
+                    if isinstance(event_id, str)
+                    else concept.locator
+                ),
+            )
+
+
+def _receipt_context(
+    view: KnowledgeReadView,
+    scope_uid: str,
+):
+    """Resolve a receipt scope to current anchors without running a checker."""
+
+    knowledge = view.knowledge
+    manifest = view.manifest_basis
+    if knowledge is None or manifest is None or manifest.artifact_hashes is None:
+        return None
+    hashes = manifest.artifact_hashes
+
+    def build(scope_locator: str | None):
+        return build_artifact_verification_context(
+            knowledge,
+            knowledge_hash=hashes.knowledge_index_hash,
+            surface_index_hash=hashes.surface_index_hash,
+            evaluated_envelope_hash=hashes.evaluated_envelope_hash,
+            governance_hash=hashes.governance_hash,
+            scope_locator=scope_locator,
+        )
+
+    bundle = build(None)
+    if bundle.scope_uid == scope_uid:
+        return bundle
+    for concept in knowledge.concepts:
+        governance = concept.extensions.get(GOVERNANCE_EXTENSION_KEY)
+        projected_uid = (
+            governance.get("uid")
+            if isinstance(governance, Mapping)
+            else None
+        )
+        current_uid = (
+            projected_uid
+            if isinstance(projected_uid, str)
+            else "locator:"
+            + hash_json(concept.locator).removeprefix("sha256:")
+        )
+        if current_uid == scope_uid:
+            return build(concept.locator)
+    # Evaluate against bundle scope to produce an explicit scope-changed
+    # reason rather than trusting an orphaned receipt.
+    return bundle
+
+
+def _check_verification_receipt(
+    report: LintReport,
+    view: KnowledgeReadView | None,
+) -> None:
+    """Validate a disposable receipt; loading never executes its checkers."""
+
+    wiki_root = Path(report.wiki_dir)
+    try:
+        receipt = load_verification_receipt(wiki_root)
+    except (OSError, TypeError, UnicodeError, ValueError):
+        _add(
+            report,
+            "knowledge_verification",
+            (
+                "Machine verification receipt is malformed or unreadable "
+                "[reason=verification-receipt-invalid]."
+            ),
+            path=VERIFICATION_RECEIPT_FILENAME,
+            target="receipt",
+        )
+        return
+    if receipt is None:
+        return
+    if view is None:
+        context = None
+    else:
+        try:
+            context = _receipt_context(view, receipt.scope_uid)
+        except (TypeError, ValueError):
+            context = None
+    if context is None:
+        _add(
+            report,
+            "knowledge_verification",
+            (
+                "Machine verification receipt has no valid current artifact "
+                "basis [reason=verification-basis-unavailable]."
+            ),
+            path=VERIFICATION_RECEIPT_FILENAME,
+            target=receipt.scope_uid,
+        )
+    else:
+        evaluation = evaluate_verification_receipt(receipt, context)
+        if not evaluation.valid:
+            reasons = ",".join(reason.value for reason in evaluation.reasons)
+            _add(
+                report,
+                "knowledge_verification",
+                (
+                    "Machine verification receipt is stale "
+                    f"[reason={reasons}]."
+                ),
+                path=VERIFICATION_RECEIPT_FILENAME,
+                target=receipt.scope_uid,
+            )
+    if receipt.result is VerificationResult.FAILED:
+        _add(
+            report,
+            "knowledge_verification",
+            (
+                "Machine verification recorded failed checks "
+                "[reason=verification-check-failed]."
+            ),
+            path=VERIFICATION_RECEIPT_FILENAME,
+            target=receipt.scope_uid,
+        )
+
+
 def _check_knowledge_lint(
     report: LintReport,
     state: _KnowledgeLintState,
@@ -1688,9 +1949,11 @@ def _check_knowledge_lint(
             path=KNOWLEDGE_INDEX_FILENAME,
             target=state.freshness_error_field or "live-evaluation-invalid",
         )
+    _check_verification_receipt(report, state.view)
     if state.view is None or not state.view.ready:
         return
     _check_knowledge_concepts(report, state.view)
+    _check_knowledge_reviews(report, state.view)
 
 
 @contextmanager
@@ -2159,6 +2422,18 @@ def render_text(report: LintReport) -> str:
         emit_knowledge_group(
             "knowledge_projection",
             "Found {count} knowledge projection issue(s).",
+        )
+        emit_knowledge_group(
+            "knowledge_governance",
+            "Found {count} knowledge governance issue(s).",
+        )
+        emit_knowledge_group(
+            "knowledge_review",
+            "Found {count} human review issue(s).",
+        )
+        emit_knowledge_group(
+            "knowledge_verification",
+            "Found {count} machine verification issue(s).",
         )
         emit_knowledge_group(
             "knowledge_snapshot",

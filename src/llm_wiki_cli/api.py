@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from pathlib import Path
 from typing import Any
 
@@ -40,6 +40,16 @@ from .services.dependencies import analyze_dependencies
 from .services.documentation_queries import (
     DocumentationGraphQueryService,
     DocumentationQueryError,
+)
+from .services.knowledge_consumption import KnowledgeReadView
+from .services.knowledge_evidence import hash_json
+from .services.knowledge_governance import GOVERNANCE_EXTENSION_KEY
+from .services.verification_contracts import (
+    VerificationReceipt,
+    VerificationResult,
+    build_artifact_verification_context,
+    evaluate_verification_receipt,
+    load_verification_receipt,
 )
 from .services.documentation_model_policy import (
     DocumentationModelEscalationRule,
@@ -281,6 +291,115 @@ def list_wiki_pages(wiki_dir: str = DEFAULT_WIKI_DIR) -> dict[str, Any]:
     }
 
 
+def _machine_verification_summaries(
+    wiki_root: Path,
+    knowledge_view: KnowledgeReadView,
+) -> dict[str, dict[str, Any]]:
+    """Load and evaluate the disposable receipt without executing a checker."""
+
+    if not isinstance(knowledge_view, KnowledgeReadView):
+        return {}
+    knowledge = knowledge_view.knowledge
+    manifest = knowledge_view.manifest_basis
+    if knowledge is None or manifest is None or manifest.artifact_hashes is None:
+        return {}
+
+    concept_coordinates: dict[str, str] = {}
+    for concept in knowledge.concepts:
+        governance = concept.extensions.get(GOVERNANCE_EXTENSION_KEY)
+        uid = governance.get("uid") if isinstance(governance, Mapping) else None
+        concept_coordinates[concept.locator] = (
+            uid if isinstance(uid, str) else concept.locator
+        )
+
+    try:
+        receipt = load_verification_receipt(wiki_root)
+    except (OSError, TypeError, UnicodeError, ValueError):
+        invalid = {
+            "availability": "invalid",
+            "reason": "verification-receipt-invalid",
+        }
+        return {
+            coordinate: dict(invalid)
+            for coordinate in sorted(set(concept_coordinates.values()))
+        }
+    if receipt is None:
+        return {}
+
+    hashes = manifest.artifact_hashes
+
+    def context(scope_locator: str | None):
+        return build_artifact_verification_context(
+            knowledge,
+            knowledge_hash=hashes.knowledge_index_hash,
+            surface_index_hash=hashes.surface_index_hash,
+            evaluated_envelope_hash=hashes.evaluated_envelope_hash,
+            governance_hash=hashes.governance_hash,
+            scope_locator=scope_locator,
+        )
+
+    bundle_context = context(None)
+    selected_locator: str | None = None
+    scope_known = receipt.scope_uid == bundle_context.scope_uid
+    if not scope_known:
+        for concept in knowledge.concepts:
+            governance = concept.extensions.get(GOVERNANCE_EXTENSION_KEY)
+            uid = governance.get("uid") if isinstance(governance, Mapping) else None
+            expected_uid = (
+                uid
+                if isinstance(uid, str)
+                else "locator:"
+                + hash_json(concept.locator).removeprefix("sha256:")
+            )
+            if expected_uid == receipt.scope_uid:
+                selected_locator = concept.locator
+                scope_known = True
+                break
+    current_context = context(selected_locator) if scope_known else bundle_context
+    evaluation = evaluate_verification_receipt(receipt, current_context)
+    summary = _machine_verification_summary(
+        receipt,
+        valid=evaluation.valid,
+        reasons=[reason.value for reason in evaluation.reasons],
+    )
+
+    if selected_locator is not None:
+        return {concept_coordinates[selected_locator]: summary}
+    return {
+        coordinate: dict(summary)
+        for coordinate in sorted(set(concept_coordinates.values()))
+    }
+
+
+def _machine_verification_summary(
+    receipt: VerificationReceipt,
+    *,
+    valid: bool,
+    reasons: list[str],
+) -> dict[str, Any]:
+    """Return a compact, bounded machine-only receipt summary."""
+
+    return {
+        "availability": "recorded",
+        "scope_uid": receipt.scope_uid,
+        "valid": valid,
+        "invalidation_reasons": reasons,
+        "recorded_result": receipt.result.value,
+        "passed": valid and receipt.result is VerificationResult.PASSED,
+        "checks": {
+            check.checker_id: {
+                "version": check.checker_version,
+                "result": check.result.value,
+                "diagnostics": [
+                    diagnostic.to_payload() for diagnostic in check.diagnostics
+                ],
+                "diagnostic_coverage": check.diagnostic_coverage.to_payload(),
+            }
+            for check in receipt.checks
+        },
+    }
+
+
 def build_documentation_query_service(
     src_dir: str = ".",
     *,
@@ -343,6 +462,10 @@ def build_documentation_query_service(
             surface_index=query_surface,
             limit=limit,
             knowledge_view=knowledge_view,
+            machine_verification=_machine_verification_summaries(
+                wiki_root,
+                knowledge_view,
+            ),
         )
     except PathValidationError as exc:
         raise PathPolicyError(str(exc)) from exc
@@ -504,7 +627,7 @@ def get_concept(
     allow_external_src: bool = False,
     read_only: bool = True,
 ) -> dict[str, Any]:
-    """Return one compact knowledge concept by locator or exact route."""
+    """Return one concept by current coordinate, durable UID, or alias."""
     return _run_query(
         lambda: _query_service(
             service,
@@ -529,7 +652,7 @@ def related_concepts(
     allow_external_src: bool = False,
     read_only: bool = True,
 ) -> dict[str, Any]:
-    """Return bounded knowledge relationships for one concept."""
+    """Return bounded knowledge relationships for one exact concept identity."""
     return _run_query(
         lambda: _query_service(
             service,
@@ -591,7 +714,7 @@ def explain_evidence(
     allow_external_src: bool = False,
     read_only: bool = True,
 ) -> dict[str, Any]:
-    """Return stored and computed evidence for one knowledge concept."""
+    """Return stored and computed evidence for one exact concept identity."""
     return _run_query(
         lambda: _query_service(
             service,

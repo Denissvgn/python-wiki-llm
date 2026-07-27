@@ -1291,6 +1291,9 @@ def _validate_builder_model(model: KnowledgeIndex) -> None:
         )
 
     concepts = {concept.locator: concept for concept in model.concepts}
+    from .knowledge_governance import GOVERNANCE_EXTENSION_KEY
+
+    governed = GOVERNANCE_EXTENSION_KEY in model.extensions
     page_locator_by_path = {
         concept.document.canonical_path: concept.locator for concept in model.concepts
     }
@@ -1306,10 +1309,10 @@ def _validate_builder_model(model: KnowledgeIndex) -> None:
                 f"{concept_path}.concept_kind",
                 f"must be {expected_kind.value!r} for KNOW-106 construction",
             )
-        if concept.lifecycle is not Lifecycle.UNKNOWN:
+        if not governed and concept.lifecycle is not Lifecycle.UNKNOWN:
             raise KnowledgeModelError(
                 f"{concept_path}.lifecycle",
-                "must be 'unknown' for KNOW-106 construction",
+                "must be 'unknown' for KNOW-106 construction without governance",
             )
         semantics = concept.facets.semantics
         if semantics.authorship.kind is not ActorKind.UNKNOWN:

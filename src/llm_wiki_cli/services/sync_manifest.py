@@ -429,6 +429,7 @@ class ManifestArtifactHashes:
     surface_index_hash: str
     knowledge_index_hash: str
     evaluated_envelope_hash: str
+    governance_hash: str | None = None
 
     def __post_init__(self) -> None:
         for name, value in (
@@ -441,13 +442,23 @@ class ManifestArtifactHashes:
                     f"artifact_hashes.{name}",
                     "must be 'sha256:' followed by 64 lowercase hexadecimal digits",
                 )
+        if self.governance_hash is not None and not is_valid_sha256(
+            self.governance_hash
+        ):
+            raise SyncManifestError(
+                "artifact_hashes.governance_hash",
+                "must be 'sha256:' followed by 64 lowercase hexadecimal digits",
+            )
 
     def to_payload(self) -> dict[str, str]:
-        return {
+        payload = {
             "surface_index_hash": self.surface_index_hash,
             "knowledge_index_hash": self.knowledge_index_hash,
             "evaluated_envelope_hash": self.evaluated_envelope_hash,
         }
+        if self.governance_hash is not None:
+            payload["governance_hash"] = self.governance_hash
+        return payload
 
     @classmethod
     def from_payload(
@@ -459,12 +470,18 @@ class ManifestArtifactHashes:
             "knowledge_index_hash",
             "evaluated_envelope_hash",
         }
-        _validate_exact_keys(data, field_name=field_name, required=required)
+        _validate_exact_keys(
+            data,
+            field_name=field_name,
+            required=required,
+            optional={"governance_hash"},
+        )
         try:
             return cls(
                 surface_index_hash=data["surface_index_hash"],  # type: ignore[arg-type]
                 knowledge_index_hash=data["knowledge_index_hash"],  # type: ignore[arg-type]
                 evaluated_envelope_hash=data["evaluated_envelope_hash"],  # type: ignore[arg-type]
+                governance_hash=data.get("governance_hash"),  # type: ignore[arg-type]
             )
         except SyncManifestError as exc:
             suffix = exc.field.split(".")[-1]
@@ -1226,6 +1243,7 @@ class SyncManifest:
         surface_index_hash: str,
         knowledge_index_hash: str,
         evaluated_envelope_hash: str,
+        governance_hash: str | None = None,
     ) -> SyncManifest:
         """Return a copy carrying one complete artifact-set commitment."""
 
@@ -1235,6 +1253,7 @@ class SyncManifest:
                 surface_index_hash=surface_index_hash,
                 knowledge_index_hash=knowledge_index_hash,
                 evaluated_envelope_hash=evaluated_envelope_hash,
+                governance_hash=governance_hash,
             ),
         )
 

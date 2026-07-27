@@ -75,10 +75,16 @@ from ..services.knowledge_evidence import (
 from ..services.knowledge_evidence import (
     semantic_hash_for_file as _semantic_hash_for_file,
 )
+from ..services.knowledge_governance import (
+    GOVERNANCE_FILENAME,
+    GovernanceError,
+    load_governance,
+)
 from ..services.knowledge_orchestration import (
     RUNTIME_GENERATION_OPTION_DEFAULTS,
     RuntimeKnowledgeInputs,
     collect_runtime_repository_evidence,
+    committed_governance_bundle_id,
     finalize_runtime_knowledge,
     runtime_generation_options,
 )
@@ -122,7 +128,13 @@ from ..services.section_ownership import (
     merge_semantic_markdown as _service_merge_semantic_markdown,
     replace_generated_section as _service_replace_generated_section,
 )
-from ..services.wiki_surface import PageKind, canonical_path, collect_wiki_pages
+from ..services.wiki_surface import (
+    PageKind,
+    WikiSurfaceError,
+    canonical_path,
+    collect_wiki_pages,
+    mcp_uri,
+)
 from ..services.wiki_surface_index import evaluate_surface_index
 from .bootstrap_cmd import (
     _build_entity_relationship_summary_map,
@@ -400,6 +412,72 @@ class SyncDiff:
             or self.renamed_entity_pages
             or self.renamed_module_pages
         )
+
+
+def _governance_moves_for_sync(
+    diff: SyncDiff,
+    manifest: SyncManifest,
+    *,
+    entity_page_cache: Mapping[tuple[str, str], str],
+) -> dict[str, str]:
+    """Return only unambiguous old-to-current concept locator moves.
+
+    Diff detection is the source of authority for automatic carry-forward.
+    Multiple candidates for one prior route are intentionally omitted: a
+    collision expansion is not enough evidence to decide which new concept
+    should inherit the old UID and must be handled by ``knowledge move``.
+    """
+
+    candidates: dict[str, set[str]] = {}
+
+    def add(kind: PageKind, old_page: str, new_page: str) -> None:
+        if old_page == new_page:
+            return
+        try:
+            old_locator = mcp_uri(kind, old_page)
+            new_locator = mcp_uri(kind, new_page)
+        except WikiSurfaceError:
+            return
+        candidates.setdefault(old_locator, set()).add(new_locator)
+
+    for (_entity_name, _filepath), (old_page, new_page) in sorted(
+        diff.renamed_entity_pages.items()
+    ):
+        add(PageKind.ENTITIES, old_page, new_page)
+
+    for _filepath, (old_page, new_page) in sorted(
+        diff.renamed_module_pages.items()
+    ):
+        add(PageKind.MODULES, old_page, new_page)
+
+    for entity_name, (old_filepath, new_filepath) in sorted(
+        diff.moved_entities.items()
+    ):
+        old_source = manifest.sources.get(old_filepath)
+        if not isinstance(old_source, Mapping):
+            continue
+        old_entity_pages = old_source.get("entity_pages")
+        old_page = (
+            str(old_entity_pages[entity_name])
+            if isinstance(old_entity_pages, Mapping)
+            and entity_name in old_entity_pages
+            else entity_name
+        )
+        new_page = entity_page_cache.get((entity_name, new_filepath))
+        if new_page is not None:
+            add(PageKind.ENTITIES, old_page, new_page)
+
+    one_target_per_source = {
+        old_locator: next(iter(targets))
+        for old_locator, targets in sorted(candidates.items())
+        if len(targets) == 1
+    }
+    source_count_by_target = Counter(one_target_per_source.values())
+    return {
+        old_locator: target_locator
+        for old_locator, target_locator in one_target_per_source.items()
+        if source_count_by_target[target_locator] == 1
+    }
 
 
 def _affected_source_files(diff: SyncDiff) -> set[str]:
@@ -2431,6 +2509,7 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
         return None
 
     baseline_manifest = manifest or SyncManifest()
+    _preflight_sync_governance(options.wiki_dir, baseline_manifest)
     selected_openapi, generation_inputs = _resolve_openapi_generation_input(
         options, baseline_manifest
     )
@@ -2507,6 +2586,31 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
         repository_evidence=repository_evidence,
         graph_observations=graph_observations,
     )
+
+
+def _preflight_sync_governance(
+    wiki_dir: Path,
+    manifest: SyncManifest,
+) -> None:
+    """Reject corrupt or missing committed governance before page mutation."""
+
+    try:
+        load_governance(
+            wiki_dir,
+            expected_bundle_id=committed_governance_bundle_id(
+                wiki_dir,
+                manifest,
+            ),
+        )
+    except FileNotFoundError:
+        marker = manifest.artifact_hashes
+        if getattr(marker, "governance_hash", None) is not None:
+            raise GovernanceError(
+                GOVERNANCE_FILENAME,
+                "is missing but the sync manifest commits governed artifacts; "
+                "restore the ledger from version control before syncing",
+                code="governance-missing",
+            )
 
 
 def _apply_prepared_sync(
@@ -2646,6 +2750,13 @@ def _finalize_prepared_sync(
             graph_analyzer_limitations=(
                 prepared.graph_observations.analyzer_limitations
             ),
+            governance_moves=_governance_moves_for_sync(
+                prepared.diff,
+                prepared.manifest,
+                entity_page_cache=prepared.page_maps.entity_page_cache,
+            )
+            if (target / GOVERNANCE_FILENAME).is_file()
+            else {},
         ),
         dry_run=dry_run,
     )
@@ -2795,7 +2906,7 @@ def run(args) -> None:
     options = _sync_run_options_from_args(args)
     try:
         prepared = _prepare_sync_run(options)
-    except ApiContractError as exc:
+    except (ApiContractError, GovernanceError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(2)
     if prepared is None:

@@ -72,10 +72,16 @@ from ..services.knowledge_artifacts import (
     ArtifactWriteState,
     KnowledgeCommitResult,
 )
+from ..services.knowledge_governance import (
+    GOVERNANCE_FILENAME,
+    GovernanceError,
+    load_governance,
+)
 from ..services.knowledge_orchestration import (
     RUNTIME_GENERATION_OPTION_DEFAULTS,
     RuntimeKnowledgeInputs,
     collect_runtime_repository_evidence,
+    committed_governance_bundle_id,
     finalize_runtime_knowledge,
     persist_runtime_generation_policy,
     runtime_generation_options,
@@ -101,7 +107,13 @@ from ..services.source_snapshot import (
     unsupported_source_summary,
 )
 from ..services.sync_manifest import SyncManifest
-from ..services.wiki_surface import PageKind, canonical_path, iter_page_kinds
+from ..services.wiki_surface import (
+    PageKind,
+    WikiSurfaceError,
+    canonical_path,
+    iter_page_kinds,
+    mcp_uri,
+)
 from ..services.wiki_surface_index import evaluate_surface_index
 from .extract_cmd import (
     InventoryResult,
@@ -4451,6 +4463,94 @@ def _load_previous_bootstrap_manifest(wiki_dir: Path) -> SyncManifest | None:
         return None
 
 
+def _governance_moves_for_bootstrap(
+    manifest: SyncManifest | None,
+    inventory: Mapping[str, Mapping],
+    page_maps: _BootstrapPageMaps,
+) -> dict[str, str]:
+    """Carry IDs only across one-to-one page renames observed by bootstrap."""
+
+    if manifest is None:
+        return {}
+    candidates: dict[str, set[str]] = {}
+
+    def add(kind: PageKind, old_page: str, new_page: str) -> None:
+        if old_page == new_page:
+            return
+        try:
+            old_locator = mcp_uri(kind, old_page)
+            new_locator = mcp_uri(kind, new_page)
+        except WikiSurfaceError:
+            return
+        candidates.setdefault(old_locator, set()).add(new_locator)
+
+    for filepath in inventory:
+        old_source = manifest.sources.get(filepath)
+        if not isinstance(old_source, Mapping):
+            continue
+        old_module_page = str(
+            old_source.get("module_page") or _module_name_from_path(filepath)
+        )
+        new_module_page = page_maps.module_page_map.get(
+            filepath, _page_name_for_module(filepath)
+        )
+        add(PageKind.MODULES, old_module_page, new_module_page)
+
+    # Bootstrap has no rename detector equivalent to SyncDiff. Restrict
+    # entity carry-forward to the same persisted source coordinate so a
+    # delete/recreate in a different file cannot silently inherit identity.
+    for filepath, file_data in inventory.items():
+        old_source = manifest.sources.get(filepath)
+        if not isinstance(old_source, Mapping):
+            continue
+        old_names = [
+            value
+            for value in old_source.get("entities", [])
+            if isinstance(value, str) and value
+        ]
+        new_names = [
+            value
+            for entity in file_data.get("classes", [])
+            if isinstance(entity, Mapping)
+            and isinstance((value := entity.get("name")), str)
+            and value
+        ]
+        old_counts: dict[str, int] = defaultdict(int)
+        new_counts: dict[str, int] = defaultdict(int)
+        for entity_name in old_names:
+            old_counts[entity_name] += 1
+        for entity_name in new_names:
+            new_counts[entity_name] += 1
+        old_pages = old_source.get("entity_pages")
+        for entity_name in sorted(set(old_names) & set(new_names)):
+            if old_counts[entity_name] != 1 or new_counts[entity_name] != 1:
+                continue
+            old_page = (
+                str(old_pages[entity_name])
+                if isinstance(old_pages, Mapping) and entity_name in old_pages
+                else entity_name
+            )
+            new_page = page_maps.entity_page_name_cache.get(
+                (entity_name, filepath)
+            )
+            if new_page is not None:
+                add(PageKind.ENTITIES, old_page, new_page)
+
+    one_target_per_source = {
+        old_locator: next(iter(targets))
+        for old_locator, targets in sorted(candidates.items())
+        if len(targets) == 1
+    }
+    source_count_by_target: dict[str, int] = defaultdict(int)
+    for target_locator in one_target_per_source.values():
+        source_count_by_target[target_locator] += 1
+    return {
+        old_locator: target_locator
+        for old_locator, target_locator in one_target_per_source.items()
+        if source_count_by_target[target_locator] == 1
+    }
+
+
 def _record_bootstrap_artifact(
     state: _BootstrapRunState,
     *,
@@ -4490,6 +4590,7 @@ def _finalize_bootstrap_artifacts(
         state,
         result.api_contract,
     )
+    previous_manifest = _load_previous_bootstrap_manifest(state.options.wiki_dir)
     _emit_bootstrap(state, "Writing generated knowledge artifacts...", flush=True)
     _emit_bootstrap(state, "Writing sync manifest...", flush=True)
     committed = finalize_runtime_knowledge(
@@ -4505,7 +4606,7 @@ def _finalize_bootstrap_artifacts(
                 state.options.wiki_dir,
             ),
             inventory_complete=state.options.deep,
-            previous_manifest=_load_previous_bootstrap_manifest(state.options.wiki_dir),
+            previous_manifest=previous_manifest,
             manifest_surfaces=surfaces,
             manifest_generation_inputs=generation_inputs,
             untrusted_evidence_page_paths={
@@ -4537,6 +4638,13 @@ def _finalize_bootstrap_artifacts(
             data_flows=result.flow.data_flows,
             external_dependencies=result.external_dependencies,
             graph_analyzer_limitations=result.graph_analyzer_limitations,
+            governance_moves=_governance_moves_for_bootstrap(
+                previous_manifest,
+                inventory,
+                page_maps,
+            )
+            if (state.options.wiki_dir / GOVERNANCE_FILENAME).is_file()
+            else {},
         )
     )
     for artifact in (
@@ -4803,6 +4911,10 @@ def _bootstrap_result(state: _BootstrapRunState) -> BootstrapResult:
 
 
 def _execute_bootstrap_options(options: _BootstrapRunOptions) -> BootstrapResult:
+    try:
+        _preflight_bootstrap_governance(options.wiki_dir)
+    except GovernanceError as exc:
+        raise BootstrapContractError(str(exc)) from exc
     state = _BootstrapRunState(options)
     _start_bootstrap(state)
 
@@ -4825,6 +4937,29 @@ def _execute_bootstrap_options(options: _BootstrapRunOptions) -> BootstrapResult
     except ApiContractError as exc:
         raise BootstrapContractError(str(exc)) from exc
     return _finalize_bootstrap(state, inventory_result, page_maps, result)
+
+
+def _preflight_bootstrap_governance(wiki_dir: Path) -> None:
+    """Reject corrupt or missing committed governance before creating pages."""
+
+    previous = _load_previous_bootstrap_manifest(wiki_dir)
+    try:
+        load_governance(
+            wiki_dir,
+            expected_bundle_id=committed_governance_bundle_id(
+                wiki_dir,
+                previous,
+            ),
+        )
+    except FileNotFoundError:
+        marker = previous.artifact_hashes if previous is not None else None
+        if getattr(marker, "governance_hash", None) is not None:
+            raise GovernanceError(
+                GOVERNANCE_FILENAME,
+                "is missing but prior bootstrap artifacts were governed; "
+                "restore the ledger from version control before bootstrapping",
+                code="governance-missing",
+            )
 
 
 def execute_bootstrap(

@@ -17,6 +17,13 @@ from .knowledge_artifacts import (
 )
 from .knowledge_envelope import KnowledgeEnvelopeError, hash_markdown_snapshot
 from .knowledge_model import KnowledgeIndex, KnowledgeLoadState
+from .knowledge_governance import (
+    GOVERNANCE_EXTENSION_KEY,
+    GOVERNANCE_FILENAME,
+    GovernanceError,
+    load_governance,
+    validate_governance_projection,
+)
 from .sync_manifest import (
     MANIFEST_FILENAME,
     SyncManifest,
@@ -388,7 +395,16 @@ def _load_once(
         validated.surface_index_hash,
         validated.knowledge_index_hash,
         validated.evaluated_envelope_hash,
+        marker.governance_hash,
+        validated.governance_hash,
     )
+    governance_issues, governance_state = _live_governance_issues(
+        root,
+        validated.knowledge,
+        committed_hash=marker.governance_hash,
+        projected_hash=validated.governance_hash,
+    )
+    marker_issues += governance_issues
     if page_issue is not None:
         marker_issues += (page_issue,)
     try:
@@ -415,7 +431,11 @@ def _load_once(
     if marker_issues:
         return (
             KnowledgeLoadResult(
-                status=KnowledgeLoadState.MIXED_SNAPSHOT,
+                status=(
+                    governance_state
+                    if governance_state is not None
+                    else KnowledgeLoadState.MIXED_SNAPSHOT
+                ),
                 surface=surface,
                 knowledge=None,
                 manifest_basis=manifest,
@@ -535,6 +555,8 @@ def _marker_issues(
     actual_surface: str,
     actual_knowledge: str,
     actual_envelope: str,
+    committed_governance: str | None = None,
+    actual_governance: str | None = None,
 ) -> tuple[KnowledgeLoadIssue, ...]:
     issues: list[KnowledgeLoadIssue] = []
     for code, artifact, field, committed, actual, message in (
@@ -562,6 +584,14 @@ def _marker_issues(
             actual_envelope,
             "knowledge envelope does not match the manifest marker",
         ),
+        (
+            "governance-hash-mismatch",
+            GOVERNANCE_FILENAME,
+            "artifact_hashes.governance_hash",
+            committed_governance,
+            actual_governance,
+            "governance projection does not match the manifest marker",
+        ),
     ):
         if committed != actual:
             issues.append(
@@ -573,6 +603,101 @@ def _marker_issues(
                 )
             )
     return tuple(issues)
+
+
+def _live_governance_issues(
+    root: Path,
+    knowledge: KnowledgeIndex,
+    *,
+    committed_hash: str | None,
+    projected_hash: str | None,
+) -> tuple[tuple[KnowledgeLoadIssue, ...], KnowledgeLoadState | None]:
+    """Validate the non-rebuildable live ledger without exposing stale state."""
+
+    path = root / GOVERNANCE_FILENAME
+    ledger_present = path.exists() or path.is_symlink()
+    if not ledger_present:
+        if committed_hash is None and projected_hash is None:
+            return (), None
+        return (
+            (
+                KnowledgeLoadIssue(
+                    code="governance-missing",
+                    artifact_path=GOVERNANCE_FILENAME,
+                    message=(
+                        "prior artifacts are governed but the authoritative "
+                        "ledger is absent; restore it from version control"
+                    ),
+                ),
+            ),
+            KnowledgeLoadState.INVALID,
+        )
+    try:
+        loaded = load_governance(root)
+    except GovernanceError as exc:
+        return (
+            (
+                KnowledgeLoadIssue(
+                    code=exc.code,
+                    artifact_path=GOVERNANCE_FILENAME,
+                    field=exc.field,
+                    message=exc.message,
+                ),
+            ),
+            KnowledgeLoadState.INVALID,
+        )
+    except (OSError, UnicodeError, ValueError):
+        return (
+            (
+                KnowledgeLoadIssue(
+                    code="governance-invalid",
+                    artifact_path=GOVERNANCE_FILENAME,
+                    message="governance ledger could not be validated",
+                ),
+            ),
+            KnowledgeLoadState.INVALID,
+        )
+    if projected_hash is None or committed_hash is None:
+        return (
+            (
+                KnowledgeLoadIssue(
+                    code="governance-projection-missing",
+                    artifact_path=KNOWLEDGE_INDEX_FILENAME,
+                    field=f"extensions.{GOVERNANCE_EXTENSION_KEY}",
+                    message=(
+                        "a governance ledger exists but the generated "
+                        "projection/manifest does not commit it"
+                    ),
+                ),
+            ),
+            KnowledgeLoadState.MIXED_SNAPSHOT,
+        )
+    issues: list[KnowledgeLoadIssue] = []
+    if loaded.content_hash != projected_hash:
+        issues.append(
+            KnowledgeLoadIssue(
+                code="governance-live-hash-mismatch",
+                artifact_path=GOVERNANCE_FILENAME,
+                message=(
+                    "governance ledger changed after the generated projection"
+                ),
+            )
+        )
+    try:
+        validate_governance_projection(knowledge, ledger=loaded.ledger)
+    except GovernanceError as exc:
+        issues.append(
+            KnowledgeLoadIssue(
+                code=exc.code,
+                artifact_path=KNOWLEDGE_INDEX_FILENAME,
+                field=exc.field,
+                message=exc.message,
+            )
+        )
+    return (
+        tuple(issues),
+        KnowledgeLoadState.MIXED_SNAPSHOT if issues else None,
+    )
 
 
 def _page_parity_message(surface_paths: set[str], live_paths: set[str]) -> str:

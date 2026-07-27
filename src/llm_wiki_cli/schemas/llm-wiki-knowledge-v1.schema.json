@@ -43,6 +43,9 @@
         },
         "llm-wiki/section-ownership-v1": {
           "$ref": "#/$defs/sectionOwnership"
+        },
+        "llm-wiki/governance-v1": {
+          "$ref": "#/$defs/governanceProjection"
         }
       }
     }
@@ -256,7 +259,16 @@
           "maximum": 9223372036854775807
         },
         "extensions": {
-          "$ref": "#/$defs/extensions"
+          "allOf": [
+            {
+              "$ref": "#/$defs/extensions"
+            }
+          ],
+          "properties": {
+            "llm-wiki/governance-hash": {
+              "$ref": "#/$defs/hash"
+            }
+          }
         }
       },
       "additionalProperties": false
@@ -394,7 +406,16 @@
           "$ref": "#/$defs/producer"
         },
         "extensions": {
-          "$ref": "#/$defs/extensions"
+          "allOf": [
+            {
+              "$ref": "#/$defs/extensions"
+            }
+          ],
+          "properties": {
+            "llm-wiki/governance-v1": {
+              "$ref": "#/$defs/governanceConceptSummary"
+            }
+          }
         }
       },
       "additionalProperties": false
@@ -2806,6 +2827,277 @@
           }
         }
       ],
+      "additionalProperties": false
+    },
+    "governanceUid": {
+      "type": "string",
+      "pattern": "^lw:[a-z][a-z0-9-]{0,31}:[0-9a-f]{32}$"
+    },
+    "governanceActor": {
+      "type": "object",
+      "required": [
+        "kind",
+        "id"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "process",
+            "tool"
+          ]
+        },
+        "id": {
+          "$ref": "#/$defs/normalizedNonemptyString"
+        }
+      },
+      "additionalProperties": false
+    },
+    "governanceAlias": {
+      "type": "object",
+      "required": [
+        "type",
+        "value"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "locator",
+            "natural-key"
+          ]
+        },
+        "value": {
+          "$ref": "#/$defs/normalizedNonemptyString"
+        }
+      },
+      "additionalProperties": false
+    },
+    "governanceLifecycleEvent": {
+      "type": "object",
+      "required": [
+        "event_id",
+        "from",
+        "to",
+        "actor",
+        "authored_at",
+        "reason"
+      ],
+      "properties": {
+        "event_id": {
+          "type": "string",
+          "pattern": "^le_[0-9a-f]{64}$"
+        },
+        "from": {
+          "$ref": "#/$defs/lifecycle"
+        },
+        "to": {
+          "$ref": "#/$defs/lifecycle"
+        },
+        "actor": {
+          "$ref": "#/$defs/governanceActor"
+        },
+        "authored_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reason": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        },
+        "successor_uid": {
+          "$ref": "#/$defs/governanceUid"
+        }
+      },
+      "additionalProperties": false
+    },
+    "governanceReviewEvent": {
+      "type": "object",
+      "required": [
+        "event_id",
+        "section_locator",
+        "state",
+        "reasons",
+        "reviewer",
+        "method",
+        "authored_at"
+      ],
+      "properties": {
+        "event_id": {
+          "type": "string",
+          "pattern": "^rv_[0-9a-f]{64}$"
+        },
+        "section_locator": {
+          "type": "string",
+          "pattern": "^llm-wiki://[^?#]+#section/[^?#]+$"
+        },
+        "state": {
+          "enum": [
+            "valid",
+            "expired"
+          ]
+        },
+        "reasons": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "scope-changed",
+              "evidence-changed",
+              "basis-incompatible",
+              "section-missing",
+              "concept-missing"
+            ]
+          }
+        },
+        "reviewer": {
+          "$ref": "#/$defs/governanceActor"
+        },
+        "method": {
+          "type": "object",
+          "required": [
+            "id",
+            "version"
+          ],
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/normalizedNonemptyString"
+            },
+            "version": {
+              "$ref": "#/$defs/normalizedNonemptyString"
+            }
+          },
+          "additionalProperties": false
+        },
+        "authored_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "governanceLifecycleEvents": {
+      "$ref": "#/$defs/governanceBoundedEvents",
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "#/$defs/governanceLifecycleEvent"
+          }
+        }
+      }
+    },
+    "governanceReviewEvents": {
+      "$ref": "#/$defs/governanceBoundedEvents",
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "#/$defs/governanceReviewEvent"
+          }
+        }
+      }
+    },
+    "governanceBoundedEvents": {
+      "type": "object",
+      "required": [
+        "items",
+        "total",
+        "returned",
+        "limit",
+        "truncated"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 1000
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "returned": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "truncated": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "governanceConceptSummary": {
+      "type": "object",
+      "required": [
+        "uid",
+        "aliases",
+        "lifecycle",
+        "lifecycle_events",
+        "reviews"
+      ],
+      "properties": {
+        "uid": {
+          "$ref": "#/$defs/governanceUid"
+        },
+        "aliases": {
+          "type": "array",
+          "maxItems": 10000,
+          "items": {
+            "$ref": "#/$defs/governanceAlias"
+          }
+        },
+        "lifecycle": {
+          "$ref": "#/$defs/lifecycle"
+        },
+        "successor_uid": {
+          "$ref": "#/$defs/governanceUid"
+        },
+        "lifecycle_events": {
+          "$ref": "#/$defs/governanceLifecycleEvents"
+        },
+        "reviews": {
+          "$ref": "#/$defs/governanceReviewEvents"
+        }
+      },
+      "additionalProperties": false
+    },
+    "governanceProjection": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "bundle_id",
+        "input_hash",
+        "concepts"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "llm-wiki-governance/v1"
+        },
+        "bundle_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "input_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "concepts": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/locator"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/governanceConceptSummary"
+          }
+        }
+      },
       "additionalProperties": false
     }
   }

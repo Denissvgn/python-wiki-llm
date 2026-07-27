@@ -106,6 +106,7 @@ class ValidatedKnowledgeArtifacts:
     surface_index_hash: str
     knowledge_index_hash: str
     evaluated_envelope_hash: str
+    governance_hash: str | None = None
 
 
 @dataclass(frozen=True)
@@ -296,6 +297,9 @@ def validate_knowledge_artifacts(
             ) from exc
     _validate_surface_knowledge_parity(surface_payload, knowledge)
     _validate_manifest_knowledge_parity(manifest, surface_payload, knowledge)
+    from .knowledge_governance import governance_hash_from_knowledge
+
+    governance_hash = governance_hash_from_knowledge(knowledge)
     return ValidatedKnowledgeArtifacts(
         surface_payload=surface_payload,
         knowledge=knowledge,
@@ -304,6 +308,7 @@ def validate_knowledge_artifacts(
         evaluated_envelope_hash=EvaluatedEnvelope(
             bundle=knowledge.bundle
         ).content_hash(),
+        governance_hash=governance_hash,
     )
 
 
@@ -334,6 +339,7 @@ def build_knowledge_commit_plan(
         surface_index_hash=validated.surface_index_hash,
         knowledge_index_hash=validated.knowledge_index_hash,
         evaluated_envelope_hash=validated.evaluated_envelope_hash,
+        governance_hash=validated.governance_hash,
     )
     try:
         manifest_bytes = formatted_json_bytes(committed_manifest.to_payload())

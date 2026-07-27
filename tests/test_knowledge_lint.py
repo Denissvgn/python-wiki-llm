@@ -11,6 +11,17 @@ import pytest
 
 from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd
 from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
+from llm_wiki_cli.services.knowledge_governance import (
+    GOVERNANCE_EXTENSION_KEY,
+    ConceptGovernanceReference,
+    GovernanceActor,
+    GovernanceLedger,
+    ReviewEvidence,
+    add_review_event,
+    concept_references_from_knowledge,
+    reconcile_concepts,
+    save_governance,
+)
 from llm_wiki_cli.services.knowledge_loader import (
     KnowledgeLoadIssue,
     load_knowledge_state,
@@ -28,6 +39,14 @@ from llm_wiki_cli.services.sync_manifest import (
     ManifestTombstone,
     SyncManifest,
 )
+from llm_wiki_cli.services.verification_contracts import (
+    ARTIFACT_INTEGRITY_CHECKER_ID,
+    INTERNAL_LINKS_CHECKER_ID,
+    VERIFICATION_RECEIPT_FILENAME,
+    CheckerContract,
+    build_artifact_verification_context,
+    verify_and_write_receipt,
+)
 from tests.knowledge_fixtures import FIXTURE_SOURCE_PATH, fixture_hash
 from tests.test_knowledge_compatibility import (
     COMPATIBILITY_CASES,
@@ -43,6 +62,9 @@ from tests.test_knowledge_loader import _committed_state
 KNOWLEDGE_CATEGORIES = {
     "knowledge_schema",
     "knowledge_projection",
+    "knowledge_governance",
+    "knowledge_review",
+    "knowledge_verification",
     "knowledge_snapshot",
     "knowledge_evidence",
     "knowledge_freshness",
@@ -78,6 +100,19 @@ def _loaded_knowledge(tmp_path):
     loaded = load_knowledge_state(tmp_path)
     assert loaded.knowledge is not None
     return loaded, loaded.knowledge
+
+
+def _verification_context(loaded, knowledge, *, knowledge_hash=None):
+    assert loaded.manifest_basis is not None
+    assert loaded.manifest_basis.artifact_hashes is not None
+    hashes = loaded.manifest_basis.artifact_hashes
+    return build_artifact_verification_context(
+        knowledge,
+        knowledge_hash=knowledge_hash or hashes.knowledge_index_hash,
+        surface_index_hash=hashes.surface_index_hash,
+        evaluated_envelope_hash=hashes.evaluated_envelope_hash,
+        governance_hash=hashes.governance_hash,
+    )
 
 
 def test_missing_lint_source_probes_are_unique_and_deterministic(
@@ -612,6 +647,246 @@ def test_projection_failures_have_stable_strict_categories_and_locations():
         set(issue) == {"category", "message", "severity", "path", "target"}
         for issue in payload["issues"]
     )
+
+
+def test_governance_and_review_projection_failures_have_distinct_categories():
+    load_issues = (
+        KnowledgeLoadIssue(
+            code="governance-bundle-mismatch",
+            artifact_path=".llm-wiki-governance.json",
+            field="bundle_id",
+            message="bundle differs",
+        ),
+        KnowledgeLoadIssue(
+            code="governance-invalid",
+            artifact_path=".llm-wiki-governance.json",
+            field="review_events.rv_invalid",
+            message="review is malformed",
+        ),
+    )
+    report = lint_cmd.LintReport(wiki_dir="wiki", src_dir="src", strict=True)
+
+    lint_cmd._check_knowledge_lint(
+        report,
+        lint_cmd._KnowledgeLintState(enabled=True, load_issues=load_issues),
+    )
+
+    assert [issue.category for issue in report.issues] == [
+        "knowledge_governance",
+        "knowledge_review",
+    ]
+
+
+def test_expired_human_review_is_reported_separately_from_machine_status(tmp_path):
+    loaded, knowledge = _loaded_knowledge(tmp_path)
+    view = build_knowledge_read_view(loaded, snapshot_only=True)
+    selected = knowledge.concepts[0]
+    governed = replace(
+        selected,
+        extensions={
+            **dict(selected.extensions),
+            GOVERNANCE_EXTENSION_KEY: {
+                "uid": "lw:guide:0123456789abcdef0123456789abcdef",
+                "reviews": {
+                    "items": [
+                        {
+                            "event_id": "rv_" + ("a" * 64),
+                            "state": "expired",
+                            "reasons": ["scope-changed"],
+                        }
+                    ]
+                },
+            },
+        },
+    )
+    view = replace(
+        view,
+        knowledge=replace(
+            knowledge,
+            concepts=(governed, *knowledge.concepts[1:]),
+        ),
+    )
+    report = lint_cmd.LintReport(
+        wiki_dir=str(tmp_path),
+        src_dir="src",
+        strict=True,
+    )
+
+    lint_cmd._check_knowledge_lint(
+        report,
+        lint_cmd._KnowledgeLintState(enabled=True, view=view),
+    )
+
+    reviews = [
+        issue for issue in report.issues if issue.category == "knowledge_review"
+    ]
+    assert len(reviews) == 1
+    assert "[reason=scope-changed]" in reviews[0].message
+    assert all(
+        issue.category != "knowledge_verification" for issue in report.issues
+    )
+
+
+def test_strict_lint_evaluates_retained_review_missing_from_projection(tmp_path):
+    loaded, knowledge = _loaded_knowledge(tmp_path)
+    archived = ConceptGovernanceReference(
+        locator="llm-wiki://guides/Archived",
+        concept_kind="guide",
+        natural_key="guide:guides/Archived.md",
+    )
+    ledger = reconcile_concepts(
+        GovernanceLedger.empty("lint-review-fixture"),
+        (*concept_references_from_knowledge(knowledge), archived),
+    )
+    archived_uid = next(
+        uid
+        for uid, allocation in ledger.concepts.items()
+        if allocation.locator == archived.locator
+    )
+    ledger = add_review_event(
+        ledger,
+        archived_uid,
+        section_locator=(
+            "llm-wiki://guides/Archived#section/description/1"
+        ),
+        scope_hash=fixture_hash("archived-section"),
+        evidence=ReviewEvidence(mode="no-source"),
+        reviewer=GovernanceActor("human", "reviewer.example"),
+        method="manual-review",
+        method_version="1",
+        authored_at="2026-07-27T10:00:00Z",
+    )
+    written = save_governance(tmp_path, ledger)
+    view = build_knowledge_read_view(loaded, snapshot_only=True)
+    assert view.manifest_basis is not None
+    assert view.manifest_basis.artifact_hashes is not None
+    view = replace(
+        view,
+        manifest_basis=replace(
+            view.manifest_basis,
+            artifact_hashes=replace(
+                view.manifest_basis.artifact_hashes,
+                governance_hash=written.content_hash,
+            ),
+        ),
+    )
+    report = lint_cmd.LintReport(
+        wiki_dir=str(tmp_path),
+        src_dir="src",
+        strict=True,
+    )
+
+    lint_cmd._check_knowledge_lint(
+        report,
+        lint_cmd._KnowledgeLintState(enabled=True, view=view),
+    )
+
+    reviews = [
+        issue for issue in report.issues if issue.category == "knowledge_review"
+    ]
+    assert len(reviews) == 1
+    assert "[reason=concept-missing,section-missing]" in reviews[0].message
+    assert reviews[0].path is None
+    assert reviews[0].target.startswith("rv_")
+
+
+def test_strict_lint_accepts_current_passing_receipt_without_running_checker(
+    tmp_path,
+    monkeypatch,
+):
+    loaded, knowledge = _loaded_knowledge(tmp_path)
+    context = _verification_context(loaded, knowledge)
+    verify_and_write_receipt(
+        tmp_path,
+        context,
+        [ARTIFACT_INTEGRITY_CHECKER_ID],
+    )
+    monkeypatch.setattr(
+        CheckerContract,
+        "run",
+        lambda *_args, **_kwargs: pytest.fail(
+            "strict lint must not execute receipt checkers"
+        ),
+    )
+    view = build_knowledge_read_view(loaded, snapshot_only=True)
+    report = lint_cmd.LintReport(
+        wiki_dir=str(tmp_path),
+        src_dir="src",
+        strict=True,
+    )
+
+    lint_cmd._check_knowledge_lint(
+        report,
+        lint_cmd._KnowledgeLintState(enabled=True, view=view),
+    )
+
+    assert not [
+        issue
+        for issue in report.issues
+        if issue.category == "knowledge_verification"
+    ]
+
+
+def test_strict_lint_surfaces_stale_and_failed_receipts(tmp_path):
+    loaded, knowledge = _loaded_knowledge(tmp_path)
+    stale_context = _verification_context(
+        loaded,
+        knowledge,
+        knowledge_hash=fixture_hash("stale-knowledge"),
+    )
+    receipt = verify_and_write_receipt(
+        tmp_path,
+        stale_context,
+        [INTERNAL_LINKS_CHECKER_ID],
+    )
+    assert receipt.result.value == "failed"
+    view = build_knowledge_read_view(loaded, snapshot_only=True)
+    report = lint_cmd.LintReport(
+        wiki_dir=str(tmp_path),
+        src_dir="src",
+        strict=True,
+    )
+
+    lint_cmd._check_knowledge_lint(
+        report,
+        lint_cmd._KnowledgeLintState(enabled=True, view=view),
+    )
+
+    findings = [
+        issue
+        for issue in report.issues
+        if issue.category == "knowledge_verification"
+    ]
+    assert len(findings) == 2
+    assert any("knowledge-changed" in issue.message for issue in findings)
+    assert any(
+        "[reason=verification-check-failed]" in issue.message
+        for issue in findings
+    )
+
+
+def test_strict_lint_rejects_malformed_receipt(tmp_path):
+    loaded, _knowledge = _loaded_knowledge(tmp_path)
+    (tmp_path / VERIFICATION_RECEIPT_FILENAME).write_bytes(b"{not-json\n")
+    view = build_knowledge_read_view(loaded, snapshot_only=True)
+    report = lint_cmd.LintReport(
+        wiki_dir=str(tmp_path),
+        src_dir="src",
+        strict=True,
+    )
+
+    lint_cmd._check_knowledge_lint(
+        report,
+        lint_cmd._KnowledgeLintState(enabled=True, view=view),
+    )
+
+    findings = [
+        issue
+        for issue in report.issues
+        if issue.category == "knowledge_verification"
+    ]
+    assert len(findings) == 1
+    assert "[reason=verification-receipt-invalid]" in findings[0].message
 
 
 def test_live_evaluation_failure_is_a_field_specific_freshness_error():

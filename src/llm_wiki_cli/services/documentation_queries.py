@@ -35,6 +35,7 @@ from .knowledge_graph import (
     KnowledgeGraphError,
     typed_graph_from_knowledge_extensions,
 )
+from .knowledge_governance import GOVERNANCE_EXTENSION_KEY
 from .knowledge_model import knowledge_index_to_payload
 from .relationships import build_entity_relationship_summaries
 
@@ -330,6 +331,7 @@ class DocumentationGraphQueryService:
         surface_index: Optional[Mapping[str, Any]] = None,
         limit: int = _DEFAULT_LIMIT,
         knowledge_view: Optional[KnowledgeReadView] = None,
+        machine_verification: Optional[Mapping[str, Mapping[str, Any]]] = None,
     ):
         if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
             raise DocumentationQueryError("limit must be a positive integer.")
@@ -345,6 +347,22 @@ class DocumentationGraphQueryService:
         self.data_flows = self._normalise_data_flows(data_flows)
         self.dependency = self._dependency_payload(dependency_analysis)
         self.pages = self._surface_pages(surface_index or {})
+        if machine_verification is None:
+            self.machine_verification: dict[str, dict[str, Any]] = {}
+        elif not isinstance(machine_verification, Mapping):
+            raise DocumentationQueryError(
+                "machine_verification must be a mapping keyed by concept coordinate."
+            )
+        else:
+            try:
+                self.machine_verification = {
+                    str(uid): _jsonable_mapping(summary)
+                    for uid, summary in machine_verification.items()
+                }
+            except (TypeError, ValueError) as exc:
+                raise DocumentationQueryError(
+                    f"machine_verification is invalid: {exc}"
+                ) from exc
 
         relationships = build_entity_relationship_summaries(
             self.inventory,
@@ -544,7 +562,7 @@ class DocumentationGraphQueryService:
         return result
 
     def get_concept(self, locator_or_exact_route: object) -> dict[str, Any]:
-        """Return one compact concept selected by an exact indexed coordinate."""
+        """Return one concept selected by current coordinate, UID, or alias."""
 
         query = _require_query(locator_or_exact_route, "locator_or_exact_route")
         result = self._knowledge_selection_result(query)
@@ -561,7 +579,7 @@ class DocumentationGraphQueryService:
         direction: str = "both",
         kinds: Optional[Iterable[str]] = None,
     ) -> dict[str, Any]:
-        """Return bounded Phase 1 relationship observations for one concept."""
+        """Return bounded relationship observations for one exact identity."""
 
         query = _require_query(locator_or_exact_route, "locator_or_exact_route")
         selected_direction = self._knowledge_direction(direction)
@@ -743,7 +761,7 @@ class DocumentationGraphQueryService:
         self,
         locator_or_exact_route: object,
     ) -> dict[str, Any]:
-        """Return full stored and computed evidence for one exact concept."""
+        """Return full stored and computed evidence for one exact identity."""
 
         query = _require_query(locator_or_exact_route, "locator_or_exact_route")
         result = self._knowledge_selection_result(query)
@@ -804,6 +822,8 @@ class DocumentationGraphQueryService:
         self.concept_by_locator: dict[str, dict[str, Any]] = {}
         self.concept_by_canonical_path: dict[str, dict[str, Any]] = {}
         self.concept_by_mcp_uri: dict[str, dict[str, Any]] = {}
+        self.concept_by_uid: dict[str, dict[str, Any]] = {}
+        self.concept_by_alias: dict[str, dict[str, Any]] = {}
         self.concepts_by_source_path: dict[
             str, tuple[dict[str, Any], ...]
         ] = {}
@@ -890,6 +910,25 @@ class DocumentationGraphQueryService:
             self.concept_by_locator[locator] = concept
             self.concept_by_mcp_uri[locator] = concept
             self.concept_by_canonical_path[canonical_path] = concept
+
+            extensions = concept.get("extensions", {})
+            governance = (
+                extensions.get(GOVERNANCE_EXTENSION_KEY)
+                if isinstance(extensions, Mapping)
+                else None
+            )
+            if isinstance(governance, Mapping):
+                uid = governance.get("uid")
+                if isinstance(uid, str):
+                    self.concept_by_uid[uid] = concept
+                aliases = governance.get("aliases", ())
+                if isinstance(aliases, list):
+                    for alias in aliases:
+                        if not isinstance(alias, Mapping):
+                            continue
+                        alias_value = alias.get("value")
+                        if isinstance(alias_value, str):
+                            self.concept_by_alias[alias_value] = concept
 
             facets = cast(Mapping[str, Any], concept.get("facets", {}))
             structure = cast(Mapping[str, Any], facets.get("structure", {}))
@@ -1025,12 +1064,7 @@ class DocumentationGraphQueryService:
         target_locators: list[Optional[str]] = []
         for index, edge in enumerate(edges):
             source = edge.get("from")
-            source_locator = (
-                source.get("locator")
-                if isinstance(source, Mapping)
-                and source.get("kind") == "concept"
-                else None
-            )
+            source_locator = self._typed_graph_concept_locator(source)
             if (
                 isinstance(source_locator, str)
                 and source_locator in self.concept_by_locator
@@ -1038,12 +1072,7 @@ class DocumentationGraphQueryService:
                 outgoing[source_locator].append(index)
 
             target = edge.get("target")
-            target_locator = (
-                target.get("locator")
-                if isinstance(target, Mapping)
-                and target.get("kind") == "concept"
-                else None
-            )
+            target_locator = self._typed_graph_concept_locator(target)
             if not (
                 isinstance(target_locator, str)
                 and target_locator in self.concept_by_locator
@@ -1083,16 +1112,41 @@ class DocumentationGraphQueryService:
             "coverage": _jsonable(graph["coverage"]),
         }
 
+    def _typed_graph_concept_locator(self, endpoint: object) -> str | None:
+        """Resolve a locator- or durable-UID concept endpoint."""
+
+        if not isinstance(endpoint, Mapping) or endpoint.get("kind") != "concept":
+            return None
+        locator = endpoint.get("locator")
+        if isinstance(locator, str):
+            return locator
+        uid = endpoint.get("uid")
+        if not isinstance(uid, str):
+            return None
+        concept = self.concept_by_uid.get(uid)
+        if concept is None:
+            return None
+        selected = concept.get("locator")
+        return selected if isinstance(selected, str) else None
+
     def _knowledge_selection_result(self, query: str) -> dict[str, Any]:
         candidates: tuple[dict[str, Any], ...] = ()
         if self.knowledge_status["availability"] == KnowledgeAvailability.READY.value:
-            direct = self.concept_by_locator.get(query)
-            if direct is None:
-                direct = self.concept_by_mcp_uri.get(query)
-            if direct is None:
-                direct = self.concept_by_canonical_path.get(query)
-            if direct is not None:
-                candidates = (direct,)
+            matches_by_locator: dict[str, dict[str, Any]] = {}
+            for index in (
+                self.concept_by_locator,
+                self.concept_by_mcp_uri,
+                self.concept_by_canonical_path,
+                self.concept_by_uid,
+                self.concept_by_alias,
+            ):
+                direct = index.get(query)
+                if direct is not None:
+                    matches_by_locator[cast(str, direct["locator"])] = direct
+            candidates = tuple(
+                matches_by_locator[locator]
+                for locator in sorted(matches_by_locator)
+            )
 
         total = len(candidates)
         capped = candidates[: self.limit]
@@ -1126,7 +1180,7 @@ class DocumentationGraphQueryService:
         source_path = (
             basis.get("source_path") if isinstance(basis, Mapping) else None
         )
-        return {
+        result = {
             "locator": locator,
             "concept_kind": concept.get("concept_kind"),
             "title": concept.get("title"),
@@ -1142,6 +1196,47 @@ class DocumentationGraphQueryService:
             "lifecycle": concept.get("lifecycle"),
             "freshness": self._compact_knowledge_freshness(locator),
         }
+        extensions = concept.get("extensions", {})
+        governance = (
+            extensions.get(GOVERNANCE_EXTENSION_KEY)
+            if isinstance(extensions, Mapping)
+            else None
+        )
+        if isinstance(governance, Mapping):
+            uid = governance.get("uid")
+            raw_aliases = governance.get("aliases", [])
+            aliases = self._bounded(
+                raw_aliases if isinstance(raw_aliases, list) else ()
+            )
+            result.update(
+                {
+                    "uid": uid,
+                    "aliases": aliases.items,
+                    "alias_coverage": aliases.metadata(),
+                    "lifecycle_events": _jsonable(
+                        governance.get("lifecycle_events", {})
+                    ),
+                    "reviews": _jsonable(governance.get("reviews", {})),
+                    "machine_verification": (
+                        None
+                        if not isinstance(uid, str)
+                        else _jsonable(
+                            self.machine_verification.get(
+                                uid,
+                                self.machine_verification.get(locator),
+                            )
+                        )
+                    ),
+                }
+            )
+            successor_uid = governance.get("successor_uid")
+            if isinstance(successor_uid, str):
+                result["successor_uid"] = successor_uid
+        elif locator in self.machine_verification:
+            result["machine_verification"] = _jsonable(
+                self.machine_verification[locator]
+            )
+        return result
 
     def _compact_knowledge_freshness(self, locator: str) -> dict[str, Any]:
         view = self.knowledge_view
@@ -1329,7 +1424,7 @@ class DocumentationGraphQueryService:
         edge = self._typed_graph_edges[index]
         source = cast(Mapping[str, Any], edge["from"])
         target = cast(Mapping[str, Any], edge["target"])
-        source_locator = source.get("locator")
+        source_locator = self._typed_graph_concept_locator(source)
         target_locator = self._typed_graph_target_locators[index]
         related_locator = (
             source_locator if direction == "incoming" else target_locator

@@ -11,7 +11,12 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli import cli
-from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd, sync_cmd
+from llm_wiki_cli.commands import (
+    bootstrap_cmd,
+    knowledge_cmd,
+    lint_cmd,
+    sync_cmd,
+)
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.commands.sync_cmd import (
     MANIFEST_FILENAME,
@@ -21,8 +26,15 @@ from llm_wiki_cli.commands.sync_cmd import (
 )
 from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.services import knowledge_orchestration, plugins
+from llm_wiki_cli.services.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
 from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
 from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME, InventoryCacheStats
+from llm_wiki_cli.services.knowledge_governance import (
+    current_review_evidence,
+    evaluate_review_event,
+    load_governance,
+    review_scope_hash,
+)
 from llm_wiki_cli.services.knowledge_evidence import (
     is_valid_sha256,
     semantic_hash_for_file,
@@ -3441,6 +3453,146 @@ class TestSyncGeneratedRelationshipSections:
         assert "service.py" not in relationships
         assert "No generated relationships detected" in relationships
         assert "UPDATE entity relationships: User" in out
+
+    def test_generated_relationship_churn_preserves_matching_human_review(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path)
+        self._write_relationship_project(
+            proj,
+            textwrap.dedent("""\
+                from models import User
+
+                def make_user(user: User) -> User:
+                    return user
+            """),
+        )
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(
+            _make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki))
+        )
+
+        entity_path = wiki / "entities" / "User.md"
+        original = entity_path.read_text(encoding="utf-8")
+        entity_path.write_text(
+            sync_cmd._replace_section_body(
+                original,
+                "Description",
+                "Human-reviewed user entity.",
+            ),
+            encoding="utf-8",
+        )
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        init_args = cli._build_parser().parse_args(
+            [
+                "knowledge",
+                "init",
+                "--wiki-dir",
+                str(wiki),
+                "--bundle-id",
+                "kb_sync_review_churn",
+            ]
+        )
+        knowledge_cmd.run(init_args)
+        state_before = load_knowledge_state(wiki)
+        assert state_before.knowledge is not None
+        knowledge_before = state_before.knowledge
+        pages = knowledge_before.extensions[
+            SECTION_OWNERSHIP_EXTENSION_KEY
+        ]["pages"]
+        user_sections = next(
+            page["sections"]
+            for page in pages
+            if page["page_locator"] == "llm-wiki://entities/User"
+        )
+        description = next(
+            section
+            for section in user_sections
+            if section["title"] == "Description"
+        )
+        ledger_before = load_governance(wiki).ledger
+        uid = next(
+            uid
+            for uid, allocation in ledger_before.concepts.items()
+            if allocation.locator == "llm-wiki://entities/User"
+        )
+        concept_before = next(
+            concept
+            for concept in knowledge_before.concepts
+            if concept.locator == "llm-wiki://entities/User"
+        )
+        scope_hash_before = review_scope_hash(
+            knowledge_before,
+            description["locator"],
+        )
+        evidence_before = current_review_evidence(concept_before)
+        assert evidence_before is not None
+
+        review_args = cli._build_parser().parse_args(
+            [
+                "knowledge",
+                "review",
+                "--wiki-dir",
+                str(wiki),
+                "--uid",
+                uid,
+                "--section",
+                description["locator"],
+                "--reviewer-kind",
+                "human",
+                "--reviewer-id",
+                "alice",
+                "--method",
+                "manual-review",
+                "--method-version",
+                "1",
+                "--authored-at",
+                "2026-07-27T12:00:00Z",
+            ]
+        )
+        knowledge_cmd.run(review_args)
+        reviewed = load_governance(wiki).ledger
+        event = next(iter(reviewed.review_events.values()))
+        before_relationships = entity_path.read_text(encoding="utf-8").split(
+            "## Relationships",
+            1,
+        )[1]
+        assert "service.py" in before_relationships
+
+        (proj / "service.py").write_text(
+            "def make_value() -> int:\n    return 1\n",
+            encoding="utf-8",
+        )
+        capsys.readouterr()
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        state_after = load_knowledge_state(wiki)
+        assert state_after.knowledge is not None
+        knowledge_after = state_after.knowledge
+        concept_after = next(
+            concept
+            for concept in knowledge_after.concepts
+            if concept.locator == "llm-wiki://entities/User"
+        )
+        after_relationships = entity_path.read_text(encoding="utf-8").split(
+            "## Relationships",
+            1,
+        )[1]
+        assert before_relationships != after_relationships
+        assert "No generated relationships detected" in after_relationships
+        assert review_scope_hash(
+            knowledge_after,
+            description["locator"],
+        ) == scope_hash_before
+        assert current_review_evidence(concept_after) == evidence_before
+        current_ledger = load_governance(wiki).ledger
+        assert current_ledger.review_events[event.event_id] == event
+        assert evaluate_review_event(
+            event,
+            current_ledger,
+            knowledge_after,
+        ).reasons == ()
 
     def test_changed_import_graph_updates_unchanged_module_local_maps(
         self, tmp_path, monkeypatch, capsys
