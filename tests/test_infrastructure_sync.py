@@ -415,10 +415,10 @@ def test_infrastructure_native_evidence_and_strict_freshness_are_live(
         strict=True,
     )
     changed_messages = [
-        issue.message
-        for issue in changed.issues
-        if issue.category == "knowledge_freshness"
-        and issue.path == "infrastructure/Dockerfile.md"
+        diagnostic.message
+        for diagnostic in changed.diagnostics
+        if diagnostic.category == "knowledge_freshness"
+        and diagnostic.path == "infrastructure/Dockerfile.md"
     ]
     assert any("source-changed" in message for message in changed_messages)
 
@@ -429,10 +429,10 @@ def test_infrastructure_native_evidence_and_strict_freshness_are_live(
         strict=True,
     )
     removed_messages = [
-        issue.message
-        for issue in removed.issues
-        if issue.category == "knowledge_freshness"
-        and issue.path == "infrastructure/Dockerfile.md"
+        diagnostic.message
+        for diagnostic in removed.diagnostics
+        if diagnostic.category == "knowledge_freshness"
+        and diagnostic.path == "infrastructure/Dockerfile.md"
     ]
     assert any("source-missing" in message for message in removed_messages)
 
@@ -471,10 +471,10 @@ def test_first_use_bootstrap_rejects_changed_existing_infrastructure_wiki(
     ).read_text(encoding="utf-8")
     report = lint_cmd.build_report(str(wiki), str(project), strict=True)
     messages = [
-        issue.message
-        for issue in report.issues
-        if issue.category == "knowledge_freshness"
-        and issue.path == "infrastructure/Dockerfile.md"
+        diagnostic.message
+        for diagnostic in report.diagnostics
+        if diagnostic.category == "knowledge_freshness"
+        and diagnostic.path == "infrastructure/Dockerfile.md"
     ]
     assert any("source-changed" in message for message in messages)
 

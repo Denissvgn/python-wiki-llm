@@ -307,6 +307,14 @@ def _add_lint_command(subparsers):
         help="Require core wiki structure and a fresh sync manifest",
     )
     lint_parser.add_argument(
+        "--knowledge-drift-gate",
+        action="store_true",
+        help=(
+            "Run strict lint and make native freshness/drift findings blocking "
+            "(default: report-only)"
+        ),
+    )
+    lint_parser.add_argument(
         "--profile",
         action="store_true",
         help="Print combined lint report and phase timings as JSON",
@@ -396,6 +404,14 @@ def _add_ci_check_command(subparsers):
         "--report",
         default=".git/llm-wiki-ci-report.md",
         help="Markdown report path (default: .git/llm-wiki-ci-report.md)",
+    )
+    ci_parser.add_argument(
+        "--knowledge-drift-gate",
+        action="store_true",
+        help=(
+            "Make native freshness/drift findings blocking "
+            "(default: report-only)"
+        ),
     )
     _add_helper_cache_argument(ci_parser)
     _add_include_tests_argument(ci_parser)

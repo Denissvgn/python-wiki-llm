@@ -932,9 +932,45 @@ class TestMcpWikiService:
 
         assert result["format"] == "json"
         assert result["wiki_dir"] == "docs/llm_wiki"
+        assert result["knowledge_drift_gate"] is False
         assert "issues" in result
         assert "execution" not in result
         assert "Extractor plan:" not in capsys.readouterr().err
+
+    def test_check_wiki_exposes_explicit_native_drift_gate(
+        self,
+        tmp_project,
+        monkeypatch,
+    ):
+        seen = {}
+
+        def fake_build_report(wiki_dir, src_dir, **kwargs):
+            seen.update(kwargs)
+            return mcp_server.lint_cmd.LintReport(
+                wiki_dir=str(wiki_dir),
+                src_dir=src_dir,
+                strict=bool(
+                    kwargs["strict"] or kwargs["knowledge_drift_gate"]
+                ),
+                knowledge_drift_gate=kwargs["knowledge_drift_gate"],
+            )
+
+        monkeypatch.setattr(
+            mcp_server.lint_cmd,
+            "build_report",
+            fake_build_report,
+        )
+        service = mcp_server.McpWikiService(
+            src_dir=".",
+            wiki_dir="docs/llm_wiki",
+        )
+
+        result = service.check_wiki(knowledge_drift_gate=True)
+
+        assert seen["strict"] is False
+        assert seen["knowledge_drift_gate"] is True
+        assert result["strict"] is True
+        assert result["knowledge_drift_gate"] is True
 
     def test_get_status_returns_structured_status(self, tmp_project):
         _write_wiki(tmp_project)
@@ -1832,6 +1868,33 @@ def test_registered_section_tool_forwards_filter_and_limit():
 
     assert result is expected
     assert calls == [("llm-wiki://entities/User", "mixed", 7)]
+
+
+def test_registered_check_wiki_tool_forwards_native_drift_gate():
+    calls = []
+    expected = {"operation": "check_wiki"}
+
+    class RecordingService:
+        def check_wiki(
+            self,
+            strict=False,
+            format="json",
+            knowledge_drift_gate=False,
+        ):
+            calls.append((strict, format, knowledge_drift_gate))
+            return expected
+
+    server = RecordingMcpServer()
+    mcp_server._register_mcp_tools(server, RecordingService())
+
+    result = server.tool_functions["check_wiki"](
+        strict=True,
+        format="markdown",
+        knowledge_drift_gate=True,
+    )
+
+    assert result is expected
+    assert calls == [(True, "markdown", True)]
 
 
 def test_tool_registration_preserves_legacy_tools_and_adds_m4_tools(tmp_project):

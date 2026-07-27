@@ -252,6 +252,8 @@ class LintReport:
     cache_stats: InventoryCacheStats | None = None
     extraction_job_plan: ExtractionJobPlan = field(default_factory=ExtractionJobPlan)
     knowledge_summary: KnowledgeLintSummary | None = None
+    # Keep additive policy fields after the original positional contract.
+    knowledge_drift_gate: bool = False
 
     @property
     def job_plan(self) -> ExtractionJobPlan:
@@ -466,6 +468,25 @@ def _diagnose(
             path=path,
             target=target,
         )
+    )
+
+
+def _record_knowledge_drift(
+    report: LintReport,
+    message: str,
+    *,
+    path: str | None = None,
+    target: str | None = None,
+) -> None:
+    """Keep native freshness findings report-only unless explicitly gated."""
+
+    recorder = _add if report.knowledge_drift_gate else _diagnose
+    recorder(
+        report,
+        "knowledge_freshness",
+        message,
+        path=path,
+        target=target,
     )
 
 
@@ -1700,9 +1721,8 @@ def _check_knowledge_concepts(
             continue
         freshness = view.freshness.by_locator.get(concept.locator)
         if freshness is None:
-            _add(
+            _record_knowledge_drift(
                 report,
-                "knowledge_freshness",
                 (
                     f"Knowledge freshness is unavailable for {concept.locator!r} "
                     "[reason=freshness-result-missing]."
@@ -1730,9 +1750,8 @@ def _check_knowledge_concepts(
             ComputedFreshness.SOURCE_MISSING,
             ComputedFreshness.BASIS_INCOMPATIBLE,
         }:
-            _add(
+            _record_knowledge_drift(
                 report,
-                "knowledge_freshness",
                 message,
                 path=concept.document.canonical_path,
                 target=concept.locator,
@@ -2008,9 +2027,8 @@ def _check_knowledge_lint(
             target=issue.field or issue.code,
         )
     if state.freshness_error_message is not None:
-        _add(
+        _record_knowledge_drift(
             report,
-            "knowledge_freshness",
             (
                 "Live knowledge evaluation could not be constructed "
                 f"[reason=live-evaluation-invalid]: "
@@ -2210,6 +2228,7 @@ def build_report(
     src_dir: str = ".",
     *,
     strict: bool = False,
+    knowledge_drift_gate: bool = False,
     profiler: _LintProfiler | None = None,
     cache_options: InventoryCacheOptions | None = None,
     parallel_jobs: int = 1,
@@ -2222,7 +2241,13 @@ def build_report(
 ) -> LintReport:
     """Build a structured lint report without rendering or exiting."""
     wiki_path = Path(wiki_dir)
-    report = LintReport(wiki_dir=str(wiki_path), src_dir=src_dir, strict=strict)
+    effective_strict = bool(strict or knowledge_drift_gate)
+    report = LintReport(
+        wiki_dir=str(wiki_path),
+        src_dir=src_dir,
+        strict=effective_strict,
+        knowledge_drift_gate=knowledge_drift_gate,
+    )
     if not wiki_path.exists():
         _add(
             report,
@@ -2250,7 +2275,7 @@ def build_report(
         report,
         wiki_path,
         src_dir,
-        strict,
+        effective_strict,
         profiler,
         inputs,
         media_size_warn_bytes,
@@ -2264,6 +2289,7 @@ def report_to_dict(report: LintReport, *, include_execution: bool = False) -> di
         "wiki_dir": report.wiki_dir,
         "src_dir": report.src_dir,
         "strict": report.strict,
+        "knowledge_drift_gate": report.knowledge_drift_gate,
         "ok": report.passed,
         "issue_count": report.issue_count,
         "issues": [asdict(issue) for issue in report.issues],
@@ -2567,6 +2593,10 @@ def render_markdown(report: LintReport) -> str:
         f"- Wiki: `{report.wiki_dir}`",
         f"- Source: `{report.src_dir}`",
         f"- Mode: `{'strict' if report.strict else 'normal'}`",
+        (
+            "- Native drift: "
+            f"`{'blocking' if report.knowledge_drift_gate else 'report-only'}`"
+        ),
         f"- Result: **{status}**",
         f"- Issues: {report.issue_count}",
         f"- Diagnostics: {len(report.diagnostics)}",
@@ -2603,7 +2633,10 @@ def render_markdown(report: LintReport) -> str:
 def run(args):
     wiki_dir = Path(args.wiki_dir)
     src_dir = getattr(args, "src_dir", ".")
-    strict = bool(getattr(args, "strict", False))
+    knowledge_drift_gate = bool(
+        getattr(args, "knowledge_drift_gate", False)
+    )
+    strict = bool(getattr(args, "strict", False) or knowledge_drift_gate)
     profile = bool(getattr(args, "profile", False))
     cache_stats = bool(getattr(args, "cache_stats", False))
     allow_external_src = bool(getattr(args, "allow_external_src", False))
@@ -2626,6 +2659,7 @@ def run(args):
         wiki_dir,
         src_dir,
         strict=strict,
+        knowledge_drift_gate=knowledge_drift_gate,
         profiler=profiler,
         cache_options=cache_options,
         parallel_jobs=getattr(args, "jobs", 1),

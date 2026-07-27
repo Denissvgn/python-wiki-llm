@@ -526,7 +526,7 @@ class TestBundledOnboardingGuideSkill:
         assert "onboarding-guide" in by_id
         onboarding_guide = by_id["onboarding-guide"]
         assert onboarding_guide.name == "onboarding-guide"
-        assert "onboarding" in onboarding_guide.description.lower()
+        assert "navigation guides" in onboarding_guide.description.lower()
         assert onboarding_guide.files[0] == "SKILL.md"
         assert "reference.md" in onboarding_guide.files
 
@@ -560,7 +560,11 @@ class TestBundledOnboardingGuideSkill:
 
         assert "lint --strict" in combined
         assert "llm-wiki ci-check" in combined
-        assert "docs(wiki): add onboarding guides" in combined
+        assert "docs(wiki): add navigation guides" in combined
+        assert "guides/<persona>-navigation.md" in combined
+        assert "# <Persona> navigation guide" in combined
+        assert "docs(wiki): add onboarding guides" not in combined
+        assert "guides/<persona>-onboarding.md" not in combined
         # Hook-path markers are reserved, not reused.
         assert "LLM_WIKI_AUTO_COMMIT" in combined
         assert "auto-update [bot]" in combined
@@ -1067,7 +1071,7 @@ class TestExternalDocumentationSkillChain:
         assert "resume from the recorded wiki snapshot" in sync
         assert "never stage or commit the source or" in sync
 
-        assert "docs(wiki): add onboarding guides" in onboarding
+        assert "docs(wiki): add navigation guides" in onboarding
         assert "recorded audiences and per-audience intent" in onboarding
         assert "Never re-ask intake on resume" in onboarding
         assert "wiki-only runs" in onboarding.lower()

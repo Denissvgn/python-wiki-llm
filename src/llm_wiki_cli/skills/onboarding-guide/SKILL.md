@@ -1,6 +1,6 @@
 ---
 name: onboarding-guide
-description: Write persona-scoped onboarding guides into an LLM Wiki's first-class `guides/` surface — verify the wiki is current, pick the flows a newcomer actually hits, write one guided-tour page per persona with links into existing flow/entity/module pages, record deferred personas as an explicit remainder, and validate with lint and sync. Use when a maintained wiki exists and the user wants "start here" narratives for contributors, operators, or reviewers; use wiki-bootstrap first when no wiki exists.
+description: Write persona-scoped navigation guides into an LLM Wiki's first-class `guides/` surface — verify the wiki is current, pick the flows a newcomer actually hits, write one guided-tour page per persona with links into existing flow/entity/module pages, record deferred personas as an explicit remainder, and validate with lint and sync without claiming measured onboarding success. Use when a maintained wiki exists and the user wants "start here" narratives for contributors, operators, or reviewers; use wiki-bootstrap first when no wiki exists.
 ---
 
 # onboarding-guide
@@ -8,6 +8,20 @@ description: Write persona-scoped onboarding guides into an LLM Wiki's first-cla
 Produce the "start here" narrative the deterministic layer cannot: reading order, mental model, where the seams are, what to touch first. These guides are the prerequisite narrative layer for `publish-docs --profile user`: user-profile publishing requires at least one guide page and a non-default site name. The loop is: **qualify wiki/native state → choose personas → rank the flows a newcomer hits → write one guide page per persona → remainder for deferred personas → final owning sync/re-anchor → lint/CI → commit**. Guide pages live in `guides/{page_id}.md`, an agent-owned surface: `sync` counts and links existing guide pages from the index `## Guides` section but never creates or rewrites them, so the prose written here is durable. Use this skill for focused persona guides; use `user-docs-author` when the goal is a complete user-docs pass that combines deterministic site evidence, broader semantic guide authoring, and checker-driven adjustment. See [reference.md](reference.md) for the surface contract, persona defaults, the page template, the flow-ranking recipe, and failure modes.
 
 When a guide needs screenshots, terminal recordings, or other usage media, finish the guide prose first and then run `usage-examples`; this skill only creates the narrative guide surface.
+
+## Positioning boundary
+
+This workflow authors navigation, not evidence that unfamiliar maintainers can
+complete setup quickly or will reuse the wiki. Never report an agent-authored
+guide, clean agent session, lint result, or successful publication as a human
+onboarding result. Do not claim completion-time, retention, or confusion-rate
+outcomes without a separately authorized human study.
+
+Every guide must keep static wiki state separate from runtime assurance. A
+native freshness result can qualify the recorded source observation only; it
+does not prove a deployed service, external dependency, credential, or
+operational environment is current. When the distinction matters, label both
+the static evidence boundary and the live confirmation still required.
 
 ## Preconditions
 
@@ -74,7 +88,7 @@ When a guide needs screenshots, terminal recordings, or other usage media, finis
 
    Through MCP, `flow_for_entrypoint`, `dependency_neighborhood`, and `pages_for_symbol` answer the same questions.
 
-4. **Write one guide page per persona** at `<wiki-dir>/guides/<persona>-onboarding.md` using the template in [reference.md](reference.md): audience and prerequisites, the mental model in a few paragraphs, a guided tour in reading order with relative links to existing flow/entity/module/architecture pages, a first-task suggestion, and where to go deeper. Every claim that names a symbol, flow, or dependency must link to the wiki page that shows it; relative links keep lint able to validate them. In `external_agent_docs`, return page-only evidence for compatibility and an optional `llm-wiki-documentation-claim-evidence/v1` record when the claim depends on an exact native concept, semantic section, lifecycle/review state, or graph bound. Preserve ambiguous, missing, unavailable, and truncated state; the supervisor recomputes the record from the committed native view.
+4. **Write one guide page per persona** at `<wiki-dir>/guides/<persona>-navigation.md` using the template in [reference.md](reference.md): audience and prerequisites, the mental model in a few paragraphs, a guided tour in reading order with relative links to existing flow/entity/module/architecture pages, a first-task suggestion, and where to go deeper. Existing `*-onboarding.md` pages remain valid compatibility inputs, but new pages use navigation positioning. Every claim that names a symbol, flow, or dependency must link to the wiki page that shows it; relative links keep lint able to validate them. In `external_agent_docs`, return page-only evidence for compatibility and an optional `llm-wiki-documentation-claim-evidence/v1` record when the claim depends on an exact native concept, semantic section, lifecycle/review state, or graph bound. Preserve ambiguous, missing, unavailable, and truncated state; the supervisor recomputes the record from the committed native view.
 
 5. **Respect the surface contract.** Guides are semantic prose only — no generated tables, no copied auto-generated sections, no content that `sync` would need to refresh. Facts that change with every commit (counts, line numbers, file inventories) belong in generated pages the guide links to, not in the guide body.
 
@@ -105,7 +119,7 @@ When a guide needs screenshots, terminal recordings, or other usage media, finis
    changes and requested checks; the supervisor performs the assigned refresh
    before strict validation.
 
-8. **Review the diff, then commit in managed mode only.** The diff should contain only the new guide pages, the regenerated index link section, and optional remainder updates. Commit separately from code changes with a `docs(wiki): add onboarding guides` style message. Never reuse the hook path's literal `auto-update [bot]` message and never set `LLM_WIKI_AUTO_COMMIT` — both are reserved for the post-commit hook path. In `external_agent_docs`, return changed workspace paths and deferrals in the assigned result; never stage or commit the source or input wiki.
+8. **Review the diff, then commit in managed mode only.** The diff should contain only the new guide pages, the regenerated index link section, and optional remainder updates. Commit separately from code changes with a `docs(wiki): add navigation guides` style message. Never reuse the hook path's literal `auto-update [bot]` message and never set `LLM_WIKI_AUTO_COMMIT` — both are reserved for the post-commit hook path so it can detect its own commits. In `external_agent_docs`, return changed workspace paths and deferrals in the assigned result; never stage or commit the source or input wiki.
 
 ## Context budget
 

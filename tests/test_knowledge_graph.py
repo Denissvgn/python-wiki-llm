@@ -747,6 +747,27 @@ def test_shuffled_analyzer_input_produces_byte_identical_graph():
     assert serialize_typed_graph(first) == serialize_typed_graph(second)
 
 
+def test_inventory_hash_accepts_source_control_bytes_without_emitting_them():
+    inputs = _inputs()
+    inventory = deepcopy(inputs.inventory)
+    inventory["src/a.py"]["module_docstring"] = "Windows path: C:\\build\boutput"
+
+    graph = materialize_typed_graph(
+        KnowledgeGraphInputs(
+            **{
+                **inputs.__dict__,
+                "inventory": inventory,
+            }
+        )
+    )
+    baseline = materialize_typed_graph(inputs)
+
+    assert graph["input_hashes"]["inventory"] != (
+        baseline["input_hashes"]["inventory"]
+    )
+    assert "\b" not in serialize_typed_graph(graph)
+
+
 def test_contract_accepts_namespaced_plugin_kind_and_reserved_supersedes():
     graph = materialize_typed_graph(_inputs())
     template = deepcopy(graph["edges"][0])

@@ -316,7 +316,16 @@ def materialize_typed_graph(inputs: KnowledgeGraphInputs) -> dict[str, Any]:
         )
     concepts = _normalise_graph_concepts(inputs.concepts)
     input_payloads = {
-        "inventory": _json_value(inputs.inventory, "inventory"),
+        # Inventory is an input commitment, not an emitted graph value.
+        # Extracted source docstrings may legitimately contain escaped control
+        # bytes (for example Windows path examples). Canonical JSON safely
+        # escapes them while keeping the exact input hash; graph fields still
+        # reject control characters below.
+        "inventory": _json_value(
+            inputs.inventory,
+            "inventory",
+            allow_control_strings=True,
+        ),
         "concept-map": [_graph_concept_payload(value) for value in concepts],
         "calls": _observation_bundle_for_hash(inputs.call_edges, "call_edges"),
         "dependencies": _observation_bundle_for_hash(
@@ -2212,11 +2221,21 @@ def _canonical_json(value: object) -> str:
         raise KnowledgeGraphError("value", "must be finite canonical JSON") from exc
 
 
-def _json_value(value: object, path: str, *, depth: int = 0) -> Any:
+def _json_value(
+    value: object,
+    path: str,
+    *,
+    depth: int = 0,
+    allow_control_strings: bool = False,
+) -> Any:
     if depth > 64:
         raise KnowledgeGraphError(path, "exceeds the maximum nesting depth")
     if value is None or isinstance(value, (bool, int, str)):
-        if isinstance(value, str) and _CONTROL_RE.search(value):
+        if (
+            isinstance(value, str)
+            and not allow_control_strings
+            and _CONTROL_RE.search(value)
+        ):
             raise KnowledgeGraphError(path, "must not contain control characters")
         return value
     if isinstance(value, float):
@@ -2229,11 +2248,21 @@ def _json_value(value: object, path: str, *, depth: int = 0) -> Any:
             if not isinstance(key, str):
                 raise KnowledgeGraphError(path, "object keys must be strings")
             _name(key, f"{path} key")
-            result[key] = _json_value(value[key], f"{path}.{key}", depth=depth + 1)
+            result[key] = _json_value(
+                value[key],
+                f"{path}.{key}",
+                depth=depth + 1,
+                allow_control_strings=allow_control_strings,
+            )
         return result
     if isinstance(value, (list, tuple)):
         return [
-            _json_value(item, f"{path}[{index}]", depth=depth + 1)
+            _json_value(
+                item,
+                f"{path}[{index}]",
+                depth=depth + 1,
+                allow_control_strings=allow_control_strings,
+            )
             for index, item in enumerate(value)
         ]
     raise KnowledgeGraphError(path, f"unsupported JSON value {type(value).__name__}")

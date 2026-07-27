@@ -40,7 +40,7 @@ Use the product/user reader persona when the repository exposes user-facing work
 ## Guide page template
 
 ```markdown
-# <Persona> onboarding
+# <Persona> navigation guide
 
 **Audience:** <who this is for>
 **Prerequisites:** <tools, access, prior knowledge>
@@ -107,6 +107,7 @@ When personas or topics exceed the run budget, append rows to the wiki's `bootst
 | No flows exist to link | Wiki bootstrapped without deep extraction or flows are placeholders | Qualify the existing target with `wiki-sync` and the migration dry-run; bootstrap is only for an absent target or the exact untouched `llm-wiki init` scaffold. A guide is narrative over structure, not a substitute for it. |
 | Guides drift stale over months | Nothing regenerates guide prose | State the written-against baseline in each guide; let `doc-review` passes flag drift; refresh guides when their linked flows change behavior. |
 | Huge repo, many personas | Budget exhausted | Ship the highest-value persona pages, record the rest in the remainder — an explicit deferral, not a failure. |
+| Agent navigation succeeds | An automated mechanics check is being mistaken for human onboarding evidence | Report only the navigation check. Do not infer unfamiliar-maintainer completion time, reuse, retention, or static/runtime comprehension. |
 
 ## Usage examples handoff
 

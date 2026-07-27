@@ -86,8 +86,13 @@ def _knowledge_findings(report):
     ]
 
 
-def _report_for_view(view):
-    report = lint_cmd.LintReport(wiki_dir="wiki", src_dir="src", strict=True)
+def _report_for_view(view, *, knowledge_drift_gate=False):
+    report = lint_cmd.LintReport(
+        wiki_dir="wiki",
+        src_dir="src",
+        strict=True,
+        knowledge_drift_gate=knowledge_drift_gate,
+    )
     lint_cmd._check_knowledge_lint(
         report,
         lint_cmd._KnowledgeLintState(enabled=True, view=view),
@@ -473,7 +478,70 @@ def test_bootstrap_lint_reuses_live_basis_and_allows_nonsemantic_change(
     )
 
 
-def test_strict_lint_reports_live_generation_option_drift(tmp_path, monkeypatch):
+def test_native_drift_is_report_only_without_suppressing_sync_manifest_integrity(
+    tmp_path,
+    monkeypatch,
+    capsys,
+):
+    source = tmp_path / "app.py"
+    source.write_text("class User:\n    pass\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    bootstrap_cmd.run(
+        types.SimpleNamespace(
+            src_dir=".",
+            wiki_dir="docs/llm_wiki",
+            overwrite=False,
+            depth="full",
+            skip_workflows=True,
+        )
+    )
+    capsys.readouterr()
+    source.write_text(
+        "class User:\n"
+        "    def save(self):\n"
+        "        return True\n",
+        encoding="utf-8",
+    )
+
+    report_only = lint_cmd.build_report(
+        "docs/llm_wiki",
+        ".",
+        strict=True,
+    )
+    gated = lint_cmd.build_report(
+        "docs/llm_wiki",
+        ".",
+        strict=True,
+        knowledge_drift_gate=True,
+    )
+
+    assert any(
+        finding.category == "knowledge_freshness"
+        and "[reason=concept-observation-changed]" in finding.message
+        for finding in report_only.diagnostics
+    )
+    assert not any(
+        issue.category == "knowledge_freshness"
+        for issue in report_only.issues
+    )
+    assert any(
+        issue.category == "sync_manifest" for issue in report_only.issues
+    )
+    assert not report_only.passed
+
+    assert any(
+        issue.category == "knowledge_freshness"
+        and "[reason=concept-observation-changed]" in issue.message
+        for issue in gated.issues
+    )
+    assert any(issue.category == "sync_manifest" for issue in gated.issues)
+    assert not gated.passed
+
+
+def test_strict_lint_reports_live_generation_option_drift_without_blocking(
+    tmp_path,
+    monkeypatch,
+):
     source = tmp_path / "app.py"
     source.write_text("class User:\n    pass\n", encoding="utf-8")
     monkeypatch.chdir(tmp_path)
@@ -495,12 +563,12 @@ def test_strict_lint_reports_live_generation_option_drift(tmp_path, monkeypatch)
     )
 
     findings = [
-        issue
-        for issue in report.issues
-        if issue.category == "knowledge_freshness"
-        and "[reason=generation-options-changed]" in issue.message
+        diagnostic
+        for diagnostic in report.diagnostics
+        if diagnostic.category == "knowledge_freshness"
+        and "[reason=generation-options-changed]" in diagnostic.message
     ]
-    assert not report.passed
+    assert report.passed
     assert {finding.target for finding in findings} == {
         "llm-wiki://entities/User",
         "llm-wiki://modules/app",
@@ -509,7 +577,7 @@ def test_strict_lint_reports_live_generation_option_drift(tmp_path, monkeypatch)
     assert report.knowledge_summary.freshness_by_state["basis-incompatible"] == 2
 
 
-def test_strict_lint_fails_closed_for_invalid_live_generation_policy(
+def test_strict_lint_reports_invalid_live_generation_policy_without_blocking(
     tmp_path,
     monkeypatch,
 ):
@@ -537,10 +605,11 @@ def test_strict_lint_fails_closed_for_invalid_live_generation_policy(
     report = lint_cmd.build_report(wiki, str(tmp_path), strict=True)
 
     findings = [
-        issue
-        for issue in report.issues
-        if "[reason=live-evaluation-invalid]" in issue.message
+        diagnostic
+        for diagnostic in report.diagnostics
+        if "[reason=live-evaluation-invalid]" in diagnostic.message
     ]
+    assert report.passed
     assert len(findings) == 1
     assert findings[0].category == "knowledge_freshness"
     assert findings[0].target == (
@@ -551,7 +620,7 @@ def test_strict_lint_fails_closed_for_invalid_live_generation_policy(
     assert report.knowledge_summary.freshness_evaluated is False
 
 
-def test_strict_lint_fails_closed_when_live_option_hashing_fails(
+def test_strict_lint_reports_live_option_hashing_failure_without_blocking(
     tmp_path,
     monkeypatch,
 ):
@@ -580,10 +649,11 @@ def test_strict_lint_fails_closed_when_live_option_hashing_fails(
     )
 
     findings = [
-        issue
-        for issue in report.issues
-        if "[reason=live-evaluation-invalid]" in issue.message
+        diagnostic
+        for diagnostic in report.diagnostics
+        if "[reason=live-evaluation-invalid]" in diagnostic.message
     ]
+    assert report.passed
     assert len(findings) == 1
     assert findings[0].category == "knowledge_freshness"
     assert findings[0].target == "generation_options.data_flow_enabled"
@@ -889,7 +959,7 @@ def test_strict_lint_rejects_malformed_receipt(tmp_path):
     assert "[reason=verification-receipt-invalid]" in findings[0].message
 
 
-def test_live_evaluation_failure_is_a_field_specific_freshness_error():
+def test_live_evaluation_failure_is_a_field_specific_freshness_diagnostic():
     report = lint_cmd.LintReport(wiki_dir="wiki", src_dir="src", strict=True)
 
     lint_cmd._check_knowledge_lint(
@@ -901,14 +971,69 @@ def test_live_evaluation_failure_is_a_field_specific_freshness_error():
         ),
     )
 
-    assert [(issue.category, issue.path, issue.target) for issue in report.issues] == [
+    assert report.issues == []
+    assert [
+        (issue.category, issue.path, issue.target)
+        for issue in report.diagnostics
+    ] == [
         (
             "knowledge_freshness",
             ".llm-wiki-knowledge.json",
             "captured_paths[0]",
         )
     ]
+    assert "[reason=live-evaluation-invalid]" in report.diagnostics[0].message
+
+
+def test_live_evaluation_failure_is_blocking_under_explicit_gate():
+    report = lint_cmd.LintReport(
+        wiki_dir="wiki",
+        src_dir="src",
+        strict=True,
+        knowledge_drift_gate=True,
+    )
+
+    lint_cmd._check_knowledge_lint(
+        report,
+        lint_cmd._KnowledgeLintState(
+            enabled=True,
+            freshness_error_field="captured_paths[0]",
+            freshness_error_message="source hash is unavailable",
+        ),
+    )
+
+    assert report.diagnostics == []
+    assert len(report.issues) == 1
+    assert report.issues[0].category == "knowledge_freshness"
     assert "[reason=live-evaluation-invalid]" in report.issues[0].message
+
+
+def test_report_only_gate_never_downgrades_projection_integrity():
+    report = lint_cmd.LintReport(
+        wiki_dir="wiki",
+        src_dir="src",
+        strict=True,
+        knowledge_drift_gate=False,
+    )
+
+    lint_cmd._check_knowledge_lint(
+        report,
+        lint_cmd._KnowledgeLintState(
+            enabled=True,
+            load_issues=(
+                KnowledgeLoadIssue(
+                    code="knowledge-invalid",
+                    artifact_path=".llm-wiki-knowledge.json",
+                    field="concepts[0]",
+                    message="invalid concept",
+                ),
+            ),
+        ),
+    )
+
+    assert report.diagnostics == []
+    assert len(report.issues) == 1
+    assert report.issues[0].category == "knowledge_schema"
 
 
 def test_nonsemantic_source_change_is_warning_and_does_not_fail(tmp_path):
@@ -941,6 +1066,81 @@ def test_nonsemantic_source_change_is_warning_and_does_not_fail(tmp_path):
         for finding in diagnostics
     )
 
+    gated = _report_for_view(view, knowledge_drift_gate=True)
+    assert gated.passed
+    assert gated.issues == []
+    assert {
+        finding.target
+        for finding in gated.diagnostics
+        if finding.category == "knowledge_freshness"
+    } == {
+        USER_LOCATOR,
+        MODULE_LOCATOR,
+        "llm-wiki://entities/AccountService",
+    }
+
+
+def test_unknown_freshness_is_report_only_and_explicitly_gateable(tmp_path):
+    loaded, _knowledge = _loaded_knowledge(tmp_path)
+    view = build_knowledge_read_view(loaded)
+    assert view.freshness is not None
+    assert view.freshness.by_locator[USER_LOCATOR].state is ComputedFreshness.UNKNOWN
+
+    report = _report_for_view(view)
+    diagnostic = next(
+        finding
+        for finding in report.diagnostics
+        if finding.target == USER_LOCATOR
+    )
+    assert report.passed
+    assert "[reason=live-evaluation-not-performed]" in diagnostic.message
+
+    gated = _report_for_view(view, knowledge_drift_gate=True)
+    issue = next(
+        finding for finding in gated.issues if finding.target == USER_LOCATOR
+    )
+    assert not gated.passed
+    assert "[reason=live-evaluation-not-performed]" in issue.message
+
+
+def test_missing_freshness_result_is_report_only_and_explicitly_gateable(
+    tmp_path,
+):
+    loaded, knowledge = _loaded_knowledge(tmp_path)
+    view = build_knowledge_read_view(
+        loaded,
+        live_evaluation=_live_evaluation(knowledge),
+    )
+    assert view.freshness is not None
+    incomplete_freshness = replace(
+        view.freshness,
+        by_locator={
+            locator: finding
+            for locator, finding in view.freshness.by_locator.items()
+            if locator != USER_LOCATOR
+        },
+    )
+    incomplete_view = replace(view, freshness=incomplete_freshness)
+
+    report = _report_for_view(incomplete_view)
+    diagnostic = next(
+        finding
+        for finding in report.diagnostics
+        if finding.target == USER_LOCATOR
+    )
+    assert report.passed
+    assert "[reason=freshness-result-missing]" in diagnostic.message
+
+    gated = _report_for_view(
+        incomplete_view,
+        knowledge_drift_gate=True,
+    )
+    issue = next(
+        finding for finding in gated.issues if finding.target == USER_LOCATOR
+    )
+    assert not gated.passed
+    assert "[reason=freshness-result-missing]" in issue.message
+
 
 @pytest.mark.parametrize(
     ("live_kwargs", "expected_state", "expected_reason"),
@@ -969,7 +1169,7 @@ def test_nonsemantic_source_change_is_warning_and_does_not_fail(tmp_path):
         ),
     ],
 )
-def test_promised_structural_stale_states_are_strict_errors(
+def test_promised_structural_stale_states_are_report_only_by_default(
     tmp_path,
     live_kwargs,
     expected_state,
@@ -985,12 +1185,28 @@ def test_promised_structural_stale_states_are_strict_errors(
 
     report = _report_for_view(view)
 
-    issue = next(finding for finding in report.issues if finding.target == USER_LOCATOR)
+    finding = next(
+        diagnostic
+        for diagnostic in report.diagnostics
+        if diagnostic.target == USER_LOCATOR
+    )
+    assert report.passed
+    assert finding.category == "knowledge_freshness"
+    assert finding.severity == "warning"
+    assert finding.path == "entities/User.md"
+    assert f"[reason={expected_reason}]" in finding.message
+    assert view.knowledge == knowledge
+
+    gated = _report_for_view(view, knowledge_drift_gate=True)
+    issue = next(
+        gated_issue
+        for gated_issue in gated.issues
+        if gated_issue.target == USER_LOCATOR
+    )
+    assert not gated.passed
     assert issue.category == "knowledge_freshness"
     assert issue.severity == "error"
-    assert issue.path == "entities/User.md"
     assert f"[reason={expected_reason}]" in issue.message
-    assert view.knowledge == knowledge
 
 
 @pytest.mark.parametrize(

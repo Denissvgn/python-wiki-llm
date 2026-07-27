@@ -109,6 +109,13 @@ Exact UID, locator-alias, and natural-key-alias lookup is available through the
 Python and MCP concept queries. Locator-only projects remain compatible when
 no ledger exists; their locators are not described as stable IDs.
 
+Governance authoring is a repository-local, explicitly adopted capability. The
+core does not promote it into downstream integrations, infer that a generic
+wiki/artifact reader is a native-governance consumer, or initialize it to
+satisfy an adapter. An external consumer must separately demonstrate that it
+uses UID, lifecycle, review-validity, and limitation fields correctly before
+its integration can be treated as qualified.
+
 ### Moves and aliases
 
 Supported sync and migration renames carry the existing UID and retain prior
@@ -472,9 +479,6 @@ Strict validation treats these conditions as hard issues:
   index, and manifest artifact commitments;
 - missing or invalid promised structural evidence for module and entity
   concepts;
-- `unknown`, `source-changed`, `source-missing`, or `basis-incompatible`
-  freshness for promised structural evidence;
-- failure to construct a reliable live evaluation.
 - invalid, missing, conflicting, bundle-mismatched, or projection-mismatched
   governance when a ledger or governance commitment is present;
 - missing governed UIDs, invalid lifecycle history, supersession cycles, or
@@ -482,10 +486,18 @@ Strict validation treats these conditions as hard issues:
 - a present verification receipt that is malformed, stale, references an
   unknown checker version, or records a failed check.
 
-`nonsemantic-source-change` is a warning diagnostic rather than a hard issue:
-the source bytes changed, but the concept-scoped structural observation did
-not. Dependency diagnostics such as cycles, undeclared dependencies, and
-unused dependencies also remain non-failing diagnostics.
+Native freshness/drift is report-only by default. `unknown`, `source-changed`,
+`source-missing`, `basis-incompatible`, and failure to construct a reliable
+live evaluation are warning diagnostics under ordinary strict lint and
+`ci-check`. Use `--knowledge-drift-gate` when a project explicitly chooses to
+make those findings blocking; on `lint` the flag also enables strict mode.
+`nonsemantic-source-change` always remains a warning because the source bytes
+changed without changing the concept-scoped structural observation.
+The gate changes only `knowledge_freshness` findings. It does not suppress
+required structure, stale sync-manifest, projection/evidence integrity,
+governance, review, or verification failures.
+Dependency diagnostics such as cycles, undeclared dependencies, and unused
+dependencies also remain non-failing diagnostics.
 
 Use profile output when an integration needs the structured report and
 separate knowledge load, evaluation, and check durations:
@@ -716,6 +728,11 @@ MCP `get_status` is snapshot-only. Its `knowledge` object contains
 `availability`, `reason`, and `freshness_evaluated: false`; when a projection
 is present it also returns a low-cardinality `knowledge_summary`. Status does
 not run source extraction and does not claim current freshness.
+
+MCP `check_wiki(strict=true, knowledge_drift_gate=false)` uses the same
+report-only native freshness default as the CLI and returns the selected gate
+in its structured report. Set `knowledge_drift_gate=true` to opt into blocking
+native freshness findings; it implies strict validation.
 
 ## Bounds and truncation
 

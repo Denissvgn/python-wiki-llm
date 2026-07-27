@@ -5828,6 +5828,7 @@ def _run_wiki_validation_pair(
                         else "source_not_verified_current"
                     ),
                     "strict": name == "ci-check",
+                    "knowledge_drift_gate": False,
                     "ok": not issues,
                     "issue_count": len(issues),
                     "issues": issues,
