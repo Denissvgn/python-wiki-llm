@@ -253,7 +253,7 @@ class LintReport:
     extraction_job_plan: ExtractionJobPlan = field(default_factory=ExtractionJobPlan)
     knowledge_summary: KnowledgeLintSummary | None = None
     # Keep additive policy fields after the original positional contract.
-    knowledge_drift_gate: bool = False
+    knowledge_drift_report: bool = False
 
     @property
     def job_plan(self) -> ExtractionJobPlan:
@@ -478,10 +478,11 @@ def _record_knowledge_drift(
     path: str | None = None,
     target: str | None = None,
 ) -> None:
-    """Keep native freshness findings report-only unless explicitly gated."""
+    """Record native freshness only in the explicit report-only mode."""
 
-    recorder = _add if report.knowledge_drift_gate else _diagnose
-    recorder(
+    if not report.knowledge_drift_report:
+        return
+    _diagnose(
         report,
         "knowledge_freshness",
         message,
@@ -1737,9 +1738,8 @@ def _check_knowledge_concepts(
             f"{freshness.description}."
         )
         if freshness.state is ComputedFreshness.NONSEMANTIC_SOURCE_CHANGE:
-            _diagnose(
+            _record_knowledge_drift(
                 report,
-                "knowledge_freshness",
                 message,
                 path=concept.document.canonical_path,
                 target=concept.locator,
@@ -2228,7 +2228,7 @@ def build_report(
     src_dir: str = ".",
     *,
     strict: bool = False,
-    knowledge_drift_gate: bool = False,
+    knowledge_drift_report: bool = False,
     profiler: _LintProfiler | None = None,
     cache_options: InventoryCacheOptions | None = None,
     parallel_jobs: int = 1,
@@ -2241,12 +2241,12 @@ def build_report(
 ) -> LintReport:
     """Build a structured lint report without rendering or exiting."""
     wiki_path = Path(wiki_dir)
-    effective_strict = bool(strict or knowledge_drift_gate)
+    effective_strict = bool(strict or knowledge_drift_report)
     report = LintReport(
         wiki_dir=str(wiki_path),
         src_dir=src_dir,
         strict=effective_strict,
-        knowledge_drift_gate=knowledge_drift_gate,
+        knowledge_drift_report=knowledge_drift_report,
     )
     if not wiki_path.exists():
         _add(
@@ -2289,7 +2289,10 @@ def report_to_dict(report: LintReport, *, include_execution: bool = False) -> di
         "wiki_dir": report.wiki_dir,
         "src_dir": report.src_dir,
         "strict": report.strict,
-        "knowledge_drift_gate": report.knowledge_drift_gate,
+        # Preserve the former additive field as an inert compatibility marker.
+        # Native freshness findings no longer have a blocking mode.
+        "knowledge_drift_gate": False,
+        "knowledge_drift_report": report.knowledge_drift_report,
         "ok": report.passed,
         "issue_count": report.issue_count,
         "issues": [asdict(issue) for issue in report.issues],
@@ -2595,7 +2598,7 @@ def render_markdown(report: LintReport) -> str:
         f"- Mode: `{'strict' if report.strict else 'normal'}`",
         (
             "- Native drift: "
-            f"`{'blocking' if report.knowledge_drift_gate else 'report-only'}`"
+            f"`{'report-only' if report.knowledge_drift_report else 'disabled'}`"
         ),
         f"- Result: **{status}**",
         f"- Issues: {report.issue_count}",
@@ -2633,10 +2636,10 @@ def render_markdown(report: LintReport) -> str:
 def run(args):
     wiki_dir = Path(args.wiki_dir)
     src_dir = getattr(args, "src_dir", ".")
-    knowledge_drift_gate = bool(
-        getattr(args, "knowledge_drift_gate", False)
+    knowledge_drift_report = bool(
+        getattr(args, "knowledge_drift_report", False)
     )
-    strict = bool(getattr(args, "strict", False) or knowledge_drift_gate)
+    strict = bool(getattr(args, "strict", False) or knowledge_drift_report)
     profile = bool(getattr(args, "profile", False))
     cache_stats = bool(getattr(args, "cache_stats", False))
     allow_external_src = bool(getattr(args, "allow_external_src", False))
@@ -2659,7 +2662,7 @@ def run(args):
         wiki_dir,
         src_dir,
         strict=strict,
-        knowledge_drift_gate=knowledge_drift_gate,
+        knowledge_drift_report=knowledge_drift_report,
         profiler=profiler,
         cache_options=cache_options,
         parallel_jobs=getattr(args, "jobs", 1),

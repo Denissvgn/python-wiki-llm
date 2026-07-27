@@ -307,11 +307,11 @@ def _add_lint_command(subparsers):
         help="Require core wiki structure and a fresh sync manifest",
     )
     lint_parser.add_argument(
-        "--knowledge-drift-gate",
+        "--knowledge-drift-report",
         action="store_true",
         help=(
-            "Run strict lint and make native freshness/drift findings blocking "
-            "(default: report-only)"
+            "Run strict lint and include native freshness/drift findings as "
+            "nonblocking diagnostics (default: disabled)"
         ),
     )
     lint_parser.add_argument(
@@ -406,11 +406,11 @@ def _add_ci_check_command(subparsers):
         help="Markdown report path (default: .git/llm-wiki-ci-report.md)",
     )
     ci_parser.add_argument(
-        "--knowledge-drift-gate",
+        "--knowledge-drift-report",
         action="store_true",
         help=(
-            "Make native freshness/drift findings blocking "
-            "(default: report-only)"
+            "Include native freshness/drift findings as nonblocking diagnostics "
+            "(default: disabled)"
         ),
     )
     _add_helper_cache_argument(ci_parser)

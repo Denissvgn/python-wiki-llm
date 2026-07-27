@@ -414,9 +414,19 @@ def test_infrastructure_native_evidence_and_strict_freshness_are_live(
         str(project),
         strict=True,
     )
+    assert not any(
+        finding.category == "knowledge_freshness"
+        for finding in (*changed.issues, *changed.diagnostics)
+    )
+    changed_report = lint_cmd.build_report(
+        str(wiki),
+        str(project),
+        strict=True,
+        knowledge_drift_report=True,
+    )
     changed_messages = [
         diagnostic.message
-        for diagnostic in changed.diagnostics
+        for diagnostic in changed_report.diagnostics
         if diagnostic.category == "knowledge_freshness"
         and diagnostic.path == "infrastructure/Dockerfile.md"
     ]
@@ -428,9 +438,19 @@ def test_infrastructure_native_evidence_and_strict_freshness_are_live(
         str(project),
         strict=True,
     )
+    assert not any(
+        finding.category == "knowledge_freshness"
+        for finding in (*removed.issues, *removed.diagnostics)
+    )
+    removed_report = lint_cmd.build_report(
+        str(wiki),
+        str(project),
+        strict=True,
+        knowledge_drift_report=True,
+    )
     removed_messages = [
         diagnostic.message
-        for diagnostic in removed.diagnostics
+        for diagnostic in removed_report.diagnostics
         if diagnostic.category == "knowledge_freshness"
         and diagnostic.path == "infrastructure/Dockerfile.md"
     ]
@@ -469,7 +489,12 @@ def test_first_use_bootstrap_rejects_changed_existing_infrastructure_wiki(
     assert "python:3.12" in (
         wiki / "infrastructure" / "Dockerfile.md"
     ).read_text(encoding="utf-8")
-    report = lint_cmd.build_report(str(wiki), str(project), strict=True)
+    report = lint_cmd.build_report(
+        str(wiki),
+        str(project),
+        strict=True,
+        knowledge_drift_report=True,
+    )
     messages = [
         diagnostic.message
         for diagnostic in report.diagnostics

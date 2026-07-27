@@ -450,7 +450,7 @@ class McpWikiService:
         self,
         strict: bool = False,
         format: str = "json",
-        knowledge_drift_gate: bool = False,
+        knowledge_drift_report: bool = False,
     ) -> dict:
         if format not in {"json", "text", "markdown"}:
             raise McpWikiError("format must be 'json', 'text', or 'markdown'.")
@@ -458,7 +458,7 @@ class McpWikiService:
             self.wiki_dir,
             self.src_dir,
             strict=strict,
-            knowledge_drift_gate=knowledge_drift_gate,
+            knowledge_drift_report=knowledge_drift_report,
         )
         payload = lint_cmd.report_to_dict(report)
         _normalise_report_paths(payload)
@@ -801,13 +801,13 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
     def check_wiki(
         strict: bool = False,
         format: str = "json",
-        knowledge_drift_gate: bool = False,
+        knowledge_drift_report: bool = False,
     ) -> dict:
         """Run read-only wiki lint checks and return a structured report."""
         return service.check_wiki(
             strict=strict,
             format=format,
-            knowledge_drift_gate=knowledge_drift_gate,
+            knowledge_drift_report=knowledge_drift_report,
         )
 
     @server.tool()

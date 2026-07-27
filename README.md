@@ -653,7 +653,7 @@ infrastructure, plugin lint rules, and team policy.
 ```bash
 llm-wiki lint --wiki-dir docs/llm_wiki --src-dir .
 llm-wiki lint --strict --wiki-dir docs/llm_wiki --src-dir .
-llm-wiki lint --knowledge-drift-gate --wiki-dir docs/llm_wiki --src-dir .
+llm-wiki lint --knowledge-drift-report --wiki-dir docs/llm_wiki --src-dir .
 llm-wiki lint --profile --wiki-dir docs/llm_wiki --src-dir .
 llm-wiki lint --cache-stats --wiki-dir docs/llm_wiki --src-dir .
 llm-wiki lint --cache-dir .cache/llm-wiki-inventory --helper-cache-dir .cache/llm-wiki-helpers
@@ -666,16 +666,14 @@ Strict mode also requires the core wiki structure and a fresh sync manifest.
 For a knowledge-capable wiki, it validates the committed
 surface/knowledge/manifest set, promised module/entity evidence, and live
 concept freshness. Invalid or mixed projections and invalid promised evidence
-are hard issues. Native freshness/drift findings remain visible but report-only
-by default: `unknown`, `source-changed`, `source-missing`,
-`basis-incompatible`, and inability to construct a live comparison are warning
-diagnostics. Pass `--knowledge-drift-gate` to make those drift findings
-blocking; on `lint` the flag also enables strict mode.
-`nonsemantic-source-change` always remains a warning.
-The flag changes only native `knowledge_freshness` findings. Required wiki
-structure, sync-manifest consistency, projection/evidence integrity,
-governance, review, and verification checks retain their normal blocking
-policy.
+are hard issues. Native freshness/drift reporting is disabled by default. Pass
+`--knowledge-drift-report` to include `unknown`, `source-changed`,
+`source-missing`, `basis-incompatible`, `nonsemantic-source-change`, and
+inability to construct a live comparison as nonblocking warning diagnostics;
+on `lint` the flag also enables strict mode. There is no blocking native-drift
+mode. Required wiki structure, sync-manifest consistency,
+projection/evidence integrity, governance, review, and verification checks
+retain their normal blocking policy.
 Legacy wikis with no declared knowledge projection continue in surface-only
 mode. See [Native knowledge reads][native-knowledge-strict]
 for the complete policy.
@@ -781,7 +779,7 @@ For CI:
 
 ```bash
 llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki
-llm-wiki ci-check --knowledge-drift-gate --src-dir . --wiki-dir docs/llm_wiki
+llm-wiki ci-check --knowledge-drift-report --src-dir . --wiki-dir docs/llm_wiki
 # Capacity-reserved CI only; shared or unknown-capacity runners should use jobs 1.
 llm-wiki ci-check --jobs auto --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki ci-check --helper-cache-dir .cache/llm-wiki-helpers --src-dir . --wiki-dir docs/llm_wiki
@@ -793,10 +791,11 @@ llm-wiki ci-check --format markdown
 
 `ci-check` always runs strict validation, writes a Markdown report, records a
 local metrics event, uses the same safe inventory cache when available, and
-exits nonzero on validation failure. Native freshness/drift is report-only
-unless `--knowledge-drift-gate` is supplied. JSON output includes non-blocking
-diagnostics so CI logs can show drift and unsupported-source coverage without
-failing.
+exits nonzero on validation failure. Native freshness/drift is disabled unless
+`--knowledge-drift-report` is supplied, and enabled findings remain
+nonblocking. Structured output discloses the report mode through
+`knowledge_drift_report`; the legacy `knowledge_drift_gate` compatibility field
+is always `false`.
 For trusted source trees outside the runner workspace, pass
 `--allow-external-src`; `--wiki-dir` remains constrained to the current project
 root.

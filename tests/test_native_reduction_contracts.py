@@ -1,10 +1,13 @@
 """Durable product restrictions for conservatively narrowed native workflows."""
 
+import inspect
 import types
 from pathlib import Path
 
+import pytest
+
 from llm_wiki_cli import api, cli
-from llm_wiki_cli.commands import bootstrap_cmd
+from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd
 from llm_wiki_cli.services import mcp_server
 from llm_wiki_cli.services.knowledge_governance import GOVERNANCE_FILENAME
 
@@ -12,14 +15,34 @@ from llm_wiki_cli.services.knowledge_governance import GOVERNANCE_FILENAME
 ROOT = Path(__file__).parents[1]
 
 
-def test_native_drift_is_report_only_without_explicit_gate():
+def test_native_drift_is_disabled_without_explicit_report_mode():
     parser = cli._build_parser()
 
     lint = parser.parse_args(["lint"])
     ci_check = parser.parse_args(["ci-check"])
+    lint_report = parser.parse_args(["lint", "--knowledge-drift-report"])
+    ci_report = parser.parse_args(["ci-check", "--knowledge-drift-report"])
 
-    assert lint.knowledge_drift_gate is False
-    assert ci_check.knowledge_drift_gate is False
+    assert lint.knowledge_drift_report is False
+    assert ci_check.knowledge_drift_report is False
+    assert lint_report.knowledge_drift_report is True
+    assert ci_report.knowledge_drift_report is True
+
+
+def test_native_drift_has_no_blocking_gate_surface(capsys):
+    parser = cli._build_parser()
+
+    for command in ("lint", "ci-check"):
+        with pytest.raises(SystemExit):
+            parser.parse_args([command, "--knowledge-drift-gate"])
+        capsys.readouterr()
+
+    assert "knowledge_drift_gate" not in inspect.signature(
+        lint_cmd.build_report
+    ).parameters
+    assert "knowledge_drift_gate" not in inspect.signature(
+        mcp_server.McpWikiService.check_wiki
+    ).parameters
 
 
 def test_governance_does_not_promote_generic_consumers():

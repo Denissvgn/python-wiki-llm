@@ -1596,7 +1596,7 @@ class TestLintProfile:
 
         assert seen == {"allow_external_src": True, "jobs": 4}
 
-    def test_knowledge_drift_gate_implies_strict_and_reaches_report(
+    def test_knowledge_drift_report_implies_strict_and_reaches_report(
         self,
         tmp_path,
         monkeypatch,
@@ -1607,12 +1607,12 @@ class TestLintProfile:
 
         def fake_build_report(wiki_dir, src_dir, **kwargs):
             seen["strict"] = kwargs["strict"]
-            seen["knowledge_drift_gate"] = kwargs["knowledge_drift_gate"]
+            seen["knowledge_drift_report"] = kwargs["knowledge_drift_report"]
             return lint_cmd.LintReport(
                 wiki_dir=str(wiki_dir),
                 src_dir=src_dir,
                 strict=kwargs["strict"],
-                knowledge_drift_gate=kwargs["knowledge_drift_gate"],
+                knowledge_drift_report=kwargs["knowledge_drift_report"],
             )
 
         monkeypatch.setattr(lint_cmd, "build_report", fake_build_report)
@@ -1622,17 +1622,17 @@ class TestLintProfile:
                 "lint",
                 "--wiki-dir",
                 "wiki",
-                "--knowledge-drift-gate",
+                "--knowledge-drift-report",
             ]
         )
         lint_cmd.run(args)
 
         assert seen == {
             "strict": True,
-            "knowledge_drift_gate": True,
+            "knowledge_drift_report": True,
         }
 
-    def test_build_report_gate_implies_strict_for_direct_callers(
+    def test_build_report_mode_implies_strict_for_direct_callers(
         self,
         tmp_path,
         monkeypatch,
@@ -1666,21 +1666,23 @@ class TestLintProfile:
         report = lint_cmd.build_report(
             wiki,
             ".",
-            knowledge_drift_gate=True,
+            knowledge_drift_report=True,
         )
 
         assert seen == {"strict": True, "report_strict": True}
-        assert report.knowledge_drift_gate is True
-        assert lint_cmd.report_to_dict(report)["knowledge_drift_gate"] is True
+        assert report.knowledge_drift_report is True
+        payload = lint_cmd.report_to_dict(report)
+        assert payload["knowledge_drift_report"] is True
+        assert payload["knowledge_drift_gate"] is False
 
-    def test_lint_report_additive_gate_preserves_original_positional_fields(self):
+    def test_lint_report_additive_mode_preserves_original_positional_fields(self):
         issues = [lint_cmd.LintIssue("broken_links", "broken")]
 
         report = lint_cmd.LintReport("wiki", "src", True, issues)
 
         assert report.strict is True
         assert report.issues is issues
-        assert report.knowledge_drift_gate is False
+        assert report.knowledge_drift_report is False
 
     def test_lint_allow_external_src_reaches_report_build(
         self, tmp_path, monkeypatch, capsys

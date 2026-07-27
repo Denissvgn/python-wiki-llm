@@ -486,16 +486,14 @@ Strict validation treats these conditions as hard issues:
 - a present verification receipt that is malformed, stale, references an
   unknown checker version, or records a failed check.
 
-Native freshness/drift is report-only by default. `unknown`, `source-changed`,
-`source-missing`, `basis-incompatible`, and failure to construct a reliable
-live evaluation are warning diagnostics under ordinary strict lint and
-`ci-check`. Use `--knowledge-drift-gate` when a project explicitly chooses to
-make those findings blocking; on `lint` the flag also enables strict mode.
-`nonsemantic-source-change` always remains a warning because the source bytes
-changed without changing the concept-scoped structural observation.
-The gate changes only `knowledge_freshness` findings. It does not suppress
-required structure, stale sync-manifest, projection/evidence integrity,
-governance, review, or verification failures.
+Native freshness/drift reporting is disabled by default. Use
+`--knowledge-drift-report` to include `unknown`, `source-changed`,
+`source-missing`, `basis-incompatible`, `nonsemantic-source-change`, and
+failure to construct a reliable live evaluation as warning diagnostics. On
+`lint`, the flag also enables strict mode. These findings are always
+nonblocking; there is no native-drift blocking mode. Disabling the report does
+not suppress required structure, stale sync-manifest, projection/evidence
+integrity, governance, review, or verification failures.
 Dependency diagnostics such as cycles, undeclared dependencies, and unused
 dependencies also remain non-failing diagnostics.
 
@@ -729,10 +727,12 @@ MCP `get_status` is snapshot-only. Its `knowledge` object contains
 is present it also returns a low-cardinality `knowledge_summary`. Status does
 not run source extraction and does not claim current freshness.
 
-MCP `check_wiki(strict=true, knowledge_drift_gate=false)` uses the same
-report-only native freshness default as the CLI and returns the selected gate
-in its structured report. Set `knowledge_drift_gate=true` to opt into blocking
-native freshness findings; it implies strict validation.
+MCP `check_wiki(strict=true, knowledge_drift_report=false)` uses the same
+disabled native freshness default as the CLI. Set
+`knowledge_drift_report=true` to include nonblocking native freshness
+diagnostics; it implies strict validation. Structured output includes
+`knowledge_drift_report`; the legacy `knowledge_drift_gate` field is always
+`false`.
 
 ## Bounds and truncation
 

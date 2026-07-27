@@ -5829,6 +5829,7 @@ def _run_wiki_validation_pair(
                     ),
                     "strict": name == "ci-check",
                     "knowledge_drift_gate": False,
+                    "knowledge_drift_report": False,
                     "ok": not issues,
                     "issue_count": len(issues),
                     "issues": issues,

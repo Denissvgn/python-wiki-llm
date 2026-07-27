@@ -933,11 +933,12 @@ class TestMcpWikiService:
         assert result["format"] == "json"
         assert result["wiki_dir"] == "docs/llm_wiki"
         assert result["knowledge_drift_gate"] is False
+        assert result["knowledge_drift_report"] is False
         assert "issues" in result
         assert "execution" not in result
         assert "Extractor plan:" not in capsys.readouterr().err
 
-    def test_check_wiki_exposes_explicit_native_drift_gate(
+    def test_check_wiki_exposes_explicit_native_drift_report_mode(
         self,
         tmp_project,
         monkeypatch,
@@ -950,9 +951,9 @@ class TestMcpWikiService:
                 wiki_dir=str(wiki_dir),
                 src_dir=src_dir,
                 strict=bool(
-                    kwargs["strict"] or kwargs["knowledge_drift_gate"]
+                    kwargs["strict"] or kwargs["knowledge_drift_report"]
                 ),
-                knowledge_drift_gate=kwargs["knowledge_drift_gate"],
+                knowledge_drift_report=kwargs["knowledge_drift_report"],
             )
 
         monkeypatch.setattr(
@@ -965,12 +966,13 @@ class TestMcpWikiService:
             wiki_dir="docs/llm_wiki",
         )
 
-        result = service.check_wiki(knowledge_drift_gate=True)
+        result = service.check_wiki(knowledge_drift_report=True)
 
         assert seen["strict"] is False
-        assert seen["knowledge_drift_gate"] is True
+        assert seen["knowledge_drift_report"] is True
         assert result["strict"] is True
-        assert result["knowledge_drift_gate"] is True
+        assert result["knowledge_drift_gate"] is False
+        assert result["knowledge_drift_report"] is True
 
     def test_get_status_returns_structured_status(self, tmp_project):
         _write_wiki(tmp_project)
@@ -1870,7 +1872,7 @@ def test_registered_section_tool_forwards_filter_and_limit():
     assert calls == [("llm-wiki://entities/User", "mixed", 7)]
 
 
-def test_registered_check_wiki_tool_forwards_native_drift_gate():
+def test_registered_check_wiki_tool_forwards_native_drift_report_mode():
     calls = []
     expected = {"operation": "check_wiki"}
 
@@ -1879,9 +1881,9 @@ def test_registered_check_wiki_tool_forwards_native_drift_gate():
             self,
             strict=False,
             format="json",
-            knowledge_drift_gate=False,
+            knowledge_drift_report=False,
         ):
-            calls.append((strict, format, knowledge_drift_gate))
+            calls.append((strict, format, knowledge_drift_report))
             return expected
 
     server = RecordingMcpServer()
@@ -1890,7 +1892,7 @@ def test_registered_check_wiki_tool_forwards_native_drift_gate():
     result = server.tool_functions["check_wiki"](
         strict=True,
         format="markdown",
-        knowledge_drift_gate=True,
+        knowledge_drift_report=True,
     )
 
     assert result is expected

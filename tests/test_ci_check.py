@@ -78,14 +78,14 @@ def test_ci_check_uses_inventory_cache_options(tmp_path, monkeypatch, capsys):
         seen["include_tests"] = kwargs["include_tests"]
         seen["parallel_jobs"] = kwargs["parallel_jobs"]
         seen["job_request"] = kwargs["job_request"]
-        seen["knowledge_drift_gate"] = kwargs["knowledge_drift_gate"]
+        seen["knowledge_drift_report"] = kwargs["knowledge_drift_report"]
         kwargs["plan_reporter"](ExtractionJobPlan())
         events.append("work")
         return LintReport(
             wiki_dir=str(wiki_dir),
             src_dir=src_dir,
             strict=kwargs["strict"],
-            knowledge_drift_gate=kwargs["knowledge_drift_gate"],
+            knowledge_drift_report=kwargs["knowledge_drift_report"],
             extraction_job_plan=ExtractionJobPlan(),
         )
 
@@ -112,14 +112,15 @@ def test_ci_check_uses_inventory_cache_options(tmp_path, monkeypatch, capsys):
     assert seen["include_tests"] == ["go"]
     assert seen["parallel_jobs"] == 1
     assert seen["job_request"].requested_jobs == 1
-    assert seen["knowledge_drift_gate"] is False
+    assert seen["knowledge_drift_report"] is False
     assert events == ["report", "work"]
     assert payload["knowledge_drift_gate"] is False
+    assert payload["knowledge_drift_report"] is False
     assert payload["execution"] == _empty_execution_payload()
     assert captured.err.count("Extractor plan:") == 1
 
 
-def test_ci_check_passes_explicit_native_drift_gate(
+def test_ci_check_passes_explicit_native_drift_report_mode(
     tmp_path,
     monkeypatch,
     capsys,
@@ -129,12 +130,12 @@ def test_ci_check_passes_explicit_native_drift_gate(
     seen = {}
 
     def fake_build_report(wiki_dir, src_dir, **kwargs):
-        seen["knowledge_drift_gate"] = kwargs["knowledge_drift_gate"]
+        seen["knowledge_drift_report"] = kwargs["knowledge_drift_report"]
         return LintReport(
             wiki_dir=str(wiki_dir),
             src_dir=src_dir,
             strict=True,
-            knowledge_drift_gate=kwargs["knowledge_drift_gate"],
+            knowledge_drift_report=kwargs["knowledge_drift_report"],
         )
 
     monkeypatch.setattr(ci_check_cmd, "build_report", fake_build_report)
@@ -147,12 +148,12 @@ def test_ci_check_passes_explicit_native_drift_gate(
             "wiki",
             "--report",
             "report.md",
-            "--knowledge-drift-gate",
+            "--knowledge-drift-report",
         ]
     )
     ci_check_cmd.run(args)
 
-    assert seen["knowledge_drift_gate"] is True
+    assert seen["knowledge_drift_report"] is True
     assert "Lint passed" in capsys.readouterr().out
 
 
@@ -460,6 +461,7 @@ def test_ci_check_json_output_adds_execution_and_exits_nonzero(
             }
         ],
         "knowledge_drift_gate": False,
+        "knowledge_drift_report": False,
         "ok": False,
         "src_dir": ".",
         "strict": True,
@@ -545,6 +547,7 @@ def test_ci_check_diagnostic_only_report_exits_zero_with_additive_execution(
         "issue_count": 0,
         "issues": [],
         "knowledge_drift_gate": False,
+        "knowledge_drift_report": False,
         "ok": True,
         "src_dir": ".",
         "strict": True,

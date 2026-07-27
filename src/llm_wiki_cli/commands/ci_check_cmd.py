@@ -54,8 +54,8 @@ def run(args) -> None:
         wiki_dir,
         src_dir,
         strict=True,
-        knowledge_drift_gate=bool(
-            getattr(args, "knowledge_drift_gate", False)
+        knowledge_drift_report=bool(
+            getattr(args, "knowledge_drift_report", False)
         ),
         cache_options=InventoryCacheOptions(enabled=True),
         parallel_jobs=getattr(args, "jobs", 1),
