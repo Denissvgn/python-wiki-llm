@@ -6,12 +6,14 @@ Markdown mirror for static-site tooling without invoking external builders.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import posixpath
 import re
 import shutil
 import stat
+import unicodedata
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -39,6 +41,10 @@ from .wiki_media import (
 SUPPORTED_SITE_FORMATS = frozenset({"plain", "mkdocs", "docusaurus"})
 SUPPORTED_SITE_PROFILES = frozenset({"reference", "user"})
 SUPPORTED_KNOWLEDGE_METADATA = frozenset({"summary"})
+SITE_PUBLICATION_SCHEMA_VERSION = "llm-wiki-site-publication-selection/v1"
+SITE_PUBLICATION_RECEIPT = ".llm-wiki-site-selection.json"
+SITE_PUBLICATION_MARKER = "llm-wiki-site-selection.json"
+SITE_PUBLICATION_STATES = frozenset({"incomplete", "complete"})
 MAX_ENRICHED_OUTPUT_SCAN_ENTRIES = 10_000
 MAX_ENRICHED_OUTPUT_SCAN_DEPTH = 32
 MAX_ENRICHED_MARKDOWN_BYTES = 2 * 1024 * 1024
@@ -101,6 +107,53 @@ class SiteExportOperation:
     message: str = ""
 
 
+@dataclass(frozen=True)
+class SitePublicationSelection:
+    """Immutable, path-safe policy selections for one generated site."""
+
+    format: str
+    profile: str
+    site_name: str
+    distribution_mode: str
+    front_matter: bool
+    knowledge_metadata: str
+    knowledge_profile: str
+    public_identity_digest: str
+    source_kind: str
+    source_identity: tuple[tuple[str, str], ...]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "format": self.format,
+            "profile": self.profile,
+            "site_name": self.site_name,
+            "distribution_mode": self.distribution_mode,
+            "front_matter": self.front_matter,
+            "knowledge_metadata": self.knowledge_metadata,
+            "knowledge_profile": self.knowledge_profile,
+            "public_identity_digest": self.public_identity_digest,
+            "source_identity": {
+                "kind": self.source_kind,
+                "sources": [
+                    {"id": source_id, "digest": digest}
+                    for source_id, digest in self.source_identity
+                ],
+            },
+        }
+
+
+@dataclass(frozen=True)
+class SitePublicationReceipt:
+    """Validated publication receipt loaded from an exported mirror."""
+
+    state: str
+    selection_id: str
+    export_id: str
+    selection: SitePublicationSelection
+    commitments: tuple[tuple[str, str], ...]
+    projection_hashes: tuple[str, ...]
+
+
 @dataclass
 class SiteExportReport:
     ok: bool = True
@@ -114,6 +167,10 @@ class SiteExportReport:
     distribution_mode: str = "http"
     link_mode: str = ""
     front_matter: bool = False
+    publication_schema_version: str = ""
+    publication_state: str = ""
+    selection_id: str = ""
+    export_id: str = ""
     page_count: int = 0
     source_count: int = 0
     asset_count: int = 0
@@ -135,6 +192,10 @@ class SiteExportReport:
             "distribution_mode": self.distribution_mode,
             "link_mode": self.link_mode,
             "front_matter": self.front_matter,
+            "publication_schema_version": self.publication_schema_version,
+            "publication_state": self.publication_state,
+            "selection_id": self.selection_id,
+            "export_id": self.export_id,
             "page_count": self.page_count,
             "source_count": self.source_count,
             "asset_count": self.asset_count,
@@ -160,6 +221,830 @@ class HubWikiSource:
     wiki_dir: Path
 
 
+def _canonical_json_bytes(value: Any) -> bytes:
+    return json.dumps(
+        value,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+
+
+def _opaque_digest(value: Any) -> str:
+    return "sha256:" + hashlib.sha256(_canonical_json_bytes(value)).hexdigest()
+
+
+def _file_digest(path: Path) -> str:
+    digest = hashlib.sha256()
+    try:
+        with path.open("rb") as stream:
+            while chunk := stream.read(64 * 1024):
+                digest.update(chunk)
+    except OSError as exc:
+        raise SiteExportError(f"Cannot hash publication output {path}: {exc}") from exc
+    return "sha256:" + digest.hexdigest()
+
+
+def _normalized_site_name(value: str) -> str:
+    return " ".join(unicodedata.normalize("NFC", value).split())
+
+
+def _normalized_source_id(value: str) -> str:
+    normalized = _normalized_site_name(value)
+    if (
+        not normalized
+        or "/" in normalized
+        or "\\" in normalized
+        or any(ord(char) < 32 for char in value)
+    ):
+        raise SiteExportError(
+            f"Publication source id is not path-safe after normalization: {value!r}"
+        )
+    return normalized
+
+
+def _source_identity(
+    *,
+    wiki: Path | None = None,
+    sources: Iterable[HubWikiSource] | None = None,
+) -> tuple[str, tuple[tuple[str, str], ...]]:
+    if wiki is not None:
+        resolved = wiki.resolve()
+        return (
+            "single",
+            (
+                (
+                    _normalized_source_id(wiki.name),
+                    _opaque_digest(resolved.as_posix()),
+                ),
+            ),
+        )
+    resolved_sources = list(sources or ())
+    identities: list[tuple[str, str]] = []
+    seen_ids: set[str] = set()
+    for source in resolved_sources:
+        source_id = _normalized_source_id(source.source_id)
+        if source_id in seen_ids:
+            raise SiteExportError(
+                "Duplicate normalized hub source id: "
+                f"{source_id!r}; choose distinct source directory names."
+            )
+        seen_ids.add(source_id)
+        identities.append(
+            (
+                source_id,
+                _opaque_digest(source.wiki_dir.resolve().as_posix()),
+            )
+        )
+    return (
+        "hub",
+        tuple(identities),
+    )
+
+
+def _knowledge_selection(
+    *,
+    knowledge_metadata: str | None,
+    projections: Iterable[KnowledgeProjection] = (),
+) -> tuple[str, str, str]:
+    projection_list = list(projections)
+    if knowledge_metadata is None:
+        return "none", "none", ""
+    if not projection_list:
+        raise SiteExportError(
+            "Knowledge metadata selection requires a validated projection."
+        )
+    profiles = {projection.profile.value for projection in projection_list}
+    if len(profiles) != 1:
+        raise SiteExportError(
+            "All hub knowledge projections must use the same profile."
+        )
+    identities = sorted(
+        {
+            str(projection.bundle.get("repository_identity", "unknown"))
+            for projection in projection_list
+            if projection.bundle.get("repository_identity", "unknown") != "unknown"
+        }
+    )
+    return (
+        knowledge_metadata,
+        next(iter(profiles)),
+        _opaque_digest(identities) if identities else "",
+    )
+
+
+def _build_publication_selection(
+    *,
+    format: str,
+    profile: str,
+    site_name: str,
+    distribution_mode: str,
+    front_matter: bool,
+    knowledge_metadata: str | None,
+    projections: Iterable[KnowledgeProjection],
+    source_kind: str,
+    source_identity: tuple[tuple[str, str], ...],
+) -> SitePublicationSelection:
+    normalized_site_name = _normalized_site_name(site_name)
+    if not normalized_site_name:
+        raise SiteExportError("Site name must contain at least one visible character.")
+    metadata, knowledge_profile, public_identity_digest = _knowledge_selection(
+        knowledge_metadata=knowledge_metadata,
+        projections=projections,
+    )
+    return SitePublicationSelection(
+        format=format,
+        profile=profile,
+        site_name=normalized_site_name,
+        distribution_mode=distribution_mode,
+        front_matter=front_matter,
+        knowledge_metadata=metadata,
+        knowledge_profile=knowledge_profile,
+        public_identity_digest=public_identity_digest,
+        source_kind=source_kind,
+        source_identity=source_identity,
+    )
+
+
+def _selection_id(selection: SitePublicationSelection) -> str:
+    return _opaque_digest(selection.to_dict())
+
+
+def _publication_payload(
+    *,
+    state: str,
+    selection: SitePublicationSelection,
+    export_id: str = "",
+    commitments: tuple[tuple[str, str], ...] = (),
+    projection_hashes: tuple[str, ...] = (),
+) -> dict[str, Any]:
+    return {
+        "schema_version": SITE_PUBLICATION_SCHEMA_VERSION,
+        "state": state,
+        "selection_id": _selection_id(selection),
+        "export_id": export_id,
+        "selection": selection.to_dict(),
+        "commitments": [
+            {"path": path, "digest": digest} for path, digest in commitments
+        ],
+        "projection_hashes": list(projection_hashes),
+    }
+
+
+def _publication_marker_payload(
+    *,
+    selection_id: str,
+    export_id: str,
+) -> dict[str, str]:
+    return {
+        "schema_version": SITE_PUBLICATION_SCHEMA_VERSION,
+        "selection_id": selection_id,
+        "export_id": export_id,
+    }
+
+
+def _write_publication_json(path: Path, payload: Mapping[str, Any]) -> None:
+    if path.is_symlink() or (path.exists() and not path.is_file()):
+        raise SiteExportError(
+            f"Publication metadata target must be a regular file: {path}"
+        )
+    write_md(path, json.dumps(payload, indent=2, sort_keys=True) + "\n")
+
+
+def _publication_metadata_path(root: Path, name: str) -> Path:
+    if name not in {SITE_PUBLICATION_RECEIPT, SITE_PUBLICATION_MARKER}:
+        raise SiteExportError(f"Unsupported publication metadata name: {name}")
+    return root / name
+
+
+def _publication_commitment_path(root: Path, relative: str) -> Path:
+    path = root / Path(relative)
+    current = root
+    for part in Path(relative).parts:
+        current = current / part
+        if current.is_symlink():
+            raise SiteExportError(
+                f"Publication output commitment must not use a symlink: {current}"
+            )
+    try:
+        path.resolve().relative_to(root.resolve())
+    except ValueError as exc:
+        raise SiteExportError(
+            f"Publication output commitment escapes output directory: {path}"
+        ) from exc
+    return path
+
+
+def _preflight_publication_export(
+    out: Path,
+    selection: SitePublicationSelection,
+) -> None:
+    receipt_path = _publication_metadata_path(out, SITE_PUBLICATION_RECEIPT)
+    marker_path = _publication_metadata_path(out, SITE_PUBLICATION_MARKER)
+    for path in (receipt_path, marker_path):
+        if path.is_symlink() or (path.exists() and not path.is_file()):
+            raise SiteExportError(
+                f"Publication metadata target must be a regular file: {path}"
+            )
+    if not receipt_path.exists():
+        return
+    receipt = _load_publication_receipt(receipt_path)
+    if receipt.selection != selection:
+        raise SiteExportError(
+            "Existing site output uses different immutable publication "
+            "selections; choose a different --out-dir."
+        )
+
+
+def _begin_publication_export(
+    out: Path,
+    selection: SitePublicationSelection,
+    *,
+    dry_run: bool,
+) -> None:
+    if dry_run:
+        return
+    _write_publication_json(
+        _publication_metadata_path(out, SITE_PUBLICATION_RECEIPT),
+        _publication_payload(state="incomplete", selection=selection),
+    )
+
+
+def _publication_commitments(
+    report: SiteExportReport,
+    *,
+    out: Path,
+) -> tuple[tuple[str, str], ...]:
+    targets: set[Path] = set()
+    for operation in (*report.operations, *report.asset_operations):
+        if (
+            operation.action == "stale_asset"
+            or operation.source == "publication-selection"
+        ):
+            continue
+        target = Path(operation.path)
+        if target.is_symlink():
+            raise SiteExportError(
+                f"Publication output commitment must not be a symlink: {target}"
+            )
+        if not target.is_file():
+            raise SiteExportError(
+                f"Publication output commitment is missing: {target}"
+            )
+        targets.add(target)
+
+    out_absolute = out.absolute()
+    commitments: list[tuple[str, str]] = []
+    for target in targets:
+        try:
+            relative = target.absolute().relative_to(out_absolute).as_posix()
+        except ValueError as exc:
+            raise SiteExportError(
+                f"Publication output escapes output directory: {target}"
+            ) from exc
+        commitments.append((relative, _file_digest(target)))
+    return tuple(sorted(commitments, key=lambda item: (item[0].casefold(), item[0])))
+
+
+def _publication_export_id(
+    *,
+    commitments: tuple[tuple[str, str], ...],
+    projection_hashes: tuple[str, ...],
+) -> str:
+    return _opaque_digest(
+        {
+            "commitments": [
+                {"path": path, "digest": digest} for path, digest in commitments
+            ],
+            "projection_hashes": list(projection_hashes),
+        }
+    )
+
+
+def _complete_publication_export(
+    report: SiteExportReport,
+    *,
+    out: Path,
+    selection: SitePublicationSelection,
+    projection_hashes: tuple[str, ...],
+) -> None:
+    report.publication_schema_version = SITE_PUBLICATION_SCHEMA_VERSION
+    report.publication_state = "complete" if not report.dry_run else "preview"
+    report.selection_id = _selection_id(selection)
+    if report.dry_run:
+        report.operations.extend(
+            (
+                SiteExportOperation(
+                    "would_write",
+                    "publication-selection",
+                    str(_publication_metadata_path(out, SITE_PUBLICATION_MARKER)),
+                ),
+                SiteExportOperation(
+                    "would_write",
+                    "publication-selection",
+                    str(_publication_metadata_path(out, SITE_PUBLICATION_RECEIPT)),
+                ),
+            )
+        )
+        return
+    commitments = _publication_commitments(report, out=out)
+    export_id = _publication_export_id(
+        commitments=commitments,
+        projection_hashes=projection_hashes,
+    )
+    marker = _publication_marker_payload(
+        selection_id=report.selection_id,
+        export_id=export_id,
+    )
+    _write_publication_json(
+        _publication_metadata_path(out, SITE_PUBLICATION_MARKER),
+        marker,
+    )
+    _write_publication_json(
+        _publication_metadata_path(out, SITE_PUBLICATION_RECEIPT),
+        _publication_payload(
+            state="complete",
+            selection=selection,
+            export_id=export_id,
+            commitments=commitments,
+            projection_hashes=projection_hashes,
+        ),
+    )
+    report.operations.extend(
+        (
+            SiteExportOperation(
+                "write",
+                "publication-selection",
+                str(_publication_metadata_path(out, SITE_PUBLICATION_MARKER)),
+            ),
+            SiteExportOperation(
+                "write",
+                "publication-selection",
+                str(_publication_metadata_path(out, SITE_PUBLICATION_RECEIPT)),
+            ),
+        )
+    )
+    report.export_id = export_id
+
+
+def _require_string(value: Any, field_name: str) -> str:
+    if not isinstance(value, str):
+        raise SiteExportError(f"Publication receipt {field_name} must be a string.")
+    return value
+
+
+def _require_digest(value: Any, field_name: str, *, allow_empty: bool = False) -> str:
+    text = _require_string(value, field_name)
+    if allow_empty and text == "":
+        return text
+    if not re.fullmatch(r"sha256:[0-9a-f]{64}", text):
+        raise SiteExportError(
+            f"Publication receipt {field_name} must be a SHA-256 digest."
+        )
+    return text
+
+
+def _selection_from_payload(value: Any) -> SitePublicationSelection:
+    if not isinstance(value, dict):
+        raise SiteExportError("Publication receipt selection must be an object.")
+    required = {
+        "format",
+        "profile",
+        "site_name",
+        "distribution_mode",
+        "front_matter",
+        "knowledge_metadata",
+        "knowledge_profile",
+        "public_identity_digest",
+        "source_identity",
+    }
+    if set(value) != required:
+        raise SiteExportError("Publication receipt selection fields are invalid.")
+    format_value = _require_string(value["format"], "selection.format")
+    profile = _require_string(value["profile"], "selection.profile")
+    distribution_mode = _require_string(
+        value["distribution_mode"], "selection.distribution_mode"
+    )
+    _validate_format(format_value)
+    _validate_profile(profile)
+    if distribution_mode not in SUPPORTED_LINK_MODES:
+        raise SiteExportError(
+            "Publication receipt selection.distribution_mode is invalid."
+        )
+    if not isinstance(value["front_matter"], bool):
+        raise SiteExportError(
+            "Publication receipt selection.front_matter must be a boolean."
+        )
+    knowledge_metadata = _require_string(
+        value["knowledge_metadata"], "selection.knowledge_metadata"
+    )
+    if knowledge_metadata not in {"none", *SUPPORTED_KNOWLEDGE_METADATA}:
+        raise SiteExportError(
+            "Publication receipt selection.knowledge_metadata is invalid."
+        )
+    knowledge_profile = _require_string(
+        value["knowledge_profile"], "selection.knowledge_profile"
+    )
+    source_value = value["source_identity"]
+    if not isinstance(source_value, dict) or set(source_value) != {"kind", "sources"}:
+        raise SiteExportError(
+            "Publication receipt selection.source_identity is invalid."
+        )
+    source_kind = _require_string(
+        source_value["kind"], "selection.source_identity.kind"
+    )
+    if source_kind not in {"single", "hub"}:
+        raise SiteExportError(
+            "Publication receipt selection.source_identity.kind is invalid."
+        )
+    raw_sources = source_value["sources"]
+    if not isinstance(raw_sources, list) or not raw_sources:
+        raise SiteExportError(
+            "Publication receipt selection.source_identity.sources is invalid."
+        )
+    source_identity: list[tuple[str, str]] = []
+    seen_source_ids: set[str] = set()
+    for index, raw_source in enumerate(raw_sources):
+        if not isinstance(raw_source, dict) or set(raw_source) != {"id", "digest"}:
+            raise SiteExportError(
+                "Publication receipt selection source entry is invalid."
+            )
+        source_id = _require_string(
+            raw_source["id"], f"selection.source_identity.sources[{index}].id"
+        )
+        if (
+            not source_id
+            or "/" in source_id
+            or "\\" in source_id
+            or any(ord(char) < 32 for char in source_id)
+            or source_id in seen_source_ids
+        ):
+            raise SiteExportError(
+                "Publication receipt selection source id is not path-safe."
+            )
+        seen_source_ids.add(source_id)
+        source_identity.append(
+            (
+                source_id,
+                _require_digest(
+                    raw_source["digest"],
+                    f"selection.source_identity.sources[{index}].digest",
+                ),
+            )
+        )
+    selection = SitePublicationSelection(
+        format=format_value,
+        profile=profile,
+        site_name=_require_string(value["site_name"], "selection.site_name"),
+        distribution_mode=distribution_mode,
+        front_matter=value["front_matter"],
+        knowledge_metadata=knowledge_metadata,
+        knowledge_profile=knowledge_profile,
+        public_identity_digest=_require_digest(
+            value["public_identity_digest"],
+            "selection.public_identity_digest",
+            allow_empty=True,
+        ),
+        source_kind=source_kind,
+        source_identity=tuple(source_identity),
+    )
+    if selection.site_name != _normalized_site_name(selection.site_name):
+        raise SiteExportError(
+            "Publication receipt selection.site_name is not normalized."
+        )
+    if not selection.site_name:
+        raise SiteExportError(
+            "Publication receipt selection.site_name must not be empty."
+        )
+    if selection.source_kind == "single" and len(selection.source_identity) != 1:
+        raise SiteExportError(
+            "Single-site publication receipt must contain exactly one source."
+        )
+    if selection.knowledge_metadata == "none":
+        if (
+            selection.knowledge_profile != "none"
+            or selection.public_identity_digest
+        ):
+            raise SiteExportError(
+                "Publication receipt disabled knowledge selection is inconsistent."
+            )
+    elif selection.knowledge_profile == "none":
+        raise SiteExportError(
+            "Publication receipt enabled knowledge selection has no profile."
+        )
+    return selection
+
+
+def _load_publication_receipt(path: Path) -> SitePublicationReceipt:
+    if path.is_symlink() or not path.is_file():
+        raise SiteExportError(f"Publication receipt is not a regular file: {path}")
+    try:
+        if path.stat().st_size > 1024 * 1024:
+            raise SiteExportError(f"Publication receipt exceeds size limit: {path}")
+        payload = json.loads(read_md(path))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise SiteExportError(f"Malformed publication receipt {path}: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise SiteExportError(f"Malformed publication receipt object: {path}")
+    required = {
+        "schema_version",
+        "state",
+        "selection_id",
+        "export_id",
+        "selection",
+        "commitments",
+        "projection_hashes",
+    }
+    if set(payload) != required:
+        raise SiteExportError(f"Publication receipt fields are invalid: {path}")
+    if payload["schema_version"] != SITE_PUBLICATION_SCHEMA_VERSION:
+        raise SiteExportError(
+            f"Unsupported publication receipt schema: {payload['schema_version']!r}"
+        )
+    state = _require_string(payload["state"], "state")
+    if state not in SITE_PUBLICATION_STATES:
+        raise SiteExportError("Publication receipt state is invalid.")
+    selection = _selection_from_payload(payload["selection"])
+    selection_id = _require_digest(payload["selection_id"], "selection_id")
+    if selection_id != _selection_id(selection):
+        raise SiteExportError("Publication receipt selection_id does not match.")
+    raw_commitments = payload["commitments"]
+    if not isinstance(raw_commitments, list):
+        raise SiteExportError("Publication receipt commitments must be an array.")
+    commitments: list[tuple[str, str]] = []
+    seen_paths: set[str] = set()
+    for index, item in enumerate(raw_commitments):
+        if not isinstance(item, dict) or set(item) != {"path", "digest"}:
+            raise SiteExportError("Publication receipt commitment is invalid.")
+        relative = _require_string(item["path"], f"commitments[{index}].path")
+        relative_path = Path(relative)
+        if (
+            not relative
+            or relative_path.is_absolute()
+            or relative_path.as_posix() != relative
+            or "\\" in relative
+            or ".." in relative_path.parts
+            or relative in {SITE_PUBLICATION_RECEIPT, SITE_PUBLICATION_MARKER}
+            or relative in seen_paths
+        ):
+            raise SiteExportError("Publication receipt commitment path is unsafe.")
+        seen_paths.add(relative)
+        commitments.append(
+            (
+                relative,
+                _require_digest(item["digest"], f"commitments[{index}].digest"),
+            )
+        )
+    if commitments != sorted(
+        commitments, key=lambda item: (item[0].casefold(), item[0])
+    ):
+        raise SiteExportError("Publication receipt commitments are not sorted.")
+    raw_projection_hashes = payload["projection_hashes"]
+    if not isinstance(raw_projection_hashes, list):
+        raise SiteExportError(
+            "Publication receipt projection_hashes must be an array."
+        )
+    projection_hashes = tuple(
+        _require_digest(value, f"projection_hashes[{index}]")
+        for index, value in enumerate(raw_projection_hashes)
+    )
+    export_id = _require_digest(
+        payload["export_id"], "export_id", allow_empty=state == "incomplete"
+    )
+    if state == "incomplete":
+        if export_id or commitments:
+            raise SiteExportError(
+                "Incomplete publication receipt must not claim output commitments."
+            )
+    elif export_id != _publication_export_id(
+        commitments=tuple(commitments),
+        projection_hashes=projection_hashes,
+    ):
+        raise SiteExportError("Publication receipt export_id does not match.")
+    return SitePublicationReceipt(
+        state=state,
+        selection_id=selection_id,
+        export_id=export_id,
+        selection=selection,
+        commitments=tuple(commitments),
+        projection_hashes=projection_hashes,
+    )
+
+
+def _load_publication_marker(path: Path) -> dict[str, str]:
+    if path.is_symlink() or not path.is_file():
+        raise SiteExportError(f"Publication marker is not a regular file: {path}")
+    try:
+        if path.stat().st_size > 16 * 1024:
+            raise SiteExportError(f"Publication marker exceeds size limit: {path}")
+        payload = json.loads(read_md(path))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise SiteExportError(f"Malformed publication marker {path}: {exc}") from exc
+    if not isinstance(payload, dict) or set(payload) != {
+        "schema_version",
+        "selection_id",
+        "export_id",
+    }:
+        raise SiteExportError(f"Publication marker fields are invalid: {path}")
+    if payload["schema_version"] != SITE_PUBLICATION_SCHEMA_VERSION:
+        raise SiteExportError(
+            f"Unsupported publication marker schema: {payload['schema_version']!r}"
+        )
+    return {
+        "schema_version": SITE_PUBLICATION_SCHEMA_VERSION,
+        "selection_id": _require_digest(payload["selection_id"], "selection_id"),
+        "export_id": _require_digest(payload["export_id"], "export_id"),
+    }
+
+
+def _publication_issue(
+    *,
+    category: str,
+    path: Path,
+    message: str,
+    target: str = "",
+) -> dict[str, str]:
+    issue = {"category": category, "path": str(path), "message": message}
+    if target:
+        issue["target"] = target
+    return issue
+
+
+def _apply_receipt_to_report(
+    report: SiteExportReport,
+    receipt: SitePublicationReceipt,
+) -> None:
+    report.publication_schema_version = SITE_PUBLICATION_SCHEMA_VERSION
+    report.publication_state = receipt.state
+    report.selection_id = receipt.selection_id
+    report.export_id = receipt.export_id
+    report.format = receipt.selection.format
+    report.profile = receipt.selection.profile
+    report.site_name = receipt.selection.site_name
+    report.distribution_mode = receipt.selection.distribution_mode
+    report.front_matter = receipt.selection.front_matter
+
+
+def _check_publication_receipt(
+    report: SiteExportReport,
+    *,
+    out: Path,
+) -> SitePublicationReceipt | None:
+    receipt_path = _publication_metadata_path(out, SITE_PUBLICATION_RECEIPT)
+    if not receipt_path.exists():
+        report.issues.append(
+            _publication_issue(
+                category="missing_publication_receipt",
+                path=receipt_path,
+                message=(
+                    "Missing static-site publication receipt; regenerate the "
+                    "mirror before using it as evidence."
+                ),
+            )
+        )
+        return None
+    try:
+        receipt = _load_publication_receipt(receipt_path)
+    except SiteExportError as exc:
+        report.issues.append(
+            _publication_issue(
+                category="invalid_publication_receipt",
+                path=receipt_path,
+                message=str(exc),
+            )
+        )
+        return None
+    _apply_receipt_to_report(report, receipt)
+    if receipt.state != "complete":
+        report.issues.append(
+            _publication_issue(
+                category="incomplete_publication_receipt",
+                path=receipt_path,
+                message="Static-site export did not complete successfully.",
+            )
+        )
+        return receipt
+    for relative, expected_digest in receipt.commitments:
+        try:
+            target = _publication_commitment_path(out, relative)
+        except SiteExportError as exc:
+            report.issues.append(
+                _publication_issue(
+                    category="invalid_publication_commitment",
+                    path=receipt_path,
+                    target=relative,
+                    message=str(exc),
+                )
+            )
+            continue
+        if target.is_symlink() or not target.is_file():
+            report.issues.append(
+                _publication_issue(
+                    category="missing_publication_commitment",
+                    path=target,
+                    target=relative,
+                    message="Committed publication output is missing or not regular.",
+                )
+            )
+            continue
+        if _file_digest(target) != expected_digest:
+            report.issues.append(
+                _publication_issue(
+                    category="stale_publication_commitment",
+                    path=target,
+                    target=relative,
+                    message="Publication output no longer matches its export receipt.",
+                )
+            )
+    marker_path = _publication_metadata_path(out, SITE_PUBLICATION_MARKER)
+    _check_marker_matches_receipt(
+        report,
+        marker_path=marker_path,
+        receipt=receipt,
+        category_prefix="mirror",
+    )
+    return receipt
+
+
+def _check_marker_matches_receipt(
+    report: SiteExportReport,
+    *,
+    marker_path: Path,
+    receipt: SitePublicationReceipt,
+    category_prefix: str,
+) -> None:
+    if not marker_path.exists():
+        report.issues.append(
+            _publication_issue(
+                category=f"missing_{category_prefix}_publication_marker",
+                path=marker_path,
+                message="Missing builder-carried publication marker.",
+            )
+        )
+        return
+    try:
+        marker = _load_publication_marker(marker_path)
+    except SiteExportError as exc:
+        report.issues.append(
+            _publication_issue(
+                category=f"invalid_{category_prefix}_publication_marker",
+                path=marker_path,
+                message=str(exc),
+            )
+        )
+        return
+    if (
+        marker["selection_id"] != receipt.selection_id
+        or marker["export_id"] != receipt.export_id
+    ):
+        report.issues.append(
+            _publication_issue(
+                category=f"mismatched_{category_prefix}_publication_marker",
+                path=marker_path,
+                message=(
+                    "Publication marker does not match the mirror receipt; "
+                    "regenerate and rebuild this site."
+                ),
+            )
+        )
+
+
+def _selection_mismatch_issues(
+    *,
+    receipt: SitePublicationReceipt,
+    expected: SitePublicationSelection,
+    receipt_path: Path,
+) -> list[dict[str, str]]:
+    actual = receipt.selection.to_dict()
+    wanted = expected.to_dict()
+    issues: list[dict[str, str]] = []
+    for field_name in (
+        "format",
+        "profile",
+        "site_name",
+        "distribution_mode",
+        "front_matter",
+        "knowledge_metadata",
+        "knowledge_profile",
+        "public_identity_digest",
+        "source_identity",
+    ):
+        if actual[field_name] == wanted[field_name]:
+            continue
+        issues.append(
+            _publication_issue(
+                category="publication_selection_mismatch",
+                path=receipt_path,
+                target=field_name,
+                message=(
+                    f"Requested {field_name} does not match the exported "
+                    "site selection."
+                ),
+            )
+        )
+    return issues
+
+
 def export_site_mirror(
     *,
     wiki_dir: Union[str, Path],
@@ -174,6 +1059,7 @@ def export_site_mirror(
     site_name: Optional[str] = None,
     knowledge_metadata: str | None = None,
     knowledge_projection: KnowledgeProjection | None = None,
+    _publication_metadata: bool = True,
 ) -> SiteExportReport:
     """Export a static-site-friendly Markdown mirror of the canonical wiki."""
     _validate_format(format)
@@ -221,7 +1107,24 @@ def export_site_mirror(
         or format in {"mkdocs", "docusaurus"}
         or knowledge_summaries is not None
     )
-    effective_site_name = site_name or "LLM Wiki"
+    effective_site_name = _normalized_site_name(site_name or "LLM Wiki")
+    selection: SitePublicationSelection | None = None
+    if _publication_metadata:
+        source_kind, source_identity = _source_identity(wiki=wiki)
+        selection = _build_publication_selection(
+            format=format,
+            profile=profile,
+            site_name=effective_site_name,
+            distribution_mode=_distribution_mode(file_friendly),
+            front_matter=effective_front_matter,
+            knowledge_metadata=knowledge_metadata,
+            projections=(
+                (knowledge_projection,) if knowledge_projection is not None else ()
+            ),
+            source_kind=source_kind,
+            source_identity=source_identity,
+        )
+        _preflight_publication_export(out, selection)
     report = SiteExportReport(
         dry_run=dry_run,
         wiki_dir=str(wiki),
@@ -231,8 +1134,19 @@ def export_site_mirror(
         site_name=effective_site_name,
         distribution_mode=_distribution_mode(file_friendly),
         front_matter=effective_front_matter,
+        publication_schema_version=(
+            SITE_PUBLICATION_SCHEMA_VERSION if selection is not None else ""
+        ),
+        publication_state=(
+            ("preview" if dry_run else "incomplete")
+            if selection is not None
+            else ""
+        ),
+        selection_id=_selection_id(selection) if selection is not None else "",
         page_count=len(pages) + (1 if profile == "user" else 0),
     )
+    if selection is not None:
+        _begin_publication_export(out, selection, dry_run=dry_run)
 
     if profile == "user":
         _record_write_operation(
@@ -310,6 +1224,7 @@ def export_site_mirror(
                 else _build_mkdocs_config(
                     pages,
                     display_titles,
+                    site_name=effective_site_name,
                     file_friendly=file_friendly,
                 )
             ),
@@ -339,6 +1254,17 @@ def export_site_mirror(
         )
 
     _record_asset_operations(report, wiki=wiki, out=out, page_contents=page_contents)
+    if selection is not None:
+        _complete_publication_export(
+            report,
+            out=out,
+            selection=selection,
+            projection_hashes=(
+                (knowledge_projection.source_knowledge_hash,)
+                if knowledge_projection is not None
+                else ()
+            ),
+        )
     return report
 
 
@@ -403,17 +1329,40 @@ def export_site_hub(
         or format in {"mkdocs", "docusaurus"}
         or knowledge_metadata is not None
     )
+    effective_site_name = _normalized_site_name(site_name or "LLM Wiki Hub")
+    source_kind, source_identity = _source_identity(sources=sources)
+    selected_projections = tuple(
+        knowledge_projections[source.source_id]
+        for source in sources
+        if knowledge_projections is not None
+    )
+    selection = _build_publication_selection(
+        format=format,
+        profile=profile,
+        site_name=effective_site_name,
+        distribution_mode=_distribution_mode(file_friendly),
+        front_matter=effective_front_matter,
+        knowledge_metadata=knowledge_metadata,
+        projections=selected_projections,
+        source_kind=source_kind,
+        source_identity=source_identity,
+    )
+    _preflight_publication_export(out, selection)
     report = SiteExportReport(
         dry_run=dry_run,
         wiki_dir=str(Path(wiki_root).expanduser()) if wiki_root is not None else "",
         out_dir=str(out),
         format=format,
         profile=profile,
-        site_name=site_name or "LLM Wiki Hub",
+        site_name=effective_site_name,
         distribution_mode=_distribution_mode(file_friendly),
         front_matter=effective_front_matter,
+        publication_schema_version=SITE_PUBLICATION_SCHEMA_VERSION,
+        publication_state="preview" if dry_run else "incomplete",
+        selection_id=_selection_id(selection),
         source_count=len(sources),
     )
+    _begin_publication_export(out, selection, dry_run=dry_run)
 
     hub_rows: list[tuple[str, int]] = []
     for source in sources:
@@ -440,6 +1389,7 @@ def export_site_hub(
                 if knowledge_projections is not None
                 else None
             ),
+            _publication_metadata=False,
         )
         report.operations.extend(child.operations)
         report.asset_operations.extend(child.asset_operations)
@@ -453,7 +1403,7 @@ def export_site_hub(
         report,
         source=report.wiki_dir or "hub",
         target=_safe_join(out, "index.md"),
-        content=_build_hub_index(hub_rows),
+        content=_build_hub_index(hub_rows, site_name=effective_site_name),
     )
     report.page_count += 1
 
@@ -462,7 +1412,11 @@ def export_site_hub(
             report,
             source=report.wiki_dir or "hub",
             target=_safe_join(out, "mkdocs.yml"),
-            content=_build_mkdocs_hub_config(sources, file_friendly=file_friendly),
+            content=_build_mkdocs_hub_config(
+                sources,
+                site_name=effective_site_name,
+                file_friendly=file_friendly,
+            ),
         )
         _record_mkdocs_file_friendly_override(
             report,
@@ -489,6 +1443,14 @@ def export_site_hub(
         )
 
     report.ok = not report.issues
+    _complete_publication_export(
+        report,
+        out=out,
+        selection=selection,
+        projection_hashes=tuple(
+            projection.source_knowledge_hash for projection in selected_projections
+        ),
+    )
     return report
 
 
@@ -499,13 +1461,17 @@ def check_site_mirror(
     docusaurus_id_prefix: str = "",
     built_site_dir: Union[str, Path, None] = None,
     link_mode: str = "http",
+    format: str | None = None,
     profile: str = "reference",
     site_name: Optional[str] = None,
     knowledge_metadata: str | None = None,
     knowledge_projection: KnowledgeProjection | None = None,
+    _publication_metadata: bool = True,
 ) -> SiteExportReport:
     """Validate that an exported static-site mirror is present and linked."""
     _validate_link_mode(link_mode)
+    if format is not None:
+        _validate_format(format)
     _validate_profile(profile)
     wiki = Path(wiki_dir).expanduser()
     out = Path(out_dir).expanduser()
@@ -524,7 +1490,8 @@ def check_site_mirror(
         else "",
         profile=profile,
         site_name=site_name or "",
-        link_mode=link_mode if built_site_dir is not None else "",
+        format=format or "plain",
+        link_mode=link_mode,
         page_count=len(pages),
     )
 
@@ -538,6 +1505,58 @@ def check_site_mirror(
         )
         report.ok = False
         return report
+
+    receipt = (
+        _check_publication_receipt(report, out=out)
+        if _publication_metadata
+        else None
+    )
+    if receipt is not None:
+        source_kind, source_identity = _source_identity(wiki=wiki)
+        projections = (
+            (knowledge_projection,) if knowledge_projection is not None else ()
+        )
+        expected_selection = _build_publication_selection(
+            format=format or receipt.selection.format,
+            profile=profile,
+            site_name=(
+                site_name
+                if site_name is not None
+                else receipt.selection.site_name
+            ),
+            distribution_mode=link_mode,
+            front_matter=receipt.selection.front_matter,
+            knowledge_metadata=knowledge_metadata,
+            projections=projections,
+            source_kind=source_kind,
+            source_identity=source_identity,
+        )
+        report.issues.extend(
+            _selection_mismatch_issues(
+                receipt=receipt,
+                expected=expected_selection,
+                receipt_path=_publication_metadata_path(
+                    out, SITE_PUBLICATION_RECEIPT
+                ),
+            )
+        )
+        expected_projection_hashes = tuple(
+            projection.source_knowledge_hash for projection in projections
+        )
+        if expected_projection_hashes != receipt.projection_hashes:
+            report.issues.append(
+                _publication_issue(
+                    category="publication_projection_mismatch",
+                    path=_publication_metadata_path(
+                        out, SITE_PUBLICATION_RECEIPT
+                    ),
+                    target="projection_hashes",
+                    message=(
+                        "The selected native-knowledge projection does not "
+                        "match the exported site."
+                    ),
+                )
+            )
 
     if knowledge_summaries is not None:
         output_scan_issues = _check_existing_unexpected_knowledge_pages(
@@ -677,7 +1696,8 @@ def check_site_mirror(
             )
         )
 
-    report.front_matter = found_front_matter
+    if receipt is None:
+        report.front_matter = found_front_matter
     if found_front_matter:
         for page, target in pages_without_front_matter:
             report.warnings.append(
@@ -693,6 +1713,16 @@ def check_site_mirror(
             )
 
     if built_site_dir is not None:
+        if receipt is not None:
+            _check_marker_matches_receipt(
+                report,
+                marker_path=_publication_metadata_path(
+                    Path(built_site_dir).expanduser(),
+                    SITE_PUBLICATION_MARKER,
+                ),
+                receipt=receipt,
+                category_prefix="built",
+            )
         report.issues.extend(
             check_built_site_links(
                 built_site_dir=built_site_dir,
@@ -719,10 +1749,21 @@ def check_site_hub(
     out_dir: Union[str, Path],
     wiki_root: Union[str, Path, None] = None,
     wikis: Iterable[Union[str, Path]] | None = None,
+    built_site_dir: Union[str, Path, None] = None,
+    link_mode: str = "http",
+    format: str | None = None,
+    profile: str = "reference",
+    site_name: Optional[str] = None,
     knowledge_metadata: str | None = None,
     knowledge_projections: Mapping[str, KnowledgeProjection] | None = None,
 ) -> SiteExportReport:
     """Validate a namespaced multi-wiki static-site hub."""
+    _validate_link_mode(link_mode)
+    if format is not None:
+        _validate_format(format)
+    _validate_profile(profile)
+    if profile != "reference":
+        raise SiteExportError("Hub check only supports --profile reference.")
     out = Path(out_dir).expanduser()
     sources = _resolve_hub_sources(wiki_root=wiki_root, wikis=wikis)
     _preflight_hub_knowledge_projections(
@@ -733,9 +1774,67 @@ def check_site_hub(
     report = SiteExportReport(
         wiki_dir=str(Path(wiki_root).expanduser()) if wiki_root is not None else "",
         out_dir=str(out),
+        built_site_dir=(
+            str(Path(built_site_dir).expanduser())
+            if built_site_dir is not None
+            else ""
+        ),
+        format=format or "plain",
+        profile=profile,
+        site_name=site_name or "",
+        link_mode=link_mode,
         source_count=len(sources),
         page_count=1,
     )
+    receipt = _check_publication_receipt(report, out=out)
+    if receipt is not None:
+        source_kind, source_identity = _source_identity(sources=sources)
+        projections = tuple(
+            knowledge_projections[source.source_id]
+            for source in sources
+            if knowledge_projections is not None
+        )
+        expected_selection = _build_publication_selection(
+            format=format or receipt.selection.format,
+            profile=profile,
+            site_name=(
+                site_name
+                if site_name is not None
+                else receipt.selection.site_name
+            ),
+            distribution_mode=link_mode,
+            front_matter=receipt.selection.front_matter,
+            knowledge_metadata=knowledge_metadata,
+            projections=projections,
+            source_kind=source_kind,
+            source_identity=source_identity,
+        )
+        report.issues.extend(
+            _selection_mismatch_issues(
+                receipt=receipt,
+                expected=expected_selection,
+                receipt_path=_publication_metadata_path(
+                    out, SITE_PUBLICATION_RECEIPT
+                ),
+            )
+        )
+        expected_projection_hashes = tuple(
+            projection.source_knowledge_hash for projection in projections
+        )
+        if expected_projection_hashes != receipt.projection_hashes:
+            report.issues.append(
+                _publication_issue(
+                    category="publication_projection_mismatch",
+                    path=_publication_metadata_path(
+                        out, SITE_PUBLICATION_RECEIPT
+                    ),
+                    target="projection_hashes",
+                    message=(
+                        "The selected native-knowledge projections do not "
+                        "match the exported hub."
+                    ),
+                )
+            )
     global_scan_issue_keys: set[tuple[str, str]] = set()
     if knowledge_metadata is not None and out.exists():
         global_scan_issues = _check_existing_unexpected_knowledge_pages(
@@ -767,12 +1866,15 @@ def check_site_hub(
             wiki_dir=source.wiki_dir,
             out_dir=out / source.source_id,
             docusaurus_id_prefix=docusaurus_prefix,
+            format=(receipt.selection.format if receipt is not None else format),
+            profile=profile,
             knowledge_metadata=knowledge_metadata,
             knowledge_projection=(
                 knowledge_projections.get(source.source_id)
                 if knowledge_projections is not None
                 else None
             ),
+            _publication_metadata=False,
         )
         report.page_count += child.page_count
         report.issues.extend(
@@ -795,6 +1897,23 @@ def check_site_hub(
         report.issues.extend(_check_hub_front_matter_id_collisions(out, sources))
         if knowledge_metadata is not None:
             report.issues.extend(_check_hub_knowledge_uid_collisions(out, sources))
+    if built_site_dir is not None:
+        if receipt is not None:
+            _check_marker_matches_receipt(
+                report,
+                marker_path=_publication_metadata_path(
+                    Path(built_site_dir).expanduser(),
+                    SITE_PUBLICATION_MARKER,
+                ),
+                receipt=receipt,
+                category_prefix="built",
+            )
+        report.issues.extend(
+            check_built_site_links(
+                built_site_dir=built_site_dir,
+                link_mode=link_mode,
+            )
+        )
     report.ok = not report.issues
     return report
 
@@ -810,6 +1929,12 @@ def render_report_text(report: SiteExportReport, *, action: str) -> str:
     lines.append(
         f"Distribution mode: {_distribution_mode_label(report.distribution_mode)}"
     )
+    if report.selection_id:
+        lines.append(f"Selection id: {report.selection_id}")
+    if report.export_id:
+        lines.append(f"Export id: {report.export_id}")
+    if report.publication_state:
+        lines.append(f"Publication state: {report.publication_state}")
     if report.built_site_dir:
         lines.append(f"Built site: {report.built_site_dir}")
         lines.append(f"Built link mode: {report.link_mode}")
@@ -1246,13 +2371,14 @@ def _build_mkdocs_config(
     pages: list[wiki_surface.WikiSurfacePage],
     display_titles: dict[str, str],
     *,
+    site_name: str = "LLM Wiki",
     file_friendly: bool = False,
 ) -> str:
     lines = [
         "# Generated by llm-wiki site export.",
         "# Mermaid code fences are preserved as Markdown. Configure a MkDocs",
         "# Mermaid plugin in your site environment to render diagrams.",
-        'site_name: "LLM Wiki"',
+        f"site_name: {_yaml_quote(site_name)}",
         'docs_dir: "."',
         'site_dir: "../_site"',
     ]
@@ -1366,9 +2492,13 @@ def _nav_entries(
     return [(display_titles[page.relative_path], page.relative_path) for page in pages]
 
 
-def _build_hub_index(rows: list[tuple[str, int]]) -> str:
+def _build_hub_index(
+    rows: list[tuple[str, int]],
+    *,
+    site_name: str = "LLM Wiki Hub",
+) -> str:
     lines = [
-        "# LLM Wiki Hub",
+        f"# {site_name}",
         "",
         "| Source | Pages | Index |",
         "|---|---:|---|",
@@ -1390,13 +2520,14 @@ def _hub_source_page_data(
 def _build_mkdocs_hub_config(
     sources: list[HubWikiSource],
     *,
+    site_name: str = "LLM Wiki Hub",
     file_friendly: bool = False,
 ) -> str:
     lines = [
         "# Generated by llm-wiki site export.",
         "# Mermaid code fences are preserved as Markdown. Configure a MkDocs",
         "# Mermaid plugin in your site environment to render diagrams.",
-        'site_name: "LLM Wiki Hub"',
+        f"site_name: {_yaml_quote(site_name)}",
         'docs_dir: "."',
         'site_dir: "../_site"',
     ]
@@ -1717,7 +2848,11 @@ def _preflight_hub_root_output_collisions(
     format: str,
     file_friendly: bool,
 ) -> None:
-    root_outputs = [_safe_join(out, "index.md")]
+    root_outputs = [
+        _safe_join(out, "index.md"),
+        _safe_join(out, SITE_PUBLICATION_RECEIPT),
+        _safe_join(out, SITE_PUBLICATION_MARKER),
+    ]
     if format == "mkdocs":
         root_outputs.append(_safe_join(out, "mkdocs.yml"))
         if file_friendly:

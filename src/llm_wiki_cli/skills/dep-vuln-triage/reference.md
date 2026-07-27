@@ -98,11 +98,17 @@ does not mean the Haskell declaration surface is empty.
 Supported v1 lock/version sources are Poetry and uv TOML locks, Pipfile.lock,
 npm package-lock v1-v3, the supported pnpm packages mapping, `go.mod`,
 `go.sum`, and Cargo.lock. Requirements exact pins and manifest constraints are
-declarations, not proof of an installed version. Unsupported forms such as
-requirements include/constraint indirection, `setup.py`, `go.work`,
-`yarn.lock`, Bun locks, generated manifests, unsupported pnpm syntax, or
-unreadable/malformed files must remain diagnostic/unknown scope. Do not
-improvise parser support or call those scopes empty.
+declarations, not proof of an installed version. Requirements
+include/constraint indirection is recognized but never followed: every `-r`,
+`--requirement`, `-c`, and `--constraint` spelling is counted as omitted with
+`unsupported-requirements-indirection`. Editable requirements and unnamed
+URL/VCS lines remain separate unknowns through
+`unsupported-requirements-editable` and
+`unnamed-requirements-url-or-vcs`. Other unsupported forms such as `setup.py`,
+`go.work`, `yarn.lock`, Bun locks, generated manifests, unsupported pnpm
+syntax, or unreadable/malformed files must remain diagnostic/unknown scope. Do
+not improvise parser support, follow repository-controlled paths, or call those
+scopes empty.
 
 The complete native inventory is the union of v1 records with legacy `used`,
 `unused`, and `undeclared` reachability names, plus one explicit limitation per
@@ -116,8 +122,8 @@ The v1 record fields distinguish provenance from selection:
 | Language | v1 source semantics | Required interpretation |
 |---|---|---|
 | Python | declaration records plus Poetry/uv/Pipfile lock selections | Scope is the owning directory. Every parsed lock version is retained; static selection does not claim runtime installation. |
-| TypeScript | npm declarations, package-lock selections, pnpm selections | Duplicate versions and distinct lock scopes remain distinct. pnpm reach may remain `unknown`. |
-| Go | `go-mod-selection`, `go-checksum-observation` | `go.mod` is the modeled static selection. Every `go.sum` version is only observed checksum history. |
+| TypeScript | npm declarations, package-lock selections, pnpm selections | Duplicate versions and distinct lock scopes remain distinct. A package-lock v1-v3 root/hoisted row is direct only with matching root/workspace declaration proof; otherwise its reach is `unknown`. Nested package-lock rows are transitive. pnpm reach may remain `unknown`. |
+| Go | `go-mod-selection`, `go-mod-requirement`, `go-mod-replacement-selection`, `go-checksum-observation` | An unreplaced `go.mod` requirement retains its modeled static selection. A remote replacement selects its effective target/version and retains the requested requirement as declaration provenance. A local or indeterminate replacement has no upstream selected version. Every `go.sum` version is only observed checksum history. |
 | Rust | Cargo declarations and lock selections | Multiple versions remain distinct. Direct/transitive reach is `unknown` when duplicate direct-package lock entries prevent a truthful assignment. |
 | Haskell | no v1 rows; legacy/raw supplemental evidence only | Cabal/Stack/Nix ranges and hints do not provide a captured resolved version. Haskell packages are therefore **always unknown-version**. |
 
@@ -253,13 +259,28 @@ Required sections beyond the table:
   do not invent a single effective version.
 - **Go module selection**: `go.sum` can retain checksums for historical,
   downloaded, or no-longer-selected versions. `go.sum` history alone never
-  produces a selected-version claim. V1 models `go.mod` selection separately
-  and retains every checksum observation. An authorized package-manager result
-  may supplement this static evidence but keeps separate provenance.
+  produces a selected-version claim. V1 retains an unreplaced requirement as a
+  selected `go-mod-selection` row. A remote replacement retains the requested
+  module/version as declared `go-mod-requirement` provenance, emits the
+  effective target/version as `go-mod-replacement-selection`, and uses
+  `declared_as` when the target module differs. A local replacement emits no
+  upstream selected version, exposes no local path, and reports
+  `go-local-replacement-version-unknown`. Malformed, conflicting, unmatched,
+  or otherwise indeterminate replacements remain diagnostic/unknown through
+  `malformed-go-replacement`, `conflicting-go-replacement`,
+  `unmatched-go-replacement`, or
+  `indeterminate-go-replacement-selection`; malformed requirements use
+  `malformed-go-requirement`. An authorized package-manager result may
+  supplement this static evidence but keeps separate provenance.
 - **Direct versus transitive dependencies**: v1 emits `direct`, `transitive`,
   or `unknown` only where the source format supports that inference.
-  Lockfile-only transitive records are retained for supported formats, but
-  coverage diagnostics and unknown reach still prohibit a complete claim.
+  Package-lock v2/v3 derives declaration proof from all non-`node_modules`
+  project rows (root and workspaces), unioned with `package.json`;
+  package-lock v1 uses matching manifest declarations. A matching
+  declaration/install scope is direct, nested dependencies are transitive, and
+  a root or hoisted package without declaration proof is unknown. Lockfile-only
+  records are retained, but coverage diagnostics and unknown reach still
+  prohibit a complete claim.
 - **Optional/dev/build packages**: v1 declaration rows keep these categories
   even when legacy `unused` and `versions` omit them. Build tools and plugins
   can execute without an application import path.

@@ -167,7 +167,7 @@ def test_multiple_versions_in_one_lockfile_remain_distinct_in_v1(
     assert "**Multiple versions in one lockfile**" in _skill_text()
 
 
-def test_lockfile_only_transitive_is_present_in_v1_and_legacy_stays_compatible(
+def test_lockfile_only_root_install_is_unknown_and_legacy_stays_compatible(
     tmp_path,
 ):
     (tmp_path / "package.json").write_text(
@@ -198,17 +198,18 @@ def test_lockfile_only_transitive_is_present_in_v1_and_legacy_stays_compatible(
         }
     }
     assert "follow-redirects" not in json.dumps(typescript)
-    transitive = next(
+    lock_only = next(
         record
         for record in dependencies["version_details"]["records"]
         if record["package"] == "follow-redirects"
     )
-    assert transitive["version"] == "1.15.6"
-    assert transitive["reach"] == "transitive"
+    assert lock_only["version"] == "1.15.6"
+    assert lock_only["reach"] == "unknown"
 
     text = _skill_text()
     normalized = " ".join(text.split())
-    assert "Lockfile-only transitive records are retained" in normalized
+    assert "root or hoisted package without declaration proof is unknown" in normalized
+    assert "nested dependencies are transitive" in normalized
     assert "prohibit a complete claim" in normalized
     assert "Direct declarations" in normalized
 

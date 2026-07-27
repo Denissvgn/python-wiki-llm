@@ -73,7 +73,7 @@ Use these classes when reviewing `site export --profile user` or `site check --p
 
 | Finding class | Typical signal | Action |
 |---|---|---|
-| broken distribution-mode link | Built-site validation reports HTTP/file mode link issues, including file-directory URLs in direct-file handoffs | Fix export mode, link target, or handoff instructions; re-run `site check --built-site-dir ... --link-mode http|file`. |
+| broken distribution-mode link | Built-site validation reports HTTP/file mode link issues, including a missing/mismatched publication marker or file-directory URLs in direct-file handoffs | Fix export mode, marker handoff, link target, or instructions; rebuild from the matching receipted mirror, then re-run `site check --format ... --built-site-dir ... --link-mode http|file`. |
 | missing human landing page | Root `index.md` is absent, still starts as a raw generated inventory, or does not use the configured site name | Regenerate/export with `--profile user --site-name <project>` or fix the human root page. |
 | missing guide surface | `missing_user_guides` or no `guides/*.md` pages in the user profile | Run `onboarding-guide` before publishing user docs. |
 | bootstrap placeholder in primary docs | `published_placeholder` in root or guide pages | Replace placeholder prose with source-backed narrative or defer the page from primary docs. |
@@ -142,8 +142,10 @@ them into public review output.
 
 The reviewer preserves ambiguous, missing, unavailable, and truncated state.
 It does not assert that a section is missing merely because a bounded list did
-not return it. The supervisor resolves and recomputes every record against the
-committed post-refresh view; a mismatched coordinate, native fact, or bound is
+not return it. The supervisor preflights result structure before refresh, then
+resolves and recomputes each record live/read-only only for a verified-current
+source-bound run; other runs use the committed snapshot with freshness
+unevaluated. A mismatched coordinate, native fact, capture binding, or bound is
 an integrity failure, not a finding the reviewer may waive.
 
 ## Usage examples handoff

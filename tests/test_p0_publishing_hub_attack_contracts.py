@@ -15,6 +15,7 @@ from llm_wiki_cli.commands import extract_cmd
 from llm_wiki_cli.services.data_flow import analyze_data_flow
 from llm_wiki_cli.services.plugins import PluginError
 from llm_wiki_cli.services.site_export import (
+    SITE_PUBLICATION_MARKER,
     check_site_hub,
     check_site_mirror,
     export_site_hub,
@@ -149,7 +150,7 @@ def test_publish_user_hosted_and_file_commands_preserve_selection():
     assert hosted_built.built_site_dir == "_site-http"
     assert file_built.built_site_dir == "_site-file"
     assert hosted_built.built_site_dir != file_built.built_site_dir
-    assert not hasattr(hosted_built, "format")
+    assert hosted_built.format == file_built.format == "mkdocs"
 
 
 def test_publish_reference_and_ci_built_checks_keep_explicit_contract():
@@ -195,6 +196,10 @@ def test_final_user_check_applies_user_only_gate(tmp_path):
         profile="reference",
     )
     _write(built / "index.html", "<html><body>Reference build</body></html>\n")
+    _write(
+        built / SITE_PUBLICATION_MARKER,
+        (out / SITE_PUBLICATION_MARKER).read_text(encoding="utf-8"),
+    )
 
     reference = check_site_mirror(
         wiki_dir=wiki,
@@ -235,8 +240,15 @@ def test_doc_hub_conservative_surface_is_overwritten_and_not_navigated(tmp_path)
     assert (out / "overview.md").is_file()
     assert check_site_hub(wiki_root=root, out_dir=out).ok is True
 
-    export_site_hub(wiki_root=root, out_dir=out, format="docusaurus")
-    sidebar = json.loads((out / "sidebars.json").read_text(encoding="utf-8"))
+    docusaurus_out = tmp_path / "site-docusaurus"
+    export_site_hub(
+        wiki_root=root,
+        out_dir=docusaurus_out,
+        format="docusaurus",
+    )
+    sidebar = json.loads(
+        (docusaurus_out / "sidebars.json").read_text(encoding="utf-8")
+    )
     assert "overview" not in json.dumps(sidebar)
 
     combined = f"{_read(HUB_SKILL)}\n{_read(HUB_REFERENCE)}".lower()

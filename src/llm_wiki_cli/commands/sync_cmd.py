@@ -1,7 +1,9 @@
 """Incremental wiki sync — update only pages whose source has changed.
 
 Workflow:
-    1. Load ``wiki_dir/.llm-wiki-manifest.json`` (error if missing — run bootstrap first).
+    1. Classify the wiki lifecycle, loading a managed manifest, safely seeding a
+       legacy wiki with ``index.md``, or routing pristine/partial targets to
+       bootstrap/migration before source extraction.
     2. Hash every source file in the current AST inventory.
     3. Compute a diff: new / changed / unchanged / removed files, moved classes.
     4. Apply changes surgically: regenerate pages for new/changed files, add a
@@ -127,6 +129,12 @@ from ..services.sync_manifest import (
     MANIFEST_VERSION,  # noqa: F401 - compatibility re-export
     SyncManifest,
     retained_concept_page_paths,
+)
+from ..services.wiki_lifecycle import (
+    WikiLifecycleState,
+    bootstrap_guidance,
+    classify_wiki_lifecycle,
+    migration_guidance,
 )
 from ..services.section_ownership import (
     SemanticMergeResult,
@@ -2152,17 +2160,22 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
 def _load_or_seed_manifest(
     options: _SyncRunOptions,
 ) -> tuple[Optional["SyncManifest"], bool]:
-    try:
+    state = classify_wiki_lifecycle(options.wiki_dir)
+    if state is WikiLifecycleState.MANAGED:
         return SyncManifest.load(options.wiki_dir), False
-    except FileNotFoundError:
-        if (options.wiki_dir / "index.md").exists():
-            return None, True
-        print(
-            f"Error: no sync manifest found at {options.wiki_dir / MANIFEST_FILENAME}.\n"
-            "Run `llm-wiki bootstrap` first to create the initial wiki and manifest.",
-            file=sys.stderr,
-        )
-        sys.exit(1)
+    if state is WikiLifecycleState.SYNC_SEEDABLE:
+        return None, True
+    guidance = (
+        bootstrap_guidance(src_dir=options.src_dir, wiki_dir=options.wiki_dir)
+        if state is WikiLifecycleState.FIRST_USE
+        else migration_guidance(src_dir=options.src_dir, wiki_dir=options.wiki_dir)
+    )
+    print(
+        f"Error: no sync manifest found at {options.wiki_dir / MANIFEST_FILENAME}.\n"
+        f"{guidance}",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
 
 def _extract_current_inventory(options: _SyncRunOptions) -> _ExtractedSyncInventory:

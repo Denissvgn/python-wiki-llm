@@ -426,6 +426,8 @@ def _requirements_records(
     root: Path,
     path: Path,
     records: list[dict[str, Any]],
+    *,
+    omission_reasons: list[str] | None = None,
 ) -> int:
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
@@ -441,11 +443,30 @@ def _requirements_records(
     )
     for raw in lines:
         line = raw.split("#", 1)[0].strip()
-        if not line or line.startswith(
-            ("-r", "--requirement", "-c", "--constraint", "-e", "--editable")
-        ):
+        if not line:
             continue
-        if line.startswith(("git+", "http://", "https://")):
+        if line.startswith(("-r", "--requirement", "-c", "--constraint")):
+            malformed += 1
+            if omission_reasons is not None:
+                omission_reasons.append(
+                    "unsupported-requirements-indirection"
+                )
+            continue
+        if line.startswith(("-e", "--editable")):
+            malformed += 1
+            if omission_reasons is not None:
+                omission_reasons.append("unsupported-requirements-editable")
+            continue
+        lowered_line = line.lower()
+        if (
+            lowered_line.startswith(
+                ("git+", "hg+", "svn+", "bzr+", "file:")
+            )
+            or re.match(r"^[a-z][a-z0-9+.-]*://", lowered_line)
+        ):
+            malformed += 1
+            if omission_reasons is not None:
+                omission_reasons.append("unnamed-requirements-url-or-vcs")
             continue
         if not _append_python_declaration(
             records,
@@ -802,6 +823,53 @@ def _package_lock_install_scope(package_path: str, lock_scope: str) -> str:
     return prefix if lock_scope == "." else f"{lock_scope}/{prefix}"
 
 
+def _package_lock_project_direct_scopes(
+    packages: Mapping,
+    *,
+    lock_scope: str,
+) -> tuple[dict[str, set[str]], int]:
+    """Read direct declarations embedded in package-lock v2/v3 project rows."""
+
+    scopes: dict[str, set[str]] = {}
+    malformed = 0
+    for raw_project_path, metadata in sorted(
+        packages.items(), key=lambda item: str(item[0])
+    ):
+        if (
+            not isinstance(raw_project_path, str)
+            or "node_modules/" in raw_project_path.strip("/")
+            or not isinstance(metadata, Mapping)
+        ):
+            continue
+        project_path = raw_project_path.strip("/")
+        project_scope = (
+            lock_scope
+            if not project_path
+            else project_path
+            if lock_scope == "."
+            else f"{lock_scope}/{project_path}"
+        )
+        for section_name in (
+            "dependencies",
+            "peerDependencies",
+            "optionalDependencies",
+            "devDependencies",
+        ):
+            section = metadata.get(section_name)
+            if section is None:
+                continue
+            if not isinstance(section, Mapping):
+                malformed += 1
+                continue
+            for raw_name in section:
+                package = str(raw_name).lower().strip()
+                if not package:
+                    malformed += 1
+                    continue
+                scopes.setdefault(package, set()).add(project_scope)
+    return scopes, malformed
+
+
 def _package_lock_records(
     root: Path,
     path: Path,
@@ -815,6 +883,15 @@ def _package_lock_records(
     malformed = 0
     packages = data.get("packages")
     if isinstance(packages, Mapping):
+        embedded_scopes, embedded_malformed = (
+            _package_lock_project_direct_scopes(
+                packages,
+                lock_scope=lock_scope,
+            )
+        )
+        malformed += embedded_malformed
+        for package, package_scopes in embedded_scopes.items():
+            direct_scopes.setdefault(package, set()).update(package_scopes)
         for package_path, metadata in sorted(
             packages.items(), key=lambda item: str(item[0])
         ):
@@ -824,6 +901,10 @@ def _package_lock_records(
             package = _package_lock_package_name(package_path, metadata)
             version = metadata.get("version")
             if not package:
+                continue
+            if metadata.get("link") is True:
+                # Workspace links identify a local project, not a registry
+                # dependency version.
                 continue
             if not isinstance(version, str) or not version:
                 malformed += 1
@@ -848,8 +929,7 @@ def _package_lock_records(
                     reach=(
                         "direct"
                         if root_level and installed_scope in package_scopes
-                        else "unknown"
-                        if root_level and package_scopes
+                        else "unknown" if root_level
                         else "transitive"
                     ),
                 )
@@ -889,8 +969,7 @@ def _package_lock_records(
                                 and lock_scope
                                 in direct_scopes.get(package, set())
                             )
-                            else "unknown"
-                            if depth == 0 and direct_scopes.get(package)
+                            else "unknown" if depth == 0
                             else "transitive"
                         ),
                     )
@@ -979,48 +1058,200 @@ def _go_mod_records(
     root: Path,
     path: Path,
     records: list[dict[str, Any]],
+    *,
+    omission_reasons: list[str] | None = None,
 ) -> int:
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
     except (OSError, UnicodeDecodeError):
         return 1
     malformed = 0
-    in_require = False
+    requirements: list[tuple[str, str, bool]] = []
+    replacements: list[
+        tuple[str, str | None, str, str | None]
+    ] = []
+    in_block: str | None = None
+    malformed_replacement = False
+
+    def unquote(value: str) -> str:
+        return value.strip().strip('"')
+
+    def record_omission(reason: str) -> None:
+        nonlocal malformed
+        malformed += 1
+        if omission_reasons is not None:
+            omission_reasons.append(reason)
+
+    def parse_replacement(
+        value: str,
+    ) -> tuple[str, str | None, str, str | None] | None:
+        tokens = value.split()
+        if tokens.count("=>") != 1:
+            return None
+        arrow = tokens.index("=>")
+        left = tokens[:arrow]
+        right = tokens[arrow + 1 :]
+        if len(left) not in {1, 2} or len(right) not in {1, 2}:
+            return None
+        old_package = unquote(left[0])
+        old_version = unquote(left[1]) if len(left) == 2 else None
+        new_package = unquote(right[0])
+        new_version = unquote(right[1]) if len(right) == 2 else None
+        if not old_package or not new_package:
+            return None
+        local_replacement = (
+            new_package in {".", ".."}
+            or new_package.startswith(("./", "../", "/"))
+            or re.match(r"^[A-Za-z]:[\\/]", new_package) is not None
+        )
+        if (local_replacement and new_version is not None) or (
+            not local_replacement and new_version is None
+        ):
+            return None
+        return old_package, old_version, new_package, new_version
+
     for raw in lines:
         code, _, comment = raw.partition("//")
         clean = code.strip()
         if not clean:
             continue
-        if in_require and clean.startswith(")"):
-            in_require = False
+        if in_block is not None and clean.startswith(")"):
+            in_block = None
             continue
-        if clean.startswith("require"):
+        directive: str | None = None
+        if clean == "require (" or clean.startswith("require ("):
+            in_block = "require"
+            continue
+        if clean == "replace (" or clean.startswith("replace ("):
+            in_block = "replace"
+            continue
+        if clean.startswith("require "):
+            directive = "require"
             clean = clean[len("require") :].strip()
-            if clean.startswith("("):
-                in_require = True
-                continue
-        elif not in_require:
+        elif clean.startswith("replace "):
+            directive = "replace"
+            clean = clean[len("replace") :].strip()
+        elif in_block is not None:
+            directive = in_block
+        else:
             continue
+
+        if directive == "replace":
+            replacement = parse_replacement(clean)
+            if replacement is None:
+                malformed_replacement = True
+                record_omission("malformed-go-replacement")
+            else:
+                replacements.append(replacement)
+            continue
+
         tokens = clean.split()
-        if len(tokens) < 2:
-            malformed += 1
+        if len(tokens) != 2:
+            record_omission("malformed-go-requirement")
             continue
-        package, version = tokens[0].strip('"'), tokens[1].strip('"')
+        package, version = unquote(tokens[0]), unquote(tokens[1])
+        if not package or not version:
+            record_omission("malformed-go-requirement")
+            continue
         indirect = "indirect" in comment.split()
+        requirements.append((package, version, indirect))
+
+    source_path = _source_path(root, path)
+    scope = _scope(root, path)
+    replacement_matches: list[bool] = [False] * len(replacements)
+    for package, version, indirect in requirements:
+        applicable: list[
+            tuple[int, tuple[str, str | None, str, str | None]]
+        ] = []
+        for index, replacement in enumerate(replacements):
+            old_package, old_version, _, _ = replacement
+            if old_package == package and (
+                old_version is None or old_version == version
+            ):
+                replacement_matches[index] = True
+                applicable.append((index, replacement))
+
+        reach = "transitive" if indirect else "direct"
+        if malformed_replacement or len(applicable) > 1:
+            records.append(
+                _record(
+                    ecosystem="go",
+                    package=package,
+                    version=version,
+                    version_kind="exact",
+                    selection_confidence="declared",
+                    source_semantics="go-mod-requirement",
+                    source_path=source_path,
+                    scope=scope,
+                    declaration="required",
+                    reach=reach,
+                )
+            )
+            if len(applicable) > 1:
+                for _ in applicable:
+                    record_omission("conflicting-go-replacement")
+            elif applicable:
+                record_omission(
+                    "indeterminate-go-replacement-selection"
+                )
+            continue
+
+        if not applicable:
+            records.append(
+                _record(
+                    ecosystem="go",
+                    package=package,
+                    version=version,
+                    version_kind="exact",
+                    selection_confidence="selected",
+                    source_semantics="go-mod-selection",
+                    source_path=source_path,
+                    scope=scope,
+                    declaration="required",
+                    reach=reach,
+                )
+            )
+            continue
+
+        _, (_, _, replacement_package, replacement_version) = applicable[0]
         records.append(
             _record(
                 ecosystem="go",
                 package=package,
                 version=version,
                 version_kind="exact",
-                selection_confidence="selected",
-                source_semantics="go-mod-selection",
-                source_path=_source_path(root, path),
-                scope=_scope(root, path),
+                selection_confidence="declared",
+                source_semantics="go-mod-requirement",
+                source_path=source_path,
+                scope=scope,
                 declaration="required",
-                reach="transitive" if indirect else "direct",
+                reach=reach,
             )
         )
+        if replacement_version is None:
+            record_omission("go-local-replacement-version-unknown")
+            continue
+        records.append(
+            _record(
+                ecosystem="go",
+                package=replacement_package,
+                version=replacement_version,
+                version_kind="exact",
+                selection_confidence="selected",
+                source_semantics="go-mod-replacement-selection",
+                source_path=source_path,
+                scope=scope,
+                declaration="required",
+                reach=reach,
+                declared_as=(
+                    package if replacement_package != package else None
+                ),
+            )
+        )
+
+    for matched in replacement_matches:
+        if not matched:
+            record_omission("unmatched-go-replacement")
     return malformed
 
 
@@ -1230,13 +1461,18 @@ def build_dependency_version_details(
         ecosystem="rust",
     )
 
-    def evaluate(path: Path) -> int:
+    def evaluate(path: Path, omission_reasons: list[str]) -> int:
         if path.name == "pyproject.toml":
             return _python_pyproject_records(root, path, records)
         if path.name == "Pipfile":
             return _pipfile_manifest_records(root, path, records)
         if path.name.startswith("requirements") and path.name.endswith(".txt"):
-            return _requirements_records(root, path, records)
+            return _requirements_records(
+                root,
+                path,
+                records,
+                omission_reasons=omission_reasons,
+            )
         if path.name in {"poetry.lock", "uv.lock"}:
             return _selected_python_toml_records(
                 root,
@@ -1253,7 +1489,12 @@ def build_dependency_version_details(
         if path.name == "pnpm-lock.yaml":
             return _pnpm_records(root, path, records)
         if path.name == "go.mod":
-            return _go_mod_records(root, path, records)
+            return _go_mod_records(
+                root,
+                path,
+                records,
+                omission_reasons=omission_reasons,
+            )
         if path.name == "go.sum":
             return _go_sum_records(root, path, records)
         if path.name == "Cargo.toml":
@@ -1269,16 +1510,25 @@ def build_dependency_version_details(
 
     for path in (*declarations, *resolutions):
         before = len(records)
-        omitted = evaluate(path)
+        omission_reasons: list[str] = []
+        omitted = evaluate(path, omission_reasons)
         malformed += omitted
         if omitted:
-            diagnostics.append(
-                {
-                    "source_path": _source_path(root, path),
-                    "state": "partial" if len(records) > before else "malformed",
-                    "reason": "unsupported-or-malformed-records",
-                }
-            )
+            reasons = set(omission_reasons)
+            if len(omission_reasons) < omitted:
+                reasons.add("unsupported-or-malformed-records")
+            for reason in reasons:
+                diagnostics.append(
+                    {
+                        "source_path": _source_path(root, path),
+                        "state": (
+                            "partial"
+                            if len(records) > before
+                            else "malformed"
+                        ),
+                        "reason": reason,
+                    }
+                )
 
     normalized = _deduplicate(records)
     limitations = [

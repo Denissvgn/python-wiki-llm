@@ -15,7 +15,7 @@ Use this reference after the main skill confirms that a full user-docs pass is n
 | `llm-wiki site check --built-site-dir ... --link-mode file` | Direct file handoff link behavior | Use after a file-friendly export/build path. |
 | `index.md` and `.llm-wiki-surface.json` | Canonical page inventory and site profile scope | Start here before reading individual pages. |
 | Generated `flows/`, `modules/`, `entities/`, and `dependencies/` pages | Product/workflow facts that guides may cite | Link to the page that supports each claim. |
-| Generated `infrastructure/` pages | Bootstrap-snapshot orientation only | Recent sync does not prove infrastructure freshness. Confirm operational claims from current raw source or a fresh dedicated extraction, and do not copy secrets, private endpoints, or sensitive host details into guide prose. |
+| Generated `infrastructure/` pages | Bounded source-bound observations with semantic `## Notes` | Bootstrap creates the initial observation and sync regenerates it incrementally. Treat it as current structural evidence only when its recorded basis matches a live freshness evaluation; recent sync alone is not assurance. Confirm operational claims from current raw source or a fresh dedicated extraction, and never copy secrets, private endpoints, or sensitive host details into guide prose. |
 | Source files | Last-resort confirmation for facts missing from wiki evidence | If source evidence is needed, prefer updating the wiki/source docs that should have carried it. |
 
 For structured `external_agent_docs` results, `claims_evidence_pages` remains
@@ -25,8 +25,10 @@ the current exact UID/locator, optional section locator, structural evidence,
 freshness, lifecycle/section review, and explicit query/analyzer bounds. Use
 `safe_evidence_link` for a publishable canonical page or fragment;
 `internal_evidence_ref`, when needed, stays under
-`.llm-wiki-docs/evidence/`. The supervisor recomputes every native field and
-rejects a stale or fabricated record.
+`.llm-wiki-docs/evidence/`. The supervisor preflights structure before refresh,
+then recomputes every native field live/read-only only for a verified-current
+source-bound run; other runs reconcile against the snapshot with freshness
+unevaluated. It rejects stale or fabricated records.
 
 ## Page Contract
 
@@ -61,17 +63,25 @@ Use the project-specific paths when they differ from these examples.
 | Sync current wiki | `llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs 1` |
 | Strict lint | `llm-wiki lint --strict --src-dir . --wiki-dir docs/llm_wiki` |
 | Whole-wiki gate | `llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki --format json` |
-| User export | `llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user --format mkdocs --profile user --site-name <project> --front-matter --output-format json` |
-| User check | `llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user --profile user --site-name <project> --output-format json` |
-| Direct-file re-export | `llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user --format mkdocs --profile user --site-name <project> --file-friendly --front-matter --output-format json` |
-| Real MkDocs rebuild | `mkdocs build --strict -f site-user/mkdocs.yml` |
-| Hosted built-link check | `llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user --built-site-dir _site --link-mode http --profile user --site-name <project> --output-format json` |
-| File handoff built-link check | `llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user --built-site-dir _site --link-mode file --profile user --site-name <project> --output-format json` |
+| Hosted user export | `llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user-http --format mkdocs --profile user --site-name <project> --front-matter --output-format json` |
+| Hosted user check | `llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user-http --format mkdocs --link-mode http --profile user --site-name <project> --output-format json` |
+| Hosted built-link check | `llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user-http --format mkdocs --built-site-dir _site-user-http --link-mode http --profile user --site-name <project> --output-format json` |
+| Direct-file export | `llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user-file --format mkdocs --profile user --site-name <project> --file-friendly --front-matter --output-format json` |
+| Direct-file check | `llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user-file --format mkdocs --link-mode file --profile user --site-name <project> --output-format json` |
+| File handoff built-link check | `llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user-file --format mkdocs --built-site-dir _site-user-file --link-mode file --profile user --site-name <project> --output-format json` |
 
-For a direct-file handoff, the complete order is file-friendly re-export,
-matching user-profile check, real MkDocs rebuild, then file-mode built-link
-check. Reusing `_site` from a previous HTTP-mode build is invalid evidence. For
-hosted docs, prefer `--link-mode http` after the real builder succeeds.
+For a direct-file handoff, the complete order is file-friendly export to
+`site-user-file`, matching user-profile check, real MkDocs build into
+`_site-user-file`, then file-mode built-link check. Hosted output uses
+`site-user-http` and `_site-user-http`. Changing policy in a receipted mirror
+fails before writes, and reusing either mode's mirror/build for the other is
+invalid evidence.
+
+Each export writes `.llm-wiki-site-selection.json` and the non-sensitive
+`llm-wiki-site-selection.json` marker. Mirror checks require the complete
+matching receipt. MkDocs carries the marker to the built root; built checks
+reject a missing, stale, or mismatched marker. Legacy output therefore needs a
+fresh export and build.
 
 Freeze one native publication row and apply its suffix unchanged to the mirror
 export, mirror check, and built-site check:

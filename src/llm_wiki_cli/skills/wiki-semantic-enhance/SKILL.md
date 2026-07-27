@@ -94,8 +94,14 @@ decisions, editable surfaces, and failure rules.
    relevant query/analyzer bounds, a safe page link, and only an internal
    detailed-evidence reference. Preserve missing, ambiguous, unavailable, and
    truncated states. Never copy repository-sensitive graph samples into the
-   public claim. The supervisor resolves every coordinate again against one
-   committed native query service and rejects mismatches.
+   public claim. The supervisor structurally preflights the result before
+   refresh, so malformed citations, captures, refs, queries, or limits leave
+   the attempt reusable. It then refreshes and reconciles as one transaction:
+   verified-current runs with their bound source available use live read-only
+   evaluation; unverified/source-unavailable runs use the committed
+   snapshot-only view with unevaluated freshness. A mismatch rolls back
+   supervisor-owned refresh artifacts while leaving the authorized semantic
+   edits for diagnosis.
 
 7. **Request deterministic verification.** Run only checks the packet assigns;
    otherwise return requested checks to the supervisor. Readiness passes only

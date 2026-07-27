@@ -112,6 +112,13 @@ packet/result fields, stage gates, and failure matrix.
    re-anchors generated ownership before validation or another dispatch. It
    reports any expired human section reviews and stale machine-verification
    receipts with their existing reasons; it does not fabricate replacements.
+   Result structure is preflighted before that refresh. Refresh plus native
+   claim/runtime-capture reconciliation is transactional: integrity or query
+   failure restores supervisor-owned native, ownership, evidence, anchor,
+   limitation, and run state without reverting the worker's authorized
+   semantic edits or writing a result. Verified-current source-bound runs use
+   live read-only reconciliation; unverified or source-unavailable runs use
+   snapshot-only reconciliation with freshness unevaluated.
 
 5. **Run the user-docs packet in order.** Enter only after semantic readiness:
    `user-docs-author` -> `onboarding-guide` when persona paths are still needed

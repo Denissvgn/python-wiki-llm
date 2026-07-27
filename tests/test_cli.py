@@ -294,6 +294,7 @@ def test_site_check_parses_built_site_dir_and_link_mode(monkeypatch):
                 "action": args.site_action,
                 "built_site_dir": args.built_site_dir,
                 "link_mode": args.link_mode,
+                "format": args.format,
             }
         ),
     )
@@ -311,6 +312,8 @@ def test_site_check_parses_built_site_dir_and_link_mode(monkeypatch):
             "_site",
             "--link-mode",
             "file",
+            "--format",
+            "mkdocs",
         ],
     )
 
@@ -320,6 +323,7 @@ def test_site_check_parses_built_site_dir_and_link_mode(monkeypatch):
         "action": "check",
         "built_site_dir": "_site",
         "link_mode": "file",
+        "format": "mkdocs",
     }
 
 

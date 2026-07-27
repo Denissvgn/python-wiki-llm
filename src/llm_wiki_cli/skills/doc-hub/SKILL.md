@@ -35,10 +35,17 @@ Aggregate several already-documented repositories into one static-site hub witho
 
    ```bash
    llm-wiki site check --wiki-root sources/code_wikis --out-dir site \
-     --profile reference --output-format json
+     --format docusaurus --link-mode http --profile reference \
+     --output-format json
    ```
 
-   Repeat the exact knowledge metadata, redaction profile, and public identity options if selected at export. Confirm `ok: true`, `0` issues, `0` warnings. An argv mismatch is not evidence for the selected hub even if the command exits successfully. The selected check reconstructs one validated projection per source and rejects stale or mismatched source-knowledge hashes in the exported metadata. This validates the generated mirror structurally without invoking mkdocs/docusaurus.
+   Repeat the exact format, knowledge metadata, redaction profile, and public
+   identity options selected at export. The check requires the complete
+   `.llm-wiki-site-selection.json` receipt and compares its ordered normalized
+   source identities, policy, and projection hashes. Confirm `ok: true`, `0`
+   issues, `0` warnings. Missing, malformed, incomplete, or mismatched receipts
+   fail; legacy hubs must be re-exported. This validates the generated mirror
+   structurally without invoking mkdocs/docusaurus.
 
 4. **Do not author a hub overview in derived output.** Do not write an overview page, even when the repositories are genuinely related. The deterministic hub index only lists sources and page counts. Hub export rewrites root `index.md`; generated MkDocs/Docusaurus navigation contains only registered source pages; `site check` does not make an arbitrary post-check `overview.md` into a supported surface. Therefore:
 

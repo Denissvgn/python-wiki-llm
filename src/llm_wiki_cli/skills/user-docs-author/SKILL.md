@@ -61,11 +61,12 @@ After evidence-backed guides exist, use `usage-examples` to capture and attach v
    ```bash
    llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs 1
    llm-wiki lint --strict --src-dir . --wiki-dir docs/llm_wiki
-   llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user \
+   llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user-http \
      --format mkdocs --profile user --site-name <project> \
      --front-matter --output-format json
-   llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user \
-     --profile user --site-name <project> --output-format json
+   llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user-http \
+     --format mkdocs --link-mode http --profile user --site-name <project> \
+     --output-format json
    ```
 
    Treat `site check --profile user` failures such as missing guide surface, placeholder primary docs, or default site naming as the authoring worklist. Do not work around failed evidence by editing exported static-site files.
@@ -80,9 +81,12 @@ After evidence-backed guides exist, use `usage-examples` to capture and attach v
    optional section locator. Preserve structural evidence, freshness,
    lifecycle/section-review state, query/analyzer bounds, a safe canonical page
    link, and only a workspace-internal detail reference when needed. The
-   supervisor recomputes these values from one current bounded native query
-   service and rejects disagreement; worker assertions do not become
-   authority. Page-only v1 results remain readable when this detail is absent.
+   supervisor structurally preflights the result before refresh and recomputes
+   these values in the run's reconciliation mode: live/read-only only for a
+   verified-current run with its bound source available, otherwise
+   snapshot-only with unevaluated freshness. Disagreement rejects the result;
+   worker assertions do not become authority. Page-only v1 results remain
+   readable when this detail is absent.
 
 4. **Final owning re-anchor, then validate the wiki.** In managed mode, after
    the last semantic Markdown edit in the current authoring/adjustment batch,
@@ -109,26 +113,29 @@ After evidence-backed guides exist, use `usage-examples` to capture and attach v
 5. **Export, build, and check the user site.**
 
    ```bash
-   llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user \
+   llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user-http \
      --format mkdocs --profile user --site-name <project> \
      --front-matter --output-format json
-   llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user \
-     --profile user --site-name <project> --output-format json
+   llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user-http \
+     --format mkdocs --link-mode http --profile user --site-name <project> \
+     --output-format json
    # If a real builder is installed:
-   mkdocs build --strict -f site-user/mkdocs.yml
-   llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user \
-     --built-site-dir _site --link-mode http \
+   mkdocs build --strict -f site-user-http/mkdocs.yml \
+     --site-dir _site-user-http
+   llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user-http \
+     --format mkdocs --built-site-dir _site-user-http --link-mode http \
      --profile user --site-name <project> --output-format json
-   # For direct-file handoff, re-export file-friendly, check, rebuild, then
-   # validate the newly built file-mode HTML:
-   llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user \
+   # For direct-file handoff, use a distinct mirror and build:
+   llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user-file \
      --format mkdocs --profile user --site-name <project> --file-friendly \
      --front-matter --output-format json
-   llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user \
-     --profile user --site-name <project> --output-format json
-   mkdocs build --strict -f site-user/mkdocs.yml
-   llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user \
-     --built-site-dir _site --link-mode file \
+   llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user-file \
+     --format mkdocs --link-mode file --profile user --site-name <project> \
+     --output-format json
+   mkdocs build --strict -f site-user-file/mkdocs.yml \
+     --site-dir _site-user-file
+   llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user-file \
+     --format mkdocs --built-site-dir _site-user-file --link-mode file \
      --profile user --site-name <project> --output-format json
    ```
 
@@ -143,6 +150,13 @@ After evidence-backed guides exist, use `usage-examples` to capture and attach v
    projection and reject a source-hash mismatch. Native redaction does not
    sanitize canonical prose or media, so their publication review remains
    separate.
+
+   Export writes a complete private publication receipt and a non-sensitive
+   marker. Every check validates the receipt; built checks also require the
+   matching marker at the built root. MkDocs carries the marker automatically.
+   Do not reuse a legacy mirror/build or change format, profile, name,
+   distribution, or knowledge policy inside a receipted output directory;
+   re-export/rebuild in a new selection-specific directory.
 
 6. **Run the adjustment loop from checker output.** Feed `lint`, `ci-check`,
    `site check`, builder output, and `doc-review` findings back into the same

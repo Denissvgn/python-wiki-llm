@@ -9,7 +9,13 @@ Bring the LLM Wiki back in sync with the code that just changed. The loop is alw
 
 ## Preconditions
 
-- The wiki directory (default `docs/llm_wiki`; substitute the project's configured `--wiki-dir` everywhere below) contains `.llm-wiki-manifest.json`. If it has neither a manifest nor `index.md`, stop — the project needs `llm-wiki bootstrap` (the wiki-bootstrap workflow), not sync.
+- The wiki directory (default `docs/llm_wiki`; substitute the project's
+  configured `--wiki-dir` everywhere below) normally contains
+  `.llm-wiki-manifest.json`. A manifestless established wiki with canonical
+  `index.md` can use sync's safe baseline seeding. An absent, empty, or exact
+  untouched init scaffold routes to `llm-wiki bootstrap`; any other partial
+  manifestless layout routes first to
+  `llm-wiki migrate --dry-run --src-dir <src> --wiki-dir <wiki>`.
 - For continued external-source wikis (source-adapter mode), pass `--allow-external-src` consistently to `sync`, `lint`, `ci-check`, and `team check` — never to one source-reading command and not the others.
 - For an `external_agent_docs` workspace, sync only the workspace wiki after a
   supervisor-approved source revision change. The source and adopted input wiki

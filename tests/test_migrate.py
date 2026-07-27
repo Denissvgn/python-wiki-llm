@@ -981,6 +981,7 @@ class TestMigrateIntegration:
         proj.mkdir()
         _write(proj / "models.py", "class User:\n    pass\n")
         wiki = _make_wiki(proj)
+        (wiki / "index.md").unlink()
         _write(
             wiki / "modules" / "models.md",
             "# models\n\n**Path:** `models.py`\n\nCustom operational notes.\n",

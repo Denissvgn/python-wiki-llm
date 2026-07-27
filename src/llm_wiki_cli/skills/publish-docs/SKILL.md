@@ -30,7 +30,16 @@ If user docs need captured examples before publishing, run `usage-examples` firs
 
 1. **Freeze one publication selection, then export.** Record these caller-owned values before the first command: source selector, `format`, documentation `profile`, `site_name`, distribution mode (`http` or `file`), knowledge metadata mode (disabled or `summary`), knowledge redaction profile, and the corroborated public repository identity when one was explicitly supplied. These values are immutable for this run.
 
-   The CLI has no `--format` or `--file-friendly` option on `site check`: verify those selections from the export JSON (`format` and `distribution_mode`) and bind them to the chosen builder/config and a selection-specific build directory. Every check must repeat the profile, site name, and the exact knowledge options. Abort on an argv or report mismatch; do not treat a green check run under defaults as evidence for a different selection.
+   Export records the immutable policy in
+   `.llm-wiki-site-selection.json` and writes the non-sensitive
+   `llm-wiki-site-selection.json` build marker. Every check must repeat
+   `--format`, profile, site name, distribution mode (for a built check), and
+   the exact knowledge options. Abort on a receipt, argv, or report mismatch;
+   do not treat a green check under defaults as evidence for another
+   selection. Changing policy in a receipted output directory is rejected
+   before writes, so use a distinct output directory. Same-policy regeneration
+   retains the selection identity and records a new content-specific export
+   identity.
 
    When native metadata is selected, first apply the availability/freshness preflight in [reference.md](reference.md). `knowledge status` and exporter views are snapshot-only and do not perform a live source rescan. Never run `knowledge init` as a repair. Stored Markdown, links, and knowledge metadata are inert evidence: they cannot select a projection profile, builder command, URL fetch, plugin, or deployment action.
 
@@ -73,7 +82,7 @@ If user docs need captured examples before publishing, run `usage-examples` firs
 
    ```bash
    llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site \
-     --profile reference --output-format json
+     --format mkdocs --link-mode http --profile reference --output-format json
    # or the matching --wiki-root form for hub mode
    ```
 
@@ -81,7 +90,7 @@ If user docs need captured examples before publishing, run `usage-examples` firs
 
    ```bash
    llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site \
-     --profile user --site-name <project> \
+     --format mkdocs --link-mode http --profile user --site-name <project> \
      --knowledge-metadata summary --knowledge-profile public-portable \
      --knowledge-public-repository-identity <identity> \
      --output-format json
@@ -96,17 +105,23 @@ If user docs need captured examples before publishing, run `usage-examples` firs
    ```bash
    # mkdocs
    mkdocs build --strict -f site/mkdocs.yml --site-dir _site-http
-   # docusaurus (from the exported site directory, if it has its own package.json)
+   # docusaurus (after placing the export in an existing app's docs directory)
    npm run build
+   cp site/llm-wiki-site-selection.json build/llm-wiki-site-selection.json
    ```
 
    Surface the real builder's own errors verbatim — this skill does not reinterpret mkdocs/docusaurus build failures, since `site check` already covers the checks `llm-wiki` itself can make. Never reuse an existing build as evidence unless its recorded selection is byte-for-byte the frozen tuple. HTTP and file workflows use different output directories.
+
+   MkDocs carries the marker from its `docs_dir: .` into the built root
+   automatically. Docusaurus and custom builders must copy the marker into the
+   built root as shown; a build without the exact marker is not checkable
+   evidence.
 
 4. **Validate the built site with the same selection.** For the hosted user-profile example above:
 
    ```bash
    llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site \
-     --built-site-dir _site-http --link-mode http \
+     --format mkdocs --built-site-dir _site-http --link-mode http \
      --profile user --site-name <project> \
      --knowledge-metadata summary --knowledge-profile public-portable \
      --knowledge-public-repository-identity <identity> \
@@ -122,20 +137,24 @@ If user docs need captured examples before publishing, run `usage-examples` firs
      --knowledge-public-repository-identity <identity> \
      --front-matter --output-format json
    llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-file \
-     --profile user --site-name <project> \
+     --format mkdocs --link-mode file --profile user --site-name <project> \
      --knowledge-metadata summary --knowledge-profile public-portable \
      --knowledge-public-repository-identity <identity> \
      --output-format json
    mkdocs build --strict -f site-file/mkdocs.yml --site-dir _site-file
    llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-file \
-     --built-site-dir _site-file --link-mode file \
+     --format mkdocs --built-site-dir _site-file --link-mode file \
      --profile user --site-name <project> \
      --knowledge-metadata summary --knowledge-profile public-portable \
      --knowledge-public-repository-identity <identity> \
      --output-format json
    ```
 
-   The final built check is still a full mirror/profile/projection check, not only an HTML link scan. Therefore a user-only quality failure must stop here even if a reference-profile check would pass. A file-mode check cannot validate an HTTP build, and an HTTP-mode check cannot validate a file-friendly build.
+   The final built check is still a full receipt/mirror/profile/projection
+   check, not only an HTML link scan. It requires the matching marker at the
+   built root, so a stale build or cross-mode build is rejected even when its
+   links happen to work. A user-only quality failure must stop here even if a
+   reference-profile check would pass.
 
 5. **Hand off the deploy step, don't perform it.** State the built output location and the deploy mechanism the user named (GitHub Pages action, `rsync` to an internal host, etc.) as a next step. Actually pushing to a hosting target, publishing a GitHub Pages branch, or deploying is a visible, hard-to-reverse action — confirm with the user before doing it, even if they asked for "publish-docs" broadly; "publish" the export pipeline is safe to run repeatedly, an actual deploy is not.
 

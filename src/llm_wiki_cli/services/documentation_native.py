@@ -13,7 +13,7 @@ import hashlib
 import json
 import stat
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
 from typing import Any, Mapping
 
@@ -39,6 +39,7 @@ from .knowledge_artifacts import (
     validate_knowledge_artifacts,
     validate_surface_index_bytes,
 )
+from .knowledge_consumption import KnowledgeReadView
 from .knowledge_envelope import (
     ConsumedInput,
     ConsumedInputKind,
@@ -103,6 +104,11 @@ class DocumentationNativeRefresh:
     markdown_after: Mapping[str, str]
     artifact_hashes_before: Mapping[str, str]
     artifact_hashes_after: Mapping[str, str]
+    knowledge_view: KnowledgeReadView | None = field(
+        default=None,
+        repr=False,
+        compare=False,
+    )
 
     @property
     def changed(self) -> bool:
@@ -332,12 +338,26 @@ def refresh_documentation_native_projection(
         raise DocumentationNativeError(
             "Native projection refresh persisted an unexpected artifact set."
         )
+    from ..commands.context_cmd import _build_context_knowledge_view
+
+    knowledge_view = _build_context_knowledge_view(
+        wiki,
+        surface,
+        dict(runtime.inventory),
+        runtime.inventory_result,
+    )
+    if not knowledge_view.ready or not knowledge_view.freshness_evaluated:
+        raise DocumentationNativeError(
+            "Refreshed native projection did not produce a live evaluated "
+            "knowledge view."
+        )
     return DocumentationNativeRefresh(
         commit=commit,
         markdown_before=markdown_before,
         markdown_after=markdown_after,
         artifact_hashes_before=artifact_hashes_before,
         artifact_hashes_after=artifact_hashes_after,
+        knowledge_view=knowledge_view,
     )
 
 

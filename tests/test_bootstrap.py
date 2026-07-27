@@ -1613,7 +1613,7 @@ class TestBootstrapOverwrite:
         output = capsys.readouterr().out
         assert "Bootstrap is first-use only" in output
         assert "llm-wiki sync --jobs 1" in output
-        assert "llm-wiki migrate --dry-run" in output
+        assert "llm-wiki migrate --dry-run" not in output
         assert "No files were changed" in output
 
     def test_overwrite_compatibility_flag_is_rejected_before_mutation(

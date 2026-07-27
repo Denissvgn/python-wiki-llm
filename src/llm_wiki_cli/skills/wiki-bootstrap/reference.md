@@ -15,11 +15,11 @@ Edited before any rank calculation because they define the reader's first experi
 3. `api-contracts.md`: review production-operation filtering, declared wire fields, unknowns, and static/OpenAPI diagnostics; add `## Notes` only for source-backed contract caveats.
 4. `dependencies.md`: fill `## Notes` with intentional cycles, dynamic imports, package-boundary caveats, and dependency-graph interpretation.
 5. `load-order.md`: fill `## Notes` with startup-order caveats and cycle rationale when generated.
-6. Infrastructure/runtime pages are bootstrap snapshots for orientation, not
-   agent-owned semantic surfaces. Do not add arbitrary `## Notes` or edit their
-   generated prose. For assurance conclusions, inspect current raw source or
-   run a fresh dedicated extraction and write redacted findings outside the
-   canonical wiki.
+6. Infrastructure/runtime pages begin as bootstrap observations and ordinary
+   sync regenerates them incrementally. Their `## Notes` section is the sole
+   agent-owned semantic surface; generated inventories and prose remain
+   protected. For assurance conclusions, require matching live freshness,
+   inspect current raw source, or run a fresh dedicated extraction.
 
 ### P1: module and entity pages
 

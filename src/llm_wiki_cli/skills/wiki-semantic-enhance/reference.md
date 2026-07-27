@@ -65,6 +65,7 @@ of recomputing a second ranking.
 | Entity/module `## Description` prose | Yes, when packet-owned and evidence-backed | Generated table rows/shape and ownership markers |
 | Flow `## Behavior` | Yes | Call/data-flow diagrams and generated metadata |
 | API/dependency/load-order `## Notes` | Yes | Generated inventories, graphs, diagnostics |
+| Infrastructure `## Notes` | Yes | Generated source observations, inventories, and diagnostics |
 | `.llm-wiki-manifest.json`, `.llm-wiki-surface.json`, `.llm-wiki-knowledge.json`, generated front matter/Mermaid blocks | No | Entire artifact/block |
 
 If ownership is ambiguous, do not edit. Report the path as a generator or
@@ -114,9 +115,21 @@ existing reasons, and do not manufacture replacements.
 `claims_evidence_pages` is the versioned page-only compatibility record. Add
 `claim_evidence` only when a claim depends on native identity, section
 ownership/review, lifecycle, or typed-graph scope. The worker supplies query
-intent and the observed result; the supervisor recomputes every field from one
-operation-scoped service over the committed post-refresh view. Any changed UID,
-locator, page, section, native state, or bound rejects the result.
+intent and the observed result. Before refresh, the supervisor structurally
+preflights citations, internal references, capture paths/digests, query shape,
+and limits. A malformed result is rejected without consuming the attempt or
+refreshing native artifacts. It then refreshes and reconciles a structurally
+valid result as one supervisor transaction; any changed UID, locator, page,
+section, native state, runtime-capture binding, or bound rejects the result and
+rolls back supervisor-owned refresh state.
+
+The reconciliation service follows the immutable run basis. A
+`verified_current` run with its bound source available uses live, read-only
+freshness evaluation under the bound helper/plugin/cache policy. An unverified
+run, or one whose bound source is unavailable, uses the committed snapshot
+only and reports freshness as unevaluated. Neither mode upgrades governance,
+review, verification, or runtime evidence, and snapshot-only evidence must
+never be described as live-current.
 
 ```json
 {

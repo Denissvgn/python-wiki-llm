@@ -181,17 +181,47 @@ def test_public_overwrite_tombstone_rejects_before_extraction_or_writes(
 
 
 @pytest.mark.parametrize(
-    ("relative_path", "content"),
+    ("relative_path", "content", "expected_route", "excluded_route"),
     (
-        ("index.md", "# Existing wiki\n\nCustom overview.\n"),
-        ("modules/partial.md", "# Partial module\n"),
-        (".llm-wiki-manifest.json", "{}\n"),
-        (".llm-wiki-governance.json", "{}\n"),
-        (".llm-wiki-verification.json", "{}\n"),
+        (
+            "index.md",
+            "# Existing wiki\n\nCustom overview.\n",
+            "llm-wiki sync --jobs 1",
+            "llm-wiki migrate --dry-run",
+        ),
+        (
+            "modules/partial.md",
+            "# Partial module\n",
+            "llm-wiki migrate --dry-run",
+            "llm-wiki sync --jobs 1",
+        ),
+        (
+            ".llm-wiki-manifest.json",
+            "{}\n",
+            "llm-wiki sync --jobs 1",
+            "llm-wiki migrate --dry-run",
+        ),
+        (
+            ".llm-wiki-governance.json",
+            "{}\n",
+            "llm-wiki migrate --dry-run",
+            "llm-wiki sync --jobs 1",
+        ),
+        (
+            ".llm-wiki-verification.json",
+            "{}\n",
+            "llm-wiki migrate --dry-run",
+            "llm-wiki sync --jobs 1",
+        ),
     ),
 )
 def test_typed_service_rejects_existing_wiki_content_before_extraction(
-    tmp_path, monkeypatch, relative_path, content
+    tmp_path,
+    monkeypatch,
+    relative_path,
+    content,
+    expected_route,
+    excluded_route,
 ):
     source = tmp_path / "source"
     source.mkdir()
@@ -212,8 +242,8 @@ def test_typed_service_rejects_existing_wiki_content_before_extraction(
 
     message = str(exc_info.value)
     assert "Bootstrap is first-use only" in message
-    assert "llm-wiki sync --jobs 1" in message
-    assert "llm-wiki migrate --dry-run" in message
+    assert expected_route in message
+    assert excluded_route not in message
     assert "No files were changed" in message
     assert _tree(wiki) == before
 

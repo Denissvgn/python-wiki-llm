@@ -66,7 +66,12 @@ absolute paths.
 
 ## Command Matrix
 
-Built-site validation uses `site check --built-site-dir` in both HTTP and file link modes when a real builder is available. Any media change invalidates the old `_site`; export/check and run the real builder again before inspecting built media.
+Built-site validation uses `site check --built-site-dir` in both HTTP and file
+link modes when a real builder is available. Hosted and direct-file selections
+use distinct mirror/build directories. Any media change invalidates the old
+build; export/check and run the real builder again before inspecting built
+media. Mirror checks require the complete publication receipt; built checks
+also require the matching marker at the built root.
 When a managed capture pass changes canonical Markdown or media references,
 run `llm-wiki sync --jobs 1 ...` before the strict lint shown below. Repeat
 that owning sync after any later Markdown adjustment. In
@@ -77,22 +82,26 @@ capture worker only returns authorized changes and requested checks.
 llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki lint --strict --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki --format json
-llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user \
+llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user-http \
   --format mkdocs --profile user --site-name <project> --output-format json
-llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user \
-  --profile user --site-name <project> --output-format json
-mkdocs build --strict -f site-user/mkdocs.yml
-llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user \
-  --built-site-dir _site --link-mode http --profile user \
+llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user-http \
+  --format mkdocs --link-mode http --profile user --site-name <project> \
+  --output-format json
+mkdocs build --strict -f site-user-http/mkdocs.yml --site-dir _site-user-http
+llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user-http \
+  --format mkdocs --built-site-dir _site-user-http --link-mode http \
+  --profile user \
   --site-name <project> --output-format json
-llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user \
+llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user-file \
   --format mkdocs --profile user --site-name <project> --file-friendly \
   --output-format json
-llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user \
-  --profile user --site-name <project> --output-format json
-mkdocs build --strict -f site-user/mkdocs.yml
-llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user \
-  --built-site-dir _site --link-mode file --profile user \
+llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user-file \
+  --format mkdocs --link-mode file --profile user --site-name <project> \
+  --output-format json
+mkdocs build --strict -f site-user-file/mkdocs.yml --site-dir _site-user-file
+llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user-file \
+  --format mkdocs --built-site-dir _site-user-file --link-mode file \
+  --profile user \
   --site-name <project> --output-format json
 ```
 

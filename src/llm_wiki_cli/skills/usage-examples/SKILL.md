@@ -53,24 +53,30 @@ Add worked examples to user-facing docs without weakening the deterministic wiki
    llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
    llm-wiki lint --strict --src-dir . --wiki-dir docs/llm_wiki
    llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki --format json
-   llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user \
+   llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user-http \
      --format mkdocs --profile user --site-name <project> --output-format json
-   llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user \
-     --profile user --site-name <project> --output-format json
-   # Media changed after any prior build: rebuild before checking _site.
-   mkdocs build --strict -f site-user/mkdocs.yml
-   llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user \
-     --built-site-dir _site --link-mode http --profile user \
+   llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user-http \
+     --format mkdocs --link-mode http --profile user --site-name <project> \
+     --output-format json
+   # Media changed after any prior build: rebuild the hosted target.
+   mkdocs build --strict -f site-user-http/mkdocs.yml \
+     --site-dir _site-user-http
+   llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user-http \
+     --format mkdocs --built-site-dir _site-user-http --link-mode http \
+     --profile user \
      --site-name <project> --output-format json
-   # For a direct-file handoff, re-export file-friendly and rebuild again.
-   llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user \
+   # A direct-file handoff uses a distinct receipted mirror and build.
+   llm-wiki site export --wiki-dir docs/llm_wiki --out-dir site-user-file \
      --format mkdocs --profile user --site-name <project> --file-friendly \
      --output-format json
-   llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user \
-     --profile user --site-name <project> --output-format json
-   mkdocs build --strict -f site-user/mkdocs.yml
-   llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user \
-     --built-site-dir _site --link-mode file --profile user \
+   llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user-file \
+     --format mkdocs --link-mode file --profile user --site-name <project> \
+     --output-format json
+   mkdocs build --strict -f site-user-file/mkdocs.yml \
+     --site-dir _site-user-file
+   llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-user-file \
+     --format mkdocs --built-site-dir _site-user-file --link-mode file \
+     --profile user \
      --site-name <project> --output-format json
    ```
 
@@ -83,6 +89,11 @@ Add worked examples to user-facing docs without weakening the deterministic wiki
    equivalent `--knowledge-mode`; `docs export` uses it for both export and
    check and rejects a source-knowledge-hash mismatch. Projection redaction
    does not sanitize the captured media or canonical prose.
+
+   The mirror receipt fixes format/profile/name/distribution/knowledge policy.
+   Every check validates it; a built check additionally requires the matching
+   public marker that MkDocs carries into its built root. Re-export legacy
+   output, and never overwrite a hosted receipt with file-friendly policy.
 
    The owning sync preserves supported guide/example prose while re-anchoring
    canonical Markdown, surface, knowledge, and manifest commitments. A

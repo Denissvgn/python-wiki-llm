@@ -17,8 +17,10 @@ from tests.skill_contract_harness import (
     SkillContractError,
     assert_cli_selections_equal,
     assert_markers_in_order,
+    extract_cli_examples,
     extract_context_request_examples,
     extract_fenced_cli_examples,
+    extract_inline_cli_examples,
     extract_mcp_tool_examples,
     extract_query_graph_examples,
     output_value,
@@ -214,11 +216,149 @@ def test_selection_harness_accepts_valid_and_identifies_invalid_fixture():
         )
 
 
-def test_all_complete_fenced_cli_examples_parse_with_real_parser():
-    examples = extract_fenced_cli_examples(skills.BUNDLED_SKILLS_ROOT)
+def test_inline_cli_harness_discovers_only_complete_bullets_and_command_tables(
+    tmp_path,
+):
+    skill = tmp_path / "contract-skill"
+    skill.mkdir()
+    path = skill / "SKILL.md"
+    path.write_text(
+        "\n".join(
+            [
+                "# Contract",
+                "",
+                "- `llm-wiki lint --strict --src-dir . --wiki-dir docs/llm_wiki`",
+                "- Use `llm-wiki sync --src-dir .` after editing.",
+                "- `llm-wiki ci-check ...`",
+                "",
+                "| Stage | Command |",
+                "| --- | --- |",
+                "| Valid | `llm-wiki context --budget 8000 --focus all --read-only` |",
+                "| External | `mkdocs build --strict` |",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    examples = extract_inline_cli_examples(tmp_path)
+
+    assert [(example.location.line, example.command) for example in examples] == [
+        (
+            3,
+            "llm-wiki lint --strict --src-dir . --wiki-dir docs/llm_wiki",
+        ),
+        (
+            9,
+            "llm-wiki context --budget 8000 --focus all --read-only",
+        ),
+    ]
+    for example in examples:
+        parse_cli_example(example)
+
+
+def test_inline_cli_harness_reports_invalid_table_example_location(tmp_path):
+    skill = tmp_path / "invalid-inline"
+    skill.mkdir()
+    path = skill / "reference.md"
+    path.write_text(
+        "| Stage | Command |\n"
+        "| --- | --- |\n"
+        "| Broken | `llm-wiki extract --cache-dir cache` |\n",
+        encoding="utf-8",
+    )
+    example = extract_inline_cli_examples(tmp_path)[0]
+
+    with pytest.raises(
+        SkillContractError,
+        match=r"invalid-inline .*reference\.md:3.*unrecognized arguments",
+    ):
+        parse_cli_example(example)
+
+
+def test_inline_cli_harness_reports_invalid_bullet_example_location(tmp_path):
+    skill = tmp_path / "invalid-bullet"
+    skill.mkdir()
+    path = skill / "SKILL.md"
+    path.write_text(
+        "# Invalid bullet\n\n"
+        "- `llm-wiki extract --cache-dir cache`\n",
+        encoding="utf-8",
+    )
+    example = extract_inline_cli_examples(tmp_path)[0]
+
+    with pytest.raises(
+        SkillContractError,
+        match=r"invalid-bullet .*SKILL\.md:3.*unrecognized arguments",
+    ):
+        parse_cli_example(example)
+
+
+def test_fenced_cli_harness_reports_invalid_example_location(tmp_path):
+    skill = tmp_path / "invalid-fence"
+    skill.mkdir()
+    path = skill / "reference.md"
+    path.write_text(
+        "# Invalid fence\n\n"
+        "```bash\n"
+        "llm-wiki extract --cache-dir cache\n"
+        "```\n",
+        encoding="utf-8",
+    )
+    example = extract_fenced_cli_examples(tmp_path)[0]
+
+    with pytest.raises(
+        SkillContractError,
+        match=r"invalid-fence .*reference\.md:4.*unrecognized arguments",
+    ):
+        parse_cli_example(example)
+
+
+def test_fenced_cli_harness_skips_explicit_command_fragments(tmp_path):
+    skill = tmp_path / "fenced-fragments"
+    skill.mkdir()
+    path = skill / "SKILL.md"
+    path.write_text(
+        "```bash\n"
+        "llm-wiki lint --strict --src-dir . --wiki-dir docs/llm_wiki\n"
+        "llm-wiki sync ...\n"
+        "llm-wiki extract …\n"
+        "llm-wiki extract --src-dir https://example.invalid/.../source\n"
+        "```\n",
+        encoding="utf-8",
+    )
+
+    examples = extract_fenced_cli_examples(tmp_path)
+
+    assert [example.command for example in examples] == [
+        "llm-wiki lint --strict --src-dir . --wiki-dir docs/llm_wiki",
+        "llm-wiki extract --src-dir https://example.invalid/.../source",
+    ]
+
+
+def test_all_complete_documented_cli_examples_parse_with_real_parser():
+    examples = extract_cli_examples(skills.BUNDLED_SKILLS_ROOT)
     assert examples
     for example in examples:
         parse_cli_example(example)
+
+
+def test_inline_command_inventory_covers_known_skill_matrices():
+    examples = extract_inline_cli_examples(skills.BUNDLED_SKILLS_ROOT)
+    commands_by_skill: dict[str, set[str]] = {}
+    for example in examples:
+        commands_by_skill.setdefault(example.location.skill_id, set()).add(
+            example.command
+        )
+
+    assert any(
+        command.startswith("llm-wiki site export ")
+        for command in commands_by_skill["user-docs-author"]
+    )
+    assert {
+        "llm-wiki lint --strict --profile --src-dir . --wiki-dir docs/llm_wiki",
+        "llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki --format json",
+    } <= commands_by_skill["dep-audit"]
 
 
 def test_wiki_reference_native_command_examples_cover_public_actions_and_modes():

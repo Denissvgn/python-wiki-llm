@@ -98,6 +98,13 @@ from ..services.verification_contracts import (
 from ..services.team import build_team_issues
 from ..services.wiki_surface import PageKind, is_safe_page_id, iter_page_kinds
 from ..services.wiki_surface_index import SURFACE_INDEX_FILENAME
+from ..services.wiki_lifecycle import (
+    WikiLifecycleState,
+    bootstrap_guidance,
+    classify_wiki_lifecycle,
+    migration_guidance,
+    sync_guidance,
+)
 from .bootstrap_cmd import (
     build_entity_occurrence_page_map,
     build_module_page_map,
@@ -560,10 +567,17 @@ def _check_sync_manifest(
     try:
         manifest = SyncManifest.load(wiki_dir)
     except FileNotFoundError:
+        state = classify_wiki_lifecycle(wiki_dir)
+        if state is WikiLifecycleState.FIRST_USE:
+            guidance = bootstrap_guidance(src_dir=src_dir, wiki_dir=wiki_dir)
+        elif state is WikiLifecycleState.SYNC_SEEDABLE:
+            guidance = sync_guidance(src_dir=src_dir, wiki_dir=wiki_dir)
+        else:
+            guidance = migration_guidance(src_dir=src_dir, wiki_dir=wiki_dir)
         _add(
             report,
             "sync_manifest",
-            f"Missing sync manifest: {MANIFEST_FILENAME}. Run `llm-wiki bootstrap` or `llm-wiki sync`.",
+            f"Missing sync manifest: {MANIFEST_FILENAME}. {guidance}",
             path=MANIFEST_FILENAME,
         )
         return

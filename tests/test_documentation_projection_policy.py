@@ -153,16 +153,17 @@ def test_standalone_export_reuses_persisted_projection_policy_and_hash(
     tmp_path,
     monkeypatch,
 ):
-    workspace, prepared = _prepare_source_run_at_review(tmp_path)
-    assert prepared.publication["knowledge_mode"] == "off"
-    assert prepared.publication["knowledge_public_repository_identity"] is None
-    governed_view = _governed_snapshot_view(workspace / "wiki")
-    monkeypatch.setattr(
-        "llm_wiki_cli.services.knowledge_consumption.load_knowledge_read_view",
-        lambda *_args, **_kwargs: governed_view,
-    )
-
     for mode in ("off", "public-portable", "internal"):
+        case_root = tmp_path / mode
+        case_root.mkdir()
+        workspace, prepared = _prepare_source_run_at_review(case_root)
+        assert prepared.publication["knowledge_mode"] == "off"
+        assert prepared.publication["knowledge_public_repository_identity"] is None
+        governed_view = _governed_snapshot_view(workspace / "wiki")
+        monkeypatch.setattr(
+            "llm_wiki_cli.services.knowledge_consumption.load_knowledge_read_view",
+            lambda *_args, _view=governed_view, **_kwargs: _view,
+        )
         run = load_documentation_run(workspace)
         run.publication["knowledge_mode"] = mode
         run.publication["knowledge_public_repository_identity"] = None

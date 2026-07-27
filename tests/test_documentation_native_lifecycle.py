@@ -10,7 +10,7 @@ from typing import Any
 
 import pytest
 
-from llm_wiki_cli import cli
+from llm_wiki_cli import api, cli
 from llm_wiki_cli.commands import knowledge_cmd
 import llm_wiki_cli.services.documentation_run as documentation_run_service
 from llm_wiki_cli.services.contracts import (
@@ -20,11 +20,10 @@ from llm_wiki_cli.services.documentation_native import DocumentationNativeError
 from llm_wiki_cli.services.documentation_claim_evidence import (
     qualify_claim_evidence,
 )
-from llm_wiki_cli.services.documentation_queries import (
-    DocumentationGraphQueryService,
-)
+from llm_wiki_cli.services.documentation_queries import DocumentationGraphQueryService
 from llm_wiki_cli.services.documentation_run import (
     DocumentationIntegrityError,
+    DocumentationSchemaError,
     build_documentation_agent_packet,
     capture_generated_ownership,
     export_documentation_run,
@@ -989,18 +988,27 @@ def test_inconsistent_native_reanchor_blocks_result_acceptance(
 
 def test_agent_claim_evidence_is_recomputed_after_native_reanchor(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    _source, workspace, run = _prepare_source_run(tmp_path)
+    source, workspace, run = _prepare_source_run(tmp_path)
     wiki = workspace / "wiki"
-    service = DocumentationGraphQueryService(
-        {},
-        knowledge_view=load_knowledge_read_view(wiki, snapshot_only=True),
+    monkeypatch.chdir(tmp_path)
+    service = api.build_documentation_query_service(
+        str(source),
+        wiki_dir=str(wiki),
     )
     claim = qualify_claim_evidence(
         service,
         claim_id="work:module-app",
         canonical_page="modules/app.md",
         concept_query="llm-wiki://modules/app",
+    )
+    monkeypatch.setattr(
+        documentation_run_service,
+        "build_live_documentation_query_service",
+        lambda **_kwargs: pytest.fail(
+            "post-refresh reconciliation rebuilt the live extraction"
+        ),
     )
     build_documentation_agent_packet(workspace, stage="wiki-enrichment")
     worklist = _read_json(workspace / run.evidence["semantic_worklist"])
@@ -1037,6 +1045,8 @@ def test_agent_claim_evidence_is_recomputed_after_native_reanchor(
     result = _read_json(workspace / updated.evidence["wiki-enrichment_result"])
     assert result["claim_evidence"] == [claim]
     assert result["reconciliation"]["claim_evidence"] == [claim]
+    assert claim["freshness"]["evaluated"] is True
+    assert claim["freshness"]["state"] == "current"
     readiness = _read_json(workspace / updated.evidence["semantic_readiness"])
     assert readiness["claim_evidence"] == [claim]
 
@@ -1076,6 +1086,14 @@ def test_tampered_agent_claim_coordinate_blocks_result_acceptance(
         "[module evidence](modules/app.md).\n",
         encoding="utf-8",
     )
+    protected_before = {
+        name: (wiki / name).read_bytes()
+        for name in NATIVE_ARTIFACTS
+    }
+    ownership_path = workspace / run.evidence["generated_ownership"]
+    refresh_path = workspace / run.evidence["native_refresh"]
+    ownership_before = ownership_path.read_bytes()
+    refresh_before = refresh_path.read_bytes()
 
     with pytest.raises(
         DocumentationIntegrityError,
@@ -1093,7 +1111,425 @@ def test_tampered_agent_claim_coordinate_blocks_result_acceptance(
             ),
         )
 
+    blocked = load_documentation_run(workspace)
+    assert blocked.state == "blocked"
+    assert {
+        name: (wiki / name).read_bytes()
+        for name in NATIVE_ARTIFACTS
+    } == protected_before
+    assert ownership_path.read_bytes() == ownership_before
+    assert refresh_path.read_bytes() == refresh_before
+    assert not (
+        workspace
+        / ".llm-wiki-docs"
+        / "evidence"
+        / "native-refresh-wiki-enrichment-01.json"
+    ).exists()
+
+
+def test_missing_claim_internal_reference_fails_before_refresh_without_blocking(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source, workspace, run = _prepare_source_run(tmp_path)
+    wiki = workspace / "wiki"
+    monkeypatch.chdir(tmp_path)
+    service = api.build_documentation_query_service(
+        str(source),
+        wiki_dir=str(wiki),
+    )
+    claim = qualify_claim_evidence(
+        service,
+        claim_id="finding:missing-internal-reference",
+        canonical_page="modules/app.md",
+        concept_query="llm-wiki://modules/app",
+        internal_evidence_ref=(
+            ".llm-wiki-docs/evidence/missing-claim-source.json"
+        ),
+    )
+    build_documentation_agent_packet(workspace, stage="wiki-enrichment")
+    run = load_documentation_run(workspace)
+    worklist = _read_json(workspace / run.evidence["semantic_worklist"])
+    work_ids = [str(item["id"]) for item in worklist["items"]]
+    evidence_pages = sorted(
+        {
+            "modules/app.md",
+            *(
+                str(item["canonical_path"])
+                for item in worklist["items"]
+                if item.get("canonical_path")
+            ),
+        }
+    )
+    index = wiki / "index.md"
+    index.write_text(
+        "# Native Lifecycle Docs\n\n"
+        "This semantic edit must survive a reusable malformed attempt. See "
+        "[module evidence](modules/app.md).\n",
+        encoding="utf-8",
+    )
+    protected_before = {
+        name: (wiki / name).read_bytes()
+        for name in NATIVE_ARTIFACTS
+    }
+    ownership_path = workspace / run.evidence["generated_ownership"]
+    refresh_path = workspace / run.evidence["native_refresh"]
+    ownership_before = ownership_path.read_bytes()
+    refresh_before = refresh_path.read_bytes()
+    run_before = (
+        workspace / ".llm-wiki-docs" / "run.json"
+    ).read_bytes()
+
+    with pytest.raises(
+        DocumentationSchemaError,
+        match="internal reference is missing",
+    ):
+        record_documentation_agent_result(
+            workspace,
+            _agent_result(
+                run.run_id,
+                "wiki-enrichment",
+                changed=["index.md"],
+                completed=work_ids,
+                claims=evidence_pages,
+                claim_evidence=[claim],
+            ),
+        )
+
+    assert {
+        name: (wiki / name).read_bytes()
+        for name in NATIVE_ARTIFACTS
+    } == protected_before
+    assert ownership_path.read_bytes() == ownership_before
+    assert refresh_path.read_bytes() == refresh_before
+    assert (
+        workspace / ".llm-wiki-docs" / "run.json"
+    ).read_bytes() == run_before
+    assert index.read_text(encoding="utf-8").startswith(
+        "# Native Lifecycle Docs"
+    )
+    reusable = load_documentation_run(workspace)
+    assert reusable.state == "wiki_enrichment"
+    assert reusable.stage_attempts["wiki-enrichment"] == 1
+    assert not (
+        workspace
+        / ".llm-wiki-docs"
+        / "results"
+        / "wiki-enrichment-01.json"
+    ).exists()
+    assert not (
+        workspace
+        / ".llm-wiki-docs"
+        / "evidence"
+        / "native-refresh-wiki-enrichment-01.json"
+    ).exists()
+
+
+def test_unverified_adopted_run_reconciles_snapshot_only_claim_evidence(
+    tmp_path: Path,
+) -> None:
+    _source, seed_workspace, _seed_run = _prepare_source_run(tmp_path)
+    workspace = tmp_path / "snapshot-only-workspace"
+    run = prepare_documentation_run(
+        workspace,
+        baseline_strategy="adopt_existing_wiki",
+        input_wiki_root=seed_workspace / "wiki",
+        freshness_policy="allow-unverified",
+        site_name="Snapshot-only Native Docs",
+        project_purpose="Preserve snapshot-qualified native claims.",
+        audiences=["operator"],
+        audience_intent={"operator": "review snapshot-qualified evidence"},
+    )
+    wiki = workspace / "wiki"
+    build_documentation_agent_packet(workspace, stage="wiki-enrichment")
+    index = wiki / "index.md"
+    index.write_text(
+        "# Imported Wiki\n\n"
+        "The imported claim remains explicitly snapshot-only.\n",
+        encoding="utf-8",
+    )
+    service = DocumentationGraphQueryService(
+        {},
+        knowledge_view=load_knowledge_read_view(wiki, snapshot_only=True),
+    )
+    claim = qualify_claim_evidence(
+        service,
+        claim_id="claim:imported-snapshot",
+        canonical_page="index.md",
+        concept_query="llm-wiki://modules/imported",
+    )
+    work_id, imported_edit = _imported_index_edit(workspace, run)
+
+    updated = record_documentation_agent_result(
+        workspace,
+        _agent_result(
+            run.run_id,
+            "wiki-enrichment",
+            status="partial",
+            changed=["index.md"],
+            completed=[work_id],
+            claims=["index.md"],
+            claim_evidence=[claim],
+            imported_page_edits=[imported_edit],
+        ),
+    )
+
+    result = _read_json(workspace / updated.evidence["wiki-enrichment_result"])
+    assert claim["freshness"]["evaluated"] is False
+    assert claim["freshness"]["state"] is None
+    assert result["reconciliation"]["claim_evidence"] == [claim]
+    assert result["reconciliation"]["native_projection_refresh"] is None
+
+
+def test_bound_source_becoming_unavailable_reconciles_snapshot_only(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source, workspace, run = _prepare_source_run(tmp_path)
+    wiki = workspace / "wiki"
+    build_documentation_agent_packet(workspace, stage="wiki-enrichment")
+    worklist = _read_json(workspace / run.evidence["semantic_worklist"])
+    work_ids = [str(item["id"]) for item in worklist["items"]]
+    evidence_pages = sorted(
+        {
+            "modules/app.md",
+            *(
+                str(item["canonical_path"])
+                for item in worklist["items"]
+                if item.get("canonical_path")
+            ),
+        }
+    )
+    (wiki / "index.md").write_text(
+        "# Native Lifecycle Docs\n\n"
+        "The source is temporarily unavailable, so this result remains "
+        "snapshot-qualified. See [module evidence](modules/app.md).\n",
+        encoding="utf-8",
+    )
+    source.rename(tmp_path / "source-offline")
+    snapshot_service = DocumentationGraphQueryService(
+        {},
+        knowledge_view=load_knowledge_read_view(wiki, snapshot_only=True),
+    )
+    claim = qualify_claim_evidence(
+        snapshot_service,
+        claim_id="claim:source-unavailable-snapshot",
+        canonical_page="modules/app.md",
+        concept_query="llm-wiki://modules/app",
+    )
+    monkeypatch.setattr(
+        documentation_run_service,
+        "build_live_documentation_query_service",
+        lambda **_kwargs: pytest.fail(
+            "source-unavailable reconciliation must not extract live"
+        ),
+    )
+
+    updated = record_documentation_agent_result(
+        workspace,
+        _agent_result(
+            run.run_id,
+            "wiki-enrichment",
+            changed=["index.md"],
+            completed=work_ids,
+            claims=evidence_pages,
+            claim_evidence=[claim],
+        ),
+    )
+
+    result = _read_json(workspace / updated.evidence["wiki-enrichment_result"])
+    assert result["reconciliation"]["claim_evidence"] == [claim]
+    assert result["reconciliation"]["native_projection_refresh"] is None
+    assert result["reconciliation"]["source_and_input_integrity"] == [
+        {
+            "check": "source_integrity",
+            "ok": True,
+            "limited": True,
+            "availability": "source_unavailable",
+        }
+    ]
+    assert "native_knowledge_snapshot_only" in updated.verdict_limitations
+
+
+def test_raw_service_failure_after_refresh_rolls_back_authority_then_blocks(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source, workspace, run = _prepare_source_run(tmp_path)
+    wiki = workspace / "wiki"
+    monkeypatch.chdir(tmp_path)
+    service = api.build_documentation_query_service(
+        str(source),
+        wiki_dir=str(wiki),
+    )
+    claim = qualify_claim_evidence(
+        service,
+        claim_id="finding:query-failure",
+        canonical_page="modules/app.md",
+        concept_query="llm-wiki://modules/app",
+    )
+    build_documentation_agent_packet(workspace, stage="wiki-enrichment")
+    run = load_documentation_run(workspace)
+    worklist = _read_json(workspace / run.evidence["semantic_worklist"])
+    work_ids = [str(item["id"]) for item in worklist["items"]]
+    evidence_pages = sorted(
+        {
+            "modules/app.md",
+            *(
+                str(item["canonical_path"])
+                for item in worklist["items"]
+                if item.get("canonical_path")
+            ),
+        }
+    )
+    index = wiki / "index.md"
+    index.write_text(
+        "# Native Lifecycle Docs\n\n"
+        "This semantic edit remains after a failed native reconciliation. See "
+        "[module evidence](modules/app.md).\n",
+        encoding="utf-8",
+    )
+    protected_before = {
+        name: (wiki / name).read_bytes()
+        for name in NATIVE_ARTIFACTS
+    }
+    ownership_path = workspace / run.evidence["generated_ownership"]
+    refresh_path = workspace / run.evidence["native_refresh"]
+    ownership_before = ownership_path.read_bytes()
+    refresh_before = refresh_path.read_bytes()
+    evidence_before = dict(run.evidence)
+    anchors_before = dict(run.integrity_anchors)
+    limitations_before = list(run.verdict_limitations)
+
+    def fail_reconciliation(*_args, **_kwargs):
+        raise RuntimeError("injected raw query-service failure")
+
+    monkeypatch.setattr(
+        documentation_run_service,
+        "reconcile_claim_evidence_records",
+        fail_reconciliation,
+    )
+
+    with pytest.raises(
+        DocumentationIntegrityError,
+        match="injected raw query-service failure",
+    ):
+        record_documentation_agent_result(
+            workspace,
+            _agent_result(
+                run.run_id,
+                "wiki-enrichment",
+                changed=["index.md"],
+                completed=work_ids,
+                claims=evidence_pages,
+                claim_evidence=[claim],
+            ),
+        )
+
+    assert {
+        name: (wiki / name).read_bytes()
+        for name in NATIVE_ARTIFACTS
+    } == protected_before
+    assert ownership_path.read_bytes() == ownership_before
+    assert refresh_path.read_bytes() == refresh_before
+    assert index.read_text(encoding="utf-8").startswith(
+        "# Native Lifecycle Docs"
+    )
+    blocked = load_documentation_run(workspace)
+    assert blocked.state == "blocked"
+    assert blocked.evidence == evidence_before
+    assert blocked.integrity_anchors == anchors_before
+    assert blocked.verdict_limitations == limitations_before
+    assert not (
+        workspace
+        / ".llm-wiki-docs"
+        / "results"
+        / "wiki-enrichment-01.json"
+    ).exists()
+    assert not (
+        workspace
+        / ".llm-wiki-docs"
+        / "evidence"
+        / "native-refresh-wiki-enrichment-01.json"
+    ).exists()
+
+
+def test_post_refresh_reconciliation_failure_restores_governance_and_verification(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys,
+) -> None:
+    source, workspace, run, _receipt_bytes = _prepare_governed_source_run(
+        tmp_path
+    )
+    capsys.readouterr()
+    wiki = workspace / "wiki"
+    monkeypatch.chdir(tmp_path)
+    service = api.build_documentation_query_service(
+        str(source),
+        wiki_dir=str(wiki),
+    )
+    claim = qualify_claim_evidence(
+        service,
+        claim_id="finding:governed-query-failure",
+        canonical_page="modules/app.md",
+        concept_query="llm-wiki://modules/app",
+    )
+    build_documentation_agent_packet(workspace, stage="wiki-enrichment")
+    index = wiki / "index.md"
+    index.write_text(
+        "# Governed Native Lifecycle Docs\n\n"
+        "This semantic edit remains after reconciliation fails. See "
+        "[module evidence](modules/app.md).\n",
+        encoding="utf-8",
+    )
+    work_id, imported_edit = _imported_index_edit(workspace, run)
+    protected_before = {
+        name: (wiki / name).read_bytes()
+        for name in PROTECTED_NATIVE_ARTIFACTS
+    }
+
+    def fail_reconciliation(*_args, **_kwargs):
+        raise RuntimeError("injected governed reconciliation failure")
+
+    monkeypatch.setattr(
+        documentation_run_service,
+        "reconcile_claim_evidence_records",
+        fail_reconciliation,
+    )
+
+    with pytest.raises(
+        DocumentationIntegrityError,
+        match="injected governed reconciliation failure",
+    ):
+        record_documentation_agent_result(
+            workspace,
+            _agent_result(
+                run.run_id,
+                "wiki-enrichment",
+                status="partial",
+                changed=["index.md"],
+                completed=[work_id],
+                claims=["index.md", "modules/app.md"],
+                claim_evidence=[claim],
+                imported_page_edits=[imported_edit],
+            ),
+        )
+
+    assert {
+        name: (wiki / name).read_bytes()
+        for name in PROTECTED_NATIVE_ARTIFACTS
+    } == protected_before
+    assert index.read_text(encoding="utf-8").startswith(
+        "# Governed Native Lifecycle Docs"
+    )
     assert load_documentation_run(workspace).state == "blocked"
+    assert not (
+        workspace
+        / ".llm-wiki-docs"
+        / "results"
+        / "wiki-enrichment-01.json"
+    ).exists()
 
 
 def test_runtime_capture_is_out_of_band_and_digest_reconciled(

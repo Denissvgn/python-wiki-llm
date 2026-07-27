@@ -30,9 +30,13 @@ assume the project root; substitute the project's configured `--wiki-dir`
   `--helper-cache-dir <same-helper-cache>` selects prepared TypeScript/JavaScript/Go/Rust/Haskell helpers
   on source-reading commands. In particular, `sync`, `lint`, `ci-check`,
   `extract`, and `bootstrap` expose `--helper-cache-dir`;
-  `--cache-dir` is a separate inventory-cache option only on `sync`, `lint`,
-  and `extract`. Never copy `--cache-dir` onto a command whose parser does not
-  expose it.
+  `--cache-dir` is a separate inventory-cache option only on `sync` and `lint`;
+  `extract` uses only `--helper-cache-dir` for prepared helpers. Never copy
+  `--cache-dir` onto a command whose parser does not expose it.
+
+  ```
+  llm-wiki extract --deep --read-only --helper-cache-dir .cache/llm-wiki-helpers
+  ```
 
 ## Haskell extraction contract
 
@@ -665,12 +669,21 @@ Markdown headings would otherwise make navigation ambiguous. Mermaid fences
 are preserved for the site's configured Markdown/Mermaid renderer. The
 static-site checker validates missing pages, local Markdown links, generated
 front matter metadata, duplicate Docusaurus ids, and output path containment
-without invoking external builders. When `--built-site-dir` is supplied it
-also parses built HTML links; `--link-mode http` accepts hosted MkDocs
-directory URLs, while `--link-mode file` requires direct `.html` targets.
+without invoking external builders. Export also writes the complete path-safe
+`.llm-wiki-site-selection.json` receipt and the non-sensitive
+`llm-wiki-site-selection.json` builder marker. Checks require a complete
+matching receipt and compare every supplied source/format/profile/site/link/
+knowledge selection. When `--built-site-dir` is supplied, the matching marker
+must exist at the built root before HTML links are checked; `--link-mode http`
+accepts hosted MkDocs directory URLs, while `--link-mode file` requires direct
+`.html` targets.
 User-profile checks add quality gates for default site names, missing guides,
 oversized landing pages, and placeholder text in primary human docs.
-Warning-only findings do not fail the check.
+Warning-only quality findings do not fail the check. Missing, malformed,
+incomplete, stale, or mismatched receipts/markers always fail. Re-export and
+rebuild legacy output; policy changes require a distinct output directory.
+MkDocs carries the public marker automatically, while Docusaurus and custom
+builders must copy it into their built root.
 
 ### Opt-in native metadata for Site and Obsidian
 
@@ -688,6 +701,8 @@ llm-wiki site export \
 llm-wiki site check \
   --wiki-dir docs/llm_wiki \
   --out-dir site \
+  --format mkdocs \
+  --link-mode http \
   --knowledge-metadata summary \
   --knowledge-profile public-portable
 llm-wiki obsidian export \

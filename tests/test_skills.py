@@ -259,6 +259,34 @@ class TestBundledWikiBootstrapSkill:
         assert "wiki-semantic-enhance" in combined
         assert "never stage or commit the source or adopted input wiki" in combined
 
+    def test_infrastructure_ownership_is_consistent_across_authoring_skills(self):
+        bootstrap = "\n".join(
+            (
+                (
+                    skills.BUNDLED_SKILLS_ROOT / "wiki-bootstrap" / "SKILL.md"
+                ).read_text(encoding="utf-8"),
+                (
+                    skills.BUNDLED_SKILLS_ROOT / "wiki-bootstrap" / "reference.md"
+                ).read_text(encoding="utf-8"),
+            )
+        )
+        semantic = (
+            skills.BUNDLED_SKILLS_ROOT
+            / "wiki-semantic-enhance"
+            / "reference.md"
+        ).read_text(encoding="utf-8")
+        user_docs = (
+            skills.BUNDLED_SKILLS_ROOT / "user-docs-author" / "reference.md"
+        ).read_text(encoding="utf-8")
+
+        assert "ordinary sync regenerates them incrementally" in bootstrap
+        assert "Infrastructure `## Notes`" in bootstrap
+        assert "| Infrastructure `## Notes` | Yes |" in semantic
+        assert "matches a live freshness evaluation" in user_docs
+        assert "bootstrap snapshots, not supported semantic" not in bootstrap
+        assert "have no agent-owned `## Notes`" not in bootstrap
+        assert "current raw source" in bootstrap
+
 
 class TestBundledWikiSemanticEnhanceSkill:
     def test_wiki_semantic_enhance_skill_is_bundled(self):
@@ -630,6 +658,9 @@ class TestBundledDocHubSkill:
         # Live CLI contract, not invented flags.
         assert "site export --wiki-root" in combined
         assert "site check --wiki-root" in combined
+        assert "--format docusaurus" in combined
+        assert ".llm-wiki-site-selection.json" in combined
+        assert "ordered normalized" in combined
         # There is no durable authored hub input/navigation/check surface.
         assert "no canonical hub-overview input" in combined.lower()
         assert "do not author a hub overview in derived output" in combined.lower()
@@ -831,10 +862,19 @@ class TestBundledPublishDocsSkill:
         assert "--site-name" in combined
         assert "at least one guide page" in combined
         assert "site check --profile user" in combined
-        assert "site check --built-site-dir" in combined
+        assert "--format mkdocs" in combined
+        assert "--built-site-dir" in combined
         assert "--link-mode http" in combined
         assert "--file-friendly" in combined
         assert "--link-mode file" in combined
+        assert ".llm-wiki-site-selection.json" in combined
+        assert "llm-wiki-site-selection.json" in combined
+        assert (
+            "cp site/llm-wiki-site-selection.json "
+            "build/llm-wiki-site-selection.json"
+        ) in combined
+        assert "_site-http" in combined
+        assert "_site-file" in combined
 
     def test_publish_docs_direct_file_sequence_rebuilds_before_file_check(self):
         manifest = (skills.BUNDLED_SKILLS_ROOT / "publish-docs" / "SKILL.md").read_text(
@@ -919,10 +959,9 @@ class TestBundledUserDocsAuthorSkill:
         reference = (
             skills.BUNDLED_SKILLS_ROOT / "user-docs-author" / "reference.md"
         ).read_text(encoding="utf-8")
-        assert (
-            "Reusing `_site` from a previous HTTP-mode build is invalid evidence"
-            in reference
-        )
+        assert "`site-user-http` and `_site-user-http`" in reference
+        assert "`site-user-file`" in reference
+        assert "mismatched marker" in reference
 
 
 class TestBundledUsageExamplesSkill:

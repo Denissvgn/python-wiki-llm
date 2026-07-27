@@ -973,9 +973,11 @@ def test_source_backed_built_run_requires_supervisor_ledger_approval(tmp_path):
     )
 
     builder_code = (
-        "from pathlib import Path; "
+        "from pathlib import Path; import shutil; "
         "p=Path('_site'); p.mkdir(exist_ok=True); "
-        "(p/'index.html').write_text('<h1>Publishable Example</h1>', encoding='utf-8')"
+        "(p/'index.html').write_text('<h1>Publishable Example</h1>', encoding='utf-8'); "
+        "shutil.copyfile('site/llm-wiki-site-selection.json', "
+        "'_site/llm-wiki-site-selection.json')"
     )
     report = export_documentation_run(
         workspace,
@@ -997,7 +999,7 @@ def test_source_backed_built_run_requires_supervisor_ledger_approval(tmp_path):
     assert builder_evidence["built_site_recreated"] is True
     assert builder_evidence["built_site_has_html"] is True
     assert builder_evidence["built_site_changed"] is True
-    assert builder_evidence["built_site_after_file_count"] == 1
+    assert builder_evidence["built_site_after_file_count"] == 2
     assert (
         builder_evidence["built_site_before_tree_hash"]
         != (builder_evidence["built_site_after_tree_hash"])

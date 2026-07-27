@@ -29,6 +29,10 @@ _SAFE_PLACEHOLDERS = {
 _PLACEHOLDER_RE = re.compile(r"<[^>\n]+>")
 _JSON_OBJECT_RE = re.compile(r"\{[^{}\n]+\}")
 _MCP_TOOL_MARKER_RE = re.compile(r"^MCP tool `([a-z][a-z0-9_]*)`:$")
+_INLINE_COMMAND_RE = re.compile(r"^`(llm-wiki\s+[^`]+)`$")
+_BULLET_COMMAND_RE = re.compile(r"^[-*+]\s+`(llm-wiki\s+[^`]+)`[.]?$")
+_TABLE_SEPARATOR_RE = re.compile(r"^:?-{3,}:?$")
+_EXPLICIT_FRAGMENT_RE = re.compile(r"(?:^|\s)(?:\.\.\.|…)(?=\s|$)")
 
 
 class SkillContractError(AssertionError):
@@ -63,6 +67,10 @@ class McpToolExample:
     location: ExampleLocation
     tool_name: str
     payload: Mapping[str, object]
+
+
+def _is_explicit_command_fragment(command: str) -> bool:
+    return _EXPLICIT_FRAGMENT_RE.search(command) is not None
 
 
 def _safe_substitute(value: str, location: ExampleLocation) -> str:
@@ -111,13 +119,106 @@ def extract_fenced_cli_examples(skills_root: Path) -> tuple[CliExample, ...]:
                 index += 1
                 if not continued:
                     break
-            examples.append(
-                CliExample(
-                    ExampleLocation(path.parent.name, path, start_line),
-                    " ".join(parts),
+            command = " ".join(parts)
+            if not _is_explicit_command_fragment(command):
+                examples.append(
+                    CliExample(
+                        ExampleLocation(path.parent.name, path, start_line),
+                        command,
+                    )
                 )
-            )
     return tuple(examples)
+
+
+def _markdown_table_cells(line: str) -> list[str] | None:
+    stripped = line.strip()
+    if not stripped.startswith("|") or not stripped.endswith("|"):
+        return None
+    return [cell.strip() for cell in stripped[1:-1].split("|")]
+
+
+def extract_inline_cli_examples(skills_root: Path) -> tuple[CliExample, ...]:
+    """Extract complete standalone bullet and ``Command`` table examples."""
+
+    examples: list[CliExample] = []
+    for path in sorted(skills_root.rglob("*.md")):
+        lines = path.read_text(encoding="utf-8").splitlines()
+        index = 0
+        while index < len(lines):
+            stripped = lines[index].strip()
+            bullet = _BULLET_COMMAND_RE.fullmatch(stripped)
+            if bullet is not None:
+                command = bullet.group(1)
+                if not _is_explicit_command_fragment(command):
+                    examples.append(
+                        CliExample(
+                            ExampleLocation(path.parent.name, path, index + 1),
+                            command,
+                        )
+                    )
+                index += 1
+                continue
+
+            header = _markdown_table_cells(lines[index])
+            separator = (
+                _markdown_table_cells(lines[index + 1])
+                if index + 1 < len(lines)
+                else None
+            )
+            if (
+                header is None
+                or separator is None
+                or len(header) != len(separator)
+                or "Command" not in header
+                or any(
+                    _TABLE_SEPARATOR_RE.fullmatch(cell) is None
+                    for cell in separator
+                )
+            ):
+                index += 1
+                continue
+
+            command_column = header.index("Command")
+            index += 2
+            while index < len(lines):
+                row = _markdown_table_cells(lines[index])
+                if row is None or len(row) != len(header):
+                    break
+                inline = _INLINE_COMMAND_RE.fullmatch(row[command_column])
+                if inline is not None:
+                    command = inline.group(1)
+                    if not _is_explicit_command_fragment(command):
+                        examples.append(
+                            CliExample(
+                                ExampleLocation(path.parent.name, path, index + 1),
+                                command,
+                            )
+                        )
+                index += 1
+    return tuple(examples)
+
+
+def extract_cli_examples(skills_root: Path) -> tuple[CliExample, ...]:
+    """Return every complete documented CLI argv example in stable order."""
+
+    examples = {
+        (
+            example.location.path,
+            example.location.line,
+            example.command,
+        ): example
+        for example in (
+            *extract_fenced_cli_examples(skills_root),
+            *extract_inline_cli_examples(skills_root),
+        )
+    }
+    return tuple(
+        examples[key]
+        for key in sorted(
+            examples,
+            key=lambda value: (value[0].as_posix(), value[1], value[2]),
+        )
+    )
 
 
 def parse_cli_example(example: CliExample):

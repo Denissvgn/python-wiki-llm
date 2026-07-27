@@ -16,7 +16,13 @@ from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING, Any
 from urllib.parse import urlsplit
 
+from .documentation_queries import DocumentationQueryError
 from .knowledge_evidence import is_valid_sha256
+from .knowledge_graph import (
+    GRAPH_ORIGINS,
+    GRAPH_RESOLUTIONS,
+    is_supported_relationship_kind,
+)
 
 if TYPE_CHECKING:
     from .documentation_queries import DocumentationGraphQueryService
@@ -235,7 +241,12 @@ def qualify_claim_evidence(
         else None
     )
 
-    selection = service.get_concept(query)
+    try:
+        selection = service.get_concept(query)
+    except DocumentationQueryError as exc:
+        raise DocumentationClaimEvidenceError(
+            f"claim {normalized_claim_id!r} native concept query failed: {exc}"
+        ) from exc
     knowledge = _mapping(selection.get("knowledge"), "knowledge")
     availability = str(knowledge.get("availability") or "")
     concept = selection.get("concept")
@@ -281,12 +292,17 @@ def qualify_claim_evidence(
             else str(knowledge.get("reason") or "native-result-unavailable")
         ),
     }
-    lifecycle_review, section_bounds = _current_lifecycle_review(
-        service,
-        query=query,
-        selected=selected,
-        section_locator=section,
-    )
+    try:
+        lifecycle_review, section_bounds = _current_lifecycle_review(
+            service,
+            query=query,
+            selected=selected,
+            section_locator=section,
+        )
+    except DocumentationQueryError as exc:
+        raise DocumentationClaimEvidenceError(
+            f"claim {normalized_claim_id!r} native section query failed: {exc}"
+        ) from exc
     bounds: dict[str, Any] = {
         "matches": _bound(selection, "matches"),
         "sections": section_bounds,
@@ -300,14 +316,19 @@ def qualify_claim_evidence(
         )
     graph_resolution = resolution
     if graph is not None and resolution == "exact":
-        traversal = service.traverse_typed_graph(
-            query,
-            direction=graph["direction"],
-            kinds=graph["kinds"],
-            origins=graph["origins"],
-            resolutions=graph["resolutions"],
-            include_evidence=False,
-        )
+        try:
+            traversal = service.traverse_typed_graph(
+                query,
+                direction=graph["direction"],
+                kinds=graph["kinds"],
+                origins=graph["origins"],
+                resolutions=graph["resolutions"],
+                include_evidence=False,
+            )
+        except DocumentationQueryError as exc:
+            raise DocumentationClaimEvidenceError(
+                f"claim {normalized_claim_id!r} typed-graph query failed: {exc}"
+            ) from exc
         typed_status = _mapping(traversal.get("typed_graph"), "typed_graph")
         if typed_status.get("availability") != "ready":
             graph_resolution = "typed-graph-unavailable"
@@ -391,38 +412,7 @@ def reconcile_runtime_capture_records(
     reconciled: list[dict[str, Any]] = []
     for raw in records:
         record = _normalize_capture_record(raw, "runtime_captures")
-        capture_path = record["capture_path"]
-        if record["result"]["state"] != "deferred":
-            assert isinstance(capture_path, str)
-            path = root / PurePosixPath(capture_path)
-            if path.is_symlink():
-                raise DocumentationClaimEvidenceError(
-                    f"runtime capture path must not be a symlink: {capture_path}"
-                )
-            try:
-                resolved = path.resolve(strict=True)
-            except OSError as exc:
-                raise DocumentationClaimEvidenceError(
-                    f"runtime capture {record['capture_id']!r} is missing: "
-                    f"{capture_path}"
-                ) from exc
-            if (
-                not resolved.is_relative_to(root)
-                or not resolved.is_file()
-            ):
-                raise DocumentationClaimEvidenceError(
-                    f"runtime capture path is not a regular wiki file: {capture_path}"
-                )
-            digest = "sha256:" + hashlib.sha256(resolved.read_bytes()).hexdigest()
-            if digest != record["capture_digest"]:
-                raise DocumentationClaimEvidenceError(
-                    f"runtime capture {record['capture_id']!r} digest does not "
-                    "match the persisted redacted bytes."
-                )
-            _validate_runtime_capture_content(
-                resolved,
-                capture_id=record["capture_id"],
-            )
+        _verify_runtime_capture_record(record, root=root)
 
         current = {
             "resolution": "native-unavailable",
@@ -434,8 +424,14 @@ def reconcile_runtime_capture_records(
             concept_uid = record.get("concept_uid")
             concept_locator = record.get("concept_locator")
             if isinstance(concept_uid, str) and isinstance(concept_locator, str):
-                uid_selection = service.get_concept(concept_uid)
-                locator_selection = service.get_concept(concept_locator)
+                try:
+                    uid_selection = service.get_concept(concept_uid)
+                    locator_selection = service.get_concept(concept_locator)
+                except DocumentationQueryError as exc:
+                    raise DocumentationClaimEvidenceError(
+                        f"runtime capture {record['capture_id']!r} native "
+                        f"identity query failed: {exc}"
+                    ) from exc
                 selections = (uid_selection, locator_selection)
                 if all(
                     isinstance(selection.get("knowledge"), Mapping)
@@ -462,7 +458,13 @@ def reconcile_runtime_capture_records(
                         )
             query = concept_uid or concept_locator
             if isinstance(query, str):
-                selected = service.get_concept(query)
+                try:
+                    selected = service.get_concept(query)
+                except DocumentationQueryError as exc:
+                    raise DocumentationClaimEvidenceError(
+                        f"runtime capture {record['capture_id']!r} native "
+                        f"concept query failed: {exc}"
+                    ) from exc
                 concept = selected.get("concept")
                 if bool(selected.get("ambiguous")):
                     current["resolution"] = "ambiguous"
@@ -476,6 +478,7 @@ def reconcile_runtime_capture_records(
                                 service,
                                 query,
                                 record.get("section_locator"),
+                                capture_id=record["capture_id"],
                             ),
                         }
                     )
@@ -486,6 +489,67 @@ def reconcile_runtime_capture_records(
                     current["resolution"] = "missing"
         reconciled.append({**record, "reconciliation": current})
     return tuple(sorted(reconciled, key=lambda item: item["capture_id"]))
+
+
+def preflight_runtime_capture_records(
+    records: Iterable[Mapping[str, Any]],
+    *,
+    wiki_root: str | Path,
+) -> tuple[dict[str, Any], ...]:
+    """Validate capture contracts and persisted bytes without native queries."""
+
+    root = Path(wiki_root).resolve()
+    checked: list[dict[str, Any]] = []
+    for raw in records:
+        record = _normalize_capture_record(raw, "runtime_captures")
+        _verify_runtime_capture_record(record, root=root)
+        checked.append(record)
+    return tuple(sorted(checked, key=lambda item: item["capture_id"]))
+
+
+def _verify_runtime_capture_record(
+    record: Mapping[str, Any],
+    *,
+    root: Path,
+) -> None:
+    capture_path = record["capture_path"]
+    result = _mapping(record["result"], "runtime_captures.result")
+    if result["state"] == "deferred":
+        return
+    assert isinstance(capture_path, str)
+    path = root / PurePosixPath(capture_path)
+    if path.is_symlink():
+        raise DocumentationClaimEvidenceError(
+            f"runtime capture path must not be a symlink: {capture_path}"
+        )
+    try:
+        resolved = path.resolve(strict=True)
+    except OSError as exc:
+        raise DocumentationClaimEvidenceError(
+            f"runtime capture {record['capture_id']!r} is missing: "
+            f"{capture_path}"
+        ) from exc
+    if not resolved.is_relative_to(root) or not resolved.is_file():
+        raise DocumentationClaimEvidenceError(
+            f"runtime capture path is not a regular wiki file: {capture_path}"
+        )
+    try:
+        capture_bytes = resolved.read_bytes()
+    except OSError as exc:
+        raise DocumentationClaimEvidenceError(
+            f"runtime capture {record['capture_id']!r} cannot be read: "
+            f"{capture_path}"
+        ) from exc
+    digest = "sha256:" + hashlib.sha256(capture_bytes).hexdigest()
+    if digest != record["capture_digest"]:
+        raise DocumentationClaimEvidenceError(
+            f"runtime capture {record['capture_id']!r} digest does not "
+            "match the persisted redacted bytes."
+        )
+    _validate_runtime_capture_content(
+        resolved,
+        capture_id=str(record["capture_id"]),
+    )
 
 
 def _normalize_claim_record(value: object, field_name: str) -> dict[str, Any]:
@@ -703,13 +767,20 @@ def _capture_section_state(
     service: DocumentationGraphQueryService,
     query: str,
     section_locator: object,
+    *,
+    capture_id: str,
 ) -> str:
     if section_locator is None:
         return "not-requested"
     list_sections = getattr(service, "list_concept_sections", None)
     if not callable(list_sections):
         return "unsupported"
-    result = list_sections(query)
+    try:
+        result = list_sections(query)
+    except DocumentationQueryError as exc:
+        raise DocumentationClaimEvidenceError(
+            f"runtime capture {capture_id!r} native section query failed: {exc}"
+        ) from exc
     if any(
         isinstance(item, Mapping) and item.get("locator") == section_locator
         for item in result.get("sections", []) or []
@@ -756,13 +827,38 @@ def _normalize_graph_query(
         raise DocumentationClaimEvidenceError(
             f"{field_name}.limit must be an integer from 1 through 100."
         )
+    kinds = _string_list(query["kinds"], f"{field_name}.kinds")
+    invalid_kinds = [
+        kind for kind in kinds if not is_supported_relationship_kind(kind)
+    ]
+    if invalid_kinds:
+        raise DocumentationClaimEvidenceError(
+            f"{field_name}.kinds contains unsupported typed relationship kind "
+            f"{invalid_kinds[0]!r}."
+        )
+    origins = _string_list(query["origins"], f"{field_name}.origins")
+    unsupported_origins = sorted(set(origins) - set(GRAPH_ORIGINS))
+    if unsupported_origins:
+        raise DocumentationClaimEvidenceError(
+            f"{field_name}.origins contains unsupported origin "
+            f"{unsupported_origins[0]!r}."
+        )
+    resolutions = _string_list(
+        query["resolutions"], f"{field_name}.resolutions"
+    )
+    unsupported_resolutions = sorted(
+        set(resolutions) - set(GRAPH_RESOLUTIONS)
+    )
+    if unsupported_resolutions:
+        raise DocumentationClaimEvidenceError(
+            f"{field_name}.resolutions contains unsupported resolution "
+            f"{unsupported_resolutions[0]!r}."
+        )
     return {
         "direction": direction,
-        "kinds": _string_list(query["kinds"], f"{field_name}.kinds"),
-        "origins": _string_list(query["origins"], f"{field_name}.origins"),
-        "resolutions": _string_list(
-            query["resolutions"], f"{field_name}.resolutions"
-        ),
+        "kinds": kinds,
+        "origins": origins,
+        "resolutions": resolutions,
         "include_evidence": False,
         "limit": limit,
     }
@@ -1298,6 +1394,10 @@ def _validate_runtime_capture_content(path: Path, *, capture_id: str) -> None:
         return
     try:
         text = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise DocumentationClaimEvidenceError(
+            f"runtime capture {capture_id!r} cannot be inspected."
+        ) from exc
     except UnicodeError as exc:
         raise DocumentationClaimEvidenceError(
             f"runtime capture {capture_id!r} uses a text format but is not UTF-8."
@@ -1325,6 +1425,7 @@ __all__ = [
     "DocumentationClaimEvidenceError",
     "normalize_claim_evidence_records",
     "normalize_runtime_capture_records",
+    "preflight_runtime_capture_records",
     "qualify_claim_evidence",
     "reconcile_claim_evidence_records",
     "reconcile_runtime_capture_records",

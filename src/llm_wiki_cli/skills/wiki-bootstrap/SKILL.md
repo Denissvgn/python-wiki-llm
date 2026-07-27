@@ -113,12 +113,13 @@ it from generated artifacts.
    `## Behavior` sections (ordered by entry-point category, then
    boundary-effect count, then page path), and the supported `## Notes`
    sections in `api-contracts.md`, `dependencies.md`, and `load-order.md`.
-   Infrastructure pages are bootstrap snapshots, not supported semantic edit
-   surfaces. Use them for orientation only; assurance requires current raw
-   source inspection or a fresh dedicated extraction, with findings written
-   to an external/redacted report. Contract unknowns and reconciliation
-   diagnostics must stay explicit rather than being rewritten as confirmed
-   facts.
+   Bootstrap creates the initial source-bound infrastructure observations and
+   ordinary sync regenerates them incrementally. Their sole supported semantic
+   surface is `## Notes`; generated inventories and prose remain CLI-owned.
+   Current operational assurance still requires a matching live basis, raw
+   source inspection, or a fresh dedicated extraction. Contract unknowns and
+   reconciliation diagnostics must stay explicit rather than being rewritten
+   as confirmed facts.
 
 6. **Rank remaining module/entity pages by dependency centrality.**
 
@@ -133,9 +134,10 @@ it from generated artifacts.
 
 7. **Edit semantic surfaces only**: entity/module `## Description` prose, flow
    `## Behavior`, the supported `## Notes` sections in `api-contracts.md`,
-   `dependencies.md`, and `load-order.md`, custom index prose, and backlog/log
-   prose. Infrastructure pages have no agent-owned `## Notes` or other
-   semantic edit surface. Never hand-edit generated tables, Mermaid diagrams,
+   `dependencies.md`, `load-order.md`, and infrastructure pages, plus custom
+   index and backlog/log prose. Infrastructure `## Notes` is the only
+   agent-owned section on those pages. Never hand-edit generated tables,
+   Mermaid diagrams,
    `.llm-wiki-manifest.json`, `.llm-wiki-surface.json`,
    `.llm-wiki-knowledge.json`, extracted row shapes, or
    `<!-- Auto-generated ... Do not edit by hand. -->` blocks.

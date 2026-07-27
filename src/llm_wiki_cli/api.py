@@ -41,7 +41,9 @@ from .services.documentation_queries import (
     DocumentationGraphQueryService,
     DocumentationQueryError,
 )
-from .services.knowledge_consumption import KnowledgeReadView
+from .services.documentation_query_builder import (
+    build_live_documentation_query_service,
+)
 from .services.knowledge_verification import (
     attach_machine_verification_read_view,
     verification_summaries_for_concepts,
@@ -304,65 +306,21 @@ def build_documentation_query_service(
             allow_external=allow_external_src,
         )
         wiki_root = _validate_wiki_dir(wiki_dir)
-        result = extract_cmd.build_extract_payload(
-            str(src_root),
-            deep=True,
-            allow_external_src=True,
-            read_only=read_only,
-        )
-        inventory = result.payload["inventory"]
-        entrypoints = result.payload.get("entrypoints", [])
-        call_edges = extract_cmd.resolve_call_edges(inventory)
-        flows = [build_flow(entrypoint, call_edges) for entrypoint in entrypoints]
-        inventory_result = getattr(result, "inventory_result", None)
-        surface_evaluation = evaluate_surface_index(
-            wiki_root,
-            inventory,
-            src_dir=src_root,
-            entry_points=entrypoints,
-        )
-        knowledge_view = context_cmd._build_context_knowledge_view(
-            wiki_root,
-            surface_evaluation,
-            inventory,
-            inventory_result,
-        )
-        if isinstance(knowledge_view, KnowledgeReadView):
-            knowledge_view = attach_machine_verification_read_view(
-                wiki_root,
-                knowledge_view,
-            )
-            machine_verification = verification_summaries_for_concepts(
-                knowledge_view,
-            )
-        else:
-            # Preserve the long-standing test-double adapter behavior. The real
-            # context boundary always returns a typed read view.
-            machine_verification = {}
-        query_surface = context_cmd._context_query_surface(
-            surface_evaluation.payload,
-            knowledge_view,
-        )
-        source_snapshot = (
-            inventory_result.source_snapshot if inventory_result is not None else None
-        )
-        dependency_analysis = getattr(result, "dependency_analysis", None)
-        if dependency_analysis is None:
-            dependency_analysis = analyze_dependencies(
-                inventory,
-                str(src_root),
-                source_snapshot=source_snapshot,
-            )
-        return DocumentationGraphQueryService(
-            inventory,
-            call_edges=call_edges,
-            flows=flows,
-            data_flows=result.payload.get("data_flows") or [],
-            dependency_analysis=dependency_analysis,
-            surface_index=query_surface,
+        return build_live_documentation_query_service(
+            source_root=src_root,
+            wiki_root=wiki_root,
             limit=limit,
-            knowledge_view=knowledge_view,
-            machine_verification=machine_verification,
+            read_only=read_only,
+            extract_payload_builder=extract_cmd.build_extract_payload,
+            call_edge_resolver=extract_cmd.resolve_call_edges,
+            flow_builder=build_flow,
+            surface_evaluator=evaluate_surface_index,
+            knowledge_view_builder=context_cmd._build_context_knowledge_view,
+            query_surface_builder=context_cmd._context_query_surface,
+            dependency_analyzer=analyze_dependencies,
+            verification_view_attacher=attach_machine_verification_read_view,
+            verification_summarizer=verification_summaries_for_concepts,
+            service_factory=DocumentationGraphQueryService,
         )
     except PathValidationError as exc:
         raise PathPolicyError(str(exc)) from exc

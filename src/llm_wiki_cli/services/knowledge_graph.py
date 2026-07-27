@@ -88,6 +88,15 @@ _CONTROL_RE = re.compile(r"[\x00-\x1f\x7f]")
 _URI_RE = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
 
 
+def is_supported_relationship_kind(value: object) -> bool:
+    """Return whether *value* is a core or qualified relationship kind."""
+
+    return isinstance(value, str) and (
+        value in CORE_RELATIONSHIP_KINDS
+        or _QUALIFIED_NAME_RE.fullmatch(value) is not None
+    )
+
+
 class KnowledgeGraphError(ValueError):
     """Field-specific typed-graph contract or materialization failure."""
 
@@ -2276,9 +2285,7 @@ def _enum(value: object, values: Sequence[str], path: str) -> str:
 
 def _relationship_kind(value: object, path: str) -> str:
     result = _open_name(value, path)
-    if result not in CORE_RELATIONSHIP_KINDS and not _QUALIFIED_NAME_RE.fullmatch(
-        result
-    ):
+    if not is_supported_relationship_kind(result):
         raise KnowledgeGraphError(
             path,
             "unknown kinds must use a namespace/name spelling",
@@ -2380,6 +2387,7 @@ __all__ = [
     "concept_endpoint",
     "external_resource_endpoint",
     "materialize_typed_graph",
+    "is_supported_relationship_kind",
     "relationship_edge_key",
     "serialize_typed_graph",
     "source_symbol_endpoint",

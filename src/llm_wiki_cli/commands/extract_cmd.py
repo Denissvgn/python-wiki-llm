@@ -1358,6 +1358,7 @@ def build_extract_payload(
     openapi_file: str | Path | None = None,
     allow_external_src: bool = False,
     read_only: bool = False,
+    include_plugins: bool = True,
 ) -> ExtractPayloadResult:
     """Build the stable extract JSON payload without printing or exiting."""
     src_root = validate_source_root(
@@ -1438,6 +1439,7 @@ def build_extract_payload(
             helper_cache_dir=helper_cache_dir,
             include_tests=include_test_languages,
             capture_data_effect_observations=deep,
+            include_plugins=include_plugins,
         )
     )
     if result.failed:

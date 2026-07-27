@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -14,6 +15,7 @@ from llm_wiki_cli.services import io as wiki_io
 from llm_wiki_cli.services import obsidian, site_export
 from llm_wiki_cli.services.knowledge_consumption import load_knowledge_read_view
 from llm_wiki_cli.services.knowledge_projection import project_knowledge
+from tests.knowledge_fixtures import FIXTURE_REPOSITORY_IDENTITY
 from tests.test_knowledge_projection_e2e import (
     _commit_governed_fixture,
     _tree_bytes,
@@ -23,6 +25,58 @@ from tests.test_knowledge_projection_e2e import (
 def _tree_paths(root: Path) -> tuple[str, ...]:
     return tuple(
         sorted(path.relative_to(root).as_posix() for path in root.rglob("*"))
+    )
+
+
+def test_site_check_compares_every_supplied_knowledge_selection(tmp_path):
+    wiki = _commit_governed_fixture(tmp_path)
+    view = load_knowledge_read_view(
+        wiki,
+        snapshot_only=True,
+        include_machine_verification=True,
+    )
+    projection = project_knowledge(
+        view,
+        profile="public-portable",
+        public_repository_identity=FIXTURE_REPOSITORY_IDENTITY,
+    )
+    out = tmp_path / "site"
+    site_export.export_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        format="mkdocs",
+        knowledge_metadata="summary",
+        knowledge_projection=projection,
+    )
+
+    matching = site_export.check_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        format="mkdocs",
+        link_mode="http",
+        knowledge_metadata="summary",
+        knowledge_projection=projection,
+    )
+    omitted_selection = site_export.check_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        format="mkdocs",
+        link_mode="http",
+    )
+
+    assert matching.ok is True
+    assert {
+        issue.get("target")
+        for issue in omitted_selection.issues
+        if issue["category"] == "publication_selection_mismatch"
+    } == {
+        "knowledge_metadata",
+        "knowledge_profile",
+        "public_identity_digest",
+    }
+    assert any(
+        issue["category"] == "publication_projection_mismatch"
+        for issue in omitted_selection.issues
     )
 
 
@@ -52,7 +106,7 @@ def test_enriched_existing_outputs_dry_run_plan_every_write_without_mutation(
         out_dir=site,
         format="mkdocs",
         knowledge_metadata="summary",
-        knowledge_projection=public_projection,
+        knowledge_projection=requested_projection,
     )
     obsidian.export_obsidian_vault(
         src_dir=str(tmp_path / "source-is-not-read"),
@@ -237,11 +291,14 @@ def test_enriched_site_main_page_interruptions_preserve_or_reject_output(
     native_paths_before = _tree_paths(wiki)
     view = load_knowledge_read_view(wiki, snapshot_only=True)
     public_projection = project_knowledge(view, profile="public-portable")
-    internal_projection = project_knowledge(view, profile="internal")
+    updated_public_projection = replace(
+        public_projection,
+        source_knowledge_hash="sha256:" + "f" * 64,
+    )
 
     prior_site = tmp_path / "site-prior"
     mixed_site = tmp_path / "site-mixed"
-    expected_internal_site = tmp_path / "site-internal"
+    expected_updated_site = tmp_path / "site-updated"
     for target in (prior_site, mixed_site):
         site_export.export_site_mirror(
             wiki_dir=wiki,
@@ -252,10 +309,10 @@ def test_enriched_site_main_page_interruptions_preserve_or_reject_output(
         )
     site_export.export_site_mirror(
         wiki_dir=wiki,
-        out_dir=expected_internal_site,
+        out_dir=expected_updated_site,
         format="mkdocs",
         knowledge_metadata="summary",
-        knowledge_projection=internal_projection,
+        knowledge_projection=updated_public_projection,
     )
 
     prior_before = _tree_bytes(prior_site)
@@ -276,27 +333,46 @@ def test_enriched_site_main_page_interruptions_preserve_or_reject_output(
                 out_dir=prior_site,
                 format="mkdocs",
                 knowledge_metadata="summary",
-                knowledge_projection=internal_projection,
+                knowledge_projection=updated_public_projection,
             )
 
-    assert _tree_bytes(prior_site) == prior_before
+    prior_after = _tree_bytes(prior_site)
+    assert {
+        path: content
+        for path, content in prior_after.items()
+        if path != site_export.SITE_PUBLICATION_RECEIPT
+    } == {
+        path: content
+        for path, content in prior_before.items()
+        if path != site_export.SITE_PUBLICATION_RECEIPT
+    }
+    assert json.loads(
+        (prior_site / site_export.SITE_PUBLICATION_RECEIPT).read_text(
+            encoding="utf-8"
+        )
+    )["state"] == "incomplete"
     assert _tree_paths(prior_site) == prior_paths_before
     assert not tuple(prior_site.rglob("*.tmp"))
-    assert site_export.check_site_mirror(
+    interrupted_prior_check = site_export.check_site_mirror(
         wiki_dir=wiki,
         out_dir=prior_site,
         knowledge_metadata="summary",
         knowledge_projection=public_projection,
-    ).ok
+    )
+    assert interrupted_prior_check.ok is False
+    assert any(
+        issue["category"] == "incomplete_publication_receipt"
+        for issue in interrupted_prior_check.issues
+    )
     stale_prior_check = site_export.check_site_mirror(
         wiki_dir=wiki,
         out_dir=prior_site,
         knowledge_metadata="summary",
-        knowledge_projection=internal_projection,
+        knowledge_projection=updated_public_projection,
     )
     assert stale_prior_check.ok is False
     assert any(
-        issue.get("target") == "llm_wiki.knowledge_profile"
+        issue["category"] == "publication_projection_mismatch"
         for issue in stale_prior_check.issues
     )
 
@@ -321,18 +397,27 @@ def test_enriched_site_main_page_interruptions_preserve_or_reject_output(
                 out_dir=mixed_site,
                 format="mkdocs",
                 knowledge_metadata="summary",
-                knowledge_projection=internal_projection,
+                knowledge_projection=updated_public_projection,
             )
 
     mixed_after = _tree_bytes(mixed_site)
-    assert mixed_after["index.md"] == _tree_bytes(expected_internal_site)["index.md"]
+    assert mixed_after["index.md"] == _tree_bytes(expected_updated_site)["index.md"]
     assert {
-        path: content for path, content in mixed_after.items() if path != "index.md"
+        path: content
+        for path, content in mixed_after.items()
+        if path not in {"index.md", site_export.SITE_PUBLICATION_RECEIPT}
     } == {
-        path: content for path, content in mixed_before.items() if path != "index.md"
+        path: content
+        for path, content in mixed_before.items()
+        if path not in {"index.md", site_export.SITE_PUBLICATION_RECEIPT}
     }
+    assert json.loads(
+        (mixed_site / site_export.SITE_PUBLICATION_RECEIPT).read_text(
+            encoding="utf-8"
+        )
+    )["state"] == "incomplete"
     assert not tuple(mixed_site.rglob("*.tmp"))
-    for projection in (public_projection, internal_projection):
+    for projection in (public_projection, updated_public_projection):
         checked = site_export.check_site_mirror(
             wiki_dir=wiki,
             out_dir=mixed_site,
@@ -341,7 +426,7 @@ def test_enriched_site_main_page_interruptions_preserve_or_reject_output(
         )
         assert checked.ok is False
         assert any(
-            issue.get("target") == "llm_wiki.knowledge_profile"
+            issue["category"] == "incomplete_publication_receipt"
             for issue in checked.issues
         )
 

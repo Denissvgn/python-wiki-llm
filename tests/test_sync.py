@@ -385,10 +385,19 @@ def test_service_manifest_load_keeps_legacy_optional_mapping_defaults(tmp_path):
 class TestNoManifest:
     """sync exits 1 with a clear message when no manifest exists."""
 
-    def test_exits_one_and_prints_error(self, tmp_path, capsys):
+    def test_exits_one_and_prints_exact_bootstrap_before_extraction(
+        self, tmp_path, capsys, monkeypatch
+    ):
         wiki_dir = tmp_path / "docs" / "llm_wiki"
         wiki_dir.mkdir(parents=True)
         args = _make_sync_args(src_dir=str(tmp_path), wiki_dir=str(wiki_dir))
+        monkeypatch.setattr(
+            sync_cmd,
+            "_extract_current_inventory",
+            lambda *_args, **_kwargs: pytest.fail(
+                "first-use routing must happen before extraction"
+            ),
+        )
 
         old_cwd = os.getcwd()
         os.chdir(tmp_path)  # validate_path checks relative to cwd
@@ -400,8 +409,46 @@ class TestNoManifest:
 
         assert exc_info.value.code == 1
         captured = capsys.readouterr()
-        assert "bootstrap" in captured.err.lower()
+        assert (
+            f"`llm-wiki bootstrap --src-dir {tmp_path} "
+            f"--wiki-dir {wiki_dir}`"
+        ) in captured.err
+        assert "llm-wiki sync --jobs 1" not in captured.err
+        assert "llm-wiki migrate --dry-run" not in captured.err
         assert MANIFEST_FILENAME in captured.err
+
+    def test_partial_manifestless_wiki_routes_to_migration_before_extraction(
+        self, tmp_path, capsys, monkeypatch
+    ):
+        wiki_dir = tmp_path / "docs" / "llm_wiki"
+        page = wiki_dir / "modules" / "custom.md"
+        page.parent.mkdir(parents=True)
+        page.write_text("# Custom\n\nHuman-authored content.\n", encoding="utf-8")
+        before = page.read_bytes()
+        args = _make_sync_args(src_dir=str(tmp_path), wiki_dir=str(wiki_dir))
+        monkeypatch.setattr(
+            sync_cmd,
+            "_extract_current_inventory",
+            lambda *_args, **_kwargs: pytest.fail(
+                "partial-wiki routing must happen before extraction"
+            ),
+        )
+
+        old_cwd = os.getcwd()
+        os.chdir(tmp_path)
+        try:
+            with pytest.raises(SystemExit) as exc_info:
+                sync_cmd.run(args)
+        finally:
+            os.chdir(old_cwd)
+
+        assert exc_info.value.code == 1
+        assert page.read_bytes() == before
+        captured = capsys.readouterr()
+        assert "llm-wiki migrate --dry-run" in captured.err
+        assert "--src-dir" in captured.err
+        assert "--wiki-dir" in captured.err
+        assert "bootstrap" not in captured.err.lower()
 
 
 class TestSyncSurfaceIndex:

@@ -185,6 +185,9 @@ def run(args) -> None:
             wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
             out_dir = getattr(args, "out_dir")
             validate_path(out_dir, "--out-dir")
+            built_site_dir = getattr(args, "built_site_dir", None)
+            if built_site_dir:
+                validate_path(built_site_dir, "--built-site-dir")
             if _hub_requested(args):
                 wiki_root, wikis = _validate_hub_args(args)
                 knowledge_projections = _load_hub_knowledge_projections(
@@ -196,20 +199,23 @@ def run(args) -> None:
                     wiki_root=wiki_root,
                     wikis=wikis,
                     out_dir=out_dir,
+                    built_site_dir=built_site_dir,
+                    link_mode=getattr(args, "link_mode", "http"),
+                    format=getattr(args, "format", None),
+                    profile=getattr(args, "profile", "reference"),
+                    site_name=getattr(args, "site_name", None),
                     knowledge_metadata=_knowledge_metadata(args),
                     knowledge_projections=knowledge_projections,
                 )
             else:
                 validate_path(wiki_dir, "--wiki-dir")
                 knowledge_projection = _load_knowledge_projection(wiki_dir, args)
-                built_site_dir = getattr(args, "built_site_dir", None)
-                if built_site_dir:
-                    validate_path(built_site_dir, "--built-site-dir")
                 report = check_site_mirror(
                     wiki_dir=wiki_dir,
                     out_dir=out_dir,
                     built_site_dir=built_site_dir,
                     link_mode=getattr(args, "link_mode", "http"),
+                    format=getattr(args, "format", None),
                     profile=getattr(args, "profile", "reference"),
                     site_name=getattr(args, "site_name", None),
                     knowledge_metadata=_knowledge_metadata(args),

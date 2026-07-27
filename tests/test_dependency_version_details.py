@@ -204,6 +204,283 @@ def test_go_mod_selection_is_separate_from_all_go_sum_observations(tmp_path):
     assert indirect["reach"] == "transitive"
 
 
+def test_go_mod_replacements_preserve_requested_and_effective_versions(tmp_path):
+    (tmp_path / "go.mod").write_text(
+        textwrap.dedent(
+            """\
+            module example.com/app
+
+            require (
+                example.com/same v1.2.3
+                example.com/original v2.0.0 // indirect
+                example.com/local v3.0.0
+                example.com/unchanged v4.0.0
+            )
+
+            replace example.com/same => example.com/same v1.2.4
+            replace (
+                example.com/original v2.0.0 => example.com/fork v2.1.0
+                example.com/local => ../private/local-module
+            )
+            """
+        ),
+        encoding="utf-8",
+    )
+
+    details = build_dependency_version_details(tmp_path)
+    records = details["records"]
+
+    assert {
+        (
+            record["package"],
+            record["version"],
+            record["selection_confidence"],
+            record["source_semantics"],
+            record["reach"],
+            record["declared_as"],
+        )
+        for record in records
+    } == {
+        (
+            "example.com/same",
+            "v1.2.3",
+            "declared",
+            "go-mod-requirement",
+            "direct",
+            None,
+        ),
+        (
+            "example.com/same",
+            "v1.2.4",
+            "selected",
+            "go-mod-replacement-selection",
+            "direct",
+            None,
+        ),
+        (
+            "example.com/original",
+            "v2.0.0",
+            "declared",
+            "go-mod-requirement",
+            "transitive",
+            None,
+        ),
+        (
+            "example.com/fork",
+            "v2.1.0",
+            "selected",
+            "go-mod-replacement-selection",
+            "transitive",
+            "example.com/original",
+        ),
+        (
+            "example.com/local",
+            "v3.0.0",
+            "declared",
+            "go-mod-requirement",
+            "direct",
+            None,
+        ),
+        (
+            "example.com/unchanged",
+            "v4.0.0",
+            "selected",
+            "go-mod-selection",
+            "direct",
+            None,
+        ),
+    }
+    assert details["diagnostics"] == [
+        {
+            "source_path": "go.mod",
+            "state": "partial",
+            "reason": "go-local-replacement-version-unknown",
+        }
+    ]
+    assert details["coverage"]["observed"] == 7
+    assert details["coverage"]["emitted"] == 6
+    assert details["coverage"]["omitted"] == 1
+    assert "private/local-module" not in json.dumps(details, sort_keys=True)
+
+
+def test_go_mod_local_replacement_with_version_is_malformed_and_path_private(
+    tmp_path,
+):
+    (tmp_path / "go.mod").write_text(
+        textwrap.dedent(
+            """\
+            module example.com/app
+            require example.com/original v1.0.0
+            replace example.com/original => ../private/local-module v1.2.3
+            """
+        ),
+        encoding="utf-8",
+    )
+
+    details = build_dependency_version_details(tmp_path)
+
+    assert [
+        (
+            record["package"],
+            record["version"],
+            record["selection_confidence"],
+        )
+        for record in details["records"]
+    ] == [("example.com/original", "v1.0.0", "declared")]
+    assert details["diagnostics"] == [
+        {
+            "source_path": "go.mod",
+            "state": "partial",
+            "reason": "malformed-go-replacement",
+        }
+    ]
+    assert details["coverage"]["observed"] == 2
+    assert details["coverage"]["emitted"] == 1
+    assert details["coverage"]["omitted"] == 1
+    assert "private/local-module" not in json.dumps(details, sort_keys=True)
+
+
+def test_go_mod_ambiguous_and_unmatched_replacements_fail_closed(tmp_path):
+    (tmp_path / "go.mod").write_text(
+        textwrap.dedent(
+            """\
+            module example.com/app
+
+            require example.com/original v1.0.0
+            replace (
+                example.com/original => example.com/fork v1.1.0
+                example.com/original v1.0.0 => example.com/fork v1.2.0
+                example.com/missing => example.com/other v2.0.0
+                broken =>
+            )
+            """
+        ),
+        encoding="utf-8",
+    )
+
+    details = build_dependency_version_details(tmp_path)
+
+    assert [
+        (
+            record["package"],
+            record["version"],
+            record["selection_confidence"],
+        )
+        for record in details["records"]
+    ] == [("example.com/original", "v1.0.0", "declared")]
+    assert {item["reason"] for item in details["diagnostics"]} == {
+        "conflicting-go-replacement",
+        "malformed-go-replacement",
+        "unmatched-go-replacement",
+    }
+    assert details["coverage"]["observed"] == 5
+    assert details["coverage"]["emitted"] == 1
+    assert details["coverage"]["omitted"] == 4
+
+
+def test_go_mod_malformed_replacement_makes_applicable_selection_unknown(
+    tmp_path,
+):
+    (tmp_path / "go.mod").write_text(
+        textwrap.dedent(
+            """\
+            module example.com/app
+            require example.com/original v1.0.0
+            replace example.com/original => example.com/fork v1.1.0
+            replace broken =>
+            """
+        ),
+        encoding="utf-8",
+    )
+
+    details = build_dependency_version_details(tmp_path)
+
+    assert [
+        (
+            record["package"],
+            record["version"],
+            record["selection_confidence"],
+        )
+        for record in details["records"]
+    ] == [("example.com/original", "v1.0.0", "declared")]
+    assert {item["reason"] for item in details["diagnostics"]} == {
+        "indeterminate-go-replacement-selection",
+        "malformed-go-replacement",
+    }
+    assert details["coverage"] == {
+        "observed": 3,
+        "emitted": 1,
+        "omitted": 2,
+        "limit": None,
+        "truncated": False,
+        "limitations": [
+            "declarations-do-not-prove-a-selected-version",
+            "malformed-or-unsupported-version-records",
+            "static-lock-analysis-does-not-claim-runtime-installation",
+            "unknown-selection-without-lock-evidence",
+        ],
+    }
+
+
+def test_requirements_unsupported_forms_are_counted_and_diagnostic(tmp_path):
+    (tmp_path / "requirements.txt").write_text(
+        textwrap.dedent(
+            """\
+            requests==2.32.0
+            named @ https://example.invalid/named-1.0.tar.gz
+            -r base.txt
+            -rmore.txt
+            --requirement nested.txt
+            --requirement=other.txt
+            -c constraints.txt
+            -cmore-constraints.txt
+            --constraint pins.txt
+            --constraint=other-pins.txt
+            -e .
+            -e../local
+            --editable ../other
+            --editable=../third
+            git+https://example.invalid/repo.git#egg=unnamed
+            hg+https://example.invalid/repo
+            https://example.invalid/archive.tar.gz
+            file:///private/archive.whl
+            """
+        ),
+        encoding="utf-8",
+    )
+
+    details = build_dependency_version_details(tmp_path)
+
+    assert {
+        (record["package"], record["version"])
+        for record in details["records"]
+    } == {
+        ("named", None),
+        ("requests", "2.32.0"),
+    }
+    assert details["coverage"]["observed"] == 18
+    assert details["coverage"]["emitted"] == 2
+    assert details["coverage"]["omitted"] == 16
+    assert details["diagnostics"] == [
+        {
+            "source_path": "requirements.txt",
+            "state": "partial",
+            "reason": "unnamed-requirements-url-or-vcs",
+        },
+        {
+            "source_path": "requirements.txt",
+            "state": "partial",
+            "reason": "unsupported-requirements-editable",
+        },
+        {
+            "source_path": "requirements.txt",
+            "state": "partial",
+            "reason": "unsupported-requirements-indirection",
+        },
+    ]
+    assert "/private/archive.whl" not in json.dumps(details, sort_keys=True)
+
+
 def test_cargo_keeps_multiple_selected_versions_and_truthful_reach(tmp_path):
     (tmp_path / "Cargo.toml").write_text(
         textwrap.dedent(
@@ -438,6 +715,93 @@ def test_package_lock_omits_project_rows_and_marks_hoisted_member_reach_unknown(
         (record["package"], record["version"], record["reach"])
         for record in selected
     ] == [("react", "18.2.0", "unknown")]
+
+
+def test_package_lock_uses_embedded_root_and_workspace_declarations(tmp_path):
+    (tmp_path / "package-lock.json").write_text(
+        json.dumps(
+            {
+                "lockfileVersion": 3,
+                "packages": {
+                    "": {
+                        "dependencies": {"root-direct": "^1"},
+                    },
+                    "packages/web": {
+                        "devDependencies": {"workspace-direct": "^2"},
+                    },
+                    "node_modules/root-direct": {"version": "1.0.0"},
+                    "packages/web/node_modules/workspace-direct": {
+                        "version": "2.0.0"
+                    },
+                    "node_modules/workspace-direct": {"version": "2.1.0"},
+                    "node_modules/hoisted-unknown": {"version": "3.0.0"},
+                    "node_modules/parent/node_modules/nested": {
+                        "version": "4.0.0"
+                    },
+                    "node_modules/web": {
+                        "link": True,
+                        "resolved": "packages/web",
+                    },
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    details = build_dependency_version_details(tmp_path)
+
+    assert [
+        (record["package"], record["version"], record["reach"])
+        for record in details["records"]
+    ] == [
+        ("hoisted-unknown", "3.0.0", "unknown"),
+        ("nested", "4.0.0", "transitive"),
+        ("root-direct", "1.0.0", "direct"),
+        ("workspace-direct", "2.0.0", "direct"),
+        ("workspace-direct", "2.1.0", "unknown"),
+    ]
+    assert not details["diagnostics"]
+
+
+def test_package_lock_v1_requires_declaration_proof_for_direct_reach(tmp_path):
+    (tmp_path / "package.json").write_text(
+        json.dumps({"dependencies": {"proved-direct": "^1"}}),
+        encoding="utf-8",
+    )
+    (tmp_path / "package-lock.json").write_text(
+        json.dumps(
+            {
+                "lockfileVersion": 1,
+                "dependencies": {
+                    "proved-direct": {"version": "1.0.0"},
+                    "unproved-top-level": {"version": "2.0.0"},
+                    "parent": {
+                        "version": "3.0.0",
+                        "dependencies": {
+                            "nested": {"version": "4.0.0"},
+                        },
+                    },
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    selected = [
+        record
+        for record in _records(tmp_path)
+        if record["selection_confidence"] == "selected"
+    ]
+
+    assert [
+        (record["package"], record["version"], record["reach"])
+        for record in selected
+    ] == [
+        ("nested", "4.0.0", "transitive"),
+        ("parent", "3.0.0", "unknown"),
+        ("proved-direct", "1.0.0", "direct"),
+        ("unproved-top-level", "2.0.0", "unknown"),
+    ]
 
 
 def test_public_analysis_is_deterministic_relative_and_reports_partial_sources(

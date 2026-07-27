@@ -13,10 +13,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any, TextIO
 
-from ..config import (
-    AGENT_CHOICES,
-    DEFAULT_WIKI_DIR as _DEFAULT_WIKI_DIR,
-)
+from ..config import DEFAULT_WIKI_DIR as _DEFAULT_WIKI_DIR
 from ..config import (
     validate_path,
     validate_source_root,
@@ -117,9 +114,12 @@ from ..services.source_snapshot import (
     unsupported_source_summary,
 )
 from ..services.sync_manifest import SyncManifest
-from ..services.wiki_scaffold import (
-    INITIAL_WIKI_INDEX_MARKDOWN,
-    INITIAL_WIKI_LOG_MARKDOWN,
+from ..services.wiki_lifecycle import (
+    WikiLifecycleState,
+    classify_wiki_lifecycle,
+    is_pristine_wiki_target,
+    migration_guidance,
+    sync_guidance,
 )
 from ..services.wiki_surface import (
     PageKind,
@@ -5031,112 +5031,31 @@ def _bootstrap_result(state: _BootstrapRunState) -> BootstrapResult:
 def _is_pristine_bootstrap_target(wiki_dir: Path) -> bool:
     """Return whether *wiki_dir* is empty or is the complete init scaffold."""
 
-    if wiki_dir.is_symlink():
-        return False
-    if not wiki_dir.exists():
-        return True
-    if not wiki_dir.is_dir():
-        return False
-
-    scaffold_directories = {
-        entry.directory
-        for entry in iter_page_kinds()
-        if entry.directory is not None
-    }
-    allowed_gitkeeps = {".gitkeep"} | {
-        f"{directory}/.gitkeep" for directory in scaffold_directories
-    }
-    expected_paths = {
-        *scaffold_directories,
-        *allowed_gitkeeps,
-        "index.md",
-        "log.md",
-    }
-    try:
-        entries = sorted(wiki_dir.rglob("*"))
-    except OSError:
-        return False
-    if not entries:
-        return True
-
-    paths_by_relative: dict[str, Path] = {}
-    for path in entries:
-        if path.is_symlink():
-            return False
-        try:
-            relative = path.relative_to(wiki_dir).as_posix()
-        except ValueError:
-            return False
-        paths_by_relative[relative] = path
-
-    actual_paths = set(paths_by_relative)
-    if actual_paths not in (
-        expected_paths,
-        expected_paths | {".llm-wiki-agent"},
-    ):
-        return False
-
-    for relative, path in paths_by_relative.items():
-        if relative in scaffold_directories:
-            if not path.is_dir():
-                return False
-            continue
-        if not path.is_file():
-            return False
-        try:
-            if relative in allowed_gitkeeps:
-                if path.stat().st_size != 0:
-                    return False
-            elif relative == "index.md":
-                if path.read_text(encoding="utf-8") != INITIAL_WIKI_INDEX_MARKDOWN:
-                    return False
-            elif relative == "log.md":
-                if path.read_text(encoding="utf-8") != INITIAL_WIKI_LOG_MARKDOWN:
-                    return False
-            elif relative == ".llm-wiki-agent":
-                raw_config = path.read_text(encoding="utf-8")
-                config = json.loads(raw_config)
-                if (
-                    not isinstance(config, dict)
-                    or set(config)
-                    != {
-                        "agent",
-                        "quality_hints",
-                        "reference_skill",
-                        "issue_reporting",
-                    }
-                    or config["agent"] not in AGENT_CHOICES
-                    or any(
-                        type(config[key]) is not bool
-                        for key in (
-                            "quality_hints",
-                            "reference_skill",
-                            "issue_reporting",
-                        )
-                    )
-                ):
-                    return False
-                canonical_config = {
-                    "agent": config["agent"],
-                    "quality_hints": config["quality_hints"],
-                    "reference_skill": config["reference_skill"],
-                    "issue_reporting": config["issue_reporting"],
-                }
-                if raw_config != json.dumps(canonical_config, indent=2) + "\n":
-                    return False
-        except (KeyError, OSError, TypeError, UnicodeError, ValueError):
-            return False
-    return True
+    return is_pristine_wiki_target(wiki_dir)
 
 
 def _first_use_guidance(options: _BootstrapRunOptions) -> str:
-    src_dir = shlex.quote(options.src_dir)
-    wiki_dir = shlex.quote(str(options.wiki_dir))
+    state = classify_wiki_lifecycle(options.wiki_dir)
+    if state is WikiLifecycleState.MIGRATION_REQUIRED:
+        route = migration_guidance(
+            src_dir=options.src_dir,
+            wiki_dir=options.wiki_dir,
+        )
+    elif state in {
+        WikiLifecycleState.MANAGED,
+        WikiLifecycleState.SYNC_SEEDABLE,
+    }:
+        route = sync_guidance(
+            src_dir=options.src_dir,
+            wiki_dir=options.wiki_dir,
+        )
+    else:
+        route = (
+            "Run the same bootstrap command without the compatibility "
+            "`overwrite` option."
+        )
     return (
-        "Bootstrap is first-use only. For a maintained wiki, run "
-        f"`llm-wiki sync --jobs 1 --src-dir {src_dir} --wiki-dir {wiki_dir}`. "
-        "For an older or partial layout, first preview "
-        f"`llm-wiki migrate --dry-run --src-dir {src_dir} --wiki-dir {wiki_dir}`. "
+        f"Bootstrap is first-use only. {route} "
         "The phrase 're-bootstrap' never authorizes replacement."
     )
 

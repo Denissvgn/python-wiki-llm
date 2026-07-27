@@ -77,6 +77,13 @@ edge cases.
    If a supported manifest cannot be read or parsed, retain its diagnostic and
    missing scope; never silently omit it.
 
+   Requirements include/constraint spellings remain intentionally unsupported:
+   each `-r`, `--requirement`, `-c`, or `--constraint` line is counted as
+   omitted with `unsupported-requirements-indirection`; do not follow its path.
+   Preserve `unsupported-requirements-editable` and
+   `unnamed-requirements-url-or-vcs` as separate unknowns instead of silently
+   discarding editable or unnamed URL/VCS lines.
+
 3. **Qualify versions per package and scope.** Treat an absent exact selected
    version as unknown. Keep every `version_details.records[]` row distinct by
    ecosystem, scope, package, version, confidence, and source path. A
@@ -90,8 +97,18 @@ edge cases.
    `go.sum` is download/checksum history, not the selected module graph. Label
    its `version_details` rows `observed` with
    `source_semantics=go-checksum-observation`. Use `go.mod` rows as the
-   separately modeled static selection, and never promote checksum history to
-   selected.
+   separately modeled static selection. An unreplaced requirement retains its
+   selected `go-mod-selection` row. A replaced request uses
+   `go-mod-requirement` as declaration provenance, while a remote replacement
+   emits the effective target and version as the selected
+   `go-mod-replacement-selection` row; `declared_as` identifies the original
+   module when the target name changes. A local replacement has no upstream
+   selected version, never exposes its local path, and carries
+   `go-local-replacement-version-unknown`. Treat
+   `malformed-go-replacement`, `conflicting-go-replacement`,
+   `unmatched-go-replacement`, `indeterminate-go-replacement-selection`, and
+   `malformed-go-requirement` as unknown selection. Never promote checksum
+   history or a replacement diagnostic to selected.
 
 4. **Look up advisories with the selected trusted source.** Query by ecosystem,
    normalized package, and each exact scoped version observation. For an
@@ -123,8 +140,11 @@ edge cases.
    Direct declarations, lockfile-only transitive packages, build/plugin
    dependencies, and undeclared imports must remain distinguishable.
    `version_details` models direct/transitive reach only where the source format
-   supports that distinction; `unknown` remains explicit. Its coverage and
-   diagnostics still prohibit a complete transitive-coverage claim.
+   supports that distinction; `unknown` remains explicit. For npm package-lock
+   v1-v3, a root or hoisted package is `direct` only when a matching root or
+   workspace declaration proves it. Without that proof its reach is `unknown`;
+   a nested package is `transitive`. Its coverage and diagnostics still
+   prohibit a complete transitive-coverage claim.
    Supplemental package-manager/scanner output is separate evidence with its
    own provenance and limits.
 

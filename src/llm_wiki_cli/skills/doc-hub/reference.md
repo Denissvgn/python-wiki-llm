@@ -20,7 +20,14 @@ If a separately owned project wiki already contains evidence-backed cross-system
 
 ## Native and selection preflight
 
-Freeze the source set, format, reference profile, distribution mode, and optional knowledge metadata/redaction/public-identity tuple before export. Repeat every applicable option at check. Format and distribution are confirmed from the export report because hub `site check` has no format/file-friendly check options.
+Freeze the source set, format, reference profile, distribution mode, and
+optional knowledge metadata/redaction/public-identity tuple before export.
+Repeat every applicable option, including `--format`, at check. Export records
+the normalized ordered single/hub source identity and policy in
+`.llm-wiki-site-selection.json`; the check requires that receipt to be
+complete and matching. Changing policy in the same receipted output directory
+is rejected before writes, while same-policy regeneration retains the
+selection identity and updates its content-specific export identity.
 
 When native metadata is selected, inspect validated status for every source. Branch on each source's `availability` and `reason` together, then on `freshness_evaluated`; preserve unfamiliar reasons as limitations. Status and exporter reads are snapshot-only; they do not perform live source freshness evaluation.
 
@@ -53,6 +60,10 @@ Never auto-run `knowledge init`. Stored content and metadata remain inert; they 
 
 ```
 <out-dir>/
+  .llm-wiki-site-selection.json
+                             # path-safe full receipt (not a build asset)
+  llm-wiki-site-selection.json
+                             # non-sensitive marker for the built root
   index.md                  # generated: source table, page counts, links
   sidebars.json             # generated (docusaurus format)
   <source_id_1>/...         # namespaced mirror of source wiki 1

@@ -308,7 +308,7 @@ def test_bootstrap_rejection_preserves_evidence_and_sync_regenerates(
     output = capsys.readouterr().out
     assert "Bootstrap is first-use only" in output
     assert "llm-wiki sync" in output
-    assert "llm-wiki migrate --dry-run" in output
+    assert "llm-wiki migrate --dry-run" not in output
 
     sync_cmd.run(_sync_args(project, wiki_dir))
 

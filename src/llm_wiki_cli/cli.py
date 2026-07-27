@@ -1273,6 +1273,15 @@ def _add_site_command(subparsers):
         help="Output directory for the derived static-site mirror",
     )
     site_check.add_argument(
+        "--format",
+        choices=site_cmd.SITE_FORMAT_CHOICES,
+        default=None,
+        help=(
+            "Require the mirror receipt to use this static-site format "
+            "(default: use the recorded format)"
+        ),
+    )
+    site_check.add_argument(
         "--built-site-dir",
         default=None,
         help="Built static site directory to validate for internal HTML links",
@@ -1281,7 +1290,10 @@ def _add_site_command(subparsers):
         "--link-mode",
         choices=site_cmd.LINK_MODE_CHOICES,
         default="http",
-        help="Built HTML link contract: HTTP routing or direct file browsing",
+        help=(
+            "Required publication distribution and built-link contract: "
+            "HTTP routing or direct file browsing (default: http)"
+        ),
     )
     site_check.add_argument(
         "--profile",

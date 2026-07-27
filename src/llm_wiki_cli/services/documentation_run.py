@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import errno
 import hashlib
 import importlib.util
@@ -39,6 +40,7 @@ from .documentation_claim_evidence import (
     DocumentationClaimEvidenceError,
     normalize_claim_evidence_records,
     normalize_runtime_capture_records,
+    preflight_runtime_capture_records,
     reconcile_claim_evidence_records,
     reconcile_runtime_capture_records,
 )
@@ -47,6 +49,12 @@ from .documentation_native import (
     DocumentationNativeRefresh,
     refresh_documentation_native_projection,
 )
+from .documentation_query_builder import (
+    build_documentation_query_service_from_view,
+    build_live_documentation_query_service,
+    build_snapshot_documentation_query_service,
+)
+from .documentation_queries import DocumentationQueryError
 from .documentation_worklist import (
     DOCUMENTATION_WORKLIST_SCHEMA_VERSION,
     build_documentation_worklist,
@@ -77,6 +85,7 @@ from .filesystem_guard import (
 )
 from .io import read_md, write_bytes_atomic, write_text_output
 from .knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from .knowledge_consumption import KnowledgeReadView
 from .knowledge_governance import GOVERNANCE_FILENAME
 from .skills import export_skills, list_bundled_skills
 from .verification_contracts import VERIFICATION_RECEIPT_FILENAME
@@ -971,6 +980,16 @@ class _RefreshArchiveTransaction:
     @property
     def active(self) -> bool:
         return self.workspace_root is not None and self.archive is not None
+
+
+@dataclass(frozen=True)
+class _NativeEvidenceTransaction:
+    """Captured controller state for refresh plus evidence reconciliation."""
+
+    wiki_root: Path
+    artifact_snapshot: dict[str, bytes | None]
+    control_snapshot: dict[Path, bytes | None]
+    run_state: dict[str, Any]
 
 
 @dataclass
@@ -2035,6 +2054,12 @@ def record_documentation_agent_result(
             f"Agent modified CLI-owned generated content: {generated_diff}"
         )
 
+    _preflight_documentation_native_evidence(
+        workspace_root,
+        run,
+        normalized,
+        actual_changed=actual_changed,
+    )
     _validate_result_work_ids(
         normalized, worklist, stage=normalized.stage, wiki_root=wiki_root
     )
@@ -2059,28 +2084,65 @@ def record_documentation_agent_result(
     except DocumentationIntegrityError as exc:
         _block_run_for_integrity(workspace_root, run, str(exc))
         raise
+    phase = f"{normalized.stage}-{attempt:02d}"
     try:
-        native_refresh = _refresh_and_reanchor_native_projection(
+        native_transaction = _capture_native_evidence_transaction(
             workspace_root,
             run,
-            phase=f"{normalized.stage}-{attempt:02d}",
-            changed_wiki_paths=actual_changed,
+            phase=phase,
         )
-    except DocumentationIntegrityError as exc:
-        _block_run_for_integrity(workspace_root, run, str(exc))
-        raise
+    except Exception as exc:
+        integrity_exc = (
+            exc
+            if isinstance(exc, DocumentationIntegrityError)
+            else DocumentationIntegrityError(
+                "Cannot capture the documentation native-evidence transaction: "
+                f"{exc}"
+            )
+        )
+        _block_run_for_integrity(workspace_root, run, str(integrity_exc))
+        if integrity_exc is exc:
+            raise
+        raise integrity_exc from exc
     try:
+        native_refresh, refreshed_knowledge_view = (
+            _refresh_and_reanchor_native_projection(
+                workspace_root,
+                run,
+                phase=phase,
+                changed_wiki_paths=actual_changed,
+            )
+        )
         reconciled_claims, reconciled_captures = (
             _reconcile_documentation_native_evidence(
                 workspace_root,
                 run,
                 normalized,
-                actual_changed=actual_changed,
+                refreshed_knowledge_view=refreshed_knowledge_view,
             )
         )
-    except DocumentationIntegrityError as exc:
-        _block_run_for_integrity(workspace_root, run, str(exc))
-        raise
+    except Exception as exc:
+        integrity_exc = (
+            exc
+            if isinstance(exc, DocumentationIntegrityError)
+            else DocumentationIntegrityError(
+                "Documentation native refresh or evidence reconciliation "
+                f"failed: {exc}"
+            )
+        )
+        try:
+            _rollback_native_evidence_transaction(
+                run,
+                native_transaction,
+                cause=integrity_exc,
+            )
+        except DocumentationIntegrityError as rollback_exc:
+            _block_run_for_integrity(workspace_root, run, str(rollback_exc))
+            raise rollback_exc from integrity_exc
+        _block_run_for_integrity(workspace_root, run, str(integrity_exc))
+        if integrity_exc is exc:
+            raise
+        raise integrity_exc from exc
     result_payload = {
         **normalized.to_dict(),
         "reconciliation": {
@@ -2224,19 +2286,17 @@ def record_documentation_agent_result(
     return run
 
 
-def _reconcile_documentation_native_evidence(
+def _preflight_documentation_native_evidence(
     workspace_root: Path,
     run: DocumentationRun,
     result: DocumentationAgentResult,
     *,
     actual_changed: Iterable[str],
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    """Recompute native claim coordinates and verify out-of-band captures."""
+) -> None:
+    """Reject malformed evidence before native refresh can mutate authority."""
 
-    if not result.claim_evidence and not result.runtime_captures:
-        return [], []
     if result.runtime_captures and result.stage != "user-docs":
-        raise DocumentationIntegrityError(
+        raise DocumentationSchemaError(
             "Runtime capture provenance is accepted only in the user-docs stage."
         )
 
@@ -2244,7 +2304,7 @@ def _reconcile_documentation_native_evidence(
     for claim in result.claim_evidence:
         canonical_page = str(claim["canonical_page"])
         if canonical_page not in evidence_pages:
-            raise DocumentationIntegrityError(
+            raise DocumentationSchemaError(
                 "Claim evidence must cite its canonical page through "
                 f"claims_evidence_pages: {claim['claim_id']}"
             )
@@ -2252,7 +2312,7 @@ def _reconcile_documentation_native_evidence(
         if isinstance(internal_ref, str):
             path = _workspace_path(workspace_root, internal_ref)
             if path.is_symlink() or not path.is_file():
-                raise DocumentationIntegrityError(
+                raise DocumentationSchemaError(
                     f"Claim evidence internal reference is missing: {internal_ref}"
                 )
 
@@ -2260,10 +2320,82 @@ def _reconcile_documentation_native_evidence(
     for capture in result.runtime_captures:
         capture_path = capture.get("capture_path")
         if isinstance(capture_path, str) and capture_path not in changed:
-            raise DocumentationIntegrityError(
+            raise DocumentationSchemaError(
                 "Persisted runtime captures must be independently visible in the "
                 f"stage changed-path set: {capture_path}"
             )
+
+    graph_limits = {
+        int(graph["limit"])
+        for claim in result.claim_evidence
+        if isinstance((graph := claim.get("graph_query")), Mapping)
+    }
+    if len(graph_limits) > 1:
+        raise DocumentationSchemaError(
+            "All claim-evidence graph queries in one result must reuse one "
+            "operation-scoped query limit."
+        )
+
+    try:
+        preflight_runtime_capture_records(
+            result.runtime_captures,
+            wiki_root=workspace_root / run.paths["wiki"],
+        )
+    except DocumentationClaimEvidenceError as exc:
+        raise DocumentationSchemaError(str(exc)) from exc
+
+
+def _capture_native_evidence_transaction(
+    workspace_root: Path,
+    run: DocumentationRun,
+    *,
+    phase: str,
+) -> _NativeEvidenceTransaction:
+    wiki_root = workspace_root / run.paths["wiki"]
+    evidence_root = workspace_root / RUN_CONTROL_DIR / "evidence"
+    control_paths = {
+        evidence_root / f"native-refresh-{phase}.json",
+        evidence_root / "native-refresh.json",
+        documentation_run_path(workspace_root),
+    }
+    ownership = run.evidence.get("generated_ownership")
+    if ownership:
+        control_paths.add(_workspace_path(workspace_root, ownership))
+    return _NativeEvidenceTransaction(
+        wiki_root=wiki_root,
+        artifact_snapshot=_capture_native_artifact_bytes(wiki_root),
+        control_snapshot=_capture_exact_file_bytes(control_paths),
+        run_state=copy.deepcopy(run.__dict__),
+    )
+
+
+def _rollback_native_evidence_transaction(
+    run: DocumentationRun,
+    transaction: _NativeEvidenceTransaction,
+    *,
+    cause: BaseException,
+) -> None:
+    run.__dict__.clear()
+    run.__dict__.update(copy.deepcopy(transaction.run_state))
+    _rollback_native_refresh_transaction(
+        transaction.wiki_root,
+        transaction.artifact_snapshot,
+        transaction.control_snapshot,
+        cause=cause,
+    )
+
+
+def _reconcile_documentation_native_evidence(
+    workspace_root: Path,
+    run: DocumentationRun,
+    result: DocumentationAgentResult,
+    *,
+    refreshed_knowledge_view: KnowledgeReadView | None = None,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Recompute native claim coordinates and verify out-of-band captures."""
+
+    if not result.claim_evidence and not result.runtime_captures:
+        return [], []
 
     graph_limits = {
         int(graph["limit"])
@@ -2280,29 +2412,46 @@ def _reconcile_documentation_native_evidence(
 
     service = None
     try:
-        from .documentation_queries import DocumentationGraphQueryService
-        from .knowledge_consumption import load_knowledge_read_view
-        from .knowledge_verification import verification_summaries_for_concepts
-
-        knowledge_view = load_knowledge_read_view(
-            wiki_root,
-            snapshot_only=True,
-            include_machine_verification=True,
-        )
-        service = DocumentationGraphQueryService(
-            {},
-            knowledge_view=knowledge_view,
-            machine_verification=verification_summaries_for_concepts(
-                knowledge_view
-            ),
-            limit=query_limit,
-        )
-    except (OSError, RecursionError, TypeError, UnicodeError, ValueError) as exc:
-        if result.claim_evidence:
-            raise DocumentationIntegrityError(
-                "Cannot independently build the committed native view required "
-                f"for claim-evidence reconciliation: {exc}"
-            ) from exc
+        runtime_paths = _load_bound_runtime_policy(workspace_root, run)
+        source_root = runtime_paths.get("source_root")
+        source_is_current = run.baseline.get("freshness") == "verified_current"
+        source_is_available = source_root is not None and source_root.is_dir()
+        if source_root is not None and source_is_available and source_is_current:
+            if refreshed_knowledge_view is not None:
+                service = build_documentation_query_service_from_view(
+                    wiki_root=wiki_root,
+                    knowledge_view=refreshed_knowledge_view,
+                    limit=query_limit,
+                )
+            else:
+                service = build_live_documentation_query_service(
+                    source_root=source_root,
+                    wiki_root=wiki_root,
+                    limit=query_limit,
+                    read_only=True,
+                    helper_cache_dir=runtime_paths.get("helper_cache_root"),
+                    include_plugins=bool(
+                        run.policy.get("source_plugins_trusted", False)
+                    ),
+                    require_live_freshness=True,
+                )
+        else:
+            service = build_snapshot_documentation_query_service(
+                wiki_root=wiki_root,
+                limit=query_limit,
+            )
+    except (
+        OSError,
+        RecursionError,
+        RuntimeError,
+        TypeError,
+        UnicodeError,
+        ValueError,
+    ) as exc:
+        raise DocumentationIntegrityError(
+            "Cannot independently build the committed native view required "
+            f"for evidence reconciliation: {exc}"
+        ) from exc
 
     try:
         claims = (
@@ -2315,7 +2464,7 @@ def _reconcile_documentation_native_evidence(
             wiki_root=wiki_root,
             service=service,
         )
-    except DocumentationClaimEvidenceError as exc:
+    except (DocumentationClaimEvidenceError, DocumentationQueryError) as exc:
         raise DocumentationIntegrityError(
             f"Documentation native evidence did not reconcile: {exc}"
         ) from exc
@@ -2733,6 +2882,7 @@ def export_documentation_run(
             out_dir=site_root,
             built_site_dir=built_root if built_verified else None,
             link_mode=link_mode,
+            format=publication_format,
             profile="user",
             site_name=str(run.publication["site_name"]),
             knowledge_metadata=(
@@ -3070,19 +3220,21 @@ def _refresh_and_reanchor_native_projection(
     *,
     phase: str,
     changed_wiki_paths: Iterable[str],
-) -> dict[str, Any] | None:
+) -> tuple[dict[str, Any] | None, KnowledgeReadView | None]:
     changed = tuple(sorted({str(path) for path in changed_wiki_paths}))
     if not any(path.casefold().endswith(".md") for path in changed):
-        return None
+        return None, None
     runtime_paths = _load_bound_runtime_policy(workspace_root, run)
     source_root = runtime_paths.get("source_root")
     source_is_current = run.baseline.get("freshness") == "verified_current"
-    if source_root is None or not source_is_current:
+    source_is_available = source_root is not None and source_root.is_dir()
+    if not source_is_available or not source_is_current:
         if "native_knowledge_snapshot_only" not in run.verdict_limitations:
             run.verdict_limitations.append("native_knowledge_snapshot_only")
         save_documentation_run(workspace_root, run)
-        return None
+        return None, None
 
+    assert source_root is not None
     wiki_root = workspace_root / run.paths["wiki"]
     ownership_path = _workspace_path(
         workspace_root,
@@ -3178,7 +3330,7 @@ def _refresh_and_reanchor_native_projection(
             run.verdict_limitations.remove("native_knowledge_snapshot_only")
         _apply_native_verification_limitation(run, verification_evaluation)
         save_documentation_run(workspace_root, run)
-        return refresh_payload
+        return refresh_payload, refresh.knowledge_view
     except BaseException as exc:
         run.evidence.clear()
         run.evidence.update(run_evidence_before)
@@ -5544,15 +5696,29 @@ def _verify_read_only_inputs(
             "Source-backed run lost its required source root or baseline evidence."
         )
     if source_evidence and source_root is not None:
-        baseline = TreeBaseline.from_dict(
-            _read_json(_workspace_path(workspace_root, source_evidence))
-        )
-        difference = compare_tree_baseline(baseline, source_root)
-        checks.append({"check": "source_integrity", **difference.to_dict()})
-        if not difference.ok:
-            raise DocumentationIntegrityError(
-                f"Read-only source integrity changed: {difference.to_dict()}"
+        if not source_root.exists():
+            checks.append(
+                {
+                    "check": "source_integrity",
+                    "ok": True,
+                    "limited": True,
+                    "availability": "source_unavailable",
+                }
             )
+        else:
+            if not source_root.is_dir():
+                raise DocumentationIntegrityError(
+                    "Bound read-only source root is no longer a directory."
+                )
+            baseline = TreeBaseline.from_dict(
+                _read_json(_workspace_path(workspace_root, source_evidence))
+            )
+            difference = compare_tree_baseline(baseline, source_root)
+            checks.append({"check": "source_integrity", **difference.to_dict()})
+            if not difference.ok:
+                raise DocumentationIntegrityError(
+                    f"Read-only source integrity changed: {difference.to_dict()}"
+                )
     input_root = runtime_paths.get("input_wiki_root")
     input_info = run.baseline.get("input_wiki")
     if isinstance(input_info, dict) and input_root is None:
@@ -5593,7 +5759,8 @@ def _run_wiki_validation_pair(
     results: dict[str, dict[str, Any]] = {}
 
     source_is_current = run.baseline.get("freshness") == "verified_current"
-    if source_root is not None and source_is_current:
+    source_is_available = source_root is not None and source_root.is_dir()
+    if source_root is not None and source_is_available and source_is_current:
         from ..commands.lint_cmd import build_report, report_to_dict
         from .inventory_cache import InventoryCacheOptions
 
@@ -5640,7 +5807,7 @@ def _run_wiki_validation_pair(
         issues = _wiki_only_structural_issues(wiki_root)
         limitation = (
             "source_unavailable; source coverage was not checked"
-            if source_root is None
+            if not source_is_available
             else "source_not_verified_current; source coverage was not checked"
         )
         for name in ("lint", "ci-check"):
@@ -5657,7 +5824,7 @@ def _run_wiki_validation_pair(
                     "wiki_dir": "wiki",
                     "src_dir": (
                         "source_unavailable"
-                        if source_root is None
+                        if not source_is_available
                         else "source_not_verified_current"
                     ),
                     "strict": name == "ci-check",

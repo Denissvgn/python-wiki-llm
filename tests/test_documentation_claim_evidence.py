@@ -17,8 +17,12 @@ from llm_wiki_cli.services.documentation_claim_evidence import (
 )
 from llm_wiki_cli.services.documentation_queries import (
     DocumentationGraphQueryService,
+    DocumentationQueryError,
 )
-from llm_wiki_cli.services.documentation_run import DocumentationAgentResult
+from llm_wiki_cli.services.documentation_run import (
+    DocumentationAgentResult,
+    DocumentationSchemaError,
+)
 from llm_wiki_cli.services.contracts import (
     DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION,
 )
@@ -81,6 +85,31 @@ def _capture_record(
     }
 
 
+def _agent_result_payload(
+    *,
+    claim_evidence: list[dict[str, object]],
+) -> dict[str, object]:
+    return {
+        "schema_version": DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION,
+        "run_id": "run-claim-shape",
+        "stage": "wiki-enrichment",
+        "status": "complete",
+        "changed_wiki_paths": [],
+        "reused_work_ids": [],
+        "completed_work_ids": [],
+        "deferred_work_ids": [],
+        "claims_evidence_pages": ["modules/accounts.md"],
+        "claim_evidence": claim_evidence,
+        "unresolved_unknowns": [],
+        "unsupported_source_notices": [],
+        "requested_follow_up_checks": [],
+        "reported_source_writes": [],
+        "reported_input_wiki_writes": [],
+        "reported_generated_block_edits": [],
+        "findings": [],
+    }
+
+
 def test_legacy_page_only_agent_result_remains_readable() -> None:
     result = DocumentationAgentResult.from_dict(
         {
@@ -135,6 +164,77 @@ def test_claim_evidence_reconciles_exact_current_identity_and_graph_bounds(
     assert record["bounds"]["edges"]["returned"] <= 1
     assert record["bounds"]["edges"]["truncated"] is True
     assert reconcile_claim_evidence_records([record], service) == (record,)
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("kinds", ["calls-ish"], "unsupported typed relationship kind"),
+        ("kinds", ["vendor//edge"], "unsupported typed relationship kind"),
+        ("origins", ["runtime"], "unsupported origin"),
+        ("resolutions", ["current"], "unsupported resolution"),
+    ],
+)
+def test_agent_result_rejects_unsupported_graph_filters_during_normalization(
+    tmp_path,
+    field,
+    value,
+    message,
+) -> None:
+    service = _typed_graph_service(tmp_path)
+    record = qualify_claim_evidence(
+        service,
+        claim_id="work:module-impact",
+        canonical_page="modules/accounts.md",
+        concept_query=MODULE_LOCATOR,
+        graph_query=_graph_query(20),
+    )
+    record["graph_query"][field] = value
+
+    with pytest.raises(DocumentationSchemaError, match=message):
+        DocumentationAgentResult.from_dict(
+            _agent_result_payload(claim_evidence=[record])
+        )
+
+
+def test_agent_result_accepts_qualified_extension_graph_kind(tmp_path) -> None:
+    service = _typed_graph_service(tmp_path)
+    record = qualify_claim_evidence(
+        service,
+        claim_id="work:module-impact",
+        canonical_page="modules/accounts.md",
+        concept_query=MODULE_LOCATOR,
+        graph_query=_graph_query(20),
+    )
+    record["graph_query"]["kinds"].append("vendor.plugin/relationship")
+
+    normalized = DocumentationAgentResult.from_dict(
+        _agent_result_payload(claim_evidence=[record])
+    )
+
+    assert "vendor.plugin/relationship" in (
+        normalized.claim_evidence[0]["graph_query"]["kinds"]
+    )
+
+
+def test_qualification_wraps_native_query_errors() -> None:
+    class FailingService:
+        limit = 20
+
+        @staticmethod
+        def get_concept(_query):
+            raise DocumentationQueryError("injected invalid query")
+
+    with pytest.raises(
+        DocumentationClaimEvidenceError,
+        match="native concept query failed",
+    ):
+        qualify_claim_evidence(
+            FailingService(),
+            claim_id="claim:query-error",
+            canonical_page="modules/accounts.md",
+            concept_query=MODULE_LOCATOR,
+        )
 
 
 def test_claim_section_beyond_bound_stays_unknown_instead_of_missing(

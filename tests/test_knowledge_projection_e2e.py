@@ -12,6 +12,7 @@ import pytest
 import llm_wiki_cli.api as api
 from llm_wiki_cli.commands import (
     bootstrap_cmd,
+    context_cmd,
     knowledge_cmd,
     lint_cmd,
     migrate_cmd,
@@ -811,6 +812,67 @@ def test_governed_projection_enriches_site_and_obsidian_without_native_writes(
         "truncated": True,
         "limitations": ["fixture/input-truncated"],
     }
+
+    def fail_runtime_generation_options(*_args, **_kwargs):
+        raise ValueError("force supported snapshot-only fallback")
+
+    with monkeypatch.context() as snapshot_guard:
+        snapshot_guard.setattr(
+            context_cmd,
+            "runtime_generation_options",
+            fail_runtime_generation_options,
+        )
+        snapshot_context = api.build_context(
+            ".",
+            budget=200_000,
+            focus="all",
+            filters={
+                "surface": "modules",
+                "relationship_direction": "outgoing",
+                "relationship_resolution": "external",
+            },
+            wiki_dir=wiki_relative,
+            read_only=True,
+        )
+
+    assert snapshot_context["knowledge"] == {
+        "availability": "ready",
+        "reason": "all-projection-commitments-match",
+        "freshness_evaluated": False,
+    }
+    assert snapshot_context["surface"]["knowledge_selection"] == context["surface"][
+        "knowledge_selection"
+    ]
+    assert snapshot_context["surface"]["bounds"] == context["surface"]["bounds"]
+    assert snapshot_context["bounds"] == context["bounds"]
+    snapshot_module = snapshot_context["surface"]["pages"][0]
+    assert snapshot_module["canonical_path"] == context_module["canonical_path"]
+    assert snapshot_module["mcp_uri"] == context_module["mcp_uri"]
+    assert snapshot_module["knowledge"]["freshness"] == {
+        "state": None,
+        "reason": "not-evaluated",
+        "live_comparison_performed": False,
+    }
+    assert snapshot_module["knowledge"]["lifecycle"] == context_knowledge["lifecycle"]
+    assert snapshot_module["knowledge"]["review"] == context_knowledge["review"]
+    assert snapshot_module["knowledge"]["verification"] == context_knowledge[
+        "verification"
+    ]
+    assert snapshot_module["knowledge"]["machine_verification"] == context_knowledge[
+        "machine_verification"
+    ]
+    assert snapshot_module["typed_graph"] == context_graph
+    encoded_snapshot_context = json.dumps(snapshot_context, sort_keys=True)
+    for private_value in (
+        PRIVATE_TOKEN,
+        PRIVATE_COORDINATE,
+        "private-reviewer@example.invalid",
+        "private-valid-reviewer@example.invalid",
+        "private-expired-reviewer@example.invalid",
+        "scope_uid",
+        "diagnostics",
+    ):
+        assert private_value not in encoded_snapshot_context
     assert _tree_bytes(wiki) == native_before
 
     site = tmp_path / "site-enriched"
