@@ -43,11 +43,23 @@ from .knowledge_index import (
     build_knowledge_index,
     serialize_knowledge_index,
 )
+from .knowledge_graph import (
+    DEFAULT_EVIDENCE_LIMIT,
+    GraphConcept,
+    KnowledgeGraphError,
+    KnowledgeGraphInputs,
+    materialize_typed_graph,
+)
 from .knowledge_links import (
     KnowledgeLinkError,
     collect_link_observations,
 )
-from .knowledge_model import ProducerRecord
+from .knowledge_model import ProducerRecord, concept_kind_for_page_kind
+from .contracts import (
+    SECTION_OWNERSHIP_EXTENSION_KEY,
+    TYPED_GRAPH_EXTENSION_KEY,
+)
+from .section_ownership import observe_page_sections, section_ownership_extension
 from .sync_manifest import (
     EVIDENCE_NOT_RECORDED,
     MANIFEST_REPAIR_UNAVAILABLE,
@@ -118,6 +130,20 @@ class KnowledgeGenerationInputs:
     snapshot_extensions: Mapping[str, Any] = field(default_factory=dict)
     producer_extensions: Mapping[str, Any] = field(default_factory=dict)
     knowledge_extensions: Mapping[str, Any] = field(default_factory=dict)
+    call_edges: Mapping[str, Any] | Sequence[Mapping[str, Any]] = ()
+    dependency_observations: (
+        Mapping[str, Any] | Sequence[Mapping[str, Any]]
+    ) = ()
+    entrypoint_observations: (
+        Mapping[str, Any] | Sequence[Mapping[str, Any]]
+    ) = ()
+    flows: Sequence[Mapping[str, Any]] = ()
+    data_flows: Sequence[Mapping[str, Any]] = ()
+    external_dependencies: Sequence[Mapping[str, Any]] = ()
+    graph_analyzer_limitations: Mapping[str, Sequence[str]] = field(
+        default_factory=dict
+    )
+    graph_evidence_limit: int = DEFAULT_EVIDENCE_LIMIT
 
 
 def build_knowledge_generation_plan(
@@ -140,6 +166,7 @@ def build_knowledge_generation_plan(
     except (
         KnowledgeArtifactError,
         KnowledgeEnvelopeError,
+        KnowledgeGraphError,
         KnowledgeIndexBuildError,
         KnowledgeLinkError,
         SyncManifestError,
@@ -323,6 +350,12 @@ def _build_knowledge_generation_plan(
         inputs.content_by_page,
         existing_asset_paths=inputs.asset_paths,
     )
+    knowledge_extensions = _application_knowledge_extensions(
+        inputs,
+        inventory=inventory,
+        module_page_map=module_page_map,
+        occurrence_page_map=occurrence_page_map,
+    )
     knowledge = build_knowledge_index(
         KnowledgeIndexInputs(
             envelope=envelope,
@@ -333,7 +366,7 @@ def _build_knowledge_generation_plan(
             evidence_baselines=manifest.evidence_baselines,
             tombstones=manifest.tombstones,
             link_observations=observations,
-            extensions=inputs.knowledge_extensions,
+            extensions=knowledge_extensions,
         )
     )
     knowledge_bytes = serialize_knowledge_index(knowledge).encode("utf-8")
@@ -343,6 +376,105 @@ def _build_knowledge_generation_plan(
         knowledge_index_bytes=knowledge_bytes,
         manifest=manifest,
     )
+
+
+def _application_knowledge_extensions(
+    inputs: KnowledgeGenerationInputs,
+    *,
+    inventory: Mapping[str, Mapping[str, Any]],
+    module_page_map: Mapping[str, str],
+    occurrence_page_map: Mapping[tuple[str, str, int], str],
+) -> dict[str, Any]:
+    """Build reserved extensions from the exact final evaluated snapshot."""
+
+    extensions = dict(inputs.knowledge_extensions)
+    for key in (
+        TYPED_GRAPH_EXTENSION_KEY,
+        SECTION_OWNERSHIP_EXTENSION_KEY,
+    ):
+        if key in extensions:
+            raise KnowledgeGenerationError(
+                f"knowledge_extensions.{key}",
+                "is application-owned and cannot be supplied by callers",
+            )
+
+    graph = materialize_typed_graph(
+        KnowledgeGraphInputs(
+            inventory=inventory,
+            concepts=_graph_concepts(
+                inputs.pages,
+                module_page_map=module_page_map,
+                occurrence_page_map=occurrence_page_map,
+            ),
+            call_edges=inputs.call_edges,
+            dependency_observations=inputs.dependency_observations,
+            entrypoint_observations=inputs.entrypoint_observations,
+            flows=inputs.flows,
+            data_flows=inputs.data_flows,
+            external_dependencies=inputs.external_dependencies,
+            analyzer_limitations=inputs.graph_analyzer_limitations,
+            evidence_limit=inputs.graph_evidence_limit,
+        )
+    )
+    extensions[TYPED_GRAPH_EXTENSION_KEY] = graph
+
+    section_pages = []
+    for page in inputs.pages:
+        try:
+            markdown = inputs.content_by_page[page.relative_path]
+        except KeyError as exc:
+            raise KnowledgeGenerationError(
+                f"content_by_page.{page.relative_path}",
+                "is required for section ownership",
+            ) from exc
+        section_pages.append(
+            observe_page_sections(
+                markdown,
+                page.mcp_uri,
+                page.kind,
+            )
+        )
+    extensions.update(section_ownership_extension(section_pages))
+    return extensions
+
+
+def _graph_concepts(
+    pages: Sequence[WikiSurfacePage],
+    *,
+    module_page_map: Mapping[str, str],
+    occurrence_page_map: Mapping[tuple[str, str, int], str],
+) -> tuple[GraphConcept, ...]:
+    """Project final surface coordinates into graph ownership coordinates."""
+
+    module_source_by_page = {
+        page_id: source_path for source_path, page_id in module_page_map.items()
+    }
+    entity_by_page = {
+        page_id: coordinate
+        for coordinate, page_id in occurrence_page_map.items()
+    }
+    concepts: list[GraphConcept] = []
+    for page in pages:
+        source_path: str | None = None
+        symbol: str | None = None
+        occurrence: int | None = None
+        if page.kind is PageKind.MODULES:
+            source_path = module_source_by_page.get(page.page_id)
+        elif page.kind is PageKind.ENTITIES:
+            coordinate = entity_by_page.get(page.page_id)
+            if coordinate is not None:
+                symbol, source_path, occurrence = coordinate
+        concepts.append(
+            GraphConcept(
+                locator=page.mcp_uri,
+                concept_kind=concept_kind_for_page_kind(page.kind).value,
+                source_path=source_path,
+                symbol=symbol,
+                occurrence=occurrence,
+                page_id=page.page_id,
+            )
+        )
+    return tuple(concepts)
 
 
 def _preserve_unchanged_unknown_baselines(

@@ -19,6 +19,10 @@ from llm_wiki_cli.services.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     CommitStage,
 )
+from llm_wiki_cli.services.contracts import (
+    SECTION_OWNERSHIP_EXTENSION_KEY,
+    TYPED_GRAPH_EXTENSION_KEY,
+)
 from llm_wiki_cli.services.knowledge_loader import (
     KnowledgeMismatchPolicy,
     KnowledgeStateLoadError,
@@ -412,7 +416,25 @@ def test_changed_source_sync_commits_only_expected_modeled_changes(
     assert after.status is KnowledgeLoadState.VALID
     assert after.knowledge is not None
     assert after.knowledge.schema_version == before.knowledge.schema_version
-    assert after.knowledge.extensions == before.knowledge.extensions
+    modeled_extension_keys = {
+        TYPED_GRAPH_EXTENSION_KEY,
+        SECTION_OWNERSHIP_EXTENSION_KEY,
+    }
+    assert {
+        key: value
+        for key, value in after.knowledge.extensions.items()
+        if key not in modeled_extension_keys
+    } == {
+        key: value
+        for key, value in before.knowledge.extensions.items()
+        if key not in modeled_extension_keys
+    }
+    assert modeled_extension_keys <= set(before.knowledge.extensions)
+    assert modeled_extension_keys <= set(after.knowledge.extensions)
+    assert all(
+        after.knowledge.extensions[key] != before.knowledge.extensions[key]
+        for key in modeled_extension_keys
+    )
     assert after.knowledge.bundle.repository == before.knowledge.bundle.repository
     assert after.knowledge.bundle.producer == before.knowledge.bundle.producer
     assert after.knowledge.bundle.extensions == before.knowledge.bundle.extensions

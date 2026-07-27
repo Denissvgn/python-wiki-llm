@@ -22,7 +22,7 @@ from llm_wiki_cli.commands.extract_cmd import (
 from llm_wiki_cli.services.data_flow import analyze_data_flow
 from llm_wiki_cli.services.dependencies import analyze_dependencies
 from llm_wiki_cli.services.entrypoints import build_flow, get_entry_points
-from llm_wiki_cli.services import plugins
+from llm_wiki_cli.services import knowledge_orchestration, plugins
 from llm_wiki_cli.services.wiki_surface import is_safe_page_id
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 
@@ -2317,6 +2317,21 @@ class TestBootstrapFlows:
         assert "## Call sequence" in text
         assert "## Data flow" not in text
         assert "## Behavior" in text
+        knowledge = json.loads(
+            (tmp_path / "wiki" / ".llm-wiki-knowledge.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        coverage = {
+            item["analyzer"]: item
+            for item in knowledge["extensions"]["llm-wiki/typed-graph-v1"][
+                "coverage"
+            ]
+        }
+        assert "data-flow-analysis-disabled" in coverage["data-flows"][
+            "limitations"
+        ]
+        assert coverage["flows"]["observed"] >= coverage["flows"]["emitted"]
 
     def test_index_lists_user_flows(self, tmp_path, monkeypatch, capsys):
         self._write_project(tmp_path)
@@ -2388,6 +2403,113 @@ class TestBootstrapFlows:
 
         assert calls == 1
         assert (tmp_path / "wiki" / "flows" / "api-run.md").exists()
+
+    def test_runtime_plan_receives_graph_analyzer_observations(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\nname = "sample"\nversion = "0.1.0"\n'
+            'dependencies = ["requests"]\n',
+            encoding="utf-8",
+        )
+        constants = "\n".join(f"CONFIG_{index} = {index}" for index in range(20))
+        reads = ", ".join(f"CONFIG_{index}" for index in range(20))
+        (tmp_path / "api.py").write_text(
+            "import requests\n\n"
+            f"{constants}\n\n"
+            '__all__ = ["run"]\n\n'
+            "def run():\n"
+            f"    values = ({reads})\n"
+            '    requests.get("https://example.invalid")\n'
+            "    return helper()\n\n"
+            "def helper():\n"
+            "    return 1\n",
+            encoding="utf-8",
+        )
+        captured = []
+        detailed_results = []
+        real_build_plan = knowledge_orchestration.build_runtime_knowledge_plan
+        real_analyze = bootstrap_cmd.analyze_data_flow_detailed
+
+        def capture_plan(inputs):
+            captured.append(inputs)
+            return real_build_plan(inputs)
+
+        def capture_data_flow(*args, **kwargs):
+            result = real_analyze(*args, **kwargs)
+            detailed_results.append(result)
+            return result
+
+        monkeypatch.setattr(
+            knowledge_orchestration,
+            "build_runtime_knowledge_plan",
+            capture_plan,
+        )
+        monkeypatch.setattr(
+            bootstrap_cmd,
+            "analyze_data_flow_detailed",
+            capture_data_flow,
+        )
+        monkeypatch.chdir(tmp_path)
+
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
+
+        assert len(captured) == 1
+        runtime = captured[0]
+        assert runtime.call_edges["schema_version"] == "llm-wiki-call-observations/v1"
+        assert runtime.call_edges["observations"]
+        assert runtime.dependency_observations["observations"]
+        assert next(
+            observation
+            for observation in runtime.dependency_observations["observations"]
+            if observation["module"] == "requests"
+        )["line"] == 1
+        assert runtime.entrypoint_observations["observations"][0]["detector"][
+            "id"
+        ].startswith("builtin.")
+        assert runtime.flows[0]["entry"]["id"] == "api-run"
+        assert runtime.flows[0]["schema_version"] == "llm-wiki-flow-observations/v1"
+        assert runtime.data_flows[0] is detailed_results[0]
+        assert runtime.data_flows[0]["schema_version"].endswith("/v1")
+        reads_coverage = runtime.data_flows[0]["coverage"]["effects"]["by_kind"][
+            "reads"
+        ]
+        assert reads_coverage["observed"] == 20
+        assert reads_coverage["emitted"] == 8
+        assert reads_coverage["omitted"] == 12
+        assert any(
+            dependency["package"] == "requests" and dependency["explicit"]
+            for dependency in runtime.external_dependencies
+        )
+
+    def test_runtime_keeps_call_observations_without_entrypoints(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        (tmp_path / "module.py").write_text(
+            "def caller():\n    return helper()\n\n\ndef helper():\n    return 1\n",
+            encoding="utf-8",
+        )
+        captured = []
+        real_build_plan = knowledge_orchestration.build_runtime_knowledge_plan
+
+        def capture_plan(inputs):
+            captured.append(inputs)
+            return real_build_plan(inputs)
+
+        monkeypatch.setattr(
+            knowledge_orchestration,
+            "build_runtime_knowledge_plan",
+            capture_plan,
+        )
+        monkeypatch.chdir(tmp_path)
+
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
+
+        runtime = captured[0]
+        assert runtime.entrypoint_observations["observations"] == []
+        assert runtime.flows == []
+        assert runtime.call_edges["coverage"]["observed"] == 1
+        assert runtime.call_edges["observations"][0]["kind"] == "internal"
 
     def test_skip_flows_writes_no_flow_pages(self, tmp_path, monkeypatch, capsys):
         self._write_project(tmp_path)
@@ -2615,6 +2737,26 @@ class TestBootstrapArchitecturePages:
         monkeypatch.chdir(tmp_path)
         bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki", depth="shallow"))
         assert not (tmp_path / "wiki" / "dependencies.md").exists()
+        knowledge = json.loads(
+            (tmp_path / "wiki" / ".llm-wiki-knowledge.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        coverage = {
+            item["analyzer"]: item
+            for item in knowledge["extensions"]["llm-wiki/typed-graph-v1"][
+                "coverage"
+            ]
+        }
+        for analyzer in (
+            "calls",
+            "dependencies",
+            "entrypoints",
+            "flows",
+            "data-flows",
+            "external-dependencies",
+        ):
+            assert "deep-analysis-disabled" in coverage[analyzer]["limitations"]
 
     def test_deep_bootstrap_skips_pages_when_dependency_graph_is_empty(
         self, tmp_path, monkeypatch, capsys

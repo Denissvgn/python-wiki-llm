@@ -718,6 +718,97 @@ class TestMcpWikiService:
             "Knowledge context includes stale concept references."
         ]
 
+    def test_get_context_preserves_compact_typed_relationship_selection(
+        self,
+        monkeypatch,
+    ):
+        refinements = {
+            "symbol": "User",
+            "relationship_kind": "calls",
+            "relationship_origin": "extracted",
+            "relationship_resolution": "resolved",
+            "relationship_direction": "incoming",
+        }
+        graph_status = {
+            "availability": "ready",
+            "reason": "typed-graph-extension-ready",
+            "coverage": [],
+        }
+        graph_selection = {
+            **graph_status,
+            "found": True,
+            "direction": "incoming",
+            "filters": {
+                key: value
+                for key, value in refinements.items()
+                if key.startswith("relationship_")
+            },
+            "unfiltered_total": 4,
+            "filtered_total": 2,
+            "returned": 1,
+            "truncated": True,
+            "coverage": {
+                "scope": "returned-edges",
+                "edges": 1,
+                "observed": 1,
+                "emitted": 1,
+                "omitted": 0,
+                "truncated": False,
+                "limitations": [],
+            },
+        }
+        seen = {}
+
+        def fake_build_context(
+            _src_dir,
+            budget,
+            _fmt,
+            _focus,
+            filters,
+            **_kwargs,
+        ):
+            seen["filters"] = filters
+            return (
+                {
+                    "budget": budget,
+                    "used": 0,
+                    "files": {},
+                    "typed_graph": graph_status,
+                    "graphs": {
+                        "symbol": {
+                            "pages": {
+                                "pages": [
+                                    {
+                                        "canonical_path": "entities/User.md",
+                                        "typed_graph": graph_selection,
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                },
+                [],
+            )
+
+        monkeypatch.setattr(context_cmd, "_build_context", fake_build_context)
+        service = mcp_server.McpWikiService()
+
+        result = service.get_context(
+            focus=["all"],
+            format="json",
+            filters=refinements,
+        )
+
+        assert seen["filters"] == refinements
+        assert result["typed_graph"] == graph_status
+        assert (
+            result["graphs"]["symbol"]["pages"]["pages"][0]["typed_graph"]
+            == graph_selection
+        )
+        encoded = json.dumps(result, sort_keys=True)
+        assert "samples" not in encoded
+        assert "aggregate_input_hash" not in encoded
+
     @pytest.mark.parametrize(
         ("filters", "field"),
         [
@@ -1633,6 +1724,7 @@ def test_tool_registration_names_without_sdk(tmp_project):
         "query_graph",
         "get_concept",
         "related_concepts",
+        "traverse_typed_graph",
         "explain_evidence",
         "search_wiki",
         "get_context",
@@ -1658,9 +1750,12 @@ def test_tool_registration_preserves_legacy_tools_and_adds_m4_tools(tmp_project)
     assert {"get_flow", "get_architecture_page", "query_graph"} <= set(
         server.tool_names
     )
-    assert {"get_concept", "related_concepts", "explain_evidence"} <= set(
-        server.tool_names
-    )
+    assert {
+        "get_concept",
+        "related_concepts",
+        "traverse_typed_graph",
+        "explain_evidence",
+    } <= set(server.tool_names)
 
 
 def test_resource_registration_preserves_legacy_resources_and_adds_m4_resources(
@@ -1798,6 +1893,15 @@ class TestMcpCli:
                 "locator_or_exact_route",
                 "direction",
                 "kinds",
+                "limit",
+            },
+            "traverse_typed_graph": {
+                "locator_or_exact_route",
+                "direction",
+                "kinds",
+                "origins",
+                "resolutions",
+                "include_evidence",
                 "limit",
             },
             "explain_evidence": {"locator_or_exact_route", "limit"},

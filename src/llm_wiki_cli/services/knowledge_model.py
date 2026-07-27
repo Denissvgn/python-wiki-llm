@@ -531,6 +531,7 @@ def parse_knowledge_index(payload: object) -> KnowledgeIndex:
         for index, item in enumerate(relationships_value)
     )
 
+    extensions = _validated_reserved_extensions(extensions, concepts)
     _validate_index_references(bundle, concepts, relationships)
     return KnowledgeIndex(
         schema_version=schema_version,
@@ -539,6 +540,60 @@ def parse_knowledge_index(payload: object) -> KnowledgeIndex:
         relationships=relationships,
         extensions=extensions,
     )
+
+
+def _validated_reserved_extensions(
+    extensions: Mapping[str, Any],
+    concepts: tuple[ConceptRecord, ...],
+) -> dict[str, Any]:
+    """Validate application-owned, independently versioned v1 extensions."""
+
+    # Local imports avoid making the independent extension contracts depend on
+    # the legacy relationship dataclasses in this module.
+    from .contracts import (
+        SECTION_OWNERSHIP_EXTENSION_KEY,
+        TYPED_GRAPH_EXTENSION_KEY,
+    )
+    from .knowledge_graph import (
+        KnowledgeGraphError,
+        typed_graph_from_knowledge_extensions,
+    )
+    from .section_ownership import (
+        SectionOwnershipError,
+        validate_section_ownership,
+    )
+
+    normalized = dict(extensions)
+    try:
+        typed_graph = typed_graph_from_knowledge_extensions(
+            normalized,
+        )
+    except KnowledgeGraphError as exc:
+        field = exc.field
+        if field.startswith("typed_graph"):
+            field = (
+                f"extensions.{TYPED_GRAPH_EXTENSION_KEY}"
+                + field[len("typed_graph") :]
+            )
+        raise KnowledgeModelError(field, exc.message) from exc
+    if typed_graph is not None:
+        normalized[TYPED_GRAPH_EXTENSION_KEY] = typed_graph
+    section_value = normalized.get(SECTION_OWNERSHIP_EXTENSION_KEY)
+    if section_value is not None:
+        try:
+            section_ownership = validate_section_ownership(
+                section_value,
+            )
+        except SectionOwnershipError as exc:
+            field = exc.field
+            if field.startswith("section_ownership"):
+                field = (
+                    f"extensions.{SECTION_OWNERSHIP_EXTENSION_KEY}"
+                    + field[len("section_ownership") :]
+                )
+            raise KnowledgeModelError(field, exc.message) from exc
+        normalized[SECTION_OWNERSHIP_EXTENSION_KEY] = section_ownership
+    return normalized
 
 
 def validate_knowledge_payload(payload: object) -> KnowledgeIndex:

@@ -2,14 +2,14 @@
 
 - **Status:** Accepted
 - **Date:** 2026-07-25
-- **Scope:** Native knowledge layer, beginning with the planned
+- **Scope:** Native knowledge layer, beginning with the generated
   `.llm-wiki-knowledge.json` artifact
 
 ## Context
 
 Knowledge-related state is currently split across canonical Markdown,
 `SyncManifest`, the canonical surface registry, and the generated surface
-index. The planned native knowledge layer adds a generated observation read
+index. The native knowledge layer adds a generated observation read
 model. Without a single decision record, that artifact could become a competing
 editable source of truth, persist an obsolete freshness verdict, or be combined
 with files produced from another repository snapshot.
@@ -50,7 +50,7 @@ Markdown, or future explicit governance records.
 | Structural source and configuration facts | Repository source/configuration, interpreted by reproducible application-owned extractors | Inventory, caches, the manifest, and the knowledge index record observations and their basis; they do not override source/configuration |
 | API wire-contract details from an explicitly selected OpenAPI input | That OpenAPI document for the details it defines; repository source remains authoritative for handler and linkage context | The selected relative input, hash, and analysis basis are operational evidence |
 | Semantic prose | Canonical Markdown body | Generated projections may digest or quote its state but never become the editing authority |
-| Page taxonomy, canonical paths, MCP URIs, and coarse `generated`/`semantic`/`mixed` ownership | The canonical surface registry | `PageKind` and `SurfaceRole` remain compatibility summaries; section-level ownership is deferred |
+| Page taxonomy, canonical paths, MCP URIs, and coarse `generated`/`semantic`/`mixed` ownership | The canonical surface registry | `PageKind` and `SurfaceRole` remain compatibility summaries; the section-ownership extension observes the finer current generation/sync boundary without overriding the registry or Markdown |
 | Active canonical page presence and stored document bytes | Markdown files found at registry-defined paths | Semantic prose follows the authority above; generated structural claims still defer to source/configuration. `index.md` is navigation, and `.llm-wiki-surface.json` is a rebuilt discovery projection |
 | Incremental generation baselines, source/page mappings, enabled-surface policy, and generation inputs | Sync machinery | The manifest is operational generation state, not a general knowledge or governance database |
 | Page discovery for machine consumers | Current canonical pages interpreted through the surface registry | `.llm-wiki-surface.json` remains the deterministic `llm-wiki-surface-index/v1` read model |
@@ -215,7 +215,9 @@ and `dependency-view`. Navigation and change-log pages use the explicit
 document-only kinds `navigation-document` and `change-log-document`; consumers
 may omit those records from a semantic graph.
 
-The initial core relationships are `derived_from` and `links_to`. Link
+The `llm-wiki-knowledge/v1` core relationships are `derived_from` and
+`links_to`. Independently versioned typed relationships are reserved extension
+data and do not expand this closed core. Link
 resolution has four states: `resolved`, `external`, `ambiguous`, and
 `unresolved`. Target classification is a separate dimension with `unknown`,
 `concept`, `source`, `external`, `mail`, `anchor`, `asset`, and `malformed`
@@ -344,11 +346,85 @@ or ordering semantics and are intentionally semantic validation rather than
 duplicated, partial schema logic.
 
 In v1, `ObservationScope` (`module`, `entity`, or `aggregate`) names the
-granularity of a reproducible structural fingerprint. It is not the future
+granularity of a reproducible structural fingerprint. It is not a
 concept/section/claim/relationship review scope. Likewise, semantic
-`ownership` mirrors the document's coarse `SurfaceRole` because `page_hash` is
-a whole-document mutation detector; section ownership and digest-bound review
-remain deferred.
+`ownership` in the core model mirrors the document's coarse `SurfaceRole`
+because `page_hash` is a whole-document mutation detector. The independently
+versioned section-ownership extension adds scoped observations; digest-bound
+human review remains a governance concern.
+
+### Typed graph and section ownership extensions
+
+The closed-core rule above means the richer relationship and section contracts
+cannot be introduced as new unqualified fields or kinds inside
+`llm-wiki-knowledge/v1`. They are therefore reserved top-level extension values:
+
+- `llm-wiki/typed-graph-v1`, whose payload schema is
+  `llm-wiki-typed-graph/v1`; and
+- `llm-wiki/section-ownership-v1`, whose payload schema is
+  `llm-wiki-section-ownership/v1`.
+
+The typed graph is a deterministic materialization over already evaluated
+inventory, concept maps, calls, dependency observations, entry points, flows,
+data flows, external dependencies, and analyzer limitations. Materialization
+does not discover source, parse Markdown, perform I/O, invoke helpers, or
+execute document-supplied behavior. Its input hashes bind each analyzer input
+and the aggregate input set; the inventory hash must agree with the committed
+knowledge envelope. A mismatch is a mixed snapshot and cannot be served.
+
+Every edge has one canonical direction and includes a domain-separated key,
+typed endpoints, origin, resolution, evidence, and coverage. The core typed
+kinds are:
+
+- source module → entity `contains`;
+- importing module → imported module or non-concept endpoint `imports`;
+- caller-owner → callee-owner or non-concept endpoint `calls`;
+- callable-owner → user flow `entrypoint_for`;
+- flow/owner → concept or external resource `reads` and `writes`; and
+- concept → explicit external/package dependency `depends_on`.
+
+`supersedes` is reserved for governance-backed stable identity. Structural
+materialization does not emit it. Calls are lifted to concept owners without
+discarding their source-symbol evidence. Imports and other observations retain
+external, ambiguous, and unresolved outcomes; an analyzer's uncertainty is
+never normalized to `resolved`. Plugin relationship kinds use qualified
+`namespace/name` spelling and cannot shadow the core.
+
+Evidence aggregation and response limiting are distinct. An edge records its
+full observed and unique counts while emitting a bounded deterministic sample
+with an explicit omitted count; edge coverage carries the corresponding
+truncation flag. Edge coverage describes materialization for that identity.
+Top-level coverage describes upstream analyzers and their limitations. Query
+bounds are applied after filters and describe only the response. None of these
+boundaries can be used to infer completeness of the others.
+
+The section-ownership payload is computed from exact final post-merge Markdown,
+not a pre-merge generated draft. Line endings are normalized before section
+hashing. Heading hierarchy ignores frontmatter, fenced blocks, and indented
+code. Locators incorporate the page locator, heading path, and duplicate
+occurrence; heading renames intentionally change identity. Document ordinals,
+parent locators, and an ordering hash make removal and reordering observable.
+
+Every observed section is conservatively `generated`, `semantic`, `mixed`, or
+`unknown`. Generated sections receive a structural digest, semantic sections a
+semantic digest, and mixed tables separate structural and semantic projection
+digests. Unknown sections receive neither scoped digest. Descriptions, guide
+prose, flow behavior, architecture notes, and sync-preserved custom navigation
+sections are semantic. Known generated relationship, import, dependency, flow,
+API, load-order, infrastructure, and navigation sections are structural.
+Entity Attributes/Methods and module Classes/Functions tables are mixed,
+separating generated rows from preserved description cells. Unrecognized or
+duplicate canonical sections remain unknown unless an explicit
+document-specific preservation rule applies.
+
+Consumers access the graph additively through typed traversal with
+direction/kind/origin/resolution filters. Evidence samples require an explicit
+opt-in. Ordinary context can use the same filters for compact selection and
+coverage summaries but does not embed edges, evidence samples, or hashes.
+Legacy core relationship queries and resource output remain unchanged.
+Knowledge availability and graph availability are separate: an otherwise ready
+v1 projection without the graph extension reports the extension as absent, not
+as an observed empty graph.
 
 ### Bundle identity, producer evidence, redaction, and no-exec policy
 
@@ -881,8 +957,10 @@ index v1 bytes.
   M2 is a stop/go gate: do not promote or continue merely because more JSON can
   be generated. At least two native consumers must materially improve behavior
   using the new evidence signals.
-- **M3 — Typed graph and section scope:** add evidenced relationship types and
-  section-level ownership without changing canonical prose authority.
+- **M3 — Typed graph and section scope:** the two independently versioned
+  reserved extensions add evidenced relationship types and section-level
+  ownership without changing the closed v1 core, canonical prose authority, or
+  legacy query behavior.
 - **M4 — Governance:** only now introduce explicit authoring for stable
   identity, aliases, lifecycle transitions, and digest-bound reviews, backed by
   a durable governance ledger.
@@ -910,6 +988,13 @@ explicit degraded policy may still consume an independently validated,
 page-current surface. A later writer must remove the obsolete commitment before
 the artifact set returns to clean `absent` state.
 
+The reserved extensions have no in-place rollback path because the knowledge
+index is generated and its exact bytes are committed by the manifest. A
+consumer may omit typed-graph options and continue using the v1 core. Removing
+the generated feature itself requires the full authorized rollback above;
+hand-editing or deleting one extension creates an invalid or mixed artifact
+rather than a valid earlier state.
+
 ## Consequences
 
 The knowledge index can make evidence and provenance consistently consumable
@@ -929,6 +1014,5 @@ Except for the v1 taxonomy, compatibility, and KNOW-004 policy above, exact
 record fields live in the packaged schema rather than prose in this ADR. The M1
 implementation provides the deterministic writer and validated loader described
 above. It does not provide a redacting exporter, signatures or attestation, a
-stable-ID format, an OKF mapping, section-level ownership, filesystem-wide
-transactions, or cross-process locking. Those capabilities require their named
-later milestones and tests.
+stable-ID format, an OKF mapping, filesystem-wide transactions, or cross-process
+locking. Those capabilities remain outside this decision.

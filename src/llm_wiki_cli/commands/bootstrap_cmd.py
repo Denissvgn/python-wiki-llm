@@ -36,9 +36,15 @@ from ..services.contracts import (
     BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
     KNOWLEDGE_SCHEMA_VERSION,
 )
-from ..services.data_flow import analyze_data_flow, build_data_flow_context
+from ..services.data_flow import (
+    analyze_data_flow,
+    analyze_data_flow_detailed,
+    build_data_flow_context,
+)
 from ..services.dependencies import (
     analyze_dependencies,
+    build_dependency_observations,
+    build_external_dependency_observations,
     package_dependency_graph,
 )
 from ..services.diagrams import (
@@ -47,7 +53,13 @@ from ..services.diagrams import (
     resolve_diagram_style,
     sequence_diagram,
 )
-from ..services.entrypoints import build_flow, detect_entry_points, read_console_scripts
+from ..services.entrypoints import (
+    build_flow,
+    build_flow_detailed,
+    entry_points_from_detailed_observations,
+    get_detailed_entry_points,
+    read_console_scripts,
+)
 from ..services.imports import ModulePathResolver, build_module_path_resolver
 from ..services.infrastructure_inventory import (
     RUNTIME_CONFIG_TYPES,
@@ -67,6 +79,9 @@ from ..services.knowledge_orchestration import (
     finalize_runtime_knowledge,
     persist_runtime_generation_policy,
     runtime_generation_options,
+)
+from ..services.markdown_sections import (
+    preserve_level_two_section_exact as _service_preserve_level_two_section_exact,
 )
 from ..services.module_maps import build_module_dependency_maps
 from ..services.paths import normalize_source_path
@@ -94,6 +109,7 @@ from .extract_cmd import (
     get_docker_inventory,
     get_inventory_result,
     print_inventory_failures,
+    resolve_call_observations,
     resolve_call_edges,
 )
 
@@ -2160,18 +2176,7 @@ def _generate_flow_md(
 
 def _preserve_level_two_section(existing: str, generated: str, heading: str) -> str:
     """Carry one human-owned level-two section into regenerated Markdown."""
-    pattern = re.compile(
-        rf"(?ms)^##[ \t]+{re.escape(heading)}[ \t]*\r?\n.*?"
-        rf"(?=^##[ \t]+|\Z)"
-    )
-    old_match = pattern.search(existing)
-    new_match = pattern.search(generated)
-    if old_match is None or new_match is None:
-        return generated
-    # Splice the complete human-owned section verbatim, including its original
-    # blank-line and trailing-newline choices.
-    old_section = old_match.group(0)
-    return generated[: new_match.start()] + old_section + generated[new_match.end() :]
+    return _service_preserve_level_two_section_exact(existing, generated, heading)
 
 
 # ── Architecture pages: dependencies + load order (Epic 2.4) ──────────
@@ -3326,6 +3331,9 @@ class _FlowResult:
     entries: list[dict]
     created: int
     data_flow_summary: dict
+    entrypoint_observations: dict = field(default_factory=dict)
+    flows: list[dict] = field(default_factory=list)
+    data_flows: list[dict] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -3361,6 +3369,12 @@ class _BootstrapGenerationResult:
     dependency: _DependencyResult
     api_contract: _ApiContractResult
     cross_reference_count: int
+    call_observations: dict = field(default_factory=dict)
+    dependency_observations: dict = field(default_factory=dict)
+    external_dependencies: list[dict] = field(default_factory=list)
+    graph_analyzer_limitations: dict[str, tuple[str, ...]] = field(
+        default_factory=dict
+    )
 
 
 def _data_flow_summary(
@@ -3537,6 +3551,8 @@ def _extract_bootstrap_inventory(state: _BootstrapRunState):
         helper_cache_dir=options.helper_cache_dir,
         include_tests=options.include_tests,
         include_plugins=options.trust_source_plugins,
+        capture_data_effect_observations=options.deep,
+        capture_import_observations=options.deep,
     )
     if inventory_result.failed:
         print_inventory_failures(inventory_result, file=options.progress_stream)
@@ -3937,8 +3953,11 @@ def _write_bootstrap_flow_pages(
     module_page_map: dict[str, str],
     call_edges: Sequence[Mapping] | None = None,
     api_contracts: Mapping[str, Any] | None = None,
+    data_effect_observations: Mapping | None = None,
 ) -> _FlowResult:
     flow_entries: list[dict] = []
+    flows: list[dict] = []
+    data_flows: list[dict] = []
     flows_created = 0
     data_flow_summary = _data_flow_summary(generated=False)
     if not state.options.deep or state.options.skip_flows:
@@ -3946,17 +3965,24 @@ def _write_bootstrap_flow_pages(
 
     _emit_bootstrap(state, "Generating user-flow pages...", flush=True)
     console_scripts = read_console_scripts(state.options.src_dir_for_scan)
-    entrypoint_result = detect_entry_points(
+    entrypoint_observations = get_detailed_entry_points(
         inventory,
         console_scripts=console_scripts,
         root=state.options.src_dir_for_scan,
         fallback_root=Path.cwd(),
         include_plugins=state.options.trust_source_plugins,
-        include_provenance=True,
+        include_warnings=True,
     )
-    _emit_bootstrap_warnings(state, entrypoint_result.warnings)
+    _emit_bootstrap_warnings(
+        state,
+        list(entrypoint_observations.pop("warnings", [])),
+    )
     entry_points = attach_routes_to_entry_points(
-        entrypoint_result.entries, api_contracts or {}
+        entry_points_from_detailed_observations(
+            entrypoint_observations,
+            include_provenance=True,
+        ),
+        api_contracts or {},
     )
     for entry_point in entry_points:
         for operation in _api_operations_for_entry_point(api_contracts, entry_point):
@@ -3971,7 +3997,11 @@ def _write_bootstrap_flow_pages(
         edges = resolve_call_edges(inventory)
     data_flow_enabled = not state.options.skip_data_flow
     data_flow_context = (
-        build_data_flow_context(inventory, edges)
+        build_data_flow_context(
+            inventory,
+            edges,
+            data_effect_observations=data_effect_observations,
+        )
         if data_flow_enabled and entry_points
         else None
     )
@@ -3982,10 +4012,24 @@ def _write_bootstrap_flow_pages(
     gaps = 0
     for entry_point in entry_points:
         flow = build_flow(entry_point, edges)
+        detailed_flow = build_flow_detailed(entry_point, edges)
+        flows.append(detailed_flow)
         data_flow = None
         if data_flow_enabled:
+            # Keep the historical projection for Markdown rendering. The
+            # detailed observation deliberately represents unknown locations
+            # as ``None`` and must not leak that additive contract into the
+            # byte-compatible legacy page surface.
             data_flow = analyze_data_flow(
                 inventory, flow, edges, context=data_flow_context
+            )
+            data_flows.append(
+                analyze_data_flow_detailed(
+                    inventory,
+                    detailed_flow,
+                    edges,
+                    context=data_flow_context,
+                )
             )
             analyzed += 1
             boundary_effects += len(data_flow.get("boundaries", []))
@@ -4064,7 +4108,14 @@ def _write_bootstrap_flow_pages(
         boundary_effects=boundary_effects,
         gaps=gaps,
     )
-    return _FlowResult(flow_entries, flows_created, data_flow_summary)
+    return _FlowResult(
+        flow_entries,
+        flows_created,
+        data_flow_summary,
+        entrypoint_observations,
+        flows,
+        data_flows,
+    )
 
 
 def _write_bootstrap_infrastructure_pages(
@@ -4479,6 +4530,13 @@ def _finalize_bootstrap_artifacts(
             ),
             generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS,
             generation_option_allowlist=tuple(RUNTIME_GENERATION_OPTION_DEFAULTS),
+            call_edges=result.call_observations,
+            dependency_observations=result.dependency_observations,
+            entrypoint_observations=result.flow.entrypoint_observations,
+            flows=result.flow.flows,
+            data_flows=result.flow.data_flows,
+            external_dependencies=result.external_dependencies,
+            graph_analyzer_limitations=result.graph_analyzer_limitations,
         )
     )
     for artifact in (
@@ -4564,15 +4622,59 @@ def _generate_bootstrap_content(
     state: _BootstrapRunState,
     inventory: dict,
     page_maps: _BootstrapPageMaps,
+    *,
+    data_effect_observations: Mapping | None = None,
+    import_observations: Mapping | None = None,
 ) -> _BootstrapGenerationResult:
     api_contracts = _build_bootstrap_api_contracts(state, inventory)
     call_edges = resolve_call_edges(inventory) if state.options.deep else []
+    call_observations = (
+        resolve_call_observations(inventory) if state.options.deep else {}
+    )
+    dependency_observations = (
+        build_dependency_observations(
+            inventory,
+            state.options.src_dir_for_scan,
+            source_snapshot=state.source_snapshot,
+            import_observations=import_observations,
+        )
+        if state.options.deep
+        else {}
+    )
     entity_relationship_summaries = (
         _build_entity_relationship_summary_map(inventory, call_edges)
         if state.options.deep
         else None
     )
     dependency_analysis = _build_bootstrap_dependency_analysis(state, inventory)
+    external_dependencies = (
+        build_external_dependency_observations(dependency_analysis)
+        if dependency_analysis is not None
+        else []
+    )
+    graph_analyzer_limitations: dict[str, tuple[str, ...]] = {}
+    if not state.options.deep:
+        for analyzer in (
+            "calls",
+            "dependencies",
+            "entrypoints",
+            "flows",
+            "data-flows",
+            "external-dependencies",
+        ):
+            graph_analyzer_limitations[analyzer] = (
+                "deep-analysis-disabled",
+            )
+    elif dependency_analysis is None:
+        graph_analyzer_limitations["external-dependencies"] = (
+            "dependency-analysis-disabled",
+        )
+    if state.options.deep and state.options.skip_flows:
+        graph_analyzer_limitations["entrypoints"] = ("flow-analysis-disabled",)
+        graph_analyzer_limitations["flows"] = ("flow-analysis-disabled",)
+        graph_analyzer_limitations["data-flows"] = ("flow-analysis-disabled",)
+    elif state.options.deep and state.options.skip_data_flow:
+        graph_analyzer_limitations["data-flows"] = ("data-flow-analysis-disabled",)
     module_dependency_maps = (
         build_module_dependency_maps(dependency_analysis)
         if dependency_analysis is not None
@@ -4600,6 +4702,7 @@ def _generate_bootstrap_content(
         page_maps.module_page_map,
         call_edges=call_edges,
         api_contracts=api_contracts,
+        data_effect_observations=data_effect_observations,
     )
     api_contract_result = _write_bootstrap_api_contract_page(
         state, api_contracts, page_maps
@@ -4614,13 +4717,17 @@ def _generate_bootstrap_content(
         analysis=dependency_analysis,
     )
     return _BootstrapGenerationResult(
-        entity_result,
-        workflow_result,
-        flow_result,
-        infrastructure_result,
-        dependency_result,
-        api_contract_result,
-        cross_reference_count,
+        entity=entity_result,
+        workflow=workflow_result,
+        flow=flow_result,
+        infrastructure=infrastructure_result,
+        dependency=dependency_result,
+        api_contract=api_contract_result,
+        cross_reference_count=cross_reference_count,
+        call_observations=call_observations,
+        dependency_observations=dependency_observations,
+        external_dependencies=external_dependencies,
+        graph_analyzer_limitations=graph_analyzer_limitations,
     )
 
 
@@ -4708,7 +4815,13 @@ def _execute_bootstrap_options(options: _BootstrapRunOptions) -> BootstrapResult
 
     page_maps = _prepare_bootstrap_page_maps(inventory)
     try:
-        result = _generate_bootstrap_content(state, inventory, page_maps)
+        result = _generate_bootstrap_content(
+            state,
+            inventory,
+            page_maps,
+            data_effect_observations=inventory_result.data_effect_observations,
+            import_observations=inventory_result.import_observations,
+        )
     except ApiContractError as exc:
         raise BootstrapContractError(str(exc)) from exc
     return _finalize_bootstrap(state, inventory_result, page_maps, result)

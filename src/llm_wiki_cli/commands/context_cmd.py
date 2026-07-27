@@ -17,6 +17,7 @@ Usage::
 from __future__ import annotations
 
 import json
+import re
 import sys
 from collections.abc import Callable, Mapping
 from fnmatch import fnmatch
@@ -46,6 +47,11 @@ from ..services.knowledge_consumption import (
     KnowledgeAvailability,
     KnowledgeReadView,
     build_knowledge_read_view,
+)
+from ..services.knowledge_graph import (
+    CORE_RELATIONSHIP_KINDS,
+    GRAPH_ORIGINS,
+    GRAPH_RESOLUTIONS,
 )
 from ..services.knowledge_loader import (
     KnowledgeLoadResult,
@@ -93,12 +99,26 @@ _FILTER_KEYS = {
     "surface",
     "freshness",
     "evidence",
+    "relationship_kind",
+    "relationship_origin",
+    "relationship_resolution",
+    "relationship_direction",
 }
 _FOCUS_VALUES = {"changed", "neighbors", "all"}
 _FORMATS = {"json", "markdown"}
 _CONTEXT_QUERY_LIMIT = 20
 _CONCEPT_FILTER_KEYS = {"surface", "symbol"}
 _KNOWLEDGE_REFINEMENT_KEYS = {"freshness", "evidence"}
+_RELATIONSHIP_REFINEMENT_KEYS = {
+    "relationship_kind",
+    "relationship_origin",
+    "relationship_resolution",
+    "relationship_direction",
+}
+_RELATIONSHIP_DIRECTIONS = ("incoming", "outgoing", "both")
+_QUALIFIED_RELATIONSHIP_KIND_RE = re.compile(
+    r"^[A-Za-z][A-Za-z0-9._-]*/[A-Za-z][A-Za-z0-9._-]*$"
+)
 _FRESHNESS_FILTER_VALUES = {item.value for item in ComputedFreshness}
 _EVIDENCE_FILTER_VALUES = {item.value for item in EvidenceState}
 _FRESHNESS_ORDER = {
@@ -515,6 +535,17 @@ def _render_markdown(payload: dict) -> str:
         )
         lines.append("")
 
+    typed_graph = payload.get("typed_graph")
+    if typed_graph:
+        lines.append("## Typed Relationship Graph")
+        lines.append("")
+        lines.append(f"- availability: {typed_graph.get('availability')}")
+        lines.append(f"- reason: {typed_graph.get('reason')}")
+        coverage = typed_graph.get("coverage")
+        analyzer_count = len(coverage) if isinstance(coverage, list) else 0
+        lines.append(f"- analyzer coverage records: {analyzer_count}")
+        lines.append("")
+
     graphs = payload.get("graphs", {})
     if graphs:
         lines.append("## Documentation Graphs")
@@ -581,11 +612,24 @@ def _render_markdown(payload: dict) -> str:
                     badge = f" [{summary.get('availability')}]"
             lines.append(
                 f"- `{page.get('canonical_path')}` - {title} ({page.get('mcp_uri')})"
-                f"{badge}"
+                f"{badge}{_typed_graph_page_badge(page)}"
             )
         lines.append("")
 
     return "\n".join(lines)
+
+
+def _typed_graph_page_badge(page: Mapping[str, Any]) -> str:
+    graph = page.get("typed_graph")
+    if not isinstance(graph, Mapping):
+        return ""
+    availability = graph.get("availability")
+    if availability != KnowledgeAvailability.READY.value:
+        return f" [typed graph: {availability}]"
+    filtered = _nonnegative_count(graph.get("filtered_total"))
+    unfiltered = _nonnegative_count(graph.get("unfiltered_total"))
+    suffix = ", truncated" if graph.get("truncated") else ""
+    return f" [relationships: {filtered}/{unfiltered}{suffix}]"
 
 
 def _graph_query(result: object) -> str:
@@ -727,6 +771,10 @@ def _normalise_protocol_filters(raw_filters: object) -> dict:
         "surface",
         "freshness",
         "evidence",
+        "relationship_kind",
+        "relationship_origin",
+        "relationship_resolution",
+        "relationship_direction",
     ):
         if key not in raw_filters:
             continue
@@ -749,11 +797,42 @@ def _normalise_protocol_filters(raw_filters: object) -> dict:
                 value,
                 _EVIDENCE_FILTER_VALUES,
             )
+        elif key == "relationship_kind":
+            _validate_relationship_kind_filter(value)
+        elif key == "relationship_origin":
+            _validate_enum_filter(key, value, set(GRAPH_ORIGINS))
+        elif key == "relationship_resolution":
+            _validate_enum_filter(key, value, set(GRAPH_RESOLUTIONS))
+        elif key == "relationship_direction":
+            _validate_enum_filter(
+                key,
+                value,
+                set(_RELATIONSHIP_DIRECTIONS),
+            )
         filters[key] = value
 
-    refinements = _KNOWLEDGE_REFINEMENT_KEYS & set(filters)
-    if refinements and not (_CONCEPT_FILTER_KEYS & set(filters)):
-        field = "freshness" if "freshness" in refinements else "evidence"
+    filter_keys = set(filters)
+    refinements = _KNOWLEDGE_REFINEMENT_KEYS & filter_keys
+    if refinements and not (_CONCEPT_FILTER_KEYS & filter_keys):
+        field = next(
+            key for key in ("freshness", "evidence") if key in refinements
+        )
+        raise ProtocolRequestError(
+            f"filters.{field} requires filters.surface or filters.symbol.",
+            f"filters.{field}",
+        )
+    relationship_refinements = _RELATIONSHIP_REFINEMENT_KEYS & filter_keys
+    if relationship_refinements and not (_CONCEPT_FILTER_KEYS & filter_keys):
+        field = next(
+            key
+            for key in (
+                "relationship_kind",
+                "relationship_origin",
+                "relationship_resolution",
+                "relationship_direction",
+            )
+            if key in relationship_refinements
+        )
         raise ProtocolRequestError(
             f"filters.{field} requires filters.surface or filters.symbol.",
             f"filters.{field}",
@@ -775,6 +854,18 @@ def _validate_enum_filter(key: str, value: str, known: set[str]) -> None:
         raise ProtocolRequestError(
             f"filters.{key} must be one of: {', '.join(sorted(known))}.",
             f"filters.{key}",
+        )
+
+
+def _validate_relationship_kind_filter(value: str) -> None:
+    if (
+        value not in CORE_RELATIONSHIP_KINDS
+        and _QUALIFIED_RELATIONSHIP_KIND_RE.fullmatch(value) is None
+    ):
+        raise ProtocolRequestError(
+            "filters.relationship_kind must be a core relationship kind or "
+            "a qualified plugin kind such as 'vendor.plugin/relationship'.",
+            "filters.relationship_kind",
         )
 
 
@@ -912,6 +1003,13 @@ def _build_protocol_enrichment(
     enrichment: dict = {}
     graphs: dict = {}
     knowledge_candidates: list[dict[str, Any]] = []
+    relationship_filter_requested = bool(
+        _RELATIONSHIP_REFINEMENT_KEYS & set(filters)
+    )
+    if relationship_filter_requested:
+        enrichment["typed_graph"] = _compact_typed_graph_status(
+            query_service.typed_graph_status
+        )
     if "symbol" in filters:
         symbol = filters["symbol"]
         graphs["symbol"] = {
@@ -949,6 +1047,12 @@ def _build_protocol_enrichment(
             knowledge_status,
             knowledge_candidates,
             filters,
+            warnings,
+        )
+    if relationship_filter_requested:
+        _append_typed_graph_context_warning(
+            query_service.typed_graph_status,
+            knowledge_candidates,
             warnings,
         )
     return enrichment
@@ -1096,6 +1200,11 @@ def _select_knowledge_page_refs(
     enriched = [
         _knowledge_enriched_page_ref(page, query_service) for page in pages
     ]
+    if _RELATIONSHIP_REFINEMENT_KEYS & set(filters):
+        enriched = [
+            _typed_graph_enriched_page_ref(page, filters, query_service)
+            for page in enriched
+        ]
     if observed is not None:
         observed.extend(enriched)
     ordered = sorted(
@@ -1106,7 +1215,10 @@ def _select_knowledge_page_refs(
         ),
     )
     filtered = [
-        page for page in ordered if _matches_knowledge_refinement(page, filters)
+        page
+        for page in ordered
+        if _matches_knowledge_refinement(page, filters)
+        and _matches_typed_graph_refinement(page, filters)
     ]
     capped = filtered[:limit]
     selection: dict[str, int | bool] = {
@@ -1165,6 +1277,190 @@ def _knowledge_enriched_page_ref(
     return enriched
 
 
+def _typed_graph_enriched_page_ref(
+    page: dict,
+    filters: dict,
+    query_service: DocumentationGraphQueryService,
+) -> dict:
+    """Add a compact persisted-graph selection without exposing edge evidence."""
+
+    enriched = dict(page)
+    locator = page.get("mcp_uri")
+    if not isinstance(locator, str) or not locator:
+        locator = page.get("canonical_path")
+
+    if not isinstance(locator, str) or not locator:
+        status = _compact_typed_graph_status(query_service.typed_graph_status)
+        enriched["typed_graph"] = {
+            **status,
+            "found": False,
+            "direction": filters.get("relationship_direction", "both"),
+            "filters": _relationship_filter_summary(filters),
+            "unfiltered_total": 0,
+            "filtered_total": 0,
+            "returned": 0,
+            "truncated": False,
+            "coverage": _empty_returned_edge_coverage(),
+        }
+        return enriched
+
+    unfiltered = query_service.traverse_typed_graph(
+        locator,
+        direction="both",
+        include_evidence=False,
+    )
+    selected_direction = filters.get("relationship_direction", "both")
+    traversal_options: dict[str, Any] = {
+        "direction": selected_direction,
+        "include_evidence": False,
+    }
+    if "relationship_kind" in filters:
+        traversal_options["kinds"] = (filters["relationship_kind"],)
+    if "relationship_origin" in filters:
+        traversal_options["origins"] = (filters["relationship_origin"],)
+    if "relationship_resolution" in filters:
+        traversal_options["resolutions"] = (
+            filters["relationship_resolution"],
+        )
+
+    if (
+        selected_direction == "both"
+        and len(traversal_options) == 2
+    ):
+        selected = unfiltered
+    else:
+        selected = query_service.traverse_typed_graph(
+            locator,
+            **traversal_options,
+        )
+
+    typed_graph_status = selected.get("typed_graph")
+    status = _compact_typed_graph_status(
+        typed_graph_status
+        if isinstance(typed_graph_status, Mapping)
+        else query_service.typed_graph_status
+    )
+    enriched["typed_graph"] = {
+        **status,
+        "found": bool(selected.get("found")),
+        "direction": selected_direction,
+        "filters": _relationship_filter_summary(filters),
+        "unfiltered_total": _nonnegative_count(unfiltered.get("total")),
+        "filtered_total": _nonnegative_count(selected.get("total")),
+        "returned": _nonnegative_count(selected.get("returned")),
+        "truncated": bool(selected.get("truncated")),
+        "coverage": _compact_returned_edge_coverage(selected.get("edges")),
+    }
+    return enriched
+
+
+def _relationship_filter_summary(filters: Mapping[str, Any]) -> dict[str, str]:
+    return {
+        key: str(filters[key])
+        for key in (
+            "relationship_kind",
+            "relationship_origin",
+            "relationship_resolution",
+            "relationship_direction",
+        )
+        if key in filters
+    }
+
+
+def _compact_typed_graph_status(
+    status: Mapping[str, Any],
+) -> dict[str, Any]:
+    coverage = status.get("coverage")
+    analyzers = coverage if isinstance(coverage, list) else []
+    return {
+        "availability": status.get("availability"),
+        "reason": status.get("reason"),
+        "coverage": [
+            _compact_analyzer_coverage(item)
+            for item in analyzers
+            if isinstance(item, Mapping)
+        ],
+    }
+
+
+def _compact_analyzer_coverage(value: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        key: (
+            sorted(
+                {
+                    item
+                    for item in value.get("limitations", [])
+                    if isinstance(item, str)
+                }
+            )
+            if key == "limitations"
+            else value.get(key)
+        )
+        for key in (
+            "analyzer",
+            "observed",
+            "emitted",
+            "omitted",
+            "limit",
+            "truncated",
+            "limitations",
+        )
+    }
+
+
+def _compact_returned_edge_coverage(value: object) -> dict[str, Any]:
+    edges = value if isinstance(value, list) else []
+    observed = 0
+    emitted = 0
+    omitted = 0
+    truncated = False
+    limitations: set[str] = set()
+    returned_edges = 0
+    for edge in edges:
+        if not isinstance(edge, Mapping):
+            continue
+        coverage = edge.get("coverage")
+        if not isinstance(coverage, Mapping):
+            continue
+        returned_edges += 1
+        observed += _nonnegative_count(coverage.get("observed"))
+        emitted += _nonnegative_count(coverage.get("emitted"))
+        omitted += _nonnegative_count(coverage.get("omitted"))
+        truncated = truncated or bool(coverage.get("truncated"))
+        raw_limitations = coverage.get("limitations")
+        if isinstance(raw_limitations, list):
+            limitations.update(
+                item for item in raw_limitations if isinstance(item, str)
+            )
+    return {
+        "scope": "returned-edges",
+        "edges": returned_edges,
+        "observed": observed,
+        "emitted": emitted,
+        "omitted": omitted,
+        "truncated": truncated,
+        "limitations": sorted(limitations),
+    }
+
+
+def _empty_returned_edge_coverage() -> dict[str, Any]:
+    return {
+        "scope": "returned-edges",
+        "edges": 0,
+        "observed": 0,
+        "emitted": 0,
+        "omitted": 0,
+        "truncated": False,
+        "limitations": [],
+    }
+
+
+def _nonnegative_count(value: object) -> int:
+    if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+        return value
+    return 0
+
+
 def _compact_context_freshness(value: object) -> dict[str, Any]:
     freshness = value if isinstance(value, dict) else {}
     return {
@@ -1193,6 +1489,20 @@ def _matches_knowledge_refinement(page: dict, filters: dict) -> bool:
         ):
             return False
     return True
+
+
+def _matches_typed_graph_refinement(page: dict, filters: dict) -> bool:
+    if not (_RELATIONSHIP_REFINEMENT_KEYS & set(filters)):
+        return True
+    summary = page.get("typed_graph")
+    if not isinstance(summary, Mapping):
+        return False
+    if summary.get("availability") != KnowledgeAvailability.READY.value:
+        # An unavailable persisted graph cannot safely disprove a candidate.
+        # Retaining the reference plus its explicit state avoids presenting
+        # missing/degraded graph data as a trustworthy empty match set.
+        return True
+    return _nonnegative_count(summary.get("filtered_total")) > 0
 
 
 def _knowledge_page_sort_key(page: dict, status: dict) -> tuple:
@@ -1283,6 +1593,26 @@ def _append_knowledge_context_warning(
                 f"({detail}); they were retained by default."
             )
     if message is not None and message not in warnings:
+        warnings.append(message)
+
+
+def _append_typed_graph_context_warning(
+    status: Mapping[str, Any],
+    candidates: list[dict[str, Any]],
+    warnings: list[str] | None,
+) -> None:
+    if warnings is None or not candidates:
+        return
+    availability = status.get("availability")
+    if availability == KnowledgeAvailability.READY.value:
+        return
+    reason = status.get("reason")
+    message = (
+        f"Typed relationship graph is {availability} ({reason}); requested "
+        "relationship refinements could not be evaluated and no candidates "
+        "were dropped."
+    )
+    if message not in warnings:
         warnings.append(message)
 
 
@@ -1602,6 +1932,8 @@ def _protocol_success_payload(
         response["surface"] = payload["surface"]
     if "knowledge" in payload:
         response["knowledge"] = payload["knowledge"]
+    if "typed_graph" in payload:
+        response["typed_graph"] = payload["typed_graph"]
 
     if request["format"] == "markdown":
         response["content"] = _render_markdown(payload)

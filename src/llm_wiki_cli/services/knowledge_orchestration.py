@@ -113,6 +113,20 @@ class RuntimeKnowledgeInputs:
     generation_options: Mapping[str, Any] = field(default_factory=dict)
     generation_option_defaults: Mapping[str, Any] = field(default_factory=dict)
     generation_option_allowlist: Sequence[str] = ()
+    call_edges: Mapping[str, Any] | Sequence[Mapping[str, Any]] = ()
+    dependency_observations: (
+        Mapping[str, Any] | Sequence[Mapping[str, Any]]
+    ) = ()
+    entrypoint_observations: (
+        Mapping[str, Any] | Sequence[Mapping[str, Any]]
+    ) = ()
+    flows: Sequence[Mapping[str, Any]] = ()
+    data_flows: Sequence[Mapping[str, Any]] = ()
+    external_dependencies: Sequence[Mapping[str, Any]] = ()
+    graph_analyzer_limitations: Mapping[str, Sequence[str]] = field(
+        default_factory=dict
+    )
+    graph_evidence_limit: int = 20
 
 
 @dataclass(frozen=True)
@@ -235,6 +249,14 @@ def build_runtime_knowledge_plan(
             force_unknown_evidence=inputs.force_unknown_evidence,
             untrusted_evidence_page_paths=(inputs.untrusted_evidence_page_paths),
             regenerated_evidence_page_paths=(inputs.regenerated_evidence_page_paths),
+            call_edges=inputs.call_edges,
+            dependency_observations=inputs.dependency_observations,
+            entrypoint_observations=inputs.entrypoint_observations,
+            flows=inputs.flows,
+            data_flows=inputs.data_flows,
+            external_dependencies=inputs.external_dependencies,
+            graph_analyzer_limitations=inputs.graph_analyzer_limitations,
+            graph_evidence_limit=inputs.graph_evidence_limit,
         )
     )
 

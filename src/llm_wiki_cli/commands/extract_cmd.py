@@ -109,6 +109,8 @@ class InventoryRequest:
     job_request: ExtractionJobRequest | None = None
     plan_reporter: Callable[[ExtractionJobPlan], None] | None = None
     include_plugins: bool = True
+    capture_data_effect_observations: bool = False
+    capture_import_observations: bool = False
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -128,6 +130,16 @@ class InventoryResult:
     plugin_lock_path: str | None = None
     plugin_lock_hash: str | None = None
     source_snapshot: SourceSnapshot | None = None
+    data_effect_observations: dict | None = field(
+        default=None,
+        repr=False,
+        compare=False,
+    )
+    import_observations: dict | None = field(
+        default=None,
+        repr=False,
+        compare=False,
+    )
 
     @property
     def job_plan(self) -> ExtractionJobPlan:
@@ -202,6 +214,8 @@ class _ExtractionOutcome:
     files_found: int
     extracted: dict
     message: str = ""
+    data_effect_observations: dict | None = None
+    import_observations: dict | None = None
 
 
 @dataclass
@@ -273,7 +287,22 @@ def _run_extraction_plan(
     files_found = plan.files_found
     if plan.source_files is None:
         files_found = len(extracted)
-    return _ExtractionOutcome(plan.language, "ok", files_found, extracted)
+    return _ExtractionOutcome(
+        plan.language,
+        "ok",
+        files_found,
+        extracted,
+        data_effect_observations=getattr(
+            extractor,
+            "last_data_effect_observations",
+            None,
+        ),
+        import_observations=getattr(
+            extractor,
+            "last_import_observations",
+            None,
+        ),
+    )
 
 
 def _merge_language_inventory(
@@ -309,6 +338,8 @@ _LEGACY_INVENTORY_REQUEST_FIELDS = (
     "job_request",
     "plan_reporter",
     "include_plugins",
+    "capture_data_effect_observations",
+    "capture_import_observations",
 )
 
 
@@ -417,7 +448,22 @@ def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
             context.plugin_lock_hash if producer_plugin_components else None
         ),
         source_snapshot=evaluated_source_snapshot,
+        **_python_extraction_sidecars(outcomes_by_language),
     )
+
+
+def _python_extraction_sidecars(
+    outcomes_by_language: dict[str, _ExtractionOutcome],
+) -> dict:
+    outcome = outcomes_by_language.get("python")
+    return {
+        "data_effect_observations": (
+            outcome.data_effect_observations if outcome is not None else None
+        ),
+        "import_observations": (
+            outcome.import_observations if outcome is not None else None
+        ),
+    }
 
 
 def _inventory_plugin_state(
@@ -695,8 +741,18 @@ def _plan_language_extraction(
         language
     )
     cached_by_language.setdefault(language, {})
+    capture_python_sidecars = (
+        (
+            context.request.capture_data_effect_observations
+            or context.request.capture_import_observations
+        )
+        and language == "python"
+        and is_builtin
+    )
     fresh_source_files = (
-        _fresh_inventory_source_files(
+        list(source_files or [])
+        if capture_python_sidecars
+        else _fresh_inventory_source_files(
             context, language, source_files, cached_by_language
         )
         if _can_use_inventory_cache(context, is_builtin)
@@ -800,6 +856,14 @@ def _build_extraction_kwargs(
         kwargs = _build_builtin_extraction_kwargs(context, language, fresh_source_files)
     if language == "python":
         kwargs["include_empty"] = context.request.include_empty
+        if is_builtin and context.request.capture_data_effect_observations:
+            kwargs["capture_data_effect_observations"] = (
+                context.request.capture_data_effect_observations
+            )
+        if is_builtin and context.request.capture_import_observations:
+            kwargs["capture_import_observations"] = (
+                context.request.capture_import_observations
+            )
     return kwargs
 
 
@@ -1761,6 +1825,189 @@ def _edges_for_file(
                     edge[key] = call[key]
             edges.append(edge)
     return edges
+
+
+_CALL_OBSERVATIONS_SCHEMA_VERSION = "llm-wiki-call-observations/v1"
+
+
+def _detailed_import_candidates(
+    filepath: str,
+    imports: list[dict],
+    symbol_to_files: dict[str, set[str]],
+    module_resolver,
+) -> dict[str, tuple[tuple[str, str], ...]]:
+    """Index every internal import candidate without collapsing ambiguity."""
+
+    by_visible_name: dict[str, set[tuple[str, str]]] = {}
+    for imp in imports:
+        if not isinstance(imp, dict):
+            continue
+        source_name = str(imp.get("name") or "")
+        visible_name = str(imp.get("alias") or source_name)
+        if not visible_name:
+            continue
+        candidates = _resolve_import_candidates(
+            imp,
+            filepath,
+            symbol_to_files,
+            module_resolver,
+        )
+        by_visible_name.setdefault(visible_name, set()).update(
+            (candidate, source_name or visible_name)
+            for candidate in candidates
+        )
+    return {
+        name: tuple(sorted(candidates))
+        for name, candidates in sorted(by_visible_name.items())
+    }
+
+
+def _resolve_call_observation(
+    call: dict,
+    filepath: str,
+    class_name: str | None,
+    data: dict,
+    imported_candidates: dict[str, tuple[tuple[str, str], ...]],
+    imported_names: set[str],
+    local_symbols: set[str],
+    symbol_to_files: dict[str, set[str]],
+) -> tuple[str | None, str, str, list[dict]]:
+    """Resolve one call while retaining every ambiguous internal candidate."""
+
+    name = call["name"]
+    attr = call.get("attr", "")
+    target = _self_method_target(call, class_name, data, filepath)
+    if target is not None:
+        return target[0], target[1], "internal", []
+
+    visible_name = _attr_root(attr) if attr else name
+    imported = imported_candidates.get(visible_name, ())
+    candidate_symbol = name if attr else None
+    if len(imported) == 1:
+        target_file, source_name = imported[0]
+        return target_file, candidate_symbol or source_name, "internal", []
+    if len(imported) > 1:
+        candidates = [
+            {
+                "file": target_file,
+                "symbol": candidate_symbol or source_name,
+            }
+            for target_file, source_name in imported
+        ]
+        return None, candidate_symbol or name, "ambiguous", candidates
+
+    if not attr and name in local_symbols:
+        return filepath, name, "internal", []
+    if not attr:
+        candidates = sorted(symbol_to_files.get(name, set()))
+        if len(candidates) == 1:
+            return candidates[0], name, "internal", []
+        if len(candidates) > 1:
+            return (
+                None,
+                name,
+                "ambiguous",
+                [{"file": candidate, "symbol": name} for candidate in candidates],
+            )
+    if _call_uses_import(name, attr, imported_names):
+        return None, name, "external", []
+    return None, name, "unresolved", []
+
+
+def _call_observations_for_file(
+    filepath: str,
+    data: dict,
+    symbol_to_files: dict[str, set[str]],
+    module_resolver,
+) -> list[dict]:
+    imports = data.get("imports", [])
+    imported_candidates = _detailed_import_candidates(
+        filepath,
+        imports,
+        symbol_to_files,
+        module_resolver,
+    )
+    imported_names = {
+        visible_name
+        for imp in imports
+        if isinstance(imp, dict)
+        and (visible_name := (imp.get("alias") or imp.get("name")))
+    }
+    local_symbols = _file_local_symbols(data)
+    observations: list[dict] = []
+    for caller_symbol, fn, class_name in _caller_components(data):
+        for call in fn.get("calls", []):
+            to_file, to_symbol, kind, candidates = _resolve_call_observation(
+                call,
+                filepath,
+                class_name,
+                data,
+                imported_candidates,
+                imported_names,
+                local_symbols,
+                symbol_to_files,
+            )
+            raw_line = call.get("line")
+            observation = {
+                "from": {"file": filepath, "symbol": caller_symbol},
+                "to": {"file": to_file, "symbol": to_symbol},
+                "name": call.get("attr") or call["name"],
+                "kind": kind,
+                "line": (
+                    raw_line
+                    if isinstance(raw_line, int)
+                    and not isinstance(raw_line, bool)
+                    and raw_line > 0
+                    else None
+                ),
+            }
+            if candidates:
+                observation["candidates"] = candidates
+            for key in ("args", "kwargs"):
+                if key in call:
+                    observation[key] = call[key]
+            observations.append(observation)
+    return observations
+
+
+def resolve_call_observations(inventory: dict) -> dict:
+    """Return deterministic, versioned call observations with honest ambiguity."""
+
+    symbol_to_files = _build_symbol_file_index(inventory)
+    module_resolver = build_module_path_resolver(inventory)
+    observations: list[dict] = []
+    for filepath in sorted(inventory):
+        observations.extend(
+            _call_observations_for_file(
+                filepath,
+                inventory[filepath],
+                symbol_to_files,
+                module_resolver,
+            )
+        )
+    observations.sort(
+        key=lambda value: json.dumps(
+            value,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+    emitted = len(observations)
+    return {
+        "schema_version": _CALL_OBSERVATIONS_SCHEMA_VERSION,
+        "observations": observations,
+        "coverage": {
+            "observed": emitted,
+            "emitted": emitted,
+            "omitted": 0,
+            "limit": None,
+            "truncated": False,
+            "limitations": [
+                "static-call-resolution-does-not-claim-runtime-completeness"
+            ],
+        },
+    }
 
 
 def resolve_call_edges(inventory: dict) -> list[dict]:

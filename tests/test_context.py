@@ -199,6 +199,75 @@ class _KnowledgeQueryStub:
         return {"concept": self.concepts.get(canonical_path)}
 
 
+class _TypedGraphQueryStub(_KnowledgeQueryStub):
+    def __init__(
+        self,
+        concepts: dict[str, dict],
+        graph_counts: dict[str, tuple[int, int]],
+        *,
+        availability: str = "ready",
+        reason: str = "typed-graph-extension-ready",
+    ):
+        super().__init__(concepts)
+        self.graph_counts = graph_counts
+        self.typed_graph_status = {
+            "availability": availability,
+            "reason": reason,
+            "schema_version": "llm-wiki-typed-graph/v1",
+            "coverage": [
+                {
+                    "analyzer": "calls",
+                    "observed": 9,
+                    "emitted": 8,
+                    "omitted": 1,
+                    "limit": 8,
+                    "truncated": True,
+                    "limitations": ["dynamic-dispatch"],
+                }
+            ],
+        }
+        self.traversals: list[tuple[str, dict]] = []
+
+    def traverse_typed_graph(self, locator: str, **options) -> dict:
+        self.traversals.append((locator, dict(options)))
+        all_total, selected_total = self.graph_counts.get(locator, (0, 0))
+        has_refinement = (
+            options.get("direction", "both") != "both"
+            or options.get("kinds") is not None
+            or options.get("origins") is not None
+            or options.get("resolutions") is not None
+        )
+        total = selected_total if has_refinement else all_total
+        if self.typed_graph_status["availability"] != "ready":
+            total = 0
+        returned = min(total, 1)
+        edges = [
+            {
+                "evidence": {
+                    "aggregate_input_hash": "sha256:" + ("1" * 64),
+                    "samples": [{"kind": "call"}],
+                },
+                "coverage": {
+                    "observed": 7,
+                    "emitted": 5,
+                    "omitted": 2,
+                    "limit": 5,
+                    "truncated": True,
+                    "limitations": ["polymorphism"],
+                },
+            }
+            for _ in range(returned)
+        ]
+        return {
+            "found": True,
+            "typed_graph": self.typed_graph_status,
+            "total": total,
+            "returned": returned,
+            "truncated": total > returned,
+            "edges": edges,
+        }
+
+
 @pytest.mark.parametrize(
     "case",
     COMPATIBILITY_CASES,
@@ -682,6 +751,102 @@ class TestProtocolValidation:
         }
 
     @pytest.mark.parametrize(
+        "relationship_kind",
+        ["calls", "supersedes", "vendor.plugin/invokes"],
+    )
+    def test_validation_accepts_scalar_typed_relationship_filters(
+        self,
+        relationship_kind,
+    ):
+        result = context_cmd._validate_protocol_request(
+            _protocol_request(
+                filters={
+                    "surface": "entities",
+                    "relationship_kind": relationship_kind,
+                    "relationship_origin": "extracted",
+                    "relationship_resolution": "resolved",
+                    "relationship_direction": "incoming",
+                }
+            )
+        )
+
+        assert result["filters"] == {
+            "surface": "entities",
+            "relationship_kind": relationship_kind,
+            "relationship_origin": "extracted",
+            "relationship_resolution": "resolved",
+            "relationship_direction": "incoming",
+        }
+
+    @pytest.mark.parametrize(
+        ("filters", "field"),
+        [
+            ({"relationship_kind": "calls"}, "filters.relationship_kind"),
+            (
+                {"entrypoint": "api-run", "relationship_origin": "extracted"},
+                "filters.relationship_origin",
+            ),
+            (
+                {"language": "python", "relationship_resolution": "resolved"},
+                "filters.relationship_resolution",
+            ),
+            (
+                {"module": "api/*", "relationship_direction": "both"},
+                "filters.relationship_direction",
+            ),
+        ],
+    )
+    def test_typed_relationship_filter_requires_concept_producer(
+        self,
+        filters,
+        field,
+    ):
+        with pytest.raises(context_cmd.ProtocolRequestError) as exc_info:
+            context_cmd._validate_protocol_request(
+                _protocol_request(filters=filters)
+            )
+
+        assert exc_info.value.field == field
+        assert "requires filters.surface or filters.symbol" in str(exc_info.value)
+
+    @pytest.mark.parametrize(
+        ("filters", "field"),
+        [
+            (
+                {"surface": "entities", "relationship_kind": "unqualified"},
+                "filters.relationship_kind",
+            ),
+            (
+                {"symbol": "User", "relationship_origin": "guessed"},
+                "filters.relationship_origin",
+            ),
+            (
+                {"symbol": "User", "relationship_resolution": "partial"},
+                "filters.relationship_resolution",
+            ),
+            (
+                {"surface": "entities", "relationship_direction": "inbound"},
+                "filters.relationship_direction",
+            ),
+            (
+                {"surface": "entities", "relationship_kind": ["calls"]},
+                "filters.relationship_kind",
+            ),
+        ],
+    )
+    def test_validation_rejects_invalid_typed_relationship_filters(
+        self,
+        filters,
+        field,
+    ):
+        with pytest.raises(context_cmd.ProtocolRequestError) as exc_info:
+            context_cmd._validate_protocol_request(
+                _protocol_request(filters=filters)
+            )
+
+        assert exc_info.value.field == field
+
+    @pytest.mark.parametrize(
         "freshness",
         [
             "current",
@@ -1038,6 +1203,159 @@ class TestKnowledgePageSelection:
                 "ranking and requested refinements are unavailable."
             )
         ]
+
+    def test_typed_graph_filters_before_page_limit_and_hides_evidence(self):
+        fixtures = [
+            _knowledge_page_fixture(
+                f"entities/{name}.md",
+                freshness="current",
+            )
+            for name in ("Alpha", "Beta", "Gamma")
+        ]
+        pages = [page for page, _concept in fixtures]
+        concepts = {
+            page["canonical_path"]: concept for page, concept in fixtures
+        }
+        service = _TypedGraphQueryStub(
+            concepts,
+            {
+                pages[0]["mcp_uri"]: (5, 2),
+                pages[1]["mcp_uri"]: (4, 0),
+                pages[2]["mcp_uri"]: (3, 1),
+            },
+        )
+        observed = []
+
+        selected, counts = context_cmd._select_knowledge_page_refs(
+            pages,
+            {
+                "relationship_kind": "calls",
+                "relationship_origin": "extracted",
+                "relationship_resolution": "resolved",
+                "relationship_direction": "incoming",
+            },
+            service,
+            limit=1,
+            observed=observed,
+        )
+
+        assert [page["canonical_path"] for page in selected] == [
+            "entities/Alpha.md"
+        ]
+        assert counts == {
+            "unfiltered_total": 3,
+            "filtered_total": 2,
+            "returned": 1,
+            "truncated": True,
+        }
+        assert len(observed) == 3
+        graph = selected[0]["typed_graph"]
+        assert graph == {
+            "availability": "ready",
+            "reason": "typed-graph-extension-ready",
+            "coverage": {
+                "scope": "returned-edges",
+                "edges": 1,
+                "observed": 7,
+                "emitted": 5,
+                "omitted": 2,
+                "truncated": True,
+                "limitations": ["polymorphism"],
+            },
+            "found": True,
+            "direction": "incoming",
+            "filters": {
+                "relationship_kind": "calls",
+                "relationship_origin": "extracted",
+                "relationship_resolution": "resolved",
+                "relationship_direction": "incoming",
+            },
+            "unfiltered_total": 5,
+            "filtered_total": 2,
+            "returned": 1,
+            "truncated": True,
+        }
+        encoded = json.dumps(graph, sort_keys=True)
+        assert "samples" not in encoded
+        assert "aggregate_input_hash" not in encoded
+        assert len(service.traversals) == 6
+        assert all(
+            options["include_evidence"] is False
+            for _locator, options in service.traversals
+        )
+
+    @pytest.mark.parametrize(
+        ("availability", "reason"),
+        [
+            ("absent", "typed-graph-extension-not-present"),
+            (
+                "degraded",
+                "policy-selected-surface-only-fallback-after-invalid",
+            ),
+        ],
+    )
+    def test_unavailable_typed_graph_is_explicit_and_does_not_drop_pages(
+        self,
+        availability,
+        reason,
+    ):
+        page, concept = _knowledge_page_fixture(
+            "entities/User.md",
+            freshness="current",
+        )
+        service = _TypedGraphQueryStub(
+            {page["canonical_path"]: concept},
+            {page["mcp_uri"]: (0, 0)},
+            availability=availability,
+            reason=reason,
+        )
+
+        selected, counts = context_cmd._select_knowledge_page_refs(
+            [page],
+            {"relationship_kind": "calls"},
+            service,
+            limit=20,
+            observed=[],
+        )
+        warnings = []
+        context_cmd._append_typed_graph_context_warning(
+            service.typed_graph_status,
+            selected,
+            warnings,
+        )
+
+        assert counts["filtered_total"] == 1
+        assert selected[0]["typed_graph"]["availability"] == availability
+        assert selected[0]["typed_graph"]["filtered_total"] == 0
+        assert warnings == [
+            (
+                f"Typed relationship graph is {availability} ({reason}); "
+                "requested relationship refinements could not be evaluated "
+                "and no candidates were dropped."
+            )
+        ]
+
+    def test_default_page_selection_never_traverses_typed_graph(self):
+        page, concept = _knowledge_page_fixture(
+            "entities/User.md",
+            freshness="current",
+        )
+        service = _TypedGraphQueryStub(
+            {page["canonical_path"]: concept},
+            {page["mcp_uri"]: (5, 2)},
+        )
+
+        selected, counts = context_cmd._select_knowledge_page_refs(
+            [page],
+            {},
+            service,
+            limit=20,
+            observed=[],
+        )
+
+        assert counts["filtered_total"] == 1
+        assert "typed_graph" not in selected[0]
+        assert service.traversals == []
 
 
 def test_committed_surface_mapping_preserves_collision_page_symbol_lookup():

@@ -32,12 +32,21 @@ from ..services.api_contracts import (
     load_openapi_document,
     render_api_contracts_markdown,
 )
-from ..services.data_flow import analyze_data_flow, build_data_flow_context
-from ..services.dependencies import analyze_dependencies
+from ..services.data_flow import (
+    analyze_data_flow,
+    analyze_data_flow_detailed,
+    build_data_flow_context,
+)
+from ..services.dependencies import (
+    analyze_dependencies,
+    build_dependency_observations,
+    build_external_dependency_observations,
+)
 from ..services.entrypoints import (
-    EntryPointDetectionResult,
     build_flow,
-    detect_entry_points,
+    build_flow_detailed,
+    entry_points_from_detailed_observations,
+    get_detailed_entry_points,
     read_console_scripts,
 )
 from ..services.extraction_jobs import (
@@ -73,6 +82,22 @@ from ..services.knowledge_orchestration import (
     finalize_runtime_knowledge,
     runtime_generation_options,
 )
+from ..services.markdown_sections import (
+    format_table_row as _service_format_table_row,
+    is_placeholder_description as _service_is_placeholder_description,
+    is_table_separator as _service_is_table_separator,
+    normalize_markdown as _service_normalize_markdown,
+    preserve_level_two_section_exact as _service_preserve_level_two_section_exact,
+    preserve_table_description_cells as _service_preserve_table_description_cells,
+    replace_section_body as _service_replace_section_body,
+    section_body as _service_section_body,
+    section_bounds as _service_section_bounds,
+    semantic_table_key as _service_semantic_table_key,
+    should_preserve_semantic_value as _service_should_preserve_semantic_value,
+    split_table_row as _service_split_table_row,
+    table_description_cells as _service_table_description_cells,
+    trim_blank_lines as _service_trim_blank_lines,
+)
 from ..services.module_maps import build_module_dependency_maps
 from ..services.paths import is_test_source_path
 from ..services.source_snapshot import (
@@ -89,6 +114,13 @@ from ..services.sync_manifest import (
     MANIFEST_VERSION,  # noqa: F401 - compatibility re-export
     SyncManifest,
     retained_concept_page_paths,
+)
+from ..services.section_ownership import (
+    SemanticMergeResult,
+    merge_entity_semantics as _service_merge_entity_semantics,
+    merge_module_semantics as _service_merge_module_semantics,
+    merge_semantic_markdown as _service_merge_semantic_markdown,
+    replace_generated_section as _service_replace_generated_section,
 )
 from ..services.wiki_surface import PageKind, canonical_path, collect_wiki_pages
 from ..services.wiki_surface_index import evaluate_surface_index
@@ -112,6 +144,7 @@ from .extract_cmd import (
     InventoryResult,
     get_inventory_result,
     print_inventory_failures,
+    resolve_call_observations,
     resolve_call_edges,
 )
 
@@ -130,7 +163,6 @@ MAX_SURFACE_CREATED_PAGES = MAX_SYNC_AFFECTED_FILES
 MAX_SURFACE_CREATED_RATIO = MAX_SYNC_AFFECTED_RATIO
 MIN_PAGES_FOR_SURFACE_RATIO_GUARD = MIN_SOURCES_FOR_RATIO_GUARD
 _FLOW_CATEGORY_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
-_AUTO_GENERATED_RE = re.compile(r"^_Auto-generated from `.+`(?: in `.+`)?\._$")
 _HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 _DEPRECATION_HEADER = (
     "> ⚠️ **Stale:** Source no longer found in codebase. "
@@ -205,7 +237,7 @@ def _build_manifest_from_inventory(
 
 
 def _normalize_md(text: str) -> str:
-    return text.replace("\r\n", "\n").replace("\r", "\n")
+    return _service_normalize_markdown(text)
 
 
 def _write_md_if_changed(path: Path, text: str) -> str:
@@ -226,82 +258,30 @@ def _write_md_if_changed(path: Path, text: str) -> str:
 
 def _section_bounds(lines: list[str], heading: str) -> tuple[int, int, int] | None:
     """Return ``(heading_index, body_start, body_end)`` for a level-2 heading."""
-    target = heading.casefold()
-    for i, line in enumerate(lines):
-        match = _HEADING_RE.match(line.strip())
-        if not match:
-            continue
-        level = len(match.group(1))
-        title = match.group(2).strip().casefold()
-        if level != 2 or title != target:
-            continue
-        end = len(lines)
-        for j in range(i + 1, len(lines)):
-            next_match = _HEADING_RE.match(lines[j].strip())
-            if next_match and len(next_match.group(1)) <= level:
-                end = j
-                break
-        return i, i + 1, end
-    return None
+    return _service_section_bounds(lines, heading)
 
 
 def _trim_blank_lines(lines: list[str]) -> list[str]:
-    start = 0
-    end = len(lines)
-    while start < end and lines[start].strip() == "":
-        start += 1
-    while end > start and lines[end - 1].strip() == "":
-        end -= 1
-    return lines[start:end]
+    return _service_trim_blank_lines(lines)
 
 
 def _section_body(markdown: str, heading: str) -> str | None:
-    lines = _normalize_md(markdown).splitlines()
-    bounds = _section_bounds(lines, heading)
-    if not bounds:
-        return None
-    _, start, end = bounds
-    body_lines = _trim_blank_lines(lines[start:end])
-    return "\n".join(body_lines).strip()
+    return _service_section_body(markdown, heading)
 
 
 def _replace_section_body(markdown: str, heading: str, body: str) -> str:
-    lines = _normalize_md(markdown).splitlines()
-    bounds = _section_bounds(lines, heading)
-    if not bounds:
-        return markdown
-    heading_idx, _, end = bounds
-    replacement = [""] + body.splitlines() + [""]
-    return "\n".join(lines[: heading_idx + 1] + replacement + lines[end:])
+    return _service_replace_section_body(markdown, heading, body)
 
 
 def _preserve_level_two_section_exact(
     existing: str, generated: str, heading: str
 ) -> str:
     """Splice a human-owned level-two section without normalizing its body."""
-    pattern = re.compile(
-        rf"(?ms)^##[ \t]+{re.escape(heading)}[ \t]*\r?\n.*?"
-        rf"(?=^##[ \t]+|\Z)"
-    )
-    old_match = pattern.search(existing)
-    new_match = pattern.search(generated)
-    if old_match is None or new_match is None:
-        return generated
-    old_section = old_match.group(0)
-    if old_section == new_match.group(0):
-        return generated
-    return generated[: new_match.start()] + old_section + generated[new_match.end() :]
+    return _service_preserve_level_two_section_exact(existing, generated, heading)
 
 
 def _is_placeholder_description(value: str | None) -> bool:
-    if value is None:
-        return True
-    stripped = value.strip()
-    if not stripped or stripped in {"—", "-"}:
-        return True
-    if _AUTO_GENERATED_RE.match(stripped):
-        return True
-    return False
+    return _service_is_placeholder_description(value)
 
 
 def _should_preserve_semantic_value(
@@ -309,100 +289,31 @@ def _should_preserve_semantic_value(
     generated: str | None,
     old_generated: str | None,
 ) -> bool:
-    if _is_placeholder_description(existing):
-        return False
-    existing_stripped = (existing or "").strip()
-    generated_stripped = (generated or "").strip()
-    if old_generated is None:
-        return existing_stripped != generated_stripped
-    old_stripped = old_generated.strip()
-    if existing_stripped == old_stripped:
-        return False
-    return existing_stripped != generated_stripped
+    return _service_should_preserve_semantic_value(
+        existing,
+        generated,
+        old_generated,
+    )
 
 
 def _split_table_row(line: str) -> list[str]:
-    stripped = line.strip()
-    if not stripped.startswith("|") or not stripped.endswith("|"):
-        return []
-    body = stripped[1:-1]
-    cells: list[str] = []
-    current: list[str] = []
-    code_fence = 0
-    index = 0
-    while index < len(body):
-        char = body[index]
-        if char == "\\" and index + 1 < len(body):
-            current.extend((char, body[index + 1]))
-            index += 2
-            continue
-        if char == "`":
-            end = index + 1
-            while end < len(body) and body[end] == "`":
-                end += 1
-            run = end - index
-            current.append(body[index:end])
-            if code_fence == 0:
-                code_fence = run
-            elif run == code_fence:
-                code_fence = 0
-            index = end
-            continue
-        if char == "|" and code_fence == 0:
-            cells.append("".join(current).strip())
-            current = []
-        else:
-            current.append(char)
-        index += 1
-    cells.append("".join(current).strip())
-    return cells
+    return _service_split_table_row(line)
 
 
 def _format_table_row(cells: list[str]) -> str:
-    return "| " + " | ".join(cells) + " |"
+    return _service_format_table_row(cells)
 
 
 def _is_table_separator(cells: list[str]) -> bool:
-    if not cells:
-        return False
-    return all(re.fullmatch(r":?-{3,}:?", cell.replace(" ", "")) for cell in cells)
+    return _service_is_table_separator(cells)
 
 
 def _semantic_table_key(cell: str) -> str:
-    key = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", cell)
-    key = key.replace("`", "").replace("*", "").replace("\\|", "|")
-    return key.strip()
+    return _service_semantic_table_key(cell)
 
 
 def _table_description_cells(markdown: str, heading: str) -> dict[str, str]:
-    lines = _normalize_md(markdown).splitlines()
-    bounds = _section_bounds(lines, heading)
-    if not bounds:
-        return {}
-    _, start, end = bounds
-
-    for i in range(start, end):
-        headers = _split_table_row(lines[i])
-        if not headers or "Description" not in headers:
-            continue
-        desc_idx = headers.index("Description")
-        row_start = i + 1
-        if row_start < end and _is_table_separator(_split_table_row(lines[row_start])):
-            row_start += 1
-
-        descriptions: dict[str, str] = {}
-        for row_idx in range(row_start, end):
-            row = _split_table_row(lines[row_idx])
-            if not row:
-                break
-            if len(row) <= desc_idx:
-                continue
-            key = _semantic_table_key(row[0])
-            description = row[desc_idx].strip()
-            if key and not _is_placeholder_description(description):
-                descriptions[key] = description
-        return descriptions
-    return {}
+    return _service_table_description_cells(markdown, heading)
 
 
 def _preserve_table_description_cells(
@@ -411,59 +322,12 @@ def _preserve_table_description_cells(
     descriptions: dict[str, str],
     old_descriptions: dict[str, str] | None = None,
 ) -> tuple[str, int]:
-    if not descriptions:
-        return markdown, 0
-
-    lines = _normalize_md(markdown).splitlines()
-    bounds = _section_bounds(lines, heading)
-    if not bounds:
-        return markdown, 0
-    _, start, end = bounds
-
-    preserved = 0
-    for i in range(start, end):
-        headers = _split_table_row(lines[i])
-        if not headers or "Description" not in headers:
-            continue
-        desc_idx = headers.index("Description")
-        row_start = i + 1
-        if row_start < end and _is_table_separator(_split_table_row(lines[row_start])):
-            row_start += 1
-
-        for row_idx in range(row_start, end):
-            row = _split_table_row(lines[row_idx])
-            if not row:
-                break
-            if len(row) <= desc_idx:
-                continue
-            key = _semantic_table_key(row[0])
-            existing_description = descriptions.get(key)
-            old_description = (old_descriptions or {}).get(key)
-            if existing_description is None:
-                continue
-            if not _should_preserve_semantic_value(
-                existing_description,
-                row[desc_idx],
-                old_description,
-            ):
-                continue
-            row[desc_idx] = existing_description
-            lines[row_idx] = _format_table_row(row)
-            preserved += 1
-        break
-
-    if preserved == 0:
-        return markdown, 0
-    updated = "\n".join(lines)
-    if markdown.endswith("\n"):
-        updated += "\n"
-    return updated, preserved
-
-
-@dataclass
-class SemanticMergeResult:
-    text: str
-    preserved: int = 0
+    return _service_preserve_table_description_cells(
+        markdown,
+        heading,
+        descriptions,
+        old_descriptions,
+    )
 
 
 def _merge_semantic_markdown(
@@ -475,30 +339,13 @@ def _merge_semantic_markdown(
     old_table_descriptions: dict[str, dict[str, str]] | None = None,
 ) -> SemanticMergeResult:
     """Preserve human-written semantic fields in regenerated wiki markdown."""
-    merged = _normalize_md(generated)
-    preserved = 0
-
-    existing_description = _section_body(existing, "Description")
-    generated_description = _section_body(generated, "Description")
-    if existing_description is not None and _should_preserve_semantic_value(
-        existing_description,
-        generated_description,
-        old_description,
-    ):
-        merged = _replace_section_body(merged, "Description", existing_description)
-        preserved += 1
-
-    for heading in table_headings:
-        descriptions = _table_description_cells(existing, heading)
-        merged, table_preserved = _preserve_table_description_cells(
-            merged,
-            heading,
-            descriptions,
-            (old_table_descriptions or {}).get(heading),
-        )
-        preserved += table_preserved
-
-    return SemanticMergeResult(merged, preserved)
+    return _service_merge_semantic_markdown(
+        existing,
+        generated,
+        table_headings,
+        old_description=old_description,
+        old_table_descriptions=old_table_descriptions,
+    )
 
 
 def _merge_entity_semantics(
@@ -506,17 +353,7 @@ def _merge_entity_semantics(
     generated: str,
     old_semantics: dict | None = None,
 ) -> SemanticMergeResult:
-    old_semantics = old_semantics or {}
-    return _merge_semantic_markdown(
-        existing,
-        generated,
-        ("Attributes", "Methods"),
-        old_description=old_semantics.get("description"),
-        old_table_descriptions={
-            "Attributes": old_semantics.get("attributes", {}),
-            "Methods": old_semantics.get("methods", {}),
-        },
-    )
+    return _service_merge_entity_semantics(existing, generated, old_semantics)
 
 
 def _merge_module_semantics(
@@ -524,17 +361,7 @@ def _merge_module_semantics(
     generated: str,
     old_semantics: dict | None = None,
 ) -> SemanticMergeResult:
-    old_semantics = old_semantics or {}
-    return _merge_semantic_markdown(
-        existing,
-        generated,
-        ("Classes", "Functions"),
-        old_description=old_semantics.get("description"),
-        old_table_descriptions={
-            "Classes": old_semantics.get("classes", {}),
-            "Functions": old_semantics.get("functions", {}),
-        },
-    )
+    return _service_merge_module_semantics(existing, generated, old_semantics)
 
 
 # ``SyncManifest`` and its manifest constants are imported above and intentionally
@@ -779,17 +606,23 @@ def _has_existing_module_dependency_sections(wiki_dir: Path) -> bool:
 def _build_generated_section_context(
     options: "_SyncRunOptions",
     inventory: dict,
+    *,
+    call_edges: list[dict] | None = None,
+    dependency_analysis: dict | None = None,
 ) -> "_GeneratedSectionContext":
-    call_edges = resolve_call_edges(inventory)
+    call_edges = call_edges if call_edges is not None else resolve_call_edges(inventory)
     entity_relationship_summaries = _build_entity_relationship_summary_map(
         inventory,
         call_edges,
     )
-    dependency_analysis = None
     module_dependency_maps = None
     if _has_existing_module_dependency_sections(options.wiki_dir):
-        dependency_analysis = analyze_dependencies(inventory, options.src_dir)
+        dependency_analysis = dependency_analysis or analyze_dependencies(
+            inventory, options.src_dir
+        )
         module_dependency_maps = build_module_dependency_maps(dependency_analysis)
+    else:
+        dependency_analysis = None
     return _GeneratedSectionContext(
         entity_relationship_summaries=entity_relationship_summaries,
         module_dependency_maps=module_dependency_maps,
@@ -1298,15 +1131,7 @@ def _removed_source_info_from_mappings(
 
 
 def _replace_generated_section(existing: str, generated: str, heading: str) -> str:
-    if _section_body(existing, heading) is None:
-        return existing
-    generated_body = _section_body(generated, heading)
-    if generated_body is None:
-        return existing
-    updated = _replace_section_body(existing, heading, generated_body)
-    if existing.endswith("\n") and not updated.endswith("\n"):
-        updated += "\n"
-    return updated
+    return _service_replace_generated_section(existing, generated, heading)
 
 
 def _record_generated_section_write(
@@ -1614,6 +1439,27 @@ class _ExtractedSyncInventory:
 
 
 @dataclass(frozen=True)
+class _SyncEntryPointAnalysis:
+    entries: list[dict]
+    observations: dict
+
+
+@dataclass(frozen=True)
+class _RuntimeGraphObservations:
+    resolved_call_edges: list[dict]
+    call_observations: dict
+    dependency_observations: dict
+    entrypoint_observations: dict
+    flows: list[dict]
+    rendering_flows: list[dict]
+    data_flows: list[dict]
+    rendering_data_flows: list[dict]
+    external_dependencies: list[dict]
+    dependency_analysis: dict | None
+    analyzer_limitations: dict[str, tuple[str, ...]] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
 class _SurfaceInitializationPlan:
     surfaces: dict[str, dict]
     policy_changed: bool
@@ -1662,6 +1508,7 @@ class _PreparedSyncRun:
     diff: "SyncDiff"
     surface_plan: _SurfaceInitializationPlan
     repository_evidence: RepositoryEvidence
+    graph_observations: _RuntimeGraphObservations
 
 
 def _updated_surface_policies(
@@ -1760,6 +1607,8 @@ def _dependency_plan(
     options: _SyncRunOptions,
     surfaces: Mapping[str, Mapping],
     inventory: dict,
+    *,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> tuple[dict, dict | None, tuple[str, ...], tuple[str, ...], int]:
     existing = tuple(
         stem
@@ -1782,7 +1631,11 @@ def _dependency_plan(
     )
     excluded_tests = len(inventory) - len(dependency_inventory)
     analysis = (
-        analyze_dependencies(dependency_inventory, options.src_dir)
+        analyze_dependencies(
+            dependency_inventory,
+            options.src_dir,
+            source_snapshot=source_snapshot,
+        )
         if target_pages
         else None
     )
@@ -1805,6 +1658,7 @@ def _build_surface_initialization_plan(
     source_changed: bool,
     api_contracts: dict | None,
     generation_inputs: Mapping[str, object],
+    source_snapshot: SourceSnapshot | None = None,
 ) -> _SurfaceInitializationPlan:
     surfaces, policy_changed = _updated_surface_policies(options, manifest)
     include_all_enabled = not options.initialize_surfaces
@@ -1824,7 +1678,12 @@ def _build_surface_initialization_plan(
             target_pages,
             new_pages,
             excluded_dependency_tests,
-        ) = _dependency_plan(options, surfaces, inventory)
+        ) = _dependency_plan(
+            options,
+            surfaces,
+            inventory,
+            source_snapshot=source_snapshot,
+        )
     else:
         dependency_inventory = inventory
         dependency_analysis = None
@@ -2192,6 +2051,8 @@ def _extract_current_inventory(options: _SyncRunOptions) -> _ExtractedSyncInvent
         plan_reporter=options.plan_reporter,
         helper_cache_dir=options.helper_cache_dir,
         include_tests=options.include_tests,
+        capture_data_effect_observations=True,
+        capture_import_observations=True,
     )
     if inventory_result.failed:
         print_inventory_failures(inventory_result)
@@ -2316,8 +2177,14 @@ def _apply_sync_changes(
     diff: "SyncDiff",
     page_maps: _SyncPageMaps,
     surface_plan: _SurfaceInitializationPlan,
+    graph_observations: _RuntimeGraphObservations,
 ) -> "SyncResult":
-    generated_sections = _build_generated_section_context(options, inventory)
+    generated_sections = _build_generated_section_context(
+        options,
+        inventory,
+        call_edges=graph_observations.resolved_call_edges,
+        dependency_analysis=graph_observations.dependency_analysis,
+    )
     result = _apply_diff(
         diff,
         options.wiki_dir,
@@ -2331,7 +2198,13 @@ def _apply_sync_changes(
         preserve_semantic=options.preserve_semantic,
     )
 
-    _apply_surface_page_changes(options, inventory, page_maps, surface_plan)
+    _apply_surface_page_changes(
+        options,
+        inventory,
+        page_maps,
+        surface_plan,
+        graph_observations=graph_observations,
+    )
 
     _rebuild_index(
         options.wiki_dir,
@@ -2358,6 +2231,8 @@ def _apply_surface_page_changes(
     inventory: dict,
     page_maps: _SyncPageMaps,
     surface_plan: _SurfaceInitializationPlan,
+    *,
+    graph_observations: _RuntimeGraphObservations | None = None,
 ) -> None:
     initializing = bool(options.initialize_surfaces)
     generation_options = runtime_generation_options(
@@ -2370,12 +2245,25 @@ def _apply_surface_page_changes(
         options,
         inventory,
         page_maps.module_page_map,
-        entry_points=list(
-            surface_plan.new_flow_entries if initializing else surface_plan.flow_entries
-        ),
+        entry_points=_selected_sync_flow_entries(options, surface_plan),
         allow_create=_surface_policy(surface_plan.surfaces, "flows") is not None,
         api_contracts=surface_plan.api_contracts,
         data_flow_enabled=bool(generation_options["data_flow_enabled"]),
+        call_edges=(
+            graph_observations.resolved_call_edges
+            if graph_observations is not None
+            else None
+        ),
+        evaluated_flows=(
+            graph_observations.rendering_flows
+            if graph_observations is not None
+            else None
+        ),
+        evaluated_data_flows=(
+            graph_observations.rendering_data_flows
+            if graph_observations is not None
+            else None
+        ),
     )
     _regenerate_dependency_pages(
         options,
@@ -2394,17 +2282,122 @@ def _apply_surface_page_changes(
 
 def _detect_sync_entry_points(
     inventory: dict, src_dir: str
-) -> EntryPointDetectionResult:
+) -> _SyncEntryPointAnalysis:
     console_scripts = read_console_scripts(src_dir)
-    result = detect_entry_points(
+    observations = get_detailed_entry_points(
         inventory,
         console_scripts=console_scripts,
         root=src_dir,
         fallback_root=Path.cwd(),
+        include_warnings=True,
     )
-    for warning in result.warnings:
+    for warning in observations.pop("warnings", []):
         print(f"Warning: {warning}", flush=True)
-    return result
+    return _SyncEntryPointAnalysis(
+        entries=entry_points_from_detailed_observations(observations),
+        observations=observations,
+    )
+
+
+def _selected_sync_flow_entries(
+    options: _SyncRunOptions,
+    surface_plan: _SurfaceInitializationPlan,
+) -> list[dict]:
+    initializing = bool(options.initialize_surfaces)
+    selected = (
+        surface_plan.new_flow_entries if initializing else surface_plan.flow_entries
+    )
+    return [dict(entry) for entry in selected]
+
+
+def _build_sync_graph_observations(
+    options: _SyncRunOptions,
+    inventory: dict,
+    source_snapshot: SourceSnapshot,
+    entrypoint_observations: dict,
+    surface_plan: _SurfaceInitializationPlan,
+    dependency_analysis: dict | None,
+    *,
+    data_effect_observations: Mapping | None = None,
+    import_observations: Mapping | None = None,
+) -> _RuntimeGraphObservations:
+    call_edges = [dict(edge) for edge in resolve_call_edges(inventory)]
+    call_observations = resolve_call_observations(inventory)
+    flow_entries = _selected_sync_flow_entries(options, surface_plan)
+    rendering_flows = [build_flow(entry, call_edges) for entry in flow_entries]
+    flows = [build_flow_detailed(entry, call_edges) for entry in flow_entries]
+    generation_options = runtime_generation_options(
+        surfaces=surface_plan.surfaces,
+        generation_inputs=surface_plan.generation_inputs,
+        include_tests=options.include_tests,
+        preserve_semantic=options.preserve_semantic,
+    )
+    data_flow_enabled = bool(generation_options["data_flow_enabled"])
+    context = (
+        build_data_flow_context(
+            inventory,
+            call_edges,
+            data_effect_observations=data_effect_observations,
+        )
+        if data_flow_enabled and flows
+        else None
+    )
+    data_flows: list[dict] = []
+    rendering_data_flows: list[dict] = []
+    if data_flow_enabled:
+        for rendering_flow, flow in zip(rendering_flows, flows):
+            # The versioned graph projection uses unknown locations instead of
+            # legacy line-zero placeholders. Retain the old analyzer result
+            # separately so regenerated Markdown remains byte-compatible.
+            rendering_data_flows.append(
+                analyze_data_flow(
+                    inventory,
+                    rendering_flow,
+                    call_edges,
+                    context=context,
+                )
+            )
+            data_flows.append(
+                analyze_data_flow_detailed(
+                    inventory,
+                    flow,
+                    call_edges,
+                    context=context,
+                )
+            )
+    limitations: dict[str, tuple[str, ...]] = {}
+    if not data_flow_enabled:
+        limitations["data-flows"] = ("data-flow-analysis-disabled",)
+    if dependency_analysis is None:
+        limitations["external-dependencies"] = (
+            "dependency-analysis-not-evaluated",
+        )
+    elif surface_plan.excluded_dependency_tests:
+        limitations["external-dependencies"] = (
+            "dependency-analysis-excludes-test-sources",
+        )
+    return _RuntimeGraphObservations(
+        resolved_call_edges=call_edges,
+        call_observations=call_observations,
+        dependency_observations=build_dependency_observations(
+            inventory,
+            options.src_dir,
+            source_snapshot=source_snapshot,
+            import_observations=import_observations,
+        ),
+        entrypoint_observations=entrypoint_observations,
+        flows=flows,
+        rendering_flows=rendering_flows,
+        data_flows=data_flows,
+        rendering_data_flows=rendering_data_flows,
+        external_dependencies=(
+            build_external_dependency_observations(dependency_analysis)
+            if dependency_analysis is not None
+            else []
+        ),
+        dependency_analysis=dependency_analysis,
+        analyzer_limitations=limitations,
+    )
 
 
 def _print_sync_summary(result: "SyncResult", diff: "SyncDiff") -> None:
@@ -2466,10 +2459,8 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
         openapi_file=selected_openapi,
         source_root=options.src_dir,
     )
-    entries = attach_routes_to_entry_points(
-        _detect_sync_entry_points(inventory, options.src_dir).entries,
-        contracts,
-    )
+    entrypoint_analysis = _detect_sync_entry_points(inventory, options.src_dir)
+    entries = attach_routes_to_entry_points(entrypoint_analysis.entries, contracts)
     contracts = _linked_api_contracts(contracts, entries)
     diff = _compute_sync_diff(
         manifest,
@@ -2486,23 +2477,35 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
         source_changed=diff.has_changes,
         api_contracts=contracts,
         generation_inputs=generation_inputs,
+        source_snapshot=source_snapshot,
+    )
+    graph_observations = _build_sync_graph_observations(
+        options,
+        inventory,
+        source_snapshot,
+        entrypoint_analysis.observations,
+        surface_plan,
+        surface_plan.dependency_analysis,
+        data_effect_observations=inventory_result.data_effect_observations,
+        import_observations=inventory_result.import_observations,
     )
     repository_evidence = collect_runtime_repository_evidence(
         options.src_dir,
         options.wiki_dir,
     )
     return _PreparedSyncRun(
-        manifest,
-        seed_manifest,
-        repair_only,
-        inventory_result,
-        source_snapshot,
-        inventory,
-        maps,
-        entries,
-        diff,
-        surface_plan,
-        repository_evidence,
+        manifest=manifest,
+        seed_manifest=seed_manifest,
+        repair_only=repair_only,
+        inventory_result=inventory_result,
+        source_snapshot=source_snapshot,
+        inventory=inventory,
+        page_maps=maps,
+        entry_points=entries,
+        diff=diff,
+        surface_plan=surface_plan,
+        repository_evidence=repository_evidence,
+        graph_observations=graph_observations,
     )
 
 
@@ -2521,10 +2524,15 @@ def _apply_prepared_sync(
             prepared.diff,
             prepared.page_maps,
             prepared.surface_plan,
+            prepared.graph_observations,
         )
     result = SyncResult()
     _apply_surface_page_changes(
-        options, prepared.inventory, prepared.page_maps, prepared.surface_plan
+        options,
+        prepared.inventory,
+        prepared.page_maps,
+        prepared.surface_plan,
+        graph_observations=prepared.graph_observations,
     )
     if options.initialize_surfaces:
         _rebuild_surface_only_index(
@@ -2623,6 +2631,21 @@ def _finalize_prepared_sync(
             ),
             generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS,
             generation_option_allowlist=tuple(RUNTIME_GENERATION_OPTION_DEFAULTS),
+            call_edges=prepared.graph_observations.call_observations,
+            dependency_observations=(
+                prepared.graph_observations.dependency_observations
+            ),
+            entrypoint_observations=(
+                prepared.graph_observations.entrypoint_observations
+            ),
+            flows=prepared.graph_observations.flows,
+            data_flows=prepared.graph_observations.data_flows,
+            external_dependencies=(
+                prepared.graph_observations.external_dependencies
+            ),
+            graph_analyzer_limitations=(
+                prepared.graph_observations.analyzer_limitations
+            ),
         ),
         dry_run=dry_run,
     )
@@ -3134,6 +3157,9 @@ def _regenerate_flow_pages(
     allow_create: bool = False,
     api_contracts: Mapping[str, object] | None = None,
     data_flow_enabled: bool = True,
+    call_edges: list[dict] | None = None,
+    evaluated_flows: list[dict] | None = None,
+    evaluated_data_flows: list[dict] | None = None,
 ) -> int:
     """Regenerate flow pages from the current inventory, preserving Behavior.
 
@@ -3149,17 +3175,40 @@ def _regenerate_flow_pages(
 
     if entry_points is None:
         entry_points = _detect_sync_entry_points(inventory, options.src_dir).entries
-    edges = resolve_call_edges(inventory) if entry_points else []
+    edges = (
+        call_edges
+        if call_edges is not None
+        else resolve_call_edges(inventory)
+        if entry_points
+        else []
+    )
     data_flow_context = (
         build_data_flow_context(inventory, edges)
-        if data_flow_enabled and entry_points
+        if data_flow_enabled and entry_points and evaluated_data_flows is None
         else None
     )
+    flow_by_id = {
+        str(entry.get("id")): flow
+        for flow in evaluated_flows or []
+        if isinstance(flow, Mapping)
+        and isinstance((entry := flow.get("entry")), Mapping)
+        and entry.get("id")
+    }
+    data_flow_by_id = {
+        str(entry.get("id")): data_flow
+        for data_flow in evaluated_data_flows or []
+        if isinstance(data_flow, Mapping)
+        and isinstance((entry := data_flow.get("entry")), Mapping)
+        and entry.get("id")
+    }
     regenerated = 0
     for entry_point in entry_points:
-        flow = build_flow(entry_point, edges)
+        flow = flow_by_id.get(str(entry_point.get("id"))) or build_flow(
+            entry_point, edges
+        )
         data_flow = (
-            analyze_data_flow(inventory, flow, edges, context=data_flow_context)
+            data_flow_by_id.get(str(entry_point.get("id")))
+            or analyze_data_flow(inventory, flow, edges, context=data_flow_context)
             if data_flow_enabled
             else None
         )

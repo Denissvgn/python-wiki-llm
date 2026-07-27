@@ -15,7 +15,9 @@ from llm_wiki_cli.services.knowledge_artifacts import (
     commit_knowledge_artifacts,
 )
 from llm_wiki_cli.services.knowledge_evidence import (
+    canonical_json_text,
     formatted_json_bytes,
+    sha256_bytes,
 )
 from llm_wiki_cli.services.knowledge_loader import (
     KnowledgeMismatchPolicy,
@@ -23,6 +25,10 @@ from llm_wiki_cli.services.knowledge_loader import (
     load_knowledge_state,
 )
 from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
+from llm_wiki_cli.services.contracts import (
+    SECTION_OWNERSHIP_EXTENSION_KEY,
+    TYPED_GRAPH_EXTENSION_KEY,
+)
 from llm_wiki_cli.services.sync_manifest import (
     MANIFEST_FILENAME,
     ManifestEvidenceBaseline,
@@ -30,6 +36,12 @@ from llm_wiki_cli.services.sync_manifest import (
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 from tests.knowledge_fixtures import one_module_two_entities_fixture
 from tests.test_knowledge_artifacts import _plan, _surface_variant
+from tests.test_knowledge_generation import _planner_inputs
+from llm_wiki_cli.services.knowledge_generation import (
+    build_knowledge_generation_plan,
+)
+from llm_wiki_cli.services.knowledge_graph import relationship_edge_key
+from llm_wiki_cli.services.knowledge_model import parse_knowledge_index
 
 
 def _write_fixture_pages(root, fixture, *, crlf: bool = False):
@@ -46,6 +58,14 @@ def _committed_state(root):
     plan = _plan(root, fixture)
     result = commit_knowledge_artifacts(plan)
     return fixture, plan, result
+
+
+def _committed_m3_state(root):
+    inputs = _planner_inputs(root)
+    _write_fixture_pages(root, one_module_two_entities_fixture())
+    plan = build_knowledge_generation_plan(inputs)
+    result = commit_knowledge_artifacts(plan)
+    return plan, result
 
 
 def test_valid_state_returns_all_validated_components(tmp_path):
@@ -310,6 +330,165 @@ def test_manifest_marker_mismatches_are_mixed_snapshots(
 
     assert exc_info.value.status is KnowledgeLoadState.MIXED_SNAPSHOT
     assert any(issue.code == issue_code for issue in exc_info.value.issues)
+
+
+def test_valid_graph_from_another_inventory_is_a_mixed_snapshot(tmp_path):
+    plan, result = _committed_m3_state(tmp_path)
+    payload = json.loads(plan.knowledge_index.content)
+    graph = payload["extensions"][TYPED_GRAPH_EXTENSION_KEY]
+    graph["input_hashes"]["inventory"] = "sha256:" + ("f" * 64)
+    graph["input_hashes"]["aggregate"] = sha256_bytes(
+        canonical_json_text(
+            {
+                key: value
+                for key, value in graph["input_hashes"].items()
+                if key != "aggregate"
+            }
+        ).encode("utf-8")
+    )
+    knowledge_bytes = formatted_json_bytes(payload)
+    write_bytes_atomic(tmp_path / KNOWLEDGE_INDEX_FILENAME, knowledge_bytes)
+    marker = result.committed_manifest.artifact_hashes
+    assert marker is not None
+    replace(
+        result.committed_manifest,
+        artifact_hashes=replace(
+            marker,
+            knowledge_index_hash=sha256_bytes(knowledge_bytes),
+        ),
+    ).save(tmp_path)
+
+    with pytest.raises(KnowledgeStateLoadError) as exc_info:
+        load_knowledge_state(tmp_path)
+
+    assert exc_info.value.status is KnowledgeLoadState.MIXED_SNAPSHOT
+    assert any(
+        issue.code == "artifact-parity-mismatch"
+        and TYPED_GRAPH_EXTENSION_KEY in (issue.field or "")
+        for issue in exc_info.value.issues
+    )
+
+
+def test_valid_graph_with_foreign_concept_reference_is_a_mixed_snapshot(tmp_path):
+    plan, result = _committed_m3_state(tmp_path)
+    payload = json.loads(plan.knowledge_index.content)
+    graph = payload["extensions"][TYPED_GRAPH_EXTENSION_KEY]
+    edge = next(edge for edge in graph["edges"] if edge["kind"] == "contains")
+    edge["target"] = {
+        "kind": "concept",
+        "locator": "llm-wiki://entities/foreign",
+    }
+    edge["key"] = relationship_edge_key(edge)
+    graph["edges"].sort(key=lambda item: item["key"])
+
+    # The extension remains intrinsically valid; only its references disagree
+    # with the enclosing knowledge snapshot.
+    parse_knowledge_index(payload)
+    knowledge_bytes = formatted_json_bytes(payload)
+    write_bytes_atomic(tmp_path / KNOWLEDGE_INDEX_FILENAME, knowledge_bytes)
+    marker = result.committed_manifest.artifact_hashes
+    assert marker is not None
+    replace(
+        result.committed_manifest,
+        artifact_hashes=replace(
+            marker,
+            knowledge_index_hash=sha256_bytes(knowledge_bytes),
+        ),
+    ).save(tmp_path)
+
+    with pytest.raises(KnowledgeStateLoadError) as exc_info:
+        load_knowledge_state(tmp_path)
+
+    assert exc_info.value.status is KnowledgeLoadState.MIXED_SNAPSHOT
+    assert any(
+        issue.code == "artifact-parity-mismatch"
+        and TYPED_GRAPH_EXTENSION_KEY in (issue.field or "")
+        for issue in exc_info.value.issues
+    )
+
+
+def test_malformed_typed_graph_is_invalid_even_with_matching_marker(tmp_path):
+    plan, result = _committed_m3_state(tmp_path)
+    payload = json.loads(plan.knowledge_index.content)
+    graph = payload["extensions"][TYPED_GRAPH_EXTENSION_KEY]
+    graph["edges"][0]["coverage"]["omitted"] = 99
+    knowledge_bytes = formatted_json_bytes(payload)
+    write_bytes_atomic(tmp_path / KNOWLEDGE_INDEX_FILENAME, knowledge_bytes)
+    marker = result.committed_manifest.artifact_hashes
+    assert marker is not None
+    replace(
+        result.committed_manifest,
+        artifact_hashes=replace(
+            marker,
+            knowledge_index_hash=sha256_bytes(knowledge_bytes),
+        ),
+    ).save(tmp_path)
+
+    with pytest.raises(KnowledgeStateLoadError) as exc_info:
+        load_knowledge_state(tmp_path)
+
+    assert exc_info.value.status is KnowledgeLoadState.INVALID
+    assert any(
+        issue.code == "knowledge-invalid"
+        and TYPED_GRAPH_EXTENSION_KEY in (issue.field or "")
+        for issue in exc_info.value.issues
+    )
+
+
+def test_valid_section_ownership_from_another_snapshot_is_mixed(tmp_path):
+    plan, result = _committed_m3_state(tmp_path)
+    payload = json.loads(plan.knowledge_index.content)
+    sections = payload["extensions"][SECTION_OWNERSHIP_EXTENSION_KEY]
+    sections["pages"][0]["source_hash"] = "sha256:" + ("f" * 64)
+    knowledge_bytes = formatted_json_bytes(payload)
+    write_bytes_atomic(tmp_path / KNOWLEDGE_INDEX_FILENAME, knowledge_bytes)
+    marker = result.committed_manifest.artifact_hashes
+    assert marker is not None
+    replace(
+        result.committed_manifest,
+        artifact_hashes=replace(
+            marker,
+            knowledge_index_hash=sha256_bytes(knowledge_bytes),
+        ),
+    ).save(tmp_path)
+
+    with pytest.raises(KnowledgeStateLoadError) as exc_info:
+        load_knowledge_state(tmp_path)
+
+    assert exc_info.value.status is KnowledgeLoadState.MIXED_SNAPSHOT
+    assert any(
+        issue.code == "artifact-parity-mismatch"
+        and SECTION_OWNERSHIP_EXTENSION_KEY in (issue.field or "")
+        for issue in exc_info.value.issues
+    )
+
+
+def test_malformed_section_ownership_is_invalid_with_matching_marker(tmp_path):
+    plan, result = _committed_m3_state(tmp_path)
+    payload = json.loads(plan.knowledge_index.content)
+    sections = payload["extensions"][SECTION_OWNERSHIP_EXTENSION_KEY]
+    sections["pages"][0]["sections"][0]["occurrence"] = 0
+    knowledge_bytes = formatted_json_bytes(payload)
+    write_bytes_atomic(tmp_path / KNOWLEDGE_INDEX_FILENAME, knowledge_bytes)
+    marker = result.committed_manifest.artifact_hashes
+    assert marker is not None
+    replace(
+        result.committed_manifest,
+        artifact_hashes=replace(
+            marker,
+            knowledge_index_hash=sha256_bytes(knowledge_bytes),
+        ),
+    ).save(tmp_path)
+
+    with pytest.raises(KnowledgeStateLoadError) as exc_info:
+        load_knowledge_state(tmp_path)
+
+    assert exc_info.value.status is KnowledgeLoadState.INVALID
+    assert any(
+        issue.code == "knowledge-invalid"
+        and SECTION_OWNERSHIP_EXTENSION_KEY in (issue.field or "")
+        for issue in exc_info.value.issues
+    )
 
 
 @pytest.mark.parametrize(

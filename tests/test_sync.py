@@ -3082,6 +3082,90 @@ class TestSyncFlowRegeneration:
         assert calls == 1
         assert "helper_b" in (wiki / "flows" / "api-run.md").read_text(encoding="utf-8")
 
+    def test_runtime_plan_receives_reused_graph_analyzer_observations(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        capsys.readouterr()
+        (proj / "pyproject.toml").write_text(
+            '[project]\nname = "p"\nversion = "0.1.0"\n'
+            'dependencies = ["requests"]\n',
+            encoding="utf-8",
+        )
+        constants = "\n".join(f"CONFIG_{index} = {index}" for index in range(20))
+        reads = ", ".join(f"CONFIG_{index}" for index in range(20))
+        (proj / "svc.py").write_text(
+            "import requests\n\n"
+            f"{constants}\n\n"
+            '__all__ = ["run"]\n\n'
+            "def run():\n"
+            f"    values = ({reads})\n"
+            '    requests.get("https://example.invalid")\n'
+            "    return helper_b()\n\n"
+            "def helper_b():\n"
+            "    return 2\n",
+            encoding="utf-8",
+        )
+        captured = []
+        detailed_results = []
+        real_build_plan = knowledge_orchestration.build_runtime_knowledge_plan
+        real_analyze = sync_cmd.analyze_data_flow_detailed
+
+        def capture_plan(inputs):
+            captured.append(inputs)
+            return real_build_plan(inputs)
+
+        def capture_data_flow(*args, **kwargs):
+            result = real_analyze(*args, **kwargs)
+            detailed_results.append(result)
+            return result
+
+        monkeypatch.setattr(
+            knowledge_orchestration,
+            "build_runtime_knowledge_plan",
+            capture_plan,
+        )
+        monkeypatch.setattr(
+            sync_cmd,
+            "analyze_data_flow_detailed",
+            capture_data_flow,
+        )
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        assert len(captured) == 1
+        runtime = captured[0]
+        assert runtime.call_edges["schema_version"] == "llm-wiki-call-observations/v1"
+        assert runtime.call_edges["observations"]
+        assert any(
+            observation["module"] == "requests"
+            for observation in runtime.dependency_observations["observations"]
+        )
+        assert next(
+            observation
+            for observation in runtime.dependency_observations["observations"]
+            if observation["module"] == "requests"
+        )["line"] == 1
+        assert runtime.entrypoint_observations["observations"][0]["detector"][
+            "id"
+        ].startswith("builtin.")
+        assert runtime.flows[0]["entry"]["id"] == "api-run"
+        assert runtime.flows[0]["schema_version"] == "llm-wiki-flow-observations/v1"
+        assert runtime.data_flows[0] is detailed_results[0]
+        assert runtime.data_flows[0]["coverage"]["steps"]["observed"] >= 1
+        reads_coverage = runtime.data_flows[0]["coverage"]["effects"]["by_kind"][
+            "reads"
+        ]
+        assert reads_coverage["observed"] == 20
+        assert reads_coverage["emitted"] == 8
+        assert reads_coverage["omitted"] == 12
+        assert any(
+            dependency["package"] == "requests" and dependency["explicit"]
+            for dependency in runtime.external_dependencies
+        )
+
     def test_regenerates_plugin_detector_flow_and_surface_index(
         self, tmp_path, monkeypatch, capsys
     ):

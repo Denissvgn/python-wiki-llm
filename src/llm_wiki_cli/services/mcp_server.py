@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import ipaddress
 import json
+import re
 import sys
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
@@ -23,6 +24,11 @@ from ..config import IDE_AGENTS, get_agent_config_path, read_config, validate_pa
 from . import circuit_breaker, wiki_surface
 from .documentation_queries import DocumentationQueryError
 from .io import read_md
+from .knowledge_graph import (
+    CORE_RELATIONSHIP_KINDS,
+    GRAPH_ORIGINS,
+    GRAPH_RESOLUTIONS,
+)
 from .knowledge_observability import (
     knowledge_status_payload,
     load_snapshot_knowledge_observability,
@@ -54,6 +60,10 @@ _GRAPH_QUERY_METHODS = {
 }
 _KNOWLEDGE_DIRECTIONS = ("inbound", "outbound", "both")
 _KNOWLEDGE_RELATIONSHIP_KINDS = ("derived_from", "links_to")
+_TYPED_GRAPH_DIRECTIONS = ("incoming", "outgoing", "both")
+_QUALIFIED_GRAPH_KIND_RE = re.compile(
+    r"^[A-Za-z][A-Za-z0-9._-]*/[A-Za-z][A-Za-z0-9._-]*$"
+)
 
 
 class MCPDependencyError(RuntimeError):
@@ -276,6 +286,44 @@ class McpWikiService:
             limit=bounded_limit,
             direction=selected_direction,
             kinds=selected_kinds,
+        )
+
+    def traverse_typed_graph(
+        self,
+        locator_or_exact_route: str,
+        direction: str = "both",
+        kinds: list[str] | None = None,
+        origins: list[str] | None = None,
+        resolutions: list[str] | None = None,
+        include_evidence: bool = False,
+        limit: int = 20,
+    ) -> dict:
+        """Traverse bounded persisted typed relationships for one concept."""
+        locator = _knowledge_locator(locator_or_exact_route)
+        selected_direction = _typed_graph_direction(direction)
+        selected_kinds = _typed_graph_kinds(kinds)
+        selected_origins = _typed_graph_enum_values(
+            origins,
+            field="origins",
+            allowed=GRAPH_ORIGINS,
+        )
+        selected_resolutions = _typed_graph_enum_values(
+            resolutions,
+            field="resolutions",
+            allowed=GRAPH_RESOLUTIONS,
+        )
+        if not isinstance(include_evidence, bool):
+            raise McpWikiError("include_evidence must be a boolean.")
+        bounded_limit = _bounded_query_limit(limit)
+        return self._run_documentation_query(
+            "traverse_typed_graph",
+            locator,
+            limit=bounded_limit,
+            direction=selected_direction,
+            kinds=selected_kinds,
+            origins=selected_origins,
+            resolutions=selected_resolutions,
+            include_evidence=include_evidence,
         )
 
     def explain_evidence(
@@ -653,6 +701,27 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         )
 
     @server.tool()
+    def traverse_typed_graph(
+        locator_or_exact_route: str,
+        direction: str = "both",
+        kinds: list[str] | None = None,
+        origins: list[str] | None = None,
+        resolutions: list[str] | None = None,
+        include_evidence: bool = False,
+        limit: int = 20,
+    ) -> dict:
+        """Traverse bounded persisted typed relationships for one concept."""
+        return service.traverse_typed_graph(
+            locator_or_exact_route,
+            direction=direction,
+            kinds=kinds,
+            origins=origins,
+            resolutions=resolutions,
+            include_evidence=include_evidence,
+            limit=limit,
+        )
+
+    @server.tool()
     def explain_evidence(
         locator_or_exact_route: str,
         limit: int = 20,
@@ -836,6 +905,70 @@ def _knowledge_kinds(values: object) -> list[str] | None:
     return [
         kind for kind in _KNOWLEDGE_RELATIONSHIP_KINDS if kind in selected
     ]
+
+
+def _typed_graph_direction(value: object) -> str:
+    if not isinstance(value, str) or value not in _TYPED_GRAPH_DIRECTIONS:
+        choices = ", ".join(repr(item) for item in _TYPED_GRAPH_DIRECTIONS)
+        raise McpWikiError(f"direction must be one of {choices}.")
+    return value
+
+
+def _typed_graph_kinds(values: object) -> list[str] | None:
+    if values is None:
+        return None
+    if isinstance(values, (str, bytes, Mapping)) or not isinstance(
+        values, Iterable
+    ):
+        raise McpWikiError(
+            "kinds must be an iterable of typed relationship kind strings."
+        )
+    requested = list(values)
+    if any(not isinstance(value, str) for value in requested):
+        raise McpWikiError(
+            "kinds must contain only typed relationship kind strings."
+        )
+    invalid = sorted(
+        {
+            value
+            for value in requested
+            if value not in CORE_RELATIONSHIP_KINDS
+            and not _QUALIFIED_GRAPH_KIND_RE.fullmatch(value)
+        }
+    )
+    if invalid:
+        raise McpWikiError(
+            f"unsupported typed relationship kind: {invalid[0]!r}."
+        )
+    selected = set(requested)
+    return [
+        *[kind for kind in CORE_RELATIONSHIP_KINDS if kind in selected],
+        *sorted(selected - set(CORE_RELATIONSHIP_KINDS)),
+    ]
+
+
+def _typed_graph_enum_values(
+    values: object,
+    *,
+    field: str,
+    allowed: tuple[str, ...],
+) -> list[str] | None:
+    if values is None:
+        return None
+    if isinstance(values, (str, bytes, Mapping)) or not isinstance(
+        values, Iterable
+    ):
+        raise McpWikiError(f"{field} must be an iterable of strings.")
+    requested = list(values)
+    if any(not isinstance(value, str) for value in requested):
+        raise McpWikiError(f"{field} must contain only strings.")
+    unsupported = sorted(set(requested) - set(allowed))
+    if unsupported:
+        raise McpWikiError(
+            f"unsupported {field[:-1]}: {unsupported[0]!r}."
+        )
+    selected = set(requested)
+    return [value for value in allowed if value in selected]
 
 
 def _bounded_query_limit(value: object) -> int:

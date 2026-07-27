@@ -37,7 +37,7 @@ import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable, Mapping, Optional
 
 from ..config import is_agent_worktree_path
 from .imports import build_module_path_resolver
@@ -169,6 +169,275 @@ def build_dependency_graph(
             unresolved, key=lambda u: (u["file"], u["module"], u["name"])
         ),
     }
+
+
+_DEPENDENCY_OBSERVATIONS_SCHEMA = "llm-wiki-dependency-observations/v1"
+_IMPORT_LOCATION_OBSERVATIONS_SCHEMA = (
+    "llm-wiki-import-location-observations/v1"
+)
+
+
+def _positive_line(value: object) -> int | None:
+    """Return a source line only when the extractor supplied a real line."""
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        return None
+    return value
+
+
+def _unresolved_import_resolution(
+    module: str, name: str, filepath: str, resolver
+) -> str:
+    """Classify a no-candidate import without claiming missing code is external."""
+    target_module = _resolve_target_module(module, name)
+    if (
+        not target_module
+        or target_module.startswith((".", "/"))
+        or resolver.typescript_path_alias_matched(target_module, filepath)
+    ):
+        return "unresolved"
+    return "external"
+
+
+def _dependency_observation_sort_key(observation: Mapping) -> tuple:
+    return (
+        str(observation.get("source_path") or ""),
+        str(observation.get("module") or ""),
+        str(observation.get("name") or ""),
+        observation.get("line") or -1,
+        str(observation.get("resolution") or ""),
+        tuple(observation.get("candidates") or ()),
+        str(observation.get("target_path") or ""),
+    )
+
+
+def _import_location_index(
+    import_observations: Mapping | None,
+) -> tuple[dict[tuple[str, int], Mapping], bool]:
+    """Validate an extractor sidecar without turning bad metadata into evidence."""
+    if import_observations is None:
+        return {}, False
+    if (
+        not isinstance(import_observations, Mapping)
+        or import_observations.get("schema_version")
+        != _IMPORT_LOCATION_OBSERVATIONS_SCHEMA
+        or not isinstance(import_observations.get("observations"), list)
+    ):
+        return {}, True
+
+    index: dict[tuple[str, int], Mapping] = {}
+    duplicate_keys: set[tuple[str, int]] = set()
+    invalid = False
+    for observation in import_observations["observations"]:
+        if not isinstance(observation, Mapping):
+            invalid = True
+            continue
+        source_path = observation.get("source_path")
+        import_index = observation.get("import_index")
+        module = observation.get("module")
+        name = observation.get("name")
+        line = _positive_line(observation.get("line"))
+        if (
+            not isinstance(source_path, str)
+            or not source_path
+            or isinstance(import_index, bool)
+            or not isinstance(import_index, int)
+            or import_index < 0
+            or not isinstance(module, str)
+            or not isinstance(name, str)
+            or line is None
+        ):
+            invalid = True
+            continue
+        key = (source_path, import_index)
+        if key in index or key in duplicate_keys:
+            index.pop(key, None)
+            duplicate_keys.add(key)
+            invalid = True
+            continue
+        index[key] = observation
+    return index, invalid
+
+
+def build_dependency_observations(
+    inventory: dict,
+    project_root: str | Path | None = None,
+    *,
+    source_snapshot: SourceSnapshot | None = None,
+    import_observations: Mapping | None = None,
+) -> dict:
+    """Return lossless, versioned import-resolution observations.
+
+    Unlike :func:`build_dependency_graph`, this collector emits one observation
+    per well-formed inventory import and does not collapse imports into
+    ``(from_file, to_file)`` tuples.  A unique internal candidate is
+    ``resolved`` (including self-imports), multiple candidates are
+    ``ambiguous``, absolute imports outside the selected inventory are
+    ``external``, and relative/path-alias misses remain ``unresolved``.
+
+    Source lines are positive integers or ``None``.  An extractor may supply
+    the additive ``llm-wiki-import-location-observations/v1`` sidecar to retain
+    locations without changing its legacy inventory records. Sidecar records
+    are matched by source path and import ordinal, then checked against the
+    legacy module/name before use. Absence is explicit rather than encoded as
+    line zero.
+    """
+    resolver = build_module_path_resolver(
+        inventory,
+        project_root=project_root,
+        source_snapshot=source_snapshot,
+    )
+    symbol_index = _build_symbol_file_index(inventory)
+    location_index, invalid_location_observations = _import_location_index(
+        import_observations
+    )
+    observations: list[dict] = []
+    malformed = 0
+    mismatched_locations = 0
+    consumed_location_keys: set[tuple[str, int]] = set()
+
+    for filepath in sorted(inventory):
+        data = inventory[filepath]
+        if not isinstance(data, Mapping) or "imports" not in data:
+            continue
+        imports = data.get("imports", [])
+        if not isinstance(imports, list):
+            malformed += 1
+            continue
+        for import_index, raw_import in enumerate(imports):
+            if not isinstance(raw_import, Mapping):
+                malformed += 1
+                continue
+            module = str(raw_import.get("module") or "")
+            name = str(raw_import.get("name") or "")
+            line = _positive_line(raw_import.get("line"))
+            location_key = (filepath, import_index)
+            location_observation = location_index.get(location_key)
+            if location_observation is not None:
+                consumed_location_keys.add(location_key)
+                location_line = _positive_line(location_observation.get("line"))
+                if (
+                    location_observation.get("module") == module
+                    and location_observation.get("name") == name
+                    and (line is None or location_line == line)
+                ):
+                    line = location_line
+                else:
+                    mismatched_locations += 1
+            candidates = sorted(
+                _resolve_internal_targets(
+                    dict(raw_import), filepath, resolver, symbol_index
+                )
+            )
+            if len(candidates) == 1:
+                resolution = "resolved"
+                target_path = candidates[0]
+            elif candidates:
+                resolution = "ambiguous"
+                target_path = None
+            else:
+                resolution = _unresolved_import_resolution(
+                    module, name, filepath, resolver
+                )
+                target_path = None
+            observations.append(
+                {
+                    "source_path": filepath,
+                    "module": module,
+                    "name": name,
+                    "line": line,
+                    "candidates": candidates,
+                    "target_path": target_path,
+                    "resolution": resolution,
+                }
+            )
+
+    mismatched_locations += len(set(location_index) - consumed_location_keys)
+    observations.sort(key=_dependency_observation_sort_key)
+    limitations = [
+        "external-resolution-is-relative-to-the-selected-inventory",
+        "import-locations-depend-on-extractor-support",
+        "static-import-resolution-does-not-claim-runtime-completeness",
+    ]
+    if malformed:
+        limitations.append("malformed-import-records")
+    if invalid_location_observations:
+        limitations.append("invalid-import-location-observations")
+    if mismatched_locations:
+        limitations.append("mismatched-import-location-observations")
+    limitations.sort()
+    emitted = len(observations)
+    return {
+        "schema_version": _DEPENDENCY_OBSERVATIONS_SCHEMA,
+        "observations": observations,
+        "coverage": {
+            "observed": emitted + malformed,
+            "emitted": emitted,
+            "limit": None,
+            "truncated": malformed > 0,
+            "omitted": malformed,
+            "limitations": limitations,
+        },
+    }
+
+
+def build_external_dependency_observations(analysis: Mapping) -> list[dict]:
+    """Lift an existing reconciliation report into source/package observations.
+
+    This is deliberately a projection over an already-computed dependency
+    analysis: it performs no manifest reads or import resolution.  Both
+    declared and undeclared packages are retained so the typed graph can
+    distinguish explicit ``depends_on`` evidence without turning every
+    external import into such an edge.
+    """
+    reconciliation = analysis.get("reconciliation", {})
+    if not isinstance(reconciliation, Mapping):
+        return []
+    languages = reconciliation.get("languages", {})
+    if not isinstance(languages, Mapping):
+        return []
+
+    observations: list[dict] = []
+    for language, raw_report in sorted(
+        languages.items(),
+        key=lambda item: str(item[0]),
+    ):
+        if not isinstance(raw_report, Mapping):
+            continue
+        used = raw_report.get("used", {})
+        if not isinstance(used, Mapping):
+            continue
+        required = {
+            str(package) for package in raw_report.get("required", []) or []
+        }
+        optional = {
+            str(package) for package in raw_report.get("optional", []) or []
+        }
+        for package, raw_paths in sorted(used.items(), key=lambda item: str(item[0])):
+            package_name = str(package)
+            declaration = (
+                "required"
+                if package_name in required
+                else "optional"
+                if package_name in optional
+                else None
+            )
+            paths = raw_paths if isinstance(raw_paths, (list, tuple, set)) else ()
+            for source_path in sorted(
+                {str(path) for path in paths if isinstance(path, str) and path}
+            ):
+                observation = {
+                    "source_path": source_path,
+                    "package": package_name,
+                    "language": str(language),
+                    "explicit": declaration is not None,
+                }
+                if declaration is not None:
+                    observation["declaration"] = declaration
+                    observation["reason"] = (
+                        f"declared as a {declaration} {language} dependency"
+                    )
+                observations.append(observation)
+    return observations
 
 
 # ── Cycle detection (DL-102) ──────────────────────────────────────────

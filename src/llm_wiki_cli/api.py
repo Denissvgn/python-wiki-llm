@@ -546,6 +546,41 @@ def related_concepts(
     )
 
 
+def traverse_typed_graph(
+    locator_or_exact_route: object,
+    *,
+    direction: str = "both",
+    kinds: Iterable[str] | None = None,
+    origins: Iterable[str] | None = None,
+    resolutions: Iterable[str] | None = None,
+    include_evidence: bool = False,
+    service: DocumentationGraphQueryService | None = None,
+    src_dir: str = ".",
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    limit: int = 20,
+    allow_external_src: bool = False,
+    read_only: bool = True,
+) -> dict[str, Any]:
+    """Traverse persisted typed relationships for one exact concept."""
+    return _run_query(
+        lambda: _query_service(
+            service,
+            src_dir=src_dir,
+            wiki_dir=wiki_dir,
+            limit=limit,
+            allow_external_src=allow_external_src,
+            read_only=read_only,
+        ).traverse_typed_graph(
+            locator_or_exact_route,
+            direction=direction,
+            kinds=kinds,
+            origins=origins,
+            resolutions=resolutions,
+            include_evidence=include_evidence,
+        )
+    )
+
+
 def explain_evidence(
     locator_or_exact_route: object,
     *,
@@ -732,6 +767,7 @@ __all__ = [
     "record_p0_calibration_agent_result",
     "related_concepts",
     "select_documentation_model",
+    "traverse_typed_graph",
     "use_p0_calibration_host_broker_authenticator",
     "validate_documentation_model_selection",
     "verify_documentation_run",

@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import re
 from collections import defaultdict
+from collections.abc import Iterable as IterableABC
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import PurePosixPath
@@ -27,13 +28,26 @@ from .knowledge_consumption import (
     KnowledgeReadReason,
     KnowledgeReadView,
 )
+from .knowledge_graph import (
+    CORE_RELATIONSHIP_KINDS,
+    GRAPH_ORIGINS,
+    GRAPH_RESOLUTIONS,
+    KnowledgeGraphError,
+    typed_graph_from_knowledge_extensions,
+)
 from .knowledge_model import knowledge_index_to_payload
 from .relationships import build_entity_relationship_summaries
 
 _DEFAULT_LIMIT = 20
 _WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:/")
+_QUALIFIED_NAME_RE = re.compile(
+    r"^[A-Za-z][A-Za-z0-9._-]*/[A-Za-z][A-Za-z0-9._-]*$"
+)
 _KNOWLEDGE_RELATIONSHIP_KINDS = ("derived_from", "links_to")
 _KNOWLEDGE_DIRECTIONS = ("inbound", "outbound", "both")
+_TYPED_GRAPH_DIRECTIONS = ("incoming", "outgoing", "both")
+_TYPED_GRAPH_READY_REASON = "typed-graph-extension-ready"
+_TYPED_GRAPH_ABSENT_REASON = "typed-graph-extension-not-present"
 _NOT_EVALUATED_REASON = "not-evaluated"
 
 
@@ -629,6 +643,102 @@ class DocumentationGraphQueryService:
         self._record_bound(result, "relationships", bounded_observations)
         return result
 
+    def traverse_typed_graph(
+        self,
+        locator_or_exact_route: object,
+        *,
+        direction: str = "both",
+        kinds: Optional[Iterable[str]] = None,
+        origins: Optional[Iterable[str]] = None,
+        resolutions: Optional[Iterable[str]] = None,
+        include_evidence: bool = False,
+    ) -> dict[str, Any]:
+        """Return a bounded traversal of the persisted typed-graph extension.
+
+        Response bounds describe only this query.  Per-edge and analyzer
+        coverage continue to describe upstream graph materialization, so a
+        response cap can never be confused with omitted analyzer evidence.
+        """
+
+        query = _require_query(locator_or_exact_route, "locator_or_exact_route")
+        selected_direction = self._typed_graph_direction(direction)
+        selected_kinds = self._typed_graph_kinds(kinds)
+        selected_origins = self._typed_graph_enum_filter(
+            origins,
+            field="origins",
+            allowed=GRAPH_ORIGINS,
+        )
+        selected_resolutions = self._typed_graph_enum_filter(
+            resolutions,
+            field="resolutions",
+            allowed=GRAPH_RESOLUTIONS,
+        )
+        if not isinstance(include_evidence, bool):
+            raise DocumentationQueryError("include_evidence must be a boolean.")
+
+        result = self._knowledge_selection_result(query)
+        locator = result.pop("_selected_locator", None)
+        result.update(
+            {
+                "typed_graph": _jsonable_mapping(self.typed_graph_status),
+                "concept": (
+                    None
+                    if locator is None
+                    else self._compact_knowledge_concept(locator)
+                ),
+                "direction": selected_direction,
+                "kinds": list(selected_kinds),
+                "origins": list(selected_origins),
+                "resolutions": list(selected_resolutions),
+                "include_evidence": include_evidence,
+                "edges": [],
+            }
+        )
+        bounded_edges = self._bounded(())
+        self._record_bound(result, "edges", bounded_edges)
+        if (
+            locator is None
+            or self.typed_graph_status["availability"]
+            != KnowledgeAvailability.READY.value
+        ):
+            result.update({"total": 0, "returned": 0})
+            self._sync_truncated(result)
+            return result
+
+        incidents = [
+            item
+            for item in self._incident_typed_graph_edges(
+                cast(str, locator),
+                selected_direction,
+            )
+            if self._typed_graph_edge_kinds[item[0]] in selected_kinds
+            and self._typed_graph_edge_origins[item[0]] in selected_origins
+            and self._typed_graph_edge_resolutions[item[0]]
+            in selected_resolutions
+        ]
+        bounded_edges = self._bounded(incidents)
+        compact_edges = [
+            self._compact_typed_graph_edge(
+                cast(int, index),
+                cast(str, edge_direction),
+                include_evidence=include_evidence,
+            )
+            for index, edge_direction in bounded_edges.items
+        ]
+        result.update(
+            {
+                "edges": compact_edges,
+                "total": bounded_edges.total,
+                "returned": bounded_edges.returned,
+            }
+        )
+        self._record_bound(
+            result,
+            "edges",
+            _BoundedResult(items=compact_edges, total=bounded_edges.total),
+        )
+        return result
+
     def explain_evidence(
         self,
         locator_or_exact_route: object,
@@ -704,6 +814,20 @@ class DocumentationGraphQueryService:
         self._knowledge_relationship_kinds: tuple[object, ...] = ()
         self._knowledge_relationship_order: tuple[int, ...] = ()
         self._knowledge_target_locators: tuple[Optional[str], ...] = ()
+        self.typed_graph_status: dict[str, Any] = {
+            "availability": KnowledgeAvailability.ABSENT.value,
+            "reason": KnowledgeReadReason.ABSENT.value,
+            "schema_version": None,
+            "coverage": [],
+        }
+        self._typed_graph_edges: tuple[dict[str, Any], ...] = ()
+        self._typed_graph_edge_kinds: tuple[object, ...] = ()
+        self._typed_graph_edge_origins: tuple[object, ...] = ()
+        self._typed_graph_edge_resolutions: tuple[object, ...] = ()
+        self._typed_graph_target_locators: tuple[Optional[str], ...] = ()
+        self._typed_graph_edge_order: tuple[int, ...] = ()
+        self.outgoing_typed_graph_edges: dict[str, tuple[int, ...]] = {}
+        self.incoming_typed_graph_edges: dict[str, tuple[int, ...]] = {}
 
         if knowledge_view is None:
             self.knowledge_status = {
@@ -731,6 +855,12 @@ class DocumentationGraphQueryService:
             "freshness_evaluated": knowledge_view.freshness is not None,
         }
         if knowledge_view.availability is not KnowledgeAvailability.READY:
+            self.typed_graph_status.update(
+                {
+                    "availability": knowledge_view.availability.value,
+                    "reason": knowledge_view.reason_code,
+                }
+            )
             if knowledge_view.knowledge is not None:
                 raise DocumentationQueryError(
                     "a non-ready knowledge_view must not expose knowledge."
@@ -856,6 +986,101 @@ class DocumentationGraphQueryService:
                 by_locator[locator] for locator in sorted(by_locator)
             )
             for source_path, by_locator in sorted(source_concepts.items())
+        }
+        self._build_typed_graph_indexes(payload)
+
+    def _build_typed_graph_indexes(self, payload: Mapping[str, Any]) -> None:
+        extensions = payload.get("extensions", {})
+        if not isinstance(extensions, Mapping):
+            raise DocumentationQueryError(
+                "knowledge extensions must be an object."
+            )
+        try:
+            graph = typed_graph_from_knowledge_extensions(
+                extensions,
+                concept_kinds={
+                    locator: cast(str, concept.get("concept_kind"))
+                    for locator, concept in self.concept_by_locator.items()
+                },
+            )
+        except KnowledgeGraphError as exc:
+            raise DocumentationQueryError(
+                f"typed graph extension is invalid: {exc}"
+            ) from exc
+        if graph is None:
+            self.typed_graph_status = {
+                "availability": KnowledgeAvailability.ABSENT.value,
+                "reason": _TYPED_GRAPH_ABSENT_REASON,
+                "schema_version": None,
+                "coverage": [],
+            }
+            return
+
+        edges = tuple(
+            _jsonable_mapping(cast(Mapping[str, Any], edge))
+            for edge in graph["edges"]
+        )
+        outgoing: dict[str, list[int]] = defaultdict(list)
+        incoming: dict[str, list[int]] = defaultdict(list)
+        target_locators: list[Optional[str]] = []
+        for index, edge in enumerate(edges):
+            source = edge.get("from")
+            source_locator = (
+                source.get("locator")
+                if isinstance(source, Mapping)
+                and source.get("kind") == "concept"
+                else None
+            )
+            if (
+                isinstance(source_locator, str)
+                and source_locator in self.concept_by_locator
+            ):
+                outgoing[source_locator].append(index)
+
+            target = edge.get("target")
+            target_locator = (
+                target.get("locator")
+                if isinstance(target, Mapping)
+                and target.get("kind") == "concept"
+                else None
+            )
+            if not (
+                isinstance(target_locator, str)
+                and target_locator in self.concept_by_locator
+            ):
+                target_locator = None
+            target_locators.append(target_locator)
+            if target_locator is not None:
+                incoming[target_locator].append(index)
+
+        # The extension validator canonicalizes by edge key.  Retaining an
+        # explicit rank lets every query use the constructor-built index only.
+        edge_order = tuple(range(len(edges)))
+        self._typed_graph_edges = edges
+        self._typed_graph_edge_kinds = tuple(
+            edge.get("kind") for edge in edges
+        )
+        self._typed_graph_edge_origins = tuple(
+            edge.get("origin") for edge in edges
+        )
+        self._typed_graph_edge_resolutions = tuple(
+            edge.get("resolution") for edge in edges
+        )
+        self._typed_graph_target_locators = tuple(target_locators)
+        self._typed_graph_edge_order = edge_order
+        self.outgoing_typed_graph_edges = {
+            locator: tuple(sorted(indexes, key=edge_order.__getitem__))
+            for locator, indexes in sorted(outgoing.items())
+        }
+        self.incoming_typed_graph_edges = {
+            locator: tuple(sorted(indexes, key=edge_order.__getitem__))
+            for locator, indexes in sorted(incoming.items())
+        }
+        self.typed_graph_status = {
+            "availability": KnowledgeAvailability.READY.value,
+            "reason": _TYPED_GRAPH_READY_REASON,
+            "schema_version": graph["schema_version"],
+            "coverage": _jsonable(graph["coverage"]),
         }
 
     def _knowledge_selection_result(self, query: str) -> dict[str, Any]:
@@ -992,6 +1217,158 @@ class DocumentationGraphQueryService:
         return tuple(
             kind for kind in _KNOWLEDGE_RELATIONSHIP_KINDS if kind in selected
         )
+
+    def _typed_graph_direction(self, value: object) -> str:
+        if not isinstance(value, str) or value not in _TYPED_GRAPH_DIRECTIONS:
+            choices = ", ".join(repr(item) for item in _TYPED_GRAPH_DIRECTIONS)
+            raise DocumentationQueryError(f"direction must be one of {choices}.")
+        return value
+
+    def _typed_graph_kinds(
+        self,
+        values: Optional[Iterable[str]],
+    ) -> tuple[str, ...]:
+        if values is None:
+            present_extensions = sorted(
+                {
+                    str(value)
+                    for value in self._typed_graph_edge_kinds
+                    if isinstance(value, str)
+                    and value not in CORE_RELATIONSHIP_KINDS
+                }
+            )
+            return (*CORE_RELATIONSHIP_KINDS, *present_extensions)
+        if isinstance(values, (str, bytes, Mapping)) or not isinstance(
+            values, IterableABC
+        ):
+            raise DocumentationQueryError(
+                "kinds must be an iterable of typed relationship kind strings."
+            )
+        requested = list(values)
+        if any(not isinstance(value, str) for value in requested):
+            raise DocumentationQueryError(
+                "kinds must contain only typed relationship kind strings."
+            )
+        invalid = sorted(
+            {
+                value
+                for value in requested
+                if value not in CORE_RELATIONSHIP_KINDS
+                and not _QUALIFIED_NAME_RE.fullmatch(value)
+            }
+        )
+        if invalid:
+            raise DocumentationQueryError(
+                f"unsupported typed relationship kind: {invalid[0]!r}."
+            )
+        selected = set(requested)
+        core = [
+            kind for kind in CORE_RELATIONSHIP_KINDS if kind in selected
+        ]
+        extensions = sorted(selected - set(CORE_RELATIONSHIP_KINDS))
+        return tuple(core + extensions)
+
+    def _typed_graph_enum_filter(
+        self,
+        values: Optional[Iterable[str]],
+        *,
+        field: str,
+        allowed: Sequence[str],
+    ) -> tuple[str, ...]:
+        if values is None:
+            return tuple(allowed)
+        if isinstance(values, (str, bytes, Mapping)) or not isinstance(
+            values, IterableABC
+        ):
+            raise DocumentationQueryError(
+                f"{field} must be an iterable of strings."
+            )
+        requested = list(values)
+        if any(not isinstance(value, str) for value in requested):
+            raise DocumentationQueryError(
+                f"{field} must contain only strings."
+            )
+        unsupported = sorted(set(requested) - set(allowed))
+        if unsupported:
+            raise DocumentationQueryError(
+                f"unsupported {field[:-1]}: {unsupported[0]!r}."
+            )
+        selected = set(requested)
+        return tuple(value for value in allowed if value in selected)
+
+    def _incident_typed_graph_edges(
+        self,
+        locator: str,
+        direction: str,
+    ) -> list[tuple[int, str]]:
+        selected: dict[int, str] = {}
+        if direction in {"outgoing", "both"}:
+            for index in self.outgoing_typed_graph_edges.get(locator, ()):
+                selected[index] = "outgoing"
+        if direction in {"incoming", "both"}:
+            for index in self.incoming_typed_graph_edges.get(locator, ()):
+                previous = selected.get(index)
+                selected[index] = "both" if previous == "outgoing" else "incoming"
+
+        direction_order = {"incoming": 0, "outgoing": 1, "both": 2}
+        return sorted(
+            selected.items(),
+            key=lambda item: (
+                direction_order[item[1]],
+                self._typed_graph_edge_order[item[0]],
+            ),
+        )
+
+    def _compact_typed_graph_edge(
+        self,
+        index: int,
+        direction: str,
+        *,
+        include_evidence: bool,
+    ) -> dict[str, Any]:
+        edge = self._typed_graph_edges[index]
+        source = cast(Mapping[str, Any], edge["from"])
+        target = cast(Mapping[str, Any], edge["target"])
+        source_locator = source.get("locator")
+        target_locator = self._typed_graph_target_locators[index]
+        related_locator = (
+            source_locator if direction == "incoming" else target_locator
+        )
+        if direction == "both":
+            related_locator = target_locator or source_locator
+
+        evidence = cast(Mapping[str, Any], edge["evidence"])
+        if include_evidence:
+            evidence_payload = _jsonable_mapping(evidence)
+        else:
+            evidence_payload = {
+                key: _jsonable(evidence[key])
+                for key in (
+                    "state",
+                    "observed",
+                    "unique",
+                    "emitted",
+                    "omitted",
+                )
+                if key in evidence
+            }
+        return {
+            "key": edge.get("key"),
+            "kind": edge.get("kind"),
+            "direction": direction,
+            "from": _jsonable(source),
+            "target": _jsonable(target),
+            "origin": edge.get("origin"),
+            "resolution": edge.get("resolution"),
+            "related_concept": (
+                self._compact_knowledge_concept(cast(str, related_locator))
+                if isinstance(related_locator, str)
+                and related_locator in self.concept_by_locator
+                else None
+            ),
+            "evidence": evidence_payload,
+            "coverage": _jsonable(edge["coverage"]),
+        }
 
     def _resolved_target_locator(
         self,

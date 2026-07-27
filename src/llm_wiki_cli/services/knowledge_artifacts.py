@@ -18,10 +18,15 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
-from .contracts import KNOWLEDGE_SCHEMA_VERSION
+from .contracts import (
+    KNOWLEDGE_SCHEMA_VERSION,
+    SECTION_OWNERSHIP_EXTENSION_KEY,
+    TYPED_GRAPH_EXTENSION_KEY,
+)
 from .io import write_bytes_atomic
-from .knowledge_envelope import EvaluatedEnvelope
+from .knowledge_envelope import EvaluatedEnvelope, INVENTORY_HASH_EXTENSION
 from .knowledge_evidence import formatted_json_bytes, is_valid_sha256, sha256_bytes
+from .knowledge_graph import KnowledgeGraphError, typed_graph_from_knowledge_extensions
 from .knowledge_index import serialize_knowledge_index, validate_knowledge_index
 from .knowledge_model import (
     ConceptKind,
@@ -30,6 +35,7 @@ from .knowledge_model import (
     KnowledgeIndex,
     Origin,
 )
+from .section_ownership import SectionOwnershipError, validate_section_ownership
 from .sync_manifest import MANIFEST_FILENAME, SyncManifest, SyncManifestError
 from .wiki_surface import (
     PageKind,
@@ -229,6 +235,65 @@ def validate_knowledge_artifacts(
             "knowledge_index.bundle.snapshot.surface_index_hash",
             "does not match the exact surface-index bytes",
         )
+    try:
+        graph = typed_graph_from_knowledge_extensions(
+            knowledge.extensions,
+            concept_kinds={
+                concept.locator: (
+                    concept.concept_kind.value
+                    if isinstance(concept.concept_kind, ConceptKind)
+                    else concept.concept_kind
+                )
+                for concept in knowledge.concepts
+            },
+        )
+    except KnowledgeGraphError as exc:
+        field = exc.field
+        if field.startswith("typed_graph"):
+            field = (
+                "knowledge_index.extensions."
+                f"{TYPED_GRAPH_EXTENSION_KEY}"
+                + field[len("typed_graph") :]
+            )
+        raise KnowledgeArtifactError(
+            field,
+            exc.message,
+        ) from exc
+    if graph is not None:
+        inventory_hash = knowledge.bundle.snapshot.extensions.get(
+            INVENTORY_HASH_EXTENSION
+        )
+        if graph["input_hashes"]["inventory"] != inventory_hash:
+            raise KnowledgeArtifactError(
+                "knowledge_index.extensions."
+                f"{TYPED_GRAPH_EXTENSION_KEY}.input_hashes.inventory",
+                "does not match the evaluated envelope inventory hash",
+            )
+    section_ownership = knowledge.extensions.get(SECTION_OWNERSHIP_EXTENSION_KEY)
+    if section_ownership is not None:
+        try:
+            validate_section_ownership(
+                section_ownership,
+                concepts={
+                    concept.locator: (
+                        concept.document.page_kind,
+                        concept.facets.semantics.page_hash,
+                    )
+                    for concept in knowledge.concepts
+                },
+            )
+        except SectionOwnershipError as exc:
+            field = exc.field
+            if field.startswith("section_ownership"):
+                field = (
+                    "knowledge_index.extensions."
+                    f"{SECTION_OWNERSHIP_EXTENSION_KEY}"
+                    + field[len("section_ownership") :]
+                )
+            raise KnowledgeArtifactError(
+                field,
+                exc.message,
+            ) from exc
     _validate_surface_knowledge_parity(surface_payload, knowledge)
     _validate_manifest_knowledge_parity(manifest, surface_payload, knowledge)
     return ValidatedKnowledgeArtifacts(

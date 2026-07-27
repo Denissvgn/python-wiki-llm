@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import inspect
+import json
 import textwrap
 import types
 
@@ -113,6 +114,7 @@ def test_supported_api_exports_are_additive_contract():
         "record_p0_calibration_agent_result",
         "related_concepts",
         "select_documentation_model",
+        "traverse_typed_graph",
         "use_p0_calibration_host_broker_authenticator",
         "verify_documentation_run",
         "verify_p0_calibration_run",
@@ -187,6 +189,20 @@ def test_knowledge_api_signatures_are_explicit_and_builder_stays_compatible():
         "locator_or_exact_route",
         "direction",
         "kinds",
+        "service",
+        "src_dir",
+        "wiki_dir",
+        "limit",
+        "allow_external_src",
+        "read_only",
+    ]
+    assert list(inspect.signature(api.traverse_typed_graph).parameters) == [
+        "locator_or_exact_route",
+        "direction",
+        "kinds",
+        "origins",
+        "resolutions",
+        "include_evidence",
         "service",
         "src_dir",
         "wiki_dir",
@@ -721,6 +737,91 @@ def test_build_context_passes_knowledge_refinements_and_preserves_results(
         "Knowledge context includes stale concept references."
     ]
     assert api.context_cmd.PROTOCOL_VERSION == "llm-wiki-context/v1"
+
+
+def test_build_context_preserves_compact_typed_relationship_selection(
+    monkeypatch,
+):
+    refinements = {
+        "surface": "entities",
+        "relationship_kind": "calls",
+        "relationship_origin": "extracted",
+        "relationship_resolution": "resolved",
+        "relationship_direction": "incoming",
+    }
+    graph_status = {
+        "availability": "ready",
+        "reason": "typed-graph-extension-ready",
+        "coverage": [],
+    }
+    graph_selection = {
+        **graph_status,
+        "found": True,
+        "direction": "incoming",
+        "filters": {
+            key: value
+            for key, value in refinements.items()
+            if key.startswith("relationship_")
+        },
+        "unfiltered_total": 4,
+        "filtered_total": 2,
+        "returned": 2,
+        "truncated": False,
+        "coverage": {
+            "scope": "returned-edges",
+            "edges": 2,
+            "observed": 2,
+            "emitted": 2,
+            "omitted": 0,
+            "truncated": False,
+            "limitations": [],
+        },
+    }
+    seen = {}
+
+    def fake_build_context(
+        _src_dir,
+        budget,
+        _fmt,
+        _focus,
+        filters,
+        **_kwargs,
+    ):
+        seen["filters"] = filters
+        return (
+            {
+                "budget": budget,
+                "used": 0,
+                "files": {},
+                "typed_graph": graph_status,
+                "surface": {
+                    "kind": "entities",
+                    "count": 1,
+                    "pages": [
+                        {
+                            "canonical_path": "entities/User.md",
+                            "typed_graph": graph_selection,
+                        }
+                    ],
+                },
+            },
+            [],
+        )
+
+    monkeypatch.setattr(api.context_cmd, "_build_context", fake_build_context)
+
+    result = build_context(
+        ".",
+        focus="all",
+        filters=refinements,
+    )
+
+    assert seen["filters"] == refinements
+    assert result["typed_graph"] == graph_status
+    assert result["surface"]["pages"][0]["typed_graph"] == graph_selection
+    encoded = json.dumps(result, sort_keys=True)
+    assert "samples" not in encoded
+    assert "aggregate_input_hash" not in encoded
 
 
 @pytest.mark.parametrize(

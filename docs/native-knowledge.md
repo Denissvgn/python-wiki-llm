@@ -73,6 +73,106 @@ that no concept exists. In degraded, unsupported, and absent states, native
 queries return explicit status and do not fabricate empty knowledge,
 evidence, or freshness.
 
+## Typed graph and section ownership extensions
+
+The knowledge index keeps its closed `llm-wiki-knowledge/v1` core contract.
+Richer structural relationships and section-scoped ownership are published as
+two reserved, independently versioned extensions:
+
+| Extension key | Extension schema | Purpose |
+|---|---|---|
+| `llm-wiki/typed-graph-v1` | `llm-wiki-typed-graph/v1` | Evidence-backed structural relationships and analyzer coverage. |
+| `llm-wiki/section-ownership-v1` | `llm-wiki-section-ownership/v1` | Ordered Markdown sections, ownership, and scoped hashes. |
+
+This keeps the existing `derived_from` and `links_to` records and their query
+behavior unchanged. A v1 consumer that does not use these extensions can
+continue to use the core projection. A knowledge projection can also be
+`ready` while the typed-graph extension is absent; graph traversal then reports
+`typed-graph-extension-not-present` rather than claiming that an empty graph
+was observed.
+
+### Typed relationship contract
+
+Every typed edge has a deterministic `key`, `kind`, `from`, `target`, `origin`,
+`resolution`, `evidence`, and `coverage`. Core directions are fixed:
+
+| Kind | Direction and meaning | Required evidence |
+|---|---|---|
+| `contains` | Source-module concept → code-entity concept. | `containment` sample with source and target symbols. |
+| `imports` | Importing source-module concept → imported module concept or unresolved/external endpoint. | `import` sample with source and target; location when the extractor provides one. |
+| `calls` | Caller-owner concept → callee-owner concept or unresolved/external endpoint. | `call` sample with exact callable endpoints; ambiguous candidates retain their source symbols. |
+| `entrypoint_for` | Callable-owner concept → user-flow concept. | `entrypoint` sample with callable endpoints and detector identity/version. |
+| `reads` / `writes` | Observed flow or owner concept → concept or external resource. | `data-effect` sample with its observed owner and resource. |
+| `depends_on` | Concept → explicitly declared package or external dependency; it is not a duplicate of every import. | `dependency` sample tied to the explicit declaration analysis. |
+| `supersedes` | Reserved for governance-backed stable identity and is not emitted by structural analysis. | Governance-origin `supersession` sample with source, successor, and reason. |
+
+Endpoints are one of a concept locator/UID, a source symbol, an external
+resource, or an unresolved raw target with optional candidates. `origin` is
+`extracted`, `inferred`, `markdown`, or `governance`; `resolution` is
+`resolved`, `ambiguous`, `external`, or `unresolved`. Ambiguous and unresolved
+analyzer observations remain so after concept lifting. Qualified plugin edge
+kinds use `namespace/name` spelling and cannot shadow an unqualified core kind.
+
+Repeated observations with the same edge identity are aggregated. Evidence
+retains the full observed and unique counts, an input-basis hash, and a
+deterministically selected bounded sample. Evidence `emitted` and `omitted`
+describe that sample; the corresponding edge `coverage.truncated` states
+whether samples were omitted. Per-edge `coverage` describes the materialized
+observations for that edge; top-level graph `coverage` describes each upstream
+analyzer, including its limitations. Query `bounds` are a third, independent
+boundary applied after filtering. A non-truncated query therefore does not
+imply complete analyzer coverage, and a truncated evidence sample does not
+change the query's edge total.
+
+The graph records static observations, not transitive truth or runtime
+completeness. Import resolution is relative to the evaluated inventory; call
+ownership is lifted while preserving source symbols; entry-point evidence
+identifies its detector; and reads, writes, and dependencies appear only when
+their analyzers provide supported observations. Missing locations stay unknown
+instead of becoming line `0`. Analyzer depth limits, unsupported language
+semantics, unresolved targets, and omitted evidence are disclosed rather than
+upgraded to resolved facts.
+
+Analyzer limitation codes are part of the graph's committed input basis.
+`deep-analysis-disabled`, `flow-analysis-disabled`, and
+`data-flow-analysis-disabled` mean the corresponding collection was not
+evaluated. Dependency analysis additionally distinguishes disabled,
+not-evaluated, and test-excluding scopes. Import locations depend on extractor
+support; unavailable locations remain absent. Entry-point coverage identifies
+invalid plugin records and failed detectors. Flow and data-flow coverage
+reports static-inference, depth, per-collection, and upstream-total limits;
+when an older extractor cannot supply pre-limit effect totals, the graph says
+that those totals may be unavailable instead of claiming completeness.
+
+### Section ownership contract
+
+Section observations are built from final post-merge Markdown. The parser
+normalizes line endings, follows the heading hierarchy, and ignores headings in
+frontmatter, fenced blocks, and indented code. A section locator is derived
+from its page locator, heading path, and duplicate occurrence. Renaming a
+heading intentionally changes its locator. Ordinals, parent locators, and a
+page ordering hash make removal and reordering observable.
+
+Every section has an exact hash and one conservative ownership state:
+
+- `generated` sections have a structural hash;
+- `semantic` sections have a semantic hash;
+- `mixed` tables have separate structural and semantic projection hashes;
+- `unknown` sections have neither scoped hash, so an unrecognized structure is
+  never treated optimistically.
+
+The policy mirrors the existing generation and sync authority boundary.
+Descriptions and guide prose are semantic. Entity `Attributes`/`Methods` and
+module `Classes`/`Functions` tables are mixed: generated row structure is
+separate from the human-preserved description cells. Relationship, import,
+local-dependency, flow, API, dependency-architecture, load-order, and known
+infrastructure sections are generated. Flow `Behavior` and architecture
+`Notes` sections are semantic. Recognized navigation sections are generated;
+custom navigation sections carried forward by sync are semantic. Duplicate
+canonical headings and unrecognized sections fall back to `unknown` unless a
+document-specific rule explicitly preserves them. `SurfaceRole` remains the
+coarse whole-page compatibility summary.
+
 ## Strict lint policy
 
 `llm-wiki lint --strict` and `llm-wiki ci-check` validate native knowledge only
@@ -112,9 +212,10 @@ absolute paths.
 
 ## Context filters and ranking
 
-The `llm-wiki-context/v1` request protocol accepts `freshness` and `evidence`
-as concept refinements. Each refinement must accompany `surface` or `symbol`,
-because those fields produce the concept candidates to refine.
+The `llm-wiki-context/v1` request protocol accepts `freshness`, `evidence`, and
+typed-relationship filters as concept refinements. Each refinement must
+accompany `surface` or `symbol`, because those fields produce the concept
+candidates to refine.
 
 ```json
 {
@@ -125,13 +226,21 @@ because those fields produce the concept candidates to refine.
   "filters": {
     "surface": "entities",
     "freshness": "current",
-    "evidence": "present"
+    "evidence": "present",
+    "relationship_kind": "calls",
+    "relationship_origin": "extracted",
+    "relationship_resolution": "resolved",
+    "relationship_direction": "incoming"
   }
 }
 ```
 
 `freshness` accepts the six computed states listed above. `evidence` accepts
 `present`, `missing`, `invalid`, `unknown`, or `not-applicable`.
+`relationship_kind` accepts a core or qualified plugin edge kind;
+`relationship_origin` and `relationship_resolution` accept the typed-graph
+values described above; and `relationship_direction` accepts `incoming`,
+`outgoing`, or `both`.
 
 Knowledge refinements affect concept references, not the source-file token
 budget or source-file priority. Candidates are filtered before the context
@@ -171,11 +280,18 @@ The `knowledge` object reports `availability`, `reason`, and
 verification, and freshness summaries; they do not embed full evidence or
 hashes in ordinary context.
 
+Typed-graph enrichment appears only when at least one relationship filter is
+supplied. It reports graph availability/reason, direction, all-incident and
+filtered totals, returned/truncated counts, and compact analyzer/edge coverage.
+It never embeds graph edges, evidence samples, or hashes. When the extension is
+absent or the knowledge projection is unavailable, context reports that state
+instead of treating the graph as empty.
+
 ## Python API
 
-The supported API exports `get_concept`, `related_concepts`, and
-`explain_evidence`. Build one service when running several queries so source
-extraction, live evaluation, and indexes are reused:
+The supported API exports `get_concept`, `related_concepts`,
+`traverse_typed_graph`, and `explain_evidence`. Build one service when running
+several queries so source extraction, live evaluation, and indexes are reused:
 
 ```python
 from llm_wiki_cli.api import (
@@ -183,6 +299,7 @@ from llm_wiki_cli.api import (
     explain_evidence,
     get_concept,
     related_concepts,
+    traverse_typed_graph,
 )
 
 service = build_documentation_query_service(
@@ -198,6 +315,15 @@ neighbors = related_concepts(
     "llm-wiki://entities/User",
     direction="both",
     kinds=["derived_from", "links_to"],
+    service=service,
+)
+typed_neighbors = traverse_typed_graph(
+    "llm-wiki://entities/User",
+    direction="incoming",
+    kinds=["calls"],
+    origins=["extracted"],
+    resolutions=["resolved"],
+    include_evidence=False,
     service=service,
 )
 evidence = explain_evidence(
@@ -247,8 +373,16 @@ Method-specific fields are additive:
 - `related_concepts` adds `concept`, `direction`, `kinds`, bounded
   `relationships`, `related_concepts`, `unresolved_targets`, and
   `external_targets`;
+- `traverse_typed_graph` adds typed-graph availability, the selected
+  direction/kind/origin/resolution filters, and bounded `edges`;
 - `explain_evidence` adds `concept` and full stored/computed `evidence`, with
   its relationship observations bounded by the query limit.
+
+Typed traversal omits evidence samples and their aggregate input hash by
+default. Pass `include_evidence=True` only when the repository-sensitive
+source-symbol, location, detector, reason, and attribute samples are needed.
+Compact results still carry evidence counts and coverage, so omission is not
+presented as completeness.
 
 The default query limit is 20. A caller can pass a different positive limit
 when building the Python service. Supplying `service=` to an API wrapper reuses
@@ -261,6 +395,8 @@ The read-only MCP server exposes the same knowledge queries:
 - `get_concept(locator_or_exact_route, limit=20)`;
 - `related_concepts(locator_or_exact_route, direction="both", kinds=None,
   limit=20)`;
+- `traverse_typed_graph(locator_or_exact_route, direction="both", kinds=None,
+  origins=None, resolutions=None, include_evidence=false, limit=20)`;
 - `explain_evidence(locator_or_exact_route, limit=20)`.
 
 Their result envelopes and degraded behavior match the Python query service.
@@ -273,10 +409,11 @@ Malformed, unsafe, unknown-kind, or noncanonical coordinates fail before source
 extraction. A syntactically valid coordinate whose concept is absent still
 returns the standard `found: false` query envelope.
 
-`query_graph` provides bounded flow, call, dependency-neighborhood, and
-page-for-symbol queries. `search_wiki` defaults to 20 results, applies the same
-MCP cap of 100, and returns exact `total`, `returned`, `truncated`, and
-`results`; legacy `count` remains an alias for `returned`.
+`query_graph` continues to provide the legacy bounded flow, call,
+dependency-neighborhood, and page-for-symbol queries. Typed traversal is
+additive and does not change those operations. `search_wiki` defaults to 20
+results, applies the same MCP cap of 100, and returns exact `total`, `returned`,
+`truncated`, and `results`; legacy `count` remains an alias for `returned`.
 
 MCP `get_status` is snapshot-only. Its `knowledge` object contains
 `availability`, `reason`, and `freshness_evaluated: false`; when a projection
@@ -291,7 +428,8 @@ Filtering is applied before limiting, and results are ordered deterministically.
 
 Every bounded query envelope includes a `bounds` mapping keyed by the response
 path of the limited collection, for example `matches`, `callers`, `flow.steps`,
-`pages`, `relationships`, or `evidence.relationships`. Each entry contains:
+`pages`, `relationships`, `edges`, or `evidence.relationships`. Each entry
+contains:
 
 - `total`, the exact post-filter and post-deduplication candidate count before
   the response limit;
@@ -306,6 +444,15 @@ whether an upstream analyzer stopped at its own depth boundary.
 Treat `truncated: true` as an incomplete graph. Increase the limit within the
 supported boundary or narrow the direction/kind/filter; never infer that an
 omitted neighbor does not exist.
+
+There is no supported in-place edit or partial deletion for either reserved
+extension. Consumers that do not need typed relationships can omit graph
+filters and continue using the stable core queries. Operational rollback of
+the generated knowledge projection follows the manifest-last procedure:
+disable knowledge generation, remove the projection and its manifest
+commitment through an authorized writer or migration, and continue from the
+independently validated surface index. Deleting or editing one extension by
+hand makes the committed artifact invalid or mixed rather than rolling it back.
 
 ## Read-only and no-execution rules
 

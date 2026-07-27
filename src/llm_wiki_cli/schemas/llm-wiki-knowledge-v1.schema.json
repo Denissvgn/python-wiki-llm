@@ -32,7 +32,19 @@
       }
     },
     "extensions": {
-      "$ref": "#/$defs/extensions"
+      "allOf": [
+        {
+          "$ref": "#/$defs/extensions"
+        }
+      ],
+      "properties": {
+        "llm-wiki/typed-graph-v1": {
+          "$ref": "#/$defs/typedGraph"
+        },
+        "llm-wiki/section-ownership-v1": {
+          "$ref": "#/$defs/sectionOwnership"
+        }
+      }
     }
   },
   "additionalProperties": false,
@@ -1605,6 +1617,1192 @@
                 ]
               }
             ]
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "sectionLocator": {
+      "type": "string",
+      "pattern": "^llm-wiki://[^\\s#]+#section/[^\\s]+$"
+    },
+    "sectionOwnership": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "pages"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "llm-wiki-section-ownership/v1"
+        },
+        "pages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sectionOwnershipPage"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "sectionOwnershipPage": {
+      "type": "object",
+      "required": [
+        "page_locator",
+        "page_kind",
+        "source_hash",
+        "exact_hash",
+        "ordering_hash",
+        "sections"
+      ],
+      "properties": {
+        "page_locator": {
+          "$ref": "#/$defs/locator"
+        },
+        "page_kind": {
+          "$ref": "#/$defs/pageKind"
+        },
+        "source_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "exact_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "ordering_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sectionOwnershipSection"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "sectionOwnershipSection": {
+      "type": "object",
+      "required": [
+        "locator",
+        "page_locator",
+        "heading_path",
+        "title",
+        "level",
+        "occurrence",
+        "ordinal",
+        "parent_locator",
+        "ownership",
+        "exact_hash"
+      ],
+      "properties": {
+        "locator": {
+          "$ref": "#/$defs/sectionLocator"
+        },
+        "page_locator": {
+          "$ref": "#/$defs/locator"
+        },
+        "heading_path": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/utf8String"
+          }
+        },
+        "title": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/utf8String"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "level": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6
+        },
+        "occurrence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "ordinal": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "parent_locator": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/sectionLocator"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ownership": {
+          "enum": [
+            "generated",
+            "semantic",
+            "mixed",
+            "unknown"
+          ]
+        },
+        "exact_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "structural_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "semantic_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "occurrence_path": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "title": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "title"
+            ]
+          },
+          "then": {
+            "required": [
+              "occurrence_path"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "occurrence_path"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "ownership": {
+                "const": "generated"
+              }
+            },
+            "required": [
+              "ownership"
+            ]
+          },
+          "then": {
+            "required": [
+              "structural_hash"
+            ],
+            "not": {
+              "required": [
+                "semantic_hash"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "ownership": {
+                "const": "semantic"
+              }
+            },
+            "required": [
+              "ownership"
+            ]
+          },
+          "then": {
+            "required": [
+              "semantic_hash"
+            ],
+            "not": {
+              "required": [
+                "structural_hash"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "ownership": {
+                "const": "mixed"
+              }
+            },
+            "required": [
+              "ownership"
+            ]
+          },
+          "then": {
+            "required": [
+              "structural_hash",
+              "semantic_hash"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "ownership": {
+                "const": "unknown"
+              }
+            },
+            "required": [
+              "ownership"
+            ]
+          },
+          "then": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "structural_hash"
+                  ]
+                },
+                {
+                  "required": [
+                    "semantic_hash"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "typedGraph": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "input_hashes",
+        "coverage",
+        "edges"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "llm-wiki-typed-graph/v1"
+        },
+        "input_hashes": {
+          "$ref": "#/$defs/typedGraphInputHashes"
+        },
+        "coverage": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/typedGraphAnalyzerCoverage"
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/typedGraphEdge"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "typedGraphInputHashes": {
+      "type": "object",
+      "required": [
+        "inventory",
+        "concept-map",
+        "calls",
+        "dependencies",
+        "entrypoints",
+        "flows",
+        "data-flows",
+        "external-dependencies",
+        "analyzer-limitations",
+        "aggregate"
+      ],
+      "properties": {
+        "inventory": {
+          "$ref": "#/$defs/hash"
+        },
+        "concept-map": {
+          "$ref": "#/$defs/hash"
+        },
+        "calls": {
+          "$ref": "#/$defs/hash"
+        },
+        "dependencies": {
+          "$ref": "#/$defs/hash"
+        },
+        "entrypoints": {
+          "$ref": "#/$defs/hash"
+        },
+        "flows": {
+          "$ref": "#/$defs/hash"
+        },
+        "data-flows": {
+          "$ref": "#/$defs/hash"
+        },
+        "external-dependencies": {
+          "$ref": "#/$defs/hash"
+        },
+        "analyzer-limitations": {
+          "$ref": "#/$defs/hash"
+        },
+        "aggregate": {
+          "$ref": "#/$defs/hash"
+        }
+      },
+      "additionalProperties": false
+    },
+    "typedGraphCoverage": {
+      "type": "object",
+      "required": [
+        "observed",
+        "emitted",
+        "omitted",
+        "limit",
+        "truncated",
+        "limitations"
+      ],
+      "properties": {
+        "observed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "emitted": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "omitted": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "limit": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/limitationCode"
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "typedGraphAnalyzerCoverage": {
+      "type": "object",
+      "required": [
+        "analyzer",
+        "observed",
+        "emitted",
+        "omitted",
+        "limit",
+        "truncated",
+        "limitations"
+      ],
+      "properties": {
+        "analyzer": {
+          "$ref": "#/$defs/normalizedNonemptyString"
+        },
+        "observed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "emitted": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "omitted": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "limit": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/limitationCode"
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "typedGraphConceptEndpoint": {
+      "type": "object",
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "const": "concept"
+        },
+        "locator": {
+          "$ref": "#/$defs/locator"
+        },
+        "uid": {
+          "$ref": "#/$defs/normalizedNonemptyString"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "locator"
+          ],
+          "not": {
+            "required": [
+              "uid"
+            ]
+          }
+        },
+        {
+          "required": [
+            "uid"
+          ],
+          "not": {
+            "required": [
+              "locator"
+            ]
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "typedGraphSourceSymbolEndpoint": {
+      "type": "object",
+      "required": [
+        "kind",
+        "source_path",
+        "symbol"
+      ],
+      "properties": {
+        "kind": {
+          "const": "source-symbol"
+        },
+        "source_path": {
+          "$ref": "#/$defs/repositoryRelativePath"
+        },
+        "symbol": {
+          "$ref": "#/$defs/normalizedNonemptyString"
+        }
+      },
+      "additionalProperties": false
+    },
+    "typedGraphExternalResourceEndpoint": {
+      "type": "object",
+      "required": [
+        "kind",
+        "resource"
+      ],
+      "properties": {
+        "kind": {
+          "const": "external-resource"
+        },
+        "resource": {
+          "$ref": "#/$defs/normalizedNonemptyString"
+        },
+        "uri": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "additionalProperties": false
+    },
+    "typedGraphResolvedEndpoint": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/typedGraphConceptEndpoint"
+        },
+        {
+          "$ref": "#/$defs/typedGraphSourceSymbolEndpoint"
+        },
+        {
+          "$ref": "#/$defs/typedGraphExternalResourceEndpoint"
+        }
+      ]
+    },
+    "typedGraphUnresolvedEndpoint": {
+      "type": "object",
+      "required": [
+        "kind",
+        "raw_target"
+      ],
+      "properties": {
+        "kind": {
+          "const": "unresolved"
+        },
+        "raw_target": {
+          "$ref": "#/$defs/normalizedNonemptyString"
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/typedGraphResolvedEndpoint"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "typedGraphEndpoint": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/typedGraphResolvedEndpoint"
+        },
+        {
+          "$ref": "#/$defs/typedGraphUnresolvedEndpoint"
+        }
+      ]
+    },
+    "typedGraphLocation": {
+      "type": "object",
+      "required": [
+        "source_path"
+      ],
+      "properties": {
+        "source_path": {
+          "$ref": "#/$defs/repositoryRelativePath"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "end_line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "end_column": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "typedGraphDetector": {
+      "type": "object",
+      "required": [
+        "id",
+        "version"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/normalizedNonemptyString"
+        },
+        "version": {
+          "$ref": "#/$defs/normalizedNonemptyString"
+        },
+        "component": {
+          "$ref": "#/$defs/normalizedNonemptyString"
+        }
+      },
+      "additionalProperties": false
+    },
+    "typedGraphEvidenceSample": {
+      "type": "object",
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/normalizedNonemptyString"
+        },
+        "source": {
+          "$ref": "#/$defs/typedGraphEndpoint"
+        },
+        "target": {
+          "$ref": "#/$defs/typedGraphEndpoint"
+        },
+        "location": {
+          "$ref": "#/$defs/typedGraphLocation"
+        },
+        "detector": {
+          "$ref": "#/$defs/typedGraphDetector"
+        },
+        "reason": {
+          "$ref": "#/$defs/normalizedNonemptyString"
+        },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/utf8JsonValue"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "typedGraphEvidence": {
+      "type": "object",
+      "required": [
+        "state",
+        "aggregate_input_hash",
+        "observed",
+        "unique",
+        "emitted",
+        "omitted",
+        "samples"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "present",
+            "unknown",
+            "missing",
+            "invalid"
+          ]
+        },
+        "aggregate_input_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "observed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unique": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "emitted": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "omitted": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "samples": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/typedGraphEvidenceSample"
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "typedGraphContainmentEvidence": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/typedGraphEvidence"
+        },
+        {
+          "properties": {
+            "samples": {
+              "minItems": 1,
+              "items": {
+                "properties": {
+                  "kind": {
+                    "const": "containment"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "source",
+                  "target"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "typedGraphImportEvidence": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/typedGraphEvidence"
+        },
+        {
+          "properties": {
+            "samples": {
+              "minItems": 1,
+              "items": {
+                "properties": {
+                  "kind": {
+                    "const": "import"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "source",
+                  "target"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "typedGraphCallEvidence": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/typedGraphEvidence"
+        },
+        {
+          "properties": {
+            "samples": {
+              "minItems": 1,
+              "items": {
+                "properties": {
+                  "kind": {
+                    "const": "call"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "source",
+                  "target"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "typedGraphEntrypointEvidence": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/typedGraphEvidence"
+        },
+        {
+          "properties": {
+            "samples": {
+              "minItems": 1,
+              "items": {
+                "properties": {
+                  "kind": {
+                    "const": "entrypoint"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "source",
+                  "target",
+                  "detector"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "typedGraphDataEffectEvidence": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/typedGraphEvidence"
+        },
+        {
+          "properties": {
+            "samples": {
+              "minItems": 1,
+              "items": {
+                "properties": {
+                  "kind": {
+                    "const": "data-effect"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "source",
+                  "target"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "typedGraphDependencyEvidence": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/typedGraphEvidence"
+        },
+        {
+          "properties": {
+            "samples": {
+              "minItems": 1,
+              "items": {
+                "properties": {
+                  "kind": {
+                    "const": "dependency"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "source",
+                  "target"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "typedGraphSupersessionEvidence": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/typedGraphEvidence"
+        },
+        {
+          "properties": {
+            "samples": {
+              "minItems": 1,
+              "items": {
+                "properties": {
+                  "kind": {
+                    "const": "supersession"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "source",
+                  "target",
+                  "reason"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "typedGraphRelationshipKind": {
+      "oneOf": [
+        {
+          "enum": [
+            "contains",
+            "imports",
+            "calls",
+            "entrypoint_for",
+            "reads",
+            "writes",
+            "depends_on",
+            "supersedes"
+          ]
+        },
+        {
+          "$ref": "#/$defs/qualifiedName"
+        }
+      ]
+    },
+    "typedGraphEdge": {
+      "type": "object",
+      "required": [
+        "key",
+        "kind",
+        "from",
+        "target",
+        "origin",
+        "resolution",
+        "evidence",
+        "coverage"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/hash"
+        },
+        "kind": {
+          "$ref": "#/$defs/typedGraphRelationshipKind"
+        },
+        "from": {
+          "$ref": "#/$defs/typedGraphConceptEndpoint"
+        },
+        "target": {
+          "$ref": "#/$defs/typedGraphEndpoint"
+        },
+        "origin": {
+          "enum": [
+            "extracted",
+            "inferred",
+            "markdown",
+            "governance"
+          ]
+        },
+        "resolution": {
+          "$ref": "#/$defs/resolution"
+        },
+        "evidence": {
+          "$ref": "#/$defs/typedGraphEvidence"
+        },
+        "coverage": {
+          "$ref": "#/$defs/typedGraphCoverage"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "resolution": {
+                "const": "resolved"
+              }
+            },
+            "required": [
+              "resolution"
+            ]
+          },
+          "then": {
+            "properties": {
+              "target": {
+                "$ref": "#/$defs/typedGraphConceptEndpoint"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "resolution": {
+                "const": "external"
+              }
+            },
+            "required": [
+              "resolution"
+            ]
+          },
+          "then": {
+            "properties": {
+              "target": {
+                "$ref": "#/$defs/typedGraphExternalResourceEndpoint"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "resolution": {
+                "enum": [
+                  "ambiguous",
+                  "unresolved"
+                ]
+              }
+            },
+            "required": [
+              "resolution"
+            ]
+          },
+          "then": {
+            "properties": {
+              "target": {
+                "$ref": "#/$defs/typedGraphUnresolvedEndpoint"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "contains"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "origin": {
+                "enum": [
+                  "extracted",
+                  "inferred"
+                ]
+              },
+              "resolution": {
+                "const": "resolved"
+              },
+              "target": {
+                "$ref": "#/$defs/typedGraphConceptEndpoint"
+              },
+              "evidence": {
+                "$ref": "#/$defs/typedGraphContainmentEvidence"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "imports"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "origin": {
+                "enum": [
+                  "extracted",
+                  "inferred"
+                ]
+              },
+              "evidence": {
+                "$ref": "#/$defs/typedGraphImportEvidence"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "calls"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "origin": {
+                "enum": [
+                  "extracted",
+                  "inferred"
+                ]
+              },
+              "evidence": {
+                "$ref": "#/$defs/typedGraphCallEvidence"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "entrypoint_for"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "origin": {
+                "enum": [
+                  "extracted",
+                  "inferred"
+                ]
+              },
+              "evidence": {
+                "$ref": "#/$defs/typedGraphEntrypointEvidence"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "reads",
+                  "writes"
+                ]
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "origin": {
+                "enum": [
+                  "extracted",
+                  "inferred"
+                ]
+              },
+              "evidence": {
+                "$ref": "#/$defs/typedGraphDataEffectEvidence"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "depends_on"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "origin": {
+                "enum": [
+                  "extracted",
+                  "inferred"
+                ]
+              },
+              "resolution": {
+                "const": "external"
+              },
+              "target": {
+                "$ref": "#/$defs/typedGraphExternalResourceEndpoint"
+              },
+              "evidence": {
+                "$ref": "#/$defs/typedGraphDependencyEvidence"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "supersedes"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "origin": {
+                "const": "governance"
+              },
+              "resolution": {
+                "const": "resolved"
+              },
+              "target": {
+                "$ref": "#/$defs/typedGraphConceptEndpoint"
+              },
+              "evidence": {
+                "$ref": "#/$defs/typedGraphSupersessionEvidence"
+              }
+            }
           }
         }
       ],
