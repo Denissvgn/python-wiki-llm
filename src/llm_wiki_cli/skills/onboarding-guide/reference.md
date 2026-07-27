@@ -19,9 +19,10 @@ Consequences:
 
 - Guide prose is durable: ordinary `sync` and hook-driven runs will not touch
   it. Bootstrap is an initialization workflow, not a guide-refresh mechanism;
-  do not rerun it over an existing wiki or substitute its destructive
-  `--overwrite` option for sync. There is no generated section to preserve and
-  no `_Auto-generated from ..._` marker to replace.
+  do not rerun it over an existing wiki. Its retained `--overwrite`
+  compatibility option is rejected and cannot substitute for sync. There is no
+  generated section to preserve and no `_Auto-generated from ..._` marker to
+  replace.
 - Discovery is automatic: lint validates guide pages and their links, MCP/API search and reads include them, and site/Obsidian exports mirror them. A guide page needs no registration step beyond existing at the path pattern.
 - Because nothing regenerates guides, stale guide prose is a real risk. Add a line to the guide's frontmatter-free header noting the wiki state it was written against (for example the flow pages it links), so `doc-review` passes can judge staleness.
 
@@ -103,7 +104,7 @@ When personas or topics exceed the run budget, append rows to the wiki's `bootst
 |---|---|---|
 | Lint rejects guide links | Linked page name drifted or never existed | Diagnose against a refreshed surface, fix the link, then run the final owning sync/re-anchor before strict lint; never suppress the finding. |
 | Sync rewrites the guide's index links oddly | Custom index sections collide with the generated `## Guides` section | Keep custom index content in trailing custom sections; let sync own `## Guides`. |
-| No flows exist to link | Wiki bootstrapped without deep extraction or flows are placeholders | Run `wiki-bootstrap`/`wiki-sync` first; a guide is narrative over structure, not a substitute for it. |
+| No flows exist to link | Wiki bootstrapped without deep extraction or flows are placeholders | Qualify the existing target with `wiki-sync` and the migration dry-run; bootstrap is only for an absent target or the exact untouched `llm-wiki init` scaffold. A guide is narrative over structure, not a substitute for it. |
 | Guides drift stale over months | Nothing regenerates guide prose | State the written-against baseline in each guide; let `doc-review` passes flag drift; refresh guides when their linked flows change behavior. |
 | Huge repo, many personas | Budget exhausted | Ship the highest-value persona pages, record the rest in the remainder — an explicit deferral, not a failure. |
 

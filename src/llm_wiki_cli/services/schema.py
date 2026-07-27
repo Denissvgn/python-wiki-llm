@@ -68,7 +68,8 @@ agent automatically on commit. You are responsible for keeping the wiki current:
 
 ## Using `llm-wiki sync` for incremental updates
 `sync` compares source file hashes against a stored manifest and regenerates only
-the wiki pages whose source has changed. Use it instead of a full re-bootstrap:
+the wiki pages whose source has changed. Use it for every update after the first
+bootstrap:
 
 ```
 llm-wiki sync --jobs 1

@@ -437,9 +437,10 @@ def test_infrastructure_native_evidence_and_strict_freshness_are_live(
     assert any("source-missing" in message for message in removed_messages)
 
 
-def test_rebootstrap_skip_never_claims_changed_infrastructure_is_current(
+def test_first_use_bootstrap_rejects_changed_existing_infrastructure_wiki(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
     project = tmp_path / "project"
     project.mkdir()
@@ -453,11 +454,18 @@ def test_rebootstrap_skip_never_claims_changed_infrastructure_is_current(
     before_state = _manifest(wiki)["generation_inputs"]["infrastructure"]
     before_hash = before_state["sources"]["Dockerfile"]["source_content_hash"]
     dockerfile.write_text("FROM python:3.13\n", encoding="utf-8")
+    before_tree = _wiki_bytes(wiki)
+    capsys.readouterr()
 
-    bootstrap_cmd.run(_bootstrap_args(project, wiki))
+    with pytest.raises(SystemExit) as exc_info:
+        bootstrap_cmd.run(_bootstrap_args(project, wiki))
+
+    assert exc_info.value.code == 2
+    assert _wiki_bytes(wiki) == before_tree
+    assert "llm-wiki sync --jobs 1" in capsys.readouterr().out
     after_state = _manifest(wiki)["generation_inputs"]["infrastructure"]
+    assert after_state == before_state
     assert after_state["sources"]["Dockerfile"]["source_content_hash"] == before_hash
-    assert after_state["deferred_sources"] == ["Dockerfile"]
     assert "python:3.12" in (
         wiki / "infrastructure" / "Dockerfile.md"
     ).read_text(encoding="utf-8")

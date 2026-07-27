@@ -9,7 +9,11 @@ Add worked examples to user-facing docs without weakening the deterministic wiki
 
 ## Preconditions
 
-- A maintained wiki exists and strict lint is clean. If not, run `wiki-sync` or `wiki-bootstrap` first.
+- A maintained wiki exists and strict lint is clean. Use `wiki-bootstrap` only
+  when the target is absent or is the exact untouched `llm-wiki init`
+  scaffold. Route every other target through `wiki-sync` or
+  `llm-wiki migrate --dry-run`; bootstrap is never an existing-wiki repair
+  path.
 - Authored guide pages exist under `guides/*.md`. If guides are missing or mostly placeholders, run `user-docs-author` before this skill.
 - Capture tooling is checked, never installed. The agent platform may provide screenshots, browser automation, terminal recording, or video recording; this package only validates the files that result.
 - Use a read-only source target unless the user explicitly asks for source edits. Run flows in a disposable working directory or scratch path.

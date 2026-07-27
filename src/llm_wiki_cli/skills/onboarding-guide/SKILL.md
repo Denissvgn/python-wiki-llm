@@ -11,7 +11,12 @@ When a guide needs screenshots, terminal recordings, or other usage media, finis
 
 ## Preconditions
 
-- A maintained wiki exists (`.llm-wiki-manifest.json` present). If not, run the `wiki-bootstrap` skill first; guides written against a stale or structurally broken wiki link to pages that lint will reject.
+- A maintained wiki exists (`.llm-wiki-manifest.json` present). If the target
+  is absent or is the exact untouched `llm-wiki init` scaffold, run
+  `wiki-bootstrap` once. Qualify any other target with `wiki-sync` or
+  `llm-wiki migrate --dry-run`; bootstrap is never an existing-wiki repair
+  path. Guides written against a stale or structurally broken wiki link to
+  pages that lint will reject.
 - The wiki directory is writable inside the current project root. Guide writing is a wiki mutation: it does not fit read-only external-source reviews. For source-adapter wikis, the wiki under `sources/code_wikis/<source_id>` is still inside the current project, so guides are allowed there; only the *source* is external and source-reading commands then take `--allow-external-src`.
 - Persona targets are known. Default to contributor / operator / reviewer, plus a product/user reader when the repository exposes user-facing workflows; ask the user only when the repository's audience makes the defaults meaningless.
 - In `external_agent_docs`, the writable wiki is the workspace snapshot and the
@@ -112,5 +117,6 @@ only when a persona's mental-model section needs source context the wiki pages
 do not already carry. Budget and focus bound emitted output after a full deep
 inventory; they do not make the scan computationally cheap. Do not re-run
 extract for this workflow — guides are written from wiki surfaces, and if the
-wiki lacks the needed structure, that is `wiki-sync`/`wiki-bootstrap` work
-first.
+wiki lacks the needed structure, qualify the existing target with `wiki-sync`
+or `llm-wiki migrate --dry-run` first. Only an absent target or the exact
+untouched `llm-wiki init` scaffold belongs to `wiki-bootstrap`.

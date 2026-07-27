@@ -2357,12 +2357,12 @@ class TestDeletedClass:
         self,
         bootstrapped_project,
     ):
-        proj, wiki_dir = bootstrapped_project
+        proj, _legacy_wiki_dir = bootstrapped_project
+        wiki_dir = proj / "docs" / "known-basis-wiki"
         bootstrap_cmd.run(
             _make_bootstrap_args(
                 src_dir=str(proj),
                 wiki_dir=str(wiki_dir),
-                overwrite=True,
             )
         )
         manifest = SyncManifest.load(wiki_dir)

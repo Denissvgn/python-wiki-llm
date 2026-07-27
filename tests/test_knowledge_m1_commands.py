@@ -284,7 +284,7 @@ def test_immediate_noop_sync_preserves_all_committed_artifact_bytes(
     assert "Manifest: unchanged" in output
 
 
-def test_bootstrap_skip_does_not_claim_fresh_evidence_and_sync_regenerates(
+def test_bootstrap_rejection_preserves_evidence_and_sync_regenerates(
     m1_command_project,
     capsys,
 ):
@@ -293,20 +293,23 @@ def test_bootstrap_skip_does_not_claim_fresh_evidence_and_sync_regenerates(
     module_path = wiki_dir / "modules" / "models.md"
     entity_path = wiki_dir / "entities" / "User.md"
     before_pages = (module_path.read_bytes(), entity_path.read_bytes())
+    before_artifacts = _artifact_bytes(wiki_dir)
+    before_manifest = SyncManifest.load(wiki_dir)
     _write_changed_source(project)
 
-    bootstrap_cmd.run(_bootstrap_args(project, wiki_dir))
+    with pytest.raises(SystemExit) as exc_info:
+        bootstrap_cmd.run(_bootstrap_args(project, wiki_dir))
 
+    assert exc_info.value.code == 2
     assert (module_path.read_bytes(), entity_path.read_bytes()) == before_pages
-    deferred = SyncManifest.load(wiki_dir)
-    assert "models.py" not in deferred.sources
-    assert {
-        "modules/models.md",
-        "entities/User.md",
-    }.issubset(deferred.tombstones)
+    assert _artifact_bytes(wiki_dir) == before_artifacts
+    assert SyncManifest.load(wiki_dir) == before_manifest
     assert load_knowledge_state(wiki_dir).status is KnowledgeLoadState.VALID
+    output = capsys.readouterr().out
+    assert "Bootstrap is first-use only" in output
+    assert "llm-wiki sync" in output
+    assert "llm-wiki migrate --dry-run" in output
 
-    capsys.readouterr()
     sync_cmd.run(_sync_args(project, wiki_dir))
 
     assert (module_path.read_bytes(), entity_path.read_bytes()) != before_pages
@@ -324,6 +327,7 @@ def test_bootstrap_and_sync_each_reuse_one_snapshot_and_inventory_extraction(
 ):
     project, wiki_dir = m1_command_project
     capsys.readouterr()
+    fresh_wiki_dir = project / "docs" / "fresh_wiki"
     counts = Counter()
     real_bootstrap_snapshot = bootstrap_cmd.build_source_snapshot
     real_bootstrap_inventory = bootstrap_cmd.get_inventory_result
@@ -346,7 +350,7 @@ def test_bootstrap_and_sync_each_reuse_one_snapshot_and_inventory_extraction(
         "get_inventory_result",
         bootstrap_inventory,
     )
-    bootstrap_cmd.run(_bootstrap_args(project, wiki_dir))
+    bootstrap_cmd.run(_bootstrap_args(project, fresh_wiki_dir))
 
     assert counts == Counter({"bootstrap_snapshot": 1, "bootstrap_inventory": 1})
 
@@ -363,7 +367,7 @@ def test_bootstrap_and_sync_each_reuse_one_snapshot_and_inventory_extraction(
 
     monkeypatch.setattr(sync_cmd, "build_source_snapshot", sync_snapshot)
     monkeypatch.setattr(sync_cmd, "get_inventory_result", sync_inventory)
-    sync_cmd.run(_sync_args(project, wiki_dir))
+    sync_cmd.run(_sync_args(project, fresh_wiki_dir))
 
     assert counts == Counter(
         {
@@ -594,7 +598,7 @@ def test_manifest_reseed_unknown_survives_following_noop_sync(
     } == before_pages
 
 
-def test_bootstrap_overwrite_promotes_reseeded_unknown_evidence(
+def test_bootstrap_overwrite_rejection_preserves_reseeded_unknown_evidence(
     m1_command_project,
     capsys,
 ):
@@ -607,16 +611,20 @@ def test_bootstrap_overwrite_promotes_reseeded_unknown_evidence(
     seeded = SyncManifest.load(wiki_dir)
     assert seeded.evidence_baselines
     assert all(not baseline.is_known for baseline in seeded.evidence_baselines.values())
+    before = _artifact_bytes(wiki_dir)
 
     capsys.readouterr()
     args = _bootstrap_args(project, wiki_dir)
     args.overwrite = True
-    bootstrap_cmd.run(args)
+    with pytest.raises(SystemExit) as exc_info:
+        bootstrap_cmd.run(args)
 
-    overwritten = SyncManifest.load(wiki_dir)
-    assert overwritten.evidence_baselines
+    assert exc_info.value.code == 2
+    assert _artifact_bytes(wiki_dir) == before
+    preserved = SyncManifest.load(wiki_dir)
+    assert preserved.evidence_baselines
     assert all(
-        baseline.is_known for baseline in overwritten.evidence_baselines.values()
+        not baseline.is_known for baseline in preserved.evidence_baselines.values()
     )
     assert load_knowledge_state(wiki_dir).status is KnowledgeLoadState.VALID
 
@@ -822,10 +830,9 @@ def test_bootstrap_commit_interruption_never_serves_mixed_knowledge(
     monkeypatch,
     capsys,
 ):
-    project, wiki_dir = m1_command_project
+    project, _existing_wiki_dir = m1_command_project
+    wiki_dir = project / "docs" / "interrupted_first_bootstrap"
     capsys.readouterr()
-    previous_manifest_bytes = (wiki_dir / MANIFEST_FILENAME).read_bytes()
-    _write_changed_source(project)
     real_finalize = bootstrap_cmd.finalize_runtime_knowledge
 
     def interrupt_after_knowledge(inputs, *, dry_run=False):
@@ -844,16 +851,23 @@ def test_bootstrap_commit_interruption_never_serves_mixed_knowledge(
         "finalize_runtime_knowledge",
         interrupt_after_knowledge,
     )
-    args = _bootstrap_args(project, wiki_dir)
-    args.overwrite = True
 
     with pytest.raises(RuntimeError, match="injected bootstrap interruption"):
-        bootstrap_cmd.run(args)
+        bootstrap_cmd.run(_bootstrap_args(project, wiki_dir))
 
-    assert (wiki_dir / MANIFEST_FILENAME).read_bytes() == previous_manifest_bytes
+    assert not (wiki_dir / MANIFEST_FILENAME).exists()
     with pytest.raises(KnowledgeStateLoadError) as exc_info:
         load_knowledge_state(wiki_dir)
     assert exc_info.value.status in {
         KnowledgeLoadState.INVALID,
         KnowledgeLoadState.MIXED_SNAPSHOT,
     }
+
+    degraded = load_knowledge_state(
+        wiki_dir,
+        policy=KnowledgeMismatchPolicy.DEGRADED,
+    )
+    assert degraded.status is KnowledgeLoadState.DEGRADED
+    assert degraded.underlying_status is exc_info.value.status
+    assert degraded.surface is not None
+    assert degraded.knowledge is None

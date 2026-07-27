@@ -146,10 +146,12 @@ def bootstrap_wiki(
     include_tests: list[str] | None = None,
     trust_source_plugins: bool = False,
 ) -> BootstrapResult:
-    """Build a deterministic wiki through the typed service boundary.
+    """Build a first-use deterministic wiki through the typed service boundary.
 
     The library boundary always uses source-adapter behavior and therefore does
-    not install or rewrite target-repository agent instructions.
+    not install or rewrite target-repository agent instructions. ``overwrite``
+    remains in the signature for compatibility, but ``True`` is rejected before
+    source extraction or target writes.
     """
 
     request = BootstrapRequest(

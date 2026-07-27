@@ -222,7 +222,7 @@ def test_openapi_implies_full_contract_surface_and_persists_generation_input(
     assert consumed_openapi.content_hash == openapi_input["sha256"]
 
 
-def test_bootstrap_overwrite_preserves_contract_notes_and_flow_behavior(
+def test_bootstrap_rejects_overwrite_without_touching_contract_semantics(
     tmp_path, monkeypatch, capsys
 ):
     project = tmp_path / "project"
@@ -250,14 +250,17 @@ def test_bootstrap_overwrite_preserves_contract_notes_and_flow_behavior(
         ),
         encoding="utf-8",
     )
-
-    bootstrap_cmd.run(_args(project, wiki, api_contracts=True, overwrite=True))
+    contract_before = contract_path.read_bytes()
+    flow_before = flow_path.read_bytes()
     capsys.readouterr()
 
-    assert "Runtime contract reviewed by the API team." in contract_path.read_text(
-        encoding="utf-8"
-    )
-    assert "Creates one inventory item." in flow_path.read_text(encoding="utf-8")
+    with pytest.raises(SystemExit) as exc_info:
+        bootstrap_cmd.run(_args(project, wiki, api_contracts=True, overwrite=True))
+
+    assert exc_info.value.code == 2
+    assert contract_path.read_bytes() == contract_before
+    assert flow_path.read_bytes() == flow_before
+    assert "overwrite` option is no longer supported" in capsys.readouterr().out
 
 
 def test_invalid_openapi_fails_before_generated_pages(tmp_path, monkeypatch, capsys):

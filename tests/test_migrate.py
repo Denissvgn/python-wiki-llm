@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from llm_wiki_cli.commands import lint_cmd, migrate_cmd
+from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd, migrate_cmd
 from llm_wiki_cli.commands.migrate_cmd import (
     ExistingPage,
     TargetPage,
@@ -970,6 +970,57 @@ class TestMigrateIntegration:
         assert after == before
         assert not (wiki / "legacy").exists()
         assert not Path(".gitignore").exists()
+
+    def test_bootstrap_migration_route_preview_is_byte_immutable(
+        self,
+        tmp_path,
+        monkeypatch,
+        capsys,
+    ):
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        _write(proj / "models.py", "class User:\n    pass\n")
+        wiki = _make_wiki(proj)
+        _write(
+            wiki / "modules" / "models.md",
+            "# models\n\n**Path:** `models.py`\n\nCustom operational notes.\n",
+        )
+        before = {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in wiki.rglob("*")
+            if path.is_file()
+        }
+        monkeypatch.chdir(proj)
+
+        with pytest.raises(SystemExit) as exc_info:
+            bootstrap_cmd.run(
+                types.SimpleNamespace(
+                    src_dir=".",
+                    wiki_dir="docs/llm_wiki",
+                    overwrite=False,
+                )
+            )
+
+        assert exc_info.value.code == 2
+        route_output = capsys.readouterr().out
+        assert "Bootstrap is first-use only" in route_output
+        assert "llm-wiki migrate --dry-run" in route_output
+        assert {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in wiki.rglob("*")
+            if path.is_file()
+        } == before
+
+        migrate_cmd.run(_make_args(dry_run=True))
+
+        preview_output = capsys.readouterr().out
+        assert "DRY-RUN" in preview_output
+        assert {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in wiki.rglob("*")
+            if path.is_file()
+        } == before
+        assert not (wiki / "legacy").exists()
 
     def test_dry_run_reports_exact_unchanged_artifact_actions(
         self,

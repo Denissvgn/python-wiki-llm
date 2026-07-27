@@ -106,8 +106,9 @@ Use this procedure:
    preserving it for diagnosis.
 4. Keep `.llm-wiki-surface.json` when its unchanged v1 bytes are useful, or let
    the pinned CLI regenerate it.
-5. Run the pinned CLI's normal sync/bootstrap initialization to reconstruct its
-   manifest from the existing canonical Markdown and source tree.
+5. Run the pinned CLI's normal sync path to reconstruct its manifest from the
+   existing canonical Markdown and source tree. Do not bootstrap over that
+   preserved wiki.
 6. Run lint before restoring automated writers.
 
 Deleting only `.llm-wiki-knowledge.json` while its hash remains in the manifest

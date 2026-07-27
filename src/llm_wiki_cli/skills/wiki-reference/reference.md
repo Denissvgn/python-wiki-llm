@@ -292,6 +292,13 @@ match no references, and the response explains the limitation. Knowledge
 enrichment does not change source-file priority or consume the source-file
 token budget.
 
+Knowledge-aware page references also carry compact lifecycle, section-review,
+and machine-verification summaries when governance or a verification receipt
+is present. Review output is limited to state counts, truncation, and stable
+reason codes. Machine-verification output is limited to receipt state and check
+counts. Reviewer identity and event details, receipt scope identifiers,
+diagnostics, evidence payloads, and hashes remain outside ordinary context.
+
 ## Knowledge query, API, and MCP boundaries
 
 The shared query service indexes locators, canonical paths/MCP URIs, source

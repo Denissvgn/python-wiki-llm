@@ -1,6 +1,6 @@
 ---
 name: wiki-bootstrap
-description: Bootstrap an LLM Wiki for an existing codebase — prepare extractor helpers, run deterministic `llm-wiki bootstrap --format json`, perform a centrality-ranked semantic pass, write an explicit remainder backlog for deferred pages, validate with lint/ci-check, and commit the wiki. Use for first-time wiki creation or an intentional full re-bootstrap; use wiki-sync for incremental post-change updates.
+description: Bootstrap an LLM Wiki for an existing codebase — prepare extractor helpers, run deterministic `llm-wiki bootstrap --format json`, perform a centrality-ranked semantic pass, write an explicit remainder backlog for deferred pages, validate with lint/ci-check, and commit the wiki. Use only for first-time wiki creation; route every existing wiki to wiki-sync or migration.
 ---
 
 # wiki-bootstrap
@@ -15,7 +15,13 @@ Managed knowledge-base behavior remains the default outside that explicit mode.
 
 ## Preconditions
 
-- This is a first bootstrap or an intentional full re-bootstrap. If `<wiki-dir>/.llm-wiki-manifest.json` already exists and the user did not ask for a full regenerate, stop — use the wiki-sync skill instead.
+- This is the first bootstrap into a nonexistent or empty target, or into the
+  exact untouched scaffold created by `llm-wiki init`. If the target contains a
+  manifest, legacy pages, partial generated output, custom prose, governance, or
+  verification state, stop before extraction or writes. Use the wiki-sync skill
+  for a maintained wiki and preview `llm-wiki migrate --dry-run` for an older or
+  partial layout. The phrase 're-bootstrap' never authorizes replacement, and
+  the compatibility `--overwrite` option is rejected.
 - The target repository is readable and the selected wiki directory (default `docs/llm_wiki`; substitute the project's configured `--wiki-dir` everywhere below) is writable.
 - If `--src-dir` points outside the current repository, the run uses `--allow-external-src` for source-reading commands: `prepare-extractors`, `bootstrap`, `lint`, `sync`, `ci-check`, and `team check`. The `--wiki-dir` remains project-root guarded.
 - Helper toolchain overrides are captured before preparation (for example `LLM_WIKI_GO=/usr/local/go/bin/go` or `LLM_WIKI_GHC=/path/to/ghc`) when the default executable on `PATH` is broken.
@@ -58,7 +64,13 @@ it from generated artifacts.
 
 ## Steps
 
-1. **Inspect the target shape.** Confirm the repo root, candidate wiki path, source languages, and whether a previous wiki manifest exists. Read the current `index.md` if present so existing custom sections are not destroyed by an accidental overwrite.
+1. **Inspect the target shape.** Confirm the repo root, candidate wiki path, and
+   source languages. Continue only when the wiki target is absent, empty, or the
+   exact untouched `llm-wiki init` scaffold. Any other `index.md`, manifest,
+   generated page, custom page, governance ledger, verification receipt, or
+   partial output means this is an existing wiki: stop and route it to wiki-sync
+   or migration. Do not attempt to preserve it by passing `--overwrite`;
+   bootstrap deliberately has no public existing-target mode.
 
 2. **Prepare helpers through the CLI.**
 

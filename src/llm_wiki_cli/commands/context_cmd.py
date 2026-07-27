@@ -71,6 +71,10 @@ from ..services.knowledge_orchestration import (
     build_runtime_live_evaluation,
     runtime_generation_options,
 )
+from ..services.knowledge_verification import (
+    attach_machine_verification_read_view,
+    verification_summaries_for_concepts,
+)
 from ..services.sync_manifest import SyncManifest
 from ..services.wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
@@ -992,6 +996,11 @@ def _build_protocol_enrichment(
             surface_index=query_surface,
             limit=_CONTEXT_QUERY_LIMIT,
             knowledge_view=knowledge_view,
+            machine_verification=(
+                verification_summaries_for_concepts(knowledge_view)
+                if isinstance(knowledge_view, KnowledgeReadView)
+                else None
+            ),
         )
     except PathValidationError as exc:
         raise ProtocolRequestError(str(exc), "wiki_dir") from exc
@@ -1275,6 +1284,22 @@ def _knowledge_enriched_page_ref(
                     ),
                 }
             )
+            lifecycle = concept.get("lifecycle")
+            if isinstance(lifecycle, str):
+                status["lifecycle"] = lifecycle
+            successor_uid = concept.get("successor_uid")
+            if isinstance(successor_uid, str):
+                status["successor_uid"] = successor_uid
+            reviews = concept.get("reviews")
+            if isinstance(reviews, Mapping):
+                status["review"] = _compact_context_review(reviews)
+            machine_verification = concept.get("machine_verification")
+            if isinstance(machine_verification, Mapping):
+                status["machine_verification"] = (
+                    _compact_context_machine_verification(
+                        machine_verification
+                    )
+                )
     enriched["knowledge"] = status
     return enriched
 
@@ -1472,6 +1497,112 @@ def _compact_context_freshness(value: object) -> dict[str, Any]:
             freshness.get("live_comparison_performed", False)
         ),
     }
+
+
+def _compact_context_review(value: Mapping[str, Any]) -> dict[str, Any]:
+    """Summarize bounded section review without reviewer or event metadata."""
+
+    raw_items = value.get("items")
+    items = raw_items if isinstance(raw_items, list) else []
+    valid_returned = sum(
+        1
+        for item in items
+        if isinstance(item, Mapping) and item.get("state") == "valid"
+    )
+    expired_returned = sum(
+        1
+        for item in items
+        if isinstance(item, Mapping) and item.get("state") == "expired"
+    )
+    total = _nonnegative_count(value.get("total"))
+    returned = _nonnegative_count(value.get("returned"))
+    truncated = bool(value.get("truncated"))
+    if total == 0:
+        state = "untracked"
+    elif truncated:
+        state = "partial"
+    elif valid_returned and expired_returned:
+        state = "mixed"
+    elif valid_returned:
+        state = "has-valid-sections"
+    elif expired_returned:
+        state = "has-expired-sections"
+    else:
+        state = "unknown"
+    reasons = sorted(
+        {
+            reason
+            for item in items
+            if isinstance(item, Mapping)
+            for reason in (
+                item.get("reasons")
+                if isinstance(item.get("reasons"), list)
+                else []
+            )
+            if isinstance(reason, str)
+            and re.fullmatch(r"[a-z][a-z0-9]*(?:-[a-z0-9]+)*", reason)
+        }
+    )
+    return {
+        "scope": "section",
+        "state": state,
+        "total": total,
+        "returned": returned,
+        "valid_returned": valid_returned,
+        "expired_returned": expired_returned,
+        "truncated": truncated,
+        "reasons": reasons,
+    }
+
+
+def _compact_context_machine_verification(
+    value: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Summarize a receipt without scope identifiers or diagnostics."""
+
+    availability = value.get("availability")
+    if availability != "recorded":
+        compact = {"availability": availability}
+        reason = value.get("reason")
+        if isinstance(reason, str) and re.fullmatch(
+            r"[a-z][a-z0-9]*(?:-[a-z0-9]+)*",
+            reason,
+        ):
+            compact["reason"] = reason
+        return compact
+
+    raw_checks = value.get("checks")
+    checks = raw_checks if isinstance(raw_checks, Mapping) else {}
+    results = [
+        check.get("result")
+        for check in checks.values()
+        if isinstance(check, Mapping)
+    ]
+    compact: dict[str, Any] = {
+        "availability": availability,
+        "valid": value.get("valid"),
+        "recorded_result": value.get("recorded_result"),
+        "passed": value.get("passed"),
+        "checks": {
+            "total": len(results),
+            "passed": sum(result == "passed" for result in results),
+            "failed": sum(result == "failed" for result in results),
+        },
+    }
+    invalidation_reasons = value.get("invalidation_reasons")
+    if isinstance(invalidation_reasons, list):
+        compact["invalidation_reasons"] = sorted(
+            {
+                reason
+                for reason in invalidation_reasons
+                if isinstance(reason, str)
+                and re.fullmatch(
+                    r"[a-z][a-z0-9]*(?:-[a-z0-9]+)*",
+                    reason,
+                )
+            }
+        )
+    return compact
 
 
 def _matches_knowledge_refinement(page: dict, filters: dict) -> bool:
@@ -1712,11 +1843,12 @@ def _build_context_knowledge_view(
                 )
             except (OSError, TypeError, UnicodeError, ValueError):
                 snapshot_only = True
-    return build_knowledge_read_view(
+    view = build_knowledge_read_view(
         load_result,
         live_evaluation=live_evaluation,
         snapshot_only=snapshot_only,
     )
+    return attach_machine_verification_read_view(wiki_root, view)
 
 
 def _context_knowledge_projection_declared(

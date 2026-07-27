@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 from llm_wiki_cli import cli
-from llm_wiki_cli.commands import bootstrap_cmd
+from llm_wiki_cli.commands import bootstrap_cmd, init_cmd
 from llm_wiki_cli.commands.extract_cmd import (
     ExtractorStatus,
     InventoryResult,
@@ -46,6 +46,14 @@ def _make_args(**kwargs):
     }
     defaults.update(kwargs)
     return types.SimpleNamespace(**defaults)
+
+
+def _tree_bytes(root: Path) -> dict[str, bytes]:
+    return {
+        path.relative_to(root).as_posix(): path.read_bytes()
+        for path in sorted(root.rglob("*"))
+        if path.is_file()
+    }
 
 
 def _body_line_count(function) -> int:
@@ -175,6 +183,17 @@ def test_bootstrap_parser_accepts_skip_data_flow_flag():
     args = parser.parse_args(["bootstrap", "--skip-data-flow"])
 
     assert args.skip_data_flow is True
+
+
+def test_bootstrap_help_hides_overwrite_compatibility_tombstone(capsys):
+    parser = cli._build_parser()
+
+    with pytest.raises(SystemExit) as exc_info:
+        parser.parse_args(["bootstrap", "--help"])
+
+    assert exc_info.value.code == 0
+    assert "--overwrite" not in capsys.readouterr().out
+    assert parser.parse_args(["bootstrap", "--overwrite"]).overwrite is True
 
 
 def test_bootstrap_excludes_agent_worktree_surfaces(tmp_path, monkeypatch, capsys):
@@ -896,15 +915,13 @@ class TestBootstrapEntityPages:
         assert "```mermaid" not in relationships
 
     def test_entity_relationship_section_is_deterministic(self, tmp_project, capsys):
-        wiki_dir = tmp_project / "docs" / "llm_wiki"
-        args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
-        bootstrap_cmd.run(args)
-        first = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
+        first_wiki = tmp_project / "docs" / "first"
+        second_wiki = tmp_project / "docs" / "second"
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir=str(first_wiki)))
+        first = (first_wiki / "entities" / "User.md").read_text(encoding="utf-8")
 
-        bootstrap_cmd.run(
-            _make_args(src_dir=".", wiki_dir=str(wiki_dir), overwrite=True)
-        )
-        second = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir=str(second_wiki)))
+        second = (second_wiki / "entities" / "User.md").read_text(encoding="utf-8")
 
         assert first == second
 
@@ -1577,31 +1594,146 @@ class TestBootstrapLog:
 
 
 class TestBootstrapOverwrite:
-    def test_skip_existing_without_flag(self, tmp_project, capsys):
+    def test_existing_wiki_is_rejected_without_mutation(self, tmp_project, capsys):
         wiki_dir = tmp_project / "docs" / "llm_wiki"
         args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
         bootstrap_cmd.run(args)
 
-        # Modify a page
         user_page = wiki_dir / "entities" / "User.md"
         user_page.write_text("CUSTOM CONTENT")
+        before = _tree_bytes(wiki_dir)
+        capsys.readouterr()
 
-        # Run again without --overwrite
-        bootstrap_cmd.run(args)
+        with pytest.raises(SystemExit) as exc_info:
+            bootstrap_cmd.run(args)
+
+        assert exc_info.value.code == 2
+        assert _tree_bytes(wiki_dir) == before
         assert user_page.read_text(encoding="utf-8") == "CUSTOM CONTENT"
+        output = capsys.readouterr().out
+        assert "Bootstrap is first-use only" in output
+        assert "llm-wiki sync --jobs 1" in output
+        assert "llm-wiki migrate --dry-run" in output
+        assert "No files were changed" in output
 
-    def test_overwrite_flag(self, tmp_project, capsys):
+    def test_overwrite_compatibility_flag_is_rejected_before_mutation(
+        self, tmp_project, capsys
+    ):
         wiki_dir = tmp_project / "docs" / "llm_wiki"
         args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
         bootstrap_cmd.run(args)
 
         user_page = wiki_dir / "entities" / "User.md"
         user_page.write_text("CUSTOM CONTENT")
+        before = _tree_bytes(wiki_dir)
+        capsys.readouterr()
 
         args_ow = _make_args(src_dir=".", wiki_dir=str(wiki_dir), overwrite=True)
-        bootstrap_cmd.run(args_ow)
-        assert user_page.read_text(encoding="utf-8") != "CUSTOM CONTENT"
-        assert "# User" in user_page.read_text(encoding="utf-8")
+        with pytest.raises(SystemExit) as exc_info:
+            bootstrap_cmd.run(args_ow)
+
+        assert exc_info.value.code == 2
+        assert _tree_bytes(wiki_dir) == before
+        assert user_page.read_text(encoding="utf-8") == "CUSTOM CONTENT"
+        assert "compatibility `overwrite` option is no longer supported" in (
+            capsys.readouterr().out
+        )
+
+    def test_exact_init_scaffold_is_accepted(self, tmp_project, capsys):
+        wiki_dir = tmp_project / "docs" / "llm_wiki"
+        init_cmd.run(
+            types.SimpleNamespace(
+                agent="generic",
+                wiki_dir=str(wiki_dir),
+                no_skills=True,
+            )
+        )
+        assert not (wiki_dir / ".llm-wiki-manifest.json").exists()
+        capsys.readouterr()
+
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir=str(wiki_dir)))
+
+        assert (wiki_dir / ".llm-wiki-manifest.json").is_file()
+
+    def test_exact_init_scaffold_with_fallback_agent_config_is_accepted(
+        self,
+        tmp_path,
+        monkeypatch,
+        capsys,
+    ):
+        project = tmp_path / "non_git_project"
+        project.mkdir()
+        (project / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        monkeypatch.chdir(project)
+        wiki_dir = project / "docs" / "llm_wiki"
+        init_cmd.run(
+            types.SimpleNamespace(
+                agent="generic",
+                wiki_dir=str(wiki_dir),
+                no_skills=True,
+            )
+        )
+        config_path = wiki_dir / ".llm-wiki-agent"
+        assert config_path.is_file()
+        capsys.readouterr()
+
+        bootstrap_cmd.run(
+            _make_args(
+                src_dir=".",
+                wiki_dir=str(wiki_dir),
+                source_adapter=True,
+            )
+        )
+
+        assert (wiki_dir / ".llm-wiki-manifest.json").is_file()
+
+    def test_modified_fallback_agent_config_is_rejected_without_mutation(
+        self,
+        tmp_path,
+        monkeypatch,
+        capsys,
+    ):
+        project = tmp_path / "non_git_project"
+        project.mkdir()
+        (project / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        monkeypatch.chdir(project)
+        wiki_dir = project / "docs" / "llm_wiki"
+        init_cmd.run(
+            types.SimpleNamespace(
+                agent="generic",
+                wiki_dir=str(wiki_dir),
+                no_skills=True,
+            )
+        )
+        config_path = wiki_dir / ".llm-wiki-agent"
+        config_path.write_text(
+            config_path.read_text(encoding="utf-8").replace(
+                '"agent": "generic"',
+                '"agent": "custom"',
+            ),
+            encoding="utf-8",
+        )
+        before = _tree_bytes(wiki_dir)
+        capsys.readouterr()
+        monkeypatch.setattr(
+            bootstrap_cmd,
+            "get_inventory_result",
+            lambda *_args, **_kwargs: pytest.fail(
+                "modified-config preflight must run before extraction"
+            ),
+        )
+
+        with pytest.raises(SystemExit) as exc_info:
+            bootstrap_cmd.run(
+                _make_args(
+                    src_dir=".",
+                    wiki_dir=str(wiki_dir),
+                    source_adapter=True,
+                )
+            )
+
+        assert exc_info.value.code == 2
+        assert _tree_bytes(wiki_dir) == before
 
 
 class TestBootstrapShallow:

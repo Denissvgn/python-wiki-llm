@@ -205,6 +205,30 @@ class TestBundledWikiBootstrapSkill:
         assert "skipped_no_safe_context" in reference
         assert "## Bootstrap Remainder" in reference
 
+    def test_wiki_bootstrap_is_permanently_first_use_only(self):
+        skill_dir = skills.BUNDLED_SKILLS_ROOT / "wiki-bootstrap"
+        manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+        reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
+        combined = f"{manifest}\n{reference}"
+
+        assert "Use only for first-time wiki creation" in manifest
+        assert "llm-wiki migrate --dry-run" in combined
+        assert "phrase 're-bootstrap' never authorizes replacement" in combined
+        assert "bootstrap deliberately has no public existing-target mode" in manifest
+        assert "intentional full re-bootstrap" not in combined
+        assert "unless the request explicitly says to re-bootstrap" not in combined
+
+    def test_adjacent_skills_never_route_existing_wikis_to_bootstrap_repair(self):
+        for skill_id in ("onboarding-guide", "usage-examples", "publish-docs"):
+            manifest = (
+                skills.BUNDLED_SKILLS_ROOT / skill_id / "SKILL.md"
+            ).read_text(encoding="utf-8")
+            normalized = " ".join(manifest.split())
+
+            assert "bootstrap is never an existing-wiki repair path" in normalized
+            assert "llm-wiki migrate --dry-run" in normalized
+            assert "exact untouched `llm-wiki init` scaffold" in normalized
+
     def test_wiki_bootstrap_skill_documents_external_helper_and_team_contracts(self):
         skill_dir = skills.BUNDLED_SKILLS_ROOT / "wiki-bootstrap"
         manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")

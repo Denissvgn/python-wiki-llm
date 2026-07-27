@@ -99,6 +99,11 @@ When closing an item, keep the row and change `Status` to `done`; do not delete 
 
 Keep authority explicit throughout bootstrap:
 
+Bootstrap is not a recovery or regeneration command. It accepts only a new,
+empty, or untouched initialized scaffold. Existing canonical Markdown and native
+artifacts stay byte-for-byte outside its authority; use sync for a maintained
+layout or migration's dry-run/archive workflow for an older or partial layout.
+
 | Artifact/surface | Authority and owner | Permitted bootstrap handling |
 |---|---|---|
 | Canonical Markdown semantic sections | Human/agent-authored under the supported section policy | Edit only the semantic surfaces listed by this skill, then run the owning sync/re-anchor. |
@@ -143,7 +148,11 @@ A successful run has:
 
 ## Failure modes and edge cases
 
-- **Existing wiki manifest.** Stop and ask whether the user wants the wiki-sync workflow unless the request explicitly says to re-bootstrap.
+- **Any existing wiki content.** Stop before extraction or writes. A manifest,
+  legacy page, partial generated page, custom prose, governance ledger, or
+  verification receipt routes to wiki-sync or
+  `llm-wiki migrate --dry-run`; explicit “re-bootstrap” wording does not change
+  that rule.
 - **Large monorepo.** Do not attempt full semantic coverage. Complete P0, then top central pages, then backlog the rest.
 - **Unsupported sources.** Treat unsupported-language summaries as coverage notices. Include them in the validation notes and backlog if the user expects those languages to be first-class.
 - **Skipped generated pages.** Page skips can hide missing documentation due to collisions or unsafe output paths. Triage before semantic polishing.
@@ -153,7 +162,8 @@ A successful run has:
 
 ## Related workflows
 
-- Incremental post-change refreshes after the first manifest exists belong to the wiki-sync skill, not a re-bootstrap.
+- Every refresh after first bootstrap belongs to wiki-sync. Older or partial
+  layouts first use migration preview and its archive-preserving workflow.
 - An external documentation workspace uses this workflow only to materialize
   the deterministic `bootstrap-source` baseline. Its separate, resumable
   semantic phase belongs to `wiki-semantic-enhance`, which consumes the same P0

@@ -375,11 +375,10 @@ to `generic`.
 
 ### `bootstrap`
 
-Generate a full wiki for an existing project.
+Generate the initial full wiki for an existing project.
 
 ```bash
 llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki
-llm-wiki bootstrap --overwrite
 llm-wiki bootstrap --depth shallow
 llm-wiki bootstrap --skip-workflows
 llm-wiki bootstrap --skip-flows
@@ -391,6 +390,15 @@ llm-wiki bootstrap --include-tests go
 llm-wiki bootstrap --helper-cache-dir .cache/llm-wiki-helpers
 llm-wiki bootstrap --format json --source-adapter
 ```
+
+`bootstrap` is first-use only. It accepts a nonexistent or empty target and the
+exact untouched scaffold created by `llm-wiki init`. If the target already
+contains a manifest, legacy or partial pages, custom prose, governance, or
+verification state, it stops before source extraction or target writes. Use
+`sync --jobs 1` for a maintained wiki and `migrate --dry-run` before migrating an
+older or partial layout. The retained `--overwrite` compatibility option always
+fails; neither that option nor a request phrased as “re-bootstrap” authorizes
+replacement.
 
 `bootstrap` writes entity, module, workflow, flow, infrastructure, index, log,
 dependency architecture, and manifest files. User-flow pages under `flows/` are
@@ -1519,9 +1527,10 @@ preserves the stored preference. Configurations created before this preference
 existed default to disabled. For older wiki layouts, `upgrade`
 idempotently adds registry-standard directories such as `flows/` and missing
 `.gitkeep` files without rewriting existing index, log, semantic pages, or
-optional `dependencies.md` / `load-order.md` pages. Run `bootstrap` or `sync`
-to generate user-flow and dependency architecture pages; after upgrading,
-`site export` and MCP automatically see any `flows/*.md` pages that exist.
+optional `dependencies.md` / `load-order.md` pages. Run `bootstrap` only for an
+untouched new scaffold, or use `sync` for an existing wiki, to generate
+user-flow and dependency architecture pages; after upgrading, `site export` and
+MCP automatically see any `flows/*.md` pages that exist.
 
 ### `migrate`
 

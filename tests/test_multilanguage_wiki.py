@@ -53,7 +53,7 @@ def _make_args(**kwargs):
     defaults = {
         "src_dir": ".",
         "wiki_dir": "docs/llm_wiki",
-        "overwrite": True,
+        "overwrite": False,
         "depth": "full",
         "skip_workflows": True,
         "dry_run": False,

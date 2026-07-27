@@ -944,6 +944,146 @@ class TestProtocolValidation:
 
 
 class TestKnowledgePageSelection:
+    def test_governed_summary_is_compact_and_omits_private_event_detail(self):
+        page, concept = _knowledge_page_fixture(
+            "entities/User.md",
+            freshness="source-changed",
+        )
+        concept.update(
+            {
+                "lifecycle": "superseded",
+                "successor_uid": "lw:entity:successor",
+                "reviews": {
+                    "items": [
+                        {
+                            "state": "valid",
+                            "reasons": [],
+                            "reviewer": {
+                                "kind": "human",
+                                "id": "private-reviewer@example.invalid",
+                            },
+                            "authored_at": "2026-07-27T09:30:00Z",
+                            "event_id": "rv_private",
+                            "method": {"id": "manual-review", "version": "2"},
+                        },
+                        {
+                            "state": "expired",
+                            "reasons": ["scope-changed", "not/a-machine-code"],
+                            "reviewer": {
+                                "kind": "human",
+                                "id": "other-private@example.invalid",
+                            },
+                        },
+                    ],
+                    "total": 2,
+                    "returned": 2,
+                    "limit": 20,
+                    "truncated": False,
+                },
+                "machine_verification": {
+                    "availability": "recorded",
+                    "scope_uid": "bundle:private",
+                    "valid": True,
+                    "invalidation_reasons": [],
+                    "recorded_result": "failed",
+                    "passed": False,
+                    "checks": {
+                        "internal-links": {
+                            "result": "failed",
+                            "diagnostics": [
+                                {
+                                    "code": "private-diagnostic",
+                                    "subject": "/private/checkout",
+                                }
+                            ],
+                        },
+                        "artifact-integrity": {
+                            "result": "passed",
+                            "diagnostics": [],
+                        },
+                    },
+                },
+            }
+        )
+        service = _KnowledgeQueryStub({page["canonical_path"]: concept})
+
+        enriched = context_cmd._knowledge_enriched_page_ref(page, service)
+
+        assert enriched["knowledge"] == {
+            "availability": "ready",
+            "reason": "all-projection-commitments-match",
+            "freshness_evaluated": True,
+            "origin": "extracted",
+            "evidence": "present",
+            "verification": "untracked",
+            "freshness": {
+                "state": "source-changed",
+                "reason": "fixture-source-changed",
+                "live_comparison_performed": True,
+            },
+            "lifecycle": "superseded",
+            "successor_uid": "lw:entity:successor",
+            "review": {
+                "scope": "section",
+                "state": "mixed",
+                "total": 2,
+                "returned": 2,
+                "valid_returned": 1,
+                "expired_returned": 1,
+                "truncated": False,
+                "reasons": ["scope-changed"],
+            },
+            "machine_verification": {
+                "availability": "recorded",
+                "valid": True,
+                "recorded_result": "failed",
+                "passed": False,
+                "checks": {
+                    "total": 2,
+                    "passed": 1,
+                    "failed": 1,
+                },
+                "invalidation_reasons": [],
+            },
+        }
+        encoded = json.dumps(enriched, sort_keys=True)
+        for forbidden in (
+            "private-reviewer",
+            "other-private",
+            "authored_at",
+            "event_id",
+            "manual-review",
+            "scope_uid",
+            "diagnostics",
+            "/private/checkout",
+            "private-diagnostic",
+        ):
+            assert forbidden not in encoded
+
+    def test_invalid_machine_receipt_stays_unevaluable(self):
+        page, concept = _knowledge_page_fixture(
+            "entities/User.md",
+            freshness="current",
+        )
+        concept["machine_verification"] = {
+            "availability": "invalid",
+            "reason": "receipt-invalid",
+        }
+        service = _KnowledgeQueryStub({page["canonical_path"]: concept})
+
+        enriched = context_cmd._knowledge_enriched_page_ref(page, service)
+
+        assert enriched["knowledge"]["machine_verification"] == {
+            "availability": "invalid",
+            "reason": "receipt-invalid",
+        }
+        assert "valid" not in enriched["knowledge"]["machine_verification"]
+        assert "passed" not in enriched["knowledge"]["machine_verification"]
+        assert (
+            "recorded_result"
+            not in enriched["knowledge"]["machine_verification"]
+        )
+
     def test_orders_by_freshness_then_evidence_presence_then_path(self):
         specs = [
             ("entities/basis.md", "basis-incompatible", "present"),
@@ -1533,6 +1673,7 @@ def test_knowledge_enrichment_reuses_one_live_inventory_and_read_view(
             "evidence",
             "verification",
             "freshness",
+            "lifecycle",
         }
         for summary in summaries
     )

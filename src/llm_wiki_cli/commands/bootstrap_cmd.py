@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, TextIO
 
 from ..config import (
+    AGENT_CHOICES,
     DEFAULT_WIKI_DIR as _DEFAULT_WIKI_DIR,
 )
 from ..config import (
@@ -116,6 +117,10 @@ from ..services.source_snapshot import (
     unsupported_source_summary,
 )
 from ..services.sync_manifest import SyncManifest
+from ..services.wiki_scaffold import (
+    INITIAL_WIKI_INDEX_MARKDOWN,
+    INITIAL_WIKI_LOG_MARKDOWN,
+)
 from ..services.wiki_surface import (
     PageKind,
     WikiSurfaceError,
@@ -5023,7 +5028,143 @@ def _bootstrap_result(state: _BootstrapRunState) -> BootstrapResult:
     )
 
 
-def _execute_bootstrap_options(options: _BootstrapRunOptions) -> BootstrapResult:
+def _is_pristine_bootstrap_target(wiki_dir: Path) -> bool:
+    """Return whether *wiki_dir* is empty or is the complete init scaffold."""
+
+    if wiki_dir.is_symlink():
+        return False
+    if not wiki_dir.exists():
+        return True
+    if not wiki_dir.is_dir():
+        return False
+
+    scaffold_directories = {
+        entry.directory
+        for entry in iter_page_kinds()
+        if entry.directory is not None
+    }
+    allowed_gitkeeps = {".gitkeep"} | {
+        f"{directory}/.gitkeep" for directory in scaffold_directories
+    }
+    expected_paths = {
+        *scaffold_directories,
+        *allowed_gitkeeps,
+        "index.md",
+        "log.md",
+    }
+    try:
+        entries = sorted(wiki_dir.rglob("*"))
+    except OSError:
+        return False
+    if not entries:
+        return True
+
+    paths_by_relative: dict[str, Path] = {}
+    for path in entries:
+        if path.is_symlink():
+            return False
+        try:
+            relative = path.relative_to(wiki_dir).as_posix()
+        except ValueError:
+            return False
+        paths_by_relative[relative] = path
+
+    actual_paths = set(paths_by_relative)
+    if actual_paths not in (
+        expected_paths,
+        expected_paths | {".llm-wiki-agent"},
+    ):
+        return False
+
+    for relative, path in paths_by_relative.items():
+        if relative in scaffold_directories:
+            if not path.is_dir():
+                return False
+            continue
+        if not path.is_file():
+            return False
+        try:
+            if relative in allowed_gitkeeps:
+                if path.stat().st_size != 0:
+                    return False
+            elif relative == "index.md":
+                if path.read_text(encoding="utf-8") != INITIAL_WIKI_INDEX_MARKDOWN:
+                    return False
+            elif relative == "log.md":
+                if path.read_text(encoding="utf-8") != INITIAL_WIKI_LOG_MARKDOWN:
+                    return False
+            elif relative == ".llm-wiki-agent":
+                raw_config = path.read_text(encoding="utf-8")
+                config = json.loads(raw_config)
+                if (
+                    not isinstance(config, dict)
+                    or set(config)
+                    != {
+                        "agent",
+                        "quality_hints",
+                        "reference_skill",
+                        "issue_reporting",
+                    }
+                    or config["agent"] not in AGENT_CHOICES
+                    or any(
+                        type(config[key]) is not bool
+                        for key in (
+                            "quality_hints",
+                            "reference_skill",
+                            "issue_reporting",
+                        )
+                    )
+                ):
+                    return False
+                canonical_config = {
+                    "agent": config["agent"],
+                    "quality_hints": config["quality_hints"],
+                    "reference_skill": config["reference_skill"],
+                    "issue_reporting": config["issue_reporting"],
+                }
+                if raw_config != json.dumps(canonical_config, indent=2) + "\n":
+                    return False
+        except (KeyError, OSError, TypeError, UnicodeError, ValueError):
+            return False
+    return True
+
+
+def _first_use_guidance(options: _BootstrapRunOptions) -> str:
+    src_dir = shlex.quote(options.src_dir)
+    wiki_dir = shlex.quote(str(options.wiki_dir))
+    return (
+        "Bootstrap is first-use only. For a maintained wiki, run "
+        f"`llm-wiki sync --jobs 1 --src-dir {src_dir} --wiki-dir {wiki_dir}`. "
+        "For an older or partial layout, first preview "
+        f"`llm-wiki migrate --dry-run --src-dir {src_dir} --wiki-dir {wiki_dir}`. "
+        "The phrase 're-bootstrap' never authorizes replacement."
+    )
+
+
+def _preflight_public_bootstrap(options: _BootstrapRunOptions) -> None:
+    """Reject overwrite and existing wiki content without reading source."""
+
+    if options.overwrite:
+        raise BootstrapContractError(
+            "The compatibility `overwrite` option is no longer supported. "
+            + _first_use_guidance(options)
+            + " No files were changed."
+        )
+    if not _is_pristine_bootstrap_target(options.wiki_dir):
+        raise BootstrapContractError(
+            f"Existing wiki content was found at '{options.wiki_dir}'. "
+            + _first_use_guidance(options)
+            + " No files were changed."
+        )
+
+
+def _execute_bootstrap_options(
+    options: _BootstrapRunOptions,
+    *,
+    _workspace_refresh_authorized: bool = False,
+) -> BootstrapResult:
+    if not _workspace_refresh_authorized:
+        _preflight_public_bootstrap(options)
     try:
         _preflight_bootstrap_governance(options.wiki_dir)
     except (GovernanceError, InfrastructureSyncError) as exc:
@@ -5085,11 +5226,44 @@ def execute_bootstrap(
     *,
     progress_stream: TextIO | None = None,
 ) -> BootstrapResult:
-    """Execute deterministic bootstrap without argparse, printing, or exits."""
+    """Execute first-use deterministic bootstrap without argparse or exits."""
 
     stream = progress_stream if progress_stream is not None else io.StringIO()
     options = _bootstrap_run_options_from_request(request, progress_stream=stream)
     return _execute_bootstrap_options(options)
+
+
+def _execute_documentation_workspace_refresh(
+    request: BootstrapRequest,
+    *,
+    workspace_root: str | Path,
+    progress_stream: TextIO | None = None,
+) -> BootstrapResult:
+    """Refresh an isolated documentation-workspace snapshot.
+
+    This private path preserves the standalone documentation workflow's
+    workspace-only refresh.  It cannot authorize writes to a source or adopted
+    input wiki and is intentionally absent from the CLI and public Python API.
+    """
+
+    stream = progress_stream if progress_stream is not None else io.StringIO()
+    options = _bootstrap_run_options_from_request(request, progress_stream=stream)
+    workspace = Path(workspace_root).expanduser().resolve()
+    if not request.overwrite or not request.source_adapter:
+        raise BootstrapContractError(
+            "Internal documentation refresh requires overwrite and source-adapter "
+            "mode."
+        )
+    expected_wiki_root = workspace / "wiki"
+    if options.wiki_dir != expected_wiki_root:
+        raise BootstrapContractError(
+            "Internal documentation refresh target must be exactly the "
+            "documentation workspace's `wiki` directory."
+        )
+    return _execute_bootstrap_options(
+        options,
+        _workspace_refresh_authorized=True,
+    )
 
 
 def run(args):

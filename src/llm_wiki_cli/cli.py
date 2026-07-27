@@ -859,7 +859,7 @@ def _add_bootstrap_command(subparsers):
     bootstrap_parser.add_argument(
         "--overwrite",
         action="store_true",
-        help="Overwrite existing entity/module pages",
+        help=argparse.SUPPRESS,
     )
     bootstrap_parser.add_argument(
         "--depth",

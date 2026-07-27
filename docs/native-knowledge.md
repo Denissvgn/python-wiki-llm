@@ -568,8 +568,12 @@ omitted- and downgraded-file summaries.
 
 The `knowledge` object reports `availability`, `reason`, and
 `freshness_evaluated`. Enriched page references use compact origin, evidence,
-verification, and freshness summaries; they do not embed full evidence or
-hashes in ordinary context.
+semantic verification, freshness, lifecycle, section-review, and machine
+verification summaries. Review summaries contain only state counts, truncation,
+and stable reason codes. Machine-verification summaries contain only receipt
+state and check counts; reviewer identities, event metadata, receipt scope
+identifiers, diagnostics, full evidence, and hashes are not embedded in
+ordinary context.
 
 Typed-graph enrichment appears only when at least one relationship filter is
 supplied. It reports graph availability/reason, direction, all-incident and

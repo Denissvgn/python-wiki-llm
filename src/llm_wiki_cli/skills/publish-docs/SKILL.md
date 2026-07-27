@@ -11,7 +11,13 @@ If user docs need captured examples before publishing, run `usage-examples` firs
 
 ## Preconditions
 
-- A validated wiki (or several, for hub mode) already exists — run `wiki-sync`/`wiki-bootstrap` first if not; this skill does not generate wiki content. "Current" native evidence means only unchanged since its recorded observation, not true, approved, secure, or runtime-current.
+- A validated wiki (or several, for hub mode) already exists. Use
+  `wiki-bootstrap` only when the target is absent or is the exact untouched
+  `llm-wiki init` scaffold. Route every other target through `wiki-sync` or
+  `llm-wiki migrate --dry-run`; bootstrap is never an existing-wiki repair
+  path. This skill does not generate wiki content. "Current" native evidence
+  means only unchanged since its recorded observation, not true, approved,
+  secure, or runtime-current.
 - For `--profile user`, a non-default `--site-name` and at least one guide page under `guides/` already exist — run `onboarding-guide` first if only persona guides are missing, or `user-docs-author` first if the whole user-docs narrative layer needs to be filled from deterministic site evidence.
 - The user has said where this is being published (GitHub Pages, an internal MkDocs/Docusaurus host, or "just give me a static mirror") — that choice picks the export `--format` and whether a real build step applies at all (`--format plain` has no corresponding builder).
 - If a real builder (`mkdocs`, `npm`/docusaurus) will be invoked, confirm it is actually installed before attempting it — this skill fails closed and reports clearly rather than half-running a build.

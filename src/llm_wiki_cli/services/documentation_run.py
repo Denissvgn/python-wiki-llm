@@ -1340,7 +1340,9 @@ def _prepare_documentation_run_impl(
                 raise DocumentationSchemaError(
                     "Workspace-only snapshot refresh requires an explicit source root."
                 )
-            from ..commands.bootstrap_cmd import execute_bootstrap
+            from ..commands.bootstrap_cmd import (
+                _execute_documentation_workspace_refresh,
+            )
 
             refresh_before = capture_tree_baseline(
                 wiki_root,
@@ -1351,7 +1353,7 @@ def _prepare_documentation_run_impl(
                 for relative in snapshot.semantic_markdown_paths
                 if (wiki_root / relative).is_file()
             }
-            refresh_result = execute_bootstrap(
+            refresh_result = _execute_documentation_workspace_refresh(
                 BootstrapRequest(
                     source_root=policy.source_root,
                     wiki_root=wiki_root,
@@ -1362,7 +1364,8 @@ def _prepare_documentation_run_impl(
                     if policy.helper_cache_root is not None
                     else None,
                     trust_source_plugins=policy.trust_source_plugins,
-                )
+                ),
+                workspace_root=workspace_root,
             )
             preserved_semantic_paths = _preserve_imported_semantic_markdown(
                 wiki_root,

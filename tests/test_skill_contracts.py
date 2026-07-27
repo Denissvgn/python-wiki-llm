@@ -435,6 +435,7 @@ def test_known_invalid_skill_contracts_are_absent_and_cache_handoff_is_explicit(
         '"query_type"',
         "sync --output-format json",
         "bootstrap --force",
+        "bootstrap --overwrite",
         "dependencies.metrics",
         "attack-surfa ce",
         "ci-check --cache-dir",

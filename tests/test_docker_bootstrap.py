@@ -214,11 +214,8 @@ class TestBootstrapInfrastructureIntegration:
             'services:\n  web:\n    build: .\n    ports:\n      - "8000:8000"\n'
         )
 
-        # Set up wiki dir inside the project (validate_path needs it inside cwd)
+        # Bootstrap creates the wiki dir inside the current project root.
         wiki = proj / "docs" / "llm_wiki"
-        for subdir in ["entities", "modules", "workflows", "infrastructure"]:
-            (wiki / subdir).mkdir(parents=True)
-        (wiki / "log.md").write_text("# Log\n")
 
         old_cwd = os.getcwd()
         os.chdir(proj)
@@ -229,7 +226,7 @@ class TestBootstrapInfrastructureIntegration:
             args = argparse.Namespace(
                 src_dir=".",
                 wiki_dir=str(wiki),
-                overwrite=True,
+                overwrite=False,
                 depth="full",
                 skip_workflows=True,
             )
@@ -282,7 +279,7 @@ class TestBootstrapInfrastructureIntegration:
             args = argparse.Namespace(
                 src_dir=".",
                 wiki_dir=str(wiki),
-                overwrite=True,
+                overwrite=False,
                 depth="shallow",
                 skip_workflows=True,
             )
@@ -332,7 +329,7 @@ class TestBootstrapInfrastructureIntegration:
                 argparse.Namespace(
                     src_dir=".",
                     wiki_dir=str(wiki),
-                    overwrite=True,
+                    overwrite=False,
                     depth="shallow",
                     skip_workflows=True,
                 )
@@ -413,7 +410,7 @@ class TestBootstrapInfrastructureIntegration:
                 argparse.Namespace(
                     src_dir=".",
                     wiki_dir=str(wiki),
-                    overwrite=True,
+                    overwrite=False,
                     depth="full",
                     skip_workflows=True,
                 )
@@ -531,7 +528,7 @@ class TestBootstrapInfrastructureIntegration:
                 argparse.Namespace(
                     src_dir=".",
                     wiki_dir=str(wiki),
-                    overwrite=True,
+                    overwrite=False,
                     depth="full",
                     skip_workflows=True,
                     format="json",

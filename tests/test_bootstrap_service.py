@@ -161,6 +161,208 @@ def test_api_maps_typed_bootstrap_failures(tmp_path):
         )
 
 
+def test_public_overwrite_tombstone_rejects_before_extraction_or_writes(
+    tmp_path, monkeypatch
+):
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+    wiki = tmp_path / "wiki"
+
+    def forbidden_inventory(*_args, **_kwargs):
+        pytest.fail("existing-target preflight must run before extraction")
+
+    monkeypatch.setattr(bootstrap_cmd, "get_inventory_result", forbidden_inventory)
+
+    with pytest.raises(BootstrapError, match="overwrite.*no longer supported"):
+        bootstrap_wiki(str(source), str(wiki), overwrite=True)
+
+    assert not wiki.exists()
+
+
+@pytest.mark.parametrize(
+    ("relative_path", "content"),
+    (
+        ("index.md", "# Existing wiki\n\nCustom overview.\n"),
+        ("modules/partial.md", "# Partial module\n"),
+        (".llm-wiki-manifest.json", "{}\n"),
+        (".llm-wiki-governance.json", "{}\n"),
+        (".llm-wiki-verification.json", "{}\n"),
+    ),
+)
+def test_typed_service_rejects_existing_wiki_content_before_extraction(
+    tmp_path, monkeypatch, relative_path, content
+):
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+    wiki = tmp_path / "wiki"
+    target = wiki / relative_path
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(content, encoding="utf-8")
+    before = _tree(wiki)
+
+    def forbidden_inventory(*_args, **_kwargs):
+        pytest.fail("existing-target preflight must run before extraction")
+
+    monkeypatch.setattr(bootstrap_cmd, "get_inventory_result", forbidden_inventory)
+
+    with pytest.raises(BootstrapContractError) as exc_info:
+        execute_bootstrap(BootstrapRequest(source_root=source, wiki_root=wiki))
+
+    message = str(exc_info.value)
+    assert "Bootstrap is first-use only" in message
+    assert "llm-wiki sync --jobs 1" in message
+    assert "llm-wiki migrate --dry-run" in message
+    assert "No files were changed" in message
+    assert _tree(wiki) == before
+
+
+def test_typed_service_rejects_partial_init_scaffold_before_extraction(
+    tmp_path,
+    monkeypatch,
+):
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+    wiki = tmp_path / "wiki"
+    (wiki / "modules").mkdir(parents=True)
+    (wiki / "modules" / ".gitkeep").touch()
+    before = _tree(wiki)
+
+    monkeypatch.setattr(
+        bootstrap_cmd,
+        "get_inventory_result",
+        lambda *_args, **_kwargs: pytest.fail(
+            "partial-scaffold preflight must run before extraction"
+        ),
+    )
+
+    with pytest.raises(BootstrapContractError, match="Existing wiki content"):
+        execute_bootstrap(BootstrapRequest(source_root=source, wiki_root=wiki))
+
+    assert _tree(wiki) == before
+
+
+@pytest.mark.skipif(not hasattr(os, "symlink"), reason="symlinks unavailable")
+def test_typed_service_rejects_symlinked_scaffold_entry(tmp_path, monkeypatch):
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+    wiki = tmp_path / "wiki"
+    wiki.mkdir()
+    outside = tmp_path / "outside.md"
+    outside.write_text("outside\n", encoding="utf-8")
+    link = wiki / "index.md"
+    try:
+        link.symlink_to(outside)
+    except OSError as exc:
+        pytest.skip(f"file symlinks unavailable: {exc}")
+
+    monkeypatch.setattr(
+        bootstrap_cmd,
+        "get_inventory_result",
+        lambda *_args, **_kwargs: pytest.fail(
+            "symlink preflight must run before extraction"
+        ),
+    )
+
+    with pytest.raises(BootstrapContractError, match="Existing wiki content"):
+        execute_bootstrap(BootstrapRequest(source_root=source, wiki_root=wiki))
+
+    assert outside.read_text(encoding="utf-8") == "outside\n"
+    assert link.is_symlink()
+
+
+@pytest.mark.parametrize(
+    ("target_name", "overwrite", "source_adapter"),
+    (
+        (None, True, True),
+        ("sibling", True, True),
+        ("wiki", False, True),
+        ("wiki", True, False),
+    ),
+)
+def test_internal_documentation_refresh_rejects_every_noncanonical_authority(
+    tmp_path,
+    monkeypatch,
+    target_name,
+    overwrite,
+    source_adapter,
+):
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    wiki = workspace if target_name is None else workspace / target_name
+    before = _tree(workspace)
+
+    monkeypatch.setattr(
+        bootstrap_cmd,
+        "get_inventory_result",
+        lambda *_args, **_kwargs: pytest.fail(
+            "internal refresh authority checks must run before extraction"
+        ),
+    )
+
+    with pytest.raises(BootstrapContractError):
+        bootstrap_cmd._execute_documentation_workspace_refresh(
+            BootstrapRequest(
+                source_root=source,
+                wiki_root=wiki,
+                overwrite=overwrite,
+                source_adapter=source_adapter,
+            ),
+            workspace_root=workspace,
+        )
+
+    assert _tree(workspace) == before
+
+
+@pytest.mark.skipif(not hasattr(os, "symlink"), reason="symlinks unavailable")
+def test_internal_documentation_refresh_rejects_workspace_wiki_symlink_escape(
+    tmp_path,
+    monkeypatch,
+):
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    marker = outside / "marker.md"
+    marker.write_text("outside stays untouched\n", encoding="utf-8")
+    wiki_link = workspace / "wiki"
+    try:
+        wiki_link.symlink_to(outside, target_is_directory=True)
+    except OSError as exc:
+        pytest.skip(f"directory symlink creation is unavailable: {exc}")
+
+    monkeypatch.setattr(
+        bootstrap_cmd,
+        "get_inventory_result",
+        lambda *_args, **_kwargs: pytest.fail(
+            "symlink authority check must run before extraction"
+        ),
+    )
+
+    with pytest.raises(BootstrapContractError, match="exactly"):
+        bootstrap_cmd._execute_documentation_workspace_refresh(
+            BootstrapRequest(
+                source_root=source,
+                wiki_root=wiki_link,
+                overwrite=True,
+                source_adapter=True,
+            ),
+            workspace_root=workspace,
+        )
+
+    assert marker.read_text(encoding="utf-8") == "outside stays untouched\n"
+    assert wiki_link.is_symlink()
+
+
 def test_typed_service_rejects_source_nested_under_wiki_output(tmp_path):
     wiki = tmp_path / "documentation output Ω"
     source = wiki / "modules" / "source"
@@ -215,7 +417,7 @@ def test_api_forwards_deterministic_bootstrap_options(monkeypatch, tmp_path):
         api_contracts=True,
         openapi_file="openapi.yaml",
         dependency_graph_detail="package",
-        overwrite=True,
+        overwrite=False,
         helper_cache_dir=str(tmp_path / "helpers"),
         include_tests=["tests/**"],
         trust_source_plugins=True,
@@ -230,7 +432,7 @@ def test_api_forwards_deterministic_bootstrap_options(monkeypatch, tmp_path):
     assert request.api_contracts is True
     assert request.openapi_file == "openapi.yaml"
     assert request.dependency_graph_detail == "package"
-    assert request.overwrite is True
+    assert request.overwrite is False
     assert request.source_adapter is True
     assert request.helper_cache_dir == str(tmp_path / "helpers")
     assert list(request.include_tests or ()) == ["tests/**"]

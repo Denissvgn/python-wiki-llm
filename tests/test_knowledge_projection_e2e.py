@@ -12,7 +12,6 @@ import pytest
 import llm_wiki_cli.api as api
 from llm_wiki_cli.commands import (
     bootstrap_cmd,
-    context_cmd,
     knowledge_cmd,
     lint_cmd,
     migrate_cmd,
@@ -643,67 +642,176 @@ def test_governed_projection_enriches_site_and_obsidian_without_native_writes(
         )
         == direct_graph
     )
-    with monkeypatch.context() as native_consumer_guard:
-        native_consumer_guard.setattr(
-            mcp_server,
-            "build_documentation_query_service",
-            lambda *_args, **_kwargs: query_service,
-        )
-        mcp = mcp_server.McpWikiService(
-            src_dir=str(tmp_path / "source-does-not-exist"),
-            wiki_dir=str(wiki),
-        )
-        assert mcp.get_concept(USER_LOCATOR, limit=100) == direct_concept
-        assert (
-            mcp.traverse_typed_graph(
-                MODULE_LOCATOR,
-                include_evidence=False,
-                limit=100,
-            )
-            == direct_graph
-        )
 
-    user_surface = next(
-        page
-        for page in view.surface["pages"]
-        if page["canonical_path"] == "entities/User.md"
+    source_root = wiki.parent.parent
+    wiki_relative = wiki.relative_to(source_root).as_posix()
+    monkeypatch.chdir(source_root)
+    live_service = api.build_documentation_query_service(
+        ".",
+        wiki_dir=wiki_relative,
+        limit=100,
+        read_only=True,
     )
-    context_user = context_cmd._knowledge_enriched_page_ref(
-        context_cmd._surface_page_ref(user_surface),
-        query_service,
+    live_module = api.get_concept(MODULE_LOCATOR, service=live_service)
+    live_graph = api.traverse_typed_graph(
+        MODULE_LOCATOR,
+        direction="outgoing",
+        resolutions=["external"],
+        include_evidence=False,
+        service=live_service,
     )
-    assert context_user["knowledge"] == {
+    public_mcp = mcp_server.McpWikiService(
+        src_dir=".",
+        wiki_dir=wiki_relative,
+    )
+    mcp_module = public_mcp.get_concept(MODULE_LOCATOR, limit=100)
+    mcp_graph = public_mcp.traverse_typed_graph(
+        MODULE_LOCATOR,
+        direction="outgoing",
+        resolutions=["external"],
+        include_evidence=False,
+        limit=100,
+    )
+    context = api.build_context(
+        ".",
+        budget=200_000,
+        focus="all",
+        filters={
+            "surface": "modules",
+            "relationship_direction": "outgoing",
+            "relationship_resolution": "external",
+        },
+        wiki_dir=wiki_relative,
+        read_only=True,
+    )
+
+    assert context["knowledge"] == live_module["knowledge"] == mcp_module[
+        "knowledge"
+    ] == {
         "availability": "ready",
         "reason": "all-projection-commitments-match",
-        "freshness_evaluated": False,
-        "origin": direct_concept["concept"]["origin"],
-        "evidence": direct_concept["concept"]["evidence"],
-        "verification": direct_concept["concept"]["verification"],
-        "freshness": direct_concept["concept"]["freshness"],
+        "freshness_evaluated": True,
     }
-    context_graph = context_cmd._typed_graph_enriched_page_ref(
-        context_cmd._surface_page_ref(
-            next(
-                page
-                for page in view.surface["pages"]
-                if page["canonical_path"] == "modules/accounts.md"
-            )
-        ),
-        {
-            "relationship_direction": "both",
-            "relationship_resolution": "ambiguous",
-        },
-        query_service,
-    )
-    ambiguous_graph = query_service.traverse_typed_graph(
-        MODULE_LOCATOR,
-        direction="both",
-        resolutions=("ambiguous",),
-        include_evidence=False,
-    )
-    assert context_graph["typed_graph"]["filtered_total"] == ambiguous_graph[
-        "total"
+    assert live_module["concept"]["freshness"] == mcp_module["concept"][
+        "freshness"
+    ] == {
+        "state": "basis-incompatible",
+        "reason": "extractor-selection-changed",
+        "live_comparison_performed": True,
+    }
+    assert context["surface"]["knowledge_selection"] == {
+        "unfiltered_total": 1,
+        "filtered_total": 1,
+        "returned": 1,
+        "truncated": False,
+    }
+    assert context["surface"]["bounds"]["pages"] == {
+        "total": 1,
+        "returned": 1,
+        "truncated": False,
+    }
+    assert context["bounds"]["files"] == {
+        "total": 1,
+        "returned": 1,
+        "truncated": False,
+    }
+    assert len(context["surface"]["pages"]) == 1
+    context_module = context["surface"]["pages"][0]
+    assert context_module["canonical_path"] == "modules/accounts.md"
+    assert context_module["mcp_uri"] == MODULE_LOCATOR
+    context_knowledge = context_module["knowledge"]
+    assert context_knowledge["freshness"] == live_module["concept"][
+        "freshness"
     ]
+    assert (
+        context_knowledge["lifecycle"]
+        == live_module["concept"]["lifecycle"]
+        == mcp_module["concept"]["lifecycle"]
+        == "deprecated"
+    )
+    assert context_knowledge["verification"] == live_module["concept"][
+        "verification"
+    ] == "untracked"
+    assert context_knowledge["review"] == {
+        "scope": "section",
+        "state": "has-expired-sections",
+        "total": 1,
+        "returned": 1,
+        "valid_returned": 0,
+        "expired_returned": 1,
+        "truncated": False,
+        "reasons": ["scope-changed"],
+    }
+    assert context_knowledge["machine_verification"] == {
+        "availability": "recorded",
+        "valid": True,
+        "recorded_result": "failed",
+        "passed": False,
+        "checks": {"total": 1, "passed": 0, "failed": 1},
+        "invalidation_reasons": [],
+    }
+    encoded_context = json.dumps(context, sort_keys=True)
+    for private_value in (
+        PRIVATE_TOKEN,
+        PRIVATE_COORDINATE,
+        "private-reviewer@example.invalid",
+        "private-valid-reviewer@example.invalid",
+        "private-expired-reviewer@example.invalid",
+        "scope_uid",
+        "diagnostics",
+    ):
+        assert private_value not in encoded_context
+
+    context_graph = context_module["typed_graph"]
+    expected_graph_bounds = {
+        "total": live_graph["total"],
+        "returned": live_graph["returned"],
+        "truncated": live_graph["truncated"],
+    }
+    assert expected_graph_bounds == {
+        "total": mcp_graph["total"],
+        "returned": mcp_graph["returned"],
+        "truncated": mcp_graph["truncated"],
+    } == {
+        "total": context_graph["filtered_total"],
+        "returned": context_graph["returned"],
+        "truncated": context_graph["truncated"],
+    } == {
+        "total": 1,
+        "returned": 1,
+        "truncated": False,
+    }
+    assert context_graph["direction"] == "outgoing"
+    assert context_graph["filters"] == {
+        "relationship_direction": "outgoing",
+        "relationship_resolution": "external",
+    }
+    assert context_graph["unfiltered_total"] == 6
+    assert context_graph["coverage"] == {
+        "scope": "returned-edges",
+        "edges": 1,
+        "observed": 2,
+        "emitted": 1,
+        "omitted": 1,
+        "truncated": True,
+        "limitations": [],
+    }
+    assert live_graph["edges"][0]["coverage"]["truncated"] is True
+    dependencies_coverage = next(
+        item
+        for item in context["typed_graph"]["coverage"]
+        if item["analyzer"] == "dependencies"
+    )
+    assert dependencies_coverage == {
+        "analyzer": "dependencies",
+        "observed": 7,
+        "emitted": 5,
+        "omitted": 2,
+        "limit": 5,
+        "truncated": True,
+        "limitations": ["fixture/input-truncated"],
+    }
+    assert _tree_bytes(wiki) == native_before
 
     site = tmp_path / "site-enriched"
     vault = tmp_path / "vault-enriched"

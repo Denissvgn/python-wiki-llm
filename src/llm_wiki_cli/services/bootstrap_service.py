@@ -26,6 +26,10 @@ class BootstrapRequest:
     ``source_adapter`` defaults to true because library callers should not
     mutate agent integration files.  The existing CLI explicitly supplies its
     historical value when translating argparse options.
+
+    ``overwrite`` is retained only as a compatibility tombstone.  Public
+    bootstrap is first-use only and rejects ``overwrite=True`` before source
+    extraction or target writes.
     """
 
     source_root: str | Path
