@@ -30,6 +30,7 @@ from .entrypoints import (
 )
 from .extraction_jobs import ExtractionJobRequest
 from .inventory_cache import InventoryCacheOptions
+from .infrastructure_inventory import get_yaml_infrastructure_inventory
 from .knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     CommitStage,
@@ -48,7 +49,7 @@ from .knowledge_freshness import (
     evaluate_knowledge_freshness,
 )
 from .knowledge_evidence import is_valid_sha256
-from .knowledge_model import ComputedFreshness, KnowledgeIndex
+from .knowledge_model import ComputedFreshness, KnowledgeIndex, ObservationScope
 from .knowledge_orchestration import (
     RUNTIME_GENERATION_OPTION_DEFAULTS,
     RuntimeKnowledgeInputs,
@@ -115,6 +116,7 @@ class DocumentationNativeRefresh:
 @dataclass(frozen=True)
 class _DocumentationNativeRuntime:
     inventory: Mapping[str, Mapping[str, Any]]
+    infrastructure_inventory: Mapping[str, Mapping[str, Any]]
     inventory_result: Any
     source_snapshot: SourceSnapshot
     uncaptured_generation_inputs: tuple[str, ...] = ()
@@ -156,11 +158,30 @@ def evaluate_documentation_native_freshness(
             runtime=runtime,
         )
         missing_source_paths = set(manifest.sources) - set(runtime.inventory)
+        captured_paths = runtime.source_snapshot.captured_content_hashes
+        for concept in knowledge.concepts:
+            basis = concept.facets.structure.basis
+            if (
+                basis is None
+                or basis.scope is not ObservationScope.INFRASTRUCTURE
+                or basis.source_path is None
+                or basis.source_path in captured_paths
+            ):
+                continue
+            try:
+                (runtime.source_snapshot.root / basis.source_path).lstat()
+            except FileNotFoundError:
+                missing_source_paths.add(basis.source_path)
+            except OSError:
+                # Unreadable or excluded paths are indeterminate, not proof of
+                # source removal.
+                continue
         live = build_runtime_live_evaluation(
             RuntimeLiveEvaluationInputs(
                 knowledge=knowledge,
                 manifest=manifest,
                 inventory=runtime.inventory,
+                infrastructure_inventory=runtime.infrastructure_inventory,
                 source_snapshot=runtime.source_snapshot,
                 generation_options=generation_options,
                 generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS,
@@ -195,7 +216,8 @@ def evaluate_documentation_native_freshness(
     structural_locators = {
         concept.locator
         for concept in knowledge.concepts
-        if concept.document.page_kind in {PageKind.MODULES, PageKind.ENTITIES}
+        if concept.document.page_kind
+        in {PageKind.MODULES, PageKind.ENTITIES, PageKind.INFRASTRUCTURE}
     }
     for locator in sorted(structural_locators):
         result = report.by_locator[locator]
@@ -331,6 +353,7 @@ def _collect_runtime(
         raise TypeError("trust_source_plugins must be a bool")
     from ..commands.extract_cmd import (  # Imported lazily to avoid command cycles.
         InventoryRequest,
+        get_docker_inventory,
         get_inventory_result,
     )
 
@@ -371,8 +394,19 @@ def _collect_runtime(
             details or "Native source inventory extraction failed."
         )
     evaluated_snapshot = result.source_snapshot or source_snapshot
+    docker_infrastructure = get_docker_inventory(
+        str(source),
+        source_snapshot=evaluated_snapshot,
+    )
+    infrastructure_inventory = dict(docker_infrastructure)
+    for source_path, record in get_yaml_infrastructure_inventory(
+        source,
+        source_snapshot=evaluated_snapshot,
+    ).items():
+        infrastructure_inventory.setdefault(source_path, record)
     return _DocumentationNativeRuntime(
         inventory=result.inventory,
+        infrastructure_inventory=infrastructure_inventory,
         inventory_result=result,
         source_snapshot=evaluated_snapshot,
         uncaptured_generation_inputs=uncaptured_generation_inputs,

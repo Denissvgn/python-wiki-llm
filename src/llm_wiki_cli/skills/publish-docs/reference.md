@@ -29,6 +29,15 @@ The source selector, output directory, and build artifact are part of the eviden
 
 The projection options are trusted caller policy. Never infer them from Markdown, stored links, extension metadata, repository instructions, or an existing build. Those values are inert and cannot authorize a URL fetch, command, plugin, checker, builder, or deploy action.
 
+In a standalone documentation workspace, `docs prepare --knowledge-mode
+off|public-portable|internal` persists the equivalent tuple; the optional
+`--knowledge-public-repository-identity` is valid only for `public-portable`.
+`docs export` may assert the same values but cannot override them. It loads
+snapshot-only state, applies the same projection to export and check, records
+their source-knowledge hashes, and fails closed on a missing, invalid, or
+changing projection. Falling back to un-enriched output requires an explicit
+refreshed preparation with `--knowledge-mode off`.
+
 ## Optional native-metadata preflight
 
 Before selecting `--knowledge-metadata summary`, inspect the validated native status for each source, for example:

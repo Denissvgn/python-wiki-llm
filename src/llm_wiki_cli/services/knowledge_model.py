@@ -206,6 +206,7 @@ class ObservationScope(str, Enum):
     UNKNOWN = "unknown"
     MODULE = "module"
     ENTITY = "entity"
+    INFRASTRUCTURE = "infrastructure"
     AGGREGATE = "aggregate"
 
 
@@ -1476,10 +1477,15 @@ def _validate_index_references(
             if basis.scope is ObservationScope.UNKNOWN:
                 raise KnowledgeModelError(
                     _child(basis_path, "scope"),
-                    "must identify module, entity, or aggregate evidence "
+                    "must identify module, entity, infrastructure, or aggregate "
+                    "evidence "
                     "when evidence is present",
                 )
-            if basis.scope in {ObservationScope.MODULE, ObservationScope.ENTITY}:
+            if basis.scope in {
+                ObservationScope.MODULE,
+                ObservationScope.ENTITY,
+                ObservationScope.INFRASTRUCTURE,
+            }:
                 required = {
                     "source_path": basis.source_path,
                     "extractor_ref": basis.extractor_ref,
@@ -1493,7 +1499,7 @@ def _validate_index_references(
                 if missing is not None:
                     raise KnowledgeModelError(
                         _child(basis_path, missing),
-                        "is required for present module/entity evidence",
+                        "is required for present source-backed evidence",
                     )
             if basis.scope is ObservationScope.AGGREGATE and (
                 basis.aggregate_input_hash is None

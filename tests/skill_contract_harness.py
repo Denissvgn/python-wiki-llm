@@ -28,6 +28,7 @@ _SAFE_PLACEHOLDERS = {
 }
 _PLACEHOLDER_RE = re.compile(r"<[^>\n]+>")
 _JSON_OBJECT_RE = re.compile(r"\{[^{}\n]+\}")
+_MCP_TOOL_MARKER_RE = re.compile(r"^MCP tool `([a-z][a-z0-9_]*)`:$")
 
 
 class SkillContractError(AssertionError):
@@ -54,6 +55,13 @@ class CliExample:
 @dataclass(frozen=True)
 class JsonExample:
     location: ExampleLocation
+    payload: Mapping[str, object]
+
+
+@dataclass(frozen=True)
+class McpToolExample:
+    location: ExampleLocation
+    tool_name: str
     payload: Mapping[str, object]
 
 
@@ -164,6 +172,102 @@ def validate_query_graph_example(example: JsonExample) -> tuple[str, str, int]:
         return mcp_server._graph_query_args(example.payload)
     except (mcp_server.McpWikiError, TypeError, ValueError) as exc:
         raise SkillContractError(f"{example.location.label}: {exc}") from exc
+
+
+def extract_mcp_tool_examples(path: Path) -> tuple[McpToolExample, ...]:
+    """Extract named fenced JSON argument objects for MCP knowledge tools."""
+    lines = path.read_text(encoding="utf-8").splitlines()
+    examples: list[McpToolExample] = []
+    index = 0
+    while index < len(lines):
+        marker = _MCP_TOOL_MARKER_RE.fullmatch(lines[index].strip())
+        if marker is None:
+            index += 1
+            continue
+
+        tool_name = marker.group(1)
+        marker_line = index + 1
+        index += 1
+        while index < len(lines) and not lines[index].strip():
+            index += 1
+        if index >= len(lines) or lines[index].strip() != "```json":
+            raise SkillContractError(
+                f"{path.parent.name} ({path.as_posix()}:{marker_line}): "
+                "MCP tool marker must be followed by a fenced JSON object"
+            )
+        start_line = index + 2
+        index += 1
+        block: list[str] = []
+        while index < len(lines) and lines[index].strip() != "```":
+            block.append(lines[index])
+            index += 1
+        if index >= len(lines):
+            raise SkillContractError(
+                f"{path.parent.name} ({path.as_posix()}:{start_line}): "
+                "unterminated MCP tool JSON fence"
+            )
+
+        location = ExampleLocation(path.parent.name, path, start_line)
+        raw = _safe_substitute("\n".join(block), location)
+        try:
+            payload = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise SkillContractError(
+                f"{location.label}: invalid MCP tool JSON: {exc.msg}"
+            ) from exc
+        if not isinstance(payload, dict):
+            raise SkillContractError(
+                f"{location.label}: MCP tool arguments must be an object"
+            )
+        examples.append(McpToolExample(location, tool_name, payload))
+        index += 1
+    return tuple(examples)
+
+
+class _ValidationOnlyMcpWikiService(mcp_server.McpWikiService):
+    """Run public MCP argument validation without building a live service."""
+
+    def _run_documentation_query(
+        self,
+        method_name: str,
+        value: str,
+        *,
+        limit: int,
+        **query_options,
+    ) -> dict:
+        return {
+            "method": method_name,
+            "value": value,
+            "limit": limit,
+            "options": query_options,
+        }
+
+
+def validate_mcp_tool_example(example: McpToolExample) -> dict:
+    """Validate one named MCP example through its production public method."""
+    supported = {
+        "get_concept",
+        "list_concept_sections",
+        "related_concepts",
+        "traverse_typed_graph",
+        "explain_evidence",
+    }
+    if example.tool_name not in supported:
+        raise SkillContractError(
+            f"{example.location.label}: unsupported MCP tool "
+            f"{example.tool_name!r}"
+        )
+    service = _ValidationOnlyMcpWikiService()
+    method = getattr(service, example.tool_name)
+    try:
+        result = method(**dict(example.payload))
+    except (mcp_server.McpWikiError, TypeError, ValueError) as exc:
+        raise SkillContractError(f"{example.location.label}: {exc}") from exc
+    if not isinstance(result, dict):
+        raise SkillContractError(
+            f"{example.location.label}: MCP validator returned no object"
+        )
+    return result
 
 
 def extract_context_request_examples(skills_root: Path) -> tuple[JsonExample, ...]:

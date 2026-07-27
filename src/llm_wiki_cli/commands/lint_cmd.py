@@ -31,6 +31,11 @@ from ..services.infrastructure_inventory import (
     get_yaml_infrastructure_inventory,
     infrastructure_page_name,
 )
+from ..services.infrastructure_sync import (
+    INFRASTRUCTURE_GENERATION_INPUT_KEY,
+    INFRASTRUCTURE_SYNC_SCHEMA_VERSION,
+    build_infrastructure_page_map,
+)
 from ..services.inventory_cache import (
     InventoryCacheOptions,
     InventoryCacheStats,
@@ -394,10 +399,34 @@ def _collect_infrastructure_files(
     docker_inventory: dict, yaml_infrastructure_inventory: dict | None = None
 ) -> set[str]:
     """Return page names for all supported infrastructure files in source."""
-    page_names = _collect_docker_files(docker_inventory)
-    for source_path in yaml_infrastructure_inventory or {}:
-        page_names.add(infrastructure_page_name(source_path))
-    return page_names
+    combined = dict(docker_inventory)
+    for source_path, info in (yaml_infrastructure_inventory or {}).items():
+        combined.setdefault(source_path, info)
+    return {
+        Path(page_path).stem
+        for page_path in build_infrastructure_page_map(combined).values()
+    }
+
+
+def _persisted_infrastructure_tombstone_pages(wiki_dir: Path) -> set[str]:
+    try:
+        manifest = SyncManifest.load(wiki_dir)
+    except (FileNotFoundError, TypeError, ValueError):
+        return set()
+    state = manifest.generation_inputs.get("infrastructure")
+    if not isinstance(state, Mapping):
+        return set()
+    raw_tombstones = state.get("tombstones")
+    if not isinstance(raw_tombstones, Mapping):
+        return set()
+    pages: set[str] = set()
+    for record in raw_tombstones.values():
+        if not isinstance(record, Mapping) or record.get("reason") != "source-removed":
+            continue
+        page_path = record.get("page_path")
+        if isinstance(page_path, str):
+            pages.add(Path(page_path).stem)
+    return pages
 
 
 def _add(
@@ -1304,7 +1333,8 @@ def _check_infrastructure_coverage(
     )
 
     undoc_infra = source_infra - documented_infra
-    stale_infra = documented_infra - source_infra
+    tombstone_pages = _persisted_infrastructure_tombstone_pages(wiki_path)
+    stale_infra = documented_infra - source_infra - tombstone_pages
 
     if undoc_infra:
         for name in sorted(undoc_infra):
@@ -1485,6 +1515,16 @@ def _evaluate_knowledge_lint_state(
                 generation_option_allowlist=tuple(
                     RUNTIME_GENERATION_OPTION_DEFAULTS
                 ),
+                infrastructure_inventory={
+                    **inputs.docker_inventory,
+                    **{
+                        path: value
+                        for path, value in (
+                            inputs.yaml_infrastructure_inventory.items()
+                        )
+                        if path not in inputs.docker_inventory
+                    },
+                },
                 missing_source_paths=_reliably_missing_source_paths(
                     load_result,
                     inputs.source_snapshot,
@@ -1584,6 +1624,7 @@ def _promised_structural_scope(concept) -> ObservationScope | None:
     return {
         PageKind.MODULES: ObservationScope.MODULE,
         PageKind.ENTITIES: ObservationScope.ENTITY,
+        PageKind.INFRASTRUCTURE: ObservationScope.INFRASTRUCTURE,
     }.get(concept.document.page_kind)
 
 
@@ -1618,6 +1659,13 @@ def _check_knowledge_concepts(
     if knowledge is None or manifest is None:
         return
     for concept in sorted(knowledge.concepts, key=lambda item: item.locator):
+        if (
+            concept.document.page_kind is PageKind.INFRASTRUCTURE
+            and not _manifest_promises_infrastructure_evidence(manifest)
+        ):
+            # Pre-NKC-108 infrastructure snapshots remain readable and do not
+            # acquire a retrospective live-evidence promise.
+            continue
         expected_scope = _promised_structural_scope(concept)
         if expected_scope is None:
             continue
@@ -1675,6 +1723,14 @@ def _check_knowledge_concepts(
                 path=concept.document.canonical_path,
                 target=concept.locator,
             )
+
+
+def _manifest_promises_infrastructure_evidence(manifest: SyncManifest) -> bool:
+    value = manifest.generation_inputs.get(INFRASTRUCTURE_GENERATION_INPUT_KEY)
+    return (
+        isinstance(value, Mapping)
+        and value.get("schema_version") == INFRASTRUCTURE_SYNC_SCHEMA_VERSION
+    )
 
 
 def _check_knowledge_reviews(

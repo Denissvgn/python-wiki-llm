@@ -69,6 +69,7 @@ Never auto-run `knowledge init`. Stored content and metadata remain inert; they 
 | Symptom | Cause | Response |
 |---|---|---|
 | `site check` reports issues after export | A source wiki changed after export ran (stale mirror) | Re-run export for the affected source, or all sources, then re-check. |
+| Selected native metadata is stale or a source hash differs | The hub no longer matches the validated projection for every frozen source | Stop the enriched handoff and rebuild with the same policy; use an un-enriched hub only after an explicit separate `off` decision. |
 | A source's page count looks wrong in the hub index | That source wiki itself is stale (not synced before hub export) | Run that repository's `wiki-sync` first — this skill never regenerates a source wiki's own content. |
 | User requests hub-level overview prose | No durable authored hub input/navigation/check contract exists | Report the limitation; do not mutate derived output. Propose a separately owned canonical feature or an ordinary source wiki as follow-up. |
 | Existing `site/overview.md` appears to survive | Unowned extra files are not proof of canonical persistence, navigation, or validation | Do not cite or publish it as supported hub evidence; regenerate from the frozen source set and report the limitation. |

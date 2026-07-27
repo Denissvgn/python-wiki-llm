@@ -116,6 +116,15 @@ metadata.
   `requirements*.txt` pins, npm `package-lock.json`, and supported
   `pnpm-lock.yaml` package entries. Missing or malformed lockfiles omit
   version metadata without changing lint pass/fail behavior.
+- Deep extract also exposes the additive
+  `dependencies.version_details` contract, versioned as
+  `llm-wiki-dependency-version-details/v1`. Its deterministic records preserve
+  every supported scoped declaration, selected lock/module version, and
+  checksum-only observation with repository-relative source path,
+  declaration kind, selection confidence, ecosystem semantics, and truthful
+  direct/transitive/unknown reach. `go.mod` selections remain distinct from
+  `go.sum` observations. Check its `coverage` and `diagnostics`; legacy
+  `versions` remains compatible but can collapse scope and versions.
 
 ## Knowledge observations, freshness, and availability
 
@@ -200,8 +209,9 @@ links remain observations and are not fetched merely because they were stored.
 Knowledge enforcement belongs to `llm-wiki lint --strict`; `llm-wiki
 ci-check` inherits the strict result. Strict reports use the categories
 `knowledge_schema`, `knowledge_projection`, `knowledge_snapshot`,
-`knowledge_evidence`, and `knowledge_freshness`, with a stable reason and the
-affected artifact, concept locator, or canonical path.
+`knowledge_evidence`, `knowledge_freshness`, `knowledge_governance`,
+`knowledge_review`, and `knowledge_verification`, with a stable reason and the
+affected artifact, concept locator, canonical path, event, or receipt scope.
 
 - A declared knowledge artifact that is missing, malformed, unsupported,
   hash-mismatched, or from a mixed snapshot is an error.
@@ -216,12 +226,19 @@ affected artifact, concept locator, or canonical path.
 - Semantic `untracked`/`unverified` state is not converted into structural
   failure. Lint reports state; it does not repair artifacts, change lifecycle,
   or mutate semantic verification.
+- `knowledge_governance` reports an invalid, missing, conflicting, bundle-
+  mismatched, or projection-mismatched authoritative governance ledger.
+  `knowledge_review` separately reports malformed or expired section-scoped
+  human review and preserves every expiry reason.
+- `knowledge_verification` reports a malformed, stale, unknown-checker, or
+  failed disposable machine receipt. Lint validates a stored receipt but never
+  runs a checker or treats its result as human review.
 - A legacy wiki that does not declare a knowledge projection keeps its
   compatible absence behavior.
 
 The `llm-wiki-context/v1` request protocol accepts `freshness` and `evidence`
-as concept refinements only when `filters.surface` or `filters.symbol` is also
-present. For example:
+plus typed-relationship filters as concept refinements only when
+`filters.surface` or `filters.symbol` is also present. For example:
 
 ```json
 {
@@ -232,7 +249,11 @@ present. For example:
   "filters": {
     "surface": "entities",
     "freshness": "source-changed",
-    "evidence": "present"
+    "evidence": "present",
+    "relationship_kind": "calls",
+    "relationship_origin": "extracted",
+    "relationship_resolution": "resolved",
+    "relationship_direction": "incoming"
   }
 }
 ```
@@ -243,6 +264,17 @@ accepts the five structural evidence values listed above. Refinements are
 applied before the 20-item concept-reference limit. The
 `knowledge_selection` object discloses `unfiltered_total`, `filtered_total`,
 `returned`, and `truncated`.
+
+`relationship_kind` accepts a core typed kind or a qualified plugin kind such
+as `vendor.plugin/relationship`; `relationship_origin` accepts `extracted`,
+`inferred`, `markdown`, or `governance`; `relationship_resolution` accepts
+`resolved`, `ambiguous`, `external`, or `unresolved`; and
+`relationship_direction` accepts `incoming`, `outgoing`, or `both`. Typed
+enrichment appears only when at least one relationship refinement is present.
+It returns graph availability/reason, selected filters, all-incident and
+filtered totals, returned/truncated counts, compact returned-edge coverage, and
+top-level analyzer coverage. It never embeds graph edges, evidence samples, or
+hashes. An unavailable extension is reported, not treated as an empty graph.
 
 The source-file budget discloses `bounds.files` with exact candidate and
 returned counts. `bounds.files.truncated` means a file was omitted; the
@@ -263,13 +295,22 @@ token budget.
 ## Knowledge query, API, and MCP boundaries
 
 The shared query service indexes locators, canonical paths/MCP URIs, source
-paths, and relationship adjacency when it is constructed. Knowledge identity
-lookups are exact; they do not fuzzy-match a locator, route, or URI. The
-initial relationship vocabulary is the recorded `derived_from` and
-Markdown-observation `links_to` kinds—prose is not inferred as a structural
-edge.
+paths, durable UIDs, persisted locator/natural-key aliases, and relationship
+adjacency when it is constructed. Knowledge identity lookups are exact. An
+accepted coordinate is a current concept locator/MCP URI, exact canonical wiki
+path, durable UID, or persisted governance alias; display titles, case-folded
+paths, fragments, source paths, and approximate routes do not fuzzy-match.
+Always check `found`, `ambiguous`, and `matches` before selecting a concept.
 
-`get_concept`, `related_concepts`, and `explain_evidence` return the same
+The stable core relationship vocabulary remains the recorded `derived_from`
+and Markdown-observation `links_to` kinds—prose is not inferred as a structural
+edge. `related_concepts` continues to expose those compact relationships,
+resolved concepts, and unresolved/external targets. The independently
+versioned typed graph is additive and does not alter core results or legacy MCP
+`query_graph` callers/callees/flows/dependency-neighborhood/page queries.
+
+`get_concept`, `list_concept_sections`, `related_concepts`,
+`traverse_typed_graph`, and `explain_evidence` return the same
 JSON-serializable query contract through the Python API and MCP adapters:
 
 - `knowledge` always identifies availability, reason, and whether freshness
@@ -279,11 +320,147 @@ JSON-serializable query contract through the Python API and MCP adapters:
   Every limited collection has a `bounds` entry keyed by its response path,
   containing exact `total`, `returned`, and `truncated` values. Knowledge
   collections retain their top-level count aliases.
-- `related_concepts` additionally reports direction, selected kinds, compact
-  relationships/concepts, and unresolved or external targets.
+- `get_concept` adds the one selected compact concept, including UID, aliases,
+  lifecycle, optional successor, bounded lifecycle/review state, and separate
+  machine-verification state when governance is present.
+- `list_concept_sections` adds section-ownership extension availability,
+  optional ownership filtering, and bounded document-order section locators
+  with heading path, occurrence, ownership, and compact review state. Duplicate
+  headings remain occurrence-specific and unknown
+  ownership remains `unknown`. When the extension is absent, degraded, or
+  unsupported, availability/reason is explicit and the empty returned list is
+  not evidence that the concept has no sections.
+- `related_concepts` additionally reports direction, selected core kinds,
+  compact relationships/concepts, and unresolved or external targets.
+- `traverse_typed_graph` additionally reports extension availability, selected
+  direction/kind/origin/resolution filters, compact edges, and
+  `bounds.edges`.
 - Ordinary concept/context results carry compact evidence and freshness.
   Full stored basis details and relationship evidence stay behind
   `explain_evidence`; treat that response as sensitive diagnostic material.
+
+### Typed graph traversal and independent bounds
+
+`traverse_typed_graph` filters before response limiting:
+
+- `direction`: `incoming`, `outgoing`, or `both`;
+- `kinds`: `contains`, `imports`, `calls`, `entrypoint_for`, `reads`,
+  `writes`, `depends_on`, `supersedes`, or a qualified plugin kind;
+- `origins`: `extracted`, `inferred`, `markdown`, or `governance`;
+- `resolutions`: `resolved`, `ambiguous`, `external`, or `unresolved`;
+- `include_evidence`: `false` by default; opt into repository-sensitive
+  samples and their aggregate input hash only for a decisive diagnostic.
+
+Resolved, ambiguous, external, and unresolved endpoints remain in the returned
+edge list when selected; do not silently keep only resolved concepts.
+`typed_graph.coverage` describes upstream analyzer materialization.
+Per-edge `coverage` describes observations and evidence-sample omission for
+that materialized edge. `bounds.edges` describes post-filter response limiting.
+These are independent: query `truncated: false` does not prove an analyzer was
+complete, and evidence-sample truncation does not change the query edge total.
+
+Build one Python service for a related query sequence, then pass `service=` to
+every wrapper:
+
+```python
+from llm_wiki_cli.api import (
+    build_documentation_query_service,
+    explain_evidence,
+    get_concept,
+    list_concept_sections,
+    related_concepts,
+    traverse_typed_graph,
+)
+
+service = build_documentation_query_service(
+    src_dir=".",
+    wiki_dir="docs/llm_wiki",
+    limit=20,
+)
+concept = get_concept("llm-wiki://entities/User", service=service)
+sections = list_concept_sections(
+    "llm-wiki://entities/User",
+    ownership="semantic",
+    service=service,
+)
+core = related_concepts(
+    "llm-wiki://entities/User",
+    direction="both",
+    kinds=["derived_from", "links_to"],
+    service=service,
+)
+typed = traverse_typed_graph(
+    "llm-wiki://entities/User",
+    direction="incoming",
+    kinds=["calls"],
+    origins=["extracted"],
+    resolutions=["resolved", "ambiguous", "external", "unresolved"],
+    include_evidence=False,
+    service=service,
+)
+detail = explain_evidence("llm-wiki://entities/User", service=service)
+```
+
+Supplying `service=` performs no new extraction. Query methods on the
+constructed service perform no file I/O, extraction, network access, writes,
+or adapter registration.
+
+The read-only MCP server exposes the same knowledge operations. These complete
+request examples use tool arguments directly rather than the legacy
+`query_graph` wrapper.
+
+MCP tool `get_concept`:
+
+```json
+{
+  "locator_or_exact_route": "llm-wiki://entities/User",
+  "limit": 20
+}
+```
+
+MCP tool `related_concepts`:
+
+```json
+{
+  "locator_or_exact_route": "llm-wiki://entities/User",
+  "direction": "both",
+  "kinds": ["derived_from", "links_to"],
+  "limit": 20
+}
+```
+
+MCP tool `list_concept_sections`:
+
+```json
+{
+  "locator_or_exact_route": "llm-wiki://entities/User",
+  "ownership": "semantic",
+  "limit": 20
+}
+```
+
+MCP tool `traverse_typed_graph`:
+
+```json
+{
+  "locator_or_exact_route": "llm-wiki://entities/User",
+  "direction": "incoming",
+  "kinds": ["calls"],
+  "origins": ["extracted"],
+  "resolutions": ["resolved", "ambiguous", "external", "unresolved"],
+  "include_evidence": false,
+  "limit": 20
+}
+```
+
+MCP tool `explain_evidence`:
+
+```json
+{
+  "locator_or_exact_route": "llm-wiki://entities/User",
+  "limit": 20
+}
+```
 
 The default query/list limit is 20. MCP validates positive limits, caps
 external requests at 100, and reports truncation instead of silently dropping
@@ -291,10 +468,7 @@ additional results. MCP Markdown search follows the same default/cap and
 returns exact `total` and `returned` values, retains `count` as the returned
 alias, and exposes `bounds.results`. MCP rejects malformed or noncanonical
 knowledge coordinates before constructing the live service; a canonical but
-absent coordinate returns `found: false`. Python callers may construct one
-`DocumentationGraphQueryService` and pass it as `service=` to reuse the same
-validated read view; query methods on that constructed service perform no file
-I/O, extraction, network access, writes, or adapter registration.
+absent coordinate returns `found: false`.
 
 The core MCP knowledge adapters expose no write operation. Stored knowledge or
 extension metadata cannot select executable code, an extractor/plugin, a
@@ -308,8 +482,157 @@ never from the knowledge artifact. External link targets remain observations
 and are not fetched. No metadata field enforces access control, and semantic
 verification execution is outside this read contract.
 
+## Durable governance, lifecycle, review, and verification
+
+Governance is optional. Without `.llm-wiki-governance.json`, current locators
+remain compatible coordinates but are not described as durable IDs. Adopt
+durable identity only as a separate, confirmed operation after a complete
+knowledge-capable snapshot exists:
+
+```bash
+llm-wiki knowledge init --wiki-dir docs/llm_wiki --dry-run
+llm-wiki knowledge init --wiki-dir docs/llm_wiki
+llm-wiki knowledge status --wiki-dir docs/llm_wiki --format json
+```
+
+The version-controlled governance ledger is the non-rebuildable authority for
+bundle identity, UID allocation, aliases, lifecycle events, and human review.
+Its joined `.llm-wiki-knowledge.json` extension is disposable. All governance
+mutations support `--dry-run`, validate an unchanged committed snapshot, use a
+compare-and-swap ledger write, and reject ownership or event conflicts instead
+of picking a winner.
+
+Public governance actions are deliberately narrow: `knowledge init` adopts
+governance; `knowledge status` reads bounded lifecycle/review history;
+`knowledge move` changes a current locator/natural key; `knowledge alias` adds
+one historical coordinate; `knowledge lifecycle set` authors an allowed state;
+`knowledge deprecate` and `knowledge supersede` are explicit lifecycle
+shortcuts (the equivalent nested lifecycle actions are also accepted);
+`knowledge review` records one digest-bound human section event; and
+`knowledge verify` runs selected registered machine checkers. None is an
+implicit side effect of bootstrap, sync, lint, query, status, or export.
+
+Supported unambiguous sync/migration renames carry the UID automatically and
+retain old locator and natural-key coordinates as aliases. For an ambiguous
+manual rename, rename the filesystem page/source first, preview the exact
+identity move, obtain the governance owner's confirmation that it is the same
+logical concept and that the target is unowned, apply the move, then sync
+immediately:
+
+```bash
+llm-wiki knowledge move \
+  --wiki-dir docs/llm_wiki \
+  --uid lw:module:0123456789abcdef0123456789abcdef \
+  --to-locator llm-wiki://modules/accounts-renamed \
+  --to-natural-key source-module:modules/accounts-renamed.md \
+  --dry-run
+llm-wiki knowledge move \
+  --wiki-dir docs/llm_wiki \
+  --uid lw:module:0123456789abcdef0123456789abcdef \
+  --to-locator llm-wiki://modules/accounts-renamed \
+  --to-natural-key source-module:modules/accounts-renamed.md
+llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
+```
+
+The staged ledger/projection mismatch is rejected by readers until sync
+restores parity. A coordinate already owned by another UID is a conflict; no
+implicit merge, reallocation, or overwrite occurs. Add a historical coordinate
+without moving the current allocation with `knowledge alias --type locator` or
+`--type natural-key`:
+
+```bash
+llm-wiki knowledge alias \
+  --wiki-dir docs/llm_wiki \
+  --uid lw:module:0123456789abcdef0123456789abcdef \
+  --type locator \
+  --value llm-wiki://modules/legacy-accounts \
+  --dry-run
+```
+
+Lifecycle is authored independently of source/evidence state. Source
+disappearance does not deprecate, supersede, or delete a concept. A
+supersession names a different existing successor UID and creates a
+governance-origin typed edge:
+
+```bash
+llm-wiki knowledge lifecycle set \
+  --wiki-dir docs/llm_wiki \
+  --uid lw:module:0123456789abcdef0123456789abcdef \
+  --state active \
+  --actor-kind human \
+  --actor-id maintainer.example \
+  --authored-at 2026-07-27T12:00:00Z \
+  --dry-run
+llm-wiki knowledge supersede \
+  --wiki-dir docs/llm_wiki \
+  --uid lw:module:0123456789abcdef0123456789abcdef \
+  --successor-uid lw:module:fedcba9876543210fedcba9876543210 \
+  --actor-kind human \
+  --actor-id maintainer.example \
+  --authored-at 2026-07-27T12:30:00Z \
+  --dry-run
+llm-wiki knowledge deprecate \
+  --wiki-dir docs/llm_wiki \
+  --uid lw:module:0123456789abcdef0123456789abcdef \
+  --actor-kind human \
+  --actor-id maintainer.example \
+  --authored-at 2026-07-27T13:00:00Z \
+  --dry-run
+```
+
+Human review binds a real human actor to one exact semantic section locator and
+its scoped hash/evidence basis; agent review cannot satisfy it. Generated-only
+churn preserves a valid event, while changed scope/evidence/basis or a missing
+section/concept expires it with every reason retained:
+
+```bash
+llm-wiki knowledge review \
+  --wiki-dir docs/llm_wiki \
+  --uid lw:module:0123456789abcdef0123456789abcdef \
+  --section 'llm-wiki://modules/accounts#section/accounts%20Module~1/Description~1' \
+  --reviewer-kind human \
+  --reviewer-id reviewer.example \
+  --method manual-review \
+  --method-version 1 \
+  --authored-at 2026-07-27T13:00:00Z \
+  --dry-run
+```
+
+Machine verification is a separate explicit operation over fixed,
+application-owned pure checkers:
+
+```bash
+llm-wiki knowledge verify \
+  --wiki-dir docs/llm_wiki \
+  --checker artifact-integrity \
+  --checker internal-links \
+  --dry-run
+```
+
+Only that command may run registered checkers. Reads and lint merely validate
+the disposable `.llm-wiki-verification.json` receipt against its selected
+scope, hashes, governance input, and checker versions; they do not rerun it or
+turn it into review, truth, or approval.
+
+Resolve ledger conflicts manually while preserving every allocation and
+non-conflicting event, giving every UID/current coordinate/alias exactly one
+owner, and explicitly resolving lifecycle forks. Then run sync and
+`knowledge status`. If a governed manifest/projection exists but the ledger is
+missing, restore the exact `.llm-wiki-governance.json` from version control or
+backup. Never run `knowledge init` or reconstruct it from generated artifacts.
+If only generated artifacts or a receipt are damaged, retain the ledger and
+regenerate the disposable state through its owning command.
+
 ## JavaScript and TypeScript flows
 
+- Deep extract keeps legacy `data_flows` compatible and adds the independently
+  versioned `data_flow_details` sibling
+  (`llm-wiki-extract-data-flow-details/v1`). Its state distinguishes
+  `not_evaluated`, `unsupported`, and `evaluated`; top-level coverage bounds
+  flows; and each detailed flow reports observed/emitted/omitted counts,
+  truncation reason, upstream analyzer limitations, and effective limits for
+  steps, effects, boundaries, transfers, and gaps. Empty evaluated output is
+  not the same as disabled or unsupported analysis.
 - JavaScript `.js` and `.jsx` files use the TypeScript extractor helper and
   appear in inventory with `language: "javascript"` when extracted.
 - Raw Node `http.createServer` and `https.createServer` calls create built-in
@@ -341,6 +664,60 @@ directory URLs, while `--link-mode file` requires direct `.html` targets.
 User-profile checks add quality gates for default site names, missing guides,
 oversized landing pages, and placeholder text in primary human docs.
 Warning-only findings do not fail the check.
+
+### Opt-in native metadata for Site and Obsidian
+
+Site and Obsidian keep their ordinary output byte contract unless
+`--knowledge-metadata summary` is explicitly selected. Enriched export/check
+must use matching knowledge options:
+
+```bash
+llm-wiki site export \
+  --wiki-dir docs/llm_wiki \
+  --out-dir site \
+  --format mkdocs \
+  --knowledge-metadata summary \
+  --knowledge-profile public-portable
+llm-wiki site check \
+  --wiki-dir docs/llm_wiki \
+  --out-dir site \
+  --knowledge-metadata summary \
+  --knowledge-profile public-portable
+llm-wiki obsidian export \
+  --wiki-dir docs/llm_wiki \
+  --vault-dir vault \
+  --knowledge-metadata summary \
+  --knowledge-profile public-portable
+llm-wiki obsidian check \
+  --wiki-dir docs/llm_wiki \
+  --vault-dir vault \
+  --knowledge-metadata summary \
+  --knowledge-profile public-portable
+```
+
+The command adapters load one validated snapshot-only view, including
+governance/review and any existing machine receipt. They do not scan source to
+claim live freshness, so exported freshness is `not-evaluated`. A service
+caller may project an already complete live-evaluated view, but ordinary
+exporter/status output never upgrades its snapshot.
+
+`public-portable` is the public allowlist profile. It omits raw evidence,
+source coordinates, local actors, producer/plugin detail, private repository
+identity, non-parity hashes, environment detail, credentials, and absolute
+paths. Public repository identity remains `unknown` unless trusted current
+configuration supplies `--knowledge-public-repository-identity` and the value
+exactly corroborates a committed `configured-public` identity. Use `internal`
+only for a controlled internal destination; it can retain additional safe
+repository, producer, actor, evidence, and extension detail but still excludes
+credentials, raw private remotes, raw plugin settings, environment dumps, and
+machine-local paths.
+
+The profile governs only added native metadata. Canonical Markdown bodies and
+copied media are preserved publication input, not redacted or reviewed by the
+knowledge projection. Review prose, links, screenshots, and other media
+separately before public publication. Both outputs are disposable views:
+rebuild them from the validated canonical snapshot rather than hand-editing
+projected front matter or Obsidian typed-relationship sections.
 
 ## Resource-aware execution
 

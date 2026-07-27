@@ -13,15 +13,18 @@ from tests.skill_contract_harness import (
     CliExample,
     ExampleLocation,
     JsonExample,
+    McpToolExample,
     SkillContractError,
     assert_cli_selections_equal,
     assert_markers_in_order,
     extract_context_request_examples,
     extract_fenced_cli_examples,
+    extract_mcp_tool_examples,
     extract_query_graph_examples,
     output_value,
     parse_cli_example,
     validate_context_example,
+    validate_mcp_tool_example,
     validate_query_graph_example,
 )
 
@@ -74,6 +77,49 @@ def test_mcp_harness_accepts_valid_and_identifies_invalid_fixture():
         match=r"invalid-mcp .*Unknown query field: query_type",
     ):
         validate_query_graph_example(invalid)
+
+
+def test_named_mcp_tool_harness_accepts_valid_and_identifies_invalid_fixture():
+    valid = McpToolExample(
+        _location(),
+        "traverse_typed_graph",
+        {
+            "locator_or_exact_route": "llm-wiki://entities/User",
+            "direction": "incoming",
+            "kinds": ["calls"],
+            "origins": ["extracted"],
+            "resolutions": ["resolved", "unresolved"],
+            "include_evidence": False,
+            "limit": 20,
+        },
+    )
+    validated = validate_mcp_tool_example(valid)
+    assert validated == {
+        "method": "traverse_typed_graph",
+        "value": "llm-wiki://entities/User",
+        "limit": 20,
+        "options": {
+            "direction": "incoming",
+            "kinds": ["calls"],
+            "origins": ["extracted"],
+            "resolutions": ["resolved", "unresolved"],
+            "include_evidence": False,
+        },
+    }
+
+    invalid = McpToolExample(
+        _location("invalid-native-mcp"),
+        "traverse_typed_graph",
+        {
+            "locator_or_exact_route": "llm-wiki://entities/User",
+            "origins": ["guessed"],
+        },
+    )
+    with pytest.raises(
+        SkillContractError,
+        match=r"invalid-native-mcp .*unsupported origin",
+    ):
+        validate_mcp_tool_example(invalid)
 
 
 def test_context_harness_accepts_valid_and_identifies_invalid_fixture():
@@ -175,6 +221,51 @@ def test_all_complete_fenced_cli_examples_parse_with_real_parser():
         parse_cli_example(example)
 
 
+def test_wiki_reference_native_command_examples_cover_public_actions_and_modes():
+    skill_root = skills.BUNDLED_SKILLS_ROOT / "wiki-reference"
+    parsed = [
+        (example, parse_cli_example(example))
+        for example in extract_fenced_cli_examples(skill_root)
+    ]
+    knowledge_actions = {
+        args.knowledge_action
+        for _example, args in parsed
+        if getattr(args, "command", None) == "knowledge"
+    }
+    assert knowledge_actions >= {
+        "init",
+        "status",
+        "move",
+        "alias",
+        "lifecycle",
+        "deprecate",
+        "supersede",
+        "review",
+        "verify",
+    }
+
+    enriched = [
+        args
+        for _example, args in parsed
+        if getattr(args, "command", None) in {"site", "obsidian"}
+        and getattr(args, "knowledge_metadata", None) == "summary"
+    ]
+    assert {
+        (
+            args.command,
+            getattr(args, "site_action", None)
+            or getattr(args, "obsidian_action", None),
+            args.knowledge_profile,
+        )
+        for args in enriched
+    } >= {
+        ("site", "export", "public-portable"),
+        ("site", "check", "public-portable"),
+        ("obsidian", "export", "public-portable"),
+        ("obsidian", "check", "public-portable"),
+    }
+
+
 def test_enumerated_inline_bootstrap_context_example_parses_with_real_parser():
     path = skills.BUNDLED_SKILLS_ROOT / "wiki-bootstrap" / "SKILL.md"
     command = "llm-wiki context --budget 12000 --focus all --format json"
@@ -202,6 +293,35 @@ def test_all_fenced_context_requests_validate_with_real_protocol_parser():
     }
     for example in examples:
         validate_context_example(example)
+
+
+def test_native_mcp_examples_validate_through_public_tool_methods():
+    examples_by_skill: dict[str, tuple[McpToolExample, ...]] = {}
+    for skill_id in ("wiki-reference", "impact-analysis"):
+        skill_dir = skills.BUNDLED_SKILLS_ROOT / skill_id
+        examples_by_skill[skill_id] = tuple(
+            example
+            for path in (skill_dir / "SKILL.md", skill_dir / "reference.md")
+            for example in extract_mcp_tool_examples(path)
+        )
+
+    assert {example.tool_name for example in examples_by_skill["wiki-reference"]} == {
+        "get_concept",
+        "list_concept_sections",
+        "related_concepts",
+        "traverse_typed_graph",
+        "explain_evidence",
+    }
+    assert {example.tool_name for example in examples_by_skill["impact-analysis"]} == {
+        "get_concept",
+        "traverse_typed_graph",
+        "explain_evidence",
+    }
+
+    for examples in examples_by_skill.values():
+        for example in examples:
+            result = validate_mcp_tool_example(example)
+            assert result["method"] == example.tool_name
 
 
 def test_impact_analysis_mcp_examples_validate_and_dispatch(monkeypatch):

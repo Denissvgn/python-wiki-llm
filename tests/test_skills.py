@@ -332,6 +332,11 @@ class TestBundledAttackSurfaceSkill:
         assert "`data_flows[].boundaries`" in combined
         assert "`data_flows[].gaps`" in combined
         assert "`data_flows[].truncated`" in combined
+        assert "`data_flow_details`" in combined
+        assert "llm-wiki-extract-data-flow-details/v1" in combined
+        assert "`observed`, `emitted`, `omitted`" in combined
+        assert "`not_evaluated`" in combined
+        assert "`unsupported`" in combined
         assert "entry_points" not in combined
         assert "summary.entry_points" not in combined
 
@@ -419,6 +424,9 @@ class TestBundledDepVulnTriageSkill:
         # Live payload field names, not invented ones.
         assert "`dependencies.external.<language>`" in combined
         assert "resolved_from" in combined
+        assert "`dependencies.version_details`" in combined
+        assert "llm-wiki-dependency-version-details/v1" in combined
+        assert "`selection_confidence`" in combined
         # Fail-open version capture means missing versions are unknowns.
         assert "unknown-version" in combined
         assert "never evidence of safety" in combined
@@ -645,6 +653,89 @@ class TestBundledImpactAnalysisSkill:
         # Truncation/ambiguity must be reported, never silently dropped.
         assert "ambiguous" in combined.lower()
         assert "truncated" in combined.lower()
+
+    def test_impact_analysis_is_native_qualified_with_labeled_legacy_supplement(
+        self,
+    ):
+        skill_dir = skills.BUNDLED_SKILLS_ROOT / "impact-analysis"
+        manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+        reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
+        combined = " ".join(f"{manifest}\n{reference}".split())
+
+        for required in (
+            "get_concept",
+            "traverse_typed_graph",
+            "explain_evidence",
+            "freshness_evaluated",
+            "lifecycle",
+            "successor",
+            "include_evidence=false",
+            "resolved",
+            "ambiguous",
+            "external",
+            "unresolved",
+            "typed_graph.coverage",
+            "bounds.edges",
+            "legacy live supplement",
+            "semantic section",
+        ):
+            assert required.lower() in combined.lower()
+        assert (
+            "A non-truncated query is not a complete neighborhood when analyzer "
+            "coverage is truncated"
+        ) in combined
+        assert "must not overwrite a native limitation" in combined
+        assert "Do not copy raw detailed evidence into public output" in combined
+
+    def test_impact_analysis_reuses_one_service_for_native_query_sequence(self):
+        reference = (
+            skills.BUNDLED_SKILLS_ROOT / "impact-analysis" / "reference.md"
+        ).read_text(encoding="utf-8")
+        example = reference[
+            reference.index("```python") + len("```python") :
+            reference.index("```", reference.index("```python") + len("```python"))
+        ]
+
+        assert example.count("build_documentation_query_service(") == 1
+        for wrapper in (
+            "get_concept(",
+            "traverse_typed_graph(",
+            "explain_evidence(",
+        ):
+            assert wrapper in example
+        assert example.count("service=service") == 3
+
+    @pytest.mark.parametrize(
+        ("row", "required"),
+        [
+            ("| `ready` + typed graph `ready` |", "analyzer bounds"),
+            (
+                "| `ready` + `typed-graph-extension-not-present` |",
+                "no typed-neighborhood conclusion",
+            ),
+            ("| `absent` (`knowledge-projection-not-present`) |", "legacy live"),
+            ("| `degraded`, `unsupported`, invalid, or mixed snapshot |", "no rejected"),
+            ("| Ambiguous exact identity or persisted alias |", "owner choice"),
+            ("| `ready` with `freshness_evaluated: false` |", "snapshot-only"),
+        ],
+    )
+    def test_impact_analysis_fallback_table_preserves_native_limitations(
+        self,
+        row,
+        required,
+    ):
+        reference = (
+            skills.BUNDLED_SKILLS_ROOT / "impact-analysis" / "reference.md"
+        ).read_text(encoding="utf-8")
+        selected = next(
+            line for line in reference.splitlines() if line.startswith(row)
+        )
+
+        assert required in selected
+        assert (
+            "Legacy detail can increase the known blast radius, but it cannot "
+            "erase native"
+        ) in reference
 
 
 class TestBundledInfraReviewSkill:

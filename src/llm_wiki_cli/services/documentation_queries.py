@@ -17,6 +17,7 @@ from enum import Enum
 from pathlib import PurePosixPath
 from typing import Any, Iterable, Mapping, Optional, Sequence, cast
 
+from .contracts import SECTION_OWNERSHIP_EXTENSION_KEY
 from .dependencies import (
     build_dependency_graph,
     dependency_metrics,
@@ -49,6 +50,9 @@ _KNOWLEDGE_DIRECTIONS = ("inbound", "outbound", "both")
 _TYPED_GRAPH_DIRECTIONS = ("incoming", "outgoing", "both")
 _TYPED_GRAPH_READY_REASON = "typed-graph-extension-ready"
 _TYPED_GRAPH_ABSENT_REASON = "typed-graph-extension-not-present"
+_SECTION_OWNERSHIP_READY_REASON = "section-ownership-extension-ready"
+_SECTION_OWNERSHIP_ABSENT_REASON = "section-ownership-extension-not-present"
+_SECTION_OWNERSHIP_VALUES = ("generated", "semantic", "mixed", "unknown")
 _NOT_EVALUATED_REASON = "not-evaluated"
 
 
@@ -661,6 +665,71 @@ class DocumentationGraphQueryService:
         self._record_bound(result, "relationships", bounded_observations)
         return result
 
+    def list_concept_sections(
+        self,
+        locator_or_exact_route: object,
+        *,
+        ownership: str | None = None,
+    ) -> dict[str, Any]:
+        """Return bounded document-order sections for one exact concept.
+
+        Unavailable native knowledge or section ownership is reported
+        explicitly and returns an empty, non-truncated section collection.
+        """
+
+        query = _require_query(locator_or_exact_route, "locator_or_exact_route")
+        selected_ownership = self._section_ownership_filter(ownership)
+        result = self._knowledge_selection_result(query)
+        locator = result.pop("_selected_locator", None)
+        result.update(
+            {
+                "section_ownership": _jsonable_mapping(
+                    self.section_ownership_status
+                ),
+                "concept": (
+                    None
+                    if locator is None
+                    else self._compact_knowledge_concept(locator)
+                ),
+                "ownership": selected_ownership,
+                "sections": [],
+            }
+        )
+        section_bounds = _BoundedResult(items=[], total=0)
+        self._record_bound(result, "sections", section_bounds)
+        if (
+            locator is None
+            or self.section_ownership_status["availability"]
+            != KnowledgeAvailability.READY.value
+        ):
+            result.update({"total": 0, "returned": 0})
+            self._sync_truncated(result)
+            return result
+
+        sections = [
+            section
+            for section in self.sections_by_page_locator.get(locator, ())
+            if selected_ownership is None
+            or section.get("ownership") == selected_ownership
+        ]
+        compact_sections = [
+            self._compact_section(locator, section)
+            for section in sections[: self.limit]
+        ]
+        section_bounds = _BoundedResult(
+            items=compact_sections,
+            total=len(sections),
+        )
+        result.update(
+            {
+                "sections": compact_sections,
+                "total": section_bounds.total,
+                "returned": section_bounds.returned,
+            }
+        )
+        self._record_bound(result, "sections", section_bounds)
+        return result
+
     def traverse_typed_graph(
         self,
         locator_or_exact_route: object,
@@ -834,6 +903,14 @@ class DocumentationGraphQueryService:
         self._knowledge_relationship_kinds: tuple[object, ...] = ()
         self._knowledge_relationship_order: tuple[int, ...] = ()
         self._knowledge_target_locators: tuple[Optional[str], ...] = ()
+        self.section_ownership_status: dict[str, Any] = {
+            "availability": KnowledgeAvailability.ABSENT.value,
+            "reason": KnowledgeReadReason.ABSENT.value,
+            "schema_version": None,
+        }
+        self.sections_by_page_locator: dict[
+            str, tuple[dict[str, Any], ...]
+        ] = {}
         self.typed_graph_status: dict[str, Any] = {
             "availability": KnowledgeAvailability.ABSENT.value,
             "reason": KnowledgeReadReason.ABSENT.value,
@@ -875,6 +952,12 @@ class DocumentationGraphQueryService:
             "freshness_evaluated": knowledge_view.freshness is not None,
         }
         if knowledge_view.availability is not KnowledgeAvailability.READY:
+            self.section_ownership_status.update(
+                {
+                    "availability": knowledge_view.availability.value,
+                    "reason": knowledge_view.reason_code,
+                }
+            )
             self.typed_graph_status.update(
                 {
                     "availability": knowledge_view.availability.value,
@@ -1026,7 +1109,75 @@ class DocumentationGraphQueryService:
             )
             for source_path, by_locator in sorted(source_concepts.items())
         }
+        self._build_section_ownership_indexes(payload)
         self._build_typed_graph_indexes(payload)
+
+    def _build_section_ownership_indexes(
+        self,
+        payload: Mapping[str, Any],
+    ) -> None:
+        extensions = payload.get("extensions", {})
+        if not isinstance(extensions, Mapping):
+            raise DocumentationQueryError(
+                "knowledge extensions must be an object."
+            )
+        extension = extensions.get(SECTION_OWNERSHIP_EXTENSION_KEY)
+        if extension is None:
+            self.section_ownership_status = {
+                "availability": KnowledgeAvailability.ABSENT.value,
+                "reason": _SECTION_OWNERSHIP_ABSENT_REASON,
+                "schema_version": None,
+            }
+            return
+        if not isinstance(extension, Mapping):
+            raise DocumentationQueryError(
+                "section ownership extension must be an object."
+            )
+
+        pages = extension.get("pages", ())
+        if not isinstance(pages, list):
+            raise DocumentationQueryError(
+                "section ownership extension pages must be an array."
+            )
+        indexed: dict[str, tuple[dict[str, Any], ...]] = {}
+        for page in pages:
+            if not isinstance(page, Mapping):
+                raise DocumentationQueryError(
+                    "section ownership extension pages must contain objects."
+                )
+            page_locator = page.get("page_locator")
+            raw_sections = page.get("sections", ())
+            if not isinstance(page_locator, str) or not isinstance(
+                raw_sections, list
+            ):
+                raise DocumentationQueryError(
+                    "section ownership extension page is invalid."
+                )
+            sections = [
+                _jsonable_mapping(cast(Mapping[str, Any], section))
+                for section in raw_sections
+                if isinstance(section, Mapping)
+            ]
+            if len(sections) != len(raw_sections):
+                raise DocumentationQueryError(
+                    "section ownership extension sections must contain objects."
+                )
+            sections.sort(
+                key=lambda section: (
+                    cast(int, section.get("ordinal", 0)),
+                    str(section.get("locator", "")),
+                )
+            )
+            indexed[page_locator] = tuple(sections)
+
+        self.sections_by_page_locator = {
+            locator: indexed[locator] for locator in sorted(indexed)
+        }
+        self.section_ownership_status = {
+            "availability": KnowledgeAvailability.READY.value,
+            "reason": _SECTION_OWNERSHIP_READY_REASON,
+            "schema_version": extension.get("schema_version"),
+        }
 
     def _build_typed_graph_indexes(self, payload: Mapping[str, Any]) -> None:
         extensions = payload.get("extensions", {})
@@ -1238,6 +1389,102 @@ class DocumentationGraphQueryService:
             )
         return result
 
+    def _compact_section(
+        self,
+        concept_locator: str,
+        section: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        """Project one section without raw hashes or review authorship."""
+
+        result = {
+            "locator": section.get("locator"),
+            "page_locator": section.get("page_locator"),
+            "heading_path": _jsonable(section.get("heading_path", [])),
+            "title": section.get("title"),
+            "level": section.get("level"),
+            "occurrence": section.get("occurrence"),
+            "ordinal": section.get("ordinal"),
+            "parent_locator": section.get("parent_locator"),
+            "ownership": section.get("ownership"),
+            "review": self._compact_section_review(
+                concept_locator,
+                str(section.get("locator", "")),
+            ),
+        }
+        if "occurrence_path" in section:
+            result["occurrence_path"] = _jsonable(
+                section.get("occurrence_path")
+            )
+        return result
+
+    def _compact_section_review(
+        self,
+        concept_locator: str,
+        section_locator: str,
+    ) -> dict[str, Any]:
+        concept = self.concept_by_locator[concept_locator]
+        extensions = concept.get("extensions", {})
+        governance = (
+            extensions.get(GOVERNANCE_EXTENSION_KEY)
+            if isinstance(extensions, Mapping)
+            else None
+        )
+        if not isinstance(governance, Mapping):
+            return {
+                "state": "unknown",
+                "reasons": ["governance-not-available"],
+                "history_truncated": False,
+            }
+
+        reviews = governance.get("reviews", {})
+        if not isinstance(reviews, Mapping):
+            return {
+                "state": "unknown",
+                "reasons": ["governance-not-available"],
+                "history_truncated": False,
+            }
+        history_truncated = bool(reviews.get("truncated"))
+        items = reviews.get("items", ())
+        if isinstance(items, list):
+            matching = [
+                item
+                for item in items
+                if isinstance(item, Mapping)
+                and item.get("section_locator") == section_locator
+            ]
+            if matching:
+                latest = matching[-1]
+                state = latest.get("state")
+                raw_reasons = latest.get("reasons", ())
+                return {
+                    "state": (
+                        state
+                        if isinstance(state, str)
+                        else "unknown"
+                    ),
+                    "reasons": (
+                        [
+                            reason
+                            for reason in raw_reasons
+                            if isinstance(reason, str)
+                        ]
+                        if isinstance(raw_reasons, list)
+                        else []
+                    ),
+                    "history_truncated": history_truncated,
+                }
+        if history_truncated:
+            return {
+                "state": "unknown",
+                "reasons": ["review-history-truncated"],
+                "history_truncated": True,
+            }
+        return {
+            "state": "not-reviewed",
+            "reasons": [],
+            "history_truncated": False,
+        }
+
     def _compact_knowledge_freshness(self, locator: str) -> dict[str, Any]:
         view = self.knowledge_view
         if view is None or view.freshness is None:
@@ -1281,6 +1528,16 @@ class DocumentationGraphQueryService:
         if not isinstance(value, str) or value not in _KNOWLEDGE_DIRECTIONS:
             choices = ", ".join(repr(item) for item in _KNOWLEDGE_DIRECTIONS)
             raise DocumentationQueryError(f"direction must be one of {choices}.")
+        return value
+
+    def _section_ownership_filter(self, value: object) -> str | None:
+        if value is None:
+            return None
+        if not isinstance(value, str) or value not in _SECTION_OWNERSHIP_VALUES:
+            choices = ", ".join(repr(item) for item in _SECTION_OWNERSHIP_VALUES)
+            raise DocumentationQueryError(
+                f"ownership must be one of {choices}, or None."
+            )
         return value
 
     def _knowledge_kinds(

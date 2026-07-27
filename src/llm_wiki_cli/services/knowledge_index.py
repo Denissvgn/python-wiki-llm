@@ -107,7 +107,17 @@ LINK_SYNTAX_EXTENSION = "llm-wiki/link-syntax"
 _WINDOWS_DRIVE_PREFIX_RE = re.compile(r"^[A-Za-z]:")
 _WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:[\\/]")
 _MALFORMED_PERCENT_RE = re.compile(r"%(?![0-9A-Fa-f]{2})")
-_STRUCTURAL_PAGE_KINDS = frozenset({PageKind.MODULES, PageKind.ENTITIES})
+_MANIFEST_STRUCTURAL_PAGE_KINDS = frozenset(
+    {PageKind.MODULES, PageKind.ENTITIES}
+)
+_STRUCTURAL_PAGE_KINDS = frozenset(
+    {*_MANIFEST_STRUCTURAL_PAGE_KINDS, PageKind.INFRASTRUCTURE}
+)
+_STRUCTURAL_SCOPE_BY_PAGE_KIND = {
+    PageKind.MODULES: ObservationScope.MODULE,
+    PageKind.ENTITIES: ObservationScope.ENTITY,
+    PageKind.INFRASTRUCTURE: ObservationScope.INFRASTRUCTURE,
+}
 _LINK_SYNTAX_VALUES = frozenset(member.value for member in LinkSyntax)
 _SURFACE_KINDS = {entry.kind: entry for entry in iter_page_kinds()}
 
@@ -138,6 +148,9 @@ class KnowledgeIndexInputs:
     evidence_baselines: Mapping[str, ManifestEvidenceBaseline]
     tombstones: Mapping[str, ManifestTombstone]
     link_observations: Sequence[LinkObservation]
+    infrastructure_bases: Mapping[str, ConceptObservationBasis] = field(
+        default_factory=dict
+    )
     extensions: Mapping[str, Any] = field(default_factory=dict)
 
 
@@ -162,9 +175,12 @@ class _JoinedPage:
     mapping: ManifestPageSource | None
     baseline: ManifestEvidenceBaseline | None
     tombstone: ManifestTombstone | None
+    infrastructure_basis: ConceptObservationBasis | None
 
     @property
     def basis(self) -> ConceptObservationBasis | None:
+        if self.infrastructure_basis is not None:
+            return self.infrastructure_basis
         if self.baseline is not None:
             return self.baseline.basis
         if self.tombstone is not None:
@@ -292,6 +308,11 @@ def _validate_and_join_inputs(inputs: KnowledgeIndexInputs) -> _BuildContext:
         "tombstones",
         ManifestTombstone,
     )
+    infrastructure_bases = _typed_mapping(
+        inputs.infrastructure_bases,
+        "infrastructure_bases",
+        ConceptObservationBasis,
+    )
     overlap = set(baselines) & set(tombstones)
     if overlap:
         path = min(overlap)
@@ -314,16 +335,29 @@ def _validate_and_join_inputs(inputs: KnowledgeIndexInputs) -> _BuildContext:
             mapping=mappings.get(path),
             baseline=baselines.get(path),
             tombstone=tombstones.get(path),
+            infrastructure_basis=infrastructure_bases.get(path),
         )
         _validate_page_evidence(joined_page, extractor_ids)
         joined.append(joined_page)
 
     active_structural_paths = {
-        page.relative_path for page in pages if page.kind in _STRUCTURAL_PAGE_KINDS
+        page.relative_path
+        for page in pages
+        if page.kind in _MANIFEST_STRUCTURAL_PAGE_KINDS
     }
     _reject_extra_state("page_source_mappings", mappings, active_structural_paths)
     _reject_extra_state("evidence_baselines", baselines, active_structural_paths)
     _reject_extra_state("tombstones", tombstones, active_structural_paths)
+    active_infrastructure_paths = {
+        page.relative_path
+        for page in pages
+        if page.kind is PageKind.INFRASTRUCTURE
+    }
+    _reject_extra_state(
+        "infrastructure_bases",
+        infrastructure_bases,
+        active_infrastructure_paths,
+    )
 
     joined.sort(
         key=lambda item: (
@@ -663,14 +697,55 @@ def _validate_page_evidence(
     if joined.page.kind not in _STRUCTURAL_PAGE_KINDS:
         if any(
             value is not None
+            for value in (
+                joined.mapping,
+                joined.baseline,
+                joined.tombstone,
+                joined.infrastructure_basis,
+            )
+        ):
+            raise KnowledgeIndexBuildError(
+                f"page_source_mappings.{path}",
+                "structural evidence is only supported for source-backed pages",
+            )
+        return
+
+    if joined.page.kind is PageKind.INFRASTRUCTURE:
+        if any(
+            value is not None
             for value in (joined.mapping, joined.baseline, joined.tombstone)
         ):
             raise KnowledgeIndexBuildError(
                 f"page_source_mappings.{path}",
-                "structural evidence is only supported for module/entity pages",
+                "infrastructure evidence must use the persisted infrastructure basis",
+            )
+        basis = joined.infrastructure_basis
+        if basis is None:
+            # Legacy/snapshot-only infrastructure pages remain valid and
+            # explicitly expose unknown structural evidence.
+            return
+        if basis.scope != ObservationScope.INFRASTRUCTURE.value:
+            raise KnowledgeIndexBuildError(
+                f"infrastructure_bases.{path}.scope",
+                "must be 'infrastructure' for this page kind",
+            )
+        if joined.surface.source_path != basis.source_path:
+            raise KnowledgeIndexBuildError(
+                f"surface_index.pages[{joined.surface.index}].source_path",
+                "must match the persisted infrastructure source mapping",
+            )
+        if basis.extractor_ref not in extractor_ids:
+            raise KnowledgeIndexBuildError(
+                f"infrastructure_bases.{path}.extractor_ref",
+                "does not reference a declared producer extractor",
             )
         return
 
+    if joined.infrastructure_basis is not None:
+        raise KnowledgeIndexBuildError(
+            f"infrastructure_bases.{path}",
+            "is only supported for infrastructure pages",
+        )
     if joined.baseline is None and joined.tombstone is None:
         raise KnowledgeIndexBuildError(
             f"evidence_baselines.{path}",
@@ -688,7 +763,7 @@ def _validate_page_evidence(
             f"page_source_mappings.{path}",
             "is required when structural evidence carries a basis",
         )
-    expected_scope = "module" if joined.page.kind is PageKind.MODULES else "entity"
+    expected_scope = _STRUCTURAL_SCOPE_BY_PAGE_KIND[joined.page.kind].value
     if joined.mapping is not None:
         if joined.mapping.scope != expected_scope:
             raise KnowledgeIndexBuildError(
@@ -747,7 +822,7 @@ def _reject_extra_state(
         path = min(extra)
         raise KnowledgeIndexBuildError(
             f"{field_name}.{path}",
-            "does not identify an active module/entity page",
+            "does not identify an active page for this evidence mapping",
         )
 
 
@@ -1345,11 +1420,9 @@ def _validate_builder_model(model: KnowledgeIndex) -> None:
                 allows_basis=False,
             )
         else:
-            expected_scope = (
-                ObservationScope.MODULE
-                if concept.document.page_kind is PageKind.MODULES
-                else ObservationScope.ENTITY
-            )
+            expected_scope = _STRUCTURAL_SCOPE_BY_PAGE_KIND[
+                concept.document.page_kind
+            ]
             if basis.scope is not expected_scope:
                 raise KnowledgeModelError(
                     f"{concept_path}.facets.structure.basis.scope",
@@ -1359,7 +1432,7 @@ def _validate_builder_model(model: KnowledgeIndex) -> None:
                 if getattr(basis, name) is None:
                     raise KnowledgeModelError(
                         f"{concept_path}.facets.structure.basis.{name}",
-                        "is required for a module/entity observation basis",
+                        "is required for a source-backed observation basis",
                     )
             if basis.extractor_ref not in extractor_ids:
                 raise KnowledgeModelError(
@@ -1369,7 +1442,7 @@ def _validate_builder_model(model: KnowledgeIndex) -> None:
             if basis.aggregate_input_hash is not None:
                 raise KnowledgeModelError(
                     f"{concept_path}.facets.structure.basis.aggregate_input_hash",
-                    "is not emitted for module/entity observation bases",
+                    "is not emitted for source-backed observation bases",
                 )
             expected_evidence = (
                 EvidenceState.PRESENT

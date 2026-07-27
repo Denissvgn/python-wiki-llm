@@ -1,12 +1,12 @@
 ---
 name: infra-review
-description: Review a repository's deployment surface — Dockerfiles, Compose services, Kubernetes manifests, and GitHub Actions workflows — using LLM Wiki's bootstrap-time infrastructure pages only as an orientation snapshot, then inspect current raw source or a fresh dedicated extraction for assurance. Use for a defensive review of a repository's containers/orchestration/CI config; page coverage is bounded and sensitive values must be redacted from reports.
+description: Review a repository's deployment surface — Dockerfiles, Compose services, Kubernetes manifests, and GitHub Actions workflows — using LLM Wiki's source-bound incremental infrastructure observations for orientation, then inspect current raw source or a fresh dedicated extraction for assurance. Use for a defensive review of a repository's containers/orchestration/CI config; page coverage is bounded and sensitive values must be redacted from reports.
 ---
 
 # infra-review
 
-Review infrastructure without confusing a generated inventory with current source.
-The loop is: **qualify the bootstrap snapshot → discover the current raw-source
+Review infrastructure without confusing a generated inventory with complete source.
+The loop is: **qualify the incremental observation → discover the current raw-source
 surface → screen page-visible fields → inspect current source (or a fresh,
 scope-recorded dedicated extraction) → write a redacted findings and coverage
 report**. This is defensive locate-and-assess work; it never claims
@@ -17,12 +17,18 @@ roots, coverage outcomes, and report format.
 ## Preconditions
 
 - This is a defensive review of a repository the user owns, maintains, or is authorized to assess.
-- Treat every `infrastructure/` page as a **bootstrap snapshot**. Ordinary
-  `llm-wiki sync` does not regenerate infrastructure content, and lint checks
-  structure/presence rather than exact raw-source parity. A recent sync alone
-  is never infrastructure-content freshness.
+- Ordinary `llm-wiki sync` incrementally regenerates recognized
+  `infrastructure/` pages and persists source/page mappings, exact source
+  hashes, normalized observation hashes, discovery roots, unsupported YAML,
+  and removal/move tombstones under
+  `generation_inputs.infrastructure`. Treat a page as current structural
+  evidence only when that state matches the native concept's
+  `infrastructure`-scoped basis and live freshness is `current` for its exact
+  source. A removal tombstone retains its last basis and evaluates
+  `source-missing`; it is never current evidence.
+  This never expands the parser boundary or proves omitted raw fields safe.
 - Current raw source must be readable for assurance conclusions. If only the
-  wiki snapshot is available, perform a labeled snapshot screen, report its
+  wiki observation is available, perform a labeled page screen, report its
   recorded basis/limitations, and leave current findings inconclusive. Do not
   run `knowledge init` or bootstrap automatically as a repair.
 - For external-source repositories, keep `--allow-external-src` on any source-reading command and report/output paths under the current project.
@@ -42,15 +48,19 @@ roots, coverage outcomes, and report format.
 
 ## Steps
 
-1. **Qualify the snapshot.** Record the wiki path, available bootstrap/source
-   basis, and native preflight result. Enumerate `infrastructure/` pages as
-   historical orientation only. Never infer that their content was refreshed by
-   a later sync.
+1. **Qualify the observation.** Record the wiki path, native preflight result,
+   and `generation_inputs.infrastructure` schema/status. For each page used,
+   bind its repository-relative source/page mapping, source-content hash,
+   observation hash, native `facets.structure.basis`, live freshness, and
+   current/tombstone state. A successful ordinary sync refreshes recognized
+   infrastructure observations; it does not make
+   unsupported YAML or omitted fields current.
 
 2. **Discover current raw-source coverage before drawing conclusions.** Scan
    the selected source root recursively, honoring ignored/excluded directories,
    and record that root in the report. Compare the current source paths with the
-   snapshot pages. The built-in discovery boundary is:
+   generated pages and persisted discovery report. The built-in discovery
+   boundary is:
 
    - Dockerfile name patterns and Compose name/content patterns are recursive;
    - GitHub Actions YAML is recognized only below `.github/workflows/`;
@@ -88,11 +98,13 @@ roots, coverage outcomes, and report format.
    omitted controls. Confirm page-screened action refs against current raw
    workflow YAML before an assurance conclusion.
 
-6. **Write only the report.** Create
+6. **Write the review report separately.** Create
    `reports/infra_review_<YYYY-MM-DD>.md` with one `IR-NNN` row per finding and
-   a coverage row for every discovered or unsupported artifact. Arbitrary
-   `## Notes` on generated infrastructure pages are not a supported semantic
-   surface; do not edit those pages for persistent findings.
+   a coverage row for every discovered or unsupported artifact.
+   Infrastructure `## Notes` is the one supported semantic section and survives
+   regeneration; every other page section is generated or unsupported and is
+   replaced. Keep security findings in the redacted report rather than copying
+   sensitive review evidence into Notes.
 
    Redact literal secrets, private endpoint values, and sensitive host details.
    Evidence should identify the file, resource/service/job, field name, and
@@ -106,7 +118,8 @@ roots, coverage outcomes, and report format.
      was found;
    - **zero discovered artifacts:** current raw discovery found no supported
      artifact in the disclosed roots;
-   - **snapshot-screened only:** pages were reviewed but current source was not;
+   - **page-screened only:** current generated fields were reviewed but raw
+     source was not;
    - **unsupported discovery:** candidate files exist outside supported roots
      or could not be parsed/read.
 
@@ -121,5 +134,6 @@ sensitive values out of the report. A fresh dedicated infrastructure extractor
 is an acceptable substitute only when its exact source revision, roots, paths,
 options, limitations, and result date are recorded. Public
 `llm-wiki extract --deep` is not a complete Kubernetes/GitHub Actions
-infrastructure extraction, and recent `wiki-sync` never makes bootstrap pages
-current.
+infrastructure extraction. A recent `wiki-sync` makes only the persisted,
+supported page observation current; it does not cover unsupported discovery
+or raw-source-only fields.

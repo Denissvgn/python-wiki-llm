@@ -65,6 +65,7 @@ _GRAPH_QUERY_METHODS = {
 }
 _KNOWLEDGE_DIRECTIONS = ("inbound", "outbound", "both")
 _KNOWLEDGE_RELATIONSHIP_KINDS = ("derived_from", "links_to")
+_SECTION_OWNERSHIP_VALUES = ("generated", "semantic", "mixed", "unknown")
 _TYPED_GRAPH_DIRECTIONS = ("incoming", "outgoing", "both")
 _QUALIFIED_GRAPH_KIND_RE = re.compile(
     r"^[A-Za-z][A-Za-z0-9._-]*/[A-Za-z][A-Za-z0-9._-]*$"
@@ -291,6 +292,23 @@ class McpWikiService:
             limit=bounded_limit,
             direction=selected_direction,
             kinds=selected_kinds,
+        )
+
+    def list_concept_sections(
+        self,
+        locator_or_exact_route: str,
+        ownership: str | None = None,
+        limit: int = 20,
+    ) -> dict:
+        """Return bounded document-order sections for one exact concept."""
+        locator = _knowledge_locator(locator_or_exact_route)
+        selected_ownership = _section_ownership(ownership)
+        bounded_limit = _bounded_query_limit(limit)
+        return self._run_documentation_query(
+            "list_concept_sections",
+            locator,
+            limit=bounded_limit,
+            ownership=selected_ownership,
         )
 
     def traverse_typed_graph(
@@ -706,6 +724,19 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         )
 
     @server.tool()
+    def list_concept_sections(
+        locator_or_exact_route: str,
+        ownership: str | None = None,
+        limit: int = 20,
+    ) -> dict:
+        """Return bounded document-order sections for one exact concept."""
+        return service.list_concept_sections(
+            locator_or_exact_route,
+            ownership=ownership,
+            limit=limit,
+        )
+
+    @server.tool()
     def traverse_typed_graph(
         locator_or_exact_route: str,
         direction: str = "both",
@@ -891,6 +922,15 @@ def _knowledge_direction(value: object) -> str:
     if not isinstance(value, str) or value not in _KNOWLEDGE_DIRECTIONS:
         choices = ", ".join(repr(item) for item in _KNOWLEDGE_DIRECTIONS)
         raise McpWikiError(f"direction must be one of {choices}.")
+    return value
+
+
+def _section_ownership(value: object) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or value not in _SECTION_OWNERSHIP_VALUES:
+        choices = ", ".join(repr(item) for item in _SECTION_OWNERSHIP_VALUES)
+        raise McpWikiError(f"ownership must be one of {choices}, or None.")
     return value
 
 

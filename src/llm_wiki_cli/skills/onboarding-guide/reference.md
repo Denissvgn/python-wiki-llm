@@ -122,3 +122,13 @@ After guide prose exists and validates, use `usage-examples` to attach evidence-
 - Write guide/remainder paths only inside the workspace. Managed mode keeps its
   normal `docs(wiki):` commit contract; external mode returns a result packet
   and does not stage or commit source/input paths.
+- Keep `claims_evidence_pages` for page-only compatibility. When a guide claim
+  relies on native identity, an exact semantic section, lifecycle/review, or a
+  bounded graph result, also return
+  `llm-wiki-documentation-claim-evidence/v1`: stable claim/work id, canonical
+  page, exact UID or current locator, optional section locator, structural and
+  freshness state/reason plus evaluation flag, applicable lifecycle/review,
+  query/analyzer bounds, and a safe page link. Detailed evidence is referenced
+  only under `.llm-wiki-docs/evidence/`. The supervisor recomputes the record
+  after re-anchor and rejects any mismatch; missing, ambiguous, unavailable,
+  and truncated results remain explicit.

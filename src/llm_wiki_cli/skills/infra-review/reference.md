@@ -2,12 +2,27 @@
 
 Supporting detail for [SKILL.md](SKILL.md).
 
-## Bootstrap snapshot and discovery boundary
+## Incremental observation and discovery boundary
 
 All generated artifact types live under the single `infrastructure/` wiki
-surface; type is distinguished by page shape, not directory. These are
-bootstrap-time pages. Ordinary sync does not regenerate them, and lint does not
-compare their complete rendered content with current source.
+surface; type is distinguished by page shape, not directory. Bootstrap creates
+the initial pages and ordinary sync incrementally regenerates recognized
+add/change/move/remove observations. Manifest v5 stores the deterministic
+repository-relative source/page mappings, source-content and normalized
+observation hashes, discovery roots, unsupported YAML, and removal/move
+tombstones under `generation_inputs.infrastructure`.
+Each active generated page and source-removal tombstone projects that exact
+source/observation pair into a native `infrastructure`-scoped structural
+basis. Live consumers recompute supported observations: matching records are
+`current`, changed records are `source-changed` (or a qualified nonsemantic
+source change), and reliably absent sources are `source-missing`. Unsupported
+YAML has no generated concept basis and must remain explicit discovery state.
+
+Only `## Notes` is semantic on an infrastructure page. Sync preserves that
+exact section, replaces every generated section, and drops unsupported custom
+headings. A source removal produces an explicit stale-observation page and
+tombstone; an unambiguous unchanged-content move carries Notes to the new
+deterministic page and retains a manifest tombstone for the old mapping.
 
 The coverage table below is bounded to the current
 `services/infrastructure_inventory.py` YAML parsers,
@@ -161,18 +176,18 @@ Include a coverage row for every supported or candidate artifact:
 |---|---|---|---|---|
 | `k8s/deployment.yaml` | supported `k8s/` root | current raw source | zero findings | line-oriented page parser used only for orientation |
 | `deploy/api.yaml` | alternate YAML root | raw candidate only | unsupported discovery | no Kubernetes page expected |
-| snapshot pages | page enumeration | bootstrap snapshot only | snapshot-screened only | current source unavailable |
+| current generated pages | source/page mapping plus source/observation hashes | current bounded page observation | page-screened only | raw-source-only fields not assessed |
 
 Only the first row can support “zero findings.” “Zero discovered artifacts,”
-“snapshot-screened only,” and “unsupported discovery” are separate outcomes.
+“page-screened only,” and “unsupported discovery” are separate outcomes.
 Zero pages by itself supports none of them.
 
 ## Failure modes
 
 | Symptom | Cause | Response |
 |---|---|---|
-| No `infrastructure/` pages at all | No supported files at bootstrap, stale/missing bootstrap pages, unsupported discovery root, or parser limitation | Inspect current raw discovery roots; choose one explicit outcome instead of “clean.” |
+| No `infrastructure/` pages at all | No supported files, unsupported discovery, or parser limitation | Inspect persisted discovery status and current raw roots; choose one explicit outcome instead of “clean.” |
 | Kubernetes/Actions findings feel thin | Pages omit security context/permissions and other controls | Read current raw YAML; page silence is not “nothing to find.” |
-| Compose page shows a literal secret | A value may have been captured into the bootstrap page | Flag the key, redact the value everywhere, and confirm/remediate in current raw source. |
+| Compose page shows a literal secret | A value may have been captured into the generated page | Flag the key, redact the value everywhere, and confirm/remediate in current raw source. |
 | Alternate-directory Kubernetes YAML has no page | Only the `k8s/` root is recognized as Kubernetes | Record unsupported discovery and review raw source or use an authorized dedicated extractor. |
 | A dedicated extractor disagrees with pages | Pages and extraction have different source basis or coverage | Prefer the fresh exact-scope result, record both bases, and do not merge them into a stronger claim. |

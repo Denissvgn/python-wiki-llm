@@ -18,6 +18,16 @@ Use this reference after the main skill confirms that a full user-docs pass is n
 | Generated `infrastructure/` pages | Bootstrap-snapshot orientation only | Recent sync does not prove infrastructure freshness. Confirm operational claims from current raw source or a fresh dedicated extraction, and do not copy secrets, private endpoints, or sensitive host details into guide prose. |
 | Source files | Last-resort confirmation for facts missing from wiki evidence | If source evidence is needed, prefer updating the wiki/source docs that should have carried it. |
 
+For structured `external_agent_docs` results, `claims_evidence_pages` remains
+the compatible page-level citation list. Optional
+`llm-wiki-documentation-claim-evidence/v1` records qualify selected claims with
+the current exact UID/locator, optional section locator, structural evidence,
+freshness, lifecycle/section review, and explicit query/analyzer bounds. Use
+`safe_evidence_link` for a publishable canonical page or fragment;
+`internal_evidence_ref`, when needed, stays under
+`.llm-wiki-docs/evidence/`. The supervisor recomputes every native field and
+rejects a stale or fabricated record.
+
 ## Page Contract
 
 Author primarily in `guides/*.md`. Use existing human-owned semantic pages only when the wiki already has that convention. Do not edit generated blocks, generated diagrams, generated tables, generated front matter, `.llm-wiki-manifest.json`, `.llm-wiki-surface.json`, `.llm-wiki-knowledge.json`, exported site files, or builder output.
@@ -63,6 +73,21 @@ matching user-profile check, real MkDocs rebuild, then file-mode built-link
 check. Reusing `_site` from a previous HTTP-mode build is invalid evidence. For
 hosted docs, prefer `--link-mode http` after the real builder succeeds.
 
+Freeze one native publication row and apply its suffix unchanged to the mirror
+export, mirror check, and built-site check:
+
+| Policy | Site command suffix | Standalone docs policy |
+| --- | --- | --- |
+| `off` | Omit all knowledge options. | `docs prepare --knowledge-mode off`; this is also the explicit fallback after an enriched failure. |
+| `public-portable` | `--knowledge-metadata summary --knowledge-profile public-portable`, plus the exact corroborated `--knowledge-public-repository-identity` only when selected. | `docs prepare --knowledge-mode public-portable` with the matching optional identity; `docs export` may assert both values. |
+| `internal` | `--knowledge-metadata summary --knowledge-profile internal`; use only for an explicitly authorized internal publication target. | `docs prepare --knowledge-mode internal`; `docs export --knowledge-mode internal` may assert it. |
+
+Standalone export loads a snapshot-only native read view, preserves freshness
+as not evaluated, and records the same source-knowledge hash for export and
+check. Projection failure or a changed hash stops the run; it never silently
+retries without enrichment. Public projection redaction is metadata-only, so
+review canonical prose and media independently.
+
 ## External documentation workspace
 
 - Enter only when `llm-wiki-documentation-semantic-readiness/v1` records
@@ -76,6 +101,10 @@ hosted docs, prefer `--link-mode http` after the real builder succeeds.
   not invent source claims or silently upgrade freshness.
 - Write only semantic workspace-wiki pages and the assigned result. Export and
   `_site` remain derived; source and input wiki remain byte-identical.
+- Use optional `claim_evidence` only for claims that benefit from exact
+  concept/section qualification. Keep legacy page citations, never copy raw
+  relationship evidence into a public link, and let the supervisor recompute
+  identity, freshness, lifecycle/review, and all bounds.
 
 ## Adjustment Loop
 

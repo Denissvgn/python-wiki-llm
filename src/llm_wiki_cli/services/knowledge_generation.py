@@ -58,6 +58,10 @@ from .knowledge_links import (
     KnowledgeLinkError,
     collect_link_observations,
 )
+from .infrastructure_sync import (
+    InfrastructureSyncError,
+    infrastructure_evidence_by_page,
+)
 from .knowledge_model import ProducerRecord, concept_kind_for_page_kind
 from .contracts import (
     SECTION_OWNERSHIP_EXTENSION_KEY,
@@ -361,6 +365,15 @@ def _build_knowledge_generation_plan(
         module_page_map=module_page_map,
         occurrence_page_map=occurrence_page_map,
     )
+    try:
+        infrastructure_bases = infrastructure_evidence_by_page(
+            manifest.generation_inputs
+        )
+    except InfrastructureSyncError as exc:
+        raise KnowledgeGenerationError(
+            "manifest_generation_inputs.infrastructure",
+            str(exc),
+        ) from exc
     knowledge = build_knowledge_index(
         KnowledgeIndexInputs(
             envelope=envelope,
@@ -371,6 +384,7 @@ def _build_knowledge_generation_plan(
             evidence_baselines=manifest.evidence_baselines,
             tombstones=manifest.tombstones,
             link_observations=observations,
+            infrastructure_bases=infrastructure_bases,
             extensions=knowledge_extensions,
         )
     )

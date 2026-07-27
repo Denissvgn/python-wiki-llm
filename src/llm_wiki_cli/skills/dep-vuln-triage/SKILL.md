@@ -11,7 +11,7 @@ extract → union raw manifest declarations → qualify every scoped version →
 query selected trusted advisory data → rank reachability evidence → report
 unknowns and the smallest safe action**. This extends `dep-audit`; it prioritizes
 evidence but does not prove exploitability, safety, or complete dependency
-coverage. See [reference.md](reference.md) for the exact public-payload losses,
+coverage. See [reference.md](reference.md) for the versioned public contract,
 supported declaration sources, version-observation rules, report format, and
 edge cases.
 
@@ -53,36 +53,45 @@ edge cases.
    optional/dev/build/peer/indirect). The supported forms and known gaps are in
    [reference.md](reference.md).
 
-   Then, for each language under `dependencies.external.<language>`, collect:
+   Use `dependencies.version_details` as the primary scoped-version and
+   declaration ledger. Require schema
+   `llm-wiki-dependency-version-details/v1`; preserve every record's
+   `ecosystem`, `scope`, `source_path`, `package`, `version`,
+   `version_kind`, `selection_confidence`, `source_semantics`,
+   `declaration`, and `reach`. Check its coverage and diagnostics before
+   drawing conclusions.
+
+   For reachability seeds and compatibility with older extracts, also collect
+   these legacy fields under `dependencies.external.<language>`:
 
    - `used` — package → importing files (the reachability seed);
    - `unused` — declared but not imported;
    - `undeclared` — imported but not declared;
-   - `versions` — package → one unscoped `{version, resolved_from}` hint.
+   - `versions` — package → one unscoped `{version, resolved_from}` legacy
+     hint.
 
-   The public projection omits its internal `required`, `optional`, and
-   declaration-scope details. Therefore, the inventory is the union of the raw
-   declaration ledger with `used`, `unused`, `undeclared`, and `versions`.
-   Optional/dev/build packages must remain rows even when they have no import or
-   public version record. If a supported manifest cannot be read/parsed, list
-   its path and missing declaration scope; never silently omit it.
+   When `version_details` is absent (an older producer), malformed, or reports
+   an unsupported source, fall back for that affected scope to the raw
+   declaration/lock ledger and label the migration limitation. Optional,
+   dev, build, and peer packages remain rows even when they have no import.
+   If a supported manifest cannot be read or parsed, retain its diagnostic and
+   missing scope; never silently omit it.
 
-3. **Qualify versions per package and scope.** Treat an absent resolved/scoped
-   version as unknown. Public `versions` collapses multiple lockfiles and
-   multiple versions to at most one unscoped record, so it cannot establish a
-   monorepo's effective version.
-
-   Inspect every reliable manifest/lock/package-manager observation for each
-   owning scope and retain one row per
-   `(scope, package, version, observation source)`. If two lockfiles contain
-   different versions, query both scoped observations; if scope or effective
-   selection cannot be established, keep the package explicitly unknown.
-   Never replace an unknown exact version with a declared range.
+3. **Qualify versions per package and scope.** Treat an absent exact selected
+   version as unknown. Keep every `version_details.records[]` row distinct by
+   ecosystem, scope, package, version, confidence, and source path. A
+   `declared` constraint is not selected; `observed` is not selected; only a
+   record whose `selection_confidence` is `selected` is a static lock/module
+   selection. Even then, the contract does not claim the version is installed
+   or runtime-reachable. If two lockfiles or one lockfile contain different
+   versions, query every scoped record. Never replace an unknown exact version
+   with a declared range or the legacy `versions` maximum.
 
    `go.sum` is download/checksum history, not the selected module graph. Label
-   its versions `observed-in-go.sum`, inspect every version relied upon, and
-   keep selected version unknown unless a separately recorded, trustworthy
-   module-selection result establishes it.
+   its `version_details` rows `observed` with
+   `source_semantics=go-checksum-observation`. Use `go.mod` rows as the
+   separately modeled static selection, and never promote checksum history to
+   selected.
 
 4. **Look up advisories with the selected trusted source.** Query by ecosystem,
    normalized package, and each exact scoped version observation. For an
@@ -112,11 +121,12 @@ edge cases.
    - **unknown** — undeclared imports, unknown-version packages, or gap-heavy flows.
 
    Direct declarations, lockfile-only transitive packages, build/plugin
-   dependencies, and undeclared imports must remain distinguishable. The public
-   extract excludes lockfile-only transitive packages from `versions`, so no
-   complete transitive-coverage claim is permitted. Supplemental
-   package-manager/scanner output is separate evidence with its own provenance
-   and limits.
+   dependencies, and undeclared imports must remain distinguishable.
+   `version_details` models direct/transitive reach only where the source format
+   supports that distinction; `unknown` remains explicit. Its coverage and
+   diagnostics still prohibit a complete transitive-coverage claim.
+   Supplemental package-manager/scanner output is separate evidence with its
+   own provenance and limits.
 
    Read importing files for top-ranked hits to identify APIs actually called.
    A traced import prioritizes review; it does not prove the vulnerable function
@@ -157,10 +167,10 @@ edge cases.
 
 ## Context budget
 
-Query the saved extract instead of re-running it per package. Read every
-supported manifest/lock scope because omission changes coverage; then limit
-source-code reads to decisive import sites. Batch advisory requests only when
-the trusted source preserves each exact ecosystem/package/version result. On a
-large monorepo, prioritize by severity while retaining all unqueried packages
-as an explicit, scoped remainder—never turn budget exhaustion into a clean
-result.
+Query the saved extract instead of re-running it per package. Use the scoped
+`version_details` ledger first, then read only scopes named by diagnostics,
+unsupported formats, or an older missing contract. Limit source-code reads to
+decisive import sites. Batch advisory requests only when the trusted source
+preserves each exact ecosystem/package/version result. On a large monorepo,
+prioritize by severity while retaining all unqueried packages as an explicit,
+scoped remainder—never turn budget exhaustion into a clean result.

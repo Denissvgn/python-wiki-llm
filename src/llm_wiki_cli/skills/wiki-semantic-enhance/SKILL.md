@@ -85,6 +85,17 @@ decisions, editable surfaces, and failure rules.
    generated writes. When an imported semantic page changed, include its strict
    `imported_page_edits` entry with the work id, canonical path, supervisor
    baseline hashes, non-empty evidence pages, and rationale.
+   Page-only `claims_evidence_pages` remains readable during migration. For
+   claims that depend on native identity, section ownership, lifecycle/review,
+   or typed-graph scope, also return an optional versioned `claim_evidence`
+   record: stable work/finding/claim id, canonical page, exact UID or current
+   locator, optional section locator, structural evidence and freshness
+   state/reason, whether freshness was evaluated, applicable lifecycle/review,
+   relevant query/analyzer bounds, a safe page link, and only an internal
+   detailed-evidence reference. Preserve missing, ambiguous, unavailable, and
+   truncated states. Never copy repository-sensitive graph samples into the
+   public claim. The supervisor resolves every coordinate again against one
+   committed native query service and rejects mismatches.
 
 7. **Request deterministic verification.** Run only checks the packet assigns;
    otherwise return requested checks to the supervisor. Readiness passes only

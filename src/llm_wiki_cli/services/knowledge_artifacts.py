@@ -24,6 +24,12 @@ from .contracts import (
     TYPED_GRAPH_EXTENSION_KEY,
 )
 from .io import write_bytes_atomic
+from .infrastructure_sync import (
+    INFRASTRUCTURE_GENERATION_INPUT_KEY,
+    INFRASTRUCTURE_SYNC_SCHEMA_VERSION,
+    InfrastructureSyncError,
+    infrastructure_evidence_by_page,
+)
 from .knowledge_envelope import EvaluatedEnvelope, INVENTORY_HASH_EXTENSION
 from .knowledge_evidence import formatted_json_bytes, is_valid_sha256, sha256_bytes
 from .knowledge_graph import KnowledgeGraphError, typed_graph_from_knowledge_extensions
@@ -881,6 +887,79 @@ def _validate_manifest_knowledge_parity(
             raise KnowledgeArtifactError(
                 f"knowledge_index.concepts.{path}.facets.structure.evidence",
                 "must match the manifest evidence state",
+            )
+
+    infrastructure = {
+        concept.document.canonical_path: concept
+        for concept in knowledge.concepts
+        if concept.document.page_kind is PageKind.INFRASTRUCTURE
+    }
+    try:
+        infrastructure_bases = infrastructure_evidence_by_page(
+            manifest.generation_inputs
+        )
+    except InfrastructureSyncError as exc:
+        raise KnowledgeArtifactError(
+            "manifest.generation_inputs.infrastructure",
+            str(exc),
+        ) from exc
+    raw_infrastructure_state = manifest.generation_inputs.get(
+        INFRASTRUCTURE_GENERATION_INPUT_KEY
+    )
+    infrastructure_state_present = (
+        isinstance(raw_infrastructure_state, Mapping)
+        and raw_infrastructure_state.get("schema_version")
+        == INFRASTRUCTURE_SYNC_SCHEMA_VERSION
+    )
+    if infrastructure_state_present and not set(infrastructure_bases).issubset(
+        infrastructure
+    ):
+        missing = set(infrastructure_bases) - set(infrastructure)
+        path = min(missing)
+        raise KnowledgeArtifactError(
+            "manifest.generation_inputs.infrastructure",
+            f"maps missing active infrastructure page {path!r}",
+        )
+    for path, concept in infrastructure.items():
+        expected_basis = infrastructure_bases.get(path)
+        actual_basis = concept.facets.structure.basis
+        expected_payload = (
+            None
+            if expected_basis is None
+            else expected_basis.to_evidence_payload()
+        )
+        if _basis_payload(actual_basis) != expected_payload:
+            raise KnowledgeArtifactError(
+                f"knowledge_index.concepts.{path}.facets.structure.basis",
+                "must match the persisted infrastructure evidence state",
+            )
+        surface_source = surface_by_path[path]["source_path"]
+        if (
+            expected_basis is not None
+            and surface_source != expected_basis.source_path
+        ):
+            raise KnowledgeArtifactError(
+                f"surface_index.pages.{path}.source_path",
+                "must match the persisted infrastructure source mapping",
+            )
+        structure = concept.facets.structure
+        expected_origin = (
+            Origin.UNKNOWN if expected_basis is None else Origin.EXTRACTED
+        )
+        expected_evidence = (
+            EvidenceState.UNKNOWN
+            if expected_basis is None
+            else EvidenceState.PRESENT
+        )
+        if structure.origin is not expected_origin:
+            raise KnowledgeArtifactError(
+                f"knowledge_index.concepts.{path}.facets.structure.origin",
+                "must match the persisted infrastructure evidence state",
+            )
+        if structure.evidence is not expected_evidence:
+            raise KnowledgeArtifactError(
+                f"knowledge_index.concepts.{path}.facets.structure.evidence",
+                "must match the persisted infrastructure evidence state",
             )
 
 

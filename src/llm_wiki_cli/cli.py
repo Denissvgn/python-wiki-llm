@@ -1816,6 +1816,23 @@ def _add_docs_command(subparsers):
         help="Persist direct-file link mode for local browsing",
     )
     prepare.add_argument(
+        "--knowledge-mode",
+        choices=docs_cmd.KNOWLEDGE_MODE_CHOICES,
+        default="off",
+        help=(
+            "Persist native metadata policy: off, public-portable, or explicitly "
+            "authorized internal (default: off)"
+        ),
+    )
+    prepare.add_argument(
+        "--knowledge-public-repository-identity",
+        default=None,
+        metavar="IDENTITY",
+        help=(
+            "Corroborated configured-public identity for public-portable metadata"
+        ),
+    )
+    prepare.add_argument(
         "--refresh",
         action="store_true",
         help="Archive owned run artifacts and explicitly rebuild the workspace baseline",
@@ -1916,6 +1933,18 @@ def _add_docs_command(subparsers):
         choices=["text", "json"],
         default="text",
         help="Console output format (default: text)",
+    )
+    export.add_argument(
+        "--knowledge-mode",
+        choices=docs_cmd.KNOWLEDGE_MODE_CHOICES,
+        default=None,
+        help="Assert the native metadata policy selected during prepare",
+    )
+    export.add_argument(
+        "--knowledge-public-repository-identity",
+        default=None,
+        metavar="IDENTITY",
+        help="Assert the public repository identity selected during prepare",
     )
     export.add_argument(
         "--builder-command",

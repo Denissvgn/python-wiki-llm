@@ -40,6 +40,7 @@ from pathlib import Path
 from typing import Callable, Mapping, Optional
 
 from ..config import is_agent_worktree_path
+from .dependency_versions import build_dependency_version_details
 from .imports import build_module_path_resolver
 from .source_snapshot import SourceSnapshot, build_source_snapshot
 
@@ -2751,7 +2752,14 @@ def reconcile_dependencies(
         "undeclared_count": sum(len(lang["undeclared"]) for lang in languages.values()),
         "unused_count": sum(len(lang["unused"]) for lang in languages.values()),
     }
-    return {"languages": languages, "summary": summary}
+    return {
+        "languages": languages,
+        "summary": summary,
+        "version_details": build_dependency_version_details(
+            project_root,
+            source_snapshot=source_snapshot,
+        ),
+    }
 
 
 # ══ Aggregation + scale guard (Epic 2.4) ══════════════════════════════════

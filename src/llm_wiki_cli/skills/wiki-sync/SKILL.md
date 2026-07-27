@@ -41,6 +41,54 @@ Bring the LLM Wiki back in sync with the code that just changed. The loop is alw
   failures, stop. Do not retry the burst; report unfinished gates as
   inconclusive until capacity is recovered.
 
+## Governed rename preflight and owner handoff
+
+When `.llm-wiki-governance.json` exists, inspect rename identity before the
+first mutating sync. Supported one-old-to-one-new sync/migration renames carry
+the existing UID and retain old coordinates as aliases automatically. Do not
+stage a manual move for that unambiguous case.
+
+Start a governed rename with the ordinary filesystem/source rename and a
+read-only preview:
+
+```bash
+llm-wiki sync --dry-run --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
+llm-wiki knowledge status --wiki-dir docs/llm_wiki --format json
+```
+
+If one prior concept can map to multiple targets, multiple prior concepts
+claim one target, or the preview cannot prove continuity, stop before mutating
+sync. Ask the governance owner which existing UID—if any—represents the same
+logical concept. For the confirmed one-to-one choice, preview the exact move,
+preserving both old coordinates as aliases:
+
+```bash
+llm-wiki knowledge move \
+  --wiki-dir docs/llm_wiki \
+  --uid lw:module:0123456789abcdef0123456789abcdef \
+  --to-locator llm-wiki://modules/accounts-renamed \
+  --to-natural-key source-module:modules/accounts-renamed.md \
+  --dry-run
+```
+
+The owner must confirm that the new coordinate is unowned and this is a move,
+not a delete/recreate or merge. After confirmation, apply the same move and
+sync immediately:
+
+```bash
+llm-wiki knowledge move \
+  --wiki-dir docs/llm_wiki \
+  --uid lw:module:0123456789abcdef0123456789abcdef \
+  --to-locator llm-wiki://modules/accounts-renamed \
+  --to-natural-key source-module:modules/accounts-renamed.md
+llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
+```
+
+The staged move may report `projection: pending-sync`; readers reject that
+temporary ledger/projection mismatch until sync restores parity. A target
+owned by another UID is a hard conflict. Do not overwrite it, delete an
+allocation, reinitialize governance, or perform an implicit merge.
+
 ## Steps
 
 1. **Deterministic pass.**
@@ -49,7 +97,11 @@ Bring the LLM Wiki back in sync with the code that just changed. The loop is alw
    llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
    ```
 
-   Never hand-edit a generated page instead of running this. If sync aborts on its broad-diff guard, do not reflexively pass `--force`: first decide whether the cause is a mass rename/refactor (expected — force is fine) or a stale/corrupted manifest (repair the manifest instead).
+   For a governed rename, complete the preflight/owner handoff above before this
+   mutating command. Never hand-edit a generated page instead of running this.
+   If sync aborts on its broad-diff guard, do not reflexively pass `--force`:
+   first decide whether the cause is a mass rename/refactor (expected—force is
+   fine) or a stale/corrupted manifest (repair the manifest instead).
 
    To backfill optional surfaces intentionally, preview the surface-only pass
    before applying it:
@@ -66,11 +118,31 @@ Bring the LLM Wiki back in sync with the code that just changed. The loop is alw
    on later specification-only changes, and returns to static authority when
    run with `--clear-openapi-file`.
 
-2. **Build the changed-page list.** Parse sync's `CREATE` / `UPDATE` / `METADATA` / `SKIP` / `DEPRECATE` / `RENAME` output lines — that output is the only changed-page manifest available. Cross-reference `llm-wiki extract --src-dir . --changed --summary` to learn *why* each page changed. Run `git diff --stat HEAD~1..HEAD` (or the working-tree equivalent), then read targeted per-file diffs only where the change reason is not obvious from the summary.
+   The same ordinary pass incrementally regenerates recognized Docker,
+   Compose, Kubernetes, GitHub Actions, and targeted runtime/config pages. Its
+   plan reports infrastructure add/change/move/remove counts, discovery roots,
+   and unsupported YAML. Manifest v5 binds repository-relative source/page
+   mappings to source-content and observation hashes; a large infrastructure
+   wave has the same separate 50-file/30-percent force boundary. The committed
+   knowledge concept carries the same `infrastructure`-scoped structural
+   basis, so strict lint compares a supported source and normalized
+   observation live; removal tombstones remain explicitly `source-missing`.
+
+2. **Build the changed-page list.** Parse sync's `CREATE` / `UPDATE` / `METADATA` / `SKIP` / `DEPRECATE` / `RENAME` / `MOVE` / `REMOVE` output lines — that output is the only changed-page manifest available. Cross-reference `llm-wiki extract --src-dir . --changed --summary` to learn *why* each page changed. Run `git diff --stat HEAD~1..HEAD` (or the working-tree equivalent), then read targeted per-file diffs only where the change reason is not obvious from the summary.
+
+   A `DEPRECATE` line for a removed source/page is a generated surface notice,
+   not a native lifecycle event. Source disappearance never authors
+   `deprecated`, `superseded`, or `deleted` governance state. Record lifecycle
+   only through an explicit owner-authorized `knowledge lifecycle` command.
 
 3. **Classify each CREATE/UPDATE page** (skip `METADATA`-only pages — the semantic hash did not change, so there is nothing to say):
    - *Generated-only*: only auto-generated blocks or table row/column structure moved. Accept as-is.
    - *Semantic drift*: a placeholder (`_Auto-generated from ..._`, bare `—` or `-`) was introduced or left, or existing prose is now stale relative to the diff. Rewrite the semantic surface only — description prose, flow `## Behavior`, `## Notes` — never the `<!-- Auto-generated ... Do not edit by hand. -->` blocks or extracted table rows.
+
+   On infrastructure pages, `## Notes` is the sole semantic section. Sync
+   preserves it exactly, replaces generated fields, and drops unsupported
+   custom headings. A source-removal tombstone is stale structural evidence,
+   not a native lifecycle decision.
 
 4. **Append the semantic log line.** After sync's own mechanical `log.md` block, append one short line or paragraph giving the architectural *why* the counts don't capture — not a new `## <date>` heading, not a restatement of the counts.
 

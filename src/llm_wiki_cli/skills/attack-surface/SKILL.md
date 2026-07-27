@@ -47,9 +47,21 @@ Build a prioritized, evidence-backed map of a repository's entry points and boun
      --output /tmp/attack-surface-extract.json
    ```
 
-   Record the schema version and inventory file count. In a deep v1 payload, `data_flows` is emitted (possibly empty), while top-level `entrypoints` is optional and is omitted when no rows were emitted. Treat a missing `entrypoints` field exactly as zero emitted entry-point rows, keep the extract valid, and continue with source/infrastructure evidence.
+   Record the schema version and inventory file count. In a deep v1 payload,
+   `data_flows` remains the legacy compatible list and
+   `data_flow_details` is the additive
+   `llm-wiki-extract-data-flow-details/v1` coverage contract. Top-level
+   `entrypoints` is optional and omitted when no rows were emitted. Treat a
+   missing `entrypoints` field exactly as zero emitted entry-point rows, keep
+   the extract valid, and continue with source/infrastructure evidence.
 
-   Label `entrypoints`, `data_flows`, `data_flows[].boundaries`, and `data_flows[].gaps` array lengths as **emitted rows**, not analyzer coverage. Count true `data_flows[].truncated` markers as emitted truncation signals. Only report observed/emitted/omitted totals when that exact public payload contains a valid `coverage` record; the legacy deep extract normally exposes the bounded shape without those totals.
+   Prefer `data_flow_details`: check its `state` (`evaluated`,
+   `not_evaluated`, or `unsupported`), top-level flow coverage, effective
+   limits, and every flow's step/effect/boundary/transfer/gap coverage. Quote
+   only its exact observed/emitted/omitted counts and retain every truncation
+   reason and upstream analyzer limitation. If this independently versioned
+   sibling is absent in an older payload, use legacy `data_flows` only as
+   emitted rows and record the migration limitation.
 
 3. **Seed the coverage worklist from the security model.** Discover the authoritative security model in this order: root `SECURITY.md`, root `security-policy.json`, `docs/security/**`, security ADRs, security scanner workflows, then explicit user selection when multiple plausible models remain. Every named high-risk area becomes a required coverage row in the final report — the run is not done while a named area has no evidence row. When no security model is documented, say so in the report and derive the worklist from entrypoint groups instead.
 
@@ -57,13 +69,13 @@ Build a prioritized, evidence-backed map of a repository's entry points and boun
 
    Compare extracted entrypoint categories against source and infrastructure evidence before trusting the queue. In mixed-language repos, verify Go `net/http` servers and Haskell Servant/Warp applications are either represented as HTTP entrypoints or recorded as uncovered surface with file, language, and suspected framework.
 
-5. **Walk data flows with gaps as first-class unknowns.** Classify every emitted boundary row using the implemented kinds: `filesystem_read`, `filesystem_write`, `environment_read`, `environment_write`, `network`, `process`, `mutation`, `output`, and `logging`. Preserve unknown kinds rather than dropping them. Record every emitted gap such as `unresolved_call`, `external_call`, `step_limit`, and `truncated_flow`, and record each true `data_flows[].truncated` marker as unknown surface.
+5. **Walk data flows with gaps as first-class unknowns.** Classify every emitted boundary row using the implemented kinds: `filesystem_read`, `filesystem_write`, `environment_read`, `environment_write`, `network`, `process`, `mutation`, `output`, and `logging`. Preserve unknown kinds rather than dropping them. From `data_flow_details.flows[].coverage`, record omitted steps, effects, boundaries, transfers, and gaps as unknown surface alongside every emitted gap such as `unresolved_call`, `external_call`, `step_limit`, and `truncated_flow`. A top-level omitted flow is also an explicit unassessed entrypoint. Keep the legacy `data_flows[].truncated` marker as a compatibility signal.
 
    Missing rows, bounded/truncated lists, unsupported languages, failed helpers/plugins, and source outside the selected snapshot all remain unknown. Never interpret a missing sink, empty list, or emitted-row count as a safe path or complete analyzer coverage.
 
 6. **Supplement with a ranked source-level sink scan.** Exclude docs, tests, generated coverage, caches, and dependency/vendor/build-output directories unless the security model names them. Review source roots in this order: security-model named files and surfaces; entrypoints with `process`, `filesystem_write`, `network`, or `environment_read` boundaries; truncated flows; high-centrality HTTP routes; then the long tail as explicit remainder. For every entrypoint whose flow contains truncation or step-limit gaps, and for support code the security model names explicitly (helper subprocesses, extractors, hook scripts), scan reachable source for sinks: subprocess/shell execution, filesystem writes and deletes, environment reads and writes, network binds, and dynamic import/plugin loading. When source evidence and the extracted flow disagree, promote the source evidence — cite file paths and line ranges, and note the controls found next to each sink (allowlists, fixed argv, timeouts, path validation, locks).
 
-7. **Write the prioritized exposure inventory.** Create `reports/attack_surface_<YYYY-MM-DD>.md` with one `AS-NNN` item per exposure, ordered by review value, using the artifact format in [reference.md](reference.md): extracted flow, source evidence with line ranges, existing controls, security-model alignment, and a conclusion. The run summary must say "emitted rows" for legacy array counts and include an explicit coverage statement even when `entrypoints` is absent and `data_flows` is empty. Capture large-run artifacts beside the report: command log, extraction JSON, review JSON when produced, generated report path, and elapsed time. Always include generated prompt/log artifacts as sensitive local artifacts even when the extract shows only `output` boundaries, and keep adjacent surfaces distinct — for example, hook prompt generation and manual agent execution are separate items, not one merged risk.
+7. **Write the prioritized exposure inventory.** Create `reports/attack_surface_<YYYY-MM-DD>.md` with one `AS-NNN` item per exposure, ordered by review value, using the artifact format in [reference.md](reference.md): extracted flow, source evidence with line ranges, existing controls, security-model alignment, and a conclusion. The run summary must cite `data_flow_details` state and coverage, say "emitted rows" for any legacy-only array counts, and include an explicit coverage statement even when `entrypoints` is absent and both flow lists are empty. Capture large-run artifacts beside the report: command log, extraction JSON, review JSON when produced, generated report path, and elapsed time. Always include generated prompt/log artifacts as sensitive local artifacts even when the extract shows only `output` boundaries, and keep adjacent surfaces distinct — for example, hook prompt generation and manual agent execution are separate items, not one merged risk.
 
 8. **Compare against the security model.** Add the coverage matrix — one row per documented high-risk area with the extract/scan evidence and an assessment: confirmed, refined (the evidence narrows or splits the stated risk), or uncovered (no documented risk matches the surface).
 

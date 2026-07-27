@@ -26,6 +26,26 @@ _EFFECT_KEYS = (
     "boundary_effects",
 )
 
+DEFAULT_DATA_FLOW_DETAILS_FLOW_LIMIT = 100
+
+
+def data_flow_effective_limits(
+    *,
+    flow_depth: int,
+    flow_limit: int = DEFAULT_DATA_FLOW_DETAILS_FLOW_LIMIT,
+) -> dict[str, int]:
+    """Return the public static-analysis limits used by detailed flow output."""
+    return {
+        "flows_per_extract": flow_limit,
+        "flow_depth": flow_depth,
+        "steps_per_flow": _STEP_LIMIT,
+        "effects_per_kind_per_step": _EFFECT_LIMIT,
+        "boundaries_per_flow": _EFFECT_LIMIT,
+        "transfers_per_flow": _TRANSFER_LIMIT,
+        "gaps_per_flow": _GAP_LIMIT,
+    }
+
+
 _COMMON_STATIC_CALLS = frozenset(
     {
         "bool",

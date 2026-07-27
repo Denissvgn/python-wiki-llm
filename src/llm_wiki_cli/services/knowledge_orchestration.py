@@ -61,6 +61,12 @@ from .knowledge_governance import (
     save_governance,
     validate_governance_ledger,
 )
+from .infrastructure_sync import (
+    INFRASTRUCTURE_EXTRACTOR_REF,
+    INFRASTRUCTURE_SYNC_SCHEMA_VERSION,
+    current_infrastructure_bases,
+    infrastructure_evidence_by_page,
+)
 from .knowledge_generation import (
     KnowledgeGenerationError,
     KnowledgeGenerationInputs,
@@ -68,6 +74,7 @@ from .knowledge_generation import (
 )
 from .knowledge_model import (
     KnowledgeIndex,
+    ObservationScope,
     ProducerRecord,
     concept_kind_for_page_kind,
 )
@@ -161,6 +168,9 @@ class RuntimeLiveEvaluationInputs:
     generation_options: Mapping[str, Any]
     generation_option_defaults: Mapping[str, Any]
     generation_option_allowlist: Sequence[str]
+    infrastructure_inventory: Mapping[str, Mapping[str, Any]] = field(
+        default_factory=dict
+    )
     missing_source_paths: AbstractSet[str] = frozenset()
     inventory_complete: bool = True
     extractor_registry: Mapping[str, str] = field(default_factory=dict)
@@ -202,6 +212,28 @@ def prepare_runtime_generation_options(
     )
 
 
+def _runtime_manifest_generation_inputs(
+    inputs: RuntimeKnowledgeInputs,
+) -> Mapping[str, object]:
+    if inputs.next_manifest is not None:
+        return inputs.next_manifest.generation_inputs
+    if inputs.manifest_generation_inputs is not None:
+        return inputs.manifest_generation_inputs
+    if inputs.previous_manifest is not None:
+        return inputs.previous_manifest.generation_inputs
+    return {}
+
+
+def _infrastructure_extractor_component() -> ProducerComponentInput:
+    return ProducerComponentInput(
+        component_id=INFRASTRUCTURE_EXTRACTOR_REF,
+        version=__version__,
+        configuration={
+            "observation_schema": INFRASTRUCTURE_SYNC_SCHEMA_VERSION,
+        },
+    )
+
+
 def build_runtime_knowledge_plan(
     inputs: RuntimeKnowledgeInputs,
 ) -> KnowledgeCommitPlan:
@@ -224,6 +256,12 @@ def build_runtime_knowledge_plan(
         plugin_extractor_components=inputs.plugin_extractor_components,
         plugin_components=inputs.plugin_components,
     )
+    generation_inputs = _runtime_manifest_generation_inputs(inputs)
+    if infrastructure_evidence_by_page(generation_inputs):
+        extractor_components = (
+            *extractor_components,
+            _infrastructure_extractor_component(),
+        )
     prepared_generation_options = prepare_runtime_generation_options(
         inputs.generation_options,
         generation_option_defaults=inputs.generation_option_defaults,
@@ -306,9 +344,28 @@ def build_runtime_live_evaluation(
         raise TypeError("inputs.source_snapshot must be a SourceSnapshot")
     if not isinstance(inputs.inventory, Mapping):
         raise TypeError("inputs.inventory must be a mapping")
+    if not isinstance(inputs.infrastructure_inventory, Mapping):
+        raise TypeError("inputs.infrastructure_inventory must be a mapping")
 
     inventory = dict(inputs.inventory)
-    source_hashes = inputs.source_snapshot.hashes_for(inventory)
+    infrastructure_inventory = {
+        path: dict(record)
+        for path, record in inputs.infrastructure_inventory.items()
+    }
+    source_hashes = dict(inputs.source_snapshot.hashes_for(inventory))
+    recorded_infrastructure_paths = {
+        basis.source_path
+        for concept in inputs.knowledge.concepts
+        if (basis := concept.facets.structure.basis) is not None
+        and basis.scope is ObservationScope.INFRASTRUCTURE
+        and basis.source_path is not None
+    }
+    for source_path in sorted(
+        set(infrastructure_inventory) | recorded_infrastructure_paths
+    ):
+        source_hash = inputs.source_snapshot.captured_content_hashes.get(source_path)
+        if source_hash is not None:
+            source_hashes[source_path] = source_hash
     (
         extractor_ref_by_source,
         _completeness_by_source,
@@ -321,6 +378,11 @@ def build_runtime_live_evaluation(
         plugin_extractor_components=inputs.plugin_extractor_components,
         plugin_components=inputs.plugin_components,
     )
+    if recorded_infrastructure_paths or infrastructure_inventory:
+        extractor_components = (
+            *extractor_components,
+            _infrastructure_extractor_component(),
+        )
     producer = build_producer_record(
         tool=ProducerComponentInput(
             component_id="agent-wiki-cli",
@@ -355,6 +417,10 @@ def build_runtime_live_evaluation(
             inventory,
             source_hashes,
             extractor_ref_by_source,
+            infrastructure_bases_by_source=current_infrastructure_bases(
+                inputs.source_snapshot,
+                infrastructure_inventory,
+            ),
             inventory_complete=inputs.inventory_complete,
         ),
     )
@@ -367,6 +433,7 @@ def _runtime_live_concept_bases(
     source_hashes: Mapping[str, str],
     extractor_ref_by_source: Mapping[str, str],
     *,
+    infrastructure_bases_by_source: Mapping[str, ConceptObservationBasis],
     inventory_complete: bool,
 ) -> dict[str, ConceptObservationBasis]:
     bases: dict[str, ConceptObservationBasis] = {}
@@ -403,6 +470,17 @@ def _runtime_live_concept_bases(
         else:
             continue
         bases[concept.locator] = basis
+    for concept in knowledge.concepts:
+        recorded = concept.facets.structure.basis
+        if (
+            recorded is None
+            or recorded.scope is not ObservationScope.INFRASTRUCTURE
+            or recorded.source_path is None
+        ):
+            continue
+        basis = infrastructure_bases_by_source.get(recorded.source_path)
+        if basis is not None:
+            bases[concept.locator] = basis
     return bases
 
 

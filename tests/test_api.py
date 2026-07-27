@@ -137,6 +137,7 @@ def test_supported_api_exports_are_additive_contract():
         "get_concept",
         "get_documentation_run_status",
         "get_p0_calibration_run_status",
+        "list_concept_sections",
         "list_wiki_pages",
         "pages_for_symbol",
         "prepare_documentation_run",
@@ -216,6 +217,16 @@ def test_knowledge_api_signatures_are_explicit_and_builder_stays_compatible():
     ]
     assert list(inspect.signature(api.get_concept).parameters) == common
     assert list(inspect.signature(api.explain_evidence).parameters) == common
+    assert list(inspect.signature(api.list_concept_sections).parameters) == [
+        "locator_or_exact_route",
+        "ownership",
+        "service",
+        "src_dir",
+        "wiki_dir",
+        "limit",
+        "allow_external_src",
+        "read_only",
+    ]
     assert list(inspect.signature(api.related_concepts).parameters) == [
         "locator_or_exact_route",
         "direction",
@@ -244,6 +255,7 @@ def test_knowledge_api_signatures_are_explicit_and_builder_stays_compatible():
 
     for function in (
         api.get_concept,
+        api.list_concept_sections,
         api.related_concepts,
         api.explain_evidence,
     ):
@@ -259,6 +271,12 @@ def test_knowledge_api_signatures_are_explicit_and_builder_stays_compatible():
     related_params = inspect.signature(api.related_concepts).parameters
     assert related_params["direction"].default == "both"
     assert related_params["kinds"].default is None
+    assert (
+        inspect.signature(api.list_concept_sections)
+        .parameters["ownership"]
+        .default
+        is None
+    )
 
 
 def test_documentation_lifecycle_api_signatures_match_cli_contract():
@@ -283,6 +301,8 @@ def test_documentation_lifecycle_api_signatures_match_cli_contract():
         "adjustment_loop_limit",
         "distribution_format",
         "link_mode",
+        "knowledge_mode",
+        "knowledge_public_repository_identity",
         "refresh",
     ]
     assert prepare_params["workspace"].kind is inspect.Parameter.POSITIONAL_OR_KEYWORD
@@ -293,7 +313,13 @@ def test_documentation_lifecycle_api_signatures_match_cli_contract():
         "build_documentation_agent_packet": ["workspace", "stage"],
         "record_documentation_agent_result": ["workspace", "result"],
         "verify_documentation_run": ["workspace", "advance"],
-        "export_documentation_run": ["workspace", "build", "builder_command"],
+        "export_documentation_run": [
+            "workspace",
+            "build",
+            "builder_command",
+            "knowledge_mode",
+            "knowledge_public_repository_identity",
+        ],
     }
     for name, parameters in expected.items():
         assert list(inspect.signature(getattr(api, name)).parameters) == parameters
@@ -312,7 +338,9 @@ def test_documentation_lifecycle_api_signatures_match_cli_contract():
             "capture_root: 'str | Path | None' = None, trust_source_plugins: "
             "'bool' = False, semantic_budget: 'int' = 30, "
             "adjustment_loop_limit: 'int' = 3, distribution_format: 'str' = "
-            "'mkdocs', link_mode: 'str' = 'http', refresh: 'bool' = False) -> "
+            "'mkdocs', link_mode: 'str' = 'http', knowledge_mode: 'str' = "
+            "'off', knowledge_public_repository_identity: 'str | None' = None, "
+            "refresh: 'bool' = False) -> "
             "'DocumentationRun'"
         ),
         "get_documentation_run_status": (
@@ -331,7 +359,9 @@ def test_documentation_lifecycle_api_signatures_match_cli_contract():
         ),
         "export_documentation_run": (
             "(workspace: 'str | Path', *, build: 'bool' = False, "
-            "builder_command: 'Iterable[str] | None' = None) -> "
+            "builder_command: 'Iterable[str] | None' = None, knowledge_mode: "
+            "'str | None' = None, knowledge_public_repository_identity: "
+            "'str | None' = None) -> "
             "'dict[str, Any]'"
         ),
     }
@@ -1536,12 +1566,24 @@ class _RecordingKnowledgeService:
     def __init__(self):
         self.calls = []
         self.concept_result = {"operation": "get_concept"}
+        self.sections_result = {"operation": "list_concept_sections"}
         self.related_result = {"operation": "related_concepts"}
         self.evidence_result = {"operation": "explain_evidence"}
 
     def get_concept(self, locator_or_exact_route):
         self.calls.append(("get_concept", locator_or_exact_route))
         return self.concept_result
+
+    def list_concept_sections(
+        self,
+        locator_or_exact_route,
+        *,
+        ownership=None,
+    ):
+        self.calls.append(
+            ("list_concept_sections", locator_or_exact_route, ownership)
+        )
+        return self.sections_result
 
     def related_concepts(
         self,
@@ -1599,6 +1641,11 @@ def test_knowledge_wrappers_reuse_supplied_service_without_building_or_extractin
     }
 
     concept = api.get_concept("llm-wiki://entities/User", **common)
+    sections = api.list_concept_sections(
+        "llm-wiki://entities/User",
+        ownership="semantic",
+        **common,
+    )
     related = api.related_concepts(
         "entities/User.md",
         direction="outbound",
@@ -1608,10 +1655,16 @@ def test_knowledge_wrappers_reuse_supplied_service_without_building_or_extractin
     evidence = api.explain_evidence("llm-wiki://entities/User", **common)
 
     assert concept is service.concept_result
+    assert sections is service.sections_result
     assert related is service.related_result
     assert evidence is service.evidence_result
     assert service.calls == [
         ("get_concept", "llm-wiki://entities/User"),
+        (
+            "list_concept_sections",
+            "llm-wiki://entities/User",
+            "semantic",
+        ),
         (
             "related_concepts",
             "entities/User.md",
@@ -1622,12 +1675,42 @@ def test_knowledge_wrappers_reuse_supplied_service_without_building_or_extractin
     ]
 
 
+def test_section_query_python_api_and_mcp_results_are_identical(monkeypatch):
+    query_service = api.DocumentationGraphQueryService({})
+    monkeypatch.setattr(
+        mcp_server,
+        "build_documentation_query_service",
+        lambda *_args, **_kwargs: query_service,
+    )
+
+    python_result = api.list_concept_sections(
+        "llm-wiki://entities/User",
+        ownership="unknown",
+        service=query_service,
+    )
+    mcp_result = mcp_server.McpWikiService().list_concept_sections(
+        "llm-wiki://entities/User",
+        ownership="unknown",
+    )
+
+    assert mcp_result == python_result
+
+
 class _FailingKnowledgeService:
     @staticmethod
     def _fail():
         raise api.DocumentationQueryError("knowledge query failed")
 
     def get_concept(self, _locator_or_exact_route):
+        self._fail()
+
+    def list_concept_sections(
+        self,
+        _locator_or_exact_route,
+        *,
+        ownership=None,
+    ):
+        del ownership
         self._fail()
 
     def related_concepts(
@@ -1648,6 +1731,7 @@ class _FailingKnowledgeService:
     ("function_name", "kwargs"),
     [
         ("get_concept", {}),
+        ("list_concept_sections", {"ownership": "semantic"}),
         (
             "related_concepts",
             {"direction": "outbound", "kinds": ["derived_from"]},
@@ -1732,6 +1816,11 @@ def test_knowledge_wrappers_preserve_structured_non_ready_state_without_extracti
         "llm-wiki://entities/User",
         service=service,
     )
+    sections = api.list_concept_sections(
+        "llm-wiki://entities/User",
+        ownership="semantic",
+        service=service,
+    )
     related = api.related_concepts(
         "llm-wiki://entities/User",
         direction="outbound",
@@ -1751,6 +1840,15 @@ def test_knowledge_wrappers_preserve_structured_non_ready_state_without_extracti
     assert concept["knowledge"] == status
     assert concept["found"] is False
     assert concept["concept"] is None
+    assert sections["knowledge"] == status
+    assert sections["found"] is False
+    assert sections["section_ownership"] == {
+        "availability": availability,
+        "reason": reason,
+        "schema_version": None,
+    }
+    assert sections["ownership"] == "semantic"
+    assert sections["sections"] == []
     assert related["knowledge"] == status
     assert related["found"] is False
     assert related["direction"] == "outbound"

@@ -12,6 +12,10 @@ import pytest
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import bootstrap_cmd
 from llm_wiki_cli.services import knowledge_orchestration
+from llm_wiki_cli.services.infrastructure_sync import (
+    INFRASTRUCTURE_GENERATION_INPUT_KEY,
+    INFRASTRUCTURE_SYNC_SCHEMA_VERSION,
+)
 from llm_wiki_cli.services.knowledge_envelope import ConsumedInputKind
 
 
@@ -114,12 +118,26 @@ def test_bootstrap_api_contracts_is_opt_in_and_links_matching_flow(
         "exclude_tests": False,
     }
     assert manifest["surfaces"]["api_contracts"] == {"enabled": True}
-    assert manifest["generation_inputs"] == {
-        knowledge_orchestration.RUNTIME_GENERATION_INPUT_KEY: {
-            "data_flow_enabled": False,
-            "dependency_graph_detail": "auto",
-            "workflows_enabled": False,
-        }
+    generation_inputs = manifest["generation_inputs"]
+    assert generation_inputs[
+        knowledge_orchestration.RUNTIME_GENERATION_INPUT_KEY
+    ] == {
+        "data_flow_enabled": False,
+        "dependency_graph_detail": "auto",
+        "workflows_enabled": False,
+    }
+    assert generation_inputs[INFRASTRUCTURE_GENERATION_INPUT_KEY] == {
+        "schema_version": INFRASTRUCTURE_SYNC_SCHEMA_VERSION,
+        "status": "nothing-discovered",
+        "discovery": {
+            "roots": ["."],
+            "candidate_count": 0,
+            "supported_count": 0,
+            "unsupported_yaml_count": 0,
+            "unsupported_yaml": [],
+        },
+        "sources": {},
+        "tombstones": {},
     }
 
 

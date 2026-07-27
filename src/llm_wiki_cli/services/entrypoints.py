@@ -45,6 +45,7 @@ _MCP_DECORATORS = frozenset({"tool", "resource", "prompt"})
 _PLUGIN_CATEGORY_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
 
 _DEFAULT_FLOW_DEPTH = 6
+DEFAULT_FLOW_DEPTH = _DEFAULT_FLOW_DEPTH
 FLOW_OBSERVATIONS_SCHEMA = "llm-wiki-flow-observations/v1"
 _ENTRY_POINT_OBSERVATIONS_SCHEMA = "llm-wiki-entrypoint-observations/v1"
 _BUILTIN_DETECTOR_VERSION = "1"

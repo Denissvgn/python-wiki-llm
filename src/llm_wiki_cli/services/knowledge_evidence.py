@@ -26,6 +26,7 @@ _UNKNOWN_REASON_RE = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$")
 
 MODULE_OBSERVATION_SCOPE = "module"
 ENTITY_OBSERVATION_SCOPE = "entity"
+INFRASTRUCTURE_OBSERVATION_SCOPE = "infrastructure"
 
 UNKNOWN_INSUFFICIENT_INVENTORY = "insufficient-inventory-detail"
 UNKNOWN_UNSUPPORTED_LANGUAGE = "unsupported-language"
@@ -68,7 +69,7 @@ _MODULE_CALL_FIELDS = ("name", "attr", "target")
 
 @dataclass(frozen=True)
 class ConceptObservationBasis:
-    """One module/entity observation basis or an explicit unknown result.
+    """One source-backed concept observation basis or explicit unknown result.
 
     ``unknown_reason`` is service-level diagnostic state and is not a v1 core
     field. :meth:`to_evidence_payload` returns only fields accepted by the
@@ -377,6 +378,28 @@ def build_entity_observation_basis(
 
     return ConceptObservationBasis(
         scope=ENTITY_OBSERVATION_SCOPE,
+        source_path=source_path,
+        extractor_ref=extractor_ref,
+        source_content_hash=source_content_hash,
+        concept_observation_hash=observation_hash,
+    )
+
+
+def build_infrastructure_observation_basis(
+    *,
+    source_path: str,
+    source_content_hash: str,
+    observation_hash: str,
+    extractor_ref: str,
+) -> ConceptObservationBasis:
+    """Build a known basis from one already normalized infrastructure record."""
+
+    _validate_source_path(source_path)
+    _validate_hash(source_content_hash, "source_content_hash")
+    _validate_hash(observation_hash, "observation_hash")
+    _validate_extractor_ref(extractor_ref)
+    return ConceptObservationBasis(
+        scope=INFRASTRUCTURE_OBSERVATION_SCOPE,
         source_path=source_path,
         extractor_ref=extractor_ref,
         source_content_hash=source_content_hash,
@@ -806,8 +829,12 @@ def _validate_inventory_complete(inventory_complete: object) -> None:
 
 
 def _validate_scope(scope: object) -> None:
-    if scope not in {MODULE_OBSERVATION_SCOPE, ENTITY_OBSERVATION_SCOPE}:
-        raise ValueError("scope must be 'module' or 'entity'")
+    if scope not in {
+        MODULE_OBSERVATION_SCOPE,
+        ENTITY_OBSERVATION_SCOPE,
+        INFRASTRUCTURE_OBSERVATION_SCOPE,
+    }:
+        raise ValueError("scope must be 'module', 'entity', or 'infrastructure'")
 
 
 def _validate_source_path(source_path: object) -> None:
@@ -894,6 +921,7 @@ def hash_file(path: Path) -> str:
 
 __all__ = [
     "ENTITY_OBSERVATION_SCOPE",
+    "INFRASTRUCTURE_OBSERVATION_SCOPE",
     "MODULE_OBSERVATION_SCOPE",
     "SHA256_PATTERN",
     "UNKNOWN_ENTITY_NOT_FOUND",
@@ -902,6 +930,7 @@ __all__ = [
     "UNKNOWN_UNSUPPORTED_LANGUAGE",
     "ConceptObservationBasis",
     "build_entity_observation_basis",
+    "build_infrastructure_observation_basis",
     "build_module_observation_basis",
     "canonical_json_bytes",
     "canonical_json_text",

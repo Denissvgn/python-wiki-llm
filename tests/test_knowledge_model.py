@@ -1848,16 +1848,17 @@ def test_packaged_schema_encodes_actor_and_evidence_defaults_and_guards():
     assert set(present_basis["properties"]["scope"]["enum"]) == {
         "module",
         "entity",
+        "infrastructure",
         "aggregate",
     }
     basis_rules = present_basis["allOf"]
-    module_entity_rule = next(
+    source_backed_rule = next(
         rule
         for rule in basis_rules
         if set(rule["if"]["properties"]["scope"].get("enum", []))
-        == {"module", "entity"}
+        == {"module", "entity", "infrastructure"}
     )
-    assert set(module_entity_rule["then"]["required"]) == {
+    assert set(source_backed_rule["then"]["required"]) == {
         "source_path",
         "extractor_ref",
         "source_content_hash",

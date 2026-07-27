@@ -7,7 +7,8 @@ import shlex
 import sys
 from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass, field
+from copy import deepcopy
+from dataclasses import dataclass, field, replace
 from datetime import date
 from pathlib import Path
 from typing import Any, TextIO
@@ -65,7 +66,15 @@ from ..services.infrastructure_inventory import (
     RUNTIME_CONFIG_TYPES,
     get_yaml_infrastructure_inventory,
     infrastructure_display_label,
-    infrastructure_page_name,
+)
+from ..services.infrastructure_sync import (
+    INFRASTRUCTURE_GENERATION_INPUT_KEY,
+    INFRASTRUCTURE_SYNC_SCHEMA_VERSION,
+    InfrastructureSyncError,
+    build_infrastructure_page_map,
+    build_infrastructure_sync_plan,
+    validate_infrastructure_generation_input,
+    with_infrastructure_generation_input,
 )
 from ..services.io import read_md, write_md
 from ..services.knowledge_artifacts import (
@@ -2669,16 +2678,29 @@ def _generate_infrastructure_md(
 ) -> str:
     """Generate a wiki page for any supported infrastructure inventory entry."""
     if info["type"] in {"dockerfile", "compose"}:
-        return _generate_docker_md(
+        generated = _generate_docker_md(
             filename, info, module_links, unsupported_sources=unsupported_sources
         )
-    if info["type"] == "github_actions":
-        return _generate_github_actions_md(filename, info)
-    if info["type"] == "kubernetes":
-        return _generate_kubernetes_md(filename, info)
-    if info["type"] in RUNTIME_CONFIG_TYPES:
-        return _generate_runtime_config_md(filename, info)
-    return _generate_unsupported_infrastructure_md(filename, info)
+    elif info["type"] == "github_actions":
+        generated = _generate_github_actions_md(filename, info)
+    elif info["type"] == "kubernetes":
+        generated = _generate_kubernetes_md(filename, info)
+    elif info["type"] in RUNTIME_CONFIG_TYPES:
+        generated = _generate_runtime_config_md(filename, info)
+    else:
+        generated = _generate_unsupported_infrastructure_md(filename, info)
+    return _with_infrastructure_notes_placeholder(generated)
+
+
+def _with_infrastructure_notes_placeholder(markdown: str) -> str:
+    """Append the sole supported semantic surface to generated infra pages."""
+
+    return (
+        markdown.rstrip()
+        + "\n\n## Notes\n\n"
+        + "_Add reviewed operational context here; generated sections are replaced "
+        + "from source observations._\n"
+    )
 
 
 def _append_infrastructure_advisories(lines: list[str], advisories: list[str]) -> None:
@@ -3355,6 +3377,8 @@ class _InfrastructureResult:
     docker_inventory: dict
     yaml_inventory: dict
     infrastructure_inventory: dict
+    written_sources: tuple[str, ...] = ()
+    skipped_sources: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -4149,15 +4173,38 @@ def _write_bootstrap_infrastructure_pages(
     for yaml_file, yaml_info in yaml_inventory.items():
         if yaml_file not in infrastructure_inventory:
             infrastructure_inventory[yaml_file] = yaml_info
+    yaml_candidates = {
+        source_file.rel_path for source_file in state.source_snapshot.yaml_candidates
+    }
+    unsupported_yaml = sorted(yaml_candidates - set(infrastructure_inventory))
+    _emit_bootstrap(
+        state,
+        "Infrastructure discovery root: . "
+        f"({len(infrastructure_inventory)} supported source(s), "
+        f"{len(unsupported_yaml)} unsupported YAML candidate(s)).",
+    )
+    if unsupported_yaml:
+        _emit_bootstrap(
+            state,
+            "Unsupported infrastructure YAML: " + ", ".join(unsupported_yaml),
+        )
+    infrastructure_page_map = build_infrastructure_page_map(
+        infrastructure_inventory
+    )
 
     advisory_warnings: list[str] = []
+    written_sources: list[str] = []
+    skipped_sources: list[str] = []
     for source_file, info in sorted(infrastructure_inventory.items()):
-        page_name = infrastructure_page_name(source_file)
-        infra_path = state.options.wiki_dir / "infrastructure" / f"{page_name}.md"
+        relative_page = infrastructure_page_map[source_file]
+        page_name = Path(relative_page).stem
+        infra_path = state.options.wiki_dir / relative_page
         if infra_path.exists() and not state.options.overwrite:
+            skipped_sources.append(source_file)
             state.skipped_files.append(_path_text(infra_path))
             _emit_bootstrap(state, f"  SKIP infrastructure (exists): {page_name}")
         else:
+            written_sources.append(source_file)
             _write_bootstrap_file(
                 state,
                 infra_path,
@@ -4190,6 +4237,8 @@ def _write_bootstrap_infrastructure_pages(
         docker_inventory,
         yaml_inventory,
         infrastructure_inventory,
+        tuple(written_sources),
+        tuple(skipped_sources),
     )
 
 
@@ -4423,6 +4472,9 @@ def _update_bootstrap_agent_constraints(state: _BootstrapRunState) -> None:
 def _bootstrap_manifest_generation_state(
     state: _BootstrapRunState,
     api_contract_result: _ApiContractResult,
+    infrastructure_result: _InfrastructureResult,
+    *,
+    previous_manifest: SyncManifest | None,
 ) -> tuple[dict[str, dict[str, object]], dict[str, object]]:
     surfaces: dict[str, dict[str, object]] = {
         "flows": {
@@ -4453,6 +4505,65 @@ def _bootstrap_manifest_generation_state(
         generation_inputs["openapi"] = {
             key: openapi[key] for key in ("path", "sha256", "format") if key in openapi
         }
+    infrastructure_plan = build_infrastructure_sync_plan(
+        state.source_snapshot,
+        infrastructure_result.infrastructure_inventory,
+        generation_inputs=(
+            previous_manifest.generation_inputs
+            if previous_manifest is not None
+            else None
+        ),
+    )
+    if infrastructure_result.skipped_sources:
+        next_state = deepcopy(infrastructure_plan.next_state)
+        current_sources = next_state.get("sources")
+        current_sources = (
+            dict(current_sources) if isinstance(current_sources, Mapping) else {}
+        )
+        prior_state = (
+            previous_manifest.generation_inputs.get(
+                INFRASTRUCTURE_GENERATION_INPUT_KEY
+            )
+            if previous_manifest is not None
+            else None
+        )
+        prior_sources = (
+            prior_state.get("sources")
+            if isinstance(prior_state, Mapping)
+            and prior_state.get("schema_version")
+            == INFRASTRUCTURE_SYNC_SCHEMA_VERSION
+            and isinstance(prior_state.get("sources"), Mapping)
+            else {}
+        )
+        deferred_sources: list[str] = []
+        for source_path in infrastructure_result.skipped_sources:
+            current_record = current_sources.get(source_path)
+            prior_record = prior_sources.get(source_path)
+            if prior_record == current_record:
+                continue
+            deferred_sources.append(source_path)
+            if (
+                isinstance(prior_record, Mapping)
+                and isinstance(current_record, Mapping)
+                and prior_record.get("page_path") == current_record.get("page_path")
+            ):
+                current_sources[source_path] = deepcopy(dict(prior_record))
+            else:
+                current_sources.pop(source_path, None)
+        next_state["sources"] = dict(sorted(current_sources.items()))
+        if deferred_sources:
+            next_state["deferred_sources"] = sorted(deferred_sources)
+        else:
+            next_state.pop("deferred_sources", None)
+        infrastructure_plan = replace(
+            infrastructure_plan,
+            next_state=next_state,
+            state_changed=next_state != infrastructure_plan.next_state,
+        )
+    generation_inputs = with_infrastructure_generation_input(
+        generation_inputs,
+        infrastructure_plan,
+    )
     return surfaces, generation_inputs
 
 
@@ -4586,11 +4697,13 @@ def _finalize_bootstrap_artifacts(
         module_page_map=page_maps.module_page_map,
         entry_points=result.flow.entries,
     )
+    previous_manifest = _load_previous_bootstrap_manifest(state.options.wiki_dir)
     surfaces, generation_inputs = _bootstrap_manifest_generation_state(
         state,
         result.api_contract,
+        result.infrastructure,
+        previous_manifest=previous_manifest,
     )
-    previous_manifest = _load_previous_bootstrap_manifest(state.options.wiki_dir)
     _emit_bootstrap(state, "Writing generated knowledge artifacts...", flush=True)
     _emit_bootstrap(state, "Writing sync manifest...", flush=True)
     committed = finalize_runtime_knowledge(
@@ -4913,7 +5026,7 @@ def _bootstrap_result(state: _BootstrapRunState) -> BootstrapResult:
 def _execute_bootstrap_options(options: _BootstrapRunOptions) -> BootstrapResult:
     try:
         _preflight_bootstrap_governance(options.wiki_dir)
-    except GovernanceError as exc:
+    except (GovernanceError, InfrastructureSyncError) as exc:
         raise BootstrapContractError(str(exc)) from exc
     state = _BootstrapRunState(options)
     _start_bootstrap(state)
@@ -4936,13 +5049,18 @@ def _execute_bootstrap_options(options: _BootstrapRunOptions) -> BootstrapResult
         )
     except ApiContractError as exc:
         raise BootstrapContractError(str(exc)) from exc
-    return _finalize_bootstrap(state, inventory_result, page_maps, result)
+    try:
+        return _finalize_bootstrap(state, inventory_result, page_maps, result)
+    except InfrastructureSyncError as exc:
+        raise BootstrapContractError(str(exc)) from exc
 
 
 def _preflight_bootstrap_governance(wiki_dir: Path) -> None:
     """Reject corrupt or missing committed governance before creating pages."""
 
     previous = _load_previous_bootstrap_manifest(wiki_dir)
+    if previous is not None:
+        validate_infrastructure_generation_input(previous.generation_inputs)
     try:
         load_governance(
             wiki_dir,

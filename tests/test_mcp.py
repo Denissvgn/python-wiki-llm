@@ -1342,6 +1342,17 @@ class TestMcpWikiService:
                 )
                 return bounded_result
 
+            def list_concept_sections(
+                self,
+                locator,
+                *,
+                ownership,
+            ):
+                calls["query"].append(
+                    ("list_concept_sections", locator, ownership)
+                )
+                return bounded_result
+
             def explain_evidence(self, locator):
                 calls["query"].append(("explain_evidence", locator))
                 return bounded_result
@@ -1377,6 +1388,11 @@ class TestMcpWikiService:
             kinds=["links_to"],
             limit=250,
         )
+        sections = service.list_concept_sections(
+            " llm-wiki://entities/User ",
+            ownership="semantic",
+            limit=250,
+        )
         evidence = service.explain_evidence(
             " llm-wiki://entities/User ",
             limit=250,
@@ -1384,8 +1400,10 @@ class TestMcpWikiService:
 
         assert concept is concept_result
         assert related is bounded_result
+        assert sections is bounded_result
         assert evidence is bounded_result
         assert calls["builder"] == [
+            ("source-root", "agent_wiki", 100, True),
             ("source-root", "agent_wiki", 100, True),
             ("source-root", "agent_wiki", 100, True),
             ("source-root", "agent_wiki", 100, True),
@@ -1397,6 +1415,11 @@ class TestMcpWikiService:
                 "entities/User.md",
                 "outbound",
                 ["links_to"],
+            ),
+            (
+                "list_concept_sections",
+                "llm-wiki://entities/User",
+                "semantic",
             ),
             ("explain_evidence", "llm-wiki://entities/User"),
         ]
@@ -1451,6 +1474,18 @@ class TestMcpWikiService:
                 {"limit": 0},
                 "limit must be a positive integer",
             ),
+            (
+                "list_concept_sections",
+                ("llm-wiki://entities/User",),
+                {"ownership": "reviewed"},
+                "ownership must be one of",
+            ),
+            (
+                "list_concept_sections",
+                ("llm-wiki://entities/User",),
+                {"limit": 0},
+                "limit must be a positive integer",
+            ),
         ],
     )
     def test_knowledge_methods_validate_before_building_query_service(
@@ -1495,7 +1530,12 @@ class TestMcpWikiService:
     )
     @pytest.mark.parametrize(
         "method_name",
-        ["get_concept", "related_concepts", "explain_evidence"],
+        [
+            "get_concept",
+            "list_concept_sections",
+            "related_concepts",
+            "explain_evidence",
+        ],
     )
     def test_knowledge_methods_reject_invalid_coordinates_before_extraction(
         self,
@@ -1555,7 +1595,12 @@ class TestMcpWikiService:
 
     @pytest.mark.parametrize(
         "method_name",
-        ["get_concept", "related_concepts", "explain_evidence"],
+        [
+            "get_concept",
+            "list_concept_sections",
+            "related_concepts",
+            "explain_evidence",
+        ],
     )
     @pytest.mark.parametrize("failure_point", ["builder", "query"])
     def test_knowledge_methods_map_api_and_query_errors(
@@ -1578,6 +1623,15 @@ class TestMcpWikiService:
                 del direction, kinds
                 raise DocumentationQueryError("bad knowledge query")
 
+            def list_concept_sections(
+                self,
+                _locator,
+                *,
+                ownership,
+            ):
+                del ownership
+                raise DocumentationQueryError("bad knowledge query")
+
             def explain_evidence(self, _locator):
                 raise DocumentationQueryError("bad knowledge query")
 
@@ -1592,11 +1646,12 @@ class TestMcpWikiService:
             fake_builder,
         )
         service = mcp_server.McpWikiService()
-        kwargs = (
-            {"direction": "both", "kinds": None}
-            if method_name == "related_concepts"
-            else {}
-        )
+        if method_name == "related_concepts":
+            kwargs = {"direction": "both", "kinds": None}
+        elif method_name == "list_concept_sections":
+            kwargs = {"ownership": None}
+        else:
+            kwargs = {}
 
         with pytest.raises(
             mcp_server.McpWikiError,
@@ -1664,6 +1719,10 @@ class TestMcpWikiService:
         service = mcp_server.McpWikiService()
 
         concept = service.get_concept("llm-wiki://entities/User")
+        sections = service.list_concept_sections(
+            "llm-wiki://entities/User",
+            ownership="unknown",
+        )
         related = service.related_concepts(
             "llm-wiki://entities/User",
             direction="outbound",
@@ -1679,6 +1738,15 @@ class TestMcpWikiService:
         assert concept["knowledge"] == status
         assert concept["found"] is False
         assert concept["concept"] is None
+        assert sections["knowledge"] == status
+        assert sections["found"] is False
+        assert sections["section_ownership"] == {
+            "availability": availability,
+            "reason": reason,
+            "schema_version": None,
+        }
+        assert sections["ownership"] == "unknown"
+        assert sections["sections"] == []
         assert related["knowledge"] == status
         assert related["found"] is False
         assert related["relationships"] == []
@@ -1689,17 +1757,20 @@ class TestMcpWikiService:
             (".", "docs/llm_wiki", 20, True),
             (".", "docs/llm_wiki", 20, True),
             (".", "docs/llm_wiki", 20, True),
+            (".", "docs/llm_wiki", 20, True),
         ]
 
 
 class RecordingMcpServer:
     def __init__(self):
         self.tool_names: list[str] = []
+        self.tool_functions: dict[str, object] = {}
         self.resource_uris: list[str] = []
 
     def tool(self):
         def decorator(func):
             self.tool_names.append(func.__name__)
+            self.tool_functions[func.__name__] = func
             return func
 
         return decorator
@@ -1726,6 +1797,7 @@ def test_tool_registration_names_without_sdk(tmp_project):
         "query_graph",
         "get_concept",
         "related_concepts",
+        "list_concept_sections",
         "traverse_typed_graph",
         "explain_evidence",
         "search_wiki",
@@ -1733,6 +1805,33 @@ def test_tool_registration_names_without_sdk(tmp_project):
         "check_wiki",
         "get_status",
     ]
+
+
+def test_registered_section_tool_forwards_filter_and_limit():
+    calls = []
+    expected = {"operation": "list_concept_sections"}
+
+    class RecordingService:
+        def list_concept_sections(
+            self,
+            locator_or_exact_route,
+            ownership=None,
+            limit=20,
+        ):
+            calls.append((locator_or_exact_route, ownership, limit))
+            return expected
+
+    server = RecordingMcpServer()
+    mcp_server._register_mcp_tools(server, RecordingService())
+
+    result = server.tool_functions["list_concept_sections"](
+        "llm-wiki://entities/User",
+        ownership="mixed",
+        limit=7,
+    )
+
+    assert result is expected
+    assert calls == [("llm-wiki://entities/User", "mixed", 7)]
 
 
 def test_tool_registration_preserves_legacy_tools_and_adds_m4_tools(tmp_project):
@@ -1754,6 +1853,7 @@ def test_tool_registration_preserves_legacy_tools_and_adds_m4_tools(tmp_project)
     )
     assert {
         "get_concept",
+        "list_concept_sections",
         "related_concepts",
         "traverse_typed_graph",
         "explain_evidence",
@@ -1895,6 +1995,11 @@ class TestMcpCli:
                 "locator_or_exact_route",
                 "direction",
                 "kinds",
+                "limit",
+            },
+            "list_concept_sections": {
+                "locator_or_exact_route",
+                "ownership",
                 "limit",
             },
             "traverse_typed_graph": {

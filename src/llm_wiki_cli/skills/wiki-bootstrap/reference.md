@@ -95,16 +95,26 @@ Required fields for every open item:
 
 When closing an item, keep the row and change `Status` to `done`; do not delete history. Add a short note in the item detail with the completion date and the validation command.
 
-## Generated native artifact ownership
+## Native artifact ownership and recovery
 
-The current writer emits manifest v5 with
-`.llm-wiki-manifest.json`, `.llm-wiki-surface.json`, and
-`.llm-wiki-knowledge.json` as one CLI-owned generated projection. Never add
-those paths to the semantic edit budget or repair one by hand. In managed mode,
-use the owning deterministic sync workflow to refresh the projection after
-semantic Markdown changes and before final strict validation. In an
-`external_agent_docs` run, return only the authorized Markdown changes; the
-supervisor refreshes the trio and re-anchors generated ownership.
+Keep authority explicit throughout bootstrap:
+
+| Artifact/surface | Authority and owner | Permitted bootstrap handling |
+|---|---|---|
+| Canonical Markdown semantic sections | Human/agent-authored under the supported section policy | Edit only the semantic surfaces listed by this skill, then run the owning sync/re-anchor. |
+| Generated Markdown blocks/tables plus `.llm-wiki-manifest.json`, `.llm-wiki-surface.json`, and `.llm-wiki-knowledge.json` | CLI-owned disposable projection | Never hand-edit or reconstruct one member independently. Bootstrap/sync commits the generated set together. |
+| `.llm-wiki-governance.json` | Version-controlled, non-rebuildable governance authority for bundle identity, UIDs, aliases, lifecycle, and human review | Absent by default. Create only through separately confirmed `knowledge init`; mutate only through explicit governance commands; restore a missing committed ledger from version control/backup. |
+| Governance data joined into `.llm-wiki-knowledge.json` | Disposable projection of the ledger | Regenerate from the intact ledger through the owning writer; it cannot replace or recover the ledger. |
+| `.llm-wiki-verification.json` | Disposable receipt from explicit application-owned `knowledge verify` checkers | Never fabricate, edit, or treat as review. Report stale/failed state; an authorized caller may rerun the fixed checker. |
+
+The current writer emits manifest v5 with the manifest, surface, and knowledge
+files as one CLI-owned generated projection. Never add those paths to the
+semantic edit budget or repair one by hand. In managed mode, use the owning
+deterministic sync workflow to refresh the projection after semantic Markdown
+changes and before final strict validation. In an `external_agent_docs` run,
+return only the authorized Markdown changes; the supervisor refreshes the
+generated set and re-anchors ownership. Neither the worker nor supervisor may
+invent a missing governance ledger or replacement review/verification event.
 
 The final managed refresh is conditional on an actual canonical Markdown
 change; generated-only bootstrap output does not need a second no-op authoring
@@ -113,6 +123,10 @@ new Markdown tree. Its validation result may expose expired human section
 reviews or stale machine-verification receipts. Preserve and report their
 existing reasons; never create replacement review events or receipts as part
 of bootstrap.
+
+Locator-only output remains the default when no ledger exists. Governance
+adoption is optional overhead justified by a named durable-identity or
+section-review consumer, not a bootstrap completeness requirement.
 
 ## Validation expectations
 

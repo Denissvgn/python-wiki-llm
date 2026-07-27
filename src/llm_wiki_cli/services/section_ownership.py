@@ -341,6 +341,12 @@ def _top_level_policy(
             return SectionOwnership.GENERATED
         return SectionOwnership.UNKNOWN
     if page_kind is PageKind.INFRASTRUCTURE:
+        if folded == "notes":
+            return (
+                SectionOwnership.SEMANTIC
+                if canonical_occurrence == 1
+                else SectionOwnership.UNKNOWN
+            )
         if (
             folded in _INFRASTRUCTURE_GENERATED_HEADINGS
             and canonical_occurrence == 1

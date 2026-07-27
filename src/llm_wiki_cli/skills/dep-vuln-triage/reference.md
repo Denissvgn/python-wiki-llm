@@ -4,11 +4,45 @@ Supporting detail for [SKILL.md](SKILL.md).
 
 ## Input contract: the deep extract dependency block
 
-`llm-wiki extract --deep --read-only` writes the `llm-wiki-extract/v1` payload with a `dependencies.external.<language>` mapping per detected language:
+`llm-wiki extract --deep --read-only` writes the additive
+`llm-wiki-extract/v1` payload. The primary version ledger is
+`dependencies.version_details`, versioned independently as
+`llm-wiki-dependency-version-details/v1`. Legacy
+`dependencies.external.<language>` fields remain unchanged:
 
 ```json
 {
   "dependencies": {
+    "version_details": {
+      "schema_version": "llm-wiki-dependency-version-details/v1",
+      "records": [
+        {
+          "ecosystem": "python",
+          "package": "requests",
+          "version": "2.31.0",
+          "version_kind": "exact",
+          "selection_confidence": "selected",
+          "selection_state": "selected",
+          "source_semantics": "poetry-lock-selection",
+          "source_path": "services/api/poetry.lock",
+          "scope": "services/api",
+          "declaration": null,
+          "reach": "direct",
+          "declared_as": null
+        }
+      ],
+      "coverage": {
+        "observed": 1,
+        "emitted": 1,
+        "omitted": 0,
+        "limit": null,
+        "truncated": false,
+        "limitations": [
+          "static-lock-analysis-does-not-claim-runtime-installation"
+        ]
+      },
+      "diagnostics": []
+    },
     "external": {
       "python": {
         "used": {"requests": ["app.py"]},
@@ -30,77 +64,77 @@ Supporting detail for [SKILL.md](SKILL.md).
   disappear from this public block when they also lack a `versions` entry.
 - `undeclared` lists imported names not reconciled to a declaration, but the
   public projection drops the internal scope details.
-- `versions` is additive and fail-open: a missing/malformed lockfile silently
-  omits metadata. It contains at most one record per package/language and
-  `resolved_from` is a lockfile name, not a scoped lockfile path.
-
-The public projection deliberately omits the internal `required`, `optional`,
-`undeclared_details`, and `unused_details` fields. It therefore cannot enumerate
-all declarations or preserve their owning manifest scopes. Missing public data
-is unknown surface, **never evidence of safety**.
+- `versions` remains a compatibility hint: it can contain at most one record
+  per package/language, and `resolved_from` is only a basename.
+- `version_details.records` preserves repository-relative manifest/lock scope,
+  all parsed version observations, declaration kind, selection confidence,
+  ecosystem semantics, and truthful modeled reach.
+- `version_details.coverage` and `diagnostics` expose malformed records and
+  unsupported forms encountered among sources inventoried by v1. Formats that
+  v1 does not inventory, including Haskell package inputs, require a separate
+  legacy/raw-source limitation. A diagnostic or absent v1 object is unknown
+  surface, **never evidence of safety**.
 
 ## Supported declaration ledger
 
-Read raw supported manifests and record one row per package declaration before
-using public extract data:
+Use v1 `version_details.records` for the following supported declaration
+sources. Read raw files for a diagnostic, unsupported form, an older payload
+without the v1 object, or an ecosystem not inventoried by v1:
 
 | Language | Supported declaration sources | Declaration kinds / scope notes |
 |---|---|---|
 | Python | every discovered `pyproject.toml`; `requirements*.txt` | `[project].dependencies` is runtime; `[project].optional-dependencies` and requirements filenames containing `dev`/`test` are optional; each manifest directory is a scope |
 | TypeScript/JavaScript | every discovered `package.json` | `dependencies` and `peerDependencies` are runtime; `devDependencies` and `optionalDependencies` are optional; each package directory is a scope |
 | Go | every discovered `go.mod` | direct `require` is runtime; `// indirect` is transitive/optional; each module directory is a scope; local replacements are internal |
-| Rust | root `Cargo.toml` | `dependencies` is runtime; `dev-dependencies` and `build-dependencies` are optional/build; nested workspace member manifests are not represented by the current reconciler |
-| Haskell | discovered `*.cabal`, `stack.yaml`, and `flake.nix` hints | Cabal library/executable `build-depends` is runtime; test/benchmark/setup, Stack `extra-deps`, and Nix hints are optional/advisory; each directory is a scope |
+| Rust | discovered `Cargo.toml` beside captured Rust source | `dependencies` is runtime; `dev-dependencies` and `build-dependencies` are dev/build; each manifest directory is a scope |
 
-Unsupported declaration forms—such as Poetry-only dependency tables,
-requirements include/constraint indirection, `setup.py`, `go.work`, Cargo
-workspace-member manifests, generated manifests, or unreadable/malformed
-files—must be listed by path and scope as missing declaration coverage. Do not
-improvise parser support or silently call those scopes empty.
+Haskell is not a v1 declaration-ledger ecosystem. Treat names surfaced by the
+legacy `dependencies.external.haskell` reconciliation only as supplemental
+reachability evidence, and inspect relevant `*.cabal`, `stack.yaml`, and
+`flake.nix` inputs directly. Record that raw-source pass and its scope as an
+explicit limitation; absence from `version_details.records` or its diagnostics
+does not mean the Haskell declaration surface is empty.
 
-Likewise, lock/version sources outside the public table—such as `uv.lock`,
-`Pipfile.lock`, `yarn.lock`, Bun locks, older npm lock shapes without
-`packages`, or unsupported pnpm syntax—do not become known versions merely
-because a file exists. Inspect them with a trustworthy scope-aware tool or list
-their packages/versions as unsupported or unknown.
+Supported v1 lock/version sources are Poetry and uv TOML locks, Pipfile.lock,
+npm package-lock v1-v3, the supported pnpm packages mapping, `go.mod`,
+`go.sum`, and Cargo.lock. Requirements exact pins and manifest constraints are
+declarations, not proof of an installed version. Unsupported forms such as
+requirements include/constraint indirection, `setup.py`, `go.work`,
+`yarn.lock`, Bun locks, generated manifests, unsupported pnpm syntax, or
+unreadable/malformed files must remain diagnostic/unknown scope. Do not
+improvise parser support or call those scopes empty.
 
-The complete interim inventory is:
-
-1. every row in the supported raw declaration ledger;
-2. unioned names from public `used`, `unused`, `undeclared`, and `versions`;
-3. one explicit limitation row per unsupported or unreadable declaration scope.
-
-This is how optional/dev/build packages remain visible when the public
-projection otherwise omits them.
+The complete native inventory is the union of v1 records with legacy `used`,
+`unused`, and `undeclared` reachability names, plus one explicit limitation per
+diagnostic or unsupported source. This keeps optional/dev/build declarations
+and lockfile-only transitives visible without erasing unknowns.
 
 ## Version observations and selection
 
-Public version metadata is a screening hint, not a scoped selected-version
-model:
+The v1 record fields distinguish provenance from selection:
 
-| Language | Public `resolved_from` | Current behavior and required interpretation |
+| Language | v1 source semantics | Required interpretation |
 |---|---|---|
-| Python | `poetry.lock`, exact `requirements*.txt` `==` pin | Multiple manifest/lock scopes collapse to one package record; inspect each owning file. A requirements pin is a scoped configured pin, not proof of an installed runtime. |
-| TypeScript | `package-lock.json`, `pnpm-lock.yaml` | Multiple lockfiles and duplicate package versions collapse to one unscoped record, generally retaining one version. Inspect every owning lock scope. |
-| Go | `go.sum` | The implementation keeps one highest-looking checksum-history version. This is **observed**, not the selected module graph. |
-| Rust | root `Cargo.lock` | Multiple versions of one crate collapse to one record; inspect the lock entries. The current manifest model is root-only. |
-| Haskell | none | Cabal/Stack/Nix ranges and hints do not provide a captured resolved version. Haskell packages are therefore **always unknown-version**. |
+| Python | declaration records plus Poetry/uv/Pipfile lock selections | Scope is the owning directory. Every parsed lock version is retained; static selection does not claim runtime installation. |
+| TypeScript | npm declarations, package-lock selections, pnpm selections | Duplicate versions and distinct lock scopes remain distinct. pnpm reach may remain `unknown`. |
+| Go | `go-mod-selection`, `go-checksum-observation` | `go.mod` is the modeled static selection. Every `go.sum` version is only observed checksum history. |
+| Rust | Cargo declarations and lock selections | Multiple versions remain distinct. Direct/transitive reach is `unknown` when duplicate direct-package lock entries prevent a truthful assignment. |
+| Haskell | no v1 rows; legacy/raw supplemental evidence only | Cabal/Stack/Nix ranges and hints do not provide a captured resolved version. Haskell packages are therefore **always unknown-version**. |
 
-Use these labels:
+Use `selection_confidence` as written:
 
-| Version state | Meaning | Advisory handling |
+| Confidence | Meaning | Advisory handling |
 |---|---|---|
-| scoped exact/configured pin | Exact value mapped to one manifest scope | Query it, but label it configured rather than observed runtime. |
-| scoped lockfile observation | Exact lock entry mapped to one owning scope | Query every distinct reliable version. |
-| selected-version observation | A separately recorded package-manager result identifies the effective graph | Query it and record the command/options/basis. |
-| observed-in-go.sum | Version appears in checksum history only | Never call it selected; query every version relied upon or keep selection unknown. |
-| unknown-version | No exact version, no scope mapping, conflicting/collapsed data, or incomplete command result | A name-only query can find candidates but cannot clear the package. |
+| `selected` | A supported static lock or module-selection source records an exact version in one scope | Query it, while preserving the limitation that static selection does not prove installation or runtime reachability. |
+| `observed` | A version was seen but is not modeled as selected; currently used for `go.sum` checksum history | Never call it selected; query it as a conservative observation or keep effective selection unknown. |
+| `declared` | A manifest constraint or pin; `selection_state` remains `unknown` | Use as provenance. A range or configured pin cannot clear an exact-version advisory question. |
+| unknown-version | No exact selected record, unsupported/malformed source, or incomplete evidence | A name-only query can find candidates but cannot clear the package. |
 
-Two lockfiles with different versions produce two scoped observations. If the
-lockfile-to-manifest mapping is ambiguous or an observation cannot be inspected,
-the package remains unknown; selecting the public maximum is not an allowed
-shortcut. A declared range is useful provenance but is not substituted for an
-exact version.
+Two lockfiles with different versions produce two v1 records, and multiple
+versions in one lockfile also remain distinct. If scope or selection confidence
+is unknown, keep it unknown; selecting the legacy `versions` maximum is not an
+allowed shortcut. A declared range is useful provenance but is not substituted
+for an exact version.
 
 ## Advisory lookup
 
@@ -199,39 +233,36 @@ Required sections beyond the table:
 5. selected advisory endpoint or offline dataset identity/hash, trust decision,
    dataset/source date, lookup date, exact package/version queries, hits, and
    rows phrased “not found in queried advisory data”—never “checked clean”;
-6. unknowns and explicit remainder: unknown versions/scopes, collapsed
-   multi-lock data, missing lockfile-only transitives, undeclared imports, and
-   gap-limited reachability;
+6. unknowns and explicit remainder: malformed/unsupported version sources,
+   unknown selection or reach, undeclared imports, and gap-limited
+   reachability;
 7. verification commands/results and follow-ups (`dep-audit`, `attack-surface`,
    or deeper security review).
 
 ## Edge cases
 
-- **Monorepos with scoped manifests**: public `used` paths can help associate an
-  import, but declarations and `versions` do not expose a complete scoped
-  model. Inspect each manifest/lock pair. If ownership is ambiguous, record an
-  unsupported/unknown scope rather than a repository-wide version.
-- **Multiple lockfiles resolving the same package**: public version capture
-  collapses them to one unscoped record (often a highest-looking or
-  last-retained version). Enumerate and query every reliable scoped version;
-  never generalize one result to the other lockfiles.
-- **Multiple versions in one lockfile**: the public mapping retains one package
-  record. Inspect all relevant lock entries or package-manager output and query
-  every reliable version; otherwise keep the package unknown.
+- **Monorepos with scoped manifests**: use each v1 record's `scope` and
+  repository-relative `source_path`; public `used` paths can help associate an
+  import. If a diagnostic or unsupported format leaves ownership ambiguous,
+  record an unknown scope rather than a repository-wide version.
+- **Multiple lockfiles resolving the same package**: v1 preserves a record for
+  every parsed scoped version. Query them separately and never generalize one
+  result to another lock scope.
+- **Multiple versions in one lockfile**: v1 preserves each parsed version. If
+  direct/transitive assignment cannot be truthful it reports `reach=unknown`;
+  do not invent a single effective version.
 - **Go module selection**: `go.sum` can retain checksums for historical,
   downloaded, or no-longer-selected versions. `go.sum` history alone never
-  produces a selected-version claim. If an authorized package-manager command
-  can run without unapproved network access, record its exact module-selection
-  output separately; otherwise selected version stays unknown.
-- **Direct versus transitive dependencies**: reconciliation and the public
-  `versions` filter retain imported/declared packages. Lockfile-only transitive
-  dependencies are excluded, even if their versions exist in the raw lockfile.
-  Do not claim complete transitive coverage. A selected package-manager or
-  advisory-scanner inventory may supplement this result, but has separate
-  provenance and must not erase the native limitation.
-- **Optional/dev/build packages**: these can be absent from `unused` and absent
-  from `versions`; the raw declaration union is mandatory. Build tools and
-  plugins can execute without an application import path.
+  produces a selected-version claim. V1 models `go.mod` selection separately
+  and retains every checksum observation. An authorized package-manager result
+  may supplement this static evidence but keeps separate provenance.
+- **Direct versus transitive dependencies**: v1 emits `direct`, `transitive`,
+  or `unknown` only where the source format supports that inference.
+  Lockfile-only transitive records are retained for supported formats, but
+  coverage diagnostics and unknown reach still prohibit a complete claim.
+- **Optional/dev/build packages**: v1 declaration rows keep these categories
+  even when legacy `unused` and `versions` omit them. Build tools and plugins
+  can execute without an application import path.
 - **Vendored code**: dependency reconciliation does not cover vendored trees; note vendored directories as uncovered surface.
 - **Offline advisory dataset**: record dataset identity/hash and as-of date,
   query locally, state “no network,” and limit every result to that dataset.

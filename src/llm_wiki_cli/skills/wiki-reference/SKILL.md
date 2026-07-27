@@ -1,6 +1,6 @@
 ---
 name: wiki-reference
-description: Deep reference for llm-wiki extraction contracts, helper toolchains and caches, knowledge observations/freshness/availability, strict knowledge lint, bounded context/API/MCP consumption, dependency reconciliation, static-site export, resource-aware execution, and context budgeting. Read only the section that matches the command or diagnostic in front of you.
+description: Deep reference for llm-wiki extraction contracts, helper toolchains and caches, native availability/freshness, typed graph queries, durable governance and review, safe verification, bounded context/API/MCP consumption, projection-aware Site and Obsidian export, dependency reconciliation, resource-aware execution, and context budgeting. Read only the section that matches the command or diagnostic in front of you.
 ---
 
 # wiki-reference
@@ -21,13 +21,20 @@ a task actually needs:
   persisted evidence versus read-time freshness, availability/degraded states,
   snapshot-only status, legacy fallback, and authority boundaries.
 - **Knowledge lint and context** — strict failure policy, concept refinements,
-  deterministic ranking, warnings, and filtered/truncated counts.
-- **Knowledge query/API/MCP contract** — exact indexed lookups, response
-  envelopes, default and external limits, and metadata no-exec rules.
+  typed-relationship refinements, deterministic ranking, warnings, and
+  filtered/truncated counts.
+- **Knowledge query/API/MCP contract** — exact UID/current-locator/canonical-path/
+  persisted-alias lookups, core relationships, typed traversal, analyzer and
+  evidence bounds, response envelopes, and service reuse.
+- **Durable governance, review, and verification** — opt-in initialization,
+  moves and aliases, lifecycle and successors, section-scoped human review,
+  explicit machine checks, dry-run/conflict behavior, and ledger recovery.
 - **JavaScript and TypeScript flows** — `.js`/`.jsx` extraction, raw Node
   `createServer` entry points, `javascript_flow_unsupported` scope.
-- **Static-site export** — `reference`/`user` profiles, MkDocs and Docusaurus
-  output, site checker modes and quality gates.
+- **Static-site and Obsidian export** — ordinary output plus opt-in native
+  `summary`, `public-portable`/`internal` privacy profiles, snapshot-only
+  freshness, identity corroboration, and the separate body/media review
+  boundary.
 - **Resource-aware execution** — interactive, isolated-terminal, and controlled
   CI scheduling plus requested/resolved/effective extractor-job semantics.
 - **`llm-wiki context` for large codebases** — token-budgeted snapshots and

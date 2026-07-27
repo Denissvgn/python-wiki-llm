@@ -13,6 +13,9 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.services import documentation_queries
+from llm_wiki_cli.services.contracts import (
+    SECTION_OWNERSHIP_SCHEMA_VERSION,
+)
 from llm_wiki_cli.services.documentation_queries import (
     DocumentationGraphQueryService,
     DocumentationQueryError,
@@ -33,14 +36,23 @@ from llm_wiki_cli.services.knowledge_governance import (
     ALIAS_NATURAL_KEY,
     GovernanceActor,
     GovernanceLedger,
+    ReviewEvidence,
+    add_review_event,
     add_alias,
     apply_governance_projection,
     concept_references_from_knowledge,
+    current_review_evidence,
     reconcile_concepts,
+    review_scope_hash,
     set_lifecycle,
 )
 from llm_wiki_cli.services.knowledge_model import Resolution, TargetClass
+from llm_wiki_cli.services.section_ownership import (
+    observe_page_sections,
+    section_ownership_extension,
+)
 from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME
+from llm_wiki_cli.services.wiki_surface import PageKind
 from tests.knowledge_fixtures import fixture_hash
 from tests.test_documentation_queries import _service
 from tests.test_knowledge_freshness import _live_evaluation
@@ -69,6 +81,37 @@ def _knowledge_service(view, *, limit: int = 20):
         limit=limit,
         knowledge_view=view,
     )
+
+
+def _sectioned_view(tmp_path):
+    view = _ready_view(tmp_path)
+    assert view.knowledge is not None
+    observed = observe_page_sections(
+        """# User
+## Description
+Human meaning.
+## Attributes
+| Name | Type | Description |
+|---|---|---|
+| `name` | `str` | Human meaning |
+## Relationships
+Generated relationship summary.
+## Description
+Duplicate human prose.
+## Custom
+Unknown ownership.
+""",
+        USER_LOCATOR,
+        PageKind.ENTITIES,
+    )
+    knowledge = replace(
+        view.knowledge,
+        extensions={
+            **view.knowledge.extensions,
+            **section_ownership_extension([observed]),
+        },
+    )
+    return replace(view, knowledge=knowledge), observed
 
 
 def _governed_view(tmp_path):
@@ -195,6 +238,196 @@ def test_ready_concept_lookup_is_exact_compact_and_fresh(tmp_path):
     assert by_locator["matches"] == [by_locator["concept"]]
     _assert_compact(by_locator)
     json.dumps(by_locator, sort_keys=True)
+
+
+def test_list_concept_sections_is_document_order_bounded_and_filter_first(
+    tmp_path,
+):
+    view, observed = _sectioned_view(tmp_path)
+    service = _knowledge_service(view, limit=2)
+
+    result = service.list_concept_sections(USER_LOCATOR, ownership="unknown")
+
+    expected_unknown = [
+        section
+        for section in observed.sections
+        if section.ownership.value == "unknown"
+    ]
+    assert result["section_ownership"] == {
+        "availability": "ready",
+        "reason": "section-ownership-extension-ready",
+        "schema_version": SECTION_OWNERSHIP_SCHEMA_VERSION,
+    }
+    assert result["found"] is True
+    assert result["concept"]["locator"] == USER_LOCATOR
+    assert result["ownership"] == "unknown"
+    assert result["total"] == len(expected_unknown) == 3
+    assert result["returned"] == 2
+    assert result["truncated"] is True
+    assert result["bounds"]["sections"] == {
+        "total": 3,
+        "returned": 2,
+        "truncated": True,
+    }
+    assert [section["ordinal"] for section in result["sections"]] == [
+        section.ordinal for section in expected_unknown[:2]
+    ]
+    assert [section["ownership"] for section in result["sections"]] == [
+        "unknown",
+        "unknown",
+    ]
+    assert all(section["review"]["state"] == "unknown" for section in result["sections"])
+    _assert_compact(result)
+
+    for ownership in ("generated", "semantic", "mixed"):
+        filtered = service.list_concept_sections(
+            USER_LOCATOR,
+            ownership=ownership,
+        )
+        assert filtered["total"] == 1
+        assert filtered["returned"] == 1
+        assert filtered["sections"][0]["ownership"] == ownership
+        assert filtered["truncated"] is False
+
+
+def test_list_concept_sections_preserves_duplicate_heading_occurrences(tmp_path):
+    view, observed = _sectioned_view(tmp_path)
+
+    result = _knowledge_service(view).list_concept_sections(USER_LOCATOR)
+    descriptions = [
+        section
+        for section in result["sections"]
+        if section["title"] == "Description"
+    ]
+    expected = [
+        section
+        for section in observed.sections
+        if section.title == "Description"
+    ]
+
+    assert len(descriptions) == 2
+    assert [section["locator"] for section in descriptions] == [
+        section.locator for section in expected
+    ]
+    assert [section["occurrence"] for section in descriptions] == [1, 2]
+    assert [section["occurrence_path"] for section in descriptions] == [
+        list(section.occurrence_path) for section in expected
+    ]
+    assert descriptions[0]["ownership"] == "semantic"
+    assert descriptions[1]["ownership"] == "unknown"
+
+
+def test_list_concept_sections_accepts_moved_uid_and_projects_safe_review(
+    tmp_path,
+):
+    view, observed = _sectioned_view(tmp_path)
+    assert view.knowledge is not None
+    references = concept_references_from_knowledge(view.knowledge)
+    legacy_locator = "llm-wiki://entities/LegacyUser"
+    legacy_references = tuple(
+        (
+            replace(
+                reference,
+                locator=legacy_locator,
+                natural_key="code-entity:entities/LegacyUser.md",
+            )
+            if reference.locator == USER_LOCATOR
+            else reference
+        )
+        for reference in references
+    )
+    ledger = reconcile_concepts(
+        GovernanceLedger.empty("section-query-fixture"),
+        legacy_references,
+    )
+    ledger = reconcile_concepts(
+        ledger,
+        references,
+        moves={legacy_locator: USER_LOCATOR},
+    )
+    user_uid = next(
+        uid
+        for uid, allocation in ledger.concepts.items()
+        if allocation.locator == USER_LOCATOR
+    )
+    semantic = next(
+        section
+        for section in observed.sections
+        if section.ownership.value == "semantic"
+    )
+    concept = next(
+        concept
+        for concept in view.knowledge.concepts
+        if concept.locator == USER_LOCATOR
+    )
+    evidence = current_review_evidence(concept) or ReviewEvidence(mode="no-source")
+    ledger = add_review_event(
+        ledger,
+        user_uid,
+        section_locator=semantic.locator,
+        scope_hash=review_scope_hash(view.knowledge, semantic.locator),
+        evidence=evidence,
+        reviewer=GovernanceActor("human", "reviewer.example"),
+        method="manual",
+        method_version="1",
+        authored_at="2026-07-27T12:00:00Z",
+    )
+    governed = replace(
+        view,
+        knowledge=apply_governance_projection(view.knowledge, ledger),
+    )
+
+    result = _knowledge_service(governed).list_concept_sections(
+        user_uid,
+        ownership="semantic",
+    )
+
+    assert result["found"] is True
+    assert result["concept"]["uid"] == user_uid
+    assert result["sections"] == [
+        {
+            "locator": semantic.locator,
+            "page_locator": USER_LOCATOR,
+            "heading_path": list(semantic.heading_path),
+            "title": semantic.title,
+            "level": semantic.level,
+            "occurrence": semantic.occurrence,
+            "ordinal": semantic.ordinal,
+            "parent_locator": semantic.parent_locator,
+            "ownership": "semantic",
+            "review": {
+                "state": "valid",
+                "reasons": [],
+                "history_truncated": False,
+            },
+            "occurrence_path": list(semantic.occurrence_path),
+        }
+    ]
+    section_json = json.dumps(result["sections"], sort_keys=True)
+    assert "reviewer.example" not in section_json
+    assert "manual" not in section_json
+    assert "sha256:" not in section_json
+
+
+def test_ready_list_concept_sections_reports_missing_extension(tmp_path):
+    result = _knowledge_service(_ready_view(tmp_path)).list_concept_sections(
+        USER_LOCATOR
+    )
+
+    assert result["found"] is True
+    assert result["section_ownership"] == {
+        "availability": "absent",
+        "reason": "section-ownership-extension-not-present",
+        "schema_version": None,
+    }
+    assert result["sections"] == []
+    assert result["total"] == 0
+    assert result["returned"] == 0
+    assert result["bounds"]["sections"] == {
+        "total": 0,
+        "returned": 0,
+        "truncated": False,
+    }
 
 
 def test_governed_concept_lookup_accepts_uid_alias_and_current_locator(tmp_path):
@@ -503,6 +736,7 @@ def test_loader_selected_non_ready_view_never_exposes_a_trustworthy_empty_graph(
     service = _knowledge_service(view)
 
     concept = service.get_concept(USER_LOCATOR)
+    sections = service.list_concept_sections(USER_LOCATOR)
     related = service.related_concepts(USER_LOCATOR)
     explained = service.explain_evidence(USER_LOCATOR)
 
@@ -515,6 +749,17 @@ def test_loader_selected_non_ready_view_never_exposes_a_trustworthy_empty_graph(
     assert concept["concept"] is None
     assert concept["bounds"] == {
         "matches": {"total": 0, "returned": 0, "truncated": False}
+    }
+    assert sections["found"] is False
+    assert sections["section_ownership"] == {
+        "availability": availability.value,
+        "reason": reason.value,
+        "schema_version": None,
+    }
+    assert sections["sections"] == []
+    assert sections["bounds"] == {
+        "matches": {"total": 0, "returned": 0, "truncated": False},
+        "sections": {"total": 0, "returned": 0, "truncated": False},
     }
     assert related["found"] is False
     assert related["relationships"] == []
@@ -753,7 +998,18 @@ def test_invalid_knowledge_identity_is_rejected(query):
     with pytest.raises(DocumentationQueryError, match="locator_or_exact_route"):
         service.related_concepts(query)
     with pytest.raises(DocumentationQueryError, match="locator_or_exact_route"):
+        service.list_concept_sections(query)
+    with pytest.raises(DocumentationQueryError, match="locator_or_exact_route"):
         service.explain_evidence(query)
+
+
+@pytest.mark.parametrize("ownership", ["", "reviewed", 3, False])
+def test_invalid_section_ownership_filter_is_rejected(ownership):
+    with pytest.raises(DocumentationQueryError, match="ownership"):
+        DocumentationGraphQueryService({}).list_concept_sections(
+            USER_LOCATOR,
+            ownership=ownership,  # type: ignore[arg-type]
+        )
 
 
 def test_explain_evidence_is_the_only_detailed_evidence_surface(tmp_path):
@@ -1006,6 +1262,7 @@ def test_shuffled_knowledge_input_produces_identical_query_json(tmp_path):
 
     for method_name, query in (
         ("get_concept", USER_LOCATOR),
+        ("list_concept_sections", USER_LOCATOR),
         ("related_concepts", MODULE_LOCATOR),
         ("explain_evidence", USER_LOCATOR),
     ):
@@ -1056,9 +1313,13 @@ def test_knowledge_is_normalized_and_indexed_only_during_construction(
         service.outbound_relationships
     )
     service.inbound_relationships = NoIterationDict(service.inbound_relationships)
+    service.sections_by_page_locator = NoIterationDict(
+        service.sections_by_page_locator
+    )
 
     for _ in range(2):
         assert service.get_concept(USER_LOCATOR)["found"] is True
+        assert service.list_concept_sections(USER_LOCATOR)["found"] is True
         assert service.related_concepts(USER_LOCATOR)["total"] == 2
         assert service.explain_evidence(USER_LOCATOR)["total"] == 2
     assert len(calls) == 1
@@ -1086,6 +1347,7 @@ def test_service_and_knowledge_queries_perform_no_io_or_external_work(
 
     service = _knowledge_service(view)
     assert service.get_concept(USER_LOCATOR)["found"] is True
+    assert service.list_concept_sections(USER_LOCATOR)["found"] is True
     assert service.related_concepts(USER_LOCATOR)["total"] == 2
     assert service.explain_evidence(USER_LOCATOR)["evidence"] is not None
 

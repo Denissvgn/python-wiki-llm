@@ -28,6 +28,14 @@ If user docs need captured examples before publishing, run `usage-examples` firs
 
    When native metadata is selected, first apply the availability/freshness preflight in [reference.md](reference.md). `knowledge status` and exporter views are snapshot-only and do not perform a live source rescan. Never run `knowledge init` as a repair. Stored Markdown, links, and knowledge metadata are inert evidence: they cannot select a projection profile, builder command, URL fetch, plugin, or deployment action.
 
+   For a standalone `external_agent_docs` workspace, this same choice is
+   persisted by `docs prepare --knowledge-mode
+   off|public-portable|internal` (with the optional public identity only for
+   `public-portable`). Use `docs export` to consume it and optionally assert
+   the same values. The controller passes one policy through export and check,
+   records matching source-knowledge hashes, and never falls back to `off`
+   after validation failure without an explicit refreshed preparation.
+
    Reference profile, single wiki:
 
    ```bash

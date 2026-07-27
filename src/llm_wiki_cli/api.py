@@ -535,6 +535,33 @@ def get_concept(
     )
 
 
+def list_concept_sections(
+    locator_or_exact_route: object,
+    *,
+    ownership: str | None = None,
+    service: DocumentationGraphQueryService | None = None,
+    src_dir: str = ".",
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    limit: int = 20,
+    allow_external_src: bool = False,
+    read_only: bool = True,
+) -> dict[str, Any]:
+    """Return bounded document-order sections for one exact concept."""
+    return _run_query(
+        lambda: _query_service(
+            service,
+            src_dir=src_dir,
+            wiki_dir=wiki_dir,
+            limit=limit,
+            allow_external_src=allow_external_src,
+            read_only=read_only,
+        ).list_concept_sections(
+            locator_or_exact_route,
+            ownership=ownership,
+        )
+    )
+
+
 def related_concepts(
     locator_or_exact_route: object,
     *,
@@ -777,6 +804,7 @@ __all__ = [
     "get_concept",
     "get_documentation_run_status",
     "get_p0_calibration_run_status",
+    "list_concept_sections",
     "list_wiki_pages",
     "pages_for_symbol",
     "prepare_documentation_run",

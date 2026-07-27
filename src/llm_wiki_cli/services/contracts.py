@@ -2,9 +2,10 @@
 
 The extract contract stays at ``llm-wiki-extract/v1`` while data-flow metadata
 is added as optional fields. Consumers must tolerate inventories without
-``data_effects``, call argument summaries, or top-level ``data_flows`` because
-older payloads and non-Python extractors may not emit them. A schema version
-bump is reserved for incompatible shape changes to existing fields.
+``data_effects``, call argument summaries, top-level ``data_flows``, or the
+versioned ``data_flow_details`` sibling because older payloads and non-Python
+extractors may not emit them. A schema version bump is reserved for
+incompatible shape changes to existing fields.
 
 Dependency/load-order architecture decisions also stay additive under the
 current extract contract: deep Python inventory may include ``data_effects`` on
@@ -13,6 +14,8 @@ environment, process, network, output, and logging calls; ``module_calls`` only
 when module-level side effects exist; ``main_block_calls`` for calls inside a
 Python ``if __name__ == "__main__"`` guard; and ``extract --deep`` may include
 a top-level ``data_flows`` list plus a top-level ``dependencies`` block.
+The dependency block may contain versioned ``version_details`` records; its
+legacy per-language ``versions`` map remains unchanged.
 Python dependency reconciliation treats ``sys.stdlib_module_names`` as the
 stdlib source when available, falls back to the bundled Python 3.9 list in
 dependency analysis, and uses the curated import-to-distribution aliases there
@@ -32,6 +35,12 @@ records, their diagnostics, and entry-point ``routes`` remain optional under
 from __future__ import annotations
 
 EXTRACT_SCHEMA_VERSION = "llm-wiki-extract/v1"
+EXTRACT_DATA_FLOW_DETAILS_SCHEMA_VERSION = (
+    "llm-wiki-extract-data-flow-details/v1"
+)
+DEPENDENCY_VERSION_DETAILS_SCHEMA_VERSION = (
+    "llm-wiki-dependency-version-details/v1"
+)
 BOOTSTRAP_SUMMARY_SCHEMA_VERSION = "llm-wiki-bootstrap-summary/v1"
 KNOWLEDGE_SCHEMA_VERSION = "llm-wiki-knowledge/v1"
 KNOWLEDGE_SCHEMA_FILENAME = "llm-wiki-knowledge-v1.schema.json"
@@ -145,7 +154,9 @@ EXTRACT_ADDITIVE_FIELDS = {
     "classes[].type_params",
     "data_effects",
     "data_effects.inputs[].parameter_kind",
+    "data_flow_details",
     "data_flows",
+    "dependencies.version_details",
     "entrypoints[].routes",
     "frameworks.fastapi",
     "main_block_calls",

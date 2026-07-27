@@ -26,29 +26,30 @@ def _skill_text() -> str:
     )
 
 
-def test_infra_review_contract_bounds_snapshot_freshness_and_outcomes():
+def test_infra_review_contract_bounds_incremental_freshness_and_outcomes():
     text = _skill_text()
     normalized = " ".join(text.split())
 
-    assert "bootstrap snapshot" in text.lower()
-    assert (
-        "Ordinary `llm-wiki sync` does not regenerate infrastructure content"
-        in normalized
-    )
-    assert "recent `wiki-sync` never makes bootstrap pages current" in normalized
+    assert "incremental observation" in text.lower()
+    assert "Ordinary `llm-wiki sync` incrementally regenerates" in normalized
+    assert "generation_inputs.infrastructure" in text
+    assert "source-content hash" in text
+    assert "observation hash" in text
+    assert "unsupported YAML" in text
+    assert "removal/move tombstones" in text
     assert "current raw source" in text.lower()
     assert "fresh dedicated infrastructure extractor" in text
 
     assert "zero findings" in text.lower()
     assert "zero discovered artifacts" in text.lower()
-    assert "snapshot-screened only" in text
+    assert "page-screened only" in text
     assert "unsupported discovery" in text
     assert "Zero `infrastructure/` pages alone proves none of them" in normalized
 
-    assert "not a supported semantic surface" in normalized
+    assert "`## Notes` is the one supported semantic section" in normalized
+    assert "unsupported custom headings" in normalized
     assert "PAYMENTS_TOKEN=<redacted>" in text
     assert "<private-endpoint>" in text
-    assert "legitimate agent-editable semantic surface" not in text
 
 
 def test_infra_review_contract_includes_native_and_trusted_plugin_preflight():

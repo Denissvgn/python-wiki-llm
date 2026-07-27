@@ -81,7 +81,9 @@ REASON_OBSERVATION_SCOPE_CHANGED = "observation-scope-changed"
 REASON_IDENTICAL_SOURCE_OBSERVATION_MISMATCH = "identical-source-observation-mismatch"
 
 _CONFIGURATION_BASIS_UNKNOWN = "configuration-basis-unknown"
-_STRUCTURAL_PAGE_KINDS = frozenset({PageKind.MODULES, PageKind.ENTITIES})
+_STRUCTURAL_PAGE_KINDS = frozenset(
+    {PageKind.MODULES, PageKind.ENTITIES, PageKind.INFRASTRUCTURE}
+)
 _WINDOWS_DRIVE_PREFIX_RE = re.compile(r"^[A-Za-z]:")
 
 _REASON_DESCRIPTIONS = MappingProxyType(
@@ -583,7 +585,12 @@ def _reliable_recorded_basis(concept: ConceptRecord) -> EvidenceBasis | None:
     if (
         structure.evidence is not EvidenceState.PRESENT
         or basis is None
-        or basis.scope not in {ObservationScope.MODULE, ObservationScope.ENTITY}
+        or basis.scope
+        not in {
+            ObservationScope.MODULE,
+            ObservationScope.ENTITY,
+            ObservationScope.INFRASTRUCTURE,
+        }
         or basis.source_path is None
         or basis.extractor_ref is None
         or basis.source_content_hash is None

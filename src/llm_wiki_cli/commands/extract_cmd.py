@@ -35,10 +35,25 @@ from ..services.api_contracts import (
     attach_routes_to_entry_points,
     build_api_contracts,
 )
-from ..services.contracts import EXTRACT_SCHEMA_VERSION
-from ..services.data_flow import analyze_data_flow, build_data_flow_context
+from ..services.contracts import (
+    EXTRACT_DATA_FLOW_DETAILS_SCHEMA_VERSION,
+    EXTRACT_SCHEMA_VERSION,
+)
+from ..services.data_flow import (
+    DEFAULT_DATA_FLOW_DETAILS_FLOW_LIMIT,
+    analyze_data_flow,
+    analyze_data_flow_detailed,
+    build_data_flow_context,
+    data_flow_effective_limits,
+)
 from ..services.dependencies import analyze_dependencies
-from ..services.entrypoints import build_flow, detect_entry_points, read_console_scripts
+from ..services.entrypoints import (
+    DEFAULT_FLOW_DEPTH,
+    build_flow,
+    build_flow_detailed,
+    detect_entry_points,
+    read_console_scripts,
+)
 from ..services.entrypoints import get_entry_points as get_entry_points  # noqa: F401
 from ..services.extraction_jobs import ExtractionJobPlan, ExtractionJobRequest
 from ..services.imports import build_module_path_resolver
@@ -1216,7 +1231,7 @@ def _dependency_extract_block(analysis: dict) -> dict:
                 if isinstance(metadata, dict)
             }
         external[language] = entry
-    return {
+    result = {
         "edges": [list(edge) for edge in graph.get("edges", [])],
         "cycles": [list(cycle) for cycle in analysis.get("cycles", [])],
         "external": external,
@@ -1226,6 +1241,106 @@ def _dependency_extract_block(analysis: dict) -> dict:
                 list(group) for group in load_order.get("cycle_groups", [])
             ],
         },
+    }
+    version_details = reconciliation.get("version_details")
+    if isinstance(version_details, dict):
+        result["version_details"] = deepcopy(version_details)
+    return result
+
+
+def _data_flow_truncation_reason(coverage: dict) -> str | None:
+    if not coverage.get("truncated"):
+        return None
+    limitations = coverage.get("limitations", [])
+    if any(
+        isinstance(value, str) and value.startswith("upstream-")
+        for value in limitations
+    ):
+        return "upstream-analyzer-limit"
+    if "limit-applies-per-effect-kind-per-emitted-step" in limitations:
+        return "per-step-collection-limit"
+    return "collection-limit"
+
+
+def _public_data_flow_coverage(coverage: dict) -> dict:
+    public = deepcopy(coverage)
+    limitations = [
+        str(value)
+        for value in public.get("limitations", [])
+        if isinstance(value, str)
+    ]
+    public["truncation_reason"] = _data_flow_truncation_reason(public)
+    public["upstream_analyzer_limitations"] = sorted(
+        value for value in limitations if value.startswith("upstream-")
+    )
+    public["effective_limit"] = public.get("limit")
+    by_kind = public.get("by_kind")
+    if isinstance(by_kind, dict):
+        public["by_kind"] = {
+            str(kind): _public_data_flow_coverage(dict(record))
+            for kind, record in sorted(by_kind.items())
+            if isinstance(record, dict)
+        }
+    return public
+
+
+def _public_detailed_data_flow(flow: dict) -> dict:
+    public = deepcopy(flow)
+    coverage = public.get("coverage", {})
+    public["coverage"] = {
+        str(collection): _public_data_flow_coverage(dict(record))
+        for collection, record in sorted(coverage.items())
+        if isinstance(record, dict)
+    }
+    return public
+
+
+def _data_flow_details_contract(
+    *,
+    deep: bool,
+    inventory: dict,
+    unsupported_sources: dict,
+    flows: list[dict],
+) -> dict:
+    if not deep:
+        state = "not_evaluated"
+        reason = "deep-analysis-disabled"
+    elif not inventory and unsupported_sources:
+        state = "unsupported"
+        reason = "no-supported-language-analyzer"
+    else:
+        state = "evaluated"
+        reason = None
+
+    flow_limit = DEFAULT_DATA_FLOW_DETAILS_FLOW_LIMIT
+    observed = len(flows)
+    emitted_flows = flows[:flow_limit]
+    emitted = len(emitted_flows)
+    omitted = observed - emitted
+    analyzer_limitations = [
+        f"unsupported-source-language:{language}"
+        for language in sorted(unsupported_sources)
+    ]
+    return {
+        "schema_version": EXTRACT_DATA_FLOW_DETAILS_SCHEMA_VERSION,
+        "state": state,
+        "reason": reason,
+        "flows": [_public_detailed_data_flow(flow) for flow in emitted_flows],
+        "coverage": {
+            "observed": observed,
+            "emitted": emitted,
+            "omitted": omitted,
+            "limit": flow_limit,
+            "truncated": omitted > 0,
+            "truncation_reason": (
+                "collection-limit" if omitted > 0 else None
+            ),
+            "upstream_analyzer_limitations": analyzer_limitations,
+        },
+        "effective_limits": data_flow_effective_limits(
+            flow_depth=DEFAULT_FLOW_DEPTH,
+            flow_limit=flow_limit,
+        ),
     }
 
 
@@ -1292,6 +1407,12 @@ def build_extract_payload(
                 dependency_analysis
             )
             empty_output["data_flows"] = []
+        empty_output["data_flow_details"] = _data_flow_details_contract(
+            deep=deep,
+            inventory={},
+            unsupported_sources={},
+            flows=[],
+        )
         return ExtractPayloadResult(
             empty_output,
             inventory_count=0,
@@ -1316,6 +1437,7 @@ def build_extract_payload(
             source_snapshot=source_snapshot,
             helper_cache_dir=helper_cache_dir,
             include_tests=include_test_languages,
+            capture_data_effect_observations=deep,
         )
     )
     if result.failed:
@@ -1357,8 +1479,32 @@ def build_extract_payload(
     else:
         entrypoints = []
     call_edges = resolve_call_edges(inventory) if deep and entrypoints else []
+    data_effect_observations = result.data_effect_observations if deep else None
     data_flow_context = (
-        build_data_flow_context(inventory, call_edges) if deep and entrypoints else None
+        build_data_flow_context(
+            inventory,
+            call_edges,
+            data_effect_observations=data_effect_observations,
+        )
+        if deep and entrypoints
+        else None
+    )
+    detailed_data_flows = (
+        [
+            analyze_data_flow_detailed(
+                inventory,
+                build_flow_detailed(
+                    entrypoint,
+                    call_edges,
+                    max_depth=DEFAULT_FLOW_DEPTH,
+                ),
+                call_edges,
+                context=data_flow_context,
+            )
+            for entrypoint in entrypoints
+        ]
+        if deep
+        else []
     )
     data_flows = (
         [
@@ -1408,6 +1554,12 @@ def build_extract_payload(
         output["entrypoints"] = entrypoints
     if data_flows is not None:
         output["data_flows"] = data_flows
+    output["data_flow_details"] = _data_flow_details_contract(
+        deep=deep,
+        inventory=inventory,
+        unsupported_sources=unsupported_sources,
+        flows=detailed_data_flows,
+    )
     if dependencies is not None:
         output["dependencies"] = dependencies
     if api_contracts is not None:

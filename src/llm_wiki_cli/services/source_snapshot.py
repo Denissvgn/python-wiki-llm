@@ -33,14 +33,23 @@ if TYPE_CHECKING:
 
 _DOC_SUFFIXES = {".md", ".txt", ".rst", ".html", ".json"}
 _PACKAGE_MARKER_NAMES = {
+    "Cargo.lock",
+    "Cargo.toml",
+    "Pipfile",
+    "Pipfile.lock",
     "cabal.project",
     "flake.nix",
     "go.mod",
+    "go.sum",
+    "package-lock.json",
     "package.json",
+    "pnpm-lock.yaml",
+    "poetry.lock",
     "pyproject.toml",
     "setup.py",
     "stack.yaml",
     "tsconfig.json",
+    "uv.lock",
 }
 _PACKAGE_MARKER_SUFFIXES = {".cabal"}
 KNOWN_UNSUPPORTED_LANGUAGE_EXTENSIONS: dict[str, tuple[str, ...]] = {

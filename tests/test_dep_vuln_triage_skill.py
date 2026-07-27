@@ -35,7 +35,13 @@ def _public_external(tmp_path, inventory: dict) -> dict:
     return _dependency_extract_block(analysis)["external"]
 
 
-def test_optional_package_without_version_disappears_from_public_extract_but_not_contract(
+def _public_dependencies(tmp_path, inventory: dict) -> dict:
+    return _dependency_extract_block(
+        analyze_dependencies(inventory, str(tmp_path))
+    )
+
+
+def test_optional_package_is_preserved_by_versioned_public_contract(
     tmp_path,
 ):
     (tmp_path / "pyproject.toml").write_text(
@@ -50,7 +56,8 @@ dev = ["pytest>=8"]
         encoding="utf-8",
     )
 
-    python = _public_external(tmp_path, {})["python"]
+    dependencies = _public_dependencies(tmp_path, {})
+    python = dependencies["external"]["python"]
 
     assert python == {
         "used": {},
@@ -58,17 +65,25 @@ dev = ["pytest>=8"]
         "unused": ["requests"],
     }
     assert "pytest" not in json.dumps(python)
+    pytest_record = next(
+        record
+        for record in dependencies["version_details"]["records"]
+        if record["package"] == "pytest"
+    )
+    assert pytest_record["declaration"] == "optional"
+    assert pytest_record["selection_confidence"] == "declared"
+    assert pytest_record["scope"] == "."
 
     text = _skill_text()
     normalized = " ".join(text.split())
-    assert "union of the raw declaration ledger" in normalized
-    assert "Optional/dev/build packages must remain rows" in normalized
-    assert "every row in the supported raw declaration ledger" in normalized
-    assert "Treat an absent resolved/scoped version as unknown" in normalized
-    assert "| unknown-version | No exact version, no scope mapping," in normalized
+    assert "`dependencies.version_details`" in normalized
+    assert "llm-wiki-dependency-version-details/v1" in normalized
+    assert "Optional, dev, build, and peer packages remain rows" in normalized
+    assert "Treat an absent exact selected version as unknown" in normalized
+    assert "| unknown-version | No exact selected record" in normalized
 
 
-def test_multiple_lockfiles_collapse_versions_but_contract_requires_scoped_observations(
+def test_multiple_lockfiles_keep_scoped_records_with_legacy_compatibility(
     tmp_path,
 ):
     service_a = tmp_path / "services" / "a"
@@ -82,7 +97,8 @@ def test_multiple_lockfiles_collapse_versions_but_contract_requires_scoped_obser
         "requests==2.32.0\n", encoding="utf-8"
     )
 
-    python = _public_external(tmp_path, {})["python"]
+    dependencies = _public_dependencies(tmp_path, {})
+    python = dependencies["external"]["python"]
 
     assert python["versions"] == {
         "requests": {
@@ -90,18 +106,28 @@ def test_multiple_lockfiles_collapse_versions_but_contract_requires_scoped_obser
             "resolved_from": "requirements.txt",
         }
     }
+    selected = [
+        record
+        for record in dependencies["version_details"]["records"]
+        if record["package"] == "requests"
+        and record["selection_confidence"] == "declared"
+    ]
+    assert [(record["scope"], record["version"]) for record in selected] == [
+        ("services/a", "2.30.0"),
+        ("services/b", "2.32.0"),
+    ]
 
     text = _skill_text()
     normalized = " ".join(text.split())
     assert (
-        "Two lockfiles with different versions produce two scoped observations"
+        "Two lockfiles with different versions produce two v1 records"
         in normalized
     )
-    assert "selecting the public maximum is not an allowed shortcut" in normalized
-    assert "query every reliable scoped version" in normalized
+    assert "selecting the legacy `versions` maximum is not an allowed shortcut" in normalized
+    assert "query every scoped record" in normalized
 
 
-def test_multiple_versions_in_one_lockfile_collapse_and_remain_explicitly_bounded(
+def test_multiple_versions_in_one_lockfile_remain_distinct_in_v1(
     tmp_path,
 ):
     (tmp_path / "package.json").write_text(
@@ -122,7 +148,8 @@ def test_multiple_versions_in_one_lockfile_collapse_and_remain_explicitly_bounde
         encoding="utf-8",
     )
 
-    typescript = _public_external(tmp_path, {})["typescript"]
+    dependencies = _public_dependencies(tmp_path, {})
+    typescript = dependencies["external"]["typescript"]
 
     assert typescript["versions"] == {
         "widget": {
@@ -130,10 +157,19 @@ def test_multiple_versions_in_one_lockfile_collapse_and_remain_explicitly_bounde
             "resolved_from": "package-lock.json",
         }
     }
+    selected = [
+        record
+        for record in dependencies["version_details"]["records"]
+        if record["package"] == "widget"
+        and record["selection_confidence"] == "selected"
+    ]
+    assert [record["version"] for record in selected] == ["1.2.0", "2.0.0"]
     assert "**Multiple versions in one lockfile**" in _skill_text()
 
 
-def test_lockfile_only_transitive_version_is_absent_from_public_projection(tmp_path):
+def test_lockfile_only_transitive_is_present_in_v1_and_legacy_stays_compatible(
+    tmp_path,
+):
     (tmp_path / "package.json").write_text(
         '{"dependencies": {"axios": "^1.0.0"}}',
         encoding="utf-8",
@@ -152,7 +188,8 @@ def test_lockfile_only_transitive_version_is_absent_from_public_projection(tmp_p
         encoding="utf-8",
     )
 
-    typescript = _public_external(tmp_path, {})["typescript"]
+    dependencies = _public_dependencies(tmp_path, {})
+    typescript = dependencies["external"]["typescript"]
 
     assert typescript["versions"] == {
         "axios": {
@@ -161,11 +198,18 @@ def test_lockfile_only_transitive_version_is_absent_from_public_projection(tmp_p
         }
     }
     assert "follow-redirects" not in json.dumps(typescript)
+    transitive = next(
+        record
+        for record in dependencies["version_details"]["records"]
+        if record["package"] == "follow-redirects"
+    )
+    assert transitive["version"] == "1.15.6"
+    assert transitive["reach"] == "transitive"
 
     text = _skill_text()
     normalized = " ".join(text.split())
-    assert "Lockfile-only transitive dependencies are excluded" in normalized
-    assert "Do not claim complete transitive coverage" in normalized
+    assert "Lockfile-only transitive records are retained" in normalized
+    assert "prohibit a complete claim" in normalized
     assert "Direct declarations" in normalized
 
 
@@ -189,10 +233,11 @@ github.com/pkg/errors v0.9.1/go.mod h1:mod
         encoding="utf-8",
     )
 
-    go = _public_external(
+    dependencies = _public_dependencies(
         tmp_path,
         {"main.go": _mod("go", _imp("github.com/pkg/errors"))},
-    )["go"]
+    )
+    go = dependencies["external"]["go"]
 
     assert go["versions"] == {
         "github.com/pkg/errors": {
@@ -200,6 +245,16 @@ github.com/pkg/errors v0.9.1/go.mod h1:mod
             "resolved_from": "go.sum",
         }
     }
+    versions = [
+        (record["selection_confidence"], record["version"])
+        for record in dependencies["version_details"]["records"]
+        if record["package"] == "github.com/pkg/errors"
+    ]
+    assert versions == [
+        ("observed", "v0.8.1"),
+        ("observed", "v0.9.1"),
+        ("selected", "v0.9.0"),
+    ]
 
     text = _skill_text()
     normalized = " ".join(text.split())
@@ -208,7 +263,7 @@ github.com/pkg/errors v0.9.1/go.mod h1:mod
         in normalized
     )
     assert "`go.sum` history alone never produces a selected-version claim" in normalized
-    assert "observed-in-go.sum" in text
+    assert "`source_semantics=go-checksum-observation`" in text
 
 
 def test_advisory_contract_records_provenance_and_fails_closed_offline():

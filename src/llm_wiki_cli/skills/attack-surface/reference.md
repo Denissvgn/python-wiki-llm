@@ -11,14 +11,33 @@ The attack-surface workflow consumes the current additive `llm-wiki-extract/v1` 
 - `data_flows[].boundaries` contains bounded emitted boundary rows.
 - `data_flows[].gaps` contains bounded emitted unresolved, external, step-limit, or truncation rows. Every gap is unknown surface.
 - `data_flows[].truncated` is a boolean marker that the upstream flow walk stopped at its depth bound. Treat `true` as a review-priority signal even when emitted boundaries look low impact.
+- `data_flow_details` is the additive
+  `llm-wiki-extract-data-flow-details/v1` sibling. Its `state` distinguishes
+  `evaluated`, `not_evaluated`, and `unsupported`; its top-level `coverage`
+  bounds emitted flows; and `effective_limits` names flow, depth, step,
+  effect, boundary, transfer, and gap limits.
+- Each `data_flow_details.flows[].coverage` record exposes exact
+  `observed`, `emitted`, `omitted`, `limit`, `truncated`,
+  `truncation_reason`, and `upstream_analyzer_limitations` for steps, effects
+  (including by kind), boundaries, transfers, and gaps.
 
-For the legacy deep payload, describe every array length as **emitted rows**. Do not call it total, observed, complete, or analyzer coverage. A richer flow payload may contain a versioned `coverage` object whose records supply `observed`, `emitted`, `omitted`, `limit`, `truncated`, and `limitations`; only then may the report quote those exact totals. Even detailed static coverage does not claim runtime completeness.
+Use the v1 detailed sibling when present and preserve every omitted count,
+truncation reason, and upstream limitation. For an older payload without it,
+describe legacy array lengths only as **emitted rows**—never totals or analyzer
+coverage. Even detailed static coverage does not claim runtime completeness.
+Only report observed/emitted/omitted totals from the detailed v1 coverage
+records; never derive those totals from legacy array lengths.
 
 If another field is absent or a payload shape is unsupported, record that limitation and fall back to source evidence for the affected row. Do not adapt the workflow to older names or manufacture zeros. Missing, bounded, unsupported, and snapshot-excluded surface remains unknown.
+Entrypoint/analyzer completeness is unknown unless independent evidence closes
+the relevant source, helper, plugin, and infrastructure gaps.
 
 Example empty-entrypoint coverage statement:
 
-> Deep extract was valid and emitted zero entry-point rows (`entrypoints` absent) and zero data-flow rows. Entrypoint/analyzer completeness is unknown; source, infrastructure, unsupported-source, helper, and plugin evidence remain in scope.
+> Deep extract evaluated `data_flow_details` and observed/emitted zero flows;
+> `entrypoints` was absent. Static entrypoint completeness remains unknown;
+> source, infrastructure, unsupported-source, helper, and plugin evidence
+> remain in scope.
 
 ## Trusted-plugin and inert-evidence preflight
 
@@ -162,7 +181,9 @@ A successful run has:
 - Missing `entrypoints` accepted as valid zero-emitted evidence, with an explicit unknown-coverage statement.
 - HTTP entrypoints included in the trust-boundary worklist.
 - All nine implemented boundary kinds classified, with unfamiliar kinds preserved as unknown.
-- Legacy array lengths labeled emitted rows; observed/emitted/omitted totals used only when supplied by the public payload.
+- `data_flow_details` v1 state, effective limits, and every relevant
+  observed/emitted/omitted collection recorded; legacy-only array lengths
+  labeled emitted rows.
 - Source-adapter runs used `llm-wiki prepare-extractors --src-dir <repo> --allow-external-src` before extraction, and used `llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki` only when a guarded copied/project wiki exists.
 - Every security-model high-risk area covered by a matrix row.
 - Every exposure item carrying source evidence with line ranges, not only extracted flow names.

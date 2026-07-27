@@ -109,6 +109,55 @@ existing reasons, and do not manufacture replacements.
 }
 ```
 
+## Native-qualified claim evidence
+
+`claims_evidence_pages` is the versioned page-only compatibility record. Add
+`claim_evidence` only when a claim depends on native identity, section
+ownership/review, lifecycle, or typed-graph scope. The worker supplies query
+intent and the observed result; the supervisor recomputes every field from one
+operation-scoped service over the committed post-refresh view. Any changed UID,
+locator, page, section, native state, or bound rejects the result.
+
+```json
+{
+  "claim_evidence": [
+    {
+      "schema_version": "llm-wiki-documentation-claim-evidence/v1",
+      "claim_id": "work:stable-work-id",
+      "canonical_page": "modules/api.md",
+      "concept_query": "uid_example",
+      "resolution": "exact",
+      "concept_uid": "uid_example",
+      "concept_locator": "llm-wiki://modules/api",
+      "section_locator": null,
+      "structural_evidence": {"state": "present", "reason": null},
+      "freshness": {
+        "evaluated": true,
+        "state": "current",
+        "reason": "source-content-current"
+      },
+      "lifecycle_review": {"lifecycle": "active", "section_review": null},
+      "graph_query": null,
+      "bounds": {
+        "matches": {"total": 1, "returned": 1, "truncated": false},
+        "sections": null,
+        "edges": null,
+        "analyzers": []
+      },
+      "safe_evidence_link": "modules/api.md",
+      "internal_evidence_ref": null
+    }
+  ]
+}
+```
+
+Use the exact section locator returned by the public section query; never parse
+the private ownership extension. Preserve `missing`, `ambiguous`,
+`native-unavailable`, `typed-graph-unavailable`, and every `truncated` bound.
+Detailed edge samples remain in `.llm-wiki-docs/evidence/` and may be named by
+`internal_evidence_ref`; they are not copied into a public page or result
+summary.
+
 For a run whose source baseline is not `verified_current`, primary guides must
 not link to an imported semantic page as canonical evidence. Keep such material
 deferred or link the guide to independently grounded, non-imported evidence.

@@ -60,6 +60,13 @@ from ..services.inventory_cache import (
     InventoryCacheStats,
     format_cache_stats,
 )
+from ..services.infrastructure_inventory import get_yaml_infrastructure_inventory
+from ..services.infrastructure_sync import (
+    InfrastructureSyncError,
+    InfrastructureSyncPlan,
+    build_infrastructure_sync_plan,
+    with_infrastructure_generation_input,
+)
 from ..services.io import read_md, write_md
 from ..services.knowledge_artifacts import (
     ArtifactWriteState,
@@ -145,6 +152,7 @@ from .bootstrap_cmd import (
     _generate_index_md,
     _generate_load_order_md,
     _generate_module_md,
+    _generate_infrastructure_md,
     _generated_diagram_style,
     _module_name_from_path,
     _page_name_for_module,
@@ -155,6 +163,7 @@ from .bootstrap_cmd import (
 from .extract_cmd import (
     InventoryResult,
     get_inventory_result,
+    get_docker_inventory,
     print_inventory_failures,
     resolve_call_observations,
     resolve_call_edges,
@@ -165,6 +174,9 @@ from .extract_cmd import (
 MAX_SYNC_AFFECTED_FILES = 50
 MAX_SYNC_AFFECTED_RATIO = 0.30
 MIN_SOURCES_FOR_RATIO_GUARD = 10
+MAX_INFRASTRUCTURE_AFFECTED_FILES = MAX_SYNC_AFFECTED_FILES
+MAX_INFRASTRUCTURE_AFFECTED_RATIO = MAX_SYNC_AFFECTED_RATIO
+MIN_INFRASTRUCTURE_SOURCES_FOR_RATIO_GUARD = MIN_SOURCES_FOR_RATIO_GUARD
 INITIALIZABLE_SURFACES = ("flows", "dependencies", "api-contracts")
 _SURFACE_POLICY_KEYS = {
     "flows": "flows",
@@ -511,6 +523,28 @@ def _large_diff_message(diff: SyncDiff, manifest: SyncManifest) -> str | None:
             limit_percent = int(MAX_SYNC_AFFECTED_RATIO * 100)
             return (
                 f"sync would affect {affected_count} of {manifest_count} manifest source file(s) "
+                f"({percent}%), which exceeds the {limit_percent}% safety limit."
+            )
+    return None
+
+
+def _large_infrastructure_message(plan: InfrastructureSyncPlan) -> str | None:
+    affected_count = plan.affected_count
+    prior_count = len(plan.prior_sources)
+    if affected_count > MAX_INFRASTRUCTURE_AFFECTED_FILES:
+        return (
+            "sync would affect "
+            f"{affected_count} infrastructure source(s), which exceeds the safety "
+            f"limit of {MAX_INFRASTRUCTURE_AFFECTED_FILES}."
+        )
+    if prior_count >= MIN_INFRASTRUCTURE_SOURCES_FOR_RATIO_GUARD:
+        affected_ratio = affected_count / prior_count
+        if affected_ratio > MAX_INFRASTRUCTURE_AFFECTED_RATIO:
+            percent = int(affected_ratio * 100)
+            limit_percent = int(MAX_INFRASTRUCTURE_AFFECTED_RATIO * 100)
+            return (
+                "sync would affect "
+                f"{affected_count} of {prior_count} infrastructure source(s) "
                 f"({percent}%), which exceeds the {limit_percent}% safety limit."
             )
     return None
@@ -1587,6 +1621,7 @@ class _PreparedSyncRun:
     surface_plan: _SurfaceInitializationPlan
     repository_evidence: RepositoryEvidence
     graph_observations: _RuntimeGraphObservations
+    infrastructure_plan: InfrastructureSyncPlan
 
 
 def _updated_surface_policies(
@@ -1849,6 +1884,7 @@ def _print_dry_run_plan(
     options: _SyncRunOptions,
     diff: "SyncDiff",
     plan: _SurfaceInitializationPlan,
+    infrastructure_plan: InfrastructureSyncPlan,
     manifest: SyncManifest,
     *,
     seed_manifest: bool,
@@ -1863,6 +1899,19 @@ def _print_dry_run_plan(
         f"{len(diff.new_files)} new, {len(diff.changed_files)} changed, "
         f"{len(diff.metadata_only_files)} metadata-only, "
         f"{len(diff.removed_files)} removed"
+    )
+    infrastructure_label = (
+        "deferred infrastructure sources"
+        if options.initialize_surfaces
+        else "infrastructure sources"
+    )
+    print(
+        f"  {infrastructure_label}: "
+        f"{len(infrastructure_plan.new_sources)} new, "
+        f"{len(infrastructure_plan.changed_sources)} changed, "
+        f"{len(infrastructure_plan.moved_sources)} moved, "
+        f"{len(infrastructure_plan.removed_sources)} removed, "
+        f"{len(infrastructure_plan.unsupported_yaml)} unsupported YAML"
     )
     categories = Counter(
         str(entry.get("category") or "unknown") for entry in plan.new_flow_entries
@@ -1919,7 +1968,10 @@ def _print_dry_run_plan(
         not options.initialize_surfaces
         and not seed_manifest
         and not repair_only
-        and _large_diff_message(diff, manifest) is not None
+        and (
+            _large_diff_message(diff, manifest) is not None
+            or _large_infrastructure_message(infrastructure_plan) is not None
+        )
     )
     surface_requires_force = (
         not seed_manifest
@@ -2231,8 +2283,11 @@ def _exit_if_large_unforced_diff(
     diff: "SyncDiff",
     manifest: "SyncManifest",
     inventory_result: InventoryResult,
+    infrastructure_plan: InfrastructureSyncPlan,
 ) -> None:
-    large_diff_message = _large_diff_message(diff, manifest)
+    large_diff_message = _large_diff_message(diff, manifest) or (
+        _large_infrastructure_message(infrastructure_plan)
+    )
     if not large_diff_message or options.force:
         return
 
@@ -2256,6 +2311,8 @@ def _apply_sync_changes(
     page_maps: _SyncPageMaps,
     surface_plan: _SurfaceInitializationPlan,
     graph_observations: _RuntimeGraphObservations,
+    infrastructure_plan: InfrastructureSyncPlan,
+    source_snapshot: SourceSnapshot,
 ) -> "SyncResult":
     generated_sections = _build_generated_section_context(
         options,
@@ -2274,6 +2331,13 @@ def _apply_sync_changes(
         module_page_map=page_maps.module_page_map,
         generated_sections=generated_sections,
         preserve_semantic=options.preserve_semantic,
+    )
+    _apply_infrastructure_plan(
+        options,
+        infrastructure_plan,
+        result,
+        page_maps=page_maps,
+        source_snapshot=source_snapshot,
     )
 
     _apply_surface_page_changes(
@@ -2300,6 +2364,7 @@ def _apply_sync_changes(
         diff,
         result,
         surface_plan=surface_plan,
+        infrastructure_plan=infrastructure_plan,
     )
     return result
 
@@ -2478,7 +2543,11 @@ def _build_sync_graph_observations(
     )
 
 
-def _print_sync_summary(result: "SyncResult", diff: "SyncDiff") -> None:
+def _print_sync_summary(
+    result: "SyncResult",
+    diff: "SyncDiff",
+    infrastructure_plan: InfrastructureSyncPlan | None = None,
+) -> None:
     print(
         f"\nSync complete: {result.created} created, {result.updated} updated, "
         f"{result.metadata_only} metadata-only, {result.skipped} skipped, "
@@ -2489,6 +2558,15 @@ def _print_sync_summary(result: "SyncResult", diff: "SyncDiff") -> None:
     if diff.moved_entities:
         names = ", ".join(diff.moved_entities.keys())
         print(f"Moved entities detected (pages updated in-place): {names}")
+    if infrastructure_plan is not None:
+        print(
+            "Infrastructure observations: "
+            f"{len(infrastructure_plan.new_sources)} added, "
+            f"{len(infrastructure_plan.changed_sources)} changed, "
+            f"{len(infrastructure_plan.moved_sources)} moved, "
+            f"{len(infrastructure_plan.removed_sources)} removed, "
+            f"{len(infrastructure_plan.unsupported_yaml)} unsupported YAML."
+        )
 
 
 def _print_surface_summary(plan: _SurfaceInitializationPlan) -> None:
@@ -2500,6 +2578,60 @@ def _print_surface_summary(plan: _SurfaceInitializationPlan) -> None:
         f"{len(plan.new_dependency_pages)} dependency page(s), "
         f"{int(plan.new_api_contract_page)} API-contract page(s), "
         f"policy {'updated' if plan.policy_changed else 'unchanged'}."
+    )
+
+
+def _discover_infrastructure_plan(
+    source_snapshot: SourceSnapshot,
+    generation_inputs: Mapping[str, object],
+) -> InfrastructureSyncPlan:
+    docker_inventory = get_docker_inventory(
+        source_snapshot.root,
+        source_snapshot=source_snapshot,
+    )
+    yaml_inventory = get_yaml_infrastructure_inventory(
+        source_snapshot.root,
+        source_snapshot=source_snapshot,
+    )
+    infrastructure_inventory = dict(docker_inventory)
+    for source_path, info in yaml_inventory.items():
+        infrastructure_inventory.setdefault(source_path, info)
+    plan = build_infrastructure_sync_plan(
+        source_snapshot,
+        infrastructure_inventory,
+        generation_inputs=generation_inputs,
+    )
+    print(
+        "Infrastructure discovery roots: "
+        f"{', '.join(plan.discovery_roots)} "
+        f"({len(plan.current_sources)} supported source(s), "
+        f"{len(plan.unsupported_yaml)} unsupported YAML candidate(s))."
+    )
+    if plan.unsupported_yaml:
+        print(
+            "Unsupported infrastructure YAML: "
+            + ", ".join(str(item["path"]) for item in plan.unsupported_yaml)
+        )
+    return plan
+
+
+def _with_planned_infrastructure_state(
+    plan: _SurfaceInitializationPlan,
+    infrastructure_plan: InfrastructureSyncPlan,
+) -> _SurfaceInitializationPlan:
+    if not infrastructure_plan.state_changed:
+        return plan
+    generation_inputs = with_infrastructure_generation_input(
+        plan.generation_inputs,
+        infrastructure_plan,
+    )
+    return replace(
+        plan,
+        generation_inputs=generation_inputs,
+        generation_inputs_changed=(
+            plan.generation_inputs_changed
+            or generation_inputs != plan.generation_inputs
+        ),
     )
 
 
@@ -2558,6 +2690,21 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
         generation_inputs=generation_inputs,
         source_snapshot=source_snapshot,
     )
+    infrastructure_plan = _discover_infrastructure_plan(
+        source_snapshot,
+        manifest.generation_inputs,
+    )
+    infrastructure_plan = _qualify_infrastructure_page_drift(
+        options,
+        infrastructure_plan,
+        page_maps=maps,
+        source_snapshot=source_snapshot,
+    )
+    if not seed_manifest and not repair_only and not options.initialize_surfaces:
+        surface_plan = _with_planned_infrastructure_state(
+            surface_plan,
+            infrastructure_plan,
+        )
     graph_observations = _build_sync_graph_observations(
         options,
         inventory,
@@ -2585,6 +2732,7 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
         surface_plan=surface_plan,
         repository_evidence=repository_evidence,
         graph_observations=graph_observations,
+        infrastructure_plan=infrastructure_plan,
     )
 
 
@@ -2613,6 +2761,230 @@ def _preflight_sync_governance(
             )
 
 
+def _infrastructure_page_path(wiki_dir: Path, record: Mapping[str, object]) -> Path:
+    relative = str(record.get("page_path") or "")
+    parts = Path(relative).parts
+    if (
+        len(parts) != 2
+        or parts[0] != "infrastructure"
+        or not parts[1].endswith(".md")
+        or parts[1] in {".md", "..md"}
+    ):
+        raise ValueError(f"invalid persisted infrastructure page path: {relative!r}")
+    return wiki_dir / relative
+
+
+def _merge_infrastructure_notes(existing: str | None, generated: str) -> str:
+    if existing is None or _section_body(existing, "Notes") is None:
+        return generated
+    return _preserve_level_two_section_exact(existing, generated, "Notes")
+
+
+def _record_infrastructure_write(
+    result: SyncResult,
+    state: str,
+    *,
+    label: str,
+) -> None:
+    if state == "created":
+        result.created += 1
+        print(f"  CREATE infrastructure: {label}")
+    elif state == "updated":
+        result.updated += 1
+        print(f"  UPDATE infrastructure: {label}")
+    else:
+        result.skipped += 1
+        print(f"  SKIP infrastructure (unchanged): {label}")
+
+
+def _write_current_infrastructure_page(
+    options: _SyncRunOptions,
+    plan: InfrastructureSyncPlan,
+    result: SyncResult,
+    source_path: str,
+    *,
+    module_page_map: Mapping[str, str],
+    unsupported_sources: Mapping[str, Mapping[str, object]],
+    semantic_source: Path | None = None,
+) -> Path:
+    record = plan.current_sources[source_path]
+    path = _infrastructure_page_path(options.wiki_dir, record)
+    existing_path = (
+        (path if path.is_file() else semantic_source)
+        if options.preserve_semantic
+        else None
+    )
+    existing = read_md(existing_path) if existing_path and existing_path.is_file() else None
+    generated = _generate_infrastructure_md(
+        source_path,
+        plan.inventory[source_path],
+        module_page_map,
+        dict(unsupported_sources),
+    )
+    merged = _merge_infrastructure_notes(existing, generated)
+    state = _write_md_if_changed(path, merged)
+    _record_infrastructure_write(result, state, label=source_path)
+    return path
+
+
+def _infrastructure_tombstone_markdown(
+    source_path: str,
+    record: Mapping[str, object],
+) -> str:
+    adapter = str(record.get("adapter") or "unknown")
+    return (
+        f"# Removed infrastructure: {source_path}\n\n"
+        "> ⚠️ **Stale observation:** The mapped infrastructure source is no longer "
+        "present in the current discovery snapshot.\n\n"
+        f"**Path:** `{source_path}`\n"
+        f"**Type:** `{adapter}`\n"
+        "**Observation State:** `source-removed`\n\n"
+        "## Notes\n\n"
+        "_Add retained operational context here; this page is not current source "
+        "evidence._\n"
+    )
+
+
+def _qualify_infrastructure_page_drift(
+    options: _SyncRunOptions,
+    plan: InfrastructureSyncPlan,
+    *,
+    page_maps: _SyncPageMaps,
+    source_snapshot: SourceSnapshot,
+) -> InfrastructureSyncPlan:
+    """Promote page drift without treating the semantic Notes body as generated."""
+
+    changed = set(plan.changed_sources)
+    unsupported_sources = unsupported_source_summary(source_snapshot)
+    for source_path in plan.unchanged_sources:
+        record = plan.current_sources[source_path]
+        path = _infrastructure_page_path(options.wiki_dir, record)
+        existing = read_md(path) if path.is_file() else None
+        generated = _generate_infrastructure_md(
+            source_path,
+            plan.inventory[source_path],
+            page_maps.module_page_map,
+            unsupported_sources,
+        )
+        expected = _merge_infrastructure_notes(
+            existing if options.preserve_semantic else None,
+            generated,
+        )
+        if existing is None or _normalize_md(existing) != _normalize_md(expected):
+            changed.add(source_path)
+
+    repair_tombstones: list[str] = []
+    cleanup_moved_pages: list[str] = []
+    raw_tombstones = plan.next_state.get("tombstones")
+    tombstones = raw_tombstones if isinstance(raw_tombstones, Mapping) else {}
+    for source_path, raw_record in sorted(tombstones.items()):
+        if not isinstance(source_path, str) or not isinstance(raw_record, Mapping):
+            continue
+        if source_path in plan.removed_sources or source_path in plan.moved_sources:
+            continue
+        path = _infrastructure_page_path(options.wiki_dir, raw_record)
+        reason = raw_record.get("reason")
+        if reason == "source-moved":
+            if path.is_file():
+                cleanup_moved_pages.append(source_path)
+            continue
+        if reason != "source-removed":
+            continue
+        existing = read_md(path) if path.is_file() else None
+        expected = _merge_infrastructure_notes(
+            existing if options.preserve_semantic else None,
+            _infrastructure_tombstone_markdown(source_path, raw_record),
+        )
+        if existing is None or _normalize_md(existing) != _normalize_md(expected):
+            repair_tombstones.append(source_path)
+
+    unchanged = tuple(
+        source_path
+        for source_path in plan.unchanged_sources
+        if source_path not in changed
+    )
+    return replace(
+        plan,
+        changed_sources=tuple(sorted(changed)),
+        unchanged_sources=unchanged,
+        repair_tombstones=tuple(repair_tombstones),
+        cleanup_moved_pages=tuple(cleanup_moved_pages),
+    )
+
+
+def _apply_infrastructure_plan(
+    options: _SyncRunOptions,
+    plan: InfrastructureSyncPlan,
+    result: SyncResult,
+    *,
+    page_maps: _SyncPageMaps,
+    source_snapshot: SourceSnapshot,
+) -> None:
+    unsupported_sources = unsupported_source_summary(source_snapshot)
+    for old_path, new_path in plan.moved_sources.items():
+        old_page = _infrastructure_page_path(options.wiki_dir, plan.prior_sources[old_path])
+        new_page = _write_current_infrastructure_page(
+            options,
+            plan,
+            result,
+            new_path,
+            module_page_map=page_maps.module_page_map,
+            unsupported_sources=unsupported_sources,
+            semantic_source=old_page,
+        )
+        if old_page != new_page and old_page.is_file():
+            old_page.unlink()
+            print(f"  MOVE infrastructure: {old_path} -> {new_path}")
+    for source_path in (*plan.new_sources, *plan.changed_sources):
+        prior_record = plan.prior_sources.get(source_path)
+        old_page = (
+            _infrastructure_page_path(options.wiki_dir, prior_record)
+            if prior_record is not None
+            else None
+        )
+        new_page = _write_current_infrastructure_page(
+            options,
+            plan,
+            result,
+            source_path,
+            module_page_map=page_maps.module_page_map,
+            unsupported_sources=unsupported_sources,
+            semantic_source=old_page,
+        )
+        if old_page is not None and old_page != new_page and old_page.is_file():
+            old_page.unlink()
+            print(f"  RENAME infrastructure page mapping: {source_path}")
+    for source_path in plan.removed_sources:
+        record = plan.prior_sources[source_path]
+        path = _infrastructure_page_path(options.wiki_dir, record)
+        existing = read_md(path) if path.is_file() else None
+        tombstone = _merge_infrastructure_notes(
+            existing if options.preserve_semantic else None,
+            _infrastructure_tombstone_markdown(source_path, record),
+        )
+        state = _write_md_if_changed(path, tombstone)
+        _record_infrastructure_write(result, state, label=f"{source_path} (removed)")
+        result.deprecated += 1
+    raw_tombstones = plan.next_state.get("tombstones")
+    tombstones = raw_tombstones if isinstance(raw_tombstones, Mapping) else {}
+    for source_path in plan.repair_tombstones:
+        record = tombstones[source_path]
+        path = _infrastructure_page_path(options.wiki_dir, record)
+        existing = read_md(path) if path.is_file() else None
+        tombstone = _merge_infrastructure_notes(
+            existing if options.preserve_semantic else None,
+            _infrastructure_tombstone_markdown(source_path, record),
+        )
+        state = _write_md_if_changed(path, tombstone)
+        _record_infrastructure_write(result, state, label=f"{source_path} (removed)")
+    for source_path in plan.cleanup_moved_pages:
+        record = tombstones[source_path]
+        path = _infrastructure_page_path(options.wiki_dir, record)
+        if path.is_file():
+            path.unlink()
+            print(f"  REMOVE moved infrastructure page: {source_path}")
+
+
 def _apply_prepared_sync(
     options: _SyncRunOptions, prepared: _PreparedSyncRun
 ) -> SyncResult:
@@ -2629,8 +3001,18 @@ def _apply_prepared_sync(
             prepared.page_maps,
             prepared.surface_plan,
             prepared.graph_observations,
+            prepared.infrastructure_plan,
+            prepared.source_snapshot,
         )
     result = SyncResult()
+    if not options.initialize_surfaces:
+        _apply_infrastructure_plan(
+            options,
+            prepared.infrastructure_plan,
+            result,
+            page_maps=prepared.page_maps,
+            source_snapshot=prepared.source_snapshot,
+        )
     _apply_surface_page_changes(
         options,
         prepared.inventory,
@@ -2656,13 +3038,18 @@ def _apply_prepared_sync(
             module_page_map=prepared.page_maps.module_page_map,
             preserve_semantic=options.preserve_semantic,
         )
-    if prepared.diff.has_changes or prepared.surface_plan.has_work:
+    if (
+        prepared.diff.has_changes
+        or prepared.surface_plan.has_work
+        or prepared.infrastructure_plan.has_changes
+    ):
         _append_log(
             options.wiki_dir,
             options.src_dir,
             prepared.diff,
             result,
             surface_plan=prepared.surface_plan,
+            infrastructure_plan=prepared.infrastructure_plan,
         )
     return result
 
@@ -2797,8 +3184,16 @@ def _finalize_prepared_sync(
         elif not prepared.surface_plan.has_work:
             print("Requested optional surfaces are up to date.")
     else:
-        if prepared.diff.has_changes or prepared.surface_plan.has_work:
-            _print_sync_summary(result, prepared.diff)
+        if (
+            prepared.diff.has_changes
+            or prepared.surface_plan.has_work
+            or prepared.infrastructure_plan.has_changes
+        ):
+            _print_sync_summary(
+                result,
+                prepared.diff,
+                prepared.infrastructure_plan,
+            )
         else:
             print("Wiki is up to date.")
     _print_cache_stats(
@@ -2839,6 +3234,7 @@ def _run_sync_dry_run(
         options,
         prepared.diff,
         prepared.surface_plan,
+        prepared.infrastructure_plan,
         prepared.manifest,
         seed_manifest=prepared.seed_manifest,
         repair_only=prepared.repair_only,
@@ -2906,7 +3302,7 @@ def run(args) -> None:
     options = _sync_run_options_from_args(args)
     try:
         prepared = _prepare_sync_run(options)
-    except (ApiContractError, GovernanceError) as exc:
+    except (ApiContractError, GovernanceError, InfrastructureSyncError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(2)
     if prepared is None:
@@ -2921,7 +3317,11 @@ def run(args) -> None:
         and not prepared.repair_only
     ):
         _exit_if_large_unforced_diff(
-            options, prepared.diff, prepared.manifest, prepared.inventory_result
+            options,
+            prepared.diff,
+            prepared.manifest,
+            prepared.inventory_result,
+            prepared.infrastructure_plan,
         )
     if not prepared.seed_manifest and not prepared.repair_only:
         _exit_if_large_unforced_surface_plan(options, prepared.surface_plan)
@@ -3458,6 +3858,7 @@ def _append_log(
     result: SyncResult,
     *,
     surface_plan: _SurfaceInitializationPlan | None = None,
+    infrastructure_plan: InfrastructureSyncPlan | None = None,
 ) -> None:
     log_path = wiki_dir / "log.md"
     today = date.today().isoformat()
@@ -3498,6 +3899,16 @@ def _append_log(
         if surface_plan is not None and surface_plan.requested_surfaces
         else "incremental sync"
     )
+    infrastructure_lines = ""
+    if infrastructure_plan is not None and infrastructure_plan.has_changes:
+        infrastructure_lines = (
+            f"- Infrastructure added: {len(infrastructure_plan.new_sources)}\n"
+            f"- Infrastructure changed: {len(infrastructure_plan.changed_sources)}\n"
+            f"- Infrastructure moved: {len(infrastructure_plan.moved_sources)}\n"
+            f"- Infrastructure removed: {len(infrastructure_plan.removed_sources)}\n"
+            "- Unsupported infrastructure YAML: "
+            f"{len(infrastructure_plan.unsupported_yaml)}\n"
+        )
     entry = (
         f"\n## {today}\n\n"
         f"### feat: {operation}\n"
@@ -3510,6 +3921,7 @@ def _append_log(
         f"- Semantic fields preserved: {result.preserved_semantic}\n"
         f"- Moved entities: {moved_str}\n"
         f"{surface_lines}"
+        f"{infrastructure_lines}"
     )
     if log_path.exists():
         existing_log = read_md(log_path)

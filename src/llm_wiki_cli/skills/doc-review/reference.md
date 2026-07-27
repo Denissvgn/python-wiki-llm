@@ -35,6 +35,28 @@ authority. It preserves each original finding ID across handoffs. Agent review
 does not author or satisfy a native human section review, and a review result
 cannot self-authorize `publish_ready`.
 
+## Native human-review handoff
+
+Agent review, native human section review, and machine verification are three
+separate records. When managed review changes a semantic section that has a
+native human review event—or policy names it as human-reviewed scope—capture
+this handoff before the edit and reconcile it after the final re-anchor:
+
+| Field | Required value |
+|---|---|
+| Concept identity | Durable UID when governed, current locator, and canonical page path |
+| Review scope | Exact semantic section locator and heading |
+| Prior assurance | Review event ID, reviewer identity, method/version, prior state, and all prior expiry reasons |
+| Change evidence | Focused semantic diff plus the source/intake/evidence basis that justified it |
+| Post-refresh state | Valid/expired and every computed reason such as `scope-changed`, `evidence-changed`, or `basis-incompatible` |
+| Owner action | Named human/governance owner asked to inspect the new scope and, if accepted, author a new explicit `knowledge review` event |
+
+The reviewing agent never runs that owner action on the human's behalf. It
+cannot convert an agent result, lint pass, machine receipt, source truth, or
+trusted intake into `reviewer-kind human`. Generated-only churn that leaves the
+semantic hash and evidence basis unchanged keeps a valid review; do not create
+noise by requesting a replacement event.
+
 ## Native lint finding map
 
 | Native category | Fact class | Review handling |
@@ -65,10 +87,11 @@ Checker output from these classes can feed the `user-docs-author` adjustment loo
 - Generated tables, diagrams, manifests, and "Do not edit by hand" blocks are protected.
 - Supported semantic wiki sections, overview prose, `## Behavior`, and
   dependency/API `## Notes` are editable when the applicable authority supports
-  the change. Generated infrastructure pages are bootstrap snapshots;
-  arbitrary infrastructure `## Notes` are not a supported semantic surface and
-  review findings belong in a separate redacted report based on current raw
-  source or an authorized fresh dedicated extraction.
+  the change. Infrastructure `## Notes` is the sole semantic section on its
+  incrementally regenerated page; unsupported custom headings are dropped and
+  generated fields remain protected. Security findings belong in a separate
+  redacted report based on current raw source or an authorized fresh dedicated
+  extraction.
 - A branch/diff workflow can include source documentation edits, but only when the reviewed truth surface is source docs rather than generated wiki output.
 - Review JSON is evidence, not authority; verify against source before edits.
 - Source settles observed code structure/behavior. Trusted intake and explicit
@@ -87,6 +110,9 @@ Checker output from these classes can feed the `user-docs-author` adjustment loo
 
 Always include an "Unresolved finding" section when anything remains open.
 Mention duplicate finding IDs and false-positive rationale explicitly.
+When a reviewed semantic scope changed, also include a separate "Native
+human-review handoff" table with the coordinates and post-refresh reasons
+above. Do not bury it among fixed agent-review findings.
 
 For `external_agent_docs`, also keep severity, status, evidence hashes,
 originating stage, iteration count, terminal rationale, and returned-to-stage
@@ -101,6 +127,24 @@ diffs, and deterministic checks.
 Original finding IDs are immutable across the review result, ledger update,
 returned-to-stage handoff, and later adjustment result. A duplicate points to
 the kept original ID; it does not replace either identity.
+
+## Native-qualified finding evidence
+
+`claims_evidence_pages` remains the page-only compatibility record. A finding
+that depends on exact native identity, semantic section ownership/review,
+lifecycle, or graph scope also returns
+`llm-wiki-documentation-claim-evidence/v1` with its stable finding ID,
+canonical page, UID or current locator, optional section locator, structural
+evidence and freshness state/reason/evaluation flag, applicable
+lifecycle/review summary, exact query/analyzer bounds, and safe page link.
+Reference detailed samples only under `.llm-wiki-docs/evidence/`; never copy
+them into public review output.
+
+The reviewer preserves ambiguous, missing, unavailable, and truncated state.
+It does not assert that a section is missing merely because a bounded list did
+not return it. The supervisor resolves and recomputes every record against the
+committed post-refresh view; a mismatched coordinate, native fact, or bound is
+an integrity failure, not a finding the reviewer may waive.
 
 ## Usage examples handoff
 

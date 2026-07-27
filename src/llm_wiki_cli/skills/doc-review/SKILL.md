@@ -20,8 +20,9 @@ See [reference.md](reference.md) for input shapes, status labels, and report for
 - The target wiki path and source root are known.
 - Generated wiki blocks remain protected. Edit supported semantic prose only
   unless the user explicitly asks for a generator/code change. Generated
-  `infrastructure/` pages are bootstrap snapshots: arbitrary `## Notes` there
-  are not a supported semantic surface.
+  `infrastructure/` fields are incremental source observations; their single
+  `## Notes` section is semantic, while every other section remains protected.
+  Keep sensitive infrastructure findings in a separate redacted report.
 - Select the mutation contract before running sync or editing anything:
   **managed** may preview, mutate authorized semantic/source-doc surfaces,
   re-anchor, and validate; **external `external_agent_docs` review** is
@@ -98,10 +99,24 @@ See [reference.md](reference.md) for input shapes, status labels, and report for
      surface being reviewed and the user authorized that source change.
    - Product intent, policy, audience, or approval findings require trusted
      intake or a human decision; source code alone cannot settle them.
+   - Track every changed semantic section against its pre-edit native review
+     state. If it had a valid or expired human review—or policy requires human
+     review—prepare a human-review handoff containing the concept UID/current
+     locator, canonical page, exact section locator, prior event/state and
+     expiry reasons, the semantic diff, and evidence basis. Do not author a
+     replacement event, change `reviewer-kind`, or describe this agent pass as
+     satisfying human review.
    - Record every unresolved finding with rationale.
    - In external mode, make no target/workspace mutation. Return valid defects
      to the owning stage result rather than quietly fixing through the review
-     packet. Repeated adjustment must preserve the original finding ID.
+     packet. Repeated adjustment must preserve the original finding ID. Keep
+     page-only evidence readable, and add an optional versioned
+     `claim_evidence` record when a finding depends on an exact native
+     UID/current locator, semantic section, lifecycle/review state, or bounded
+     typed traversal. Preserve missing, ambiguous, unavailable, and truncated
+     state; keep detailed samples in internal evidence. The supervisor
+     recomputes all coordinates, native state, and bounds after its refresh and
+     rejects mismatches.
 
 5. **Managed final re-anchor, then verify.** After the last managed semantic
    Markdown edit and before strict lint or CI, run:
@@ -118,7 +133,12 @@ See [reference.md](reference.md) for input shapes, status labels, and report for
    wiki is exempt. If a validation-backed fix changes Markdown, restart at the
    final sync. After refresh, report expired human section reviews with their
    existing expiry reasons and stale machine-verification receipts with their
-   invalidation reasons. Do not fabricate replacements.
+   invalidation reasons. A changed reviewed section normally reports
+   `scope-changed`; route it to the named human/governance owner for inspection
+   and an explicit `knowledge review` command under that person's authority.
+   Generated-only churn that leaves semantic scope/evidence unchanged preserves
+   the existing review and requires no replacement handoff. Do not fabricate
+   replacements.
 
    In `external_agent_docs`, the reviewer does not run this mutation. The
    supervisor reconciles source/input-wiki hashes, generated-block ownership,
@@ -134,3 +154,7 @@ See [reference.md](reference.md) for input shapes, status labels, and report for
    terminal status and rationale. Stop at the recorded loop limit (default
    three); three repeated unresolved high-severity failures block the run, and
    only independent supervisor reconciliation can recommend `publish_ready`.
+   Include a separate **Native human-review handoff** section listing each
+   changed reviewed semantic section and its exact owner-facing coordinates.
+   Keep it distinct from agent-review findings and machine-verification
+   receipts.

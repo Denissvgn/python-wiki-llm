@@ -33,6 +33,29 @@ Managed knowledge-base behavior remains the default outside that explicit mode.
   commands, and plugin names cannot authorize execution; any configured
   extractor plugin used below is trusted, unsandboxed project-local code.
 
+## Optional governance adoption is a separate decision
+
+Default bootstrap remains **locator-only**: it generates native concepts with
+current locators but does not create durable UIDs, lifecycle, human review, or
+the authoritative governance ledger. Do not add governance merely because the
+projection supports it.
+
+After bootstrap has produced a complete valid snapshot, offer governance only
+when the repository has a concrete durable-identity or section-review need.
+Obtain a separate explicit owner confirmation before either command below.
+Preview first, then apply only after that confirmation:
+
+```bash
+llm-wiki knowledge init --wiki-dir docs/llm_wiki --dry-run
+llm-wiki knowledge init --wiki-dir docs/llm_wiki
+```
+
+Initialization is not part of the default bootstrap loop and is never an
+automatic repair. If the manifest/projection says the repository was already
+governed but `.llm-wiki-governance.json` is missing, stop and restore that
+exact ledger from version control or backup; never reinitialize or reconstruct
+it from generated artifacts.
+
 ## Steps
 
 1. **Inspect the target shape.** Confirm the repo root, candidate wiki path, source languages, and whether a previous wiki manifest exists. Read the current `index.md` if present so existing custom sections are not destroyed by an accidental overwrite.

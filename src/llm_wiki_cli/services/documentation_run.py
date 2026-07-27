@@ -35,6 +35,13 @@ from .documentation_calibration import (
     build_flow_evidence_census,
     build_p0_calibration_shadow,
 )
+from .documentation_claim_evidence import (
+    DocumentationClaimEvidenceError,
+    normalize_claim_evidence_records,
+    normalize_runtime_capture_records,
+    reconcile_claim_evidence_records,
+    reconcile_runtime_capture_records,
+)
 from .documentation_native import (
     DocumentationNativeError,
     DocumentationNativeRefresh,
@@ -68,9 +75,11 @@ from .filesystem_guard import (
     WindowsDirectoryGuardError,
     guard_windows_directory_chain,
 )
-from .io import read_md, write_text_output
+from .io import read_md, write_bytes_atomic, write_text_output
 from .knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from .knowledge_governance import GOVERNANCE_FILENAME
 from .skills import export_skills, list_bundled_skills
+from .verification_contracts import VERIFICATION_RECEIPT_FILENAME
 from .wiki_media import (
     iter_markdown_link_targets,
     local_link_path,
@@ -109,6 +118,8 @@ _AGENT_RESULT_FIELDS = frozenset(
         "completed_work_ids",
         "deferred_work_ids",
         "claims_evidence_pages",
+        "claim_evidence",
+        "runtime_captures",
         "unresolved_unknowns",
         "unsupported_source_notices",
         "requested_follow_up_checks",
@@ -121,8 +132,10 @@ _AGENT_RESULT_FIELDS = frozenset(
     }
 )
 _REQUIRED_AGENT_RESULT_FIELDS = _AGENT_RESULT_FIELDS - {
+    "claim_evidence",
     "deferral_rationales",
     "imported_page_edits",
+    "runtime_captures",
 }
 _IMPORTED_PAGE_EDIT_FIELDS = frozenset(
     {
@@ -155,6 +168,9 @@ _AGENT_FINDING_SEVERITIES = frozenset({"low", "medium", "high"})
 SUPPORTED_FRESHNESS_POLICIES = frozenset(
     {"require-current", "refresh-snapshot", "allow-unverified"}
 )
+SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES = frozenset(
+    {"off", "public-portable", "internal"}
+)
 DEFAULT_DOCUMENTATION_SKILLS = (
     "agent-docs",
     "wiki-semantic-enhance",
@@ -178,8 +194,13 @@ _NATIVE_ARTIFACT_PATHS = frozenset(
         ".llm-wiki-manifest.json",
         ".llm-wiki-surface.json",
         KNOWLEDGE_INDEX_FILENAME,
+        GOVERNANCE_FILENAME,
+        VERIFICATION_RECEIPT_FILENAME,
     }
 )
+_NATIVE_REFRESH_MUTABLE_PATHS = _NATIVE_ARTIFACT_PATHS - {
+    VERIFICATION_RECEIPT_FILENAME
+}
 _MAX_BUILDER_LOG_BYTES = 10_000
 _PACKET_FORBIDDEN_FIELDS = frozenset(
     {
@@ -792,6 +813,8 @@ class DocumentationAgentResult:
     reported_source_writes: tuple[str, ...]
     reported_input_wiki_writes: tuple[str, ...]
     reported_generated_block_edits: tuple[str, ...]
+    claim_evidence: tuple[dict[str, Any], ...] = ()
+    runtime_captures: tuple[dict[str, Any], ...] = ()
     imported_page_edits: tuple[dict[str, Any], ...] = ()
     deferral_rationales: dict[str, str] = field(default_factory=dict)
     findings: tuple[dict[str, Any], ...] = ()
@@ -835,6 +858,15 @@ class DocumentationAgentResult:
         imported_page_edits = _validate_imported_page_edits(
             payload.get("imported_page_edits", [])
         )
+        try:
+            claim_evidence = normalize_claim_evidence_records(
+                payload.get("claim_evidence", [])
+            )
+            runtime_captures = normalize_runtime_capture_records(
+                payload.get("runtime_captures", [])
+            )
+        except DocumentationClaimEvidenceError as exc:
+            raise DocumentationSchemaError(str(exc)) from exc
         return cls(
             run_id=run_id,
             stage=stage,
@@ -844,6 +876,8 @@ class DocumentationAgentResult:
             completed_work_ids=_text_tuple(payload.get("completed_work_ids", [])),
             deferred_work_ids=_text_tuple(payload.get("deferred_work_ids", [])),
             claims_evidence_pages=evidence_pages,
+            claim_evidence=claim_evidence,
+            runtime_captures=runtime_captures,
             unresolved_unknowns=_text_tuple(payload.get("unresolved_unknowns", [])),
             unsupported_source_notices=_text_tuple(
                 payload.get("unsupported_source_notices", [])
@@ -878,6 +912,8 @@ class DocumentationAgentResult:
             "completed_work_ids": list(self.completed_work_ids),
             "deferred_work_ids": list(self.deferred_work_ids),
             "claims_evidence_pages": list(self.claims_evidence_pages),
+            "claim_evidence": [dict(item) for item in self.claim_evidence],
+            "runtime_captures": [dict(item) for item in self.runtime_captures],
             "unresolved_unknowns": list(self.unresolved_unknowns),
             "unsupported_source_notices": list(self.unsupported_source_notices),
             "requested_follow_up_checks": list(self.requested_follow_up_checks),
@@ -992,6 +1028,8 @@ def prepare_documentation_run(
     adjustment_loop_limit: int = 3,
     distribution_format: str = "mkdocs",
     link_mode: str = "http",
+    knowledge_mode: str = "off",
+    knowledge_public_repository_identity: str | None = None,
     refresh: bool = False,
 ) -> DocumentationRun:
     """Prepare a run with transactional rollback for initial creation and refresh."""
@@ -1019,6 +1057,10 @@ def prepare_documentation_run(
             adjustment_loop_limit=adjustment_loop_limit,
             distribution_format=distribution_format,
             link_mode=link_mode,
+            knowledge_mode=knowledge_mode,
+            knowledge_public_repository_identity=(
+                knowledge_public_repository_identity
+            ),
             refresh=refresh,
             refresh_transaction=refresh_transaction,
             initial_prepare_transaction=initial_prepare_transaction,
@@ -1071,6 +1113,8 @@ def _prepare_documentation_run_impl(
     adjustment_loop_limit: int = 3,
     distribution_format: str = "mkdocs",
     link_mode: str = "http",
+    knowledge_mode: str = "off",
+    knowledge_public_repository_identity: str | None = None,
     refresh: bool = False,
     refresh_transaction: _RefreshArchiveTransaction,
     initial_prepare_transaction: _InitialPrepareTransaction,
@@ -1104,6 +1148,13 @@ def _prepare_documentation_run_impl(
         )
     if link_mode not in {"http", "file"}:
         raise DocumentationSchemaError("link_mode must be http or file.")
+    (
+        knowledge_mode,
+        knowledge_public_repository_identity,
+    ) = _validate_documentation_projection_policy(
+        knowledge_mode,
+        knowledge_public_repository_identity,
+    )
 
     if baseline_strategy == "bootstrap_source":
         if source_root is None:
@@ -1168,6 +1219,10 @@ def _prepare_documentation_run_impl(
             adjustment_loop_limit=adjustment_loop_limit,
             distribution_format=distribution_format,
             link_mode=link_mode,
+            knowledge_mode=knowledge_mode,
+            knowledge_public_repository_identity=(
+                knowledge_public_repository_identity
+            ),
         )
         return existing
     initial_prepare = not run_path.is_file()
@@ -1487,6 +1542,20 @@ def _prepare_documentation_run_impl(
         limitations.append("source_verified_publish_ready_unavailable")
     if native_refresh_evidence is None:
         limitations.append("native_knowledge_snapshot_only")
+    else:
+        verification = native_refresh_evidence.get("verification_receipt", {})
+        evaluation = (
+            verification.get("evaluation")
+            if isinstance(verification, Mapping)
+            else None
+        )
+        limitation = (
+            evaluation.get("limitation")
+            if isinstance(evaluation, Mapping)
+            else None
+        )
+        if isinstance(limitation, str):
+            limitations.append(limitation)
     run = DocumentationRun(
         run_id=run_id,
         state="baseline_ready",
@@ -1503,6 +1572,10 @@ def _prepare_documentation_run_impl(
             "format": distribution_format,
             "link_mode": link_mode,
             "deployment": "handoff_only",
+            "knowledge_mode": knowledge_mode,
+            "knowledge_public_repository_identity": (
+                knowledge_public_repository_identity
+            ),
         },
         skills=skills,
         semantic_budget=semantic_budget,
@@ -1937,6 +2010,11 @@ def record_documentation_agent_result(
             actual_changed,
             current_tree=current_tree,
             worklist=worklist,
+            runtime_capture_paths=(
+                str(capture["capture_path"])
+                for capture in normalized.runtime_captures
+                if isinstance(capture.get("capture_path"), str)
+            ),
         )
     except DocumentationIntegrityError as exc:
         _block_run_for_integrity(workspace_root, run, str(exc))
@@ -1988,11 +2066,25 @@ def record_documentation_agent_result(
     except DocumentationIntegrityError as exc:
         _block_run_for_integrity(workspace_root, run, str(exc))
         raise
+    try:
+        reconciled_claims, reconciled_captures = (
+            _reconcile_documentation_native_evidence(
+                workspace_root,
+                run,
+                normalized,
+                actual_changed=actual_changed,
+            )
+        )
+    except DocumentationIntegrityError as exc:
+        _block_run_for_integrity(workspace_root, run, str(exc))
+        raise
     result_payload = {
         **normalized.to_dict(),
         "reconciliation": {
             "actual_changed_wiki_paths": actual_changed,
             "imported_page_edits": reconciled_imported_edits,
+            "claim_evidence": reconciled_claims,
+            "runtime_captures": reconciled_captures,
             "source_and_input_integrity": integrity_checks,
             "generated_ownership": generated_diff,
             "native_projection_refresh": (
@@ -2127,6 +2219,104 @@ def record_documentation_agent_result(
             transition_documentation_run(run, adjustment_state)
     save_documentation_run(workspace_root, run)
     return run
+
+
+def _reconcile_documentation_native_evidence(
+    workspace_root: Path,
+    run: DocumentationRun,
+    result: DocumentationAgentResult,
+    *,
+    actual_changed: Iterable[str],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Recompute native claim coordinates and verify out-of-band captures."""
+
+    if not result.claim_evidence and not result.runtime_captures:
+        return [], []
+    if result.runtime_captures and result.stage != "user-docs":
+        raise DocumentationIntegrityError(
+            "Runtime capture provenance is accepted only in the user-docs stage."
+        )
+
+    evidence_pages = set(result.claims_evidence_pages)
+    for claim in result.claim_evidence:
+        canonical_page = str(claim["canonical_page"])
+        if canonical_page not in evidence_pages:
+            raise DocumentationIntegrityError(
+                "Claim evidence must cite its canonical page through "
+                f"claims_evidence_pages: {claim['claim_id']}"
+            )
+        internal_ref = claim.get("internal_evidence_ref")
+        if isinstance(internal_ref, str):
+            path = _workspace_path(workspace_root, internal_ref)
+            if path.is_symlink() or not path.is_file():
+                raise DocumentationIntegrityError(
+                    f"Claim evidence internal reference is missing: {internal_ref}"
+                )
+
+    changed = {str(path) for path in actual_changed}
+    for capture in result.runtime_captures:
+        capture_path = capture.get("capture_path")
+        if isinstance(capture_path, str) and capture_path not in changed:
+            raise DocumentationIntegrityError(
+                "Persisted runtime captures must be independently visible in the "
+                f"stage changed-path set: {capture_path}"
+            )
+
+    graph_limits = {
+        int(graph["limit"])
+        for claim in result.claim_evidence
+        if isinstance((graph := claim.get("graph_query")), Mapping)
+    }
+    if len(graph_limits) > 1:
+        raise DocumentationIntegrityError(
+            "All claim-evidence graph queries in one result must reuse one "
+            "operation-scoped query limit."
+        )
+    query_limit = next(iter(graph_limits), 20)
+    wiki_root = workspace_root / run.paths["wiki"]
+
+    service = None
+    try:
+        from .documentation_queries import DocumentationGraphQueryService
+        from .knowledge_consumption import load_knowledge_read_view
+        from .knowledge_verification import verification_summaries_for_concepts
+
+        knowledge_view = load_knowledge_read_view(
+            wiki_root,
+            snapshot_only=True,
+            include_machine_verification=True,
+        )
+        service = DocumentationGraphQueryService(
+            {},
+            knowledge_view=knowledge_view,
+            machine_verification=verification_summaries_for_concepts(
+                knowledge_view
+            ),
+            limit=query_limit,
+        )
+    except (OSError, RecursionError, TypeError, UnicodeError, ValueError) as exc:
+        if result.claim_evidence:
+            raise DocumentationIntegrityError(
+                "Cannot independently build the committed native view required "
+                f"for claim-evidence reconciliation: {exc}"
+            ) from exc
+
+    try:
+        claims = (
+            reconcile_claim_evidence_records(result.claim_evidence, service)
+            if service is not None
+            else ()
+        )
+        captures = reconcile_runtime_capture_records(
+            result.runtime_captures,
+            wiki_root=wiki_root,
+            service=service,
+        )
+    except DocumentationClaimEvidenceError as exc:
+        raise DocumentationIntegrityError(
+            f"Documentation native evidence did not reconcile: {exc}"
+        ) from exc
+    return [dict(item) for item in claims], [dict(item) for item in captures]
 
 
 def verify_documentation_run(
@@ -2304,15 +2494,125 @@ def verify_documentation_run(
     return report
 
 
+def _documentation_projection_policy(
+    run: DocumentationRun,
+) -> tuple[str, str | None]:
+    return _validate_documentation_projection_policy(
+        run.publication.get("knowledge_mode", "off"),
+        run.publication.get("knowledge_public_repository_identity"),
+    )
+
+
+def _assert_documentation_export_projection_policy(
+    run: DocumentationRun,
+    *,
+    knowledge_mode: str | None,
+    knowledge_public_repository_identity: str | None,
+) -> tuple[str, str | None]:
+    recorded_mode, recorded_identity = _documentation_projection_policy(run)
+    if knowledge_mode is not None and knowledge_mode != recorded_mode:
+        raise DocumentationRunError(
+            "Export knowledge mode differs from the prepared run contract; rerun "
+            "docs prepare with --refresh and the intended --knowledge-mode."
+        )
+    if (
+        knowledge_public_repository_identity is not None
+        and knowledge_public_repository_identity != recorded_identity
+    ):
+        raise DocumentationRunError(
+            "Export public repository identity differs from the prepared run "
+            "contract; rerun docs prepare with --refresh and the intended "
+            "--knowledge-public-repository-identity."
+        )
+    return recorded_mode, recorded_identity
+
+
+def _load_documentation_knowledge_projection(
+    wiki_root: Path,
+    *,
+    knowledge_mode: str,
+    knowledge_public_repository_identity: str | None,
+):
+    if knowledge_mode == "off":
+        return None
+
+    from .knowledge_consumption import load_knowledge_read_view
+    from .knowledge_projection import project_knowledge
+
+    try:
+        view = load_knowledge_read_view(
+            wiki_root,
+            snapshot_only=True,
+            include_machine_verification=True,
+        )
+        projection = project_knowledge(
+            view,
+            profile=knowledge_mode,
+            public_repository_identity=knowledge_public_repository_identity,
+        )
+    except (OSError, RecursionError, TypeError, UnicodeError, ValueError) as exc:
+        raise DocumentationIntegrityError(
+            "The selected native-knowledge publication projection could not be "
+            f"validated: {exc}. No un-enriched fallback was performed; explicitly "
+            "rerun docs prepare with --refresh --knowledge-mode off to choose "
+            "that fallback."
+        ) from exc
+
+    freshness_records = [
+        concept.get("freshness")
+        for concept in projection.concepts.values()
+        if isinstance(concept, Mapping)
+    ]
+    if any(
+        not isinstance(freshness, Mapping)
+        or freshness.get("state") != "not-evaluated"
+        or freshness.get("evaluated") is not False
+        or freshness.get("live_comparison_performed") is not False
+        for freshness in freshness_records
+    ):
+        raise DocumentationIntegrityError(
+            "Standalone documentation export requires a snapshot-only native "
+            "projection with freshness preserved as not-evaluated."
+        )
+    return projection
+
+
+def _documentation_projection_evidence(
+    *,
+    knowledge_mode: str,
+    knowledge_public_repository_identity: str | None,
+    projection,
+) -> dict[str, Any]:
+    return {
+        "mode": knowledge_mode,
+        "knowledge_metadata": "off" if projection is None else "summary",
+        "profile": projection.profile.value if projection is not None else None,
+        "public_repository_identity": knowledge_public_repository_identity,
+        "projection_schema_version": (
+            projection.schema_version if projection is not None else None
+        ),
+        "source_knowledge_hash": (
+            projection.source_knowledge_hash if projection is not None else None
+        ),
+        "freshness_scope": "snapshot-only",
+        "freshness_evaluated": False,
+        "warnings": list(projection.warnings) if projection is not None else [],
+        "canonical_body_media_review": "separate-required",
+        "derived_output": "disposable-rebuildable",
+    }
+
+
 def export_documentation_run(
     workspace: str | Path,
     *,
     build: bool = False,
     builder_command: Iterable[str] | None = None,
+    knowledge_mode: str | None = None,
+    knowledge_public_repository_identity: str | None = None,
 ) -> dict[str, Any]:
     """Export/check the user profile and write a reproducible local handoff."""
 
-    from .site_export import check_site_mirror, export_site_mirror
+    from .site_export import SiteExportError, check_site_mirror, export_site_mirror
 
     workspace_root = _resolve_workspace_root_argument(workspace)
     run = load_documentation_run(workspace_root)
@@ -2335,23 +2635,61 @@ def export_documentation_run(
         raise DocumentationTransitionError(
             "Workspace export requires a completed user-docs stage and review state."
         )
+    (
+        selected_knowledge_mode,
+        selected_public_repository_identity,
+    ) = _assert_documentation_export_projection_policy(
+        run,
+        knowledge_mode=knowledge_mode,
+        knowledge_public_repository_identity=(
+            knowledge_public_repository_identity
+        ),
+    )
     wiki_root = workspace_root / run.paths["wiki"]
     site_root = workspace_root / run.paths["site"]
     built_root = workspace_root / run.paths["built_site"]
     publication_format = str(run.publication["format"])
     link_mode = str(run.publication["link_mode"])
     file_friendly = link_mode == "file"
-    export_report = export_site_mirror(
-        wiki_dir=wiki_root,
-        out_dir=site_root,
-        format=publication_format,
-        front_matter=publication_format in {"mkdocs", "docusaurus"},
-        file_friendly=file_friendly,
-        profile="user",
-        site_name=str(run.publication["site_name"]),
+    try:
+        export_projection = _load_documentation_knowledge_projection(
+            wiki_root,
+            knowledge_mode=selected_knowledge_mode,
+            knowledge_public_repository_identity=(
+                selected_public_repository_identity
+            ),
+        )
+        export_report = export_site_mirror(
+            wiki_dir=wiki_root,
+            out_dir=site_root,
+            format=publication_format,
+            front_matter=publication_format in {"mkdocs", "docusaurus"},
+            file_friendly=file_friendly,
+            profile="user",
+            site_name=str(run.publication["site_name"]),
+            knowledge_metadata=(
+                "summary" if export_projection is not None else None
+            ),
+            knowledge_projection=export_projection,
+        )
+    except (DocumentationIntegrityError, SiteExportError) as exc:
+        message = (
+            "Standalone documentation export rejected the persisted native-knowledge "
+            f"publication policy: {exc}"
+        )
+        _block_run_for_integrity(workspace_root, run, message)
+        raise DocumentationIntegrityError(message) from exc
+    export_projection_evidence = _documentation_projection_evidence(
+        knowledge_mode=selected_knowledge_mode,
+        knowledge_public_repository_identity=(
+            selected_public_repository_identity
+        ),
+        projection=export_projection,
     )
+    export_payload = export_report.to_dict()
+    export_payload["knowledge_projection"] = export_projection_evidence
     export_path = workspace_root / RUN_CONTROL_DIR / "evidence" / "site-export.json"
-    _write_json(export_path, export_report.to_dict())
+    _write_json(export_path, export_payload)
     run.evidence["site_export"] = export_path.relative_to(workspace_root).as_posix()
 
     builder_evidence = _run_authorized_builder(
@@ -2364,15 +2702,50 @@ def export_documentation_run(
     _write_json(builder_path, builder_evidence)
     run.evidence["builder"] = builder_path.relative_to(workspace_root).as_posix()
     built_verified = builder_evidence.get("status") == "complete"
-    check_report = check_site_mirror(
-        wiki_dir=wiki_root,
-        out_dir=site_root,
-        built_site_dir=built_root if built_verified else None,
-        link_mode=link_mode,
-        profile="user",
-        site_name=str(run.publication["site_name"]),
-    )
+    try:
+        check_projection = _load_documentation_knowledge_projection(
+            wiki_root,
+            knowledge_mode=selected_knowledge_mode,
+            knowledge_public_repository_identity=(
+                selected_public_repository_identity
+            ),
+        )
+        check_projection_evidence = _documentation_projection_evidence(
+            knowledge_mode=selected_knowledge_mode,
+            knowledge_public_repository_identity=(
+                selected_public_repository_identity
+            ),
+            projection=check_projection,
+        )
+        if (
+            export_projection_evidence["source_knowledge_hash"]
+            != check_projection_evidence["source_knowledge_hash"]
+        ):
+            raise DocumentationIntegrityError(
+                "The native knowledge snapshot changed between export and check; "
+                "the enriched output is stale and must be rebuilt."
+            )
+        check_report = check_site_mirror(
+            wiki_dir=wiki_root,
+            out_dir=site_root,
+            built_site_dir=built_root if built_verified else None,
+            link_mode=link_mode,
+            profile="user",
+            site_name=str(run.publication["site_name"]),
+            knowledge_metadata=(
+                "summary" if check_projection is not None else None
+            ),
+            knowledge_projection=check_projection,
+        )
+    except (DocumentationIntegrityError, SiteExportError) as exc:
+        message = (
+            "Standalone documentation check rejected the persisted native-knowledge "
+            f"publication policy: {exc}"
+        )
+        _block_run_for_integrity(workspace_root, run, message)
+        raise DocumentationIntegrityError(message) from exc
     check_payload = check_report.to_dict()
+    check_payload["knowledge_projection"] = check_projection_evidence
     if not built_verified:
         check_payload.setdefault("warnings", []).append(
             {
@@ -2411,7 +2784,7 @@ def export_documentation_run(
     run = load_documentation_run(workspace_root)
     final_report = _build_final_report(
         run,
-        export_report=export_report.to_dict(),
+        export_report=export_payload,
         builder_evidence=builder_evidence,
         site_check=check_payload,
         verification=verification.to_dict(),
@@ -2436,8 +2809,14 @@ def capture_generated_ownership(wiki_root: str | Path) -> dict[str, str]:
         ".llm-wiki-manifest.json",
         ".llm-wiki-surface.json",
         KNOWLEDGE_INDEX_FILENAME,
+        GOVERNANCE_FILENAME,
+        VERIFICATION_RECEIPT_FILENAME,
     ):
         path = root / name
+        if path.is_symlink():
+            raise DocumentationIntegrityError(
+                f"Native ownership inventory rejects symlinked content: {path}"
+            )
         if path.is_file():
             fingerprints[name] = hash_bytes(path.read_bytes())
     for path in sorted(root.rglob("*.md")):
@@ -2466,6 +2845,145 @@ def compare_generated_ownership(
     }
 
 
+def _capture_native_artifact_bytes(
+    wiki_root: Path,
+) -> dict[str, bytes | None]:
+    snapshot: dict[str, bytes | None] = {}
+    for name in sorted(_NATIVE_ARTIFACT_PATHS):
+        path = wiki_root / name
+        if path.is_symlink():
+            raise DocumentationIntegrityError(
+                f"Native refresh rejects a symlinked protected artifact: {path}"
+            )
+        if path.exists() and not path.is_file():
+            raise DocumentationIntegrityError(
+                f"Native refresh requires a regular protected artifact: {path}"
+            )
+        snapshot[name] = path.read_bytes() if path.is_file() else None
+    return snapshot
+
+
+def _rollback_native_artifact_bytes(
+    wiki_root: Path,
+    snapshot: Mapping[str, bytes | None],
+    *,
+    cause: BaseException,
+) -> None:
+    try:
+        for name in sorted(_NATIVE_ARTIFACT_PATHS):
+            path = wiki_root / name
+            prior = snapshot.get(name)
+            if path.is_symlink():
+                raise DocumentationIntegrityError(
+                    f"Cannot roll back a symlinked native artifact: {path}"
+                )
+            if prior is None:
+                if path.exists():
+                    if not path.is_file():
+                        raise DocumentationIntegrityError(
+                            "Cannot roll back a non-regular native artifact: "
+                            f"{path}"
+                        )
+                    path.unlink()
+                continue
+            if path.exists() and not path.is_file():
+                raise DocumentationIntegrityError(
+                    f"Cannot roll back a non-regular native artifact: {path}"
+                )
+            write_bytes_atomic(path, prior)
+        restored = _capture_native_artifact_bytes(wiki_root)
+        if restored != dict(snapshot):
+            raise DocumentationIntegrityError(
+                "Native artifact rollback did not restore the captured bytes."
+            )
+    except (OSError, DocumentationIntegrityError) as rollback_exc:
+        raise DocumentationIntegrityError(
+            "Native projection refresh failed and protected-artifact rollback "
+            f"also failed: {rollback_exc}"
+        ) from cause
+
+
+def _capture_exact_file_bytes(
+    paths: Iterable[Path],
+) -> dict[Path, bytes | None]:
+    snapshot: dict[Path, bytes | None] = {}
+    for path in sorted({Path(value) for value in paths}):
+        if path.is_symlink():
+            raise DocumentationIntegrityError(
+                f"Native refresh rejects a symlinked controller file: {path}"
+            )
+        if path.exists() and not path.is_file():
+            raise DocumentationIntegrityError(
+                f"Native refresh requires a regular controller file: {path}"
+            )
+        snapshot[path] = path.read_bytes() if path.is_file() else None
+    return snapshot
+
+
+def _rollback_exact_file_bytes(
+    snapshot: Mapping[Path, bytes | None],
+    *,
+    cause: BaseException,
+) -> None:
+    try:
+        for path, prior in sorted(snapshot.items(), key=lambda item: str(item[0])):
+            if path.is_symlink():
+                raise DocumentationIntegrityError(
+                    f"Cannot roll back a symlinked controller file: {path}"
+                )
+            if prior is None:
+                if path.exists():
+                    if not path.is_file():
+                        raise DocumentationIntegrityError(
+                            "Cannot roll back a non-regular controller file: "
+                            f"{path}"
+                        )
+                    path.unlink()
+                continue
+            if path.exists() and not path.is_file():
+                raise DocumentationIntegrityError(
+                    f"Cannot roll back a non-regular controller file: {path}"
+                )
+            write_bytes_atomic(path, prior)
+        restored = _capture_exact_file_bytes(snapshot)
+        if restored != dict(snapshot):
+            raise DocumentationIntegrityError(
+                "Controller-file rollback did not restore the captured bytes."
+            )
+    except (OSError, DocumentationIntegrityError) as rollback_exc:
+        raise DocumentationIntegrityError(
+            "Native projection refresh failed and controller-file rollback "
+            f"also failed: {rollback_exc}"
+        ) from cause
+
+
+def _rollback_native_refresh_transaction(
+    wiki_root: Path,
+    artifact_snapshot: Mapping[str, bytes | None],
+    control_snapshot: Mapping[Path, bytes | None],
+    *,
+    cause: BaseException,
+) -> None:
+    failures: list[str] = []
+    try:
+        _rollback_native_artifact_bytes(
+            wiki_root,
+            artifact_snapshot,
+            cause=cause,
+        )
+    except DocumentationIntegrityError as exc:
+        failures.append(str(exc))
+    try:
+        _rollback_exact_file_bytes(control_snapshot, cause=cause)
+    except DocumentationIntegrityError as exc:
+        failures.append(str(exc))
+    if failures:
+        raise DocumentationIntegrityError(
+            "Native refresh transaction rollback was incomplete: "
+            + "; ".join(failures)
+        ) from cause
+
+
 def _refresh_prepared_native_projection(
     workspace_root: Path,
     *,
@@ -2476,6 +2994,14 @@ def _refresh_prepared_native_projection(
     helper_cache_root: Path | None,
 ) -> dict[str, Any]:
     before = capture_generated_ownership(wiki_root)
+    artifact_snapshot = _capture_native_artifact_bytes(wiki_root)
+    evidence_root = workspace_root / RUN_CONTROL_DIR / "evidence"
+    control_snapshot = _capture_exact_file_bytes(
+        (
+            evidence_root / "native-refresh-baseline.json",
+            evidence_root / "native-refresh.json",
+        )
+    )
     try:
         refresh = refresh_documentation_native_projection(
             source_root=source_root,
@@ -2483,26 +3009,56 @@ def _refresh_prepared_native_projection(
             trust_source_plugins=trust_source_plugins,
             helper_cache_dir=helper_cache_root,
         )
-    except DocumentationNativeError as exc:
-        raise DocumentationIntegrityError(
-            f"Cannot anchor the prepared native projection: {exc}"
-        ) from exc
-    after = capture_generated_ownership(wiki_root)
-    _assert_native_only_ownership_change(before, after)
-    payload = _native_refresh_payload(
-        run_id=run_id,
-        phase="baseline",
-        refresh=refresh,
-        ownership_before=before,
-        ownership_after=after,
-        changed_wiki_paths=(),
-    )
-    _write_native_refresh_evidence(
-        workspace_root,
-        phase="baseline",
-        payload=payload,
-    )
-    return payload
+    except BaseException as exc:
+        _rollback_native_artifact_bytes(
+            wiki_root,
+            artifact_snapshot,
+            cause=exc,
+        )
+        if isinstance(exc, DocumentationNativeError):
+            raise DocumentationIntegrityError(
+                f"Cannot anchor the prepared native projection: {exc}"
+            ) from exc
+        raise
+    try:
+        after = capture_generated_ownership(wiki_root)
+        _assert_native_only_ownership_change(before, after)
+    except BaseException as exc:
+        _rollback_native_artifact_bytes(
+            wiki_root,
+            artifact_snapshot,
+            cause=exc,
+        )
+        raise
+    try:
+        verification_evaluation = _native_refresh_verification_evaluation(wiki_root)
+        payload = _native_refresh_payload(
+            run_id=run_id,
+            phase="baseline",
+            refresh=refresh,
+            ownership_before=before,
+            ownership_after=after,
+            changed_wiki_paths=(),
+            verification_evaluation=verification_evaluation,
+        )
+        _write_native_refresh_evidence(
+            workspace_root,
+            phase="baseline",
+            payload=payload,
+        )
+        return payload
+    except BaseException as exc:
+        _rollback_native_refresh_transaction(
+            wiki_root,
+            artifact_snapshot,
+            control_snapshot,
+            cause=exc,
+        )
+        if isinstance(exc, OSError):
+            raise DocumentationIntegrityError(
+                f"Cannot finalize the prepared native projection: {exc}"
+            ) from exc
+        raise
 
 
 def _refresh_and_reanchor_native_projection(
@@ -2548,6 +3104,20 @@ def _refresh_and_reanchor_native_projection(
             f"{pre_refresh_difference}"
         )
 
+    artifact_snapshot = _capture_native_artifact_bytes(wiki_root)
+    evidence_root = workspace_root / RUN_CONTROL_DIR / "evidence"
+    control_snapshot = _capture_exact_file_bytes(
+        (
+            evidence_root / f"native-refresh-{phase}.json",
+            evidence_root / "native-refresh.json",
+            ownership_path,
+            documentation_run_path(workspace_root),
+        )
+    )
+    run_evidence_before = dict(run.evidence)
+    run_anchors_before = dict(run.integrity_anchors)
+    run_limitations_before = list(run.verdict_limitations)
+    run_updated_at_before = run.updated_at
     try:
         refresh = refresh_documentation_native_projection(
             source_root=source_root,
@@ -2557,36 +3127,73 @@ def _refresh_and_reanchor_native_projection(
             ),
             helper_cache_dir=runtime_paths.get("helper_cache_root"),
         )
-    except DocumentationNativeError as exc:
-        raise DocumentationIntegrityError(
-            f"Controller native projection refresh failed: {exc}"
-        ) from exc
-    ownership_after = capture_generated_ownership(wiki_root)
-    _assert_native_only_ownership_change(normalized_before, ownership_after)
-    refresh_payload = _native_refresh_payload(
-        run_id=run.run_id,
-        phase=phase,
-        refresh=refresh,
-        ownership_before=normalized_before,
-        ownership_after=ownership_after,
-        changed_wiki_paths=changed,
-    )
-    refresh_path = _write_native_refresh_evidence(
-        workspace_root,
-        phase=phase,
-        payload=refresh_payload,
-    )
-    _write_json(ownership_path, {"fingerprints": ownership_after})
-    run.evidence["native_refresh"] = refresh_path.relative_to(
-        workspace_root
-    ).as_posix()
-    run.integrity_anchors["generated_ownership"] = hash_bytes(
-        ownership_path.read_bytes()
-    )
-    if "native_knowledge_snapshot_only" in run.verdict_limitations:
-        run.verdict_limitations.remove("native_knowledge_snapshot_only")
-    save_documentation_run(workspace_root, run)
-    return refresh_payload
+    except BaseException as exc:
+        _rollback_native_artifact_bytes(
+            wiki_root,
+            artifact_snapshot,
+            cause=exc,
+        )
+        if isinstance(exc, DocumentationNativeError):
+            raise DocumentationIntegrityError(
+                f"Controller native projection refresh failed: {exc}"
+            ) from exc
+        raise
+    try:
+        ownership_after = capture_generated_ownership(wiki_root)
+        _assert_native_only_ownership_change(normalized_before, ownership_after)
+    except BaseException as exc:
+        _rollback_native_artifact_bytes(
+            wiki_root,
+            artifact_snapshot,
+            cause=exc,
+        )
+        raise
+    try:
+        verification_evaluation = _native_refresh_verification_evaluation(wiki_root)
+        refresh_payload = _native_refresh_payload(
+            run_id=run.run_id,
+            phase=phase,
+            refresh=refresh,
+            ownership_before=normalized_before,
+            ownership_after=ownership_after,
+            changed_wiki_paths=changed,
+            verification_evaluation=verification_evaluation,
+        )
+        refresh_path = _write_native_refresh_evidence(
+            workspace_root,
+            phase=phase,
+            payload=refresh_payload,
+        )
+        _write_json(ownership_path, {"fingerprints": ownership_after})
+        run.evidence["native_refresh"] = refresh_path.relative_to(
+            workspace_root
+        ).as_posix()
+        run.integrity_anchors["generated_ownership"] = hash_bytes(
+            ownership_path.read_bytes()
+        )
+        if "native_knowledge_snapshot_only" in run.verdict_limitations:
+            run.verdict_limitations.remove("native_knowledge_snapshot_only")
+        _apply_native_verification_limitation(run, verification_evaluation)
+        save_documentation_run(workspace_root, run)
+        return refresh_payload
+    except BaseException as exc:
+        run.evidence.clear()
+        run.evidence.update(run_evidence_before)
+        run.integrity_anchors.clear()
+        run.integrity_anchors.update(run_anchors_before)
+        run.verdict_limitations[:] = run_limitations_before
+        run.updated_at = run_updated_at_before
+        _rollback_native_refresh_transaction(
+            wiki_root,
+            artifact_snapshot,
+            control_snapshot,
+            cause=exc,
+        )
+        if isinstance(exc, OSError):
+            raise DocumentationIntegrityError(
+                f"Controller native refresh finalization failed: {exc}"
+            ) from exc
+        raise
 
 
 def _write_native_refresh_evidence(
@@ -2618,12 +3225,30 @@ def _assert_native_only_ownership_change(
             key for key in set(before) & set(after) if before[key] != after[key]
         },
     }
+    receipt_changes = sorted(
+        {
+            key
+            for values in difference.values()
+            for key in values
+            if key == VERIFICATION_RECEIPT_FILENAME
+        }
+    )
+    if receipt_changes:
+        raise DocumentationIntegrityError(
+            "Native projection refresh must retain the disposable verification "
+            "receipt for explicit post-refresh evaluation."
+        )
+    if (GOVERNANCE_FILENAME in before) != (GOVERNANCE_FILENAME in after):
+        raise DocumentationIntegrityError(
+            "Native projection refresh cannot create or remove the authoritative "
+            "governance ledger; adoption and recovery require explicit authority."
+        )
     unexpected = sorted(
         {
             key
             for values in difference.values()
             for key in values
-            if key not in _NATIVE_ARTIFACT_PATHS
+            if key not in _NATIVE_REFRESH_MUTABLE_PATHS
         }
     )
     if unexpected:
@@ -2641,6 +3266,7 @@ def _native_refresh_payload(
     ownership_before: Mapping[str, str],
     ownership_after: Mapping[str, str],
     changed_wiki_paths: Iterable[str],
+    verification_evaluation: Mapping[str, Any],
 ) -> dict[str, Any]:
     artifacts = {}
     for label, artifact in (
@@ -2654,7 +3280,7 @@ def _native_refresh_payload(
             "sha256": artifact.content_hash,
         }
     return {
-        "schema_version": "llm-wiki-documentation-native-refresh/v1",
+        "schema_version": "llm-wiki-documentation-native-refresh/v2",
         "run_id": run_id,
         "phase": phase,
         "status": "complete",
@@ -2669,8 +3295,160 @@ def _native_refresh_payload(
         ),
         "ownership_before": dict(sorted(ownership_before.items())),
         "ownership_after": dict(sorted(ownership_after.items())),
+        "artifact_ownership": {
+            ".llm-wiki-manifest.json": {
+                "classification": "generated-projection",
+                "owner": "documentation-supervisor",
+            },
+            ".llm-wiki-surface.json": {
+                "classification": "generated-projection",
+                "owner": "documentation-supervisor",
+            },
+            KNOWLEDGE_INDEX_FILENAME: {
+                "classification": "generated-projection",
+                "owner": "documentation-supervisor",
+            },
+            GOVERNANCE_FILENAME: {
+                "classification": "authoritative-adopted-ledger",
+                "owner": "repository-governance-owner",
+                "supervisor_action": "reconcile-existing-only",
+            },
+            VERIFICATION_RECEIPT_FILENAME: {
+                "classification": "disposable-machine-receipt",
+                "owner": "application-checker",
+                "supervisor_action": "retain-and-evaluate-only",
+            },
+        },
+        "governance_reconciliation": _native_artifact_transition(
+            ownership_before,
+            ownership_after,
+            GOVERNANCE_FILENAME,
+            absent_status="not-adopted",
+            changed_status="reconciled-changed",
+        ),
+        "verification_receipt": {
+            **_native_artifact_transition(
+                ownership_before,
+                ownership_after,
+                VERIFICATION_RECEIPT_FILENAME,
+                absent_status="absent",
+                changed_status="forbidden-mutation",
+            ),
+            "policy": "retain-and-limit",
+            "checker_execution": "not-authorized",
+            "evaluation": dict(verification_evaluation),
+        },
+        "review_authority": {
+            "external_agent_result": "not-native-human-review",
+            "human_review_mutation": "not-authorized",
+        },
         "completed_at": _utc_now(),
     }
+
+
+def _native_artifact_transition(
+    before: Mapping[str, str],
+    after: Mapping[str, str],
+    path: str,
+    *,
+    absent_status: str,
+    changed_status: str,
+) -> dict[str, Any]:
+    before_hash = before.get(path)
+    after_hash = after.get(path)
+    if before_hash is None and after_hash is None:
+        status = absent_status
+    elif before_hash == after_hash:
+        status = "unchanged"
+    else:
+        status = changed_status
+    return {
+        "path": path,
+        "before_sha256": before_hash,
+        "after_sha256": after_hash,
+        "status": status,
+    }
+
+
+def _native_refresh_verification_evaluation(wiki_root: Path) -> dict[str, Any]:
+    receipt_path = wiki_root / VERIFICATION_RECEIPT_FILENAME
+    if not receipt_path.exists() and not receipt_path.is_symlink():
+        return {
+            "status": "absent",
+            "availability": "absent",
+            "reason": "verification-receipt-not-present",
+            "valid": None,
+            "recorded_result": None,
+            "passed": None,
+            "invalidation_reasons": [],
+            "limitation": None,
+        }
+    try:
+        from .knowledge_consumption import load_knowledge_read_view
+
+        view = load_knowledge_read_view(
+            wiki_root,
+            snapshot_only=True,
+            include_machine_verification=True,
+        )
+        evaluated = view.machine_verification
+        availability = evaluated.availability.value
+        valid = evaluated.valid
+        passed = evaluated.passed
+        recorded_result = evaluated.recorded_result
+        reasons = list(evaluated.invalidation_reasons)
+        reason = evaluated.reason
+    except (OSError, RecursionError, TypeError, UnicodeError, ValueError):
+        return {
+            "status": "retained-invalid",
+            "availability": "invalid",
+            "reason": "verification-receipt-evaluation-failed",
+            "valid": False,
+            "recorded_result": None,
+            "passed": None,
+            "invalidation_reasons": [],
+            "limitation": "native_verification_receipt_invalid",
+        }
+
+    if availability == "recorded" and valid is True and passed is True:
+        status = "current-passed"
+        limitation = None
+    elif availability == "recorded" and valid is True:
+        status = "current-failed"
+        limitation = "native_verification_receipt_failed"
+    elif availability == "recorded":
+        status = "retained-stale"
+        limitation = "native_verification_receipt_stale"
+    else:
+        status = "retained-invalid"
+        limitation = "native_verification_receipt_invalid"
+    return {
+        "status": status,
+        "availability": availability,
+        "reason": reason,
+        "valid": valid,
+        "recorded_result": recorded_result,
+        "passed": passed,
+        "invalidation_reasons": reasons,
+        "limitation": limitation,
+    }
+
+
+def _apply_native_verification_limitation(
+    run: DocumentationRun,
+    evaluation: Mapping[str, Any],
+) -> None:
+    known = {
+        "native_verification_receipt_failed",
+        "native_verification_receipt_invalid",
+        "native_verification_receipt_stale",
+    }
+    run.verdict_limitations[:] = [
+        item for item in run.verdict_limitations if item not in known
+    ]
+    limitation = evaluation.get("limitation")
+    if isinstance(limitation, str):
+        run.verdict_limitations.append(limitation)
 
 
 def source_identity(source_root: str | Path, baseline: TreeBaseline) -> dict[str, Any]:
@@ -2709,6 +3487,8 @@ def _assert_resume_compatible(
     adjustment_loop_limit: int,
     distribution_format: str,
     link_mode: str,
+    knowledge_mode: str,
+    knowledge_public_repository_identity: str | None,
 ) -> None:
     if run.baseline_strategy != baseline_strategy:
         raise DocumentationRunError(
@@ -2729,6 +3509,19 @@ def _assert_resume_compatible(
         raise DocumentationRunError(
             "Prepared workspace uses a different link mode; request an explicit "
             "refresh or choose a new workspace."
+        )
+    recorded_knowledge_mode = run.publication.get("knowledge_mode", "off")
+    recorded_public_identity = run.publication.get(
+        "knowledge_public_repository_identity"
+    )
+    if (
+        recorded_knowledge_mode != knowledge_mode
+        or recorded_public_identity != knowledge_public_repository_identity
+    ):
+        raise DocumentationRunError(
+            "Prepared workspace uses a different native-knowledge publication "
+            "policy; request an explicit refresh (including --knowledge-mode off "
+            "for a deliberate un-enriched fallback) or choose a new workspace."
         )
     if run.semantic_budget != semantic_budget:
         raise DocumentationRunError(
@@ -4980,10 +5773,12 @@ def _validate_stage_changed_paths(
     *,
     current_tree: TreeBaseline,
     worklist: Mapping[str, Any],
+    runtime_capture_paths: Iterable[str] = (),
 ) -> None:
     """Enforce the machine-readable wiki write boundary for one agent stage."""
 
     changed = set(changed_paths)
+    capture_paths = set(runtime_capture_paths)
     removed = sorted(changed - set(current_tree.file_hashes))
     if removed:
         raise DocumentationIntegrityError(
@@ -4999,6 +5794,10 @@ def _validate_stage_changed_paths(
             if not (
                 path in {"index.md", "deferred-docs.md"}
                 or (path.startswith("guides/") and path.casefold().endswith(".md"))
+                or (
+                    path in capture_paths
+                    and _is_supported_runtime_capture_asset(path)
+                )
             )
         )
     elif stage == "wiki-enrichment":
@@ -5023,6 +5822,29 @@ def _validate_stage_changed_paths(
             f"Stage {stage!r} changed a wiki path outside its write allowlist: "
             f"{forbidden[0]}"
         )
+
+
+def _is_supported_runtime_capture_asset(path: str) -> bool:
+    candidate = PurePosixPath(path)
+    return (
+        len(candidate.parts) >= 3
+        and candidate.parts[0] == "assets"
+        and candidate.suffix.casefold()
+        in {
+            ".gif",
+            ".jpeg",
+            ".jpg",
+            ".json",
+            ".log",
+            ".md",
+            ".mp4",
+            ".png",
+            ".svg",
+            ".txt",
+            ".webm",
+            ".webp",
+        }
+    )
 
 
 def _block_run_for_integrity(
@@ -5307,6 +6129,8 @@ def _reconcile_semantic_readiness(
         ],
         "missing_work_ids": missing,
         "claims_evidence_pages": list(result.claims_evidence_pages),
+        "claim_evidence": [dict(item) for item in result.claim_evidence],
+        "runtime_captures": [dict(item) for item in result.runtime_captures],
         "evidence_by_work": evidence_by_work,
         "deferral_rationales": dict(sorted(result.deferral_rationales.items())),
         "unresolved_unknowns": list(result.unresolved_unknowns),
@@ -6080,6 +6904,18 @@ def _build_final_report(
     current_publish_ready = (
         run.state == "publish_ready" and built_site_check_ok and verification_ok
     )
+    export_projection = export_report.get("knowledge_projection")
+    check_projection = site_check.get("knowledge_projection")
+    export_projection_hash = (
+        export_projection.get("source_knowledge_hash")
+        if isinstance(export_projection, Mapping)
+        else None
+    )
+    check_projection_hash = (
+        check_projection.get("source_knowledge_hash")
+        if isinstance(check_projection, Mapping)
+        else None
+    )
     if current_publish_ready:
         verdict = "publish_ready"
     elif verification_ok:
@@ -6139,6 +6975,16 @@ def _build_final_report(
             "built_site_check_ok": built_site_check_ok,
             "builder_status": builder_evidence.get("status"),
             "current_publish_ready": current_publish_ready,
+            "knowledge_projection": {
+                "mode": run.publication.get("knowledge_mode", "off"),
+                "export_source_knowledge_hash": export_projection_hash,
+                "check_source_knowledge_hash": check_projection_hash,
+                "source_knowledge_hashes_match": (
+                    export_projection_hash == check_projection_hash
+                ),
+                "freshness_scope": "snapshot-only",
+                "canonical_body_media_review": "separate-required",
+            },
         },
         "limitations": list(dict.fromkeys(run.verdict_limitations)),
         "distribution": {
@@ -6775,10 +7621,55 @@ def _validate_policy_contract(
         )
 
 
+def _validate_documentation_projection_policy(
+    knowledge_mode: Any,
+    public_repository_identity: Any,
+) -> tuple[str, str | None]:
+    if not isinstance(knowledge_mode, str):
+        raise DocumentationSchemaError(
+            "knowledge_mode must be off, public-portable, or internal."
+        )
+    if knowledge_mode not in SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES:
+        raise DocumentationSchemaError(
+            "knowledge_mode must be off, public-portable, or internal."
+        )
+    if public_repository_identity is not None:
+        if (
+            not isinstance(public_repository_identity, str)
+            or not public_repository_identity
+            or public_repository_identity != public_repository_identity.strip()
+            or len(public_repository_identity) > 512
+            or any(
+                ord(character) < 32 or ord(character) == 127
+                for character in public_repository_identity
+            )
+        ):
+            raise DocumentationSchemaError(
+                "knowledge_public_repository_identity must be one exact, "
+                "non-empty safe identity string."
+            )
+    if (
+        public_repository_identity is not None
+        and knowledge_mode != "public-portable"
+    ):
+        raise DocumentationSchemaError(
+            "knowledge_public_repository_identity is valid only with "
+            "knowledge_mode='public-portable'."
+        )
+    return knowledge_mode, public_repository_identity
+
+
 def _validate_publication_contract(publication: Mapping[str, Any]) -> None:
     _require_exact_fields(
         publication,
-        allowed={"site_name", "format", "link_mode", "deployment"},
+        allowed={
+            "site_name",
+            "format",
+            "link_mode",
+            "deployment",
+            "knowledge_mode",
+            "knowledge_public_repository_identity",
+        },
         required={"site_name", "format", "link_mode", "deployment"},
         label="run publication",
     )
@@ -6795,6 +7686,10 @@ def _validate_publication_contract(publication: Mapping[str, Any]) -> None:
         raise DocumentationSchemaError(
             "Run publication deployment must remain handoff_only."
         )
+    _validate_documentation_projection_policy(
+        publication.get("knowledge_mode", "off"),
+        publication.get("knowledge_public_repository_identity"),
+    )
 
 
 def _validate_skill_contracts(skills: list[Any]) -> None:
@@ -7697,6 +8592,7 @@ __all__ = [
     "RUN_CONTROL_DIR",
     "SUPPORTED_AGENT_STAGES",
     "SUPPORTED_BASELINE_STRATEGIES",
+    "SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES",
     "SUPPORTED_FRESHNESS_POLICIES",
     "build_documentation_agent_packet",
     "capture_generated_ownership",

@@ -176,6 +176,7 @@ NATIVE_CONSUMING_SKILLS = (
     "agent-docs",
     "dep-audit",
     "doc-review",
+    "impact-analysis",
     "onboarding-guide",
     "usage-examples",
     "user-docs-author",
@@ -351,7 +352,113 @@ def test_doc_review_maps_native_fact_classes_without_conflating_authority() -> N
     )
 
 
-def test_doc_review_does_not_treat_infrastructure_snapshots_as_editable_notes() -> None:
+def test_bootstrap_keeps_locator_only_default_and_separately_confirms_governance() -> None:
+    manifest = _manifest("wiki-bootstrap")
+    reference = _reference("wiki-bootstrap")
+    section = manifest[
+        manifest.index("## Optional governance adoption is a separate decision") :
+        manifest.index("## Steps")
+    ]
+    normalized = " ".join(section.split())
+
+    locator_only = section.index("Default bootstrap remains **locator-only**")
+    confirmation = section.index("separate explicit owner confirmation")
+    dry_run = section.index(
+        "llm-wiki knowledge init --wiki-dir docs/llm_wiki --dry-run"
+    )
+    mutation = section.index(
+        "llm-wiki knowledge init --wiki-dir docs/llm_wiki",
+        dry_run + len("llm-wiki knowledge init --wiki-dir docs/llm_wiki --dry-run"),
+    )
+    assert locator_only < confirmation < dry_run < mutation
+    assert "does not create durable UIDs, lifecycle, human review" in normalized
+    assert "never an automatic repair" in normalized
+    assert "restore that exact ledger from version control or backup" in normalized
+
+    ownership = reference[
+        reference.index("## Native artifact ownership and recovery") :
+        reference.index("## Validation expectations")
+    ]
+    for artifact in (
+        ".llm-wiki-manifest.json",
+        ".llm-wiki-surface.json",
+        ".llm-wiki-knowledge.json",
+        ".llm-wiki-governance.json",
+        ".llm-wiki-verification.json",
+    ):
+        assert artifact in ownership
+    assert "non-rebuildable governance authority" in ownership
+    assert "Disposable receipt" in ownership
+    assert "cannot replace or recover the ledger" in ownership
+
+
+def test_sync_documents_governed_move_preview_confirmation_mutation_order() -> None:
+    manifest = _manifest("wiki-sync")
+    reference = _reference("wiki-sync")
+    section = manifest[
+        manifest.index("## Governed rename preflight and owner handoff") :
+        manifest.index("## Steps")
+    ]
+
+    filesystem_rename = section.index("filesystem/source rename")
+    sync_preview = section.index("llm-wiki sync --dry-run", filesystem_rename)
+    status = section.index("llm-wiki knowledge status", sync_preview)
+    move_preview = section.index("llm-wiki knowledge move", status)
+    dry_run = section.index("--dry-run", move_preview)
+    confirmation = section.index("The owner must confirm", dry_run)
+    move_mutation = section.index("llm-wiki knowledge move", confirmation)
+    owning_sync = section.index("llm-wiki sync --jobs 1", move_mutation)
+
+    assert (
+        filesystem_rename
+        < sync_preview
+        < status
+        < move_preview
+        < dry_run
+        < confirmation
+        < move_mutation
+        < owning_sync
+    )
+    normalized = " ".join(f"{manifest}\n{reference}".split())
+    for required in (
+        "retain old coordinates as aliases automatically",
+        "target owned by another UID is a hard conflict",
+        "implicit merge",
+        "Source disappearance never authors",
+        "expire prior human section reviews",
+        "make a machine verification receipt stale",
+        "restore the exact ledger from version control or backup",
+        "Generated `.llm-wiki-knowledge.json`",
+    ):
+        assert required in normalized
+
+
+def test_doc_review_hands_changed_native_review_scope_to_a_human() -> None:
+    manifest = _manifest("doc-review")
+    reference = _reference("doc-review")
+    normalized = " ".join(f"{manifest}\n{reference}".split())
+
+    for required in (
+        "concept UID/current locator",
+        "canonical page",
+        "exact section locator",
+        "prior event/state",
+        "semantic diff",
+        "evidence basis",
+        "named human/governance owner",
+        "Native human-review handoff",
+    ):
+        assert required in normalized
+    assert "Do not author a replacement event" in normalized
+    assert "cannot convert an agent result" in normalized
+    assert (
+        "Generated-only churn that leaves the semantic hash and evidence basis "
+        "unchanged keeps a valid review"
+    ) in normalized
+    assert "machine verification are three separate records" in normalized
+
+
+def test_doc_review_limits_infrastructure_semantics_to_notes() -> None:
     manifest = " ".join(_manifest("doc-review").split())
     reference = " ".join(_reference("doc-review").split())
     shared = schema.build_schema_content("generic", "docs/llm_wiki")
@@ -360,12 +467,15 @@ def test_doc_review_does_not_treat_infrastructure_snapshots_as_editable_notes() 
         shared.index("- After the last canonical Markdown edit")
     ]
 
-    assert "infrastructure/` pages are bootstrap snapshots" in manifest
-    assert "not a supported semantic surface" in manifest
-    assert "Do not edit generated infrastructure pages" in manifest
-    assert "arbitrary infrastructure `## Notes` are not a supported" in reference
-    assert "infrastructure pages in `{wiki_dir}/infrastructure/`" not in edit_targets
-    assert "Do not persist review findings in generated infrastructure pages" in shared
+    assert "incremental source observations" in manifest
+    assert "single `## Notes` section is semantic" in manifest
+    assert "every other section remains protected" in manifest
+    assert "Infrastructure `## Notes` is the sole semantic section" in reference
+    assert "unsupported custom headings are dropped" in reference
+    assert "Infrastructure `## Notes` is the only supported semantic" in edit_targets
+    assert "separate redacted infrastructure-review report" in " ".join(
+        shared.split()
+    )
 
 
 def test_shared_agent_instructions_include_native_preflight_and_final_reanchor() -> None:

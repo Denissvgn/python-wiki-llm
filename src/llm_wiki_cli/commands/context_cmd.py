@@ -42,6 +42,7 @@ from ..services.extraction_jobs import (
     print_extraction_job_plan,
 )
 from ..services.io import write_text_output
+from ..services.infrastructure_inventory import get_yaml_infrastructure_inventory
 from ..services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
 from ..services.knowledge_consumption import (
     KnowledgeAvailability,
@@ -83,6 +84,7 @@ from .extract_cmd import (
     build_data_flow_context,
     build_flow,
     get_entry_points,
+    get_docker_inventory,
     get_inventory_result,
     read_console_scripts,
     resolve_call_edges,
@@ -1663,12 +1665,23 @@ def _build_context_knowledge_view(
             assert load_result.knowledge is not None
             assert load_result.manifest_basis is not None
             try:
+                docker_infrastructure = get_docker_inventory(
+                    str(source_snapshot.root),
+                    source_snapshot=source_snapshot,
+                )
+                infrastructure_inventory = dict(docker_infrastructure)
+                for source_path, record in get_yaml_infrastructure_inventory(
+                    source_snapshot.root,
+                    source_snapshot=source_snapshot,
+                ).items():
+                    infrastructure_inventory.setdefault(source_path, record)
                 live_evaluation = build_runtime_live_evaluation(
                     RuntimeLiveEvaluationInputs(
                         knowledge=load_result.knowledge,
                         manifest=load_result.manifest_basis,
                         inventory=inventory,
                         source_snapshot=source_snapshot,
+                        infrastructure_inventory=infrastructure_inventory,
                         missing_source_paths=_reliably_missing_context_sources(
                             load_result.knowledge,
                             source_snapshot,

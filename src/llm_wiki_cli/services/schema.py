@@ -217,10 +217,12 @@ The canonical wiki surfaces are:
 - `{wiki_dir}/guides/`: semantic agent-authored onboarding, operator, and
   contributor guides. `sync` does not generate or overwrite guide prose.
 - `{wiki_dir}/flows/`: mixed user-flow pages generated from entry points.
-- `{wiki_dir}/infrastructure/`: bootstrap-time Docker, Compose, GitHub Actions,
-  Kubernetes, and targeted runtime/config YAML snapshots. Ordinary `sync` does
-  not regenerate their content, and arbitrary `## Notes` on these pages are
-  not a supported semantic surface.
+- `{wiki_dir}/infrastructure/`: incrementally regenerated Docker, Compose,
+  GitHub Actions, Kubernetes, and targeted runtime/config YAML observations.
+  Ordinary `sync` records repository-relative source/page mappings, exact
+  source and normalized observation hashes, discovery roots, unsupported YAML,
+  and move/removal tombstones. The single `## Notes` section is semantic;
+  generated sections are replaced and unsupported custom headings are dropped.
 - `{wiki_dir}/api-contracts.md`: optional mixed production HTTP contract
   inventory generated from static FastAPI analysis or an exported OpenAPI file;
   its `## Notes` section is semantic.
@@ -267,9 +269,9 @@ Hard rules for every agent:
 Do not edit generated Mermaid diagrams by hand. Treat generated diagrams,
 tables, links, headings, canonical filenames, and machine-readable artifacts as
 CLI-owned structure. Keep supported semantic sections such as descriptions,
-`## Behavior`, dependency/API `## Notes`, and log summaries aligned with the
-current source. Infrastructure-page `## Notes` are not a supported semantic
-surface.
+`## Behavior`, dependency/API/infrastructure `## Notes`, and log summaries
+aligned with the current source. Infrastructure-page `## Notes` are the sole
+supported semantic surface on those generated pages.
 Diagram style plugins may configure generated Mermaid flowchart direction,
 node classes, and class colors, but they cannot inject arbitrary Markdown,
 labels, hrefs, or raw Mermaid content.
@@ -311,10 +313,11 @@ labels, hrefs, or raw Mermaid content.
   `{wiki_dir}/entities/`, module pages in `{wiki_dir}/modules/`, workflow pages
   in `{wiki_dir}/workflows/`, user-flow pages in `{wiki_dir}/flows/`, and append
   one concise summary to `{wiki_dir}/log.md`.
-- Do not persist review findings in generated infrastructure pages. Treat them
-  as bootstrap snapshots, leave them unchanged, and use current raw-source
-  inspection or an authorized fresh dedicated extraction for assurance
-  conclusions and a separate redacted infrastructure-review report.
+- Infrastructure `## Notes` is the only supported semantic section; keep
+  reviewed non-sensitive operational context there and leave generated fields
+  untouched. Use current raw-source inspection or an authorized fresh dedicated
+  extraction for assurance conclusions, and keep findings in a separate
+  redacted infrastructure-review report.
 - After the last canonical Markdown edit, run
   `llm-wiki sync --jobs 1 --wiki-dir {wiki_dir} --src-dir .` again before
   strict lint or CI. This owning refresh preserves supported semantic prose and

@@ -11,6 +11,7 @@ from ..config import PathValidationError, validate_source_root
 from ..services.documentation_run import (
     DocumentationAgentResult,
     DocumentationRunError,
+    SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES,
     build_documentation_agent_packet,
     export_documentation_run,
     get_documentation_run_status,
@@ -29,6 +30,9 @@ _BASELINE_STRATEGIES = {
     "bootstrap-source": "bootstrap_source",
     "existing-wiki": "adopt_existing_wiki",
 }
+KNOWLEDGE_MODE_CHOICES = tuple(
+    sorted(SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES)
+)
 _INTAKE_KEYS = {
     "project_purpose",
     "audiences",
@@ -306,6 +310,10 @@ def _prepare(args) -> None:
         adjustment_loop_limit=args.adjustment_loop_limit,
         distribution_format=args.site_format,
         link_mode=link_mode,
+        knowledge_mode=getattr(args, "knowledge_mode", "off"),
+        knowledge_public_repository_identity=(
+            getattr(args, "knowledge_public_repository_identity", None)
+        ),
         refresh=bool(args.refresh),
         **intake,
     )
@@ -583,6 +591,31 @@ def _assert_export_options(args) -> None:
             "--file-friendly was not selected when the run was prepared; rerun docs "
             "prepare with --refresh --file-friendly."
         )
+    requested_knowledge_mode = getattr(args, "knowledge_mode", None)
+    recorded_knowledge_mode = run.publication.get("knowledge_mode", "off")
+    if (
+        requested_knowledge_mode is not None
+        and requested_knowledge_mode != recorded_knowledge_mode
+    ):
+        raise DocumentationRunError(
+            "Export knowledge mode differs from the prepared run contract; rerun "
+            "docs prepare with --refresh and the intended --knowledge-mode."
+        )
+    requested_public_identity = getattr(
+        args,
+        "knowledge_public_repository_identity",
+        None,
+    )
+    if (
+        requested_public_identity is not None
+        and requested_public_identity
+        != run.publication.get("knowledge_public_repository_identity")
+    ):
+        raise DocumentationRunError(
+            "Export public repository identity differs from the prepared run "
+            "contract; rerun docs prepare with --refresh and the intended "
+            "--knowledge-public-repository-identity."
+        )
 
 
 def _export(args) -> None:
@@ -591,6 +624,12 @@ def _export(args) -> None:
         args.workspace,
         build=bool(args.build),
         builder_command=args.builder_command,
+        knowledge_mode=getattr(args, "knowledge_mode", None),
+        knowledge_public_repository_identity=getattr(
+            args,
+            "knowledge_public_repository_identity",
+            None,
+        ),
     )
     if args.output_format == "json":
         print(json.dumps(report, indent=2, sort_keys=True))
