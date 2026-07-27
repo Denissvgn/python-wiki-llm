@@ -1,3 +1,4 @@
 tests/fixtures/knowledge/*.json text eol=lf
 tests/fixtures/knowledge-index/*.json text eol=lf
 tests/fixtures/knowledge-evidence/*.json text eol=lf
+tests/fixtures/knowledge-m1/** text eol=lf

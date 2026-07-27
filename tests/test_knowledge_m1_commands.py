@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import textwrap
 import types
 from collections import Counter, defaultdict
+from datetime import date
+from pathlib import Path
 
 import pytest
 
@@ -37,6 +40,15 @@ from llm_wiki_cli.services.sync_manifest import (
     SyncManifest,
 )
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
+
+
+# Golden bytes were captured from v1.4.0 before native knowledge work:
+# 76bfc0b35cbca12317f9a5c0182488d9cddbf72b.
+_PRE_FEATURE_BOOTSTRAP_FIXTURE = (
+    Path(__file__).parent / "fixtures" / "knowledge-m1" / "pre-feature-bootstrap"
+)
+_PRE_FEATURE_BOOTSTRAP_DATE = date(2025, 1, 2)
+_PROJECT_ROOT_TOKEN = b"<PROJECT_ROOT>"
 
 
 def _bootstrap_args(project, wiki_dir):
@@ -113,6 +125,13 @@ def _artifact_bytes(wiki_dir):
     }
 
 
+def _markdown_tree_bytes(root):
+    return {
+        path.relative_to(root).as_posix(): path.read_bytes()
+        for path in sorted(root.rglob("*.md"))
+    }
+
+
 def _concepts_by_path(knowledge):
     return {concept.document.canonical_path: concept for concept in knowledge.concepts}
 
@@ -178,6 +197,63 @@ def test_bootstrap_commits_a_loader_valid_knowledge_state(
     assert loaded.manifest_basis is not None
     assert loaded.manifest_basis.artifact_hashes is not None
     assert loaded.issues == ()
+
+
+def test_bootstrap_matches_pre_native_markdown_and_surface_v1_goldens(
+    tmp_path,
+    monkeypatch,
+):
+    """Lock bootstrap bytes from the pre-native v1.4.0 revision 76bfc0b."""
+
+    project = tmp_path / "project"
+    shutil.copytree(_PRE_FEATURE_BOOTSTRAP_FIXTURE / "source", project)
+    wiki_dir = project / "wiki"
+    expected_wiki = _PRE_FEATURE_BOOTSTRAP_FIXTURE / "wiki"
+
+    class FrozenDate(date):
+        @classmethod
+        def today(cls):
+            return _PRE_FEATURE_BOOTSTRAP_DATE
+
+    monkeypatch.chdir(project)
+    monkeypatch.setattr(bootstrap_cmd, "date", FrozenDate)
+    bootstrap_cmd.run(_bootstrap_args(project, wiki_dir))
+
+    expected_markdown = _markdown_tree_bytes(expected_wiki)
+    assert set(expected_markdown) == {
+        "dependencies.md",
+        "entities/User.md",
+        "index.md",
+        "load-order.md",
+        "log.md",
+        "modules/models.md",
+    }
+    # Bootstrap records the resolved source root in its legacy log entry.
+    assert expected_markdown["log.md"].count(_PROJECT_ROOT_TOKEN) == 1
+    expected_markdown["log.md"] = expected_markdown["log.md"].replace(
+        _PROJECT_ROOT_TOKEN,
+        str(project.resolve()).encode("utf-8"),
+    )
+    assert all(b"\r" not in content for content in expected_markdown.values())
+    assert _markdown_tree_bytes(wiki_dir) == expected_markdown
+
+    expected_surface = (expected_wiki / SURFACE_INDEX_FILENAME).read_bytes()
+    actual_surface = (wiki_dir / SURFACE_INDEX_FILENAME).read_bytes()
+    assert b"\r" not in expected_surface
+    assert json.loads(actual_surface)["schema_version"] == (
+        "llm-wiki-surface-index/v1"
+    )
+    assert actual_surface == expected_surface
+    assert {
+        path.name
+        for path in wiki_dir.iterdir()
+        if path.is_file() and path.name.startswith(".")
+    } == {
+        SURFACE_INDEX_FILENAME,
+        KNOWLEDGE_INDEX_FILENAME,
+        MANIFEST_FILENAME,
+    }
+    assert load_knowledge_state(wiki_dir).status is KnowledgeLoadState.VALID
 
 
 def test_immediate_noop_sync_preserves_all_committed_artifact_bytes(
