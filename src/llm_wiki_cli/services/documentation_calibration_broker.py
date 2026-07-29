@@ -1312,48 +1312,76 @@ class _LocalEgressCanary:
         _validate_slug(probe_id, "probe_id")
         self._challenge = secrets.token_hex(32)
         self._response = _network_canary_response(self._challenge)
-        self._listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self._listener.bind(("127.0.0.1", 0))
-        self._listener.listen(8)
-        self._listener.settimeout(0.1)
+        listener: socket.socket | None = None
+        try:
+            listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            listener.bind(("127.0.0.1", 0))
+            listener.listen(8)
+            listener.settimeout(0.1)
+        except OSError as exc:
+            if listener is not None:
+                try:
+                    listener.close()
+                except OSError:
+                    pass
+            raise OciBrokerError(
+                "Local egress canary enforcement is unavailable."
+            ) from exc
+        self._listener = listener
         self._stop = threading.Event()
         self._guard = threading.Lock()
         self._control_complete = False
         self._pre_control_connections = 0
         self._pre_control_authenticated = 0
         self._post_control_connections = 0
-        self._thread = threading.Thread(
-            target=self._serve,
-            name="llm-wiki-oci-egress-canary",
-            daemon=True,
-        )
-        self._thread.start()
-        self._run_host_control()
-        with self._guard:
-            invalid_control = (
-                self._pre_control_connections != 1
-                or self._pre_control_authenticated != 1
+        thread_started = False
+        try:
+            self._thread = threading.Thread(
+                target=self._serve,
+                name="llm-wiki-oci-egress-canary",
+                daemon=True,
             )
-            if not invalid_control:
-                self._control_complete = True
-        if invalid_control:
-            self.close()
-            raise OciBrokerError(
-                "Local egress canary control was not uniquely reachable."
+            self._thread.start()
+            thread_started = True
+            self._run_host_control()
+            with self._guard:
+                invalid_control = (
+                    self._pre_control_connections != 1
+                    or self._pre_control_authenticated != 1
+                )
+                if not invalid_control:
+                    self._control_complete = True
+            if invalid_control:
+                raise OciBrokerError(
+                    "Local egress canary control was not uniquely reachable."
+                )
+            challenge_bytes = bytes.fromhex(self._challenge)
+            transcript = b"host-control\x00" + challenge_bytes + self._response
+            host, port = self._listener.getsockname()[:2]
+            self.binding = OciNetworkCanaryBinding(
+                canary_id=f"canary-{uuid.uuid4().hex}",
+                host=str(host),
+                port=int(port),
+                challenge=self._challenge,
+                challenge_sha256=_bytes_sha256(challenge_bytes),
+                response_sha256=_bytes_sha256(self._response),
+                control_sha256=_bytes_sha256(transcript),
             )
-        challenge_bytes = bytes.fromhex(self._challenge)
-        transcript = b"host-control\x00" + challenge_bytes + self._response
-        host, port = self._listener.getsockname()[:2]
-        self.binding = OciNetworkCanaryBinding(
-            canary_id=f"canary-{uuid.uuid4().hex}",
-            host=str(host),
-            port=int(port),
-            challenge=self._challenge,
-            challenge_sha256=_bytes_sha256(challenge_bytes),
-            response_sha256=_bytes_sha256(self._response),
-            control_sha256=_bytes_sha256(transcript),
-        )
+        except BaseException as exc:
+            if thread_started:
+                self.close()
+            else:
+                self._stop.set()
+                try:
+                    self._listener.close()
+                except OSError:
+                    pass
+            if isinstance(exc, (OSError, RuntimeError)):
+                raise OciBrokerError(
+                    "Local egress canary enforcement is unavailable."
+                ) from exc
+            raise
 
     @property
     def post_control_connections(self) -> int:
@@ -1376,7 +1404,10 @@ class _LocalEgressCanary:
         except OSError:
             pass
         self._thread.join(timeout=2)
-        self._listener.close()
+        try:
+            self._listener.close()
+        except OSError:
+            pass
 
     def _run_host_control(self) -> None:
         try:

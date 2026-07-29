@@ -1246,6 +1246,76 @@ def test_local_admission_requires_complete_denial_probe_results(
     assert get_p0_calibration_run_status(root).state == "REJECT"
 
 
+def test_local_admission_environment_setup_failure_is_terminal_and_fail_closed(
+    tmp_path: Path,
+    monkeypatch,
+):
+    from llm_wiki_cli.services import documentation_calibration_broker as broker
+
+    _source, control_a, control_b = _prepare_controls(tmp_path)
+    manifest = _local_manifest(tmp_path)
+    root = tmp_path / "unavailable-admission-enforcement"
+    run = prepare_p0_calibration_run(
+        root,
+        control_workspaces=[control_a, control_b],
+        execution_manifest=manifest,
+    )
+    probe_calls: list[bool] = []
+
+    @contextmanager
+    def unavailable_environment(*, probe_id):
+        del probe_id
+        raise broker.OciBrokerError(
+            "Local egress canary enforcement is unavailable."
+        )
+        yield
+
+    def unexpected_probe(*_args, **_kwargs):
+        probe_calls.append(True)
+        raise AssertionError("probe execution must not follow setup failure")
+
+    monkeypatch.setattr(
+        broker,
+        "create_oci_admission_probe_environment",
+        unavailable_environment,
+    )
+    monkeypatch.setattr(broker, "execute_oci_admission_probe", unexpected_probe)
+    authority = _authority(run, manifest)
+
+    blocked = admit_p0_calibration_run(
+        root,
+        authority_grant=authority,
+    )
+
+    assert blocked.state == "BLOCKED_NO_SHIP"
+    assert blocked.payload["terminal_reason_codes"] == [
+        "isolation_enforcement_unavailable"
+    ]
+    assert blocked.payload["attestation_hash"] is None
+    assert probe_calls == []
+    assert "admission_probe_request" not in blocked.payload["artifacts"]
+    assert "isolation_attestation" not in blocked.payload["artifacts"]
+    assert "admission" not in blocked.payload["artifacts"]
+    assert not (root / "packets").exists()
+
+    terminal_snapshot = (root / "run.json").read_bytes()
+    status = get_p0_calibration_run_status(root)
+    assert status.state == "BLOCKED_NO_SHIP"
+    assert status.terminal is True
+    with pytest.raises(
+        P0CalibrationTransitionError,
+        match="Admission requires BASELINE_FROZEN, not BLOCKED_NO_SHIP",
+    ):
+        admit_p0_calibration_run(root, authority_grant=authority)
+    with pytest.raises(
+        P0CalibrationTransitionError,
+        match="Packets require an admitted, nonterminal cohort",
+    ):
+        build_p0_calibration_agent_packet(root, role="intake-a")
+    assert (root / "run.json").read_bytes() == terminal_snapshot
+    assert probe_calls == []
+
+
 def test_interrupted_local_admission_probe_is_ledgered_and_blocks(
     tmp_path: Path,
     monkeypatch,
