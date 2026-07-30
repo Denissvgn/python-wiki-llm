@@ -13,7 +13,7 @@ from typing import Iterable, Mapping, Sequence
 
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import context_cmd
-from llm_wiki_cli.services import mcp_server
+from llm_wiki_cli.services import mcp_server, skills
 
 
 _SAFE_PLACEHOLDERS = {
@@ -34,6 +34,28 @@ _INLINE_COMMAND_RE = re.compile(r"^`(llm-wiki\s+[^`]+)`$")
 _BULLET_COMMAND_RE = re.compile(r"^[-*+]\s+`(llm-wiki\s+[^`]+)`[.]?$")
 _TABLE_SEPARATOR_RE = re.compile(r"^:?-{3,}:?$")
 _EXPLICIT_FRAGMENT_RE = re.compile(r"(?:^|\s)(?:\.\.\.|…)(?=\s|$)")
+
+WORKFLOW_MARKER_EDIT = "edit"
+WORKFLOW_MARKER_REANCHOR = "reanchor"
+WORKFLOW_MARKER_STRICT = "strict"
+
+_WORKFLOW_SECTION_HEADINGS = ("## Steps", "## Workflow")
+_FRONTMATTER_DELIMITER = "---"
+# A canonical-Markdown edit is claimed when an authoring verb and a wiki
+# surface object appear on the same instruction line.
+_CANONICAL_EDIT_VERB_RE = re.compile(
+    r"(?i)\b(?:edit|edits|edited|editing|write|writes|writing|wrote|author"
+    r"|authors|authoring|append|appends|appending|attach|attaches|attaching"
+    r"|rewrite|rewrites|rewriting|update|updates|updating|add|adds|adding)\b"
+)
+_CANONICAL_EDIT_OBJECT_RE = re.compile(
+    r"(?i)(?:canonical|markdown|semantic|wiki prose|guide page|log line"
+    r"|asset path|deferred-docs row)"
+)
+_REANCHOR_COMMAND_RE = re.compile(r"^llm-wiki (?:sync|bootstrap|migrate)\b")
+_STRICT_VALIDATION_COMMAND_RE = re.compile(
+    r"^llm-wiki (?:ci-check\b|lint\b.*?\s--strict\b)"
+)
 
 
 class SkillContractError(AssertionError):
@@ -68,6 +90,13 @@ class McpToolExample:
     location: ExampleLocation
     tool_name: str
     payload: Mapping[str, object]
+
+
+@dataclass(frozen=True)
+class WorkflowMarker:
+    location: ExampleLocation
+    kind: str
+    text: str
 
 
 def _is_explicit_command_fragment(command: str) -> bool:
@@ -502,3 +531,115 @@ def assert_cli_selections_equal(
                 f"{example.location.label}: selections {actual!r} do not match "
                 f"{first_example.location.label} selections {expected!r}"
             )
+
+
+def _workflow_section(path: Path) -> tuple[int, list[str]]:
+    """Return the workflow body of a manifest with its 0-based line offset."""
+    lines = path.read_text(encoding="utf-8").splitlines()
+    for index, line in enumerate(lines):
+        if line.strip() in _WORKFLOW_SECTION_HEADINGS:
+            return index + 1, lines[index + 1 :]
+    offset = 0
+    if lines and lines[0].strip() == _FRONTMATTER_DELIMITER:
+        for index in range(1, len(lines)):
+            if lines[index].strip() == _FRONTMATTER_DELIMITER:
+                offset = index + 1
+                break
+    return offset, lines[offset:]
+
+
+def extract_workflow_markers(path: Path) -> tuple[WorkflowMarker, ...]:
+    """Extract ordered edit, re-anchor, and strict-validation workflow markers.
+
+    A ``--dry-run`` sync previews without re-committing the native snapshot, so
+    it never counts as a re-anchor.
+    """
+    offset, lines = _workflow_section(path)
+    markers: list[WorkflowMarker] = []
+    for index, line in enumerate(lines):
+        command = line.strip()
+        location = ExampleLocation(path.parent.name, path, offset + index + 1)
+        if _REANCHOR_COMMAND_RE.match(command):
+            if "--dry-run" in command:
+                continue
+            markers.append(
+                WorkflowMarker(location, WORKFLOW_MARKER_REANCHOR, command)
+            )
+        elif _STRICT_VALIDATION_COMMAND_RE.match(command):
+            markers.append(
+                WorkflowMarker(location, WORKFLOW_MARKER_STRICT, command)
+            )
+        elif _CANONICAL_EDIT_VERB_RE.search(line) and _CANONICAL_EDIT_OBJECT_RE.search(
+            line
+        ):
+            markers.append(WorkflowMarker(location, WORKFLOW_MARKER_EDIT, command))
+    return tuple(markers)
+
+
+def validate_workflow_ordering(path: Path) -> None:
+    """Require a re-anchor between any canonical edit and strict validation."""
+    pending: WorkflowMarker | None = None
+    for marker in extract_workflow_markers(path):
+        if marker.kind == WORKFLOW_MARKER_EDIT:
+            pending = pending or marker
+        elif marker.kind == WORKFLOW_MARKER_REANCHOR:
+            pending = None
+        elif pending is not None:
+            raise SkillContractError(
+                f"{marker.location.label}: strict validation "
+                f"{marker.text!r} follows the canonical edit documented at "
+                f"line {pending.location.line} with no intervening re-anchor "
+                "sync"
+            )
+
+
+def bundled_skill_dirs(skills_root: Path) -> tuple[Path, ...]:
+    """Every bundled skill directory that ships a manifest, in stable order."""
+    return tuple(
+        path
+        for path in sorted(skills_root.iterdir())
+        if (path / skills.SKILL_MANIFEST_NAME).is_file()
+    )
+
+
+def collect_skill_contract_errors(skill_dir: Path) -> tuple[str, ...]:
+    """Every documented-contract violation in one bundled skill directory."""
+    errors: list[str] = []
+
+    for extract_all, validate_all in (
+        (extract_cli_examples, parse_cli_example),
+        (extract_context_request_examples, validate_context_example),
+    ):
+        try:
+            extracted = extract_all(skill_dir)
+        except SkillContractError as exc:
+            errors.append(str(exc))
+            continue
+        for example in extracted:
+            try:
+                validate_all(example)
+            except SkillContractError as exc:
+                errors.append(str(exc))
+
+    for path in sorted(skill_dir.rglob("*.md")):
+        for extract_one, validate_one in (
+            (extract_query_graph_examples, validate_query_graph_example),
+            (extract_mcp_tool_examples, validate_mcp_tool_example),
+        ):
+            try:
+                extracted = extract_one(path)
+            except SkillContractError as exc:
+                errors.append(str(exc))
+                continue
+            for example in extracted:
+                try:
+                    validate_one(example)
+                except SkillContractError as exc:
+                    errors.append(str(exc))
+
+    try:
+        validate_workflow_ordering(skill_dir / skills.SKILL_MANIFEST_NAME)
+    except SkillContractError as exc:
+        errors.append(str(exc))
+
+    return tuple(errors)
