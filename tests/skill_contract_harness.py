@@ -28,6 +28,7 @@ _SAFE_PLACEHOLDERS = {
 }
 _PLACEHOLDER_RE = re.compile(r"<[^>\n]+>")
 _JSON_OBJECT_RE = re.compile(r"\{[^{}\n]+\}")
+_SHELL_QUOTED_JSON_RE = re.compile(r"'(\{.*\})'")
 _MCP_TOOL_MARKER_RE = re.compile(r"^MCP tool `([a-z][a-z0-9_]*)`:$")
 _INLINE_COMMAND_RE = re.compile(r"^`(llm-wiki\s+[^`]+)`$")
 _BULLET_COMMAND_RE = re.compile(r"^[-*+]\s+`(llm-wiki\s+[^`]+)`[.]?$")
@@ -246,24 +247,38 @@ def parse_cli_example(example: CliExample):
 
 
 def extract_query_graph_examples(path: Path) -> tuple[JsonExample, ...]:
-    """Extract inline JSON objects presented as MCP ``query_graph`` requests."""
+    """Extract inline JSON objects presented as MCP ``query_graph`` requests.
+
+    A documented request may wrap onto the line after the ``query_graph``
+    mention, so each mention scans its own line plus the next one.
+    """
+    lines = path.read_text(encoding="utf-8").splitlines()
+    seen: set[tuple[int, int]] = set()
     examples: list[JsonExample] = []
-    for line_number, line in enumerate(
-        path.read_text(encoding="utf-8").splitlines(), 1
-    ):
+    for line_number, line in enumerate(lines, 1):
         if "query_graph" not in line:
             continue
-        location = ExampleLocation(path.parent.name, path, line_number)
-        for match in _JSON_OBJECT_RE.finditer(line):
-            raw = _safe_substitute(match.group(0), location)
-            try:
-                payload = json.loads(raw)
-            except json.JSONDecodeError as exc:
-                raise SkillContractError(
-                    f"{location.label}: invalid query_graph JSON: {exc.msg}"
-                ) from exc
-            if isinstance(payload, dict):
-                examples.append(JsonExample(location, payload))
+        window = [(line_number, line)]
+        if line_number < len(lines):
+            window.append((line_number + 1, lines[line_number]))
+        for json_line_number, json_line in window:
+            for match in _JSON_OBJECT_RE.finditer(json_line):
+                key = (json_line_number, match.start())
+                if key in seen:
+                    continue
+                seen.add(key)
+                location = ExampleLocation(
+                    path.parent.name, path, json_line_number
+                )
+                raw = _safe_substitute(match.group(0), location)
+                try:
+                    payload = json.loads(raw)
+                except json.JSONDecodeError as exc:
+                    raise SkillContractError(
+                        f"{location.label}: invalid query_graph JSON: {exc.msg}"
+                    ) from exc
+                if isinstance(payload, dict):
+                    examples.append(JsonExample(location, payload))
     return tuple(examples)
 
 
@@ -372,13 +387,36 @@ def validate_mcp_tool_example(example: McpToolExample) -> dict:
 
 
 def extract_context_request_examples(skills_root: Path) -> tuple[JsonExample, ...]:
-    """Extract fenced context-protocol JSON requests from bundled skills."""
+    """Extract fenced and shell-quoted context-protocol JSON requests."""
     examples: list[JsonExample] = []
     for path in sorted(skills_root.rglob("*.md")):
         lines = path.read_text(encoding="utf-8").splitlines()
         index = 0
         while index < len(lines):
-            if not lines[index].strip().startswith("```json"):
+            stripped = lines[index].strip()
+            if not stripped.startswith("```json"):
+                inline = _SHELL_QUOTED_JSON_RE.search(lines[index])
+                if (
+                    inline is not None
+                    and context_cmd.PROTOCOL_VERSION in inline.group(1)
+                ):
+                    location = ExampleLocation(
+                        path.parent.name, path, index + 1
+                    )
+                    raw = _safe_substitute(inline.group(1), location)
+                    try:
+                        payload = json.loads(raw)
+                    except json.JSONDecodeError as exc:
+                        raise SkillContractError(
+                            f"{location.label}: invalid context JSON: "
+                            f"{exc.msg}"
+                        ) from exc
+                    if not isinstance(payload, dict):
+                        raise SkillContractError(
+                            f"{location.label}: context request must be "
+                            "an object"
+                        )
+                    examples.append(JsonExample(location, payload))
                 index += 1
                 continue
             start_line = index + 2

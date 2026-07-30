@@ -81,6 +81,88 @@ def test_mcp_harness_accepts_valid_and_identifies_invalid_fixture():
         validate_query_graph_example(invalid)
 
 
+def test_query_graph_harness_extracts_continuation_line_payloads(tmp_path):
+    skill = tmp_path / "contract-skill"
+    skill.mkdir()
+    path = skill / "SKILL.md"
+    path.write_text(
+        "\n".join(
+            [
+                "# Contract",
+                "",
+                "Use MCP `query_graph` with",
+                '`{"type": "dependency_neighborhood", "value": "<file>",'
+                ' "limit": 20}` —',
+                "the context protocol does not expose it.",
+                "",
+                'Same-line form: `query_graph {"type": "callers",'
+                ' "value": "<symbol>", "limit": 20}`.',
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    examples = extract_query_graph_examples(path)
+
+    assert [
+        (example.location.line, validate_query_graph_example(example))
+        for example in examples
+    ] == [
+        (4, ("dependency_neighborhood", "src/contract.py", 20)),
+        (7, ("callers", "contract_symbol", 20)),
+    ]
+
+
+def test_context_harness_extracts_shell_quoted_requests(tmp_path):
+    skill = tmp_path / "contract-skill"
+    skill.mkdir()
+    path = skill / "SKILL.md"
+    path.write_text(
+        "\n".join(
+            [
+                "# Contract",
+                "",
+                "```bash",
+                "echo '{\"protocol\":\"llm-wiki-context/v1\","
+                "\"budget_tokens\":16000,"
+                "\"filters\":{\"symbol\":\"<symbol>\"}}' \\",
+                "  | llm-wiki context --src-dir . --request - --read-only",
+                "```",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    examples = extract_context_request_examples(tmp_path)
+
+    assert len(examples) == 1
+    assert examples[0].location.line == 4
+    validated = validate_context_example(examples[0])
+    assert validated["budget_tokens"] == 16000
+    assert validated["filters"] == {"symbol": "contract_symbol"}
+
+
+def test_context_harness_reports_invalid_shell_quoted_request(tmp_path):
+    skill = tmp_path / "invalid-shell-context"
+    skill.mkdir()
+    path = skill / "SKILL.md"
+    path.write_text(
+        "echo '{\"protocol\":\"llm-wiki-context/v1\",\"unknown\":true}'\n",
+        encoding="utf-8",
+    )
+
+    examples = extract_context_request_examples(tmp_path)
+
+    assert len(examples) == 1
+    with pytest.raises(
+        SkillContractError,
+        match=r"invalid-shell-context .*Unknown request field: unknown",
+    ):
+        validate_context_example(examples[0])
+
+
 def test_named_mcp_tool_harness_accepts_valid_and_identifies_invalid_fixture():
     valid = McpToolExample(
         _location(),
@@ -472,6 +554,10 @@ def test_impact_analysis_mcp_examples_validate_and_dispatch(monkeypatch):
         for example in extract_query_graph_examples(path)
     )
     assert examples
+    assert {example.location.path.name for example in examples} == {
+        "SKILL.md",
+        "reference.md",
+    }
     assert {validate_query_graph_example(example)[0] for example in examples} >= {
         "callers",
         "dependency_neighborhood",
