@@ -138,20 +138,20 @@ def test_core_dependencies_do_not_install_model_provider_sdks():
     )
 
 
-def test_package_data_includes_bundled_m4_plugin_sample():
+def test_package_data_includes_bundled_documentation_hooks_plugin_sample():
     data = _pyproject()
     package_data = data["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]
     assert (
-        "examples/plugins/m4-documentation-hooks/llm-wiki-plugin.json" in package_data
+        "examples/plugins/documentation-hooks/llm-wiki-plugin.json" in package_data
     )
-    assert "examples/plugins/m4-documentation-hooks/detectors.py" in package_data
-    assert "examples/plugins/m4-documentation-hooks/styles.py" in package_data
+    assert "examples/plugins/documentation-hooks/detectors.py" in package_data
+    assert "examples/plugins/documentation-hooks/styles.py" in package_data
 
 
-def test_sdist_manifest_includes_source_m4_plugin_sample():
+def test_sdist_manifest_includes_source_documentation_hooks_plugin_sample():
     manifest = (PROJECT_ROOT / "MANIFEST.in").read_text(encoding="utf-8")
     assert (
-        "recursive-include examples/plugins/m4-documentation-hooks *.py *.json"
+        "recursive-include examples/plugins/documentation-hooks *.py *.json"
         in manifest
     )
 
@@ -291,7 +291,7 @@ def test_readme_documents_resource_aware_execution():
     assert "the `llm-wiki-context/v1` protocol stay unchanged" in text
 
 
-def test_release_metadata_documents_surfaces_and_verification():
+def test_release_metadata_documents_surfaces_and_platforms():
     readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
     release_notes = _changelog_section("## [1.0.0]")
     release_metadata = " ".join("\n".join([readme, release_notes]).split())
@@ -313,10 +313,7 @@ def test_release_metadata_documents_surfaces_and_verification():
         "Ubuntu",
         "macOS",
         "Windows",
-        "Python 3.9, 3.12, and 3.13",
-        ".venv/bin/pytest -q",
-        ".venv/bin/python -m build",
-        "git diff --check",
+        "package metadata",
     ]:
         assert required in release_metadata
 
@@ -337,8 +334,9 @@ def test_readme_release_verification_uses_project_virtualenv():
     assert not any(line.startswith("python -m pytest") for line in readme_lines)
 
 
-def test_changelog_1_0_0_documents_m4_public_surfaces():
+def test_changelog_1_0_0_documents_public_surfaces():
     release_notes = _changelog_section("## [1.0.0]")
+    release_text = " ".join(release_notes.split())
 
     for required in [
         "static-site",
@@ -348,10 +346,9 @@ def test_changelog_1_0_0_documents_m4_public_surfaces():
         "context",
         "plugin",
         "migration",
-        "dogfood",
-        "release-readiness",
+        "self-hosted documentation",
     ]:
-        assert required in release_notes
+        assert required in release_text
 
 
 def test_changelog_1_1_0_documents_haskell_release_boundaries():

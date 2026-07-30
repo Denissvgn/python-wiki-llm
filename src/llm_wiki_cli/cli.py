@@ -1987,7 +1987,7 @@ def _add_docs_command(subparsers):
 
     calibration = docs_sub.add_parser(
         "calibration",
-        help="Supervise an evidence-backed P0 calibration cohort",
+        help="Supervise an evidence-backed documentation calibration cohort",
     )
     calibration_sub = calibration.add_subparsers(
         dest="calibration_action",

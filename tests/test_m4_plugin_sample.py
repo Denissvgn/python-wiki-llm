@@ -1,4 +1,4 @@
-"""Tests for the documented M4 plugin sample fixture."""
+"""Tests for the documented documentation-hooks plugin sample fixture."""
 
 from __future__ import annotations
 
@@ -15,14 +15,14 @@ from llm_wiki_cli.services.diagrams import resolve_diagram_style
 from llm_wiki_cli.services.entrypoints import detect_entry_points
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SAMPLE_PLUGIN = REPO_ROOT / "examples" / "plugins" / "m4-documentation-hooks"
+SAMPLE_PLUGIN = REPO_ROOT / "examples" / "plugins" / "documentation-hooks"
 BUNDLED_SAMPLE_PLUGIN = (
     REPO_ROOT
     / "src"
     / "llm_wiki_cli"
     / "examples"
     / "plugins"
-    / "m4-documentation-hooks"
+    / "documentation-hooks"
 )
 SAMPLE_FILES = (
     "detectors.py",
@@ -32,7 +32,7 @@ SAMPLE_FILES = (
 
 
 def _install_sample_plugin(root: Path) -> Path:
-    plugin_dir = root / "vendor" / "m4-documentation-hooks"
+    plugin_dir = root / "vendor" / "documentation-hooks"
     shutil.copytree(SAMPLE_PLUGIN, plugin_dir)
     plugins.install_plugin(str(plugin_dir), root=root, yes=True)
     return plugin_dir
@@ -41,7 +41,7 @@ def _install_sample_plugin(root: Path) -> Path:
 def test_sample_plugin_manifest_uses_documented_component_refs(tmp_path):
     manifest = json.loads((SAMPLE_PLUGIN / plugins.MANIFEST_FILENAME).read_text())
 
-    assert manifest["id"] == "m4-documentation-hooks"
+    assert manifest["id"] == "documentation-hooks"
     assert manifest["components"] == [
         {
             "type": "entrypoint_detector",
@@ -61,8 +61,8 @@ def test_sample_plugin_manifest_uses_documented_component_refs(tmp_path):
 def test_bundled_sample_plugin_matches_source_fixture():
     assert plugin_samples.list_samples() == [
         {
-            "id": "m4-documentation-hooks",
-            "description": "M4 documentation hooks sample plugin",
+            "id": "documentation-hooks",
+            "description": "Documentation hooks sample plugin",
         }
     ]
 
@@ -73,20 +73,35 @@ def test_bundled_sample_plugin_matches_source_fixture():
 
 
 def test_bundled_sample_plugin_exports_valid_plugin(tmp_path):
-    dest = tmp_path / "vendor" / "m4-documentation-hooks"
+    dest = tmp_path / "vendor" / "documentation-hooks"
 
-    result = plugin_samples.export_sample("m4-documentation-hooks", dest)
+    result = plugin_samples.export_sample("documentation-hooks", dest)
 
-    assert result == {"id": "m4-documentation-hooks", "path": str(dest)}
+    assert result == {"id": "documentation-hooks", "path": str(dest)}
     assert sorted(path.name for path in dest.iterdir()) == sorted(SAMPLE_FILES)
     manifest = plugins.validate_plugin(dest)
-    assert manifest["id"] == "m4-documentation-hooks"
+    assert manifest["id"] == "documentation-hooks"
+
+
+def test_deprecated_sample_id_exports_canonical_plugin_with_visible_warning(tmp_path):
+    dest = tmp_path / "vendor" / "legacy-export"
+
+    with pytest.warns(
+        FutureWarning,
+        match=r"is deprecated; use 'documentation-hooks' instead",
+    ) as captured:
+        result = plugin_samples.export_sample("m4-documentation-hooks", dest)
+
+    assert len(captured) == 1
+    assert result == {"id": "documentation-hooks", "path": str(dest)}
+    manifest = plugins.validate_plugin(dest)
+    assert manifest["id"] == "documentation-hooks"
 
 
 def test_bundled_sample_plugin_export_rejects_relative_destination_escape(tmp_path):
     with pytest.raises(plugins.PluginError, match="inside the project root"):
         plugin_samples.export_sample(
-            "m4-documentation-hooks", "../outside", root=tmp_path
+            "documentation-hooks", "../outside", root=tmp_path
         )
 
 
@@ -125,9 +140,9 @@ def test_readme_references_tested_sample_plugin_names():
     content = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
 
     for expected in [
-        "examples/plugins/m4-documentation-hooks",
-        "m4-documentation-hooks/worker-tasks",
-        "m4-documentation-hooks/brand-flowcharts",
+        "examples/plugins/documentation-hooks",
+        "documentation-hooks/worker-tasks",
+        "documentation-hooks/brand-flowcharts",
         "detectors:detect_worker_tasks",
         "styles:style_flowcharts",
     ]:

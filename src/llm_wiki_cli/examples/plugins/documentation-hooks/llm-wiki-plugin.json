@@ -1,5 +1,5 @@
 {
-  "id": "m4-documentation-hooks",
+  "id": "documentation-hooks",
   "version": "0.1.0",
   "llm_wiki_version": "*",
   "components": [

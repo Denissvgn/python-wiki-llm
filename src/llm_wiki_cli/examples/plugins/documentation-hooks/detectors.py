@@ -1,4 +1,4 @@
-"""Sample M4 entry-point detector hooks for LLM Wiki plugins."""
+"""Sample entry-point detector hooks for LLM Wiki plugins."""
 
 from __future__ import annotations
 

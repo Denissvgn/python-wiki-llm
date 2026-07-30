@@ -143,6 +143,9 @@ The local execution manifest is exact-field and must have this shape. Replace
 the schematic executable, hashes, and image identities with canonical
 host-specific values; mutable image tags are rejected:
 
+The `p0-calibration` fragments in the following schema values are historical
+wire identifiers retained for compatibility.
+
 ```json
 {
   "schema_version": "llm-wiki-p0-calibration-execution-manifest/v1",
@@ -233,7 +236,7 @@ Use `dispatch` for the frozen local OCI backend. Use `record-result` only for a
 separately authenticated host broker whose identity is established outside its
 JSON receipt. The ordinary CLI remains fail-closed without a host authenticator;
 an embedding Python host scopes authenticated calls with
-`use_p0_calibration_host_broker_authenticator`. Local OCI entrypoints overwrite
+`use_calibration_host_broker_authenticator`. Local OCI entrypoints overwrite
 the supplied pre-created result file; its parent is not writable, its exact
 byte ceiling is enforced during execution, and admission must deny both an
 over-limit extension and sibling creation. Unavailable enforcement blocks the

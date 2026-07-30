@@ -440,7 +440,7 @@ def _calibration_prepare(args) -> None:
         label="execution manifest",
     )
     controller = _calibration_controller()
-    run = controller.prepare_p0_calibration_run(
+    run = controller.prepare_calibration_run(
         args.root,
         control_workspaces=controls,
         execution_manifest=manifest,
@@ -463,7 +463,7 @@ def _calibration_admit(args) -> None:
         else None
     )
     controller = _calibration_controller()
-    run = controller.admit_p0_calibration_run(
+    run = controller.admit_calibration_run(
         args.root,
         authority_grant=authority,
         broker_attestation=attestation,
@@ -475,7 +475,7 @@ def _calibration_admit(args) -> None:
 
 
 def _calibration_status(args) -> None:
-    status = _calibration_controller().get_p0_calibration_run_status(args.root)
+    status = _calibration_controller().get_calibration_run_status(args.root)
     _print_calibration_json(status, label="calibration status")
 
 
@@ -489,7 +489,7 @@ def _calibration_packet(args) -> None:
         args.root,
         args.output,
     )
-    packet = controller.build_p0_calibration_agent_packet(
+    packet = controller.build_calibration_agent_packet(
         args.root,
         role=args.role,
     )
@@ -509,7 +509,7 @@ def _calibration_packet(args) -> None:
 
 
 def _calibration_dispatch(args) -> None:
-    receipt = _calibration_controller().dispatch_p0_calibration_agent(
+    receipt = _calibration_controller().dispatch_calibration_agent(
         args.root,
         role=args.role,
     )
@@ -532,7 +532,7 @@ def _calibration_record_result(args) -> None:
     controller = _calibration_controller()
     receipt = controller.P0CalibrationDispatchReceipt.from_dict(receipt_payload)
     result = controller.P0CalibrationAgentResult.from_dict(result_payload)
-    run = controller.record_p0_calibration_agent_result(
+    run = controller.record_calibration_agent_result(
         args.root,
         dispatch_receipt=receipt,
         result=result,
@@ -541,7 +541,7 @@ def _calibration_record_result(args) -> None:
 
 
 def _calibration_verify(args) -> None:
-    report = _calibration_controller().verify_p0_calibration_run(
+    report = _calibration_controller().verify_calibration_run(
         args.root,
         advance=not bool(args.no_advance),
     )

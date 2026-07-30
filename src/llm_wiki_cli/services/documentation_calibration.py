@@ -1,4 +1,4 @@
-"""Deterministic evidence contracts for standalone-documentation P0 calibration.
+"""Deterministic evidence contracts for standalone documentation calibration.
 
 This module deliberately does not classify, label, rank, or promote flows.  Its
 v1 preflight, shadow, and verdict records are diagnostic-only: they cannot admit

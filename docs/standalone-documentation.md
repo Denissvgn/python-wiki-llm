@@ -61,7 +61,10 @@ project-docs/
 └── _site/     # optional output from an authorized real builder
 ```
 
-### P0 calibration evidence is diagnostic
+### Documentation calibration evidence is diagnostic
+
+Protocol and artifact strings containing `p0-calibration` are historical wire
+identifiers retained for compatibility; they do not name the feature in prose.
 
 Every prepared run now records two supervisor-owned artifacts beside the
 semantic worklist:
@@ -250,7 +253,7 @@ package ships no provider credential, SDK, external-provider adapter, or
 self-authenticating receipt path. The ordinary CLI exposes no authenticator
 selector and remains fail-closed. An embedding Python host that has already
 authenticated the broker scopes lifecycle calls with
-`use_p0_calibration_host_broker_authenticator`.
+`use_calibration_host_broker_authenticator`.
 
 After admission, write each private packet to an explicit path:
 
@@ -693,8 +696,8 @@ compatible runner, and persist the returned selection receipt outside the
 provider-neutral lifecycle packet. The lifecycle does not record or prove
 which concrete model actually ran. First-class publisher/backend/transport
 bindings, concrete adapters, price evidence, and runner receipts remain the
-separate multi-provider routing backlog rather than part of this deterministic
-core contract.
+responsibility of a separate multi-provider routing layer rather than this
+deterministic core contract.
 
 Example `model-routing.json` (the model IDs are placeholders to replace with
 your runner's configured IDs):
@@ -954,18 +957,18 @@ from llm_wiki_cli.api import (
     HostBrokerAuthenticator,
     P0CalibrationAgentResult,
     P0CalibrationDispatchReceipt,
-    admit_p0_calibration_run,
-    build_p0_calibration_agent_packet,
-    dispatch_p0_calibration_agent,
-    get_p0_calibration_run_status,
-    prepare_p0_calibration_run,
-    record_p0_calibration_agent_result,
-    use_p0_calibration_host_broker_authenticator,
-    verify_p0_calibration_run,
+    admit_calibration_run,
+    build_calibration_agent_packet,
+    dispatch_calibration_agent,
+    get_calibration_run_status,
+    prepare_calibration_run,
+    record_calibration_agent_result,
+    use_calibration_host_broker_authenticator,
+    verify_calibration_run,
 )
 
 calibration_root = Path("/path/to/operator-calibration/controller")
-calibration = prepare_p0_calibration_run(
+calibration = prepare_calibration_run(
     calibration_root,
     control_workspaces=(
         "/path/to/operator-calibration/control-a",
@@ -973,22 +976,22 @@ calibration = prepare_p0_calibration_run(
     ),
     execution_manifest=execution_manifest,
 )
-calibration = admit_p0_calibration_run(
+calibration = admit_calibration_run(
     calibration_root,
     authority_grant=authority_grant,
 )
-packet = build_p0_calibration_agent_packet(
+packet = build_calibration_agent_packet(
     calibration_root,
     role="intake-a",
 )
-status = get_p0_calibration_run_status(calibration_root)
+status = get_calibration_run_status(calibration_root)
 ```
 
-For the local profile, call `dispatch_p0_calibration_agent`; for an
+For the local profile, call `dispatch_calibration_agent`; for an
 independently authenticated external broker, construct the versioned
 `P0CalibrationDispatchReceipt` and `P0CalibrationAgentResult` types before
-calling `record_p0_calibration_agent_result`. Use
-`verify_p0_calibration_run(..., advance=False)` for a read-only eligibility
+calling `record_calibration_agent_result`. Use
+`verify_calibration_run(..., advance=False)` for a read-only eligibility
 report.
 
 An embedding host supplies an object implementing `HostBrokerAuthenticator`
@@ -996,13 +999,13 @@ only after authenticating the external broker through its own protected
 mechanism. Scope admission and receipt imports explicitly:
 
 ```python
-with use_p0_calibration_host_broker_authenticator(authenticated_host_broker):
-    admitted = admit_p0_calibration_run(
+with use_calibration_host_broker_authenticator(authenticated_host_broker):
+    admitted = admit_calibration_run(
         calibration_root,
         authority_grant=authority_grant,
         broker_attestation=broker_attestation,
     )
-    record_p0_calibration_agent_result(
+    record_calibration_agent_result(
         calibration_root,
         dispatch_receipt=dispatch_receipt,
         result=agent_result,

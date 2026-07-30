@@ -188,6 +188,7 @@ From source:
 ```bash
 git clone https://github.com/Denissvgn/python-wiki-llm.git
 cd python-wiki-llm
+python3 -m venv .venv
 .venv/bin/pip install -e ".[dev]"
 ```
 
@@ -1035,26 +1036,26 @@ to opt into `--jobs` parallel execution; omit it unless the extractor is safe to
 run concurrently in a fresh instance.
 
 A tested sample documentation-hooks plugin lives at
-`examples/plugins/m4-documentation-hooks` in source checkouts. It can be
+`examples/plugins/documentation-hooks` in source checkouts. It can be
 inspected or installed like any other local plugin:
 
 ```bash
-llm-wiki plugins validate examples/plugins/m4-documentation-hooks
-llm-wiki install examples/plugins/m4-documentation-hooks --yes
+llm-wiki plugins validate examples/plugins/documentation-hooks
+llm-wiki install examples/plugins/documentation-hooks --yes
 ```
 
 Installed packages can export the same bundled sample before installing it:
 
 ```bash
 llm-wiki plugins samples list
-llm-wiki plugins samples export m4-documentation-hooks --dest vendor/m4-documentation-hooks
-llm-wiki plugins validate vendor/m4-documentation-hooks
-llm-wiki install vendor/m4-documentation-hooks --yes
+llm-wiki plugins samples export documentation-hooks --dest vendor/documentation-hooks
+llm-wiki plugins validate vendor/documentation-hooks
+llm-wiki install vendor/documentation-hooks --yes
 ```
 
-The sample manifest declares `m4-documentation-hooks/worker-tasks`
+The sample manifest declares `documentation-hooks/worker-tasks`
 (`detectors:detect_worker_tasks`) and
-`m4-documentation-hooks/brand-flowcharts` (`styles:style_flowcharts`). The
+`documentation-hooks/brand-flowcharts` (`styles:style_flowcharts`). The
 detector only reads the plain inventory it receives and returns task handler
 records; the style hook only returns normalized direction, class, and color
 hints for generated flowcharts.
@@ -1244,7 +1245,7 @@ establish the attestation and every imported receipt. No provider credential,
 SDK, external-broker adapter, dynamic authenticator loader, or CLI
 authenticator selector is included; an embedding host must establish that
 same-process trust boundary with
-`use_p0_calibration_host_broker_authenticator`.
+`use_calibration_host_broker_authenticator`.
 The strict local execution-manifest and authority-grant templates, including
 the prepare-then-bind hash sequence, are in the
 [standalone documentation guide](docs/standalone-documentation.md#protected-calibration-admission-and-intake).

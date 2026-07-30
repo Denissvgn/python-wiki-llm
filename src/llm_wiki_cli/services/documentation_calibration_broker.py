@@ -1,4 +1,4 @@
-"""Provider-neutral OCI broker for qualifying P0 calibration agents.
+"""Provider-neutral OCI broker for qualifying documentation calibration agents.
 
 The broker deliberately owns no model-provider SDK, endpoint, or credential.
 For the qualifying ``local_no_egress`` profile it invokes a caller-resolved

@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
+import sys
 import textwrap
 import types
 from pathlib import Path
@@ -17,6 +20,8 @@ from llm_wiki_cli.commands import (
 )
 from llm_wiki_cli.services import plugins
 from llm_wiki_cli.services.schema import refresh_skill_blocks
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _ns(**kwargs):
@@ -620,11 +625,13 @@ class TestPluginCliSmoke:
     def test_cli_lists_and_exports_bundled_plugin_sample(
         self, tmp_project, capsys, monkeypatch
     ):
-        dest = tmp_project / "vendor" / "m4-documentation-hooks"
+        dest = tmp_project / "vendor" / "documentation-hooks"
 
         monkeypatch.setattr("sys.argv", ["llm-wiki", "plugins", "samples", "list"])
         cli.main()
-        assert "m4-documentation-hooks" in capsys.readouterr().out
+        listed = capsys.readouterr().out
+        assert "documentation-hooks: Documentation hooks sample plugin" in listed
+        assert "m4-documentation-hooks" not in listed
 
         monkeypatch.setattr(
             "sys.argv",
@@ -633,20 +640,63 @@ class TestPluginCliSmoke:
                 "plugins",
                 "samples",
                 "export",
-                "m4-documentation-hooks",
+                "documentation-hooks",
                 "--dest",
                 str(dest),
             ],
         )
         cli.main()
         assert (
-            "Exported plugin sample: m4-documentation-hooks" in capsys.readouterr().out
+            "Exported plugin sample: documentation-hooks" in capsys.readouterr().out
         )
 
         monkeypatch.setattr("sys.argv", ["llm-wiki", "plugins", "validate", str(dest)])
         cli.main()
-        assert "Plugin valid: m4-documentation-hooks" in capsys.readouterr().out
+        assert "Plugin valid: documentation-hooks" in capsys.readouterr().out
 
         monkeypatch.setattr("sys.argv", ["llm-wiki", "install", str(dest), "--yes"])
         cli.main()
-        assert "Installed plugin: m4-documentation-hooks" in capsys.readouterr().out
+        assert "Installed plugin: documentation-hooks" in capsys.readouterr().out
+
+    def test_cli_legacy_sample_alias_warns_and_exports_canonical_plugin(
+        self, tmp_project
+    ):
+        dest = tmp_project / "vendor" / "legacy-export"
+        env = os.environ.copy()
+        source_root = str(PROJECT_ROOT / "src")
+        current_pythonpath = env.get("PYTHONPATH")
+        env["PYTHONPATH"] = (
+            os.pathsep.join((source_root, current_pythonpath))
+            if current_pythonpath
+            else source_root
+        )
+
+        completed = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                "from llm_wiki_cli.cli import main; main()",
+                "plugins",
+                "samples",
+                "export",
+                "m4-documentation-hooks",
+                "--dest",
+                str(dest),
+            ],
+            cwd=tmp_project,
+            env=env,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        assert completed.returncode == 0, completed.stderr
+        assert "Exported plugin sample: documentation-hooks" in completed.stdout
+        assert (
+            "Plugin sample 'm4-documentation-hooks' is deprecated; use "
+            "'documentation-hooks' instead."
+        ) in completed.stderr
+        manifest = json.loads(
+            (dest / plugins.MANIFEST_FILENAME).read_text(encoding="utf-8")
+        )
+        assert manifest["id"] == "documentation-hooks"

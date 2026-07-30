@@ -1,11 +1,7 @@
 # Native Knowledge Layer: Real-World Use Cases and Value
 
-- **Assessment date:** 2026-07-27
-- **Implementation baseline:** `aa276347f5dfee4b0e5892716ad0db148f607705`
-- **Feature baseline:** [Native Knowledge Layer Implementation Backlog](./okf-native-knowledge-backlog.md)
-- **Companion analysis:** [Bundled Skill Consistency Review](./native-knowledge-skill-consistency-review.md)
-- **Companion work plan:** [Native Knowledge Consistency Backlog](./native-knowledge-consistency-backlog.md)
-- **Status:** internal product and implementation guidance
+This guide describes implemented capabilities, optional integrations, and
+candidate evaluation designs. It does not report completed field evaluations.
 
 ## Executive conclusion
 
@@ -90,9 +86,12 @@ detailed evidence only when needed.
 
 ### Repository and documentation maintainers
 
-They receive concept-level drift detection in `lint --strict` and `ci-check`.
-The useful unit becomes “the documented `User` concept changed” instead of only
-“some bytes in `models.py` changed.”
+They can opt into concept-level native drift diagnostics by passing
+`--knowledge-drift-report` to `lint` or `ci-check`. Native drift findings remain
+nonblocking warnings; structural integrity, projection, governance, review, and
+verification failures retain their normal validation behavior. The useful unit
+becomes “the documented `User` concept changed” instead of only “some bytes in
+`models.py` changed.”
 
 ### Documentation-platform and developer-portal teams
 
@@ -181,27 +180,29 @@ projection as an always-current knowledge database. Every proposed workflow
 therefore needs to preserve availability, evidence, freshness, bounds, and
 authority boundaries.
 
-## Prioritized use cases
+## Use cases
 
-| ID | Use case | Primary actor | User value | Implementation readiness | Product priority |
+| ID | Use case | Primary actor | User value | Current availability | Adoption tier |
 |---|---|---|---|---|---|
-| NK-UC-001 | Concept-level documentation drift CI | Maintainer / reviewer | Prevent stale repository docs from merging | Ready | P0 |
-| NK-UC-002 | Evidence-qualified context for coding agents | Agent / IDE integrator | Reduce confident use of stale or unsupported context | Ready | P0 |
-| NK-UC-003 | Evidence-backed change-impact analysis | Developer / reviewer | Find affected code and docs with visible graph limits | Ready, skill integration incomplete | P0 |
-| NK-UC-004 | Qualified onboarding and incident orientation | New contributor / responder | Reach the relevant architecture faster without presenting static evidence as runtime truth | Ready, workflow integration incomplete | P1 |
-| NK-UC-005 | Durable concept identity through refactors | Maintainer / tool integrator | Preserve links, lifecycle, and memory across moves | Ready, opt-in | P1 |
-| NK-UC-006 | Section-scoped review and safe verification | Reviewer / governance owner | Keep review validity precise and auditable | Ready, workflow integration incomplete | P1 |
-| NK-UC-007 | Privacy-scoped Site and Obsidian projections | Docs publisher / PKM user | Publish useful metadata without moving authority or leaking private detail | Ready, skill integration incomplete | P1 |
-| NK-UC-008 | Trust metadata around RAG | Retrieval-platform author | Filter or label retrieved chunks by evidence and freshness | Future adapter, core primitives ready | P2 |
-| NK-UC-009 | Specialized static triage acceleration | Security / dependency / infrastructure reviewer | Rank static evidence while keeping gaps and limits explicit | Core primitives ready, skills legacy-first | P2 |
+| NK-UC-001 | Concept-level documentation drift diagnostics | Maintainer / reviewer | Surface stale repository documentation for review or external policy | Implemented as opt-in, nonblocking diagnostics | Core |
+| NK-UC-002 | Evidence-qualified context for coding agents | Agent / IDE integrator | Reduce confident use of stale or unsupported context | Implemented | Core |
+| NK-UC-003 | Evidence-backed change-impact analysis | Developer / reviewer | Find affected code and docs with visible graph limits | Implemented with a bundled workflow | Core |
+| NK-UC-004 | Qualified onboarding and incident orientation | New contributor / responder | Reach the relevant architecture faster without presenting static evidence as runtime truth | Implemented with bundled guidance | Recommended |
+| NK-UC-005 | Durable concept identity through refactors | Maintainer / tool integrator | Preserve links, lifecycle, and memory across moves | Implemented, opt-in | Recommended |
+| NK-UC-006 | Section-scoped review and safe verification | Reviewer / governance owner | Keep review validity precise and auditable | Implemented, opt-in | Recommended |
+| NK-UC-007 | Privacy-scoped Site and Obsidian projections | Docs publisher / PKM user | Publish useful metadata without moving authority or leaking private detail | Implemented, opt-in | Recommended |
+| NK-UC-008 | Trust metadata around RAG | Retrieval-platform author | Filter or label retrieved chunks by evidence and freshness | Core metadata is available; an external adapter is not included | Optional |
+| NK-UC-009 | Specialized static triage acceleration | Security / dependency / infrastructure reviewer | Rank static evidence while keeping gaps and limits explicit | Static workflows are available; native enrichment varies by workflow | Optional |
 
-## NK-UC-001 — Concept-level documentation drift CI
+## NK-UC-001 — Concept-level documentation drift diagnostics
 
 ### Job to be done
 
-When a pull request changes code, identify whether committed documentation and
-structural observations still describe the affected concepts, then block only
-on contractually unsafe states.
+When a pull request changes code, report whether committed documentation and
+structural observations still compare to the affected concepts so maintainers
+or a separately configured CI policy can decide what follow-up is required.
+LLM Wiki's native drift findings are diagnostic-only and never form a built-in
+blocking gate.
 
 ### Actors
 
@@ -224,16 +225,19 @@ inputs, governance state, or canonical Markdown.
 
 ### Workflow
 
-1. CI runs `llm-wiki ci-check` without first rewriting the wiki.
+1. CI runs `llm-wiki ci-check --knowledge-drift-report` without first
+   rewriting the wiki.
 2. Strict validation loads the committed manifest, surface, Markdown, and
    knowledge projection as one snapshot.
 3. A live comparison classifies promised module/entity observations.
-4. The job fails on malformed/mixed projections, missing promised evidence,
-   incompatible bases, meaningful source drift, missing sources, and applicable
-   governance or verification failures.
+4. Structural, projection, governance, review, and verification failures keep
+   the ordinary `ci-check` behavior. Native drift findings such as changed or
+   missing sources and incompatible bases are emitted as warning diagnostics
+   and do not change the exit status.
 5. `nonsemantic-source-change` remains a diagnostic rather than a hard failure.
 6. The developer runs `wiki-sync`, reviews semantic surfaces, and reruns the
-   gate.
+   diagnostics. An external CI wrapper may separately apply its own policy to
+   the structured report.
 
 ### Output
 
@@ -244,25 +248,27 @@ inputs, governance state, or canonical Markdown.
 
 ### Real value
 
-This creates a documentation-specific merge gate that is more precise than
+This creates a documentation-specific review signal that is more precise than
 “docs changed with code” and more conservative than an LLM judging prose from
-scratch. It can detect stale concepts even when Markdown links and syntax remain
-valid.
+scratch. It can surface stale concepts even when Markdown links and syntax
+remain valid, without silently changing repository merge policy.
 
 ### Success measures
 
 - at least 80% of surfaced drift findings are actionable;
-- at least five real stale-documentation defects found in a four-week,
-  three-to-five-repository shadow pilot;
+- a planned four-week evaluation across three to five repositories surfaces at
+  least five real stale-documentation defects;
 - fewer than one false alarm per ten pull requests;
 - `unknown` plus `basis-incompatible` below 20% after setup stabilization;
 - less than 15% CI wall-time overhead relative to the existing documentation
-  gate.
+  validation command.
 
 ### Boundaries
 
 - “current” means unchanged since the recorded observation, not semantically
   correct;
+- native drift findings are opt-in, warning-only diagnostics; any blocking
+  policy belongs to an external CI integration;
 - CI should not auto-edit or auto-approve semantic prose;
 - a legacy wiki with no declared projection remains compatible;
 - the check is only as broad as extractor and analyzer coverage.
@@ -696,6 +702,7 @@ The smallest coherent product loop is:
 ```text
 bootstrap/sync
     -> strict lint and ci-check
+    -> optional nonblocking `--knowledge-drift-report` diagnostics
     -> MCP/context query with explicit availability
     -> targeted code or semantic-doc change
     -> sync and review
@@ -711,10 +718,11 @@ knowledge init
     -> matching projection check
 ```
 
-This should be the primary demonstration. A large schema tour is less
-persuasive than showing one stale documented concept caught in CI, one agent
-query that reports why it is stale, and one targeted update that restores the
-gate.
+This is the most direct demonstration. A large schema tour is less persuasive
+than showing one stale documented concept surfaced by an opt-in CI diagnostic,
+one agent query that reports why it is stale, and one targeted update that
+clears the finding. An external CI policy may choose to gate on the structured
+diagnostic, but the native finding itself remains nonblocking.
 
 ## Adoption levels
 
@@ -722,12 +730,12 @@ gate.
 |---|---|---|---|
 | 0 — Surface only | Markdown, surface navigation, legacy graph/query workflows | Existing wiki | Users who need documentation but not native qualification |
 | 1 — Generated observations | Committed knowledge projection and strict validation | Bootstrap/sync with knowledge-capable artifacts | Most active repositories |
-| 2 — Qualified consumption | Live context, API, MCP, drift CI, typed traversal | Supported extractor environment and consumer integration | Agent-heavy teams |
+| 2 — Qualified consumption | Live context, API, MCP, opt-in drift diagnostics, typed traversal | Supported extractor environment and consumer integration | Agent-heavy teams |
 | 3 — Durable governance | UIDs, aliases, lifecycle, scoped review, verification receipts | Version-controlled governance ledger and maintainers | High-churn, long-lived repositories |
 | 4 — Derived distribution | Redacted Site/Obsidian summaries | Explicit projection profile and validation | Portals, public docs, PKM users |
 
 Users should be allowed to stop at any level. Governance and enriched
-projections should not be made mandatory for the core drift/context value.
+projections should not be made mandatory for the core diagnostic/context value.
 
 ## Anti-use-cases and non-goals
 
@@ -785,25 +793,34 @@ truncation and evidence-sample truncation.
 Token budgets bound output, not full source scanning. Agent integrations should
 reuse a built service and avoid broad context for narrow tasks.
 
-### Skills remain on legacy semantics
+### Native qualification is skipped by an integration
 
-The current bundled skills largely execute valid workflows, but most do not
-consume native availability, freshness, typed graph, governance, or projection
-profiles. The companion consistency review and backlog address this adoption
-gap.
+Bundled skills now preserve native availability, stable reasons, live versus
+snapshot-only freshness, and qualifier boundaries where those signals are
+relevant. Impact analysis also consumes exact native identity and bounded typed
+relationships, while publication workflows apply explicit projection profiles.
+Some source-first workflows do not need native metadata. The remaining risk is
+an external integration dropping qualifiers or treating a snapshot-only result
+as a live source comparison.
 
-## Validation plan before broader positioning
+## Candidate evaluation scenarios
 
-### Experiment A — Drift CI shadow pilot
+The following scenarios are hypothetical designs for future evaluation. They
+do not claim that a cohort was recruited, a study was run, or a result was
+observed.
 
-- **Cohort:** three to five actively changing repositories.
-- **Duration:** four weeks.
-- **Mode:** report-only before making the gate blocking.
+### Scenario A — Drift diagnostics in CI
+
+- **Possible cohort:** three to five actively changing repositories.
+- **Proposed duration:** four weeks.
+- **Mode:** collect native warning diagnostics; any blocking experiment policy
+  is external to LLM Wiki.
 - **Measure:** actionable precision, unique native findings, unknown and
   incompatible rates, triage time, runtime.
-- **Decision:** promote only after the NK-UC-001 thresholds are met.
+- **Decision:** consider an external enforcement policy only after the
+  NK-UC-001 thresholds are met.
 
-### Experiment B — Agent context A/B
+### Scenario B — Agent context A/B
 
 - **Cohort:** 15–20 historical issues across at least three repositories.
 - **Control:** current source/wiki navigation and legacy graph queries.
@@ -812,7 +829,7 @@ gap.
   stale-context errors.
 - **Decision:** continue only with measured quality or efficiency improvement.
 
-### Experiment C — Impact graph benchmark
+### Scenario C — Impact graph benchmark
 
 - **Corpus:** 25–30 maintainer-authored blast-radius questions.
 - **Measure:** expected-node accuracy, document checklist accuracy, ambiguity
@@ -820,7 +837,7 @@ gap.
 - **Decision:** use results to choose which typed relationship families deserve
   further analyzer investment.
 
-### Experiment D — Governance pilot
+### Scenario D — Governance evaluation
 
 - **Cohort:** one high-churn subsystem for four to six weeks.
 - **Measure:** UID survival, review invalidation, authoring time, merge
@@ -828,25 +845,23 @@ gap.
 - **Decision:** freeze expansion if event volume is low or no consumer uses the
   state.
 
-### Experiment E — External onboarding
+### Scenario E — External onboarding
 
 - **Cohort:** five maintainers unfamiliar with the selected repositories.
 - **Measure:** setup time, orientation-task completion, retained use, confusion
   between static and runtime evidence.
 - **Decision:** refine the quickstart and skill workflow before adding features.
 
-## Product decision
+## Practical validation priorities
 
-The project should invest next in making existing workflows consume the native
-contract, not in adding more schema surface.
+A practical evaluation should demonstrate:
 
-The immediate proof of value is:
-
-1. drift CI that catches a real stale concept;
+1. opt-in CI diagnostics that surface a real stale concept without changing the
+   command's exit status;
 2. an agent query that explains availability, freshness, evidence, and bounds;
 3. impact analysis that combines legacy source queries with the typed graph;
 4. an opt-in public projection that demonstrably preserves privacy and parity.
 
-If those workflows do not improve maintainer or agent outcomes in the pilots,
-the correct response is to simplify or narrow the layer, not to add more graph
-types.
+If future evaluations do not improve maintainer or agent outcomes, the
+appropriate response is to simplify or narrow the layer rather than add more
+graph types.

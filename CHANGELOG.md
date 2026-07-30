@@ -30,8 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   attempts. External-broker contracts remain credential-free and require
   separately established host authentication; no provider SDK or adapter is
   included.
-- Priority-blind standalone P0 calibration evidence: bootstrap and surface
-  artifacts now preserve detector/language provenance, routes, bounded
+- Priority-blind standalone documentation calibration evidence: bootstrap and
+  surface artifacts now preserve detector/language provenance, routes, bounded
   call/data-flow details, boundary confidence and gaps, and dependency metrics;
   `docs prepare` records a source-cited complete census and an evidence-only
   shadow without changing the v1 priority rule. Fail-closed preflight and
@@ -66,8 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   configured escalation signals or explicit user overrides. The routing API
   returns serializable host-owned selection metadata and does not invoke a
   provider. Mistral, DeepSeek, Qwen, gateway, and cloud labels currently use the
-  v1 `other` family; first-class backend/publisher/transport bindings remain
-  proposed. Provider families and tiers are caller-maintained labels: the core
+  v1 `other` family; first-class backend/publisher/transport bindings are not
+  included. Provider families and tiers are caller-maintained labels: the core
   includes no native provider adapter, current-price lookup, or proof of the
   concrete model used.
 - Bundled `agent-docs` and `wiki-semantic-enhance` skills plus external-mode
@@ -91,6 +91,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Standalone result reconciliation refreshes the controller-owned native
   projection after accepted semantic Markdown changes and re-anchors generated
   ownership before later validation or dispatch.
+
+### Deprecated
+
+- Documentation calibration lifecycle APIs now use the canonical
+  `prepare_calibration_run`, `get_calibration_run_status`,
+  `admit_calibration_run`, `build_calibration_agent_packet`,
+  `dispatch_calibration_agent`, `record_calibration_agent_result`,
+  `verify_calibration_run`, and
+  `use_calibration_host_broker_authenticator` names. The corresponding
+  `prepare_p0_calibration_run`, `get_p0_calibration_run_status`,
+  `admit_p0_calibration_run`, `build_p0_calibration_agent_packet`,
+  `dispatch_p0_calibration_agent`, `record_p0_calibration_agent_result`,
+  `verify_p0_calibration_run`, and
+  `use_p0_calibration_host_broker_authenticator` compatibility aliases now emit
+  `DeprecationWarning`.
+- The bundled sample plugin is now `documentation-hooks`. The legacy
+  `m4-documentation-hooks` sample ID remains a compatibility alias and emits a
+  warning when used.
 
 ### Fixed
 
@@ -265,8 +283,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
   for attaching evidence-linked screenshots or recordings under
   `assets/<surface>/<page-stem>/` and validating the media pipeline before
   publishing.
-- Bundled `attack-surface` agent skill (from the 2026-07-04 workflow
-  dogfood): defensive security-review preparation — prepare extractor
+- Bundled `attack-surface` agent skill (from the 2026-07-04 self-hosted
+  workflow review): defensive security-review preparation — prepare extractor
   helpers, run `extract --deep --read-only`, seed required coverage from
   `SECURITY.md`, treat data-flow gaps as unknown surface (never as
   evidence of safety), supplement bounded flow walks with a source-level
@@ -311,7 +329,7 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
   discovered as built-in source files, extracted through an explicitly prepared
   helper-backed GHC parser, rendered in generated wiki pages, and included in
   declared-module dependency maps.
-- Haskell inventory is syntax-only for this milestone: it records module names,
+- Haskell inventory is syntax-only in this release: it records module names,
   imports, top-level signatures and values, and type-oriented declarations
   without typechecking the target project, starting Haskell Language Server, or
   reconciling Cabal, Stack, or Nix dependency manifests.
@@ -335,8 +353,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
   call targets (additive under `llm-wiki-extract/v1`; omitted when empty and
   absent in slim mode). A new internal `resolve_call_edges` resolver maps those
   calls to project symbols, tagging each caller→callee edge `internal`,
-  `external`, or `unresolved`. This is the call-edge foundation for upcoming
-  user-flow documentation (Milestone 1 — Flow Foundations).
+  `external`, or `unresolved`. This is the call-edge foundation for
+  user-flow documentation.
 - Deep extraction now records optional `all_exports` (names listed in `__all__`)
   and `main_block` (presence of an `if __name__ == "__main__"` guard) file-level
   fields (additive under `llm-wiki-extract/v1`; omitted when absent or in slim
@@ -373,14 +391,12 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
   dependency architecture links only when those pages exist, and a log link.
   `sync` preserves custom top-level index sections by default while
   regenerating the landing-page structure.
-- Milestone 4 release-readiness is documented with a verification matrix for
-  static-site export/check, documentation graph query access through MCP,
-  Python API wrappers and context filters, deterministic plugin component
-  types, migration and upgrade closure, and this repo's dogfood smoke.
-- The M4 release-readiness matrix records the local `.venv` verification
-  commands, package build check, and the compatible CI matrix for
-  Ubuntu/macOS/Windows on Python 3.9, 3.12, and 3.13 without stamping a release
-  or publishing artifacts.
+- Supported public integration surfaces include static-site export and checks,
+  documentation graph queries through MCP, Python API context filters,
+  deterministic plugin component types, migration and upgrade commands, and
+  self-hosted documentation workflows.
+- Cross-platform behavior covers Ubuntu, macOS, and Windows. Current Python
+  requirements are declared by the package metadata.
 
 ## [0.6.2] - 2026-06-23
 

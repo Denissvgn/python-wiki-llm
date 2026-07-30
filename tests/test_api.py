@@ -118,8 +118,10 @@ def test_supported_api_exports_are_additive_contract():
         "P0CalibrationTransitionError",
         "P0CalibrationVerificationReport",
         "PathPolicyError",
+        "admit_calibration_run",
         "admit_p0_calibration_run",
         "adopt_documentation_wiki_snapshot",
+        "build_calibration_agent_packet",
         "build_p0_calibration_agent_packet",
         "build_documentation_agent_packet",
         "build_context",
@@ -128,26 +130,32 @@ def test_supported_api_exports_are_additive_contract():
         "callers",
         "data_flow_for_entrypoint",
         "dependency_neighborhood",
+        "dispatch_calibration_agent",
         "dispatch_p0_calibration_agent",
         "export_documentation_run",
         "extract_source",
         "explain_evidence",
         "flow_for_entrypoint",
         "fingerprint_documentation_wiki_input",
+        "get_calibration_run_status",
         "get_concept",
         "get_documentation_run_status",
         "get_p0_calibration_run_status",
         "list_concept_sections",
         "list_wiki_pages",
         "pages_for_symbol",
+        "prepare_calibration_run",
         "prepare_documentation_run",
         "prepare_p0_calibration_run",
+        "record_calibration_agent_result",
         "record_documentation_agent_result",
         "record_p0_calibration_agent_result",
         "related_concepts",
         "select_documentation_model",
         "traverse_typed_graph",
+        "use_calibration_host_broker_authenticator",
         "use_p0_calibration_host_broker_authenticator",
+        "verify_calibration_run",
         "verify_documentation_run",
         "verify_p0_calibration_run",
     }
@@ -369,27 +377,27 @@ def test_documentation_lifecycle_api_signatures_match_cli_contract():
         assert str(inspect.signature(getattr(api, name))) == expected_signature
 
 
-def test_p0_calibration_lifecycle_api_signatures_are_supported():
+def test_calibration_lifecycle_api_signatures_are_supported():
     expected = {
-        "prepare_p0_calibration_run": [
+        "prepare_calibration_run": [
             "root",
             "control_workspaces",
             "execution_manifest",
         ],
-        "admit_p0_calibration_run": [
+        "admit_calibration_run": [
             "root",
             "authority_grant",
             "broker_attestation",
         ],
-        "get_p0_calibration_run_status": ["root"],
-        "build_p0_calibration_agent_packet": ["root", "role"],
-        "dispatch_p0_calibration_agent": ["root", "role"],
-        "record_p0_calibration_agent_result": [
+        "get_calibration_run_status": ["root"],
+        "build_calibration_agent_packet": ["root", "role"],
+        "dispatch_calibration_agent": ["root", "role"],
+        "record_calibration_agent_result": [
             "root",
             "dispatch_receipt",
             "result",
         ],
-        "verify_p0_calibration_run": ["root", "advance"],
+        "verify_calibration_run": ["root", "advance"],
     }
 
     for name, parameters in expected.items():
@@ -404,50 +412,79 @@ def test_p0_calibration_lifecycle_api_signatures_are_supported():
             )
 
     assert (
-        inspect.signature(api.admit_p0_calibration_run)
+        inspect.signature(api.admit_calibration_run)
         .parameters["broker_attestation"]
         .default
         is None
     )
     assert (
-        inspect.signature(api.verify_p0_calibration_run).parameters["advance"].default
+        inspect.signature(api.verify_calibration_run).parameters["advance"].default
         is True
     )
 
     exact_signatures = {
-        "prepare_p0_calibration_run": (
+        "prepare_calibration_run": (
             "(root: 'str | Path', *, control_workspaces: 'Sequence[str | Path]', "
             "execution_manifest: 'Mapping[str, Any]') -> 'P0CalibrationRun'"
         ),
-        "admit_p0_calibration_run": (
+        "admit_calibration_run": (
             "(root: 'str | Path', *, authority_grant: 'Mapping[str, Any]', "
             "broker_attestation: 'Mapping[str, Any] | None' = None) -> "
             "'P0CalibrationRun'"
         ),
-        "get_p0_calibration_run_status": (
+        "get_calibration_run_status": (
             "(root: 'str | Path') -> 'P0CalibrationStatus'"
         ),
-        "build_p0_calibration_agent_packet": (
+        "build_calibration_agent_packet": (
             "(root: 'str | Path', *, role: 'str') -> 'P0CalibrationAgentPacket'"
         ),
-        "dispatch_p0_calibration_agent": (
+        "dispatch_calibration_agent": (
             "(root: 'str | Path', *, role: 'str') -> 'P0CalibrationDispatchReceipt'"
         ),
-        "record_p0_calibration_agent_result": (
+        "record_calibration_agent_result": (
             "(root: 'str | Path', *, dispatch_receipt: "
             "'P0CalibrationDispatchReceipt | Mapping[str, Any]', result: "
             "'P0CalibrationAgentResult | Mapping[str, Any]') -> 'P0CalibrationRun'"
         ),
-        "verify_p0_calibration_run": (
+        "verify_calibration_run": (
             "(root: 'str | Path', *, advance: 'bool' = True) -> "
             "'P0CalibrationVerificationReport'"
         ),
-        "use_p0_calibration_host_broker_authenticator": (
+        "use_calibration_host_broker_authenticator": (
             "(authenticator: 'HostBrokerAuthenticator') -> 'Iterator[None]'"
         ),
     }
     for name, expected_signature in exact_signatures.items():
         assert str(inspect.signature(getattr(api, name))) == expected_signature
+
+
+@pytest.mark.parametrize(
+    ("legacy_name", "replacement_name"),
+    [
+        ("prepare_p0_calibration_run", "prepare_calibration_run"),
+        ("admit_p0_calibration_run", "admit_calibration_run"),
+        ("get_p0_calibration_run_status", "get_calibration_run_status"),
+        ("build_p0_calibration_agent_packet", "build_calibration_agent_packet"),
+        ("dispatch_p0_calibration_agent", "dispatch_calibration_agent"),
+        ("record_p0_calibration_agent_result", "record_calibration_agent_result"),
+        ("verify_p0_calibration_run", "verify_calibration_run"),
+        (
+            "use_p0_calibration_host_broker_authenticator",
+            "use_calibration_host_broker_authenticator",
+        ),
+    ],
+)
+def test_p0_calibration_api_names_warn_and_delegate(
+    legacy_name,
+    replacement_name,
+):
+    legacy = getattr(api, legacy_name)
+    replacement = getattr(api, replacement_name)
+
+    assert legacy.__wrapped__ is replacement
+    with pytest.warns(DeprecationWarning, match=f"use {replacement_name} instead"):
+        with pytest.raises(TypeError):
+            legacy()
 
 
 def test_api_error_types_remain_structured_subclasses():

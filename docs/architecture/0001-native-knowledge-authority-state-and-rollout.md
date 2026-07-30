@@ -1,4 +1,4 @@
-# ADR-0001: Native knowledge authority, state, and rollout
+# ADR-0001: Native knowledge authority, state, and compatibility
 
 - **Status:** Accepted
 - **Date:** 2026-07-25
@@ -14,11 +14,11 @@ model. Without a single decision record, that artifact could become a competing
 editable source of truth, persist an obsolete freshness verdict, or be combined
 with files produced from another repository snapshot.
 
-This ADR is normative for authority, load-state, commit, compatibility, and
-rollout semantics. Its KNOW-002 addendum fixes the v1 taxonomy and
-forward-compatibility policy, while its KNOW-004 addendum fixes bundle
-identity, producer evidence, redaction, and no-exec policy. The packaged schema
-remains normative for exact `llm-wiki-knowledge/v1` field names.
+This ADR is normative for authority, load-state, commit, and compatibility
+semantics. It fixes the v1 taxonomy and forward-compatibility policy together
+with the bundle identity, producer evidence, redaction, and no-exec policy. The
+packaged schema remains normative for exact `llm-wiki-knowledge/v1` field
+names.
 
 The relevant existing seams are:
 
@@ -41,7 +41,7 @@ LLM Wiki uses a native, evidence-aware knowledge contract and a generated,
 rebuildable `.llm-wiki-knowledge.json` projection. The native contract is
 canonical for the meaning of its API records, but the projection is not an
 editable document store and does not supersede repository source, canonical
-Markdown, or future explicit governance records.
+Markdown, or the durable governance ledger.
 
 ### Authority by fact class
 
@@ -55,15 +55,15 @@ Markdown, or future explicit governance records.
 | Incremental generation baselines, source/page mappings, enabled-surface policy, and generation inputs | Sync machinery | The manifest is operational generation state, not a general knowledge or governance database |
 | Page discovery for machine consumers | Current canonical pages interpreted through the surface registry | `.llm-wiki-surface.json` remains the deterministic `llm-wiki-surface-index/v1` read model |
 | Knowledge record vocabulary and representation | The versioned native knowledge contract | The contract is normative for record meaning and shape, not for the truth of a represented observation |
-| Knowledge observations, provenance, evidence basis, and extracted/inferred relationships | Repository evidence plus reproducible analysis for structural observations; canonical Markdown for link observations; the future governance ledger for governance relationships | A committed knowledge index is the validated read projection for those observations, not proof that an observation is true or current |
+| Knowledge observations, provenance, evidence basis, and extracted/inferred relationships | Repository evidence plus reproducible analysis for structural observations; canonical Markdown for link observations; the durable governance ledger for governance relationships | A committed knowledge index is the validated read projection for those observations, not proof that an observation is true or current |
 | Live freshness | A consumer's comparison of a persisted observation basis with one live evaluated basis | No generated artifact may persist a timeless `current` verdict |
 | Extraction, lint, authorship, and verification | Each fact's own explicit producer or event | No one dimension implies any other, and they are never collapsed into a scalar trust score |
-| Stable identity, aliases, lifecycle transitions, and review events | A future durable, merge-aware governance ledger changed through explicit operations | These decisions must not live only in the rebuildable manifest or knowledge index |
+| Stable identity, aliases, lifecycle transitions, and review events | The durable, merge-aware `.llm-wiki-governance.json` ledger changed through explicit `knowledge` operations | These decisions do not live only in the rebuildable manifest or knowledge index |
 | Site, Obsidian, and possible OKF output | The applicable native contract plus canonical Markdown | These are disposable derived projections and never authoring authorities |
 
 ### Locked decisions
 
-The following decisions apply to all milestones:
+The following decisions apply to every compatible implementation:
 
 1. Repository source and configuration are authoritative for structural facts.
 2. Canonical Markdown is authoritative for semantic prose.
@@ -72,7 +72,7 @@ The following decisions apply to all milestones:
 4. The knowledge index is generated and rebuildable and must never be
    hand-edited.
 5. `.llm-wiki-surface.json` remains on
-   `llm-wiki-surface-index/v1` throughout the MVP.
+   `llm-wiki-surface-index/v1` for v1 compatibility.
 6. Generated data persists observation bases, not a timeless
    `"freshness": "current"` value. Consumers compute freshness against a live
    evaluated snapshot.
@@ -94,7 +94,8 @@ The following decisions apply to all milestones:
 A persisted structural observation records the basis needed for a later
 comparison: the source content, concept-scoped observation, applicable
 extractor/plugin/schema/configuration/options basis, and evaluated snapshot.
-The exact schema fields are a later contract decision.
+The exact schema fields are defined by the packaged schema and evaluated
+envelope contracts described below.
 
 A consumer may report `current` only after evaluating live inputs and
 establishing that:
@@ -112,7 +113,7 @@ separate dimensions. If the source bytes differ but the concept-scoped
 observation still matches, the result is a nonsemantic source change rather
 than `current`.
 
-### Live freshness evaluation (KNOW-201 addendum)
+### Live freshness evaluation
 
 Live freshness is computed by one pure comparison service over a validated
 knowledge index and already evaluated live values. The live input explicitly
@@ -151,11 +152,12 @@ For a reliable module/entity observation, comparison uses this precedence:
    producer may be corrupt or nondeterministic.
 
 Only the concept's referenced extractor is compared, so a change to an
-unrelated language extractor does not stale that concept. M1 does not record
-per-concept plugin or generation-option attribution, so the complete declared
-contributing plugin set and effective generation-options hash are compared
-conservatively. Component extensions do not silently redefine compatibility;
-core identity, version, safe configuration hash, and limitations do.
+unrelated language extractor does not stale that concept. The persisted v1
+concept record does not carry per-concept plugin or generation-option
+attribution, so the complete declared contributing plugin set and effective
+generation-options hash are compared conservatively. Component extensions do
+not silently redefine compatibility; core identity, version, safe
+configuration hash, and limitations do.
 An applicable component carrying `version-unknown` or
 `configuration-basis-unknown` cannot support a positive freshness result even
 when the same unknown marker appears on both sides.
@@ -164,7 +166,7 @@ The `current` result is described only as "unchanged since observation."
 Freshness results are consumer-side values and are never written back into the
 knowledge index, manifest, lifecycle, verification, or review state.
 
-### Shared native read view (KNOW-202 addendum)
+### Shared native read view
 
 Each native read operation creates one shared read view and passes that same
 view to its downstream consumers. The view invokes the validated loader exactly
@@ -201,7 +203,7 @@ Freshness counts likewise include every closed state only when freshness was
 evaluated. The view is an operation-scoped snapshot and is not cached across
 later filesystem changes.
 
-### V1 vocabulary and forward compatibility (KNOW-002 addendum)
+### V1 vocabulary and forward compatibility
 
 The packaged
 [`llm-wiki-knowledge/v1` JSON Schema](../../src/llm_wiki_cli/schemas/llm-wiki-knowledge-v1.schema.json)
@@ -216,8 +218,8 @@ document-only kinds `navigation-document` and `change-log-document`; consumers
 may omit those records from a semantic graph.
 
 The `llm-wiki-knowledge/v1` core relationships are `derived_from` and
-`links_to`. Independently versioned typed relationships are reserved extension
-data and do not expand this closed core. Link
+`links_to`. Independently versioned typed relationships are carried as
+extension data and do not expand this closed core. Link
 resolution has four states: `resolved`, `external`, `ambiguous`, and
 `unresolved`. Target classification is a separate dimension with `unknown`,
 `concept`, `source`, `external`, `mail`, `anchor`, `asset`, and `malformed`
@@ -248,7 +250,7 @@ V1 uses the following closed-core policy:
   producer that needs forward-compatible v1 data must use a namespaced
   extension instead.
 
-#### Lossless Markdown link collection (KNOW-105 addendum)
+#### Lossless Markdown link collection
 
 The knowledge link collector is a pure boundary over the already discovered
 canonical page registry, the exact Markdown strings for those pages, and the
@@ -291,17 +293,16 @@ the complete affected observation is omitted, including Mermaid clicks. Query
 strings and arbitrary extension values are not heuristically scanned in this
 slice.
 
-#### Pure knowledge-index construction (KNOW-106 addendum)
+#### Pure knowledge-index construction
 
-The knowledge-index builder consumes one already validated KNOW-104 envelope,
+The knowledge-index builder consumes one already validated evaluated envelope,
 the active canonical page registry, exact Markdown strings, exact surface-index
 bytes, in-memory manifest mappings/evidence/tombstones, and already collected
-KNOW-105 link observations. Canonical page path is the join key. The builder
+lossless link observations. Canonical page path is the join key. The builder
 requires exact page/content/surface parity and verifies both the LF-normalized
-Markdown snapshot commitment and the exact surface-index byte commitment
-before constructing records. It does not read a path, rebuild an inventory,
-invoke an extractor, inspect Git, use a clock, access the network, or write an
-artifact.
+Markdown snapshot commitment and the exact surface-index byte commitment before
+constructing records. It does not read a path, rebuild an inventory, invoke an
+extractor, inspect Git, use a clock, access the network, or write an artifact.
 
 Every active page produces exactly one concept and document. The existing
 page-kind registry supplies the concept kind, document coordinates, and role;
@@ -357,7 +358,8 @@ human review remains a governance concern.
 
 The closed-core rule above means the richer relationship and section contracts
 cannot be introduced as new unqualified fields or kinds inside
-`llm-wiki-knowledge/v1`. They are therefore reserved top-level extension values:
+`llm-wiki-knowledge/v1`. They are therefore versioned top-level extension
+values:
 
 - `llm-wiki/typed-graph-v1`, whose payload schema is
   `llm-wiki-typed-graph/v1`; and
@@ -428,8 +430,6 @@ as an observed empty graph.
 
 ### Bundle identity, producer evidence, redaction, and no-exec policy
 
-_KNOW-004 addendum._
-
 The native bundle is portable across checkouts, but it is not anonymous and is
 not automatically safe to publish. Repository identity, evaluated state,
 producer evidence, and projection redaction are separate dimensions. None of
@@ -471,10 +471,10 @@ input evidence only and are never persisted.
 `configured-public`, `normalized-vcs`, or `unknown`. A non-`unknown` identity
 must carry one of the first two values. An `unknown` identity has source
 `unknown`, whether that default is explicit or omitted; canonical serialization
-omits that default marker. This provenance lets a later public projection
-distinguish intentionally public identity after an application-owned
-build/load check; the self-described marker alone is not authorization to
-disclose it.
+omits that default marker. This provenance lets the `public-portable`
+projection distinguish intentionally public identity after an
+application-owned build/load check; the self-described marker alone is not
+authorization to disclose it.
 
 The identity is repository-level, not checkout-level. A builder must never
 derive it from an absolute checkout path, directory basename, local username,
@@ -534,16 +534,14 @@ order:
 | `page_hash` | The complete canonical Markdown document bytes used by that semantic observation |
 
 Exact tagged framing for structured source, Markdown, option, observation, and
-aggregate inputs belongs to the later envelope builder milestone; the
+aggregate inputs is defined by the evaluated bundle envelope below; the
 `surface_index_hash` and projection commitments remain raw hashes of exact
-persisted bytes. Later framing may not change the semantic domains above. Hash
-inputs exclude wall-clock time, absolute checkout roots, temporary files,
-caches, logs, process IDs, thread or completion order, and other machine-local
-state.
+persisted bytes. A new framing contract must preserve the semantic domains
+above. Hash inputs exclude wall-clock time, absolute checkout roots, temporary
+files, caches, logs, process IDs, thread or completion order, and other
+machine-local state.
 
 #### Concept-scoped structural observations
-
-_KNOW-102 addendum._
 
 Module and entity observation hashes use compact canonical JSON with sorted
 object keys, UTF-8 encoding, and a `scope` member in the normalized payload.
@@ -631,9 +629,9 @@ present the result as lossless.
 
 A public projection drops an entire observation when a required lossless core
 field contains credentialed or private material; it does not rewrite the raw
-observation into something falsely presented as lossless. Exact public
-allowlists, exporter mechanics, and heuristic secret detection in query strings
-or arbitrary extension values belong to KNOW-501. The packaged native JSON
+observation into something falsely presented as lossless. The projection and
+exporter services implement the exact public allowlists together with
+credential-like value and unsafe-path screening. The packaged native JSON
 Schema is platform-portable, not proof that an instance is safe for public
 release.
 
@@ -663,9 +661,9 @@ unavailable; they never opt into broader behavior.
 
 ### Knowledge-load states
 
-The shared loader uses the following state vocabulary. Stable reason codes
-may refine a state, including distinguishing malformed data from an unsupported
-future schema version.
+The shared loader uses the following state vocabulary. Stable reason codes may
+refine a state, including distinguishing malformed data from a newer,
+unsupported schema version.
 
 | State | Meaning | Required loader behavior |
 |---|---|---|
@@ -695,17 +693,15 @@ Read-only API, context, query, site, and MCP paths must not repair files as a
 side effect. A rebuild requires an explicit caller policy and a write-authorized
 callback or command path.
 
-The KNOW-101 extraction retained manifest v4 fields and behavior while moving
-persistence and evidence primitives to service-level boundaries shared by
+The manifest service retains manifest v4 fields and behavior while keeping
+persistence and evidence primitives at service-level boundaries shared by
 bootstrap, sync, lint, migrate, and team operations. `commands.sync_cmd`
-continues to re-export `SyncManifest` and its manifest constants for one
-compatibility cycle. Artifact JSON is UTF-8 with sorted keys, LF formatting,
-and one trailing newline, and is replaced atomically through a unique
-same-directory temporary file whose cleanup is guaranteed on failure.
+continues to re-export `SyncManifest` and its manifest constants for
+compatibility. Artifact JSON is UTF-8 with sorted keys, LF formatting, and one
+trailing newline, and is replaced atomically through a unique same-directory
+temporary file whose cleanup is guaranteed on failure.
 
 ### Manifest v5 operational evidence state
-
-_KNOW-103 addendum._
 
 Manifest v5 preserves the complete v4 `sources`, `surfaces`, and
 `generation_inputs` values and adds only rebuildable operational state:
@@ -713,7 +709,7 @@ Manifest v5 preserves the complete v4 `sources`, `surfaces`, and
 | Field | Meaning |
 |---|---|
 | `page_source_mappings` | Last observed module/entity source coordinate keyed by canonical page path. Entity coordinates include the exact name and one-based occurrence |
-| `evidence_baselines` | Known or explicitly unknown evidence for active module/entity pages. Known and partial bases use the KNOW-102 scope, relative source path, extractor reference, source-content hash, and optional concept-observation hash |
+| `evidence_baselines` | Known or explicitly unknown evidence for active module/entity pages. Known and partial bases use the concept-scoped observation basis, relative source path, extractor reference, source-content hash, and optional concept-observation hash |
 | `tombstones` | Evidence retained for stale pages. A `source-missing` tombstone requires the last valid known basis; otherwise the tombstone is `unknown-provenance` with a machine-readable unknown reason |
 | `artifact_hashes` | Optional all-or-none exact-byte hashes for the surface index, knowledge index, and evaluated envelope |
 
@@ -771,8 +767,6 @@ signature, timeless freshness verdict, or inferred governance fact.
 
 ### Evaluated bundle envelope
 
-_KNOW-104 addendum._
-
 `llm-wiki-knowledge/v1` and its existing `BundleRecord` wire shape remain
 unchanged. The builder produces the existing `repository`, `snapshot`, and
 `producer` records and validates them through the v1 typed contract. The
@@ -820,10 +814,10 @@ sync orchestration. It requires identical path sets for exact
 captured content hashes and selected-kind candidates. Overlapping candidates
 use the fixed precedence OpenAPI, Compose, Docker, package, plugin, selection,
 generic YAML, then language source, so a Compose YAML file is committed once
-with one stable classification. KNOW-109 and KNOW-110 must populate this
-capture during the existing evaluated run, including `.gitignore` and other
-selection inputs, OpenAPI and package/configuration files, and enabled plugin
-metadata; they may not reconstruct it with a later source scan.
+with one stable classification. Bootstrap and sync populate this capture during
+the existing evaluated run, including `.gitignore` and other selection inputs,
+OpenAPI and package/configuration files, and enabled plugin metadata; they may
+not reconstruct it with a later source scan.
 
 `build_evaluated_envelope()` is pure over supplied repository evidence,
 content commitments, normalized inventory, Markdown content, exact surface
@@ -880,9 +874,9 @@ credentials, and arbitrary settings are excluded. Producer and plugin records
 describe what the application already selected and ran; they never select or
 load code from artifact metadata.
 
-`hash_aggregate_inputs()` exposes the M3 hook for ordered cross-file evidence.
-It is domain-separated, preserves contributor order and duplicates, and is
-not an additional bundle snapshot hash.
+`hash_aggregate_inputs()` provides the ordered cross-file evidence commitment.
+It is domain-separated, preserves contributor order and duplicates, and is not
+an additional bundle snapshot hash.
 
 ### Manifest-last commit protocol
 
@@ -933,67 +927,69 @@ protocol and does not establish a committed knowledge state. Callers that
 produce knowledge must use the shared planning and commit boundary rather than
 compose the older single-artifact writers.
 
-### Compatibility and rollout
+### Compatibility layers
 
-Throughout M0–M2, knowledge-layer work must not change canonical Markdown bytes
-beyond existing bootstrap/sync behavior, and the exact
-`llm-wiki-surface-index/v1` contract remains the compatibility boundary.
-The richer KNOW-105 collector is deliberately parallel to, not a replacement
-for, the surface index's legacy resolved-only, deduplicated link list. Its
-stricter fence and Mermaid observation policy therefore cannot change surface
-index v1 bytes.
+Native knowledge does not change canonical Markdown bytes beyond existing
+bootstrap/sync behavior, and the exact `llm-wiki-surface-index/v1` contract
+remains the compatibility boundary. The lossless knowledge link collector is
+parallel to, not a replacement for, the surface index's resolved-only,
+deduplicated link list. Its stricter fence and Mermaid observation policy
+therefore cannot change surface-index v1 bytes.
 
-- **M0 — Contract:** this ADR changes no runtime, file format, or canonical
-  Markdown.
-- **M1 — Generated observations:** add the experimental knowledge projection
-  and validated loader. Preserve canonical Markdown bytes, paths, page IDs, MCP
-  URIs, and the exact surface-index-v1 contract. Reuse the existing extraction
-  run and commit the new projection through the manifest-last protocol.
-- **M2 — Native consumption:** add evidence-aware lint, query, context, API,
-  and MCP behavior additively. Legacy and absent knowledge remain usable in
+The implemented layers preserve these boundaries:
+
+- **Authority contract.** This ADR defines authority and compatibility without
+  making the generated projection an editable source of truth.
+- **Generated observations.** The knowledge projection and validated loader
+  preserve canonical Markdown bytes, paths, page IDs, MCP URIs, and the exact
+  surface-index-v1 contract. Writers reuse the evaluated extraction run and
+  commit the projection through the manifest-last protocol.
+- **Native consumption.** Evidence-aware lint, query, context, API, and MCP
+  behavior is additive. Legacy and absent knowledge remain usable in
   surface-only mode. Every response-layer bounded collection discloses its
   exact post-filter, pre-limit total, returned count, and truncation state;
   upstream analyzer-depth truncation remains a separate signal.
-  M2 is a stop/go gate: do not promote or continue merely because more JSON can
-  be generated. At least two native consumers must materially improve behavior
-  using the new evidence signals.
-- **M3 — Typed graph and section scope:** the two independently versioned
-  reserved extensions add evidenced relationship types and section-level
-  ownership without changing the closed v1 core, canonical prose authority, or
-  legacy query behavior.
-- **M4 — Governance:** only now introduce explicit authoring for stable
-  identity, aliases, lifecycle transitions, and digest-bound reviews, backed by
-  a durable governance ledger.
-- **M5 — Projections:** enrich site and Obsidian output and add an OKF mapping
-  only if a real consumer justifies it; all remain derived.
+- **Typed graph and section scope.** Independently versioned extensions add
+  evidenced relationship types and section-level ownership without changing
+  the closed v1 core, canonical prose authority, or legacy query behavior.
+- **Durable governance.** Opt-in governance operations author stable identity,
+  aliases, lifecycle transitions, and digest-bound reviews in
+  `.llm-wiki-governance.json`. A dedicated cross-process governance lock
+  serializes those mutations.
+- **Derived projections.** Site and Obsidian can emit allowlisted native
+  summaries under explicit projection profiles. They remain disposable and do
+  not transfer authority. No OKF mapping is exposed without a named consumer
+  and a separate versioned contract.
 
-Lifecycle and governance authoring are explicitly deferred until M4. Before
-then, paths, page IDs, and MCP URIs are locators rather than promised stable
-identities, and missing lifecycle data is `unknown`.
+Paths, page IDs, and MCP URIs remain locators rather than promised stable
+identities until durable governance is explicitly initialized. Missing
+lifecycle data remains `unknown`.
 
 ### Rollback
 
-To roll back the feature cleanly, disable knowledge generation, delete the
-generated `.llm-wiki-knowledge.json`, and clear the manifest artifact commitment
-through an authorized writer or migration path. Compatibility consumers then
-classify the result as `absent` and continue with an independently validated
-surface-index-v1 view. This restores pre-feature behavior without changing
-canonical Markdown, `.llm-wiki-surface.json`, or their paths.
+A clean transition to surface-only state is an artifact-set operation, not a
+one-file deletion. An authorized writer or migration must remove the generated
+`.llm-wiki-knowledge.json` and its manifest commitment together.
+Compatibility consumers then classify the result as `absent` and continue with
+an independently validated surface-index-v1 view without changing canonical
+Markdown, `.llm-wiki-surface.json`, or their paths. Current bootstrap and sync
+writers generate native artifacts; this ADR does not define a user-facing
+disable flag.
 
 If only the knowledge file is deleted while the manifest still contains its
 commitment, the loader reports `invalid` with the structured
 `declared-artifact-missing` reason. It does not serve knowledge, fabricate
 freshness, or treat the missing projection as an empty trustworthy graph. An
 explicit degraded policy may still consume an independently validated,
-page-current surface. A later writer must remove the obsolete commitment before
-the artifact set returns to clean `absent` state.
+page-current surface. An authorized writer must remove the obsolete commitment
+before the artifact set returns to clean `absent` state.
 
-The reserved extensions have no in-place rollback path because the knowledge
+The versioned extensions have no in-place rollback path because the knowledge
 index is generated and its exact bytes are committed by the manifest. A
 consumer may omit typed-graph options and continue using the v1 core. Removing
-the generated feature itself requires the full authorized rollback above;
-hand-editing or deleting one extension creates an invalid or mixed artifact
-rather than a valid earlier state.
+generated knowledge requires the complete authorized transition above;
+hand-editing or deleting one extension creates an invalid or mixed artifact,
+not a valid earlier state.
 
 ## Consequences
 
@@ -1008,11 +1004,12 @@ knowledge-aware readers must use the shared loader instead of parsing the JSON
 ad hoc. Older surface-only readers remain compatible, although they do not gain
 the new integrity or evidence semantics.
 
-## Deferred and out of scope
+## Out of scope
 
-Except for the v1 taxonomy, compatibility, and KNOW-004 policy above, exact
-record fields live in the packaged schema rather than prose in this ADR. The M1
-implementation provides the deterministic writer and validated loader described
-above. It does not provide a redacting exporter, signatures or attestation, a
-stable-ID format, an OKF mapping, filesystem-wide transactions, or cross-process
-locking. Those capabilities remain outside this decision.
+Exact record fields live in the packaged schema rather than prose in this ADR.
+The implemented system includes the deterministic writer and validated loader,
+durable governance, typed extensions, and allowlisted Site and Obsidian
+projections described above. It does not turn artifact metadata into a
+signature or attestation, expose an OKF mapping, or provide a filesystem-wide
+transaction. The dedicated governance lock serializes governance mutations; it
+is not a general cross-process lock for every artifact writer.

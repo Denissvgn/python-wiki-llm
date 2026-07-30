@@ -1,4 +1,4 @@
-"""Evidence-backed admission and intake controller for P0 calibration.
+"""Evidence-backed admission and intake controller for documentation calibration.
 
 This lifecycle is deliberately separate from ``documentation-run/v1``.  The
 existing documentation workspaces are read-only controls; this controller
@@ -16,8 +16,10 @@ import stat
 import tempfile
 import unicodedata
 import uuid
+import warnings
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from functools import wraps
 from pathlib import Path, PurePosixPath
 from typing import Any, BinaryIO, Callable, Iterable, Mapping, Sequence
 
@@ -597,7 +599,7 @@ class P0CalibrationVerificationReport:
         )
 
 
-def prepare_p0_calibration_run(
+def prepare_calibration_run(
     root: str | Path,
     *,
     control_workspaces: Sequence[str | Path],
@@ -756,7 +758,7 @@ def prepare_p0_calibration_run(
         raise P0CalibrationIntegrityError(str(exc)) from exc
 
 
-def get_p0_calibration_run_status(root: str | Path) -> P0CalibrationStatus:
+def get_calibration_run_status(root: str | Path) -> P0CalibrationStatus:
     """Return verified status without advancing the lifecycle."""
 
     store = _open_store(root)
@@ -871,7 +873,7 @@ def validate_p0_calibration_packet_output(
     return target
 
 
-def admit_p0_calibration_run(
+def admit_calibration_run(
     root: str | Path,
     *,
     authority_grant: Mapping[str, Any],
@@ -1379,7 +1381,7 @@ def _admit_external_broker(
     )
 
 
-def build_p0_calibration_agent_packet(
+def build_calibration_agent_packet(
     root: str | Path,
     *,
     role: str,
@@ -2051,7 +2053,8 @@ def _validate_authority_grant(
         raise P0CalibrationSchemaError("Authority grant is bound to another cohort.")
     if payload.get("decision_scope") != P0_CALIBRATION_DECISION_SCOPE:
         raise P0CalibrationSchemaError(
-            "Authority grant decision_scope does not authorize P0 policy admission."
+            "Authority grant decision_scope does not authorize documentation "
+            "calibration admission."
         )
     if payload.get("profile") != run.payload["admission_profile"]:
         raise P0CalibrationSchemaError(
@@ -2520,7 +2523,7 @@ def _revalidate_external_receipt_authentications(
             )
 
 
-def dispatch_p0_calibration_agent(
+def dispatch_calibration_agent(
     root: str | Path,
     *,
     role: str,
@@ -2702,7 +2705,7 @@ def dispatch_p0_calibration_agent(
     return receipt
 
 
-def record_p0_calibration_agent_result(
+def record_calibration_agent_result(
     root: str | Path,
     *,
     dispatch_receipt: P0CalibrationDispatchReceipt | Mapping[str, Any],
@@ -3290,7 +3293,7 @@ def _validate_result_import_bindings(
         )
 
 
-def verify_p0_calibration_run(
+def verify_calibration_run(
     root: str | Path,
     *,
     advance: bool = True,
@@ -6986,6 +6989,56 @@ def _bounded_error(error: BaseException) -> str:
     return text[:2048] or type(error).__name__
 
 
+def _deprecated_calibration_alias(
+    replacement: Callable[..., Any],
+    legacy_name: str,
+) -> Callable[..., Any]:
+    """Return a signature-preserving compatibility wrapper."""
+
+    @wraps(replacement)
+    def deprecated(*args: Any, **kwargs: Any) -> Any:
+        warnings.warn(
+            f"{legacy_name} is deprecated; use {replacement.__name__} instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return replacement(*args, **kwargs)
+
+    deprecated.__name__ = legacy_name
+    deprecated.__qualname__ = legacy_name
+    return deprecated
+
+
+admit_p0_calibration_run = _deprecated_calibration_alias(
+    admit_calibration_run,
+    "admit_p0_calibration_run",
+)
+build_p0_calibration_agent_packet = _deprecated_calibration_alias(
+    build_calibration_agent_packet,
+    "build_p0_calibration_agent_packet",
+)
+dispatch_p0_calibration_agent = _deprecated_calibration_alias(
+    dispatch_calibration_agent,
+    "dispatch_p0_calibration_agent",
+)
+get_p0_calibration_run_status = _deprecated_calibration_alias(
+    get_calibration_run_status,
+    "get_p0_calibration_run_status",
+)
+prepare_p0_calibration_run = _deprecated_calibration_alias(
+    prepare_calibration_run,
+    "prepare_p0_calibration_run",
+)
+record_p0_calibration_agent_result = _deprecated_calibration_alias(
+    record_calibration_agent_result,
+    "record_p0_calibration_agent_result",
+)
+verify_p0_calibration_run = _deprecated_calibration_alias(
+    verify_calibration_run,
+    "verify_p0_calibration_run",
+)
+
+
 __all__ = [
     "ADMISSION_PROFILES",
     "CALIBRATION_ROLES",
@@ -7003,11 +7056,18 @@ __all__ = [
     "P0CalibrationStatus",
     "P0CalibrationTransitionError",
     "P0CalibrationVerificationReport",
+    "admit_calibration_run",
     "admit_p0_calibration_run",
+    "build_calibration_agent_packet",
     "build_p0_calibration_agent_packet",
+    "dispatch_calibration_agent",
     "dispatch_p0_calibration_agent",
+    "get_calibration_run_status",
     "get_p0_calibration_run_status",
+    "prepare_calibration_run",
     "prepare_p0_calibration_run",
+    "record_calibration_agent_result",
     "record_p0_calibration_agent_result",
+    "verify_calibration_run",
     "verify_p0_calibration_run",
 ]

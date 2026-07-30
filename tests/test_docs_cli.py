@@ -44,6 +44,7 @@ def test_docs_help_lists_all_lifecycle_actions(monkeypatch, capsys):
 
     assert exc_info.value.code == 0
     help_text = capsys.readouterr().out
+    normalized_help = " ".join(help_text.split())
     for action in (
         "prepare",
         "status",
@@ -54,6 +55,8 @@ def test_docs_help_lists_all_lifecycle_actions(monkeypatch, capsys):
         "calibration",
     ):
         assert action in help_text
+    assert "evidence-backed documentation calibration cohort" in normalized_help
+    assert "P0 calibration" not in normalized_help
 
 
 @pytest.mark.parametrize(

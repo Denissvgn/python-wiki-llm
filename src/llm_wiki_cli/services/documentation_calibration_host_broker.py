@@ -10,9 +10,11 @@ authenticator, and the stock CLI remains fail-closed outside that context.
 from __future__ import annotations
 
 import re
+import warnings
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import asdict, dataclass
+from functools import wraps
 from typing import Any, Iterator, Literal, Mapping, Protocol, runtime_checkable
 
 
@@ -182,7 +184,7 @@ _HOST_BROKER_AUTHENTICATOR: ContextVar[HostBrokerAuthenticator | None] = Context
 
 
 @contextmanager
-def use_p0_calibration_host_broker_authenticator(
+def use_calibration_host_broker_authenticator(
     authenticator: HostBrokerAuthenticator,
 ) -> Iterator[None]:
     """Scope one already-authenticated host broker to lifecycle API calls.
@@ -202,6 +204,30 @@ def use_p0_calibration_host_broker_authenticator(
         yield
     finally:
         _HOST_BROKER_AUTHENTICATOR.reset(token)
+
+
+@wraps(use_calibration_host_broker_authenticator)
+def use_p0_calibration_host_broker_authenticator(
+    *args: Any,
+    **kwargs: Any,
+) -> Any:
+    """Compatibility wrapper for the former public API name."""
+
+    warnings.warn(
+        "use_p0_calibration_host_broker_authenticator is deprecated; "
+        "use use_calibration_host_broker_authenticator instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return use_calibration_host_broker_authenticator(*args, **kwargs)
+
+
+use_p0_calibration_host_broker_authenticator.__name__ = (
+    "use_p0_calibration_host_broker_authenticator"
+)
+use_p0_calibration_host_broker_authenticator.__qualname__ = (
+    "use_p0_calibration_host_broker_authenticator"
+)
 
 
 def require_process_host_broker_authenticator() -> HostBrokerAuthenticator:
@@ -317,5 +343,6 @@ __all__ = [
     "require_attestation_authentication",
     "require_process_host_broker_authenticator",
     "require_receipt_authentication",
+    "use_calibration_host_broker_authenticator",
     "use_p0_calibration_host_broker_authenticator",
 ]

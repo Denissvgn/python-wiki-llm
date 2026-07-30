@@ -6,6 +6,11 @@ deterministic read projection of observations about those pages and their
 source basis. It is not an editable source of truth, an approval record, or
 proof that an observation is still current.
 
+For operational details, see
+[Native knowledge artifact operations](native-knowledge-artifacts.md). For
+audience value, adoption tiers, and candidate evaluation designs, see
+[Native knowledge use cases](native-knowledge-use-cases.md).
+
 Knowledge-aware commands read the projection together with
 `.llm-wiki-surface.json` and the artifact commitments in
 `.llm-wiki-manifest.json`. A consumer never serves knowledge from a mismatched
@@ -765,12 +770,17 @@ omitted neighbor does not exist.
 
 There is no supported in-place edit or partial deletion for either reserved
 extension. Consumers that do not need typed relationships can omit graph
-filters and continue using the stable core queries. Operational rollback of
-the generated knowledge projection follows the manifest-last procedure:
-disable knowledge generation, remove the projection and its manifest
-commitment through an authorized writer or migration, and continue from the
-independently validated surface index. Deleting or editing one extension by
-hand makes the committed artifact invalid or mixed rather than rolling it back.
+filters and continue using the stable core queries. Legacy wikis that never
+declared a knowledge projection remain readable in surface-only mode, but the
+current CLI does not convert a committed knowledge-capable artifact set into
+that legacy shape. If generated projections alone are damaged while the
+manifest and any required governance ledger remain valid, use `llm-wiki sync`
+to regenerate the manifest, surface, and knowledge artifacts together. Restore
+missing or invalid manifest or governance state from version control or backup
+before syncing. When the selected release requires migration, follow its
+`llm-wiki migrate` and release-specific migration guidance. Deleting or editing
+one extension by hand makes the committed artifact invalid or mixed rather
+than rolling it back.
 
 ## Read-only and no-execution rules
 

@@ -109,7 +109,7 @@ class TestBundledAgentDocsSkill:
         assert "separately authenticated host broker" in combined
         assert "`candidate_evaluated=true`" in combined
         assert "`INTAKE_FROZEN`" in combined
-        assert "use_p0_calibration_host_broker_authenticator" in combined
+        assert "use_calibration_host_broker_authenticator" in combined
 
 
 class TestBundledWikiSyncSkill:
