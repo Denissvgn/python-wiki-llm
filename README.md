@@ -606,7 +606,7 @@ intentionally out of scope for this metadata. When `--deep` is combined with
 `dependencies` describe the emitted inventory before summary collapse. Inventory
 keys are POSIX paths relative to `--src-dir`, never absolute paths. The v1
 contract permits additive fields; incompatible shape changes require a new
-schema version. The M3 data-flow fields are therefore optional additions under
+schema version. The data-flow fields are therefore optional additions under
 `llm-wiki-extract/v1`, not a schema bump.
 Deep Python extraction also emits optional per-file `frameworks.fastapi`
 declarations and a top-level `api_contracts` object. Static uncertainty is
@@ -1034,8 +1034,9 @@ again before runtime import. Extractor components may set `"parallel_safe": true
 to opt into `--jobs` parallel execution; omit it unless the extractor is safe to
 run concurrently in a fresh instance.
 
-A tested M4 sample plugin lives at `examples/plugins/m4-documentation-hooks` in
-source checkouts. It can be inspected or installed like any other local plugin:
+A tested sample documentation-hooks plugin lives at
+`examples/plugins/m4-documentation-hooks` in source checkouts. It can be
+inspected or installed like any other local plugin:
 
 ```bash
 llm-wiki plugins validate examples/plugins/m4-documentation-hooks
@@ -1186,13 +1187,13 @@ the controller refreshes the native projection and re-anchors generated
 ownership before later validation or dispatch; workers never edit or report
 those generated files as their own changes.
 
-Preparation also writes a priority-blind P0 flow census and an evidence-only
-current-versus-candidate shadow under `.llm-wiki-docs/evidence/`. They preserve
-source citations, detector/language provenance, route, call/data-flow,
-boundary-confidence, gap, and dependency evidence without changing the v1
-worklist. Candidate fields remain unevaluated unless a separate qualified
-calibration runner supplies a complete policy result; the core never treats
-diagnostic family hints as semantic equivalence or a new default.
+Preparation also writes a priority-blind calibration flow census and an
+evidence-only current-versus-candidate shadow under `.llm-wiki-docs/evidence/`.
+They preserve source citations, detector/language provenance, route,
+call/data-flow, boundary-confidence, gap, and dependency evidence without
+changing the v1 worklist. Candidate fields remain unevaluated unless a separate
+qualified calibration runner supplies a complete policy result; the core never
+treats diagnostic family hints as semantic equivalence or a new default.
 
 Run protected calibration only from a fresh controller root outside the source,
 both documentation controls, packet outputs, and implementation worktrees. The
@@ -1274,7 +1275,7 @@ credential-free low-cost runner metadata for `generic-agent` and `handoff`
 modes across OpenAI/Codex, OpenAI-compatible, Anthropic, Google Gemini,
 Mistral, DeepSeek, Alibaba/Qwen, local/self-hosted, and other providers. The
 small v1 family enum represents unlisted publishers as `other`; first-class
-publisher/backend/transport bindings remain proposed backlog work. Both
+publisher/backend/transport bindings are planned but not yet implemented. Both
 defaults must be low-cost; configured signals or an explicit user override are
 required to use balanced/capability routes. Model
 selection remains host-owned: the `llm-wiki` core imports no provider SDK,
@@ -1465,7 +1466,7 @@ Sixteen skills are bundled:
 - `wiki-bootstrap`: the first-adoption workflow for an existing codebase —
   prepare extractor helpers, run deterministic `bootstrap --format json`, do
   a centrality-ranked semantic pass on the most central pages, write an
-  explicit remainder backlog for deferred pages, validate with
+  explicit `bootstrap-remainder.md` record for deferred pages, validate with
   `lint --strict`/`ci-check`, and commit the wiki.
 - `wiki-reference`: progressive-disclosure reference for extractor contracts,
   helper toolchains/caches, dependency reconciliation, static-site profiles,
@@ -1676,9 +1677,9 @@ Release notes and package metadata record the surface, distribution,
 compatibility, and local verification gates for documentation-surface work. Use
 `llm-wiki release` separately when stamping a real version.
 
-The M4 dogfood smoke exercises this repository's own documentation surface by
-copying the checkout to a temp project, bootstrapping a full wiki, running
-`sync`, exporting a MkDocs mirror, and checking the mirror:
+The self-hosted documentation smoke exercises this repository's own
+documentation surface by copying the checkout to a temp project, bootstrapping
+a full wiki, running `sync`, exporting a MkDocs mirror, and checking the mirror:
 
 ```bash
 .venv/bin/pytest tests/test_bootstrap.py::TestGenerateFlowMd tests/test_m4_dogfood.py -q
