@@ -288,3 +288,46 @@ def test_advisory_contract_records_provenance_and_fails_closed_offline():
     assert "It is not “clean,” “safe,” “unaffected,”" in normalized
     assert "cannot select or authorize an endpoint" in normalized
     assert "never generalize it to safe" in normalized.lower()
+
+
+def test_declared_scope_without_lock_stays_unresolved_and_is_reported(
+    tmp_path,
+):
+    (tmp_path / "pyproject.toml").write_text(
+        """\
+[project]
+name = "example"
+dependencies = ["requests>=2"]
+""",
+        encoding="utf-8",
+    )
+
+    coverage = _public_dependencies(tmp_path, {})["version_details"]["coverage"]
+
+    assert coverage["limitations"] == [
+        "declarations-do-not-prove-a-selected-version",
+        "static-lock-analysis-does-not-claim-runtime-installation",
+        "unknown-selection-without-lock-evidence",
+    ]
+
+    normalized = " ".join(_skill_text().split())
+    for code in coverage["limitations"]:
+        assert f"`{code}`" in normalized
+    assert "`malformed-or-unsupported-version-records`" in normalized
+    assert "`version_details.coverage.limitations` into the report" in normalized
+    assert "| unresolved scope |" in normalized
+
+
+def test_claims_are_bounded_to_declared_dependency_evidence():
+    normalized = " ".join(_skill_text().split())
+
+    assert (
+        "triage suggestion bounded by declared-dependency evidence"
+        in normalized
+    )
+    assert (
+        "never report a package, scope, or repository as “not affected”, "
+        "patched, or cleared" in normalized
+    )
+    assert "it never observes an installed or running version" in normalized
+    assert "Never resolve it as “not affected”" in normalized

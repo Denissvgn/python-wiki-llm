@@ -1,6 +1,6 @@
 ---
 name: dep-vuln-triage
-description: Triage vulnerable-dependency exposure with LLM Wiki while failing closed on missing declarations, scopes, versions, lockfiles, helper/plugin state, advisory data, and network access. Union supported manifest declarations with the public deep extract, keep every scoped version observation, query only agent/user-selected trusted advisory data, and distinguish “not found in queried data” from safe.
+description: Triage vulnerable-dependency exposure with LLM Wiki while failing closed on missing declarations, scopes, versions, lockfiles, helper/plugin state, advisory data, and network access. Union supported manifest declarations with the public deep extract, keep every scoped version observation, query only agent/user-selected trusted advisory data, and distinguish “not found in queried data” from safe. Every row is a triage suggestion bounded by declared-dependency evidence: report an unresolved version scope as unresolved, never as “not affected”.
 ---
 
 # dep-vuln-triage
@@ -14,6 +14,14 @@ evidence but does not prove exploitability, safety, or complete dependency
 coverage. See [reference.md](reference.md) for the versioned public contract,
 supported declaration sources, version-observation rules, report format, and
 edge cases.
+
+Every row this skill produces is a **triage suggestion bounded by
+declared-dependency evidence**, not a security verdict. The extract resolves
+declared constraints, parsed static lock/module selections, and lockfile
+presence; it never observes an installed or running version, and its supported
+declaration sources are an enumerated subset (see [reference.md](reference.md)).
+So disclose an unresolved or ambiguous version scope as unresolved, and never
+report a package, scope, or repository as “not affected”, patched, or cleared.
 
 ## Preconditions
 
@@ -59,7 +67,12 @@ edge cases.
    `ecosystem`, `scope`, `source_path`, `package`, `version`,
    `version_kind`, `selection_confidence`, `source_semantics`,
    `declaration`, and `reach`. Check its coverage and diagnostics before
-   drawing conclusions.
+   drawing conclusions, and carry `version_details.coverage.limitations` into
+   the report verbatim: `declarations-do-not-prove-a-selected-version` and
+   `static-lock-analysis-does-not-claim-runtime-installation` are always
+   emitted, while `unknown-selection-without-lock-evidence` and
+   `malformed-or-unsupported-version-records` name scopes whose selected
+   version stays unresolved.
 
    For reachability seeds and compatibility with older extracts, also collect
    these legacy fields under `dependencies.external.<language>`:
@@ -157,6 +170,11 @@ edge cases.
    unsupported-scope rows visible. Order known hits by severity and
    reachability, without dropping the explicit unknown/remainder ledger.
 
+   A scope whose selected version stays unresolved keeps its own row with the
+   `unresolved scope` status, naming the scope, the missing evidence, and the
+   limitation or diagnostic code that produced it. Collapsing such a row into a
+   negative finding is a reporting defect, not a triage shortcut.
+
 7. **Choose the smallest safe action per row.** Version bump when a fixed
    version is compatible (edit the manifest, then regenerate the lockfile with
    the package manager—never hand-edit lockfiles); mitigation when blocked;
@@ -176,6 +194,8 @@ edge cases.
      extract SHA-256, helper/plugin status, and run time;
    - declaration and scoped-version ledgers, including missing scopes and every
      unknown;
+   - the verbatim `version_details.coverage.limitations` codes and one
+     `unresolved scope` row per scope without a selected version;
    - direct/transitive/build/test classification and reachability gaps;
    - selected advisory source/dataset, trust decision, source/advisory/query
      dates, exact queried tuples, and network/offline limitations;

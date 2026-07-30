@@ -38,6 +38,7 @@ Supporting detail for [SKILL.md](SKILL.md).
         "limit": null,
         "truncated": false,
         "limitations": [
+          "declarations-do-not-prove-a-selected-version",
           "static-lock-analysis-does-not-claim-runtime-installation"
         ]
       },
@@ -74,6 +75,16 @@ Supporting detail for [SKILL.md](SKILL.md).
   v1 does not inventory, including Haskell package inputs, require a separate
   legacy/raw-source limitation. A diagnostic or absent v1 object is unknown
   surface, **never evidence of safety**.
+
+`coverage.limitations` is a required report input, not decoration. It states
+what the ledger cannot establish, and every triage row inherits those bounds:
+
+| Limitation code | Emitted when | Required reporting |
+|---|---|---|
+| `declarations-do-not-prove-a-selected-version` | always | A declared range or configured pin never answers an exact-version advisory question. |
+| `static-lock-analysis-does-not-claim-runtime-installation` | always | A `selected` record is a static selection; the installed and running versions were never observed. |
+| `unknown-selection-without-lock-evidence` | a declared package in some scope has no `selected` record | Report each such scope as an `unresolved scope` row; do not fall back to the declared constraint. |
+| `malformed-or-unsupported-version-records` | at least one inventoried source was malformed or unsupported | Pair with `diagnostics[]` and report the omitted scope as unresolved. |
 
 ## Supported declaration ledger
 
@@ -208,10 +219,11 @@ Dependency reconciliation matches on the *declared package name*, but a package'
 
 | Status | Meaning | Typical action |
 |---|---|---|
-| bump now | Fixed version exists and is compatible | Edit manifest, regenerate lockfile via the package manager, re-verify. |
+| bump now | The advisory source reports a fixed version that looks compatible | Edit manifest, regenerate lockfile via the package manager, re-verify. |
 | bump blocked | Fixed version conflicts with peers or needs migration | Record blocker + mitigation; file follow-up. |
 | mitigate | No fix released or bump impossible now | Document the compensating control next to the evidence. |
-| remove | `declared-only` and evidence shows it is genuinely dead | Propose removal via the `dep-audit` contract — no manifest edits without source evidence. |
+| remove | `declared-only` with `dep-audit` source evidence that nothing imports it | Propose removal via the `dep-audit` contract — no manifest edits without source evidence. |
+| unresolved scope | The scope has no selected version, or its source was malformed/unsupported/uninventoried | Name the scope, the missing evidence, and the limitation/diagnostic code. Never resolve it as “not affected”. |
 | defer | Severity × reachability too low for this budget | Record rationale and the row stays in the report. |
 | needs human confirmation | Policy-sensitive or ambiguous evidence | Record the exact question and stop before edits. |
 
@@ -223,6 +235,7 @@ Dependency reconciliation matches on the *declared package name*, but a package'
 | ID | Package (lang) | Declaration scope/kind | Version observation (source) | Advisory query basis | Severity | Reachability | Status | Action |
 |---|---|---|---|---|---|---|---|---|
 | DVT-001 | requests (python) | `services/api/pyproject.toml` / runtime | 2.31.0 (`services/api/poetry.lock`, lockfile-observed) | GHSA-xxxx / CVE-yyyy; selected source/date | high | reachable-from-entrypoint | bump now | bump to 2.32.4 |
+| DVT-002 | urllib3 (python) | `services/worker/requirements.txt` / runtime | unknown-version (`>=1.26`, no lock; `unknown-selection-without-lock-evidence`) | name-only query; selected source/date | unknown | unknown | unresolved scope | resolve the selection, then re-query — no affected/not-affected claim |
 ```
 
 Required sections beyond the table:
@@ -239,9 +252,10 @@ Required sections beyond the table:
 5. selected advisory endpoint or offline dataset identity/hash, trust decision,
    dataset/source date, lookup date, exact package/version queries, hits, and
    rows phrased “not found in queried advisory data”—never “checked clean”;
-6. unknowns and explicit remainder: malformed/unsupported version sources,
-   unknown selection or reach, undeclared imports, and gap-limited
-   reachability;
+6. unknowns and explicit remainder: the verbatim `coverage.limitations` codes,
+   one `unresolved scope` row per scope without a selected version,
+   malformed/unsupported version sources, unknown selection or reach,
+   undeclared imports, and gap-limited reachability;
 7. verification commands/results and follow-ups (`dep-audit`, `attack-surface`,
    or deeper security review).
 
@@ -292,6 +306,10 @@ Required sections beyond the table:
 
 ## Scope guardrails
 
+- Every triage row is a suggestion bounded by declared-dependency evidence, not
+  a security verdict: declarations, static lock/module selections, and lockfile
+  presence are observable here; installed versions, running versions, and
+  uninventoried declaration formats are not.
 - Defensive locate-and-mitigate only: no exploit development, no
   proof-of-concept payloads, no testing of live systems.
 - Never hand-edit lockfiles; manifests change first, the package manager regenerates the lock.
