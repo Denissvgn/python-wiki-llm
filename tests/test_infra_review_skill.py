@@ -48,6 +48,9 @@ def test_infra_review_contract_bounds_incremental_freshness_and_outcomes():
 
     assert "`## Notes` is the one supported semantic section" in normalized
     assert "unsupported custom headings" in normalized
+    assert "A report-only review makes no wiki change and needs no sync" in normalized
+    assert "strict lint correctly fails until the owning sync re-anchors it" in normalized
+    assert "llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki" in text
     assert "PAYMENTS_TOKEN=<redacted>" in text
     assert "<private-endpoint>" in text
 

@@ -115,7 +115,7 @@ Add worked examples to user-facing docs without weakening the deterministic wiki
    supervisor performs the assigned owning refresh before strict validation;
    the worker does not sync an unavailable source or mutate native artifacts.
 
-6. **Defer honestly.** If a flow cannot be exercised because credentials, runtime services, browser support, or capture tooling are missing, add a deferred-docs row with a `capture blocker` value. Never stage a screenshot of behavior the runner cannot actually exercise.
+6. **Defer honestly.** If a flow cannot be exercised because credentials, runtime services, browser support, or capture tooling are missing, add a deferred-docs row with a `capture blocker` value. Never stage a screenshot of behavior the runner cannot actually exercise. A deferred-docs row recorded in the run report needs no wiki refresh; a row added to canonical wiki Markdown is a semantic edit — restart at the step 5 owning sync/re-anchor so strict validation never runs against a mixed snapshot.
 
 7. **Write the run report.** Record captured examples, tool versions or agent platform capabilities used, deferred flows, media paths, validation results, and any follow-up defaults or policy changes. In `external_agent_docs`, preserve stable work/finding ids and return these facts through the assigned stage result; never commit the source or adopted input wiki.
 

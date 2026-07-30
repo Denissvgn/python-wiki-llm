@@ -994,6 +994,10 @@ class TestBundledUsageExamplesSkill:
         assert "alt text" in combined
         assert "caption" in combined
         assert "capture blocker" in combined
+        assert (
+            "a row added to canonical wiki Markdown is a semantic edit" in combined
+        )
+        assert "restart at the step 5 owning sync/re-anchor" in combined
         assert "media_link_broken" in combined
         assert "media_missing_alt_text" in combined
         assert "media_oversize" in combined

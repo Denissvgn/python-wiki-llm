@@ -106,6 +106,19 @@ roots, coverage outcomes, and report format.
    replaced. Keep security findings in the redacted report rather than copying
    sensitive review evidence into Notes.
 
+   A report-only review makes no wiki change and needs no sync. If the review
+   does add or update a page's `## Notes` in managed mode, that canonical
+   Markdown edit leaves the committed snapshot mixed — strict lint correctly
+   fails until the owning sync re-anchors it. After the last Notes edit and
+   before any strict lint or CI gate, run:
+
+   ```bash
+   llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
+   ```
+
+   For an external source root, keep `--allow-external-src` on this command
+   like every other source-reading command in the review.
+
    Redact literal secrets, private endpoint values, and sensitive host details.
    Evidence should identify the file, resource/service/job, field name, and
    line/range when safe, for example `PAYMENTS_TOKEN=<redacted>` or
