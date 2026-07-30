@@ -14,26 +14,59 @@ from __future__ import annotations
 import os
 import stat
 import tempfile
+from collections.abc import Callable, Set
 from pathlib import Path
 from typing import Any
 
 from .knowledge_evidence import formatted_json_bytes
 
 
-def first_unsafe_path_component(path: str | Path) -> Path | None:
+def first_unsafe_path_component(
+    path: str | Path,
+    *,
+    trusted_symlink_uids: Set[int] | None = None,
+    trusted_symlink_owner: Callable[[Path], bool] | None = None,
+) -> Path | None:
     """Return the first traversal, symlink, or reparse component of a path.
 
     ``Path.resolve`` is deliberately not used: callers need to reject a path
     escape, not normalize it into an apparently safe leaf. Missing suffix
     components are permitted so the same helper can guard future targets.
+
+    By default, only platform aliases that are root-owned entries immediately
+    below the filesystem root are trusted, preserving the strict policy for
+    write paths. Read-only callers may explicitly trust symlink owner UIDs or
+    provide a platform owner predicate; reparse points without a trusted owner
+    remain unsafe. Platforms that cannot verify ownership should pass an empty
+    set and fail closed.
+
+    The sequential ``lstat`` walk does not pin ancestor descriptors, so a
+    same-UID attacker able to rewrite the path concurrently can race this
+    convenience check. Security boundaries exposed to that attacker use the
+    descriptor-relative or guarded I/O in ``filesystem_guard`` and
+    ``protected_artifacts`` instead.
     """
 
     lexical = Path(os.fspath(path))
-    if ".." in lexical.parts:
+    if ".." in lexical.parts and trusted_symlink_uids is None:
         return lexical
-    absolute = Path(os.path.abspath(lexical))
+    if trusted_symlink_uids is None:
+        absolute = Path(os.path.abspath(lexical))
+    elif lexical.is_absolute():
+        # Preserve ``..`` components for the trusted-owner read policy. They
+        # must be applied sequentially after any preceding symlink target is
+        # inspected, rather than collapsed before the walk.
+        absolute = lexical
+    else:
+        absolute = Path.cwd() / lexical
     current = Path(absolute.anchor)
-    for part in absolute.parts[1:]:
+    pending_parts = list(absolute.parts[1:])
+    followed_link_count = 0
+    while pending_parts:
+        part = pending_parts.pop(0)
+        if part == "..":
+            current = current.parent
+            continue
         current /= part
         try:
             metadata = current.lstat()
@@ -47,16 +80,42 @@ def first_unsafe_path_component(path: str | Path) -> Path | None:
             bool(reparse_flag) and bool(attributes & reparse_flag)
         )
         if special_link:
+            owner_uid = getattr(metadata, "st_uid", None)
+            if trusted_symlink_owner is not None:
+                trusted_owner = trusted_symlink_owner(current)
+            elif (
+                trusted_symlink_uids is not None
+                and owner_uid in trusted_symlink_uids
+            ):
+                trusted_owner = True
+            else:
+                trusted_owner = False
             # Platform-level aliases such as macOS ``/var -> private/var`` are
             # root-owned entries directly below the filesystem root, outside
             # a checkout's control. Preserve those aliases while rejecting
             # every user/project-controlled component beneath them.
-            if (
-                current.parent == Path(absolute.anchor)
-                and getattr(metadata, "st_uid", None) == 0
-            ):
+            platform_alias = (
+                callable(getattr(os, "geteuid", None))
+                and current.parent == Path(current.anchor)
+                and owner_uid == 0
+            )
+            if not trusted_owner and not platform_alias:
+                return current
+            if trusted_symlink_uids is None:
+                # Preserve the historical direct-root alias exception for
+                # strict write-path callers.
                 continue
-            return current
+            followed_link_count += 1
+            if followed_link_count > 64:
+                return current
+            try:
+                link_target = Path(os.readlink(current))
+            except OSError:
+                return current
+            if not link_target.is_absolute():
+                link_target = current.parent / link_target
+            current = Path(link_target.anchor)
+            pending_parts = list(link_target.parts[1:]) + pending_parts
     return None
 
 

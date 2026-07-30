@@ -763,8 +763,11 @@ class TestTypeScriptExtractorWrapper:
         assert inv == {}
         assert "malformed JSON" in capsys.readouterr().err
 
-    def test_timeout_returns_empty(self, tmp_path, capsys):
+    def test_timeout_returns_empty_and_names_configuration(
+        self, tmp_path, capsys, monkeypatch
+    ):
         _make_ts(tmp_path, "app.ts", "export class App {}")
+        monkeypatch.setenv("LLM_WIKI_EXTRACTOR_TIMEOUT", "37")
         with patch(
             "llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"
         ):
@@ -774,12 +777,16 @@ class TestTypeScriptExtractorWrapper:
             ):
                 with patch(
                     "llm_wiki_cli.extractors.ts_extractor.subprocess.run",
-                    side_effect=subprocess.TimeoutExpired(["node"], 120),
-                ):
-                    inv = TypeScriptExtractor().extract(str(tmp_path))
+                    side_effect=subprocess.TimeoutExpired(["node"], 37),
+                ) as mock_run:
+                    extractor = TypeScriptExtractor()
+                    inv = extractor.extract(str(tmp_path))
 
         assert inv == {}
-        assert "timed out" in capsys.readouterr().err
+        assert mock_run.call_args.kwargs["timeout"] == 37
+        assert extractor.last_error is not None
+        assert "LLM_WIKI_EXTRACTOR_TIMEOUT" in extractor.last_error
+        assert "LLM_WIKI_EXTRACTOR_TIMEOUT" in capsys.readouterr().err
 
 
 # ===========================================================================

@@ -55,6 +55,40 @@ class TestTriggerRunStructure:
         assert _body_line_count(trigger_cmd._run_sync) <= 40
 
 
+class TestTriggerLockWait:
+    @pytest.mark.parametrize(
+        ("env_value", "expected"),
+        [(None, 0.0), ("", 0.0), ("0.25", 0.25), ("2", 2.0)],
+    )
+    def test_lock_wait_environment_reaches_wiki_lock(
+        self, monkeypatch, env_value, expected
+    ):
+        if env_value is None:
+            monkeypatch.delenv("LLM_WIKI_LOCK_WAIT", raising=False)
+        else:
+            monkeypatch.setenv("LLM_WIKI_LOCK_WAIT", env_value)
+        lock_factory = MagicMock()
+        monkeypatch.setattr(trigger_cmd, "WikiLock", lock_factory)
+        monkeypatch.setattr(trigger_cmd, "_run_sync", MagicMock())
+
+        trigger_cmd.run(_make_args())
+
+        lock_factory.assert_called_once_with(
+            trigger_cmd.GIT_DIR,
+            wait_seconds=expected,
+        )
+
+    @pytest.mark.parametrize("env_value", ["-1", "nan", "inf", "not-a-number"])
+    def test_invalid_lock_wait_environment_is_rejected(self, monkeypatch, env_value):
+        monkeypatch.setenv("LLM_WIKI_LOCK_WAIT", env_value)
+
+        with pytest.raises(
+            ValueError,
+            match="LLM_WIKI_LOCK_WAIT must be a finite non-negative number",
+        ):
+            trigger_cmd.run(_make_args())
+
+
 class TestTriggerUIAgent:
     def test_rejects_ide_agent(self, capsys):
         for agent in ["copilot", "cursor", "generic"]:
@@ -82,12 +116,36 @@ class TestTriggerResetBreaker:
 class TestTriggerBreakerOpen:
     def test_aborts_when_breaker_open(self, tmp_project, capsys):
         git_dir = tmp_project / ".git"
-        state = {"consecutive_failures": 3, "state": "open", "last_failure_ts": None}
+        state = {
+            "consecutive_failures": 3,
+            "state": "open",
+            "last_failure_ts": "2999-01-01T00:00:00+00:00",
+        }
         (git_dir / "llm-wiki-breaker.json").write_text(json.dumps(state))
 
         trigger_cmd.run(_make_args())
         out = capsys.readouterr().out
         assert "OPEN" in out
+        assert "Automatic recovery retries" in out
+
+    def test_active_half_open_probe_reports_lease_and_recovery(
+        self, tmp_project, capsys
+    ):
+        git_dir = tmp_project / ".git"
+        state = {
+            "consecutive_failures": 3,
+            "state": "half-open",
+            "last_failure_ts": "2999-01-01T00:00:00+00:00",
+            "probe_started_ts": "2999-01-01T00:00:00+00:00",
+        }
+        (git_dir / "llm-wiki-breaker.json").write_text(json.dumps(state))
+
+        trigger_cmd.run(_make_args())
+
+        out = capsys.readouterr().out
+        assert "HALF-OPEN" in out
+        assert "recovery probe lease" in out
+        assert "Automatic recovery retries" in out
 
 
 class TestTriggerDiffGuard:
@@ -115,6 +173,16 @@ class TestTriggerGitFailure:
 
 
 class TestTriggerPromptHandling:
+    def test_prompt_artifact_redacts_credentials(self, tmp_project):
+        secret = "ghp_abcdefghijklmnopqrstuvwxyz"
+
+        path = trigger_cmd._write_prompt_file(f"Git diff:\n+TOKEN={secret}\n")
+
+        content = path.read_text(encoding="utf-8")
+        assert secret not in content
+        assert "[REDACTED:credential]" in content
+        assert content.endswith("[1 credential-like values redacted]\n")
+
     @patch("llm_wiki_cli.commands.trigger_cmd.subprocess.run")
     def test_skips_prompt_larger_than_cap(
         self, mock_run, tmp_project, monkeypatch, capsys

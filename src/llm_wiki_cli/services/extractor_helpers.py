@@ -18,6 +18,8 @@ from .inventory_cache import ENV_CACHE_DIR
 
 ENV_GO_BINARY = "LLM_WIKI_GO"
 ENV_GHC_BINARY = "LLM_WIKI_GHC"
+ENV_EXTRACTOR_TIMEOUT = "LLM_WIKI_EXTRACTOR_TIMEOUT"
+DEFAULT_EXTRACTOR_TIMEOUT_SECONDS = 120
 HELPER_CACHE_DIRNAME = "llm-wiki-extractors"
 HELPER_MANIFEST = "current.json"
 HELPER_MANIFEST_VERSION = 1
@@ -43,6 +45,19 @@ class HelperPrepareResult:
     status: str  # prepared | already_current | skipped | failed
     message: str
     path: str | None = None
+
+
+def extractor_timeout_seconds() -> int:
+    """Return the configured extractor runtime timeout, with a one-second floor."""
+
+    raw_value = os.environ.get(ENV_EXTRACTOR_TIMEOUT)
+    if raw_value is None:
+        return DEFAULT_EXTRACTOR_TIMEOUT_SECONDS
+    try:
+        configured = int(raw_value)
+    except ValueError:
+        return DEFAULT_EXTRACTOR_TIMEOUT_SECONDS
+    return max(1, configured)
 
 
 def _binary_name(base: str) -> str:

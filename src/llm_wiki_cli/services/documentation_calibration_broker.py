@@ -3,15 +3,20 @@
 The broker deliberately owns no model-provider SDK, endpoint, or credential.
 For the qualifying ``local_no_egress`` profile it invokes a caller-resolved
 Docker or Podman executable with fixed argument vectors, a minimal host
-environment, a digest-pinned image, and exactly two bind mounts: one immutable
-JSON packet and one pre-created result artifact.  The surrounding container
-root is read-only, so the artifact is the only persistent writable target; an
-exact ``RLIMIT_FSIZE`` bounds it while the process is running.
+environment, a digest-pinned image, and exactly two bind mounts: one JSON packet
+mounted read-only for the container and one pre-created result artifact.  The
+surrounding container root is read-only, so the artifact is the only persistent
+writable target; an exact ``RLIMIT_FSIZE`` bounds it while the process is
+running.
 
 This module is intentionally separate from the documentation-run v1 lifecycle.
 The protected calibration controller owns authority, state transitions, and
 artifact persistence; the broker only validates one frozen OCI runtime section,
 executes a bounded process, and returns hash-bound evidence.
+
+Frozen value objects and hash bindings provide application-level
+content-integrity checks within the host trust domain.  They do not authenticate
+evidence against the filesystem owner, root, or offline modification.
 """
 
 from __future__ import annotations
@@ -33,6 +38,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Iterator, Mapping, Optional, Protocol, Sequence
 
 from .contracts import (
+    OCI_MAX_PACKET_BYTES,
     P0_CALIBRATION_AGENT_RESULT_SCHEMA_VERSION,
     P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION,
     P0_CALIBRATION_EXECUTION_MANIFEST_SCHEMA_VERSION,
@@ -40,6 +46,10 @@ from .contracts import (
     P0_CALIBRATION_ISOLATION_PROBE_RESULT_SCHEMA_VERSION,
 )
 from .filesystem_guard import atomic_write_private_bytes
+from .redaction import (
+    LIKELY_SECRET_RE as _LIKELY_SECRET_RE,
+    SENSITIVE_KEYS as _SENSITIVE_KEYS,
+)
 
 
 LOCAL_NO_EGRESS_PROFILE = "local_no_egress"
@@ -74,32 +84,6 @@ _IMAGE_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/-]*@sha256:[0-9a-f]{64}$")
 _NUMERIC_USER_RE = re.compile(r"^([0-9]{1,10}):([0-9]{1,10})$")
 _HEX_32_RE = re.compile(r"^[0-9a-f]{64}$")
 _CONTROL_RE = re.compile(r"[\x00-\x1f\x7f]")
-_LIKELY_SECRET_RE = re.compile(
-    r"(?:^|\s)(?:bearer\s+\S+|sk-[A-Za-z0-9_-]{12,}|"
-    r"gh[pousr]_[A-Za-z0-9]{12,}|xox[baprs]-[A-Za-z0-9-]{12,}|"
-    r"AIza[A-Za-z0-9_-]{12,})",
-    re.IGNORECASE,
-)
-_SENSITIVE_KEYS = frozenset(
-    {
-        "access_token",
-        "api_key",
-        "apikey",
-        "auth_token",
-        "authorization",
-        "client_secret",
-        "cookie",
-        "credentials",
-        "docker_auth_config",
-        "environment",
-        "headers",
-        "password",
-        "provider_credentials",
-        "registry_auth",
-        "secret",
-        "token",
-    }
-)
 _HOST_ENV_ALLOWLIST = (
     "LANG",
     "LC_ALL",
@@ -129,7 +113,6 @@ _CLEANUP_LOG_LIMIT_BYTES = 4096
 _MIN_MEMORY_BYTES = 64 * 1024 * 1024
 _MAX_MEMORY_BYTES = 64 * 1024 * 1024 * 1024
 _MIN_TMPFS_BYTES = 1024 * 1024
-OCI_MAX_PACKET_BYTES = 64 * 1024 * 1024
 _MAX_STREAM_BYTES = 16 * 1024 * 1024
 _MAX_RESULT_BYTES = 64 * 1024 * 1024
 
@@ -191,7 +174,7 @@ class OciImageCommand:
 
     @property
     def digest(self) -> str:
-        """Return the immutable image digest."""
+        """Return the digest-pinned image identifier."""
 
         return self.image.rsplit("@", 1)[1]
 
@@ -730,7 +713,7 @@ class BoundedProcessResult:
 
 @dataclass(frozen=True)
 class OciDispatchContext:
-    """Controller-owned immutable bindings for one agent attempt."""
+    """Controller-owned frozen value bindings for one agent attempt."""
 
     cohort_id: str
     generation: int
@@ -832,7 +815,7 @@ _CLEANUP_STATUSES = frozenset({"not_required", "complete", "failed", "inconclusi
 
 @dataclass(frozen=True)
 class OciDispatchReceipt:
-    """Tamper-evident immutable evidence for one broker attempt."""
+    """Application-level hash-bound evidence for one broker attempt."""
 
     schema_version: str
     receipt_id: str
@@ -1157,7 +1140,7 @@ class OciDispatchReceipt:
 
 @dataclass(frozen=True)
 class OciDispatchOutcome:
-    """Bounded local evidence and immutable receipt returned to the controller."""
+    """Bounded local evidence and a hash-bound receipt returned to the controller."""
 
     receipt: OciDispatchReceipt
     result: Optional[Mapping[str, Any]]
@@ -2130,7 +2113,7 @@ def dispatch_oci_agent(
     runner: Optional[OciProcessRunner] = None,
     environment: Optional[Mapping[str, str]] = None,
 ) -> OciDispatchOutcome:
-    """Execute one bounded local agent and return an immutable receipt.
+    """Execute one bounded local agent and return a hash-bound receipt.
 
     Configuration/path/packet failures occur before invoking the process runner.
     Once an invocation is attempted, all terminal process/result conditions are

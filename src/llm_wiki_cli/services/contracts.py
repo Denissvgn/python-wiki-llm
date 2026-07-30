@@ -126,6 +126,15 @@ P0_CALIBRATION_OPTIMIZER_SEARCH_CONTRACT_SCHEMA_VERSION = (
     "llm-wiki-p0-calibration-optimizer-search-contract/v1"
 )
 P0_CALIBRATION_DECISION_SCOPE = "p0_policy_default"
+
+# The CLI, controller, and OCI broker all validate the same direct calibration
+# packet bytes; the broker adds no transport envelope. Probe requests use the
+# same conservative absolute ceiling. Keep the compatibility names as aliases
+# of one source of truth so the consumers cannot drift independently.
+CALIBRATION_MAX_PACKET_BYTES = 16 * 1024 * 1024
+CALIBRATION_CONTROLLER_MAX_PACKET_BYTES = CALIBRATION_MAX_PACKET_BYTES
+OCI_MAX_PACKET_BYTES = CALIBRATION_MAX_PACKET_BYTES
+
 EXTRACT_ADDITIVE_FIELDS = {
     "calls[].args",
     "calls[].kwargs",

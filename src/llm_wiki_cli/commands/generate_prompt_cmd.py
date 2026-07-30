@@ -9,6 +9,7 @@ from ..config import DEFAULT_WIKI_DIR, validate_path
 from ..services.metrics import record_event, resolve_agent
 from ..services.paths import shell_quote
 from ..services.plugins import PluginError, render_prompt_template
+from ..services.redaction import redact_credentials
 from ..services.secure_file import write_private_text
 from ..services.team import TeamConfigError, team_prompt_template_default
 
@@ -368,6 +369,13 @@ def _build_prompt(
     )
 
 
+def _redact_prompt_artifact(prompt: str) -> str:
+    redacted, count = redact_credentials(prompt)
+    if not count:
+        return redacted
+    return redacted.rstrip("\n") + f"\n\n[{count} credential-like values redacted]\n"
+
+
 def run(args) -> None:
     wiki_dir: str = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     src_dir: str = getattr(args, "src_dir", ".")
@@ -391,6 +399,7 @@ def run(args) -> None:
     except PluginError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         raise SystemExit(1)
+    prompt = _redact_prompt_artifact(prompt)
     effective_type = resolve_change_type(change_type, _git_diff())
     agent, mode = resolve_agent(None, wiki_dir)
 

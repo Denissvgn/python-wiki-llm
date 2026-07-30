@@ -144,9 +144,33 @@ def run(args) -> None:
         failures = state.get("consecutive_failures", 0)
         if breaker_state == "open":
             print(f"Circuit breaker: OPEN ({failures} consecutive failures)")
+            ttl_seconds = circuit_breaker.breaker_ttl_seconds()
+            if ttl_seconds == 0:
+                print(
+                    "                 Automatic recovery is disabled; run "
+                    "`llm-wiki trigger-agent --reset-breaker` to re-enable"
+                )
+            else:
+                print(
+                    "                 The next trigger evaluates automatic recovery "
+                    f"after {ttl_seconds:g}s; use `--reset-breaker` to recover now"
+                )
+        elif breaker_state == "half-open":
             print(
-                "                 Run `llm-wiki trigger-agent --reset-breaker` to re-enable"
+                "Circuit breaker: HALF-OPEN "
+                f"({failures} consecutive failures; recovery probe lease persisted)"
             )
+            ttl_seconds = circuit_breaker.breaker_ttl_seconds()
+            if ttl_seconds == 0:
+                print(
+                    "                 Automatic recovery is disabled; run "
+                    "`llm-wiki trigger-agent --reset-breaker` to re-enable"
+                )
+            else:
+                print(
+                    "                 The next trigger evaluates the probe lease "
+                    f"after {ttl_seconds:g}s; use `--reset-breaker` to recover now"
+                )
         else:
             print(f"Circuit breaker: closed ({failures} recent failures)")
     else:

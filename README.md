@@ -305,7 +305,9 @@ The trigger command:
 - uses a lock file to prevent concurrent syncs;
 - opens a circuit breaker after repeated failures;
 - builds deep source inventory and call-graph context;
-- writes `.git/llm-wiki-prompt.txt` with owner-only permissions where supported;
+- filters credential-like values from the generated prompt on a best-effort
+  basis, then writes `.git/llm-wiki-prompt.txt` with owner-only permissions
+  where supported;
 - invokes the selected agent with a prompt that asks it to update, lint, and commit wiki changes.
 
 Useful trigger options:
@@ -316,6 +318,12 @@ llm-wiki trigger-agent --agent claude --max-prompt-bytes 2000000
 llm-wiki trigger-agent --agent claude --force
 llm-wiki trigger-agent --reset-breaker
 ```
+
+Set `LLM_WIKI_LOCK_WAIT` to a non-negative number of seconds when a trusted
+automation runner should wait briefly for another sync to release the lock.
+The circuit breaker permits one automatic recovery attempt after 3600 seconds
+by default; set `LLM_WIKI_BREAKER_TTL_SECONDS` to another non-negative duration,
+or to `0` to require `--reset-breaker`.
 
 Optional strict pre-commit validation:
 
@@ -481,8 +489,9 @@ Pass `--include-tests go` to include Go `_test.go` files in the synced
 inventory and generated module pages; the default remains production Go source
 only.
 For trusted source trees outside the runner workspace, pass
-`--allow-external-src`; `--wiki-dir` remains constrained to the current project
-root.
+`--allow-external-src`; same-owner or system-administrator-owned symlinks are
+disclosed with a warning, symlinks owned by another user are rejected, and
+`--wiki-dir` remains constrained to the current project root.
 
 `sync` is deterministic: it updates AST/docstring-based page skeletons and does
 not call an LLM. In agent workflows, treat sync as the first step, then inspect
@@ -567,6 +576,9 @@ block. When Haskell files are present, extraction requires a prepared helper and
 reports a clear `prepare-extractors --language haskell` message if it is
 missing. Haskell internal dependency edges resolve through declared module
 names from inventory entries rather than filepath stems.
+Extractor helper processes use a 120-second runtime timeout by default. Set
+`LLM_WIKI_EXTRACTOR_TIMEOUT` to an integer number of seconds (minimum `1`) for
+larger repositories.
 Haskell file entries are additive under `llm-wiki-extract/v1`. A Haskell entry
 uses `language: "haskell"`, `imports`, `classes`, and `functions`, with `module`
 present when the source declares one. Import records use `module`, `qualified`,
@@ -720,8 +732,9 @@ with known capacity. Plugin extractors without that opt-in remain sequential.
 Use `--include-tests go` when a wiki intentionally documents Go `_test.go`
 files; omit it to lint against the default production-source inventory.
 For trusted source trees outside the runner workspace, pass
-`--allow-external-src`; `--wiki-dir` remains constrained to the current project
-root.
+`--allow-external-src`; same-owner or system-administrator-owned symlinks are
+disclosed with a warning, symlinks owned by another user are rejected, and
+`--wiki-dir` remains constrained to the current project root.
 
 When dependency architecture pages exist, lint reruns dependency analysis and
 surfaces import cycles, undeclared dependencies, and unused declared
@@ -798,8 +811,9 @@ nonblocking. Structured output discloses the report mode through
 `knowledge_drift_report`; the legacy `knowledge_drift_gate` compatibility field
 is always `false`.
 For trusted source trees outside the runner workspace, pass
-`--allow-external-src`; `--wiki-dir` remains constrained to the current project
-root.
+`--allow-external-src`; same-owner or system-administrator-owned symlinks are
+disclosed with a warning, symlinks owned by another user are rejected, and
+`--wiki-dir` remains constrained to the current project root.
 `--report` is an output path, so explicit
 absolute paths and relative artifact paths outside the project root are allowed.
 

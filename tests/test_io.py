@@ -3,12 +3,14 @@
 import os
 import stat
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
 from llm_wiki_cli.services import io
 from llm_wiki_cli.services.filesystem_guard import atomic_write_private_bytes
 from llm_wiki_cli.services.io import (
+    first_unsafe_path_component,
     read_md,
     write_json_atomic,
     write_md,
@@ -150,3 +152,158 @@ def test_atomic_write_private_bytes_rejects_relative_and_redirected_targets(
         atomic_write_private_bytes(linked_parent / "packet.json", b"private")
 
     assert not (real_parent / "packet.json").exists()
+
+
+def test_first_unsafe_path_component_can_trust_explicit_symlink_owner(tmp_path):
+    target = tmp_path / "target"
+    target.mkdir()
+    link = tmp_path / "link"
+    try:
+        link.symlink_to(target, target_is_directory=True)
+    except OSError:
+        pytest.skip("Directory symlinks are unavailable to this test account.")
+    owner_uid = link.lstat().st_uid
+
+    assert first_unsafe_path_component(link) == link
+    assert (
+        first_unsafe_path_component(
+            link,
+            trusted_symlink_uids={owner_uid},
+        )
+        is None
+    )
+
+
+def test_first_unsafe_path_component_rejects_untrusted_symlink_owner(tmp_path):
+    target = tmp_path / "target"
+    target.mkdir()
+    link = tmp_path / "link"
+    try:
+        link.symlink_to(target, target_is_directory=True)
+    except OSError:
+        pytest.skip("Directory symlinks are unavailable to this test account.")
+    owner_uid = link.lstat().st_uid
+    different_uid = owner_uid + 1
+
+    assert (
+        first_unsafe_path_component(
+            link,
+            trusted_symlink_uids={different_uid},
+        )
+        == link
+    )
+
+
+def test_first_unsafe_path_component_checks_symlink_target_chain(
+    tmp_path, monkeypatch
+):
+    target = tmp_path / "target"
+    target.mkdir()
+    inner_link = tmp_path / "inner-link"
+    outer_link = tmp_path / "outer-link"
+    try:
+        inner_link.symlink_to(target, target_is_directory=True)
+        outer_link.symlink_to(inner_link, target_is_directory=True)
+    except OSError:
+        pytest.skip("Directory symlinks are unavailable to this test account.")
+    owner_uid = outer_link.lstat().st_uid
+    original_lstat = Path.lstat
+
+    def lstat_with_untrusted_inner(path):
+        metadata = original_lstat(path)
+        if path == inner_link:
+            return SimpleNamespace(
+                st_file_attributes=getattr(metadata, "st_file_attributes", 0),
+                st_mode=metadata.st_mode,
+                st_uid=owner_uid + 1,
+            )
+        return metadata
+
+    monkeypatch.setattr(Path, "lstat", lstat_with_untrusted_inner)
+
+    assert (
+        first_unsafe_path_component(
+            outer_link,
+            trusted_symlink_uids={owner_uid},
+        )
+        == inner_link
+    )
+
+
+def test_first_unsafe_path_component_does_not_collapse_target_traversal(
+    tmp_path, monkeypatch
+):
+    sensitive = tmp_path / "sensitive"
+    nested = sensitive / "nested"
+    target = sensitive / "target"
+    nested.mkdir(parents=True)
+    target.mkdir()
+    inner_link = tmp_path / "inner-link"
+    outer_link = tmp_path / "outer-link"
+    try:
+        inner_link.symlink_to(nested, target_is_directory=True)
+        outer_link.symlink_to(
+            Path("inner-link") / ".." / "target",
+            target_is_directory=True,
+        )
+    except OSError:
+        pytest.skip("Directory symlinks are unavailable to this test account.")
+    owner_uid = outer_link.lstat().st_uid
+    original_lstat = Path.lstat
+
+    def lstat_with_untrusted_inner(path):
+        metadata = original_lstat(path)
+        if path == inner_link:
+            return SimpleNamespace(
+                st_file_attributes=getattr(metadata, "st_file_attributes", 0),
+                st_mode=metadata.st_mode,
+                st_uid=owner_uid + 1,
+            )
+        return metadata
+
+    monkeypatch.setattr(Path, "lstat", lstat_with_untrusted_inner)
+
+    assert (
+        first_unsafe_path_component(
+            outer_link,
+            trusted_symlink_uids={owner_uid},
+        )
+        == inner_link
+    )
+
+
+def test_first_unsafe_path_component_walks_parent_parts_in_trusted_mode(
+    tmp_path, monkeypatch
+):
+    project = tmp_path / "project"
+    target = tmp_path / "target"
+    project.mkdir()
+    target.mkdir()
+    link = tmp_path / "source-link"
+    try:
+        link.symlink_to(target, target_is_directory=True)
+    except OSError:
+        pytest.skip("Directory symlinks are unavailable to this test account.")
+    owner_uid = link.lstat().st_uid
+    original_lstat = Path.lstat
+
+    def lstat_with_untrusted_link(path):
+        metadata = original_lstat(path)
+        if path == link:
+            return SimpleNamespace(
+                st_file_attributes=getattr(metadata, "st_file_attributes", 0),
+                st_mode=metadata.st_mode,
+                st_uid=owner_uid + 1,
+            )
+        return metadata
+
+    monkeypatch.setattr(Path, "lstat", lstat_with_untrusted_link)
+    raw_path = project / ".." / "source-link"
+
+    assert (
+        first_unsafe_path_component(
+            raw_path,
+            trusted_symlink_uids={owner_uid},
+        )
+        == link
+    )

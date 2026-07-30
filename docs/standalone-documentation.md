@@ -218,13 +218,21 @@ grant, manifest, evidence bundle, and cohort. A root whose ownership, POSIX
 mode, or Windows DACL is not restrictive fails closed.
 
 The root must be new or empty and must not overlap a source, documentation
-control, worker output, packet output, or implementation worktree. Immutable
-numbered artifacts and transition records are canonical; `run.json` is a
-rebuildable current-state snapshot. A dedicated controller lock, generation
-and transition-head comparisons, guarded no-follow I/O, and crash recovery
-protect state changes. Unknown files, ambiguous recovery, an indeterminate
-dispatch, or unavailable enforcement blocks the cohort without erasing
-evidence. Source/control mutation or ledger tampering rejects it.
+control, worker output, packet output, or implementation worktree.
+Application-level, create-once numbered artifacts and transition records are
+canonical; `run.json` is a rebuildable current-state snapshot. A dedicated
+controller lock, generation and transition-head comparisons, guarded no-follow
+I/O, and crash recovery protect state changes. Unknown files, ambiguous
+recovery, an indeterminate dispatch, or unavailable enforcement blocks the
+cohort without erasing evidence. Within this trust domain, source/control
+mutation or a ledger integrity mismatch rejects the cohort.
+
+These protections are same-user, application-level guarantees within one trust
+domain. Here “immutable” means that the application creates an artifact path
+once and accepts only a byte-identical replay. The mechanisms do not resist the
+filesystem owner, root, or offline modification; they provide content-integrity
+checks, not authenticity. Stronger assurance requires host controls outside
+the workspace.
 
 For `local_no_egress`, the frozen manifest supplies the Docker or Podman
 executable identity, digest-pinned worker and probe images, fixed entrypoints,

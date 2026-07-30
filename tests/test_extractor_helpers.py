@@ -14,6 +14,8 @@ from llm_wiki_cli.commands import prepare_extractors_cmd
 from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.services import extractor_helpers
 from llm_wiki_cli.services.extractor_helpers import (
+    DEFAULT_EXTRACTOR_TIMEOUT_SECONDS,
+    ENV_EXTRACTOR_TIMEOUT,
     HELPER_CACHE_DIRNAME,
     HELPER_MANIFEST_VERSION,
     HelperPrepareResult,
@@ -24,6 +26,28 @@ from llm_wiki_cli.services.extractor_helpers import (
     prepare_rust,
     resolve_helper_cache_root,
 )
+
+
+@pytest.mark.parametrize(
+    ("configured", "expected"),
+    [
+        (None, DEFAULT_EXTRACTOR_TIMEOUT_SECONDS),
+        ("275", 275),
+        ("1", 1),
+        ("0", 1),
+        ("-40", 1),
+        ("not-an-integer", DEFAULT_EXTRACTOR_TIMEOUT_SECONDS),
+    ],
+)
+def test_extractor_timeout_uses_environment_default_and_floor(
+    configured, expected, monkeypatch
+):
+    if configured is None:
+        monkeypatch.delenv(ENV_EXTRACTOR_TIMEOUT, raising=False)
+    else:
+        monkeypatch.setenv(ENV_EXTRACTOR_TIMEOUT, configured)
+
+    assert extractor_helpers.extractor_timeout_seconds() == expected
 
 
 def test_helper_cache_key_changes_for_sources_platform_and_toolchain(

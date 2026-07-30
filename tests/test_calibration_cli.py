@@ -324,7 +324,7 @@ def test_calibration_packet_writes_bounded_json_only_to_explicit_output(
 
     bounded_output = tmp_path / "oversized.json"
     args.output = str(bounded_output)
-    monkeypatch.setattr(docs_cmd, "_MAX_CALIBRATION_PACKET_BYTES", 16)
+    monkeypatch.setattr(docs_cmd, "CALIBRATION_CONTROLLER_MAX_PACKET_BYTES", 16)
     with pytest.raises(SystemExit) as exc_info:
         docs_cmd.run(args)
     assert exc_info.value.code == 1

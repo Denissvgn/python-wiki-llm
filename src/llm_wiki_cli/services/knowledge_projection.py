@@ -77,6 +77,11 @@ from .knowledge_model import (
     WorkingTreeState,
     serialize_knowledge_index,
 )
+from .redaction import (
+    CREDENTIAL_VALUE_RE as _CREDENTIAL_VALUE_RE,
+    PROJECTION_URI_USERINFO_RE as _URI_USERINFO_RE,
+    SENSITIVE_KEY_RE as _SENSITIVE_KEY_RE,
+)
 from .wiki_surface import PageKind, SurfaceRole
 
 PROJECTION_SCHEMA_VERSION = "llm-wiki-knowledge-projection/v1"
@@ -96,28 +101,10 @@ _RESERVED_EXTENSION_KEYS = frozenset(
         TYPED_GRAPH_EXTENSION_KEY,
     }
 )
-_SENSITIVE_KEY_RE = re.compile(
-    r"(?:password|passwd|secret|credential|authorization|api[-_]?key|"
-    r"access[-_]?token|private[-_]?key|environment|env(?:iron)?\b|"
-    r"(?:repository[-_])?remote(?:[-_](?:url|uri))?)",
-    re.IGNORECASE,
-)
-_CREDENTIAL_VALUE_RE = re.compile(
-    r"(?:\bBearer\s+[A-Za-z0-9._~+/=-]+|"
-    r"\b(?:sk|ghp|github_pat)[-_][A-Za-z0-9_-]{8,}|"
-    r"\bxox[a-z]-[A-Za-z0-9-]{8,}|"
-    r"\beyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\."
-    r"[A-Za-z0-9_-]{8,}|"
-    r"\bAKIA[0-9A-Z]{12,})",
-    re.IGNORECASE,
-)
 _WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:[/\\]")
 _TRAVERSAL_RE = re.compile(r"(?:^|[/\\])\.\.(?:[/\\]|$)")
 _EMBEDDED_ABSOLUTE_RE = re.compile(
     r"(?:^|[\s\"'=(])(?:/(?!/)[^\s\"']+|[A-Za-z]:[/\\][^\s\"']*)"
-)
-_URI_USERINFO_RE = re.compile(
-    r"[A-Za-z][A-Za-z0-9+.-]*://[^/\s@]+(?::[^/\s@]*)?@"
 )
 _RAW_VCS_REMOTE_RE = re.compile(
     r"(?:\bgit@[A-Za-z0-9.-]+:[^\s]+|"

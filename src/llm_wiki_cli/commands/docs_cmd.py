@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from ..config import PathValidationError, validate_source_root
+from ..services.contracts import CALIBRATION_CONTROLLER_MAX_PACKET_BYTES
 from ..services.documentation_run import (
     DocumentationAgentResult,
     DocumentationRunError,
@@ -25,7 +26,6 @@ from ..services.filesystem_guard import atomic_write_private_bytes
 
 _MAX_INTAKE_BYTES = 1_000_000
 _MAX_CALIBRATION_JSON_BYTES = 4 * 1024 * 1024
-_MAX_CALIBRATION_PACKET_BYTES = 16 * 1024 * 1024
 _BASELINE_STRATEGIES = {
     "bootstrap-source": "bootstrap_source",
     "existing-wiki": "adopt_existing_wiki",
@@ -496,7 +496,7 @@ def _calibration_packet(args) -> None:
     rendered = _bounded_calibration_json(
         packet,
         label="calibration agent packet",
-        max_bytes=_MAX_CALIBRATION_PACKET_BYTES,
+        max_bytes=CALIBRATION_CONTROLLER_MAX_PACKET_BYTES,
         canonical=True,
     )
     output = controller.validate_p0_calibration_packet_output(args.root, output)

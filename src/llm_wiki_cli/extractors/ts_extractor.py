@@ -25,7 +25,11 @@ from .common import (
     filter_bundled_inventory,
     inventory_language_for_path,
 )
-from ..services.extractor_helpers import typescript_dependencies_ready
+from ..services.extractor_helpers import (
+    ENV_EXTRACTOR_TIMEOUT,
+    extractor_timeout_seconds,
+    typescript_dependencies_ready,
+)
 
 _TS_SCRIPTS_DIR = Path(__file__).parent / "ts_scripts"
 
@@ -143,13 +147,14 @@ class TypeScriptExtractor:
         return cmd
 
     def _run_node_extractor(self, cmd: list[str]) -> subprocess.CompletedProcess | None:
+        timeout_seconds = extractor_timeout_seconds()
         try:
             return subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
                 check=True,
-                timeout=120,
+                timeout=timeout_seconds,
                 cwd=_TS_SCRIPTS_DIR,
             )
         except subprocess.CalledProcessError as exc:
@@ -160,9 +165,12 @@ class TypeScriptExtractor:
             )
             return None
         except subprocess.TimeoutExpired:
-            self.last_error = "extraction timed out after 120 s"
+            self.last_error = (
+                f"extraction timed out after {timeout_seconds} s; configure "
+                f"{ENV_EXTRACTOR_TIMEOUT} to allow more time"
+            )
             print(
-                "llm-wiki TypeScript extractor: extraction timed out after 120 s.",
+                f"llm-wiki TypeScript extractor: {self.last_error}.",
                 file=sys.stderr,
             )
             return None

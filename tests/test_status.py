@@ -304,6 +304,26 @@ class TestStatusBreaker:
         out = capsys.readouterr().out
         assert "OPEN" in out
         assert "3" in out
+        assert "next trigger evaluates automatic recovery" in out.lower()
+
+    def test_shows_active_half_open_recovery_probe(self, tmp_project, capsys):
+        git_dir = tmp_project / ".git"
+        state = {
+            "consecutive_failures": 3,
+            "last_failure_ts": "2026-01-01T00:00:00+00:00",
+            "probe_started_ts": "2026-01-01T01:00:00+00:00",
+            "state": "half-open",
+        }
+        (git_dir / "llm-wiki-breaker.json").write_text(json.dumps(state))
+        wiki = tmp_project / "docs" / "llm_wiki"
+        wiki.mkdir(parents=True)
+
+        status_cmd.run(_make_args(wiki_dir=str(wiki)))
+
+        out = capsys.readouterr().out
+        assert "HALF-OPEN" in out
+        assert "recovery probe lease persisted" in out
+        assert "next trigger evaluates the probe lease" in out.lower()
 
 
 class TestStatusReferenceSkill:

@@ -3,9 +3,20 @@
 from __future__ import annotations
 
 import json
+import os
+import sys
+import warnings
+from collections.abc import Callable
 from dataclasses import dataclass
 from fnmatch import fnmatch
 from pathlib import Path
+
+from .services.filesystem_guard import (
+    WindowsSecurityGuardError,
+    windows_current_user_sid,
+    windows_path_owner_sid,
+)
+from .services.io import first_unsafe_path_component
 
 DEFAULT_WIKI_DIR = "docs/llm_wiki"
 
@@ -140,14 +151,96 @@ def validate_source_root(
     if not allow_external:
         return validate_path(path, label)
 
-    candidate = Path(path).expanduser()
-    if not candidate.is_absolute():
-        candidate = Path.cwd() / candidate
-    resolved = candidate.resolve()
+    try:
+        candidate = Path(path).expanduser()
+        if not candidate.is_absolute():
+            candidate = Path.cwd() / candidate
+        resolved = candidate.resolve(strict=True)
+    except (OSError, RuntimeError, ValueError) as exc:
+        raise PathValidationError(
+            f"Error: {label} '{path}' cannot be resolved to an existing "
+            f"directory: {exc}."
+        ) from exc
     if not resolved.is_dir():
         raise PathValidationError(
             f"Error: {label} '{path}' resolves to '{resolved}', "
             "which is not an existing directory."
+        )
+    normalized_candidate = Path(os.path.abspath(candidate))
+    if resolved != normalized_candidate:
+        effective_uid: int | None = None
+        trusted_owner: Callable[[Path], bool] | None = None
+        ownership_is_verifiable = False
+        if sys.platform == "win32":
+            try:
+                current_sid = windows_current_user_sid()
+            except (OSError, RuntimeError, TypeError, ValueError):
+                pass
+            else:
+                if isinstance(current_sid, str) and current_sid:
+                    ownership_is_verifiable = True
+                    trusted_windows_sids = {
+                        current_sid,
+                        "S-1-5-18",  # LocalSystem
+                        "S-1-5-32-544",  # Built-in Administrators
+                    }
+
+                    def is_trusted_windows_owner(component: Path) -> bool:
+                        return (
+                            windows_path_owner_sid(component)
+                            in trusted_windows_sids
+                        )
+
+                    trusted_owner = is_trusted_windows_owner
+        else:
+            get_effective_uid = getattr(os, "geteuid", None)
+            if callable(get_effective_uid):
+                try:
+                    derived_uid = get_effective_uid()
+                except (OSError, RuntimeError, TypeError, ValueError):
+                    pass
+                else:
+                    if (
+                        isinstance(derived_uid, int)
+                        and not isinstance(derived_uid, bool)
+                        and derived_uid >= 0
+                    ):
+                        effective_uid = derived_uid
+                        ownership_is_verifiable = True
+        trusted_uids = {0, effective_uid} if effective_uid is not None else set()
+        try:
+            unsafe = first_unsafe_path_component(
+                candidate,
+                trusted_symlink_uids=trusted_uids,
+                trusted_symlink_owner=trusted_owner,
+            )
+        except (OSError, RuntimeError, WindowsSecurityGuardError) as exc:
+            raise PathValidationError(
+                f"Error: {label} '{path}' traverses a symlink or reparse point "
+                "whose ownership cannot be verified on this platform."
+            ) from exc
+        if unsafe is not None:
+            if not ownership_is_verifiable:
+                raise PathValidationError(
+                    f"Error: {label} '{path}' traverses symlink or reparse point "
+                    f"'{unsafe}' whose ownership cannot be verified on this "
+                    "platform."
+                )
+            if sys.platform == "win32":
+                raise PathValidationError(
+                    f"Error: {label} '{path}' traverses symlink or reparse point "
+                    f"'{unsafe}' not owned by the current Windows user, "
+                    "LocalSystem, or Administrators."
+                )
+            raise PathValidationError(
+                f"Error: {label} '{path}' traverses symlink or reparse point "
+                f"'{unsafe}' not owned by the current user or root."
+            )
+        warnings.warn(
+            f"external source root '{normalized_candidate}' resolves to "
+            f"'{resolved}'.",
+            UserWarning,
+            stacklevel=2,
         )
     return resolved
 

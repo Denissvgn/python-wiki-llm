@@ -2,10 +2,16 @@
 """Protected, bounded artifact storage for controller-owned lifecycle state.
 
 The store deliberately has no calibration-specific schema knowledge.  It owns
-only the filesystem trust boundary: a new/empty root, portable relative names,
-regular files and directories, descriptor-relative POSIX operations, guarded
-Windows pathname operations, atomic replacement, immutable write-once
+these filesystem mechanisms: a new/empty root, portable relative names, regular
+files and directories, descriptor-relative POSIX operations, guarded Windows
+pathname operations, atomic replacement, application-level write-once
 artifacts, and a dedicated non-blocking root lock.
+
+These are same-user, application-level guarantees within one trust domain.
+Here ``immutable`` means that cooperating code creates a path once and accepts
+only a byte-identical replay.  The mechanisms do not resist the filesystem
+owner, root, or offline modification; they provide content-integrity checks,
+not authenticity.
 """
 
 from __future__ import annotations
@@ -17,6 +23,7 @@ import os
 import re
 import stat
 import sys
+import threading
 import unicodedata
 import uuid
 from contextlib import contextmanager
@@ -46,6 +53,7 @@ DEFAULT_MAX_PROJECTION_BYTES = 32 * 1024 * 1024
 ROOT_LOCK_FILENAME = "controller.lock"
 
 _LOCK_SIZE = 1
+_LOCK_OPEN_ATTEMPTS = 8
 _WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:[/\\]")
 _WINDOWS_RESERVED_NAMES = frozenset(
     {"con", "prn", "aux", "nul"}
@@ -79,7 +87,7 @@ class ProtectedArtifactIntegrityError(ProtectedArtifactError):
 
 
 class ProtectedArtifactLimitError(ProtectedArtifactError):
-    """Raised when an artifact exceeds its configured byte limit."""
+    """Raised when an artifact or protected root exceeds its byte limit."""
 
 
 class ProtectedArtifactLockError(ProtectedArtifactError):
@@ -145,9 +153,27 @@ def canonical_json_bytes(payload: Mapping[str, Any]) -> bytes:
 
 
 class ProtectedArtifactStore:
-    """A reusable protected filesystem boundary rooted at one directory."""
+    """A reusable same-user application-level artifact store rooted at one directory.
 
-    def __init__(self, root: str | Path, *, create: bool = False) -> None:
+    ``max_root_bytes`` optionally bounds the cumulative committed artifact
+    payload under the root. The controller lock is coordination metadata and
+    does not count toward that quota. Quota-bearing writes claim that lock
+    around both accounting and commit, and the lock is reentrant on its owning
+    thread so callers may still group transitions in ``with store.lock()``.
+
+    This quota is an application-level contract for store instances configured
+    with the same limit. The same-user filesystem owner can bypass it through
+    direct I/O or an unbounded store, consistent with this module's trust model.
+    """
+
+    def __init__(
+        self,
+        root: str | Path,
+        *,
+        create: bool = False,
+        max_root_bytes: int | None = None,
+    ) -> None:
+        root_limit = _validate_optional_root_bytes(max_root_bytes)
         requested = Path(os.path.abspath(os.fspath(Path(root).expanduser())))
         if create:
             _create_or_require_empty_root(requested)
@@ -162,6 +188,9 @@ class ProtectedArtifactStore:
         _assert_regular_directory(resolved, context="protected artifact root")
         self._root = resolved
         self._root_identity = _directory_identity(resolved)
+        self._max_root_bytes = root_limit
+        self._thread_lock = threading.RLock()
+        self._lock_depth = 0
         self.verify_host_protection()
 
     @property
@@ -169,6 +198,12 @@ class ProtectedArtifactStore:
         """Return the resolved protected root."""
 
         return self._root
+
+    @property
+    def max_root_bytes(self) -> int | None:
+        """Return the cumulative artifact quota, or ``None`` when disabled."""
+
+        return self._max_root_bytes
 
     def verify_host_protection(self) -> None:
         """Fail closed unless the complete store has supported host protection."""
@@ -221,73 +256,96 @@ class ProtectedArtifactStore:
 
     @contextmanager
     def lock(self) -> Iterator[None]:
-        """Acquire the dedicated controller lock without waiting."""
+        """Acquire the dedicated controller lock without waiting.
 
-        self._assert_root_current()
-        if _supports_descriptor_relative_io():
-            descriptor = self._open_posix_lock()
-            windows_lock = False
-        elif _uses_windows_guarded_io():
-            descriptor = self._open_windows_lock()
-            windows_lock = True
-        else:  # pragma: no cover - supported platforms select one safe branch
-            raise ProtectedArtifactIntegrityError(
-                "Platform lacks protected descriptor-relative or guarded I/O."
+        Nested acquisition by the owning thread is reentrant. Another thread
+        or process still receives ``ProtectedArtifactLockError`` immediately.
+        """
+
+        if not self._thread_lock.acquire(blocking=False):
+            raise ProtectedArtifactLockError(
+                "Another protected controller already holds controller.lock."
             )
-
-        locked = False
         try:
+            if self._lock_depth:
+                self._lock_depth += 1
+                try:
+                    yield
+                finally:
+                    self._lock_depth -= 1
+                return
+
+            self._assert_root_current()
+            if _supports_descriptor_relative_io():
+                descriptor = self._open_posix_lock()
+                windows_lock = False
+            elif _uses_windows_guarded_io():
+                descriptor = self._open_windows_lock()
+                windows_lock = True
+            else:  # pragma: no cover - supported platforms select one safe branch
+                raise ProtectedArtifactIntegrityError(
+                    "Platform lacks protected descriptor-relative or guarded I/O."
+                )
+
+            locked = False
             try:
-                if windows_lock:
-                    import msvcrt
+                try:
+                    if windows_lock:
+                        import msvcrt
 
-                    os.lseek(descriptor, 0, os.SEEK_SET)
-                    locking = getattr(msvcrt, "locking")
-                    locking(
-                        descriptor,
-                        int(getattr(msvcrt, "LK_NBLCK")),
-                        _LOCK_SIZE,
-                    )
-                else:
-                    import fcntl
-
-                    fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                locked = True
-            except (BlockingIOError, OSError) as exc:
-                raise ProtectedArtifactLockError(
-                    "Another protected controller already holds controller.lock."
-                ) from exc
-
-            diagnostic = f"{os.getpid()}\n".encode("ascii")
-            os.ftruncate(descriptor, 0)
-            os.lseek(descriptor, 0, os.SEEK_SET)
-            _write_all(descriptor, diagnostic)
-            os.fsync(descriptor)
-            yield
-        finally:
-            if locked:
-                if windows_lock:
-                    import msvcrt
-
-                    try:
                         os.lseek(descriptor, 0, os.SEEK_SET)
                         locking = getattr(msvcrt, "locking")
                         locking(
                             descriptor,
-                            int(getattr(msvcrt, "LK_UNLCK")),
+                            int(getattr(msvcrt, "LK_NBLCK")),
                             _LOCK_SIZE,
                         )
-                    except OSError:
-                        pass
-                else:
-                    import fcntl
+                    else:
+                        import fcntl
 
-                    try:
-                        fcntl.flock(descriptor, fcntl.LOCK_UN)
-                    except OSError:
-                        pass
-            os.close(descriptor)
-            self._assert_root_current()
+                        fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    locked = True
+                except (BlockingIOError, OSError) as exc:
+                    raise ProtectedArtifactLockError(
+                        "Another protected controller already holds controller.lock."
+                    ) from exc
+
+                diagnostic = f"{os.getpid()}\n".encode("ascii")
+                os.ftruncate(descriptor, 0)
+                os.lseek(descriptor, 0, os.SEEK_SET)
+                _write_all(descriptor, diagnostic)
+                os.fsync(descriptor)
+                self._lock_depth = 1
+                try:
+                    yield
+                finally:
+                    self._lock_depth = 0
+            finally:
+                if locked:
+                    if windows_lock:
+                        import msvcrt
+
+                        try:
+                            os.lseek(descriptor, 0, os.SEEK_SET)
+                            locking = getattr(msvcrt, "locking")
+                            locking(
+                                descriptor,
+                                int(getattr(msvcrt, "LK_UNLCK")),
+                                _LOCK_SIZE,
+                            )
+                        except OSError:
+                            pass
+                    else:
+                        import fcntl
+
+                        try:
+                            fcntl.flock(descriptor, fcntl.LOCK_UN)
+                        except OSError:
+                            pass
+                os.close(descriptor)
+                self._assert_root_current()
+        finally:
+            self._thread_lock.release()
 
     def exists(self, relative: str | Path) -> bool:
         """Return whether a regular protected artifact exists."""
@@ -361,7 +419,7 @@ class ProtectedArtifactStore:
         *,
         max_bytes: int = DEFAULT_MAX_ARTIFACT_BYTES,
     ) -> Path:
-        """Atomically create one immutable JSON artifact.
+        """Atomically create one application-level immutable JSON artifact.
 
         Replaying byte-identical canonical JSON is an idempotent no-op.
         Reusing the path for different bytes is an integrity failure.
@@ -421,8 +479,14 @@ class ProtectedArtifactStore:
                 "Protected artifact root changed identity."
             )
 
-    def _verify_windows_tree(self) -> None:
+    def _verify_windows_tree(
+        self,
+        *,
+        target_parts: tuple[str, ...] | None = None,
+    ) -> tuple[int, int]:
         pending: list[tuple[str, ...]] = [()]
+        total_bytes = 0
+        target_bytes = 0
         try:
             while pending:
                 components = pending.pop()
@@ -446,6 +510,7 @@ class ProtectedArtifactStore:
                             payload,
                             context=f"protected artifact {entry.name!r}",
                         )
+                        entry_parts = (*components, entry.name)
                         if not components and entry.name == ROOT_LOCK_FILENAME:
                             verify_windows_restrictive_dacl(Path(entry.path))
                             continue
@@ -462,6 +527,9 @@ class ProtectedArtifactStore:
                                     "Protected artifact changed during Windows host "
                                     f"protection verification: {entry.path}"
                                 )
+                        total_bytes += payload.st_size
+                        if target_parts == entry_parts:
+                            target_bytes = payload.st_size
         except ProtectedArtifactError:
             raise
         except (
@@ -473,6 +541,7 @@ class ProtectedArtifactStore:
             raise ProtectedArtifactIntegrityError(
                 f"Cannot verify protected Windows artifact tree: {exc}"
             ) from exc
+        return total_bytes, target_bytes
 
     def _read_bytes(
         self,
@@ -502,8 +571,28 @@ class ProtectedArtifactStore:
         return data
 
     def _write_bytes(self, portable: str, data: bytes, *, immutable: bool) -> None:
+        if self._max_root_bytes is None:
+            self._write_bytes_once(portable, data, immutable=immutable)
+            return
+        with self.lock():
+            self._write_bytes_once(portable, data, immutable=immutable)
+
+    def _write_bytes_once(
+        self,
+        portable: str,
+        data: bytes,
+        *,
+        immutable: bool,
+    ) -> None:
         self._assert_root_current()
         parts = PurePosixPath(portable).parts
+        if parts == (ROOT_LOCK_FILENAME,):
+            raise ProtectedArtifactIntegrityError(
+                f"Protected artifact path {ROOT_LOCK_FILENAME!r} is reserved "
+                "for store coordination."
+            )
+        if self._enforce_root_quota(parts, data, immutable=immutable):
+            return
         try:
             if _supports_descriptor_relative_io():
                 self._write_posix(parts, data, immutable=immutable)
@@ -520,6 +609,57 @@ class ProtectedArtifactStore:
                 f"Cannot safely write protected artifact {portable!r}: {exc}"
             ) from exc
         self._assert_root_current()
+
+    def _enforce_root_quota(
+        self,
+        parts: tuple[str, ...],
+        data: bytes,
+        *,
+        immutable: bool,
+    ) -> bool:
+        maximum = self._max_root_bytes
+        if maximum is None:
+            return False
+        if _supports_descriptor_relative_io():
+            total_bytes, target_bytes = _assert_tree_safe(
+                self._root,
+                target_parts=parts,
+            )
+        elif _uses_windows_guarded_io():
+            total_bytes, target_bytes = self._verify_windows_tree(
+                target_parts=parts,
+            )
+        else:  # pragma: no cover - supported platforms select one safe branch
+            raise ProtectedArtifactIntegrityError(
+                "Platform cannot inspect protected-root byte usage."
+            )
+        portable = "/".join(parts)
+        target_exists = self.exists(portable)
+        if immutable and target_exists:
+            if target_bytes != len(data):
+                raise ProtectedArtifactIntegrityError(
+                    f"Immutable protected artifact {portable!r} already "
+                    "exists with different bytes."
+                )
+            existing = self._read_bytes(
+                portable,
+                maximum_bytes=max(1, len(data)),
+            )
+            if existing == data:
+                return True
+            raise ProtectedArtifactIntegrityError(
+                f"Immutable protected artifact {portable!r} already "
+                "exists with different bytes."
+            )
+        projected_bytes = total_bytes - target_bytes + len(data)
+        if projected_bytes > maximum:
+            raise ProtectedArtifactLimitError(
+                f"Writing protected artifact {'/'.join(parts)!r} would use "
+                f"{projected_bytes} bytes and exceed the {maximum}-byte "
+                "protected-root limit."
+            )
+        self._assert_root_current()
+        return False
 
     def _read_posix(
         self,
@@ -656,9 +796,11 @@ class ProtectedArtifactStore:
                     )
                     _write_all(descriptor, data)
                     os.fsync(descriptor)
-                    temp_identity = _file_identity(os.fstat(descriptor))
                 finally:
-                    os.close(descriptor)
+                    try:
+                        temp_identity = _file_identity(os.fstat(descriptor))
+                    finally:
+                        os.close(descriptor)
 
                 if immutable:
                     created_target = False
@@ -753,9 +895,11 @@ class ProtectedArtifactStore:
                         _assert_regular_file_stat(temp_stat, context=temp.name)
                         _write_all(descriptor, data)
                         os.fsync(descriptor)
-                        temp_identity = _file_identity(os.fstat(descriptor))
                     finally:
-                        os.close(descriptor)
+                        try:
+                            temp_identity = _file_identity(os.fstat(descriptor))
+                        finally:
+                            os.close(descriptor)
 
                     if immutable:
                         created_target = False
@@ -892,16 +1036,53 @@ class ProtectedArtifactStore:
         return current
 
     def _open_posix_lock(self) -> int:
-        flags = os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0)
+        common_flags = os.O_RDWR | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0)
+        create_flags = common_flags | os.O_CREAT | os.O_EXCL
         with self._open_posix_parent((ROOT_LOCK_FILENAME,), create=False) as (
             parent_fd,
             name,
         ):
             _assert_no_portable_collision_fd(parent_fd, name)
-            _assert_relative_target_regular(parent_fd, name)
-            try:
-                descriptor = os.open(name, flags, 0o600, dir_fd=parent_fd)
-            except OSError as exc:
+            descriptor: int | None = None
+            last_missing_error: OSError | None = None
+            for _attempt in range(_LOCK_OPEN_ATTEMPTS):
+                try:
+                    descriptor = os.open(
+                        name,
+                        create_flags,
+                        0o600,
+                        dir_fd=parent_fd,
+                    )
+                    break
+                except FileExistsError:
+                    try:
+                        descriptor = os.open(
+                            name,
+                            common_flags,
+                            dir_fd=parent_fd,
+                        )
+                        break
+                    except FileNotFoundError as exc:
+                        # Another creator may still be between the exclusive
+                        # create and reopen observations. Retry the same
+                        # no-follow sequence within a fixed bound.
+                        last_missing_error = exc
+                        continue
+                    except OSError as exc:
+                        raise ProtectedArtifactIntegrityError(
+                            f"Cannot safely open {ROOT_LOCK_FILENAME}: {exc}"
+                        ) from exc
+                except FileNotFoundError as exc:
+                    # Darwin/APFS can transiently report ENOENT for concurrent
+                    # descriptor-relative creation in a fresh directory.
+                    last_missing_error = exc
+                    continue
+                except OSError as exc:
+                    raise ProtectedArtifactIntegrityError(
+                        f"Cannot safely open {ROOT_LOCK_FILENAME}: {exc}"
+                    ) from exc
+            if descriptor is None:
+                exc = last_missing_error or FileNotFoundError(name)
                 raise ProtectedArtifactIntegrityError(
                     f"Cannot safely open {ROOT_LOCK_FILENAME}: {exc}"
                 ) from exc
@@ -1036,10 +1217,16 @@ def _uses_windows_guarded_io() -> bool:
     return os.name == "nt"
 
 
-def _assert_tree_safe(root: Path) -> None:
-    stack = [root]
+def _assert_tree_safe(
+    root: Path,
+    *,
+    target_parts: tuple[str, ...] | None = None,
+) -> tuple[int, int]:
+    stack: list[tuple[Path, tuple[str, ...]]] = [(root, ())]
+    total_bytes = 0
+    target_bytes = 0
     while stack:
-        directory = stack.pop()
+        directory, components = stack.pop()
         _assert_regular_directory(directory, context="protected artifact directory")
         try:
             entries = list(os.scandir(directory))
@@ -1059,7 +1246,7 @@ def _assert_tree_safe(root: Path) -> None:
                 _assert_regular_directory_stat(
                     payload, context=f"protected directory {entry.name!r}"
                 )
-                stack.append(Path(entry.path))
+                stack.append((Path(entry.path), (*components, entry.name)))
             else:
                 _assert_regular_file_stat(
                     payload, context=f"protected artifact {entry.name!r}"
@@ -1069,6 +1256,13 @@ def _assert_tree_safe(root: Path) -> None:
                     context=f"protected artifact {entry.name!r}",
                     expected=payload,
                 )
+                entry_parts = (*components, entry.name)
+                if entry_parts == (ROOT_LOCK_FILENAME,):
+                    continue
+                total_bytes += payload.st_size
+                if target_parts == entry_parts:
+                    target_bytes = payload.st_size
+    return total_bytes, target_bytes
 
 
 def _assert_regular_directory(
@@ -1581,6 +1775,16 @@ def _fsync_directory(directory_fd: int) -> None:
 def _validate_maximum_bytes(value: int) -> int:
     if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
         raise ProtectedArtifactLimitError("Artifact byte limit must be positive.")
+    return value
+
+
+def _validate_optional_root_bytes(value: int | None) -> int | None:
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        raise ProtectedArtifactLimitError(
+            "Protected-root byte limit must be positive."
+        )
     return value
 
 

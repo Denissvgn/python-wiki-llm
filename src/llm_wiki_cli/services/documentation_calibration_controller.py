@@ -3,7 +3,10 @@
 This lifecycle is deliberately separate from ``documentation-run/v1``.  The
 existing documentation workspaces are read-only controls; this controller
 copies only bounded, priority-blind evidence into a fresh protected root and
-records every mutation in an immutable hash-linked transition ledger.
+records every mutation in an application-level, create-once hash-linked
+transition ledger.  Its integrity checks inherit the same-user trust
+assumptions documented by :mod:`protected_artifacts`; they do not authenticate
+content against the filesystem owner, root, or offline modification.
 """
 
 from __future__ import annotations
@@ -24,6 +27,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, BinaryIO, Callable, Iterable, Mapping, Sequence
 
 from .contracts import (
+    CALIBRATION_CONTROLLER_MAX_PACKET_BYTES,
     P0_CALIBRATION_ACCESS_EVENT_SCHEMA_VERSION,
     P0_CALIBRATION_ADMISSION_SCHEMA_VERSION,
     P0_CALIBRATION_AMBIGUOUS_RECOVERY_SCHEMA_VERSION,
@@ -82,6 +86,13 @@ from .protected_artifacts import (
     canonical_json_bytes,
     validate_portable_relative_path,
 )
+from .redaction import (
+    COMMON_TOKEN_PATTERNS as _COMMON_TOKEN_PATTERNS,
+    PRIVATE_KEY_BLOCK_RE as _PRIVATE_KEY_BLOCK_RE,
+    SENSITIVE_ASSIGNMENT_RE as _SENSITIVE_ASSIGNMENT_RE,
+    SENSITIVE_NATURAL_LANGUAGE_RE as _SENSITIVE_NATURAL_LANGUAGE_RE,
+    URI_USERINFO_RE as _URI_USERINFO_RE,
+)
 
 
 CALIBRATION_STATES = (
@@ -108,7 +119,6 @@ _MAX_DOCUMENT_COUNT = 128
 _MAX_DOCUMENT_TOTAL_BYTES = 4 * 1024 * 1024
 _MAX_RESULT_BYTES = 4 * 1024 * 1024
 _MAX_DISPATCH_FAILURE_MESSAGE_BYTES = 2048
-_MAX_PACKET_BYTES = 16 * 1024 * 1024
 _MAX_TRANSACTION_BYTES = 64 * 1024 * 1024
 _EXTERNAL_DISPATCH_FAILURE_REASONS = frozenset(
     {
@@ -182,86 +192,6 @@ _ALLOWED_TRANSITIONS = {
     "BLOCKED_NO_SHIP": frozenset(),
     "REJECT": frozenset(),
 }
-_PRIVATE_KEY_BLOCK_RE = re.compile(
-    r"-----BEGIN (?P<label>(?:[A-Z0-9][A-Z0-9 -]* )?PRIVATE KEY(?: BLOCK)?)-----"
-    r".*?"
-    r"-----END (?P=label)-----",
-    re.IGNORECASE | re.DOTALL,
-)
-_SENSITIVE_ASSIGNMENT_RE = re.compile(
-    r"""
-    (?P<prefix>
-        (?<![A-Za-z0-9_])
-        ["']?
-        (?:[A-Za-z0-9]+[_-])*
-        (?:
-            api[_-]?key
-            | access[_-]?token
-            | auth(?:entication|orization)?[_-]?(?:key|token)?
-            | bearer[_-]?token
-            | client[_-]?secret
-            | credentials?
-            | password
-            | passwd
-            | private[_-]?key
-            | pwd
-            | secret(?:[_-]?key)?
-            | token
-        )
-        ["']?
-        \s*(?:=|:)\s*
-    )
-    (?!["']?\[REDACTED:)
-    (?:
-        "(?P<double_quoted>[^"\r\n]{1,4096})"
-        |
-        '(?P<single_quoted>[^'\r\n]{1,4096})'
-        |
-        (?P<bare>[^\s,;}\]\r\n]{1,4096})
-    )
-    """,
-    re.IGNORECASE | re.VERBOSE,
-)
-_SENSITIVE_NATURAL_LANGUAGE_RE = re.compile(
-    r"""
-    (?P<prefix>
-        (?<![A-Za-z0-9_])
-        (?:
-            api[ _-]?key
-            | access[ _-]?token
-            | auth(?:entication|orization)?[ _-]?(?:key|token)?
-            | bearer[ _-]?token
-            | client[ _-]?secret
-            | credentials?
-            | password
-            | passwd
-            | private[ _-]?key
-            | pwd
-            | secret(?:[ _-]?key)?
-            | token
-        )
-        \s+(?:is|equals?|was)\s+
-    )
-    (?!["']?\[REDACTED:)
-    (?!
-        (?:configured|invalid|missing|optional|required|redacted|sensitive|unset|valid)
-        \b
-    )
-    (?:
-        "(?P<double_quoted>[^"\r\n]{6,4096})"
-        |
-        '(?P<single_quoted>[^'\r\n]{6,4096})'
-        |
-        (?P<bare>[^\s,;}\]\r\n]{6,4096})
-    )
-    """,
-    re.IGNORECASE | re.VERBOSE,
-)
-_URI_USERINFO_RE = re.compile(
-    r"(?P<scheme>\b[a-z][a-z0-9+.-]{1,31}://)"
-    r"(?P<userinfo>[^/@\s:]+:[^/@\s]+)@",
-    re.IGNORECASE,
-)
 _FILE_URI_RE = re.compile(r"\bfile:///[^\s<>'\"`]+", re.IGNORECASE)
 _WINDOWS_ABSOLUTE_PATH_RE = re.compile(
     r"(?<![A-Za-z0-9])(?:"
@@ -277,57 +207,6 @@ _POSIX_ABSOLUTE_PATH_RE = re.compile(
     r"(?:/[^/\s<>'\"`,;:)\]}]+)+",
     re.IGNORECASE,
 )
-_COMMON_TOKEN_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
-    (
-        "bearer-token",
-        re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._~+/=-]{8,}"),
-    ),
-    (
-        "authorization-token",
-        re.compile(r"(?i)\b(?:Basic|ApiKey|Token)\s+[A-Za-z0-9._~+/=-]{8,}"),
-    ),
-    (
-        "github-token",
-        re.compile(
-            r"\b(?:gh[pousr]_[A-Za-z0-9]{20,255}"
-            r"|github_pat_[A-Za-z0-9_]{22,255})\b"
-        ),
-    ),
-    (
-        "gitlab-token",
-        re.compile(r"\bglpat-[A-Za-z0-9_-]{20,255}\b"),
-    ),
-    (
-        "slack-token",
-        re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,255}\b"),
-    ),
-    (
-        "aws-access-key",
-        re.compile(r"\b(?:AKIA|ASIA)[A-Z0-9]{16}\b"),
-    ),
-    (
-        "google-api-key",
-        re.compile(r"\bAIza[0-9A-Za-z_-]{35}\b"),
-    ),
-    (
-        "provider-token",
-        re.compile(
-            r"\b(?:sk-(?:proj-)?[A-Za-z0-9_-]{20,255}"
-            r"|(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{16,255}"
-            r"|npm_[A-Za-z0-9]{32,255}"
-            r"|pypi-[A-Za-z0-9_-]{32,255})\b"
-        ),
-    ),
-    (
-        "jwt",
-        re.compile(
-            r"\beyJ[A-Za-z0-9_-]{8,}\."
-            r"eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b"
-        ),
-    ),
-)
-
-
 class P0CalibrationError(RuntimeError):
     """Base error raised by the protected calibration lifecycle."""
 
@@ -1541,7 +1420,7 @@ def build_calibration_agent_packet(
         _validate_agent_packet(packet_payload)
         packet_bytes = len(canonical_json_bytes(packet_payload))
         packet_limit = min(
-            _MAX_PACKET_BYTES,
+            CALIBRATION_CONTROLLER_MAX_PACKET_BYTES,
             _require_positive_int(
                 manifest_budgets.get("max_packet_bytes"),
                 "frozen execution manifest max_packet_bytes",
@@ -3255,7 +3134,10 @@ def _validate_result_import_bindings(
         if not isinstance(route, Mapping):
             raise P0CalibrationSchemaError("External receipt route is not authorized.")
         packet_path = _packet_path_for_role_state(run, role_state, role=role)
-        packet_payload = store.read_json(packet_path, max_bytes=_MAX_PACKET_BYTES)
+        packet_payload = store.read_json(
+            packet_path,
+            max_bytes=CALIBRATION_CONTROLLER_MAX_PACKET_BYTES,
+        )
         packet_bytes = len(canonical_json_bytes(packet_payload))
         if packet_bytes > int(route["max_request_bytes"]):
             raise P0CalibrationSchemaError(
@@ -4999,14 +4881,15 @@ def _persist_emergency_rejection(
             ProtectedArtifactError,
         ) as fallback_error:
             raise P0CalibrationIntegrityError(
-                "Calibration ledger is damaged and no trusted cohort identity "
+                "Calibration ledger is damaged and no validated cohort identity "
                 f"can be recovered: {_bounded_error(fallback_error)}"
             ) from error
     snapshot["state"] = "REJECT"
     snapshot["updated_at"] = _utc_now()
     snapshot["terminal_reason_codes"] = ["ledger_tampering"]
     snapshot["limitations"] = list(snapshot.get("limitations", [])) + [
-        "Terminal REJECT: ledger_tampering"
+        "Terminal REJECT: application-level ledger integrity mismatch "
+        "(ledger_tampering)"
     ]
     _validate_run_snapshot(snapshot)
     record = {
@@ -5242,7 +5125,10 @@ def _validate_execution_manifest(payload: Mapping[str, Any]) -> None:
     result_bytes = _require_positive_int(
         budgets.get("max_result_bytes"), "manifest max_result_bytes"
     )
-    if packet_bytes > _MAX_PACKET_BYTES or result_bytes > _MAX_RESULT_BYTES:
+    if (
+        packet_bytes > CALIBRATION_CONTROLLER_MAX_PACKET_BYTES
+        or result_bytes > _MAX_RESULT_BYTES
+    ):
         raise P0CalibrationSchemaError(
             "Execution manifest packet or result budget exceeds the controller cap."
         )

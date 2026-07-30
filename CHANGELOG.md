@@ -78,12 +78,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   covering source and enriched-wiki setup, trust/isolation, agent handoffs,
   result schemas, low-cost routing, Python APIs, refresh/resume behavior,
   builders, limitations, and troubleshooting.
+- Bounded trigger lock waiting through `LLM_WIKI_LOCK_WAIT`, one-hour circuit
+  breaker auto-recovery with `LLM_WIKI_BREAKER_TTL_SECONDS` control, and
+  configurable helper runtimes through `LLM_WIKI_EXTRACTOR_TIMEOUT`.
 
 ### Changed
 
 - Site and Obsidian enrichment now share a validated snapshot projection. The
   default remains disabled and byte-compatible, while portable enrichment uses
   public redaction unless a caller explicitly selects the internal profile.
+- Calibration packet validation now uses one 16 MiB ceiling across the CLI,
+  controller, and OCI broker. The broker previously retained a separate,
+  unused 64 MiB ceiling even though it receives the direct packet bytes.
 - Manifest v5 is the current native wiki format. Standalone adoption retains
   manifest v4/surface compatibility, distinguishes markerless v5 surface-only
   inputs from complete marked v5 trios, and exposes unevaluable inputs as
@@ -134,12 +140,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-- Calibration state uses a dedicated protected root with immutable numbered
-  artifacts, guarded no-follow writes, atomic snapshots, a cross-platform
-  controller lock, generation/head compare-and-swap checks, bounded canonical
-  JSON, replay detection, and fail-closed crash recovery. Intake-role packets
+- Calibration state uses a dedicated protected root with application-level
+  create-once numbered artifacts, guarded no-follow writes, atomic snapshots, a
+  cross-platform controller lock, generation/head compare-and-swap checks,
+  bounded canonical JSON, replay detection, and fail-closed crash recovery.
+  These are same-user content-integrity controls, not authentication against
+  the filesystem owner, root, or offline modification. Intake-role packets
   exclude priorities, credentials, host paths, and other-role outputs; the
   verifier receives only the three frozen, sanitized proposals.
+- Generated prompt artifacts now apply best-effort credential-pattern
+  redaction and report the number of matched values. This pattern matching is
+  not secret detection, so generated artifacts still require review before
+  sharing.
+- External source roots now disclose same-owner and
+  system-administrator-owned symlink resolution while rejecting links owned by
+  another user. Protected artifact stores also support an optional cumulative
+  payload quota, coordinated by the existing root lock.
 - Standalone runs treat source trees, adopted wikis, target instructions, and
   live-service responses as untrusted evidence. Source plugins are disabled by
   default, helper/build preparation is explicit, symlink/non-regular/path-escape

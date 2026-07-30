@@ -48,8 +48,13 @@ CLIs. Review generated prompts and wiki diffs when working with sensitive code.
 
 ## Handling Secrets
 
-Generated prompt files and background logs may include code snippets or commit
-diffs. Avoid committing or sharing:
+Generated prompt files are filtered before they are written using best-effort
+credential-pattern matching. This is not secret detection: unfamiliar formats,
+split or encoded values, and other sensitive source text can remain. Review
+generated prompts before sharing them.
+
+Current releases do not create background sync logs. Older installations may
+still have local runtime artifacts. Avoid committing or sharing:
 
 - `.git/llm-wiki-prompt.txt`
 - `.git/llm-wiki-sync.log`
@@ -57,4 +62,4 @@ diffs. Avoid committing or sharing:
 - Other local hook/runtime artifacts
 
 The project attempts to ignore these local files, but users remain responsible
-for reviewing commits before publishing them.
+for reviewing generated artifacts and commits before publishing them.
