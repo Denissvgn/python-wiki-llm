@@ -1,10 +1,13 @@
-"""Documentation-run prepare lifecycle."""
+"""Documentation-run prepare services."""
 
 from __future__ import annotations
 
 from .dependencies import *
 from .contracts import *
-from ._legacy import *
+from .schema import *
+from .workspace import *
+from .integrity import *
+from .refresh import *
 
 def prepare_documentation_run(
     workspace: str | Path,

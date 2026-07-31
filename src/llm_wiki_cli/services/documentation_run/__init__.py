@@ -9,7 +9,10 @@ import types as _types
 # independently reviewable.
 from . import dependencies as _dependencies
 from . import contracts as _contracts
-from . import _legacy as __legacy
+from . import schema as _schema
+from . import workspace as _workspace
+from . import integrity as _integrity
+from . import refresh as _refresh
 from . import prepare as _prepare
 from . import packet as _packet
 from . import record as _record
@@ -53,15 +56,19 @@ if _typing.TYPE_CHECKING:
     from .export import (
         export_documentation_run,
     )
-    from ._legacy import (
+    from .integrity import (
         capture_generated_ownership,
         compare_generated_ownership,
+    )
+    from .workspace import (
         documentation_run_path,
         get_documentation_run_status,
         load_documentation_run,
         save_documentation_run,
-        source_identity,
         transition_documentation_run,
+    )
+    from .refresh import (
+        source_identity,
     )
 
 del _typing
@@ -69,7 +76,10 @@ del _typing
 _COMPATIBILITY_MODULES = (
     _dependencies,
     _contracts,
-    __legacy,
+    _schema,
+    _workspace,
+    _integrity,
+    _refresh,
     _prepare,
     _packet,
     _record,

@@ -1,10 +1,14 @@
-"""Documentation-run verify lifecycle."""
+"""Documentation-run verify services."""
 
 from __future__ import annotations
 
 from .dependencies import *
 from .contracts import *
-from ._legacy import *
+from .schema import *
+from .workspace import *
+from .integrity import *
+from .refresh import *
+from .record import *
 
 def verify_documentation_run(
     workspace: str | Path,

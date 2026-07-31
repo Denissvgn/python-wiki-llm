@@ -957,6 +957,57 @@ def workspace_paths() -> dict[str, str]:
         "built_site": "_site",
     }
 
+
+def _optional_text(value: Any) -> str | None:
+    if value in (None, ""):
+        return None
+    return str(value)
+
+
+def _next_actions(run: DocumentationRun) -> tuple[str, ...]:
+    if run.validation_results:
+        latest = run.validation_results[-1]
+        if latest.get("status") == "partial" and run.current_stage:
+            return (
+                f"build another {run.current_stage} packet from recorded state",
+                "resolve or defer the recorded unknowns before advancement",
+            )
+    actions = {
+        "prepared": ("complete deterministic baseline",),
+        "baseline_ready": ("build wiki-enrichment packet",),
+        "wiki_enrichment": ("record wiki-enrichment result",),
+        "user_docs": ("record user-docs result",),
+        "review": ("record independent review result", "verify and export"),
+        "publish_ready": ("use the recorded local deployment handoff",),
+        "blocked": ("resolve recorded blocking findings", "resume recorded stage"),
+    }
+    return actions[run.state]
+
+
+def _state_to_stage(state: str) -> str | None:
+    return {
+        "wiki_enrichment": "wiki-enrichment",
+        "user_docs": "user-docs",
+        "review": "review",
+    }.get(state)
+
+
+def _json_round_trip(payload: Mapping[str, Any]) -> dict[str, Any]:
+    return json.loads(json.dumps(payload))
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+
+
+def _new_run_id() -> str:
+    return str(uuid.uuid4())
+
+
+def _sha256_json(payload: Mapping[str, Any]) -> str:
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return "sha256:" + hashlib.sha256(encoded).hexdigest()
+
 __all__ = (
     'RUN_CONTROL_DIR',
     'RUN_FILENAME',
@@ -1002,4 +1053,11 @@ __all__ = (
     '_NativeEvidenceTransaction',
     '_InitialPrepareTransaction',
     'workspace_paths',
+    '_optional_text',
+    '_next_actions',
+    '_state_to_stage',
+    '_json_round_trip',
+    '_utc_now',
+    '_new_run_id',
+    '_sha256_json',
 )
