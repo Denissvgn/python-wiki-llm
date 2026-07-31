@@ -285,6 +285,7 @@ def _documentation_projection_evidence(
         "source_knowledge_hash": (
             projection.source_knowledge_hash if projection is not None else None
         ),
+        "freshness": projection.freshness if projection is not None else None,
         "freshness_scope": "snapshot-only",
         "freshness_evaluated": False,
         "warnings": list(projection.warnings) if projection is not None else [],

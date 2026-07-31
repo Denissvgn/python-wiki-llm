@@ -45,7 +45,6 @@ from .knowledge_envelope import (
 )
 from .knowledge_freshness import (
     KNOWN_FRESHNESS_REASON_CODES,
-    REASON_LIVE_EVALUATION_NOT_PERFORMED,
     REASON_RECORDED_BASIS_MATCHES_LIVE_EVALUATION,
 )
 from .knowledge_governance import validate_governance_projection
@@ -76,6 +75,11 @@ from .knowledge_model import (
     WorkingTreeState,
     serialize_knowledge_index,
 )
+from .knowledge_observability import (
+    UNEVALUATED_FRESHNESS_DISCLOSURE,
+    knowledge_freshness_disclosure,
+    knowledge_freshness_hint,
+)
 from .redaction import (
     CREDENTIAL_VALUE_RE as _CREDENTIAL_VALUE_RE,
     PROJECTION_URI_USERINFO_RE as _URI_USERINFO_RE,
@@ -99,6 +103,9 @@ DEFAULT_RELATIONSHIP_LIMIT = 20
 MAX_RELATIONSHIP_LIMIT = 1000
 UNKNOWN_VALUE = "unknown"
 NOT_EVALUATED = "not-evaluated"
+_EVALUATED_FRESHNESS_DISCLOSURE_RE = re.compile(
+    r"^evaluated \((0|[1-9][0-9]*) concepts\)$"
+)
 
 _RESERVED_EXTENSION_KEYS = frozenset(
     {
@@ -207,6 +214,7 @@ class KnowledgeProjection:
     concepts: Mapping[str, Mapping[str, Any]]
     warnings: tuple[str, ...]
     omitted_fields: Mapping[str, int]
+    freshness: str | None = None
 
     def __post_init__(self) -> None:
         """Detach and recursively freeze every caller-supplied container."""
@@ -227,14 +235,25 @@ class KnowledgeProjection:
             "omitted_fields",
             _deep_freeze(self.omitted_fields, "omitted_fields"),
         )
+        object.__setattr__(
+            self,
+            "freshness",
+            (
+                UNEVALUATED_FRESHNESS_DISCLOSURE
+                if self.freshness is None
+                else self.freshness
+            ),
+        )
 
     def to_payload(self) -> dict[str, Any]:
         """Return a detached JSON-compatible payload."""
 
+        _validate_projection_structure(self)
         return {
             "schema_version": self.schema_version,
             "profile": self.profile.value,
             "source_knowledge_hash": self.source_knowledge_hash,
+            "freshness": self.freshness,
             "bundle": _json_copy(self.bundle),
             "concepts": {
                 path: _json_copy(self.concepts[path])
@@ -357,6 +376,7 @@ def project_knowledge(
                 if count > 0
             }
         ),
+        freshness=knowledge_freshness_disclosure(view),
     )
     _validate_projection_structure(projection)
     return projection
@@ -367,7 +387,6 @@ def serialize_knowledge_projection(projection: KnowledgeProjection) -> str:
 
     if not isinstance(projection, KnowledgeProjection):
         raise TypeError("projection must be a KnowledgeProjection")
-    _validate_projection_structure(projection)
     return (
         json.dumps(
             projection.to_payload(),
@@ -416,6 +435,9 @@ def _projection_concept_summary_unchecked(
     review = _mapping(concept.get("review"))
     machine_check = _mapping(concept.get("machine_check"))
     summary = {
+        "freshness": str(
+            projection.freshness or UNEVALUATED_FRESHNESS_DISCLOSURE
+        ),
         "knowledge_projection_schema": projection.schema_version,
         "knowledge_profile": projection.profile.value,
         "knowledge_bundle_id": str(identity.get("bundle_id", UNKNOWN_VALUE)),
@@ -485,6 +507,9 @@ def _projection_concept_summary_unchecked(
         ),
         "source_knowledge_hash": projection.source_knowledge_hash,
     }
+    hint = freshness.get("hint")
+    if isinstance(hint, str):
+        summary["knowledge_freshness_hint"] = hint
     return summary
 
 
@@ -813,6 +838,39 @@ def _validate_projection_structure(projection: KnowledgeProjection) -> None:
             profile=projection.profile,
         )
         concept_by_path[raw_path] = concept
+
+    disclosure = projection.freshness
+    if not isinstance(disclosure, str):
+        _shape_error("freshness", "must be a freshness disclosure string")
+    if disclosure != UNEVALUATED_FRESHNESS_DISCLOSURE:
+        match = _EVALUATED_FRESHNESS_DISCLOSURE_RE.fullmatch(disclosure)
+        if match is None:
+            _shape_error(
+                "freshness",
+                "must be snapshot-only or use 'evaluated (N concepts)'",
+            )
+        assert match is not None
+        if int(match.group(1)) != len(concept_by_path):
+            _shape_error(
+                "freshness",
+                "evaluated concept count must match the projection",
+            )
+
+    aggregate_evaluated = disclosure != UNEVALUATED_FRESHNESS_DISCLOSURE
+    for path, concept in concept_by_path.items():
+        concept_freshness = _require_mapping(
+            concept["freshness"],
+            f"concepts.{path}.freshness",
+        )
+        concept_evaluated = _require_bool(
+            concept_freshness["evaluated"],
+            f"concepts.{path}.freshness.evaluated",
+        )
+        if concept_evaluated is not aggregate_evaluated:
+            _shape_error(
+                "freshness",
+                "must agree with every concept freshness evaluated flag",
+            )
 
     for path, concept in concept_by_path.items():
         _validate_projection_relationships(
@@ -1360,6 +1418,7 @@ def _validate_projection_freshness(
         freshness,
         path,
         {"state", "reason", "evaluated", "live_comparison_performed"},
+        optional={"hint"},
     )
     evaluated = _require_bool(freshness["evaluated"], path + ".evaluated")
     live = _require_bool(
@@ -1369,6 +1428,11 @@ def _validate_projection_freshness(
     state = freshness["state"]
     reason = freshness["reason"]
     if state == NOT_EVALUATED:
+        if "hint" in freshness:
+            _shape_error(
+                path + ".hint",
+                "is valid only for basis-incompatible freshness",
+            )
         if reason != NOT_EVALUATED or evaluated or live:
             _shape_error(path, "not-evaluated freshness carries live claims")
         return
@@ -1388,6 +1452,24 @@ def _validate_projection_freshness(
             _shape_error(path, "current freshness requires a positive live match")
     elif reason == REASON_RECORDED_BASIS_MATCHES_LIVE_EVALUATION:
         _shape_error(path + ".reason", "is valid only for current freshness")
+    try:
+        expected_hint = knowledge_freshness_hint(state, reason)
+    except ValueError:
+        _shape_error(
+            path + ".reason",
+            "has no registered actionable freshness guidance",
+        )
+    if expected_hint is None:
+        if "hint" in freshness:
+            _shape_error(
+                path + ".hint",
+                "is valid only for basis-incompatible freshness",
+            )
+    elif freshness.get("hint") != expected_hint:
+        _shape_error(
+            path + ".hint",
+            "must match the registered actionable freshness guidance",
+        )
 
 
 def _validate_projection_review(
@@ -2538,19 +2620,19 @@ def _project_freshness(
             f"view.freshness.{concept.locator}",
             "contains an invalid or unrecognized freshness result",
         )
-    if result.reason_code == REASON_LIVE_EVALUATION_NOT_PERFORMED:
-        return {
-            "state": NOT_EVALUATED,
-            "reason": NOT_EVALUATED,
-            "evaluated": False,
-            "live_comparison_performed": False,
-        }
-    return {
+    payload = {
         "state": result.state.value,
         "reason": result.reason_code,
         "evaluated": True,
         "live_comparison_performed": result.live_comparison_performed,
     }
+    hint = knowledge_freshness_hint(
+        result.state,
+        result.reason_code,
+    )
+    if hint is not None:
+        payload["hint"] = hint
+    return payload
 
 
 def _project_review(

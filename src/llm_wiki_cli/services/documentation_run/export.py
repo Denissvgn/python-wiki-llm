@@ -294,6 +294,16 @@ def _build_final_report(
         if isinstance(check_projection, Mapping)
         else None
     )
+    export_projection_freshness = (
+        export_projection.get("freshness")
+        if isinstance(export_projection, Mapping)
+        else None
+    )
+    check_projection_freshness = (
+        check_projection.get("freshness")
+        if isinstance(check_projection, Mapping)
+        else None
+    )
     if current_publish_ready:
         verdict = "publish_ready"
     elif verification_ok:
@@ -360,6 +370,11 @@ def _build_final_report(
                 "source_knowledge_hashes_match": (
                     export_projection_hash == check_projection_hash
                 ),
+                "freshness": export_projection_freshness,
+                "check_freshness": check_projection_freshness,
+                "freshness_disclosures_match": (
+                    export_projection_freshness == check_projection_freshness
+                ),
                 "freshness_scope": "snapshot-only",
                 "canonical_body_media_review": "separate-required",
             },
@@ -394,6 +409,17 @@ def _render_final_report(report: Mapping[str, Any]) -> str:
     distribution = report.get("distribution", {})
     coverage = report.get("coverage", {})
     limitations = list(report.get("limitations", []))
+    validation = report.get("validation", {})
+    projection = (
+        validation.get("knowledge_projection")
+        if isinstance(validation, Mapping)
+        else None
+    )
+    native_freshness = (
+        projection.get("freshness")
+        if isinstance(projection, Mapping) and projection.get("mode") != "off"
+        else None
+    )
     lines = [
         "# Documentation Run Final Report",
         "",
@@ -404,17 +430,23 @@ def _render_final_report(report: Mapping[str, Any]) -> str:
         f"- Source verified: `{str(source.get('source_verified', False)).lower()}`",
         f"- Distribution: `{distribution.get('format', '')}` / `{distribution.get('link_mode', '')}`",
         "- Remote deployment performed: `false`",
-        "",
-        "## Coverage",
-        "",
-        f"- Reused: {len(coverage.get('reused_work_ids', []))}",
-        f"- Completed: {len(coverage.get('completed_work_ids', []))}",
-        f"- Deferred: {len(coverage.get('deferred_work_ids', []))}",
-        f"- Blocked: {len(coverage.get('blocked_work_ids', []))}",
-        "",
-        "## Limitations",
-        "",
     ]
+    if isinstance(native_freshness, str):
+        lines.append(f"- Freshness: {native_freshness}")
+    lines.extend(
+        [
+            "",
+            "## Coverage",
+            "",
+            f"- Reused: {len(coverage.get('reused_work_ids', []))}",
+            f"- Completed: {len(coverage.get('completed_work_ids', []))}",
+            f"- Deferred: {len(coverage.get('deferred_work_ids', []))}",
+            f"- Blocked: {len(coverage.get('blocked_work_ids', []))}",
+            "",
+            "## Limitations",
+            "",
+        ]
+    )
     lines.extend(f"- `{limitation}`" for limitation in limitations)
     if not limitations:
         lines.append("- None recorded.")

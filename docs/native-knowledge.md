@@ -51,9 +51,11 @@ hash match means only that the compared observation basis is unchanged. It
 does not make an unverified concept verified or an active concept approved.
 
 Snapshot-only operations, including `llm-wiki status` and MCP `get_status`, do
-not collect a live source basis. They report that freshness was not evaluated
-instead of returning zero freshness counts or claiming that concepts are
-current.
+not collect a live source basis. They report
+`freshness: unevaluated (snapshot-only read)` instead of claiming that
+concepts are current. MCP also returns `freshness_evaluated: false`; when a
+projection is present, its `knowledge_summary` has null freshness counts. The
+status CLI renders the disclosure as a text line.
 
 ## Availability states
 
@@ -77,6 +79,40 @@ Callers should branch on `availability`, not interpret `found: false` as proof
 that no concept exists. In degraded, unsupported, and absent states, native
 queries return explicit status and do not fabricate empty knowledge,
 evidence, or freshness.
+
+## Semantics you should expect
+
+Three conservative results are deliberate consumer contracts:
+
+- Branch on `freshness_evaluated` before interpreting any per-concept
+  freshness state. `false` means that no live evaluation was performed, so a
+  consumer must not infer `current` or `stale`. `true` means a freshness report
+  was produced, but does not guarantee that every concept had a live basis:
+  inspect each result's `live_comparison_performed` flag and reason, including
+  `live-evaluation-not-performed`. When live evaluation is available,
+  document-only and aggregate-scoped concepts report `unknown` with
+  `freshness-not-modeled`. Infrastructure is not unconditionally unknown: a
+  concept with a complete recorded infrastructure basis is live-comparable.
+  An older concept without a reliable basis normally reports `unknown` with
+  `recorded-basis-unavailable`; if its partial basis maps to a source that is
+  reliably known missing, the reason is
+  `missing-source-has-no-reliable-recorded-basis` instead. Any `unknown` result
+  establishes neither currentness nor staleness.
+- A governance ledger stores the anchors and provenance of a human review, not
+  a lasting validity verdict. Validity is computed from the current section
+  and evidence anchors whenever a governance projection or live review report
+  is assembled. If those anchors no longer match, the review event remains
+  available with state `expired` and a reason. Treat `expired` as
+  advisory-invalid: preserve its provenance, but do not use it as current
+  review or approval evidence.
+- A ledger-first governance update or an interrupted artifact write can leave
+  the authoritative ledger temporarily out of step with its generated
+  projection and manifest commitment. When a read reports `degraded`, use it
+  only as a read-only surface fallback: do not serve native knowledge,
+  evidence, or freshness, and do not interpret the rejected projection as an
+  empty graph. After validating or restoring the ledger, rerun the
+  `llm-wiki sync` command; readers return `ready` only after all commitments
+  match again.
 
 ## Durable identity and governance
 
@@ -301,6 +337,21 @@ not scan source merely to claim current freshness. A separate caller that has
 already collected a complete live evaluation can supply the resulting
 projection through the service API.
 
+Every enriched page carries the read-wide disclosure separately from its
+per-concept result. A command-line snapshot export includes this front-matter
+fragment:
+
+```yaml
+llm_wiki:
+  freshness: "unevaluated (snapshot-only read)"
+  knowledge_freshness: "not-evaluated"
+  knowledge_freshness_reason: "not-evaluated"
+```
+
+The `freshness` value describes aggregate evaluation for the projection;
+`knowledge_freshness` and `knowledge_freshness_reason` describe that page's
+concept.
+
 The summary is written under `llm_wiki` front matter and contains only:
 
 - the projection schema and selected redaction profile;
@@ -310,7 +361,8 @@ The summary is written under `llm_wiki` front matter and contains only:
   `configured-public` identity;
 - explicit lifecycle state and an optional namespaced successor UID;
 - structural evidence state and reason;
-- freshness state and reason;
+- the aggregate `freshness` disclosure plus per-concept freshness state and
+  reason;
 - bounded section-review state, counts, truncation, and safe section results;
 - a separate disposable machine-check state, reason, recorded result, and
   aggregate check counts; and
@@ -581,14 +633,30 @@ also be true when a returned file was downgraded to a smaller detail level.
 JSON and Markdown protocol envelopes retain these bounds together with the
 omitted- and downgraded-file summaries.
 
-The `knowledge` object reports `availability`, `reason`, and
-`freshness_evaluated`. Enriched page references use compact origin, evidence,
-semantic verification, freshness, lifecycle, section-review, and machine
-verification summaries. Review summaries contain only state counts, truncation,
-and stable reason codes. Machine-verification summaries contain only receipt
-state and check counts; reviewer identities, event metadata, receipt scope
-identifiers, diagnostics, full evidence, and hashes are not embedded in
-ordinary context.
+The `knowledge` object reports `availability`, `reason`, `freshness`, and
+`freshness_evaluated`. For example, a live context response can include:
+
+```json
+{
+  "knowledge": {
+    "availability": "ready",
+    "reason": "all-projection-commitments-match",
+    "freshness": "evaluated (6 concepts)",
+    "freshness_evaluated": true
+  }
+}
+```
+
+The aggregate `freshness` count means that the evaluator returned one result
+per concept. It does not assert that every concept had a live comparison.
+Enriched page references use compact origin, evidence, semantic verification,
+freshness, lifecycle, section-review, and machine verification summaries.
+Inspect a page's freshness `state`, `reason`, and
+`live_comparison_performed` before making a concept-specific claim. Review
+summaries contain only state counts, truncation, and stable reason codes.
+Machine-verification summaries contain only receipt state and check counts;
+reviewer identities, event metadata, receipt scope identifiers, diagnostics,
+full evidence, and hashes are not embedded in ordinary context.
 
 Typed-graph enrichment appears only when at least one relationship filter is
 supplied. It reports graph availability/reason, direction, all-incident and
@@ -654,6 +722,7 @@ abbreviated here):
   "knowledge": {
     "availability": "ready",
     "reason": "all-projection-commitments-match",
+    "freshness": "evaluated (6 concepts)",
     "freshness_evaluated": true
   },
   "query": "llm-wiki://entities/User",
@@ -677,6 +746,11 @@ abbreviated here):
   "truncated": false
 }
 ```
+
+Here `knowledge.freshness` is the aggregate disclosure for the read. It does
+not replace the compact concept's freshness `state`, `reason`, and
+`live_comparison_performed`, which determine whether that particular concept
+was compared with a live basis.
 
 Method-specific fields are additive:
 
@@ -727,10 +801,23 @@ additive and does not change those operations. `search_wiki` defaults to 20
 results, applies the same MCP cap of 100, and returns exact `total`, `returned`,
 `truncated`, and `results`; legacy `count` remains an alias for `returned`.
 
-MCP `get_status` is snapshot-only. Its `knowledge` object contains
-`availability`, `reason`, and `freshness_evaluated: false`; when a projection
-is present it also returns a low-cardinality `knowledge_summary`. Status does
-not run source extraction and does not claim current freshness.
+MCP `get_status` is snapshot-only. Its relevant response fragment is:
+
+```json
+{
+  "knowledge": {
+    "availability": "ready",
+    "reason": "all-projection-commitments-match",
+    "freshness": "unevaluated (snapshot-only read)",
+    "freshness_evaluated": false
+  }
+}
+```
+
+When a projection is present, the low-cardinality `knowledge_summary` repeats
+the exact `freshness: unevaluated (snapshot-only read)` disclosure, reports
+`concepts_evaluated: 0`, and leaves `freshness_counts` null. Status does not
+run source extraction and does not claim current freshness.
 
 MCP `check_wiki(strict=true, knowledge_drift_report=false)` uses the same
 disabled native freshness default as the CLI. Set

@@ -280,6 +280,8 @@ def test_lifecycle_mutation_refreshes_projection_and_dry_run_is_read_only(
         ]
     )
     status = json.loads(capsys.readouterr().out)
+    assert status["freshness"] == "unevaluated (snapshot-only read)"
+    assert status["freshness_evaluated"] is False
     concept_status = next(
         item for item in status["concepts"] if item["uid"] == uid
     )
@@ -295,6 +297,19 @@ def test_lifecycle_mutation_refreshes_projection_and_dry_run_is_read_only(
         "limit": 1,
         "truncated": False,
     }
+    _run(
+        [
+            "status",
+            "--wiki-dir",
+            str(tmp_path),
+            "--event-limit",
+            "1",
+        ]
+    )
+    assert (
+        "Freshness: unevaluated (snapshot-only read)"
+        in capsys.readouterr().out
+    )
 
 
 def test_alias_refreshes_projection_and_move_can_stage_until_sync(

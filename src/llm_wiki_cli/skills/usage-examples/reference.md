@@ -47,7 +47,9 @@ strict `llm-wiki-documentation-runtime-capture/v1` records. Each record carries:
 - a wiki-relative `capture_path` under the approved `assets/` surface and the
   SHA-256 `capture_digest` of the persisted, redacted bytes;
 - `native_observation` with availability, reason, structural-evidence state,
-  and the freshness state/reason only when freshness was evaluated;
+  the exact aggregate `freshness` disclosure (`evaluated (N concepts)` or
+  `unevaluated (snapshot-only read)`), and the freshness state/reason only
+  when freshness was evaluated;
 - `redaction`, `environment`, and explicit `limitations`.
 
 A deferred capture uses a null path and digest and names its blocker. A rejected

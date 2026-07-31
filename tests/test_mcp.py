@@ -28,6 +28,9 @@ from llm_wiki_cli.services.knowledge_artifacts import (
 from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
 from llm_wiki_cli.services.knowledge_loader import KnowledgeLoadResult
 from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
+from llm_wiki_cli.services.knowledge_observability import (
+    BASIS_INCOMPATIBLE_HINTS,
+)
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 from tests.knowledge_fixtures import (
     fail_if_extraction_runs,
@@ -135,6 +138,7 @@ def _assert_snapshot_knowledge_summary(
     assert set(summary) == {
         "availability",
         "reason",
+        "freshness",
         "concepts_evaluated",
         "freshness_counts",
         "evidence_issue_counts",
@@ -144,6 +148,7 @@ def _assert_snapshot_knowledge_summary(
     }
     assert summary["availability"] == availability
     assert summary["reason"] == reason
+    assert summary["freshness"] == "unevaluated (snapshot-only read)"
     assert summary["concepts_evaluated"] == 0
     assert summary["freshness_counts"] is None
     assert summary["evidence_issue_counts"] == evidence_issue_counts
@@ -213,6 +218,11 @@ def test_mcp_knowledge_tools_and_status_share_compatibility_policy(
     expected_status = {
         "availability": case.expected_availability.value,
         "reason": case.expected_reason.value,
+        "freshness": (
+            "evaluated (6 concepts)"
+            if case.serves_knowledge
+            else "unevaluated (snapshot-only read)"
+        ),
         "freshness_evaluated": case.serves_knowledge,
     }
     assert concept["knowledge"] == expected_status
@@ -223,6 +233,7 @@ def test_mcp_knowledge_tools_and_status_share_compatibility_policy(
     assert evidence["found"] is case.serves_knowledge
     assert status == {
         **expected_status,
+        "freshness": "unevaluated (snapshot-only read)",
         "freshness_evaluated": False,
     }
     if case.expected_availability.value == "absent":
@@ -626,6 +637,7 @@ class TestMcpWikiService:
         status = {
             "availability": "ready",
             "reason": "all-projection-commitments-match",
+            "freshness": "evaluated (6 concepts)",
             "freshness_evaluated": True,
         }
         seen = {}
@@ -836,6 +848,7 @@ class TestMcpWikiService:
         status = {
             "availability": "degraded",
             "reason": "policy-selected-surface-only-fallback-after-invalid",
+            "freshness": "unevaluated (snapshot-only read)",
             "freshness_evaluated": False,
         }
 
@@ -974,6 +987,50 @@ class TestMcpWikiService:
         assert result["knowledge_drift_gate"] is False
         assert result["knowledge_drift_report"] is True
 
+    def test_check_wiki_preserves_structured_freshness_guidance(
+        self,
+        monkeypatch,
+    ):
+        reason = "generation-options-changed"
+        hint = BASIS_INCOMPATIBLE_HINTS[reason]
+
+        def fake_build_report(wiki_dir, src_dir, **kwargs):
+            return mcp_server.lint_cmd.LintReport(
+                wiki_dir=str(wiki_dir),
+                src_dir=src_dir,
+                strict=True,
+                knowledge_drift_report=True,
+                diagnostics=[
+                    mcp_server.lint_cmd.LintIssue(
+                        category="knowledge_freshness",
+                        message=f"Basis is incompatible [reason={reason}].",
+                        severity="warning",
+                        reason_code=reason,
+                        hint=hint,
+                    )
+                ],
+            )
+
+        monkeypatch.setattr(
+            mcp_server.lint_cmd,
+            "build_report",
+            fake_build_report,
+        )
+        service = mcp_server.McpWikiService()
+
+        json_result = service.check_wiki(
+            format="json",
+            knowledge_drift_report=True,
+        )
+        markdown_result = service.check_wiki(
+            format="markdown",
+            knowledge_drift_report=True,
+        )
+
+        assert json_result["diagnostics"][0]["reason_code"] == reason
+        assert json_result["diagnostics"][0]["hint"] == hint
+        assert f"Hint: {hint}" in markdown_result["content"]
+
     def test_get_status_returns_structured_status(self, tmp_project):
         _write_wiki(tmp_project)
         hooks = tmp_project / ".git" / "hooks"
@@ -1015,6 +1072,7 @@ class TestMcpWikiService:
         assert result["knowledge"] == {
             "availability": "ready",
             "reason": "all-projection-commitments-match",
+            "freshness": "unevaluated (snapshot-only read)",
             "freshness_evaluated": False,
         }
         _assert_snapshot_knowledge_summary(
@@ -1045,6 +1103,7 @@ class TestMcpWikiService:
         assert result["knowledge"] == {
             "availability": "absent",
             "reason": "knowledge-projection-not-present",
+            "freshness": "unevaluated (snapshot-only read)",
             "freshness_evaluated": False,
         }
         assert "knowledge_summary" not in result
@@ -1067,6 +1126,7 @@ class TestMcpWikiService:
         assert result["knowledge"] == {
             "availability": "absent",
             "reason": "knowledge-projection-not-present",
+            "freshness": "unevaluated (snapshot-only read)",
             "freshness_evaluated": False,
         }
         assert "knowledge_summary" not in result
@@ -1088,6 +1148,7 @@ class TestMcpWikiService:
         assert result["knowledge"] == {
             "availability": "absent",
             "reason": "knowledge-projection-not-present",
+            "freshness": "unevaluated (snapshot-only read)",
             "freshness_evaluated": False,
         }
         assert "knowledge_summary" not in result
@@ -1111,6 +1172,7 @@ class TestMcpWikiService:
         assert result["knowledge"] == {
             "availability": "degraded",
             "reason": "policy-selected-surface-only-fallback-after-invalid",
+            "freshness": "unevaluated (snapshot-only read)",
             "freshness_evaluated": False,
         }
         _assert_snapshot_knowledge_summary(
@@ -1145,6 +1207,7 @@ class TestMcpWikiService:
         assert result["knowledge"] == {
             "availability": "unsupported",
             "reason": "knowledge-schema-version-unsupported",
+            "freshness": "unevaluated (snapshot-only read)",
             "freshness_evaluated": False,
         }
         _assert_snapshot_knowledge_summary(
@@ -1173,6 +1236,7 @@ class TestMcpWikiService:
         assert result["knowledge"] == {
             "availability": "degraded",
             "reason": "policy-selected-surface-only-fallback-after-invalid",
+            "freshness": "unevaluated (snapshot-only read)",
             "freshness_evaluated": False,
         }
         _assert_snapshot_knowledge_summary(
@@ -1340,13 +1404,21 @@ class TestMcpWikiService:
         assert result["knowledge"] == {
             "availability": "ready",
             "reason": "all-projection-commitments-match",
+            "freshness": (
+                "evaluated (6 concepts)"
+                if freshness_evaluated
+                else "unevaluated (snapshot-only read)"
+            ),
             "freshness_evaluated": freshness_evaluated,
         }
-        assert result["concept"]["freshness"] == {
+        expected_freshness = {
             "state": state,
             "reason": reason,
             "live_comparison_performed": freshness_evaluated,
         }
+        if live_policy == "mismatch":
+            expected_freshness["hint"] = BASIS_INCOMPATIBLE_HINTS[reason]
+        assert result["concept"]["freshness"] == expected_freshness
 
     def test_knowledge_methods_delegate_once_and_cap_external_limit(
         self,
@@ -1771,6 +1843,7 @@ class TestMcpWikiService:
         status = {
             "availability": availability,
             "reason": reason,
+            "freshness": "unevaluated (snapshot-only read)",
             "freshness_evaluated": False,
         }
         assert concept["knowledge"] == status

@@ -243,6 +243,7 @@ def _projection_from_payload(payload: dict[str, object]) -> KnowledgeProjection:
         concepts=payload["concepts"],
         warnings=tuple(payload["warnings"]),
         omitted_fields=payload["omitted_fields"],
+        freshness=payload.get("freshness"),
     )
 
 
@@ -620,9 +621,22 @@ class TestObsidianMirror:
             vault / "LLM Wiki" / "Entities" / "User.md"
         ).read_text(encoding="utf-8")
         assert report.ok is True
+        assert report.freshness == "unevaluated (snapshot-only read)"
+        assert report.to_dict()["freshness"] == (
+            "unevaluated (snapshot-only read)"
+        )
+        assert (
+            "Freshness: unevaluated (snapshot-only read)"
+            in obsidian.render_report_text(report, action="export")
+        )
+        assert (
+            '"freshness": "unevaluated (snapshot-only read)"'
+            in obsidian.render_report_json(report)
+        )
         assert 'knowledge_bundle_id: "bundle-1"' in content
         assert 'knowledge_uid: "bundle-1#lw:doc:' in content
         assert 'knowledge_profile: "public-portable"' in content
+        assert '  freshness: "unevaluated (snapshot-only read)"' in content
         assert "## Typed Relationships" in content
         assert "### Incoming: `depends_on`" in content
         assert "### Outgoing: `calls`" in content
@@ -635,6 +649,104 @@ class TestObsidianMirror:
         ) in content
         assert "sk_seeded_private_value" not in content
         assert "sk_seeded_bundle_value" not in content
+        checked = obsidian.check_obsidian_vault(
+            wiki_dir=wiki,
+            vault_dir=vault,
+            knowledge_metadata="summary",
+            knowledge_projection=projection,
+        )
+        assert checked.freshness == "unevaluated (snapshot-only read)"
+
+    def test_reports_omit_freshness_when_projection_is_disabled(
+        self,
+        tmp_project,
+    ):
+        wiki = _write_wiki(tmp_project)
+        report = obsidian.export_obsidian_vault(
+            src_dir=str(tmp_project),
+            wiki_dir=wiki,
+            vault_dir=tmp_project / "vault",
+        )
+
+        assert report.freshness is None
+        assert "freshness" not in report.to_dict()
+        assert "Freshness:" not in obsidian.render_report_text(
+            report,
+            action="export",
+        )
+
+    def test_check_rejects_enriched_vault_when_knowledge_mode_is_omitted(
+        self,
+        tmp_project,
+    ):
+        wiki = _write_wiki(tmp_project)
+        vault = tmp_project / "vault"
+        obsidian.export_obsidian_vault(
+            wiki_dir=wiki,
+            vault_dir=vault,
+            knowledge_metadata="summary",
+            knowledge_projection=_knowledge_projection(wiki),
+        )
+
+        report = obsidian.check_obsidian_vault(
+            wiki_dir=wiki,
+            vault_dir=vault,
+        )
+
+        assert report.ok is False
+        assert report.freshness is None
+        assert any(
+            issue["category"] == "unexpected_knowledge_metadata"
+            and issue["path"]
+            == str(vault / "LLM Wiki" / "Entities" / "User.md")
+            for issue in report.issues
+        )
+
+    def test_disabled_check_reserves_freshness_but_allows_other_metadata(
+        self,
+        tmp_project,
+    ):
+        wiki = _write_wiki(tmp_project)
+        vault = tmp_project / "vault"
+        obsidian.export_obsidian_vault(
+            src_dir=str(tmp_project),
+            wiki_dir=wiki,
+            vault_dir=vault,
+        )
+        page = vault / "LLM Wiki" / "Index.md"
+        content = page.read_text(encoding="utf-8").replace(
+            "---\n",
+            '---\nowner: "docs-team"\n',
+            1,
+        )
+        page.write_text(content, encoding="utf-8")
+
+        unrelated = obsidian.check_obsidian_vault(
+            wiki_dir=wiki,
+            vault_dir=vault,
+        )
+        assert unrelated.ok is True
+
+        page.write_text(
+            content.replace(
+                "llm_wiki:\n",
+                "llm_wiki:\n"
+                '  freshness: "unevaluated (snapshot-only read)"\n',
+                1,
+            ),
+            encoding="utf-8",
+        )
+        retained = obsidian.check_obsidian_vault(
+            wiki_dir=wiki,
+            vault_dir=vault,
+        )
+
+        assert retained.ok is False
+        assert any(
+            issue["category"] == "unexpected_knowledge_metadata"
+            and issue["path"] == str(page)
+            for issue in retained.issues
+        )
 
     def test_public_projection_omits_legacy_source_frontmatter_and_alias(
         self, tmp_project
@@ -1167,6 +1279,50 @@ class TestObsidianMirror:
                 knowledge_metadata="summary",
                 knowledge_projection=projection,
             )
+
+    def test_enriched_scan_reserves_nested_freshness_disclosure(
+        self,
+        tmp_project,
+    ):
+        wiki = _write_wiki(tmp_project)
+        vault = tmp_project / "vault"
+        projection = _knowledge_projection(wiki)
+        obsidian.export_obsidian_vault(
+            wiki_dir=wiki,
+            vault_dir=vault,
+            knowledge_metadata="summary",
+            knowledge_projection=projection,
+        )
+        stale = vault / "LLM Wiki" / "freshness-only.md"
+        stale.write_text(
+            "---\n"
+            "llm_wiki:\n"
+            '  freshness: "unevaluated (snapshot-only read)"\n'
+            "---\n",
+            encoding="utf-8",
+        )
+
+        with pytest.raises(
+            obsidian.ObsidianError,
+            match="Unexpected projected Obsidian mirror page",
+        ):
+            obsidian.export_obsidian_vault(
+                wiki_dir=wiki,
+                vault_dir=vault,
+                knowledge_metadata="summary",
+                knowledge_projection=projection,
+            )
+        checked = obsidian.check_obsidian_vault(
+            wiki_dir=wiki,
+            vault_dir=vault,
+            knowledge_metadata="summary",
+            knowledge_projection=projection,
+        )
+        assert any(
+            issue["category"] == "unexpected_projected_mirror_page"
+            and issue["path"] == str(stale)
+            for issue in checked.issues
+        )
 
     @pytest.mark.parametrize(
         "duplicate",

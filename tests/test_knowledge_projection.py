@@ -38,11 +38,15 @@ from llm_wiki_cli.services.knowledge_governance import (
     set_lifecycle,
 )
 from llm_wiki_cli.services.knowledge_model import (
+    ComputedFreshness,
     KnowledgeLoadState,
     KnowledgeProjectionProfile,
     knowledge_index_to_payload,
     parse_knowledge_index,
     serialize_knowledge_index,
+)
+from llm_wiki_cli.services.knowledge_observability import (
+    BASIS_INCOMPATIBLE_HINTS,
 )
 from llm_wiki_cli.services.knowledge_projection import (
     KnowledgeProjection,
@@ -58,6 +62,7 @@ from tests.knowledge_fixtures import (
     one_module_two_entities_fixture,
 )
 from tests.test_knowledge_artifacts import _plan
+from tests.test_knowledge_freshness import _live_evaluation
 from tests.test_knowledge_generation import _planner_inputs
 
 
@@ -116,6 +121,7 @@ def _projection_from_payload(payload) -> KnowledgeProjection:
         concepts=payload["concepts"],
         warnings=tuple(payload["warnings"]),
         omitted_fields=payload["omitted_fields"],
+        freshness=payload.get("freshness"),
     )
 
 
@@ -407,6 +413,297 @@ def test_projection_rejects_unready_and_mixed_read_views(tmp_path):
         match="intact committed artifact set",
     ):
         project_knowledge(mixed)
+
+
+def test_projection_discloses_snapshot_and_live_evaluation_scope(tmp_path):
+    snapshot = _base_view(tmp_path)
+    snapshot_projection = project_knowledge(snapshot)
+
+    assert snapshot_projection.freshness == (
+        "unevaluated (snapshot-only read)"
+    )
+    assert snapshot_projection.to_payload()["freshness"] == (
+        "unevaluated (snapshot-only read)"
+    )
+    path = next(iter(snapshot_projection.concepts))
+    assert projection_concept_summary(snapshot_projection, path)["freshness"] == (
+        "unevaluated (snapshot-only read)"
+    )
+
+    evaluated_without_live = project_knowledge(
+        replace(
+            snapshot,
+            freshness=evaluate_knowledge_freshness(snapshot.knowledge),
+        )
+    )
+    assert evaluated_without_live.freshness == (
+        f"evaluated ({len(evaluated_without_live.concepts)} concepts)"
+    )
+    assert all(
+        concept["freshness"]
+        == {
+            "state": "unknown",
+            "reason": "live-evaluation-not-performed",
+            "evaluated": True,
+            "live_comparison_performed": False,
+        }
+        for concept in evaluated_without_live.concepts.values()
+    )
+
+    live = replace(
+        snapshot,
+        freshness=evaluate_knowledge_freshness(
+            snapshot.knowledge,
+            _live_evaluation(snapshot.knowledge),
+        ),
+    )
+    live_projection = project_knowledge(live)
+
+    assert live_projection.freshness == (
+        f"evaluated ({len(live_projection.concepts)} concepts)"
+    )
+    projected_freshness = [
+        concept["freshness"] for concept in live_projection.concepts.values()
+    ]
+    assert all(item["evaluated"] is True for item in projected_freshness)
+    assert any(
+        item["state"] == "unknown"
+        and item["live_comparison_performed"] is False
+        for item in projected_freshness
+    )
+
+
+def test_empty_evaluated_projection_preserves_zero_concept_disclosure(
+    tmp_path,
+):
+    projection = project_knowledge(_base_view(tmp_path))
+    evaluated_empty = replace(
+        projection,
+        concepts={},
+        freshness="evaluated (0 concepts)",
+    )
+
+    payload = json.loads(serialize_knowledge_projection(evaluated_empty))
+
+    assert payload["concepts"] == {}
+    assert payload["freshness"] == "evaluated (0 concepts)"
+
+
+@pytest.mark.parametrize(
+    ("reason_code", "expected_hint"),
+    tuple(BASIS_INCOMPATIBLE_HINTS.items()),
+)
+def test_projection_and_frontmatter_render_every_incompatible_hint(
+    tmp_path,
+    reason_code,
+    expected_hint,
+):
+    view = _base_view(tmp_path)
+    assert view.knowledge is not None
+    report = evaluate_knowledge_freshness(
+        view.knowledge,
+        _live_evaluation(view.knowledge),
+    )
+    locator = next(iter(report.by_locator))
+    original = report.by_locator[locator]
+    by_locator = dict(report.by_locator)
+    by_locator[locator] = replace(
+        original,
+        state=ComputedFreshness.BASIS_INCOMPATIBLE,
+        reason_code=reason_code,
+        live_comparison_performed=True,
+        description="the recorded and live bases are incompatible",
+    )
+    counts = dict(report.counts)
+    counts[original.state] -= 1
+    counts[ComputedFreshness.BASIS_INCOMPATIBLE] += 1
+    mixed_view = replace(
+        view,
+        freshness=replace(
+            report,
+            by_locator=by_locator,
+            counts=counts,
+        ),
+    )
+
+    projection = project_knowledge(mixed_view)
+    concept = next(
+        concept
+        for concept in view.knowledge.concepts
+        if concept.locator == locator
+    )
+    freshness = projection.concepts[concept.document.canonical_path]["freshness"]
+    summary = projection_concept_summary(
+        projection,
+        concept.document.canonical_path,
+    )
+
+    assert projection.freshness == (
+        f"evaluated ({len(projection.concepts)} concepts)"
+    )
+    assert freshness["reason"] == reason_code
+    assert freshness["hint"] == expected_hint
+    assert summary["knowledge_freshness_reason"] == reason_code
+    assert summary["knowledge_freshness_hint"] == expected_hint
+    serialize_knowledge_projection(projection)
+
+
+def test_projection_disclosure_is_explicit_counted_and_not_inferred(tmp_path):
+    snapshot = project_knowledge(_base_view(tmp_path))
+    without_explicit_disclosure = replace(snapshot, freshness=None)
+
+    assert (
+        without_explicit_disclosure.freshness
+        == "unevaluated (snapshot-only read)"
+    )
+    serialize_knowledge_projection(without_explicit_disclosure)
+
+    for disclosure in (
+        "current",
+        f"evaluated ({len(snapshot.concepts) + 1} concepts)",
+        "evaluated (-1 concepts)",
+        "evaluated (01 concepts)",
+    ):
+        forged = replace(snapshot, freshness=disclosure)
+        with pytest.raises(
+            KnowledgeProjectionError,
+            match="freshness",
+        ):
+            serialize_knowledge_projection(forged)
+
+
+@pytest.mark.parametrize(
+    "aggregate_evaluated",
+    [False, True],
+    ids=["unevaluated-over-evaluated", "evaluated-over-unevaluated"],
+)
+def test_projection_rejects_aggregate_and_concept_evaluation_conflicts(
+    tmp_path,
+    aggregate_evaluated,
+):
+    snapshot = project_knowledge(_base_view(tmp_path))
+    assert snapshot.freshness == "unevaluated (snapshot-only read)"
+    assert all(
+        concept["freshness"]["evaluated"] is False
+        for concept in snapshot.concepts.values()
+    )
+
+    view = _base_view(tmp_path)
+    assert view.knowledge is not None
+    evaluated = project_knowledge(
+        replace(
+            view,
+            freshness=evaluate_knowledge_freshness(
+                view.knowledge,
+                _live_evaluation(view.knowledge),
+            ),
+        )
+    )
+    assert all(
+        concept["freshness"]["evaluated"] is True
+        for concept in evaluated.concepts.values()
+    )
+
+    forged = replace(
+        evaluated if aggregate_evaluated is False else snapshot,
+        freshness=(
+            "unevaluated (snapshot-only read)"
+            if aggregate_evaluated is False
+            else f"evaluated ({len(snapshot.concepts)} concepts)"
+        ),
+    )
+
+    with pytest.raises(
+        KnowledgeProjectionError,
+        match="must agree with every concept freshness evaluated flag",
+    ):
+        forged.to_payload()
+
+
+def test_projection_rejects_partially_evaluated_concept_flags(tmp_path):
+    view = _base_view(tmp_path)
+    assert view.knowledge is not None
+    evaluated = project_knowledge(
+        replace(
+            view,
+            freshness=evaluate_knowledge_freshness(
+                view.knowledge,
+                _live_evaluation(view.knowledge),
+            ),
+        )
+    )
+    payload = evaluated.to_payload()
+    path = next(iter(payload["concepts"]))
+    payload["concepts"][path]["freshness"] = {
+        "state": "not-evaluated",
+        "reason": "not-evaluated",
+        "evaluated": False,
+        "live_comparison_performed": False,
+    }
+    forged = _projection_from_payload(payload)
+
+    with pytest.raises(
+        KnowledgeProjectionError,
+        match="must agree with every concept freshness evaluated flag",
+    ):
+        forged.to_payload()
+
+
+def test_projection_rejects_missing_wrong_or_extraneous_hint(tmp_path):
+    view = _base_view(tmp_path)
+    assert view.knowledge is not None
+    report = evaluate_knowledge_freshness(
+        view.knowledge,
+        _live_evaluation(view.knowledge),
+    )
+    locator = next(iter(report.by_locator))
+    result = report.by_locator[locator]
+    reason = "generation-options-changed"
+    incompatible = replace(
+        result,
+        state=ComputedFreshness.BASIS_INCOMPATIBLE,
+        reason_code=reason,
+        live_comparison_performed=True,
+    )
+    projection = project_knowledge(
+        replace(
+            view,
+            freshness=replace(
+                report,
+                by_locator={**report.by_locator, locator: incompatible},
+            ),
+        )
+    )
+    concept = next(
+        concept
+        for concept in view.knowledge.concepts
+        if concept.locator == locator
+    )
+    path = concept.document.canonical_path
+
+    def forged(mutator):
+        payload = projection.to_payload()
+        mutator(payload["concepts"][path]["freshness"])
+        return _projection_from_payload(payload)
+
+    candidates = (
+        forged(lambda freshness: freshness.pop("hint")),
+        forged(lambda freshness: freshness.__setitem__("hint", "generic")),
+    )
+    current_path = next(
+        candidate_path
+        for candidate_path, projected in projection.concepts.items()
+        if projected["freshness"]["state"] != "basis-incompatible"
+    )
+    extraneous_payload = projection.to_payload()
+    extraneous_payload["concepts"][current_path]["freshness"]["hint"] = (
+        BASIS_INCOMPATIBLE_HINTS[reason]
+    )
+    candidates += (_projection_from_payload(extraneous_payload),)
+
+    for candidate in candidates:
+        with pytest.raises(KnowledgeProjectionError, match="hint"):
+            serialize_knowledge_projection(candidate)
 
 
 def test_projection_rejects_unrecognized_auxiliary_freshness_reason(

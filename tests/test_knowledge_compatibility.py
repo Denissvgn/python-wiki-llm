@@ -425,6 +425,7 @@ def test_loader_read_view_and_query_envelope_share_compatibility_policy(
     expected_envelope = {
         "availability": case.expected_availability.value,
         "reason": case.expected_reason.value,
+        "freshness": "unevaluated (snapshot-only read)",
         "freshness_evaluated": False,
     }
     assert concept["knowledge"] == expected_envelope

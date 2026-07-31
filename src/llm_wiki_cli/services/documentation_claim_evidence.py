@@ -129,6 +129,10 @@ _FRESHNESS_STATES = frozenset(
         "unknown",
     }
 )
+_EVALUATED_FRESHNESS_DISCLOSURE_RE = re.compile(
+    r"^evaluated \((0|[1-9][0-9]*) concepts\)$"
+)
+_UNEVALUATED_FRESHNESS_DISCLOSURE = "unevaluated (snapshot-only read)"
 _AVAILABILITY_STATES = frozenset(
     {"ready", "absent", "degraded", "unsupported"}
 )
@@ -274,25 +278,36 @@ def qualify_claim_evidence(
         selected = None
 
     freshness_evaluated = bool(knowledge.get("freshness_evaluated", False))
+    freshness_disclosure = knowledge.get("freshness")
+    if not isinstance(freshness_disclosure, str):
+        if freshness_evaluated:
+            raise DocumentationClaimEvidenceError(
+                "knowledge.freshness must disclose the evaluated concept count."
+            )
+        freshness_disclosure = _UNEVALUATED_FRESHNESS_DISCLOSURE
     freshness_value = (
         _mapping(selected.get("freshness"), "concept.freshness")
         if selected is not None
         else {}
     )
-    freshness = {
-        "evaluated": freshness_evaluated,
-        "state": (
-            freshness_value.get("state") if freshness_evaluated else None
-        ),
-        "reason": str(
-            freshness_value.get("reason")
-            or (
-                "freshness-not-evaluated"
-                if not freshness_evaluated
-                else "freshness-result-unavailable"
-            )
-        ),
-    }
+    freshness = _freshness(
+        {
+            "evaluated": freshness_evaluated,
+            "disclosure": freshness_disclosure,
+            "state": (
+                freshness_value.get("state") if freshness_evaluated else None
+            ),
+            "reason": str(
+                freshness_value.get("reason")
+                or (
+                    "freshness-not-evaluated"
+                    if not freshness_evaluated
+                    else "freshness-result-unavailable"
+                )
+            ),
+        },
+        "freshness",
+    )
     evidence_state = selected.get("evidence") if selected is not None else None
     structural_evidence = {
         "state": evidence_state,
@@ -393,7 +408,16 @@ def reconcile_claim_evidence_records(
             safe_evidence_link=record["safe_evidence_link"],
             internal_evidence_ref=record.get("internal_evidence_ref"),
         )
-        if record != expected:
+        comparable_expected = expected
+        record_freshness = record.get("freshness")
+        if (
+            isinstance(record_freshness, Mapping)
+            and "disclosure" not in record_freshness
+        ):
+            legacy_freshness = dict(expected["freshness"])
+            legacy_freshness.pop("disclosure")
+            comparable_expected = {**expected, "freshness": legacy_freshness}
+        if record != comparable_expected:
             mismatch = next(
                 (
                     field
@@ -895,7 +919,7 @@ def _freshness(value: object, field_name: str) -> dict[str, Any]:
     freshness = _mapping(value, field_name)
     _exact_fields(
         freshness,
-        frozenset({"evaluated", "state", "reason"}),
+        frozenset({"evaluated", "disclosure", "state", "reason"}),
         frozenset({"evaluated", "state", "reason"}),
         field_name,
     )
@@ -911,11 +935,30 @@ def _freshness(value: object, field_name: str) -> dict[str, Any]:
         raise DocumentationClaimEvidenceError(
             f"{field_name}.state must be null when freshness was not evaluated."
         )
-    return {
+    disclosure = freshness.get("disclosure")
+    if disclosure is not None:
+        if not isinstance(disclosure, str):
+            raise DocumentationClaimEvidenceError(
+                f"{field_name}.disclosure must be a string."
+            )
+        if evaluated:
+            if _EVALUATED_FRESHNESS_DISCLOSURE_RE.fullmatch(disclosure) is None:
+                raise DocumentationClaimEvidenceError(
+                    f"{field_name}.disclosure must include the evaluated "
+                    "concept count."
+                )
+        elif disclosure != _UNEVALUATED_FRESHNESS_DISCLOSURE:
+            raise DocumentationClaimEvidenceError(
+                f"{field_name}.disclosure must identify a snapshot-only read."
+            )
+    normalized = {
         "evaluated": evaluated,
         "state": state,
         "reason": _reason(freshness["reason"], f"{field_name}.reason"),
     }
+    if disclosure is not None:
+        normalized["disclosure"] = disclosure
+    return normalized
 
 
 def _lifecycle_review(value: object, field_name: str) -> dict[str, Any] | None:
@@ -1098,6 +1141,7 @@ def _native_observation(value: object, field_name: str) -> dict[str, Any]:
                 "availability",
                 "reason",
                 "structural_evidence_state",
+                "freshness",
                 "freshness_evaluated",
                 "freshness_state",
                 "freshness_reason",
@@ -1140,7 +1184,34 @@ def _native_observation(value: object, field_name: str) -> dict[str, Any]:
         raise DocumentationClaimEvidenceError(
             f"{field_name}.freshness_state must be null when not evaluated."
         )
-    return {
+    disclosure = native.get("freshness")
+    if disclosure is None:
+        if evaluated:
+            # An evaluated legacy record does not carry the aggregate concept
+            # count needed to reconstruct an exact disclosure.
+            raise DocumentationClaimEvidenceError(
+                f"{field_name}.freshness is required for evaluated freshness; "
+                "recapture with the exact aggregate disclosure."
+            )
+        # Legacy snapshot-only records have enough information for a truthful
+        # additive upgrade.
+        disclosure = _UNEVALUATED_FRESHNESS_DISCLOSURE
+    elif disclosure is not None:
+        if not isinstance(disclosure, str):
+            raise DocumentationClaimEvidenceError(
+                f"{field_name}.freshness must be a string."
+            )
+        if evaluated:
+            if _EVALUATED_FRESHNESS_DISCLOSURE_RE.fullmatch(disclosure) is None:
+                raise DocumentationClaimEvidenceError(
+                    f"{field_name}.freshness must include the evaluated "
+                    "concept count."
+                )
+        elif disclosure != _UNEVALUATED_FRESHNESS_DISCLOSURE:
+            raise DocumentationClaimEvidenceError(
+                f"{field_name}.freshness must identify a snapshot-only read."
+            )
+    normalized = {
         "availability": availability,
         "reason": _reason(native["reason"], f"{field_name}.reason"),
         "structural_evidence_state": evidence,
@@ -1150,6 +1221,8 @@ def _native_observation(value: object, field_name: str) -> dict[str, Any]:
             native["freshness_reason"], f"{field_name}.freshness_reason"
         ),
     }
+    normalized["freshness"] = disclosure
+    return normalized
 
 
 def _redaction(value: object, field_name: str) -> dict[str, Any]:

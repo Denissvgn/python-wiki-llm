@@ -1,9 +1,10 @@
-"""Privacy-safe aggregate observability for native knowledge consumers.
+"""Privacy-safe observability for native knowledge consumers.
 
 This module is deliberately separate from the deterministic knowledge model.
-It projects only closed status values, fixed aggregate counters, and optional
-operational durations.  It never exposes per-concept evidence, repository
-identity, hashes, paths, actors, remotes, or timestamps.
+It projects only closed status values, fixed aggregate counters, static
+diagnostic guidance, and optional operational durations.  It never exposes
+per-concept evidence, repository identity, hashes, paths, actors, remotes, or
+timestamps.
 """
 
 from __future__ import annotations
@@ -21,6 +22,30 @@ from .knowledge_consumption import (
     KnowledgeReadReason,
     KnowledgeReadView,
     build_knowledge_read_view,
+)
+from .knowledge_freshness import (
+    REASON_EXTRACTOR_CONFIGURATION_CHANGED,
+    REASON_EXTRACTOR_CONFIGURATION_UNKNOWN,
+    REASON_EXTRACTOR_LIMITATIONS_CHANGED,
+    REASON_EXTRACTOR_SELECTION_CHANGED,
+    REASON_EXTRACTOR_VERSION_CHANGED,
+    REASON_GENERATION_OPTIONS_CHANGED,
+    REASON_IDENTICAL_SOURCE_OBSERVATION_MISMATCH,
+    REASON_LIVE_EXTRACTOR_UNAVAILABLE,
+    REASON_OBSERVATION_SCOPE_CHANGED,
+    REASON_PLUGIN_CONFIGURATION_CHANGED,
+    REASON_PLUGIN_CONFIGURATION_UNKNOWN,
+    REASON_PLUGIN_LIMITATIONS_CHANGED,
+    REASON_PLUGIN_SET_CHANGED,
+    REASON_PLUGIN_VERSION_CHANGED,
+    REASON_SCHEMA_VERSION_CHANGED,
+    REASON_SOURCE_MAPPING_CHANGED,
+    REASON_TOOL_CONFIGURATION_CHANGED,
+    REASON_TOOL_CONFIGURATION_UNKNOWN,
+    REASON_TOOL_ID_CHANGED,
+    REASON_TOOL_LIMITATIONS_CHANGED,
+    REASON_TOOL_VERSION_CHANGED,
+    REASON_VERSION_UNKNOWN,
 )
 from .knowledge_loader import (
     KnowledgeLoadIssue,
@@ -60,6 +85,101 @@ _UNSUPPORTED_REASON_VALUES = frozenset(
         KnowledgeReadReason.SURFACE_SCHEMA_VERSION_UNSUPPORTED.value,
     }
 )
+UNEVALUATED_FRESHNESS_DISCLOSURE = "unevaluated (snapshot-only read)"
+BASIS_INCOMPATIBLE_HINTS: Mapping[str, str] = MappingProxyType(
+    {
+        REASON_EXTRACTOR_CONFIGURATION_CHANGED: (
+            "Restore the extractor configuration used at sync, or re-run sync "
+            "with the current extractor configuration."
+        ),
+        REASON_EXTRACTOR_CONFIGURATION_UNKNOWN: (
+            "Make the extractor configuration basis available and explicit, "
+            "then re-run sync."
+        ),
+        REASON_EXTRACTOR_LIMITATIONS_CHANGED: (
+            "Use an extractor with the limitations recorded at sync, or re-run "
+            "sync after accepting the changed limitations."
+        ),
+        REASON_EXTRACTOR_SELECTION_CHANGED: (
+            "Use the extractor selected at sync for this concept, or re-run sync "
+            "after the intentional extractor change."
+        ),
+        REASON_EXTRACTOR_VERSION_CHANGED: (
+            "Use the extractor version recorded at sync, or re-run sync with the "
+            "installed extractor version."
+        ),
+        REASON_GENERATION_OPTIONS_CHANGED: (
+            "Re-run with the generation options used at sync where supported "
+            "(check --include-tests), or re-run sync with the intended current "
+            "options."
+        ),
+        REASON_IDENTICAL_SOURCE_OBSERVATION_MISMATCH: (
+            "Producer nondeterminism or artifact corruption is possible—re-run "
+            "sync; if it persists, file a defect."
+        ),
+        REASON_SCHEMA_VERSION_CHANGED: (
+            "Use the knowledge schema version recorded at sync, or re-run sync "
+            "with the current llm-wiki version."
+        ),
+        REASON_LIVE_EXTRACTOR_UNAVAILABLE: (
+            "Install or enable the extractor recorded for this concept, or re-run "
+            "sync with an available extractor."
+        ),
+        REASON_OBSERVATION_SCOPE_CHANGED: (
+            "Restore the module, entity, or infrastructure observation scope used "
+            "at sync, or re-run sync after an intentional scope change."
+        ),
+        REASON_PLUGIN_CONFIGURATION_CHANGED: (
+            "Restore the plugin configuration used at sync, or re-run sync with "
+            "the current plugin configuration."
+        ),
+        REASON_PLUGIN_CONFIGURATION_UNKNOWN: (
+            "Make every contributing plugin configuration basis available and "
+            "explicit, then re-run sync."
+        ),
+        REASON_PLUGIN_LIMITATIONS_CHANGED: (
+            "Restore the contributing plugin limitations recorded at sync, or "
+            "re-run sync after accepting the change."
+        ),
+        REASON_PLUGIN_SET_CHANGED: (
+            "Enable the plugin set used at sync, or re-run sync with the currently "
+            "enabled plugin set."
+        ),
+        REASON_PLUGIN_VERSION_CHANGED: (
+            "Use the contributing plugin versions recorded at sync, or re-run sync "
+            "with the installed versions."
+        ),
+        REASON_TOOL_CONFIGURATION_CHANGED: (
+            "Restore the producer configuration used at sync, or re-run sync with "
+            "the current producer configuration."
+        ),
+        REASON_TOOL_CONFIGURATION_UNKNOWN: (
+            "Make the producer configuration basis available and explicit, then "
+            "re-run sync."
+        ),
+        REASON_TOOL_ID_CHANGED: (
+            "Use the producer tool recorded at sync, or re-run sync with the "
+            "current producer tool."
+        ),
+        REASON_TOOL_LIMITATIONS_CHANGED: (
+            "Use a producer with the limitations recorded at sync, or re-run sync "
+            "after accepting the changed limitations."
+        ),
+        REASON_TOOL_VERSION_CHANGED: (
+            "Use the producer version recorded at sync, or re-run sync with the "
+            "installed producer version."
+        ),
+        REASON_SOURCE_MAPPING_CHANGED: (
+            "Restore this concept's recorded source mapping, or re-run sync to "
+            "record the moved or remapped source."
+        ),
+        REASON_VERSION_UNKNOWN: (
+            "Make concrete versions available for every contributing producer, "
+            "extractor, and plugin, then re-run sync."
+        ),
+    }
+)
+BASIS_INCOMPATIBLE_REASON_CODES = frozenset(BASIS_INCOMPATIBLE_HINTS)
 
 
 @dataclass(frozen=True)
@@ -200,6 +320,7 @@ class KnowledgeAggregateSummary:
         return {
             "availability": self.availability,
             "reason": self.reason,
+            "freshness": self.freshness,
             "concepts_evaluated": self.concepts_evaluated,
             "freshness_counts": (
                 None if self.freshness_counts is None else dict(self.freshness_counts)
@@ -213,6 +334,15 @@ class KnowledgeAggregateSummary:
             "phase_durations_ms": dict(self.phase_durations_ms),
             "freshness_evaluated": self.freshness_evaluated,
         }
+
+    @property
+    def freshness(self) -> str:
+        """Return the required user-facing freshness disclosure."""
+
+        return _freshness_disclosure(
+            evaluated=self.freshness_evaluated,
+            concepts_evaluated=self.concepts_evaluated,
+        )
 
 
 def _validated_counts(
@@ -299,12 +429,79 @@ def summarize_knowledge_view(
     )
 
 
-def knowledge_status_payload(view: KnowledgeReadView) -> dict[str, object]:
+def knowledge_freshness_disclosure(view: KnowledgeReadView) -> str:
+    """Describe whether the read produced one freshness result per concept.
+
+    An evaluated result can still report that no live comparison was
+    performed; consumers must inspect each concept's reason and
+    ``live_comparison_performed`` flag.
+    """
+
+    if not isinstance(view, KnowledgeReadView):
+        raise TypeError("view must be a KnowledgeReadView")
+    if not view.freshness_evaluated:
+        return UNEVALUATED_FRESHNESS_DISCLOSURE
+    assert view.freshness is not None
+    return _freshness_disclosure(
+        evaluated=True,
+        concepts_evaluated=sum(int(count) for count in view.freshness.counts.values()),
+    )
+
+
+def knowledge_freshness_hint(
+    state: ComputedFreshness | str | None,
+    reason_code: object,
+) -> str | None:
+    """Return static recovery guidance for one incompatible freshness basis.
+
+    The evaluator's reason vocabulary is closed.  Failing closed here ensures
+    that a future incompatible reason cannot be presented without distinct
+    actionable guidance.
+    """
+
+    state_value = state.value if isinstance(state, ComputedFreshness) else state
+    if state_value != ComputedFreshness.BASIS_INCOMPATIBLE.value:
+        return None
+    if not isinstance(reason_code, str):
+        raise ValueError(
+            "basis-incompatible freshness requires a known actionable reason code"
+        )
+    try:
+        return BASIS_INCOMPATIBLE_HINTS[reason_code]
+    except KeyError as exc:
+        raise ValueError(
+            "basis-incompatible freshness requires a known actionable reason code"
+        ) from exc
+
+
+def _freshness_disclosure(
+    *,
+    evaluated: bool,
+    concepts_evaluated: int,
+) -> str:
+    if not evaluated:
+        return UNEVALUATED_FRESHNESS_DISCLOSURE
+    return f"evaluated ({concepts_evaluated} concepts)"
+
+
+def knowledge_status_payload(
+    view: KnowledgeReadView | None,
+) -> dict[str, object]:
     """Return the stable compact status envelope used by MCP and CLI status."""
 
+    if view is None:
+        return {
+            "availability": KnowledgeAvailability.ABSENT.value,
+            "reason": KnowledgeReadReason.ABSENT.value,
+            "freshness": UNEVALUATED_FRESHNESS_DISCLOSURE,
+            "freshness_evaluated": False,
+        }
+    if not isinstance(view, KnowledgeReadView):
+        raise TypeError("view must be a KnowledgeReadView or None")
     return {
         "availability": view.availability.value,
         "reason": view.reason_code,
+        "freshness": knowledge_freshness_disclosure(view),
         "freshness_evaluated": view.freshness_evaluated,
     }
 
@@ -431,9 +628,14 @@ def _degraded_snapshot_view(
 
 
 __all__ = [
+    "BASIS_INCOMPATIBLE_HINTS",
+    "BASIS_INCOMPATIBLE_REASON_CODES",
     "KnowledgeAggregateSummary",
     "KnowledgePhaseDurations",
     "SnapshotKnowledgeObservability",
+    "UNEVALUATED_FRESHNESS_DISCLOSURE",
+    "knowledge_freshness_disclosure",
+    "knowledge_freshness_hint",
     "knowledge_status_payload",
     "load_snapshot_knowledge_observability",
     "summarize_knowledge_view",

@@ -22,6 +22,7 @@ from urllib.parse import unquote
 
 from . import wiki_surface
 from .io import read_md, write_md
+from .knowledge_observability import UNEVALUATED_FRESHNESS_DISCLOSURE
 from .knowledge_projection import (
     UNKNOWN_VALUE as UNKNOWN_KNOWLEDGE_VALUE,
     KnowledgeProjection,
@@ -186,9 +187,11 @@ class SiteExportReport:
     asset_operations: list[SiteExportOperation] = field(default_factory=list)
     issues: list[dict[str, str]] = field(default_factory=list)
     warnings: list[dict[str, str]] = field(default_factory=list)
+    freshness: str | None = None
+    freshness_by_source: dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        payload = {
             "ok": self.ok,
             "dry_run": self.dry_run,
             "wiki_dir": self.wiki_dir,
@@ -214,6 +217,47 @@ class SiteExportReport:
             "issues": self.issues,
             "warnings": self.warnings,
         }
+        if self.freshness is not None:
+            payload["freshness"] = self.freshness
+        if self.freshness_by_source:
+            payload["freshness_by_source"] = dict(
+                sorted(self.freshness_by_source.items())
+            )
+        return payload
+
+
+def _projection_report_freshness(
+    projection: KnowledgeProjection | None,
+) -> str | None:
+    if projection is None:
+        return None
+    return projection.freshness
+
+
+def _hub_report_freshness(
+    projections: Mapping[str, KnowledgeProjection] | None,
+) -> tuple[str | None, dict[str, str]]:
+    if not projections:
+        return None, {}
+    by_source = {
+        source_id: projection.freshness
+        for source_id, projection in sorted(projections.items())
+        if isinstance(projection.freshness, str)
+    }
+    if len(by_source) != len(projections):
+        return None, by_source
+    if set(by_source.values()) == {UNEVALUATED_FRESHNESS_DISCLOSURE}:
+        return UNEVALUATED_FRESHNESS_DISCLOSURE, {}
+    evaluated_count = 0
+    for source_id, projection in sorted(projections.items()):
+        concept_count = len(projection.concepts)
+        expected = f"evaluated ({concept_count} concepts)"
+        if by_source[source_id] != expected:
+            return None, by_source
+        evaluated_count += concept_count
+    if projections:
+        return f"evaluated ({evaluated_count} concepts)", {}
+    return None, by_source
 
 
 @dataclass(frozen=True)
@@ -1155,6 +1199,7 @@ def export_site_mirror(
         ),
         selection_id=_selection_id(selection) if selection is not None else "",
         page_count=len(pages) + (1 if profile == "user" else 0),
+        freshness=_projection_report_freshness(knowledge_projection),
     )
     if selection is not None:
         _begin_publication_export(out, selection, dry_run=dry_run)
@@ -1347,6 +1392,9 @@ def export_site_hub(
         for source in sources
         if knowledge_projections is not None
     )
+    report_freshness, report_freshness_by_source = _hub_report_freshness(
+        knowledge_projections
+    )
     selection = _build_publication_selection(
         format=format,
         profile=profile,
@@ -1372,6 +1420,8 @@ def export_site_hub(
         publication_state="preview" if dry_run else "incomplete",
         selection_id=_selection_id(selection),
         source_count=len(sources),
+        freshness=report_freshness,
+        freshness_by_source=report_freshness_by_source,
     )
     _begin_publication_export(out, selection, dry_run=dry_run)
 
@@ -1504,6 +1554,7 @@ def check_site_mirror(
         format=format or "plain",
         link_mode=link_mode,
         page_count=len(pages),
+        freshness=_projection_report_freshness(knowledge_projection),
     )
 
     if not out.exists() or not out.is_dir():
@@ -1782,6 +1833,9 @@ def check_site_hub(
         knowledge_metadata=knowledge_metadata,
         knowledge_projections=knowledge_projections,
     )
+    report_freshness, report_freshness_by_source = _hub_report_freshness(
+        knowledge_projections
+    )
     report = SiteExportReport(
         wiki_dir=str(Path(wiki_root).expanduser()) if wiki_root is not None else "",
         out_dir=str(out),
@@ -1796,6 +1850,8 @@ def check_site_hub(
         link_mode=link_mode,
         source_count=len(sources),
         page_count=1,
+        freshness=report_freshness,
+        freshness_by_source=report_freshness_by_source,
     )
     receipt = _check_publication_receipt(report, out=out)
     if receipt is not None:
@@ -1946,6 +2002,16 @@ def render_report_text(report: SiteExportReport, *, action: str) -> str:
         lines.append(f"Export id: {report.export_id}")
     if report.publication_state:
         lines.append(f"Publication state: {report.publication_state}")
+    if report.freshness is not None:
+        lines.append(f"Freshness: {report.freshness}")
+    elif report.freshness_by_source:
+        lines.append("Freshness by source:")
+        lines.extend(
+            f"- {source_id}: {disclosure}"
+            for source_id, disclosure in sorted(
+                report.freshness_by_source.items()
+            )
+        )
     if report.built_site_dir:
         lines.append(f"Built site: {report.built_site_dir}")
         lines.append(f"Built link mode: {report.link_mode}")
@@ -3178,6 +3244,7 @@ def _contains_projected_knowledge_metadata(
         return False
     return any(
         key == "source_path"
+        or key == "freshness"
         or key.startswith("knowledge_")
         or key.startswith("source_knowledge_")
         for key in llm_wiki
@@ -3513,8 +3580,10 @@ def _check_front_matter_metadata(
                     }
                 )
         for key in sorted(llm_wiki):
-            if key.startswith("knowledge_") or key.startswith(
-                "source_knowledge_"
+            if (
+                key == "freshness"
+                or key.startswith("knowledge_")
+                or key.startswith("source_knowledge_")
             ):
                 issues.append(
                     {

@@ -520,5 +520,6 @@ def test_metrics_text_adds_optional_knowledge_summary(monkeypatch):
     assert "Knowledge:" in rendered
     assert "Availability: ready (all-projection-commitments-match)" in rendered
     assert "Concepts evaluated: 6" in rendered
+    assert "Freshness: evaluated (6 concepts)" in rendered
     assert "current=3" in rendered
     assert "load=2.0 ms, evaluate=3.0 ms, check=1.0 ms" in rendered

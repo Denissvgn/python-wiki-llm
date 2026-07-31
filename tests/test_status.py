@@ -160,7 +160,7 @@ class TestStatusKnowledge:
         ) in out
         assert "Concepts evaluated: 0" in out
         assert "Evidence issues: invalid=0, missing=0, unknown=1" in out
-        assert "Freshness: not evaluated (snapshot-only status)" in out
+        assert "Freshness: unevaluated (snapshot-only read)" in out
         assert "llm-wiki://entities/User" not in out
         assert "sha256:" not in out
 
@@ -182,7 +182,7 @@ class TestStatusKnowledge:
             "Knowledge:       absent (reason: knowledge-projection-not-present)"
         ) in out
         assert "Evidence issues: unavailable" in out
-        assert "Freshness: not evaluated (snapshot-only status)" in out
+        assert "Freshness: unevaluated (snapshot-only read)" in out
 
     def test_invalid_projection_reports_degraded_without_serving_evidence(
         self,
@@ -204,7 +204,7 @@ class TestStatusKnowledge:
         ) in out
         assert "Concepts evaluated: 0" in out
         assert "Evidence issues: unavailable" in out
-        assert "Freshness: not evaluated (snapshot-only status)" in out
+        assert "Freshness: unevaluated (snapshot-only read)" in out
         assert "llm-wiki://entities/User" not in out
         assert "sha256:" not in out
 

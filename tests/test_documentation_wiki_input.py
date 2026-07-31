@@ -25,7 +25,12 @@ from llm_wiki_cli.services.knowledge_artifacts import (
     commit_knowledge_artifacts,
 )
 from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
+from llm_wiki_cli.services.knowledge_freshness import (
+    REASON_GENERATION_OPTIONS_CHANGED,
+)
 from llm_wiki_cli.services.knowledge_index import serialize_knowledge_index
+from llm_wiki_cli.services.knowledge_model import ComputedFreshness
+from llm_wiki_cli.services.knowledge_observability import knowledge_freshness_hint
 from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME, SyncManifest
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 from tests.knowledge_fixtures import one_module_two_entities_fixture
@@ -1073,10 +1078,127 @@ def test_marked_v5_trio_rejects_changed_source_through_shared_live_evaluation(
 
     assert exc_info.value.category == "freshness_not_current"
     assert any(
-        "native_basis_incompatible:changed:src/accounts.py" in item
+        "native_freshness_not_current:changed:src/accounts.py" in item
         for item in exc_info.value.diagnostics
     )
     assert not (tmp_path / "workspace").exists()
+
+
+def test_native_basis_incompatibility_exposes_structured_actionable_diagnostic(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    wiki = tmp_path / "wiki"
+    source = tmp_path / "source"
+    fixture, _plan = _write_v5_metadata(wiki, marked=True)
+    for relative_path, content in fixture.source_files.items():
+        _write(source / relative_path, content)
+
+    locator = "llm-wiki://entities/User"
+    reason = REASON_GENERATION_OPTIONS_CHANGED
+    hint = knowledge_freshness_hint(ComputedFreshness.BASIS_INCOMPATIBLE, reason)
+    assert hint is not None
+
+    from llm_wiki_cli.services import documentation_native
+
+    monkeypatch.setattr(
+        documentation_native,
+        "evaluate_documentation_native_freshness",
+        lambda **_kwargs: SimpleNamespace(
+            current=False,
+            reasons=(f"{locator}:{reason}",),
+            source_mismatches=(),
+            report=SimpleNamespace(
+                by_locator={
+                    locator: SimpleNamespace(
+                        state=ComputedFreshness.BASIS_INCOMPATIBLE,
+                        reason_code=reason,
+                    )
+                }
+            ),
+        ),
+    )
+
+    snapshot = adopt_documentation_wiki_snapshot(
+        wiki,
+        tmp_path / "allow-unverified" / "wiki",
+        source_root=source,
+        freshness_policy="allow-unverified",
+    )
+
+    expected = {
+        "locator": locator,
+        "state": ComputedFreshness.BASIS_INCOMPATIBLE.value,
+        "reason_code": reason,
+        "hint": hint,
+    }
+    assert snapshot.freshness == "verified_stale"
+    assert snapshot.freshness_diagnostics == (expected,)
+    assert snapshot.to_dict()["freshness_diagnostics"] == [expected]
+    assert any(
+        item == f"native_basis_incompatible:{locator}:{reason}; hint={hint}"
+        for item in snapshot.diagnostics
+    )
+
+    with pytest.raises(DocumentationWikiInputError) as exc_info:
+        adopt_documentation_wiki_snapshot(
+            wiki,
+            tmp_path / "require-current" / "wiki",
+            source_root=source,
+            freshness_policy="require-current",
+        )
+
+    assert exc_info.value.category == "freshness_not_current"
+    assert reason in str(exc_info.value)
+    assert hint in str(exc_info.value)
+
+
+def test_native_unknown_basis_incompatibility_fails_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    wiki = tmp_path / "wiki"
+    source = tmp_path / "source"
+    fixture, _plan = _write_v5_metadata(wiki, marked=True)
+    for relative_path, content in fixture.source_files.items():
+        _write(source / relative_path, content)
+
+    unknown_reason = "future-basis-reason"
+    locator = "llm-wiki://entities/User"
+    from llm_wiki_cli.services import documentation_native
+
+    monkeypatch.setattr(
+        documentation_native,
+        "evaluate_documentation_native_freshness",
+        lambda **_kwargs: SimpleNamespace(
+            current=False,
+            reasons=(f"{locator}:{unknown_reason}",),
+            source_mismatches=(),
+            report=SimpleNamespace(
+                by_locator={
+                    locator: SimpleNamespace(
+                        state=ComputedFreshness.BASIS_INCOMPATIBLE,
+                        reason_code=unknown_reason,
+                    )
+                }
+            ),
+        ),
+    )
+
+    snapshot = adopt_documentation_wiki_snapshot(
+        wiki,
+        tmp_path / "workspace" / "wiki",
+        source_root=source,
+        freshness_policy="allow-unverified",
+    )
+
+    assert snapshot.freshness == "unverified"
+    assert snapshot.freshness_diagnostics == ()
+    assert "freshness_diagnostics" not in snapshot.to_dict()
+    assert any(
+        item.startswith("native_freshness_invalid:") for item in snapshot.diagnostics
+    )
+    assert all(unknown_reason not in item for item in snapshot.diagnostics)
 
 
 @pytest.mark.parametrize(

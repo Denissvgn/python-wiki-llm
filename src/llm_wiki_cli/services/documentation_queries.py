@@ -38,6 +38,10 @@ from .knowledge_graph import (
 )
 from .knowledge_governance import GOVERNANCE_EXTENSION_KEY
 from .knowledge_model import knowledge_index_to_payload
+from .knowledge_observability import (
+    knowledge_freshness_hint,
+    knowledge_status_payload,
+)
 from .relationships import build_entity_relationship_summaries
 from .validation import (
     normalize_legacy_portable_relative_path,
@@ -938,11 +942,7 @@ class DocumentationGraphQueryService:
         self.incoming_typed_graph_edges: dict[str, tuple[int, ...]] = {}
 
         if knowledge_view is None:
-            self.knowledge_status = {
-                "availability": KnowledgeAvailability.ABSENT.value,
-                "reason": KnowledgeReadReason.ABSENT.value,
-                "freshness_evaluated": False,
-            }
+            self.knowledge_status = knowledge_status_payload(None)
             return
         if not isinstance(knowledge_view, KnowledgeReadView):
             raise DocumentationQueryError(
@@ -957,11 +957,7 @@ class DocumentationGraphQueryService:
                 "knowledge_view.reason must be a KnowledgeReadReason."
             )
 
-        self.knowledge_status = {
-            "availability": knowledge_view.availability.value,
-            "reason": knowledge_view.reason_code,
-            "freshness_evaluated": knowledge_view.freshness is not None,
-        }
+        self.knowledge_status = knowledge_status_payload(knowledge_view)
         if knowledge_view.availability is not KnowledgeAvailability.READY:
             self.section_ownership_status.update(
                 {
@@ -1511,11 +1507,18 @@ class DocumentationGraphQueryService:
                 "reason": _NOT_EVALUATED_REASON,
                 "live_comparison_performed": False,
             }
-        return {
+        result = {
             "state": _wire_value(freshness.state),
             "reason": freshness.reason_code,
             "live_comparison_performed": freshness.live_comparison_performed,
         }
+        hint = knowledge_freshness_hint(
+            freshness.state,
+            freshness.reason_code,
+        )
+        if hint is not None:
+            result["hint"] = hint
+        return result
 
     def _full_knowledge_freshness(self, locator: str) -> Optional[dict[str, Any]]:
         view = self.knowledge_view
@@ -1524,7 +1527,7 @@ class DocumentationGraphQueryService:
         freshness = view.freshness.by_locator.get(locator)
         if freshness is None:
             return None
-        return {
+        result = {
             "state": _wire_value(freshness.state),
             "reason": freshness.reason_code,
             "description": freshness.description,
@@ -1534,6 +1537,13 @@ class DocumentationGraphQueryService:
             ),
             "live_basis": _freshness_basis_payload(freshness.live_basis),
         }
+        hint = knowledge_freshness_hint(
+            freshness.state,
+            freshness.reason_code,
+        )
+        if hint is not None:
+            result["hint"] = hint
+        return result
 
     def _knowledge_direction(self, value: object) -> str:
         if not isinstance(value, str) or value not in _KNOWLEDGE_DIRECTIONS:

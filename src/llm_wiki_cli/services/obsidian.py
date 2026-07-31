@@ -70,9 +70,20 @@ PROJECTED_FRONTMATTER_KEY_RE = re.compile(
     r"(?m)^[ \t]+(?:knowledge_|source_knowledge_)[A-Za-z0-9_-]*[ \t]*:"
     r"|^[ \t]+source_path[ \t]*:"
 )
+PROJECTED_KNOWLEDGE_FRONTMATTER_KEY_RE = re.compile(
+    r"(?m)^[ \t]+(?:knowledge_|source_knowledge_)[A-Za-z0-9_-]*[ \t]*:"
+)
+LLM_WIKI_FRESHNESS_RE = re.compile(
+    r"(?m)^llm_wiki:[ \t]*(?:#.*)?"
+    r"(?:\r?\n[ \t]+[^\r\n]*)*"
+    r"\r?\n[ \t]+freshness[ \t]*:"
+)
 TOP_LEVEL_PROJECTED_FRONTMATTER_KEY_RE = re.compile(
     r"(?m)^(?:knowledge_|source_knowledge_)[A-Za-z0-9_-]*[ \t]*:"
     r"|^source_path[ \t]*:"
+)
+TOP_LEVEL_PROJECTED_KNOWLEDGE_FRONTMATTER_KEY_RE = re.compile(
+    r"(?m)^(?:knowledge_|source_knowledge_)[A-Za-z0-9_-]*[ \t]*:"
 )
 FRONTMATTER_END_BYTES_RE = re.compile(rb"\r?\n---(?:\r?\n|\Z)")
 MAX_OBSIDIAN_MIRROR_SCAN_ENTRIES = 10_000
@@ -113,9 +124,10 @@ class ObsidianReport:
     page_count: int = 0
     operations: list[ObsidianOperation] = field(default_factory=list)
     issues: list[dict[str, str]] = field(default_factory=list)
+    freshness: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        payload = {
             "ok": self.ok,
             "dry_run": self.dry_run,
             "wiki_dir": self.wiki_dir,
@@ -125,6 +137,9 @@ class ObsidianReport:
             "operations": [op.__dict__ for op in self.operations],
             "issues": self.issues,
         }
+        if self.freshness is not None:
+            payload["freshness"] = self.freshness
+        return payload
 
 
 def export_obsidian_vault(
@@ -234,6 +249,7 @@ def export_obsidian_vault(
         wiki_dir=str(wiki),
         vault_dir=str(vault),
         page_count=len(pages),
+        freshness=projection.freshness if projection is not None else None,
     )
 
     for page, mirror_path, note_path, content in rendered_pages:
@@ -282,26 +298,43 @@ def check_obsidian_vault(
         wiki_dir=str(wiki),
         vault_dir=str(vault),
         page_count=len(pages),
+        freshness=projection.freshness if projection is not None else None,
     )
-    if projection is not None:
-        try:
-            unexpected_pages = _unexpected_projected_mirror_pages(
-                vault,
-                expected_relative_paths=[
+    try:
+        unexpected_pages = _unexpected_projected_mirror_pages(
+            vault,
+            expected_relative_paths=(
+                [
                     _mirror_scan_relative_path(page) for page in pages
-                ],
-            )
-        except ObsidianError as exc:
+                ]
+                if projection is not None
+                else []
+            ),
+            knowledge_metadata_only=projection is None,
+        )
+    except ObsidianError as exc:
+        report.issues.append(
+            {
+                "category": "unsafe_projected_mirror_scan",
+                "path": str(vault / MIRROR_ROOT),
+                "message": str(exc),
+            }
+        )
+        report.ok = False
+        return report
+    for unexpected in unexpected_pages:
+        if projection is None:
             report.issues.append(
                 {
-                    "category": "unsafe_projected_mirror_scan",
-                    "path": str(vault / MIRROR_ROOT),
-                    "message": str(exc),
+                    "category": "unexpected_knowledge_metadata",
+                    "path": str(unexpected),
+                    "message": (
+                        "Projected knowledge frontmatter is present, but "
+                        "knowledge metadata mode was not selected"
+                    ),
                 }
             )
-            report.ok = False
-            return report
-        for unexpected in unexpected_pages:
+        else:
             report.issues.append(
                 {
                     "category": "unexpected_projected_mirror_page",
@@ -603,6 +636,8 @@ def render_report_text(report: ObsidianReport, *, action: str) -> str:
     lines = [f"Obsidian {action}", f"Vault: {report.vault_dir}"]
     if report.wiki_dir:
         lines.append(f"Wiki: {report.wiki_dir}")
+    if report.freshness is not None:
+        lines.append(f"Freshness: {report.freshness}")
     lines.append(f"Pages: {report.page_count}")
     if report.dry_run:
         lines.append("Dry run: no files were changed.")
@@ -954,6 +989,7 @@ def _unexpected_projected_mirror_pages(
     *,
     expected_relative_paths: Sequence[str],
     excluded_roots: Sequence[Path] = (),
+    knowledge_metadata_only: bool = False,
 ) -> list[Path]:
     """Find stale generated-looking pages through a bounded no-follow scan."""
 
@@ -1083,7 +1119,12 @@ def _unexpected_projected_mirror_pages(
                 path,
                 expected_metadata=metadata,
             )
-            if _has_projected_knowledge_frontmatter(frontmatter):
+            has_projected_metadata = (
+                _has_projected_knowledge_metadata_frontmatter(frontmatter)
+                if knowledge_metadata_only
+                else _has_projected_knowledge_frontmatter(frontmatter)
+            )
+            if has_projected_metadata:
                 unexpected.append(path)
     return unexpected
 
@@ -1255,6 +1296,26 @@ def _has_projected_knowledge_frontmatter(content: str) -> bool:
                 LLM_WIKI_FRONTMATTER_RE.search(frontmatter)
                 and PROJECTED_FRONTMATTER_KEY_RE.search(frontmatter)
             )
+            or LLM_WIKI_FRESHNESS_RE.search(frontmatter)
+        )
+    )
+
+
+def _has_projected_knowledge_metadata_frontmatter(content: str) -> bool:
+    """Detect knowledge-only fields while preserving legacy source metadata."""
+
+    frontmatter = _frontmatter_block(content)
+    if frontmatter is None and content.startswith("---"):
+        frontmatter = content
+    return bool(
+        frontmatter
+        and (
+            TOP_LEVEL_PROJECTED_KNOWLEDGE_FRONTMATTER_KEY_RE.search(frontmatter)
+            or (
+                LLM_WIKI_FRONTMATTER_RE.search(frontmatter)
+                and PROJECTED_KNOWLEDGE_FRONTMATTER_KEY_RE.search(frontmatter)
+            )
+            or LLM_WIKI_FRESHNESS_RE.search(frontmatter)
         )
     )
 

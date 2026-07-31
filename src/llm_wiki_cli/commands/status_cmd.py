@@ -61,7 +61,7 @@ def _print_knowledge_status(wiki_path: Path, src_dir: str) -> None:
     print(f"Knowledge:       {status['availability']} (reason: {status['reason']})")
     print(f"  Concepts evaluated: {summary['concepts_evaluated']}")
     print(f"  Evidence issues: {_format_counts(summary['evidence_issue_counts'])}")
-    print("  Freshness: not evaluated (snapshot-only status)")
+    print(f"  Freshness: {status['freshness']}")
     load_ms = summary["phase_durations_ms"]["load"]
     if load_ms is not None:
         print(f"  Snapshot load: {load_ms} ms")

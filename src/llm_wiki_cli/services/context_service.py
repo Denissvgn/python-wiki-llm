@@ -66,6 +66,7 @@ from .knowledge_model import (
     EvidenceState,
     KnowledgeLoadState,
 )
+from .knowledge_observability import knowledge_freshness_hint
 from .knowledge_orchestration import (
     RUNTIME_GENERATION_OPTION_DEFAULTS,
     RuntimeLiveEvaluationInputs,
@@ -541,6 +542,7 @@ def _render_markdown(payload: dict) -> str:
             "- freshness evaluated: "
             + ("yes" if knowledge.get("freshness_evaluated") else "no")
         )
+        lines.append(f"- freshness: {knowledge.get('freshness')}")
         lines.append("")
 
     typed_graph = payload.get("typed_graph")
@@ -622,6 +624,12 @@ def _render_markdown(payload: dict) -> str:
                 f"- `{page.get('canonical_path')}` - {title} ({page.get('mcp_uri')})"
                 f"{badge}{_typed_graph_page_badge(page)}"
             )
+            if isinstance(summary, dict) and isinstance(freshness, dict):
+                reason = freshness.get("reason")
+                hint = freshness.get("hint")
+                if isinstance(reason, str) and isinstance(hint, str):
+                    lines.append(f"  - freshness reason: `{reason}`")
+                    lines.append(f"  - freshness hint: {hint}")
         lines.append("")
 
     return "\n".join(lines)
@@ -1263,6 +1271,7 @@ def _knowledge_enriched_page_ref(
     status = {
         "availability": query_service.knowledge_status["availability"],
         "reason": query_service.knowledge_status["reason"],
+        "freshness_disclosure": query_service.knowledge_status["freshness"],
         "freshness_evaluated": query_service.knowledge_status[
             "freshness_evaluated"
         ],
@@ -1491,13 +1500,19 @@ def _nonnegative_count(value: object) -> int:
 
 def _compact_context_freshness(value: object) -> dict[str, Any]:
     freshness = value if isinstance(value, dict) else {}
-    return {
-        "state": freshness.get("state"),
-        "reason": freshness.get("reason"),
+    state = freshness.get("state")
+    reason = freshness.get("reason")
+    result = {
+        "state": state,
+        "reason": reason,
         "live_comparison_performed": bool(
             freshness.get("live_comparison_performed", False)
         ),
     }
+    hint = knowledge_freshness_hint(state, reason)
+    if hint is not None:
+        result["hint"] = hint
+    return result
 
 
 def _compact_context_review(value: Mapping[str, Any]) -> dict[str, Any]:

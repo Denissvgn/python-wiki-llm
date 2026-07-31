@@ -42,6 +42,8 @@ from .knowledge_artifacts import (
     validate_surface_index_bytes,
 )
 from .knowledge_envelope import KnowledgeEnvelopeError, hash_markdown_snapshot
+from .knowledge_model import ComputedFreshness
+from .knowledge_observability import knowledge_freshness_hint
 from .source_snapshot import build_source_snapshot
 from .sync_manifest import (
     LEGACY_MANIFEST_VERSION,
@@ -236,6 +238,7 @@ class DocumentationWikiSnapshot:
     resource_limits: Mapping[str, int]
     knowledge_schema_version: str | None = None
     artifact_form: str = "legacy_index_only"
+    freshness_diagnostics: tuple[Mapping[str, str], ...] = ()
     baseline_strategy: str = field(default="adopt_existing_wiki", init=False)
 
     @property
@@ -281,7 +284,7 @@ class DocumentationWikiSnapshot:
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-serializable evidence payload."""
 
-        return {
+        payload = {
             "baseline_strategy": self.baseline_strategy,
             "input_wiki_dir": self.input_wiki_dir,
             "workspace_wiki_dir": self.workspace_wiki_dir,
@@ -319,6 +322,11 @@ class DocumentationWikiSnapshot:
                 "source_verified_publish_ready": self.source_verified_publish_ready,
             },
         }
+        if self.freshness_diagnostics:
+            payload["freshness_diagnostics"] = [
+                dict(diagnostic) for diagnostic in self.freshness_diagnostics
+            ]
+        return payload
 
 
 @dataclass(frozen=True)
@@ -705,7 +713,12 @@ def _adopt_validated_wiki_snapshot(
         surface,
         generated_marker_counts=markdown_inspection.generated_marker_counts,
     )
-    freshness, source_mismatches, diagnostics = _resolve_metadata_freshness(
+    (
+        freshness,
+        source_mismatches,
+        diagnostics,
+        freshness_diagnostics,
+    ) = _resolve_metadata_freshness(
         metadata,
         source_root=source_root,
         trust_source_plugins=trust_source_plugins,
@@ -811,6 +824,7 @@ def _adopt_validated_wiki_snapshot(
         resource_limits=documentation_wiki_input_resource_limits(),
         knowledge_schema_version=metadata.knowledge_schema_version,
         artifact_form=metadata.artifact_form,
+        freshness_diagnostics=freshness_diagnostics,
     )
 
 
@@ -2972,7 +2986,12 @@ def _resolve_metadata_freshness(
     source_root: Path | None,
     trust_source_plugins: bool,
     helper_cache_dir: str | Path | None,
-) -> tuple[str, tuple[str, ...], list[str]]:
+) -> tuple[
+    str,
+    tuple[str, ...],
+    list[str],
+    tuple[Mapping[str, str], ...],
+]:
     """Select legacy comparison or the fail-closed native evaluation seam.
 
     A run-specific private adapter can extend this function with trusted plugin
@@ -2987,6 +3006,7 @@ def _resolve_metadata_freshness(
                 "unverified",
                 (),
                 ["source_unavailable: source freshness cannot be verified"],
+                (),
             )
         return (
             "unverified",
@@ -2995,6 +3015,7 @@ def _resolve_metadata_freshness(
                 "native_freshness_pending: validated manifest v5 state requires "
                 "shared live generation and producer evaluation"
             ],
+            (),
         )
     if metadata.artifact_form == "manifest_v5_native":
         if source_root is None:
@@ -3002,6 +3023,7 @@ def _resolve_metadata_freshness(
                 "unverified",
                 (),
                 ["source_unavailable: source freshness cannot be verified"],
+                (),
             )
         if (
             metadata.sync_manifest is None
@@ -3014,6 +3036,7 @@ def _resolve_metadata_freshness(
                     "native_freshness_invalid: validated native state is "
                     "incomplete"
                 ],
+                (),
             )
         from .documentation_native import evaluate_documentation_native_freshness
 
@@ -3025,6 +3048,9 @@ def _resolve_metadata_freshness(
                 trust_source_plugins=trust_source_plugins,
                 helper_cache_dir=helper_cache_dir,
             )
+            freshness_diagnostics = _basis_incompatible_diagnostics(
+                evaluated.report
+            )
         except Exception:  # Fail closed across extractor/plugin/runtime boundaries.
             return (
                 "unverified",
@@ -3033,6 +3059,7 @@ def _resolve_metadata_freshness(
                     "native_freshness_invalid: live native evaluation could not "
                     "be constructed"
                 ],
+                (),
             )
         if evaluated.current:
             return (
@@ -3042,26 +3069,66 @@ def _resolve_metadata_freshness(
                     "native_verified_current: source inventory and native "
                     "generation and producer bases match"
                 ],
+                (),
             )
-        diagnostics = [
-            f"native_basis_incompatible:{reason}"
-            for reason in evaluated.reasons
-        ]
+        basis_by_reason = {
+            f"{item['locator']}:{item['reason_code']}": item
+            for item in freshness_diagnostics
+        }
+        diagnostics = []
+        for reason in evaluated.reasons:
+            basis = basis_by_reason.get(reason)
+            if basis is None:
+                diagnostics.append(f"native_freshness_not_current:{reason}")
+                continue
+            diagnostics.append(
+                f"native_basis_incompatible:{reason}; hint={basis['hint']}"
+            )
         if not diagnostics:
             diagnostics.append(
-                "native_basis_incompatible: live native evaluation did not "
+                "native_freshness_not_current: live native evaluation did not "
                 "establish a current state"
             )
         return (
             "verified_stale",
             tuple(evaluated.source_mismatches),
             diagnostics,
+            freshness_diagnostics,
         )
-    return _resolve_freshness(
+    freshness, source_mismatches, diagnostics = _resolve_freshness(
         metadata.manifest_payload,
         legacy=metadata.legacy_index_only,
         source_root=source_root,
     )
+    return freshness, source_mismatches, diagnostics, ()
+
+
+def _basis_incompatible_diagnostics(
+    report: object,
+) -> tuple[Mapping[str, str], ...]:
+    by_locator = getattr(report, "by_locator", None)
+    if not isinstance(by_locator, Mapping):
+        raise ValueError("native freshness report has no locator results")
+    diagnostics: list[Mapping[str, str]] = []
+    for locator, result in sorted(by_locator.items()):
+        state = getattr(result, "state", None)
+        reason_code = getattr(result, "reason_code", None)
+        if state is not ComputedFreshness.BASIS_INCOMPATIBLE:
+            continue
+        hint = knowledge_freshness_hint(state, reason_code)
+        if hint is None or not isinstance(locator, str):
+            raise ValueError(
+                "basis-incompatible native freshness lacks actionable guidance"
+            )
+        diagnostics.append(
+            {
+                "locator": locator,
+                "state": ComputedFreshness.BASIS_INCOMPATIBLE.value,
+                "reason_code": reason_code,
+                "hint": hint,
+            }
+        )
+    return tuple(diagnostics)
 
 
 def _resolve_freshness(
@@ -3185,9 +3252,11 @@ def _enforce_freshness_policy(
     if freshness == "verified_current":
         return False
     if policy == "require-current":
+        details = "; ".join(diagnostics)
         raise DocumentationWikiInputError(
             f"Input wiki freshness is {freshness}; require-current refuses adoption. "
-            "Choose allow-unverified or refresh-snapshot explicitly.",
+            "Choose allow-unverified or refresh-snapshot explicitly."
+            + (f" Diagnostics: {details}" if details else ""),
             category="freshness_not_current",
             diagnostics=tuple(diagnostics),
         )

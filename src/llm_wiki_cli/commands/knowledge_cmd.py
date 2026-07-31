@@ -22,6 +22,7 @@ from ..services.knowledge_artifacts import (
     commit_knowledge_artifacts,
     validate_knowledge_artifacts,
 )
+from ..services.knowledge_consumption import build_knowledge_read_view
 from ..services.knowledge_governance import (
     ACTOR_KINDS,
     ALIAS_LOCATOR,
@@ -61,6 +62,7 @@ from ..services.knowledge_model import (
     KnowledgeLoadState,
     Lifecycle,
 )
+from ..services.knowledge_observability import knowledge_freshness_disclosure
 from ..services.sync_manifest import MANIFEST_FILENAME, SyncManifest
 from ..services.verification_contracts import (
     VerificationResult,
@@ -787,6 +789,8 @@ def _run_status(args) -> None:
         wiki_dir,
         policy=KnowledgeMismatchPolicy.REJECT,
     )
+    read_view = build_knowledge_read_view(state, snapshot_only=True)
+    freshness = knowledge_freshness_disclosure(read_view)
     path = wiki_dir / GOVERNANCE_FILENAME
     if not (path.exists() or path.is_symlink()):
         payload: dict[str, object] = {
@@ -806,17 +810,21 @@ def _run_status(args) -> None:
             event_limit=args.event_limit,
         )
         payload["knowledge_state"] = state.status.value
+    payload["freshness"] = freshness
+    payload["freshness_evaluated"] = read_view.freshness_evaluated
     if args.format == "json":
         _print_payload(payload)
         return
     if payload["state"] == "ungoverned":
         print(f"Knowledge governance: ungoverned ({payload['knowledge_state']})")
+        print(f"Freshness: {freshness}")
         return
     print(
         "Knowledge governance: "
         f"{payload['bundle_id']} — {payload['concept_count']} concepts "
         f"({payload['governance_hash']})"
     )
+    print(f"Freshness: {freshness}")
     for concept in payload["concepts"]:
         print(
             f"{concept['uid']} {concept['lifecycle']} "

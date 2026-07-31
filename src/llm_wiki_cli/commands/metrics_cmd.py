@@ -77,7 +77,14 @@ def render_text(summary: dict, last: str) -> str:
                     f"({reason})"
                 ),
                 (f"- Concepts evaluated: {knowledge.get('concepts_evaluated', 0)}"),
-                (f"- Freshness: {_fmt_counts(knowledge.get('freshness_counts'))}"),
+                (
+                    "- Freshness: "
+                    f"{knowledge.get('freshness', 'unevaluated (snapshot-only read)')}"
+                ),
+                (
+                    "- Freshness counts: "
+                    f"{_fmt_counts(knowledge.get('freshness_counts'))}"
+                ),
                 (
                     "- Evidence issues: "
                     f"{_fmt_counts(knowledge.get('evidence_issue_counts'))}"

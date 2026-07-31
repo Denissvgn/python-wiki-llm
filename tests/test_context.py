@@ -15,6 +15,12 @@ from llm_wiki_cli.commands import context_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
 from llm_wiki_cli.services.knowledge_artifacts import commit_knowledge_artifacts
+from llm_wiki_cli.services.knowledge_freshness import (
+    REASON_GENERATION_OPTIONS_CHANGED,
+)
+from llm_wiki_cli.services.knowledge_observability import (
+    BASIS_INCOMPATIBLE_HINTS,
+)
 from tests.knowledge_fixtures import (
     materialize_fixture_tree,
     one_module_two_entities_fixture,
@@ -124,7 +130,11 @@ def _knowledge_page_fixture(
         "verification": "untracked",
         "freshness": {
             "state": freshness,
-            "reason": f"fixture-{freshness}",
+            "reason": (
+                REASON_GENERATION_OPTIONS_CHANGED
+                if freshness == "basis-incompatible"
+                else f"fixture-{freshness}"
+            ),
             "live_comparison_performed": True,
         },
     }
@@ -190,6 +200,11 @@ class _KnowledgeQueryStub:
         self.knowledge_status = {
             "availability": availability,
             "reason": reason,
+            "freshness": (
+                f"evaluated ({len(self.concepts)} concepts)"
+                if freshness_evaluated
+                else "unevaluated (snapshot-only read)"
+            ),
             "freshness_evaluated": freshness_evaluated,
         }
         self.lookups: list[str] = []
@@ -301,6 +316,11 @@ def test_context_v1_uses_shared_knowledge_compatibility_policy(
     expected_status = {
         "availability": case.expected_availability.value,
         "reason": case.expected_reason.value,
+        "freshness": (
+            "evaluated (6 concepts)"
+            if case.serves_knowledge
+            else "unevaluated (snapshot-only read)"
+        ),
         "freshness_evaluated": case.serves_knowledge,
     }
     assert context_cmd.PROTOCOL_VERSION == "llm-wiki-context/v1"
@@ -320,7 +340,13 @@ def test_context_v1_uses_shared_knowledge_compatibility_policy(
         )
     else:
         assert all(
-            page["knowledge"] == expected_status
+            page["knowledge"]
+            == {
+                "availability": expected_status["availability"],
+                "reason": expected_status["reason"],
+                "freshness_disclosure": expected_status["freshness"],
+                "freshness_evaluated": False,
+            }
             for page in payload["surface"]["pages"]
         )
         assert any(
@@ -686,6 +712,42 @@ class TestRenderMarkdown:
         assert "Surface `flows`" in md
         assert "`flows/api-run.md`" in md
 
+    def test_basis_incompatibility_renders_machine_reason_and_action_hint(self):
+        reason = "generation-options-changed"
+        hint = BASIS_INCOMPATIBLE_HINTS[reason]
+        payload = {
+            "budget": 10,
+            "used": 0,
+            "files": {},
+            "surface": {
+                "kind": "entities",
+                "count": 1,
+                "truncated": False,
+                "pages": [
+                    {
+                        "id": "User",
+                        "title": "User",
+                        "canonical_path": "entities/User.md",
+                        "mcp_uri": "llm-wiki://entities/User",
+                        "knowledge": {
+                            "availability": "ready",
+                            "freshness": {
+                                "state": "basis-incompatible",
+                                "reason": reason,
+                                "hint": hint,
+                                "live_comparison_performed": True,
+                            },
+                        },
+                    }
+                ],
+            },
+        }
+
+        markdown = context_cmd._render_markdown(payload)
+
+        assert f"freshness reason: `{reason}`" in markdown
+        assert f"freshness hint: {hint}" in markdown
+
 
 # ── Protocol helpers ──────────────────────────────────────────────────
 
@@ -1012,6 +1074,7 @@ class TestKnowledgePageSelection:
         assert enriched["knowledge"] == {
             "availability": "ready",
             "reason": "all-projection-commitments-match",
+            "freshness_disclosure": "evaluated (1 concepts)",
             "freshness_evaluated": True,
             "origin": "extracted",
             "evidence": "present",
@@ -1237,6 +1300,7 @@ class TestKnowledgePageSelection:
             == {
                 "availability": availability,
                 "reason": reason,
+                "freshness_disclosure": "unevaluated (snapshot-only read)",
                 "freshness_evaluated": False,
             }
             for page in selected
@@ -1654,6 +1718,7 @@ def test_knowledge_enrichment_reuses_one_live_inventory_and_read_view(
     assert payload["knowledge"] == {
         "availability": "ready",
         "reason": "all-projection-commitments-match",
+        "freshness": "evaluated (6 concepts)",
         "freshness_evaluated": True,
     }
     assert payload["surface"]["knowledge_selection"] == {
@@ -1668,6 +1733,7 @@ def test_knowledge_enrichment_reuses_one_live_inventory_and_read_view(
         == {
             "availability",
             "reason",
+            "freshness_disclosure",
             "freshness_evaluated",
             "origin",
             "evidence",
@@ -1747,6 +1813,11 @@ def test_context_generation_option_evaluation_fails_closed(
     assert payload["knowledge"] == {
         "availability": "ready",
         "reason": "all-projection-commitments-match",
+        "freshness": (
+            "evaluated (6 concepts)"
+            if freshness_evaluated
+            else "unevaluated (snapshot-only read)"
+        ),
         "freshness_evaluated": freshness_evaluated,
     }
     freshness = [
@@ -1757,6 +1828,12 @@ def test_context_generation_option_evaluation_fails_closed(
     assert {item["live_comparison_performed"] for item in freshness} == {
         freshness_evaluated
     }
+    if live_policy == "mismatch":
+        assert {item["hint"] for item in freshness} == {
+            BASIS_INCOMPATIBLE_HINTS[reason]
+        }
+    else:
+        assert all("hint" not in item for item in freshness)
 
 
 class TestProtocolRun:

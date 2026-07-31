@@ -30,6 +30,9 @@ from llm_wiki_cli.services.knowledge_model import (
     ComputedFreshness,
     EvidenceState,
 )
+from llm_wiki_cli.services.knowledge_observability import (
+    BASIS_INCOMPATIBLE_HINTS,
+)
 from llm_wiki_cli.services.knowledge_orchestration import (
     RUNTIME_GENERATION_INPUT_KEY,
 )
@@ -293,6 +296,7 @@ def test_strict_ready_state_reports_current_summary_and_optional_json(
     assert payload["knowledge_summary"] == {
         "availability": "ready",
         "reason": "all-projection-commitments-match",
+        "freshness": "evaluated (6 concepts)",
         "concepts_evaluated": 6,
         "freshness_counts": {
             "basis-incompatible": 0,
@@ -334,6 +338,10 @@ def test_strict_ready_state_reports_current_summary_and_optional_json(
             "unknown": 3,
         },
     }
+    assert "Freshness: evaluated (6 concepts)" in lint_cmd.render_text(report)
+    assert "- Freshness: evaluated (6 concepts)" in lint_cmd.render_markdown(
+        report
+    )
 
 
 def test_lint_sets_observability_summary_after_knowledge_checks_close(
@@ -582,8 +590,49 @@ def test_report_mode_reports_live_generation_option_drift_without_blocking(
         "llm-wiki://entities/User",
         "llm-wiki://modules/app",
     }
+    expected_hint = BASIS_INCOMPATIBLE_HINTS["generation-options-changed"]
+    assert {finding.reason_code for finding in findings} == {
+        "generation-options-changed"
+    }
+    assert {finding.hint for finding in findings} == {expected_hint}
+    payload_findings = [
+        finding
+        for finding in lint_cmd.report_to_dict(report)["diagnostics"]
+        if finding.get("reason_code") == "generation-options-changed"
+    ]
+    assert {finding["hint"] for finding in payload_findings} == {expected_hint}
+    assert f"Hint: {expected_hint}" in lint_cmd.render_text(report)
+    assert f"Hint: {expected_hint}" in lint_cmd.render_markdown(report)
     assert report.knowledge_summary is not None
     assert report.knowledge_summary.freshness_by_state["basis-incompatible"] == 2
+
+
+def test_only_freshness_diagnostics_gain_structured_reason_and_hint():
+    report = lint_cmd.LintReport(wiki_dir="wiki", src_dir="src")
+    report.diagnostics.extend(
+        [
+            lint_cmd.LintIssue(
+                category="knowledge_freshness",
+                message="incompatible",
+                reason_code="generation-options-changed",
+                hint=BASIS_INCOMPATIBLE_HINTS["generation-options-changed"],
+            ),
+            lint_cmd.LintIssue(
+                category="unsupported_sources",
+                message="unsupported",
+                severity="warning",
+            ),
+        ]
+    )
+
+    diagnostics = lint_cmd.report_to_dict(report)["diagnostics"]
+
+    assert diagnostics[0]["reason_code"] == "generation-options-changed"
+    assert diagnostics[0]["hint"] == BASIS_INCOMPATIBLE_HINTS[
+        "generation-options-changed"
+    ]
+    assert "reason_code" not in diagnostics[1]
+    assert "hint" not in diagnostics[1]
 
 
 def test_report_mode_reports_invalid_live_generation_policy_without_blocking(

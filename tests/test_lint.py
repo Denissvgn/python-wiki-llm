@@ -2617,6 +2617,7 @@ def test_strict_lint_metrics_receive_only_safe_aggregate_knowledge(
     assert set(recorded[0]["knowledge_summary"]) == {
         "availability",
         "reason",
+        "freshness",
         "concepts_evaluated",
         "freshness_counts",
         "evidence_issue_counts",

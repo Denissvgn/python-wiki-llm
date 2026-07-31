@@ -59,6 +59,9 @@ from llm_wiki_cli.services.knowledge_model import (
     parse_knowledge_index,
     serialize_knowledge_index,
 )
+from llm_wiki_cli.services.knowledge_observability import (
+    BASIS_INCOMPATIBLE_HINTS,
+)
 from llm_wiki_cli.services.knowledge_projection import (
     project_knowledge,
     projection_concept_summary,
@@ -691,6 +694,7 @@ def test_governed_projection_enriches_site_and_obsidian_without_native_writes(
     ] == {
         "availability": "ready",
         "reason": "all-projection-commitments-match",
+        "freshness": "evaluated (6 concepts)",
         "freshness_evaluated": True,
     }
     assert live_module["concept"]["freshness"] == mcp_module["concept"][
@@ -698,6 +702,7 @@ def test_governed_projection_enriches_site_and_obsidian_without_native_writes(
     ] == {
         "state": "basis-incompatible",
         "reason": "extractor-selection-changed",
+        "hint": BASIS_INCOMPATIBLE_HINTS["extractor-selection-changed"],
         "live_comparison_performed": True,
     }
     assert context["surface"]["knowledge_selection"] == {
@@ -838,6 +843,7 @@ def test_governed_projection_enriches_site_and_obsidian_without_native_writes(
     assert snapshot_context["knowledge"] == {
         "availability": "ready",
         "reason": "all-projection-commitments-match",
+        "freshness": "unevaluated (snapshot-only read)",
         "freshness_evaluated": False,
     }
     assert snapshot_context["surface"]["knowledge_selection"] == context["surface"][

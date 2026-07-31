@@ -536,6 +536,11 @@ def test_python_knowledge_api_uses_shared_compatibility_policy(
     expected_status = {
         "availability": case.expected_availability.value,
         "reason": case.expected_reason.value,
+        "freshness": (
+            "evaluated (6 concepts)"
+            if case.serves_knowledge
+            else "unevaluated (snapshot-only read)"
+        ),
         "freshness_evaluated": case.serves_knowledge,
     }
     assert concept["knowledge"] == expected_status
@@ -747,6 +752,7 @@ def test_build_context_passes_knowledge_refinements_and_preserves_results(
     knowledge_status = {
         "availability": "ready",
         "reason": "all-projection-commitments-match",
+        "freshness": "evaluated (1 concepts)",
         "freshness_evaluated": True,
     }
     seen = {}
@@ -792,6 +798,7 @@ def test_build_context_passes_knowledge_refinements_and_preserves_results(
                             "mcp_uri": "llm-wiki://entities/User",
                             "knowledge": {
                                 **knowledge_status,
+                                "freshness_disclosure": knowledge_status["freshness"],
                                 "evidence": "present",
                                 "freshness": {
                                     "state": "source-changed",
@@ -943,6 +950,7 @@ def test_build_context_markdown_preserves_knowledge_status_and_warnings(
     status = {
         "availability": "degraded",
         "reason": "policy-selected-surface-only-fallback-after-invalid",
+        "freshness": "unevaluated (snapshot-only read)",
         "freshness_evaluated": False,
     }
 
@@ -971,6 +979,7 @@ def test_build_context_markdown_preserves_knowledge_status_and_warnings(
     ]
     assert "## Knowledge" in result["content"]
     assert "- availability: degraded" in result["content"]
+    assert "- freshness: unevaluated (snapshot-only read)" in result["content"]
 
 
 def test_build_context_legacy_json_shape_remains_context_v1(monkeypatch):
@@ -1232,6 +1241,7 @@ def test_query_service_builder_exposes_committed_knowledge_end_to_end(
     assert result["knowledge"] == {
         "availability": "ready",
         "reason": "all-projection-commitments-match",
+        "freshness": "evaluated (6 concepts)",
         "freshness_evaluated": True,
     }
     assert result["found"] is True
@@ -1527,6 +1537,7 @@ def test_query_service_builder_uses_snapshot_only_on_live_option_failure(
     assert result["knowledge"] == {
         "availability": "ready",
         "reason": "all-projection-commitments-match",
+        "freshness": "unevaluated (snapshot-only read)",
         "freshness_evaluated": False,
     }
     assert result["concept"]["freshness"] == {
@@ -1584,6 +1595,7 @@ def test_graph_query_service_and_wrappers_return_documentation_answers(tmp_proje
     assert concept["knowledge"] == {
         "availability": "absent",
         "reason": "knowledge-projection-not-present",
+        "freshness": "unevaluated (snapshot-only read)",
         "freshness_evaluated": False,
     }
     assert concept["found"] is False
@@ -1872,6 +1884,7 @@ def test_knowledge_wrappers_preserve_structured_non_ready_state_without_extracti
     status = {
         "availability": availability,
         "reason": reason,
+        "freshness": "unevaluated (snapshot-only read)",
         "freshness_evaluated": False,
     }
     assert concept["knowledge"] == status

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+from pathlib import Path
 
 import pytest
 
@@ -75,6 +76,7 @@ def _capture_record(
             "availability": "ready",
             "reason": "knowledge-ready",
             "structural_evidence_state": "present",
+            "freshness": "unevaluated (snapshot-only read)",
             "freshness_evaluated": False,
             "freshness_state": None,
             "freshness_reason": "freshness-not-evaluated",
@@ -156,6 +158,7 @@ def test_claim_evidence_reconciles_exact_current_identity_and_graph_bounds(
     assert record["resolution"] == "exact"
     assert record["concept_locator"] == MODULE_LOCATOR
     assert record["freshness"]["evaluated"] is True
+    assert record["freshness"]["disclosure"] == "evaluated (6 concepts)"
     assert record["bounds"]["matches"] == {
         "total": 1,
         "returned": 1,
@@ -164,6 +167,42 @@ def test_claim_evidence_reconciles_exact_current_identity_and_graph_bounds(
     assert record["bounds"]["edges"]["returned"] <= 1
     assert record["bounds"]["edges"]["truncated"] is True
     assert reconcile_claim_evidence_records([record], service) == (record,)
+
+
+def test_claim_evidence_accepts_and_upgrades_legacy_freshness_shape(
+    tmp_path,
+) -> None:
+    service = _typed_graph_service(tmp_path)
+    record = qualify_claim_evidence(
+        service,
+        claim_id="work:module-impact",
+        canonical_page="modules/accounts.md",
+        concept_query=MODULE_LOCATOR,
+    )
+    legacy = {**record, "freshness": dict(record["freshness"])}
+    legacy["freshness"].pop("disclosure")
+
+    reconciled = reconcile_claim_evidence_records([legacy], service)
+
+    assert reconciled[0]["freshness"]["disclosure"] == "evaluated (6 concepts)"
+
+
+def test_claim_evidence_rejects_forged_freshness_disclosure(tmp_path) -> None:
+    service = _typed_graph_service(tmp_path)
+    record = qualify_claim_evidence(
+        service,
+        claim_id="work:module-impact",
+        canonical_page="modules/accounts.md",
+        concept_query=MODULE_LOCATOR,
+    )
+    forged = {**record, "freshness": dict(record["freshness"])}
+    forged["freshness"]["disclosure"] = "unevaluated (snapshot-only read)"
+
+    with pytest.raises(
+        DocumentationClaimEvidenceError,
+        match="evaluated concept count",
+    ):
+        reconcile_claim_evidence_records([forged], service)
 
 
 @pytest.mark.parametrize(
@@ -296,6 +335,7 @@ def test_claim_preserves_expired_section_review_without_private_parsing() -> Non
                 "knowledge": {
                     "availability": "ready",
                     "reason": "all-projection-commitments-match",
+                    "freshness": "evaluated (1 concepts)",
                     "freshness_evaluated": True,
                 },
                 "concept": {
@@ -390,6 +430,9 @@ def test_claim_preserves_unsupported_native_state() -> None:
     assert record["concept_uid"] is None
     assert record["concept_locator"] is None
     assert record["freshness"]["evaluated"] is False
+    assert record["freshness"]["disclosure"] == (
+        "unevaluated (snapshot-only read)"
+    )
     assert record["structural_evidence"]["state"] is None
 
 
@@ -422,6 +465,128 @@ def test_runtime_capture_verifies_redacted_bytes_and_reconciles_identity(
         "locator": USER_LOCATOR,
         "section_state": "not-requested",
     }
+
+
+def test_runtime_capture_freshness_disclosure_is_truthful_and_compatible() -> None:
+    current = _capture_record(
+        capture_path=None,
+        capture_digest=None,
+        state="deferred",
+    )
+    normalized = normalize_runtime_capture_records([current])[0]
+    assert normalized["native_observation"]["freshness"] == (
+        "unevaluated (snapshot-only read)"
+    )
+
+    legacy_snapshot = _capture_record(
+        capture_path=None,
+        capture_digest=None,
+        state="deferred",
+    )
+    legacy_snapshot["native_observation"].pop("freshness")
+    upgraded = normalize_runtime_capture_records([legacy_snapshot])[0]
+    assert upgraded["native_observation"]["freshness"] == (
+        "unevaluated (snapshot-only read)"
+    )
+
+    evaluated = _capture_record(
+        capture_path=None,
+        capture_digest=None,
+        state="deferred",
+    )
+    evaluated["native_observation"].update(
+        {
+            "freshness": "evaluated (6 concepts)",
+            "freshness_evaluated": True,
+            "freshness_state": "unknown",
+            "freshness_reason": "live-evaluation-not-performed",
+        }
+    )
+    evaluated_normalized = normalize_runtime_capture_records([evaluated])[0]
+    assert evaluated_normalized["native_observation"]["freshness"] == (
+        "evaluated (6 concepts)"
+    )
+
+    legacy_evaluated = _capture_record(
+        capture_path=None,
+        capture_digest=None,
+        state="deferred",
+    )
+    legacy_evaluated["native_observation"].update(
+        {
+            "freshness_evaluated": True,
+            "freshness_state": "unknown",
+            "freshness_reason": "live-evaluation-not-performed",
+        }
+    )
+    legacy_evaluated["native_observation"].pop("freshness")
+    with pytest.raises(
+        DocumentationClaimEvidenceError,
+        match="recapture with the exact aggregate disclosure",
+    ):
+        normalize_runtime_capture_records([legacy_evaluated])
+
+
+@pytest.mark.parametrize(
+    ("evaluated", "disclosure", "message"),
+    [
+        (
+            False,
+            "evaluated (6 concepts)",
+            "must identify a snapshot-only read",
+        ),
+        (
+            True,
+            "unevaluated (snapshot-only read)",
+            "must include the evaluated concept count",
+        ),
+        (
+            True,
+            "evaluated (06 concepts)",
+            "must include the evaluated concept count",
+        ),
+    ],
+)
+def test_runtime_capture_rejects_forged_freshness_disclosure(
+    evaluated,
+    disclosure,
+    message,
+) -> None:
+    record = _capture_record(
+        capture_path=None,
+        capture_digest=None,
+        state="deferred",
+    )
+    record["native_observation"].update(
+        {
+            "freshness": disclosure,
+            "freshness_evaluated": evaluated,
+            "freshness_state": "unknown" if evaluated else None,
+            "freshness_reason": (
+                "live-evaluation-not-performed"
+                if evaluated
+                else "freshness-not-evaluated"
+            ),
+        }
+    )
+
+    with pytest.raises(DocumentationClaimEvidenceError, match=message):
+        normalize_runtime_capture_records([record])
+
+
+def test_usage_examples_reference_requires_runtime_freshness_disclosure() -> None:
+    reference = (
+        Path(__file__).resolve().parents[1]
+        / "src"
+        / "llm_wiki_cli"
+        / "skills"
+        / "usage-examples"
+        / "reference.md"
+    ).read_text(encoding="utf-8")
+
+    assert "exact aggregate `freshness` disclosure" in reference
+    assert "`evaluated (N concepts)`" in reference
+    assert "`unevaluated (snapshot-only read)`" in reference
 
 
 def test_runtime_capture_reconciles_uid_with_a_governed_rename_alias(
@@ -476,6 +641,7 @@ def test_runtime_capture_deferral_and_secret_rejection_are_explicit() -> None:
         "availability": "absent",
         "reason": "knowledge-not-present",
         "structural_evidence_state": None,
+        "freshness": "unevaluated (snapshot-only read)",
         "freshness_evaluated": False,
         "freshness_state": None,
         "freshness_reason": "freshness-not-evaluated",

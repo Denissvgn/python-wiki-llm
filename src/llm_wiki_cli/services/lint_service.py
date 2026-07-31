@@ -72,6 +72,7 @@ from .validation import path_is_in_top_level_directory
 from .knowledge_observability import (
     KnowledgeAggregateSummary,
     KnowledgePhaseDurations,
+    knowledge_freshness_hint,
     summarize_knowledge_view,
 )
 from .knowledge_orchestration import (
@@ -203,6 +204,8 @@ class LintIssue:
     severity: str = "error"
     path: str | None = None
     target: str | None = None
+    reason_code: str | None = None
+    hint: str | None = None
 
 
 @dataclass(frozen=True)
@@ -452,6 +455,8 @@ def _diagnose(
     path: str | None = None,
     target: str | None = None,
     severity: str = "warning",
+    reason_code: str | None = None,
+    hint: str | None = None,
 ) -> None:
     report.diagnostics.append(
         LintIssue(
@@ -460,6 +465,8 @@ def _diagnose(
             severity=severity,
             path=path,
             target=target,
+            reason_code=reason_code,
+            hint=hint,
         )
     )
 
@@ -470,6 +477,8 @@ def _record_knowledge_drift(
     *,
     path: str | None = None,
     target: str | None = None,
+    reason_code: str | None = None,
+    hint: str | None = None,
 ) -> None:
     """Record native freshness only in the explicit report-only mode."""
 
@@ -481,6 +490,8 @@ def _record_knowledge_drift(
         message,
         path=path,
         target=target,
+        reason_code=reason_code,
+        hint=hint,
     )
 
 
@@ -1635,7 +1646,14 @@ def _set_knowledge_summary(
     counts = view.counts
     aggregate = summarize_knowledge_view(view, durations=durations)
     report.knowledge_summary = KnowledgeLintSummary(
-        **aggregate.to_payload(),
+        availability=aggregate.availability,
+        reason=aggregate.reason,
+        concepts_evaluated=aggregate.concepts_evaluated,
+        freshness_counts=aggregate.freshness_counts,
+        evidence_issue_counts=aggregate.evidence_issue_counts,
+        degraded_reason=aggregate.degraded_reason,
+        phase_durations_ms=aggregate.phase_durations_ms,
+        freshness_evaluated=aggregate.freshness_evaluated,
         concepts_total=0 if counts is None else counts.concepts_total,
         concepts_by_kind={} if counts is None else dict(counts.concepts_by_kind),
         evidence_by_state=(
@@ -1723,8 +1741,13 @@ def _check_knowledge_concepts(
                 ),
                 path=concept.document.canonical_path,
                 target=concept.locator,
+                reason_code="freshness-result-missing",
             )
             continue
+        hint = knowledge_freshness_hint(
+            freshness.state,
+            freshness.reason_code,
+        )
         message = (
             f"Knowledge freshness for {concept.locator!r} is "
             f"{freshness.state.value} [reason={freshness.reason_code}]: "
@@ -1736,6 +1759,8 @@ def _check_knowledge_concepts(
                 message,
                 path=concept.document.canonical_path,
                 target=concept.locator,
+                reason_code=freshness.reason_code,
+                hint=hint,
             )
         elif freshness.state in {
             ComputedFreshness.UNKNOWN,
@@ -1748,6 +1773,8 @@ def _check_knowledge_concepts(
                 message,
                 path=concept.document.canonical_path,
                 target=concept.locator,
+                reason_code=freshness.reason_code,
+                hint=hint,
             )
 
 
@@ -2277,6 +2304,15 @@ def build_report(
     return report
 
 
+def _lint_issue_payload(issue: LintIssue) -> dict[str, object]:
+    payload = asdict(issue)
+    if issue.reason_code is None:
+        payload.pop("reason_code")
+    if issue.hint is None:
+        payload.pop("hint")
+    return payload
+
+
 def report_to_dict(report: LintReport, *, include_execution: bool = False) -> dict:
     payload = {
         "wiki_dir": report.wiki_dir,
@@ -2288,8 +2324,10 @@ def report_to_dict(report: LintReport, *, include_execution: bool = False) -> di
         "knowledge_drift_report": report.knowledge_drift_report,
         "ok": report.passed,
         "issue_count": report.issue_count,
-        "issues": [asdict(issue) for issue in report.issues],
-        "diagnostics": [asdict(diagnostic) for diagnostic in report.diagnostics],
+        "issues": [_lint_issue_payload(issue) for issue in report.issues],
+        "diagnostics": [
+            _lint_issue_payload(diagnostic) for diagnostic in report.diagnostics
+        ],
     }
     if report.knowledge_summary is not None:
         payload["knowledge_summary"] = report.knowledge_summary.report_payload()
@@ -2302,7 +2340,6 @@ def _profile_report_to_dict(
     report: LintReport, profiler: _LintProfiler, *, include_cache: bool = False
 ) -> dict:
     payload = report_to_dict(report, include_execution=True)
-    payload["diagnostics"] = [asdict(diagnostic) for diagnostic in report.diagnostics]
     payload["profile"] = profiler.to_dict()
     if include_cache and report.cache_stats is not None:
         payload["cache"] = report.cache_stats.to_dict()
@@ -2361,6 +2398,8 @@ def render_text(report: LintReport) -> str:
         for diagnostic in diagnostics:
             marker = "INFO" if diagnostic.severity == "info" else "⚠️ "
             lines.append(f"  {marker} {diagnostic.message}")
+            if diagnostic.hint is not None:
+                lines.append(f"       Hint: {diagnostic.hint}")
         lines.append(f"  {found.format(count=len(issues) + len(diagnostics))}")
         lines.append("")
 
@@ -2571,6 +2610,15 @@ def render_text(report: LintReport) -> str:
         "Found {count} team canonical naming issue(s).",
     )
 
+    if report.knowledge_summary is not None:
+        lines.extend(
+            [
+                "Knowledge:",
+                f"  Freshness: {report.knowledge_summary.freshness}",
+                "",
+            ]
+        )
+
     # ── Summary ───────────────────────────────────────────────────────
     if report.passed:
         lines.append("✅ Lint passed: wiki is fully consistent.")
@@ -2596,8 +2644,10 @@ def render_markdown(report: LintReport) -> str:
         f"- Result: **{status}**",
         f"- Issues: {report.issue_count}",
         f"- Diagnostics: {len(report.diagnostics)}",
-        "",
     ]
+    if report.knowledge_summary is not None:
+        lines.append(f"- Freshness: {report.knowledge_summary.freshness}")
+    lines.append("")
     if not report.issues and not report.diagnostics:
         lines.append("No issues found.")
         return "\n".join(lines) + "\n"
@@ -2623,6 +2673,8 @@ def render_markdown(report: LintReport) -> str:
                 f"- **{diagnostic.category}**{location} [{severity}]: "
                 f"{diagnostic.message}"
             )
+            if diagnostic.hint is not None:
+                lines.append(f"  - Hint: {diagnostic.hint}")
     return "\n".join(lines) + "\n"
 
 

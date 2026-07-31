@@ -159,7 +159,15 @@ def _wiki_instructions(
 
 ## Native knowledge preflight
 - Before interpreting a native query or `found: false`, inspect knowledge
-  availability, its stable reason, and `freshness_evaluated`.
+  availability, its stable reason, `freshness`, and `freshness_evaluated`.
+  The aggregate `freshness` disclosure is `evaluated (N concepts)` or
+  `unevaluated (snapshot-only read)`.
+- Aggregate `freshness: evaluated (N concepts)` means the evaluator returned
+  one result per concept; it does not mean every concept had a live comparison.
+  Before a concept-specific freshness claim, inspect its state, reason, and
+  `live_comparison_performed`. A per-concept
+  `live_comparison_performed: false` remains non-live even when the aggregate
+  disclosure says evaluated.
 - `ready` with live `current` means only unchanged since observation, not true,
   reviewed, approved, secure, semantically verified, or runtime-current.
   Preserve `nonsemantic-source-change` as a qualified byte-change diagnostic.

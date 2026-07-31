@@ -40,6 +40,7 @@ def _projection(
     wiki: Path,
     *,
     bundle_id: str = "kb_site",
+    freshness_evaluated: bool = False,
 ) -> KnowledgeProjection:
     concepts = {}
     for page in collect_wiki_pages(wiki):
@@ -68,9 +69,13 @@ def _projection(
                 "origin": "extracted",
             },
             "freshness": {
-                "state": "not-evaluated",
-                "reason": "not-evaluated",
-                "evaluated": False,
+                "state": "unknown" if freshness_evaluated else "not-evaluated",
+                "reason": (
+                    "live-evaluation-not-performed"
+                    if freshness_evaluated
+                    else "not-evaluated"
+                ),
+                "evaluated": freshness_evaluated,
                 "live_comparison_performed": False,
             },
             "review": {
@@ -113,6 +118,11 @@ def _projection(
         concepts=concepts,
         warnings=(),
         omitted_fields={},
+        freshness=(
+            f"evaluated ({len(concepts)} concepts)"
+            if freshness_evaluated
+            else None
+        ),
     )
 
 
@@ -133,6 +143,7 @@ def _projection_from_payload(payload: dict[str, object]) -> KnowledgeProjection:
         concepts=payload["concepts"],
         warnings=tuple(payload["warnings"]),
         omitted_fields=payload["omitted_fields"],
+        freshness=payload.get("freshness"),
     )
 
 
@@ -153,8 +164,12 @@ def test_disabled_export_is_byte_identical_and_command_does_not_load_knowledge(
     baseline = tmp_path / "baseline"
     explicit_disabled = tmp_path / "explicit-disabled"
 
-    export_site_mirror(wiki_dir=wiki, out_dir=baseline, format="mkdocs")
-    export_site_mirror(
+    baseline_report = export_site_mirror(
+        wiki_dir=wiki,
+        out_dir=baseline,
+        format="mkdocs",
+    )
+    explicit_report = export_site_mirror(
         wiki_dir=wiki,
         out_dir=explicit_disabled,
         format="mkdocs",
@@ -162,6 +177,13 @@ def test_disabled_export_is_byte_identical_and_command_does_not_load_knowledge(
         knowledge_projection=None,
     )
     assert _tree(explicit_disabled) == _tree(baseline)
+    for report in (baseline_report, explicit_report):
+        assert report.freshness is None
+        assert "freshness" not in report.to_dict()
+        assert "Freshness:" not in site_export.render_report_text(
+            report,
+            action="export",
+        )
 
     def unexpected_load(*args, **kwargs):
         raise AssertionError("disabled site export loaded knowledge")
@@ -272,11 +294,31 @@ def test_summary_export_is_deterministic_private_safe_and_projection_only(
         )
         assert report.ok is True
 
+    assert report.freshness == "unevaluated (snapshot-only read)"
+    assert report.to_dict()["freshness"] == (
+        "unevaluated (snapshot-only read)"
+    )
+    assert (
+        "Freshness: unevaluated (snapshot-only read)"
+        in site_export.render_report_text(report, action="export")
+    )
+    assert (
+        '"freshness": "unevaluated (snapshot-only read)"'
+        in site_export.render_report_json(report)
+    )
+    checked = check_site_mirror(
+        wiki_dir=wiki,
+        out_dir=first,
+        knowledge_metadata="summary",
+        knowledge_projection=projection,
+    )
+    assert checked.freshness == "unevaluated (snapshot-only read)"
     assert _tree(first) == _tree(second)
     service = (first / "modules" / "service.md").read_text(encoding="utf-8")
     assert 'knowledge_bundle_id: "kb_site"' in service
     assert 'source_knowledge_hash: "sha256:' + "a" * 64 + '"' in service
     assert 'knowledge_evidence_reason: "structural-evidence-present"' in service
+    assert '  freshness: "unevaluated (snapshot-only read)"' in service
     assert 'knowledge_freshness: "not-evaluated"' in service
     assert 'knowledge_review_items: "[]"' in service
     assert 'knowledge_machine_check_result: "not-evaluated"' in service
@@ -746,6 +788,90 @@ def test_public_reexport_rejects_stale_internal_knowledge_before_writes(
     assert "PRIVATE-SENTINEL" in stale.read_text(encoding="utf-8")
 
 
+def test_freshness_disclosure_is_reserved_projected_site_metadata(
+    tmp_path,
+):
+    wiki = _wiki(tmp_path)
+    projection = _projection(wiki)
+    out = tmp_path / "site"
+    export_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        knowledge_metadata="summary",
+        knowledge_projection=projection,
+    )
+    stale = out / "freshness-only.md"
+    _write(
+        stale,
+        "---\n"
+        "llm_wiki:\n"
+        '  freshness: "unevaluated (snapshot-only read)"\n'
+        "---\n"
+        "# Stale projection disclosure\n",
+    )
+
+    checked = check_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        knowledge_metadata="summary",
+        knowledge_projection=projection,
+    )
+
+    assert any(
+        issue["category"] == "unexpected_knowledge_page"
+        and issue["path"] == str(stale)
+        for issue in checked.issues
+    )
+    with pytest.raises(
+        SiteExportError,
+        match="unexpected Markdown with projected knowledge metadata",
+    ):
+        export_site_mirror(
+            wiki_dir=wiki,
+            out_dir=out,
+            knowledge_metadata="summary",
+            knowledge_projection=projection,
+        )
+
+
+def test_checker_rejects_freshness_metadata_when_knowledge_is_disabled(
+    tmp_path,
+):
+    wiki = _wiki(tmp_path)
+    projection = _projection(wiki)
+    out = tmp_path / "site"
+    export_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        knowledge_metadata="summary",
+        knowledge_projection=projection,
+    )
+    page = out / "modules" / "service.md"
+    page.write_text(
+        "\n".join(
+            line
+            for line in page.read_text(encoding="utf-8").splitlines()
+            if not line.startswith("  knowledge_")
+            and not line.startswith("  source_knowledge_")
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    checked = check_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        knowledge_metadata=None,
+        knowledge_projection=None,
+    )
+
+    assert any(
+        issue["category"] == "unexpected_knowledge_metadata"
+        and issue["target"] == "llm_wiki.freshness"
+        for issue in checked.issues
+    )
+
+
 def test_enriched_output_scan_leaves_unrelated_extra_markdown_untouched(
     tmp_path,
 ):
@@ -999,13 +1125,14 @@ def test_enriched_hub_namespaces_front_matter_ids_by_bundle(tmp_path):
         "beta": _projection(beta, bundle_id="kb_beta"),
     }
 
-    export_site_hub(
+    report = export_site_hub(
         wikis=[alpha, beta],
         out_dir=out,
         format="docusaurus",
         knowledge_metadata="summary",
         knowledge_projections=projections,
     )
+    assert report.freshness == "unevaluated (snapshot-only read)"
 
     assert 'id: "kb_alpha/index"' in (
         out / "alpha" / "index.md"
@@ -1020,6 +1147,82 @@ def test_enriched_hub_namespaces_front_matter_ids_by_bundle(tmp_path):
         knowledge_projections=projections,
     )
     assert checked.ok is True
+    assert checked.freshness == "unevaluated (snapshot-only read)"
+
+
+def test_enriched_hub_sums_evaluated_freshness_across_sources(tmp_path):
+    root = tmp_path / "sources"
+    alpha = _wiki(root, "alpha")
+    beta = _wiki(root, "beta")
+    out = tmp_path / "hub"
+    projections = {
+        "alpha": _projection(
+            alpha,
+            bundle_id="kb_alpha",
+            freshness_evaluated=True,
+        ),
+        "beta": _projection(
+            beta,
+            bundle_id="kb_beta",
+            freshness_evaluated=True,
+        ),
+    }
+    expected = "evaluated (6 concepts)"
+
+    report = export_site_hub(
+        wikis=[alpha, beta],
+        out_dir=out,
+        knowledge_metadata="summary",
+        knowledge_projections=projections,
+    )
+
+    assert report.freshness == expected
+    assert report.freshness_by_source == {}
+    assert report.to_dict()["freshness"] == expected
+    assert f"Freshness: {expected}" in site_export.render_report_text(
+        report,
+        action="export",
+    )
+
+    checked = check_site_hub(
+        wikis=[alpha, beta],
+        out_dir=out,
+        knowledge_metadata="summary",
+        knowledge_projections=projections,
+    )
+    assert checked.ok is True
+    assert checked.freshness == expected
+    assert checked.freshness_by_source == {}
+
+
+def test_hub_retains_per_source_disclosures_for_mixed_evaluation_scope(tmp_path):
+    root = tmp_path / "sources"
+    alpha = _wiki(root, "alpha")
+    beta = _wiki(root, "beta")
+    expected = {
+        "alpha": "evaluated (3 concepts)",
+        "beta": "unevaluated (snapshot-only read)",
+    }
+
+    freshness, by_source = site_export._hub_report_freshness(
+        {
+            "alpha": _projection(
+                alpha,
+                bundle_id="kb_alpha",
+                freshness_evaluated=True,
+            ),
+            "beta": _projection(beta, bundle_id="kb_beta"),
+        }
+    )
+
+    assert freshness is None
+    assert by_source == expected
+    report = SiteExportReport(freshness_by_source=by_source)
+    assert report.to_dict()["freshness_by_source"] == expected
+    rendered = site_export.render_report_text(report, action="export")
+    assert "Freshness by source:" in rendered
+    assert "- alpha: evaluated (3 concepts)" in rendered
+    assert "- beta: unevaluated (snapshot-only read)" in rendered
 
 
 def test_checker_rejects_enriched_hub_when_knowledge_mode_is_omitted(tmp_path):

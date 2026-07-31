@@ -31,6 +31,9 @@ from llm_wiki_cli.services.knowledge_loader import (
     KnowledgeMismatchPolicy,
     load_knowledge_state,
 )
+from llm_wiki_cli.services.knowledge_observability import (
+    BASIS_INCOMPATIBLE_HINTS,
+)
 from llm_wiki_cli.services.knowledge_governance import (
     ALIAS_LOCATOR,
     ALIAS_NATURAL_KEY,
@@ -46,7 +49,11 @@ from llm_wiki_cli.services.knowledge_governance import (
     review_scope_hash,
     set_lifecycle,
 )
-from llm_wiki_cli.services.knowledge_model import Resolution, TargetClass
+from llm_wiki_cli.services.knowledge_model import (
+    ComputedFreshness,
+    Resolution,
+    TargetClass,
+)
 from llm_wiki_cli.services.section_ownership import (
     observe_page_sections,
     section_ownership_extension,
@@ -205,6 +212,7 @@ def test_ready_concept_lookup_is_exact_compact_and_fresh(tmp_path):
     assert by_locator["knowledge"] == {
         "availability": "ready",
         "reason": "all-projection-commitments-match",
+        "freshness": "evaluated (6 concepts)",
         "freshness_evaluated": True,
     }
     assert by_locator["found"] is True
@@ -671,11 +679,14 @@ def test_query_projects_every_live_freshness_outcome_and_reason(tmp_path):
         freshness = _knowledge_service(view).get_concept(USER_LOCATOR)["concept"][
             "freshness"
         ]
-        assert freshness == {
+        expected = {
             "state": expected_state,
             "reason": expected_reason,
             "live_comparison_performed": True,
         }
+        if expected_state == ComputedFreshness.BASIS_INCOMPATIBLE.value:
+            expected["hint"] = BASIS_INCOMPATIBLE_HINTS[expected_reason]
+        assert freshness == expected
 
     ready = build_knowledge_read_view(
         loaded,
@@ -687,6 +698,39 @@ def test_query_projects_every_live_freshness_outcome_and_reason(tmp_path):
         "reason": "freshness-not-modeled",
         "live_comparison_performed": False,
     }
+
+
+@pytest.mark.parametrize(
+    ("reason_code", "expected_hint"),
+    tuple(BASIS_INCOMPATIBLE_HINTS.items()),
+)
+def test_query_compact_and_full_freshness_render_every_incompatible_hint(
+    tmp_path,
+    reason_code,
+    expected_hint,
+):
+    view = _ready_view(tmp_path)
+    assert view.freshness is not None
+    recorded = view.freshness.by_locator[USER_LOCATOR]
+    by_locator = dict(view.freshness.by_locator)
+    by_locator[USER_LOCATOR] = replace(
+        recorded,
+        state=ComputedFreshness.BASIS_INCOMPATIBLE,
+        reason_code=reason_code,
+        description="the recorded and live bases are incompatible",
+    )
+    view = replace(
+        view,
+        freshness=replace(view.freshness, by_locator=by_locator),
+    )
+    service = _knowledge_service(view)
+
+    compact = service.get_concept(USER_LOCATOR)["concept"]["freshness"]
+    full = service.explain_evidence(USER_LOCATOR)["evidence"]["freshness"]
+
+    assert compact["reason"] == full["reason"] == reason_code
+    assert compact["hint"] == full["hint"] == expected_hint
+    assert compact["state"] == full["state"] == "basis-incompatible"
 
 
 @pytest.mark.parametrize(
@@ -743,6 +787,7 @@ def test_loader_selected_non_ready_view_never_exposes_a_trustworthy_empty_graph(
     assert concept["knowledge"] == {
         "availability": availability.value,
         "reason": reason.value,
+        "freshness": "unevaluated (snapshot-only read)",
         "freshness_evaluated": False,
     }
     assert concept["found"] is False
@@ -786,6 +831,7 @@ def test_no_view_reports_absent_instead_of_claiming_an_empty_graph():
         "knowledge": {
             "availability": "absent",
             "reason": "knowledge-projection-not-present",
+            "freshness": "unevaluated (snapshot-only read)",
             "freshness_evaluated": False,
         },
         "query": USER_LOCATOR,

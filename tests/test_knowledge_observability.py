@@ -12,15 +12,163 @@ from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
 from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
 from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
 from llm_wiki_cli.services.knowledge_observability import (
+    BASIS_INCOMPATIBLE_HINTS,
+    BASIS_INCOMPATIBLE_REASON_CODES,
     KnowledgeAggregateSummary,
     KnowledgePhaseDurations,
+    knowledge_freshness_disclosure,
+    knowledge_freshness_hint,
     knowledge_status_payload,
     load_snapshot_knowledge_observability,
     summarize_knowledge_view,
 )
+from llm_wiki_cli.services.knowledge_model import ComputedFreshness
 from tests.knowledge_fixtures import fail_if_extraction_runs
 from tests.test_knowledge_freshness import _live_evaluation
 from tests.test_knowledge_loader import _committed_state
+
+
+_EXPECTED_BASIS_INCOMPATIBLE_HINTS = {
+    "extractor-configuration-changed": (
+        "Restore the extractor configuration used at sync, or re-run sync with "
+        "the current extractor configuration."
+    ),
+    "extractor-configuration-unknown": (
+        "Make the extractor configuration basis available and explicit, then "
+        "re-run sync."
+    ),
+    "extractor-limitations-changed": (
+        "Use an extractor with the limitations recorded at sync, or re-run sync "
+        "after accepting the changed limitations."
+    ),
+    "extractor-selection-changed": (
+        "Use the extractor selected at sync for this concept, or re-run sync after "
+        "the intentional extractor change."
+    ),
+    "extractor-version-changed": (
+        "Use the extractor version recorded at sync, or re-run sync with the "
+        "installed extractor version."
+    ),
+    "generation-options-changed": (
+        "Re-run with the generation options used at sync where supported (check "
+        "--include-tests), or re-run sync with the intended current options."
+    ),
+    "identical-source-observation-mismatch": (
+        "Producer nondeterminism or artifact corruption is possible—re-run sync; "
+        "if it persists, file a defect."
+    ),
+    "knowledge-schema-version-changed": (
+        "Use the knowledge schema version recorded at sync, or re-run sync with "
+        "the current llm-wiki version."
+    ),
+    "live-extractor-unavailable": (
+        "Install or enable the extractor recorded for this concept, or re-run sync "
+        "with an available extractor."
+    ),
+    "observation-scope-changed": (
+        "Restore the module, entity, or infrastructure observation scope used at "
+        "sync, or re-run sync after an intentional scope change."
+    ),
+    "plugin-configuration-changed": (
+        "Restore the plugin configuration used at sync, or re-run sync with the "
+        "current plugin configuration."
+    ),
+    "plugin-configuration-unknown": (
+        "Make every contributing plugin configuration basis available and "
+        "explicit, then re-run sync."
+    ),
+    "plugin-limitations-changed": (
+        "Restore the contributing plugin limitations recorded at sync, or re-run "
+        "sync after accepting the change."
+    ),
+    "plugin-set-changed": (
+        "Enable the plugin set used at sync, or re-run sync with the currently "
+        "enabled plugin set."
+    ),
+    "plugin-version-changed": (
+        "Use the contributing plugin versions recorded at sync, or re-run sync "
+        "with the installed versions."
+    ),
+    "producer-tool-configuration-changed": (
+        "Restore the producer configuration used at sync, or re-run sync with the "
+        "current producer configuration."
+    ),
+    "producer-tool-configuration-unknown": (
+        "Make the producer configuration basis available and explicit, then "
+        "re-run sync."
+    ),
+    "producer-tool-id-changed": (
+        "Use the producer tool recorded at sync, or re-run sync with the current "
+        "producer tool."
+    ),
+    "producer-tool-limitations-changed": (
+        "Use a producer with the limitations recorded at sync, or re-run sync "
+        "after accepting the changed limitations."
+    ),
+    "producer-tool-version-changed": (
+        "Use the producer version recorded at sync, or re-run sync with the "
+        "installed producer version."
+    ),
+    "source-mapping-changed": (
+        "Restore this concept's recorded source mapping, or re-run sync to record "
+        "the moved or remapped source."
+    ),
+    "version-unknown": (
+        "Make concrete versions available for every contributing producer, "
+        "extractor, and plugin, then re-run sync."
+    ),
+}
+
+
+@pytest.mark.parametrize(
+    ("reason_code", "expected_hint"),
+    sorted(_EXPECTED_BASIS_INCOMPATIBLE_HINTS.items()),
+)
+def test_every_basis_incompatibility_has_distinct_actionable_guidance(
+    reason_code,
+    expected_hint,
+):
+    assert knowledge_freshness_hint(
+        ComputedFreshness.BASIS_INCOMPATIBLE,
+        reason_code,
+    ) == expected_hint
+    assert BASIS_INCOMPATIBLE_HINTS[reason_code] == expected_hint
+
+
+def test_basis_incompatibility_guidance_is_exact_unique_and_privacy_safe():
+    assert BASIS_INCOMPATIBLE_REASON_CODES == frozenset(
+        _EXPECTED_BASIS_INCOMPATIBLE_HINTS
+    )
+    assert dict(BASIS_INCOMPATIBLE_HINTS) == _EXPECTED_BASIS_INCOMPATIBLE_HINTS
+    hints = tuple(BASIS_INCOMPATIBLE_HINTS.values())
+    assert len(hints) == len(set(hints)) == 22
+    assert all(hint and hint == hint.strip() for hint in hints)
+    encoded = "\n".join(hints)
+    assert "sha256:" not in encoded
+    assert "llm-wiki://" not in encoded
+    assert "src/" not in encoded
+    with pytest.raises(TypeError):
+        BASIS_INCOMPATIBLE_HINTS["future-reason"] = "mutable"  # type: ignore[index]
+
+
+@pytest.mark.parametrize("reason_code", [None, "", "future-incompatible-reason"])
+def test_unknown_basis_incompatibility_guidance_fails_closed(reason_code):
+    with pytest.raises(ValueError, match="known actionable reason"):
+        knowledge_freshness_hint("basis-incompatible", reason_code)
+
+
+@pytest.mark.parametrize(
+    "state",
+    [None, "not-evaluated", *tuple(
+        value for value in ComputedFreshness
+        if value is not ComputedFreshness.BASIS_INCOMPATIBLE
+    )],
+)
+def test_guidance_is_absent_outside_basis_incompatibility(state):
+    assert (
+        knowledge_freshness_hint(state, "generation-options-changed")
+        is None
+    )
 
 
 def test_live_summary_contains_only_closed_aggregate_counts(tmp_path):
@@ -41,9 +189,12 @@ def test_live_summary_contains_only_closed_aggregate_counts(tmp_path):
         ),
     )
 
+    assert knowledge_freshness_disclosure(view) == "evaluated (6 concepts)"
+    assert knowledge_status_payload(view)["freshness"] == "evaluated (6 concepts)"
     assert summary.to_payload() == {
         "availability": "ready",
         "reason": "all-projection-commitments-match",
+        "freshness": "evaluated (6 concepts)",
         "concepts_evaluated": 6,
         "freshness_counts": {
             "basis-incompatible": 0,
@@ -115,12 +266,18 @@ def test_snapshot_summary_never_claims_live_freshness(
     observed = load_snapshot_knowledge_observability(tmp_path)
     payload = observed.summary.to_payload()
 
+    assert (
+        knowledge_freshness_disclosure(observed.view)
+        == "unevaluated (snapshot-only read)"
+    )
     assert knowledge_status_payload(observed.view) == {
         "availability": "ready",
         "reason": "all-projection-commitments-match",
+        "freshness": "unevaluated (snapshot-only read)",
         "freshness_evaluated": False,
     }
     assert payload["concepts_evaluated"] == 0
+    assert payload["freshness"] == "unevaluated (snapshot-only read)"
     assert payload["freshness_counts"] is None
     assert payload["freshness_evaluated"] is False
     assert payload["phase_durations_ms"]["load"] >= 0
@@ -159,8 +316,24 @@ def test_legacy_snapshot_status_does_not_read_markdown(tmp_path):
     assert knowledge_status_payload(observed.view) == {
         "availability": "absent",
         "reason": "knowledge-projection-not-present",
+        "freshness": "unevaluated (snapshot-only read)",
         "freshness_evaluated": False,
     }
+
+
+def test_absent_status_without_a_read_view_discloses_snapshot_limitation():
+    assert knowledge_status_payload(None) == {
+        "availability": "absent",
+        "reason": "knowledge-projection-not-present",
+        "freshness": "unevaluated (snapshot-only read)",
+        "freshness_evaluated": False,
+    }
+
+
+@pytest.mark.parametrize("value", [None, object(), "view"])
+def test_freshness_disclosure_rejects_non_read_views(value):
+    with pytest.raises(TypeError, match="KnowledgeReadView"):
+        knowledge_freshness_disclosure(value)
 
 
 @pytest.mark.parametrize(

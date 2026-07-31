@@ -201,13 +201,28 @@ def test_standalone_export_reuses_persisted_projection_policy_and_hash(
             "source_knowledge_hash"
         ]
         assert final_projection["source_knowledge_hashes_match"] is True
+        assert final_projection["freshness"] == exported["freshness"]
+        assert final_projection["check_freshness"] == checked["freshness"]
+        assert final_projection["freshness_disclosures_match"] is True
         if mode == "off":
             assert exported["knowledge_metadata"] == "off"
             assert exported["source_knowledge_hash"] is None
+            assert exported["freshness"] is None
         else:
             assert exported["knowledge_metadata"] == "summary"
             assert exported["profile"] == mode
             assert exported["source_knowledge_hash"].startswith("sha256:")
+            assert exported["freshness"] == (
+                "unevaluated (snapshot-only read)"
+            )
+            final_markdown = (
+                workspace
+                / persisted.evidence["final_report"]
+            ).with_suffix(".md").read_text(encoding="utf-8")
+            assert (
+                "- Freshness: unevaluated (snapshot-only read)"
+                in final_markdown
+            )
 
 
 def test_standalone_export_rejects_policy_mismatch_before_writing(tmp_path):

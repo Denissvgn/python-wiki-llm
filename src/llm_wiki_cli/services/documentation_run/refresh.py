@@ -433,6 +433,12 @@ def _native_refresh_payload(
     changed_wiki_paths: Iterable[str],
     verification_evaluation: Mapping[str, Any],
 ) -> dict[str, Any]:
+    from ..knowledge_observability import knowledge_freshness_disclosure
+
+    if refresh.knowledge_view is None:
+        raise DocumentationIntegrityError(
+            "Native refresh evidence requires its live evaluated knowledge view."
+        )
     artifacts = {}
     for label, artifact in (
         ("surface", refresh.commit.surface_index),
@@ -449,6 +455,8 @@ def _native_refresh_payload(
         "run_id": run_id,
         "phase": phase,
         "status": "complete",
+        "freshness": knowledge_freshness_disclosure(refresh.knowledge_view),
+        "freshness_evaluated": refresh.knowledge_view.freshness_evaluated,
         "changed": refresh.changed,
         "changed_wiki_paths": sorted({str(path) for path in changed_wiki_paths}),
         "artifacts": artifacts,

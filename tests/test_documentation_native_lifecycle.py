@@ -333,6 +333,10 @@ def test_source_backed_prepare_owns_a_valid_native_trio(tmp_path: Path) -> None:
     )
     assert refresh["phase"] == "baseline"
     assert refresh["status"] == "complete"
+    assert refresh["freshness"] == (
+        f"evaluated ({len(loaded.knowledge.concepts)} concepts)"
+    )
+    assert refresh["freshness_evaluated"] is True
     assert set(refresh["artifacts"]) == {"surface", "knowledge", "manifest"}
     assert refresh["ownership_after"] == ownership["fingerprints"]
     assert set(refresh["artifact_ownership"]) == PROTECTED_NATIVE_ARTIFACTS
@@ -1597,6 +1601,7 @@ def test_runtime_capture_is_out_of_band_and_digest_reconciled(
             "availability": "ready",
             "reason": "knowledge-ready",
             "structural_evidence_state": "present",
+            "freshness": "unevaluated (snapshot-only read)",
             "freshness_evaluated": False,
             "freshness_state": None,
             "freshness_reason": "freshness-not-evaluated",

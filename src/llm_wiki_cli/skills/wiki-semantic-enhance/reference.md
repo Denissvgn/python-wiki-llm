@@ -146,8 +146,9 @@ never be described as live-current.
       "structural_evidence": {"state": "present", "reason": null},
       "freshness": {
         "evaluated": true,
+        "disclosure": "evaluated (6 concepts)",
         "state": "current",
-        "reason": "source-content-current"
+        "reason": "recorded-basis-matches-live-evaluation"
       },
       "lifecycle_review": {"lifecycle": "active", "section_review": null},
       "graph_query": null,
