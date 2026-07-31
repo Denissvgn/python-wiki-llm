@@ -1265,12 +1265,13 @@ def _context_query_surface(
     if committed_surface is None:
         return payload
 
-    committed_sources = {
-        page.get("canonical_path"): page.get("source_path")
-        for page in committed_surface.get("pages", []) or []
-        if isinstance(page, Mapping)
-        and isinstance(page.get("canonical_path"), str)
-    }
+    committed_sources: dict[str, object] = {}
+    for page in committed_surface.get("pages", []) or []:
+        if not isinstance(page, Mapping):
+            continue
+        canonical_path = page.get("canonical_path")
+        if isinstance(canonical_path, str):
+            committed_sources[canonical_path] = page.get("source_path")
     payload["pages"] = [
         _page_with_committed_source(page, committed_sources)
         for page in live_surface.get("pages", []) or []
@@ -1281,11 +1282,11 @@ def _context_query_surface(
 
 def _page_with_committed_source(
     page: Mapping[str, Any],
-    committed_sources: Mapping[object, object],
+    committed_sources: Mapping[str, object],
 ) -> dict[str, Any]:
     copied = dict(page)
     canonical_path = copied.get("canonical_path")
-    if canonical_path in committed_sources:
+    if isinstance(canonical_path, str) and canonical_path in committed_sources:
         copied["source_path"] = committed_sources[canonical_path]
     return copied
 
@@ -1717,20 +1718,20 @@ def _compact_context_review(value: Mapping[str, Any]) -> dict[str, Any]:
         state = "has-expired-sections"
     else:
         state = "unknown"
-    reasons = sorted(
-        {
+    reason_values: set[str] = set()
+    for item in items:
+        if not isinstance(item, Mapping):
+            continue
+        raw_reasons = item.get("reasons")
+        if not isinstance(raw_reasons, list):
+            continue
+        reason_values.update(
             reason
-            for item in items
-            if isinstance(item, Mapping)
-            for reason in (
-                item.get("reasons")
-                if isinstance(item.get("reasons"), list)
-                else []
-            )
+            for reason in raw_reasons
             if isinstance(reason, str)
             and re.fullmatch(r"[a-z][a-z0-9]*(?:-[a-z0-9]+)*", reason)
-        }
-    )
+        )
+    reasons = sorted(reason_values)
     return {
         "scope": "section",
         "state": state,

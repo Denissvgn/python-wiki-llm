@@ -15,6 +15,7 @@ import pytest
 
 from llm_wiki_cli.extractors import common as extractor_common
 from llm_wiki_cli.extractors.ts_extractor import TypeScriptExtractor
+from llm_wiki_cli.services.extractor_helpers import typescript_dependencies_ready
 
 # ---------------------------------------------------------------------------
 # Skip all tests when Node.js is not available on this machine.
@@ -41,16 +42,13 @@ def _command_available(*cmd: str) -> bool:
         return False
 
 
-TS_NODE_MODULES = (
-    Path(__file__).parents[1]
-    / "src"
-    / "llm_wiki_cli"
-    / "extractors"
-    / "ts_scripts"
-    / "node_modules"
+PROJECT_ROOT = Path(__file__).parents[1]
+BUNDLED_TS_SCRIPTS = (
+    PROJECT_ROOT / "src" / "llm_wiki_cli" / "extractors" / "ts_scripts"
 )
 NODE_AVAILABLE = (
-    _command_available("node", "--version") and (TS_NODE_MODULES / "ts-morph").exists()
+    _command_available("node", "--version")
+    and typescript_dependencies_ready(PROJECT_ROOT)
 )
 skip_no_node = pytest.mark.skipif(
     not NODE_AVAILABLE,
@@ -92,8 +90,8 @@ class TestTypeScriptWrapperFiltering:
             lambda _name: "/bin/tool",
         )
         monkeypatch.setattr(
-            "llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready",
-            lambda: True,
+            "llm_wiki_cli.extractors.ts_extractor.get_prepared_typescript_root",
+            lambda *_args: BUNDLED_TS_SCRIPTS,
         )
         monkeypatch.setattr(
             "llm_wiki_cli.extractors.ts_extractor.subprocess.run", fake_run
@@ -132,8 +130,8 @@ class TestTypeScriptWrapperFiltering:
             lambda _name: "/bin/tool",
         )
         monkeypatch.setattr(
-            "llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready",
-            lambda: True,
+            "llm_wiki_cli.extractors.ts_extractor.get_prepared_typescript_root",
+            lambda *_args: BUNDLED_TS_SCRIPTS,
         )
         monkeypatch.setattr(
             "llm_wiki_cli.extractors.ts_extractor.subprocess.run", fake_run
@@ -166,8 +164,8 @@ class TestTypeScriptWrapperFiltering:
             lambda _name: "/bin/tool",
         )
         monkeypatch.setattr(
-            "llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready",
-            lambda: True,
+            "llm_wiki_cli.extractors.ts_extractor.get_prepared_typescript_root",
+            lambda *_args: BUNDLED_TS_SCRIPTS,
         )
         monkeypatch.setattr(
             "llm_wiki_cli.extractors.ts_extractor.subprocess.run", fake_run
@@ -203,8 +201,8 @@ class TestTypeScriptWrapperFiltering:
             lambda _name: "/bin/tool",
         )
         monkeypatch.setattr(
-            "llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready",
-            lambda: True,
+            "llm_wiki_cli.extractors.ts_extractor.get_prepared_typescript_root",
+            lambda *_args: BUNDLED_TS_SCRIPTS,
         )
         monkeypatch.setattr(
             "llm_wiki_cli.extractors.ts_extractor.subprocess.run", fake_run
@@ -241,8 +239,8 @@ class TestTypeScriptWrapperFiltering:
             lambda _name: "/bin/tool",
         )
         monkeypatch.setattr(
-            "llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready",
-            lambda: True,
+            "llm_wiki_cli.extractors.ts_extractor.get_prepared_typescript_root",
+            lambda *_args: BUNDLED_TS_SCRIPTS,
         )
         monkeypatch.setattr(
             "llm_wiki_cli.extractors.ts_extractor.subprocess.run", fake_run
@@ -288,8 +286,8 @@ class TestTypeScriptWrapperFiltering:
             lambda _name: "/bin/tool",
         )
         monkeypatch.setattr(
-            "llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready",
-            lambda: True,
+            "llm_wiki_cli.extractors.ts_extractor.get_prepared_typescript_root",
+            lambda *_args: BUNDLED_TS_SCRIPTS,
         )
         monkeypatch.setattr(
             "llm_wiki_cli.extractors.ts_extractor.subprocess.run", fake_run
@@ -703,8 +701,8 @@ class TestTypeScriptExtractorWrapper:
             "llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"
         ):
             with patch(
-                "llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready",
-                return_value=False,
+                "llm_wiki_cli.extractors.ts_extractor.get_prepared_typescript_root",
+                return_value=None,
             ):
                 with patch(
                     "llm_wiki_cli.extractors.ts_extractor.subprocess.run"
@@ -726,8 +724,8 @@ class TestTypeScriptExtractorWrapper:
             "llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"
         ):
             with patch(
-                "llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready",
-                return_value=True,
+                "llm_wiki_cli.extractors.ts_extractor.get_prepared_typescript_root",
+                return_value=BUNDLED_TS_SCRIPTS,
             ):
                 with patch(
                     "llm_wiki_cli.extractors.ts_extractor.subprocess.run",
@@ -751,8 +749,8 @@ class TestTypeScriptExtractorWrapper:
             "llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"
         ):
             with patch(
-                "llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready",
-                return_value=True,
+                "llm_wiki_cli.extractors.ts_extractor.get_prepared_typescript_root",
+                return_value=BUNDLED_TS_SCRIPTS,
             ):
                 with patch(
                     "llm_wiki_cli.extractors.ts_extractor.subprocess.run",
@@ -772,8 +770,8 @@ class TestTypeScriptExtractorWrapper:
             "llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"
         ):
             with patch(
-                "llm_wiki_cli.extractors.ts_extractor.typescript_dependencies_ready",
-                return_value=True,
+                "llm_wiki_cli.extractors.ts_extractor.get_prepared_typescript_root",
+                return_value=BUNDLED_TS_SCRIPTS,
             ):
                 with patch(
                     "llm_wiki_cli.extractors.ts_extractor.subprocess.run",

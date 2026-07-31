@@ -15,7 +15,7 @@ import stat
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
-from typing import Any, Mapping
+from typing import Any, Mapping, TypeGuard
 
 from .api_contracts import (
     ApiContractError,
@@ -927,11 +927,10 @@ def _is_safe_relative_posix_path(
     value: object,
     *,
     required_suffix: str | None = None,
-) -> bool:
-    return is_portable_relative_path(value) and (
+) -> TypeGuard[str]:
+    return isinstance(value, str) and is_portable_relative_path(value) and (
         required_suffix is None
-        or isinstance(value, str)
-        and value.endswith(required_suffix)
+        or value.endswith(required_suffix)
     )
 
 

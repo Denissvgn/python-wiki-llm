@@ -34,6 +34,7 @@ if _typing.TYPE_CHECKING:
         DocumentationSchemaError,
         DocumentationTransitionError,
         DocumentationVerificationReport,
+        POLICY_FILENAME as POLICY_FILENAME,
         RUN_CONTROL_DIR,
         SUPPORTED_AGENT_STAGES,
         SUPPORTED_BASELINE_STRATEGIES,
@@ -90,8 +91,13 @@ _COMPATIBILITY_MODULES = (
 # Preserve the monolith's module-level annotation metadata without exposing
 # annotations owned by implementation-only role modules.
 __annotations__ = dict(_contracts.__annotations__)
-if hasattr(_contracts, "__conditional_annotations__"):
-    __conditional_annotations__ = set(_contracts.__conditional_annotations__)
+_conditional_annotations = getattr(
+    _contracts,
+    "__conditional_annotations__",
+    None,
+)
+if _conditional_annotations is not None:
+    __conditional_annotations__ = set(_conditional_annotations)
 
 for _module in _COMPATIBILITY_MODULES:
     for _name in _module.__all__:
@@ -108,7 +114,7 @@ for _module in _COMPATIBILITY_MODULES:
 _MISSING = object()
 _HISTORICAL_MODULE = __name__
 _HISTORICAL_MODULE_PREFIX = __name__ + "."
-_HISTORICAL_CLASS_FIRSTLINENO = dict(
+_HISTORICAL_CLASS_FIRSTLINENO: dict[str, int] = dict(
     [
         ("DocumentationRunError", 295),
         ("DocumentationSchemaError", 299),

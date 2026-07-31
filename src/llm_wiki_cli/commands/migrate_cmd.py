@@ -61,7 +61,7 @@ from ..services.wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     evaluate_surface_index,
 )
-from .bootstrap_cmd import (
+from ..services.bootstrap_runtime import (
     _build_relationships,
     _generate_docker_md,
     _generate_entity_md,
@@ -70,7 +70,7 @@ from .bootstrap_cmd import (
     build_entity_occurrence_page_map,
     build_module_page_map,
 )
-from .extract_cmd import (
+from ..services.extraction_service import (
     InventoryResult,
     get_call_graph,
     get_docker_inventory,

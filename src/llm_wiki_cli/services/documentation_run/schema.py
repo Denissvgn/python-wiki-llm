@@ -626,10 +626,8 @@ def _validate_publication_contract(publication: Mapping[str, Any]) -> None:
         required={"site_name", "format", "link_mode", "deployment"},
         label="run publication",
     )
-    if (
-        not isinstance(publication.get("site_name"), str)
-        or not publication.get("site_name").strip()
-    ):
+    site_name = publication.get("site_name")
+    if not isinstance(site_name, str) or not site_name.strip():
         raise DocumentationSchemaError("Run publication site_name is required.")
     if publication.get("format") not in {"mkdocs", "plain", "docusaurus"}:
         raise DocumentationSchemaError("Run publication format is unsupported.")

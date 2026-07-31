@@ -350,11 +350,9 @@ def _load_once(
         )
     except KnowledgeArtifactError as exc:
         is_invalid = exc.field.startswith("knowledge_index_bytes")
-        is_unsupported = exc.code == "unsupported-schema-version"
-        is_governance = (
-            isinstance(exc.code, str)
-            and exc.code.startswith("governance-")
-        )
+        error_code = exc.code if isinstance(exc.code, str) else ""
+        is_unsupported = error_code == "unsupported-schema-version"
+        is_governance = error_code.startswith("governance-")
         status = (
             KnowledgeLoadState.INVALID
             if is_invalid
@@ -362,7 +360,7 @@ def _load_once(
         )
         issue = _issue_from_artifact_error(
             (
-                exc.code
+                error_code
                 if is_governance
                 else "knowledge-schema-version-unsupported"
                 if is_unsupported

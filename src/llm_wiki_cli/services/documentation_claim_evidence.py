@@ -480,10 +480,12 @@ def reconcile_runtime_capture_records(
                         else None
                         for selection in selections
                     ]
+                    uid_concept, locator_concept = resolved
                     if (
-                        any(concept is None for concept in resolved)
-                        or resolved[0].get("locator")
-                        != resolved[1].get("locator")
+                        uid_concept is None
+                        or locator_concept is None
+                        or uid_concept.get("locator")
+                        != locator_concept.get("locator")
                     ):
                         raise DocumentationClaimEvidenceError(
                             f"runtime capture {record['capture_id']!r} concept_uid "
@@ -754,6 +756,10 @@ def _current_lifecycle_review(
                 "The native query service does not expose section ownership."
             )
         section_result = list_sections(query)
+        if not isinstance(section_result, Mapping):
+            raise DocumentationClaimEvidenceError(
+                "The native section query returned an invalid result."
+            )
         section_bounds = _bound(section_result, "sections")
         sections = section_result.get("sections", [])
         matching = [
@@ -815,6 +821,11 @@ def _capture_section_state(
         raise DocumentationClaimEvidenceError(
             f"runtime capture {capture_id!r} native section query failed: {exc}"
         ) from exc
+    if not isinstance(result, Mapping):
+        raise DocumentationClaimEvidenceError(
+            f"runtime capture {capture_id!r} native section query "
+            "returned an invalid result."
+        )
     if any(
         isinstance(item, Mapping) and item.get("locator") == section_locator
         for item in result.get("sections", []) or []

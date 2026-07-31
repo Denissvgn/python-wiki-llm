@@ -23,14 +23,12 @@ from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any
 
 from .contracts import VERIFICATION_RECEIPT_SCHEMA_VERSION
 from .io import first_unsafe_path_component, write_bytes_atomic
 from .knowledge_evidence import (
     formatted_json_bytes,
     hash_json,
-    is_valid_sha256,
 )
 from .knowledge_model import (
     KnowledgeIndex,

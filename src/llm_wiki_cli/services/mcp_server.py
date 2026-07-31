@@ -14,6 +14,7 @@ import sys
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any, Protocol, cast
 from urllib.parse import unquote, urlparse
 
 from ..api import LlmWikiApiError, build_documentation_query_service
@@ -83,6 +84,20 @@ class MCPDependencyError(RuntimeError):
 
 class McpWikiError(ValueError):
     """Raised for invalid MCP wiki requests."""
+
+
+class _McpHttpApplication(Protocol):
+    def add_middleware(
+        self,
+        middleware_class: type[object],
+        **options: object,
+    ) -> None: ...
+
+
+class _RunnableMcpServer(Protocol):
+    def run(self, *, transport: str, **kwargs: object) -> None: ...
+
+    def streamable_http_app(self) -> _McpHttpApplication: ...
 
 
 @dataclass(frozen=True)
@@ -739,6 +754,9 @@ def create_mcp_server(config: McpServerConfig):
             "search documentation, query documentation and knowledge graphs, "
             "request generated context, and run checks."
         ),
+        host=config.host,
+        port=config.port,
+        streamable_http_path=config.path,
     )
 
     _register_mcp_tools(server, service)
@@ -946,28 +964,25 @@ def run_mcp_server(config: McpServerConfig) -> None:
         for origin in config.allowed_origins:
             _normalise_origin(origin)
 
-    server = create_mcp_server(config)
+    server = cast(_RunnableMcpServer, create_mcp_server(config))
 
     if config.transport == "stdio":
-        server.run(transport="stdio", show_banner=False)
+        server.run(transport="stdio")
         return
 
-    from starlette.middleware import Middleware  # type: ignore[reportMissingImports]
+    import uvicorn  # type: ignore[reportMissingImports]
 
-    middleware = [
-        Middleware(
-            OriginValidationMiddleware,
-            port=config.port,
-            allowed_origins=list(config.allowed_origins),
-        )
-    ]
-    server.run(
-        transport="streamable-http",
-        show_banner=False,
+    application = server.streamable_http_app()
+    application.add_middleware(
+        OriginValidationMiddleware,
+        port=config.port,
+        allowed_origins=list(config.allowed_origins),
+    )
+    uvicorn.run(
+        cast(Any, application),
         host=config.host,
         port=config.port,
-        path=config.path,
-        middleware=middleware,
+        log_level="warning",
     )
 
 

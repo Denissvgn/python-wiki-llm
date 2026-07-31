@@ -4533,12 +4533,16 @@ def _bootstrap_manifest_generation_state(
             if previous_manifest is not None
             else None
         )
-        prior_sources = (
+        prior_sources_value = (
             prior_state.get("sources")
             if isinstance(prior_state, Mapping)
             and prior_state.get("schema_version")
             == INFRASTRUCTURE_SYNC_SCHEMA_VERSION
-            and isinstance(prior_state.get("sources"), Mapping)
+            else None
+        )
+        prior_sources = (
+            prior_sources_value
+            if isinstance(prior_sources_value, Mapping)
             else {}
         )
         deferred_sources: list[str] = []

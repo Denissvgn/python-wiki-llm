@@ -9,6 +9,7 @@ from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field, replace
 from enum import Enum
 from pathlib import Path
+from typing import TypeVar
 
 from ..config import validate_path, validate_source_root
 from ..extractors.common import normalize_include_tests
@@ -1645,7 +1646,10 @@ def _projection_issue_category(issue: KnowledgeLoadIssue) -> str:
     return "knowledge_projection"
 
 
-def _enum_count_payload(values: Mapping[object, int]) -> dict[str, int]:
+_CountKey = TypeVar("_CountKey")
+
+
+def _enum_count_payload(values: Mapping[_CountKey, int]) -> dict[str, int]:
     normalized = {
         key.value if isinstance(key, Enum) else str(key): value
         for key, value in values.items()

@@ -20,10 +20,13 @@ from llm_wiki_cli.services.extractor_helpers import (
     HELPER_MANIFEST_VERSION,
     HelperPrepareResult,
     get_prepared_binary,
+    get_prepared_typescript_root,
+    helper_artifact_fingerprint,
     helper_cache_key,
     prepare_go,
     prepare_haskell,
     prepare_rust,
+    prepare_typescript,
     resolve_helper_cache_root,
 )
 
@@ -157,6 +160,7 @@ def test_prepared_binary_uses_manifest_and_exe_suffix(tmp_path, monkeypatch):
                 "language": "go",
                 "platform": "windows-amd64",
                 "source_fingerprint": "src",
+                "artifact_fingerprint": helper_artifact_fingerprint(binary),
                 "path": str(binary),
             }
         ),
@@ -184,6 +188,7 @@ def test_haskell_prepared_binary_uses_manifest_and_exe_suffix(tmp_path, monkeypa
                 "language": "haskell",
                 "platform": "windows-amd64",
                 "source_fingerprint": "src",
+                "artifact_fingerprint": helper_artifact_fingerprint(binary),
                 "path": str(binary),
             }
         ),
@@ -209,6 +214,7 @@ def test_haskell_manifest_path_must_point_to_file(tmp_path, monkeypatch):
                 "language": "haskell",
                 "platform": "linux-x86_64",
                 "source_fingerprint": "src",
+                "artifact_fingerprint": helper_artifact_fingerprint(directory_path),
                 "path": str(directory_path),
             }
         ),
@@ -216,6 +222,39 @@ def test_haskell_manifest_path_must_point_to_file(tmp_path, monkeypatch):
     )
 
     assert get_prepared_binary("haskell", tmp_path, str(tmp_path / "cache")) is None
+
+
+def test_typescript_manifest_v1_is_invalidated_instead_of_reused(
+    tmp_path, monkeypatch
+):
+    configured_cache = tmp_path / "cache"
+    cache_root = configured_cache / HELPER_CACHE_DIRNAME
+    helper_root = cache_root / "typescript" / "legacy"
+    dependency = helper_root / "node_modules" / "ts-morph"
+    dependency.mkdir(parents=True)
+    (helper_root / "extract.js").write_text("// legacy\n", encoding="utf-8")
+    (dependency / "package.json").write_text("{}\n", encoding="utf-8")
+    monkeypatch.setattr(extractor_helpers, "platform_id", lambda: "linux-x86_64")
+    monkeypatch.setattr(
+        extractor_helpers, "helper_source_fingerprint", lambda _language: "src"
+    )
+    (cache_root / "typescript" / "current.json").write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "language": "typescript",
+                "platform": "linux-x86_64",
+                "source_fingerprint": "src",
+                "path": str(dependency),
+                "root": str(helper_root),
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert get_prepared_typescript_root(
+        tmp_path, str(configured_cache)
+    ) is None
 
 
 def test_prepare_extractors_detects_languages_from_snapshot(
@@ -418,6 +457,72 @@ def test_prepare_go_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
     )
     assert manifest["path"] == result.path
     assert manifest["go_executable"] == "/usr/bin/go"
+    assert manifest["artifact_fingerprint"] == helper_artifact_fingerprint(
+        Path(result.path)
+    )
+
+
+def test_prepare_typescript_uses_locked_cache_and_detects_artifact_tampering(
+    tmp_path, monkeypatch
+):
+    configured_cache = tmp_path / "cache"
+    cache_root = configured_cache / HELPER_CACHE_DIRNAME
+    commands = []
+
+    monkeypatch.setattr(
+        extractor_helpers.shutil,
+        "which",
+        lambda name: f"/usr/bin/{name}" if name in {"node", "npm"} else None,
+    )
+    monkeypatch.setattr(
+        extractor_helpers,
+        "command_output",
+        lambda cmd, **_kwargs: "v24.18.0" if cmd[0].endswith("node") else "11.16.0",
+    )
+
+    def fake_run(cmd, **kwargs):
+        commands.append((cmd, kwargs))
+        dependency = Path(kwargs["cwd"]) / "node_modules" / "ts-morph"
+        dependency.mkdir(parents=True, exist_ok=True)
+        (dependency / "package.json").write_text(
+            '{"name":"ts-morph","version":"28.0.0"}\n',
+            encoding="utf-8",
+        )
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(extractor_helpers.subprocess, "run", fake_run)
+
+    first = prepare_typescript(cache_root)
+    second = prepare_typescript(cache_root)
+
+    assert first.status == "prepared"
+    assert second.status == "already_current"
+    assert len(commands) == 1
+    command, kwargs = commands[0]
+    assert command == [
+        "/usr/bin/npm",
+        "ci",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+    ]
+    helper_root = Path(kwargs["cwd"])
+    assert helper_root != extractor_helpers.TS_SCRIPTS_DIR
+    assert (helper_root / "extract.js").read_bytes() == (
+        extractor_helpers.TS_SCRIPTS_DIR / "extract.js"
+    ).read_bytes()
+    assert (helper_root / "package-lock.json").is_file()
+    assert not (extractor_helpers.TS_SCRIPTS_DIR / "node_modules").exists()
+    assert get_prepared_typescript_root(
+        tmp_path, str(configured_cache)
+    ) == helper_root
+
+    dependency_file = Path(first.path) / "package.json"
+    dependency_file.write_text('{"tampered":true}\n', encoding="utf-8")
+    third = prepare_typescript(cache_root)
+
+    assert third.status == "prepared"
+    assert len(commands) == 2
 
 
 def test_prepare_go_reports_missing_executable(tmp_path, monkeypatch):
@@ -553,10 +658,8 @@ def test_prepare_rust_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
     result = prepare_rust(cache_root)
 
     assert result.status == "prepared"
-    build_cmd = next(
-        cmd for cmd in commands if cmd[:3] == ["cargo", "build", "--release"]
-    )
-    assert build_cmd[:3] == ["cargo", "build", "--release"]
+    build_cmd = next(cmd for cmd in commands if cmd[:2] == ["cargo", "build"])
+    assert build_cmd[:4] == ["cargo", "build", "--locked", "--release"]
     manifest = json.loads(
         (cache_root / "rust" / "current.json").read_text(encoding="utf-8")
     )
@@ -591,6 +694,7 @@ def test_prepare_haskell_builds_cached_binary_and_manifest(tmp_path, monkeypatch
     assert result.status == "prepared"
     build_cmd, build_kwargs = commands[0]
     assert build_cmd[0] == "/usr/bin/ghc"
+    assert "-Wall" in build_cmd
     assert build_cmd[build_cmd.index("-package") + 1] == "ghc"
     assert build_cmd[build_cmd.index("-o") + 1] == result.path
     assert build_kwargs["cwd"] == str(extractor_helpers.HASKELL_SCRIPTS_DIR)

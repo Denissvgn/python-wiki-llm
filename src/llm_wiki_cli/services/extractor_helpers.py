@@ -22,7 +22,7 @@ ENV_EXTRACTOR_TIMEOUT = "LLM_WIKI_EXTRACTOR_TIMEOUT"
 DEFAULT_EXTRACTOR_TIMEOUT_SECONDS = 120
 HELPER_CACHE_DIRNAME = "llm-wiki-extractors"
 HELPER_MANIFEST = "current.json"
-HELPER_MANIFEST_VERSION = 1
+HELPER_MANIFEST_VERSION = 2
 SUPPORTED_HELPERS = ("typescript", "go", "rust", "haskell")
 SUPPORTED_GHC_MAJOR = 9
 SUPPORTED_GHC_MINOR = 6
@@ -150,6 +150,19 @@ def helper_source_files(language: str) -> list[tuple[str, Path]]:
 
 def helper_source_fingerprint(language: str) -> str:
     return _hash_labeled_files(helper_source_files(language))
+
+
+def helper_artifact_fingerprint(path: Path) -> str:
+    if path.is_file():
+        return _hash_labeled_files([(path.name, path)])
+    if path.is_dir():
+        files = [
+            (candidate.relative_to(path).as_posix(), candidate)
+            for candidate in path.rglob("*")
+            if candidate.is_file()
+        ]
+        return _hash_labeled_files(files)
+    return _hash_labeled_files([("<missing>", path)])
 
 
 def command_output(
@@ -334,6 +347,15 @@ def _manifest_current(cache_root: Path, language: str) -> dict[str, Any] | None:
     if language in {"go", "rust", "haskell"}:
         if not isinstance(path_value, str) or not Path(path_value).is_file():
             return None
+    elif language == "typescript":
+        if not isinstance(path_value, str) or not Path(path_value).is_dir():
+            return None
+    else:
+        return None
+    if manifest.get("artifact_fingerprint") != helper_artifact_fingerprint(
+        Path(path_value)
+    ):
+        return None
     return manifest
 
 
@@ -360,6 +382,27 @@ def get_prepared_binary(
     return path if path.is_file() else None
 
 
+def get_prepared_typescript_root(
+    src_dir: str | Path = ".", cache_dir: str | None = None
+) -> Path | None:
+    cache_root = resolve_helper_cache_root(src_dir, cache_dir)
+    if cache_root is None:
+        return None
+    manifest = _manifest_current(cache_root, "typescript")
+    if not manifest:
+        return None
+    root_value = manifest.get("root")
+    if not isinstance(root_value, str):
+        return None
+    root = Path(root_value)
+    expected_dependency = root / "node_modules" / "ts-morph"
+    if Path(str(manifest["path"])) != expected_dependency:
+        return None
+    if not (root / "extract.js").is_file():
+        return None
+    return root
+
+
 def missing_helper_message(
     language: str, src_dir: str | Path = ".", cache_dir: str | None = None
 ) -> str:
@@ -372,41 +415,78 @@ def missing_helper_message(
     return _prepared_message(language)
 
 
-def typescript_dependencies_ready() -> bool:
-    return (TS_SCRIPTS_DIR / "node_modules" / "ts-morph").exists()
+def typescript_dependencies_ready(
+    src_dir: str | Path = ".", cache_dir: str | None = None
+) -> bool:
+    return get_prepared_typescript_root(src_dir, cache_dir) is not None
 
 
 def prepare_typescript(cache_root: Path) -> HelperPrepareResult:
-    if shutil.which("node") is None:
+    node_executable = shutil.which("node")
+    if node_executable is None:
         return HelperPrepareResult("typescript", "failed", "node not found")
-    if typescript_dependencies_ready():
-        return HelperPrepareResult(
-            "typescript", "already_current", "TypeScript dependencies already installed"
-        )
-    if shutil.which("npm") is None:
+    npm_executable = shutil.which("npm")
+    if npm_executable is None:
         return HelperPrepareResult("typescript", "failed", "npm not found")
+    node_version = command_output([node_executable, "--version"])
+    npm_version = command_output([npm_executable, "--version"])
+    if node_version is None:
+        return HelperPrepareResult(
+            "typescript", "failed", "node version probe failed"
+        )
+    if npm_version is None:
+        return HelperPrepareResult("typescript", "failed", "npm version probe failed")
+
+    toolchain = f"node {node_version}; npm {npm_version}"
+    key = helper_cache_key("typescript", toolchain_version=toolchain)
+    build_root = cache_root / "typescript" / key
+    dependency_path = build_root / "node_modules" / "ts-morph"
+    current = _manifest_current(cache_root, "typescript")
+    if (
+        current
+        and current.get("key") == key
+        and Path(str(current["path"])) == dependency_path
+    ):
+        return HelperPrepareResult(
+            "typescript",
+            "already_current",
+            "TypeScript helper already prepared",
+            str(dependency_path),
+        )
+
+    build_root.mkdir(parents=True, exist_ok=True)
+    for relative_name, source_path in helper_source_files("typescript"):
+        destination = build_root / relative_name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source_path, destination)
 
     try:
         subprocess.run(
-            ["npm", "install"],
+            [
+                npm_executable,
+                "ci",
+                "--ignore-scripts",
+                "--no-audit",
+                "--no-fund",
+            ],
             capture_output=True,
             check=True,
             timeout=120,
-            cwd=str(TS_SCRIPTS_DIR),
+            cwd=str(build_root),
             text=True,
         )
     except subprocess.CalledProcessError as exc:
         return HelperPrepareResult(
-            "typescript", "failed", f"npm install failed: {exc.stderr.strip()}"
+            "typescript", "failed", f"npm ci failed: {exc.stderr.strip()}"
         )
     except (subprocess.TimeoutExpired, FileNotFoundError):
         return HelperPrepareResult(
-            "typescript", "failed", "npm install timed out or was not found"
+            "typescript", "failed", "npm ci timed out or was not found"
         )
 
-    if not typescript_dependencies_ready():
+    if not dependency_path.is_dir():
         return HelperPrepareResult(
-            "typescript", "failed", "ts-morph dependency missing after npm install"
+            "typescript", "failed", "ts-morph dependency missing after npm ci"
         )
 
     data = {
@@ -414,11 +494,17 @@ def prepare_typescript(cache_root: Path) -> HelperPrepareResult:
         "language": "typescript",
         "platform": platform_id(),
         "source_fingerprint": helper_source_fingerprint("typescript"),
-        "path": str(TS_SCRIPTS_DIR / "node_modules" / "ts-morph"),
+        "artifact_fingerprint": helper_artifact_fingerprint(dependency_path),
+        "toolchain": toolchain,
+        "node_executable": node_executable,
+        "npm_executable": npm_executable,
+        "key": key,
+        "root": str(build_root),
+        "path": str(dependency_path),
     }
     _write_manifest(cache_root, "typescript", data)
     return HelperPrepareResult(
-        "typescript", "prepared", "TypeScript dependencies installed", data["path"]
+        "typescript", "prepared", "TypeScript helper prepared", data["path"]
     )
 
 
@@ -479,6 +565,7 @@ def prepare_go(cache_root: Path) -> HelperPrepareResult:
         "language": "go",
         "platform": platform_id(),
         "source_fingerprint": helper_source_fingerprint("go"),
+        "artifact_fingerprint": helper_artifact_fingerprint(binary_path),
         "toolchain": toolchain,
         "go_executable": go_executable,
         "key": key,
@@ -506,7 +593,14 @@ def prepare_rust(cache_root: Path) -> HelperPrepareResult:
     build_root.mkdir(parents=True, exist_ok=True)
     try:
         subprocess.run(
-            ["cargo", "build", "--release", "--target-dir", str(target_dir)],
+            [
+                "cargo",
+                "build",
+                "--locked",
+                "--release",
+                "--target-dir",
+                str(target_dir),
+            ],
             capture_output=True,
             text=True,
             check=True,
@@ -531,6 +625,7 @@ def prepare_rust(cache_root: Path) -> HelperPrepareResult:
         "language": "rust",
         "platform": platform_id(),
         "source_fingerprint": helper_source_fingerprint("rust"),
+        "artifact_fingerprint": helper_artifact_fingerprint(binary_path),
         "toolchain": toolchain,
         "key": key,
         "path": str(binary_path),
@@ -581,6 +676,7 @@ def prepare_haskell(cache_root: Path) -> HelperPrepareResult:
         subprocess.run(
             [
                 ghc_executable,
+                "-Wall",
                 "-package",
                 "ghc",
                 "-outputdir",
@@ -620,6 +716,7 @@ def prepare_haskell(cache_root: Path) -> HelperPrepareResult:
         "language": "haskell",
         "platform": platform_id(),
         "source_fingerprint": helper_source_fingerprint("haskell"),
+        "artifact_fingerprint": helper_artifact_fingerprint(binary_path),
         "toolchain": toolchain,
         "ghc_executable": ghc_executable,
         "key": key,

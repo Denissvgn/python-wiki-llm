@@ -1229,7 +1229,7 @@ def _iter_scalar_values(value: object) -> list[Any]:
         return []
     if isinstance(value, (str, bytes, Mapping)):
         return [value]
-    if _is_sequence(value) or isinstance(value, (set, frozenset)):
+    if isinstance(value, (Sequence, set, frozenset)):
         return list(value)
     if isinstance(value, IterableABC):
         return list(value)

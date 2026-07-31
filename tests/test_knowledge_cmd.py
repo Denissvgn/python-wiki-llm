@@ -33,7 +33,6 @@ from llm_wiki_cli.services.verification_contracts import (
     load_verification_receipt,
 )
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
-from tests.knowledge_fixtures import one_module_two_entities_fixture
 from tests.test_knowledge_generation import _planner_inputs
 
 

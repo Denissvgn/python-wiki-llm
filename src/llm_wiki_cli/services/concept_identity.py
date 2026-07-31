@@ -17,7 +17,7 @@ from collections import defaultdict
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from enum import Enum
-from typing import TypeVar
+from typing import TypeVar, cast
 from urllib.parse import quote, unquote, urlsplit
 
 from .wiki_surface import (
@@ -242,9 +242,10 @@ class IdentityUpdate:
         seen_records: set[tuple[str, str, str]] = set()
         owners_by_coordinate: dict[tuple[str, str], str] = {}
         for alias in aliases:
+            alias_type = cast(AliasType, alias.alias_type)
             coordinate = (
-                alias.alias_type.value,
-                identity_coordinate_key(alias.alias_type, alias.value),
+                alias_type.value,
+                identity_coordinate_key(alias_type, alias.value),
             )
             record = (*coordinate, alias.uid)
             if record in seen_records:
@@ -663,17 +664,18 @@ def find_identity_collisions(
     ] = defaultdict(list)
     known_uids = set(allocations_by_uid)
     for alias in historical:
+        alias_type = cast(AliasType, alias.alias_type)
         aliases_by_coordinate[
             (
-                alias.alias_type,
-                identity_coordinate_key(alias.alias_type, alias.value),
+                alias_type,
+                identity_coordinate_key(alias_type, alias.value),
             )
         ].append(alias)
         if alias.uid not in known_uids:
             collisions.append(
                 IdentityCollision(
                     code="alias-missing-allocation",
-                    coordinate_type=alias.alias_type.value,
+                    coordinate_type=alias_type.value,
                     value=alias.value,
                     uids=(alias.uid,),
                 )
@@ -998,7 +1000,11 @@ def _sorted_aliases(values: Iterable[IdentityAlias]) -> tuple[IdentityAlias, ...
     return tuple(
         sorted(
             values,
-            key=lambda item: (item.alias_type.value, item.value, item.uid),
+            key=lambda item: (
+                cast(AliasType, item.alias_type).value,
+                item.value,
+                item.uid,
+            ),
         )
     )
 
@@ -1008,8 +1014,11 @@ def _deduplicated_aliases(
 ) -> tuple[IdentityAlias, ...]:
     by_key = {
         (
-            item.alias_type.value,
-            identity_coordinate_key(item.alias_type, item.value),
+            cast(AliasType, item.alias_type).value,
+            identity_coordinate_key(
+                cast(AliasType, item.alias_type),
+                item.value,
+            ),
             item.uid,
         ): item
         for item in values

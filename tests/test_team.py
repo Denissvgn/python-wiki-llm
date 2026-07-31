@@ -136,6 +136,44 @@ class TestTeamConfig:
         with pytest.raises(team.TeamConfigError, match="unknown"):
             team.validate_team_config(config)
 
+    def test_config_must_be_an_object(self):
+        with pytest.raises(team.TeamConfigError, match="JSON object"):
+            team.validate_team_config([])
+
+    @pytest.mark.parametrize(
+        ("path", "value", "message"),
+        [
+            (("version",), 2, "version must"),
+            (("wiki_dir",), "", "wiki_dir"),
+            (("conventions",), None, "conventions must"),
+            (("conventions", "require_log"), "yes", "require_log"),
+            (("conventions", "canonical_naming"), "yes", "canonical_naming"),
+            (
+                ("conventions", "workflow_filename_pattern"),
+                7,
+                "workflow_filename_pattern",
+            ),
+            (
+                ("conventions", "workflow_filename_pattern"),
+                "(",
+                "is invalid",
+            ),
+            (("agent",), None, "agent must"),
+            (("agent", "prompt_template"), 7, "prompt_template"),
+        ],
+    )
+    def test_invalid_config_field_types_are_rejected(
+        self, path, value, message
+    ):
+        config = team.default_team_config()
+        container = config
+        for key in path[:-1]:
+            container = container[key]
+        container[path[-1]] = value
+
+        with pytest.raises(team.TeamConfigError, match=message):
+            team.validate_team_config(config)
+
 
 class TestTeamLintAndCheck:
     def test_check_team_conventions_uses_request_object(self):

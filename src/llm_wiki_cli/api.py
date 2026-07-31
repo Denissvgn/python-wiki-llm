@@ -8,9 +8,11 @@ from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from functools import wraps
 from pathlib import Path
-from typing import Any, NoReturn, ParamSpec, TypeVar, cast
+from typing import TYPE_CHECKING, Any, NoReturn, ParamSpec, TypeVar, cast
 
-from .commands import bootstrap_cmd, context_cmd, extract_cmd
+from .services import bootstrap_runtime as bootstrap_cmd
+from .services import context_service as context_cmd
+from .services import extraction_service as extract_cmd
 from .api_types import (
     CalleesResult,
     CallersResult,
@@ -104,7 +106,7 @@ from .services.documentation_run import (
     DocumentationTransitionError,
     DocumentationVerificationReport,
     build_documentation_agent_packet,
-    export_documentation_run,
+    export_documentation_run as _export_documentation_run_service,
     get_documentation_run_status,
     prepare_documentation_run,
     record_documentation_agent_result,
@@ -119,6 +121,27 @@ from .services.documentation_wiki_input import (
 
 from .services.entrypoints import build_flow
 from .services.wiki_surface_index import evaluate_surface_index
+
+if TYPE_CHECKING:
+    from .services.calibration.controller import (
+        P0CalibrationAgentPacket,
+        P0CalibrationAgentResult,
+        P0CalibrationDispatchReceipt,
+        P0CalibrationError,
+        P0CalibrationIntegrityError,
+        P0CalibrationRecoveryError,
+        P0CalibrationRun,
+        P0CalibrationSchemaError,
+        P0CalibrationStatus,
+        P0CalibrationTransitionError,
+        P0CalibrationVerificationReport,
+    )
+    from .services.calibration.host_broker import (
+        HostBrokerAuthenticationError,
+        HostBrokerAuthenticationProof,
+        HostBrokerAuthenticationUnavailable,
+        HostBrokerAuthenticator,
+    )
 
 QualifiedContextPacket = context_packet_service.QualifiedContextPacket
 ContextPacketValidation = context_packet_service.ContextPacketValidation
@@ -1276,7 +1299,7 @@ record_documentation_agent_result = _api_boundary(
 _verify_documentation_run_impl = verify_documentation_run
 verify_documentation_run = _api_boundary(_verify_documentation_run_impl)
 
-_export_documentation_run_impl = export_documentation_run
+_export_documentation_run_impl = _export_documentation_run_service
 
 
 @_api_boundary

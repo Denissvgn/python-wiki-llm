@@ -1661,3 +1661,46 @@ class TestObsidianPluginPackage:
             capture_output=True,
             text=True,
         )
+
+
+def test_text_report_discloses_operations_issues_and_no_issue_state():
+    report = obsidian.ObsidianReport(
+        dry_run=True,
+        wiki_dir="docs/llm_wiki",
+        vault_dir="vault",
+        page_count=1,
+        freshness="current",
+        operations=[
+            obsidian.ObsidianOperation("write", "LLM Wiki/index.md", "page")
+        ],
+        issues=[
+            {
+                "category": "broken_link",
+                "path": "index.md",
+                "target": "missing.md",
+                "message": "missing",
+            }
+        ],
+    )
+
+    rendered = obsidian.render_report_text(report, action="export")
+
+    for expected in (
+        "Wiki: docs/llm_wiki",
+        "Freshness: current",
+        "Pages: 1",
+        "Dry run: no files were changed.",
+        "Operations:",
+        "- write: LLM Wiki/index.md - page",
+        "Issues:",
+        "index.md -> missing.md - missing",
+    ):
+        assert expected in rendered
+
+    assert (
+        "No Obsidian mirror issues found."
+        in obsidian.render_report_text(
+            obsidian.ObsidianReport(vault_dir="vault"),
+            action="check",
+        )
+    )

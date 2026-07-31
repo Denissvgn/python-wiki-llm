@@ -962,7 +962,7 @@ def _add_imported_page_candidates(
             if previous_classification is None
             else max(
                 (candidate.grounding_status, grounding_status),
-                key=_GROUNDING_STATUS_ORDER.get,
+                key=lambda value: _GROUNDING_STATUS_ORDER[value],
             )
         )
         candidate.signals.add(f"imported:{classification}")
@@ -1201,4 +1201,7 @@ def _stable_digest(value: str) -> str:
 def _stronger_import_classification(current: str | None, candidate: str) -> str:
     if current is None:
         return candidate
-    return max((current, candidate), key=_IMPORT_CLASSIFICATION_ORDER.get)
+    return max(
+        (current, candidate),
+        key=lambda value: _IMPORT_CLASSIFICATION_ORDER[value],
+    )

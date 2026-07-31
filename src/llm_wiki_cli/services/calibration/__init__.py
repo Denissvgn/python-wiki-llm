@@ -13,6 +13,10 @@ from __future__ import annotations
 
 import types as _types
 from collections.abc import MutableMapping as _MutableMapping
+from typing import TYPE_CHECKING as _TYPE_CHECKING
+
+if _TYPE_CHECKING:
+    from . import broker, contracts, controller, host_broker
 
 
 def _restore_legacy_definition_modules(

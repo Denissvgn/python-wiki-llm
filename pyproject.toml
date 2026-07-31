@@ -1,13 +1,15 @@
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["setuptools==83.0.0"]
+build-backend = "release_build_backend"
+backend-path = ["."]
 
 [project]
 name = "agent-wiki-cli"
-version = "1.4.0"
+version = "1.5.0"
 description = "CLI tool to maintain hybrid LLM Wikis for multi-language projects."
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
 authors = [
     {name = "Denis Sivagin", email = "denissvgn@gmail.com"}
@@ -16,7 +18,6 @@ keywords = ["llm", "wiki", "documentation", "ai", "agents", "code-context"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
     "Topic :: Software Development :: Documentation",
@@ -34,7 +35,7 @@ dev = [
     "markdown-it-py>=4.0,<5",
 ]
 # TypeScript extraction requires Node.js + npm at runtime (no Python deps).
-# Run: npm install in src/llm_wiki_cli/extractors/ts_scripts/
+# Prepare the locked dependency cache with `llm-wiki prepare-extractors`.
 typescript = []
 # Go extraction requires the Go toolchain at runtime (no Python deps).
 go = []
@@ -58,6 +59,7 @@ where = ["src"]
 "llm_wiki_cli" = [
     "schemas/llm-wiki-knowledge-v1.schema.json",
     "extractors/ts_scripts/package.json",
+    "extractors/ts_scripts/package-lock.json",
     "extractors/ts_scripts/extract.js",
     "extractors/go_scripts/main.go",
     "extractors/go_scripts/go.mod",
@@ -105,6 +107,9 @@ where = ["src"]
     "skills/wiki-sync/SKILL.md",
     "skills/wiki-sync/reference.md",
 ]
+
+[tool.setuptools.data-files]
+"share/doc/agent-wiki-cli" = ["docs/standalone-documentation.md"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

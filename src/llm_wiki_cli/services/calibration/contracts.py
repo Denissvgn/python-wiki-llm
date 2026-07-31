@@ -289,11 +289,14 @@ def validate_flow_evidence_census(payload: Mapping[str, Any]) -> None:
             raise DocumentationCalibrationError(
                 "Flow census evidence completeness is malformed."
             )
-    flow_ids = [item.get("flow_id") for item in capsules if isinstance(item, Mapping)]
-    if len(flow_ids) != len(capsules) or any(
-        not isinstance(value, str) for value in flow_ids
+    raw_flow_ids = [
+        item.get("flow_id") for item in capsules if isinstance(item, Mapping)
+    ]
+    if len(raw_flow_ids) != len(capsules) or any(
+        not isinstance(value, str) for value in raw_flow_ids
     ):
         raise DocumentationCalibrationError("Every census capsule needs a flow_id.")
+    flow_ids = [value for value in raw_flow_ids if isinstance(value, str)]
     if len(flow_ids) != len(set(flow_ids)):
         raise DocumentationCalibrationError("Flow census ids must be unique.")
     if flow_ids != sorted(flow_ids, key=lambda value: (value.casefold(), value)):
@@ -326,27 +329,29 @@ def validate_flow_evidence_census(payload: Mapping[str, Any]) -> None:
         raise DocumentationCalibrationError(
             "Critical review inventory cannot contain labels or mismatched case ids."
         )
-    family_members = []
-    family_ids = set()
-    family_by_member = {}
+    family_members: list[str] = []
+    family_ids: set[str] = set()
+    family_by_member: dict[str, str] = {}
     for family in families:
-        if not isinstance(family, Mapping) or not isinstance(
-            family.get("members"), list
-        ):
+        if not isinstance(family, Mapping):
+            raise DocumentationCalibrationError("Preliminary family is malformed.")
+        raw_members = family.get("members")
+        if not isinstance(raw_members, list):
             raise DocumentationCalibrationError("Preliminary family is malformed.")
         family_id = family.get("id")
         if (
             not isinstance(family_id, str)
             or not family_id
             or family_id in family_ids
-            or any(not isinstance(member, str) for member in family["members"])
+            or any(not isinstance(member, str) for member in raw_members)
         ):
             raise DocumentationCalibrationError(
                 "Preliminary family ids and members are malformed."
-            )
+        )
         family_ids.add(family_id)
-        family_members.extend(family["members"])
-        family_by_member.update({member: family_id for member in family["members"]})
+        members = [member for member in raw_members if isinstance(member, str)]
+        family_members.extend(members)
+        family_by_member.update({member: family_id for member in members})
         if family.get("semantic_equivalence") != "unadjudicated":
             raise DocumentationCalibrationError(
                 "Preliminary families cannot claim semantic equivalence."

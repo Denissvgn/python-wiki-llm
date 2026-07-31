@@ -45,7 +45,6 @@ from .concept_identity import (
     validate_bundle_id,
     validate_concept_kind,
     validate_concept_uid,
-    validate_locator,
     validate_natural_key,
 )
 from .knowledge_evidence import (
@@ -1409,7 +1408,7 @@ def add_review_event(
     return validate_governance_ledger(replace(current, review_events=events))
 
 
-def authored_event_time(value: str | datetime | None = None) -> str:
+def authored_event_time(value: object = None) -> str:
     """Return a canonical real UTC authored-event time."""
 
     selected = datetime.now(timezone.utc) if value is None else value
@@ -1896,8 +1895,22 @@ def validate_governance_projection(
             f"governance_projection.concepts.{locator}",
             limit=selected_limit,
         )
-        lifecycle_limit = int(summary["lifecycle_events"]["limit"])
-        review_limit = int(summary["reviews"]["limit"])
+        lifecycle_summary = _object(
+            summary["lifecycle_events"],
+            f"governance_projection.concepts.{locator}.lifecycle_events",
+        )
+        review_summary = _object(
+            summary["reviews"],
+            f"governance_projection.concepts.{locator}.reviews",
+        )
+        lifecycle_limit = _nonnegative_int(
+            lifecycle_summary["limit"],
+            f"governance_projection.concepts.{locator}.lifecycle_events.limit",
+        )
+        review_limit = _nonnegative_int(
+            review_summary["limit"],
+            f"governance_projection.concepts.{locator}.reviews.limit",
+        )
         if lifecycle_limit != review_limit:
             raise GovernanceError(
                 f"governance_projection.concepts.{locator}",
@@ -2859,9 +2872,13 @@ def _parse_review_evidence(value: object, path: str) -> ReviewEvidence:
     return _review_evidence(
         ReviewEvidence(
             mode=str(mode),
-            basis_ids=tuple(_array(record["basis_ids"], f"{path}.basis_ids")),
+            basis_ids=tuple(
+                _safe_name(item, f"{path}.basis_ids", allow_slash=True)
+                for item in _array(record["basis_ids"], f"{path}.basis_ids")
+            ),
             basis_hashes=tuple(
-                _array(record["basis_hashes"], f"{path}.basis_hashes")
+                _hash(item, f"{path}.basis_hashes")
+                for item in _array(record["basis_hashes"], f"{path}.basis_hashes")
             ),
         ),
         path,
@@ -3137,7 +3154,7 @@ def _exact_fields(
     path: str,
     required: set[str],
     *,
-    optional: set[str] = frozenset(),
+    optional: set[str] | frozenset[str] = frozenset(),
 ) -> None:
     return require_shared_exact_fields(
         value,

@@ -2268,6 +2268,91 @@ class TestOriginSafety:
             allowed_origins=["https://agent.example.com"],
         )
 
+    def test_origin_helpers_normalize_defaults_and_reject_malformed_values(self):
+        assert not mcp_server._is_loopback_host("not a host")
+        assert mcp_server._default_port_for_scheme("http") == 80
+        assert mcp_server._default_port_for_scheme("https") == 443
+        assert mcp_server._default_port_for_scheme("ftp") is None
+        assert (
+            mcp_server._normalise_origin("HTTPS://[::1]:8765")
+            == "https://[::1]:8765"
+        )
+
+        for origin in (
+            "ftp://localhost",
+            "http://localhost/path",
+            "http://localhost:not-a-port",
+        ):
+            with pytest.raises(mcp_server.McpWikiError):
+                mcp_server._normalise_origin(origin)
+
+    def test_graph_filter_helpers_validate_and_order_values(self):
+        assert mcp_server._knowledge_kinds(None) is None
+        assert mcp_server._knowledge_kinds([]) == []
+        with pytest.raises(mcp_server.McpWikiError, match="iterable"):
+            mcp_server._knowledge_kinds("calls")
+        with pytest.raises(mcp_server.McpWikiError, match="only"):
+            mcp_server._knowledge_kinds([1])
+        with pytest.raises(mcp_server.McpWikiError, match="unsupported"):
+            mcp_server._knowledge_kinds(["not-a-kind"])
+
+        assert mcp_server._typed_graph_kinds(None) is None
+        with pytest.raises(mcp_server.McpWikiError, match="iterable"):
+            mcp_server._typed_graph_kinds({"kind": "calls"})
+        with pytest.raises(mcp_server.McpWikiError, match="only"):
+            mcp_server._typed_graph_kinds([1])
+        with pytest.raises(mcp_server.McpWikiError, match="unsupported"):
+            mcp_server._typed_graph_kinds(["not a kind"])
+        with pytest.raises(mcp_server.McpWikiError, match="direction"):
+            mcp_server._typed_graph_direction("sideways")
+
+        assert mcp_server._typed_graph_enum_values(
+            ["beta", "alpha"],
+            field="states",
+            allowed=("alpha", "beta"),
+        ) == ["alpha", "beta"]
+        with pytest.raises(mcp_server.McpWikiError, match="iterable"):
+            mcp_server._typed_graph_enum_values(
+                "alpha",
+                field="states",
+                allowed=("alpha",),
+            )
+        with pytest.raises(mcp_server.McpWikiError, match="only"):
+            mcp_server._typed_graph_enum_values(
+                [1],
+                field="states",
+                allowed=("alpha",),
+            )
+        with pytest.raises(mcp_server.McpWikiError, match="unsupported"):
+            mcp_server._typed_graph_enum_values(
+                ["beta"],
+                field="states",
+                allowed=("alpha",),
+            )
+
+    def test_page_and_markdown_helpers_enforce_bounds(self, tmp_path):
+        for value in (True, 0):
+            with pytest.raises(mcp_server.McpWikiError, match="positive integer"):
+                mcp_server._bounded_query_limit(value)
+        assert mcp_server._bounded_query_limit(10_000) == 100
+
+        with pytest.raises(mcp_server.McpWikiError, match="non-empty"):
+            mcp_server._validate_page_id("")
+        with pytest.raises(mcp_server.McpWikiError, match="Unsafe"):
+            mcp_server._validate_page_id("%2E%2E")
+        assert mcp_server._validate_page_id("User") == "User"
+
+        with pytest.raises(mcp_server.McpWikiError, match="escapes"):
+            mcp_server._ensure_inside(tmp_path, tmp_path.parent / "outside.md")
+
+        assert mcp_server._markdown_title("\n## Title\n", "Fallback") == "Title"
+        assert mcp_server._markdown_title("#\n", "Fallback") == "Fallback"
+        assert mcp_server._markdown_title("No heading", "Fallback") == "Fallback"
+        assert mcp_server._count_md(tmp_path / "missing") == 0
+        (tmp_path / "one.md").write_text("# One\n", encoding="utf-8")
+        (tmp_path / "two.txt").write_text("Two\n", encoding="utf-8")
+        assert mcp_server._count_md(tmp_path) == 1
+
     def test_origin_validation_middleware_rejects_disallowed_origin(self):
         sent = []
 
@@ -2316,6 +2401,103 @@ class TestMcpCli:
             mcp_server.ensure_mcp_runtime()
 
         assert "pip install 'agent-wiki-cli[mcp]'" in str(exc.value)
+
+    def test_stdio_server_uses_supported_fastmcp_run_signature(
+        self,
+        tmp_path,
+        monkeypatch,
+    ):
+        source = tmp_path / "source"
+        wiki = tmp_path / "wiki"
+        source.mkdir()
+        wiki.mkdir()
+        calls = []
+        monkeypatch.chdir(tmp_path)
+
+        class Server:
+            def run(self, *, transport):
+                calls.append(transport)
+
+        monkeypatch.setattr(
+            mcp_server,
+            "create_mcp_server",
+            lambda _config: Server(),
+        )
+
+        mcp_server.run_mcp_server(
+            mcp_server.McpServerConfig(
+                src_dir="source",
+                wiki_dir="wiki",
+            )
+        )
+
+        assert calls == ["stdio"]
+
+    def test_http_server_wraps_sdk_application_with_origin_validation(
+        self,
+        tmp_path,
+        monkeypatch,
+    ):
+        source = tmp_path / "source"
+        wiki = tmp_path / "wiki"
+        source.mkdir()
+        wiki.mkdir()
+        middleware = []
+        uvicorn_calls = []
+        monkeypatch.chdir(tmp_path)
+
+        class Application:
+            def add_middleware(self, middleware_class, **options):
+                middleware.append((middleware_class, options))
+
+        application = Application()
+
+        class Server:
+            def streamable_http_app(self):
+                return application
+
+        monkeypatch.setattr(
+            mcp_server,
+            "create_mcp_server",
+            lambda _config: Server(),
+        )
+        monkeypatch.setitem(
+            sys.modules,
+            "uvicorn",
+            types.SimpleNamespace(
+                run=lambda app, **options: uvicorn_calls.append((app, options))
+            ),
+        )
+
+        mcp_server.run_mcp_server(
+            mcp_server.McpServerConfig(
+                src_dir="source",
+                wiki_dir="wiki",
+                transport="http",
+                port=8765,
+                allowed_origins=("https://example.com",),
+            )
+        )
+
+        assert middleware == [
+            (
+                mcp_server.OriginValidationMiddleware,
+                {
+                    "port": 8765,
+                    "allowed_origins": ["https://example.com"],
+                },
+            )
+        ]
+        assert uvicorn_calls == [
+            (
+                application,
+                {
+                    "host": "127.0.0.1",
+                    "port": 8765,
+                    "log_level": "warning",
+                },
+            )
+        ]
 
     def test_optional_sdk_registration_when_installed(self, tmp_project):
         if importlib.util.find_spec("mcp") is None:

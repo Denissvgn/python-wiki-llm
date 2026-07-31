@@ -12,7 +12,6 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any
 
 from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from .contracts import DOCTOR_SCHEMA_VERSION
@@ -434,11 +433,16 @@ def _drift_section(
     view: KnowledgeReadView | None,
 ) -> dict[str, object]:
     raw_counts = freshness["counts_by_state"]
-    counts = (
-        None
-        if raw_counts is None
-        else {state: int(raw_counts[state]) for state in _FRESHNESS_STATES}
-    )
+    counts: dict[str, int] | None = None
+    if raw_counts is not None:
+        if not isinstance(raw_counts, Mapping):
+            raise TypeError("freshness counts_by_state must be a mapping")
+        counts = {}
+        for state in _FRESHNESS_STATES:
+            value = raw_counts[state]
+            if isinstance(value, bool) or not isinstance(value, int):
+                raise TypeError("freshness state counts must be integers")
+            counts[state] = value
     diagnostics = _issues(lint, "knowledge_freshness", diagnostics=True)
     diagnostic_states = _diagnostic_freshness_states(diagnostics, view)
     confirmed = (
@@ -592,7 +596,10 @@ def _classify(
         ).append("nonsemantic-source-change")
     if not freshness["evaluated"]:
         degraded.append("freshness-unevaluated")
-    if int(governance["expired_reviews"]) > 0:
+    expired_reviews = governance["expired_reviews"]
+    if isinstance(expired_reviews, bool) or not isinstance(expired_reviews, int):
+        raise TypeError("governance expired_reviews must be an integer")
+    if expired_reviews > 0:
         degraded.append("expired-reviews")
     if verification["state"] in _VERIFICATION_UNHEALTHY_STATES:
         unhealthy.append(f"verification-{verification['state']}")

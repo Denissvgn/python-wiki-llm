@@ -14,9 +14,11 @@ import json
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from typing import cast
 
 from ..services.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
+    KnowledgeCommitPlan,
     ValidatedKnowledgeArtifacts,
     build_knowledge_commit_plan,
     commit_knowledge_artifacts,
@@ -33,6 +35,9 @@ from ..services.knowledge_governance import (
     GovernanceActor,
     GovernanceError,
     GovernanceLedger,
+    GovernanceLoadResult,
+    LifecycleEvent,
+    ReviewEvent,
     add_alias,
     add_review_event,
     apply_governance_projection,
@@ -306,7 +311,12 @@ def _print_payload(payload: Mapping[str, object]) -> None:
 def _prepare_existing_mutation(
     wiki_dir: Path,
     mutation: LedgerMutation,
-) -> tuple[_ArtifactSnapshot, object, GovernanceLedger, object]:
+) -> tuple[
+    _ArtifactSnapshot,
+    GovernanceLoadResult,
+    GovernanceLedger,
+    KnowledgeCommitPlan,
+]:
     loaded = _load_required_ledger(wiki_dir)
     snapshot = _validated_artifact_snapshot(
         wiki_dir,
@@ -665,12 +675,12 @@ def _status_payload(
         aliases_by_uid[alias.uid].append(
             {"type": alias.alias_type, "value": alias.value}
         )
-    lifecycle_by_uid: dict[str, list[object]] = {
+    lifecycle_by_uid: dict[str, list[LifecycleEvent]] = {
         uid: [] for uid in ledger.concepts
     }
     for event in ledger.lifecycle_events.values():
         lifecycle_by_uid[event.concept_uid].append(event)
-    reviews_by_uid: dict[str, list[object]] = {
+    reviews_by_uid: dict[str, list[ReviewEvent]] = {
         uid: [] for uid in ledger.concepts
     }
     for event in ledger.review_events.values():
@@ -825,7 +835,7 @@ def _run_status(args) -> None:
         f"({payload['governance_hash']})"
     )
     print(f"Freshness: {freshness}")
-    for concept in payload["concepts"]:
+    for concept in cast(list[Mapping[str, object]], payload["concepts"]):
         print(
             f"{concept['uid']} {concept['lifecycle']} "
             f"{concept['locator']}"

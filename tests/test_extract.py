@@ -31,19 +31,13 @@ from llm_wiki_cli.services.dependencies import (
     build_dependency_observations,
 )
 from llm_wiki_cli.services.extraction_jobs import ExtractionJobRequest
+from llm_wiki_cli.services.extractor_helpers import typescript_dependencies_ready
 from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
 from llm_wiki_cli.services.packages import discover_packages, stamp_inventory_packages
 from llm_wiki_cli.services import plugins
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
-TS_NODE_MODULES = (
-    Path(__file__).parents[1]
-    / "src"
-    / "llm_wiki_cli"
-    / "extractors"
-    / "ts_scripts"
-    / "node_modules"
-)
+PROJECT_ROOT = Path(__file__).parents[1]
 
 
 def _body_line_count(function) -> int:
@@ -4013,7 +4007,7 @@ class TestSummarizeInventory:
 
 
 @pytest.mark.skipif(
-    not (TS_NODE_MODULES / "ts-morph").exists() or shutil.which("node") is None,
+    not typescript_dependencies_ready(PROJECT_ROOT) or shutil.which("node") is None,
     reason="Node.js/ts-morph dependencies not installed",
 )
 class TestTypeScriptModuleOnlyExtraction:

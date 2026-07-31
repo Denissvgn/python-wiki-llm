@@ -19,7 +19,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum
 from types import MappingProxyType
-from typing import Any
+from typing import Any, NoReturn
 
 from .concept_identity import (
     ConceptIdentityError,
@@ -1277,7 +1277,7 @@ def _validate_projection_lifecycle(
         {"state", "successor_uid", "successor_namespaced_uid"},
         optional=optional,
     )
-    state = _require_enum(
+    _require_enum(
         lifecycle["state"],
         {value.value for value in Lifecycle},
         path + ".state",
@@ -2243,7 +2243,7 @@ def _require_machine_code(value: object, path: str) -> str:
     return selected
 
 
-def _shape_error(path: str, message: str) -> None:
+def _shape_error(path: str, message: str) -> NoReturn:
     raise KnowledgeProjectionError(
         "projection-shape-invalid",
         path,

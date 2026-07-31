@@ -75,15 +75,11 @@ from ..services.knowledge_artifacts import (
     KnowledgeCommitResult,
 )
 from ..services.knowledge_envelope import RepositoryEvidence
-from ..services.knowledge_evidence import (
-    hash_file as _hash_file,
-)
+from ..services.knowledge_evidence import hash_file
 from ..services.knowledge_evidence import (
     is_valid_sha256,
 )
-from ..services.knowledge_evidence import (
-    semantic_hash_for_file as _semantic_hash_for_file,
-)
+from ..services.knowledge_evidence import semantic_hash_for_file
 from ..services.knowledge_governance import (
     GOVERNANCE_FILENAME,
     GovernanceError,
@@ -153,7 +149,7 @@ from ..services.wiki_surface import (
     mcp_uri,
 )
 from ..services.wiki_surface_index import evaluate_surface_index
-from .bootstrap_cmd import (
+from ..services.bootstrap_runtime import (
     _build_entity_relationship_summary_map,
     _build_relationships,
     _generate_dependencies_md,
@@ -170,7 +166,7 @@ from .bootstrap_cmd import (
     build_entity_page_map,
     build_module_page_map,
 )
-from .extract_cmd import (
+from ..services.extraction_service import (
     InventoryResult,
     get_inventory_result,
     get_docker_inventory,
@@ -178,6 +174,10 @@ from .extract_cmd import (
     resolve_call_observations,
     resolve_call_edges,
 )
+
+# Historical private aliases are imported by downstream integrations.
+_hash_file = hash_file
+_semantic_hash_for_file = semantic_hash_for_file
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -241,7 +241,7 @@ def _build_manifest_from_inventory(
     module_page_map: dict[str, str] | None = None,
     surfaces: Mapping[str, Mapping] | None = None,
     generation_inputs: Mapping[str, object] | None = None,
-    previous_manifest: "SyncManifest" | None = None,
+    previous_manifest: SyncManifest | None = None,
     retained_page_paths: Iterable[str] | None = None,
     unknown_evidence_reason: str = EVIDENCE_NOT_RECORDED,
     source_content_hashes: Mapping[str, str] | None = None,
@@ -2468,7 +2468,7 @@ def _discover_infrastructure_plan(
     generation_inputs: Mapping[str, object],
 ) -> InfrastructureSyncPlan:
     docker_inventory = get_docker_inventory(
-        source_snapshot.root,
+        str(source_snapshot.root),
         source_snapshot=source_snapshot,
     )
     yaml_inventory = get_yaml_infrastructure_inventory(
@@ -2701,7 +2701,10 @@ def _write_current_infrastructure_page(
         source_path,
         plan.inventory[source_path],
         module_page_map,
-        dict(unsupported_sources),
+        {
+            source: dict(details)
+            for source, details in unsupported_sources.items()
+        },
     )
     merged = _merge_infrastructure_notes(existing, generated)
     state = _write_md_if_changed(path, merged)

@@ -1324,8 +1324,9 @@ class DocumentationGraphQueryService:
             "truncated": match_bounds.truncated,
             "bounds": {"matches": match_bounds.metadata()},
         }
-        if total == 1:
-            result["_selected_locator"] = candidates[0]["locator"]
+        selected = next(iter(candidates), None)
+        if total == 1 and selected is not None:
+            result["_selected_locator"] = selected["locator"]
         return result
 
     def _compact_knowledge_concept(self, locator: str) -> dict[str, Any]:

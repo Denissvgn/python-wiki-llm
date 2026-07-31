@@ -63,3 +63,46 @@ class TestBumpStageFlag:
             bump_cmd.run(_make_args(bump_type="patch", stage=True))
 
         assert exc_info.value.code == 1
+
+    def test_stage_reports_missing_git(self, tmp_project, monkeypatch, capsys):
+        def missing_git(*args, **kwargs):
+            raise FileNotFoundError
+
+        monkeypatch.setattr(bump_cmd.subprocess, "run", missing_git)
+
+        with pytest.raises(SystemExit) as exc_info:
+            bump_cmd.run(_make_args(bump_type="patch", stage=True))
+
+        assert exc_info.value.code == 1
+        assert "git not found" in capsys.readouterr().err
+
+
+class TestBumpValidation:
+    def test_missing_version_file_is_actionable(self, monkeypatch, capsys):
+        monkeypatch.setattr(bump_cmd, "find_version_file", lambda root: None)
+
+        with pytest.raises(SystemExit) as exc_info:
+            bump_cmd.run(_make_args())
+
+        assert exc_info.value.code == 1
+        assert "No version file found" in capsys.readouterr().out
+
+    def test_unparseable_version_is_actionable(self, monkeypatch, capsys):
+        version_file = Path("VERSION")
+        monkeypatch.setattr(
+            bump_cmd, "find_version_file", lambda root: version_file
+        )
+        monkeypatch.setattr(bump_cmd, "read_version", lambda path: None)
+
+        with pytest.raises(SystemExit) as exc_info:
+            bump_cmd.run(_make_args())
+
+        assert exc_info.value.code == 1
+        assert "Could not parse version from VERSION" in capsys.readouterr().out
+
+    def test_unknown_bump_type_is_rejected(self, tmp_project, capsys):
+        with pytest.raises(SystemExit) as exc_info:
+            bump_cmd.run(_make_args(bump_type="major"))
+
+        assert exc_info.value.code == 1
+        assert "Unknown bump type 'major'" in capsys.readouterr().out

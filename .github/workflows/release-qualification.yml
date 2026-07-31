@@ -1,0 +1,1620 @@
+name: Release qualification
+
+on:
+  workflow_dispatch:
+    inputs:
+      candidate-sha:
+        description: Full pushed Git SHA to qualify
+        required: true
+        type: string
+      discovery-mode:
+        description: Collect skip tuples only; never emit a qualified release
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+env:
+  CI: "1"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PIP_NO_INPUT: "1"
+  PYTHONUTF8: "1"
+  PYTHONIOENCODING: "utf-8"
+
+jobs:
+  freeze:
+    name: RD-00 freeze candidate source
+    runs-on: ubuntu-24.04
+    outputs:
+      sha: ${{ steps.freeze.outputs.sha }}
+      tree: ${{ steps.freeze.outputs.tree }}
+      version: ${{ steps.freeze.outputs.version }}
+      tag: ${{ steps.freeze.outputs.tag }}
+      source-sha256: ${{ steps.freeze.outputs.source-sha256 }}
+      harness-sha256: ${{ steps.harness.outputs.harness-sha256 }}
+      commit-epoch: ${{ steps.freeze.outputs.commit-epoch }}
+      node-version: ${{ steps.tool-lock.outputs.node-version }}
+      npm-version: ${{ steps.tool-lock.outputs.npm-version }}
+      go-version: ${{ steps.tool-lock.outputs.go-version }}
+      rust-version: ${{ steps.tool-lock.outputs.rust-version }}
+      ghc-version: ${{ steps.tool-lock.outputs.ghc-version }}
+      actionlint-version: ${{ steps.tool-lock.outputs.actionlint-version }}
+      cargo-audit-version: ${{ steps.tool-lock.outputs.cargo-audit-version }}
+      govulncheck-version: ${{ steps.tool-lock.outputs.govulncheck-version }}
+    steps:
+      - name: Check out the exact candidate
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: ${{ inputs.candidate-sha }}
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Set up qualification Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+
+      - name: Bind the workflow definition to the candidate
+        env:
+          CANDIDATE_SHA: ${{ inputs.candidate-sha }}
+          WORKFLOW_EVENT: ${{ github.event_name }}
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+          WORKFLOW_PREFIX: ${{ github.repository }}/.github/workflows/release-qualification.yml@
+        run: |
+          set -euo pipefail
+          test "${WORKFLOW_EVENT}" = "workflow_dispatch"
+          test "${WORKFLOW_SHA}" = "${CANDIDATE_SHA}"
+          case "${WORKFLOW_REF}" in
+            "${WORKFLOW_PREFIX}"refs/heads/*) ;;
+            *)
+              echo "qualification workflow must run from a full branch ref" >&2
+              exit 1
+              ;;
+          esac
+          git check-ref-format "${WORKFLOW_REF#"${WORKFLOW_PREFIX}"}"
+
+      - name: Validate identity and create one source archive
+        id: freeze
+        env:
+          CANDIDATE_SHA: ${{ inputs.candidate-sha }}
+        run: >-
+          python -I release/qualification.py freeze-source
+          --root .
+          --output "${RUNNER_TEMP}/frozen"
+          --expected-sha "${CANDIDATE_SHA}"
+          --repository "${{ github.repository }}"
+          --mode candidate
+          --required-ancestor 432d4c54da4a250f84f60b921f721ba8d6af6e81
+          --required-ancestor e69b5e28b31d5558b9746919b78adeaccc972c68
+          --check-registry
+
+      - name: Read exact tool versions from the committed lock
+        id: tool-lock
+        run: |
+          lock_value() {
+            python -I release/qualification.py lock-value \
+              --lock release/toolchain-lock.json --key "$1"
+          }
+          {
+            echo "node-version=$(lock_value toolchains.node.version)"
+            echo "npm-version=$(lock_value toolchains.npm.version)"
+            echo "go-version=$(lock_value toolchains.go.version)"
+            echo "rust-version=$(lock_value toolchains.rust.version)"
+            echo "ghc-version=$(lock_value toolchains.haskell.version)"
+            echo "actionlint-version=$(lock_value qualification_tools.actionlint.version)"
+            echo "cargo-audit-version=$(lock_value qualification_tools.cargo-audit.version)"
+            echo "govulncheck-version=$(lock_value qualification_tools.govulncheck.version)"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Freeze and digest tracked qualification harnesses
+        id: harness
+        env:
+          CANDIDATE_SHA: ${{ inputs.candidate-sha }}
+        run: |
+          git archive --format=tar \
+            --output="${RUNNER_TEMP}/frozen/qualification-harnesses.tar" \
+            "${CANDIDATE_SHA}" -- \
+            release/qualification.py \
+            tests/release_artifact_smoke.py
+          harness_sha256="$(sha256sum \
+            "${RUNNER_TEMP}/frozen/qualification-harnesses.tar" | cut -d' ' -f1)"
+          echo "harness-sha256=${harness_sha256}" >> "${GITHUB_OUTPUT}"
+
+      - name: Upload frozen source and identity
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: candidate-source
+          path: |
+            ${{ runner.temp }}/frozen/candidate-source.tar
+            ${{ runner.temp }}/frozen/identity.json
+            ${{ runner.temp }}/frozen/SHA256SUMS
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+      - name: Upload independently digested qualification harnesses
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: qualification-harnesses
+          path: ${{ runner.temp }}/frozen/qualification-harnesses.tar
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+  core:
+    name: RD-01/RD-02 core (${{ matrix.lane }})
+    needs: freeze
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - lane: core-ubuntu-3.10
+            os: ubuntu-24.04
+            python: "3.10"
+          - lane: core-windows-3.13
+            os: windows-2025
+            python: "3.13"
+          - lane: core-macos-3.14
+            os: macos-15
+            python: "3.14"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Download frozen source
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: candidate-source
+          path: incoming/source
+
+      - name: Download qualification harness
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: qualification-harnesses
+          path: incoming/tools
+
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+
+      - name: Verify and extract the frozen archive
+        run: >-
+          python -I incoming/tools/release/qualification.py extract-source
+          --archive incoming/source/candidate-source.tar
+          --sha256 "${{ needs.freeze.outputs.source-sha256 }}"
+          --destination candidate
+
+      - name: Create an isolated lane environment
+        run: >-
+          python -I incoming/tools/release/qualification.py create-venv
+          --path "${RUNNER_TEMP}/qualification-venv"
+
+      - name: Install the frozen source non-editably
+        run: python -m pip install --no-cache-dir "./candidate[dev]"
+
+      - name: Run strict core suite and coverage
+        run: >-
+          python -m pytest candidate/tests -q
+          -p no:cacheprovider
+          --strict-config
+          --strict-markers
+          -W error
+          -o xfail_strict=true
+          --junitxml="evidence/${{ matrix.lane }}.xml"
+          --cov=llm_wiki_cli
+          --cov-report="xml:evidence/coverage-${{ matrix.lane }}.xml"
+          --cov-fail-under=87
+
+      - name: Enforce exact skip tuples and minimum inventory
+        env:
+          DISCOVERY_MODE: ${{ inputs.discovery-mode }}
+        run: |
+          discovery=()
+          if [[ "${DISCOVERY_MODE}" == "true" ]]; then
+            discovery=(--discovery)
+          fi
+          python -I incoming/tools/release/qualification.py verify-junit \
+            --junit "evidence/${{ matrix.lane }}.xml" \
+            --lane "${{ matrix.lane }}" \
+            --allowlist candidate/release/skip-allowlist.json \
+            --minimum-collected 5322 \
+            --minimum-passed 5070 \
+            --output "evidence/result-${{ matrix.lane }}.json" \
+            "${discovery[@]}"
+
+      - name: Upload lane evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: evidence-${{ matrix.lane }}
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Prevent discovery evidence from qualifying
+        if: ${{ inputs.discovery-mode }}
+        run: |
+          echo "Discovery mode can generate evidence but cannot qualify a release." >&2
+          exit 1
+
+  discovery-allowlist:
+    name: Generate non-qualifying skip allowlist
+    if: ${{ always() && inputs.discovery-mode && needs.freeze.result == 'success' }}
+    needs: [freeze, core]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: qualification-harnesses
+          path: incoming/tools
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: evidence-core-*
+          path: incoming/evidence
+      - name: Generate review-required tuples from all core lanes
+        run: |
+          ubuntu="$(find incoming/evidence -name 'core-ubuntu-3.10.xml' -print -quit)"
+          windows="$(find incoming/evidence -name 'core-windows-3.13.xml' -print -quit)"
+          macos="$(find incoming/evidence -name 'core-macos-3.14.xml' -print -quit)"
+          test -f "${ubuntu}"
+          test -f "${windows}"
+          test -f "${macos}"
+          python -I incoming/tools/release/qualification.py discover-allowlist \
+            --result "core-ubuntu-3.10=${ubuntu}" \
+            --result "core-windows-3.13=${windows}" \
+            --result "core-macos-3.14=${macos}" \
+            --output discovered-skip-allowlist.json
+      - name: Upload non-qualifying allowlist for owner review
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: discovered-skip-allowlist
+          path: discovered-skip-allowlist.json
+          if-no-files-found: error
+          retention-days: 14
+
+  slow:
+    name: RD-03 slow, scale, bounds, and determinism
+    needs: freeze
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download frozen source
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: candidate-source
+          path: incoming/source
+      - name: Download qualification harness
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: qualification-harnesses
+          path: incoming/tools
+      - name: Set up Python 3.13
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+      - name: Extract and install the source
+        run: |
+          python -I incoming/tools/release/qualification.py extract-source \
+            --archive incoming/source/candidate-source.tar \
+            --sha256 "${{ needs.freeze.outputs.source-sha256 }}" \
+            --destination candidate
+          python -I incoming/tools/release/qualification.py create-venv \
+            --path "${RUNNER_TEMP}/qualification-venv"
+      - name: Install the frozen source non-editably
+        run: python -m pip install --no-cache-dir "./candidate[dev]"
+      - name: Run slow and canonical deterministic tests
+        run: |
+          python -m pytest -q \
+            candidate/tests/test_knowledge_m1_hardening.py::test_representative_m1_generation_stays_deterministic_and_within_budget \
+            -p no:cacheprovider --strict-config --strict-markers \
+            -W error -o xfail_strict=true --junitxml=evidence/slow.xml
+          python -m pytest -q \
+            candidate/tests/test_knowledge_performance.py::test_query_operation_uses_one_snapshot_one_deep_extraction_and_one_view \
+            candidate/tests/test_knowledge_performance.py::test_one_freshness_evaluation_and_zero_query_method_io \
+            candidate/tests/test_knowledge_performance.py::test_default_and_mcp_bounds_disclose_stress_truncation \
+            candidate/tests/test_knowledge_performance.py::test_exact_lookup_is_indexed_and_neighbor_work_is_local \
+            candidate/tests/test_knowledge_performance.py::test_thousands_scale_output_is_deterministic_across_shuffled_inputs \
+            candidate/tests/test_m3_scale.py::test_high_fanout_graph_keeps_evidence_and_query_output_bounded \
+            candidate/tests/test_m3_scale.py::test_recorded_scale_gate_is_reproducible_current_and_sanitized \
+            candidate/tests/test_context_packet.py::test_packet_is_byte_stable_immutable_and_matches_cross_platform_golden \
+            candidate/tests/test_context.py::TestBuildContextPayload::test_prefer_fresh_flag_off_matches_protocol_baseline_golden \
+            candidate/tests/test_context.py::TestBuildContextPayload::test_prefer_fresh_flag_on_matches_deterministic_protocol_golden \
+            -p no:cacheprovider --strict-config --strict-markers \
+            -W error -o xfail_strict=true --junitxml=evidence/determinism.xml
+      - name: Upload gate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: evidence-rd-03
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 14
+
+  security-behavior:
+    name: RD-04 security behavior (${{ matrix.os }})
+    needs: freeze
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025, macos-15]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: candidate-source
+          path: incoming/source
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: qualification-harnesses
+          path: incoming/tools
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+      - name: Extract and install the source
+        run: |
+          python -I incoming/tools/release/qualification.py extract-source \
+            --archive incoming/source/candidate-source.tar \
+            --sha256 "${{ needs.freeze.outputs.source-sha256 }}" \
+            --destination candidate
+          python -I incoming/tools/release/qualification.py create-venv \
+            --path "${RUNNER_TEMP}/qualification-venv"
+      - name: Install the frozen source non-editably
+        run: python -m pip install --no-cache-dir "./candidate[dev]"
+      - name: Run security owner suites
+        run: >-
+          python -m pytest -q
+          candidate/tests/test_lockfile.py
+          candidate/tests/test_circuit_breaker.py
+          candidate/tests/test_redaction.py
+          candidate/tests/test_config.py
+          candidate/tests/test_io.py
+          candidate/tests/test_protected_artifacts.py
+          candidate/tests/test_documentation_adversarial.py
+          candidate/tests/test_documentation_control_integrity.py
+          candidate/tests/test_documentation_input_recheck.py
+          candidate/tests/test_documentation_native_lifecycle.py
+          candidate/tests/test_resource_diagnostics.py
+          candidate/tests/test_api_exception_taxonomy.py
+          -p no:cacheprovider --strict-config --strict-markers
+          -W error
+          -o xfail_strict=true
+          --junitxml="evidence/security-${{ matrix.os }}.xml"
+      - name: Upload gate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: evidence-rd-04-${{ matrix.os }}
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 14
+
+  product:
+    name: RD-05 product vectors (${{ matrix.os }})
+    needs: freeze
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: candidate-source
+          path: incoming/source
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: qualification-harnesses
+          path: incoming/tools
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+      - name: Extract and install the source
+        run: |
+          python -I incoming/tools/release/qualification.py extract-source \
+            --archive incoming/source/candidate-source.tar \
+            --sha256 "${{ needs.freeze.outputs.source-sha256 }}" \
+            --destination candidate
+          python -I incoming/tools/release/qualification.py create-venv \
+            --path "${RUNNER_TEMP}/qualification-venv"
+      - name: Install the frozen source non-editably
+        run: python -m pip install --no-cache-dir "./candidate[dev]"
+      - name: Run knowledge, documentation, and export vectors
+        shell: bash
+        run: >-
+          python -m pytest -q
+          candidate/tests/test_knowledge_*.py
+          candidate/tests/test_documentation_*.py
+          candidate/tests/test_doctor.py
+          candidate/tests/test_context_packet.py
+          candidate/tests/test_eval_lite.py
+          candidate/tests/test_github_action.py
+          candidate/tests/test_site_*.py
+          candidate/tests/test_obsidian.py
+          -p no:cacheprovider --strict-config --strict-markers
+          -W error
+          -o xfail_strict=true
+          --junitxml="evidence/product-${{ matrix.os }}.xml"
+      - name: Upload gate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: evidence-rd-05-${{ matrix.os }}
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 14
+
+  mcp:
+    name: RD-06 MCP SDK (Python ${{ matrix.python }})
+    needs: freeze
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.13"]
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: candidate-source
+          path: incoming/source
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: qualification-harnesses
+          path: incoming/tools
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+      - name: Extract and install the source
+        run: |
+          python -I incoming/tools/release/qualification.py extract-source \
+            --archive incoming/source/candidate-source.tar \
+            --sha256 "${{ needs.freeze.outputs.source-sha256 }}" \
+            --destination candidate
+          python -I incoming/tools/release/qualification.py create-venv \
+            --path "${RUNNER_TEMP}/qualification-venv"
+      - name: Install source with real SDK
+        run: python -m pip install --no-cache-dir "./candidate[dev,mcp]"
+      - name: Run MCP contract
+        env:
+          LLM_WIKI_REQUIRE_MCP_SDK: "1"
+        run: >-
+          python -m pytest candidate/tests/test_mcp.py -q
+          -p no:cacheprovider --strict-config --strict-markers
+          -W error
+          -o xfail_strict=true
+          --junitxml="evidence/mcp-${{ matrix.python }}.xml"
+      - name: Upload gate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: evidence-rd-06-${{ matrix.python }}
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 14
+
+  toolchains:
+    name: RD-07 prepared extractor toolchains
+    needs: freeze
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: candidate-source
+          path: incoming/source
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: qualification-harnesses
+          path: incoming/tools
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+      - name: Verify and extract source
+        run: |
+          python -I incoming/tools/release/qualification.py extract-source \
+            --archive incoming/source/candidate-source.tar \
+            --sha256 "${{ needs.freeze.outputs.source-sha256 }}" \
+            --destination candidate
+          python -I incoming/tools/release/qualification.py create-venv \
+            --path "${RUNNER_TEMP}/qualification-venv"
+      - name: Verify locked upstream archives
+        run: |
+          verify() {
+            python -I incoming/tools/release/qualification.py verify-download \
+              --lock candidate/release/toolchain-lock.json \
+              --key "$1" --output "${RUNNER_TEMP}/$2"
+          }
+          verify toolchains.node.artifact node.tar.xz
+          verify toolchains.npm.artifact npm.tgz
+          verify toolchains.go.artifact go.tar.gz
+          verify toolchains.haskell.artifact ghc.tar.xz
+          verify toolchains.rust.checksum_manifest rust-channel.toml
+          verify toolchains.rust.artifact rust.tar.xz
+          verify toolchains.rust.clippy_artifact clippy.tar.xz
+          verify qualification_tools.cargo-audit.source cargo-audit.tar.gz
+          verify qualification_tools.govulncheck.source govulncheck.tar.gz
+
+      - name: Install exact compiler and audit tools
+        run: |
+          set -euo pipefail
+          mkdir -p \
+            "${RUNNER_TEMP}/locked-node" \
+            "${RUNNER_TEMP}/locked-go" \
+            "${RUNNER_TEMP}/locked-rust" \
+            "${RUNNER_TEMP}/locked-clippy" \
+            "${RUNNER_TEMP}/locked-ghc-source" \
+            "${RUNNER_TEMP}/locked-ghc" \
+            "${RUNNER_TEMP}/locked-tools" \
+            "${RUNNER_TEMP}/qualified-bin" \
+            "${RUNNER_TEMP}/cargo-audit-source" \
+            "${RUNNER_TEMP}/govulncheck-source" \
+            "${RUNNER_TEMP}/govulncheck-builder"
+          tar -xJf "${RUNNER_TEMP}/node.tar.xz" \
+            -C "${RUNNER_TEMP}/locked-node" --strip-components=1
+          "${RUNNER_TEMP}/locked-node/bin/node" \
+            "${RUNNER_TEMP}/locked-node/lib/node_modules/npm/bin/npm-cli.js" \
+            install --global --prefix "${RUNNER_TEMP}/locked-node" \
+            --ignore-scripts --no-audit --no-fund \
+            "${RUNNER_TEMP}/npm.tgz"
+          tar -xzf "${RUNNER_TEMP}/go.tar.gz" \
+            -C "${RUNNER_TEMP}/locked-go"
+          tar -xJf "${RUNNER_TEMP}/rust.tar.xz" \
+            -C "${RUNNER_TEMP}/locked-rust" --strip-components=1
+          "${RUNNER_TEMP}/locked-rust/install.sh" \
+            --prefix="${RUNNER_TEMP}/locked-tools" --disable-ldconfig
+          tar -xJf "${RUNNER_TEMP}/clippy.tar.xz" \
+            -C "${RUNNER_TEMP}/locked-clippy" --strip-components=1
+          "${RUNNER_TEMP}/locked-clippy/install.sh" \
+            --prefix="${RUNNER_TEMP}/locked-tools" --disable-ldconfig
+          tar -xJf "${RUNNER_TEMP}/ghc.tar.xz" \
+            -C "${RUNNER_TEMP}/locked-ghc-source" --strip-components=1
+          (
+            cd "${RUNNER_TEMP}/locked-ghc-source"
+            ./configure --prefix="${RUNNER_TEMP}/locked-ghc"
+            make install
+          )
+          for binding in \
+            node="${RUNNER_TEMP}/locked-node/bin/node" \
+            npm="${RUNNER_TEMP}/locked-node/bin/npm" \
+            npx="${RUNNER_TEMP}/locked-node/bin/npx" \
+            go="${RUNNER_TEMP}/locked-go/go/bin/go" \
+            gofmt="${RUNNER_TEMP}/locked-go/go/bin/gofmt" \
+            rustc="${RUNNER_TEMP}/locked-tools/bin/rustc" \
+            cargo="${RUNNER_TEMP}/locked-tools/bin/cargo" \
+            cargo-clippy="${RUNNER_TEMP}/locked-tools/bin/cargo-clippy" \
+            clippy-driver="${RUNNER_TEMP}/locked-tools/bin/clippy-driver" \
+            ghc="${RUNNER_TEMP}/locked-ghc/bin/ghc"; do
+            ln -s "${binding#*=}" \
+              "${RUNNER_TEMP}/qualified-bin/${binding%%=*}"
+          done
+          echo "${RUNNER_TEMP}/qualified-bin" >> "${GITHUB_PATH}"
+          export PATH="${RUNNER_TEMP}/qualified-bin:${PATH}"
+          tar -xzf "${RUNNER_TEMP}/cargo-audit.tar.gz" \
+            -C "${RUNNER_TEMP}/cargo-audit-source" --strip-components=1
+          tar -xzf "${RUNNER_TEMP}/govulncheck.tar.gz" \
+            -C "${RUNNER_TEMP}/govulncheck-source" --strip-components=1
+          cargo install --root "${RUNNER_TEMP}/locked-tools" \
+            --path "${RUNNER_TEMP}/cargo-audit-source/cargo-audit" --locked
+          govulncheck_version="$(
+            python -I incoming/tools/release/qualification.py lock-value \
+              --lock candidate/release/toolchain-lock.json \
+              --key qualification_tools.govulncheck.version
+          )"
+          (
+            cd "${RUNNER_TEMP}/govulncheck-builder"
+            go mod init agent-wiki.local/govulncheck-builder
+            go mod edit -go=1.26
+            go mod edit \
+              -require="golang.org/x/vuln@v${govulncheck_version}"
+            go mod edit \
+              -replace="golang.org/x/vuln=${RUNNER_TEMP}/govulncheck-source"
+            cp "${RUNNER_TEMP}/govulncheck-source/go.sum" go.sum
+            GOBIN="${RUNNER_TEMP}/locked-tools/bin" \
+              go install -mod=readonly \
+                golang.org/x/vuln/cmd/govulncheck
+          )
+          ln -s "${RUNNER_TEMP}/locked-tools/bin/cargo-audit" \
+            "${RUNNER_TEMP}/qualified-bin/cargo-audit"
+          ln -s "${RUNNER_TEMP}/locked-tools/bin/govulncheck" \
+            "${RUNNER_TEMP}/qualified-bin/govulncheck"
+      - name: Record and enforce tool versions
+        run: |
+          mkdir -p evidence
+          node --version | tee evidence/node.txt
+          npm --version | tee evidence/npm.txt
+          go version | tee evidence/go.txt
+          cargo --version | tee evidence/cargo.txt
+          ghc --numeric-version | tee evidence/ghc.txt
+          cargo audit --version | tee evidence/cargo-audit.txt
+          govulncheck -version 2>&1 | tee evidence/govulncheck.txt
+          test "$(node --version)" = "$(python -I incoming/tools/release/qualification.py lock-value --lock candidate/release/toolchain-lock.json --key toolchains.node.version_output)"
+          test "$(npm --version)" = "$(python -I incoming/tools/release/qualification.py lock-value --lock candidate/release/toolchain-lock.json --key toolchains.npm.version_output)"
+          test "$(go version | cut -d' ' -f1-3)" = "$(python -I incoming/tools/release/qualification.py lock-value --lock candidate/release/toolchain-lock.json --key toolchains.go.version_output)"
+          test "$(cargo --version)" = "$(python -I incoming/tools/release/qualification.py lock-value --lock candidate/release/toolchain-lock.json --key toolchains.rust.version_output)"
+          test "$(ghc --numeric-version)" = "$(python -I incoming/tools/release/qualification.py lock-value --lock candidate/release/toolchain-lock.json --key toolchains.haskell.version_output)"
+          test "$(cargo audit --version)" = "$(python -I incoming/tools/release/qualification.py lock-value --lock candidate/release/toolchain-lock.json --key qualification_tools.cargo-audit.version_output)"
+          grep -Fx "$(python -I incoming/tools/release/qualification.py lock-value --lock candidate/release/toolchain-lock.json --key qualification_tools.govulncheck.version_output)" evidence/govulncheck.txt
+      - name: Install source and prepare every extractor
+        run: |
+          python -m pip install --no-cache-dir "./candidate[dev]"
+          python -m llm_wiki_cli.cli prepare-extractors \
+            --src-dir candidate \
+            --cache-dir "${RUNNER_TEMP}/extractor-cache" \
+            --language typescript \
+            --language go \
+            --language rust \
+            --language haskell
+      - name: Run toolchain owner suites
+        env:
+          LLM_WIKI_CACHE_DIR: ${{ runner.temp }}/extractor-cache
+        run: >-
+          python -m pytest -q
+          candidate/tests/test_ts_extract.py
+          candidate/tests/test_go_extract.py
+          candidate/tests/test_rust_extract.py
+          candidate/tests/test_haskell_extract.py
+          candidate/tests/test_multilanguage_wiki.py
+          candidate/tests/test_migrate.py
+          candidate/tests/test_extract.py
+          candidate/tests/test_lint.py
+          candidate/tests/test_m4_dogfood.py
+          -p no:cacheprovider --strict-config --strict-markers
+          -W error -o xfail_strict=true --junitxml=evidence/toolchains.xml
+      - name: Audit exact helper dependency trees
+        run: |
+          set -euo pipefail
+          cp candidate/integrations/obsidian/llm-wiki/main.js \
+            "${RUNNER_TEMP}/obsidian-main.js"
+          npm ci --ignore-scripts --no-audit --no-fund \
+            --prefix candidate/src/llm_wiki_cli/extractors/ts_scripts
+          npm audit --audit-level=high \
+            --prefix candidate/src/llm_wiki_cli/extractors/ts_scripts \
+            --json > evidence/typescript-npm-audit.json
+          npm ci --ignore-scripts --no-audit --no-fund \
+            --prefix candidate/integrations/obsidian/llm-wiki
+          npm run build --prefix candidate/integrations/obsidian/llm-wiki
+          npm audit --audit-level=high \
+            --prefix candidate/integrations/obsidian/llm-wiki \
+            --json > evidence/obsidian-npm-audit.json
+          cmp "${RUNNER_TEMP}/obsidian-main.js" \
+            candidate/integrations/obsidian/llm-wiki/main.js
+          cargo test --locked \
+            --manifest-path candidate/src/llm_wiki_cli/extractors/rust_scripts/Cargo.toml
+          cargo clippy --locked \
+            --manifest-path candidate/src/llm_wiki_cli/extractors/rust_scripts/Cargo.toml \
+            -- -D warnings
+          cargo audit --json \
+            --file candidate/src/llm_wiki_cli/extractors/rust_scripts/Cargo.lock \
+            > evidence/cargo-audit.json
+          (
+            cd candidate/src/llm_wiki_cli/extractors/go_scripts
+            go test ./...
+            go vet ./...
+            govulncheck -json ./... > "${GITHUB_WORKSPACE}/evidence/govulncheck.json"
+            govulncheck ./... 2>&1 | tee \
+              "${GITHUB_WORKSPACE}/evidence/govulncheck-blocking.txt"
+          )
+          (
+            cd candidate/src/llm_wiki_cli/extractors/haskell_scripts
+            ghc -Wall -Werror -fno-code Main.hs
+          )
+      - name: Upload gate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: evidence-rd-07
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 14
+
+  oci:
+    name: RD-08 real OCI isolation
+    needs: freeze
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: candidate-source
+          path: incoming/source
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: qualification-harnesses
+          path: incoming/tools
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+      - name: Extract and install source
+        run: |
+          python -I incoming/tools/release/qualification.py extract-source \
+            --archive incoming/source/candidate-source.tar \
+            --sha256 "${{ needs.freeze.outputs.source-sha256 }}" \
+            --destination candidate
+          python -I incoming/tools/release/qualification.py create-venv \
+            --path "${RUNNER_TEMP}/qualification-venv"
+      - name: Install frozen source
+        run: python -m pip install --no-cache-dir "./candidate[dev]"
+      - name: Build immutable synthetic OCI fixture
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          registry_name="agent-wiki-release-registry"
+          cleanup() {
+            if docker rm --force "${registry_name}" >/dev/null 2>&1; then
+              printf 'registry-container-removed\n' > evidence/teardown.txt
+            else
+              printf 'registry-container-absent\n' > evidence/teardown.txt
+            fi
+          }
+          trap cleanup EXIT
+          lock_value() {
+            python -I incoming/tools/release/qualification.py lock-value \
+              --lock candidate/release/toolchain-lock.json --key "$1"
+          }
+          python_ref="$(lock_value oci_images.python_base.reference)"
+          registry_ref="$(lock_value oci_images.registry.reference)"
+          test "$(lock_value oci_images.python_base.platform)" = linux/amd64
+          test "$(lock_value oci_images.registry.platform)" = linux/amd64
+          case "${python_ref}" in python@sha256:*) ;; *) exit 1 ;; esac
+          case "${registry_ref}" in registry@sha256:*) ;; *) exit 1 ;; esac
+          docker pull --platform linux/amd64 "${python_ref}"
+          docker pull --platform linux/amd64 "${registry_ref}"
+          printf '%s\n' "${python_ref}" > evidence/python-base-ref.txt
+          printf '%s\n' "${registry_ref}" > evidence/registry-ref.txt
+          docker run --detach --platform linux/amd64 \
+            --publish 127.0.0.1:5000:5000 \
+            --name "${registry_name}" "${registry_ref}"
+          ready=false
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:5000/v2/ >/dev/null; then
+              ready=true
+              break
+            fi
+            if [[ "${attempt}" == "30" ]]; then
+              echo "registry did not become ready" >&2
+              exit 1
+            fi
+            sleep 1
+          done
+          test "${ready}" = true
+          printf 'registry-v2-ready\n' > evidence/readiness.txt
+          docker build --network=none --pull=false \
+            --build-arg "BASE_IMAGE=${python_ref}" \
+            --tag localhost:5000/llm-wiki/release-oci:ci \
+            candidate/tests/fixtures/oci_calibration
+          docker push localhost:5000/llm-wiki/release-oci:ci
+          docker pull localhost:5000/llm-wiki/release-oci:ci
+          fixture_ref="$(docker image inspect \
+            --format='{{index .RepoDigests 0}}' \
+            localhost:5000/llm-wiki/release-oci:ci)"
+          case "${fixture_ref}" in
+            localhost:5000/llm-wiki/release-oci@sha256:*) ;;
+            *) exit 1 ;;
+          esac
+          printf '%s\n' "${fixture_ref}" > evidence/fixture-ref.txt
+          {
+            echo "LLM_WIKI_OCI_DOCKER=$(readlink -f "$(command -v docker)")"
+            echo "LLM_WIKI_OCI_TEST_IMAGE=${fixture_ref}"
+          } >> "${GITHUB_ENV}"
+      - name: Run no-egress broker qualification
+        env:
+          LLM_WIKI_RUN_OCI_INTEGRATION: "1"
+        run: >-
+          python -m pytest -q
+          -m oci_integration
+          -p no:cacheprovider --strict-config --strict-markers
+          -W error
+          -o xfail_strict=true
+          --junitxml=evidence/oci.xml
+          candidate/tests/test_documentation_calibration_oci_integration.py
+      - name: Upload gate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: evidence-rd-08
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 14
+
+  static:
+    name: RD-09 static and dependency security
+    needs: freeze
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: candidate-source
+          path: incoming/source
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: qualification-harnesses
+          path: incoming/tools
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
+        with:
+          go-version: ${{ needs.freeze.outputs.go-version }}
+          cache: false
+      - name: Extract and install source
+        run: |
+          python -I incoming/tools/release/qualification.py extract-source \
+            --archive incoming/source/candidate-source.tar \
+            --sha256 "${{ needs.freeze.outputs.source-sha256 }}" \
+            --destination candidate
+          python -I incoming/tools/release/qualification.py create-venv \
+            --path "${RUNNER_TEMP}/qualification-venv"
+      - name: Install source and hash-locked release tools
+        run: |
+          python -m pip install --no-cache-dir "./candidate[dev,mcp]"
+          python -m pip install --require-hashes \
+            --no-cache-dir -r candidate/release/requirements.txt
+          python -I incoming/tools/release/qualification.py verify-download \
+            --lock candidate/release/toolchain-lock.json \
+            --key qualification_tools.actionlint.source \
+            --output "${RUNNER_TEMP}/actionlint.tar.gz"
+          mkdir -p "${RUNNER_TEMP}/actionlint-source"
+          tar -xzf "${RUNNER_TEMP}/actionlint.tar.gz" \
+            -C "${RUNNER_TEMP}/actionlint-source" --strip-components=1
+          actionlint_version="$(
+            python -I incoming/tools/release/qualification.py lock-value \
+              --lock candidate/release/toolchain-lock.json \
+              --key qualification_tools.actionlint.version_output
+          )"
+          (
+            cd "${RUNNER_TEMP}/actionlint-source"
+            go install \
+              -ldflags="-X github.com/rhysd/actionlint.version=${actionlint_version}" \
+              ./cmd/actionlint
+          )
+      - name: Record exact tool versions
+        run: |
+          mkdir -p evidence/security
+          pyright --version | tee evidence/pyright-version.txt
+          ruff --version | tee evidence/ruff-version.txt
+          bandit --version | tee evidence/bandit-version.txt
+          pip-audit --version | tee evidence/pip-audit-version.txt
+          actionlint --version | tee evidence/actionlint-version.txt
+          test "$(actionlint --version | head -n1)" = \
+            "$(python -I incoming/tools/release/qualification.py lock-value --lock candidate/release/toolchain-lock.json --key qualification_tools.actionlint.version_output)"
+      - name: Run static checks
+        working-directory: candidate
+        run: |
+          pyright
+          ruff check src tests integrations/github-action/render_summary.py
+          bandit -r src/llm_wiki_cli -f json \
+            -o ../evidence/security/bandit-full.json || true
+          bandit -r src/llm_wiki_cli -lll -iii
+          pip-audit --local --format json \
+            --output ../evidence/security/pip-audit.json
+          actionlint .github/workflows/*.yml
+      - name: Upload gate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: evidence-rd-09
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 14
+
+  action:
+    name: RD-10 hosted composite Action
+    needs: freeze
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: candidate-source
+          path: incoming/source
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: qualification-harnesses
+          path: incoming/tools
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+      - name: Extract source
+        run: >-
+          python -I incoming/tools/release/qualification.py extract-source
+          --archive incoming/source/candidate-source.tar
+          --sha256 "${{ needs.freeze.outputs.source-sha256 }}"
+          --destination candidate
+      - name: Build repository-owned fixture
+        env:
+          BOOTSTRAP_VENV: ${{ runner.temp }}/action-bootstrap
+        run: |
+          python -m venv "${BOOTSTRAP_VENV}"
+          "${BOOTSTRAP_VENV}/bin/python" -m pip install --no-input ./candidate
+          "${BOOTSTRAP_VENV}/bin/llm-wiki" bootstrap \
+            --src-dir candidate/tests/fixtures/context-health-action/source \
+            --wiki-dir candidate/.action-selftest/wiki \
+            --skip-workflows --skip-flows --skip-dependencies
+      - name: Verify the Action interpreter is clean
+        run: |
+          if python -m pip show agent-wiki-cli >/dev/null 2>&1; then
+            exit 1
+          fi
+      - name: Run context health gate
+        uses: ./candidate/integrations/github-action
+        with:
+          wiki-dir: candidate/.action-selftest/wiki
+          src-dir: candidate/tests/fixtures/context-health-action/source
+          strict: "true"
+          fail-on: unhealthy
+      - name: Reject invalid strict
+        id: invalid-strict
+        continue-on-error: true
+        uses: ./candidate/integrations/github-action
+        with:
+          wiki-dir: candidate/.action-selftest/wiki
+          src-dir: candidate/tests/fixtures/context-health-action/source
+          strict: invalid
+          fail-on: unhealthy
+      - name: Reject invalid fail-on
+        id: invalid-fail-on
+        continue-on-error: true
+        uses: ./candidate/integrations/github-action
+        with:
+          wiki-dir: candidate/.action-selftest/wiki
+          src-dir: candidate/tests/fixtures/context-health-action/source
+          strict: "true"
+          fail-on: warning
+      - name: Assert both invalid inputs failed closed
+        env:
+          STRICT_OUTCOME: ${{ steps.invalid-strict.outcome }}
+          FAIL_ON_OUTCOME: ${{ steps.invalid-fail-on.outcome }}
+        run: |
+          test "${STRICT_OUTCOME}" = failure
+          test "${FAIL_ON_OUTCOME}" = failure
+          mkdir -p evidence
+          printf '%s\n' \
+            '{"context_health":"PASS","fail_on_invalid":"PASS","schema_version":"agent-wiki-release-action-result/v1","strict_invalid":"PASS"}' \
+            > evidence/action-result.json
+      - name: Upload gate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: evidence-rd-10
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 14
+
+  build:
+    name: RD-11 independent build ${{ matrix.copy }}
+    needs: freeze
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        copy: [a, b]
+    env:
+      SOURCE_DATE_EPOCH: ${{ needs.freeze.outputs.commit-epoch }}
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: candidate-source
+          path: incoming/source
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: qualification-harnesses
+          path: incoming/tools
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+      - name: Extract source and create isolated builder
+        run: |
+          python -I incoming/tools/release/qualification.py extract-source \
+            --archive incoming/source/candidate-source.tar \
+            --sha256 "${{ needs.freeze.outputs.source-sha256 }}" \
+            --destination candidate
+          python -I incoming/tools/release/qualification.py create-venv \
+            --path "${RUNNER_TEMP}/build-venv"
+      - name: Install hash-locked build tools
+        run: >-
+          python -m pip install --require-hashes --no-cache-dir
+          -r candidate/release/requirements.txt
+      - name: Build and validate both distributions
+        run: |
+          mkdir dist
+          python -m build --no-isolation --sdist --wheel \
+            --outdir dist candidate
+          twine check dist/*
+          python candidate/tests/verify_installed_knowledge_schema.py dist
+      - name: Upload independent build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: build-${{ matrix.copy }}
+          path: dist/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+  reproducible:
+    name: RD-11 compare independent build bytes
+    needs: [freeze, build]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: qualification-harnesses
+          path: incoming/tools
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: build-a
+          path: incoming/a
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: build-b
+          path: incoming/b
+      - name: Require byte-identical wheel and sdist
+        run: >-
+          python -I incoming/tools/release/qualification.py compare-builds
+          --first incoming/a
+          --second incoming/b
+          --output reproducible
+      - name: Upload selected reproducible artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: reproducible-build
+          path: reproducible/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+  artifact-smoke:
+    name: RD-12 artifact-only ${{ matrix.kind }} smoke
+    needs: [freeze, reproducible]
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        kind: [wheel, sdist]
+    steps:
+      - name: Download only the selected distributions
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: reproducible-build
+          path: incoming/release
+      - name: Download independently transferred smoke harness
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: qualification-harnesses
+          path: incoming/tools
+      - name: Set up clean Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+      - name: Create default and MCP artifact environments
+        run: |
+          python -m venv "${RUNNER_TEMP}/default-venv"
+          python -m venv "${RUNNER_TEMP}/mcp-venv"
+          if [[ "${{ matrix.kind }}" == "wheel" ]]; then
+            artifact="$(find incoming/release/dist -maxdepth 1 -name '*.whl' -print)"
+          else
+            artifact="$(find incoming/release/dist -maxdepth 1 -name '*.tar.gz' -print)"
+          fi
+          test -n "${artifact}"
+          "${RUNNER_TEMP}/default-venv/bin/python" -m pip install \
+            --no-cache-dir "${artifact}"
+          "${RUNNER_TEMP}/mcp-venv/bin/python" -m pip install \
+            --no-cache-dir "${artifact}[mcp]"
+          echo "ARTIFACT=${artifact}" >> "${GITHUB_ENV}"
+      - name: Run without a source checkout
+        run: >-
+          python -I incoming/tools/tests/release_artifact_smoke.py
+          --artifact "${ARTIFACT}"
+          --python "${RUNNER_TEMP}/default-venv/bin/python"
+          --mcp-python "${RUNNER_TEMP}/mcp-venv/bin/python"
+          --expected-version "${{ needs.freeze.outputs.version }}"
+          --work artifact-smoke-work
+          --output "smoke-${{ matrix.kind }}.json"
+      - name: Upload canonical smoke result
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: smoke-${{ matrix.kind }}
+          path: smoke-${{ matrix.kind }}.json
+          if-no-files-found: error
+          retention-days: 14
+
+  smoke-parity:
+    name: RD-12 wheel/sdist parity
+    needs: [freeze, artifact-smoke]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: qualification-harnesses
+          path: incoming/tools
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: smoke-wheel
+          path: incoming/wheel
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: smoke-sdist
+          path: incoming/sdist
+      - name: Require identical installed behavior
+        run: >-
+          python -I incoming/tools/release/qualification.py compare-smoke
+          --wheel incoming/wheel/smoke-wheel.json
+          --sdist incoming/sdist/smoke-sdist.json
+          --output smoke-comparison.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: smoke-comparison
+          path: smoke-comparison.json
+          if-no-files-found: error
+          retention-days: 14
+
+  owner-lanes:
+    name: Require every allowlisted skip owner to pass
+    if: ${{ always() && !inputs.discovery-mode && needs.freeze.result == 'success' }}
+    needs:
+      - freeze
+      - core
+      - slow
+      - security-behavior
+      - product
+      - mcp
+      - toolchains
+      - oci
+      - static
+      - action
+      - reproducible
+      - artifact-smoke
+      - smoke-parity
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: candidate-source
+          path: incoming/source
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: qualification-harnesses
+          path: incoming/tools
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+      - name: Download owner-lane JUnit evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: evidence-*
+          path: incoming/owner-evidence
+      - name: Extract the committed skip contract
+        run: >-
+          python -I incoming/tools/release/qualification.py extract-source
+          --archive incoming/source/candidate-source.tar
+          --sha256 "${{ needs.freeze.outputs.source-sha256 }}"
+          --destination candidate
+      - name: Verify reviewed owners against hosted lane results
+        run: |
+          test "${{ needs.core.result }}" = "success"
+          python -I incoming/tools/release/qualification.py verify-owner-lanes \
+            --identity incoming/source/identity.json \
+            --allowlist candidate/release/skip-allowlist.json \
+            --owner-result "core-ubuntu-3.10=${{ needs.core.result }}" \
+            --owner-junit "core-ubuntu-3.10=incoming/owner-evidence/evidence-core-ubuntu-3.10/core-ubuntu-3.10.xml" \
+            --owner-result "core-windows-3.13=${{ needs.core.result }}" \
+            --owner-junit "core-windows-3.13=incoming/owner-evidence/evidence-core-windows-3.13/core-windows-3.13.xml" \
+            --owner-result "core-macos-3.14=${{ needs.core.result }}" \
+            --owner-junit "core-macos-3.14=incoming/owner-evidence/evidence-core-macos-3.14/core-macos-3.14.xml" \
+            --owner-result "slow=${{ needs.slow.result }}" \
+            --owner-junit "slow=incoming/owner-evidence/evidence-rd-03/slow.xml" \
+            --owner-result "determinism=${{ needs.slow.result }}" \
+            --owner-junit "determinism=incoming/owner-evidence/evidence-rd-03/determinism.xml" \
+            --owner-result "security-ubuntu-24.04=${{ needs.security-behavior.result }}" \
+            --owner-junit "security-ubuntu-24.04=incoming/owner-evidence/evidence-rd-04-ubuntu-24.04/security-ubuntu-24.04.xml" \
+            --owner-result "security-windows-2025=${{ needs.security-behavior.result }}" \
+            --owner-junit "security-windows-2025=incoming/owner-evidence/evidence-rd-04-windows-2025/security-windows-2025.xml" \
+            --owner-result "security-macos-15=${{ needs.security-behavior.result }}" \
+            --owner-junit "security-macos-15=incoming/owner-evidence/evidence-rd-04-macos-15/security-macos-15.xml" \
+            --owner-result "product-ubuntu-24.04=${{ needs.product.result }}" \
+            --owner-junit "product-ubuntu-24.04=incoming/owner-evidence/evidence-rd-05-ubuntu-24.04/product-ubuntu-24.04.xml" \
+            --owner-result "product-windows-2025=${{ needs.product.result }}" \
+            --owner-junit "product-windows-2025=incoming/owner-evidence/evidence-rd-05-windows-2025/product-windows-2025.xml" \
+            --owner-result "mcp-3.10=${{ needs.mcp.result }}" \
+            --owner-junit "mcp-3.10=incoming/owner-evidence/evidence-rd-06-3.10/mcp-3.10.xml" \
+            --owner-result "mcp-3.13=${{ needs.mcp.result }}" \
+            --owner-junit "mcp-3.13=incoming/owner-evidence/evidence-rd-06-3.13/mcp-3.13.xml" \
+            --owner-result "toolchains=${{ needs.toolchains.result }}" \
+            --owner-junit "toolchains=incoming/owner-evidence/evidence-rd-07/toolchains.xml" \
+            --owner-result "oci=${{ needs.oci.result }}" \
+            --owner-junit "oci=incoming/owner-evidence/evidence-rd-08/oci.xml" \
+            --output owner-lane-verification.json
+      - name: Upload owner-lane verification
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: evidence-owner-lanes
+          path: owner-lane-verification.json
+          if-no-files-found: error
+          retention-days: 14
+
+  bundle:
+    name: Assemble immutable qualified release
+    needs:
+      - freeze
+      - core
+      - slow
+      - security-behavior
+      - product
+      - mcp
+      - toolchains
+      - oci
+      - static
+      - action
+      - reproducible
+      - smoke-parity
+      - owner-lanes
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    outputs:
+      version: ${{ steps.bundle.outputs.version }}
+      wheel-sha256: ${{ steps.bundle.outputs.wheel-sha256 }}
+      sdist-sha256: ${{ steps.bundle.outputs.sdist-sha256 }}
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: candidate-source
+          path: incoming/source
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: qualification-harnesses
+          path: incoming/tools
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+      - name: Download all hosted gate evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: evidence-*
+          path: incoming/gates
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: reproducible-build
+          path: incoming/release
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: smoke-wheel
+          path: incoming/wheel
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: smoke-sdist
+          path: incoming/sdist
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: smoke-comparison
+          path: incoming/comparison
+      - name: Bind actual hosted job conclusions to the candidate
+        run: >-
+          python -I incoming/tools/release/qualification.py aggregate
+          --candidate-sha "${{ needs.freeze.outputs.sha }}"
+          --candidate-version "${{ needs.freeze.outputs.version }}"
+          --gate "RD-00=${{ needs.freeze.result }}"
+          --gate "RD-01=${{ needs.core.result }}"
+          --gate "RD-02=${{ needs.owner-lanes.result }}"
+          --gate "RD-03=${{ needs.slow.result }}"
+          --gate "RD-04=${{ needs.security-behavior.result }}"
+          --gate "RD-05=${{ needs.product.result }}"
+          --gate "RD-06=${{ needs.mcp.result }}"
+          --gate "RD-07=${{ needs.toolchains.result }}"
+          --gate "RD-08=${{ needs.oci.result }}"
+          --gate "RD-09=${{ needs.static.result }}"
+          --gate "RD-10=${{ needs.action.result }}"
+          --gate "RD-11=${{ needs.reproducible.result }}"
+          --gate "RD-12=${{ needs.smoke-parity.result }}"
+          --gate "RD-13=BLOCKED"
+          --allow-non-go-exit-zero
+          --output gate-decision.json
+      - name: Build versioned release bundle
+        id: bundle
+        run: >-
+          python -I incoming/tools/release/qualification.py build-bundle
+          --identity incoming/source/identity.json
+          --dist incoming/release/dist
+          --wheel-smoke incoming/wheel/smoke-wheel.json
+          --sdist-smoke incoming/sdist/smoke-sdist.json
+          --smoke-comparison incoming/comparison/smoke-comparison.json
+          --gate-decision gate-decision.json
+          --evidence "RD-00:source=incoming/source"
+          --evidence "RD-00:harness=incoming/tools/qualification-harnesses.tar"
+          --evidence "RD-01:ubuntu=incoming/gates/evidence-core-ubuntu-3.10"
+          --evidence "RD-01:windows=incoming/gates/evidence-core-windows-3.13"
+          --evidence "RD-01:macos=incoming/gates/evidence-core-macos-3.14"
+          --evidence "RD-02:owners=incoming/gates/evidence-owner-lanes"
+          --evidence "RD-03:slow=incoming/gates/evidence-rd-03"
+          --evidence "RD-04:ubuntu=incoming/gates/evidence-rd-04-ubuntu-24.04"
+          --evidence "RD-04:windows=incoming/gates/evidence-rd-04-windows-2025"
+          --evidence "RD-04:macos=incoming/gates/evidence-rd-04-macos-15"
+          --evidence "RD-05:ubuntu=incoming/gates/evidence-rd-05-ubuntu-24.04"
+          --evidence "RD-05:windows=incoming/gates/evidence-rd-05-windows-2025"
+          --evidence "RD-06:python310=incoming/gates/evidence-rd-06-3.10"
+          --evidence "RD-06:python313=incoming/gates/evidence-rd-06-3.13"
+          --evidence "RD-07:toolchains=incoming/gates/evidence-rd-07"
+          --evidence "RD-08:oci=incoming/gates/evidence-rd-08"
+          --evidence "RD-09:static=incoming/gates/evidence-rd-09"
+          --evidence "RD-10:action=incoming/gates/evidence-rd-10"
+          --evidence "RD-11:reproducible=incoming/release/reproducible-build.json"
+          --evidence "RD-12:wheel=incoming/wheel/smoke-wheel.json"
+          --evidence "RD-12:sdist=incoming/sdist/smoke-sdist.json"
+          --evidence "RD-12:comparison=incoming/comparison/smoke-comparison.json"
+          --workflow-run-id "${{ github.run_id }}"
+          --output qualified-release
+      - name: Self-verify the completed bundle
+        run: >-
+          python -I incoming/tools/release/qualification.py verify-bundle
+          --bundle qualified-release
+          --repository "${{ github.repository }}"
+          --workflow-run-id "${{ github.run_id }}"
+          --candidate-sha "${{ needs.freeze.outputs.sha }}"
+          --wheel-sha256 "${{ steps.bundle.outputs.wheel-sha256 }}"
+          --sdist-sha256 "${{ steps.bundle.outputs.sdist-sha256 }}"
+      - name: Upload immutable qualification bundle
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: qualified-release
+          path: qualified-release/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+      - name: Attest exact qualified distributions
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v3.0.0
+        with:
+          subject-path: qualified-release/dist/*
+
+      - name: Attest the SPDX SBOM for exact qualified distributions
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        with:
+          subject-path: qualified-release/dist/*
+          sbom-path: qualified-release/sbom.spdx.json
+
+  decision:
+    name: Aggregate RD-00 through RD-13
+    if: always()
+    needs:
+      - freeze
+      - core
+      - slow
+      - security-behavior
+      - product
+      - mcp
+      - toolchains
+      - oci
+      - static
+      - action
+      - reproducible
+      - smoke-parity
+      - owner-lanes
+      - bundle
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        if: ${{ needs.freeze.result == 'success' }}
+        with:
+          name: qualification-harnesses
+          path: incoming/tools
+      - name: Verify and extract qualification harnesses
+        if: ${{ needs.freeze.result == 'success' }}
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+      - name: Emit deterministic aggregate
+        if: ${{ needs.freeze.result == 'success' }}
+        run: >-
+          python -I incoming/tools/release/qualification.py aggregate
+          --candidate-sha "${{ needs.freeze.outputs.sha }}"
+          --candidate-version "${{ needs.freeze.outputs.version }}"
+          --gate "RD-00=${{ needs.freeze.result }}"
+          --gate "RD-01=${{ needs.core.result }}"
+          --gate "RD-02=${{ needs.owner-lanes.result }}"
+          --gate "RD-03=${{ needs.slow.result }}"
+          --gate "RD-04=${{ needs.security-behavior.result }}"
+          --gate "RD-05=${{ needs.product.result }}"
+          --gate "RD-06=${{ needs.mcp.result }}"
+          --gate "RD-07=${{ needs.toolchains.result }}"
+          --gate "RD-08=${{ needs.oci.result }}"
+          --gate "RD-09=${{ needs.static.result }}"
+          --gate "RD-10=${{ needs.action.result }}"
+          --gate "RD-11=${{ needs.reproducible.result }}"
+          --gate "RD-12=${{ needs.smoke-parity.result }}"
+          --gate "RD-13=BLOCKED"
+          --allow-non-go-exit-zero
+          --output decision.json
+      - name: Upload pre-promotion decision
+        if: ${{ always() && needs.freeze.result == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: qualification-decision
+          path: decision.json
+          if-no-files-found: error
+          retention-days: 14

@@ -70,6 +70,56 @@ class TestPluginManifestValidation:
         assert manifest["id"] == "demo-plugin"
         assert manifest["components"][0]["type"] == "skill"
 
+    def test_catalog_loads_string_and_object_entries(self, tmp_project):
+        catalog = tmp_project / "catalog.json"
+        catalog.write_text(
+            json.dumps(
+                {
+                    "plugins": {
+                        "direct": "vendor/direct",
+                        "nested": {"path": "vendor/nested"},
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        assert plugins._load_catalog(catalog) == {
+            "direct": "vendor/direct",
+            "nested": "vendor/nested",
+        }
+        assert plugins._load_catalog(tmp_project / "missing.json") == {}
+
+    @pytest.mark.parametrize(
+        ("content", "message"),
+        [
+            ("{bad", "Invalid plugin catalog"),
+            ("[]", "expected an object"),
+            ('{"broken": 42}', "expected a path"),
+        ],
+    )
+    def test_catalog_rejects_malformed_data(
+        self, tmp_project, content, message
+    ):
+        catalog = tmp_project / "catalog.json"
+        catalog.write_text(content, encoding="utf-8")
+
+        with pytest.raises(plugins.PluginError, match=message):
+            plugins._load_catalog(catalog)
+
+    def test_version_requirements_have_deterministic_semantics(self):
+        assert plugins._parse_version("release") == (0, 0, 0)
+        assert plugins._parse_version("1.2") == (1, 2, 0)
+        assert plugins._version_satisfies("1.5.0", "*")
+        assert plugins._version_satisfies("1.5.0", ">=1.4")
+        assert plugins._version_satisfies("1.5.0", "==1.5")
+        assert not plugins._version_satisfies("1.5.0", "1.4.0")
+
+    def test_safe_prompt_format_preserves_unknown_placeholders(self):
+        values = plugins._SafeFormat({"known": "yes"})
+
+        assert "{known} {missing}".format_map(values) == "yes {missing}"
+
     @pytest.mark.parametrize("component_type", ["prompt_template", "skill"])
     def test_rejects_component_path_escape(self, tmp_project, component_type):
         plugin_dir = _write_plugin(

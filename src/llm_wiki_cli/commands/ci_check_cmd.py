@@ -12,7 +12,12 @@ from ..services.extraction_jobs import (
 )
 from ..services.inventory_cache import InventoryCacheOptions
 from ..services.metrics import record_validation_event
-from .lint_cmd import build_report, render_markdown, render_text, report_to_dict
+from ..services.lint_service import (
+    build_report,
+    render_markdown,
+    render_text,
+    report_to_dict,
+)
 
 DEFAULT_REPORT = ".git/llm-wiki-ci-report.md"
 

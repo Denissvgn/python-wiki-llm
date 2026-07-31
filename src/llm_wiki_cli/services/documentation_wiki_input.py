@@ -3116,7 +3116,11 @@ def _basis_incompatible_diagnostics(
         if state is not ComputedFreshness.BASIS_INCOMPATIBLE:
             continue
         hint = knowledge_freshness_hint(state, reason_code)
-        if hint is None or not isinstance(locator, str):
+        if (
+            hint is None
+            or not isinstance(locator, str)
+            or not isinstance(reason_code, str)
+        ):
             raise ValueError(
                 "basis-incompatible native freshness lacks actionable guidance"
             )

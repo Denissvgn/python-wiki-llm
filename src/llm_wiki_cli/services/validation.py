@@ -135,7 +135,7 @@ def is_portable_path_component(component: str) -> bool:
 
 
 def require_portable_relative_path(
-    value: str | Path,
+    value: object,
     *,
     normalize_backslashes: bool = False,
     normalize_posix_spelling: bool = False,
@@ -167,10 +167,9 @@ def require_portable_relative_path(
     result is subsequently passed through this helper again in strict mode.
     """
 
-    try:
-        raw = os.fspath(value)
-    except TypeError:
+    if not isinstance(value, (str, os.PathLike)):
         raise text_error or _default_path_error(value) from None
+    raw = os.fspath(value)
     if not isinstance(raw, str):
         raise text_error or _default_path_error(value)
     try:
@@ -309,7 +308,7 @@ def is_portable_relative_path(
     """Return whether *value* is a canonical portable relative path."""
 
     try:
-        require_portable_relative_path(  # type: ignore[arg-type]
+        require_portable_relative_path(
             value,
             normalize_backslashes=normalize_backslashes,
         )
@@ -678,7 +677,7 @@ def require_trimmed_text_list(
 ) -> list[str]:
     """Return text items from a caller-selected sequence container."""
 
-    if not isinstance(value, container_type):
+    if not isinstance(value, container_type) or not isinstance(value, Iterable):
         raise error
     items: list[str] = []
     for item in value:

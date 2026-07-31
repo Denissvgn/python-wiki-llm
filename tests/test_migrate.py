@@ -26,6 +26,7 @@ from llm_wiki_cli.commands.migrate_cmd import (
 )
 from llm_wiki_cli.commands.sync_cmd import MANIFEST_FILENAME
 from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from llm_wiki_cli.services.extractor_helpers import typescript_dependencies_ready
 from llm_wiki_cli.services.knowledge_evidence import (
     MODULE_OBSERVATION_SCOPE,
     ConceptObservationBasis,
@@ -45,16 +46,9 @@ from llm_wiki_cli.services.sync_manifest import (
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 NODE_AVAILABLE = shutil.which("node") is not None
-TS_NODE_MODULES = (
-    Path(__file__).parents[1]
-    / "src"
-    / "llm_wiki_cli"
-    / "extractors"
-    / "ts_scripts"
-    / "node_modules"
-).exists()
+TYPESCRIPT_READY = typescript_dependencies_ready(Path(__file__).parents[1])
 skip_no_ts = pytest.mark.skipif(
-    not (NODE_AVAILABLE and TS_NODE_MODULES),
+    not (NODE_AVAILABLE and TYPESCRIPT_READY),
     reason="Node.js/ts-morph dependencies not available",
 )
 

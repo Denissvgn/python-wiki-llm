@@ -1012,7 +1012,6 @@ def _pnpm_records(
         lines = path.read_text(encoding="utf-8").splitlines()
     except (OSError, UnicodeDecodeError):
         return 1
-    direct = _direct_packages(records, "typescript", _scope(root, path))
     malformed = 0
     in_packages = False
     packages_indent = 0

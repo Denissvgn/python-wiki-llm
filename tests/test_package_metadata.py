@@ -45,6 +45,12 @@ def test_package_data_includes_rust_lockfile():
     assert "extractors/rust_scripts/Cargo.lock" in package_data
 
 
+def test_package_data_includes_typescript_lockfile():
+    data = _pyproject()
+    package_data = data["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]
+    assert "extractors/ts_scripts/package-lock.json" in package_data
+
+
 def test_package_data_includes_haskell_helper_sources():
     data = _pyproject()
     package_data = data["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]
@@ -168,7 +174,25 @@ def test_project_distribution_name_is_pypi_safe_name():
 
 def test_project_version_is_release_target():
     data = _pyproject()
-    assert data["project"]["version"] == "1.4.0"
+    assert data["project"]["version"] == "1.5.0"
+
+
+def test_standalone_guide_is_installed_as_canonical_shared_documentation():
+    data = _pyproject()
+    assert data["tool"]["setuptools"]["data-files"] == {
+        "share/doc/agent-wiki-cli": ["docs/standalone-documentation.md"]
+    }
+
+
+def test_release_metadata_uses_current_license_fields_and_pinned_backend():
+    data = _pyproject()
+    assert data["project"]["license"] == "MIT"
+    assert data["project"]["license-files"] == ["LICENSE"]
+    assert data["build-system"] == {
+        "requires": ["setuptools==83.0.0"],
+        "build-backend": "release_build_backend",
+        "backend-path": ["."],
+    }
 
 
 def test_project_requires_python_3_10_or_newer():
@@ -179,9 +203,9 @@ def test_project_requires_python_3_10_or_newer():
 def test_ci_pairs_selected_python_versions_with_one_os_each():
     assert _ci_test_matrix() == {
         "include": [
-            {"os": "ubuntu-latest", "python-version": "3.10"},
-            {"os": "windows-latest", "python-version": "3.13"},
-            {"os": "macos-latest", "python-version": "3.14"},
+            {"os": "ubuntu-24.04", "python-version": "3.10"},
+            {"os": "windows-2025", "python-version": "3.13"},
+            {"os": "macos-15", "python-version": "3.14"},
         ]
     }
 

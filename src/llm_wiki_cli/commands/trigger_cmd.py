@@ -180,7 +180,7 @@ def _skip_large_diff(args, wiki_dir, started: float, diff_text: str) -> bool:
 
 def _build_sync_prompt(args, wiki_dir, started: float, diff_text: str) -> str | None:
     print("Extracting current structure context...")
-    from .extract_cmd import (
+    from ..services.extraction_service import (
         get_call_graph,
         get_inventory_result,
         print_inventory_failures,

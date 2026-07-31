@@ -16,10 +16,13 @@ from llm_wiki_cli.services.site_export import (
     SITE_PUBLICATION_RECEIPT,
     SITE_PUBLICATION_SCHEMA_VERSION,
     SiteExportError,
+    SiteExportOperation,
+    SiteExportReport,
     check_site_hub,
     check_site_mirror,
     export_site_hub,
     export_site_mirror,
+    render_report_text,
 )
 
 
@@ -2412,3 +2415,74 @@ class TestSiteCli:
         output = capsys.readouterr().out
         assert "export" in output
         assert "check" in output
+
+
+def test_text_report_discloses_complete_export_evidence():
+    report = SiteExportReport(
+        dry_run=True,
+        wiki_dir="docs/llm_wiki",
+        out_dir="site",
+        built_site_dir="_site",
+        format="mkdocs",
+        profile="reference",
+        site_name="Knowledge",
+        distribution_mode="file",
+        link_mode="file",
+        selection_id="selection-1",
+        export_id="export-1",
+        publication_state="complete",
+        page_count=2,
+        source_count=2,
+        freshness_by_source={"beta": "stale", "alpha": "current"},
+        operations=[
+            SiteExportOperation("write", "wiki/index.md", "index.md", "page")
+        ],
+        asset_operations=[
+            SiteExportOperation("copy", "wiki/logo.png", "logo.png", "asset")
+        ],
+        issues=[
+            {
+                "category": "broken_link",
+                "path": "index.md",
+                "target": "missing.md",
+                "message": "missing",
+            }
+        ],
+        warnings=[
+            {
+                "category": "missing_title",
+                "path": "page.md",
+                "target": "heading",
+                "message": "fallback used",
+            }
+        ],
+    )
+
+    rendered = render_report_text(report, action="export")
+
+    for expected in (
+        "Wiki: docs/llm_wiki",
+        "Site name: Knowledge",
+        "Selection id: selection-1",
+        "Export id: export-1",
+        "Publication state: complete",
+        "Freshness by source:",
+        "- alpha: current",
+        "Built site: _site",
+        "Sources: 2",
+        "Dry run: no files were changed.",
+        "Operations:",
+        "- write: index.md - page",
+        "Asset operations:",
+        "- copy: logo.png - asset",
+        "Issues:",
+        "index.md -> missing.md - missing",
+        "Warnings:",
+        "page.md -> heading - fallback used",
+    ):
+        assert expected in rendered
+
+    assert (
+        "No static-site mirror issues found."
+        in render_report_text(SiteExportReport(), action="check")
+    )

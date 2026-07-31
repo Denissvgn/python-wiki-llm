@@ -13,12 +13,11 @@ separate from live reconciliation.
 
 from __future__ import annotations
 
-import hashlib
 import json
 import math
 import os
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum
@@ -35,7 +34,7 @@ from .documentation_queries import (
     DocumentationGraphQueryService,
     DocumentationQueryError,
 )
-from .extraction_jobs import ExtractionJobRequest
+from .extraction_jobs import ExtractionJobPlan, ExtractionJobRequest
 from .extraction_service import InventoryResult
 from .knowledge_consumption import KnowledgeReadView
 from .knowledge_evidence import (
@@ -483,7 +482,7 @@ def capture_context_read(
     allow_external_src: bool = False,
     read_only: bool = True,
     job_request: ExtractionJobRequest | None = None,
-    plan_reporter: Any | None = None,
+    plan_reporter: Callable[[ExtractionJobPlan], None] | None = None,
 ) -> CapturedContextRead:
     """Capture one source inventory, wiki surface, and knowledge read view.
 
@@ -727,7 +726,7 @@ def build_qualified_context(
     allow_external_src: bool = False,
     read_only: bool = True,
     job_request: ExtractionJobRequest | None = None,
-    plan_reporter: Any | None = None,
+    plan_reporter: Callable[[ExtractionJobPlan], None] | None = None,
 ) -> QualifiedContextPacket:
     """Build a canonical packet in memory from one coordinated read view."""
 
@@ -863,7 +862,7 @@ def reconcile_context_packet(
     allow_external_src: bool = False,
     read_only: bool = True,
     job_request: ExtractionJobRequest | None = None,
-    plan_reporter: Any | None = None,
+    plan_reporter: Callable[[ExtractionJobPlan], None] | None = None,
 ) -> ContextPacketReconciliation:
     """Validate first, then compare every packet facet with a fresh read."""
 

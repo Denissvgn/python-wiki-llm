@@ -515,7 +515,9 @@ def _prepare_documentation_run_impl(
     )
     calibration_census = build_flow_evidence_census(
         str(wiki_root),
-        source_root=policy.source_root,
+        source_root=(
+            str(policy.source_root) if policy.source_root is not None else None
+        ),
         source_revision=str(source.get("revision", "source_unavailable")),
         source_fingerprint=str(source.get("content_fingerprint", "unknown")),
         dependency_evidence=bootstrap_summary.get("dependency_evidence", {}),

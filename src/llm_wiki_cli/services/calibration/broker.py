@@ -2622,7 +2622,10 @@ def _build_oci_run_command(
             ),
             "--workdir=/tmp",
             "--tmpfs",
-            (f"/tmp:rw,noexec,nosuid,nodev,size={config.resources.tmpfs_bytes}"),
+            (
+                # This target is inside the isolated container, not on the host.
+                f"/tmp:rw,noexec,nosuid,nodev,size={config.resources.tmpfs_bytes}"  # nosec B108
+            ),
         )
     )
     for value in _CONTAINER_ENVIRONMENT:

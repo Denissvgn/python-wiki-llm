@@ -523,3 +523,113 @@ def test_metrics_text_adds_optional_knowledge_summary(monkeypatch):
     assert "Freshness: evaluated (6 concepts)" in rendered
     assert "current=3" in rendered
     assert "load=2.0 ms, evaluate=3.0 ms, check=1.0 ms" in rendered
+
+
+def test_record_event_discards_payload_when_sanitization_fails(
+    tmp_path, monkeypatch
+):
+    git_dir = tmp_path / ".git"
+    git_dir.mkdir()
+
+    def fail_sanitization(*args, **kwargs):
+        raise RuntimeError("sanitizer failed")
+
+    monkeypatch.setattr(metrics, "_sanitize_metrics_value", fail_sanitization)
+    metrics.record_event("safe-fallback", {"secret": "value"}, git_dir=git_dir)
+
+    event = json.loads(
+        metrics.metrics_path(git_dir).read_text(encoding="utf-8")
+    )
+    assert event["event"] == "safe-fallback"
+    assert "secret" not in event
+
+
+def test_load_events_skips_unsanitizable_and_non_object_values(
+    tmp_path, monkeypatch
+):
+    git_dir = tmp_path / ".git"
+    git_dir.mkdir()
+    path = metrics.metrics_path(git_dir)
+    path.write_text('{"event": "legacy"}\n', encoding="utf-8")
+
+    def fail_sanitization(*args, **kwargs):
+        raise RuntimeError("unsafe legacy value")
+
+    monkeypatch.setattr(metrics, "_sanitize_metrics_value", fail_sanitization)
+    assert metrics.load_events(git_dir=git_dir) == []
+
+    monkeypatch.undo()
+    path.write_text("[]\n", encoding="utf-8")
+    assert metrics.load_events(git_dir=git_dir) == []
+
+
+def test_metrics_sanitizer_handles_nested_path_lists():
+    assert metrics._sanitize_metrics_value(
+        {"source_paths": ["/private/source.py", "src/public.py"]}
+    ) == {
+        "source_paths": [
+            metrics.REDACTED_ABSOLUTE_PATH,
+            "src/public.py",
+        ]
+    }
+
+
+@pytest.mark.parametrize(
+    ("value", "allowed", "expected"),
+    [
+        ("invalid", {"current"}, None),
+        ({}, {"current"}, None),
+        ({"current": -1}, {"current"}, None),
+        ({"current": 2}, {"current"}, {"current": 2}),
+    ],
+)
+def test_safe_count_mapping_rejects_invalid_shapes(value, allowed, expected):
+    assert metrics._safe_count_mapping(value, allowed_keys=allowed) == expected
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("invalid", None),
+        ({"load": 1}, None),
+        ({"load": 1, "evaluate": -1, "check": None}, None),
+        ({"load": 1, "evaluate": None, "check": 2}, {
+            "load": 1,
+            "evaluate": None,
+            "check": 2,
+        }),
+    ],
+)
+def test_safe_phase_durations_rejects_invalid_shapes(value, expected):
+    assert metrics._safe_phase_durations(value) == expected
+
+
+def test_recent_failures_are_capped_at_five(monkeypatch):
+    monkeypatch.setattr(
+        metrics,
+        "current_coverage",
+        lambda src_dir, wiki_dir: {
+            "percent": 100.0,
+            "entities": {"documented": 0, "total": 0},
+            "modules": {"documented": 0, "total": 0},
+        },
+    )
+    events = [
+        {
+            "event": "validation",
+            "strict": True,
+            "passed": False,
+            "sequence": sequence,
+        }
+        for sequence in range(7)
+    ]
+
+    summary = metrics.summarize_events(events)
+
+    assert [event["sequence"] for event in summary["recent_failures"]] == [
+        6,
+        5,
+        4,
+        3,
+        2,
+    ]

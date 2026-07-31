@@ -2,7 +2,23 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from .dependencies import *
+
+if TYPE_CHECKING:
+    from .packet import _render_packet_markdown
+    from .schema import (
+        _assert_no_forbidden_packet_fields,
+        _portable_path_tuple,
+        _require_exact_fields,
+        _required_agent_result_text,
+        _require_utc_timestamp,
+        _text_tuple,
+        _validate_agent_result_findings,
+        _validate_imported_page_edits,
+        _validate_run_payload,
+    )
 
 RUN_CONTROL_DIR = ".llm-wiki-docs"
 
@@ -519,6 +535,10 @@ class DocumentationIntakeBrief:
                 )
         recorded_at = payload.get("recorded_at")
         _require_utc_timestamp(recorded_at, "Intake recorded_at")
+        if not isinstance(recorded_at, str):  # validation narrows for typing
+            raise DocumentationSchemaError(
+                "Intake recorded_at must be a UTC timestamp string."
+            )
         _assert_no_forbidden_packet_fields(payload, label="intake")
         return cls(
             project_purpose=project_purpose,

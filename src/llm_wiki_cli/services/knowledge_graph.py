@@ -19,11 +19,11 @@ import re
 from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, cast
 from urllib.parse import urlsplit
 
 from .contracts import TYPED_GRAPH_EXTENSION_KEY, TYPED_GRAPH_SCHEMA_VERSION
-from .knowledge_evidence import canonical_json_text, is_valid_sha256, sha256_bytes
+from .knowledge_evidence import canonical_json_text, sha256_bytes
 from .validation import (
     require_choice,
     require_exact_fields as require_shared_exact_fields,
@@ -2095,7 +2095,7 @@ def _observation_bundle_for_hash(
     path: str,
 ) -> Any:
     if isinstance(value, Mapping):
-        normalized = _json_value(value, path)
+        normalized = cast(dict[str, Any], _json_value(value, path))
         observations = normalized.get("observations")
         if isinstance(observations, list):
             normalized["observations"] = sorted(
@@ -2104,9 +2104,10 @@ def _observation_bundle_for_hash(
             )
         coverage = normalized.get("coverage")
         if isinstance(coverage, Mapping):
+            mutable_coverage = cast(dict[str, Any], coverage)
             limitations = coverage.get("limitations")
             if isinstance(limitations, list):
-                coverage["limitations"] = sorted(set(limitations))
+                mutable_coverage["limitations"] = sorted(set(limitations))
         return normalized
     return _sorted_json_records(value, path)
 
@@ -2299,7 +2300,7 @@ def _only_fields(
     path: str,
     allowed: set[str],
     *,
-    required: set[str] = frozenset(),
+    required: set[str] | frozenset[str] = frozenset(),
 ) -> None:
     return require_shared_exact_fields(
         value,

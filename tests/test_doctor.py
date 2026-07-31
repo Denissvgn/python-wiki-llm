@@ -47,6 +47,20 @@ from tests.test_knowledge_loader import _committed_state
 ROOT = Path(__file__).parents[1]
 
 
+@pytest.mark.parametrize(
+    ("kwargs", "error"),
+    [
+        ({"strict": 1}, TypeError),
+        ({"allow_external_src": 1}, TypeError),
+        ({"parallel_jobs": True}, TypeError),
+        ({"parallel_jobs": 0}, ValueError),
+    ],
+)
+def test_doctor_rejects_ambiguous_runtime_options(kwargs, error):
+    with pytest.raises(error):
+        doctor_service.build_doctor_report(**kwargs)
+
+
 def _lint_for_fixture(
     root: Path,
     fixture: DoctorExitFixture,

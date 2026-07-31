@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
 
 from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS, get_agent_config_path, read_config
@@ -62,7 +63,12 @@ def _print_knowledge_status(wiki_path: Path, src_dir: str) -> None:
     print(f"  Concepts evaluated: {summary['concepts_evaluated']}")
     print(f"  Evidence issues: {_format_counts(summary['evidence_issue_counts'])}")
     print(f"  Freshness: {status['freshness']}")
-    load_ms = summary["phase_durations_ms"]["load"]
+    phase_durations = summary["phase_durations_ms"]
+    load_ms = (
+        phase_durations.get("load")
+        if isinstance(phase_durations, Mapping)
+        else None
+    )
     if load_ms is not None:
         print(f"  Snapshot load: {load_ms} ms")
 

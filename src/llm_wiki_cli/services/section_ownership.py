@@ -13,6 +13,7 @@ from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum
+from typing import cast
 
 from .contracts import (
     SECTION_OWNERSHIP_EXTENSION_KEY,
@@ -739,13 +740,14 @@ def validate_section_ownership(
         )
         for section_index, section in enumerate(sections):
             parent = section["parent_locator"]
+            heading_path = cast(list[str], section["heading_path"])
             if section["title"] is None and section_index != 0:
                 raise SectionOwnershipError(
                     f"{path}.sections[{section_index}].title",
                     "the synthetic preamble must be the first section",
                 )
             if parent is None:
-                if section["title"] is not None and len(section["heading_path"]) != 1:
+                if section["title"] is not None and len(heading_path) != 1:
                     raise SectionOwnershipError(
                         f"{path}.sections[{section_index}].heading_path",
                         "a root section must have one heading-path component",
@@ -759,11 +761,15 @@ def validate_section_ownership(
                     )
                 if (
                     parent_section["title"] is None
-                    or section["heading_path"][:-1]
-                    != parent_section["heading_path"]
-                    or section.get("occurrence_path", [])[:-1]
-                    != parent_section.get("occurrence_path", [])
-                    or section["level"] <= parent_section["level"]
+                    or heading_path[:-1]
+                    != cast(list[str], parent_section["heading_path"])
+                    or cast(list[int], section.get("occurrence_path", []))[:-1]
+                    != cast(
+                        list[int],
+                        parent_section.get("occurrence_path", []),
+                    )
+                    or cast(int, section["level"])
+                    <= cast(int, parent_section["level"])
                 ):
                     raise SectionOwnershipError(
                         f"{path}.sections[{section_index}].parent_locator",
@@ -1174,15 +1180,12 @@ def merge_entity_semantics(
     semantics = old_semantics or {}
     attributes = semantics.get("attributes", {})
     methods = semantics.get("methods", {})
+    description = semantics.get("description")
     return merge_semantic_markdown(
         existing,
         generated,
         ("Attributes", "Methods"),
-        old_description=(
-            semantics.get("description")
-            if isinstance(semantics.get("description"), str)
-            else None
-        ),
+        old_description=description if isinstance(description, str) else None,
         old_table_descriptions={
             "Attributes": dict(attributes) if isinstance(attributes, Mapping) else {},
             "Methods": dict(methods) if isinstance(methods, Mapping) else {},
@@ -1200,15 +1203,12 @@ def merge_module_semantics(
     semantics = old_semantics or {}
     classes = semantics.get("classes", {})
     functions = semantics.get("functions", {})
+    description = semantics.get("description")
     return merge_semantic_markdown(
         existing,
         generated,
         ("Classes", "Functions"),
-        old_description=(
-            semantics.get("description")
-            if isinstance(semantics.get("description"), str)
-            else None
-        ),
+        old_description=description if isinstance(description, str) else None,
         old_table_descriptions={
             "Classes": dict(classes) if isinstance(classes, Mapping) else {},
             "Functions": dict(functions) if isinstance(functions, Mapping) else {},

@@ -282,7 +282,7 @@ fn walk_dir(dir: &Path, out: &mut Vec<PathBuf>) {
                 continue;
             }
             walk_dir(&path, out);
-        } else if path.extension().map_or(false, |e| e == "rs") {
+        } else if path.extension().is_some_and(|e| e == "rs") {
             out.push(path);
         }
     }
@@ -707,7 +707,7 @@ fn main() {
             if has_excluded_dir(rel) {
                 continue;
             }
-            if p.exists() && p.extension().map_or(false, |e| e == "rs") {
+            if p.exists() && p.extension().is_some_and(|e| e == "rs") {
                 out.push(p);
             }
         }
