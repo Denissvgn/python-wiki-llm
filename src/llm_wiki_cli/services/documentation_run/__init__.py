@@ -10,6 +10,11 @@ import types as _types
 from . import dependencies as _dependencies
 from . import contracts as _contracts
 from . import _legacy as __legacy
+from . import prepare as _prepare
+from . import packet as _packet
+from . import record as _record
+from . import verify as _verify
+from . import export as _export
 
 import typing as _typing
 
@@ -33,20 +38,30 @@ if _typing.TYPE_CHECKING:
         SUPPORTED_FRESHNESS_POLICIES,
         workspace_paths,
     )
-    from ._legacy import (
+    from .prepare import (
+        prepare_documentation_run,
+    )
+    from .packet import (
         build_documentation_agent_packet,
+    )
+    from .record import (
+        record_documentation_agent_result,
+    )
+    from .verify import (
+        verify_documentation_run,
+    )
+    from .export import (
+        export_documentation_run,
+    )
+    from ._legacy import (
         capture_generated_ownership,
         compare_generated_ownership,
         documentation_run_path,
-        export_documentation_run,
         get_documentation_run_status,
         load_documentation_run,
-        prepare_documentation_run,
-        record_documentation_agent_result,
         save_documentation_run,
         source_identity,
         transition_documentation_run,
-        verify_documentation_run,
     )
 
 del _typing
@@ -55,6 +70,11 @@ _COMPATIBILITY_MODULES = (
     _dependencies,
     _contracts,
     __legacy,
+    _prepare,
+    _packet,
+    _record,
+    _verify,
+    _export,
 )
 
 # Preserve the monolith's module-level annotation metadata without exposing
