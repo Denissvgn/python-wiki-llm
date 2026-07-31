@@ -428,6 +428,7 @@ class McpWikiService:
         focus: list[str] | None = None,
         format: str = "markdown",
         filters: dict | None = None,
+        prefer_fresh: bool = False,
     ) -> dict:
         request = {
             "protocol": context_cmd.PROTOCOL_VERSION,
@@ -435,21 +436,78 @@ class McpWikiService:
             "focus": focus or ["changed", "neighbors"],
             "format": format,
             "filters": filters or {},
+            "prefer_fresh": prefer_fresh,
         }
         try:
             validated = context_cmd._validate_protocol_request(request)
+            build_options = {
+                "emit_warnings": False,
+                "wiki_dir": str(self.wiki_dir),
+            }
+            if validated["prefer_fresh"]:
+                build_options["prefer_fresh"] = True
             payload, warnings = context_cmd._build_context(
                 self.src_dir,
                 validated["budget_tokens"],
                 validated["format"],
                 validated["focus"],
                 validated["filters"],
-                emit_warnings=False,
-                wiki_dir=str(self.wiki_dir),
+                **build_options,
             )
         except context_cmd.ProtocolRequestError as exc:
             raise McpWikiError(str(exc)) from exc
         return context_cmd._protocol_success_payload(validated, payload, warnings)
+
+    def get_context_packet(
+        self,
+        budget_tokens: int = 32000,
+        focus: list[str] | None = None,
+        format: str = "json",
+        filters: dict | None = None,
+        prefer_fresh: bool = False,
+        if_packet_id: str | None = None,
+    ) -> dict:
+        """Return a fresh qualified packet or an unchanged cache marker."""
+
+        from .context_packet import ContextPacketError, build_qualified_context
+
+        if if_packet_id is not None and (
+            not isinstance(if_packet_id, str)
+            or re.fullmatch(r"sha256:[0-9a-f]{64}", if_packet_id) is None
+        ):
+            raise McpWikiError(
+                "if_packet_id must be a sha256:<64 lowercase hex> value or None."
+            )
+        request = {
+            "protocol": context_cmd.PROTOCOL_VERSION,
+            "budget_tokens": budget_tokens,
+            "focus": focus or ["changed", "neighbors"],
+            "format": format,
+            "filters": filters or {},
+            "prefer_fresh": prefer_fresh,
+        }
+        try:
+            packet = build_qualified_context(
+                self.src_dir,
+                str(self.wiki_dir),
+                request,
+                read_only=True,
+            )
+        except (ContextPacketError, context_cmd.ProtocolRequestError) as exc:
+            raise McpWikiError(str(exc)) from exc
+
+        if packet.packet_id == if_packet_id:
+            return {
+                "state": "unchanged",
+                "unchanged": True,
+                "packet_id": packet.packet_id,
+            }
+        return {
+            "state": "fresh",
+            "unchanged": False,
+            "packet_id": packet.packet_id,
+            "packet": packet.to_payload(),
+        }
 
     def check_wiki(
         self,
@@ -793,6 +851,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         focus: list[str] | None = None,
         format: str = "markdown",
         filters: dict | None = None,
+        prefer_fresh: bool = False,
     ) -> dict:
         """Return priority-ranked codebase context from llm-wiki context."""
         return service.get_context(
@@ -800,6 +859,26 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
             focus=focus,
             format=format,
             filters=filters,
+            prefer_fresh=prefer_fresh,
+        )
+
+    @server.tool()
+    def get_context_packet(
+        budget_tokens: int = 32000,
+        focus: list[str] | None = None,
+        format: str = "json",
+        filters: dict | None = None,
+        prefer_fresh: bool = False,
+        if_packet_id: str | None = None,
+    ) -> dict:
+        """Return a qualified packet with packet-id cache revalidation."""
+        return service.get_context_packet(
+            budget_tokens=budget_tokens,
+            focus=focus,
+            format=format,
+            filters=filters,
+            prefer_fresh=prefer_fresh,
+            if_packet_id=if_packet_id,
         )
 
     @server.tool()

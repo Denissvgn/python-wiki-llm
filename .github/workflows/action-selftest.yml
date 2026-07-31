@@ -1,0 +1,62 @@
+name: Context health action
+
+on:
+  push:
+    paths:
+      - integrations/github-action/**
+      - src/llm_wiki_cli/**
+      - tests/fixtures/context-health-action/source/**
+      - pyproject.toml
+      - .github/workflows/action-selftest.yml
+  pull_request:
+    paths:
+      - integrations/github-action/**
+      - src/llm_wiki_cli/**
+      - tests/fixtures/context-health-action/source/**
+      - pyproject.toml
+      - .github/workflows/action-selftest.yml
+
+permissions:
+  contents: read
+
+jobs:
+  repository-fixture:
+    runs-on: ubuntu-latest
+    env:
+      BOOTSTRAP_VENV: ${{ runner.temp }}/agent-wiki-bootstrap
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+
+      - name: Build repository-owned wiki fixture
+        run: |
+          python -m venv "${BOOTSTRAP_VENV}"
+          "${BOOTSTRAP_VENV}/bin/python" -m pip install \
+            --disable-pip-version-check \
+            --no-input \
+            .
+          "${BOOTSTRAP_VENV}/bin/llm-wiki" bootstrap \
+            --src-dir tests/fixtures/context-health-action/source \
+            --wiki-dir .action-selftest/wiki \
+            --skip-workflows \
+            --skip-flows \
+            --skip-dependencies
+
+      - name: Verify the action interpreter is clean
+        run: |
+          if python -m pip show agent-wiki-cli >/dev/null 2>&1; then
+            echo "agent-wiki-cli unexpectedly exists outside the bootstrap environment" >&2
+            exit 1
+          fi
+
+      - name: Run context health gate
+        uses: ./integrations/github-action
+        with:
+          wiki-dir: .action-selftest/wiki
+          src-dir: tests/fixtures/context-health-action/source
+          strict: "true"
+          fail-on: unhealthy

@@ -18,7 +18,7 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, Optional
 from urllib.parse import urlsplit
 from ... import __version__
 from ..contracts import (
@@ -30,10 +30,6 @@ from ..contracts import (
     DOCUMENTATION_VERIFICATION_SCHEMA_VERSION,
 )
 from ..bootstrap_service import BootstrapRequest
-from ..documentation_calibration import (
-    build_flow_evidence_census,
-    build_p0_calibration_shadow,
-)
 from ..documentation_claim_evidence import (
     DocumentationClaimEvidenceError,
     normalize_claim_evidence_records,
@@ -103,6 +99,55 @@ from ..wiki_media import (
     strip_fenced_code_blocks,
 )
 from ..wiki_surface_index import WIKI_SURFACE_INDEX_SCHEMA_VERSION
+
+
+# Documentation preparation emits calibration evidence, but importing the
+# ordinary lifecycle must not pull the isolated calibration stack into every
+# CLI process.  These signature-preserving adapters cross that boundary only
+# when preparation actually requests the evidence.
+def build_flow_evidence_census(
+    wiki_dir: str,
+    *,
+    source_root: Optional[str] = None,
+    source_revision: str = "unknown",
+    source_fingerprint: str = "unknown",
+    dependency_evidence: Optional[Mapping[str, Any]] = None,
+    tool_revision: str = "unknown",
+    allow_surface_fallback: bool = False,
+) -> dict[str, Any]:
+    from ..calibration.contracts import (
+        build_flow_evidence_census as implementation,
+    )
+
+    return implementation(
+        wiki_dir,
+        source_root=source_root,
+        source_revision=source_revision,
+        source_fingerprint=source_fingerprint,
+        dependency_evidence=dependency_evidence,
+        tool_revision=tool_revision,
+        allow_surface_fallback=allow_surface_fallback,
+    )
+
+
+def build_p0_calibration_shadow(
+    worklist: Mapping[str, Any],
+    census: Mapping[str, Any],
+    *,
+    candidate_records: Optional[Iterable[Mapping[str, Any]]] = None,
+    policy_version: str = "unscored-shadow/v1",
+) -> dict[str, Any]:
+    from ..calibration.contracts import (
+        build_p0_calibration_shadow as implementation,
+    )
+
+    return implementation(
+        worklist,
+        census,
+        candidate_records=candidate_records,
+        policy_version=policy_version,
+    )
+
 
 __all__ = (
     'copy',

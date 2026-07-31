@@ -135,7 +135,7 @@ def test_init_issue_toggle_without_agent_reuses_stored_agent(
 
 
 @pytest.mark.parametrize(
-    "command", ["extract", "bootstrap", "lint", "sync", "ci-check"]
+    "command", ["extract", "bootstrap", "lint", "sync", "ci-check", "doctor"]
 )
 def test_inventory_commands_help_lists_include_tests_go(command, monkeypatch, capsys):
     monkeypatch.setattr("sys.argv", ["llm-wiki", command, "--help"])
@@ -157,6 +157,7 @@ def test_inventory_commands_help_lists_include_tests_go(command, monkeypatch, ca
         ("lint", "lint_cmd"),
         ("sync", "sync_cmd"),
         ("ci-check", "ci_check_cmd"),
+        ("doctor", "doctor_cmd"),
     ],
 )
 def test_inventory_commands_parse_include_tests_go(command, module_name, monkeypatch):
@@ -175,7 +176,7 @@ def test_inventory_commands_parse_include_tests_go(command, module_name, monkeyp
 
 
 @pytest.mark.parametrize(
-    "command", ["extract", "bootstrap", "lint", "sync", "ci-check"]
+    "command", ["extract", "bootstrap", "lint", "sync", "ci-check", "doctor"]
 )
 def test_inventory_commands_reject_unsupported_include_tests_language(
     command, monkeypatch
@@ -189,7 +190,7 @@ def test_inventory_commands_reject_unsupported_include_tests_language(
 
 
 @pytest.mark.parametrize(
-    "command", ["extract", "bootstrap", "lint", "sync", "ci-check"]
+    "command", ["extract", "bootstrap", "lint", "sync", "ci-check", "doctor"]
 )
 def test_inventory_commands_help_lists_helper_cache_dir(command, monkeypatch, capsys):
     monkeypatch.setattr("sys.argv", ["llm-wiki", command, "--help"])
@@ -518,6 +519,7 @@ def test_site_check_parses_user_profile_and_site_name(monkeypatch):
         ("lint", cli.lint_cmd),
         ("sync", cli.sync_cmd),
         ("ci-check", cli.ci_check_cmd),
+        ("doctor", cli.doctor_cmd),
     ],
 )
 def test_extraction_commands_default_resolved_and_requested_jobs(

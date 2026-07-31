@@ -46,6 +46,7 @@ class ContextPayload(_ContextRequired, total=False):
     knowledge: dict[str, Any]
     typed_graph: dict[str, Any]
     surface: dict[str, Any]
+    ranking_policy: dict[str, Any]
     warnings: list[str]
 
 
@@ -189,6 +190,70 @@ class DocumentationExportResult(TypedDict):
     generated_at: str
 
 
+class DoctorAvailability(TypedDict):
+    state: str
+    reason: str
+    usable: bool
+
+
+class DoctorFreshness(TypedDict):
+    evaluated: bool
+    disclosure: str
+    concepts: int
+    counts_by_state: dict[str, int] | None
+
+
+class DoctorSnapshotParity(TypedDict):
+    state: str
+    issue_count: int
+    reasons: list[str]
+
+
+class DoctorGovernance(TypedDict):
+    state: str
+    ledger: str
+    projection: str
+    expired_reviews: int
+    issue_count: int
+    reasons: list[str]
+
+
+class DoctorDrift(TypedDict):
+    state: str
+    confirmed_stale: int
+    indeterminate: int
+    nonsemantic_changes: int
+    counts_by_state: dict[str, int] | None
+    diagnostic_count: int
+    reasons: list[str]
+
+
+class DoctorVerificationReceipt(TypedDict):
+    state: str
+    reason: str
+    recorded_result: str | None
+    passed: bool | None
+
+
+class DoctorResult(TypedDict):
+    """Stable ``llm-wiki-doctor/v1`` Python API payload."""
+
+    schema_version: str
+    status: str
+    exit_code: int
+    strict: bool
+    wiki_dir: str
+    src_dir: str
+    availability: DoctorAvailability
+    freshness: DoctorFreshness
+    snapshot_parity: DoctorSnapshotParity
+    governance: DoctorGovernance
+    drift: DoctorDrift
+    verification_receipt: DoctorVerificationReceipt
+    degraded_reasons: list[str]
+    unhealthy_reasons: list[str]
+
+
 __all__ = [
     "CalleesResult",
     "CallersResult",
@@ -198,6 +263,13 @@ __all__ = [
     "DataFlowForEntrypointResult",
     "DependencyNeighborhoodResult",
     "DocumentationExportResult",
+    "DoctorAvailability",
+    "DoctorDrift",
+    "DoctorFreshness",
+    "DoctorGovernance",
+    "DoctorResult",
+    "DoctorSnapshotParity",
+    "DoctorVerificationReceipt",
     "EvidenceExplanationResult",
     "ExtractSourceResult",
     "FlowForEntrypointResult",

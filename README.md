@@ -352,6 +352,39 @@ Use `--force` when you intentionally want to replace an existing unrelated hook:
 llm-wiki install-hook --force
 ```
 
+### CI gate
+
+The bundled composite GitHub Action runs the knowledge health check on a pull
+request, writes its structured results as a job-summary table, and applies a
+configurable failure threshold:
+
+```yaml
+- uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+- uses: Denissvgn/python-wiki-llm/integrations/github-action@main
+  with:
+    wiki-dir: docs/llm_wiki
+    src-dir: .
+    strict: "true"
+    fail-on: unhealthy
+```
+
+Use `fail-on: unhealthy` to allow degraded-but-usable knowledge while blocking
+mixed snapshots, invalid governance, confirmed stale concepts, and invalid
+verification receipts. Use `fail-on: degraded` when any degraded result must
+block the job. `strict: "true"` also classifies indeterminate or nonsemantic
+source drift as unhealthy. For a protected production workflow, replace the
+branch reference with an immutable released commit.
+
+The action installs `agent-wiki-cli` from the same action checkout, so pinning
+the action reference also binds the CLI implementation. It invokes
+`llm-wiki doctor --format json` and reads only the complete, versioned
+`llm-wiki-doctor/v1` object. It rejects a report when its declared exit code
+does not match the doctor process exit captured by the runner, and it does not
+scrape human output. Within that schema major, required fields and documented
+state values remain strict while additive object fields are ignored. A wiki
+that has not been initialized is reported as `absent` and fails either
+threshold.
+
 ## Command Reference
 
 ### Resource-aware execution
@@ -832,6 +865,42 @@ disclosed with a warning, symlinks owned by another user are rejected, and
 `--report` is an output path, so explicit
 absolute paths and relative artifact paths outside the project root are allowed.
 
+### `doctor`
+
+Inspect current wiki knowledge health in one read-only command:
+
+```bash
+llm-wiki doctor --wiki-dir docs/llm_wiki --src-dir .
+llm-wiki doctor --wiki-dir docs/llm_wiki --src-dir . --format json
+llm-wiki doctor --wiki-dir docs/llm_wiki --src-dir . --strict
+```
+
+The report composes the existing availability, live freshness, snapshot parity,
+governance and review, drift, and verification-receipt checks. It does not
+define a separate source analyzer. Human output is a compact screen summary.
+JSON output uses the stable `llm-wiki-doctor/v1` schema and contains the same
+six named sections, complete freshness counts when evaluation succeeds, and
+the required evaluated or snapshot-only disclosure.
+
+To keep the health read from executing project plugin code, `doctor` never
+loads source plugins. Evidence that only a source plugin can produce may
+therefore be unavailable or basis-incompatible; strict mode can classify the
+resulting indeterminate drift as unhealthy.
+
+| Exit code | Status | Meaning |
+|---|---|---|
+| `0` | `healthy` | The committed snapshot is coherent and no health downgrade was found. |
+| `1` | `degraded` | Knowledge remains usable, but availability is degraded, freshness was not evaluated, a review expired, or drift is indeterminate/nonsemantic. |
+| `2` | `unhealthy` | A mixed snapshot, invalid governance or receipt, unsupported state, or confirmed stale concept was found. |
+| `3` | `absent` | Knowledge artifacts are absent or the wiki has not been initialized. |
+
+`--strict` promotes indeterminate and nonsemantic source drift from degraded to
+unhealthy. It does not change the JSON shape. Shell automation should capture
+the JSON before applying its own threshold because codes `1` through `3` are
+health results, not serialization failures. The supported Python API exposes
+the identical object through
+`llm_wiki_cli.api.doctor(src_dir=".", wiki_dir="docs/llm_wiki")`.
+
 ### `context`
 
 Build a token-budgeted source snapshot for agents.
@@ -841,11 +910,16 @@ llm-wiki context --budget 8000 --src-dir . --format json
 llm-wiki context --budget 8000 --src-dir . --format markdown
 llm-wiki context --budget 8000 --focus changed
 llm-wiki context --budget 8000 --focus all
+llm-wiki context --budget 8000 --focus all --prefer-fresh
 llm-wiki context --budget 12000 --format json --focus all --output context.json --read-only
 ```
 
 `--focus changed` is the default. Changed files get full detail, one-hop import
 neighbors get slim detail, and remaining files get names only.
+`--prefer-fresh` is opt-in: under budget pressure it prefers current knowledge
+within an existing relevance tier, without moving candidates across relevance
+tiers or dropping content solely because it is stale. JSON output discloses
+whether the ranking policy was evaluated and applied.
 
 For broad repository-wide work, run one serialized
 `llm-wiki context --budget 8000 --focus changed --read-only`, then read only the

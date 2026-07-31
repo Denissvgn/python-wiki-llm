@@ -7,6 +7,7 @@ from .commands import (
     ci_check_cmd,
     context_cmd,
     docs_cmd,
+    doctor_cmd,
     extract_cmd,
     generate_prompt_cmd,
     hook_cmd,
@@ -129,6 +130,7 @@ _COMMAND_MODULES = {
     "migrate": migrate_cmd,
     "context": context_cmd,
     "docs": docs_cmd,
+    "doctor": doctor_cmd,
 }
 
 HELPER_CACHE_HELP = (
@@ -179,6 +181,45 @@ def _register_commands(subparsers):
     _add_migrate_command(subparsers)
     _add_context_command(subparsers)
     _add_docs_command(subparsers)
+    _add_doctor_command(subparsers)
+
+
+def _add_doctor_command(subparsers):
+    doctor_parser = subparsers.add_parser(
+        "doctor",
+        help="Report current wiki knowledge health with CI-friendly exit codes",
+    )
+    doctor_parser.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Wiki directory to inspect (default: docs/llm_wiki)",
+    )
+    doctor_parser.add_argument(
+        "--src-dir",
+        default=".",
+        help="Source directory to compare with the wiki",
+    )
+    doctor_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    doctor_parser.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)",
+    )
+    doctor_parser.add_argument(
+        "--strict",
+        action="store_true",
+        help=(
+            "Classify indeterminate or nonsemantic source drift as unhealthy"
+        ),
+    )
+    _add_helper_cache_argument(doctor_parser)
+    _add_include_tests_argument(doctor_parser)
+    _add_jobs_argument(doctor_parser)
 
 
 def _add_init_command(subparsers):
@@ -1676,9 +1717,9 @@ def _add_context_command(subparsers):
     )
     context_parser.add_argument(
         "--format",
-        choices=["json", "markdown"],
+        choices=["json", "markdown", "packet"],
         default="json",
-        help="Output format (default: json)",
+        help="Output format; packet emits canonical Qualified Context Packet JSON (default: json)",
     )
     context_parser.add_argument(
         "--focus",
@@ -1705,6 +1746,11 @@ def _add_context_command(subparsers):
         "--allow-external-src",
         action="store_true",
         help="Allow --src-dir to point outside the current working directory",
+    )
+    context_parser.add_argument(
+        "--prefer-fresh",
+        action="store_true",
+        help="Under budget pressure, prefer CURRENT context within an existing relevance tier",
     )
 
 

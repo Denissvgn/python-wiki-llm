@@ -783,7 +783,7 @@ def test_projection_failures_have_stable_strict_categories_and_locations():
     )
 
 
-def test_governance_and_review_projection_failures_have_distinct_categories():
+def test_governance_projection_failures_remain_governance_for_review_fields():
     load_issues = (
         KnowledgeLoadIssue(
             code="governance-bundle-mismatch",
@@ -797,6 +797,15 @@ def test_governance_and_review_projection_failures_have_distinct_categories():
             field="review_events.rv_invalid",
             message="review is malformed",
         ),
+        KnowledgeLoadIssue(
+            code="knowledge-invalid",
+            artifact_path=".llm-wiki-knowledge.json",
+            field=(
+                "knowledge_index_bytes.governance_projection.concepts."
+                "llm-wiki://concepts/account.reviews.total"
+            ),
+            message="projected review is malformed",
+        ),
     )
     report = lint_cmd.LintReport(wiki_dir="wiki", src_dir="src", strict=True)
 
@@ -807,7 +816,8 @@ def test_governance_and_review_projection_failures_have_distinct_categories():
 
     assert [issue.category for issue in report.issues] == [
         "knowledge_governance",
-        "knowledge_review",
+        "knowledge_governance",
+        "knowledge_governance",
     ]
 
 

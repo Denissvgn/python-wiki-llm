@@ -39,7 +39,15 @@ FIXTURE_GIT_REVISION = "git:0123456789abcdef0123456789abcdef01234567"
 FIXTURE_SOURCE_PATH = "src/accounts.py"
 FIXTURE_WIKI_DIR = "docs/llm_wiki"
 FIXTURE_KNOWLEDGE_FILENAME = ".llm-wiki-knowledge.json"
-FIXTURE_CONSUMERS = ("bootstrap", "sync", "lint", "api", "context", "mcp")
+FIXTURE_CONSUMERS = (
+    "bootstrap",
+    "sync",
+    "lint",
+    "api",
+    "context",
+    "doctor",
+    "mcp",
+)
 FIXTURE_ASSETS = {
     "assets/account-flow.svg": (
         b'<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>\n'
@@ -250,6 +258,16 @@ class ProjectionFixture:
     fallback_selected: bool = False
     underlying_state: Optional[KnowledgeLoadState] = None
     committed_envelope_hash: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class DoctorExitFixture:
+    """One knowledge-health scenario and its stable process classification."""
+
+    name: str
+    scenario: str
+    expected_status: str
+    expected_exit_code: int
 
 
 def _repository(
@@ -1532,6 +1550,37 @@ def load_state_fixtures() -> tuple[ProjectionFixture, ...]:
     )
 
 
+def doctor_exit_fixtures() -> tuple[DoctorExitFixture, ...]:
+    """Return one fixture-backed scenario for every doctor exit code."""
+
+    return (
+        DoctorExitFixture(
+            name="healthy-current",
+            scenario="current",
+            expected_status="healthy",
+            expected_exit_code=0,
+        ),
+        DoctorExitFixture(
+            name="degraded-unevaluated",
+            scenario="unevaluated",
+            expected_status="degraded",
+            expected_exit_code=1,
+        ),
+        DoctorExitFixture(
+            name="unhealthy-stale-confirmed",
+            scenario="stale-confirmed",
+            expected_status="unhealthy",
+            expected_exit_code=2,
+        ),
+        DoctorExitFixture(
+            name="absent-not-initialized",
+            scenario="absent",
+            expected_status="absent",
+            expected_exit_code=3,
+        ),
+    )
+
+
 def normalize_temporary_roots(value: Any, roots: Mapping[Path | str, str]) -> Any:
     """Replace only explicitly supplied roots, recursively and portably."""
 
@@ -1669,6 +1718,7 @@ __all__ = [
     "FIXTURE_SOURCE_PATH",
     "FIXTURE_WIKI_DIR",
     "BundleEnvelopeFixture",
+    "DoctorExitFixture",
     "EvaluatedKnowledgeFixture",
     "FreshnessFixture",
     "LinkOutcomeFixture",
@@ -1680,6 +1730,7 @@ __all__ = [
     "build_complete_knowledge_payload",
     "bundle_envelope_fixtures",
     "duplicate_entity_occurrences_fixture",
+    "doctor_exit_fixtures",
     "fail_if_extraction_runs",
     "fixture_hash",
     "freshness_fixtures",

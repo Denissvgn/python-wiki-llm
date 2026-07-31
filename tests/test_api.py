@@ -83,6 +83,7 @@ def test_supported_api_exports_are_additive_contract():
         "DOCUMENTATION_MODEL_SELECTION_SCHEMA_VERSION",
         "DOCUMENTATION_RUN_SCHEMA_VERSION",
         "DOCUMENTATION_VERIFICATION_SCHEMA_VERSION",
+        "DOCTOR_SCHEMA_VERSION",
         "EXTRACT_SCHEMA_VERSION",
         "P0_CALIBRATION_AGENT_PACKET_SCHEMA_VERSION",
         "P0_CALIBRATION_AGENT_RESULT_SCHEMA_VERSION",
@@ -90,6 +91,15 @@ def test_supported_api_exports_are_additive_contract():
         "P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION",
         "P0_CALIBRATION_RUN_SCHEMA_VERSION",
         "P0_CALIBRATION_VERIFICATION_REPORT_SCHEMA_VERSION",
+        "QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION",
+        "ContextBasisComparison",
+        "ContextPacketError",
+        "ContextPacketMalformedError",
+        "ContextPacketPathPolicyError",
+        "ContextPacketReconciliation",
+        "ContextPacketSourceMutationError",
+        "ContextPacketUnavailableError",
+        "ContextPacketValidation",
         "DocumentationGraphQueryService",
         "DocumentationAgentPacket",
         "DocumentationAgentResult",
@@ -100,6 +110,7 @@ def test_supported_api_exports_are_additive_contract():
         "DocumentationRunStatus",
         "DocumentationVerificationReport",
         "DocumentationWikiSnapshot",
+        "DoctorResult",
         "ExtractionError",
         "HostBrokerAuthenticationError",
         "HostBrokerAuthenticationProof",
@@ -118,6 +129,7 @@ def test_supported_api_exports_are_additive_contract():
         "P0CalibrationTransitionError",
         "P0CalibrationVerificationReport",
         "PathPolicyError",
+        "QualifiedContextPacket",
         "admit_calibration_run",
         "admit_p0_calibration_run",
         "adopt_documentation_wiki_snapshot",
@@ -125,13 +137,16 @@ def test_supported_api_exports_are_additive_contract():
         "build_p0_calibration_agent_packet",
         "build_documentation_agent_packet",
         "build_context",
+        "build_qualified_context",
         "build_documentation_query_service",
         "callees",
         "callers",
+        "compare_context_packet_basis",
         "data_flow_for_entrypoint",
         "dependency_neighborhood",
         "dispatch_calibration_agent",
         "dispatch_p0_calibration_agent",
+        "doctor",
         "export_documentation_run",
         "extract_source",
         "explain_evidence",
@@ -150,11 +165,13 @@ def test_supported_api_exports_are_additive_contract():
         "record_calibration_agent_result",
         "record_documentation_agent_result",
         "record_p0_calibration_agent_result",
+        "reconcile_context_packet",
         "related_concepts",
         "select_documentation_model",
         "traverse_typed_graph",
         "use_calibration_host_broker_authenticator",
         "use_p0_calibration_host_broker_authenticator",
+        "validate_context_packet",
         "verify_calibration_run",
         "verify_documentation_run",
         "verify_p0_calibration_run",
@@ -189,6 +206,7 @@ def test_supported_api_signatures_preserve_existing_callers():
         "focus",
         "filters",
         "wiki_dir",
+        "prefer_fresh",
         "allow_external_src",
         "read_only",
     ]
@@ -1002,6 +1020,147 @@ def test_build_context_legacy_json_shape_remains_context_v1(monkeypatch):
     assert result == legacy_payload
     assert "knowledge" not in result
     assert api.context_cmd.PROTOCOL_VERSION == "llm-wiki-context/v1"
+
+
+def test_build_context_forwards_opt_in_freshness_policy(monkeypatch):
+    seen = {}
+
+    def fake_build_context(
+        _src_dir,
+        budget,
+        _format,
+        _focus,
+        _filters,
+        **kwargs,
+    ):
+        seen.update(kwargs)
+        return (
+            {
+                "budget": budget,
+                "used": 0,
+                "truncated": False,
+                "omitted_files": [],
+                "downgraded_files": {},
+                "bounds": {
+                    "files": {
+                        "total": 0,
+                        "returned": 0,
+                        "truncated": False,
+                    }
+                },
+                "files": {},
+                "ranking_policy": {
+                    "name": "relevance-then-current-freshness",
+                    "prefer_fresh": True,
+                },
+            },
+            [],
+        )
+
+    monkeypatch.setattr(api.context_cmd, "_build_context", fake_build_context)
+
+    result = api.build_context(".", prefer_fresh=True)
+
+    assert seen["prefer_fresh"] is True
+    assert result["ranking_policy"]["prefer_fresh"] is True
+
+
+def test_qualified_context_api_build_validate_and_reconcile_are_typed(
+    monkeypatch,
+):
+    packet_payload = {
+        "schema_version": "llm-wiki-qualified-context-packet/v1",
+        "packet_id": "sha256:" + "a" * 64,
+        "assurance": {},
+        "request": {},
+        "response": {},
+        "basis": {},
+        "delivery": {},
+        "path_policy": {},
+    }
+    seen = {}
+
+    packet = types.SimpleNamespace(
+        packet_id=packet_payload["packet_id"],
+        to_payload=lambda: dict(packet_payload),
+        to_bytes=lambda: b"packet\n",
+    )
+
+    def fake_build(src_dir, wiki_dir, request, **kwargs):
+        seen.update(
+            {
+                "src_dir": src_dir,
+                "wiki_dir": wiki_dir,
+                "request": request,
+                **kwargs,
+            }
+        )
+        return packet
+
+    validation = types.SimpleNamespace(
+        valid=True,
+        packet_id=packet_payload["packet_id"],
+    )
+    comparison = types.SimpleNamespace(
+        packet_id=packet_payload["packet_id"],
+        matches_expected=True,
+        current=None,
+    )
+    reconciliation = types.SimpleNamespace(
+        packet_id=packet_payload["packet_id"],
+        state="current",
+        current=True,
+    )
+    monkeypatch.setattr(
+        api.context_packet_service,
+        "build_qualified_context",
+        fake_build,
+    )
+    monkeypatch.setattr(
+        api.context_packet_service,
+        "validate_context_packet",
+        lambda _raw: validation,
+    )
+    monkeypatch.setattr(
+        api.context_packet_service,
+        "compare_context_packet_basis",
+        lambda _raw, _basis: comparison,
+    )
+    monkeypatch.setattr(
+        api.context_packet_service,
+        "reconcile_context_packet",
+        lambda *_args, **_kwargs: reconciliation,
+    )
+
+    request = {
+        "budget_tokens": 2048,
+        "focus": ["all"],
+        "format": "json",
+        "filters": {},
+        "prefer_fresh": True,
+    }
+    built = api.build_qualified_context(
+        "src",
+        "agent_wiki",
+        request,
+    )
+    validated = api.validate_context_packet(b"packet\n")
+    compared = api.compare_context_packet_basis(
+        b"packet\n",
+        {"source_snapshot": {}},
+    )
+    reconciled = api.reconcile_context_packet(
+        b"packet\n",
+        "src",
+        wiki_dir="agent_wiki",
+    )
+
+    assert built is packet
+    assert validated is validation
+    assert compared is comparison
+    assert reconciled is reconciliation
+    assert seen["request"] is request
+    assert seen["read_only"] is True
 
 
 def test_list_wiki_pages_returns_registry_metadata_without_running_extraction(

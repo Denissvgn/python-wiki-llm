@@ -365,14 +365,15 @@ def _verify(args) -> None:
 
 
 def _calibration_controller():
-    # Keep the controller dependency scoped to the nested lifecycle handlers.
-    from ..services import documentation_calibration_controller
+    # Calibration is intentionally isolated from ordinary CLI imports.  This
+    # command-only loader is the supported boundary into the subsystem.
+    from ..services.calibration import controller
 
-    return documentation_calibration_controller
+    return controller
 
 
 def _calibration_error_type() -> type[RuntimeError]:
-    from ..services.documentation_calibration_controller import P0CalibrationError
+    from ..services.calibration.controller import P0CalibrationError
 
     return P0CalibrationError
 

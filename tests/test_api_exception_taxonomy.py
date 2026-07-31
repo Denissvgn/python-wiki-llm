@@ -21,15 +21,18 @@ _PUBLIC_FUNCTION_NAMES = (
     "bootstrap_wiki",
     "build_calibration_agent_packet",
     "build_context",
+    "build_qualified_context",
     "build_documentation_agent_packet",
     "build_documentation_query_service",
     "build_p0_calibration_agent_packet",
     "callees",
     "callers",
+    "compare_context_packet_basis",
     "data_flow_for_entrypoint",
     "dependency_neighborhood",
     "dispatch_calibration_agent",
     "dispatch_p0_calibration_agent",
+    "doctor",
     "explain_evidence",
     "export_documentation_run",
     "extract_source",
@@ -48,11 +51,13 @@ _PUBLIC_FUNCTION_NAMES = (
     "record_calibration_agent_result",
     "record_documentation_agent_result",
     "record_p0_calibration_agent_result",
+    "reconcile_context_packet",
     "related_concepts",
     "select_documentation_model",
     "traverse_typed_graph",
     "use_calibration_host_broker_authenticator",
     "use_p0_calibration_host_broker_authenticator",
+    "validate_context_packet",
     "validate_documentation_model_selection",
     "verify_calibration_run",
     "verify_documentation_run",
@@ -62,11 +67,14 @@ _PUBLIC_FUNCTION_NAMES = (
 _INVALID_REQUEST_FAILURES = frozenset(
     {
         "build_context",
+        "build_qualified_context",
         "build_documentation_query_service",
         "callees",
         "callers",
+        "compare_context_packet_basis",
         "data_flow_for_entrypoint",
         "dependency_neighborhood",
+        "doctor",
         "explain_evidence",
         "extract_source",
         "flow_for_entrypoint",
@@ -83,6 +91,8 @@ _INVALID_REQUEST_FAILURES = frozenset(
         "traverse_typed_graph",
         "use_calibration_host_broker_authenticator",
         "use_p0_calibration_host_broker_authenticator",
+        "reconcile_context_packet",
+        "validate_context_packet",
         "validate_documentation_model_selection",
     }
 )
@@ -213,6 +223,21 @@ def _failure_cases(tmp_path: Path):
         ),
         "extract_source": lambda: api.extract_source(str(missing_source)),
         "build_context": lambda: api.build_context(".", budget=0),
+        "build_qualified_context": lambda: api.build_qualified_context(
+            ".",
+            request={
+                "budget_tokens": 0,
+                "focus": ["all"],
+                "format": "json",
+                "filters": {},
+            },
+        ),
+        "validate_context_packet": lambda: api.validate_context_packet(b"{}\n"),
+        "compare_context_packet_basis": lambda: api.compare_context_packet_basis(
+            b"{}\n",
+            {"source_snapshot": {}},
+        ),
+        "reconcile_context_packet": lambda: api.reconcile_context_packet(b"{}\n"),
         "list_wiki_pages": lambda: api.list_wiki_pages("\0"),
         "build_documentation_query_service": lambda: (
             api.build_documentation_query_service(str(missing_source))
@@ -230,6 +255,11 @@ def _failure_cases(tmp_path: Path):
         "dependency_neighborhood": lambda: api.dependency_neighborhood(
             "module.py",
             service=query_service,
+        ),
+        "doctor": lambda: api.doctor(
+            str(missing_source),
+            wiki_dir=str(missing_wiki),
+            allow_external_src=True,
         ),
         "pages_for_symbol": lambda: api.pages_for_symbol(
             "symbol",
@@ -460,6 +490,50 @@ def test_missing_allowed_query_source_is_workspace_state(tmp_path: Path):
     assert isinstance(raised.value.__cause__, api.PathValidationError)
 
 
+@pytest.mark.parametrize(
+    "function_name",
+    ("build_qualified_context", "reconcile_context_packet"),
+)
+@pytest.mark.parametrize(
+    ("field", "public_error"),
+    [
+        ("src_dir", api.WorkspaceStateError),
+        ("wiki_dir", api.PathPolicyError),
+        ("budget_tokens", api.InvalidRequestError),
+    ],
+)
+def test_qualified_context_protocol_fields_follow_context_taxonomy(
+    monkeypatch,
+    function_name,
+    field,
+    public_error,
+):
+    internal_error = api.context_cmd.ProtocolRequestError(
+        f"invalid {field}",
+        field,
+    )
+
+    def fail(*_args, **_kwargs):
+        raise internal_error
+
+    monkeypatch.setattr(
+        api.context_packet_service,
+        function_name,
+        fail,
+    )
+    call = (
+        (lambda: api.build_qualified_context())
+        if function_name == "build_qualified_context"
+        else (lambda: api.reconcile_context_packet(b"packet\n"))
+    )
+
+    with pytest.raises(public_error) as raised:
+        call()
+
+    assert type(raised.value) is public_error
+    assert raised.value.__cause__ is internal_error
+
+
 @pytest.mark.parametrize("payload", ["{", "{}"])
 def test_persisted_documentation_run_corruption_is_artifact_integrity(
     tmp_path: Path,
@@ -507,7 +581,12 @@ def test_public_dict_return_annotations_import_and_resolve():
         "build_context": (
             api_types.ContextPayload | api_types.MarkdownContextResult
         ),
+        "build_qualified_context": api.QualifiedContextPacket,
+        "validate_context_packet": api.ContextPacketValidation,
+        "compare_context_packet_basis": api.ContextBasisComparison,
+        "reconcile_context_packet": api.ContextPacketReconciliation,
         "list_wiki_pages": api_types.WikiPagesResult,
+        "doctor": api_types.DoctorResult,
         "flow_for_entrypoint": api_types.FlowForEntrypointResult,
         "data_flow_for_entrypoint": api_types.DataFlowForEntrypointResult,
         "callers": api_types.CallersResult,
@@ -559,7 +638,14 @@ def test_public_dict_return_annotations_import_and_resolve():
                 "bounds",
                 "files",
             },
-            {"graphs", "surface", "knowledge", "typed_graph", "warnings"},
+            {
+                "graphs",
+                "surface",
+                "knowledge",
+                "typed_graph",
+                "ranking_policy",
+                "warnings",
+            },
         ),
         api_types.MarkdownContextResult: (
             {"content", "payload", "warnings"},
@@ -583,6 +669,64 @@ def test_public_dict_return_annotations_import_and_resolve():
         ),
         api_types.WikiPagesResult: (
             {"wiki_dir", "counts", "pages"},
+            set(),
+        ),
+        api_types.DoctorAvailability: (
+            {"state", "reason", "usable"},
+            set(),
+        ),
+        api_types.DoctorFreshness: (
+            {"evaluated", "disclosure", "concepts", "counts_by_state"},
+            set(),
+        ),
+        api_types.DoctorSnapshotParity: (
+            {"state", "issue_count", "reasons"},
+            set(),
+        ),
+        api_types.DoctorGovernance: (
+            {
+                "state",
+                "ledger",
+                "projection",
+                "expired_reviews",
+                "issue_count",
+                "reasons",
+            },
+            set(),
+        ),
+        api_types.DoctorDrift: (
+            {
+                "state",
+                "confirmed_stale",
+                "indeterminate",
+                "nonsemantic_changes",
+                "counts_by_state",
+                "diagnostic_count",
+                "reasons",
+            },
+            set(),
+        ),
+        api_types.DoctorVerificationReceipt: (
+            {"state", "reason", "recorded_result", "passed"},
+            set(),
+        ),
+        api_types.DoctorResult: (
+            {
+                "schema_version",
+                "status",
+                "exit_code",
+                "strict",
+                "wiki_dir",
+                "src_dir",
+                "availability",
+                "freshness",
+                "snapshot_parity",
+                "governance",
+                "drift",
+                "verification_receipt",
+                "degraded_reasons",
+                "unhealthy_reasons",
+            },
             set(),
         ),
         api_types.FlowForEntrypointResult: (bounded | {"flow"}, set()),

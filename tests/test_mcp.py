@@ -937,6 +937,161 @@ class TestMcpWikiService:
         ):
             service.get_context(budget_tokens=1000, focus=["all"], format="json")
 
+    def test_get_context_packet_returns_fresh_packet_and_forwards_bounds(
+        self,
+        monkeypatch,
+    ):
+        from llm_wiki_cli.services import context_packet
+
+        packet_id = "sha256:" + "a" * 64
+        payload = {
+            "schema_version": context_packet.CONTEXT_PACKET_SCHEMA_VERSION,
+            "packet_id": packet_id,
+        }
+        seen = {}
+
+        class Packet:
+            def __init__(self):
+                self.packet_id = packet_id
+
+            def to_payload(self):
+                return dict(payload)
+
+        def fake_build(src_dir, wiki_dir, request, *, read_only):
+            seen.update(
+                {
+                    "src_dir": src_dir,
+                    "wiki_dir": wiki_dir,
+                    "request": request,
+                    "read_only": read_only,
+                }
+            )
+            return Packet()
+
+        monkeypatch.setattr(context_packet, "build_qualified_context", fake_build)
+        service = mcp_server.McpWikiService(
+            src_dir="source-root",
+            wiki_dir="docs/llm_wiki",
+        )
+
+        result = service.get_context_packet(
+            budget_tokens=4096,
+            focus=["all"],
+            format="json",
+            filters={"surface": "entities"},
+            prefer_fresh=True,
+        )
+
+        assert result == {
+            "state": "fresh",
+            "unchanged": False,
+            "packet_id": packet_id,
+            "packet": payload,
+        }
+        assert seen == {
+            "src_dir": "source-root",
+            "wiki_dir": "docs/llm_wiki",
+            "request": {
+                "protocol": "llm-wiki-context/v1",
+                "budget_tokens": 4096,
+                "focus": ["all"],
+                "format": "json",
+                "filters": {"surface": "entities"},
+                "prefer_fresh": True,
+            },
+            "read_only": True,
+        }
+
+    def test_get_context_packet_revalidates_unchanged_and_changed_ids(
+        self,
+        monkeypatch,
+    ):
+        from llm_wiki_cli.services import context_packet
+
+        packet_ids = iter(("sha256:" + "a" * 64, "sha256:" + "b" * 64))
+
+        class Packet:
+            def __init__(self, packet_id):
+                self.packet_id = packet_id
+
+            def to_payload(self):
+                return {"packet_id": self.packet_id}
+
+        monkeypatch.setattr(
+            context_packet,
+            "build_qualified_context",
+            lambda *_args, **_kwargs: Packet(next(packet_ids)),
+        )
+        service = mcp_server.McpWikiService()
+
+        unchanged = service.get_context_packet(if_packet_id="sha256:" + "a" * 64)
+        changed = service.get_context_packet(if_packet_id="sha256:" + "a" * 64)
+
+        assert unchanged == {
+            "state": "unchanged",
+            "unchanged": True,
+            "packet_id": "sha256:" + "a" * 64,
+        }
+        assert "packet" not in unchanged
+        assert changed == {
+            "state": "fresh",
+            "unchanged": False,
+            "packet_id": "sha256:" + "b" * 64,
+            "packet": {"packet_id": "sha256:" + "b" * 64},
+        }
+
+    def test_get_context_packet_revalidation_detects_real_source_change(
+        self,
+        tmp_project,
+    ):
+        _write_wiki(tmp_project)
+        service = mcp_server.McpWikiService(
+            src_dir=".",
+            wiki_dir="docs/llm_wiki",
+        )
+
+        fresh = service.get_context_packet(focus=["all"])
+        unchanged = service.get_context_packet(
+            focus=["all"],
+            if_packet_id=fresh["packet_id"],
+        )
+        (tmp_project / "models.py").write_text(
+            (tmp_project / "models.py").read_text(encoding="utf-8")
+            + "\nclass ChangedAfterPacket:\n    pass\n",
+            encoding="utf-8",
+        )
+        changed = service.get_context_packet(
+            focus=["all"],
+            if_packet_id=fresh["packet_id"],
+        )
+
+        assert fresh["state"] == "fresh"
+        assert unchanged == {
+            "state": "unchanged",
+            "unchanged": True,
+            "packet_id": fresh["packet_id"],
+        }
+        assert changed["state"] == "fresh"
+        assert changed["unchanged"] is False
+        assert changed["packet_id"] != fresh["packet_id"]
+        assert changed["packet"]["packet_id"] == changed["packet_id"]
+
+    @pytest.mark.parametrize(
+        "if_packet_id",
+        ["sha256:" + "A" * 64, "a" * 64, "not-a-digest", 7],
+    )
+    def test_get_context_packet_rejects_invalid_revalidation_id(
+        self,
+        if_packet_id,
+    ):
+        service = mcp_server.McpWikiService()
+
+        with pytest.raises(
+            mcp_server.McpWikiError,
+            match="if_packet_id must be a sha256:<64 lowercase hex>",
+        ):
+            service.get_context_packet(if_packet_id=if_packet_id)
+
     def test_check_wiki_returns_lint_report(self, tmp_project, capsys):
         _write_wiki(tmp_project)
         service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
@@ -1913,6 +2068,7 @@ def test_tool_registration_names_without_sdk(tmp_project):
         "explain_evidence",
         "search_wiki",
         "get_context",
+        "get_context_packet",
         "check_wiki",
         "get_status",
     ]
@@ -1972,6 +2128,57 @@ def test_registered_check_wiki_tool_forwards_native_drift_report_mode():
     assert calls == [(True, "markdown", True)]
 
 
+def test_registered_context_packet_tool_forwards_revalidation_and_policy():
+    calls = []
+    expected = {"state": "unchanged"}
+
+    class RecordingService:
+        def get_context_packet(
+            self,
+            budget_tokens=32000,
+            focus=None,
+            format="json",
+            filters=None,
+            prefer_fresh=False,
+            if_packet_id=None,
+        ):
+            calls.append(
+                (
+                    budget_tokens,
+                    focus,
+                    format,
+                    filters,
+                    prefer_fresh,
+                    if_packet_id,
+                )
+            )
+            return expected
+
+    server = RecordingMcpServer()
+    mcp_server._register_mcp_tools(server, RecordingService())
+
+    result = server.tool_functions["get_context_packet"](
+        budget_tokens=2048,
+        focus=["all"],
+        format="json",
+        filters={"surface": "entities"},
+        prefer_fresh=True,
+        if_packet_id="sha256:" + "a" * 64,
+    )
+
+    assert result is expected
+    assert calls == [
+        (
+            2048,
+            ["all"],
+            "json",
+            {"surface": "entities"},
+            True,
+            "sha256:" + "a" * 64,
+        )
+    ]
+
+
 def test_tool_registration_preserves_legacy_tools_and_adds_m4_tools(tmp_project):
     server = RecordingMcpServer()
     service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
@@ -1983,6 +2190,7 @@ def test_tool_registration_preserves_legacy_tools_and_adds_m4_tools(tmp_project)
         "get_module",
         "search_wiki",
         "get_context",
+        "get_context_packet",
         "check_wiki",
         "get_status",
     } <= set(server.tool_names)

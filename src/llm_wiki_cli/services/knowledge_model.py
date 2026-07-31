@@ -77,9 +77,16 @@ _MAX_LOCATION_OFFSET = (2**63) - 1
 class KnowledgeModelError(ValueError):
     """Raised when a knowledge payload violates the v1 contract."""
 
-    def __init__(self, field: str, message: str):
+    def __init__(
+        self,
+        field: str,
+        message: str,
+        *,
+        code: str | None = None,
+    ):
         self.field = field
         self.reason = message
+        self.code = code
         super().__init__(f"{field}: {message}")
 
 
@@ -559,7 +566,12 @@ def parse_knowledge_index(payload: object) -> KnowledgeIndex:
     except ValueError as exc:
         field = getattr(exc, "field", "extensions")
         message = getattr(exc, "message", str(exc))
-        raise KnowledgeModelError(str(field), str(message)) from exc
+        code = getattr(exc, "code", None)
+        raise KnowledgeModelError(
+            str(field),
+            str(message),
+            code=str(code) if isinstance(code, str) else None,
+        ) from exc
     return model
 
 

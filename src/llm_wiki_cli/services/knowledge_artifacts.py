@@ -224,6 +224,7 @@ def validate_knowledge_artifacts(
         expected_knowledge_bytes = serialize_knowledge_index(knowledge).encode("utf-8")
     except (TypeError, ValueError) as exc:
         nested_field = getattr(exc, "field", None)
+        nested_code = getattr(exc, "code", None)
         artifact_field = (
             f"knowledge_index_bytes.{nested_field}"
             if isinstance(nested_field, str) and nested_field
@@ -232,6 +233,11 @@ def validate_knowledge_artifacts(
         raise KnowledgeArtifactError(
             artifact_field,
             f"does not contain a valid knowledge index: {exc}",
+            code=(
+                str(nested_code)
+                if isinstance(nested_code, str)
+                else None
+            ),
         ) from exc
     if knowledge_index_bytes != expected_knowledge_bytes:
         raise KnowledgeArtifactError(

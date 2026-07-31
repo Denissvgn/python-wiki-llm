@@ -7,28 +7,58 @@ import json
 import sys
 import textwrap
 import types
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
+from llm_wiki_cli import cli
 from llm_wiki_cli.commands import context_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
-from llm_wiki_cli.services.knowledge_artifacts import commit_knowledge_artifacts
+from llm_wiki_cli.services.knowledge_artifacts import (
+    build_knowledge_commit_plan,
+    commit_knowledge_artifacts,
+)
+from llm_wiki_cli.services.knowledge_evidence import (
+    build_module_observation_basis,
+    sha256_bytes,
+)
 from llm_wiki_cli.services.knowledge_freshness import (
     REASON_GENERATION_OPTIONS_CHANGED,
+)
+from llm_wiki_cli.services.knowledge_index import (
+    build_knowledge_index,
+    serialize_knowledge_index,
 )
 from llm_wiki_cli.services.knowledge_observability import (
     BASIS_INCOMPATIBLE_HINTS,
 )
+from llm_wiki_cli.services.sync_manifest import (
+    ManifestEvidenceBaseline,
+    ManifestPageSource,
+    SyncManifest,
+)
+from tests import knowledge_fixtures as knowledge_fixture_helpers
 from tests.knowledge_fixtures import (
+    EvaluatedKnowledgeFixture,
+    PageFixture,
     materialize_fixture_tree,
     one_module_two_entities_fixture,
 )
 from tests.test_knowledge_artifacts import _plan as _knowledge_commit_plan
+from tests.test_knowledge_index import _builder_case_for
 from tests.test_knowledge_compatibility import (
     COMPATIBILITY_CASES,
     _materialize_case,
+)
+
+CONTEXT_FIXTURE_DIR = Path(__file__).parent / "fixtures"
+PREFER_FRESH_OFF_GOLDEN = (
+    CONTEXT_FIXTURE_DIR / "context-prefer-fresh-off-v1.json"
+)
+PREFER_FRESH_ON_GOLDEN = (
+    CONTEXT_FIXTURE_DIR / "context-prefer-fresh-on-v1.json"
 )
 
 # ── Helpers ───────────────────────────────────────────────────────────
@@ -61,6 +91,22 @@ def _protocol_request(**overrides):
     }
     data.update(overrides)
     return data
+
+
+def test_context_parser_accepts_packet_and_freshness_preference():
+    args = cli._build_parser().parse_args(
+        [
+            "context",
+            "--budget",
+            "2048",
+            "--format",
+            "packet",
+            "--prefer-fresh",
+        ]
+    )
+
+    assert args.format == "packet"
+    assert args.prefer_fresh is True
 
 
 def _write_query_project(root: Path) -> None:
@@ -106,6 +152,189 @@ def _write_query_wiki(root: Path, rel_path: str = "docs/llm_wiki") -> Path:
     (wiki / "dependencies.md").write_text("# Dependencies\n\n", encoding="utf-8")
     (wiki / "load-order.md").write_text("# Load order\n\n", encoding="utf-8")
     return wiki
+
+
+def _freshness_ranking_golden_inputs() -> tuple[
+    dict[str, dict],
+    dict[str, str],
+    int,
+]:
+    file_data = {
+        "language": "python",
+        "classes": [],
+        "functions": [{"name": "run", "line": 1}],
+    }
+    inventory = {
+        "a_stale.py": file_data,
+        "z_fresh.py": file_data,
+    }
+    classification = {
+        "a_stale.py": "high",
+        "z_fresh.py": "high",
+    }
+    budget = context_cmd._entry_tokens(
+        "a_stale.py",
+        context_cmd._build_entry(file_data, "high", "deep"),
+    )
+    return inventory, classification, budget
+
+
+def _protocol_output_bytes(request: dict, payload: dict) -> bytes:
+    response = context_cmd._protocol_success_payload(request, payload, [])
+    return (json.dumps(response, indent=2) + "\n").encode("utf-8")
+
+
+def _materialize_managed_freshness_ranking_project(tmp_path: Path) -> Path:
+    source_files = {
+        "src/a_stale.py": (
+            '"""Stale module."""\n\n'
+            "class StaleService:\n"
+            '    """Recorded stale service."""\n'
+        ),
+        "src/z_fresh.py": (
+            '"""Fresh module."""\n\n'
+            "class FreshService:\n"
+            '    """Current fresh service."""\n'
+        ),
+    }
+
+    def module_inventory(
+        module_docstring: str,
+        class_name: str,
+        class_docstring: str,
+    ) -> dict:
+        return {
+            "language": "python",
+            "module_docstring": module_docstring,
+            "classes": [
+                {
+                    "name": class_name,
+                    "kind": "class",
+                    "line": 3,
+                    "docstring": class_docstring,
+                    "bases": [],
+                    "decorators": [],
+                    "attributes": [],
+                    "methods": [],
+                }
+            ],
+            "functions": [],
+            "imports": [],
+        }
+
+    inventory = {
+        "src/a_stale.py": module_inventory(
+            "Stale module.",
+            "StaleService",
+            "Recorded stale service.",
+        ),
+        "src/z_fresh.py": module_inventory(
+            "Fresh module.",
+            "FreshService",
+            "Current fresh service.",
+        ),
+    }
+    pages = (
+        PageFixture(
+            "modules",
+            "stale",
+            "modules/stale.md",
+            "semantic",
+            "# stale Module\n\nStale module documentation.\n",
+        ),
+        PageFixture(
+            "modules",
+            "fresh",
+            "modules/fresh.md",
+            "semantic",
+            "# fresh Module\n\nFresh module documentation.\n",
+        ),
+    )
+    module_page_map = {
+        "src/a_stale.py": "stale",
+        "src/z_fresh.py": "fresh",
+    }
+    surface_payload, surface_bytes = (
+        knowledge_fixture_helpers._build_surface_projection(
+            source_files=source_files,
+            assets={},
+            inventory=inventory,
+            pages=pages,
+            module_page_map=module_page_map,
+            entity_occurrence_page_map={},
+        )
+    )
+    base_fixture = one_module_two_entities_fixture()
+    fixture = EvaluatedKnowledgeFixture(
+        name="freshness-ranking",
+        source_files=source_files,
+        assets={},
+        inventory=inventory,
+        pages=pages,
+        module_page_map=module_page_map,
+        entity_occurrence_page_map={},
+        surface_payload=surface_payload,
+        surface_bytes=surface_bytes,
+        knowledge_payload=base_fixture.knowledge_payload,
+        knowledge_bytes=base_fixture.knowledge_bytes,
+    )
+    builder_case = _builder_case_for(fixture)
+    page_sources: dict[str, ManifestPageSource] = {}
+    evidence_baselines: dict[str, ManifestEvidenceBaseline] = {}
+    for source_path, page_id in module_page_map.items():
+        page_path = f"modules/{page_id}.md"
+        page_sources[page_path] = ManifestPageSource(
+            scope="module",
+            source_path=source_path,
+        )
+        evidence_baselines[page_path] = ManifestEvidenceBaseline.from_basis(
+            build_module_observation_basis(
+                source_path=source_path,
+                file_data=inventory[source_path],
+                source_content_hash=sha256_bytes(
+                    source_files[source_path].encode("utf-8")
+                ),
+                extractor_ref="llm-wiki/extractor/python",
+                inventory_complete=True,
+            )
+        )
+    inputs = replace(
+        builder_case.inputs,
+        page_source_mappings=page_sources,
+        evidence_baselines=evidence_baselines,
+    )
+    knowledge_bytes = serialize_knowledge_index(
+        build_knowledge_index(inputs)
+    ).encode("utf-8")
+    fixture = replace(fixture, knowledge_bytes=knowledge_bytes)
+    tree = materialize_fixture_tree(fixture, tmp_path / "checkout")
+    manifest = SyncManifest(
+        sources={
+            source_path: {
+                "hash": sha256_bytes(content.encode("utf-8")),
+                "language": inventory[source_path]["language"],
+            }
+            for source_path, content in source_files.items()
+        },
+        page_source_mappings=page_sources,
+        evidence_baselines=evidence_baselines,
+        tombstones={},
+    )
+    commit_knowledge_artifacts(
+        build_knowledge_commit_plan(
+            tree["wiki_root"],
+            surface_index_bytes=surface_bytes,
+            knowledge_index_bytes=knowledge_bytes,
+            manifest=manifest,
+        )
+    )
+    (tree["root"] / "src" / "a_stale.py").write_text(
+        '"""Stale module changed."""\n\n'
+        "class ChangedStaleService:\n"
+        '    """Changed stale service."""\n',
+        encoding="utf-8",
+    )
+    return tree["root"]
 
 
 def _knowledge_page_fixture(
@@ -528,6 +757,208 @@ class TestBuildContextPayload:
             "truncated": False,
         }
 
+    def test_prefer_fresh_is_opt_in_and_breaks_ties_only_within_tier(self):
+        file_data = {
+            "language": "python",
+            "classes": [],
+            "functions": [{"name": "run", "line": 1}],
+        }
+        inventory = {
+            "a_old.py": file_data,
+            "z_new.py": file_data,
+        }
+        classification = {
+            "a_old.py": "high",
+            "z_new.py": "high",
+        }
+        budget = context_cmd._entry_tokens(
+            "a_old.py",
+            context_cmd._build_entry(file_data, "high", "deep"),
+        )
+
+        baseline = context_cmd._build_context_payload(
+            inventory,
+            classification,
+            budget,
+        )
+        explicit_off = context_cmd._build_context_payload(
+            inventory,
+            classification,
+            budget,
+            freshness_rank_by_source=None,
+        )
+        preferred = context_cmd._build_context_payload(
+            inventory,
+            classification,
+            budget,
+            freshness_rank_by_source={
+                "a_old.py": 1,
+                "z_new.py": 0,
+            },
+        )
+        regenerated = context_cmd._build_context_payload(
+            inventory,
+            classification,
+            budget,
+            freshness_rank_by_source={
+                "a_old.py": 1,
+                "z_new.py": 0,
+            },
+        )
+
+        assert json.dumps(explicit_off, sort_keys=False) == json.dumps(
+            baseline,
+            sort_keys=False,
+        )
+        assert json.dumps(regenerated, sort_keys=False) == json.dumps(
+            preferred,
+            sort_keys=False,
+        )
+        assert list(baseline["files"]) == ["a_old.py"]
+        assert list(preferred["files"]) == ["z_new.py"]
+        assert preferred["omitted_files"] == ["a_old.py"]
+        assert preferred["bounds"]["files"]["total"] == 2
+
+    def test_prefer_fresh_never_reorders_across_relevance_tiers(self):
+        file_data = {
+            "language": "python",
+            "classes": [],
+            "functions": [{"name": "run", "line": 1}],
+        }
+        inventory = {
+            "a_old.py": file_data,
+            "z_new.py": file_data,
+        }
+        classification = {
+            "a_old.py": "high",
+            "z_new.py": "low",
+        }
+        budget = context_cmd._entry_tokens(
+            "a_old.py",
+            context_cmd._build_entry(file_data, "high", "deep"),
+        )
+
+        preferred = context_cmd._build_context_payload(
+            inventory,
+            classification,
+            budget,
+            freshness_rank_by_source={
+                "a_old.py": 1,
+                "z_new.py": 0,
+            },
+        )
+
+        assert list(preferred["files"]) == ["a_old.py"]
+        assert preferred["files"]["a_old.py"]["priority"] == "high"
+        assert preferred["omitted_files"] == ["z_new.py"]
+
+    def test_prefer_fresh_does_not_reorder_without_budget_pressure(self):
+        file_data = {
+            "language": "python",
+            "classes": [],
+            "functions": [{"name": "run", "line": 1}],
+        }
+        inventory = {
+            "a_old.py": file_data,
+            "z_new.py": file_data,
+        }
+        classification = {
+            "a_old.py": "high",
+            "z_new.py": "high",
+        }
+
+        baseline = context_cmd._build_context_payload(
+            inventory,
+            classification,
+            100_000,
+        )
+        preferred, budget_pressure = (
+            context_cmd._build_context_payload_with_freshness_preference(
+                inventory,
+                classification,
+                100_000,
+                freshness_rank_by_source={
+                    "a_old.py": 1,
+                    "z_new.py": 0,
+                },
+            )
+        )
+
+        assert budget_pressure is False
+        assert json.dumps(preferred, sort_keys=False) == json.dumps(
+            baseline,
+            sort_keys=False,
+        )
+        assert list(preferred["files"]) == ["a_old.py", "z_new.py"]
+
+    def test_prefer_fresh_flag_off_matches_protocol_baseline_golden(self):
+        inventory, classification, budget = _freshness_ranking_golden_inputs()
+        payload = context_cmd._build_context_payload(
+            inventory,
+            classification,
+            budget,
+        )
+        request_without_flag = context_cmd._validate_protocol_request(
+            _protocol_request(budget_tokens=budget)
+        )
+        request_with_explicit_off = context_cmd._validate_protocol_request(
+            _protocol_request(
+                budget_tokens=budget,
+                prefer_fresh=False,
+            )
+        )
+
+        without_flag = _protocol_output_bytes(request_without_flag, payload)
+        explicit_off = _protocol_output_bytes(
+            request_with_explicit_off,
+            payload,
+        )
+
+        assert without_flag == explicit_off
+        assert without_flag == PREFER_FRESH_OFF_GOLDEN.read_bytes()
+        assert b'"prefer_fresh"' not in without_flag
+        assert b'"ranking_policy"' not in without_flag
+
+    def test_prefer_fresh_flag_on_matches_deterministic_protocol_golden(self):
+        inventory, classification, budget = _freshness_ranking_golden_inputs()
+        ranks = {
+            "a_stale.py": 1,
+            "z_fresh.py": 0,
+        }
+
+        def render() -> bytes:
+            payload, budget_pressure = (
+                context_cmd._build_context_payload_with_freshness_preference(
+                    inventory,
+                    classification,
+                    budget,
+                    freshness_rank_by_source=ranks,
+                )
+            )
+            payload["ranking_policy"] = context_cmd._freshness_ranking_policy(
+                {"freshness_evaluated": True},
+                ranks,
+                budget_pressure=budget_pressure,
+            )
+            request = context_cmd._validate_protocol_request(
+                _protocol_request(
+                    budget_tokens=budget,
+                    prefer_fresh=True,
+                )
+            )
+            return _protocol_output_bytes(request, payload)
+
+        first = render()
+        second = render()
+
+        assert first == second
+        assert first == PREFER_FRESH_ON_GOLDEN.read_bytes()
+        payload = json.loads(first)
+        assert payload["ranking_policy"]["applied"] is True
+        assert list(payload["files"]) == ["z_fresh.py"]
+        assert payload["omitted_files"] == ["a_stale.py"]
+        assert b"example.invalid" not in first
+
     def test_high_downgraded_before_omit(self):
         inventory = {
             "a.py": {
@@ -748,6 +1179,28 @@ class TestRenderMarkdown:
         assert f"freshness reason: `{reason}`" in markdown
         assert f"freshness hint: {hint}" in markdown
 
+    def test_prefer_fresh_policy_is_disclosed(self):
+        payload = {
+            "budget": 10,
+            "used": 0,
+            "files": {},
+            "ranking_policy": {
+                "name": "relevance-then-current-freshness",
+                "prefer_fresh": True,
+                "scope": "within-relevance-tiers",
+                "freshness_evaluated": True,
+                "applied": True,
+                "filters_stale_content": False,
+            },
+        }
+
+        markdown = context_cmd._render_markdown(payload)
+
+        assert (
+            "current freshness is preferred only within existing relevance tiers"
+            in markdown
+        )
+
 
 # ── Protocol helpers ──────────────────────────────────────────────────
 
@@ -790,6 +1243,26 @@ class TestProtocolValidation:
         assert result["focus"] == ["changed", "neighbors"]
         assert result["format"] == "json"
         assert result["filters"] == {}
+        assert result["prefer_fresh"] is False
+
+    def test_validation_accepts_boolean_prefer_fresh(self):
+        result = context_cmd._validate_protocol_request(
+            _protocol_request(prefer_fresh=True)
+        )
+
+        assert result["prefer_fresh"] is True
+
+    @pytest.mark.parametrize("value", [1, "true", [], None])
+    def test_validation_rejects_non_boolean_prefer_fresh(self, value):
+        with pytest.raises(
+            context_cmd.ProtocolRequestError,
+            match="prefer_fresh must be a boolean",
+        ) as exc_info:
+            context_cmd._validate_protocol_request(
+                _protocol_request(prefer_fresh=value)
+            )
+
+        assert exc_info.value.field == "prefer_fresh"
 
     def test_validation_accepts_graph_and_surface_filters(self):
         result = context_cmd._validate_protocol_request(
@@ -1006,6 +1479,101 @@ class TestProtocolValidation:
 
 
 class TestKnowledgePageSelection:
+    def test_source_freshness_rank_requires_every_mapped_concept_current(self):
+        current_page, current = _knowledge_page_fixture(
+            "entities/Current.md",
+            freshness="current",
+        )
+        mixed_current_page, mixed_current = _knowledge_page_fixture(
+            "entities/MixedCurrent.md",
+            freshness="current",
+        )
+        mixed_stale_page, mixed_stale = _knowledge_page_fixture(
+            "entities/MixedStale.md",
+            freshness="source-changed",
+        )
+        mixed_current_page["source_path"] = "src/mixed.py"
+        mixed_stale_page["source_path"] = "src/mixed.py"
+        service = _KnowledgeQueryStub(
+            {
+                current_page["canonical_path"]: current,
+                mixed_current_page["canonical_path"]: mixed_current,
+                mixed_stale_page["canonical_path"]: mixed_stale,
+            }
+        )
+
+        ranks = context_cmd._context_freshness_rank_by_source(
+            {
+                "pages": [
+                    current_page,
+                    mixed_current_page,
+                    mixed_stale_page,
+                ]
+            },
+            service,
+        )
+
+        assert ranks == {
+            "src/Current.py": 0,
+            "src/mixed.py": 1,
+        }
+        policy = context_cmd._freshness_ranking_policy(
+            service.knowledge_status,
+            ranks,
+        )
+        assert policy == {
+            "name": "relevance-then-current-freshness",
+            "prefer_fresh": True,
+            "scope": "within-relevance-tiers",
+            "freshness_evaluated": True,
+            "budget_pressure": False,
+            "applied": False,
+            "filters_stale_content": False,
+        }
+
+    def test_source_freshness_rank_treats_missing_state_as_non_current(self):
+        current_page, current = _knowledge_page_fixture(
+            "entities/MixedCurrent.md",
+            freshness="current",
+        )
+        unknown_page, _ = _knowledge_page_fixture(
+            "entities/MixedUnknown.md",
+            freshness="current",
+        )
+        current_page["source_path"] = "src/mixed.py"
+        unknown_page["source_path"] = "src/mixed.py"
+        service = _KnowledgeQueryStub(
+            {current_page["canonical_path"]: current}
+        )
+
+        ranks = context_cmd._context_freshness_rank_by_source(
+            {"pages": [current_page, unknown_page]},
+            service,
+        )
+
+        assert ranks == {"src/mixed.py": 1}
+
+    def test_source_freshness_rank_is_unavailable_without_evaluation(self):
+        page, concept = _knowledge_page_fixture(
+            "entities/User.md",
+            freshness="current",
+        )
+        service = _KnowledgeQueryStub(
+            {page["canonical_path"]: concept},
+            freshness_evaluated=False,
+        )
+
+        ranks = context_cmd._context_freshness_rank_by_source(
+            {"pages": [page]},
+            service,
+        )
+
+        assert ranks == {}
+        assert context_cmd._freshness_ranking_policy(
+            service.knowledge_status,
+            ranks,
+        )["applied"] is False
+
     def test_governed_summary_is_compact_and_omits_private_event_detail(self):
         page, concept = _knowledge_page_fixture(
             "entities/User.md",
@@ -1837,6 +2405,64 @@ def test_context_generation_option_evaluation_fails_closed(
 
 
 class TestProtocolRun:
+    def test_packet_format_emits_exact_canonical_bytes(
+        self,
+        monkeypatch,
+        capsys,
+    ):
+        from llm_wiki_cli.services import context_packet
+
+        canonical = b'{"packet_id":"sha256:' + b"a" * 64 + b'"}\n'
+        seen = {}
+
+        class Packet:
+            @staticmethod
+            def to_bytes():
+                return canonical
+
+        def fake_builder(src_dir, wiki_dir, request, **kwargs):
+            seen.update(
+                {
+                    "src_dir": src_dir,
+                    "wiki_dir": wiki_dir,
+                    "request": request,
+                    **kwargs,
+                }
+            )
+            return Packet()
+
+        monkeypatch.setattr(
+            context_packet,
+            "build_qualified_context",
+            fake_builder,
+        )
+
+        context_cmd.run(
+            _make_args(
+                format="packet",
+                budget=2048,
+                focus="all",
+                wiki_dir="agent_wiki",
+                prefer_fresh=True,
+                read_only=False,
+                allow_external_src=False,
+            )
+        )
+
+        assert capsys.readouterr().out.encode("utf-8") == canonical
+        assert seen["src_dir"] == "."
+        assert seen["wiki_dir"] == "agent_wiki"
+        assert seen["request"] == {
+            "protocol": "llm-wiki-context/v1",
+            "budget_tokens": 2048,
+            "focus": ["all"],
+            "format": "json",
+            "filters": {},
+            "prefer_fresh": True,
+        }
+        assert seen["read_only"] is True
+        assert seen["allow_external_src"] is False
+
     def test_request_file_json_envelope(self, tmp_project, tmp_path, capsys):
         request = _write_request(tmp_path, _protocol_request(budget_tokens=100000))
         context_cmd.run(_make_args(request=request, budget=None))
@@ -1853,6 +2479,104 @@ class TestProtocolRun:
         assert "graphs" not in data
         assert "surface" not in data
         assert data["files"]
+
+    def test_request_discloses_opt_in_freshness_ranking(
+        self,
+        tmp_project,
+        tmp_path,
+        capsys,
+    ):
+        _write_query_project(tmp_project)
+        _write_query_wiki(tmp_project, "agent_wiki")
+        request = _write_request(
+            tmp_path,
+            _protocol_request(
+                budget_tokens=100000,
+                prefer_fresh=True,
+            ),
+        )
+
+        context_cmd.run(
+            _make_args(
+                request=request,
+                budget=None,
+                wiki_dir="agent_wiki",
+            )
+        )
+
+        data = json.loads(capsys.readouterr().out)
+        assert data["prefer_fresh"] is True
+        assert data["ranking_policy"] == {
+            "name": "relevance-then-current-freshness",
+            "prefer_fresh": True,
+            "scope": "within-relevance-tiers",
+            "freshness_evaluated": False,
+            "budget_pressure": False,
+            "applied": False,
+            "filters_stale_content": False,
+        }
+        assert data["knowledge"]["freshness_evaluated"] is False
+
+    def test_managed_public_context_prefers_current_source_under_pressure(
+        self,
+        tmp_path,
+        monkeypatch,
+    ):
+        from llm_wiki_cli.api import build_context
+
+        root = _materialize_managed_freshness_ranking_project(tmp_path)
+        monkeypatch.chdir(root)
+        inventory = context_cmd.get_inventory(".", deep=True)
+        fresh_path = "src/z_fresh.py"
+        stale_path = "src/a_stale.py"
+        budget = context_cmd._entry_tokens(
+            fresh_path,
+            context_cmd._build_entry(
+                inventory[fresh_path],
+                "high",
+                "slim",
+            ),
+        )
+        options = {
+            "budget": budget,
+            "focus": "all",
+            "filters": {"surface": "modules"},
+            "wiki_dir": "docs/llm_wiki",
+        }
+
+        baseline = build_context(".", **options)
+        preferred = build_context(".", prefer_fresh=True, **options)
+
+        assert list(baseline["files"]) == [stale_path]
+        assert baseline["downgraded_files"] == {
+            stale_path: "summary",
+        }
+        assert baseline["omitted_files"] == [fresh_path]
+        assert "ranking_policy" not in baseline
+        assert list(preferred["files"]) == [fresh_path]
+        assert preferred["omitted_files"] == [stale_path]
+        assert preferred["downgraded_files"] == {
+            fresh_path: "slim",
+        }
+        assert preferred["files"][fresh_path]["priority"] == "high"
+        assert preferred["truncated"] is True
+        assert preferred["ranking_policy"] == {
+            "name": "relevance-then-current-freshness",
+            "prefer_fresh": True,
+            "scope": "within-relevance-tiers",
+            "freshness_evaluated": True,
+            "budget_pressure": True,
+            "applied": True,
+            "filters_stale_content": False,
+        }
+        states = {
+            page["source_path"]: page["knowledge"]["freshness"]["state"]
+            for page in preferred["surface"]["pages"]
+        }
+        assert states == {
+            fresh_path: "current",
+            stale_path: "source-changed",
+        }
 
     def test_success_envelope_keeps_old_json_shape_when_enriched(
         self, tmp_project, tmp_path, capsys

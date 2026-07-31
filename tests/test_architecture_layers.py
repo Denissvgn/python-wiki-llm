@@ -45,7 +45,7 @@ REQUIRED_SHARED_VALIDATION_ADAPTERS_BY_FAMILY = {
         {"_path_under", "_path_under_scope", "_positive_line"}
     ),
     "diagrams": frozenset({"_roots_equal"}),
-    "documentation_calibration": frozenset(
+    "calibration/contracts": frozenset(
         {
             "_bool_or_none",
             "_non_negative_int_or_none",
@@ -55,7 +55,7 @@ REQUIRED_SHARED_VALIDATION_ADAPTERS_BY_FAMILY = {
             "_text_list",
         }
     ),
-    "documentation_calibration_broker": frozenset(
+    "calibration/broker": frozenset(
         {
             "_bounded_int",
             "_bounded_text",
@@ -70,7 +70,7 @@ REQUIRED_SHARED_VALIDATION_ADAPTERS_BY_FAMILY = {
             "_validate_uuid",
         }
     ),
-    "documentation_calibration_controller": frozenset(
+    "calibration/controller": frozenset(
         {
             "_require_bool",
             "_require_choice",
@@ -86,7 +86,7 @@ REQUIRED_SHARED_VALIDATION_ADAPTERS_BY_FAMILY = {
             "_paths_overlap",
         }
     ),
-    "documentation_calibration_host_broker": frozenset(
+    "calibration/host_broker": frozenset(
         {"_require_bounded_text", "_require_hash"}
     ),
     "documentation_claim_evidence": frozenset(
@@ -799,7 +799,10 @@ def _shared_validation_adapters(
 
 
 def _service_family(path: Path, *, services_root: Path = SERVICES_ROOT) -> str:
-    first_part = path.relative_to(services_root).parts[0]
+    relative = path.relative_to(services_root)
+    first_part = relative.parts[0]
+    if first_part == "calibration" and len(relative.parts) > 1:
+        return f"calibration/{Path(relative.parts[1]).stem}"
     return first_part.removesuffix(".py")
 
 

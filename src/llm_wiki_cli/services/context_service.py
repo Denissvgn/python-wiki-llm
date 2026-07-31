@@ -99,7 +99,14 @@ from .extraction_service import (
 
 PROTOCOL_VERSION = CONTEXT_PROTOCOL_VERSION
 
-_REQUEST_KEYS = {"protocol", "budget_tokens", "focus", "format", "filters"}
+_REQUEST_KEYS = {
+    "protocol",
+    "budget_tokens",
+    "focus",
+    "format",
+    "filters",
+    "prefer_fresh",
+}
 _FILTER_KEYS = {
     "language",
     "module",
@@ -170,14 +177,22 @@ def get_inventory(
     return_result: bool = False,
     job_request: ExtractionJobRequest | None = None,
     plan_reporter: Callable[[ExtractionJobPlan], None] | None = None,
+    include_plugins: bool = True,
 ) -> dict | InventoryResult:
     """Context-local inventory helper kept patchable for protocol tests."""
+    inventory_options: dict[str, Any] = {
+        "deep": deep,
+        "parallel_jobs": (
+            job_request.resolved_jobs if job_request is not None else 1
+        ),
+        "job_request": job_request,
+        "plan_reporter": plan_reporter,
+    }
+    if not include_plugins:
+        inventory_options["include_plugins"] = False
     inventory_result = get_inventory_result(
         src_dir,
-        deep=deep,
-        parallel_jobs=job_request.resolved_jobs if job_request is not None else 1,
-        job_request=job_request,
-        plan_reporter=plan_reporter,
+        **inventory_options,
     )
     if inventory_result.failed:
         raise ProtocolRequestError(
@@ -367,6 +382,8 @@ def _build_context_payload(
     inventory: dict,
     classification: dict[str, str],
     budget: int,
+    *,
+    freshness_rank_by_source: Mapping[str, int] | None = None,
 ) -> dict:
     """Build a token-budgeted context payload.
 
@@ -392,9 +409,24 @@ def _build_context_payload(
     downgraded_files: dict[str, str] = {}
     used = 0
 
-    # Process tiers in priority order
+    # Process relevance tiers in their established order. An opt-in freshness
+    # rank may break ties inside a tier, but can never move a file across tiers
+    # or filter a file independently of the existing budget.
     for tier in ("high", "medium", "low"):
-        tier_files = sorted(fp for fp, pri in classification.items() if pri == tier)
+        tier_candidates = (
+            fp for fp, pri in classification.items() if pri == tier
+        )
+        tier_files = (
+            sorted(tier_candidates)
+            if freshness_rank_by_source is None
+            else sorted(
+                tier_candidates,
+                key=lambda path: (
+                    freshness_rank_by_source.get(path, 1),
+                    path,
+                ),
+            )
+        )
         for fp in tier_files:
             file_data = inventory.get(fp, {})
             selected_entry: dict | None = None
@@ -435,6 +467,32 @@ def _build_context_payload(
     }
 
 
+def _build_context_payload_with_freshness_preference(
+    inventory: dict,
+    classification: dict[str, str],
+    budget: int,
+    *,
+    freshness_rank_by_source: Mapping[str, int],
+) -> tuple[dict[str, Any], bool]:
+    """Apply the freshness tie-break only when budget pressure is observed."""
+
+    baseline = _build_context_payload(inventory, classification, budget)
+    budget_pressure = bool(
+        baseline.get("truncated") or baseline.get("downgraded_files")
+    )
+    if not freshness_rank_by_source or not budget_pressure:
+        return baseline, budget_pressure
+    return (
+        _build_context_payload(
+            inventory,
+            classification,
+            budget,
+            freshness_rank_by_source=freshness_rank_by_source,
+        ),
+        True,
+    )
+
+
 def _bounds_metadata(*, total: int, returned: int) -> dict[str, int | bool]:
     """Return exact response-layer collection bounds."""
 
@@ -465,6 +523,21 @@ def _render_markdown(payload: dict) -> str:
     lines: list[str] = []
     lines.append(f"# Context Budget: {payload['used']} / {payload['budget']} tokens")
     lines.append("")
+    ranking_policy = payload.get("ranking_policy")
+    if isinstance(ranking_policy, Mapping):
+        if ranking_policy.get("applied"):
+            availability = ""
+        elif not ranking_policy.get("freshness_evaluated"):
+            availability = " (requested but freshness was unavailable)"
+        elif not ranking_policy.get("budget_pressure"):
+            availability = " (inactive because the full context fit the budget)"
+        else:
+            availability = " (requested but no current source mapping was available)"
+        lines.append(
+            "Ranking policy: current freshness is preferred only within "
+            f"existing relevance tiers{availability}."
+        )
+        lines.append("")
 
     tier_labels = {
         "high": "Changed Files (High Priority)",
@@ -724,6 +797,12 @@ def _validate_protocol_request(data: object) -> dict:
 
     focus = _normalise_protocol_focus(data.get("focus", ["changed", "neighbors"]))
     filters = _normalise_protocol_filters(data.get("filters", {}))
+    prefer_fresh = data.get("prefer_fresh", False)
+    if not isinstance(prefer_fresh, bool):
+        raise ProtocolRequestError(
+            "prefer_fresh must be a boolean.",
+            "prefer_fresh",
+        )
 
     return {
         "protocol": PROTOCOL_VERSION,
@@ -731,6 +810,7 @@ def _validate_protocol_request(data: object) -> dict:
         "focus": focus,
         "format": fmt,
         "filters": filters,
+        "prefer_fresh": prefer_fresh,
     }
 
 
@@ -934,6 +1014,80 @@ def _matches_module_filter(filepath: str, pattern: str) -> bool:
     )
 
 
+def _context_freshness_rank_by_source(
+    query_surface: Mapping[str, Any],
+    query_service: DocumentationGraphQueryService,
+) -> dict[str, int]:
+    """Return CURRENT-first tie-break ranks for mapped source files.
+
+    A source receives the preferred rank only when every mapped concept has an
+    evaluated CURRENT result. Mixed, unknown, stale, incompatible, unmapped,
+    or unevaluated sources remain in deterministic path order.
+    """
+
+    status = query_service.knowledge_status
+    if (
+        status.get("availability") != KnowledgeAvailability.READY.value
+        or not status.get("freshness_evaluated")
+    ):
+        return {}
+
+    states_by_source: dict[str, list[str]] = {}
+    for raw_page in query_surface.get("pages", []) or []:
+        if not isinstance(raw_page, Mapping):
+            continue
+        page = _surface_page_ref(raw_page)
+        source_path = page.get("source_path")
+        if not isinstance(source_path, str) or not source_path:
+            continue
+        normalized_source = source_path.replace("\\", "/")
+        enriched = _knowledge_enriched_page_ref(page, query_service)
+        summary = enriched.get("knowledge")
+        freshness = (
+            summary.get("freshness") if isinstance(summary, Mapping) else None
+        )
+        state = (
+            freshness.get("state") if isinstance(freshness, Mapping) else None
+        )
+        states_by_source.setdefault(normalized_source, []).append(
+            state if isinstance(state, str) else ""
+        )
+
+    return {
+        source_path: (
+            0
+            if states
+            and all(
+                state == ComputedFreshness.CURRENT.value for state in states
+            )
+            else 1
+        )
+        for source_path, states in sorted(states_by_source.items())
+    }
+
+
+def _freshness_ranking_policy(
+    status: Mapping[str, Any],
+    freshness_rank_by_source: Mapping[str, int],
+    *,
+    budget_pressure: bool = False,
+) -> dict[str, Any]:
+    evaluated = bool(status.get("freshness_evaluated", False))
+    return {
+        "name": "relevance-then-current-freshness",
+        "prefer_fresh": True,
+        "scope": "within-relevance-tiers",
+        "freshness_evaluated": evaluated,
+        "budget_pressure": budget_pressure,
+        "applied": (
+            evaluated
+            and bool(freshness_rank_by_source)
+            and budget_pressure
+        ),
+        "filters_stale_content": False,
+    }
+
+
 def _build_protocol_enrichment(
     inventory: dict,
     filters: dict,
@@ -942,8 +1096,12 @@ def _build_protocol_enrichment(
     wiki_dir: str,
     inventory_result: InventoryResult | None = None,
     warnings: list[str] | None = None,
+    prefer_fresh: bool = False,
+    freshness_ranking_out: dict[str, int] | None = None,
 ) -> dict:
-    if not any(key in filters for key in ("symbol", "entrypoint", "surface")):
+    if not prefer_fresh and not any(
+        key in filters for key in ("symbol", "entrypoint", "surface")
+    ):
         return {}
 
     try:
@@ -974,7 +1132,9 @@ def _build_protocol_enrichment(
             src_dir=src_root,
             entry_points=entrypoints,
         )
-        concept_filter_requested = bool(_CONCEPT_FILTER_KEYS & set(filters))
+        concept_filter_requested = (
+            bool(_CONCEPT_FILTER_KEYS & set(filters)) or prefer_fresh
+        )
         knowledge_view = (
             _build_context_knowledge_view(
                 wiki_root,
@@ -1024,6 +1184,13 @@ def _build_protocol_enrichment(
     enrichment: dict = {}
     graphs: dict = {}
     knowledge_candidates: list[dict[str, Any]] = []
+    freshness_rank_by_source = (
+        _context_freshness_rank_by_source(query_surface, query_service)
+        if prefer_fresh
+        else {}
+    )
+    if freshness_ranking_out is not None:
+        freshness_ranking_out.update(freshness_rank_by_source)
     relationship_filter_requested = bool(
         _RELATIONSHIP_REFINEMENT_KEYS & set(filters)
     )
@@ -1070,6 +1237,11 @@ def _build_protocol_enrichment(
             filters,
             warnings,
         )
+        if prefer_fresh:
+            enrichment["ranking_policy"] = _freshness_ranking_policy(
+                knowledge_status,
+                freshness_rank_by_source,
+            )
     if relationship_filter_requested:
         _append_typed_graph_context_warning(
             query_service.typed_graph_status,
@@ -1951,6 +2123,7 @@ def _build_context(
     focus_values: list[str],
     filters: dict | None = None,
     *,
+    prefer_fresh: bool = False,
     emit_warnings: bool = True,
     allow_external_src: bool = False,
     read_only: bool = False,
@@ -1989,6 +2162,19 @@ def _build_context(
     filters = filters or {}
     inventory = _apply_protocol_filters(raw_inventory, filters)
     warnings: list[str] = []
+    freshness_rank_by_source: dict[str, int] = {}
+    enrichment: dict[str, Any] = {}
+    if prefer_fresh:
+        enrichment = _build_protocol_enrichment(
+            raw_inventory,
+            filters,
+            src_root=src_root,
+            wiki_dir=wiki_dir,
+            inventory_result=inventory_result,
+            warnings=warnings,
+            prefer_fresh=True,
+            freshness_ranking_out=freshness_rank_by_source,
+        )
 
     if not inventory:
         payload = {
@@ -2002,8 +2188,8 @@ def _build_context(
             },
             "files": {},
         }
-        payload.update(
-            _build_protocol_enrichment(
+        if not prefer_fresh:
+            enrichment = _build_protocol_enrichment(
                 raw_inventory,
                 filters,
                 src_root=src_root,
@@ -2011,7 +2197,7 @@ def _build_context(
                 inventory_result=inventory_result,
                 warnings=warnings,
             )
-        )
+        payload.update(enrichment)
         _emit_context_warnings(warnings, enabled=emit_warnings)
         return payload, warnings
 
@@ -2043,9 +2229,26 @@ def _build_context(
         include_neighbors=include_neighbors,
     )
 
-    payload = _build_context_payload(inventory, classification, budget)
-    payload.update(
-        _build_protocol_enrichment(
+    payload, budget_pressure = (
+        _build_context_payload_with_freshness_preference(
+            inventory,
+            classification,
+            budget,
+            freshness_rank_by_source=(
+                freshness_rank_by_source if prefer_fresh else {}
+            ),
+        )
+    )
+    ranking_policy = enrichment.get("ranking_policy")
+    if isinstance(ranking_policy, dict):
+        ranking_policy["budget_pressure"] = budget_pressure
+        ranking_policy["applied"] = bool(
+            ranking_policy.get("freshness_evaluated")
+            and freshness_rank_by_source
+            and budget_pressure
+        )
+    if not prefer_fresh:
+        enrichment = _build_protocol_enrichment(
             raw_inventory,
             filters,
             src_root=src_root,
@@ -2053,7 +2256,7 @@ def _build_context(
             inventory_result=inventory_result,
             warnings=warnings,
         )
-    )
+    payload.update(enrichment)
     _emit_context_warnings(warnings, enabled=emit_warnings)
     return payload, warnings
 
@@ -2077,6 +2280,8 @@ def _protocol_success_payload(
         "focus": request["focus"],
         "filters": request["filters"],
     }
+    if request.get("prefer_fresh"):
+        response["prefer_fresh"] = True
     for field_name in (
         "truncated",
         "omitted_files",
@@ -2095,6 +2300,8 @@ def _protocol_success_payload(
         response["knowledge"] = payload["knowledge"]
     if "typed_graph" in payload:
         response["typed_graph"] = payload["typed_graph"]
+    if "ranking_policy" in payload:
+        response["ranking_policy"] = payload["ranking_policy"]
 
     if request["format"] == "markdown":
         response["content"] = _render_markdown(payload)
@@ -2113,6 +2320,7 @@ def _run_protocol(args) -> None:
             request["format"],
             request["focus"],
             request["filters"],
+            prefer_fresh=request["prefer_fresh"],
             emit_warnings=False,
             allow_external_src=getattr(args, "allow_external_src", False),
             read_only=getattr(args, "read_only", False),
@@ -2134,6 +2342,50 @@ def _run_protocol(args) -> None:
         print(rendered)
 
 
+def _run_packet_output(
+    *,
+    src_dir: str,
+    wiki_dir: str,
+    budget: int,
+    focus_values: list[str],
+    prefer_fresh: bool,
+    output_path: str | None,
+    allow_external_src: bool,
+) -> None:
+    """Build and emit canonical QCP bytes for the CLI-only packet format."""
+
+    from .context_packet import ContextPacketError, build_qualified_context
+
+    request = {
+        "protocol": PROTOCOL_VERSION,
+        "budget_tokens": budget,
+        "focus": focus_values,
+        "format": "json",
+        "filters": {},
+        "prefer_fresh": prefer_fresh,
+    }
+    try:
+        packet = build_qualified_context(
+            src_dir,
+            wiki_dir,
+            request,
+            allow_external_src=allow_external_src,
+            read_only=True,
+            job_request=ExtractionJobRequest.resolved(1),
+            plan_reporter=print_extraction_job_plan,
+        )
+    except (ContextPacketError, PathValidationError, ProtocolRequestError) as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        raise SystemExit(1)
+
+    rendered = packet.to_bytes().decode("utf-8")
+    if output_path:
+        write_text_output(output_path, rendered)
+        print(f"Context output written to: {output_path}", file=sys.stderr)
+    else:
+        sys.stdout.write(rendered)
+
+
 # ── CLI entry point ───────────────────────────────────────────────────
 
 
@@ -2150,6 +2402,7 @@ def run(args) -> None:
     allow_external_src: bool = getattr(args, "allow_external_src", False)
     read_only: bool = getattr(args, "read_only", False)
     wiki_dir: str = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
+    prefer_fresh: bool = bool(getattr(args, "prefer_fresh", False))
 
     if budget is None:
         print("Error: --budget is required unless --request is used.", file=sys.stderr)
@@ -2159,12 +2412,24 @@ def run(args) -> None:
         raise SystemExit(2)
 
     focus_values = ["all"] if focus == "all" else ["changed", "neighbors"]
+    if fmt == "packet":
+        _run_packet_output(
+            src_dir=src_dir,
+            wiki_dir=wiki_dir,
+            budget=budget,
+            focus_values=focus_values,
+            prefer_fresh=prefer_fresh,
+            output_path=output_path,
+            allow_external_src=allow_external_src,
+        )
+        return
     try:
         payload, _warnings = _build_context(
             src_dir,
             budget,
             fmt,
             focus_values,
+            prefer_fresh=prefer_fresh,
             emit_warnings=True,
             allow_external_src=allow_external_src,
             read_only=read_only,

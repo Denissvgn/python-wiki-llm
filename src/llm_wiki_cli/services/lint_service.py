@@ -6,7 +6,7 @@ import sys
 import time
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from contextlib import contextmanager
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from enum import Enum
 from pathlib import Path
 
@@ -46,6 +46,7 @@ from .knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
 from .knowledge_consumption import (
     KnowledgeAvailability,
     KnowledgeReadView,
+    MachineVerificationAvailability,
     build_knowledge_read_view,
 )
 from .knowledge_loader import (
@@ -61,7 +62,6 @@ from .knowledge_model import (
     KnowledgeLoadState,
     ObservationScope,
 )
-from .knowledge_evidence import hash_json
 from .knowledge_governance import (
     GOVERNANCE_EXTENSION_KEY,
     GOVERNANCE_FILENAME,
@@ -81,6 +81,7 @@ from .knowledge_orchestration import (
     build_runtime_live_evaluation,
     runtime_generation_options,
 )
+from .knowledge_verification import attach_machine_verification_read_view
 from .plugins import PluginError, iter_components, load_entry_point
 from .source_snapshot import (
     SourceSnapshot,
@@ -93,8 +94,6 @@ from .sync_manifest import MANIFEST_FILENAME, SyncManifest
 from .verification_contracts import (
     VERIFICATION_RECEIPT_FILENAME,
     VerificationResult,
-    build_artifact_verification_context,
-    evaluate_verification_receipt,
     load_verification_receipt,
 )
 from .team import build_team_issues
@@ -258,6 +257,11 @@ class LintReport:
     knowledge_summary: KnowledgeLintSummary | None = None
     # Keep additive policy fields after the original positional contract.
     knowledge_drift_report: bool = False
+    # Operation-local composition state. It is intentionally omitted from the
+    # serialized lint contract; consumers such as doctor can reuse the exact
+    # validated read without reloading artifacts or re-running extraction.
+    knowledge_enabled: bool = False
+    knowledge_view: KnowledgeReadView | None = None
 
     @property
     def job_plan(self) -> ExtractionJobPlan:
@@ -1598,6 +1602,29 @@ def _evaluate_knowledge_lint_state(
 
 
 def _projection_issue_category(issue: KnowledgeLoadIssue) -> str:
+    # Governance validation failures remain governance failures even when the
+    # malformed field is a review event.  Computed review expiry is emitted
+    # separately by _check_knowledge_reviews and remains advisory.
+    if issue.code.startswith("governance-"):
+        return "knowledge_governance"
+    if issue.code.endswith("-version-unsupported") or issue.code in {
+        "knowledge-invalid",
+        "manifest-invalid",
+        "surface-invalid",
+    }:
+        if (
+            issue.code == "knowledge-invalid"
+            and issue.field is not None
+            and (
+                issue.field == "governance_projection"
+                or issue.field.startswith("governance_projection.")
+                or ".governance_projection." in issue.field
+                or issue.field.endswith(".governance_projection")
+                or GOVERNANCE_EXTENSION_KEY in issue.field
+            )
+        ):
+            return "knowledge_governance"
+        return "knowledge_schema"
     if (
         issue.field is not None
         and (
@@ -1609,14 +1636,6 @@ def _projection_issue_category(issue: KnowledgeLoadIssue) -> str:
         )
     ):
         return "knowledge_review"
-    if issue.code.startswith("governance-"):
-        return "knowledge_governance"
-    if issue.code.endswith("-version-unsupported") or issue.code in {
-        "knowledge-invalid",
-        "manifest-invalid",
-        "surface-invalid",
-    }:
-        return "knowledge_schema"
     if issue.code in {
         "markdown-snapshot-invalid",
         "markdown-snapshot-mismatch",
@@ -1902,56 +1921,63 @@ def _check_knowledge_reviews(
             )
 
 
-def _receipt_context(
-    view: KnowledgeReadView,
-    scope_uid: str,
-):
-    """Resolve a receipt scope to current anchors without running a checker."""
-
-    knowledge = view.knowledge
-    manifest = view.manifest_basis
-    if knowledge is None or manifest is None or manifest.artifact_hashes is None:
-        return None
-    hashes = manifest.artifact_hashes
-
-    def build(scope_locator: str | None):
-        return build_artifact_verification_context(
-            knowledge,
-            knowledge_hash=hashes.knowledge_index_hash,
-            surface_index_hash=hashes.surface_index_hash,
-            evaluated_envelope_hash=hashes.evaluated_envelope_hash,
-            governance_hash=hashes.governance_hash,
-            scope_locator=scope_locator,
-        )
-
-    bundle = build(None)
-    if bundle.scope_uid == scope_uid:
-        return bundle
-    for concept in knowledge.concepts:
-        governance = concept.extensions.get(GOVERNANCE_EXTENSION_KEY)
-        projected_uid = (
-            governance.get("uid")
-            if isinstance(governance, Mapping)
-            else None
-        )
-        current_uid = (
-            projected_uid
-            if isinstance(projected_uid, str)
-            else "locator:"
-            + hash_json(concept.locator).removeprefix("sha256:")
-        )
-        if current_uid == scope_uid:
-            return build(concept.locator)
-    # Evaluate against bundle scope to produce an explicit scope-changed
-    # reason rather than trusting an orphaned receipt.
-    return bundle
-
-
 def _check_verification_receipt(
     report: LintReport,
     view: KnowledgeReadView | None,
 ) -> None:
-    """Validate a disposable receipt; loading never executes its checkers."""
+    """Validate one operation-scoped receipt view without executing checkers."""
+
+    if view is not None and view.ready:
+        receipt = view.machine_verification
+        if (
+            receipt.availability
+            is MachineVerificationAvailability.NOT_EVALUATED
+        ):
+            receipt = attach_machine_verification_read_view(
+                report.wiki_dir,
+                view,
+            ).machine_verification
+        if receipt.availability is MachineVerificationAvailability.INVALID:
+            _add(
+                report,
+                "knowledge_verification",
+                (
+                    "Machine verification receipt is malformed or unreadable "
+                    "[reason=verification-receipt-invalid]."
+                ),
+                path=VERIFICATION_RECEIPT_FILENAME,
+                target="receipt",
+            )
+            return
+        if receipt.availability in {
+            MachineVerificationAvailability.ABSENT,
+            MachineVerificationAvailability.NOT_EVALUATED,
+        }:
+            return
+        if receipt.valid is False:
+            reasons = ",".join(receipt.invalidation_reasons)
+            _add(
+                report,
+                "knowledge_verification",
+                (
+                    "Machine verification receipt is stale "
+                    f"[reason={reasons}]."
+                ),
+                path=VERIFICATION_RECEIPT_FILENAME,
+                target=receipt.scope_uid,
+            )
+        if receipt.recorded_result == VerificationResult.FAILED.value:
+            _add(
+                report,
+                "knowledge_verification",
+                (
+                    "Machine verification recorded failed checks "
+                    "[reason=verification-check-failed]."
+                ),
+                path=VERIFICATION_RECEIPT_FILENAME,
+                target=receipt.scope_uid,
+            )
+        return
 
     wiki_root = Path(report.wiki_dir)
     try:
@@ -1970,38 +1996,16 @@ def _check_verification_receipt(
         return
     if receipt is None:
         return
-    if view is None:
-        context = None
-    else:
-        try:
-            context = _receipt_context(view, receipt.scope_uid)
-        except (TypeError, ValueError):
-            context = None
-    if context is None:
-        _add(
-            report,
-            "knowledge_verification",
-            (
-                "Machine verification receipt has no valid current artifact "
-                "basis [reason=verification-basis-unavailable]."
-            ),
-            path=VERIFICATION_RECEIPT_FILENAME,
-            target=receipt.scope_uid,
-        )
-    else:
-        evaluation = evaluate_verification_receipt(receipt, context)
-        if not evaluation.valid:
-            reasons = ",".join(reason.value for reason in evaluation.reasons)
-            _add(
-                report,
-                "knowledge_verification",
-                (
-                    "Machine verification receipt is stale "
-                    f"[reason={reasons}]."
-                ),
-                path=VERIFICATION_RECEIPT_FILENAME,
-                target=receipt.scope_uid,
-            )
+    _add(
+        report,
+        "knowledge_verification",
+        (
+            "Machine verification receipt has no valid current artifact "
+            "basis [reason=verification-basis-unavailable]."
+        ),
+        path=VERIFICATION_RECEIPT_FILENAME,
+        target=receipt.scope_uid,
+    )
     if receipt.result is VerificationResult.FAILED:
         _add(
             report,
@@ -2202,6 +2206,16 @@ def _run_report_checks(
                 knowledge_state,
                 inputs,
             )
+        if knowledge_state.view is not None:
+            knowledge_state = replace(
+                knowledge_state,
+                view=attach_machine_verification_read_view(
+                    wiki_path,
+                    knowledge_state.view,
+                ),
+            )
+        report.knowledge_enabled = knowledge_state.enabled
+        report.knowledge_view = knowledge_state.view
         with (
             _profile_phase(profiler, "knowledge_checks"),
             _measure_knowledge_phase(knowledge_durations, "check"),

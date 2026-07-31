@@ -40,8 +40,16 @@ from tests.test_knowledge_generation import _planner_inputs
 from llm_wiki_cli.services.knowledge_generation import (
     build_knowledge_generation_plan,
 )
+from llm_wiki_cli.services.knowledge_governance import (
+    GOVERNANCE_EXTENSION_KEY,
+    apply_governance_projection,
+)
 from llm_wiki_cli.services.knowledge_graph import relationship_edge_key
-from llm_wiki_cli.services.knowledge_model import parse_knowledge_index
+from llm_wiki_cli.services.knowledge_model import (
+    knowledge_index_to_payload,
+    parse_knowledge_index,
+)
+from tests.test_knowledge_governance import _review_ledger, _reviewable_knowledge
 
 
 def _write_fixture_pages(root, fixture, *, crlf: bool = False):
@@ -163,6 +171,37 @@ def test_malformed_or_duplicate_key_knowledge_never_loads(
 
     assert exc_info.value.status is KnowledgeLoadState.INVALID
     assert any(issue.code == "knowledge-invalid" for issue in exc_info.value.issues)
+
+
+def test_malformed_governance_projection_preserves_governance_reason(
+    tmp_path,
+):
+    _committed_state(tmp_path)
+    knowledge, _module_locator, _entity_locator = _reviewable_knowledge()
+    ledger = _review_ledger(knowledge)
+    payload = knowledge_index_to_payload(
+        apply_governance_projection(knowledge, ledger)
+    )
+    projection = payload["extensions"][GOVERNANCE_EXTENSION_KEY]
+    locator = next(iter(projection["concepts"]))
+    projection["concepts"][locator]["reviews"]["total"] = -1
+    (tmp_path / KNOWLEDGE_INDEX_FILENAME).write_bytes(
+        formatted_json_bytes(payload)
+    )
+
+    with pytest.raises(KnowledgeStateLoadError) as exc_info:
+        load_knowledge_state(tmp_path)
+
+    assert exc_info.value.status is KnowledgeLoadState.INVALID
+    issue = next(
+        item
+        for item in exc_info.value.issues
+        if item.code == "governance-invalid"
+    )
+    assert issue.field == (
+        "knowledge_index_bytes.governance_projection.concepts."
+        f"{locator}.reviews.total"
+    )
 
 
 def test_unsupported_knowledge_version_is_invalid(tmp_path):

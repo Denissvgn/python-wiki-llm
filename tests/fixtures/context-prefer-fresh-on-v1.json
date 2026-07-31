@@ -1,0 +1,46 @@
+{
+  "protocol": "llm-wiki-context/v1",
+  "ok": true,
+  "budget_tokens": 28,
+  "used_tokens": 28,
+  "format": "json",
+  "focus": [
+    "all"
+  ],
+  "filters": {},
+  "prefer_fresh": true,
+  "truncated": true,
+  "omitted_files": [
+    "a_stale.py"
+  ],
+  "downgraded_files": {},
+  "bounds": {
+    "files": {
+      "total": 2,
+      "returned": 1,
+      "truncated": true
+    }
+  },
+  "ranking_policy": {
+    "name": "relevance-then-current-freshness",
+    "prefer_fresh": true,
+    "scope": "within-relevance-tiers",
+    "freshness_evaluated": true,
+    "budget_pressure": true,
+    "applied": true,
+    "filters_stale_content": false
+  },
+  "files": {
+    "z_fresh.py": {
+      "classes": [],
+      "functions": [
+        {
+          "name": "run",
+          "line": 1
+        }
+      ],
+      "priority": "high",
+      "detail": "deep"
+    }
+  }
+}
