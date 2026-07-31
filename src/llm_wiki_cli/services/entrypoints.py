@@ -22,6 +22,7 @@ from typing import Any
 
 from .imports import build_module_path_resolver
 from .plugins import PluginError, entrypoint_detector_components, load_entry_point
+from .validation import positive_int_or_none, resolved_paths_equal
 
 # ── Entry-point categories ────────────────────────────────────────────
 
@@ -491,7 +492,7 @@ def _load_plugin_detector(component: Mapping[str, Any], root: str | Path):
 
 
 def _roots_equal(left: str | Path, right: str | Path) -> bool:
-    return Path(left).resolve() == Path(right).resolve()
+    return resolved_paths_equal(left, right)
 
 
 def _read_detector_components(
@@ -527,9 +528,7 @@ def _detector_components(
 
 
 def _source_line(value: object) -> int | None:
-    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
-        return None
-    return value
+    return positive_int_or_none(value)
 
 
 def _source_location(source_path: object, line: object) -> dict:

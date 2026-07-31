@@ -12,6 +12,7 @@ from pathlib import PurePosixPath
 from typing import Iterable, Mapping, Optional
 
 from .imports import build_module_path_resolver
+from .validation import positive_int_or_none
 
 _RELATION_LIMIT = 12
 _RELATIONSHIP_SUMMARIES_SCHEMA = "llm-wiki-relationship-summaries/v1"
@@ -585,9 +586,7 @@ def _build_entity_relationship_summaries(
 
 
 def _detail_line(value: object) -> int | None:
-    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
-        return None
-    return value
+    return positive_int_or_none(value)
 
 
 def _normalize_detailed_record(value: object, *, key: str | None = None) -> object:

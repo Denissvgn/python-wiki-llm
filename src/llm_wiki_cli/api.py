@@ -2,11 +2,35 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
+import inspect
+import warnings
+from collections.abc import Callable, Iterable, Iterator, Mapping
+from contextlib import contextmanager
+from functools import wraps
 from pathlib import Path
-from typing import Any
+from typing import Any, NoReturn, ParamSpec, TypeVar, cast
 
 from .commands import bootstrap_cmd, context_cmd, extract_cmd
+from .api_types import (
+    CalleesResult,
+    CallersResult,
+    ConceptResult,
+    ConceptSectionsResult,
+    ContextPayload,
+    DataFlowForEntrypointResult,
+    DependencyNeighborhoodResult,
+    DocumentationExportResult,
+    EvidenceExplanationResult,
+    ExtractSourceResult,
+    FlowForEntrypointResult,
+    MarkdownContextResult,
+    PagesForSymbolResult,
+    RelatedConceptsResult,
+    TypedGraphTraversalResult,
+    WikiPage,
+    WikiPageCounts,
+    WikiPagesResult,
+)
 from .config import (
     DEFAULT_WIKI_DIR,
     PathValidationError,
@@ -32,6 +56,9 @@ from .services.contracts import (
     P0_CALIBRATION_VERIFICATION_REPORT_SCHEMA_VERSION,
 )
 from .services.bootstrap_service import (
+    BootstrapContractError,
+    BootstrapExtractionError,
+    BootstrapRequestError,
     BootstrapRequest,
     BootstrapResult,
     BootstrapServiceError,
@@ -127,18 +154,175 @@ class LlmWikiApiError(RuntimeError):
     """Base exception raised by the supported Python API."""
 
 
-class PathPolicyError(LlmWikiApiError):
-    """Raised when a source path violates the configured path policy."""
+class InvalidRequestError(LlmWikiApiError):
+    """Raised when arguments or a submitted request contract are invalid."""
 
 
-class ExtractionError(LlmWikiApiError):
-    """Raised when source extraction fails."""
+class WorkspaceStateError(LlmWikiApiError):
+    """Raised when workspace state or an operational dependency is unusable."""
 
 
-class BootstrapError(LlmWikiApiError):
-    """Raised when deterministic library bootstrap fails."""
+class ArtifactIntegrityError(LlmWikiApiError):
+    """Raised when persisted or supplied artifact integrity cannot be trusted."""
 
 
+# Compatibility aliases retain the original catch points while making every
+# raised API exception one of the stable taxonomy leaves above.
+PathPolicyError = InvalidRequestError
+ExtractionError = WorkspaceStateError
+BootstrapError = WorkspaceStateError
+
+_API_ERROR_LEAVES = (
+    InvalidRequestError,
+    WorkspaceStateError,
+    ArtifactIntegrityError,
+)
+
+_WIKI_INPUT_ARTIFACT_CATEGORIES = frozenset(
+    {
+        "input_changed_during_snapshot",
+        "knowledge_artifact_orphan",
+        "knowledge_schema_unsupported",
+        "manifest_schema_invalid",
+        "manifest_schema_unsupported",
+        "metadata_corrupt",
+        "metadata_pair_incomplete",
+        "native_artifact_form_invalid",
+        "native_artifact_invalid",
+        "native_artifact_marker_mismatch",
+        "native_artifact_marker_missing",
+        "native_artifact_set_incomplete",
+        "native_markdown_snapshot_invalid",
+        "native_markdown_snapshot_mismatch",
+        "native_page_parity_mismatch",
+        "snapshot_hash_mismatch",
+        "surface_schema_invalid",
+        "surface_schema_unsupported",
+    }
+)
+_WIKI_INPUT_WORKSPACE_CATEGORIES = frozenset(
+    {
+        "input_missing",
+        "input_not_directory",
+        "input_unreadable",
+        "secure_copy_unavailable",
+        "secure_input_traversal_unavailable",
+        "source_not_directory",
+        "source_unavailable",
+        "workspace_copy_failed",
+        "workspace_rollback_failed",
+        "workspace_unreadable",
+        "workspace_unwritable",
+    }
+)
+
+
+_P = ParamSpec("_P")
+_R = TypeVar("_R")
+
+
+def _caused_by(exc: BaseException, expected: type[BaseException]) -> bool:
+    """Return whether an explicitly chained cause has the requested type."""
+
+    current = exc.__cause__
+    seen: set[int] = set()
+    while current is not None and id(current) not in seen:
+        if isinstance(current, expected):
+            return True
+        seen.add(id(current))
+        current = current.__cause__
+    return False
+
+
+def _raise_api_error(exc: Exception) -> NoReturn:
+    """Translate one internal exception at the supported API boundary."""
+
+    for leaf in _API_ERROR_LEAVES:
+        if isinstance(exc, leaf):
+            raise leaf(str(exc)) from exc
+    if isinstance(exc, (PathValidationError, DocumentationPolicyError)) and (
+        _caused_by(exc, OSError)
+    ):
+        raise WorkspaceStateError(str(exc)) from exc
+    if isinstance(exc, DocumentationWikiInputError):
+        category = getattr(exc, "category", "invalid_wiki_input")
+        if category in _WIKI_INPUT_ARTIFACT_CATEGORIES:
+            raise ArtifactIntegrityError(str(exc)) from exc
+        if category in _WIKI_INPUT_WORKSPACE_CATEGORIES:
+            raise WorkspaceStateError(str(exc)) from exc
+        raise InvalidRequestError(str(exc)) from exc
+    if isinstance(
+        exc,
+        (
+            DocumentationIntegrityError,
+            P0CalibrationIntegrityError,
+            P0CalibrationRecoveryError,
+        ),
+    ):
+        raise ArtifactIntegrityError(str(exc)) from exc
+    if isinstance(
+        exc,
+        (
+            DocumentationSchemaError,
+            P0CalibrationSchemaError,
+            PathValidationError,
+            DocumentationQueryError,
+            DocumentationPolicyError,
+            DocumentationModelPolicyError,
+            HostBrokerAuthenticationError,
+            BootstrapRequestError,
+            wiki_surface.WikiSurfaceError,
+            context_cmd.ProtocolRequestError,
+            AttributeError,
+            ValueError,
+            TypeError,
+            LookupError,
+        ),
+    ):
+        raise InvalidRequestError(str(exc)) from exc
+    if isinstance(
+        exc,
+        (
+            BootstrapExtractionError,
+            BootstrapContractError,
+            BootstrapServiceError,
+            DocumentationTransitionError,
+            DocumentationRunError,
+            P0CalibrationTransitionError,
+            P0CalibrationError,
+            extract_cmd.ExtractorFailureError,
+            OSError,
+            RuntimeError,
+        ),
+    ):
+        raise WorkspaceStateError(str(exc)) from exc
+    raise WorkspaceStateError(str(exc)) from exc
+
+
+def _api_boundary(function: Callable[_P, _R]) -> Callable[_P, _R]:
+    """Wrap a synchronous public callable in the stable exception taxonomy."""
+
+    signature = inspect.signature(function)
+
+    @wraps(function)
+    def wrapped(*args: _P.args, **kwargs: _P.kwargs) -> _R:
+        # Invocation-shape TypeError remains Python's normal call contract; only
+        # failures raised after a valid call enters the API taxonomy.
+        signature.bind(*args, **kwargs)
+        try:
+            return function(*args, **kwargs)
+        except LlmWikiApiError as exc:
+            if type(exc) in _API_ERROR_LEAVES:
+                raise
+            _raise_api_error(exc)
+        except Exception as exc:
+            _raise_api_error(exc)
+
+    setattr(wrapped, "__llm_wiki_api_boundary__", True)
+    return wrapped
+
+
+@_api_boundary
 def bootstrap_wiki(
     source_root: str,
     wiki_root: str,
@@ -183,10 +367,15 @@ def bootstrap_wiki(
     )
     try:
         return bootstrap_cmd.execute_bootstrap(request)
+    except BootstrapRequestError as exc:
+        raise InvalidRequestError(str(exc)) from exc
+    except BootstrapContractError as exc:
+        raise WorkspaceStateError(str(exc)) from exc
     except BootstrapServiceError as exc:
-        raise BootstrapError(str(exc)) from exc
+        raise WorkspaceStateError(str(exc)) from exc
 
 
+@_api_boundary
 def extract_source(
     src_dir: str = ".",
     *,
@@ -198,7 +387,7 @@ def extract_source(
     include_empty: bool = False,
     allow_external_src: bool = False,
     read_only: bool = True,
-) -> dict[str, Any]:
+) -> ExtractSourceResult:
     """Return the stable ``llm-wiki extract`` JSON payload as a dict."""
     try:
         result = extract_cmd.build_extract_payload(
@@ -213,25 +402,28 @@ def extract_source(
             read_only=read_only,
         )
     except PathValidationError as exc:
+        if _caused_by(exc, OSError):
+            raise WorkspaceStateError(str(exc)) from exc
         raise PathPolicyError(str(exc)) from exc
     except extract_cmd.ExtractorFailureError as exc:
-        raise ExtractionError(str(exc)) from exc
+        raise WorkspaceStateError(str(exc)) from exc
     except ValueError as exc:
-        raise LlmWikiApiError(str(exc)) from exc
-    return result.payload
+        raise InvalidRequestError(str(exc)) from exc
+    return cast(ExtractSourceResult, result.payload)
 
 
+@_api_boundary
 def build_context(
     src_dir: str = ".",
     *,
     budget: int = 32000,
     format: str = "json",
     focus: str | list[str] = "changed",
-    filters: dict | None = None,
+    filters: dict[str, Any] | None = None,
     wiki_dir: str = DEFAULT_WIKI_DIR,
     allow_external_src: bool = False,
     read_only: bool = True,
-) -> dict[str, Any]:
+) -> ContextPayload | MarkdownContextResult:
     """Return a supported context payload without depending on CLI internals."""
     focus_values = _normalise_focus(focus)
     request = {
@@ -255,28 +447,34 @@ def build_context(
             wiki_dir=wiki_dir,
         )
     except PathValidationError as exc:
+        if _caused_by(exc, OSError):
+            raise WorkspaceStateError(str(exc)) from exc
         raise PathPolicyError(str(exc)) from exc
     except context_cmd.ProtocolRequestError as exc:
         if exc.field == "wiki_dir":
             raise PathPolicyError(str(exc)) from exc
         if exc.field == "src_dir":
-            raise ExtractionError(str(exc)) from exc
-        raise LlmWikiApiError(str(exc)) from exc
+            raise WorkspaceStateError(str(exc)) from exc
+        raise InvalidRequestError(str(exc)) from exc
 
     if validated["format"] == "markdown":
-        return {
-            "content": context_cmd._render_markdown(payload),
-            "payload": payload,
-            "warnings": warnings,
-        }
+        return cast(
+            MarkdownContextResult,
+            {
+                "content": context_cmd._render_markdown(payload),
+                "payload": payload,
+                "warnings": warnings,
+            },
+        )
 
-    result = dict(payload)
+    result: dict[str, Any] = dict(payload)
     if warnings:
         result["warnings"] = warnings
-    return result
+    return cast(ContextPayload, result)
 
 
-def list_wiki_pages(wiki_dir: str = DEFAULT_WIKI_DIR) -> dict[str, Any]:
+@_api_boundary
+def list_wiki_pages(wiki_dir: str = DEFAULT_WIKI_DIR) -> WikiPagesResult:
     """Return registry-backed wiki page metadata without source extraction."""
     try:
         wiki_root = _validate_wiki_dir(wiki_dir)
@@ -287,9 +485,9 @@ def list_wiki_pages(wiki_dir: str = DEFAULT_WIKI_DIR) -> dict[str, Any]:
     except PathValidationError as exc:
         raise PathPolicyError(str(exc)) from exc
     except wiki_surface.WikiSurfaceError as exc:
-        raise LlmWikiApiError(str(exc)) from exc
+        raise InvalidRequestError(str(exc)) from exc
     except OSError as exc:
-        raise LlmWikiApiError(str(exc)) from exc
+        raise WorkspaceStateError(str(exc)) from exc
 
     return {
         "wiki_dir": _display_path(wiki_root),
@@ -298,6 +496,7 @@ def list_wiki_pages(wiki_dir: str = DEFAULT_WIKI_DIR) -> dict[str, Any]:
     }
 
 
+@_api_boundary
 def build_documentation_query_service(
     src_dir: str = ".",
     *,
@@ -331,17 +530,20 @@ def build_documentation_query_service(
             service_factory=DocumentationGraphQueryService,
         )
     except PathValidationError as exc:
+        if _caused_by(exc, OSError):
+            raise WorkspaceStateError(str(exc)) from exc
         raise PathPolicyError(str(exc)) from exc
     except extract_cmd.ExtractorFailureError as exc:
-        raise ExtractionError(str(exc)) from exc
+        raise WorkspaceStateError(str(exc)) from exc
     except DocumentationQueryError as exc:
-        raise LlmWikiApiError(str(exc)) from exc
+        raise InvalidRequestError(str(exc)) from exc
     except ValueError as exc:
-        raise LlmWikiApiError(str(exc)) from exc
+        raise InvalidRequestError(str(exc)) from exc
     except OSError as exc:
-        raise LlmWikiApiError(str(exc)) from exc
+        raise WorkspaceStateError(str(exc)) from exc
 
 
+@_api_boundary
 def flow_for_entrypoint(
     id_or_symbol: object,
     *,
@@ -351,20 +553,24 @@ def flow_for_entrypoint(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
-) -> dict[str, Any]:
+) -> FlowForEntrypointResult:
     """Return a bounded user-flow query result for an entry point."""
-    return _run_query(
-        lambda: _query_service(
-            service,
-            src_dir=src_dir,
-            wiki_dir=wiki_dir,
-            limit=limit,
-            allow_external_src=allow_external_src,
-            read_only=read_only,
-        ).flow_for_entrypoint(id_or_symbol)
+    return cast(
+        FlowForEntrypointResult,
+        _run_query(
+            lambda: _query_service(
+                service,
+                src_dir=src_dir,
+                wiki_dir=wiki_dir,
+                limit=limit,
+                allow_external_src=allow_external_src,
+                read_only=read_only,
+            ).flow_for_entrypoint(id_or_symbol)
+        ),
     )
 
 
+@_api_boundary
 def data_flow_for_entrypoint(
     id_or_symbol: object,
     *,
@@ -374,20 +580,24 @@ def data_flow_for_entrypoint(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
-) -> dict[str, Any]:
+) -> DataFlowForEntrypointResult:
     """Return a bounded data-flow query result for an entry point."""
-    return _run_query(
-        lambda: _query_service(
-            service,
-            src_dir=src_dir,
-            wiki_dir=wiki_dir,
-            limit=limit,
-            allow_external_src=allow_external_src,
-            read_only=read_only,
-        ).data_flow_for_entrypoint(id_or_symbol)
+    return cast(
+        DataFlowForEntrypointResult,
+        _run_query(
+            lambda: _query_service(
+                service,
+                src_dir=src_dir,
+                wiki_dir=wiki_dir,
+                limit=limit,
+                allow_external_src=allow_external_src,
+                read_only=read_only,
+            ).data_flow_for_entrypoint(id_or_symbol)
+        ),
     )
 
 
+@_api_boundary
 def callers(
     symbol: object,
     *,
@@ -397,20 +607,24 @@ def callers(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
-) -> dict[str, Any]:
+) -> CallersResult:
     """Return bounded callers for one callable symbol."""
-    return _run_query(
-        lambda: _query_service(
-            service,
-            src_dir=src_dir,
-            wiki_dir=wiki_dir,
-            limit=limit,
-            allow_external_src=allow_external_src,
-            read_only=read_only,
-        ).callers(symbol)
+    return cast(
+        CallersResult,
+        _run_query(
+            lambda: _query_service(
+                service,
+                src_dir=src_dir,
+                wiki_dir=wiki_dir,
+                limit=limit,
+                allow_external_src=allow_external_src,
+                read_only=read_only,
+            ).callers(symbol)
+        ),
     )
 
 
+@_api_boundary
 def callees(
     symbol: object,
     *,
@@ -420,20 +634,24 @@ def callees(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
-) -> dict[str, Any]:
+) -> CalleesResult:
     """Return bounded callees for one callable symbol."""
-    return _run_query(
-        lambda: _query_service(
-            service,
-            src_dir=src_dir,
-            wiki_dir=wiki_dir,
-            limit=limit,
-            allow_external_src=allow_external_src,
-            read_only=read_only,
-        ).callees(symbol)
+    return cast(
+        CalleesResult,
+        _run_query(
+            lambda: _query_service(
+                service,
+                src_dir=src_dir,
+                wiki_dir=wiki_dir,
+                limit=limit,
+                allow_external_src=allow_external_src,
+                read_only=read_only,
+            ).callees(symbol)
+        ),
     )
 
 
+@_api_boundary
 def dependency_neighborhood(
     path: object,
     *,
@@ -443,20 +661,24 @@ def dependency_neighborhood(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
-) -> dict[str, Any]:
+) -> DependencyNeighborhoodResult:
     """Return bounded dependency neighbors for one source path."""
-    return _run_query(
-        lambda: _query_service(
-            service,
-            src_dir=src_dir,
-            wiki_dir=wiki_dir,
-            limit=limit,
-            allow_external_src=allow_external_src,
-            read_only=read_only,
-        ).dependency_neighborhood(path)
+    return cast(
+        DependencyNeighborhoodResult,
+        _run_query(
+            lambda: _query_service(
+                service,
+                src_dir=src_dir,
+                wiki_dir=wiki_dir,
+                limit=limit,
+                allow_external_src=allow_external_src,
+                read_only=read_only,
+            ).dependency_neighborhood(path)
+        ),
     )
 
 
+@_api_boundary
 def pages_for_symbol(
     symbol: object,
     *,
@@ -466,20 +688,24 @@ def pages_for_symbol(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
-) -> dict[str, Any]:
+) -> PagesForSymbolResult:
     """Return wiki surface pages related to one symbol."""
-    return _run_query(
-        lambda: _query_service(
-            service,
-            src_dir=src_dir,
-            wiki_dir=wiki_dir,
-            limit=limit,
-            allow_external_src=allow_external_src,
-            read_only=read_only,
-        ).pages_for_symbol(symbol)
+    return cast(
+        PagesForSymbolResult,
+        _run_query(
+            lambda: _query_service(
+                service,
+                src_dir=src_dir,
+                wiki_dir=wiki_dir,
+                limit=limit,
+                allow_external_src=allow_external_src,
+                read_only=read_only,
+            ).pages_for_symbol(symbol)
+        ),
     )
 
 
+@_api_boundary
 def get_concept(
     locator_or_exact_route: object,
     *,
@@ -489,20 +715,24 @@ def get_concept(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
-) -> dict[str, Any]:
+) -> ConceptResult:
     """Return one concept by current coordinate, durable UID, or alias."""
-    return _run_query(
-        lambda: _query_service(
-            service,
-            src_dir=src_dir,
-            wiki_dir=wiki_dir,
-            limit=limit,
-            allow_external_src=allow_external_src,
-            read_only=read_only,
-        ).get_concept(locator_or_exact_route)
+    return cast(
+        ConceptResult,
+        _run_query(
+            lambda: _query_service(
+                service,
+                src_dir=src_dir,
+                wiki_dir=wiki_dir,
+                limit=limit,
+                allow_external_src=allow_external_src,
+                read_only=read_only,
+            ).get_concept(locator_or_exact_route)
+        ),
     )
 
 
+@_api_boundary
 def list_concept_sections(
     locator_or_exact_route: object,
     *,
@@ -513,23 +743,27 @@ def list_concept_sections(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
-) -> dict[str, Any]:
+) -> ConceptSectionsResult:
     """Return bounded document-order sections for one exact concept."""
-    return _run_query(
-        lambda: _query_service(
-            service,
-            src_dir=src_dir,
-            wiki_dir=wiki_dir,
-            limit=limit,
-            allow_external_src=allow_external_src,
-            read_only=read_only,
-        ).list_concept_sections(
-            locator_or_exact_route,
-            ownership=ownership,
-        )
+    return cast(
+        ConceptSectionsResult,
+        _run_query(
+            lambda: _query_service(
+                service,
+                src_dir=src_dir,
+                wiki_dir=wiki_dir,
+                limit=limit,
+                allow_external_src=allow_external_src,
+                read_only=read_only,
+            ).list_concept_sections(
+                locator_or_exact_route,
+                ownership=ownership,
+            )
+        ),
     )
 
 
+@_api_boundary
 def related_concepts(
     locator_or_exact_route: object,
     *,
@@ -541,24 +775,28 @@ def related_concepts(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
-) -> dict[str, Any]:
+) -> RelatedConceptsResult:
     """Return bounded knowledge relationships for one exact concept identity."""
-    return _run_query(
-        lambda: _query_service(
-            service,
-            src_dir=src_dir,
-            wiki_dir=wiki_dir,
-            limit=limit,
-            allow_external_src=allow_external_src,
-            read_only=read_only,
-        ).related_concepts(
-            locator_or_exact_route,
-            direction=direction,
-            kinds=kinds,
-        )
+    return cast(
+        RelatedConceptsResult,
+        _run_query(
+            lambda: _query_service(
+                service,
+                src_dir=src_dir,
+                wiki_dir=wiki_dir,
+                limit=limit,
+                allow_external_src=allow_external_src,
+                read_only=read_only,
+            ).related_concepts(
+                locator_or_exact_route,
+                direction=direction,
+                kinds=kinds,
+            )
+        ),
     )
 
 
+@_api_boundary
 def traverse_typed_graph(
     locator_or_exact_route: object,
     *,
@@ -573,27 +811,31 @@ def traverse_typed_graph(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
-) -> dict[str, Any]:
+) -> TypedGraphTraversalResult:
     """Traverse persisted typed relationships for one exact concept."""
-    return _run_query(
-        lambda: _query_service(
-            service,
-            src_dir=src_dir,
-            wiki_dir=wiki_dir,
-            limit=limit,
-            allow_external_src=allow_external_src,
-            read_only=read_only,
-        ).traverse_typed_graph(
-            locator_or_exact_route,
-            direction=direction,
-            kinds=kinds,
-            origins=origins,
-            resolutions=resolutions,
-            include_evidence=include_evidence,
-        )
+    return cast(
+        TypedGraphTraversalResult,
+        _run_query(
+            lambda: _query_service(
+                service,
+                src_dir=src_dir,
+                wiki_dir=wiki_dir,
+                limit=limit,
+                allow_external_src=allow_external_src,
+                read_only=read_only,
+            ).traverse_typed_graph(
+                locator_or_exact_route,
+                direction=direction,
+                kinds=kinds,
+                origins=origins,
+                resolutions=resolutions,
+                include_evidence=include_evidence,
+            )
+        ),
     )
 
 
+@_api_boundary
 def explain_evidence(
     locator_or_exact_route: object,
     *,
@@ -603,17 +845,20 @@ def explain_evidence(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
-) -> dict[str, Any]:
+) -> EvidenceExplanationResult:
     """Return stored and computed evidence for one exact concept identity."""
-    return _run_query(
-        lambda: _query_service(
-            service,
-            src_dir=src_dir,
-            wiki_dir=wiki_dir,
-            limit=limit,
-            allow_external_src=allow_external_src,
-            read_only=read_only,
-        ).explain_evidence(locator_or_exact_route)
+    return cast(
+        EvidenceExplanationResult,
+        _run_query(
+            lambda: _query_service(
+                service,
+                src_dir=src_dir,
+                wiki_dir=wiki_dir,
+                limit=limit,
+                allow_external_src=allow_external_src,
+                read_only=read_only,
+            ).explain_evidence(locator_or_exact_route)
+        ),
     )
 
 
@@ -638,7 +883,7 @@ def _display_path(path: Path) -> str:
         return path.as_posix()
 
 
-def _wiki_page_payload(page: wiki_surface.WikiSurfacePage) -> dict[str, Any]:
+def _wiki_page_payload(page: wiki_surface.WikiSurfacePage) -> WikiPage:
     return {
         "kind": page.kind.value,
         "id": page.page_id,
@@ -650,7 +895,7 @@ def _wiki_page_payload(page: wiki_surface.WikiSurfacePage) -> dict[str, Any]:
     }
 
 
-def _wiki_page_counts(pages: list[dict[str, Any]]) -> dict[str, Any]:
+def _wiki_page_counts(pages: list[WikiPage]) -> WikiPageCounts:
     by_kind = {entry.kind.value: 0 for entry in wiki_surface.iter_page_kinds()}
     for page in pages:
         by_kind[str(page["kind"])] += 1
@@ -686,21 +931,221 @@ def _query_service(
     )
 
 
-def _run_query(callback) -> dict[str, Any]:
+def _run_query(callback: Callable[[], dict[str, Any]]) -> dict[str, Any]:
     try:
         return callback()
     except DocumentationQueryError as exc:
-        raise LlmWikiApiError(str(exc)) from exc
+        raise InvalidRequestError(str(exc)) from exc
+
+
+# Public service functions are adapted here rather than requiring callers to
+# understand each service's private exception family.
+_adopt_documentation_wiki_snapshot_impl = adopt_documentation_wiki_snapshot
+adopt_documentation_wiki_snapshot = _api_boundary(
+    _adopt_documentation_wiki_snapshot_impl
+)
+_fingerprint_documentation_wiki_input_impl = fingerprint_documentation_wiki_input
+fingerprint_documentation_wiki_input = _api_boundary(
+    _fingerprint_documentation_wiki_input_impl
+)
+
+_prepare_documentation_run_impl = prepare_documentation_run
+prepare_documentation_run = _api_boundary(_prepare_documentation_run_impl)
+_get_documentation_run_status_impl = get_documentation_run_status
+get_documentation_run_status = _api_boundary(_get_documentation_run_status_impl)
+_build_documentation_agent_packet_impl = build_documentation_agent_packet
+build_documentation_agent_packet = _api_boundary(
+    _build_documentation_agent_packet_impl
+)
+_record_documentation_agent_result_impl = record_documentation_agent_result
+record_documentation_agent_result = _api_boundary(
+    _record_documentation_agent_result_impl
+)
+_verify_documentation_run_impl = verify_documentation_run
+verify_documentation_run = _api_boundary(_verify_documentation_run_impl)
+
+_export_documentation_run_impl = export_documentation_run
+
+
+@_api_boundary
+def export_documentation_run(
+    workspace: str | Path,
+    *,
+    build: bool = False,
+    builder_command: Iterable[str] | None = None,
+    knowledge_mode: str | None = None,
+    knowledge_public_repository_identity: str | None = None,
+) -> DocumentationExportResult:
+    """Export a documentation workspace through the stable API boundary."""
+
+    return cast(
+        DocumentationExportResult,
+        _export_documentation_run_impl(
+            workspace,
+            build=build,
+            builder_command=builder_command,
+            knowledge_mode=knowledge_mode,
+            knowledge_public_repository_identity=(
+                knowledge_public_repository_identity
+            ),
+        ),
+    )
+
+
+_prepare_calibration_run_impl = prepare_calibration_run
+prepare_calibration_run = _api_boundary(_prepare_calibration_run_impl)
+_admit_calibration_run_impl = admit_calibration_run
+admit_calibration_run = _api_boundary(_admit_calibration_run_impl)
+_get_calibration_run_status_impl = get_calibration_run_status
+get_calibration_run_status = _api_boundary(_get_calibration_run_status_impl)
+_build_calibration_agent_packet_impl = build_calibration_agent_packet
+build_calibration_agent_packet = _api_boundary(_build_calibration_agent_packet_impl)
+_dispatch_calibration_agent_impl = dispatch_calibration_agent
+dispatch_calibration_agent = _api_boundary(_dispatch_calibration_agent_impl)
+_record_calibration_agent_result_impl = record_calibration_agent_result
+record_calibration_agent_result = _api_boundary(
+    _record_calibration_agent_result_impl
+)
+_verify_calibration_run_impl = verify_calibration_run
+verify_calibration_run = _api_boundary(_verify_calibration_run_impl)
+
+_select_documentation_model_impl = select_documentation_model
+select_documentation_model = _api_boundary(_select_documentation_model_impl)
+_validate_documentation_model_selection_impl = (
+    validate_documentation_model_selection
+)
+validate_documentation_model_selection = _api_boundary(
+    _validate_documentation_model_selection_impl
+)
+
+_use_calibration_host_broker_authenticator_impl = (
+    use_calibration_host_broker_authenticator
+)
+
+
+@contextmanager
+def use_calibration_host_broker_authenticator(
+    authenticator: HostBrokerAuthenticator,
+) -> Iterator[None]:
+    """Scope a host authenticator while preserving caller-block exceptions."""
+
+    try:
+        manager = _use_calibration_host_broker_authenticator_impl(authenticator)
+        manager.__enter__()
+    except Exception as exc:
+        _raise_api_error(exc)
+
+    try:
+        yield
+    except BaseException as body_exc:
+        try:
+            suppressed = manager.__exit__(
+                type(body_exc),
+                body_exc,
+                body_exc.__traceback__,
+            )
+        except BaseException as exit_exc:
+            if exit_exc is body_exc:
+                raise
+            if isinstance(exit_exc, Exception):
+                _raise_api_error(exit_exc)
+            raise
+        if not suppressed:
+            raise
+    else:
+        try:
+            manager.__exit__(None, None, None)
+        except Exception as exc:
+            _raise_api_error(exc)
+
+
+setattr(
+    use_calibration_host_broker_authenticator,
+    "__llm_wiki_api_boundary__",
+    True,
+)
+
+
+def _deprecated_api_alias(
+    replacement: Callable[..., Any],
+    *,
+    legacy_name: str,
+    replacement_name: str,
+) -> Callable[..., Any]:
+    @wraps(replacement)
+    def legacy(*args: Any, **kwargs: Any) -> Any:
+        warnings.warn(
+            f"{legacy_name} is deprecated; use {replacement_name} instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return replacement(*args, **kwargs)
+
+    legacy.__name__ = legacy_name
+    legacy.__qualname__ = legacy_name
+    setattr(legacy, "__llm_wiki_api_boundary__", True)
+    return legacy
+
+
+prepare_p0_calibration_run = _deprecated_api_alias(
+    prepare_calibration_run,
+    legacy_name="prepare_p0_calibration_run",
+    replacement_name="prepare_calibration_run",
+)
+admit_p0_calibration_run = _deprecated_api_alias(
+    admit_calibration_run,
+    legacy_name="admit_p0_calibration_run",
+    replacement_name="admit_calibration_run",
+)
+get_p0_calibration_run_status = _deprecated_api_alias(
+    get_calibration_run_status,
+    legacy_name="get_p0_calibration_run_status",
+    replacement_name="get_calibration_run_status",
+)
+build_p0_calibration_agent_packet = _deprecated_api_alias(
+    build_calibration_agent_packet,
+    legacy_name="build_p0_calibration_agent_packet",
+    replacement_name="build_calibration_agent_packet",
+)
+dispatch_p0_calibration_agent = _deprecated_api_alias(
+    dispatch_calibration_agent,
+    legacy_name="dispatch_p0_calibration_agent",
+    replacement_name="dispatch_calibration_agent",
+)
+record_p0_calibration_agent_result = _deprecated_api_alias(
+    record_calibration_agent_result,
+    legacy_name="record_p0_calibration_agent_result",
+    replacement_name="record_calibration_agent_result",
+)
+verify_p0_calibration_run = _deprecated_api_alias(
+    verify_calibration_run,
+    legacy_name="verify_p0_calibration_run",
+    replacement_name="verify_calibration_run",
+)
+use_p0_calibration_host_broker_authenticator = _deprecated_api_alias(
+    use_calibration_host_broker_authenticator,
+    legacy_name="use_p0_calibration_host_broker_authenticator",
+    replacement_name="use_calibration_host_broker_authenticator",
+)
 
 
 __all__ = [
+    "ArtifactIntegrityError",
     "BOOTSTRAP_SUMMARY_SCHEMA_VERSION",
     "BootstrapError",
     "BootstrapRequest",
     "BootstrapResult",
     "BootstrapServiceError",
+    "CalleesResult",
+    "CallersResult",
+    "ConceptResult",
+    "ConceptSectionsResult",
+    "ContextPayload",
+    "DataFlowForEntrypointResult",
+    "DependencyNeighborhoodResult",
     "DocumentationAgentPacket",
     "DocumentationAgentResult",
+    "DocumentationExportResult",
     "EXTRACT_SCHEMA_VERSION",
     "DocumentationGraphQueryService",
     "DocumentationIntegrityError",
@@ -734,9 +1179,14 @@ __all__ = [
     "DocumentationVerificationReport",
     "DocumentationWikiInputError",
     "DocumentationWikiSnapshot",
+    "EvidenceExplanationResult",
     "ExtractionError",
+    "ExtractSourceResult",
+    "FlowForEntrypointResult",
     "LlmWikiApiError",
+    "InvalidRequestError",
     "PathPolicyError",
+    "WorkspaceStateError",
     "P0CalibrationAgentPacket",
     "P0CalibrationAgentResult",
     "P0CalibrationDispatchReceipt",
@@ -748,6 +1198,13 @@ __all__ = [
     "P0CalibrationStatus",
     "P0CalibrationTransitionError",
     "P0CalibrationVerificationReport",
+    "MarkdownContextResult",
+    "PagesForSymbolResult",
+    "RelatedConceptsResult",
+    "TypedGraphTraversalResult",
+    "WikiPage",
+    "WikiPageCounts",
+    "WikiPagesResult",
     "HostBrokerAuthenticationError",
     "HostBrokerAuthenticationProof",
     "HostBrokerAuthenticationUnavailable",
@@ -756,8 +1213,8 @@ __all__ = [
     "admit_p0_calibration_run",
     "adopt_documentation_wiki_snapshot",
     "build_calibration_agent_packet",
-    "build_p0_calibration_agent_packet",
     "build_documentation_agent_packet",
+    "build_p0_calibration_agent_packet",
     "build_context",
     "bootstrap_wiki",
     "build_documentation_query_service",

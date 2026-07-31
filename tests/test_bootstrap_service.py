@@ -7,7 +7,11 @@ from pathlib import Path
 
 import pytest
 
-from llm_wiki_cli.api import BootstrapError, bootstrap_wiki
+from llm_wiki_cli.api import (
+    BootstrapError,
+    InvalidRequestError,
+    bootstrap_wiki,
+)
 from llm_wiki_cli.commands import bootstrap_cmd
 from llm_wiki_cli.commands.bootstrap_cmd import execute_bootstrap
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
@@ -174,7 +178,10 @@ def test_public_overwrite_tombstone_rejects_before_extraction_or_writes(
 
     monkeypatch.setattr(bootstrap_cmd, "get_inventory_result", forbidden_inventory)
 
-    with pytest.raises(BootstrapError, match="overwrite.*no longer supported"):
+    with pytest.raises(
+        InvalidRequestError,
+        match="overwrite.*no longer supported",
+    ):
         bootstrap_wiki(str(source), str(wiki), overwrite=True)
 
     assert not wiki.exists()

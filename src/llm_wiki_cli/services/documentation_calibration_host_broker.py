@@ -9,7 +9,6 @@ authenticator, and the stock CLI remains fail-closed outside that context.
 
 from __future__ import annotations
 
-import re
 import warnings
 from contextlib import contextmanager
 from contextvars import ContextVar
@@ -17,9 +16,7 @@ from dataclasses import asdict, dataclass
 from functools import wraps
 from typing import Any, Iterator, Literal, Mapping, Protocol, runtime_checkable
 
-
-_BOUNDED_TEXT_RE = re.compile(r"^[^\x00-\x1f\x7f]{1,512}$")
-_HASH_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
+from .validation import require_bounded_text, require_sha256
 
 
 class HostBrokerAuthenticationError(ValueError):
@@ -320,19 +317,22 @@ def require_receipt_authentication(
 
 
 def _require_bounded_text(value: Any, label: str) -> str:
-    if not isinstance(value, str) or _BOUNDED_TEXT_RE.fullmatch(value) is None:
-        raise HostBrokerAuthenticationError(
+    return require_bounded_text(
+        value,
+        maximum=512,
+        error=HostBrokerAuthenticationError(
             f"Host broker {label} must be bounded printable text."
-        )
-    return value
+        ),
+    )
 
 
 def _require_hash(value: Any, label: str) -> str:
-    if not isinstance(value, str) or _HASH_RE.fullmatch(value) is None:
-        raise HostBrokerAuthenticationError(
+    return require_sha256(
+        value,
+        digest_error=HostBrokerAuthenticationError(
             f"Host broker {label} must be a canonical sha256 hash."
-        )
-    return value
+        ),
+    )
 
 
 __all__ = [

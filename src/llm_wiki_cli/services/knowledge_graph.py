@@ -19,12 +19,22 @@ import re
 from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
-from pathlib import PurePosixPath
 from typing import Any
 from urllib.parse import urlsplit
 
 from .contracts import TYPED_GRAPH_EXTENSION_KEY, TYPED_GRAPH_SCHEMA_VERSION
 from .knowledge_evidence import canonical_json_text, is_valid_sha256, sha256_bytes
+from .validation import (
+    require_choice,
+    require_exact_fields as require_shared_exact_fields,
+    require_list,
+    require_mapping,
+    require_nonempty_text,
+    require_nonnegative_int,
+    require_positive_int,
+    require_repository_relative_path,
+    require_sha256,
+)
 from .wiki_media import contains_uri_authority_userinfo
 from .wiki_surface import WikiSurfaceError, validate_exact_page_coordinate
 
@@ -83,7 +93,6 @@ _QUALIFIED_NAME_RE = re.compile(
 _LIMITATION_RE = re.compile(
     r"^[a-z][a-z0-9.-]*(?:/[a-z][a-z0-9.-]*)?$"
 )
-_WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:/")
 _CONTROL_RE = re.compile(r"[\x00-\x1f\x7f]")
 _URI_RE = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
 
@@ -2269,20 +2278,20 @@ def _json_value(
 
 
 def _object(value: object, path: str) -> dict[str, Any]:
-    if not isinstance(value, Mapping):
-        raise KnowledgeGraphError(path, "must be an object")
-    result: dict[str, Any] = {}
-    for key, item in value.items():
-        if not isinstance(key, str):
-            raise KnowledgeGraphError(path, "object keys must be strings")
-        result[key] = item
-    return result
+    selected = require_mapping(
+        value,
+        error=KnowledgeGraphError(path, "must be an object"),
+        require_string_keys=True,
+        key_error=KnowledgeGraphError(path, "object keys must be strings"),
+    )
+    return dict(selected)
 
 
 def _array(value: object, path: str) -> list[Any]:
-    if not isinstance(value, list):
-        raise KnowledgeGraphError(path, "must be an array")
-    return value
+    return require_list(
+        value,
+        error=KnowledgeGraphError(path, "must be an array"),
+    )
 
 
 def _only_fields(
@@ -2292,24 +2301,33 @@ def _only_fields(
     *,
     required: set[str] = frozenset(),
 ) -> None:
-    unknown = sorted(set(value) - allowed)
-    if unknown:
-        raise KnowledgeGraphError(
-            f"{path}.{unknown[0]}",
-            "unknown field",
-        )
-    missing = sorted(required - set(value))
-    if missing:
-        raise KnowledgeGraphError(f"{path}.{missing[0]}", "is required")
+    return require_shared_exact_fields(
+        value,
+        allowed=allowed,
+        required=required,
+        mapping_error=KnowledgeGraphError(path, "must be an object"),
+        missing_error=lambda fields: KnowledgeGraphError(
+            f"{path}.{fields[0]}", "is required"
+        ),
+        unknown_error=lambda fields: KnowledgeGraphError(
+            f"{path}.{fields[0]}", "unknown field"
+        ),
+        unknown_first=True,
+    )
 
 
 def _enum(value: object, values: Sequence[str], path: str) -> str:
-    if not isinstance(value, str) or value not in values:
-        raise KnowledgeGraphError(
-            path,
-            f"must be one of {', '.join(repr(item) for item in values)}",
-        )
-    return value
+    error = KnowledgeGraphError(
+        path,
+        f"must be one of {', '.join(repr(item) for item in values)}",
+    )
+    return require_choice(
+        value,
+        values,
+        text_error=error,
+        choice_error=lambda _allowed: error,
+        reject_control_characters=False,
+    )
 
 
 def _relationship_kind(value: object, path: str) -> str:
@@ -2330,27 +2348,33 @@ def _open_name(value: object, path: str) -> str:
 
 
 def _name(value: object, path: str) -> str:
-    if (
-        not isinstance(value, str)
-        or not value
-        or value != value.strip()
-        or _CONTROL_RE.search(value)
-    ):
-        raise KnowledgeGraphError(
+    return require_nonempty_text(
+        value,
+        error=KnowledgeGraphError(
             path,
             "must be a non-empty normalized string without control characters",
-        )
-    return value
+        ),
+        require_trimmed=True,
+        reject_delete_character=True,
+    )
 
 
 def _relative_path(value: object, path: str) -> str:
     result = _name(value, path)
-    if "\\" in result or result.startswith("/") or _WINDOWS_ABSOLUTE_RE.match(result):
-        raise KnowledgeGraphError(path, "must be a repository-relative POSIX path")
-    parts = PurePosixPath(result).parts
-    if not parts or any(part in {"", ".", ".."} for part in parts):
-        raise KnowledgeGraphError(path, "must be a normalized relative path")
-    return PurePosixPath(*parts).as_posix()
+    return require_repository_relative_path(
+        result,
+        text_error=KnowledgeGraphError(
+            path,
+            "must be a non-empty normalized string without control characters",
+        ),
+        posix_error=KnowledgeGraphError(
+            path, "must be a repository-relative POSIX path"
+        ),
+        normalized_error=KnowledgeGraphError(
+            path, "must be a normalized relative path"
+        ),
+        normalize_posix_spelling=True,
+    )
 
 
 def _locator(value: object, path: str) -> str:
@@ -2377,9 +2401,10 @@ def _external_uri(value: object, path: str) -> str:
 
 
 def _hash(value: object, path: str) -> str:
-    if not is_valid_sha256(value):
-        raise KnowledgeGraphError(path, "must be a sha256: digest")
-    return str(value)
+    return require_sha256(
+        value,
+        digest_error=KnowledgeGraphError(path, "must be a sha256: digest"),
+    )
 
 
 def _limitation(value: object, path: str) -> str:
@@ -2390,15 +2415,15 @@ def _limitation(value: object, path: str) -> str:
 
 
 def _nonnegative_int(value: object, path: str) -> int:
-    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
-        raise KnowledgeGraphError(path, "must be a non-negative integer")
-    return value
+    return require_nonnegative_int(
+        value,
+        error=KnowledgeGraphError(path, "must be a non-negative integer"),
+    )
 
 
 def _positive_int(value: object, path: str) -> int:
-    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
-        raise KnowledgeGraphError(path, "must be a positive integer")
-    return value
+    error = KnowledgeGraphError(path, "must be a positive integer")
+    return require_positive_int(value, invalid_error=error, zero_error=error)
 
 
 __all__ = [

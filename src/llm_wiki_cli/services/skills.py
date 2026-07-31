@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from .io import read_md, write_md
+from .validation import require_safe_base_path
 
 DEFAULT_INSTALL_TARGET = Path(".claude") / "skills"
 BUNDLED_SKILLS_ROOT = Path(__file__).resolve().parents[1] / "skills"
@@ -326,5 +327,7 @@ def _parse_skill_frontmatter(content: str) -> tuple[str, str]:
 
 
 def _ensure_safe_base(path: Path) -> None:
-    if path.name in {"", ".", ".."}:
-        raise SkillsError(f"Invalid destination directory: {path}")
+    require_safe_base_path(
+        path,
+        error=SkillsError(f"Invalid destination directory: {path}"),
+    )

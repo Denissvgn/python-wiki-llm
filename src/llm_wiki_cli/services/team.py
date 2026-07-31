@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any
 from ..config import DEFAULT_WIKI_DIR
 from .io import read_md, write_json_atomic, write_md
 from .plugins import PluginError, iter_components
+from .validation import require_exact_fields, require_string_list
 
 if TYPE_CHECKING:
     from .sync_manifest import SyncManifest
@@ -97,15 +98,23 @@ def write_default_team_config(
 
 
 def _reject_unknown_keys(data: dict[str, Any], allowed: set[str], scope: str) -> None:
-    unknown = sorted(set(data) - allowed)
-    if unknown:
-        raise TeamConfigError(f"{scope} contains unknown key(s): {', '.join(unknown)}")
+    return require_exact_fields(
+        data,
+        allowed=allowed,
+        required=(),
+        mapping_error=TeamConfigError(f"{scope} must be a mapping"),
+        missing_error=lambda _fields: AssertionError("no required fields"),
+        unknown_error=lambda fields: TeamConfigError(
+            f"{scope} contains unknown key(s): {', '.join(fields)}"
+        ),
+    )
 
 
 def _ensure_string_list(value: Any, field: str) -> list[str]:
-    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
-        raise TeamConfigError(f"{field} must be a list of strings.")
-    return value
+    return require_string_list(
+        value,
+        error=TeamConfigError(f"{field} must be a list of strings."),
+    )
 
 
 def validate_team_config(data: Any) -> dict[str, Any]:
@@ -263,11 +272,11 @@ def check_plugin_requirements(
 def check_team_conventions(
     request: TeamConventionRequest,
 ) -> list[dict[str, str | None]]:
-    from ..commands.bootstrap_cmd import (
+    from .bootstrap_runtime import (
         build_entity_occurrence_page_map,
         build_module_page_map,
     )
-    from ..commands.extract_cmd import get_docker_inventory
+    from .extraction_service import get_docker_inventory
 
     wiki_path = request.wiki_path
     conventions = request.config["conventions"]
@@ -436,7 +445,7 @@ def _existing_page_entries(directory: Path, extra_key: str) -> list[dict[str, st
 
 
 def _index_content(wiki_dir: Path, inventory: dict) -> str:
-    from ..commands.bootstrap_cmd import (
+    from .bootstrap_runtime import (
         _generate_index_md,
         build_entity_occurrence_page_map,
         build_module_page_map,
@@ -500,7 +509,7 @@ def _manifest_content(
     generation_inputs: dict[str, object] | None = None,
     previous_manifest: SyncManifest | None = None,
 ) -> str:
-    from ..commands.bootstrap_cmd import (
+    from .bootstrap_runtime import (
         build_entity_occurrence_page_map,
         build_entity_page_map,
         build_module_page_map,
@@ -647,7 +656,7 @@ def _manifest_state_from_conflict(
 
 
 def _module_content(page_stem: str, inventory: dict) -> tuple[str | None, str]:
-    from ..commands.bootstrap_cmd import (
+    from .bootstrap_runtime import (
         _generate_module_md,
         build_entity_occurrence_page_map,
         build_module_page_map,
@@ -679,7 +688,7 @@ def _module_content(page_stem: str, inventory: dict) -> tuple[str | None, str]:
 
 
 def _entity_content(page_stem: str, inventory: dict) -> tuple[str | None, str]:
-    from ..commands.bootstrap_cmd import (
+    from .bootstrap_runtime import (
         _build_relationships,
         _generate_entity_md,
         build_entity_occurrence_page_map,
@@ -716,8 +725,8 @@ def _entity_content(page_stem: str, inventory: dict) -> tuple[str | None, str]:
 def _infrastructure_content(
     page_stem: str, inventory: dict, src_dir: str
 ) -> tuple[str | None, str]:
-    from ..commands.bootstrap_cmd import _generate_docker_md, build_module_page_map
-    from ..commands.extract_cmd import get_docker_inventory
+    from .bootstrap_runtime import _generate_docker_md, build_module_page_map
+    from .extraction_service import get_docker_inventory
 
     docker_inventory = get_docker_inventory(src_dir)
     matches = [
@@ -831,7 +840,7 @@ def resolve_conflicts(
     *,
     write: bool = False,
 ) -> dict[str, Any]:
-    from ..commands.extract_cmd import get_inventory
+    from .extraction_service import get_inventory
 
     wiki_path = Path(wiki_dir)
     inventory = get_inventory(src_dir, deep=True)

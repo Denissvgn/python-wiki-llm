@@ -901,6 +901,30 @@ llm-wiki docs verify --workspace ./project-docs --format json --no-advance
 `--no-advance` reports the result without advancing an eligible review run.
 Remote deployment is always a separate, explicitly authorized workflow.
 
+## Protocol versioning
+
+Shared machine-readable payload identifiers declared in
+`llm_wiki_cli.services.contracts` are registered in that module's
+`PROTOCOL_VERSIONS` tuple. Component-owned identifiers follow the same
+versioning rules below. Adding optional fields to an open record is
+backward-compatible and never bumps the protocol version. Readers of open
+records must ignore unknown fields from the same major version while
+continuing to validate fields they understand.
+
+Request, authority-bearing, and other explicitly closed records may reject
+unknown fields so misspellings or unrecognized instructions cannot be treated
+as accepted input. A closed record evolves additively through a declared
+extension container or by first publishing reader support for the new field;
+otherwise changing its accepted top-level fields requires a new major version.
+
+Renaming or removing a field, changing its meaning or type incompatibly, or
+otherwise making an existing reader misinterpret a payload requires a new
+major protocol version. Before support for an older major version is removed,
+it remains deprecated for at least one minor package release. During that
+window, writers should emit both representations where doing so is feasible;
+otherwise they must retain an explicit reader or conversion path and document
+the handoff.
+
 ## Python lifecycle API
 
 The supported API mirrors the CLI without `argparse`, console scraping, or
@@ -1048,13 +1072,17 @@ The supported API also exports the lifecycle protocol constants
 `DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION`, so hosts do not need to duplicate
 version strings when accepting packets, results, verification evidence, or the
 final report.
-Lifecycle failures use typed `DocumentationRunError`,
-`DocumentationSchemaError`, `DocumentationTransitionError`, and
-`DocumentationIntegrityError` exceptions. Preparation may also surface
-`DocumentationPolicyError`, `BootstrapServiceError`, or
-`DocumentationWikiInputError` from its deterministic policy, bootstrap, and
-import boundaries. Model selection uses `DocumentationModelPolicyError`. These
-public base errors are exported from `llm_wiki_cli.api`.
+Supported API entry points translate lifecycle implementation failures into
+the stable `LlmWikiApiError` taxonomy. Invalid policy, path, query, model, and
+submitted-schema input raises `InvalidRequestError`; unavailable bootstrap,
+ordinary source/input, or documentation-workspace operations raise
+`WorkspaceStateError`; and missing or corrupt protected
+calibration/controller state, corrupt persisted documentation-run schemas,
+plus hash, metadata, native-artifact, or recovery mismatches raise
+`ArtifactIntegrityError`. The original implementation exception is retained
+as `__cause__`. Internal lifecycle exception classes remain exported for
+contract and compatibility references, but callers should catch the three
+stable API categories.
 
 ## Resume and troubleshooting
 

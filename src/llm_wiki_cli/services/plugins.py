@@ -18,6 +18,11 @@ from typing import Any
 
 from .. import __version__
 from ..config import EXTRACTOR_REGISTRY
+from .validation import (
+    path_is_within as shared_path_is_within,
+    require_existing_file,
+    resolve_portable_workspace_path,
+)
 
 MANIFEST_FILENAME = "llm-wiki-plugin.json"
 PLUGIN_HOME = ".llm-wiki"
@@ -195,11 +200,7 @@ def _version_satisfies(current: str, requirement: str) -> bool:
 
 
 def _is_relative_to(path: Path, root: Path) -> bool:
-    try:
-        path.relative_to(root)
-    except ValueError:
-        return False
-    return True
+    return shared_path_is_within(path, root)
 
 
 def _entry_point_module_source(plugin_dir: Path, module: str) -> Path | None:
@@ -246,20 +247,20 @@ def _ensure_entry_point(
 
 
 def _safe_component_path(plugin_dir: Path, value: Any, field: str) -> str:
-    if not isinstance(value, str) or not value:
-        raise PluginError(f"{field} must be a relative file path.")
-    rel = Path(value)
-    if rel.is_absolute():
-        raise PluginError(f"{field} must be relative to the plugin directory.")
-    candidate = (plugin_dir / rel).resolve()
-    root = plugin_dir.resolve()
-    try:
-        candidate.relative_to(root)
-    except ValueError as exc:
-        raise PluginError(f"{field} escapes the plugin directory: {value}") from exc
-    if not candidate.is_file():
-        raise PluginError(f"{field} does not exist: {value}")
-    return candidate.relative_to(root).as_posix()
+    return require_existing_file(
+        resolve_portable_workspace_path(
+            plugin_dir,
+            value,  # type: ignore[arg-type]
+            path_error=PluginError(f"{field} must be a relative file path."),
+            escape_error=PluginError(
+                f"{field} must be relative to the plugin directory."
+            ),
+            traversal_error=PluginError(
+                f"{field} escapes the plugin directory: {value}"
+            ),
+        ),
+        error=PluginError(f"{field} does not exist: {value}"),
+    ).relative_to(plugin_dir.resolve()).as_posix()
 
 
 def _normalize_component(plugin_dir: Path, raw: Any) -> dict[str, Any]:

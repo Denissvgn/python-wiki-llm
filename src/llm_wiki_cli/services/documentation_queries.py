@@ -39,9 +39,12 @@ from .knowledge_graph import (
 from .knowledge_governance import GOVERNANCE_EXTENSION_KEY
 from .knowledge_model import knowledge_index_to_payload
 from .relationships import build_entity_relationship_summaries
+from .validation import (
+    normalize_legacy_portable_relative_path,
+    require_nonempty_text,
+)
 
 _DEFAULT_LIMIT = 20
-_WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:/")
 _QUALIFIED_NAME_RE = re.compile(
     r"^[A-Za-z][A-Za-z0-9._-]*/[A-Za-z][A-Za-z0-9._-]*$"
 )
@@ -136,39 +139,47 @@ def _jsonable_mapping_list(values: Iterable[Mapping[str, Any]]) -> list[dict[str
 
 
 def _require_query(value: object, field: str) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise DocumentationQueryError(f"{field} must be a non-empty string.")
-    return value.strip()
+    """Retain query-request whitespace normalization for API compatibility."""
+
+    return require_nonempty_text(
+        value,
+        error=DocumentationQueryError(f"{field} must be a non-empty string."),
+        normalize=True,
+        reject_control_characters=False,
+    )
 
 
 def _normalise_source_path(
     value: object, *, field: str, required: bool
 ) -> Optional[str]:
-    if not isinstance(value, str) or not value.strip():
-        if required:
-            raise DocumentationQueryError(f"{field} must be a non-empty string.")
-        return None
-
-    raw = value.strip().replace("\\", "/")
-    if raw.startswith("/") or _WINDOWS_ABSOLUTE_RE.match(raw):
-        if required:
-            raise DocumentationQueryError(f"{field} must be a relative source path.")
-        return None
-
-    path = PurePosixPath(raw)
-    if ".." in path.parts:
-        if required:
-            raise DocumentationQueryError(f"{field} must not contain '..'.")
-        return None
-
-    normalised = path.as_posix()
-    while normalised.startswith("./"):
-        normalised = normalised[2:]
-    if not normalised or normalised == ".":
-        if required:
-            raise DocumentationQueryError(f"{field} must be a source file path.")
-        return None
-    return normalised
+    return normalize_legacy_portable_relative_path(
+        value,
+        text_error=(
+            DocumentationQueryError(f"{field} must be a non-empty string.")
+            if required
+            else None
+        ),
+        absolute_error=(
+            DocumentationQueryError(f"{field} must be a relative source path.")
+            if required
+            else None
+        ),
+        traversal_error=(
+            DocumentationQueryError(f"{field} must not contain '..'.")
+            if required
+            else None
+        ),
+        empty_error=(
+            DocumentationQueryError(f"{field} must be a source file path.")
+            if required
+            else None
+        ),
+        invalid_error=(
+            DocumentationQueryError(f"{field} must be a relative source path.")
+            if required
+            else None
+        ),
+    )
 
 
 def _module_name(filepath: Optional[str]) -> Optional[str]:

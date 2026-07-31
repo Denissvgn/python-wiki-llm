@@ -63,6 +63,15 @@ from .knowledge_model import (
     KnowledgeIndex,
     Lifecycle,
 )
+from .validation import (
+    require_exact_fields as require_shared_exact_fields,
+    require_list,
+    require_mapping,
+    require_no_control_characters,
+    require_nonnegative_int,
+    require_repository_relative_path,
+    require_sha256,
+)
 from .wiki_media import contains_uri_authority_userinfo
 
 GOVERNANCE_FILENAME = ".llm-wiki-governance.json"
@@ -2532,9 +2541,10 @@ def _event_limit(value: object) -> int:
 
 
 def _nonnegative_int(value: object, path: str) -> int:
-    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
-        raise GovernanceError(path, "must be a non-negative integer")
-    return value
+    return require_nonnegative_int(
+        value,
+        error=GovernanceError(path, "must be a non-negative integer"),
+    )
 
 
 def _parse_lifecycle_event(event_id: str, value: object) -> LifecycleEvent:
@@ -3106,20 +3116,20 @@ def _actor(value: GovernanceActor, path: str) -> GovernanceActor:
 
 
 def _object(value: object, path: str) -> dict[str, object]:
-    if not isinstance(value, Mapping):
-        raise GovernanceError(path, "must be an object")
-    result: dict[str, object] = {}
-    for key, item in value.items():
-        if not isinstance(key, str):
-            raise GovernanceError(path, "must use string keys")
-        result[key] = item
-    return result
+    selected = require_mapping(
+        value,
+        error=GovernanceError(path, "must be an object"),
+        require_string_keys=True,
+        key_error=GovernanceError(path, "must use string keys"),
+    )
+    return dict(selected)
 
 
 def _array(value: object, path: str) -> list[object]:
-    if not isinstance(value, list):
-        raise GovernanceError(path, "must be an array")
-    return value
+    return require_list(
+        value,
+        error=GovernanceError(path, "must be an array"),
+    )
 
 
 def _exact_fields(
@@ -3129,12 +3139,18 @@ def _exact_fields(
     *,
     optional: set[str] = frozenset(),
 ) -> None:
-    missing = required - set(value)
-    if missing:
-        raise GovernanceError(f"{path}.{min(missing)}", "is required")
-    unknown = set(value) - required - optional
-    if unknown:
-        raise GovernanceError(f"{path}.{min(unknown)}", "is not supported")
+    return require_shared_exact_fields(
+        value,
+        allowed=required | optional,
+        required=required,
+        mapping_error=GovernanceError(path, "must be an object"),
+        missing_error=lambda fields: GovernanceError(
+            f"{path}.{fields[0]}", "is required"
+        ),
+        unknown_error=lambda fields: GovernanceError(
+            f"{path}.{fields[0]}", "is not supported"
+        ),
+    )
 
 
 def _safe_id(value: object, path: str) -> str:
@@ -3203,8 +3219,13 @@ def _safe_name(
 
 
 def _safe_text(value: str, path: str) -> None:
-    if _CONTROL_RE.search(value):
-        raise GovernanceError(path, "must not contain control characters")
+    """Apply credential, URI-userinfo, and absolute-path domain safeguards."""
+
+    require_no_control_characters(
+        value,
+        error=GovernanceError(path, "must not contain control characters"),
+        reject_delete_character=True,
+    )
     if _SENSITIVE_RE.search(value):
         raise GovernanceError(path, "must not contain credential-like fields")
     if contains_uri_authority_userinfo(value):
@@ -3259,20 +3280,25 @@ def _identity_ownership_key(alias_type: str, value: str) -> str:
 
 
 def _relative_path(value: object, path: str) -> str:
-    if (
-        not isinstance(value, str)
-        or not value
-        or value.startswith("/")
-        or _WINDOWS_ABSOLUTE_RE.match(value)
-        or "\\" in value
-        or value != value.strip()
-    ):
-        raise GovernanceError(path, "must be a repository-relative POSIX path")
-    parts = value.split("/")
-    if any(part in {"", ".", ".."} for part in parts):
-        raise GovernanceError(path, "must be a normalized relative path")
-    _safe_text(value, path)
-    return value
+    result = require_repository_relative_path(
+        value,
+        text_error=GovernanceError(
+            path, "must be a repository-relative POSIX path"
+        ),
+        posix_error=GovernanceError(
+            path, "must be a repository-relative POSIX path"
+        ),
+        normalized_error=GovernanceError(
+            path, "must be a normalized relative path"
+        ),
+        control_error=GovernanceError(
+            path, "must not contain control characters"
+        ),
+        reject_delete_character=True,
+        control_after_normalization=True,
+    )
+    _safe_text(result, path)
+    return result
 
 
 def _section_locator(value: object, path: str) -> str:
@@ -3292,10 +3318,10 @@ def _section_locator(value: object, path: str) -> str:
 
 
 def _hash(value: object, path: str) -> str:
-    if not is_valid_sha256(value):
-        raise GovernanceError(path, "must be a canonical SHA-256 value")
-    assert isinstance(value, str)
-    return value
+    return require_sha256(
+        value,
+        digest_error=GovernanceError(path, "must be a canonical SHA-256 value"),
+    )
 
 
 def _existing_uid(

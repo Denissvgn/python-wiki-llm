@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import math
 import os
-import posixpath
 import re
 import subprocess
 from collections.abc import Iterable, Mapping, Sequence
@@ -44,6 +43,7 @@ from .knowledge_model import (
     WorkingTreeState,
     knowledge_index_to_payload,
 )
+from .validation import require_repository_relative_path
 
 EVALUATED_ENVELOPE_VERSION = "llm-wiki-evaluated-envelope/v1"
 INVENTORY_HASH_EXTENSION = "llm-wiki/inventory-hash"
@@ -1217,32 +1217,18 @@ def _normalized_remote_identity(host: str, raw_path: str) -> str | None:
 
 
 def _repository_relative_path(value: object, field_name: str) -> str:
-    if not isinstance(value, str) or not value:
-        raise KnowledgeEnvelopeError(
-            field_name,
-            "must be a non-empty repository-relative path",
-        )
-    if (
-        value != value.strip()
-        or any(ord(char) < 0x20 for char in value)
-        or value.startswith("/")
-        or _WINDOWS_DRIVE_PREFIX_RE.match(value)
-        or "\\" in value
-    ):
-        raise KnowledgeEnvelopeError(
-            field_name,
-            "must be a repository-relative POSIX path",
-        )
-    parts = value.split("/")
-    if (
-        any(part in {"", ".", ".."} for part in parts)
-        or posixpath.normpath(value) != value
-    ):
-        raise KnowledgeEnvelopeError(
-            field_name,
-            "must be a normalized repository-relative path",
-        )
-    return value
+    return require_repository_relative_path(
+        value,
+        text_error=KnowledgeEnvelopeError(
+            field_name, "must be a non-empty repository-relative path"
+        ),
+        posix_error=KnowledgeEnvelopeError(
+            field_name, "must be a repository-relative POSIX path"
+        ),
+        normalized_error=KnowledgeEnvelopeError(
+            field_name, "must be a normalized repository-relative path"
+        ),
+    )
 
 
 def _canonical_consumed_input_kind(

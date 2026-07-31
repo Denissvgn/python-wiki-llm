@@ -20,11 +20,9 @@ import ctypes
 import errno
 import json
 import os
-import re
 import stat
 import sys
 import threading
-import unicodedata
 import uuid
 from contextlib import contextmanager
 from pathlib import Path, PurePosixPath
@@ -46,6 +44,11 @@ from .filesystem_guard import (
     verify_windows_restrictive_dacl,
     windows_current_user_sid,
 )
+from .validation import (
+    portable_path_key,
+    require_portable_path_component,
+    require_portable_relative_path,
+)
 
 
 DEFAULT_MAX_ARTIFACT_BYTES = 16 * 1024 * 1024
@@ -54,15 +57,6 @@ ROOT_LOCK_FILENAME = "controller.lock"
 
 _LOCK_SIZE = 1
 _LOCK_OPEN_ATTEMPTS = 8
-_WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:[/\\]")
-_WINDOWS_RESERVED_NAMES = frozenset(
-    {"con", "prn", "aux", "nul"}
-    | {f"com{number}" for number in range(1, 10)}
-    | {f"lpt{number}" for number in range(1, 10)}
-    | {f"com{number}" for number in ("¹", "²", "³")}
-    | {f"lpt{number}" for number in ("¹", "²", "³")}
-)
-_WINDOWS_FORBIDDEN_PATH_CHARS = frozenset('<>:"|?*')
 _TEMP_SUFFIX = ".protected-tmp"
 _DARWIN_ACL_TYPE_EXTENDED = 0x00000100
 _DESCRIPTOR_RELATIVE_IO_AVAILABLE = (
@@ -98,7 +92,9 @@ class ProtectedArtifactDurabilityError(ProtectedArtifactError):
     """Raised when committed filesystem metadata cannot be made durable."""
 
 
-def validate_portable_relative_path(relative: str | Path) -> str:
+def validate_portable_relative_path(
+    relative: str | Path, *, normalize_backslashes: bool = True
+) -> str:
     """Return one normalized portable path or reject it.
 
     Artifact paths use ``/`` as their canonical separator.  Backslashes are
@@ -108,26 +104,24 @@ def validate_portable_relative_path(relative: str | Path) -> str:
     """
 
     raw = os.fspath(relative)
-    if not isinstance(raw, str):
-        raise ProtectedArtifactIntegrityError("Artifact paths must be text.")
-    normalized = raw.replace("\\", "/")
-    path = PurePosixPath(normalized)
-    if (
-        not normalized
-        or normalized in {".", ".."}
-        or normalized != normalized.strip()
-        or path.is_absolute()
-        or _WINDOWS_ABSOLUTE_RE.match(raw)
-        or "." in path.parts
-        or ".." in path.parts
-        or path.as_posix() != normalized
-    ):
-        raise ProtectedArtifactIntegrityError(
+    context = raw.replace("\\", "/") if isinstance(raw, str) else raw
+    return require_portable_relative_path(
+        raw,
+        normalize_backslashes=normalize_backslashes,
+        text_error=ProtectedArtifactIntegrityError("Artifact paths must be text."),
+        relative_error=ProtectedArtifactIntegrityError(
             f"Artifact path must be a non-empty portable relative path: {raw!r}"
-        )
-    for component in path.parts:
-        _validate_portable_component(component, context=normalized)
-    return path.as_posix()
+        ),
+        non_nfc_error=ProtectedArtifactIntegrityError(
+            f"Artifact path is not NFC-normalized: {context!r}"
+        ),
+        nonportable_error=ProtectedArtifactIntegrityError(
+            f"Artifact path is not portable across supported systems: {context!r}"
+        ),
+        reserved_error=ProtectedArtifactIntegrityError(
+            f"Artifact path uses a reserved Windows name: {context!r}"
+        ),
+    )
 
 
 def canonical_json_bytes(payload: Mapping[str, Any]) -> bytes:
@@ -1508,25 +1502,23 @@ def _file_identity(payload: os.stat_result) -> tuple[int, int, int, int]:
 
 
 def _validate_portable_component(component: str, *, context: str) -> None:
-    if component != unicodedata.normalize("NFC", component):
-        raise ProtectedArtifactIntegrityError(
+    require_portable_path_component(
+        component,
+        context=context,
+        non_nfc_error=ProtectedArtifactIntegrityError(
             f"Artifact path is not NFC-normalized: {context!r}"
-        )
-    if component.endswith((" ", ".")) or any(
-        character in _WINDOWS_FORBIDDEN_PATH_CHARS or ord(character) < 32
-        for character in component
-    ):
-        raise ProtectedArtifactIntegrityError(
+        ),
+        nonportable_error=ProtectedArtifactIntegrityError(
             f"Artifact path is not portable across supported systems: {context!r}"
-        )
-    if component.split(".", 1)[0].casefold() in _WINDOWS_RESERVED_NAMES:
-        raise ProtectedArtifactIntegrityError(
+        ),
+        reserved_error=ProtectedArtifactIntegrityError(
             f"Artifact path uses a reserved Windows name: {context!r}"
-        )
+        ),
+    )
 
 
 def _portable_name_key(name: str) -> str:
-    return unicodedata.normalize("NFC", name).casefold()
+    return portable_path_key(name)
 
 
 def _assert_portable_entry_names(names: Iterator[str] | Sequence[str]) -> None:

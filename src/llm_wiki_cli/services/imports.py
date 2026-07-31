@@ -9,6 +9,10 @@ from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING
 
 from ..config import is_agent_worktree_path
+from .validation import (
+    path_is_under as shared_path_is_under,
+    path_is_under_scope as shared_path_is_under_scope,
+)
 
 if TYPE_CHECKING:
     from .source_snapshot import SourceSnapshot
@@ -472,14 +476,11 @@ def _go_package_dir_for_module(module: str, scope: _GoModuleScope) -> str:
 
 
 def _path_under(path: str, prefix: str) -> bool:
-    return bool(prefix) and (path == prefix or path.startswith(prefix + "/"))
+    return shared_path_is_under(path, prefix)
 
 
 def _path_under_scope(path: str, scope_root: str) -> bool:
-    normalized = path.replace("\\", "/").strip("/")
-    if not scope_root:
-        return True
-    return normalized == scope_root or normalized.startswith(scope_root + "/")
+    return shared_path_is_under_scope(path, scope_root)
 
 
 _TS_CONFIG_EXCLUDED_DIRS: frozenset[str] = frozenset(

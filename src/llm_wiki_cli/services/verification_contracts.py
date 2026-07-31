@@ -40,6 +40,15 @@ from .knowledge_model import (
     knowledge_index_to_payload,
     parse_knowledge_index,
 )
+from .validation import (
+    require_exact_fields as require_shared_exact_fields,
+    require_bounded_text,
+    require_list,
+    require_mapping,
+    require_nonnegative_int,
+    require_sha256,
+    require_string,
+)
 
 VERIFICATION_RECEIPT_FILENAME = ".llm-wiki-verification.json"
 
@@ -1404,25 +1413,23 @@ def _portable_text(
     *,
     maximum: int,
 ) -> str:
-    if (
-        not isinstance(value, str)
-        or not value
-        or value != value.strip()
-        or len(value) > maximum
-        or any(ord(character) < 0x20 or ord(character) == 0x7F for character in value)
-    ):
-        raise VerificationContractError(
+    return require_bounded_text(
+        value,
+        maximum=maximum,
+        require_trimmed=True,
+        error=VerificationContractError(
             f"{field_name} must be bounded non-control text"
-        )
-    return value
+        ),
+    )
 
 
 def _sha256(value: object, field_name: str) -> str:
-    if not is_valid_sha256(value):
-        raise VerificationContractError(
+    return require_sha256(
+        value,
+        digest_error=VerificationContractError(
             f"{field_name} must be a canonical lowercase SHA-256 value"
-        )
-    return value
+        ),
+    )
 
 
 def _receipt_hash(value: object, field_name: str) -> str:
@@ -1433,32 +1440,36 @@ def _receipt_hash(value: object, field_name: str) -> str:
 
 
 def _object(value: object, field_name: str) -> Mapping[str, object]:
-    if not isinstance(value, Mapping):
-        raise VerificationReceiptError(field_name, "must be an object")
-    if any(not isinstance(key, str) for key in value):
-        raise VerificationReceiptError(field_name, "must use string keys")
-    return value
+    return require_mapping(
+        value,
+        error=VerificationReceiptError(field_name, "must be an object"),
+        require_string_keys=True,
+        key_error=VerificationReceiptError(field_name, "must use string keys"),
+    )
 
 
 def _array(value: object, field_name: str) -> list[object]:
-    if not isinstance(value, list):
-        raise VerificationReceiptError(field_name, "must be an array")
-    return value
+    return require_list(
+        value,
+        error=VerificationReceiptError(field_name, "must be an array"),
+    )
 
 
 def _string(value: object, field_name: str) -> str:
-    if not isinstance(value, str):
-        raise VerificationReceiptError(field_name, "must be a string")
-    return value
+    return require_string(
+        value,
+        error=VerificationReceiptError(field_name, "must be a string"),
+    )
 
 
 def _nonnegative_int(value: object, field_name: str) -> int:
-    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
-        raise VerificationReceiptError(
+    return require_nonnegative_int(
+        value,
+        error=VerificationReceiptError(
             field_name,
             "must be a non-negative integer",
-        )
-    return value
+        ),
+    )
 
 
 def _exact_fields(
@@ -1469,20 +1480,18 @@ def _exact_fields(
     optional: set[str] | None = None,
 ) -> None:
     optional = optional or set()
-    missing = required - set(value)
-    if missing:
-        name = min(missing)
-        raise VerificationReceiptError(
-            f"{field_name}.{name}",
-            "is required",
-        )
-    unknown = set(value) - required - optional
-    if unknown:
-        name = min(unknown)
-        raise VerificationReceiptError(
-            f"{field_name}.{name}",
-            "is not supported",
-        )
+    return require_shared_exact_fields(
+        value,
+        allowed=required | optional,
+        required=required,
+        mapping_error=VerificationReceiptError(field_name, "must be an object"),
+        missing_error=lambda fields: VerificationReceiptError(
+            f"{field_name}.{fields[0]}", "is required"
+        ),
+        unknown_error=lambda fields: VerificationReceiptError(
+            f"{field_name}.{fields[0]}", "is not supported"
+        ),
+    )
 
 
 _CHECKER_REGISTRY: Mapping[str, CheckerContract] = MappingProxyType(

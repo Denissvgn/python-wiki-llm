@@ -10,17 +10,29 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-import posixpath
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from .validation import (
+    require_bool,
+    require_list,
+    require_mapping,
+    require_mapping_list,
+    require_member,
+    require_nonempty_text,
+    require_positive_int,
+    require_repository_relative_path,
+    require_sha256,
+    require_string,
+    require_string_list,
+)
+
 SHA256_PATTERN = r"^sha256:[0-9a-f]{64}$"
 
 _SHA256_RE = re.compile(SHA256_PATTERN)
-_WINDOWS_DRIVE_PREFIX_RE = re.compile(r"^[A-Za-z]:")
 _COMPONENT_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]*$")
 _UNKNOWN_REASON_RE = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$")
 
@@ -555,17 +567,18 @@ def _record_array(
 
 
 def _json_array(file_data: Mapping[str, Any], field: str) -> list[Any]:
-    value = file_data.get(field, [])
-    if not isinstance(value, list):
-        raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
-    return value
+    return require_list(
+        file_data.get(field, []),
+        error=_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY),
+    )
 
 
 def _record_name(record: Mapping[str, Any]) -> str:
-    name = record.get("name")
-    if not isinstance(name, str) or not name:
-        raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
-    return name
+    return require_nonempty_text(
+        record.get("name"),
+        error=_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY),
+        reject_control_characters=False,
+    )
 
 
 def _validate_module_entity_record(record: Mapping[str, Any]) -> None:
@@ -665,21 +678,31 @@ def _validate_optional_strings(
     record: Mapping[str, Any],
     fields: tuple[str, ...],
 ) -> None:
-    if any(field in record and not isinstance(record[field], str) for field in fields):
-        raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
+    for field in fields:
+        if field in record:
+            require_string(
+                record[field],
+                error=_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY),
+            )
 
 
 def _validate_optional_booleans(
     record: Mapping[str, Any],
     fields: tuple[str, ...],
 ) -> None:
-    if any(field in record and not isinstance(record[field], bool) for field in fields):
-        raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
+    for field in fields:
+        if field in record:
+            require_bool(
+                record[field],
+                error=_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY),
+            )
 
 
 def _validate_string_array(value: list[Any]) -> None:
-    if not all(isinstance(item, str) for item in value):
-        raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
+    require_string_list(
+        value,
+        error=_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY),
+    )
 
 
 def _validate_optional_string_array(
@@ -688,18 +711,21 @@ def _validate_optional_string_array(
 ) -> None:
     if field not in record:
         return
-    value = record[field]
-    if not isinstance(value, list):
-        raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
-    _validate_string_array(value)
+    require_string_list(
+        record[field],
+        error=_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY),
+    )
 
 
 def _validate_optional_json_array(
     record: Mapping[str, Any],
     field: str,
 ) -> None:
-    if field in record and not isinstance(record[field], list):
-        raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
+    if field in record:
+        require_list(
+            record[field],
+            error=_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY),
+        )
 
 
 def _optional_record_array(
@@ -708,12 +734,10 @@ def _optional_record_array(
 ) -> list[Mapping[str, Any]]:
     if field not in record:
         return []
-    value = record[field]
-    if not isinstance(value, list) or not all(
-        isinstance(item, Mapping) for item in value
-    ):
-        raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
-    return value
+    return require_mapping_list(
+        record[field],
+        error=_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY),
+    )
 
 
 def _validate_optional_record_array(
@@ -729,10 +753,10 @@ def _validate_optional_mapping(
 ) -> Mapping[str, Any] | None:
     if field not in record:
         return None
-    value = record[field]
-    if not isinstance(value, Mapping):
-        raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
-    return value
+    return require_mapping(
+        record[field],
+        error=_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY),
+    )
 
 
 def _copy_selected_fields(
@@ -824,62 +848,71 @@ def _validate_basis_inputs(
 
 
 def _validate_inventory_complete(inventory_complete: object) -> None:
-    if not isinstance(inventory_complete, bool):
-        raise TypeError("inventory_complete must be a boolean")
+    require_bool(
+        inventory_complete,
+        error=TypeError("inventory_complete must be a boolean"),
+    )
 
 
 def _validate_scope(scope: object) -> None:
-    if scope not in {
-        MODULE_OBSERVATION_SCOPE,
-        ENTITY_OBSERVATION_SCOPE,
-        INFRASTRUCTURE_OBSERVATION_SCOPE,
-    }:
-        raise ValueError("scope must be 'module', 'entity', or 'infrastructure'")
+    require_member(
+        scope,
+        {
+            MODULE_OBSERVATION_SCOPE,
+            ENTITY_OBSERVATION_SCOPE,
+            INFRASTRUCTURE_OBSERVATION_SCOPE,
+        },
+        error=ValueError(
+            "scope must be 'module', 'entity', or 'infrastructure'"
+        ),
+    )
 
 
 def _validate_source_path(source_path: object) -> None:
-    if not isinstance(source_path, str) or not source_path:
-        raise ValueError("source_path must be a non-empty repository-relative path")
-    if (
-        source_path != source_path.strip()
-        or any(ord(char) < 0x20 for char in source_path)
-        or source_path.startswith("/")
-        or _WINDOWS_DRIVE_PREFIX_RE.match(source_path)
-        or "\\" in source_path
-    ):
-        raise ValueError("source_path must be a repository-relative POSIX path")
-    parts = source_path.split("/")
-    if (
-        any(part in {"", ".", ".."} for part in parts)
-        or posixpath.normpath(source_path) != source_path
-    ):
-        raise ValueError("source_path must be a normalized repository-relative path")
+    require_repository_relative_path(
+        source_path,
+        text_error=ValueError(
+            "source_path must be a non-empty repository-relative path"
+        ),
+        posix_error=ValueError(
+            "source_path must be a repository-relative POSIX path"
+        ),
+        normalized_error=ValueError(
+            "source_path must be a normalized repository-relative path"
+        ),
+    )
 
 
 def _validate_extractor_ref(extractor_ref: object) -> None:
-    if (
-        not isinstance(extractor_ref, str)
-        or _COMPONENT_ID_RE.fullmatch(extractor_ref) is None
-    ):
+    parsed = require_string(
+        extractor_ref,
+        error=ValueError(
+            "extractor_ref must be a normalized producer component ID"
+        ),
+    )
+    if _COMPONENT_ID_RE.fullmatch(parsed) is None:
         raise ValueError("extractor_ref must be a normalized producer component ID")
 
 
 def _validate_hash(value: object, field: str) -> None:
-    if not is_valid_sha256(value):
-        raise ValueError(
+    require_sha256(
+        value,
+        digest_error=ValueError(
             f"{field} must be 'sha256:' followed by 64 lowercase hexadecimal digits"
-        )
+        ),
+    )
 
 
 def _validate_entity_coordinate(entity_name: object, occurrence: object) -> None:
-    if not isinstance(entity_name, str) or not entity_name:
-        raise ValueError("entity_name must be a non-empty string")
-    if (
-        isinstance(occurrence, bool)
-        or not isinstance(occurrence, int)
-        or occurrence < 1
-    ):
-        raise ValueError("occurrence must be a positive integer")
+    require_nonempty_text(
+        entity_name,
+        error=ValueError("entity_name must be a non-empty string"),
+        reject_control_characters=False,
+    )
+    require_positive_int(
+        occurrence,
+        invalid_error=ValueError("occurrence must be a positive integer"),
+    )
 
 
 def without_line_metadata(value: Any) -> Any:

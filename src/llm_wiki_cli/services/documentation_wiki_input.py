@@ -14,7 +14,6 @@ import os
 import re
 import shutil
 import stat
-import unicodedata
 from contextlib import ExitStack, contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
@@ -61,6 +60,12 @@ from .wiki_surface_index import (
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,
 )
 from .wiki_surface import is_safe_page_id, iter_page_kinds
+from .validation import (
+    is_portable_relative_path,
+    path_is_within as shared_path_is_within,
+    paths_overlap as shared_paths_overlap,
+    require_portable_relative_path,
+)
 
 
 MANIFEST_FILENAME = ".llm-wiki-manifest.json"
@@ -951,15 +956,11 @@ def _validate_root_isolation(
 
 
 def _paths_overlap(left: Path, right: Path) -> bool:
-    return _is_relative_to(left, right) or _is_relative_to(right, left)
+    return shared_paths_overlap(left, right)
 
 
 def _is_relative_to(path: Path, root: Path) -> bool:
-    try:
-        path.relative_to(root)
-    except ValueError:
-        return False
-    return True
+    return shared_path_is_within(path, root)
 
 
 def _supports_secure_input_fd_traversal() -> bool:
@@ -1886,45 +1887,48 @@ def _open_input_entry(entry: _InputFile):
 def _validate_portable_relative_path(
     relative: PurePosixPath, seen: dict[str, str]
 ) -> None:
-    if relative.is_absolute() or ".." in relative.parts:
-        raise DocumentationWikiInputError(
-            f"Wiki entry escapes its root: {relative.as_posix()}",
+    rendered = relative.as_posix()
+    require_portable_relative_path(
+        rendered,
+        escape_error=DocumentationWikiInputError(
+            f"Wiki entry escapes its root: {rendered}",
             category="path_escape",
-            path=relative.as_posix(),
-        )
-    for component in relative.parts:
-        if component in {"", ".", ".."}:
-            raise DocumentationWikiInputError(
-                f"Invalid wiki path component in {relative.as_posix()!r}.",
-                category="nonportable_path",
-                path=relative.as_posix(),
-            )
-        if component.endswith((" ", ".")) or any(
-            char in _WINDOWS_FORBIDDEN_CHARS or ord(char) < 32 for char in component
-        ):
-            raise DocumentationWikiInputError(
-                f"Wiki path is not portable across supported systems: {relative.as_posix()}",
-                category="nonportable_path",
-                path=relative.as_posix(),
-            )
-        stem = component.split(".", 1)[0].casefold()
-        if stem in _WINDOWS_RESERVED_NAMES:
-            raise DocumentationWikiInputError(
-                f"Wiki path uses a reserved Windows name: {relative.as_posix()}",
-                category="nonportable_path",
-                path=relative.as_posix(),
-            )
-
-    portable_key = unicodedata.normalize("NFC", relative.as_posix()).casefold()
-    previous = seen.setdefault(portable_key, relative.as_posix())
-    if previous != relative.as_posix():
-        raise DocumentationWikiInputError(
+            path=rendered,
+        ),
+        relative_error=DocumentationWikiInputError(
+            f"Invalid wiki path component in {rendered!r}.",
+            category="nonportable_path",
+            path=rendered,
+        ),
+        separator_error=DocumentationWikiInputError(
+            f"Wiki path is not portable across supported systems: {rendered}",
+            category="nonportable_path",
+            path=rendered,
+        ),
+        non_nfc_error=DocumentationWikiInputError(
+            f"Wiki path is not NFC-normalized: {rendered}",
+            category="nonportable_path",
+            path=rendered,
+        ),
+        nonportable_error=DocumentationWikiInputError(
+            f"Wiki path is not portable across supported systems: {rendered}",
+            category="nonportable_path",
+            path=rendered,
+        ),
+        reserved_error=DocumentationWikiInputError(
+            f"Wiki path uses a reserved Windows name: {rendered}",
+            category="nonportable_path",
+            path=rendered,
+        ),
+        collision_seen=seen,
+        collision_error=lambda previous, current: DocumentationWikiInputError(
             "Wiki paths collide on a case-insensitive or Unicode-normalizing "
-            f"filesystem: {previous!r} and {relative.as_posix()!r}",
+            f"filesystem: {previous!r} and {current!r}",
             category="nonportable_path_collision",
-            path=relative.as_posix(),
-            rejected_entries=(previous, relative.as_posix()),
-        )
+            path=current,
+            rejected_entries=(previous, current),
+        ),
+    )
 
 
 def _is_reparse_point(entry_stat: os.stat_result) -> bool:
@@ -2384,7 +2388,7 @@ def _validate_generation_inputs(generation_inputs: Mapping[str, Any]) -> None:
         )
 
     openapi_path = openapi["path"]
-    if not isinstance(openapi_path, str) or not _is_portable_source_relative_path(
+    if not isinstance(openapi_path, str) or not _is_safe_posix_relative(
         openapi_path
     ):
         raise DocumentationWikiInputError(
@@ -2642,26 +2646,7 @@ def _validate_surface_index(
 
 
 def _is_safe_posix_relative(value: str) -> bool:
-    if not value or "\\" in value or "\x00" in value:
-        return False
-    path = PurePosixPath(value)
-    return not path.is_absolute() and ".." not in path.parts and "." not in path.parts
-
-
-def _is_portable_source_relative_path(value: str) -> bool:
-    raw_components = value.split("/")
-    if not _is_safe_posix_relative(value) or any(
-        component in {"", ".", ".."} for component in raw_components
-    ):
-        return False
-    for component in raw_components:
-        if component.endswith((" ", ".")) or any(
-            char in _WINDOWS_FORBIDDEN_CHARS or ord(char) < 32 for char in component
-        ):
-            return False
-        if component.split(".", 1)[0].casefold() in _WINDOWS_RESERVED_NAMES:
-            return False
-    return True
+    return is_portable_relative_path(value)
 
 
 def _is_sha256(value: object) -> bool:

@@ -26,6 +26,13 @@ from .contracts import (
     P0_CALIBRATION_VERDICT_SCHEMA_VERSION,
     P0_FLOW_CENSUS_SCHEMA_VERSION,
 )
+from .validation import (
+    bool_or_none,
+    filtered_trimmed_text_list,
+    nonnegative_int_or_none,
+    normalize_optional_portable_relative_path,
+    trimmed_text_or_none,
+)
 from .wiki_surface import is_safe_page_id
 from .wiki_surface_index import SURFACE_INDEX_FILENAME
 
@@ -938,17 +945,9 @@ def _required_flow_id(raw: Mapping[str, Any]) -> str:
 
 
 def _portable_relative_path(value: object) -> Optional[str]:
-    if not isinstance(value, str) or not value.strip():
-        return None
-    raw = value.strip().replace("\\", "/")
-    if raw.startswith("/") or re.match(r"^[A-Za-z]:/", raw):
-        return None
-    while raw.startswith("./"):
-        raw = raw[2:]
-    path = PurePosixPath(raw)
-    if not path.parts or ".." in path.parts or path.as_posix() in {"", "."}:
-        return None
-    return path.as_posix()
+    """Normalize legacy observation spelling without admitting unsafe paths."""
+
+    return normalize_optional_portable_relative_path(value)
 
 
 def _portable_path_list(value: object, *, limit: int) -> list[str]:
@@ -989,33 +988,26 @@ def _json_mapping(value: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _text_list(value: object, *, limit: int) -> list[str]:
-    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
-        return []
-    return sorted(
-        {item.strip() for item in value if isinstance(item, str) and item.strip()}
-    )[:limit]
+    """Normalize loose diagnostic text while discarding malformed observations."""
+
+    return filtered_trimmed_text_list(value, limit=limit)
 
 
 def _optional_text(value: object) -> Optional[str]:
-    return value.strip() if isinstance(value, str) and value.strip() else None
+    return trimmed_text_or_none(value)
 
 
 def _safe_non_negative_int(value: object) -> int:
-    return (
-        value
-        if isinstance(value, int) and not isinstance(value, bool) and value >= 0
-        else 0
-    )
+    parsed = nonnegative_int_or_none(value)
+    return 0 if parsed is None else parsed
 
 
 def _non_negative_int_or_none(value: object) -> Optional[int]:
-    if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
-        return value
-    return None
+    return nonnegative_int_or_none(value)
 
 
 def _bool_or_none(value: object) -> Optional[bool]:
-    return value if isinstance(value, bool) else None
+    return bool_or_none(value)
 
 
 def _file_sha256(path: Path) -> str:

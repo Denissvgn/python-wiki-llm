@@ -50,6 +50,19 @@ from .redaction import (
     LIKELY_SECRET_RE as _LIKELY_SECRET_RE,
     SENSITIVE_KEYS as _SENSITIVE_KEYS,
 )
+from .validation import (
+    is_canonical_uuid,
+    path_is_within as shared_path_is_within,
+    require_bounded_int,
+    require_bounded_text,
+    require_exact_fields,
+    require_int,
+    require_mapping,
+    require_nonempty_text,
+    require_sha256,
+    require_string_tuple,
+    require_uuid,
+)
 
 
 LOCAL_NO_EGRESS_PROFILE = "local_no_egress"
@@ -75,7 +88,6 @@ _CONTAINER_ENGINE_SOCKET_TARGETS = (
     "/run/podman/podman.sock",
 )
 
-_HASH_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 _SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,127}$")
 _IDEMPOTENCY_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,191}$")
 _PUBLIC_RECIPIENT_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/@+~-]{0,255}$")
@@ -3107,76 +3119,95 @@ def _is_windows_reparse(metadata: os.stat_result) -> bool:
 
 
 def _is_relative_to(path: Path, parent: Path) -> bool:
-    try:
-        path.relative_to(parent)
-    except ValueError:
-        return False
-    return True
+    return shared_path_is_within(path, parent)
 
 
 def _validate_object(
     payload: Mapping[str, Any], expected: set[str], label: str
 ) -> None:
-    if not isinstance(payload, Mapping):
-        raise OciBrokerError(f"{label} must be an object.")
-    actual = set(payload)
-    if actual != expected:
-        missing = sorted(expected - actual)
-        unexpected = sorted(actual - expected)
-        details = []
-        if missing:
-            details.append(f"missing={missing}")
-        if unexpected:
-            details.append(f"unexpected={unexpected}")
-        raise OciBrokerError(f"{label} fields are invalid ({'; '.join(details)}).")
+    return require_exact_fields(
+        payload,
+        allowed=expected,
+        required=expected,
+        mapping_error=OciBrokerError(f"{label} must be an object."),
+        missing_error=lambda values: AssertionError(values),
+        unknown_error=lambda values: AssertionError(values),
+        invalid_error=lambda missing, unknown: _object_fields_error(
+            label, missing, unknown
+        ),
+    )
+
+
+def _object_fields_error(
+    label: str,
+    missing: tuple[str, ...],
+    unexpected: tuple[str, ...],
+) -> OciBrokerError:
+    details = []
+    if missing:
+        details.append(f"missing={list(missing)}")
+    if unexpected:
+        details.append(f"unexpected={list(unexpected)}")
+    return OciBrokerError(f"{label} fields are invalid ({'; '.join(details)}).")
 
 
 def _required_mapping(value: Any, label: str) -> Mapping[str, Any]:
-    if not isinstance(value, Mapping):
-        raise OciBrokerError(f"{label} must be an object.")
-    return value
+    return require_mapping(
+        value,
+        error=OciBrokerError(f"{label} must be an object."),
+    )
 
 
 def _required_text(value: Any, label: str) -> str:
-    if not isinstance(value, str) or not value:
-        raise OciBrokerError(f"{label} must be non-empty text.")
-    return value
+    """Retain the broker protocol's historical non-normalizing text policy."""
+
+    return require_nonempty_text(
+        value,
+        error=OciBrokerError(f"{label} must be non-empty text."),
+        reject_control_characters=False,
+    )
 
 
 def _bounded_text(value: str, label: str, *, maximum: int) -> None:
-    if not isinstance(value, str) or not value or len(value) > maximum:
-        raise OciBrokerError(f"{label} must contain 1-{maximum} characters.")
-    if _CONTROL_RE.search(value):
-        raise OciBrokerError(f"{label} cannot contain control characters.")
+    require_bounded_text(
+        value,
+        maximum=maximum,
+        error=OciBrokerError(
+            f"{label} must contain 1-{maximum} characters."
+        ),
+        control_error=OciBrokerError(
+            f"{label} cannot contain control characters."
+        ),
+    )
 
 
 def _required_int(value: Any, label: str) -> int:
-    if isinstance(value, bool) or not isinstance(value, int):
-        raise OciBrokerError(f"{label} must be an integer.")
-    return value
+    return require_int(
+        value,
+        error=OciBrokerError(f"{label} must be an integer."),
+    )
 
 
 def _bounded_int(value: int, label: str, *, minimum: int, maximum: int) -> None:
-    if isinstance(value, bool) or not isinstance(value, int):
-        raise OciBrokerError(f"{label} must be an integer.")
-    if value < minimum or value > maximum:
-        raise OciBrokerError(f"{label} must be between {minimum} and {maximum}.")
+    require_bounded_int(
+        value,
+        minimum=minimum,
+        maximum=maximum,
+        invalid_error=OciBrokerError(f"{label} must be an integer."),
+        bounds_error=OciBrokerError(
+            f"{label} must be between {minimum} and {maximum}."
+        ),
+    )
 
 
 def _text_tuple(value: Any, label: str, *, maximum: int) -> tuple[str, ...]:
-    if (
-        not isinstance(value, Sequence)
-        or isinstance(value, (str, bytes))
-        or not value
-        or len(value) > maximum
-    ):
-        raise OciBrokerError(f"{label} must contain 1-{maximum} strings.")
-    result = []
-    for item in value:
-        if not isinstance(item, str):
-            raise OciBrokerError(f"{label} must contain only strings.")
-        result.append(item)
-    return tuple(result)
+    return require_string_tuple(
+        value,
+        error=OciBrokerError(f"{label} must contain 1-{maximum} strings."),
+        item_error=OciBrokerError(f"{label} must contain only strings."),
+        minimum=1,
+        maximum=maximum,
+    )
 
 
 def _validate_slug(value: str, label: str) -> None:
@@ -3185,23 +3216,24 @@ def _validate_slug(value: str, label: str) -> None:
 
 
 def _is_canonical_uuid(value: Any) -> bool:
-    if not isinstance(value, str):
-        return False
-    try:
-        parsed = uuid.UUID(value)
-    except (ValueError, AttributeError):
-        return False
-    return str(parsed) == value
+    return is_canonical_uuid(value)
 
 
 def _validate_uuid(value: str, label: str) -> None:
-    if not _is_canonical_uuid(value):
-        raise OciBrokerError(f"{label} must be a canonical UUID.")
+    error = OciBrokerError(f"{label} must be a canonical UUID.")
+    require_uuid(
+        value,
+        text_error=error,
+        uuid_error=error,
+        canonical_error=error,
+    )
 
 
 def _validate_hash(value: str, label: str) -> None:
-    if not isinstance(value, str) or _HASH_RE.fullmatch(value) is None:
-        raise OciBrokerError(f"{label} must be a sha256 digest.")
+    require_sha256(
+        value,
+        digest_error=OciBrokerError(f"{label} must be a sha256 digest."),
+    )
 
 
 def _validate_argv_value(value: str, label: str) -> None:

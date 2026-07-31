@@ -126,21 +126,21 @@ def build_live_documentation_query_service(
 ) -> DocumentationGraphQueryService:
     """Build a live service using one operation-scoped extraction."""
 
-    # Import lazily: the commands package exposes the documentation command,
-    # which imports the lifecycle controller that also uses this builder.
-    from ..commands import context_cmd, extract_cmd
+    # Keep heavyweight extraction/context modules out of this builder's import
+    # path until a live query service is requested.
+    from . import context_service, extraction_service
 
     selected_extract_builder = (
-        extract_payload_builder or extract_cmd.build_extract_payload
+        extract_payload_builder or extraction_service.build_extract_payload
     )
     selected_call_edge_resolver = (
-        call_edge_resolver or extract_cmd.resolve_call_edges
+        call_edge_resolver or extraction_service.resolve_call_edges
     )
     selected_view_builder = (
-        knowledge_view_builder or context_cmd._build_context_knowledge_view
+        knowledge_view_builder or context_service._build_context_knowledge_view
     )
     selected_query_surface_builder = (
-        query_surface_builder or context_cmd._context_query_surface
+        query_surface_builder or context_service._context_query_surface
     )
     extract_options: dict[str, Any] = {
         "deep": True,

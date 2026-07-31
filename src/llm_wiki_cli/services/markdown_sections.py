@@ -27,6 +27,26 @@ _ATX_HEADING_RE = re.compile(r"^ {0,3}(#{1,6})(?:[ \t]+(.*)|[ \t]*)$")
 _FENCE_OPEN_RE = re.compile(r"^ {0,3}((?:`{3,})|(?:~{3,}))(.*)$")
 _LEGACY_HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 _AUTO_GENERATED_RE = re.compile(r"^_Auto-generated from `.+`(?: in `.+`)?\._$")
+_INDEX_GENERATED_HEADINGS = frozenset(
+    heading.casefold()
+    for heading in (
+        "Surface Overview",
+        "Entities",
+        "Modules",
+        "Workflows",
+        "Guides",
+        "User Flows",
+        "Infrastructure",
+        "Architecture",
+        "Dependency Architecture",
+        "API Contracts",
+        "Log",
+    )
+)
+_INDEX_GENERATED_INTROS = {
+    ("Catalog of project modules and entities.",),
+    ("Use this landing page to choose the right wiki surface.",),
+}
 
 
 def normalize_markdown(text: str) -> str:
@@ -687,6 +707,97 @@ def preserve_level_two_section_exact(
         + old_section
         + generated[new_match.end() :]
     )
+
+
+def _legacy_heading_title(line: str) -> str | None:
+    match = _LEGACY_HEADING_RE.match(line.strip())
+    if match is None:
+        return None
+    return match.group(2).strip()
+
+
+def _legacy_level_two_sections(
+    lines: list[str],
+) -> list[tuple[str, list[str]]]:
+    sections: list[tuple[str, list[str]]] = []
+    for index, line in enumerate(lines):
+        match = _LEGACY_HEADING_RE.match(line.strip())
+        if match is None or len(match.group(1)) != 2:
+            continue
+        end = len(lines)
+        for following in range(index + 1, len(lines)):
+            next_match = _LEGACY_HEADING_RE.match(lines[following].strip())
+            if next_match is not None and len(next_match.group(1)) <= 2:
+                end = following
+                break
+        sections.append(
+            (line.strip(), trim_blank_lines(lines[index + 1 : end]))
+        )
+    return sections
+
+
+def _index_intro_lines(lines: list[str]) -> list[str]:
+    start = 1 if lines and lines[0].startswith("# ") else 0
+    first_section = len(lines)
+    for index, line in enumerate(lines[start:], start=start):
+        match = _LEGACY_HEADING_RE.match(line.strip())
+        if match is not None and len(match.group(1)) == 2:
+            first_section = index
+            break
+    return trim_blank_lines(lines[start:first_section])
+
+
+def _merge_index_intro_into_notes(
+    sections: list[tuple[str, list[str]]],
+    intro: list[str],
+) -> list[tuple[str, list[str]]]:
+    if not intro:
+        return sections
+    merged: list[tuple[str, list[str]]] = []
+    inserted = False
+    for heading, body in sections:
+        title = _legacy_heading_title(heading)
+        if title and title.casefold() == "notes" and not inserted:
+            merged.append((heading, intro + ([""] if body else []) + body))
+            inserted = True
+        else:
+            merged.append((heading, body))
+    if not inserted:
+        merged.insert(0, ("## Notes", intro))
+    return merged
+
+
+def preserve_index_custom_sections(old_markdown: str, new_markdown: str) -> str:
+    """Preserve historical custom index prose and level-two sections.
+
+    This is the service-layer form of the sync compatibility splice. Its
+    deliberately permissive legacy parsing keeps existing output bytes stable.
+    """
+
+    old_lines = normalize_markdown(old_markdown).splitlines()
+    custom_sections = [
+        (heading, body)
+        for heading, body in _legacy_level_two_sections(old_lines)
+        if (_legacy_heading_title(heading) or "").casefold()
+        not in _INDEX_GENERATED_HEADINGS
+    ]
+    intro = _index_intro_lines(old_lines)
+    if tuple(intro) in _INDEX_GENERATED_INTROS:
+        intro = []
+    preserved = _merge_index_intro_into_notes(custom_sections, intro)
+    if not preserved:
+        return new_markdown
+
+    lines = normalize_markdown(new_markdown).splitlines()
+    while lines and lines[-1].strip() == "":
+        lines.pop()
+    lines.append("")
+    for heading, body in preserved:
+        lines.append(heading)
+        lines.append("")
+        lines.extend(body)
+        lines.append("")
+    return "\n".join(lines)
 
 
 def table_description_cells(markdown: str, heading: str) -> dict[str, str]:

@@ -11,6 +11,8 @@ from collections import defaultdict, deque
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 
+from .validation import positive_int_or_none
+
 _STEP_LIMIT = 12
 _EFFECT_LIMIT = 8
 _TRANSFER_LIMIT = 12
@@ -536,9 +538,7 @@ def _emitted_effects(steps: Iterable[Mapping]) -> dict[str, int]:
 
 
 def _positive_source_line(value: object) -> int | None:
-    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
-        return None
-    return value
+    return positive_int_or_none(value)
 
 
 def _normalize_detailed_value(value: object, *, key: str | None = None) -> object:

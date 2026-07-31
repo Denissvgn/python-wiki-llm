@@ -76,6 +76,11 @@ from .sync_manifest import (
     ManifestPageSource,
     ManifestTombstone,
 )
+from .validation import (
+    contains_control_character as shared_contains_control_character,
+    require_exact_fields,
+    require_repository_relative_path,
+)
 from .wiki_media import (
     MarkdownLinkTarget,
     contains_uri_authority_userinfo,
@@ -104,7 +109,6 @@ from .wiki_surface_index import WIKI_SURFACE_INDEX_SCHEMA_VERSION
 
 LINK_SYNTAX_EXTENSION = "llm-wiki/link-syntax"
 
-_WINDOWS_DRIVE_PREFIX_RE = re.compile(r"^[A-Za-z]:")
 _WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:[\\/]")
 _MALFORMED_PERCENT_RE = re.compile(r"%(?![0-9A-Fa-f]{2})")
 _MANIFEST_STRUCTURAL_PAGE_KINDS = frozenset(
@@ -1235,7 +1239,10 @@ def _expected_observation_outcome(
 
 
 def _contains_control_character(value: str) -> bool:
-    return any(ord(character) < 32 or ord(character) == 127 for character in value)
+    return shared_contains_control_character(
+        value,
+        reject_delete_character=True,
+    )
 
 
 def _observation_contains_authority_userinfo(
@@ -1730,41 +1737,42 @@ def _require_exact_keys(
     expected: Mapping[str, Any],
     actual: Mapping[str, Any],
 ) -> None:
-    missing = set(expected) - set(actual)
-    extra = set(actual) - set(expected)
-    if missing:
-        path = min(missing)
-        raise KnowledgeIndexBuildError(
+    return require_exact_fields(
+        actual,
+        allowed=expected,
+        required=expected,
+        mapping_error=KnowledgeIndexBuildError(field_name, "must be a mapping"),
+        missing_error=lambda fields: KnowledgeIndexBuildError(
             field_name,
-            f"is missing active canonical page {path!r}",
-        )
-    if extra:
-        path = min(extra)
-        raise KnowledgeIndexBuildError(
+            f"is missing active canonical page {fields[0]!r}",
+        ),
+        unknown_error=lambda fields: KnowledgeIndexBuildError(
             field_name,
-            f"contains unknown canonical page {path!r}",
-        )
+            f"contains unknown canonical page {fields[0]!r}",
+        ),
+    )
 
 
 def _relative_path(value: object, field_name: str) -> str:
     text = _nonempty_string(value, field_name)
-    if text.startswith(("/", "//")) or _WINDOWS_DRIVE_PREFIX_RE.match(text):
-        raise KnowledgeIndexBuildError(field_name, "must be repository-relative")
-    if "\\" in text:
-        raise KnowledgeIndexBuildError(
-            field_name,
-            "must use POSIX '/' separators",
-        )
-    parts = text.split("/")
-    if (
-        any(part in {"", ".", ".."} for part in parts)
-        or posixpath.normpath(text) != text
-    ):
-        raise KnowledgeIndexBuildError(
-            field_name,
-            "must be a normalized path without empty or dot segments",
-        )
-    return text
+    return require_repository_relative_path(
+        text,
+        text_error=KnowledgeIndexBuildError(
+            field_name, "must be a non-empty normalized string"
+        ),
+        posix_error=KnowledgeIndexBuildError(
+            field_name, "must be a normalized path without empty or dot segments"
+        ),
+        normalized_error=KnowledgeIndexBuildError(
+            field_name, "must be a normalized path without empty or dot segments"
+        ),
+        absolute_error=KnowledgeIndexBuildError(
+            field_name, "must be repository-relative"
+        ),
+        separator_error=KnowledgeIndexBuildError(
+            field_name, "must use POSIX '/' separators"
+        ),
+    )
 
 
 def _nonempty_string(value: object, field_name: str) -> str:

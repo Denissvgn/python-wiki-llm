@@ -8,8 +8,6 @@ the resulting freshness state.
 
 from __future__ import annotations
 
-import posixpath
-import re
 from collections import Counter
 from collections.abc import Mapping
 from collections.abc import Set as AbstractSet
@@ -41,6 +39,7 @@ from .knowledge_model import (
     knowledge_index_to_payload,
     parse_knowledge_index,
 )
+from .validation import require_repository_relative_path
 from .wiki_surface import PageKind
 
 REASON_LIVE_EVALUATION_NOT_PERFORMED = "live-evaluation-not-performed"
@@ -84,8 +83,6 @@ _CONFIGURATION_BASIS_UNKNOWN = "configuration-basis-unknown"
 _STRUCTURAL_PAGE_KINDS = frozenset(
     {PageKind.MODULES, PageKind.ENTITIES, PageKind.INFRASTRUCTURE}
 )
-_WINDOWS_DRIVE_PREFIX_RE = re.compile(r"^[A-Za-z]:")
-
 _REASON_DESCRIPTIONS = MappingProxyType(
     {
         REASON_LIVE_EVALUATION_NOT_PERFORMED: "live evaluation was not performed",
@@ -830,23 +827,26 @@ def _result(
 
 
 def _validate_source_path(value: object, field_name: str) -> None:
-    if not isinstance(value, str) or not value:
-        raise KnowledgeFreshnessError(
-            field_name,
-            "must contain non-empty string source paths",
-        )
-    if (
-        value.startswith(("/", "\\", "../"))
-        or "\\" in value
-        or _WINDOWS_DRIVE_PREFIX_RE.match(value)
-        or posixpath.normpath(value) != value
-        or value in {".", ".."}
-        or any(ord(character) < 32 or ord(character) == 127 for character in value)
-    ):
-        raise KnowledgeFreshnessError(
+    require_repository_relative_path(
+        value,
+        text_error=KnowledgeFreshnessError(
+            field_name, "must contain non-empty string source paths"
+        ),
+        posix_error=KnowledgeFreshnessError(
             field_name,
             f"contains unsafe repository-relative source path {value!r}",
-        )
+        ),
+        normalized_error=KnowledgeFreshnessError(
+            field_name,
+            f"contains unsafe repository-relative source path {value!r}",
+        ),
+        control_error=KnowledgeFreshnessError(
+            field_name,
+            f"contains unsafe repository-relative source path {value!r}",
+        ),
+        reject_delete_character=True,
+    )
+    return None
 
 
 __all__ = [

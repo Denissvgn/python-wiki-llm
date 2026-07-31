@@ -43,6 +43,11 @@ from ..config import is_agent_worktree_path
 from .dependency_versions import build_dependency_version_details
 from .imports import build_module_path_resolver
 from .source_snapshot import SourceSnapshot, build_source_snapshot
+from .validation import (
+    path_is_under as shared_path_is_under,
+    path_is_under_scope as shared_path_is_under_scope,
+    positive_int_or_none,
+)
 
 try:  # Python 3.11+
     import tomllib  # type: ignore[reportMissingImports]
@@ -180,9 +185,7 @@ _IMPORT_LOCATION_OBSERVATIONS_SCHEMA = (
 
 def _positive_line(value: object) -> int | None:
     """Return a source line only when the extractor supplied a real line."""
-    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
-        return None
-    return value
+    return positive_int_or_none(value)
 
 
 def _unresolved_import_resolution(
@@ -1681,7 +1684,7 @@ def _classify_go(
 
 
 def _path_under(path: str, prefix: str) -> bool:
-    return bool(prefix) and (path == prefix or path.startswith(prefix + "/"))
+    return shared_path_is_under(path, prefix)
 
 
 # ── Rust (DL-204) ─────────────────────────────────────────────────────
@@ -2224,10 +2227,7 @@ def classify_imports(
 
 
 def _path_under_scope(filepath: str, scope_root: str) -> bool:
-    normalized = filepath.replace("\\", "/").strip("/")
-    if not scope_root:
-        return True
-    return normalized == scope_root or normalized.startswith(scope_root + "/")
+    return shared_path_is_under_scope(filepath, scope_root)
 
 
 def _nearest_manifest_scope(

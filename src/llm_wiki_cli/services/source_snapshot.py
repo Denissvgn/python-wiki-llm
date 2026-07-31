@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import os
-import posixpath
-import re
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from fnmatch import fnmatch
@@ -27,6 +25,7 @@ from ..extractors.common import (
     is_generated_javascript_bundle_path,
     normalize_include_tests,
 )
+from .validation import require_repository_relative_path
 
 if TYPE_CHECKING:
     from .knowledge_envelope import ConsumedInput
@@ -60,8 +59,6 @@ _UNSUPPORTED_LANGUAGE_LABELS = {
     GENERATED_JAVASCRIPT_BUNDLE_LANGUAGE: "generated JavaScript bundle",
 }
 _UNSUPPORTED_SUMMARY_PATH_LIMIT = 5
-_WINDOWS_DRIVE_PREFIX_RE = re.compile(r"^[A-Za-z]:")
-
 _SOURCE_INPUT_KIND = "source"
 _DOCKER_INPUT_KIND = "docker"
 _COMPOSE_INPUT_KIND = "compose"
@@ -278,31 +275,18 @@ def _new_snapshot_buckets(
 
 
 def _validate_repository_path(value: object, field: str) -> str:
-    if not isinstance(value, str) or not value:
-        raise SourceSnapshotError(
-            field,
-            "must be a non-empty repository-relative path",
-        )
-    if (
-        value != value.strip()
-        or any(ord(char) < 0x20 for char in value)
-        or value.startswith("/")
-        or _WINDOWS_DRIVE_PREFIX_RE.match(value)
-        or "\\" in value
-    ):
-        raise SourceSnapshotError(
-            field,
-            "must be a repository-relative POSIX path",
-        )
-    if (
-        any(part in {"", ".", ".."} for part in value.split("/"))
-        or posixpath.normpath(value) != value
-    ):
-        raise SourceSnapshotError(
-            field,
-            "must be a normalized repository-relative path",
-        )
-    return value
+    return require_repository_relative_path(
+        value,
+        text_error=SourceSnapshotError(
+            field, "must be a non-empty repository-relative path"
+        ),
+        posix_error=SourceSnapshotError(
+            field, "must be a repository-relative POSIX path"
+        ),
+        normalized_error=SourceSnapshotError(
+            field, "must be a normalized repository-relative path"
+        ),
+    )
 
 
 def _normalize_only_files(

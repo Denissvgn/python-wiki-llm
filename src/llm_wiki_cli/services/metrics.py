@@ -190,12 +190,12 @@ def load_events(
 def current_coverage(
     src_dir: str = ".", wiki_dir: str | Path = DEFAULT_WIKI_DIR
 ) -> dict[str, Any]:
-    from ..commands.bootstrap_cmd import (
+    from .bootstrap_runtime import (
         build_entity_occurrence_page_map,
         build_module_page_map,
     )
-    from ..commands.extract_cmd import get_inventory
-    from ..commands.lint_cmd import (
+    from .extraction_service import get_inventory
+    from .lint_service import (
         _collect_documented_entities,
         _collect_documented_modules,
     )

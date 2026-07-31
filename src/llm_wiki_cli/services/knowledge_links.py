@@ -22,6 +22,10 @@ from .knowledge_model import (
     Resolution,
     TargetClass,
 )
+from .validation import (
+    contains_control_character as shared_contains_control_character,
+    require_repository_relative_path,
+)
 from .wiki_media import (
     MarkdownLinkTarget,
     contains_uri_authority_userinfo,
@@ -577,28 +581,27 @@ def is_valid_link_locator_target(value: str) -> bool:
 
 
 def _canonical_relative_path(value: str, field: str) -> str:
-    if not isinstance(value, str) or not value:
-        raise KnowledgeLinkError(field, "must be a non-empty string")
-    if (
-        _contains_control_character(value)
-        or value.startswith(("/", "\\"))
-        or _WINDOWS_ABSOLUTE_RE.match(value)
-        or "\\" in value
-    ):
-        raise KnowledgeLinkError(field, "must be a repository-relative POSIX path")
-    parts = value.split("/")
-    if (
-        any(part in {"", ".", ".."} for part in parts)
-        or posixpath.normpath(value) != value
-    ):
-        raise KnowledgeLinkError(
+    return require_repository_relative_path(
+        value,
+        text_error=KnowledgeLinkError(field, "must be a non-empty string"),
+        posix_error=KnowledgeLinkError(
+            field, "must be a repository-relative POSIX path"
+        ),
+        normalized_error=KnowledgeLinkError(
             field, "must be normalized without empty or dot segments"
-        )
-    return value
+        ),
+        control_error=KnowledgeLinkError(
+            field, "must be a repository-relative POSIX path"
+        ),
+        reject_delete_character=True,
+    )
 
 
 def _contains_control_character(value: str) -> bool:
-    return any(ord(char) < 32 or ord(char) == 127 for char in value)
+    return shared_contains_control_character(
+        value,
+        reject_delete_character=True,
+    )
 
 
 def _page_locator(value: str, field: str) -> str:

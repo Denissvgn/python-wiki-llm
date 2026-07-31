@@ -72,6 +72,7 @@ from .sync_manifest import (
     MANIFEST_VERSION,
     SyncManifest,
 )
+from .validation import is_portable_relative_path
 from .wiki_surface import PageKind
 from .wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
@@ -338,7 +339,7 @@ def refresh_documentation_native_projection(
         raise DocumentationNativeError(
             "Native projection refresh persisted an unexpected artifact set."
         )
-    from ..commands.context_cmd import _build_context_knowledge_view
+    from .context_service import _build_context_knowledge_view
 
     knowledge_view = _build_context_knowledge_view(
         wiki,
@@ -371,7 +372,7 @@ def _collect_runtime(
     source = _validated_directory(source_root, "source_root")
     if not isinstance(trust_source_plugins, bool):
         raise TypeError("trust_source_plugins must be a bool")
-    from ..commands.extract_cmd import (  # Imported lazily to avoid command cycles.
+    from .extraction_service import (
         InventoryRequest,
         get_docker_inventory,
         get_inventory_result,
@@ -520,7 +521,7 @@ def _runtime_flow_entries(
         )
     entries = attach_routes_to_entry_points(entries, contracts)
 
-    from ..commands.extract_cmd import resolve_call_edges
+    from .extraction_service import resolve_call_edges
 
     edges = resolve_call_edges(dict(runtime.inventory)) if entries else []
     data_flow_enabled = generation_options.get("data_flow_enabled") is True
@@ -614,9 +615,11 @@ def _runtime_api_contracts(
 def _page_maps(
     inventory: Mapping[str, Mapping[str, Any]],
 ) -> _DocumentationPageMaps:
-    from ..commands.bootstrap_cmd import build_module_page_map
-    from ..commands.bootstrap_cmd import build_entity_page_map
-    from ..commands.bootstrap_cmd import build_entity_occurrence_page_map
+    from .bootstrap_runtime import (
+        build_entity_occurrence_page_map,
+        build_entity_page_map,
+        build_module_page_map,
+    )
 
     inventory_dict = dict(inventory)
     return _DocumentationPageMaps(
@@ -925,19 +928,11 @@ def _is_safe_relative_posix_path(
     *,
     required_suffix: str | None = None,
 ) -> bool:
-    if (
-        not isinstance(value, str)
-        or not value
-        or value != value.strip()
-        or "\\" in value
-    ):
-        return False
-    path = PurePosixPath(value)
-    if path.is_absolute() or any(
-        part in {"", ".", ".."} for part in path.parts
-    ):
-        return False
-    return required_suffix is None or value.endswith(required_suffix)
+    return is_portable_relative_path(value) and (
+        required_suffix is None
+        or isinstance(value, str)
+        and value.endswith(required_suffix)
+    )
 
 
 def _native_artifact_hashes(

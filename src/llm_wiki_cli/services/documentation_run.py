@@ -14,7 +14,6 @@ import stat
 import subprocess
 import sys
 import tempfile
-import unicodedata
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -88,6 +87,16 @@ from .knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
 from .knowledge_consumption import KnowledgeReadView
 from .knowledge_governance import GOVERNANCE_FILENAME
 from .skills import export_skills, list_bundled_skills
+from .validation import (
+    parse_utc_timestamp,
+    portable_path_key,
+    require_exact_fields as require_shared_exact_fields,
+    require_nonempty_text,
+    require_portable_relative_path,
+    require_sha256 as require_shared_sha256,
+    require_trimmed_text_list,
+    resolve_workspace_path,
+)
 from .verification_contracts import VERIFICATION_RECEIPT_FILENAME
 from .wiki_media import (
     iter_markdown_link_targets,
@@ -189,13 +198,6 @@ DEFAULT_DOCUMENTATION_SKILLS = (
     "doc-review",
     "publish-docs",
 )
-_WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:[/\\]")
-_WINDOWS_RESERVED_NAMES = frozenset(
-    {"con", "prn", "aux", "nul"}
-    | {f"com{number}" for number in range(1, 10)}
-    | {f"lpt{number}" for number in range(1, 10)}
-)
-_WINDOWS_FORBIDDEN_PATH_CHARS = frozenset('<>:"|?*')
 _GENERATED_MARKER = "Auto-generated"
 _DO_NOT_EDIT_MARKER = "Do not edit by hand"
 _NATIVE_ARTIFACT_PATHS = frozenset(
@@ -304,6 +306,13 @@ class DocumentationTransitionError(DocumentationRunError):
 
 class DocumentationIntegrityError(DocumentationRunError):
     """Raised when source, input-wiki, or generated ownership changed."""
+
+
+class DocumentationPersistedStateError(
+    DocumentationIntegrityError,
+    DocumentationSchemaError,
+):
+    """Raised when a stored documentation-run contract is corrupt."""
 
 
 @dataclass(frozen=True)
@@ -1298,7 +1307,7 @@ def _prepare_documentation_run_impl(
     wiki_root = workspace_root / "wiki"
 
     if baseline_strategy == "bootstrap_source":
-        from ..commands.bootstrap_cmd import execute_bootstrap
+        from .bootstrap_runtime import execute_bootstrap
 
         result = execute_bootstrap(
             BootstrapRequest(
@@ -1359,7 +1368,7 @@ def _prepare_documentation_run_impl(
                 raise DocumentationSchemaError(
                     "Workspace-only snapshot refresh requires an explicit source root."
                 )
-            from ..commands.bootstrap_cmd import (
+            from .bootstrap_runtime import (
                 _execute_documentation_workspace_refresh,
             )
 
@@ -1675,12 +1684,17 @@ def load_documentation_run(workspace: str | Path) -> DocumentationRun:
     except FileNotFoundError as exc:
         raise DocumentationRunError(f"No documentation run found at {path}") from exc
     except (OSError, json.JSONDecodeError) as exc:
-        raise DocumentationSchemaError(
+        raise DocumentationPersistedStateError(
             f"Invalid documentation run at {path}: {exc}"
         ) from exc
     if not isinstance(payload, dict):
-        raise DocumentationSchemaError("Documentation run payload must be an object.")
-    return DocumentationRun.from_dict(payload)
+        raise DocumentationPersistedStateError(
+            "Documentation run payload must be an object."
+        )
+    try:
+        return DocumentationRun.from_dict(payload)
+    except DocumentationSchemaError as exc:
+        raise DocumentationPersistedStateError(str(exc)) from exc
 
 
 def save_documentation_run(
@@ -4108,9 +4122,9 @@ def _merge_refresh_semantic_page(
     imported = "imported_semantic_page" in reasons
 
     if relative == "index.md" and current:
-        from ..commands.sync_cmd import _preserve_index_custom_sections
+        from .markdown_sections import preserve_index_custom_sections
 
-        merged = _preserve_index_custom_sections(prior, current)
+        merged = preserve_index_custom_sections(prior, current)
         if merged == current:
             return None
         return _ensure_final_newline(merged), _semantic_owner_markdown(prior)
@@ -5073,14 +5087,13 @@ def _initial_readiness_ledger(
 
 def _workspace_path(workspace_root: Path, relative: str) -> Path:
     portable = _portable_path(relative)
-    target = (workspace_root / portable).resolve()
-    try:
-        target.relative_to(workspace_root)
-    except ValueError as exc:
-        raise DocumentationSchemaError(
+    return resolve_workspace_path(
+        workspace_root,
+        portable,
+        escape_error=DocumentationSchemaError(
             f"Workspace artifact path escapes the workspace: {relative!r}"
-        ) from exc
-    return target
+        ),
+    )
 
 
 def _stage_event_path(
@@ -5761,7 +5774,7 @@ def _run_wiki_validation_pair(
     source_is_current = run.baseline.get("freshness") == "verified_current"
     source_is_available = source_root is not None and source_root.is_dir()
     if source_root is not None and source_is_available and source_is_current:
-        from ..commands.lint_cmd import build_report, report_to_dict
+        from .lint_service import build_report, report_to_dict
         from .inventory_cache import InventoryCacheOptions
 
         for name, strict in (("lint", False), ("ci-check", True)):
@@ -7231,19 +7244,19 @@ def _require_exact_fields(
     required: set[str],
     label: str,
 ) -> None:
-    if not isinstance(payload, Mapping):
-        raise DocumentationSchemaError(f"{label} must be an object.")
-    keys = {str(key) for key in payload}
-    missing = sorted(required - keys)
-    if missing:
-        raise DocumentationSchemaError(
-            f"{label} is missing required field: {missing[0]}"
-        )
-    unknown = sorted(keys - allowed)
-    if unknown:
-        raise DocumentationSchemaError(
-            f"{label} contains unsupported field: {unknown[0]}"
-        )
+    return require_shared_exact_fields(
+        payload,
+        allowed=allowed,
+        required=required,
+        mapping_error=DocumentationSchemaError(f"{label} must be an object."),
+        missing_error=lambda fields: DocumentationSchemaError(
+            f"{label} is missing required field: {fields[0]}"
+        ),
+        unknown_error=lambda fields: DocumentationSchemaError(
+            f"{label} contains unsupported field: {fields[0]}"
+        ),
+        stringify_keys=True,
+    )
 
 
 def _assert_no_forbidden_packet_fields(
@@ -8105,23 +8118,27 @@ def _validate_run_state_contract(payload: Mapping[str, Any]) -> None:
 
 
 def _require_sha256(value: Any, label: str) -> str:
-    text = str(value or "")
-    if not re.fullmatch(r"sha256:[0-9a-f]{64}", text):
-        raise DocumentationSchemaError(f"{label} must be a lowercase sha256 digest.")
-    return text
+    return require_shared_sha256(
+        value,
+        digest_error=DocumentationSchemaError(
+            f"{label} must be a lowercase sha256 digest."
+        ),
+    )
 
 
 def _require_utc_timestamp(value: Any, label: str) -> datetime:
-    if not isinstance(value, str) or not value.strip() or value != value.strip():
-        raise DocumentationSchemaError(f"{label} must be a UTC timestamp string.")
-    normalized = value[:-1] + "+00:00" if value.endswith("Z") else value
-    try:
-        parsed = datetime.fromisoformat(normalized)
-    except ValueError as exc:
-        raise DocumentationSchemaError(f"{label} must be a UTC timestamp.") from exc
-    if parsed.tzinfo is None or parsed.utcoffset() != timezone.utc.utcoffset(parsed):
-        raise DocumentationSchemaError(f"{label} must be a UTC timestamp.")
-    return parsed
+    """Preserve the documentation-run v1 ISO parser's timestamp acceptance."""
+
+    return parse_utc_timestamp(
+        value,
+        string_error=DocumentationSchemaError(
+            f"{label} must be a UTC timestamp string."
+        ),
+        timestamp_error=DocumentationSchemaError(
+            f"{label} must be a UTC timestamp."
+        ),
+        reject_control_characters=False,
+    )[1]
 
 
 def _render_packet_markdown(payload: Mapping[str, Any]) -> str:
@@ -8212,15 +8229,17 @@ def _generated_sections(text: str) -> list[tuple[str, str]]:
 
 
 def _required_agent_result_text(value: Any, field_name: str) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise DocumentationSchemaError(
+    return require_nonempty_text(
+        value,
+        error=DocumentationSchemaError(
             f"Agent result {field_name} must be a non-empty string."
-        )
-    if value != value.strip():
-        raise DocumentationSchemaError(
+        ),
+        trim_error=DocumentationSchemaError(
             f"Agent result {field_name} must not have surrounding whitespace."
-        )
-    return value
+        ),
+        require_trimmed=True,
+        reject_control_characters=False,
+    )
 
 
 def _validate_imported_page_edits(value: Any) -> tuple[dict[str, Any], ...]:
@@ -8271,7 +8290,7 @@ def _validate_imported_page_edits(value: Any) -> tuple[dict[str, Any], ...]:
         rationale = _required_agent_result_text(
             raw["rationale"], f"imported_page_edits[{index}].rationale"
         )
-        path_key = unicodedata.normalize("NFC", canonical_path).casefold()
+        path_key = portable_path_key(canonical_path)
         if work_id in seen_work_ids or path_key in seen_paths:
             raise DocumentationSchemaError(
                 "Agent result imported_page_edits must contain unique work ids and "
@@ -8387,10 +8406,12 @@ def _portable_path_tuple(value: Any) -> tuple[str, ...]:
         raise DocumentationSchemaError("Expected a list of portable paths.")
     if any(not isinstance(item, str) for item in value):
         raise DocumentationSchemaError("Portable paths must be strings.")
-    paths = tuple(_portable_path(item) for item in value)
+    paths = tuple(
+        _portable_path(item, defer_non_nfc_error=True) for item in value
+    )
     seen: dict[str, str] = {}
     for path in paths:
-        key = unicodedata.normalize("NFC", path).casefold()
+        key = portable_path_key(path)
         previous = seen.get(key)
         if previous is not None:
             raise DocumentationSchemaError(
@@ -8398,45 +8419,54 @@ def _portable_path_tuple(value: Any) -> tuple[str, ...]:
                 f"Unicode-normalizing filesystems: {previous!r} and {path!r}."
             )
         seen[key] = path
-    return paths
+    return tuple(_portable_path(path) for path in paths)
 
 
-def _portable_path(value: str, *, field_name: str = "path") -> str:
-    normalized = value.replace("\\", "/")
-    path = PurePosixPath(normalized)
-    if (
-        not normalized
-        or normalized != normalized.strip()
-        or path.is_absolute()
-        or _WINDOWS_ABSOLUTE_RE.match(value)
-        or ".." in path.parts
-        or "." in path.parts
-        or path.as_posix() != normalized
-    ):
-        raise DocumentationSchemaError(
+def _portable_path(
+    value: str,
+    *,
+    field_name: str = "path",
+    defer_non_nfc_error: bool = False,
+) -> str:
+    """Validate a path, with NFC deferral only for tuple collision preflights."""
+
+    return require_portable_relative_path(
+        value,
+        defer_non_nfc_error=defer_non_nfc_error,
+        text_error=DocumentationSchemaError(
             f"{field_name} must be a non-empty workspace-relative portable path: {value!r}"
-        )
-    for component in path.parts:
-        if component.endswith((" ", ".")) or any(
-            character in _WINDOWS_FORBIDDEN_PATH_CHARS or ord(character) < 32
-            for character in component
-        ):
-            raise DocumentationSchemaError(
-                f"{field_name} is not portable across supported systems: {value!r}"
-            )
-        if component.split(".", 1)[0].casefold() in _WINDOWS_RESERVED_NAMES:
-            raise DocumentationSchemaError(
-                f"{field_name} uses a reserved Windows name: {value!r}"
-            )
-    return path.as_posix()
+        ),
+        relative_error=DocumentationSchemaError(
+            f"{field_name} must be a non-empty workspace-relative portable path: {value!r}"
+        ),
+        separator_error=DocumentationSchemaError(
+            f"{field_name} must be a non-empty workspace-relative portable path: {value!r}"
+        ),
+        non_nfc_error=DocumentationSchemaError(
+            f"{field_name} is not portable across supported systems: {value!r}"
+        ),
+        nonportable_error=DocumentationSchemaError(
+            f"{field_name} is not portable across supported systems: {value!r}"
+        ),
+        reserved_error=DocumentationSchemaError(
+            f"{field_name} uses a reserved Windows name: {value!r}"
+        ),
+    )
 
 
 def _strict_string_tuple(value: Any, *, label: str) -> tuple[str, ...]:
-    if not isinstance(value, list) or any(
-        not isinstance(item, str) or not item.strip() for item in value
-    ):
-        raise DocumentationSchemaError(f"{label} must be a list of non-empty strings.")
-    return tuple(value)
+    """Preserve v1 result strings without trimming or control filtering."""
+
+    return tuple(
+        require_trimmed_text_list(
+            value,
+            error=DocumentationSchemaError(
+                f"{label} must be a list of non-empty strings."
+            ),
+            require_trimmed_items=False,
+            reject_control_characters=False,
+        )
+    )
 
 
 def _text_tuple(value: Any) -> tuple[str, ...]:

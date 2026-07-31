@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import posixpath
 import re
 from collections import Counter, defaultdict
 from collections.abc import Iterable, Mapping
@@ -23,6 +22,12 @@ from .knowledge_evidence import (
     is_valid_sha256,
     semantic_hash_for_file,
 )
+from .validation import (
+    portable_page_component,
+    require_exact_fields,
+    require_mapping,
+    require_repository_relative_path,
+)
 
 MANIFEST_FILENAME = ".llm-wiki-manifest.json"
 MANIFEST_VERSION = 5
@@ -38,8 +43,6 @@ PRODUCER_BASIS_INCOMPATIBLE = "producer-basis-incompatible"
 TOMBSTONE_SOURCE_MISSING = "source-missing"
 TOMBSTONE_UNKNOWN_PROVENANCE = "unknown-provenance"
 
-_UNSAFE_PAGE_ID_CHARS_RE = re.compile(r"[^A-Za-z0-9_.-]+")
-_WINDOWS_DRIVE_PREFIX_RE = re.compile(r"^[A-Za-z]:")
 _REASON_RE = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$")
 _CONCEPT_PAGE_RE = re.compile(r"^(modules|entities)/([^/]+)\.md$")
 
@@ -64,27 +67,18 @@ def _validate_reason(value: object, field_name: str) -> str:
 
 
 def _validate_repository_path(value: object, field_name: str) -> str:
-    if not isinstance(value, str) or not value:
-        raise SyncManifestError(
+    return require_repository_relative_path(
+        value,
+        text_error=SyncManifestError(
             field_name, "must be a non-empty repository-relative path"
-        )
-    if (
-        value != value.strip()
-        or any(ord(char) < 0x20 for char in value)
-        or value.startswith("/")
-        or _WINDOWS_DRIVE_PREFIX_RE.match(value)
-        or "\\" in value
-    ):
-        raise SyncManifestError(field_name, "must be a repository-relative POSIX path")
-    parts = value.split("/")
-    if (
-        any(part in {"", ".", ".."} for part in parts)
-        or posixpath.normpath(value) != value
-    ):
-        raise SyncManifestError(
+        ),
+        posix_error=SyncManifestError(
+            field_name, "must be a repository-relative POSIX path"
+        ),
+        normalized_error=SyncManifestError(
             field_name, "must be a normalized repository-relative path"
-        )
-    return value
+        ),
+    )
 
 
 def _validate_concept_page_path(value: object, field_name: str) -> str:
@@ -105,22 +99,28 @@ def _validate_exact_keys(
     required: set[str],
     optional: Iterable[str] = (),
 ) -> None:
-    missing = required - set(value)
-    if missing:
-        name = min(missing)
-        raise SyncManifestError(f"{field_name}.{name}", "is required")
-    unknown = set(value) - required - set(optional)
-    if unknown:
-        name = min(unknown)
-        raise SyncManifestError(f"{field_name}.{name}", "is not supported")
+    optional_keys = set(optional)
+    return require_exact_fields(
+        value,
+        allowed=required | optional_keys,
+        required=required,
+        mapping_error=SyncManifestError(field_name, "must be an object"),
+        missing_error=lambda fields: SyncManifestError(
+            f"{field_name}.{fields[0]}", "is required"
+        ),
+        unknown_error=lambda fields: SyncManifestError(
+            f"{field_name}.{fields[0]}", "is not supported"
+        ),
+    )
 
 
 def _mapping_value(value: object, field_name: str) -> Mapping[str, object]:
-    if not isinstance(value, Mapping):
-        raise SyncManifestError(field_name, "must be an object")
-    if any(not isinstance(key, str) for key in value):
-        raise SyncManifestError(field_name, "must use string keys")
-    return value
+    return require_mapping(
+        value,
+        error=SyncManifestError(field_name, "must be an object"),
+        require_string_keys=True,
+        key_error=SyncManifestError(field_name, "must use string keys"),
+    )
 
 
 @dataclass(frozen=True)
@@ -502,10 +502,7 @@ def _first_doc_line(info: Mapping[str, Any]) -> str:
 
 
 def _safe_page_component(value: object, *, fallback: str = "page") -> str:
-    raw = str(value).strip() if value not in (None, "") else ""
-    safe = _UNSAFE_PAGE_ID_CHARS_RE.sub("_", raw).strip("_")
-    safe = re.sub(r"_+", "_", safe).lstrip(".")
-    return safe or fallback
+    return portable_page_component(value, fallback=fallback)
 
 
 def _page_name_with_extension(filepath: str) -> str:

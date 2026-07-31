@@ -18,7 +18,7 @@ from .contracts import (
     SECTION_OWNERSHIP_EXTENSION_KEY,
     SECTION_OWNERSHIP_SCHEMA_VERSION,
 )
-from .knowledge_evidence import hash_json, is_valid_sha256, sha256_bytes
+from .knowledge_evidence import hash_json, sha256_bytes
 from .markdown_sections import (
     SECTION_ORDER_DOMAIN,
     MarkdownSection,
@@ -32,6 +32,14 @@ from .markdown_sections import (
     section_body,
     should_preserve_semantic_value,
     table_description_cells,
+)
+from .validation import (
+    require_exact_fields,
+    require_int_at_least,
+    require_mapping,
+    require_nonempty_text,
+    require_sequence,
+    require_sha256,
 )
 from .wiki_surface import PageKind
 
@@ -1026,15 +1034,20 @@ def _section_ordering_hash(
 
 
 def _section_object(value: object, path: str) -> Mapping[str, object]:
-    if not isinstance(value, Mapping):
-        raise SectionOwnershipError(path, "must be an object")
-    return value
+    return require_mapping(
+        value,
+        error=SectionOwnershipError(path, "must be an object"),
+    )
 
 
 def _section_array(value: object, path: str) -> list[object]:
-    if isinstance(value, (str, bytes, Mapping)) or not isinstance(value, Sequence):
-        raise SectionOwnershipError(path, "must be an array")
-    return list(value)
+    return list(
+        require_sequence(
+            value,
+            error=SectionOwnershipError(path, "must be an array"),
+            reject_mapping=True,
+        )
+    )
 
 
 def _section_fields(
@@ -1043,30 +1056,44 @@ def _section_fields(
     allowed: set[str],
     required: set[str],
 ) -> None:
-    unknown = set(value) - allowed
-    if unknown:
-        raise SectionOwnershipError(path, f"contains unknown field {min(unknown)!r}")
-    missing = required - set(value)
-    if missing:
-        raise SectionOwnershipError(path, f"is missing field {min(missing)!r}")
+    return require_exact_fields(
+        value,
+        allowed=allowed,
+        required=required,
+        mapping_error=SectionOwnershipError(path, "must be an object"),
+        missing_error=lambda fields: SectionOwnershipError(
+            path, f"is missing field {fields[0]!r}"
+        ),
+        unknown_error=lambda fields: SectionOwnershipError(
+            path, f"contains unknown field {fields[0]!r}"
+        ),
+        unknown_first=True,
+    )
 
 
 def _section_string(value: object, path: str) -> str:
-    if not isinstance(value, str) or not value:
-        raise SectionOwnershipError(path, "must be a non-empty string")
-    return value
+    """Preserve raw persisted strings; callers apply their domain constraints."""
+
+    return require_nonempty_text(
+        value,
+        error=SectionOwnershipError(path, "must be a non-empty string"),
+        reject_control_characters=False,
+    )
 
 
 def _section_hash(value: object, path: str) -> str:
-    if not isinstance(value, str) or not is_valid_sha256(value):
-        raise SectionOwnershipError(path, "must be a sha256 content hash")
-    return value
+    return require_sha256(
+        value,
+        digest_error=SectionOwnershipError(path, "must be a sha256 content hash"),
+    )
 
 
 def _section_int(value: object, path: str, *, minimum: int) -> int:
-    if isinstance(value, bool) or not isinstance(value, int) or value < minimum:
-        raise SectionOwnershipError(path, f"must be an integer >= {minimum}")
-    return value
+    return require_int_at_least(
+        value,
+        minimum=minimum,
+        error=SectionOwnershipError(path, f"must be an integer >= {minimum}"),
+    )
 
 
 def _section_string_array(value: object, path: str) -> list[str]:

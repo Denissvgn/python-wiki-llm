@@ -81,6 +81,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bounded trigger lock waiting through `LLM_WIKI_LOCK_WAIT`, one-hour circuit
   breaker auto-recovery with `LLM_WIKI_BREAKER_TTL_SECONDS` control, and
   configurable helper runtimes through `LLM_WIKI_EXTRACTOR_TIMEOUT`.
+- Typed return contracts for the supported Python API, a shared protocol
+  version registry with documented migration rules, and stable
+  `InvalidRequestError`, `WorkspaceStateError`, and `ArtifactIntegrityError`
+  failure categories across every public API function.
 
 ### Changed
 

@@ -72,7 +72,6 @@ from .knowledge_model import (
     Origin,
     REPOSITORY_IDENTITY_SOURCE_EXTENSION,
     RepositoryIdentitySource,
-    SHA256_PATTERN,
     Verification,
     WorkingTreeState,
     serialize_knowledge_index,
@@ -81,6 +80,17 @@ from .redaction import (
     CREDENTIAL_VALUE_RE as _CREDENTIAL_VALUE_RE,
     PROJECTION_URI_USERINFO_RE as _URI_USERINFO_RE,
     SENSITIVE_KEY_RE as _SENSITIVE_KEY_RE,
+)
+from .validation import (
+    require_bool as require_shared_bool,
+    require_choice as require_shared_choice,
+    require_exact_fields as require_shared_exact_fields,
+    require_mapping as require_shared_mapping,
+    require_nonnegative_int as require_shared_nonnegative_int,
+    require_portable_relative_path,
+    require_positive_int as require_shared_positive_int,
+    require_sequence as require_shared_sequence,
+    require_sha256 as require_shared_sha256,
 )
 from .wiki_surface import PageKind, SurfaceRole
 
@@ -112,7 +122,6 @@ _RAW_VCS_REMOTE_RE = re.compile(
     re.IGNORECASE,
 )
 _CONTROL_RE = re.compile(r"[\x00-\x1f\x7f]")
-_SHA256_RE = re.compile(SHA256_PATTERN)
 _EVALUATED_REVISION_RE = re.compile(EVALUATED_REVISION_PATTERN)
 _LIMITATION_CODE_RE = re.compile(LIMITATION_CODE_PATTERN)
 _QUALIFIED_RELATIONSHIP_KIND_RE = re.compile(
@@ -1996,15 +2005,21 @@ def _validate_safe_json_value(
 
 
 def _require_mapping(value: object, path: str) -> Mapping[str, Any]:
-    if not isinstance(value, Mapping):
-        _shape_error(path, "must be a mapping")
-    return value
+    return require_shared_mapping(
+        value,
+        error=KnowledgeProjectionError(
+            "projection-shape-invalid", path, "must be a mapping"
+        ),
+    )
 
 
 def _require_sequence(value: object, path: str) -> Sequence[Any]:
-    if isinstance(value, (str, bytes)) or not isinstance(value, Sequence):
-        _shape_error(path, "must be a sequence")
-    return value
+    return require_shared_sequence(
+        value,
+        error=KnowledgeProjectionError(
+            "projection-shape-invalid", path, "must be a sequence"
+        ),
+    )
 
 
 def _require_exact_fields(
@@ -2014,13 +2029,23 @@ def _require_exact_fields(
     *,
     optional: set[str] | frozenset[str] = frozenset(),
 ) -> None:
-    keys = set(value)
-    unknown = sorted(keys - required - set(optional))
-    missing = sorted(required - keys)
-    if unknown:
-        _shape_error(f"{path}.{unknown[0]}", "is not an allowed field")
-    if missing:
-        _shape_error(f"{path}.{missing[0]}", "is required")
+    return require_shared_exact_fields(
+        value,
+        allowed=required | set(optional),
+        required=required,
+        mapping_error=KnowledgeProjectionError(
+            "projection-shape-invalid", path, "must be a mapping"
+        ),
+        missing_error=lambda fields: KnowledgeProjectionError(
+            "projection-shape-invalid", f"{path}.{fields[0]}", "is required"
+        ),
+        unknown_error=lambda fields: KnowledgeProjectionError(
+            "projection-shape-invalid",
+            f"{path}.{fields[0]}",
+            "is not an allowed field",
+        ),
+        unknown_first=True,
+    )
 
 
 def _require_safe_text(value: object, path: str) -> str:
@@ -2056,38 +2081,61 @@ def _require_canonical_path(value: object, path: str) -> str:
 
 def _require_relative_path(value: object, path: str) -> str:
     selected = _require_safe_text(value, path)
-    if (
-        "\\" in selected
-        or selected.startswith("/")
-        or any(part in {"", ".", ".."} for part in selected.split("/"))
-    ):
-        _shape_error(path, "must be a normalized repository-relative path")
-    return selected
+    error = KnowledgeProjectionError(
+        "projection-shape-invalid",
+        path,
+        "must be a normalized repository-relative path",
+    )
+    return require_portable_relative_path(
+        selected,
+        relative_error=error,
+        separator_error=error,
+        non_nfc_error=error,
+        nonportable_error=error,
+        reserved_error=error,
+    )
 
 
 def _require_enum(value: object, values: set[str] | frozenset[str], path: str) -> str:
-    if not isinstance(value, str) or value not in values:
-        _shape_error(path, "contains an unsupported closed value")
-    return value
+    error = KnowledgeProjectionError(
+        "projection-shape-invalid", path, "contains an unsupported closed value"
+    )
+    return require_shared_choice(
+        value,
+        values,
+        text_error=error,
+        choice_error=lambda _allowed: error,
+    )
 
 
 def _require_bool(value: object, path: str) -> bool:
-    if not isinstance(value, bool):
-        _shape_error(path, "must be a boolean")
-    return value
+    return require_shared_bool(
+        value,
+        error=KnowledgeProjectionError(
+            "projection-shape-invalid", path, "must be a boolean"
+        ),
+    )
 
 
 def _require_nonnegative_int(value: object, path: str) -> int:
-    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
-        _shape_error(path, "must be a non-negative integer")
-    return value
+    return require_shared_nonnegative_int(
+        value,
+        error=KnowledgeProjectionError(
+            "projection-shape-invalid", path, "must be a non-negative integer"
+        ),
+    )
 
 
 def _require_positive_int(value: object, path: str) -> int:
-    selected = _require_nonnegative_int(value, path)
-    if selected == 0:
-        _shape_error(path, "must be a positive integer")
-    return selected
+    return require_shared_positive_int(
+        value,
+        invalid_error=KnowledgeProjectionError(
+            "projection-shape-invalid", path, "must be a non-negative integer"
+        ),
+        zero_error=KnowledgeProjectionError(
+            "projection-shape-invalid", path, "must be a positive integer"
+        ),
+    )
 
 
 def _require_sha256(
@@ -2096,13 +2144,14 @@ def _require_sha256(
     *,
     code: str = "projection-shape-invalid",
 ) -> str:
-    if not isinstance(value, str) or _SHA256_RE.fullmatch(value) is None:
-        raise KnowledgeProjectionError(
+    return require_shared_sha256(
+        value,
+        digest_error=KnowledgeProjectionError(
             code,
             path,
             "must be a canonical sha256:<64 lowercase hexadecimal> value",
-        )
-    return value
+        ),
+    )
 
 
 def _require_machine_code(value: object, path: str) -> str:

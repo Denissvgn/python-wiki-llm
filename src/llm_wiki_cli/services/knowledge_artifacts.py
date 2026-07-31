@@ -9,7 +9,6 @@ validated reader must reject any orphan or mixed projection set.
 from __future__ import annotations
 
 import json
-import posixpath
 import re
 from collections import Counter
 from collections.abc import Callable, Mapping
@@ -43,6 +42,11 @@ from .knowledge_model import (
 )
 from .section_ownership import SectionOwnershipError, validate_section_ownership
 from .sync_manifest import MANIFEST_FILENAME, SyncManifest, SyncManifestError
+from .validation import (
+    is_portable_relative_path,
+    require_exact_fields as require_shared_exact_fields,
+    require_nonnegative_int,
+)
 from .wiki_surface import (
     PageKind,
     WikiSurfaceError,
@@ -56,7 +60,6 @@ from .wiki_surface_index import (
 )
 
 KNOWLEDGE_INDEX_FILENAME = ".llm-wiki-knowledge.json"
-_WINDOWS_DRIVE_PREFIX_RE = re.compile(r"^[A-Za-z]:")
 _KNOWLEDGE_SCHEMA_VERSION_RE = re.compile(
     r"^llm-wiki-knowledge/v([1-9][0-9]*)$"
 )
@@ -1458,18 +1461,18 @@ def _validate_surface_keys(
     required: set[str],
     optional: set[str],
 ) -> None:
-    missing = required - set(value)
-    if missing:
-        raise KnowledgeArtifactError(
-            f"{field}.{min(missing)}",
-            "is required",
-        )
-    unknown = set(value) - required - optional
-    if unknown:
-        raise KnowledgeArtifactError(
-            f"{field}.{min(unknown)}",
-            "is not supported by surface-index v1",
-        )
+    return require_shared_exact_fields(
+        value,
+        allowed=required | optional,
+        required=required,
+        mapping_error=KnowledgeArtifactError(field, "must be an object"),
+        missing_error=lambda fields: KnowledgeArtifactError(
+            f"{field}.{fields[0]}", "is required"
+        ),
+        unknown_error=lambda fields: KnowledgeArtifactError(
+            f"{field}.{fields[0]}", "is not supported by surface-index v1"
+        ),
+    )
 
 
 def _validate_exact_surface_keys(
@@ -1481,32 +1484,14 @@ def _validate_exact_surface_keys(
 
 
 def _nonnegative_integer(value: object, field: str) -> int:
-    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
-        raise KnowledgeArtifactError(field, "must be a non-negative integer")
-    return value
+    return require_nonnegative_int(
+        value,
+        error=KnowledgeArtifactError(field, "must be a non-negative integer"),
+    )
 
 
 def _is_safe_relative_path(value: object) -> bool:
-    if isinstance(value, str):
-        try:
-            value.encode("utf-8")
-        except UnicodeEncodeError:
-            return False
-    if (
-        not isinstance(value, str)
-        or not value
-        or value != value.strip()
-        or any(ord(char) < 0x20 for char in value)
-        or value.startswith("/")
-        or _WINDOWS_DRIVE_PREFIX_RE.match(value)
-        or "\\" in value
-    ):
-        return False
-    parts = value.split("/")
-    return not (
-        any(part in {"", ".", ".."} for part in parts)
-        or posixpath.normpath(value) != value
-    )
+    return is_portable_relative_path(value)
 
 
 __all__ = [

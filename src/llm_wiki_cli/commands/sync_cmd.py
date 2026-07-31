@@ -102,6 +102,7 @@ from ..services.markdown_sections import (
     is_placeholder_description as _service_is_placeholder_description,
     is_table_separator as _service_is_table_separator,
     normalize_markdown as _service_normalize_markdown,
+    preserve_index_custom_sections as _service_preserve_index_custom_sections,
     preserve_level_two_section_exact as _service_preserve_level_two_section_exact,
     preserve_table_description_cells as _service_preserve_table_description_cells,
     replace_section_body as _service_replace_section_body,
@@ -130,6 +131,7 @@ from ..services.sync_manifest import (
     SyncManifest,
     retained_concept_page_paths,
 )
+from ..services.sync_analysis import SyncDiff, compute_sync_diff as _compute_diff
 from ..services.wiki_lifecycle import (
     WikiLifecycleState,
     bootstrap_guidance,
@@ -195,7 +197,6 @@ MAX_SURFACE_CREATED_PAGES = MAX_SYNC_AFFECTED_FILES
 MAX_SURFACE_CREATED_RATIO = MAX_SYNC_AFFECTED_RATIO
 MIN_PAGES_FOR_SURFACE_RATIO_GUARD = MIN_SOURCES_FOR_RATIO_GUARD
 _FLOW_CATEGORY_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
-_HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 _DEPRECATION_HEADER = (
     "> ⚠️ **Stale:** Source no longer found in codebase. "
     "Run `llm-wiki lint` to audit.\n\n"
@@ -403,37 +404,6 @@ def _merge_module_semantics(
 # ── Diff ──────────────────────────────────────────────────────────────────────
 
 
-@dataclass
-class SyncDiff:
-    """Categorised difference between the persisted manifest and live inventory."""
-
-    new_files: list[str] = field(default_factory=list)
-    changed_files: list[str] = field(default_factory=list)
-    metadata_only_files: list[str] = field(default_factory=list)
-    unchanged_files: list[str] = field(default_factory=list)
-    removed_files: list[str] = field(default_factory=list)
-    # {class_name: (old_filepath, new_filepath)}
-    moved_entities: dict[str, tuple[str, str]] = field(default_factory=dict)
-    # {(class_name, filepath): (old_page_name, new_page_name)}
-    renamed_entity_pages: dict[tuple[str, str], tuple[str, str]] = field(
-        default_factory=dict
-    )
-    # {filepath: (old_page_name, new_page_name)}
-    renamed_module_pages: dict[str, tuple[str, str]] = field(default_factory=dict)
-
-    @property
-    def has_changes(self) -> bool:
-        return bool(
-            self.new_files
-            or self.changed_files
-            or self.metadata_only_files
-            or self.removed_files
-            or self.moved_entities
-            or self.renamed_entity_pages
-            or self.renamed_module_pages
-        )
-
-
 def _governance_moves_for_sync(
     diff: SyncDiff,
     manifest: SyncManifest,
@@ -556,107 +526,6 @@ def _large_infrastructure_message(plan: InfrastructureSyncPlan) -> str | None:
                 f"({percent}%), which exceeds the {limit_percent}% safety limit."
             )
     return None
-
-
-def _compute_diff(
-    manifest: SyncManifest,
-    inventory: dict,
-    src_dir: str,
-    *,
-    entity_page_cache: dict[tuple[str, str], str] | None = None,
-    module_page_map: dict[str, str] | None = None,
-    source_content_hashes: Mapping[str, str] | None = None,
-) -> SyncDiff:
-    """Compare *manifest* against the live *inventory*.
-
-    Move detection: a class that appears in the manifest under one filepath
-    but now lives in a *different* filepath is considered moved rather than
-    deleted+created.  Its source-file hash is therefore refreshed from the
-    *new* filepath.
-    """
-    diff = SyncDiff()
-
-    # Build reverse lookups. Keep sets so duplicate class names do not collapse
-    # into false moves when a new same-named entity appears.
-    old_cls_to_files: dict[str, set[str]] = {}
-    for fp, info in manifest.sources.items():
-        for cls_name in info.get("entities", []):
-            old_cls_to_files.setdefault(cls_name, set()).add(fp)
-
-    new_cls_to_files: dict[str, set[str]] = {}
-    for fp, file_data in inventory.items():
-        for cls in file_data.get("classes", []):
-            new_cls_to_files.setdefault(cls["name"], set()).add(fp)
-
-    # Detect moves only when the entity name is unambiguous before and after.
-    # If both old and new paths still contain the same class name, this is a
-    # naming collision, not a move.
-    for cls_name, old_files in old_cls_to_files.items():
-        new_files = new_cls_to_files.get(cls_name, set())
-        if len(old_files) == 1 and len(new_files) == 1:
-            old_fp = next(iter(old_files))
-            new_fp = next(iter(new_files))
-        else:
-            continue
-        if old_fp != new_fp:
-            diff.moved_entities[cls_name] = (old_fp, new_fp)
-
-    # Categorise each file in the new inventory
-    for filepath, file_data in inventory.items():
-        if filepath not in manifest.sources:
-            diff.new_files.append(filepath)
-        else:
-            # Re-hash to detect content changes
-            current_hash = (
-                source_content_hashes[filepath]
-                if source_content_hashes is not None
-                else _hash_file(Path(src_dir) / filepath)
-            )
-            if current_hash != manifest.sources[filepath].get("hash", ""):
-                current_semantic_hash = _semantic_hash_for_file(file_data)
-                if current_semantic_hash == manifest.sources[filepath].get(
-                    "semantic_hash"
-                ):
-                    diff.metadata_only_files.append(filepath)
-                else:
-                    diff.changed_files.append(filepath)
-            else:
-                diff.unchanged_files.append(filepath)
-
-    # Detect removals: in manifest but not in new inventory
-    for filepath in manifest.sources:
-        if filepath not in inventory:
-            diff.removed_files.append(filepath)
-
-    if entity_page_cache is None:
-        entity_page_cache = build_entity_page_map(inventory)
-    if module_page_map is None:
-        module_page_map = build_module_page_map(inventory)
-
-    for filepath, file_data in inventory.items():
-        old_info = manifest.sources.get(filepath)
-        if not old_info:
-            continue
-        old_module_page = str(
-            old_info.get("module_page") or _module_name_from_path(filepath)
-        )
-        new_module_page = module_page_map.get(filepath, _page_name_for_module(filepath))
-        if old_module_page != new_module_page:
-            diff.renamed_module_pages[filepath] = (old_module_page, new_module_page)
-
-        entity_pages = old_info.get("entity_pages")
-        for cls in file_data.get("classes", []):
-            cls_name = str(cls["name"])
-            new_page = entity_page_cache.get((cls_name, filepath), cls_name)
-            old_page = (
-                str(entity_pages[cls_name])
-                if isinstance(entity_pages, dict) and cls_name in entity_pages
-                else cls_name
-            )
-            if old_page != new_page:
-                diff.renamed_entity_pages[(cls_name, filepath)] = (old_page, new_page)
-
-    return diff
 
 
 # ── Apply ─────────────────────────────────────────────────────────────────────
@@ -3345,113 +3214,8 @@ def run(args) -> None:
 # ── Index + log helpers ───────────────────────────────────────────────────────
 
 
-_INDEX_GENERATED_HEADINGS = frozenset(
-    heading.casefold()
-    for heading in (
-        "Surface Overview",
-        "Entities",
-        "Modules",
-        "Workflows",
-        "Guides",
-        "User Flows",
-        "Infrastructure",
-        "Architecture",
-        "Dependency Architecture",
-        "API Contracts",
-        "Log",
-    )
-)
-_INDEX_GENERATED_INTROS = {
-    ("Catalog of project modules and entities.",),
-    ("Use this landing page to choose the right wiki surface.",),
-}
-
-
-def _heading_title(line: str) -> str | None:
-    match = _HEADING_RE.match(line.strip())
-    if not match:
-        return None
-    return match.group(2).strip()
-
-
-def _iter_level_two_sections(
-    lines: list[str],
-) -> list[tuple[str, list[str]]]:
-    sections: list[tuple[str, list[str]]] = []
-    for i, line in enumerate(lines):
-        match = _HEADING_RE.match(line.strip())
-        if not match or len(match.group(1)) != 2:
-            continue
-        end = len(lines)
-        for j in range(i + 1, len(lines)):
-            next_match = _HEADING_RE.match(lines[j].strip())
-            if next_match and len(next_match.group(1)) <= 2:
-                end = j
-                break
-        sections.append((line.strip(), _trim_blank_lines(lines[i + 1 : end])))
-    return sections
-
-
-def _index_intro_lines(lines: list[str]) -> list[str]:
-    start = 0
-    if lines and lines[0].startswith("# "):
-        start = 1
-    first_section = len(lines)
-    for i, line in enumerate(lines[start:], start=start):
-        match = _HEADING_RE.match(line.strip())
-        if match and len(match.group(1)) == 2:
-            first_section = i
-            break
-    return _trim_blank_lines(lines[start:first_section])
-
-
-def _merge_intro_into_notes(
-    sections: list[tuple[str, list[str]]], intro: list[str]
-) -> list[tuple[str, list[str]]]:
-    if not intro:
-        return sections
-    merged: list[tuple[str, list[str]]] = []
-    inserted = False
-    for heading, body in sections:
-        title = _heading_title(heading)
-        if title and title.casefold() == "notes" and not inserted:
-            new_body = intro + ([""] if body else []) + body
-            merged.append((heading, new_body))
-            inserted = True
-        else:
-            merged.append((heading, body))
-    if not inserted:
-        merged.insert(0, ("## Notes", intro))
-    return merged
-
-
-def _preserved_index_sections(old_md: str) -> list[tuple[str, list[str]]]:
-    lines = _normalize_md(old_md).splitlines()
-    custom_sections = [
-        (heading, body)
-        for heading, body in _iter_level_two_sections(lines)
-        if (_heading_title(heading) or "").casefold() not in _INDEX_GENERATED_HEADINGS
-    ]
-    intro = _index_intro_lines(lines)
-    if tuple(intro) in _INDEX_GENERATED_INTROS:
-        intro = []
-    return _merge_intro_into_notes(custom_sections, intro)
-
-
 def _preserve_index_custom_sections(old_md: str, new_md: str) -> str:
-    preserved = _preserved_index_sections(old_md)
-    if not preserved:
-        return new_md
-    lines = _normalize_md(new_md).splitlines()
-    while lines and lines[-1].strip() == "":
-        lines.pop()
-    lines.append("")
-    for heading, body in preserved:
-        lines.append(heading)
-        lines.append("")
-        lines.extend(body)
-        lines.append("")
-    return "\n".join(lines)
+    return _service_preserve_index_custom_sections(old_md, new_md)
 
 
 def _rebuild_index(

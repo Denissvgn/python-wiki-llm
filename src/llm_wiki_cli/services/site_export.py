@@ -29,6 +29,14 @@ from .knowledge_projection import (
     validate_projection_summaries,
 )
 from .site_html_check import SUPPORTED_LINK_MODES, check_built_site_links
+from .validation import (
+    path_is_within as shared_path_is_within,
+    paths_overlap as shared_paths_overlap,
+    require_existing_directory,
+    require_sha256,
+    require_string,
+    resolve_portable_workspace_path,
+)
 from .wiki_media import (
     build_asset_index,
     collect_media_references,
@@ -588,20 +596,23 @@ def _complete_publication_export(
 
 
 def _require_string(value: Any, field_name: str) -> str:
-    if not isinstance(value, str):
-        raise SiteExportError(f"Publication receipt {field_name} must be a string.")
-    return value
+    return require_string(
+        value,
+        error=SiteExportError(
+            f"Publication receipt {field_name} must be a string."
+        ),
+    )
 
 
 def _require_digest(value: Any, field_name: str, *, allow_empty: bool = False) -> str:
     text = _require_string(value, field_name)
-    if allow_empty and text == "":
-        return text
-    if not re.fullmatch(r"sha256:[0-9a-f]{64}", text):
-        raise SiteExportError(
+    return require_sha256(
+        text,
+        digest_error=SiteExportError(
             f"Publication receipt {field_name} must be a SHA-256 digest."
-        )
-    return text
+        ),
+        allow_empty=allow_empty,
+    )
 
 
 def _selection_from_payload(value: Any) -> SitePublicationSelection:
@@ -4215,39 +4226,31 @@ def _validate_output_base(
 
 
 def _paths_overlap(left: Path, right: Path) -> bool:
-    try:
-        left.relative_to(right)
-        return True
-    except ValueError:
-        pass
-    try:
-        right.relative_to(left)
-        return True
-    except ValueError:
-        return False
+    return shared_paths_overlap(left, right)
 
 
 def _is_relative_to(path: Path, root: Path) -> bool:
-    try:
-        path.relative_to(root)
-        return True
-    except ValueError:
-        return False
+    return shared_path_is_within(path, root)
 
 
 def _safe_join(root: Path, relative: str) -> Path:
-    root_resolved = root.resolve()
-    path = (root / relative).resolve()
-    try:
-        path.relative_to(root_resolved)
-    except ValueError as exc:
-        raise SiteExportError(f"Path escapes output directory: {path}") from exc
-    return path
+    return resolve_portable_workspace_path(
+        root,
+        relative,
+        path_error=SiteExportError(f"Unsafe portable output path: {relative}"),
+        escape_error=SiteExportError(
+            f"Path escapes output directory: {(root / relative).resolve()}"
+        ),
+    )
 
 
 def _validate_existing_dir(path: Path, label: str) -> None:
-    if not path.exists() or not path.is_dir():
-        raise SiteExportError(f"{label} does not exist or is not a directory: {path}")
+    require_existing_directory(
+        path,
+        error=SiteExportError(
+            f"{label} does not exist or is not a directory: {path}"
+        ),
+    )
 
 
 def _is_external_link(target: str) -> bool:

@@ -13,6 +13,11 @@ from pathlib import Path
 from typing import Optional, Union
 from urllib.parse import quote, unquote
 
+from .validation import (
+    is_portable_path_component,
+    path_is_in_top_level_directory,
+)
+
 RESOURCE_SCHEME = "llm-wiki"
 _PAGE_ID_RE = re.compile(r"^[A-Za-z0-9_.()-]+$")
 
@@ -215,6 +220,7 @@ def is_safe_page_id(page_id: str) -> bool:
         and not page_id.startswith(".")
         and ".." not in page_id
         and bool(_PAGE_ID_RE.fullmatch(page_id))
+        and is_portable_path_component(page_id)
     )
 
 
@@ -380,10 +386,4 @@ def _matches_directory_uri(coordinate: str, entry: WikiSurfaceKind) -> bool:
 
 
 def _is_legacy_path(path: Path, wiki: Path) -> bool:
-    try:
-        return path.relative_to(wiki).parts[:1] == ("legacy",)
-    except ValueError:
-        try:
-            return path.resolve().relative_to(wiki.resolve()).parts[:1] == ("legacy",)
-        except ValueError:
-            return False
+    return path_is_in_top_level_directory(path, wiki, "legacy")

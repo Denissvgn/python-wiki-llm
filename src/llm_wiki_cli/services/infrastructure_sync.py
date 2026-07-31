@@ -21,6 +21,7 @@ from .knowledge_evidence import (
     is_valid_sha256,
 )
 from .source_snapshot import SourceSnapshot
+from .validation import is_portable_relative_path
 
 
 INFRASTRUCTURE_SYNC_SCHEMA_VERSION = "llm-wiki-infrastructure-sync/v1"
@@ -121,15 +122,8 @@ def _prior_infrastructure_state(
 
 
 def _valid_repository_path(value: str) -> bool:
-    path = PurePosixPath(value)
-    return bool(
-        value
-        and not path.is_absolute()
-        and "\\" not in value
-        and ".." not in path.parts
-        and "." not in path.parts
-        and path.as_posix() == value
-    )
+    PurePosixPath(value)  # Preserve the legacy type-error boundary.
+    return is_portable_relative_path(value)
 
 
 def _valid_page_path(value: object) -> bool:

@@ -79,6 +79,21 @@ plain, MkDocs-compatible, or Docusaurus-compatible Markdown output without
 invoking external builders. Static-site output is a derived artifact; it must
 not become a second editable source of truth.
 
+After normal Python signature binding succeeds, all functions exported by
+`llm_wiki_cli.api` report operational and validation failures through
+`LlmWikiApiError` and one of three stable subclasses:
+
+| Exception | Failure mapping |
+|---|---|
+| `InvalidRequestError` | Invalid arguments, path policy, query/model policy, authentication input, or submitted schema |
+| `WorkspaceStateError` | Extraction/bootstrap failure, missing or inaccessible ordinary source/input/documentation workspace storage, invalid lifecycle transition, or other unusable operational state |
+| `ArtifactIntegrityError` | Missing or corrupt protected calibration/controller state, corrupt persisted documentation state, or adopted-input integrity failure, including invalid stored schemas, hash/metadata/native-artifact mismatch, and ambiguous protected-state recovery |
+
+The original `PathPolicyError` name remains an alias for
+`InvalidRequestError`; `ExtractionError` and `BootstrapError` remain aliases
+for `WorkspaceStateError`. The original internal exception is available
+through `__cause__`.
+
 The package has a small required Python runtime footprint. `PyYAML>=6` parses
 user-supplied OpenAPI YAML, and Python versions older than 3.11 use `tomli` for
 TOML. FastAPI, Pydantic, and the target application are not runtime

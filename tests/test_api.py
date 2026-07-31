@@ -370,7 +370,7 @@ def test_documentation_lifecycle_api_signatures_match_cli_contract():
             "builder_command: 'Iterable[str] | None' = None, knowledge_mode: "
             "'str | None' = None, knowledge_public_repository_identity: "
             "'str | None' = None) -> "
-            "'dict[str, Any]'"
+            "'DocumentationExportResult'"
         ),
     }
     for name, expected_signature in exact_signatures.items():

@@ -12,6 +12,7 @@ from urllib.parse import unquote
 
 from .io import write_bytes_atomic
 from .paths import normalize_source_path
+from .validation import normalize_optional_portable_relative_path
 from .wiki_media import (
     build_asset_index,
     iter_markdown_link_targets,
@@ -31,7 +32,6 @@ WIKI_SURFACE_INDEX_SCHEMA_VERSION = "llm-wiki-surface-index/v1"
 
 _MERMAID_CLICK_RE = re.compile(r'^\s*click\s+\S+\s+"([^"]+)"', re.MULTILINE)
 _MARKDOWN_PATH_RE = re.compile(r"\*\*Path:\*\*\s+`([^`]+)`")
-_WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:/")
 
 
 @dataclass(frozen=True)
@@ -393,15 +393,13 @@ def _source_path_from_markdown(content: str, src_root: Path) -> Optional[str]:
 
 
 def _safe_source_path(value: object, src_root: Path) -> Optional[str]:
+    """Normalize observational source metadata, retaining only portable output."""
+
     if not isinstance(value, str) or not value:
         return None
-    normalized = normalize_source_path(value, str(src_root))
-    if not normalized:
-        return None
-    normalized = normalized.replace("\\", "/")
-    if normalized.startswith("/") or _WINDOWS_ABSOLUTE_RE.match(normalized):
-        return None
-    return normalized
+    return normalize_optional_portable_relative_path(
+        normalize_source_path(value, str(src_root))
+    )
 
 
 def _markdown_title(content: str, fallback: str) -> str:

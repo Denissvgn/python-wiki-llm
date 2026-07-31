@@ -18,11 +18,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from ..commands.bootstrap_cmd import (
+from .bootstrap_runtime import (
     build_entity_occurrence_page_map,
     build_module_page_map,
 )
-from ..commands.extract_cmd import get_inventory as get_inventory
+from .extraction_service import get_inventory as get_inventory
 from . import wiki_surface
 from .io import first_unsafe_path_component, read_md, write_md
 from .knowledge_projection import (
@@ -31,6 +31,14 @@ from .knowledge_projection import (
     projection_concept_summary,
     projection_json_value,
     validate_projection_summaries,
+)
+from .validation import (
+    path_is_within as shared_path_is_within,
+    paths_overlap as shared_paths_overlap,
+    require_existing_directory,
+    require_portable_relative_path,
+    require_safe_base_path,
+    resolve_portable_workspace_path,
 )
 
 
@@ -1178,17 +1186,20 @@ def _same_file_identity(
 
 
 def _validate_mirror_scan_relative_path(value: str) -> str:
-    path = Path(value)
-    if (
-        not value
-        or path.is_absolute()
-        or value != path.as_posix()
-        or any(part in {"", ".", ".."} for part in path.parts)
-    ):
-        raise ObsidianError(
-            f"Unsafe expected Obsidian mirror path: {value!r}"
-        )
-    return value
+    error = ObsidianError(f"Unsafe expected Obsidian mirror path: {value!r}")
+    return require_portable_relative_path(
+        value,
+        text_error=error,
+        relative_error=error,
+        escape_error=error,
+        traversal_error=error,
+        separator_error=error,
+        utf8_error=error,
+        control_error=error,
+        non_nfc_error=error,
+        nonportable_error=error,
+        reserved_error=error,
+    )
 
 
 def _mirror_scan_relative_path(page: WikiPage) -> str:
@@ -1500,18 +1511,21 @@ def _preflight_planned_parent_directories(
 
 
 def _safe_join(root: Path, relative: str | Path) -> Path:
-    root_resolved = root.resolve()
-    path = (root / relative).resolve()
-    try:
-        path.relative_to(root_resolved)
-    except ValueError as exc:
-        raise ObsidianError(f"Path escapes base directory: {path}") from exc
-    return path
+    return resolve_portable_workspace_path(
+        root,
+        relative,
+        path_error=ObsidianError(f"Unsafe portable path: {relative}"),
+        escape_error=ObsidianError(
+            f"Path escapes base directory: {(root / relative).resolve()}"
+        ),
+    )
 
 
 def _ensure_safe_base(path: Path) -> None:
-    if path.name in {"", ".", ".."}:
-        raise ObsidianError(f"Invalid directory path: {path}")
+    require_safe_base_path(
+        path,
+        error=ObsidianError(f"Invalid directory path: {path}"),
+    )
 
 
 def _validate_no_authority_overlap(
@@ -1528,24 +1542,11 @@ def _validate_no_authority_overlap(
 
 
 def _paths_overlap(left: Path, right: Path) -> bool:
-    try:
-        left.relative_to(right)
-        return True
-    except ValueError:
-        pass
-    try:
-        right.relative_to(left)
-        return True
-    except ValueError:
-        return False
+    return shared_paths_overlap(left, right)
 
 
 def _path_is_within(path: Path, root: Path) -> bool:
-    try:
-        path.relative_to(root)
-        return True
-    except ValueError:
-        return False
+    return shared_path_is_within(path, root)
 
 
 def _vault_relative_path(path: Path, vault_dir: Path) -> str:
@@ -1563,8 +1564,12 @@ def _is_absolute_link_target(value: str) -> bool:
 
 
 def _validate_existing_dir(path: Path, label: str) -> None:
-    if not path.exists() or not path.is_dir():
-        raise ObsidianError(f"{label} does not exist or is not a directory: {path}")
+    require_existing_directory(
+        path,
+        error=ObsidianError(
+            f"{label} does not exist or is not a directory: {path}"
+        ),
+    )
 
 
 def _plugin_copy_ignore(_dir: str, names: list[str]) -> set[str]:

@@ -13,21 +13,22 @@ import re
 import sys
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 from ..api import LlmWikiApiError, build_documentation_query_service
-from ..commands import context_cmd, lint_cmd
-from ..commands.bootstrap_cmd import build_module_page_map
-from ..commands.extract_cmd import get_inventory
 from ..config import IDE_AGENTS, get_agent_config_path, read_config, validate_path
-from . import circuit_breaker, wiki_surface
+from . import circuit_breaker, context_service as context_cmd
+from . import lint_service as lint_cmd
+from . import wiki_surface
+from .bootstrap_runtime import build_module_page_map
 from .concept_identity import (
     ConceptIdentityError,
     validate_concept_uid,
     validate_natural_key,
 )
 from .documentation_queries import DocumentationQueryError
+from .extraction_service import get_inventory
 from .io import read_md
 from .knowledge_graph import (
     CORE_RELATIONSHIP_KINDS,
@@ -37,6 +38,10 @@ from .knowledge_graph import (
 from .knowledge_observability import (
     knowledge_status_payload,
     load_snapshot_knowledge_observability,
+)
+from .validation import (
+    posix_path_text as shared_posix_path_text,
+    require_portable_relative_path,
 )
 
 MCP_PACKAGE_HINT = "Install it with: pip install 'agent-wiki-cli[mcp]'"
@@ -1065,10 +1070,20 @@ def _is_safe_page_id(page_id: str) -> bool:
 
 
 def _normalise_source_path(path: str) -> str:
-    posix = PurePosixPath(path.replace("\\", "/"))
-    if posix.is_absolute() or ".." in posix.parts:
-        raise McpWikiError(f"Unsafe source path: {path}")
-    return posix.as_posix().lstrip("./")
+    error = McpWikiError(f"Unsafe source path: {path}")
+    return require_portable_relative_path(
+        path,
+        text_error=error,
+        relative_error=error,
+        escape_error=error,
+        traversal_error=error,
+        separator_error=error,
+        utf8_error=error,
+        control_error=error,
+        non_nfc_error=error,
+        nonportable_error=error,
+        reserved_error=error,
+    )
 
 
 def _ensure_inside(root: Path, path: Path) -> None:
@@ -1086,7 +1101,7 @@ def _relative_posix(path: Path, root: Path) -> str:
 
 
 def _posix_string(value: object) -> str:
-    return str(value).replace("\\", "/")
+    return shared_posix_path_text(value)
 
 
 def _normalise_report_paths(payload: dict) -> None:

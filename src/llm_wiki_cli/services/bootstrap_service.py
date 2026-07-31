@@ -19,6 +19,10 @@ class BootstrapContractError(BootstrapServiceError):
     """Raised when bootstrap input or generated contracts are invalid."""
 
 
+class BootstrapRequestError(BootstrapContractError):
+    """Raised when caller-supplied bootstrap options violate the contract."""
+
+
 @dataclass(frozen=True)
 class BootstrapRequest:
     """Runner-neutral deterministic bootstrap inputs.
@@ -70,6 +74,7 @@ class BootstrapResult:
 __all__ = [
     "BootstrapContractError",
     "BootstrapExtractionError",
+    "BootstrapRequestError",
     "BootstrapRequest",
     "BootstrapResult",
     "BootstrapServiceError",

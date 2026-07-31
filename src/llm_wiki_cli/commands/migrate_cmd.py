@@ -55,6 +55,7 @@ from ..services.sync_manifest import (
     MANIFEST_STATE_UNAVAILABLE,
     SyncManifest,
 )
+from ..services.validation import path_is_in_top_level_directory
 from ..services.wiki_surface import PageKind, WikiSurfaceError, mcp_uri
 from ..services.wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
@@ -995,15 +996,7 @@ def _write_page(wiki_dir: Path, rel: str, content: str, dry_run: bool) -> bool:
 
 
 def _is_legacy_path(path: Path, wiki_dir: Path) -> bool:
-    try:
-        return path.relative_to(wiki_dir).parts[:1] == ("legacy",)
-    except ValueError:
-        try:
-            return path.resolve().relative_to(wiki_dir.resolve()).parts[:1] == (
-                "legacy",
-            )
-        except ValueError:
-            return False
+    return path_is_in_top_level_directory(path, wiki_dir, "legacy")
 
 
 def _active_markdown_pages(wiki_dir: Path) -> list[Path]:

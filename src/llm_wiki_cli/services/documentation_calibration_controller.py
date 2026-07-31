@@ -93,6 +93,21 @@ from .redaction import (
     SENSITIVE_NATURAL_LANGUAGE_RE as _SENSITIVE_NATURAL_LANGUAGE_RE,
     URI_USERINFO_RE as _URI_USERINFO_RE,
 )
+from .validation import (
+    format_field_differences,
+    parse_utc_timestamp,
+    paths_overlap as shared_paths_overlap,
+    require_bool as require_shared_bool,
+    require_choice as require_shared_choice,
+    require_exact_fields as require_shared_exact_fields,
+    require_mapping,
+    require_nonnegative_int as require_shared_nonnegative_int,
+    require_positive_int as require_shared_positive_int,
+    require_sha256 as require_shared_sha256,
+    require_trimmed_text,
+    require_trimmed_text_list,
+    require_uuid as require_shared_uuid,
+)
 
 
 CALIBRATION_STATES = (
@@ -110,7 +125,6 @@ INTAKE_ROLES = CALIBRATION_ROLES[:3]
 ADMISSION_PROFILES = frozenset({"local_no_egress", "external_authorized"})
 
 _ZERO_HASH = "sha256:" + ("0" * 64)
-_SHA256_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 _PORTABLE_ID_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,127}$")
 _MAX_EXTERNAL_JSON_BYTES = 16 * 1024 * 1024
 _MAX_BUNDLE_BYTES = 16 * 1024 * 1024
@@ -4496,7 +4510,9 @@ def _commit_transition(
     sequence = actual_generation + 1
     artifact_index = [
         {
-            "path": validate_portable_relative_path(path),
+            "path": validate_portable_relative_path(
+                path, normalize_backslashes=False
+            ),
             "sha256": _sha256_json(payload),
         }
         for path, payload in artifacts
@@ -6127,7 +6143,8 @@ def _validate_transition(payload: Mapping[str, Any]) -> None:
                 "Transition artifact binding is malformed."
             )
         validate_portable_relative_path(
-            _require_text(artifact.get("path"), "transition artifact path")
+            _require_text(artifact.get("path"), "transition artifact path"),
+            normalize_backslashes=False,
         )
         _require_sha256(artifact.get("sha256"), "transition artifact sha256")
     body = payload.get("resulting_run_body")
@@ -6639,100 +6656,144 @@ def _assert_packet_has_no_private_policy_fields(payload: Mapping[str, Any]) -> N
 def _require_exact_fields(
     payload: Mapping[str, Any], fields: set[str], *, label: str
 ) -> None:
-    if not isinstance(payload, Mapping):
-        raise P0CalibrationSchemaError(f"{label.title()} must be an object.")
-    actual = set(payload)
-    if actual != fields:
-        missing = sorted(fields - actual)
-        unknown = sorted(actual - fields)
-        detail = []
-        if missing:
-            detail.append("missing " + ", ".join(missing))
-        if unknown:
-            detail.append("unknown " + ", ".join(unknown))
-        raise P0CalibrationSchemaError(
-            f"{label.title()} fields are invalid: {'; '.join(detail)}."
-        )
+    return require_shared_exact_fields(
+        payload,
+        allowed=fields,
+        required=fields,
+        mapping_error=P0CalibrationSchemaError(
+            f"{label.title()} must be an object."
+        ),
+        missing_error=lambda values: AssertionError(values),
+        unknown_error=lambda values: AssertionError(values),
+        invalid_error=lambda missing, unknown: P0CalibrationSchemaError(
+            f"{label.title()} fields are invalid: "
+            f"{format_field_differences(missing, unknown)}."
+        ),
+    )
 
 
 def _required_mapping(value: Any, label: str) -> Mapping[str, Any]:
-    if not isinstance(value, Mapping):
-        raise P0CalibrationSchemaError(f"{label} must be an object.")
-    return value
+    return require_mapping(
+        value,
+        error=P0CalibrationSchemaError(f"{label} must be an object."),
+        require_string_keys=True,
+    )
 
 
 def _require_text(value: Any, label: str) -> str:
-    if not isinstance(value, str) or not value or value != value.strip():
-        raise P0CalibrationSchemaError(f"{label} must be non-empty trimmed text.")
-    return value
+    """Preserve calibration-v1 controls in otherwise trimmed free-form text."""
+
+    return require_trimmed_text(
+        value,
+        error=P0CalibrationSchemaError(
+            f"{label} must be non-empty trimmed text."
+        ),
+        reject_control_characters=False,
+    )
 
 
 def _require_text_list(value: Any, label: str) -> list[str]:
-    if not isinstance(value, list) or any(
-        not isinstance(item, str) or not item or item != item.strip() for item in value
-    ):
-        raise P0CalibrationSchemaError(f"{label} must be a list of trimmed strings.")
-    return list(value)
+    """Preserve calibration-v1 controls in trimmed free-form text arrays."""
+
+    return require_trimmed_text_list(
+        value,
+        error=P0CalibrationSchemaError(
+            f"{label} must be a list of trimmed strings."
+        ),
+        reject_control_characters=False,
+    )
 
 
 def _require_bool(value: Any, label: str) -> bool:
-    if not isinstance(value, bool):
-        raise P0CalibrationSchemaError(f"{label} must be boolean.")
-    return value
+    return require_shared_bool(
+        value,
+        error=P0CalibrationSchemaError(f"{label} must be boolean."),
+    )
 
 
 def _require_nonnegative_int(value: Any, label: str) -> int:
-    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
-        raise P0CalibrationSchemaError(f"{label} must be a non-negative integer.")
-    return value
+    return require_shared_nonnegative_int(
+        value,
+        error=P0CalibrationSchemaError(
+            f"{label} must be a non-negative integer."
+        ),
+    )
 
 
 def _require_positive_int(value: Any, label: str) -> int:
-    parsed = _require_nonnegative_int(value, label)
-    if parsed < 1:
-        raise P0CalibrationSchemaError(f"{label} must be greater than zero.")
-    return parsed
+    return require_shared_positive_int(
+        value,
+        invalid_error=P0CalibrationSchemaError(
+            f"{label} must be a non-negative integer."
+        ),
+        zero_error=P0CalibrationSchemaError(
+            f"{label} must be greater than zero."
+        ),
+    )
 
 
 def _require_choice(value: Any, choices: Iterable[str], label: str) -> str:
-    parsed = _require_text(value, label)
-    allowed = frozenset(choices)
-    if parsed not in allowed:
-        raise P0CalibrationSchemaError(
+    # Preserve the established closed-value diagnostic for embedded controls.
+    return require_shared_choice(
+        value,
+        choices,
+        text_error=P0CalibrationSchemaError(
+            f"{label} must be non-empty trimmed text."
+        ),
+        choice_error=lambda allowed: P0CalibrationSchemaError(
             f"{label} must be one of: {', '.join(sorted(allowed))}."
-        )
-    return parsed
+        ),
+        reject_control_characters=False,
+    )
 
 
 def _require_sha256(value: Any, label: str) -> str:
-    parsed = _require_text(value, label)
-    if not _SHA256_RE.fullmatch(parsed):
-        raise P0CalibrationSchemaError(f"{label} must be a lowercase sha256 digest.")
-    return parsed
+    # Preserve the established digest diagnostic for embedded controls.
+    return require_shared_sha256(
+        value,
+        text_error=P0CalibrationSchemaError(
+            f"{label} must be non-empty trimmed text."
+        ),
+        digest_error=P0CalibrationSchemaError(
+            f"{label} must be a lowercase sha256 digest."
+        ),
+        reject_control_characters=False,
+    )
 
 
 def _require_uuid(value: Any, label: str) -> str:
-    parsed = _require_text(value, label)
-    try:
-        normalized = str(uuid.UUID(parsed))
-    except ValueError as exc:
-        raise P0CalibrationSchemaError(f"{label} must be a UUID.") from exc
-    if parsed != normalized:
-        raise P0CalibrationSchemaError(f"{label} must be a canonical UUID.")
-    return parsed
+    # Preserve the established UUID diagnostic for embedded controls.
+    return require_shared_uuid(
+        value,
+        text_error=P0CalibrationSchemaError(
+            f"{label} must be non-empty trimmed text."
+        ),
+        uuid_error=P0CalibrationSchemaError(f"{label} must be a UUID."),
+        canonical_error=P0CalibrationSchemaError(
+            f"{label} must be a canonical UUID."
+        ),
+        reject_control_characters=False,
+    )
 
 
 def _require_timestamp(value: Any, label: str) -> str:
-    parsed = _require_text(value, label)
-    if not parsed.endswith("Z"):
-        raise P0CalibrationSchemaError(f"{label} must be a UTC Z timestamp.")
-    try:
-        timestamp = datetime.fromisoformat(parsed[:-1] + "+00:00")
-    except ValueError as exc:
-        raise P0CalibrationSchemaError(f"{label} is not an ISO timestamp.") from exc
-    if timestamp.tzinfo != timezone.utc:
-        raise P0CalibrationSchemaError(f"{label} must use UTC.")
-    return parsed
+    return parse_utc_timestamp(
+        value,
+        string_error=P0CalibrationSchemaError(
+            f"{label} must be non-empty trimmed text."
+        ),
+        timestamp_error=P0CalibrationSchemaError(
+            f"{label} is not an ISO timestamp."
+        ),
+        control_error=P0CalibrationSchemaError(
+            f"{label} is not an ISO timestamp."
+        ),
+        require_z=True,
+        z_error=P0CalibrationSchemaError(
+            f"{label} must be a UTC Z timestamp."
+        ),
+        utc_error=P0CalibrationSchemaError(f"{label} must use UTC."),
+    )[0]
 
 
 def _parse_timestamp(value: Any, label: str) -> datetime:
@@ -6751,7 +6812,9 @@ def _portable_relative_path(value: Any, *, label: str) -> str:
     if not isinstance(value, str):
         raise P0CalibrationSchemaError(f"{label} must be text.")
     try:
-        return validate_portable_relative_path(value)
+        return validate_portable_relative_path(
+            value, normalize_backslashes=False
+        )
     except ProtectedArtifactIntegrityError as exc:
         raise P0CalibrationSchemaError(f"{label} is not portable: {exc}") from exc
 
@@ -6779,7 +6842,7 @@ def _assert_regular_directory(path: Path, label: str) -> None:
 
 def _assert_portable_leaf_name(value: str, label: str) -> None:
     try:
-        validate_portable_relative_path(value)
+        validate_portable_relative_path(value, normalize_backslashes=False)
     except ProtectedArtifactIntegrityError as exc:
         raise P0CalibrationIntegrityError(
             f"{label.title()} name is not portable: {exc}"
@@ -6787,16 +6850,7 @@ def _assert_portable_leaf_name(value: str, label: str) -> None:
 
 
 def _paths_overlap(left: Path, right: Path) -> bool:
-    try:
-        left.relative_to(right)
-        return True
-    except ValueError:
-        pass
-    try:
-        right.relative_to(left)
-        return True
-    except ValueError:
-        return False
+    return shared_paths_overlap(left, right)
 
 
 def _sha256_json(payload: Mapping[str, Any]) -> str:

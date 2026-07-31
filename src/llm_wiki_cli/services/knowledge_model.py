@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import json
 import math
-import posixpath
 import re
 from dataclasses import dataclass, field
 from enum import Enum
@@ -30,7 +29,17 @@ from urllib.parse import unquote, urlsplit
 
 from . import wiki_surface
 from .contracts import KNOWLEDGE_SCHEMA_FILENAME, KNOWLEDGE_SCHEMA_VERSION
-from .knowledge_evidence import SHA256_PATTERN, is_valid_sha256
+from .knowledge_evidence import SHA256_PATTERN
+from .validation import (
+    require_bounded_integral_number,
+    require_enum_value,
+    require_list,
+    require_mapping,
+    require_nonempty_text,
+    require_repository_relative_path,
+    require_sha256,
+    require_string,
+)
 from .wiki_media import contains_uri_authority_userinfo
 from .wiki_surface import (
     PageKind,
@@ -58,7 +67,6 @@ _QUALIFIED_NAME_RE = re.compile(QUALIFIED_NAME_PATTERN)
 _REPOSITORY_IDENTITY_RE = re.compile(REPOSITORY_IDENTITY_PATTERN)
 _EVALUATED_REVISION_RE = re.compile(EVALUATED_REVISION_PATTERN)
 _LIMITATION_CODE_RE = re.compile(LIMITATION_CODE_PATTERN)
-_WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:/")
 _PERCENT_ESCAPE_RE = re.compile(r"%(?![0-9A-Fa-f]{2})")
 _COMPONENT_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]*$")
 _URI_CHAR_RE = re.compile(r"^[A-Za-z0-9._~:/?#\[\]@!$&'()*+,;=%-]+$")
@@ -1634,67 +1642,82 @@ def _normalize_json_value_inner(
 
 
 def _object(value: object, path: str) -> dict[str, Any]:
-    if not isinstance(value, Mapping):
-        raise KnowledgeModelError(path, "must be an object")
-    result: dict[str, Any] = {}
-    for key, item in value.items():
-        if not isinstance(key, str):
-            raise KnowledgeModelError(path, "object keys must be strings")
-        _string(key, path)
-        result[key] = item
-    return result
+    return dict(
+        require_mapping(
+            value,
+            error=KnowledgeModelError(path, "must be an object"),
+            require_string_keys=True,
+            key_error=KnowledgeModelError(
+                path, "object keys must be strings"
+            ),
+            require_utf8_keys=True,
+            utf8_key_error=KnowledgeModelError(
+                path,
+                "must contain only Unicode scalar values encodable as UTF-8",
+            ),
+        )
+    )
 
 
 def _array(value: object, path: str) -> list[Any]:
-    if not isinstance(value, list):
-        raise KnowledgeModelError(path, "must be an array")
-    return value
+    return require_list(
+        value,
+        error=KnowledgeModelError(path, "must be an array"),
+    )
 
 
 def _string(value: object, path: str) -> str:
-    if not isinstance(value, str):
-        raise KnowledgeModelError(path, "must be a string")
-    try:
-        value.encode("utf-8")
-    except UnicodeEncodeError as exc:
-        raise KnowledgeModelError(
+    return require_string(
+        value,
+        error=KnowledgeModelError(path, "must be a string"),
+        utf8_error=KnowledgeModelError(
             path,
             "must contain only Unicode scalar values encodable as UTF-8",
-        ) from exc
-    return value
+        ),
+    )
 
 
 def _nonempty_string(value: object, path: str) -> str:
     text = _string(value, path)
-    if not text or text.strip() != text or any(ord(char) < 32 for char in text):
-        raise KnowledgeModelError(
-            path, "must be a non-empty string without surrounding/control whitespace"
-        )
-    return text
+    return require_nonempty_text(
+        text,
+        error=KnowledgeModelError(
+            path,
+            "must be a non-empty string without surrounding/control whitespace",
+        ),
+        require_trimmed=True,
+    )
 
 
 def _nonnegative_integer(value: object, path: str) -> int:
-    if isinstance(value, bool):
-        raise KnowledgeModelError(path, "must be a non-negative integer")
-    if isinstance(value, int):
-        integer = value
-    elif isinstance(value, float) and math.isfinite(value) and value.is_integer():
-        integer = int(value)
-    else:
-        raise KnowledgeModelError(path, "must be a non-negative integer")
-    if integer < 0 or integer > _MAX_LOCATION_OFFSET:
-        raise KnowledgeModelError(
+    return require_bounded_integral_number(
+        value,
+        invalid_error=KnowledgeModelError(
+            path, "must be a non-negative integer"
+        ),
+        minimum=0,
+        maximum=_MAX_LOCATION_OFFSET,
+        bounds_error=KnowledgeModelError(
             path,
             f"must be between 0 and {_MAX_LOCATION_OFFSET}",
-        )
-    return integer
+        ),
+    )
 
 
 def _positive_integer(value: object, path: str) -> int:
-    integer = _nonnegative_integer(value, path)
-    if integer < 1:
-        raise KnowledgeModelError(path, "must be a positive integer")
-    return integer
+    return require_bounded_integral_number(
+        value,
+        invalid_error=KnowledgeModelError(
+            path, "must be a non-negative integer"
+        ),
+        minimum=0,
+        maximum=_MAX_LOCATION_OFFSET,
+        bounds_error=KnowledgeModelError(
+            path,
+            f"must be between 0 and {_MAX_LOCATION_OFFSET}",
+        ),
+        zero_error=KnowledgeModelError(path, "must be a positive integer"),
+    )
 
 
 def _optional_nonempty_string(value: object, path: str) -> Optional[str]:
@@ -1705,11 +1728,13 @@ def _optional_nonempty_string(value: object, path: str) -> Optional[str]:
 
 def _hash(value: object, path: str) -> str:
     text = _string(value, path)
-    if not is_valid_sha256(text):
-        raise KnowledgeModelError(
-            path, "must be 'sha256:' followed by 64 lowercase hexadecimal digits"
-        )
-    return text
+    return require_sha256(
+        text,
+        digest_error=KnowledgeModelError(
+            path,
+            "must be 'sha256:' followed by 64 lowercase hexadecimal digits",
+        ),
+    )
 
 
 def _optional_hash(value: object, path: str) -> Optional[str]:
@@ -1720,18 +1745,23 @@ def _optional_hash(value: object, path: str) -> Optional[str]:
 
 def _relative_path(value: object, path: str) -> str:
     text = _nonempty_string(value, path)
-    if _looks_absolute(text):
-        raise KnowledgeModelError(path, "must be repository-relative")
-    if "\\" in text:
-        raise KnowledgeModelError(path, "must use POSIX '/' separators")
-    parts = text.split("/")
-    if any(part in {"", ".", ".."} for part in parts):
-        raise KnowledgeModelError(
+    return require_repository_relative_path(
+        text,
+        text_error=KnowledgeModelError(
+            path, "must be a non-empty string without surrounding/control whitespace"
+        ),
+        posix_error=KnowledgeModelError(
             path, "must be normalized without empty or dot segments"
-        )
-    if posixpath.normpath(text) != text:
-        raise KnowledgeModelError(path, "must be a normalized POSIX path")
-    return text
+        ),
+        normalized_error=KnowledgeModelError(
+            path, "must be normalized without empty or dot segments"
+        ),
+        absolute_error=KnowledgeModelError(path, "must be repository-relative"),
+        separator_error=KnowledgeModelError(
+            path, "must use POSIX '/' separators"
+        ),
+        leading_backslash_is_absolute=True,
+    )
 
 
 def _optional_relative_path(value: object, path: str) -> Optional[str]:
@@ -1763,15 +1793,6 @@ def _evaluated_revision(value: object, path: str) -> str:
             "40- or 64-hex object ID",
         )
     return text
-
-
-def _looks_absolute(value: str) -> bool:
-    normalized = value.replace("\\", "/")
-    return (
-        normalized.startswith("/")
-        or normalized.startswith("//")
-        or bool(_WINDOWS_ABSOLUTE_RE.match(normalized))
-    )
 
 
 def _locator(value: object, path: str) -> str:
@@ -1864,13 +1885,16 @@ def _link_observation_string(value: object, path: str) -> str:
 
 
 def _enum_value(value: object, enum_type: Type[_EnumT], path: str) -> _EnumT:
-    if not isinstance(value, str):
-        raise KnowledgeModelError(path, "must be a string")
-    try:
-        return enum_type(value)
-    except ValueError as exc:
-        allowed = ", ".join(repr(item.value) for item in enum_type)
-        raise KnowledgeModelError(path, f"must be one of {allowed}") from exc
+    return require_enum_value(
+        value,
+        enum_type,
+        text_error=KnowledgeModelError(path, "must be a string"),
+        choice_error=lambda: KnowledgeModelError(
+            path,
+            "must be one of "
+            + ", ".join(repr(item.value) for item in enum_type),
+        ),
+    )
 
 
 def _open_enum_value(

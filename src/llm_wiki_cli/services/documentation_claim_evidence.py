@@ -23,6 +23,16 @@ from .knowledge_graph import (
     GRAPH_RESOLUTIONS,
     is_supported_relationship_kind,
 )
+from .validation import (
+    require_exact_choice,
+    require_exact_fields,
+    require_mapping,
+    require_mapping_list,
+    require_nonnegative_int,
+    require_portable_relative_path,
+    require_trimmed_text,
+    require_trimmed_text_list,
+)
 
 if TYPE_CHECKING:
     from .documentation_queries import DocumentationGraphQueryService
@@ -1212,19 +1222,18 @@ def _portable_path(
     value: object, field_name: str, *, suffix: str | None = None
 ) -> str:
     text = _text(value, field_name)
-    path = PurePosixPath(text)
-    if (
-        "\\" in text
-        or path.is_absolute()
-        or _WINDOWS_DRIVE_RE.match(text)
-        or path.as_posix() != text
-        or any(part in {"", ".", ".."} for part in path.parts)
-        or (suffix is not None and not text.casefold().endswith(suffix))
-    ):
-        raise DocumentationClaimEvidenceError(
-            f"{field_name} must be a portable repository-relative path."
-        )
-    return text
+    error = DocumentationClaimEvidenceError(
+        f"{field_name} must be a portable repository-relative path."
+    )
+    return require_portable_relative_path(
+        text,
+        required_suffix=suffix,
+        relative_error=error,
+        separator_error=error,
+        non_nfc_error=error,
+        nonportable_error=error,
+        reserved_error=error,
+    )
 
 
 def _runtime_capture_path(value: object, field_name: str) -> str:
@@ -1284,57 +1293,65 @@ def _reason(value: object, field_name: str) -> str:
 
 
 def _enum(value: object, allowed: frozenset[str], field_name: str) -> str:
-    if not isinstance(value, str) or value not in allowed:
-        raise DocumentationClaimEvidenceError(
+    return require_exact_choice(
+        value,
+        allowed,
+        error=DocumentationClaimEvidenceError(
             f"{field_name} must be one of {', '.join(sorted(allowed))}."
-        )
-    return value
+        ),
+    )
 
 
 def _text(value: object, field_name: str) -> str:
-    if (
-        not isinstance(value, str)
-        or not value
-        or value != value.strip()
-        or any(ord(char) < 0x20 for char in value)
-    ):
-        raise DocumentationClaimEvidenceError(
+    return require_trimmed_text(
+        value,
+        error=DocumentationClaimEvidenceError(
             f"{field_name} must be non-empty normalized text."
-        )
-    return value
+        ),
+    )
 
 
 def _string_list(value: object, field_name: str) -> list[str]:
-    if not isinstance(value, list):
-        raise DocumentationClaimEvidenceError(f"{field_name} must be an array.")
-    items = [_text(item, f"{field_name}[]") for item in value]
-    if len(set(items)) != len(items):
-        raise DocumentationClaimEvidenceError(
+    return require_trimmed_text_list(
+        value,
+        error=DocumentationClaimEvidenceError(f"{field_name} must be an array."),
+        item_error=DocumentationClaimEvidenceError(
+            f"{field_name}[] must be non-empty normalized text."
+        ),
+        duplicate_error=DocumentationClaimEvidenceError(
             f"{field_name} must not contain duplicates."
-        )
-    return sorted(items)
+        ),
+        sort=True,
+        reject_duplicates=True,
+    )
 
 
 def _nonnegative_int(value: object, field_name: str) -> int:
-    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
-        raise DocumentationClaimEvidenceError(
+    return require_nonnegative_int(
+        value,
+        error=DocumentationClaimEvidenceError(
             f"{field_name} must be a non-negative integer."
-        )
-    return value
+        ),
+    )
 
 
 def _mapping(value: object, field_name: str) -> Mapping[str, Any]:
-    if not isinstance(value, Mapping) or any(
-        not isinstance(key, str) for key in value
-    ):
-        raise DocumentationClaimEvidenceError(f"{field_name} must be an object.")
-    return value
+    return require_mapping(
+        value,
+        error=DocumentationClaimEvidenceError(f"{field_name} must be an object."),
+        require_string_keys=True,
+    )
 
 
 def _object_array(value: object, field_name: str) -> list[Mapping[str, Any]]:
-    if not isinstance(value, list):
-        raise DocumentationClaimEvidenceError(f"{field_name} must be an array.")
-    return [_mapping(item, f"{field_name}[]") for item in value]
+    return require_mapping_list(
+        value,
+        error=DocumentationClaimEvidenceError(f"{field_name} must be an array."),
+        item_error=DocumentationClaimEvidenceError(
+            f"{field_name}[] must be an object."
+        ),
+        require_string_keys=True,
+    )
 
 
 def _exact_fields(
@@ -1343,16 +1360,20 @@ def _exact_fields(
     required: frozenset[str],
     field_name: str,
 ) -> None:
-    missing = required - set(value)
-    unknown = set(value) - allowed
-    if missing:
-        raise DocumentationClaimEvidenceError(
-            f"{field_name}.{min(missing)} is required."
-        )
-    if unknown:
-        raise DocumentationClaimEvidenceError(
-            f"{field_name}.{min(unknown)} is not supported."
-        )
+    return require_exact_fields(
+        value,
+        allowed=allowed,
+        required=required,
+        mapping_error=DocumentationClaimEvidenceError(
+            f"{field_name} must be an object."
+        ),
+        missing_error=lambda fields: DocumentationClaimEvidenceError(
+            f"{field_name}.{fields[0]} is required."
+        ),
+        unknown_error=lambda fields: DocumentationClaimEvidenceError(
+            f"{field_name}.{fields[0]} is not supported."
+        ),
+    )
 
 
 def _reject_sensitive_metadata(value: object, field_name: str) -> None:
