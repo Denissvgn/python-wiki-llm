@@ -62,7 +62,7 @@ jobs:
           strict: "true"
           fail-on: unhealthy
 
-      - name: Reject an invalid strict input
+      - name: "Expected failure: reject an invalid strict input"
         id: invalid-strict
         continue-on-error: true
         uses: ./integrations/github-action
@@ -79,7 +79,7 @@ jobs:
         run: |
           test "${STEP_OUTCOME}" = "failure"
 
-      - name: Reject an invalid failure threshold
+      - name: "Expected failure: reject an invalid failure threshold"
         id: invalid-fail-on
         continue-on-error: true
         uses: ./integrations/github-action
