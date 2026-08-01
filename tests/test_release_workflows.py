@@ -79,6 +79,18 @@ def test_action_selftest_uses_step_scoped_runner_temp_and_negative_cases() -> No
     assert text.count('test "${STEP_OUTCOME}" = "failure"') == 2
 
 
+def test_ci_pins_the_package_build_tool() -> None:
+    workflow = _yaml("ci.yml")
+    package_build = next(
+        step
+        for step in workflow["jobs"]["test"]["steps"]
+        if step.get("name") == "Check package builds"
+    )
+    assert 'python -m pip install --no-cache-dir "build==1.5.0"' in package_build[
+        "run"
+    ]
+
+
 def test_publish_is_dry_run_by_default_and_publisher_cannot_build() -> None:
     workflow = _yaml("publish.yml")
     dispatch = workflow.get("on", workflow.get(True))["workflow_dispatch"]

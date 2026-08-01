@@ -33,6 +33,7 @@ dev = [
     "pytest-cov>=4.0",
     "jsonschema>=4.18",
     "markdown-it-py>=4.0,<5",
+    "setuptools==83.0.0",
 ]
 # TypeScript extraction requires Node.js + npm at runtime (no Python deps).
 # Prepare the locked dependency cache with `llm-wiki prepare-extractors`.

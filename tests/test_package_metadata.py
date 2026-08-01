@@ -76,6 +76,18 @@ def test_jsonschema_is_a_dev_only_dependency():
     )
 
 
+def test_build_backend_requirement_is_a_dev_only_dependency():
+    data = _pyproject()
+    backend_requirement = data["build-system"]["requires"][0]
+
+    assert backend_requirement == "setuptools==83.0.0"
+    assert backend_requirement in data["project"]["optional-dependencies"]["dev"]
+    assert not any(
+        dependency.lower().startswith("setuptools")
+        for dependency in data["project"]["dependencies"]
+    )
+
+
 def test_sdist_manifest_includes_knowledge_schema():
     manifest = (PROJECT_ROOT / "MANIFEST.in").read_text(encoding="utf-8")
     assert (
