@@ -835,14 +835,25 @@ def _validate_optional_run_collections(payload: Mapping[str, Any]) -> None:
                 raise DocumentationSchemaError(
                     f"Run evidence.{result_key} has an invalid attempt path."
                 )
+    global_evidence_keys = set(required_evidence) | set(optional_exact)
+    stage_evidence_keys = {
+        f"{stage}_{suffix}"
+        for stage in SUPPORTED_AGENT_STAGES
+        for suffix in ("before", "packet", "result")
+    }
     stage_evidence_prefixes = tuple(f"{stage}_" for stage in SUPPORTED_AGENT_STAGES)
     for key in evidence:
-        if key.startswith(stage_evidence_prefixes):
-            stage = key.rsplit("_", 1)[0]
-            if stage not in attempts:
-                raise DocumentationSchemaError(
-                    f"Run evidence.{key} has no corresponding stage attempt."
-                )
+        if key in global_evidence_keys or not key.startswith(stage_evidence_prefixes):
+            continue
+        if key not in stage_evidence_keys:
+            raise DocumentationSchemaError(
+                f"Run evidence.{key} is not supported stage evidence."
+            )
+        stage = key.rsplit("_", 1)[0]
+        if stage not in attempts:
+            raise DocumentationSchemaError(
+                f"Run evidence.{key} has no corresponding stage attempt."
+            )
     limitations = payload.get("verdict_limitations", [])
     if not isinstance(limitations, list) or any(
         not isinstance(value, str) for value in limitations

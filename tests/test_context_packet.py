@@ -51,6 +51,10 @@ def _request(**overrides: Any) -> dict[str, Any]:
     return value
 
 
+def test_context_packet_golden_is_lf_only() -> None:
+    assert b"\r" not in GOLDEN_PATH.read_bytes()
+
+
 def _write_snapshot_project(root: Path, *, opaque_text: bool = False) -> None:
     root.mkdir(parents=True)
     docstring = (

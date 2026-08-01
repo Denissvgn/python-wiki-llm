@@ -6,7 +6,7 @@ import argparse
 import json
 import subprocess
 from copy import deepcopy
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 import pytest
 
@@ -186,6 +186,15 @@ def test_bundle_round_trip_binds_identity_artifacts_and_support(
     )
     assert manifest["gates"]["RD-13"]["evidence"] == []
     assert {item["kind"] for item in manifest["artifacts"]} == {"wheel", "sdist"}
+
+
+def test_bundle_relative_paths_are_portable_posix_text() -> None:
+    root = PureWindowsPath(r"C:\qualified-bundle")
+    path = root / "dist" / "agent_wiki_cli-1.5.0-py3-none-any.whl"
+
+    assert qualification._bundle_relative_path(path, root) == (
+        "dist/agent_wiki_cli-1.5.0-py3-none-any.whl"
+    )
 
 
 @pytest.mark.parametrize("mutation", ["missing", "extra", "artifact", "support"])

@@ -124,6 +124,10 @@ def validate_path(path: str, label: str = "path") -> Path:
     Raises PathValidationError with a clear message if the resolved path escapes the
     repository root (cwd).
     """
+    if "\0" in path:
+        raise PathValidationError(
+            f"Error: {label} contains an embedded NUL character."
+        )
     resolved = (Path.cwd() / path).resolve()
     cwd = Path.cwd().resolve()
     try:

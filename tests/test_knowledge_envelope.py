@@ -211,10 +211,16 @@ def _initialized_git_repository(repository: Path) -> str:
         "envelope-fixture@example.invalid",
     )
     _git(repository, "config", "--local", "commit.gpgsign", "false")
-    (repository / ".gitignore").write_text("ignored/\n", encoding="utf-8")
-    (repository / "tracked.txt").write_text("tracked\n", encoding="utf-8")
+    _git(repository, "config", "--local", "core.autocrlf", "false")
+    _git(repository, "config", "--local", "core.eol", "lf")
+    (repository / ".gitignore").write_bytes(b"ignored/\n")
+    (repository / "tracked.txt").write_bytes(b"tracked\n")
     _git(repository, "add", ".gitignore", "tracked.txt")
     _git(repository, "commit", "--quiet", "-m", "initial")
+    assert (
+        collect_git_repository_evidence(repository).working_tree
+        is WorkingTreeState.CLEAN
+    )
     return _git(repository, "rev-parse", "HEAD")
 
 

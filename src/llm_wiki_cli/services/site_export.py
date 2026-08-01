@@ -21,6 +21,7 @@ from typing import Any, Iterable, Optional, Union
 from urllib.parse import unquote
 
 from . import wiki_surface
+from .filesystem_guard import fresh_no_follow_stat
 from .io import read_md, write_md
 from .knowledge_observability import UNEVALUATED_FRESHNESS_DISCLOSURE
 from .knowledge_projection import (
@@ -1123,6 +1124,12 @@ def export_site_mirror(
     _validate_export_site_name(profile, site_name)
     wiki = Path(wiki_dir).expanduser()
     out = Path(out_dir).expanduser()
+    if _publication_metadata:
+        # The publication receipt binds the source directory name, so reject an
+        # unsafe normalized identity before touching the filesystem.  This also
+        # keeps the validation portable when a host cannot materialize names
+        # such as a whitespace-only Windows directory.
+        _normalized_source_id(wiki.name)
     _validate_existing_dir(wiki, "wiki_dir")
     _validate_output_base(
         wiki,
@@ -1536,6 +1543,8 @@ def check_site_mirror(
     _validate_profile(profile)
     wiki = Path(wiki_dir).expanduser()
     out = Path(out_dir).expanduser()
+    if _publication_metadata:
+        _normalized_source_id(wiki.name)
     _validate_existing_dir(wiki, "wiki_dir")
     pages = wiki_surface.collect_wiki_pages(wiki)
     knowledge_summaries = _preflight_knowledge_projection(
@@ -3088,7 +3097,7 @@ def _find_unexpected_knowledge_pages(
             path = Path(entry.path)
             relative_path = path.relative_to(out).as_posix()
             try:
-                metadata = entry.stat(follow_symlinks=False)
+                metadata = fresh_no_follow_stat(path)
             except OSError as exc:
                 raise SiteExportError(
                     "Cannot safely inspect existing enriched output entry."

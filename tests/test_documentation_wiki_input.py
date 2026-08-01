@@ -5,6 +5,7 @@ import json
 import os
 import subprocess
 import sys
+from collections.abc import Mapping
 from contextlib import contextmanager
 from pathlib import Path, PurePosixPath
 from types import SimpleNamespace
@@ -47,6 +48,21 @@ def _write(path: Path, data: str | bytes) -> None:
         path.write_bytes(data)
     else:
         path.write_text(data, encoding="utf-8")
+
+
+def _materialize_evaluated_fixture_source(
+    root: Path,
+    source_files: Mapping[str, str],
+) -> None:
+    """Write evaluated fixture inputs as their exact UTF-8 evidence bytes."""
+
+    expected = {
+        relative_path: content.encode("utf-8")
+        for relative_path, content in source_files.items()
+    }
+    for relative_path, content in expected.items():
+        _write(root / relative_path, content)
+    assert _tree_bytes(root) == expected
 
 
 def _tree_bytes(root: Path) -> dict[str, bytes]:
@@ -1025,8 +1041,7 @@ def test_marked_v5_trio_uses_guarded_bytes_and_exposes_validated_schema_metadata
     source = tmp_path / "source"
     workspace = tmp_path / "workspace" / "wiki"
     fixture, plan = _write_v5_metadata(wiki, marked=True)
-    for relative_path, content in fixture.source_files.items():
-        _write(source / relative_path, content)
+    _materialize_evaluated_fixture_source(source, fixture.source_files)
 
     monkeypatch.setattr(
         SyncManifest,
@@ -1067,7 +1082,10 @@ def test_marked_v5_trio_rejects_changed_source_through_shared_live_evaluation(
     source = tmp_path / "source"
     fixture, _plan = _write_v5_metadata(wiki, marked=True)
     for relative_path, content in fixture.source_files.items():
-        _write(source / relative_path, content + "\n# changed after generation\n")
+        _write(
+            source / relative_path,
+            (content + "\n# changed after generation\n").encode("utf-8"),
+        )
 
     with pytest.raises(DocumentationWikiInputError) as exc_info:
         adopt_documentation_wiki_snapshot(
@@ -1091,8 +1109,7 @@ def test_native_basis_incompatibility_exposes_structured_actionable_diagnostic(
     wiki = tmp_path / "wiki"
     source = tmp_path / "source"
     fixture, _plan = _write_v5_metadata(wiki, marked=True)
-    for relative_path, content in fixture.source_files.items():
-        _write(source / relative_path, content)
+    _materialize_evaluated_fixture_source(source, fixture.source_files)
 
     locator = "llm-wiki://entities/User"
     reason = REASON_GENERATION_OPTIONS_CHANGED
@@ -1160,8 +1177,7 @@ def test_native_unknown_basis_incompatibility_fails_closed(
     wiki = tmp_path / "wiki"
     source = tmp_path / "source"
     fixture, _plan = _write_v5_metadata(wiki, marked=True)
-    for relative_path, content in fixture.source_files.items():
-        _write(source / relative_path, content)
+    _materialize_evaluated_fixture_source(source, fixture.source_files)
 
     unknown_reason = "future-basis-reason"
     locator = "llm-wiki://entities/User"

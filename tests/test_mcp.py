@@ -1002,6 +1002,72 @@ class TestMcpWikiService:
             "read_only": True,
         }
 
+    def test_service_boundaries_serialize_wiki_dir_with_posix_separators(
+        self,
+        monkeypatch,
+    ):
+        from llm_wiki_cli.services import context_packet
+
+        calls: dict[str, object] = {"queries": []}
+
+        class QueryService:
+            def flow_for_entrypoint(self, _value):
+                return {"found": True}
+
+            def get_concept(self, _value):
+                return {"found": True}
+
+        def fake_query_builder(src_dir, *, wiki_dir, limit, read_only=None):
+            queries = calls["queries"]
+            assert isinstance(queries, list)
+            queries.append((src_dir, wiki_dir, limit, read_only))
+            return QueryService()
+
+        def fake_build_context(*_args, **options):
+            calls["context_wiki_dir"] = options["wiki_dir"]
+            return ({"used": 0, "files": {}}, [])
+
+        class Packet:
+            packet_id = "sha256:" + "a" * 64
+
+            @staticmethod
+            def to_payload():
+                return {"packet_id": Packet.packet_id}
+
+        def fake_build_packet(src_dir, wiki_dir, _request, *, read_only):
+            calls["packet"] = (src_dir, wiki_dir, read_only)
+            return Packet()
+
+        monkeypatch.setattr(
+            mcp_server,
+            "build_documentation_query_service",
+            fake_query_builder,
+        )
+        monkeypatch.setattr(context_cmd, "_build_context", fake_build_context)
+        monkeypatch.setattr(
+            context_packet,
+            "build_qualified_context",
+            fake_build_packet,
+        )
+        service = mcp_server.McpWikiService(
+            src_dir="source-root",
+            wiki_dir=r"docs\llm_wiki",
+        )
+
+        service.query_graph({"type": "flow_for_entrypoint", "value": "run"})
+        service.get_context(format="json")
+        service.get_context_packet()
+        service.get_concept("llm-wiki://entities/User")
+
+        assert calls == {
+            "queries": [
+                ("source-root", "docs/llm_wiki", 20, None),
+                ("source-root", "docs/llm_wiki", 20, True),
+            ],
+            "context_wiki_dir": "docs/llm_wiki",
+            "packet": ("source-root", "docs/llm_wiki", True),
+        }
+
     def test_get_context_packet_revalidates_unchanged_and_changed_ids(
         self,
         monkeypatch,

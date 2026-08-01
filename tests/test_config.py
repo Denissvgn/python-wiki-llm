@@ -62,6 +62,12 @@ class TestValidatePath:
         with pytest.raises(PathValidationError):
             validate_path("/tmp/outside", "--wiki-dir")
 
+    def test_rejects_embedded_nul_before_path_resolution(self, tmp_path):
+        os.chdir(tmp_path)
+
+        with pytest.raises(PathValidationError, match="embedded NUL character"):
+            validate_path("docs\0wiki", "--wiki-dir")
+
     def test_accepts_absolute_inside(self, tmp_path):
         os.chdir(tmp_path)
         sub = tmp_path / "inner"

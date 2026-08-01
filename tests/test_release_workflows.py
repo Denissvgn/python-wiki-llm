@@ -447,3 +447,31 @@ def test_release_runners_and_ci_runners_are_explicit() -> None:
         assert "ubuntu-latest" not in text
         assert "windows-latest" not in text
         assert "macos-latest" not in text
+
+
+def test_core_qualification_preserves_the_supported_cross_platform_contract() -> None:
+    ci = _yaml("ci.yml")
+    ci_matrix = ci["jobs"]["test"]["strategy"]["matrix"]["include"]
+    assert ci_matrix == [
+        {"os": "ubuntu-24.04", "python-version": "3.10"},
+        {"os": "windows-2025", "python-version": "3.13"},
+        {"os": "macos-15", "python-version": "3.14"},
+    ]
+
+    qualification = _yaml("release-qualification.yml")
+    core = qualification["jobs"]["core"]
+    assert core["strategy"]["matrix"]["include"] == [
+        {"lane": "core-ubuntu-3.10", "os": "ubuntu-24.04", "python": "3.10"},
+        {"lane": "core-windows-3.13", "os": "windows-2025", "python": "3.13"},
+        {"lane": "core-macos-3.14", "os": "macos-15", "python": "3.14"},
+    ]
+    core_text = "\n".join(str(step) for step in core["steps"])
+    assert 'python -m pip install --no-cache-dir "./candidate[dev]"' in core_text
+    assert " -e " not in core_text
+    assert "--strict-config" in core_text
+    assert "--strict-markers" in core_text
+    assert "-W error" in core_text
+    assert "-o xfail_strict=true" in core_text
+    assert "--junitxml=" in core_text
+    assert "verify-junit" in core_text
+    assert "--cov-fail-under=87" in core_text

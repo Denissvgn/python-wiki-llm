@@ -1257,13 +1257,19 @@ def test_hub_export_rejects_normalized_source_id_collision_before_writes(
 def test_single_export_rejects_empty_normalized_source_id_before_writes(
     tmp_path,
 ):
-    wiki = _write_hub_wiki(tmp_path, "   ", "Whitespace")
+    # Windows cannot materialize a whitespace-only directory. Publication
+    # source identity must be checked before filesystem validation so every
+    # supported host reports the same invalid identifier.
+    wiki = tmp_path / "   "
     out = tmp_path / "site"
 
     with pytest.raises(SiteExportError, match="not path-safe after normalization"):
         export_site_mirror(wiki_dir=wiki, out_dir=out)
 
     assert not out.exists()
+
+    with pytest.raises(SiteExportError, match="not path-safe after normalization"):
+        check_site_mirror(wiki_dir=wiki, out_dir=out)
 
 
 def test_check_reports_duplicate_docusaurus_front_matter_ids(tmp_path):

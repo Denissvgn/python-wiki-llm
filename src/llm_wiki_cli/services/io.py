@@ -48,9 +48,13 @@ def first_unsafe_path_component(
     """
 
     lexical = Path(os.fspath(path))
-    if ".." in lexical.parts and trusted_symlink_uids is None:
+    trusted_mode = (
+        trusted_symlink_uids is not None
+        or trusted_symlink_owner is not None
+    )
+    if ".." in lexical.parts and not trusted_mode:
         return lexical
-    if trusted_symlink_uids is None:
+    if not trusted_mode:
         absolute = Path(os.path.abspath(lexical))
     elif lexical.is_absolute():
         # Preserve ``..`` components for the trusted-owner read policy. They
@@ -83,6 +87,12 @@ def first_unsafe_path_component(
             owner_uid = getattr(metadata, "st_uid", None)
             if trusted_symlink_owner is not None:
                 trusted_owner = trusted_symlink_owner(current)
+                # A caller that supplies a platform ownership predicate has
+                # explicitly opted into following links only after that
+                # predicate approves each component.  Do not let the
+                # direct-root alias exception bypass a failed predicate.
+                if not trusted_owner:
+                    return current
             elif (
                 trusted_symlink_uids is not None
                 and owner_uid in trusted_symlink_uids
@@ -101,7 +111,7 @@ def first_unsafe_path_component(
             )
             if not trusted_owner and not platform_alias:
                 return current
-            if trusted_symlink_uids is None:
+            if not trusted_mode:
                 # Preserve the historical direct-root alias exception for
                 # strict write-path callers.
                 continue

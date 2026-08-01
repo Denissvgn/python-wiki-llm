@@ -423,6 +423,14 @@ def test_legacy_exception_names_are_leaf_aliases():
     assert api.BootstrapError is api.WorkspaceStateError
 
 
+def test_nul_wiki_dir_is_an_invalid_request():
+    with pytest.raises(api.InvalidRequestError) as raised:
+        api.list_wiki_pages("invalid\0wiki")
+
+    assert type(raised.value) is api.InvalidRequestError
+    assert isinstance(raised.value.__cause__, api.PathValidationError)
+
+
 @pytest.mark.parametrize("function_name", _PUBLIC_FUNCTION_NAMES)
 def test_public_api_function_maps_a_provoked_failure(tmp_path, function_name):
     expected_types = {

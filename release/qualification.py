@@ -23,7 +23,7 @@ import uuid
 import venv
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import Any, Iterable, Mapping, Sequence
 
 try:
@@ -102,6 +102,12 @@ def sha256_file(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _bundle_relative_path(path: PurePath, root: PurePath) -> str:
+    """Return a manifest-compatible relative bundle path."""
+
+    return path.relative_to(root).as_posix()
 
 
 def _sha256_bytes(value: bytes) -> str:
@@ -1653,7 +1659,7 @@ def verify_bundle(args: argparse.Namespace) -> int:
         ),
     }
     actual_files = {
-        str(path.relative_to(root))
+        _bundle_relative_path(path, root)
         for path in root.rglob("*")
         if path.is_file()
     }

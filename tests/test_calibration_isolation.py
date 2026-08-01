@@ -211,8 +211,12 @@ import tempfile
 import llm_wiki_cli.api as api
 
 with tempfile.TemporaryDirectory() as root:
-    os.chdir(root)
-    payload = api.extract_source(".", read_only=True)
+    previous_cwd = os.getcwd()
+    try:
+        os.chdir(root)
+        payload = api.extract_source(".", read_only=True)
+    finally:
+        os.chdir(previous_cwd)
 assert payload["schema_version"] == "llm-wiki-extract/v1"
 
 prefixes = (

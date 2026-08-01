@@ -418,6 +418,7 @@ jobs:
           candidate/tests/test_lockfile.py
           candidate/tests/test_circuit_breaker.py
           candidate/tests/test_redaction.py
+          candidate/tests/test_metrics.py
           candidate/tests/test_config.py
           candidate/tests/test_io.py
           candidate/tests/test_protected_artifacts.py

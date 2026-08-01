@@ -15,13 +15,14 @@ import stat
 import tempfile
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from .bootstrap_runtime import (
     build_entity_occurrence_page_map,
     build_module_page_map,
 )
+from .filesystem_guard import fresh_no_follow_stat
 from .extraction_service import get_inventory as get_inventory
 from . import wiki_surface
 from .io import first_unsafe_path_component, read_md, write_md
@@ -180,7 +181,7 @@ def export_obsidian_vault(
             [
                 *[vault / page.mirror_rel for page in pages],
                 *[
-                    notes / _sidecar_note_relative_path(page)
+                    _sidecar_note_path(notes, page)
                     for page in pages
                 ],
             ]
@@ -1061,7 +1062,7 @@ def _unexpected_projected_mirror_pages(
                     if _mirror_scan_path_is_excluded(relative, excluded):
                         continue
                     try:
-                        metadata = entry.stat(follow_symlinks=False)
+                        metadata = fresh_no_follow_stat(path)
                     except OSError as exc:
                         raise ObsidianError(
                             "Cannot safely inspect an existing Obsidian "
@@ -1494,9 +1495,9 @@ def _sidecar_note_path(notes_dir: Path, page: WikiPage) -> Path:
     return _safe_join(notes_dir, _sidecar_note_relative_path(page))
 
 
-def _sidecar_note_relative_path(page: WikiPage) -> Path:
+def _sidecar_note_relative_path(page: WikiPage) -> str:
     safe_id = _safe_filename(page.page_id)
-    return Path(page.kind) / f"{safe_id}.md"
+    return (PurePosixPath(page.kind) / f"{safe_id}.md").as_posix()
 
 
 def _sidecar_note_stub(page: WikiPage) -> str:

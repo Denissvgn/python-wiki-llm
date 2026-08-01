@@ -4,7 +4,7 @@ import json
 import re
 from collections.abc import Mapping
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any
 
 from ..config import CLI_AGENTS, DEFAULT_WIKI_DIR, IDE_AGENTS, read_config
@@ -42,7 +42,6 @@ _FRESHNESS_COUNT_KEYS = {
 }
 _EVIDENCE_ISSUE_COUNT_KEYS = {"missing", "invalid", "unknown"}
 _PHASE_DURATION_KEYS = ("load", "evaluate", "check")
-_WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:[\\/]")
 
 
 def metrics_path(git_dir: str | Path = ".git") -> Path:
@@ -476,8 +475,9 @@ def _path_field(key: str) -> bool:
 
 
 def _is_absolute_path(value: str) -> bool:
+    windows_path = PureWindowsPath(value)
     return (
-        Path(value).is_absolute()
-        or _WINDOWS_ABSOLUTE_RE.match(value) is not None
-        or value.startswith(("\\\\", "//"))
+        PurePosixPath(value).is_absolute()
+        or windows_path.is_absolute()
+        or bool(windows_path.root)
     )

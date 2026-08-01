@@ -6,10 +6,14 @@ import pytest
 
 from llm_wiki_cli.config import AGENT_CHOICES
 from llm_wiki_cli.commands import lint_cmd
+from llm_wiki_cli.services import wiki_lifecycle
 from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME
 from llm_wiki_cli.services.wiki_lifecycle import (
     WikiLifecycleState,
+    bootstrap_guidance,
     classify_wiki_lifecycle,
+    migration_guidance,
+    sync_guidance,
 )
 from llm_wiki_cli.services.wiki_scaffold import (
     INITIAL_WIKI_INDEX_MARKDOWN,
@@ -141,3 +145,92 @@ def test_lint_manifest_guidance_routes_every_first_use_state_to_bootstrap(
     assert "llm-wiki bootstrap --src-dir" in message
     assert "llm-wiki sync --jobs 1" not in message
     assert "llm-wiki migrate --dry-run" not in message
+
+
+@pytest.mark.parametrize(
+    ("guidance", "expected"),
+    [
+        (
+            bootstrap_guidance,
+            "Run `llm-wiki bootstrap --src-dir '/tmp/source dir' "
+            "--wiki-dir '/tmp/wiki dir'` to create the initial wiki and manifest.",
+        ),
+        (
+            migration_guidance,
+            "Preview the existing wiki migration with "
+            "`llm-wiki migrate --dry-run --src-dir '/tmp/source dir' "
+            "--wiki-dir '/tmp/wiki dir'`.",
+        ),
+        (
+            sync_guidance,
+            "Seed the existing wiki safely with "
+            "`llm-wiki sync --jobs 1 --src-dir '/tmp/source dir' "
+            "--wiki-dir '/tmp/wiki dir'`.",
+        ),
+    ],
+)
+def test_lifecycle_guidance_uses_posix_shell_join(
+    monkeypatch,
+    guidance,
+    expected,
+):
+    monkeypatch.setattr(wiki_lifecycle, "_uses_windows_command_line", lambda: False)
+
+    assert guidance(src_dir="/tmp/source dir", wiki_dir="/tmp/wiki dir") == expected
+
+
+@pytest.mark.parametrize(
+    ("guidance", "src_dir", "wiki_dir", "expected_command"),
+    [
+        (
+            bootstrap_guidance,
+            r"C:\Source",
+            r"C:\Wiki",
+            r"llm-wiki bootstrap --src-dir C:\Source --wiki-dir C:\Wiki",
+        ),
+        (
+            bootstrap_guidance,
+            r"C:\Source Dir",
+            r"C:\Wiki Dir",
+            'llm-wiki bootstrap --src-dir "C:\\Source Dir" '
+            '--wiki-dir "C:\\Wiki Dir"',
+        ),
+        (
+            migration_guidance,
+            r"C:\Source Dir",
+            r"C:\Wiki Dir",
+            'llm-wiki migrate --dry-run --src-dir "C:\\Source Dir" '
+            '--wiki-dir "C:\\Wiki Dir"',
+        ),
+        (
+            sync_guidance,
+            r"C:\Source Dir",
+            r"C:\Wiki Dir",
+            'llm-wiki sync --jobs 1 --src-dir "C:\\Source Dir" '
+            '--wiki-dir "C:\\Wiki Dir"',
+        ),
+    ],
+)
+def test_lifecycle_guidance_uses_native_windows_command_line(
+    monkeypatch,
+    guidance,
+    src_dir,
+    wiki_dir,
+    expected_command,
+):
+    monkeypatch.setattr(wiki_lifecycle, "_uses_windows_command_line", lambda: True)
+
+    message = guidance(src_dir=src_dir, wiki_dir=wiki_dir)
+
+    assert f"`{expected_command}`" in message
+
+
+def test_windows_lifecycle_guidance_escapes_embedded_quotes(monkeypatch):
+    monkeypatch.setattr(wiki_lifecycle, "_uses_windows_command_line", lambda: True)
+
+    message = bootstrap_guidance(
+        src_dir='C:\\Source Dir\\quoted "value"',
+        wiki_dir=r"C:\Wiki Dir",
+    )
+
+    assert '"C:\\Source Dir\\quoted \\"value\\""' in message

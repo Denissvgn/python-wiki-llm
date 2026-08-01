@@ -925,7 +925,7 @@ def test_inventory_build_rejects_invalid_captured_source_hashes(
 def test_inventory_build_keeps_file_hash_compatibility_path(tmp_path, monkeypatch):
     source = tmp_path / "src" / "app.py"
     source.parent.mkdir()
-    source.write_text("class App: pass\n", encoding="utf-8")
+    source.write_bytes(b"class App: pass\n")
     inventory = {
         "src/app.py": {
             "language": "python",

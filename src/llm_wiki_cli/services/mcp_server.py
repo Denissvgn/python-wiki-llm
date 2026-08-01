@@ -272,7 +272,7 @@ class McpWikiService:
         try:
             query_service = build_documentation_query_service(
                 self.src_dir,
-                wiki_dir=str(self.wiki_dir),
+                wiki_dir=_posix_string(self.wiki_dir),
                 limit=limit,
             )
             method = getattr(query_service, _GRAPH_QUERY_METHODS[query_type])
@@ -457,7 +457,7 @@ class McpWikiService:
             validated = context_cmd._validate_protocol_request(request)
             build_options = {
                 "emit_warnings": False,
-                "wiki_dir": str(self.wiki_dir),
+                "wiki_dir": _posix_string(self.wiki_dir),
             }
             if validated["prefer_fresh"]:
                 build_options["prefer_fresh"] = True
@@ -504,7 +504,7 @@ class McpWikiService:
         try:
             packet = build_qualified_context(
                 self.src_dir,
-                str(self.wiki_dir),
+                _posix_string(self.wiki_dir),
                 request,
                 read_only=True,
             )
@@ -610,7 +610,7 @@ class McpWikiService:
         try:
             query_service = build_documentation_query_service(
                 self.src_dir,
-                wiki_dir=str(self.wiki_dir),
+                wiki_dir=_posix_string(self.wiki_dir),
                 limit=limit,
                 read_only=True,
             )

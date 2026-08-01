@@ -575,6 +575,52 @@ def test_metrics_sanitizer_handles_nested_path_lists():
 
 
 @pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("/private/source.py", True),
+        (r"C:\private\source.py", True),
+        ("C:/private/source.py", True),
+        (r"\\server\share\source.py", True),
+        (r"\private\source.py", True),
+        ("src/public.py", False),
+        (r"C:relative\source.py", False),
+    ],
+)
+def test_metrics_absolute_path_detection_is_host_independent(value, expected):
+    assert metrics._is_absolute_path(value) is expected
+
+
+def test_metrics_sanitizer_redacts_portable_absolute_paths_in_nested_values():
+    assert metrics._sanitize_metrics_value(
+        {
+            "source_paths": [
+                "/private/source.py",
+                r"C:\private\source.py",
+                r"\\server\share\source.py",
+                r"\private\source.py",
+                "src/public.py",
+            ],
+            "nested": {
+                "output_dir": "C:/private/output",
+                "relative_path": "docs/llm_wiki/index.md",
+            },
+        }
+    ) == {
+        "source_paths": [
+            metrics.REDACTED_ABSOLUTE_PATH,
+            metrics.REDACTED_ABSOLUTE_PATH,
+            metrics.REDACTED_ABSOLUTE_PATH,
+            metrics.REDACTED_ABSOLUTE_PATH,
+            "src/public.py",
+        ],
+        "nested": {
+            "output_dir": metrics.REDACTED_ABSOLUTE_PATH,
+            "relative_path": "docs/llm_wiki/index.md",
+        },
+    }
+
+
+@pytest.mark.parametrize(
     ("value", "allowed", "expected"),
     [
         ("invalid", {"current"}, None),

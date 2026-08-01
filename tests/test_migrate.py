@@ -61,7 +61,7 @@ def _make_args(**kwargs):
 
 def _write(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(textwrap.dedent(content), encoding="utf-8")
+    path.write_bytes(textwrap.dedent(content).encode("utf-8"))
 
 
 def _make_wiki(proj: Path) -> Path:
@@ -1076,6 +1076,22 @@ class TestMigrateIntegration:
         )
         subprocess.run(
             ["git", "-C", str(proj), "config", "user.name", "Test"],
+            check=True,
+        )
+        subprocess.run(
+            [
+                "git",
+                "-C",
+                str(proj),
+                "config",
+                "--local",
+                "core.autocrlf",
+                "false",
+            ],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(proj), "config", "--local", "core.eol", "lf"],
             check=True,
         )
         subprocess.run(["git", "-C", str(proj), "add", "."], check=True)

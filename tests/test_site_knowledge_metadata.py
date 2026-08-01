@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import hashlib
 import types
+from contextlib import contextmanager
+import os
 from pathlib import Path
 
 import pytest
@@ -941,6 +943,73 @@ def test_enriched_output_scan_fails_closed_on_unexpected_symlink(tmp_path):
         issue["category"] == "unsafe_enriched_output_scan"
         for issue in report.issues
     )
+
+
+def test_enriched_output_scan_uses_fresh_no_follow_direntry_metadata(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    out = tmp_path / "site"
+    page = out / "index.md"
+    _write(page, "# Existing index\n")
+    cached_stat_calls = 0
+    fresh_stat_paths: list[Path] = []
+    real_fresh_stat = site_export.fresh_no_follow_stat
+
+    class EmulatedWindowsDirEntry:
+        name = page.name
+        path = os.fspath(page)
+
+        def stat(self, *, follow_symlinks: bool = True):
+            nonlocal cached_stat_calls
+            cached_stat_calls += 1
+            raise AssertionError("Windows DirEntry.stat() metadata must not be trusted")
+
+    @contextmanager
+    def scandir(directory: str | Path):
+        assert Path(directory) == out
+        yield [EmulatedWindowsDirEntry()]
+
+    def fresh_stat(path: str | Path) -> os.stat_result:
+        fresh_stat_paths.append(Path(path))
+        return real_fresh_stat(path)
+
+    monkeypatch.setattr(site_export.os, "scandir", scandir)
+    monkeypatch.setattr(site_export, "fresh_no_follow_stat", fresh_stat)
+
+    assert site_export._find_unexpected_knowledge_pages(
+        out,
+        expected_paths=frozenset({"index.md"}),
+    ) == []
+    assert cached_stat_calls == 0
+    assert fresh_stat_paths == [page]
+
+
+def test_enriched_output_scan_rejects_hardlinked_markdown(tmp_path):
+    wiki = _wiki(tmp_path)
+    projection = _projection(wiki)
+    out = tmp_path / "site"
+    export_site_mirror(
+        wiki_dir=wiki,
+        out_dir=out,
+        knowledge_metadata="summary",
+        knowledge_projection=projection,
+    )
+    shared = tmp_path / "shared.md"
+    _write(shared, "# Shared\n")
+    linked = out / "hard-linked.md"
+    try:
+        os.link(shared, linked)
+    except OSError as exc:
+        pytest.skip(f"hard links are unavailable: {exc}")
+
+    with pytest.raises(SiteExportError, match="hard-linked file"):
+        export_site_mirror(
+            wiki_dir=wiki,
+            out_dir=out,
+            knowledge_metadata="summary",
+            knowledge_projection=projection,
+        )
 
 
 def test_enriched_export_preflights_late_expected_symlink_before_writes(

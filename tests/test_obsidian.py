@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import types
+from contextlib import contextmanager
 from dataclasses import replace
 from pathlib import Path
 
@@ -294,6 +296,22 @@ class TestObsidianMirror:
         assert '  source_path: "models.py"' in frontmatter
         assert "  source_line: 3" in frontmatter
         assert '  - "entity/User"' in frontmatter
+
+    def test_sidecar_relative_path_is_canonical_posix(self, tmp_project):
+        wiki = _write_wiki(tmp_project)
+        page = next(
+            page
+            for page in obsidian.collect_wiki_pages(wiki)
+            if page.canonical_rel == "entities/User.md"
+        )
+
+        relative = obsidian._sidecar_note_relative_path(page)
+
+        assert relative == "entity/User.md"
+        assert "\\" not in relative
+        assert obsidian._sidecar_note_path(
+            tmp_project / "notes", page
+        ) == tmp_project / "notes" / "entity" / "User.md"
 
     def test_converts_internal_markdown_links_to_wikilinks(self, tmp_project):
         wiki = _write_wiki(tmp_project)
@@ -1050,6 +1068,68 @@ class TestObsidianMirror:
             and "symlink entry" in issue["message"]
             for issue in checked.issues
         )
+
+    def test_enriched_scan_uses_fresh_no_follow_direntry_metadata(
+        self,
+        tmp_project,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        vault = tmp_project / "vault"
+        mirror = vault / obsidian.MIRROR_ROOT
+        page = mirror / "Index.md"
+        page.parent.mkdir(parents=True)
+        page.write_text("# Existing index\n", encoding="utf-8")
+        cached_stat_calls = 0
+        fresh_stat_paths: list[Path] = []
+        real_fresh_stat = obsidian.fresh_no_follow_stat
+
+        class EmulatedWindowsDirEntry:
+            name = page.name
+            path = os.fspath(page)
+
+            def stat(self, *, follow_symlinks: bool = True):
+                nonlocal cached_stat_calls
+                cached_stat_calls += 1
+                raise AssertionError(
+                    "Windows DirEntry.stat() metadata must not be trusted"
+                )
+
+        @contextmanager
+        def scandir(directory: str | Path):
+            assert Path(directory) == mirror
+            yield [EmulatedWindowsDirEntry()]
+
+        def fresh_stat(path: str | Path) -> os.stat_result:
+            fresh_stat_paths.append(Path(path))
+            return real_fresh_stat(path)
+
+        monkeypatch.setattr(obsidian.os, "scandir", scandir)
+        monkeypatch.setattr(obsidian, "fresh_no_follow_stat", fresh_stat)
+
+        assert obsidian._unexpected_projected_mirror_pages(
+            vault,
+            expected_relative_paths=["Index.md"],
+        ) == []
+        assert cached_stat_calls == 0
+        assert fresh_stat_paths == [page]
+
+    def test_enriched_scan_rejects_hardlinked_markdown(self, tmp_project):
+        vault = tmp_project / "vault"
+        mirror = vault / obsidian.MIRROR_ROOT
+        mirror.mkdir(parents=True)
+        shared = vault / "shared.md"
+        shared.write_text("# Shared\n", encoding="utf-8")
+        linked = mirror / "stale.md"
+        try:
+            os.link(shared, linked)
+        except OSError as exc:
+            pytest.skip(f"hard links are unavailable: {exc}")
+
+        with pytest.raises(obsidian.ObsidianError, match="hard-linked file"):
+            obsidian._unexpected_projected_mirror_pages(
+                vault,
+                expected_relative_paths=[],
+            )
 
     @pytest.mark.parametrize(
         ("path_kind", "error"),

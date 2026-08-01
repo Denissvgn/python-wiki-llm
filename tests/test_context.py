@@ -93,6 +93,14 @@ def _protocol_request(**overrides):
     return data
 
 
+@pytest.mark.parametrize(
+    "golden_path",
+    [PREFER_FRESH_OFF_GOLDEN, PREFER_FRESH_ON_GOLDEN],
+)
+def test_context_protocol_goldens_are_lf_only(golden_path: Path) -> None:
+    assert b"\r" not in golden_path.read_bytes()
+
+
 def test_context_parser_accepts_packet_and_freshness_preference():
     args = cli._build_parser().parse_args(
         [

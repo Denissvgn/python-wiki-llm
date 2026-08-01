@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import json
+import os
 import shlex
+import subprocess
 from enum import Enum
 from pathlib import Path
 from typing import Union
@@ -24,6 +26,20 @@ class WikiLifecycleState(str, Enum):
     SYNC_SEEDABLE = "sync-seedable"
     MIGRATION_REQUIRED = "migration-required"
     MANAGED = "managed"
+
+
+def _uses_windows_command_line() -> bool:
+    """Return whether lifecycle guidance should use Windows CLI quoting."""
+
+    return os.name == "nt"
+
+
+def _render_recovery_command(arguments: list[str]) -> str:
+    """Render a copy-pasteable recovery command for the current platform."""
+
+    if _uses_windows_command_line():
+        return subprocess.list2cmdline(arguments)
+    return shlex.join(arguments)
 
 
 def is_pristine_wiki_target(wiki_dir: Union[str, Path]) -> bool:
@@ -148,10 +164,12 @@ def classify_wiki_lifecycle(
 def bootstrap_guidance(*, src_dir: str, wiki_dir: Union[str, Path]) -> str:
     """Return a path-safe first-use bootstrap command."""
 
+    command = _render_recovery_command(
+        ["llm-wiki", "bootstrap", "--src-dir", src_dir, "--wiki-dir", str(wiki_dir)]
+    )
     return (
         "Run "
-        f"`llm-wiki bootstrap --src-dir {shlex.quote(src_dir)} "
-        f"--wiki-dir {shlex.quote(str(wiki_dir))}` "
+        f"`{command}` "
         "to create the initial wiki and manifest."
     )
 
@@ -159,20 +177,41 @@ def bootstrap_guidance(*, src_dir: str, wiki_dir: Union[str, Path]) -> str:
 def migration_guidance(*, src_dir: str, wiki_dir: Union[str, Path]) -> str:
     """Return a path-safe migration preview command."""
 
+    command = _render_recovery_command(
+        [
+            "llm-wiki",
+            "migrate",
+            "--dry-run",
+            "--src-dir",
+            src_dir,
+            "--wiki-dir",
+            str(wiki_dir),
+        ]
+    )
     return (
         "Preview the existing wiki migration with "
-        f"`llm-wiki migrate --dry-run --src-dir {shlex.quote(src_dir)} "
-        f"--wiki-dir {shlex.quote(str(wiki_dir))}`."
+        f"`{command}`."
     )
 
 
 def sync_guidance(*, src_dir: str, wiki_dir: Union[str, Path]) -> str:
     """Return a path-safe manifest-seeding sync command."""
 
+    command = _render_recovery_command(
+        [
+            "llm-wiki",
+            "sync",
+            "--jobs",
+            "1",
+            "--src-dir",
+            src_dir,
+            "--wiki-dir",
+            str(wiki_dir),
+        ]
+    )
     return (
         "Seed the existing wiki safely with "
-        f"`llm-wiki sync --jobs 1 --src-dir {shlex.quote(src_dir)} "
-        f"--wiki-dir {shlex.quote(str(wiki_dir))}`."
+        f"`{command}`."
     )
 
 

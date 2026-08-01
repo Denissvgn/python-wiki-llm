@@ -248,6 +248,37 @@ def test_run_schema_tolerates_additive_fields_but_rejects_unknown_state(tmp_path
         DocumentationRun.from_dict(payload)
 
 
+def test_run_schema_accepts_global_review_ledger_before_review_stage(tmp_path):
+    _, _, _, run = _prepare_wiki_only_run(tmp_path)
+    payload = run.to_dict()
+    payload["evidence"]["review_ledger"] = (
+        ".llm-wiki-docs/evidence/review-ledger.json"
+    )
+
+    loaded = DocumentationRun.from_dict(payload)
+
+    assert loaded.evidence["review_ledger"] == (
+        ".llm-wiki-docs/evidence/review-ledger.json"
+    )
+
+
+def test_run_schema_rejects_unknown_review_stage_evidence():
+    payload = json.loads(
+        Path("tests/fixtures/documentation_runs/complete.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    payload["evidence"]["review_unrecognized"] = (
+        ".llm-wiki-docs/evidence/review-unrecognized.json"
+    )
+
+    with pytest.raises(
+        DocumentationSchemaError,
+        match="not supported stage evidence",
+    ):
+        DocumentationRun.from_dict(payload)
+
+
 @pytest.mark.parametrize(
     ("mutation", "message"),
     [
