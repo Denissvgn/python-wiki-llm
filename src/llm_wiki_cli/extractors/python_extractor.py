@@ -91,6 +91,17 @@ def _extract_decorators(node) -> list[str]:
 # not the enclosing function, so the walk does not descend into them.
 _SCOPE_BOUNDARIES = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
 _DATA_EFFECT_LIMIT = 8
+DATA_EFFECT_OBSERVATIONS_SCHEMA = "llm-wiki-data-effect-observations/v1"
+IMPORT_LOCATION_OBSERVATIONS_SCHEMA = (
+    "llm-wiki-import-location-observations/v1"
+)
+_DATA_EFFECT_KEYS = (
+    "inputs",
+    "reads",
+    "writes",
+    "returns",
+    "boundary_effects",
+)
 _ATTRIBUTE_READ_ROOTS = {"self", "cls", "options"}
 _FILESYSTEM_READ_CALLS = {"json.load"}
 _FILESYSTEM_READ_METHODS = {"read_text", "read_bytes"}
@@ -497,6 +508,12 @@ class _DataEffectVisitor(ast.NodeVisitor):
         self.writes: list[dict] = []
         self.returns: list[dict] = []
         self.boundary_effects: list[dict] = []
+        self.observed: dict[str, int] = {
+            "reads": 0,
+            "writes": 0,
+            "returns": 0,
+            "boundary_effects": 0,
+        }
         self._seen: dict[str, set[tuple]] = {
             "reads": set(),
             "writes": set(),
@@ -505,13 +522,14 @@ class _DataEffectVisitor(ast.NodeVisitor):
         }
 
     def _add(self, category: str, record: dict) -> None:
-        bucket = getattr(self, category)
-        if len(bucket) >= _DATA_EFFECT_LIMIT:
-            return
         key = tuple(record.items())
         if key in self._seen[category]:
             return
         self._seen[category].add(key)
+        self.observed[category] += 1
+        bucket = getattr(self, category)
+        if len(bucket) >= _DATA_EFFECT_LIMIT:
+            return
         bucket.append(record)
 
     def _add_write_targets(self, target) -> None:
@@ -641,6 +659,8 @@ def _extract_data_effects(
     module_globals: set[str],
     module_import_aliases: dict[str, str],
     return_annotation: str,
+    *,
+    coverage: dict[str, dict] | None = None,
 ) -> dict:
     local_bindings, global_declarations, local_import_aliases = _collect_function_scope(
         node
@@ -674,6 +694,21 @@ def _extract_data_effects(
         effects["returns"] = visitor.returns
     if visitor.boundary_effects:
         effects["boundary_effects"] = visitor.boundary_effects
+    if coverage is not None:
+        observed_by_kind = {
+            "inputs": len(params),
+            **visitor.observed,
+        }
+        for kind in _DATA_EFFECT_KEYS:
+            observed = observed_by_kind[kind]
+            emitted = len(effects.get(kind, []))
+            coverage[kind] = {
+                "observed": observed,
+                "emitted": emitted,
+                "omitted": observed - emitted,
+                "limit": _DATA_EFFECT_LIMIT,
+                "truncated": observed > emitted,
+            }
     return effects
 
 
@@ -745,6 +780,8 @@ def _extract_function_info(
     module_import_aliases: dict[str, str] | None = None,
     *,
     omit_method_receiver: bool = False,
+    data_effect_observations: list[dict] | None = None,
+    observation_symbol: str | None = None,
 ) -> dict:
     """Extract full function/method info from a FunctionDef or AsyncFunctionDef.
 
@@ -771,15 +808,27 @@ def _extract_function_info(
         calls = _extract_calls(node)
         if calls:
             info["calls"] = calls
+        effect_coverage: dict[str, dict] | None = (
+            {} if data_effect_observations is not None else None
+        )
         data_effects = _extract_data_effects(
             node,
             params,
             module_globals or set(),
             module_import_aliases or {},
             return_type,
+            coverage=effect_coverage,
         )
         if data_effects:
             info["data_effects"] = data_effects
+        if data_effect_observations is not None:
+            data_effect_observations.append(
+                {
+                    "symbol": observation_symbol or node.name,
+                    "line": node.lineno,
+                    "coverage": effect_coverage,
+                }
+            )
 
     return info
 
@@ -851,6 +900,8 @@ class ComponentVisitor(ast.NodeVisitor):
         deep: bool = False,
         module_globals: set[str] | None = None,
         module_import_aliases: dict[str, str] | None = None,
+        data_effect_observations: list[dict] | None = None,
+        import_location_observations: list[dict] | None = None,
     ):
         self.classes = []
         self.functions = []  # top-level functions only
@@ -866,28 +917,48 @@ class ComponentVisitor(ast.NodeVisitor):
         self._deep = deep
         self._module_globals = module_globals or set()
         self._module_import_aliases = module_import_aliases or {}
+        self._data_effect_observations = data_effect_observations
+        self._import_location_observations = import_location_observations
+
+    def _record_import(
+        self, record: dict, node: ast.Import | ast.ImportFrom
+    ) -> None:
+        """Retain the legacy import shape and optional source-location sidecar."""
+        import_index = len(self.imports)
+        self.imports.append(record)
+        if self._import_location_observations is not None:
+            self._import_location_observations.append(
+                {
+                    "import_index": import_index,
+                    "module": record["module"],
+                    "name": record["name"],
+                    "line": node.lineno,
+                }
+            )
 
     def visit_Import(self, node):
         for alias in node.names:
-            self.imports.append(
+            self._record_import(
                 {
                     "module": alias.name,
                     "name": alias.asname or alias.name,
                     "type": "import",
-                }
+                },
+                node,
             )
         self.generic_visit(node)
 
     def visit_ImportFrom(self, node):
         module = "." * node.level + (node.module or "")
         for alias in node.names:
-            self.imports.append(
+            self._record_import(
                 {
                     "module": module,
                     "name": alias.name,
                     "alias": alias.asname,
                     "type": "from",
-                }
+                },
+                node,
             )
         self.generic_visit(node)
 
@@ -920,6 +991,8 @@ class ComponentVisitor(ast.NodeVisitor):
                         module_globals=self._module_globals,
                         module_import_aliases=self._module_import_aliases,
                         omit_method_receiver=not is_static_method,
+                        data_effect_observations=self._data_effect_observations,
+                        observation_symbol=f"{node.name}.{child.name}",
                     )
                 )
                 validator = extract_validator(child, self._module_import_aliases)
@@ -954,6 +1027,7 @@ class ComponentVisitor(ast.NodeVisitor):
                         deep=self._deep,
                         module_globals=self._module_globals,
                         module_import_aliases=self._module_import_aliases,
+                        data_effect_observations=self._data_effect_observations,
                     )
                 )
             elif self._deep:
@@ -962,6 +1036,7 @@ class ComponentVisitor(ast.NodeVisitor):
                     deep=self._deep,
                     module_globals=self._module_globals,
                     module_import_aliases=self._module_import_aliases,
+                    data_effect_observations=self._data_effect_observations,
                 )
                 info["private"] = True
                 self.functions.append(info)
@@ -975,6 +1050,7 @@ class ComponentVisitor(ast.NodeVisitor):
                     deep=True,
                     module_globals=self._module_globals,
                     module_import_aliases=self._module_import_aliases,
+                    data_effect_observations=self._data_effect_observations,
                 )
             )
         self._function_depth += 1
@@ -992,6 +1068,7 @@ class ComponentVisitor(ast.NodeVisitor):
                         deep=self._deep,
                         module_globals=self._module_globals,
                         module_import_aliases=self._module_import_aliases,
+                        data_effect_observations=self._data_effect_observations,
                     )
                 )
             elif self._deep:
@@ -1000,6 +1077,7 @@ class ComponentVisitor(ast.NodeVisitor):
                     deep=self._deep,
                     module_globals=self._module_globals,
                     module_import_aliases=self._module_import_aliases,
+                    data_effect_observations=self._data_effect_observations,
                 )
                 info["private"] = True
                 self.functions.append(info)
@@ -1013,6 +1091,7 @@ class ComponentVisitor(ast.NodeVisitor):
                     deep=True,
                     module_globals=self._module_globals,
                     module_import_aliases=self._module_import_aliases,
+                    data_effect_observations=self._data_effect_observations,
                 )
             )
         self._function_depth += 1
@@ -1106,6 +1185,8 @@ def _scan_python_files(
     only_files: list[str] | None = None,
     include_empty: bool = False,
     source_files: list[str] | None = None,
+    data_effect_observations: list[dict] | None = None,
+    import_location_observations: list[dict] | None = None,
 ) -> dict:
     """Scan Python files under *src_dir* and return a raw inventory dict.
 
@@ -1151,12 +1232,25 @@ def _scan_python_files(
         except SyntaxError:
             continue
 
+        file_effect_observations: list[dict] | None = (
+            [] if data_effect_observations is not None else None
+        )
+        file_import_observations: list[dict] | None = (
+            [] if import_location_observations is not None else None
+        )
         visitor = ComponentVisitor(
             deep=deep,
             module_globals=_extract_module_globals(tree),
             module_import_aliases=_extract_import_aliases(tree),
+            data_effect_observations=file_effect_observations,
+            import_location_observations=file_import_observations,
         )
         visitor.visit(tree)
+        if data_effect_observations is not None:
+            data_effect_observations.extend(
+                {"file": rel.as_posix(), **observation}
+                for observation in file_effect_observations or []
+            )
         finalize_model_kinds(visitor.classes)
 
         # Module-level side effects (deep only) make an otherwise-defless module
@@ -1234,6 +1328,11 @@ def _scan_python_files(
                 file_entry["functions"] = fns
 
             inventory[rel.as_posix()] = file_entry
+            if import_location_observations is not None:
+                import_location_observations.extend(
+                    {"source_path": rel.as_posix(), **observation}
+                    for observation in file_import_observations or []
+                )
 
     resolver = build_module_path_resolver(inventory)
     finalize_inventory_model_kinds(
@@ -1251,6 +1350,10 @@ class PythonExtractor:
     Implements :class:`~llm_wiki_cli.extractors.ExtractorProtocol`.
     """
 
+    def __init__(self) -> None:
+        self.last_data_effect_observations: dict | None = None
+        self.last_import_observations: dict | None = None
+
     def extract(
         self,
         src_dir: str,
@@ -1258,18 +1361,70 @@ class PythonExtractor:
         deep: bool = False,
         include_empty: bool = False,
         source_files: list[str] | None = None,
+        capture_data_effect_observations: bool = False,
+        capture_import_observations: bool = False,
     ) -> dict:
         """Scan *src_dir* for Python files and return an inventory dict.
 
         Each file entry includes ``"language": "python"``.
         """
+        if capture_data_effect_observations and not deep:
+            raise ValueError("data-effect observations require deep extraction")
+        if capture_import_observations and not deep:
+            raise ValueError("import observations require deep extraction")
+        observations: list[dict] | None = (
+            [] if capture_data_effect_observations else None
+        )
+        import_observations: list[dict] | None = (
+            [] if capture_import_observations else None
+        )
+        self.last_data_effect_observations = None
+        self.last_import_observations = None
         inventory = _scan_python_files(
             src_dir,
             deep=deep,
             only_files=only_files,
             include_empty=include_empty,
             source_files=source_files,
+            data_effect_observations=observations,
+            import_location_observations=import_observations,
         )
         for entry in inventory.values():
             entry["language"] = "python"
+        if observations is not None:
+            self.last_data_effect_observations = {
+                "schema_version": DATA_EFFECT_OBSERVATIONS_SCHEMA,
+                "callables": sorted(
+                    observations,
+                    key=lambda item: (
+                        item["file"],
+                        item["symbol"],
+                        item["line"],
+                    ),
+                ),
+            }
+        if import_observations is not None:
+            self.last_import_observations = {
+                "schema_version": IMPORT_LOCATION_OBSERVATIONS_SCHEMA,
+                "observations": sorted(
+                    import_observations,
+                    key=lambda item: (
+                        item["source_path"],
+                        item["import_index"],
+                        item["module"],
+                        item["name"],
+                        item["line"],
+                    ),
+                ),
+                "coverage": {
+                    "observed": len(import_observations),
+                    "emitted": len(import_observations),
+                    "omitted": 0,
+                    "limit": None,
+                    "truncated": False,
+                    "limitations": [
+                        "static-import-observation-does-not-claim-runtime-completeness"
+                    ],
+                },
+            }
         return inventory

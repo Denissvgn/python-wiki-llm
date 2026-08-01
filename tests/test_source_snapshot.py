@@ -3,9 +3,15 @@
 from __future__ import annotations
 
 import inspect
+from pathlib import Path
+
+import pytest
 
 from llm_wiki_cli.extractors.common import discover_source_files
+from llm_wiki_cli.services.knowledge_envelope import ConsumedInputKind
+from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
 from llm_wiki_cli.services.source_snapshot import (
+    SourceSnapshotError,
     build_source_snapshot,
     unsupported_source_summary,
 )
@@ -476,6 +482,120 @@ def test_gitignore_fingerprint_changes_with_discovered_gitignore(tmp_path):
     second = build_source_snapshot(tmp_path)
 
     assert second.gitignore_fingerprint != first.gitignore_fingerprint
+
+
+def test_captures_exact_consumed_input_hashes_and_overlap_kinds(tmp_path):
+    files = {
+        ".gitignore": b"ignored.py\n",
+        "app.py": b"class App: pass\n",
+        "compose.yaml": b"services:\n  web:\n    image: nginx\n",
+        "pyproject.toml": b'[project]\nname = "demo"\n',
+    }
+    for rel_path in reversed(tuple(files)):
+        (tmp_path / rel_path).write_bytes(files[rel_path])
+
+    snapshot = build_source_snapshot(tmp_path)
+
+    assert snapshot.captured_content_hashes == {
+        path: sha256_bytes(content) for path, content in sorted(files.items())
+    }
+    assert snapshot.captured_input_kinds == {
+        ".gitignore": ("selection",),
+        "app.py": ("source",),
+        "compose.yaml": ("compose", "yaml"),
+        "pyproject.toml": ("package",),
+    }
+    assert [(item.path, item.kind_value) for item in snapshot.to_consumed_inputs()] == [
+        (".gitignore", ConsumedInputKind.SELECTION.value),
+        ("app.py", ConsumedInputKind.SOURCE.value),
+        ("compose.yaml", ConsumedInputKind.COMPOSE.value),
+        ("pyproject.toml", ConsumedInputKind.PACKAGE.value),
+    ]
+
+
+def test_snapshot_reads_each_captured_input_once(tmp_path, monkeypatch):
+    (tmp_path / ".gitignore").write_text("ignored.py\n", encoding="utf-8")
+    (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
+    (tmp_path / "compose.yaml").write_text("services: {}\n", encoding="utf-8")
+    real_open = Path.open
+    binary_reads: dict[str, int] = {}
+
+    def tracking_open(path, *args, **kwargs):
+        mode = args[0] if args else kwargs.get("mode", "r")
+        if mode == "rb":
+            try:
+                rel_path = path.resolve().relative_to(tmp_path).as_posix()
+            except ValueError:
+                pass
+            else:
+                binary_reads[rel_path] = binary_reads.get(rel_path, 0) + 1
+        return real_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "open", tracking_open)
+
+    snapshot = build_source_snapshot(tmp_path)
+
+    assert sorted(snapshot.captured_content_hashes) == [
+        ".gitignore",
+        "app.py",
+        "compose.yaml",
+    ]
+    assert binary_reads == {
+        ".gitignore": 1,
+        "app.py": 1,
+        "compose.yaml": 1,
+    }
+
+
+@pytest.mark.parametrize(
+    ("paths", "field"),
+    [
+        (["../app.py"], "captured_paths[0]"),
+        ([r"src\\app.py"], "captured_paths[0]"),
+        (["/tmp/app.py"], "captured_paths[0]"),
+        (["app.py", "app.py"], "captured_paths[1]"),
+        (["missing.py"], "captured_paths[0]"),
+    ],
+)
+def test_snapshot_hash_selection_rejects_unsafe_duplicate_or_missing_paths(
+    tmp_path, paths, field
+):
+    (tmp_path / "app.py").write_text("pass\n", encoding="utf-8")
+    snapshot = build_source_snapshot(tmp_path)
+
+    with pytest.raises(SourceSnapshotError) as exc_info:
+        snapshot.hashes_for(paths)
+
+    assert exc_info.value.field == field
+
+
+def test_snapshot_captures_exact_plugin_inventory_path_without_rescanning(
+    tmp_path,
+):
+    plugin_source = tmp_path / "flow.toy"
+    plugin_source.write_bytes(b"run\r\n")
+    snapshot = build_source_snapshot(tmp_path)
+    assert "flow.toy" not in snapshot.captured_content_hashes
+
+    extended = snapshot.with_captured_inventory_paths(["flow.toy"])
+
+    assert extended.hashes_for(["flow.toy"]) == {"flow.toy": sha256_bytes(b"run\r\n")}
+    assert extended.captured_input_kinds["flow.toy"] == ("source",)
+    assert "flow.toy" in extended.all_source_paths
+    assert snapshot.captured_content_hashes == {}
+
+
+@pytest.mark.parametrize("path", ["../outside.toy", "missing.toy"])
+def test_snapshot_rejects_unsafe_or_missing_plugin_inventory_path(
+    tmp_path,
+    path,
+):
+    snapshot = build_source_snapshot(tmp_path)
+
+    with pytest.raises(SourceSnapshotError) as exc_info:
+        snapshot.with_captured_inventory_paths([path])
+
+    assert exc_info.value.field == "inventory_paths[0]"
 
 
 def test_records_docker_yaml_and_package_candidates_deterministically(tmp_path):

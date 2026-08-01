@@ -22,7 +22,12 @@ from .common import (
     discover_source_files,
     filter_bundled_inventory,
 )
-from ..services.extractor_helpers import get_prepared_binary, missing_helper_message
+from ..services.extractor_helpers import (
+    ENV_EXTRACTOR_TIMEOUT,
+    extractor_timeout_seconds,
+    get_prepared_binary,
+    missing_helper_message,
+)
 
 _RUST_SCRIPTS_DIR = Path(__file__).parent / "rust_scripts"
 
@@ -143,13 +148,14 @@ class RustExtractor:
         cmd: list[str],
         helper_binary: Path,
     ) -> subprocess.CompletedProcess | None:
+        timeout_seconds = extractor_timeout_seconds()
         try:
             return subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
                 check=True,
-                timeout=180,
+                timeout=timeout_seconds,
                 cwd=str(helper_binary.parent),
             )
         except subprocess.CalledProcessError as exc:
@@ -160,9 +166,12 @@ class RustExtractor:
             )
             return None
         except subprocess.TimeoutExpired:
-            self.last_error = "extraction timed out after 180 s"
+            self.last_error = (
+                f"extraction timed out after {timeout_seconds} s; configure "
+                f"{ENV_EXTRACTOR_TIMEOUT} to allow more time"
+            )
             print(
-                "llm-wiki Rust extractor: extraction timed out after 180 s.",
+                f"llm-wiki Rust extractor: {self.last_error}.",
                 file=sys.stderr,
             )
             return None

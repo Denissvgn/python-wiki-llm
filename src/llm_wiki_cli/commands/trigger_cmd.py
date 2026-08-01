@@ -1,18 +1,20 @@
 from __future__ import annotations
 
+import json
+import math
 import os
 import subprocess
 import sys
 import time
 from pathlib import Path
-from .generate_prompt_cmd import _build_prompt
-from ..services.lockfile import WikiLock, LockAcquisitionError
+
+from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS, validate_path
 from ..services import circuit_breaker
+from ..services.lockfile import LockAcquisitionError, WikiLock
 from ..services.metrics import record_event
 from ..services.secure_file import write_private_text
 from ..services.team import TeamConfigError, team_prompt_template_default
-from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS, validate_path
-import json
+from .generate_prompt_cmd import _build_prompt, _redact_prompt_artifact
 
 GIT_DIR = Path(".git")
 DEFAULT_MAX_PROMPT_BYTES = 2_000_000
@@ -35,7 +37,7 @@ def run(args):
 
     # --- Fuse: Concurrency Lock ---
     try:
-        with WikiLock(GIT_DIR):
+        with WikiLock(GIT_DIR, wait_seconds=_lock_wait_seconds()):
             _run_sync(args)
     except LockAcquisitionError:
         print("Another llm-wiki sync is already running. Skipping.")
@@ -106,10 +108,29 @@ def _record_trigger_failure(args, wiki_dir, started: float, *, exit_code: int) -
 def _is_breaker_open() -> bool:
     if not circuit_breaker.check_breaker(GIT_DIR):
         return False
-    print(
-        "Circuit breaker is OPEN — manual trigger-agent sync is disabled after repeated failures."
-    )
-    print("To re-enable: llm-wiki trigger-agent --reset-breaker")
+    state = circuit_breaker.load_state(GIT_DIR)
+    breaker_state = state.get("state")
+    ttl_seconds = circuit_breaker.breaker_ttl_seconds()
+    if breaker_state == "half-open":
+        print(
+            "Circuit breaker is HALF-OPEN — a recovery probe lease already "
+            "blocks this trigger-agent sync."
+        )
+    else:
+        print(
+            "Circuit breaker is OPEN — manual trigger-agent sync is disabled "
+            "after repeated failures."
+        )
+    if ttl_seconds == 0:
+        print(
+            "Automatic recovery is disabled. To re-enable: "
+            "llm-wiki trigger-agent --reset-breaker"
+        )
+    else:
+        print(
+            f"Automatic recovery retries after {ttl_seconds:g} seconds; "
+            "to recover now: llm-wiki trigger-agent --reset-breaker"
+        )
     return True
 
 
@@ -159,7 +180,7 @@ def _skip_large_diff(args, wiki_dir, started: float, diff_text: str) -> bool:
 
 def _build_sync_prompt(args, wiki_dir, started: float, diff_text: str) -> str | None:
     print("Extracting current structure context...")
-    from .extract_cmd import (
+    from ..services.extraction_service import (
         get_call_graph,
         get_inventory_result,
         print_inventory_failures,
@@ -211,7 +232,7 @@ def _skip_large_prompt(args, wiki_dir, started: float, prompt: str) -> bool:
 
 def _write_prompt_file(prompt: str) -> Path:
     prompt_file = Path(".git/llm-wiki-prompt.txt")
-    write_private_text(prompt_file, prompt)
+    write_private_text(prompt_file, _redact_prompt_artifact(prompt))
     return prompt_file
 
 
@@ -283,3 +304,20 @@ def _max_prompt_bytes(args) -> int:
         except ValueError:
             pass
     return DEFAULT_MAX_PROMPT_BYTES
+
+
+def _lock_wait_seconds() -> float:
+    raw_value = os.environ.get("LLM_WIKI_LOCK_WAIT")
+    if raw_value is None or not raw_value.strip():
+        return 0.0
+    try:
+        wait_seconds = float(raw_value)
+    except ValueError as exc:
+        raise ValueError(
+            "LLM_WIKI_LOCK_WAIT must be a finite non-negative number of seconds."
+        ) from exc
+    if not math.isfinite(wait_seconds) or wait_seconds < 0:
+        raise ValueError(
+            "LLM_WIKI_LOCK_WAIT must be a finite non-negative number of seconds."
+        )
+    return wait_seconds

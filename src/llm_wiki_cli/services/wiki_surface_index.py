@@ -5,11 +5,14 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence, Union
 from urllib.parse import unquote
 
+from .io import write_bytes_atomic
 from .paths import normalize_source_path
+from .validation import normalize_optional_portable_relative_path
 from .wiki_media import (
     build_asset_index,
     iter_markdown_link_targets,
@@ -17,6 +20,7 @@ from .wiki_media import (
 )
 from .wiki_surface import (
     PageKind,
+    WikiSurfaceError,
     WikiSurfacePage,
     collect_wiki_pages,
     iter_page_kinds,
@@ -28,7 +32,17 @@ WIKI_SURFACE_INDEX_SCHEMA_VERSION = "llm-wiki-surface-index/v1"
 
 _MERMAID_CLICK_RE = re.compile(r'^\s*click\s+\S+\s+"([^"]+)"', re.MULTILINE)
 _MARKDOWN_PATH_RE = re.compile(r"\*\*Path:\*\*\s+`([^`]+)`")
-_WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:/")
+
+
+@dataclass(frozen=True)
+class SurfaceIndexEvaluation:
+    """One collected canonical-page view reused by M1 projection builders."""
+
+    pages: tuple[WikiSurfacePage, ...]
+    content_by_path: Mapping[str, str]
+    payload: Mapping[str, Any]
+    serialized_bytes: bytes
+    existing_asset_paths: frozenset[str]
 
 
 def build_surface_index(
@@ -40,8 +54,36 @@ def build_surface_index(
     entity_occurrence_page_cache: Optional[Mapping[tuple[str, str, int], str]] = None,
     module_page_map: Optional[Mapping[str, str]] = None,
     entry_points: Optional[Sequence[Mapping[str, Any]]] = None,
+    page_source_overrides: Optional[Mapping[str, Optional[str]]] = None,
 ) -> dict[str, Any]:
     """Build the deterministic wiki surface index payload."""
+    return dict(
+        evaluate_surface_index(
+            wiki_dir,
+            inventory,
+            src_dir=src_dir,
+            entity_page_cache=entity_page_cache,
+            entity_occurrence_page_cache=entity_occurrence_page_cache,
+            module_page_map=module_page_map,
+            entry_points=entry_points,
+            page_source_overrides=page_source_overrides,
+        ).payload
+    )
+
+
+def evaluate_surface_index(
+    wiki_dir: Union[str, Path],
+    inventory: Mapping[str, Mapping[str, Any]],
+    *,
+    src_dir: Union[str, Path] = ".",
+    entity_page_cache: Optional[Mapping[tuple[str, str], str]] = None,
+    entity_occurrence_page_cache: Optional[Mapping[tuple[str, str, int], str]] = None,
+    module_page_map: Optional[Mapping[str, str]] = None,
+    entry_points: Optional[Sequence[Mapping[str, Any]]] = None,
+    page_source_overrides: Optional[Mapping[str, Optional[str]]] = None,
+) -> SurfaceIndexEvaluation:
+    """Collect pages/assets once and build exact surface-index v1 bytes."""
+
     wiki = Path(wiki_dir)
     src_root = Path(src_dir)
     pages = collect_wiki_pages(wiki)
@@ -58,6 +100,7 @@ def build_surface_index(
             entry_points=entry_points,
         ),
         src_root,
+        page_source_overrides=page_source_overrides,
     )
     counts = _counts(page_entries)
     assets = build_asset_index(wiki, content_by_path)
@@ -96,7 +139,14 @@ def build_surface_index(
             "pages": page_entries,
         }
     )
-    return payload
+    serialized = (json.dumps(payload, indent=2, sort_keys=True) + "\n").encode("utf-8")
+    return SurfaceIndexEvaluation(
+        pages=tuple(pages),
+        content_by_path=content_by_path,
+        payload=payload,
+        serialized_bytes=serialized,
+        existing_asset_paths=assets.existing_paths,
+    )
 
 
 def write_surface_index(
@@ -108,12 +158,13 @@ def write_surface_index(
     entity_occurrence_page_cache: Optional[Mapping[tuple[str, str, int], str]] = None,
     module_page_map: Optional[Mapping[str, str]] = None,
     entry_points: Optional[Sequence[Mapping[str, Any]]] = None,
+    page_source_overrides: Optional[Mapping[str, Optional[str]]] = None,
 ) -> tuple[Path, str]:
     """Write the surface index artifact and return ``(path, state)``."""
     wiki = Path(wiki_dir)
     path = wiki / SURFACE_INDEX_FILENAME
     existed = path.exists()
-    payload = build_surface_index(
+    evaluation = evaluate_surface_index(
         wiki,
         inventory,
         src_dir=src_dir,
@@ -121,14 +172,12 @@ def write_surface_index(
         entity_occurrence_page_cache=entity_occurrence_page_cache,
         module_page_map=module_page_map,
         entry_points=entry_points,
+        page_source_overrides=page_source_overrides,
     )
-    content = json.dumps(payload, indent=2, sort_keys=True) + "\n"
-    if existed and path.read_text(encoding="utf-8") == content:
+    if existed and path.read_bytes() == evaluation.serialized_bytes:
         return path, "unchanged"
 
-    tmp_path = path.with_suffix(".json.tmp")
-    tmp_path.write_text(content, encoding="utf-8")
-    tmp_path.replace(path)
+    write_bytes_atomic(path, evaluation.serialized_bytes)
     return path, "updated" if existed else "created"
 
 
@@ -144,12 +193,22 @@ def _page_entries(
     content_by_path: Mapping[str, str],
     sources: Mapping[tuple[PageKind, str], Optional[str]],
     src_root: Path,
+    *,
+    page_source_overrides: Optional[Mapping[str, Optional[str]]] = None,
 ) -> list[dict[str, Any]]:
     canonical_by_path = {page.path.resolve(): page.relative_path for page in pages}
+    overrides = _validated_page_source_overrides(
+        pages,
+        page_source_overrides,
+        src_root,
+    )
     entries = []
     for page in pages:
         content = content_by_path.get(page.relative_path, "")
-        source_path = sources.get((page.kind, page.page_id))
+        source_path = overrides.get(
+            page.relative_path,
+            sources.get((page.kind, page.page_id)),
+        )
         if source_path is None and page.kind is PageKind.INFRASTRUCTURE:
             source_path = _source_path_from_markdown(content, src_root)
         entries.append(
@@ -169,6 +228,37 @@ def _page_entries(
             }
         )
     return entries
+
+
+def _validated_page_source_overrides(
+    pages: Sequence[WikiSurfacePage],
+    overrides: Optional[Mapping[str, Optional[str]]],
+    src_root: Path,
+) -> dict[str, Optional[str]]:
+    """Validate explicit source mappings for already active canonical pages."""
+
+    if overrides is None:
+        return {}
+    if not isinstance(overrides, Mapping):
+        raise WikiSurfaceError("page_source_overrides must be an object")
+    active = {page.relative_path for page in pages}
+    normalized: dict[str, Optional[str]] = {}
+    for page_path, source_path in overrides.items():
+        if not isinstance(page_path, str) or page_path not in active:
+            raise WikiSurfaceError(
+                "page_source_overrides must identify active canonical pages"
+            )
+        if source_path is None:
+            normalized[page_path] = None
+            continue
+        safe_source_path = _safe_source_path(source_path, src_root)
+        if safe_source_path is None:
+            raise WikiSurfaceError(
+                f"page_source_overrides[{page_path!r}] must contain a safe "
+                "repository-relative source path or null"
+            )
+        normalized[page_path] = safe_source_path
+    return normalized
 
 
 def _source_maps(
@@ -303,15 +393,13 @@ def _source_path_from_markdown(content: str, src_root: Path) -> Optional[str]:
 
 
 def _safe_source_path(value: object, src_root: Path) -> Optional[str]:
+    """Normalize observational source metadata, retaining only portable output."""
+
     if not isinstance(value, str) or not value:
         return None
-    normalized = normalize_source_path(value, str(src_root))
-    if not normalized:
-        return None
-    normalized = normalized.replace("\\", "/")
-    if normalized.startswith("/") or _WINDOWS_ABSOLUTE_RE.match(normalized):
-        return None
-    return normalized
+    return normalize_optional_portable_relative_path(
+        normalize_source_path(value, str(src_root))
+    )
 
 
 def _markdown_title(content: str, fallback: str) -> str:

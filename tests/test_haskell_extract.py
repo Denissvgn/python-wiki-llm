@@ -173,6 +173,7 @@ class TestHaskellExtractorWrapper:
         self, tmp_path, monkeypatch
     ):
         _write_haskell(tmp_path, "src/App.hs", "module App where\n")
+        monkeypatch.setenv("LLM_WIKI_EXTRACTOR_TIMEOUT", "40")
         helper_calls = []
         commands = []
 
@@ -211,7 +212,7 @@ class TestHaskellExtractorWrapper:
         command, kwargs = commands[0]
         assert command[command.index("--only-files") + 1] == "src/App.hs"
         assert "--deep" in command
-        assert kwargs["timeout"] == 120
+        assert kwargs["timeout"] == 40
         assert kwargs["cwd"] == str(Path("/tmp/haskell-helper").parent)
 
     def test_full_scan_passes_gitignore_filtered_files_to_subprocess(
@@ -431,9 +432,10 @@ class TestHaskellExtractorWrapper:
         assert "malformed JSON" in capsys.readouterr().err
 
     def test_helper_failure_timeout_and_missing_executable_set_last_error(
-        self, tmp_path, monkeypatch
+        self, tmp_path, monkeypatch, capsys
     ):
         _write_haskell(tmp_path, "Main.hs", "module Main where\n")
+        monkeypatch.setenv("LLM_WIKI_EXTRACTOR_TIMEOUT", "41")
 
         monkeypatch.setattr(
             "llm_wiki_cli.extractors.haskell_extractor.get_prepared_binary",
@@ -445,7 +447,7 @@ class TestHaskellExtractorWrapper:
                 subprocess.CalledProcessError(2, ["haskell"], stderr="parse failed"),
                 "extraction failed",
             ),
-            (subprocess.TimeoutExpired(["haskell"], 120), "timed out"),
+            (subprocess.TimeoutExpired(["haskell"], 41), "timed out"),
             (FileNotFoundError(), "prepared Haskell helper executable not found"),
         ]
         for error, expected in cases:
@@ -460,6 +462,9 @@ class TestHaskellExtractorWrapper:
             assert inventory == {}
             assert extractor.last_error is not None
             assert expected in extractor.last_error
+            if isinstance(error, subprocess.TimeoutExpired):
+                assert "LLM_WIKI_EXTRACTOR_TIMEOUT" in extractor.last_error
+                assert "LLM_WIKI_EXTRACTOR_TIMEOUT" in capsys.readouterr().err
 
     def test_extract_remains_short_orchestrator(self):
         source = textwrap.dedent(inspect.getsource(HaskellExtractor.extract))

@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from llm_wiki_cli.services import dependencies
 from llm_wiki_cli.services.dependencies import (
     analyze_dependencies,
     build_dependency_graph,
+    build_dependency_observations,
     dependency_metrics,
     detect_cycles,
     detect_side_effects,
@@ -12,6 +14,7 @@ from llm_wiki_cli.services.dependencies import (
     top_level_package,
     topological_order,
 )
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
 
 def _imp(module, name=None):
@@ -154,6 +157,184 @@ class TestBuildDependencyGraph:
         }
         reverse = dict(reversed(list(forward.items())))
         assert build_dependency_graph(forward) == build_dependency_graph(reverse)
+
+
+class TestBuildDependencyObservations:
+    def test_preserves_resolution_candidates_location_and_legacy_shape(self):
+        inventory = {
+            "app.py": _mod(
+                {"module": "pkg.target", "name": "run", "line": 7},
+                {"module": "shared", "name": "missing", "line": 0},
+                {"module": "requests", "name": "get"},
+                {"module": ".missing", "name": "value", "line": -2},
+            ),
+            "pkg/target.py": _mod(),
+            "one/shared.py": _mod(),
+            "two/shared.py": _mod(),
+        }
+
+        legacy = build_dependency_graph(inventory)
+        result = build_dependency_observations(inventory)
+        by_module = {item["module"]: item for item in result["observations"]}
+
+        assert legacy == {
+            "edges": [
+                ("app.py", "one/shared.py"),
+                ("app.py", "pkg/target.py"),
+                ("app.py", "two/shared.py"),
+            ],
+            "nodes": [
+                "app.py",
+                "one/shared.py",
+                "pkg/target.py",
+                "two/shared.py",
+            ],
+            "unresolved": [
+                {"file": "app.py", "module": ".missing", "name": "value"},
+                {"file": "app.py", "module": "requests", "name": "get"},
+            ],
+        }
+        assert by_module["pkg.target"] == {
+            "source_path": "app.py",
+            "module": "pkg.target",
+            "name": "run",
+            "line": 7,
+            "candidates": ["pkg/target.py"],
+            "target_path": "pkg/target.py",
+            "resolution": "resolved",
+        }
+        assert by_module["shared"]["candidates"] == [
+            "one/shared.py",
+            "two/shared.py",
+        ]
+        assert by_module["shared"]["target_path"] is None
+        assert by_module["shared"]["resolution"] == "ambiguous"
+        assert by_module["shared"]["line"] is None
+        assert by_module["requests"]["resolution"] == "external"
+        assert by_module["requests"]["line"] is None
+        assert by_module[".missing"]["resolution"] == "unresolved"
+        assert by_module[".missing"]["line"] is None
+
+        assert result["schema_version"] == "llm-wiki-dependency-observations/v1"
+        assert result["coverage"]["observed"] == 4
+        assert result["coverage"]["emitted"] == 4
+        assert result["coverage"]["limit"] is None
+        assert result["coverage"]["truncated"] is False
+        assert result["coverage"]["omitted"] == 0
+        assert result["coverage"]["limitations"]
+
+    def test_keeps_duplicate_and_self_import_observations_deterministically(self):
+        imports = [
+            {"module": "b", "name": "second"},
+            {"module": "a", "name": "a", "line": 0},
+            {"module": "b", "name": "first", "line": 2},
+        ]
+        forward = {
+            "a.py": {"imports": list(imports)},
+            "b.py": {"imports": []},
+        }
+        reverse = {
+            "b.py": {"imports": []},
+            "a.py": {"imports": list(reversed(imports))},
+        }
+
+        first = build_dependency_observations(forward)
+        second = build_dependency_observations(reverse)
+
+        assert first == second
+        assert [item["module"] for item in first["observations"]] == ["a", "b", "b"]
+        self_import = first["observations"][0]
+        assert self_import["resolution"] == "resolved"
+        assert self_import["target_path"] == "a.py"
+        assert self_import["line"] is None
+
+    def test_versioned_location_sidecar_is_matched_and_validated(self):
+        inventory = {
+            "a.py": {
+                "imports": [
+                    {"module": "b", "name": "b"},
+                    {"module": "requests", "name": "get"},
+                    {"module": ".missing", "name": "value"},
+                ]
+            },
+            "b.py": {"imports": []},
+        }
+        sidecar = {
+            "schema_version": "llm-wiki-import-location-observations/v1",
+            "observations": [
+                {
+                    "source_path": "a.py",
+                    "import_index": 2,
+                    "module": ".different",
+                    "name": "value",
+                    "line": 13,
+                },
+                {
+                    "source_path": "a.py",
+                    "import_index": 1,
+                    "module": "requests",
+                    "name": "get",
+                    "line": 0,
+                },
+                {
+                    "source_path": "a.py",
+                    "import_index": 0,
+                    "module": "b",
+                    "name": "b",
+                    "line": 11,
+                },
+            ],
+        }
+
+        result = build_dependency_observations(
+            inventory,
+            import_observations=sidecar,
+        )
+        by_module = {item["module"]: item for item in result["observations"]}
+
+        assert by_module["b"]["line"] == 11
+        assert by_module["requests"]["line"] is None
+        assert by_module[".missing"]["line"] is None
+        assert "invalid-import-location-observations" in result["coverage"][
+            "limitations"
+        ]
+        assert "mismatched-import-location-observations" in result["coverage"][
+            "limitations"
+        ]
+        assert build_dependency_observations(
+            inventory,
+            import_observations={
+                **sidecar,
+                "observations": list(reversed(sidecar["observations"])),
+            },
+        ) == result
+
+    def test_malformed_import_omission_is_reported_exactly(self):
+        result = build_dependency_observations(
+            {
+                "a.py": {
+                    "imports": [
+                        "not-an-import-record",
+                        {"module": "requests", "name": "get"},
+                    ]
+                }
+            }
+        )
+
+        assert len(result["observations"]) == 1
+        assert result["coverage"] == {
+            "observed": 2,
+            "emitted": 1,
+            "limit": None,
+            "truncated": True,
+            "omitted": 1,
+            "limitations": [
+                "external-resolution-is-relative-to-the-selected-inventory",
+                "import-locations-depend-on-extractor-support",
+                "malformed-import-records",
+                "static-import-resolution-does-not-claim-runtime-completeness",
+            ],
+        }
 
 
 # ── DL-102: detect_cycles ─────────────────────────────────────────────
@@ -1382,6 +1563,43 @@ class TestAnalyzeDependencies:
         }
         assert "click" not in python["versions"]
         assert "local-pkg" not in python["versions"]
+
+    def test_dependency_analysis_reuses_snapshot_for_lockfile_discovery(
+        self,
+        tmp_path,
+        monkeypatch,
+    ):
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\ndependencies = ["requests>=2"]\n',
+            encoding="utf-8",
+        )
+        (tmp_path / "requirements.txt").write_text(
+            "requests==2.31.0\n",
+            encoding="utf-8",
+        )
+        (tmp_path / "app.py").write_text(
+            "import requests\n",
+            encoding="utf-8",
+        )
+        snapshot = build_source_snapshot(tmp_path)
+
+        def fail_if_walked(*_args, **_kwargs):
+            raise AssertionError("dependency analysis must reuse the source snapshot")
+
+        monkeypatch.setattr(dependencies.os, "walk", fail_if_walked)
+
+        result = analyze_dependencies(
+            {"app.py": _pymod(_imp("requests", "requests"))},
+            str(tmp_path),
+            source_snapshot=snapshot,
+        )
+
+        assert result["reconciliation"]["languages"]["python"]["versions"] == {
+            "requests": {
+                "version": "2.31.0",
+                "resolved_from": "requirements.txt",
+            }
+        }
 
     def test_javascript_package_lock_and_pnpm_versions_resolve_metadata(self, tmp_path):
         (tmp_path / "package.json").write_text(

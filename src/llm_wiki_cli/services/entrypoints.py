@@ -22,6 +22,7 @@ from typing import Any
 
 from .imports import build_module_path_resolver
 from .plugins import PluginError, entrypoint_detector_components, load_entry_point
+from .validation import positive_int_or_none, resolved_paths_equal
 
 # ── Entry-point categories ────────────────────────────────────────────
 
@@ -45,12 +46,24 @@ _MCP_DECORATORS = frozenset({"tool", "resource", "prompt"})
 _PLUGIN_CATEGORY_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
 
 _DEFAULT_FLOW_DEPTH = 6
+DEFAULT_FLOW_DEPTH = _DEFAULT_FLOW_DEPTH
+FLOW_OBSERVATIONS_SCHEMA = "llm-wiki-flow-observations/v1"
+_ENTRY_POINT_OBSERVATIONS_SCHEMA = "llm-wiki-entrypoint-observations/v1"
+_BUILTIN_DETECTOR_VERSION = "1"
 
 
 @dataclass(frozen=True)
 class EntryPointDetectionResult:
     entries: list[dict]
     warnings: list[str]
+
+
+@dataclass(frozen=True)
+class _PluginEntryPointDetectionResult:
+    entries: list[dict]
+    warnings: list[str]
+    omitted: int
+    detector_failures: int
 
 
 def _entry(
@@ -284,7 +297,9 @@ def _javascript_server_symbol(data: Mapping[str, Any], call: Mapping[str, Any]) 
     return "createServer"
 
 
-def _detect_javascript_http_servers(inventory: dict) -> list[dict]:
+def _detect_javascript_http_servers(
+    inventory: dict, *, include_details: bool = False
+) -> list[dict]:
     entries: list[dict] = []
     for filepath, data in inventory.items():
         if not isinstance(data, Mapping) or data.get("language") != "javascript":
@@ -295,7 +310,10 @@ def _detect_javascript_http_servers(inventory: dict) -> list[dict]:
             if not isinstance(call, Mapping) or call.get("name") != "createServer":
                 continue
             symbol = _javascript_server_symbol(data, call)
-            entries.append(_entry(CATEGORY_HTTP, filepath, symbol))
+            entry = _entry(CATEGORY_HTTP, filepath, symbol)
+            if include_details:
+                entry["__source_line"] = _source_line(call.get("line"))
+            entries.append(entry)
     return entries
 
 
@@ -474,7 +492,7 @@ def _load_plugin_detector(component: Mapping[str, Any], root: str | Path):
 
 
 def _roots_equal(left: str | Path, right: str | Path) -> bool:
-    return Path(left).resolve() == Path(right).resolve()
+    return resolved_paths_equal(left, right)
 
 
 def _read_detector_components(
@@ -509,6 +527,38 @@ def _detector_components(
     )
 
 
+def _source_line(value: object) -> int | None:
+    return positive_int_or_none(value)
+
+
+def _source_location(source_path: object, line: object) -> dict:
+    return {
+        "source_path": source_path if isinstance(source_path, str) else None,
+        "line": _source_line(line),
+    }
+
+
+def _plugin_detector_details(
+    component: Mapping[str, Any],
+    record: Mapping[str, Any],
+    entry: Mapping[str, Any],
+) -> dict:
+    location = record.get("source_location")
+    location_line = (
+        location.get("line") if isinstance(location, Mapping) else record.get("line")
+    )
+    reason = record.get("reason")
+    if not isinstance(reason, str) or not reason:
+        reason = "plugin detector reported the entry point"
+    return {
+        "id": f"plugin:{component.get('ref', 'unknown')}",
+        "version": str(component.get("plugin_version") or "unknown"),
+        "reason": reason,
+        "source_location": _source_location(entry.get("file"), location_line),
+        "plugin_component": str(component.get("ref") or "unknown"),
+    }
+
+
 def _detect_plugin_entries(
     inventory: dict,
     *,
@@ -516,13 +566,16 @@ def _detect_plugin_entries(
     fallback_root: str | Path | None,
     strict_plugin_errors: bool,
     include_provenance: bool,
-) -> EntryPointDetectionResult:
+    include_details: bool = False,
+) -> _PluginEntryPointDetectionResult:
     components, warnings = _detector_components(
         root,
         fallback_root=fallback_root,
         strict_plugin_errors=strict_plugin_errors,
     )
     entries: list[dict] = []
+    omitted = 0
+    detector_failures = len(warnings)
     for component, component_root in components:
         try:
             detector = _load_plugin_detector(component, component_root)
@@ -531,6 +584,7 @@ def _detect_plugin_entries(
             if strict_plugin_errors:
                 raise
             warnings.append(_plugin_warning(component, f"failed: {exc}"))
+            detector_failures += 1
             continue
         for index, record in enumerate(records, start=1):
             try:
@@ -540,14 +594,24 @@ def _detect_plugin_entries(
                         f"plugin:{component.get('ref', 'unknown')}"
                         f"@{component.get('plugin_version', 'unknown')}"
                     )
+                if include_details:
+                    entry["__detector_details"] = _plugin_detector_details(
+                        component, record, entry
+                    )
                 entries.append(entry)
             except Exception as exc:
                 if strict_plugin_errors:
                     raise
+                omitted += 1
                 warnings.append(
                     _plugin_warning(component, f"invalid record {index}: {exc}")
                 )
-    return EntryPointDetectionResult(entries, warnings)
+    return _PluginEntryPointDetectionResult(
+        entries,
+        warnings,
+        omitted,
+        detector_failures,
+    )
 
 
 # ── Console-script parsing (pyproject.toml ``[project.scripts]``) ──────
@@ -631,7 +695,11 @@ def _assign_ids(entries: list[dict]) -> list[dict]:
 
 
 def _builtin_entry_points(
-    inventory: dict, console_scripts: list[dict] | None, *, root: str | Path
+    inventory: dict,
+    console_scripts: list[dict] | None,
+    *,
+    root: str | Path,
+    include_details: bool = False,
 ) -> list[dict]:
     entries: list[dict] = []
     entries += _detect_argparse_dispatch_commands(inventory)
@@ -645,12 +713,144 @@ def _builtin_entry_points(
     entries += _detect_decorated(
         inventory, _HTTP_DECORATORS, CATEGORY_HTTP, allow_bare=False
     )
-    entries += _detect_javascript_http_servers(inventory)
+    entries += _detect_javascript_http_servers(
+        inventory, include_details=include_details
+    )
     entries += _detect_go_http_servers(inventory, root=root)
     entries += _detect_haskell_web_servers(inventory, root=root)
     entries += _detect_process(inventory, console_scripts)
 
     return entries
+
+
+def _callable_record(inventory: Mapping, entry: Mapping) -> Mapping[str, Any]:
+    filepath = entry.get("file")
+    symbol = entry.get("symbol")
+    data = inventory.get(filepath) if isinstance(filepath, str) else None
+    if not isinstance(data, Mapping):
+        return {}
+    for candidate_file, candidate_symbol, record in _iter_callables(dict(inventory)):
+        if candidate_file == filepath and candidate_symbol == symbol:
+            return record
+    return {}
+
+
+def _matching_decorator(
+    record: Mapping[str, Any], category: str
+) -> str | None:
+    leaves = {
+        CATEGORY_CLI: _CLI_DECORATORS,
+        CATEGORY_MCP: _MCP_DECORATORS,
+        CATEGORY_HTTP: _HTTP_DECORATORS,
+    }.get(category)
+    if leaves is None:
+        return None
+    for decorator in record.get("decorators", []):
+        leaf, dotted = _decorator_leaf(str(decorator))
+        if leaf in leaves and (dotted or category == CATEGORY_CLI):
+            return str(decorator)
+    return None
+
+
+def _javascript_detection_line(data: Mapping[str, Any], symbol: object) -> int | None:
+    for call in data.get("module_calls", []):
+        if (
+            isinstance(call, Mapping)
+            and call.get("name") == "createServer"
+            and _javascript_server_symbol(data, call) == symbol
+        ):
+            return _source_line(call.get("line"))
+    return None
+
+
+def _builtin_detector_details(
+    inventory: Mapping,
+    entry: Mapping[str, Any],
+    console_scripts: list[dict] | None,
+) -> dict:
+    filepath = entry.get("file")
+    data = inventory.get(filepath) if isinstance(filepath, str) else None
+    data = data if isinstance(data, Mapping) else {}
+    record = _callable_record(inventory, entry)
+    category = str(entry.get("category") or "")
+    decorator = _matching_decorator(record, category)
+    line = _source_line(record.get("line"))
+
+    if category == CATEGORY_API:
+        detector_id = "builtin.api-export"
+        reason = "symbol is a local definition listed in __all__"
+    elif decorator is not None:
+        detector_id = f"builtin.{category}-decorator"
+        reason = f"callable uses the {decorator} decorator"
+    elif category == CATEGORY_CLI:
+        detector_id = "builtin.argparse-dispatch"
+        reason = "callable is registered by the _COMMAND_MODULES dispatch table"
+    elif category == CATEGORY_HTTP and data.get("language") == "javascript":
+        detector_id = "builtin.javascript-node-http"
+        reason = "module imports Node HTTP and invokes createServer"
+        line = _source_line(entry.get("__source_line"))
+        if line is None:
+            line = _javascript_detection_line(data, entry.get("symbol"))
+    elif category == CATEGORY_HTTP and data.get("language") == "go":
+        detector_id = "builtin.go-net-http"
+        reason = "source imports net/http and declares a supported server pattern"
+    elif category == CATEGORY_HTTP and data.get("language") == "haskell":
+        detector_id = "builtin.haskell-web-server"
+        reason = "source imports a supported WAI, Warp, or Servant server module"
+    elif category == CATEGORY_PROCESS:
+        matching_script = next(
+            (
+                script
+                for script in console_scripts or []
+                if script.get("name") == entry.get("label")
+                and script.get("attr") == entry.get("symbol")
+            ),
+            None,
+        )
+        if matching_script is not None:
+            detector_id = "builtin.console-script"
+            reason = "callable is declared in the project.scripts table"
+        else:
+            detector_id = "builtin.main-block"
+            reason = "module contains an executable __main__ guard"
+    else:
+        detector_id = "builtin.static-entrypoint"
+        reason = "built-in static detector reported the entry point"
+
+    return {
+        "id": detector_id,
+        "version": _BUILTIN_DETECTOR_VERSION,
+        "reason": reason,
+        "source_location": _source_location(filepath, line),
+        "plugin_component": None,
+    }
+
+
+def _entry_key(entry: Mapping) -> tuple:
+    return (
+        entry.get("category"),
+        entry.get("file"),
+        entry.get("symbol"),
+    )
+
+
+def _public_entry(entry: Mapping) -> dict:
+    return {
+        key: value
+        for key, value in entry.items()
+        if not str(key).startswith("__") and key != "detector"
+    }
+
+
+def _detector_identity(entry: Mapping) -> tuple[str, str, str | None]:
+    details = entry.get("__detector_details")
+    details = details if isinstance(details, Mapping) else {}
+    component = details.get("plugin_component")
+    return (
+        str(details.get("id") or "unknown"),
+        str(details.get("version") or "unknown"),
+        str(component) if component is not None else None,
+    )
 
 
 def _finalize_entries(entries: list[dict]) -> list[dict]:
@@ -699,19 +899,158 @@ def get_entry_points(
     console_scripts: list[dict] | None = None,
     root: str | Path = ".",
     fallback_root: str | Path | None = None,
+    include_plugins: bool = True,
 ) -> list[dict]:
     """Detect user-reachable entry points from a deep inventory.
 
     Returns a deterministically ordered list of
     ``{"id", "category", "file", "symbol", "label"}`` records. ``console_scripts``
     are the parsed ``[project.scripts]`` entries (see :func:`read_console_scripts`).
+    Plugin detectors can be excluded for untrusted source workspaces.
     """
     return detect_entry_points(
         inventory,
         console_scripts=console_scripts,
         root=root,
         fallback_root=fallback_root,
+        include_plugins=include_plugins,
     ).entries
+
+
+def get_detailed_entry_points(
+    inventory: dict,
+    *,
+    console_scripts: list[dict] | None = None,
+    root: str | Path = ".",
+    fallback_root: str | Path | None = None,
+    include_plugins: bool = True,
+    strict_plugin_errors: bool = False,
+    include_warnings: bool = False,
+) -> dict:
+    """Return versioned detector observations without changing legacy entries.
+
+    ``include_warnings`` is an orchestration-only escape hatch for callers that
+    use this detailed detector as their single entry-point analysis pass.  It
+    defaults off so the public detailed contract remains byte-compatible.
+    """
+    raw_entries = _builtin_entry_points(
+        inventory, console_scripts, root=root, include_details=True
+    )
+    detector_warnings: list[str] = []
+    for entry in raw_entries:
+        entry["__detector_details"] = _builtin_detector_details(
+            inventory, entry, console_scripts
+        )
+
+    if include_plugins:
+        plugin_result = _detect_plugin_entries(
+            inventory,
+            root=root,
+            fallback_root=fallback_root,
+            strict_plugin_errors=strict_plugin_errors,
+            include_provenance=False,
+            include_details=True,
+        )
+        raw_entries.extend(plugin_result.entries)
+        detector_warnings = list(plugin_result.warnings)
+
+    selected_entries = {
+        _entry_key(entry): entry for entry in _dedup(raw_entries)
+    }
+    finalized = _finalize_entries([_public_entry(entry) for entry in raw_entries])
+    entries_by_key = {_entry_key(entry): entry for entry in finalized}
+    observations = [
+        {
+            "entry": dict(entries_by_key[_entry_key(raw_entry)]),
+            "detector": dict(raw_entry["__detector_details"]),
+            "selected": (
+                _public_entry(raw_entry)
+                == _public_entry(selected_entries[_entry_key(raw_entry)])
+                and _detector_identity(raw_entry)
+                == _detector_identity(selected_entries[_entry_key(raw_entry)])
+            ),
+        }
+        for raw_entry in raw_entries
+    ]
+    observations.sort(
+        key=lambda observation: (
+            observation["entry"].get("id") or "",
+            observation["detector"].get("id") or "",
+            observation["detector"]["source_location"].get("line") or -1,
+            observation["detector"].get("reason") or "",
+        )
+    )
+    limitations = [
+        "static-entrypoint-detection-does-not-claim-runtime-reachability"
+    ]
+    omitted = 0
+    detector_failures = 0
+    if include_plugins:
+        omitted = plugin_result.omitted
+        detector_failures = plugin_result.detector_failures
+    if omitted:
+        limitations.append("plugin-entrypoint-records-invalid")
+    if detector_failures:
+        limitations.append("plugin-entrypoint-detectors-failed")
+    limitations.sort()
+    emitted = len(observations)
+    result = {
+        "schema_version": _ENTRY_POINT_OBSERVATIONS_SCHEMA,
+        "observations": observations,
+        "coverage": {
+            "observed": emitted + omitted,
+            "emitted": emitted,
+            "limit": None,
+            "truncated": omitted > 0,
+            "omitted": omitted,
+            "limitations": limitations,
+        },
+    }
+    if include_warnings:
+        result["warnings"] = detector_warnings
+    return result
+
+
+def entry_points_from_detailed_observations(
+    detailed: Mapping[str, Any],
+    *,
+    include_provenance: bool = False,
+) -> list[dict]:
+    """Recover the compatible de-duplicated entries from a detailed result."""
+    chosen: dict[tuple, tuple[bool, dict]] = {}
+    for observation in detailed.get("observations", []) or []:
+        if not isinstance(observation, Mapping):
+            continue
+        raw_entry = observation.get("entry")
+        if not isinstance(raw_entry, Mapping):
+            continue
+        entry = dict(raw_entry)
+        key = _entry_key(entry)
+        selected = observation.get("selected") is True
+        existing = chosen.get(key)
+        if existing is not None and (existing[0] or not selected):
+            continue
+        if include_provenance:
+            detector = observation.get("detector")
+            detector = detector if isinstance(detector, Mapping) else {}
+            detector_id = str(detector.get("id") or "unknown")
+            if detector_id.startswith("builtin."):
+                entry["detector"] = "builtin"
+            elif detector_id.startswith("plugin:"):
+                entry["detector"] = (
+                    f"{detector_id}@{detector.get('version') or 'unknown'}"
+                )
+            else:
+                entry["detector"] = detector_id
+        chosen[key] = (selected, entry)
+    return sorted(
+        (entry for _, entry in chosen.values()),
+        key=lambda entry: (
+            entry.get("category") or "",
+            entry.get("file") or "",
+            entry.get("symbol") or "",
+        ),
+    )
 
 
 def javascript_flow_limitations(
@@ -834,4 +1173,63 @@ def build_flow(
         "modules_touched": _modules_touched(steps),
         "related_modules": _dedup_paths(entry.get("related_modules", [])),
         "truncated": state["truncated"],
+    }
+
+
+def _reachable_step_count(
+    start: tuple,
+    adjacency: dict[tuple, list[dict]],
+) -> int:
+    """Count the finite static traversal without applying the depth bound."""
+    observed = 1
+    visited = {start}
+    pending = [start]
+    while pending:
+        node = pending.pop()
+        for edge in adjacency.get(node, []):
+            observed += 1
+            target = (edge["to"]["file"], edge["to"]["symbol"])
+            if (
+                edge["kind"] == "internal"
+                and edge["to"]["file"] is not None
+                and target not in visited
+            ):
+                visited.add(target)
+                pending.append(target)
+    return observed
+
+
+def build_flow_detailed(
+    entry: dict,
+    edges: list[dict],
+    *,
+    max_depth: int = _DEFAULT_FLOW_DEPTH,
+) -> dict:
+    """Return the legacy flow plus versioned, exact reachable-step coverage.
+
+    The unbounded count follows the same de-cycled static traversal as
+    :func:`build_flow`; it does not claim that every edge executes at runtime.
+    ``limit`` is ``None`` because the legacy bound is a traversal depth rather
+    than a maximum collection size. ``depth_limit`` records that bound
+    explicitly.
+    """
+    flow = build_flow(entry, edges, max_depth=max_depth)
+    start = (entry["file"], entry["symbol"])
+    observed = _reachable_step_count(start, _build_adjacency(edges))
+    emitted = len(flow["steps"])
+    omitted = max(0, observed - emitted)
+    return {
+        **flow,
+        "schema_version": FLOW_OBSERVATIONS_SCHEMA,
+        "coverage": {
+            "steps": {
+                "observed": observed,
+                "emitted": emitted,
+                "omitted": omitted,
+                "limit": None,
+                "depth_limit": max_depth,
+                "truncated": omitted > 0,
+                "limitations": ["flow-steps-are-statically-inferred"],
+            }
+        },
     }

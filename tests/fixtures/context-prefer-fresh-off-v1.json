@@ -1,0 +1,36 @@
+{
+  "protocol": "llm-wiki-context/v1",
+  "ok": true,
+  "budget_tokens": 28,
+  "used_tokens": 28,
+  "format": "json",
+  "focus": [
+    "all"
+  ],
+  "filters": {},
+  "truncated": true,
+  "omitted_files": [
+    "z_fresh.py"
+  ],
+  "downgraded_files": {},
+  "bounds": {
+    "files": {
+      "total": 2,
+      "returned": 1,
+      "truncated": true
+    }
+  },
+  "files": {
+    "a_stale.py": {
+      "classes": [],
+      "functions": [
+        {
+          "name": "run",
+          "line": 1
+        }
+      ],
+      "priority": "high",
+      "detail": "deep"
+    }
+  }
+}

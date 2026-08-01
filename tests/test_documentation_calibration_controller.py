@@ -32,14 +32,14 @@ from llm_wiki_cli.services.documentation_calibration_controller import (
     P0CalibrationIntegrityError,
     P0CalibrationSchemaError,
     P0CalibrationTransitionError,
-    admit_p0_calibration_run,
-    build_p0_calibration_agent_packet,
-    dispatch_p0_calibration_agent,
-    get_p0_calibration_run_status,
-    prepare_p0_calibration_run,
-    record_p0_calibration_agent_result,
+    admit_calibration_run,
+    build_calibration_agent_packet,
+    dispatch_calibration_agent,
+    get_calibration_run_status,
+    prepare_calibration_run,
+    record_calibration_agent_result,
     validate_p0_calibration_packet_output,
-    verify_p0_calibration_run,
+    verify_calibration_run,
 )
 from llm_wiki_cli.services.documentation_run import prepare_documentation_run
 from llm_wiki_cli.services.protected_artifacts import (
@@ -116,7 +116,7 @@ class _HostBrokerAuthenticator:
 
 @pytest.fixture(autouse=True)
 def _install_test_host_broker_authenticator():
-    with host_broker.use_p0_calibration_host_broker_authenticator(
+    with host_broker.use_calibration_host_broker_authenticator(
         _HostBrokerAuthenticator()
     ):
         yield
@@ -386,7 +386,7 @@ def _add_matching_canonical_wiki_inputs(*workspaces: Path) -> tuple[Path, ...]:
 def _prepare_external_cohort(tmp_path: Path):
     _source, control_a, control_b = _prepare_controls(tmp_path)
     root = tmp_path / "calibration"
-    run = prepare_p0_calibration_run(
+    run = prepare_calibration_run(
         root,
         control_workspaces=[control_a, control_b],
         execution_manifest=_external_manifest(),
@@ -456,7 +456,7 @@ def _attestation(
 def _admit_external_cohort(tmp_path: Path):
     root, run = _prepare_external_cohort(tmp_path)
     authority = _authority(run)
-    admitted = admit_p0_calibration_run(
+    admitted = admit_calibration_run(
         root,
         authority_grant=authority,
         broker_attestation=_attestation(run, authority),
@@ -696,7 +696,7 @@ def test_prepare_rejects_copied_documentation_run_identity(tmp_path: Path):
         P0CalibrationIntegrityError,
         match="independently prepared documentation run identities",
     ):
-        prepare_p0_calibration_run(
+        prepare_calibration_run(
             tmp_path / "calibration",
             control_workspaces=[control_a, control_b],
             execution_manifest=_external_manifest(),
@@ -738,12 +738,12 @@ def test_expired_authority_blocks_without_admission_or_packet(tmp_path: Path):
     authority = _authority(run)
     authority["expires_at"] = _timestamp(timedelta(seconds=-1))
 
-    blocked = admit_p0_calibration_run(root, authority_grant=authority)
+    blocked = admit_calibration_run(root, authority_grant=authority)
 
     assert blocked.state == "BLOCKED_NO_SHIP"
     assert blocked.payload["decision_scope"] == "p0_policy_default"
     assert not (root / "packets").exists()
-    assert get_p0_calibration_run_status(root).terminal is True
+    assert get_calibration_run_status(root).terminal is True
 
 
 def test_status_rejects_source_mutation_before_admission(tmp_path: Path):
@@ -753,7 +753,7 @@ def test_status_rejects_source_mutation_before_admission(tmp_path: Path):
         encoding="utf-8",
     )
 
-    status = get_p0_calibration_run_status(root)
+    status = get_calibration_run_status(root)
 
     assert status.state == "REJECT"
     snapshot = json.loads((root / "run.json").read_text(encoding="utf-8"))
@@ -771,7 +771,7 @@ def test_admission_rejects_source_mutation_before_authority_or_probe(
         encoding="utf-8",
     )
 
-    rejected = admit_p0_calibration_run(
+    rejected = admit_calibration_run(
         root,
         authority_grant=authority,
         broker_attestation=attestation,
@@ -789,7 +789,7 @@ def test_self_asserted_external_attestation_cannot_authenticate_itself(
     authority = _authority(run)
     token = host_broker._HOST_BROKER_AUTHENTICATOR.set(None)
     try:
-        blocked = admit_p0_calibration_run(
+        blocked = admit_calibration_run(
             root,
             authority_grant=authority,
             broker_attestation=_attestation(run, authority),
@@ -816,10 +816,10 @@ def test_external_attestation_proof_binding_mismatch_blocks(
 
     root, run = _prepare_external_cohort(tmp_path)
     authority = _authority(run)
-    with host_broker.use_p0_calibration_host_broker_authenticator(
+    with host_broker.use_calibration_host_broker_authenticator(
         _WrongCohortAuthenticator()
     ):
-        blocked = admit_p0_calibration_run(
+        blocked = admit_calibration_run(
             root,
             authority_grant=authority,
             broker_attestation=_attestation(run, authority),
@@ -843,7 +843,7 @@ def test_status_blocks_when_admitted_authority_is_no_longer_fresh(
         lambda _store, _run: "Authority expired during status verification.",
     )
 
-    status = get_p0_calibration_run_status(root)
+    status = get_calibration_run_status(root)
 
     assert status.state == "BLOCKED_NO_SHIP"
     snapshot = json.loads((root / "run.json").read_text(encoding="utf-8"))
@@ -858,7 +858,7 @@ def test_status_rejects_source_mutation_after_admission(tmp_path: Path):
         encoding="utf-8",
     )
 
-    status = get_p0_calibration_run_status(root)
+    status = get_calibration_run_status(root)
 
     assert status.state == "REJECT"
     snapshot = json.loads((root / "run.json").read_text(encoding="utf-8"))
@@ -875,7 +875,7 @@ def test_admission_replay_rejects_source_mutation_after_admission(tmp_path: Path
         encoding="utf-8",
     )
 
-    replay = admit_p0_calibration_run(root, authority_grant=authority)
+    replay = admit_calibration_run(root, authority_grant=authority)
 
     assert replay.state == "REJECT"
     assert replay.payload["terminal_reason_codes"] == ["source_or_control_mutation"]
@@ -893,7 +893,7 @@ def test_canonical_wiki_input_mutation_rejects_at_every_action_gate(
         _local_manifest(tmp_path) if checkpoint == "dispatch" else _external_manifest()
     )
     root = tmp_path / "calibration"
-    run = prepare_p0_calibration_run(
+    run = prepare_calibration_run(
         root,
         control_workspaces=[control_a, control_b],
         execution_manifest=manifest,
@@ -909,12 +909,12 @@ def test_canonical_wiki_input_mutation_rejects_at_every_action_gate(
 
     if checkpoint == "dispatch":
         _install_passing_local_probe(monkeypatch, tmp_path)
-        admitted = admit_p0_calibration_run(
+        admitted = admit_calibration_run(
             root,
             authority_grant=_authority(run, manifest),
         )
         assert admitted.state == "ADMISSION_AUTHORIZED"
-        build_p0_calibration_agent_packet(root, role="intake-a")
+        build_calibration_agent_packet(root, role="intake-a")
 
     wiki_a.write_text(
         "# Architecture\n\nThis control changed after the calibration freeze.\n",
@@ -922,10 +922,10 @@ def test_canonical_wiki_input_mutation_rejects_at_every_action_gate(
     )
 
     if checkpoint == "status":
-        assert get_p0_calibration_run_status(root).state == "REJECT"
+        assert get_calibration_run_status(root).state == "REJECT"
     elif checkpoint == "admit":
         authority = _authority(run)
-        rejected = admit_p0_calibration_run(
+        rejected = admit_calibration_run(
             root,
             authority_grant=authority,
             broker_attestation=_attestation(run, authority),
@@ -933,7 +933,7 @@ def test_canonical_wiki_input_mutation_rejects_at_every_action_gate(
         assert rejected.state == "REJECT"
     else:
         with pytest.raises(P0CalibrationIntegrityError, match="documentation_inputs"):
-            dispatch_p0_calibration_agent(root, role="intake-a")
+            dispatch_calibration_agent(root, role="intake-a")
 
     snapshot = json.loads((root / "run.json").read_text(encoding="utf-8"))
     assert snapshot["state"] == "REJECT"
@@ -945,7 +945,7 @@ def test_external_admission_rechecks_controls_after_host_authentication(
 ):
     source, control_a, control_b = _prepare_controls(tmp_path)
     root = tmp_path / "calibration"
-    run = prepare_p0_calibration_run(
+    run = prepare_calibration_run(
         root,
         control_workspaces=[control_a, control_b],
         execution_manifest=_external_manifest(),
@@ -961,10 +961,10 @@ def test_external_admission_rechecks_controls_after_host_authentication(
             )
             return proof
 
-    with host_broker.use_p0_calibration_host_broker_authenticator(
+    with host_broker.use_calibration_host_broker_authenticator(
         _MutatingAuthenticator()
     ):
-        rejected = admit_p0_calibration_run(
+        rejected = admit_calibration_run(
             root,
             authority_grant=authority,
             broker_attestation=_attestation(run, authority),
@@ -987,7 +987,7 @@ def test_external_admission_rechecks_authority_after_host_authentication(
         lambda _store, _run: "Authority expired during broker authentication.",
     )
 
-    blocked = admit_p0_calibration_run(
+    blocked = admit_calibration_run(
         root,
         authority_grant=authority,
         broker_attestation=_attestation(run, authority),
@@ -1022,7 +1022,7 @@ def test_admission_resumes_from_one_frozen_authority_without_rewriting_it(
         interrupt_after_authority,
     )
     with pytest.raises(KeyboardInterrupt, match="after authority freeze"):
-        admit_p0_calibration_run(
+        admit_calibration_run(
             root,
             authority_grant=authority,
             broker_attestation=attestation,
@@ -1043,7 +1043,7 @@ def test_admission_resumes_from_one_frozen_authority_without_rewriting_it(
     replayed_authority = json.loads(json.dumps(authority))
     if change_replayed_grant:
         replayed_authority["authentication"]["reference"] = "different-approval"
-    resumed = admit_p0_calibration_run(
+    resumed = admit_calibration_run(
         root,
         authority_grant=replayed_authority,
         broker_attestation=attestation,
@@ -1066,30 +1066,30 @@ def test_external_intake_freezes_without_labels_or_default_change(tmp_path: Path
     root, _run = _admit_external_cohort(tmp_path)
 
     for role in CALIBRATION_ROLES[:3]:
-        packet = build_p0_calibration_agent_packet(root, role=role)
+        packet = build_calibration_agent_packet(root, role=role)
         result, receipt = _external_result_and_receipt(root, packet, verifier=False)
-        record_p0_calibration_agent_result(
+        record_calibration_agent_result(
             root, dispatch_receipt=receipt, result=result
         )
 
-    verifier_packet = build_p0_calibration_agent_packet(root, role="verifier")
+    verifier_packet = build_calibration_agent_packet(root, role="verifier")
     verifier_result, verifier_receipt = _external_result_and_receipt(
         root, verifier_packet, verifier=True
     )
-    record_p0_calibration_agent_result(
+    record_calibration_agent_result(
         root,
         dispatch_receipt=verifier_receipt,
         result=verifier_result,
     )
 
-    preview = verify_p0_calibration_run(root, advance=False)
+    preview = verify_calibration_run(root, advance=False)
     assert preview.ok is True
     assert preview.payload["advanced"] is False
-    report = verify_p0_calibration_run(root)
+    report = verify_calibration_run(root)
 
     assert report.ok is True
     assert report.payload["advanced"] is True
-    assert get_p0_calibration_run_status(root).state == "INTAKE_FROZEN"
+    assert get_calibration_run_status(root).state == "INTAKE_FROZEN"
     frozen = json.loads(
         (root / "intake" / "frozen-intake.json").read_text(encoding="utf-8")
     )
@@ -1112,11 +1112,11 @@ def test_external_intake_freezes_without_labels_or_default_change(tmp_path: Path
 
 def test_early_verify_with_pending_roles_is_read_only_and_ineligible(tmp_path: Path):
     root, _run = _admit_external_cohort(tmp_path)
-    build_p0_calibration_agent_packet(root, role="intake-a")
+    build_calibration_agent_packet(root, role="intake-a")
     before_snapshot = (root / "run.json").read_bytes()
     before_transitions = sorted((root / "transitions").glob("*.json"))
 
-    report = verify_p0_calibration_run(root)
+    report = verify_calibration_run(root)
 
     assert report.ok is False
     assert report.payload["eligible"] is False
@@ -1124,12 +1124,12 @@ def test_early_verify_with_pending_roles_is_read_only_and_ineligible(tmp_path: P
     assert report.payload["next_state"] is None
     assert (root / "run.json").read_bytes() == before_snapshot
     assert sorted((root / "transitions").glob("*.json")) == before_transitions
-    assert get_p0_calibration_run_status(root).state == "INTAKE_OPEN"
+    assert get_calibration_run_status(root).state == "INTAKE_OPEN"
 
 
 def test_semantic_result_gets_only_one_fresh_context_attempt(tmp_path: Path):
     root, _run = _admit_external_cohort(tmp_path)
-    packet = build_p0_calibration_agent_packet(root, role="intake-a")
+    packet = build_calibration_agent_packet(root, role="intake-a")
     result, receipt = _external_result_and_receipt(root, packet, verifier=False)
     result.payload["proposal"]["purpose"]["citations"] = ["citation-forged"]
     material = dict(receipt.payload)
@@ -1147,11 +1147,11 @@ def test_semantic_result_gets_only_one_fresh_context_attempt(tmp_path: Path):
     )
 
     with pytest.raises(P0CalibrationSchemaError, match="Semantic result"):
-        record_p0_calibration_agent_result(
+        record_calibration_agent_result(
             root, dispatch_receipt=replacement, result=result
         )
 
-    status = get_p0_calibration_run_status(root)
+    status = get_calibration_run_status(root)
     assert status.state == "INTAKE_OPEN"
     result_id_path = root / "intake" / "result-ids" / f"{result.result_id}.json"
     invalid_result_paths = list(
@@ -1160,13 +1160,13 @@ def test_semantic_result_gets_only_one_fresh_context_attempt(tmp_path: Path):
     assert result_id_path.read_bytes() == canonical_json_bytes(result.payload)
     assert len(invalid_result_paths) == 1
     assert invalid_result_paths[0].read_bytes() == canonical_json_bytes(result.payload)
-    retry = build_p0_calibration_agent_packet(root, role="intake-a")
+    retry = build_calibration_agent_packet(root, role="intake-a")
     assert retry.payload["attempt"] == 2
     assert retry.payload["packet_id"] != packet.payload["packet_id"]
     retry_snapshot = (root / "run.json").read_bytes()
     retry_transitions = sorted((root / "transitions").glob("*.json"))
 
-    pending_retry = verify_p0_calibration_run(root)
+    pending_retry = verify_calibration_run(root)
 
     assert pending_retry.payload["eligible"] is False
     assert pending_retry.payload["advanced"] is False
@@ -1194,12 +1194,12 @@ def test_semantic_result_gets_only_one_fresh_context_attempt(tmp_path: Path):
     )
 
     with pytest.raises(P0CalibrationIntegrityError, match="Result id was reused"):
-        record_p0_calibration_agent_result(
+        record_calibration_agent_result(
             root,
             dispatch_receipt=reused_receipt,
             result=valid_result,
         )
-    assert get_p0_calibration_run_status(root).state == "REJECT"
+    assert get_calibration_run_status(root).state == "REJECT"
 
 
 def test_local_admission_requires_complete_denial_probe_results(
@@ -1208,13 +1208,13 @@ def test_local_admission_requires_complete_denial_probe_results(
     source, control_a, control_b = _prepare_controls(tmp_path)
     manifest = _local_manifest(tmp_path)
     root = tmp_path / "local-calibration"
-    run = prepare_p0_calibration_run(
+    run = prepare_calibration_run(
         root,
         control_workspaces=[control_a, control_b],
         execution_manifest=manifest,
     )
     broker = _install_passing_local_probe(monkeypatch, tmp_path)
-    admitted = admit_p0_calibration_run(
+    admitted = admit_calibration_run(
         root,
         authority_grant=_authority(run, manifest),
     )
@@ -1225,14 +1225,14 @@ def test_local_admission_requires_complete_denial_probe_results(
     )
     assert len(audit["events"]) == len(broker.REQUIRED_ISOLATION_PROBES)
     assert {event["outcome"] for event in audit["events"]} == {"denied"}
-    packet = build_p0_calibration_agent_packet(root, role="intake-a")
+    packet = build_calibration_agent_packet(root, role="intake-a")
     assert str(tmp_path) not in packet.to_json()
     result, receipt = _external_result_and_receipt(root, packet, verifier=False)
     with pytest.raises(
         P0CalibrationTransitionError,
         match="only be recorded by dispatch",
     ):
-        record_p0_calibration_agent_result(
+        record_calibration_agent_result(
             root,
             dispatch_receipt=receipt,
             result=result,
@@ -1242,8 +1242,78 @@ def test_local_admission_requires_complete_denial_probe_results(
         encoding="utf-8",
     )
     with pytest.raises(P0CalibrationIntegrityError, match="source changed"):
-        dispatch_p0_calibration_agent(root, role="intake-a")
-    assert get_p0_calibration_run_status(root).state == "REJECT"
+        dispatch_calibration_agent(root, role="intake-a")
+    assert get_calibration_run_status(root).state == "REJECT"
+
+
+def test_local_admission_environment_setup_failure_is_terminal_and_fail_closed(
+    tmp_path: Path,
+    monkeypatch,
+):
+    from llm_wiki_cli.services import documentation_calibration_broker as broker
+
+    _source, control_a, control_b = _prepare_controls(tmp_path)
+    manifest = _local_manifest(tmp_path)
+    root = tmp_path / "unavailable-admission-enforcement"
+    run = prepare_calibration_run(
+        root,
+        control_workspaces=[control_a, control_b],
+        execution_manifest=manifest,
+    )
+    probe_calls: list[bool] = []
+
+    @contextmanager
+    def unavailable_environment(*, probe_id):
+        del probe_id
+        raise broker.OciBrokerError(
+            "Local egress canary enforcement is unavailable."
+        )
+        yield
+
+    def unexpected_probe(*_args, **_kwargs):
+        probe_calls.append(True)
+        raise AssertionError("probe execution must not follow setup failure")
+
+    monkeypatch.setattr(
+        broker,
+        "create_oci_admission_probe_environment",
+        unavailable_environment,
+    )
+    monkeypatch.setattr(broker, "execute_oci_admission_probe", unexpected_probe)
+    authority = _authority(run, manifest)
+
+    blocked = admit_calibration_run(
+        root,
+        authority_grant=authority,
+    )
+
+    assert blocked.state == "BLOCKED_NO_SHIP"
+    assert blocked.payload["terminal_reason_codes"] == [
+        "isolation_enforcement_unavailable"
+    ]
+    assert blocked.payload["attestation_hash"] is None
+    assert probe_calls == []
+    assert "admission_probe_request" not in blocked.payload["artifacts"]
+    assert "isolation_attestation" not in blocked.payload["artifacts"]
+    assert "admission" not in blocked.payload["artifacts"]
+    assert not (root / "packets").exists()
+
+    terminal_snapshot = (root / "run.json").read_bytes()
+    status = get_calibration_run_status(root)
+    assert status.state == "BLOCKED_NO_SHIP"
+    assert status.terminal is True
+    with pytest.raises(
+        P0CalibrationTransitionError,
+        match="Admission requires BASELINE_FROZEN, not BLOCKED_NO_SHIP",
+    ):
+        admit_calibration_run(root, authority_grant=authority)
+    with pytest.raises(
+        P0CalibrationTransitionError,
+        match="Packets require an admitted, nonterminal cohort",
+    ):
+        build_calibration_agent_packet(root, role="intake-a")
+    assert (root / "run.json").read_bytes() == terminal_snapshot
+    assert probe_calls == []
 
 
 def test_interrupted_local_admission_probe_is_ledgered_and_blocks(
@@ -1254,7 +1324,7 @@ def test_interrupted_local_admission_probe_is_ledgered_and_blocks(
     del source
     manifest = _local_manifest(tmp_path)
     root = tmp_path / "interrupted-admission"
-    run = prepare_p0_calibration_run(
+    run = prepare_calibration_run(
         root,
         control_workspaces=[control_a, control_b],
         execution_manifest=manifest,
@@ -1267,14 +1337,14 @@ def test_interrupted_local_admission_probe_is_ledgered_and_blocks(
     monkeypatch.setattr(broker, "execute_oci_admission_probe", interrupt_probe)
 
     with pytest.raises(KeyboardInterrupt, match="interrupted admission"):
-        admit_p0_calibration_run(
+        admit_calibration_run(
             root,
             authority_grant=_authority(run, manifest),
         )
 
     request_paths = list((root / "authority").glob("probe-request-*.json"))
     assert len(request_paths) == 1
-    status = get_p0_calibration_run_status(root)
+    status = get_calibration_run_status(root)
     assert status.state == "BLOCKED_NO_SHIP"
     snapshot = json.loads((root / "run.json").read_text(encoding="utf-8"))
     assert snapshot["terminal_reason_codes"] == [
@@ -1289,18 +1359,18 @@ def test_interrupted_local_dispatch_blocks_and_reraises(
     _source, control_a, control_b = _prepare_controls(tmp_path)
     manifest = _local_manifest(tmp_path)
     root = tmp_path / "interrupted-dispatch"
-    run = prepare_p0_calibration_run(
+    run = prepare_calibration_run(
         root,
         control_workspaces=[control_a, control_b],
         execution_manifest=manifest,
     )
     broker = _install_passing_local_probe(monkeypatch, tmp_path)
-    admitted = admit_p0_calibration_run(
+    admitted = admit_calibration_run(
         root,
         authority_grant=_authority(run, manifest),
     )
     assert admitted.state == "ADMISSION_AUTHORIZED"
-    build_p0_calibration_agent_packet(root, role="intake-a")
+    build_calibration_agent_packet(root, role="intake-a")
 
     def interrupt_dispatch(*_args, **_kwargs):
         raise KeyboardInterrupt("operator interrupted dispatch")
@@ -1308,9 +1378,9 @@ def test_interrupted_local_dispatch_blocks_and_reraises(
     monkeypatch.setattr(broker, "dispatch_oci_agent", interrupt_dispatch)
 
     with pytest.raises(KeyboardInterrupt, match="interrupted dispatch"):
-        dispatch_p0_calibration_agent(root, role="intake-a")
+        dispatch_calibration_agent(root, role="intake-a")
 
-    status = get_p0_calibration_run_status(root)
+    status = get_calibration_run_status(root)
     assert status.state == "BLOCKED_NO_SHIP"
     snapshot = json.loads((root / "run.json").read_text(encoding="utf-8"))
     assert snapshot["terminal_reason_codes"] == ["dispatch_inconclusive"]
@@ -1320,14 +1390,14 @@ def test_verifier_cannot_be_issued_before_three_intake_results(tmp_path: Path):
     root, _run = _admit_external_cohort(tmp_path)
 
     with pytest.raises(P0CalibrationTransitionError, match="all three"):
-        build_p0_calibration_agent_packet(root, role="verifier")
+        build_calibration_agent_packet(root, role="verifier")
 
 
 def test_external_result_import_rejects_control_mutation_before_freeze(
     tmp_path: Path,
 ):
     root, _run = _admit_external_cohort(tmp_path)
-    packet = build_p0_calibration_agent_packet(root, role="intake-a")
+    packet = build_calibration_agent_packet(root, role="intake-a")
     result, receipt = _external_result_and_receipt(root, packet, verifier=False)
     (tmp_path / "source" / "app.py").write_text(
         "def changed_before_import() -> None:\n    pass\n",
@@ -1335,13 +1405,13 @@ def test_external_result_import_rejects_control_mutation_before_freeze(
     )
 
     with pytest.raises(P0CalibrationIntegrityError, match="source changed"):
-        record_p0_calibration_agent_result(
+        record_calibration_agent_result(
             root,
             dispatch_receipt=receipt,
             result=result,
         )
 
-    assert get_p0_calibration_run_status(root).state == "REJECT"
+    assert get_calibration_run_status(root).state == "REJECT"
 
 
 def test_verifier_must_bind_exactly_one_synthesized_primary_journey(
@@ -1349,14 +1419,14 @@ def test_verifier_must_bind_exactly_one_synthesized_primary_journey(
 ):
     root, _run = _admit_external_cohort(tmp_path)
     for role in CALIBRATION_ROLES[:3]:
-        packet = build_p0_calibration_agent_packet(root, role=role)
+        packet = build_calibration_agent_packet(root, role=role)
         result, receipt = _external_result_and_receipt(root, packet, verifier=False)
-        record_p0_calibration_agent_result(
+        record_calibration_agent_result(
             root,
             dispatch_receipt=receipt,
             result=result,
         )
-    verifier = build_p0_calibration_agent_packet(root, role="verifier")
+    verifier = build_calibration_agent_packet(root, role="verifier")
     assert verifier.payload["result_contract"]["primary_journey_contract"] == {
         "field": "primary_journey_claim_id",
         "references": "verification.journeys[].claim_id",
@@ -1379,7 +1449,7 @@ def test_verifier_must_bind_exactly_one_synthesized_primary_journey(
     )
 
     with pytest.raises(P0CalibrationSchemaError, match="primary_journey_claim_id"):
-        record_p0_calibration_agent_result(
+        record_calibration_agent_result(
             root,
             dispatch_receipt=replacement,
             result=result,
@@ -1391,14 +1461,14 @@ def test_verifier_synthesis_must_come_from_accepted_proposal_claims(
 ):
     root, _run = _admit_external_cohort(tmp_path)
     for role in CALIBRATION_ROLES[:3]:
-        packet = build_p0_calibration_agent_packet(root, role=role)
+        packet = build_calibration_agent_packet(root, role=role)
         result, receipt = _external_result_and_receipt(root, packet, verifier=False)
-        record_p0_calibration_agent_result(
+        record_calibration_agent_result(
             root,
             dispatch_receipt=receipt,
             result=result,
         )
-    verifier_packet = build_p0_calibration_agent_packet(root, role="verifier")
+    verifier_packet = build_calibration_agent_packet(root, role="verifier")
     result, receipt = _external_result_and_receipt(root, verifier_packet, verifier=True)
     result.payload["verification"]["purpose"]["statement"] = (
         "A new source-cited statement absent from every accepted proposal."
@@ -1418,25 +1488,25 @@ def test_verifier_synthesis_must_come_from_accepted_proposal_claims(
     )
 
     with pytest.raises(P0CalibrationSchemaError, match="not retained from an accepted"):
-        record_p0_calibration_agent_result(
+        record_calibration_agent_result(
             root,
             dispatch_receipt=replacement,
             result=result,
         )
 
-    status = get_p0_calibration_run_status(root)
+    status = get_calibration_run_status(root)
     assert status.role_statuses["verifier"] == "not_issued"
 
 
 def test_identical_result_delivery_is_a_noop(tmp_path: Path):
     root, _run = _admit_external_cohort(tmp_path)
-    packet = build_p0_calibration_agent_packet(root, role="intake-a")
+    packet = build_calibration_agent_packet(root, role="intake-a")
     result, receipt = _external_result_and_receipt(root, packet, verifier=False)
-    first = record_p0_calibration_agent_result(
+    first = record_calibration_agent_result(
         root, dispatch_receipt=receipt, result=result
     )
 
-    replay = record_p0_calibration_agent_result(
+    replay = record_calibration_agent_result(
         root, dispatch_receipt=receipt, result=result
     )
 
@@ -1448,7 +1518,7 @@ def test_external_dispatch_failure_is_authenticated_preserved_and_terminal(
     tmp_path: Path,
 ):
     root, _run = _admit_external_cohort(tmp_path)
-    packet = build_p0_calibration_agent_packet(root, role="intake-a")
+    packet = build_calibration_agent_packet(root, role="intake-a")
     result, receipt = _external_failure_result_and_receipt(
         root,
         packet,
@@ -1456,7 +1526,7 @@ def test_external_dispatch_failure_is_authenticated_preserved_and_terminal(
         dispatch_started=True,
     )
 
-    blocked = record_p0_calibration_agent_result(
+    blocked = record_calibration_agent_result(
         root,
         dispatch_receipt=receipt,
         result=result,
@@ -1487,7 +1557,7 @@ def test_external_dispatch_failure_is_authenticated_preserved_and_terminal(
         "def changed_after_terminal_failure() -> None:\n    pass\n",
         encoding="utf-8",
     )
-    replay = record_p0_calibration_agent_result(
+    replay = record_calibration_agent_result(
         root,
         dispatch_receipt=receipt,
         result=result,
@@ -1495,14 +1565,14 @@ def test_external_dispatch_failure_is_authenticated_preserved_and_terminal(
     assert replay.generation == blocked.generation
     assert replay.head_transition_hash == blocked.head_transition_hash
     with pytest.raises(P0CalibrationTransitionError, match="terminal"):
-        build_p0_calibration_agent_packet(root, role="intake-a")
+        build_calibration_agent_packet(root, role="intake-a")
 
 
 def test_external_dispatch_failure_receipt_mismatch_rejects_cohort(
     tmp_path: Path,
 ):
     root, _run = _admit_external_cohort(tmp_path)
-    packet = build_p0_calibration_agent_packet(root, role="intake-a")
+    packet = build_calibration_agent_packet(root, role="intake-a")
     result, receipt = _external_failure_result_and_receipt(root, packet)
     material = dict(receipt.payload)
     material.pop("receipt_id")
@@ -1518,18 +1588,18 @@ def test_external_dispatch_failure_receipt_mismatch_rejects_cohort(
     )
 
     with pytest.raises(P0CalibrationIntegrityError, match="reason_code"):
-        record_p0_calibration_agent_result(
+        record_calibration_agent_result(
             root,
             dispatch_receipt=forged,
             result=result,
         )
 
-    assert get_p0_calibration_run_status(root).state == "REJECT"
+    assert get_calibration_run_status(root).state == "REJECT"
 
 
 def test_external_dispatch_failure_result_contract_is_strict(tmp_path: Path):
     root, _run = _admit_external_cohort(tmp_path)
-    packet = build_p0_calibration_agent_packet(root, role="intake-a")
+    packet = build_calibration_agent_packet(root, role="intake-a")
     result, _receipt = _external_failure_result_and_receipt(root, packet)
     invalid_results = []
     retryable = result.to_dict()
@@ -1555,7 +1625,7 @@ def test_external_dispatch_failure_result_contract_is_strict(tmp_path: Path):
 
 def test_mismatched_receipt_rejects_cohort(tmp_path: Path):
     root, _run = _admit_external_cohort(tmp_path)
-    packet = build_p0_calibration_agent_packet(root, role="intake-a")
+    packet = build_calibration_agent_packet(root, role="intake-a")
     result, receipt = _external_result_and_receipt(root, packet, verifier=False)
     material = dict(receipt.payload)
     material.pop("receipt_id")
@@ -1571,14 +1641,14 @@ def test_mismatched_receipt_rejects_cohort(tmp_path: Path):
     )
 
     with pytest.raises(P0CalibrationIntegrityError, match="packet_hash"):
-        record_p0_calibration_agent_result(root, dispatch_receipt=forged, result=result)
+        record_calibration_agent_result(root, dispatch_receipt=forged, result=result)
 
-    assert get_p0_calibration_run_status(root).state == "REJECT"
+    assert get_calibration_run_status(root).state == "REJECT"
 
 
 def test_receipt_response_byte_mismatch_rejects_cohort(tmp_path: Path):
     root, _run = _admit_external_cohort(tmp_path)
-    packet = build_p0_calibration_agent_packet(root, role="intake-a")
+    packet = build_calibration_agent_packet(root, role="intake-a")
     result, receipt = _external_result_and_receipt(root, packet, verifier=False)
     material = dict(receipt.payload)
     material.pop("receipt_id")
@@ -1594,9 +1664,9 @@ def test_receipt_response_byte_mismatch_rejects_cohort(tmp_path: Path):
     )
 
     with pytest.raises(P0CalibrationIntegrityError, match="byte count"):
-        record_p0_calibration_agent_result(root, dispatch_receipt=forged, result=result)
+        record_calibration_agent_result(root, dispatch_receipt=forged, result=result)
 
-    assert get_p0_calibration_run_status(root).state == "REJECT"
+    assert get_calibration_run_status(root).state == "REJECT"
 
 
 def test_external_receipt_requires_matching_host_authentication(
@@ -1610,22 +1680,22 @@ def test_external_receipt_requires_matching_host_authentication(
             )
 
     root, _run = _admit_external_cohort(tmp_path)
-    packet = build_p0_calibration_agent_packet(root, role="intake-a")
+    packet = build_calibration_agent_packet(root, role="intake-a")
     result, receipt = _external_result_and_receipt(root, packet, verifier=False)
-    with host_broker.use_p0_calibration_host_broker_authenticator(
+    with host_broker.use_calibration_host_broker_authenticator(
         _WrongReceiptAuthenticator()
     ):
         with pytest.raises(
             P0CalibrationIntegrityError,
             match="receipt proof packet_hash",
         ):
-            record_p0_calibration_agent_result(
+            record_calibration_agent_result(
                 root,
                 dispatch_receipt=receipt,
                 result=result,
             )
 
-    assert get_p0_calibration_run_status(root).state == "REJECT"
+    assert get_calibration_run_status(root).state == "REJECT"
 
 
 def test_external_authentication_proof_tampering_rejects(tmp_path: Path):
@@ -1635,7 +1705,7 @@ def test_external_authentication_proof_tampering_rejects(tmp_path: Path):
     proof["proof"]["principal"] = "tampered-principal"
     proof_path.write_bytes(canonical_json_bytes(proof))
 
-    status = get_p0_calibration_run_status(root)
+    status = get_calibration_run_status(root)
 
     assert status.state == "REJECT"
     snapshot = json.loads((root / "run.json").read_text(encoding="utf-8"))
@@ -1649,41 +1719,41 @@ def test_external_route_call_limit_is_enforced_across_semantic_results(
     manifest = _external_manifest()
     manifest["external_routes"][0]["max_calls"] = 1
     root = tmp_path / "calibration"
-    run = prepare_p0_calibration_run(
+    run = prepare_calibration_run(
         root,
         control_workspaces=[control_a, control_b],
         execution_manifest=manifest,
     )
     authority = _authority(run, manifest)
-    admitted = admit_p0_calibration_run(
+    admitted = admit_calibration_run(
         root,
         authority_grant=authority,
         broker_attestation=_attestation(run, authority, manifest),
     )
     assert admitted.state == "ADMISSION_AUTHORIZED"
 
-    first = build_p0_calibration_agent_packet(root, role="intake-a")
+    first = build_calibration_agent_packet(root, role="intake-a")
     first_result, first_receipt = _external_result_and_receipt(
         root, first, verifier=False
     )
-    record_p0_calibration_agent_result(
+    record_calibration_agent_result(
         root,
         dispatch_receipt=first_receipt,
         result=first_result,
     )
-    second = build_p0_calibration_agent_packet(root, role="intake-b")
+    second = build_calibration_agent_packet(root, role="intake-b")
     second_result, second_receipt = _external_result_and_receipt(
         root, second, verifier=False
     )
 
     with pytest.raises(P0CalibrationIntegrityError, match="call limit"):
-        record_p0_calibration_agent_result(
+        record_calibration_agent_result(
             root,
             dispatch_receipt=second_receipt,
             result=second_result,
         )
 
-    assert get_p0_calibration_run_status(root).state == "REJECT"
+    assert get_calibration_run_status(root).state == "REJECT"
 
 
 def test_frozen_total_call_budget_blocks_a_fifth_role_attempt(tmp_path: Path):
@@ -1692,27 +1762,27 @@ def test_frozen_total_call_budget_blocks_a_fifth_role_attempt(tmp_path: Path):
     manifest["budgets"]["max_total_calls"] = 4
     manifest["external_routes"][0]["max_calls"] = 4
     root = tmp_path / "calibration"
-    run = prepare_p0_calibration_run(
+    run = prepare_calibration_run(
         root,
         control_workspaces=[control_a, control_b],
         execution_manifest=manifest,
     )
     authority = _authority(run, manifest)
-    admitted = admit_p0_calibration_run(
+    admitted = admit_calibration_run(
         root,
         authority_grant=authority,
         broker_attestation=_attestation(run, authority, manifest),
     )
     assert admitted.state == "ADMISSION_AUTHORIZED"
     for role in CALIBRATION_ROLES[:3]:
-        packet = build_p0_calibration_agent_packet(root, role=role)
+        packet = build_calibration_agent_packet(root, role=role)
         result, receipt = _external_result_and_receipt(root, packet, verifier=False)
-        record_p0_calibration_agent_result(
+        record_calibration_agent_result(
             root,
             dispatch_receipt=receipt,
             result=result,
         )
-    verifier = build_p0_calibration_agent_packet(root, role="verifier")
+    verifier = build_calibration_agent_packet(root, role="verifier")
     result, receipt = _external_result_and_receipt(root, verifier, verifier=True)
     result.payload["verification"]["purpose"]["citations"] = ["citation-forged"]
     material = dict(receipt.payload)
@@ -1729,16 +1799,16 @@ def test_frozen_total_call_budget_blocks_a_fifth_role_attempt(tmp_path: Path):
         }
     )
     with pytest.raises(P0CalibrationSchemaError, match="Semantic result"):
-        record_p0_calibration_agent_result(
+        record_calibration_agent_result(
             root,
             dispatch_receipt=replacement,
             result=result,
         )
 
     with pytest.raises(P0CalibrationTransitionError, match="budget is exhausted"):
-        build_p0_calibration_agent_packet(root, role="verifier")
+        build_calibration_agent_packet(root, role="verifier")
 
-    assert get_p0_calibration_run_status(root).state == "BLOCKED_NO_SHIP"
+    assert get_calibration_run_status(root).state == "BLOCKED_NO_SHIP"
 
 
 def test_snapshot_is_rebuilt_but_ledger_tampering_rejects(tmp_path: Path):
@@ -1747,7 +1817,7 @@ def test_snapshot_is_rebuilt_but_ledger_tampering_rejects(tmp_path: Path):
     snapshot["state"] = "PREFLIGHT"
     (root / "run.json").write_bytes(canonical_json_bytes(snapshot))
 
-    assert get_p0_calibration_run_status(root).state == "BASELINE_FROZEN"
+    assert get_calibration_run_status(root).state == "BASELINE_FROZEN"
     repaired = json.loads((root / "run.json").read_text(encoding="utf-8"))
     assert repaired["state"] == "BASELINE_FROZEN"
 
@@ -1757,7 +1827,7 @@ def test_snapshot_is_rebuilt_but_ledger_tampering_rejects(tmp_path: Path):
     control["source"]["revision"] = "tampered"
     (root / "baseline" / "control-01.json").write_bytes(canonical_json_bytes(control))
 
-    rejected = get_p0_calibration_run_status(root)
+    rejected = get_calibration_run_status(root)
     assert rejected.state == "REJECT"
     assert rejected.decision_scope == "p0_policy_default"
     assert (root / "terminal-rejection.json").is_file()
@@ -1773,7 +1843,7 @@ def test_unknown_controller_file_blocks_without_deleting_evidence(tmp_path: Path
         immutable=True,
     )
 
-    status = get_p0_calibration_run_status(root)
+    status = get_calibration_run_status(root)
 
     assert status.state == "BLOCKED_NO_SHIP"
     assert unknown.is_file()
@@ -1790,7 +1860,7 @@ def test_nested_unknown_controller_file_blocks_without_deleting_evidence(
         immutable=True,
     )
 
-    status = get_p0_calibration_run_status(root)
+    status = get_calibration_run_status(root)
 
     assert status.state == "BLOCKED_NO_SHIP"
     snapshot = json.loads((root / "run.json").read_text(encoding="utf-8"))
@@ -1807,7 +1877,7 @@ def test_fully_written_pending_transaction_is_recovered_idempotently(
     pending["status"] = "pending"
     pending_path.write_bytes(canonical_json_bytes(pending))
 
-    status = get_p0_calibration_run_status(root)
+    status = get_calibration_run_status(root)
 
     assert status.state == "BASELINE_FROZEN"
     assert status.generation == run.generation
@@ -1824,7 +1894,7 @@ def test_ambiguous_pending_transaction_blocks_and_preserves_marker(
     pending["status"] = "unknown-after-crash"
     pending_path.write_bytes(canonical_json_bytes(pending))
 
-    status = get_p0_calibration_run_status(root)
+    status = get_calibration_run_status(root)
 
     assert status.state == "BLOCKED_NO_SHIP"
     preserved = list((root / "verification").glob("ambiguous-recovery-*.json"))
@@ -1857,7 +1927,7 @@ def test_incoherent_pending_transaction_blocks_before_replay(
         pending["transition"]["details"]["tampered"] = True
     pending_path.write_bytes(canonical_json_bytes(pending))
 
-    status = get_p0_calibration_run_status(root)
+    status = get_calibration_run_status(root)
 
     assert status.state == "BLOCKED_NO_SHIP"
     snapshot = json.loads((root / "run.json").read_text(encoding="utf-8"))
@@ -1879,7 +1949,7 @@ def test_prepare_rejects_nonreproducible_control_worklists(tmp_path: Path):
     )
 
     with pytest.raises(P0CalibrationIntegrityError, match="worklist_hash"):
-        prepare_p0_calibration_run(
+        prepare_calibration_run(
             tmp_path / "calibration",
             control_workspaces=[control_a, control_b],
             execution_manifest=_external_manifest(),
@@ -1911,7 +1981,7 @@ def test_outbound_evidence_redacts_credentials_keys_and_host_paths(
         readme_text=readme,
     )
     root = tmp_path / "calibration"
-    run = prepare_p0_calibration_run(
+    run = prepare_calibration_run(
         root,
         control_workspaces=[control_a, control_b],
         execution_manifest=_external_manifest(),
@@ -1938,13 +2008,13 @@ def test_outbound_evidence_redacts_credentials_keys_and_host_paths(
     }
 
     authority = _authority(run)
-    admitted = admit_p0_calibration_run(
+    admitted = admit_calibration_run(
         root,
         authority_grant=authority,
         broker_attestation=_attestation(run, authority),
     )
     assert admitted.state == "ADMISSION_AUTHORIZED"
-    packet = build_p0_calibration_agent_packet(root, role="intake-a").to_json()
+    packet = build_calibration_agent_packet(root, role="intake-a").to_json()
     assert github_token not in packet
     assert aws_access_key not in packet
     assert private_key_payload not in packet
@@ -1982,7 +2052,7 @@ def test_prepare_rejects_source_document_changed_after_tree_check(
         P0CalibrationIntegrityError,
         match="Source documentation changed from the frozen tree baseline",
     ):
-        prepare_p0_calibration_run(
+        prepare_calibration_run(
             tmp_path / "calibration",
             control_workspaces=[control_a, control_b],
             execution_manifest=_external_manifest(),
@@ -2008,7 +2078,7 @@ def test_cited_source_with_sensitive_content_fails_closed(tmp_path: Path):
     )
 
     with pytest.raises(P0CalibrationIntegrityError, match="outbound-sensitive"):
-        prepare_p0_calibration_run(
+        prepare_calibration_run(
             tmp_path / "calibration",
             control_workspaces=[control_a, control_b],
             execution_manifest=_external_manifest(),
@@ -2019,7 +2089,7 @@ def test_verifier_packet_redacts_sensitive_intake_statements(tmp_path: Path):
     root, _run = _admit_external_cohort(tmp_path)
     proposal_token = "ghp_" + ("D" * 36)
     for role in CALIBRATION_ROLES[:3]:
-        packet = build_p0_calibration_agent_packet(root, role=role)
+        packet = build_calibration_agent_packet(root, role=role)
         result, receipt = _external_result_and_receipt(root, packet, verifier=False)
         if role == "intake-a":
             result.payload["proposal"]["purpose"]["statement"] = (
@@ -2038,13 +2108,13 @@ def test_verifier_packet_redacts_sensitive_intake_statements(tmp_path: Path):
                     "receipt_hash": receipt_hash,
                 }
             )
-        record_p0_calibration_agent_result(
+        record_calibration_agent_result(
             root,
             dispatch_receipt=receipt,
             result=result,
         )
 
-    verifier = build_p0_calibration_agent_packet(root, role="verifier")
+    verifier = build_calibration_agent_packet(root, role="verifier")
     encoded = verifier.to_json()
     assert proposal_token not in encoded
     assert str(tmp_path) not in encoded

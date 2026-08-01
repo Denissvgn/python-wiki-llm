@@ -203,6 +203,17 @@ def _service(**kwargs) -> DocumentationGraphQueryService:
     )
 
 
+def _assert_bounds(result, expected):
+    assert set(result["bounds"]) == set(expected)
+    for path, collection in expected.items():
+        bound = result["bounds"][path]
+        assert bound["returned"] == len(collection)
+        assert bound["truncated"] is (bound["total"] > bound["returned"])
+    assert result["truncated"] is any(
+        bound["truncated"] for bound in result["bounds"].values()
+    )
+
+
 def test_flow_call_data_flow_and_page_queries_are_deterministic_json():
     service = _service()
 
@@ -219,6 +230,13 @@ def test_flow_call_data_flow_and_page_queries_are_deterministic_json():
         }
     ]
     assert flow["flow"]["modules_touched"] == ["api.py", "repo.py"]
+    _assert_bounds(
+        flow,
+        {
+            "matches": flow["matches"],
+            "flow.steps": flow["flow"]["steps"],
+        },
+    )
 
     callers = service.callers("save")
     assert callers["callable"] == {
@@ -238,7 +256,12 @@ def test_flow_call_data_flow_and_page_queries_are_deterministic_json():
             "line": 3,
         }
     ]
-    assert service.callees("run")["callees"] == [
+    _assert_bounds(
+        callers,
+        {"matches": callers["matches"], "callers": callers["callers"]},
+    )
+    callees = service.callees("run")
+    assert callees["callees"] == [
         {
             "file": "repo.py",
             "module": "repo",
@@ -247,11 +270,25 @@ def test_flow_call_data_flow_and_page_queries_are_deterministic_json():
             "line": 3,
         }
     ]
+    _assert_bounds(
+        callees,
+        {"matches": callees["matches"], "callees": callees["callees"]},
+    )
 
     data_flow = service.data_flow_for_entrypoint("run")
     assert data_flow["found"] is True
     assert data_flow["data_flow"]["id"] == "api-run"
     assert data_flow["data_flow"]["transfers"][0]["call"] == "save(payload)"
+    _assert_bounds(
+        data_flow,
+        {
+            "matches": data_flow["matches"],
+            "data_flow.steps": data_flow["data_flow"]["steps"],
+            "data_flow.transfers": data_flow["data_flow"]["transfers"],
+            "data_flow.boundaries": data_flow["data_flow"]["boundaries"],
+            "data_flow.gaps": data_flow["data_flow"]["gaps"],
+        },
+    )
 
     pages = service.pages_for_symbol("run")
     assert pages["found"] is True
@@ -259,6 +296,10 @@ def test_flow_call_data_flow_and_page_queries_are_deterministic_json():
         "flows/api-run.md",
         "modules/api.md",
     ]
+    _assert_bounds(
+        pages,
+        {"matches": pages["matches"], "pages": pages["pages"]},
+    )
 
     json.dumps(
         {
@@ -280,6 +321,10 @@ def test_unknown_symbol_returns_structured_empty_result():
         "ambiguous": False,
         "matches": [],
         "truncated": False,
+        "bounds": {
+            "matches": {"total": 0, "returned": 0, "truncated": False},
+            "callers": {"total": 0, "returned": 0, "truncated": False},
+        },
         "callable": None,
         "callers": [],
     }
@@ -319,6 +364,10 @@ def test_ambiguous_symbol_returns_matches_without_selected_payload():
             "owner_class": None,
         },
     ]
+    _assert_bounds(
+        result,
+        {"matches": result["matches"], "callees": result["callees"]},
+    )
 
 
 def test_dependency_neighborhood_includes_neighbors_metrics_and_pages():
@@ -335,6 +384,16 @@ def test_dependency_neighborhood_includes_neighbors_metrics_and_pages():
         "flows/api-run.md",
         "modules/api.md",
     ]
+    _assert_bounds(
+        result,
+        {
+            "matches": result["matches"],
+            "inbound": result["inbound"],
+            "outbound": result["outbound"],
+            "cycle_groups": result["cycle_groups"],
+            "pages": result["pages"],
+        },
+    )
 
 
 def test_bounded_output_sets_truncated_flag():
@@ -370,6 +429,11 @@ def test_bounded_output_sets_truncated_flag():
         "caller_0",
         "caller_1",
     ]
+    assert result["bounds"]["callers"] == {
+        "total": 3,
+        "returned": 2,
+        "truncated": True,
+    }
 
 
 def test_default_limit_reports_raw_caller_truncation_past_relationship_page_cap():
@@ -405,6 +469,145 @@ def test_default_limit_reports_raw_caller_truncation_past_relationship_page_cap(
     assert [caller["symbol"] for caller in result["callers"]] == sorted(
         f"caller_{idx}" for idx in range(25)
     )[:20]
+    assert result["bounds"]["callers"] == {
+        "total": 25,
+        "returned": 20,
+        "truncated": True,
+    }
+
+
+def test_every_query_collection_discloses_exact_zero_equal_and_over_limit_bounds():
+    bounded = _service(limit=1)
+
+    flow = bounded.flow_for_entrypoint("api-run")
+    assert flow["bounds"]["flow.steps"] == {
+        "total": 2,
+        "returned": 1,
+        "truncated": True,
+    }
+
+    dependency = bounded.dependency_neighborhood("api.py")
+    _assert_bounds(
+        dependency,
+        {
+            "matches": dependency["matches"],
+            "inbound": dependency["inbound"],
+            "outbound": dependency["outbound"],
+            "cycle_groups": dependency["cycle_groups"],
+            "pages": dependency["pages"],
+        },
+    )
+    assert dependency["bounds"]["inbound"] == {
+        "total": 0,
+        "returned": 0,
+        "truncated": False,
+    }
+    assert dependency["bounds"]["matches"] == {
+        "total": 1,
+        "returned": 1,
+        "truncated": False,
+    }
+    assert dependency["bounds"]["outbound"] == {
+        "total": 2,
+        "returned": 1,
+        "truncated": True,
+    }
+    assert dependency["bounds"]["pages"] == {
+        "total": 2,
+        "returned": 1,
+        "truncated": True,
+    }
+
+    data_flow = bounded.data_flow_for_entrypoint("api-run")
+    _assert_bounds(
+        data_flow,
+        {
+            "matches": data_flow["matches"],
+            "data_flow.steps": data_flow["data_flow"]["steps"],
+            "data_flow.transfers": data_flow["data_flow"]["transfers"],
+            "data_flow.boundaries": data_flow["data_flow"]["boundaries"],
+            "data_flow.gaps": data_flow["data_flow"]["gaps"],
+        },
+    )
+
+    pages = bounded.pages_for_symbol("run")
+    assert pages["bounds"]["pages"] == {
+        "total": 2,
+        "returned": 1,
+        "truncated": True,
+    }
+
+    missing = bounded.dependency_neighborhood("missing.py")
+    _assert_bounds(
+        missing,
+        {
+            "matches": missing["matches"],
+            "inbound": missing["inbound"],
+            "outbound": missing["outbound"],
+            "cycle_groups": missing["cycle_groups"],
+            "pages": missing["pages"],
+        },
+    )
+
+
+def test_ambiguous_matches_report_exact_bounds_before_empty_payload_bounds():
+    inventory = {
+        "api.py": {"classes": [], "functions": [{"name": "run"}], "imports": []},
+        "jobs.py": {"classes": [], "functions": [{"name": "run"}], "imports": []},
+    }
+    result = DocumentationGraphQueryService(inventory, limit=1).callees("run")
+
+    assert result["ambiguous"] is True
+    assert result["bounds"] == {
+        "matches": {"total": 2, "returned": 1, "truncated": True},
+        "callees": {"total": 0, "returned": 0, "truncated": False},
+    }
+    assert result["truncated"] is True
+
+
+def test_upstream_analyzer_truncation_is_distinct_from_response_bounds():
+    flow = _flow()
+    flow["truncated"] = True
+    result = DocumentationGraphQueryService(
+        _inventory(),
+        flows=[flow],
+    ).flow_for_entrypoint("api-run")
+
+    assert result["flow"]["truncated"] is True
+    assert result["bounds"] == {
+        "matches": {"total": 1, "returned": 1, "truncated": False},
+        "flow.steps": {"total": 2, "returned": 2, "truncated": False},
+    }
+    assert result["truncated"] is False
+
+
+def test_query_methods_use_indexes_built_during_service_construction():
+    service = _service()
+
+    class NoIterationList(list):
+        def __iter__(self):
+            raise AssertionError("query attempted to rescan constructor input")
+
+    service.callables = NoIterationList(service.callables)
+    service.classes = NoIterationList(service.classes)
+    service.flows = NoIterationList(service.flows)
+    service.data_flows = NoIterationList(service.data_flows)
+    service.pages = NoIterationList(service.pages)
+    service.dependency["graph"]["edges"] = NoIterationList(
+        service.dependency["graph"]["edges"]
+    )
+    service.dependency["cycles"] = NoIterationList(service.dependency["cycles"])
+    service.dependency["load_order"]["order"] = NoIterationList(
+        service.dependency["load_order"]["order"]
+    )
+
+    assert service.flow_for_entrypoint("api-run")["found"] is True
+    assert service.callers("save")["found"] is True
+    assert service.callers("repo.py:save")["found"] is True
+    assert service.callees("run")["found"] is True
+    assert service.data_flow_for_entrypoint("run")["found"] is True
+    assert service.pages_for_symbol("run")["found"] is True
+    assert service.dependency_neighborhood("api.py")["found"] is True
 
 
 @pytest.mark.parametrize("query", ["", "   ", None, 3])

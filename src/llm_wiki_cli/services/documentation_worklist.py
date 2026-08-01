@@ -21,6 +21,12 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping, Sequence
 
 from .io import read_md
+from .validation import (
+    nonnegative_int_or_none,
+    normalize_legacy_portable_relative_path,
+    require_nonnegative_int,
+    require_positive_int,
+)
 from .wiki_surface import (
     PageKind,
     WikiSurfacePage,
@@ -449,15 +455,21 @@ def _classify_imported_semantic_page(
 
 
 def _require_non_negative_int(value: object, field_name: str) -> None:
-    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
-        raise DocumentationWorklistError(
+    require_nonnegative_int(
+        value,
+        error=DocumentationWorklistError(
             f"{field_name} must be a non-negative integer."
-        )
+        ),
+    )
 
 
 def _require_positive_int(value: object, field_name: str) -> None:
-    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
-        raise DocumentationWorklistError(f"{field_name} must be a positive integer.")
+    require_positive_int(
+        value,
+        invalid_error=DocumentationWorklistError(
+            f"{field_name} must be a positive integer."
+        ),
+    )
 
 
 def _read_surface_index(wiki: Path) -> Mapping[str, Any]:
@@ -481,17 +493,10 @@ def _surface_page_map(surface_index: Mapping[str, Any]) -> dict[str, Mapping[str
 
 
 def _normalise_relative_path(value: object) -> str | None:
-    if not isinstance(value, str) or not value.strip():
-        return None
-    raw = value.strip().replace("\\", "/")
-    if raw.startswith("/") or re.match(r"^[A-Za-z]:/", raw):
-        return None
-    while raw.startswith("./"):
-        raw = raw[2:]
-    path = PurePosixPath(raw)
-    if ".." in path.parts or path.as_posix() in {"", "."}:
-        return None
-    return path.as_posix()
+    return normalize_legacy_portable_relative_path(
+        value,
+        reject_dot_prefixed_absolute=True,
+    )
 
 
 def _source_path_from_page(content: str) -> str | None:
@@ -529,11 +534,8 @@ def _normalise_dependency_metrics(
 
 
 def _safe_non_negative_int(value: object) -> int:
-    return (
-        value
-        if isinstance(value, int) and not isinstance(value, bool) and value >= 0
-        else 0
-    )
+    parsed = nonnegative_int_or_none(value)
+    return 0 if parsed is None else parsed
 
 
 def _normalise_entrypoints(
@@ -960,7 +962,7 @@ def _add_imported_page_candidates(
             if previous_classification is None
             else max(
                 (candidate.grounding_status, grounding_status),
-                key=_GROUNDING_STATUS_ORDER.get,
+                key=lambda value: _GROUNDING_STATUS_ORDER[value],
             )
         )
         candidate.signals.add(f"imported:{classification}")
@@ -1199,4 +1201,7 @@ def _stable_digest(value: str) -> str:
 def _stronger_import_classification(current: str | None, candidate: str) -> str:
     if current is None:
         return candidate
-    return max((current, candidate), key=_IMPORT_CLASSIFICATION_ORDER.get)
+    return max(
+        (current, candidate),
+        key=lambda value: _IMPORT_CLASSIFICATION_ORDER[value],
+    )

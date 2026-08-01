@@ -5,6 +5,12 @@ from __future__ import annotations
 import sys
 
 from ..config import DEFAULT_WIKI_DIR, validate_path
+from ..services.knowledge_consumption import load_knowledge_read_view
+from ..services.knowledge_projection import (
+    KnowledgeProjection,
+    KnowledgeProjectionError,
+    project_knowledge,
+)
 from ..services.obsidian import (
     DEFAULT_NOTES_DIR,
     DEFAULT_PLUGIN_SOURCE,
@@ -15,6 +21,45 @@ from ..services.obsidian import (
     render_report_json,
     render_report_text,
 )
+
+
+def _knowledge_projection(args, wiki_dir: str) -> KnowledgeProjection | None:
+    knowledge_metadata = getattr(args, "knowledge_metadata", None)
+    if knowledge_metadata is None:
+        profile = getattr(args, "knowledge_profile", "public-portable")
+        public_identity = getattr(
+            args,
+            "knowledge_public_repository_identity",
+            None,
+        )
+        if profile != "public-portable" or public_identity is not None:
+            raise ObsidianError(
+                "--knowledge-profile internal and "
+                "--knowledge-public-repository-identity require "
+                "--knowledge-metadata summary"
+            )
+        return None
+    if knowledge_metadata != "summary":
+        raise ObsidianError("knowledge metadata mode must be 'summary'")
+    try:
+        view = load_knowledge_read_view(
+            wiki_dir,
+            snapshot_only=True,
+            include_machine_verification=True,
+        )
+        return project_knowledge(
+            view,
+            profile=getattr(args, "knowledge_profile", "public-portable"),
+            public_repository_identity=getattr(
+                args,
+                "knowledge_public_repository_identity",
+                None,
+            ),
+        )
+    except (KnowledgeProjectionError, TypeError, ValueError) as exc:
+        raise ObsidianError(
+            f"knowledge metadata projection failed: {exc}"
+        ) from exc
 
 
 def _print_report(report, output_format: str, *, action: str) -> None:
@@ -34,12 +79,15 @@ def run(args) -> None:
             src_dir = getattr(args, "src_dir", ".")
             validate_path(wiki_dir, "--wiki-dir")
             validate_path(src_dir, "--src-dir")
+            knowledge_projection = _knowledge_projection(args, wiki_dir)
             report = export_obsidian_vault(
                 src_dir=src_dir,
                 wiki_dir=wiki_dir,
                 vault_dir=getattr(args, "vault_dir"),
                 notes_dir=getattr(args, "notes_dir", DEFAULT_NOTES_DIR),
                 dry_run=bool(getattr(args, "dry_run", False)),
+                knowledge_metadata=getattr(args, "knowledge_metadata", None),
+                knowledge_projection=knowledge_projection,
             )
             _print_report(report, output_format, action="export")
             return
@@ -47,9 +95,12 @@ def run(args) -> None:
         if action == "check":
             wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
             validate_path(wiki_dir, "--wiki-dir")
+            knowledge_projection = _knowledge_projection(args, wiki_dir)
             report = check_obsidian_vault(
                 wiki_dir=wiki_dir,
                 vault_dir=getattr(args, "vault_dir"),
+                knowledge_metadata=getattr(args, "knowledge_metadata", None),
+                knowledge_projection=knowledge_projection,
             )
             _print_report(report, output_format, action="check")
             if not report.ok:

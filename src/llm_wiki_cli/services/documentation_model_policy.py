@@ -25,6 +25,14 @@ from .contracts import (
     DOCUMENTATION_MODEL_ROUTING_SCHEMA_VERSION,
     DOCUMENTATION_MODEL_SELECTION_SCHEMA_VERSION,
 )
+from .validation import (
+    require_exact_fields,
+    require_mapping,
+    require_mapping_tuple,
+    require_nonempty_text,
+    require_string_tuple,
+    trimmed_text_or_none,
+)
 
 SUPPORTED_PROVIDER_FAMILIES = frozenset(
     {
@@ -798,14 +806,24 @@ def _inline_override_id(route: DocumentationModelRoute) -> str:
 
 
 def _validate_object(payload: Mapping[str, Any], allowed: set[str], label: str) -> None:
-    if not isinstance(payload, Mapping):
-        raise DocumentationModelPolicyError(f"{label} must be an object.")
+    require_mapping(
+        payload,
+        error=DocumentationModelPolicyError(f"{label} must be an object."),
+    )
     _reject_sensitive_keys(payload)
-    unknown = {str(key) for key in payload} - allowed
-    if unknown:
-        raise DocumentationModelPolicyError(
-            f"Unsupported {label} fields: {sorted(unknown)!r}."
-        )
+    require_exact_fields(
+        payload,
+        allowed=allowed,
+        required=(),
+        mapping_error=DocumentationModelPolicyError(
+            f"{label} must be an object."
+        ),
+        missing_error=lambda fields: AssertionError(fields),
+        unknown_error=lambda fields: DocumentationModelPolicyError(
+            f"Unsupported {label} fields: {list(fields)!r}."
+        ),
+        stringify_keys=True,
+    )
 
 
 def _reject_sensitive_keys(value: Any, path: str = "$") -> None:
@@ -825,32 +843,46 @@ def _reject_sensitive_keys(value: Any, path: str = "$") -> None:
 
 
 def _required_text(value: Any, label: str) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise DocumentationModelPolicyError(f"{label} must be a non-empty string.")
-    return value.strip()
+    """Retain the model policy's historical whitespace normalization."""
+
+    return require_nonempty_text(
+        value,
+        error=DocumentationModelPolicyError(
+            f"{label} must be a non-empty string."
+        ),
+        normalize=True,
+        reject_control_characters=False,
+    )
 
 
 def _optional_text(value: Any) -> str | None:
-    if value is None:
-        return None
-    if not isinstance(value, str):
-        raise DocumentationModelPolicyError("Optional text values must be strings.")
-    normalized = value.strip()
-    return normalized or None
+    return trimmed_text_or_none(
+        value,
+        error=DocumentationModelPolicyError(
+            "Optional text values must be strings."
+        ),
+    )
 
 
 def _text_sequence(value: Any, label: str) -> tuple[str, ...]:
-    if isinstance(value, (str, bytes)) or not isinstance(value, (list, tuple)):
-        raise DocumentationModelPolicyError(f"{label} must be a list of strings.")
-    return tuple(_required_text(item, label) for item in value)
+    return require_string_tuple(
+        value,
+        error=DocumentationModelPolicyError(
+            f"{label} must be a list of strings."
+        ),
+        container_type=(list, tuple),
+        item_parser=lambda item: _required_text(item, label),
+    )
 
 
 def _object_sequence(value: Any, label: str) -> tuple[Mapping[str, Any], ...]:
-    if isinstance(value, (str, bytes)) or not isinstance(value, (list, tuple)):
-        raise DocumentationModelPolicyError(f"{label} must be a list of objects.")
-    if any(not isinstance(item, Mapping) for item in value):
-        raise DocumentationModelPolicyError(f"{label} must be a list of objects.")
-    return tuple(item for item in value if isinstance(item, Mapping))
+    return require_mapping_tuple(
+        value,
+        error=DocumentationModelPolicyError(
+            f"{label} must be a list of objects."
+        ),
+        container_type=(list, tuple),
+    )
 
 
 def _validate_slug(value: Any, label: str) -> str:

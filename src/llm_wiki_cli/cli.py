@@ -7,11 +7,13 @@ from .commands import (
     ci_check_cmd,
     context_cmd,
     docs_cmd,
+    doctor_cmd,
     extract_cmd,
     generate_prompt_cmd,
     hook_cmd,
     init_cmd,
     install_cmd,
+    knowledge_cmd,
     lint_cmd,
     mcp_cmd,
     metrics_cmd,
@@ -107,6 +109,7 @@ _COMMAND_MODULES = {
     "ci-check": ci_check_cmd,
     "install-hook": hook_cmd,
     "install": install_cmd,
+    "knowledge": knowledge_cmd,
     "plugins": plugins_cmd,
     "team": team_cmd,
     "trigger-agent": trigger_cmd,
@@ -127,6 +130,7 @@ _COMMAND_MODULES = {
     "migrate": migrate_cmd,
     "context": context_cmd,
     "docs": docs_cmd,
+    "doctor": doctor_cmd,
 }
 
 HELPER_CACHE_HELP = (
@@ -156,6 +160,7 @@ def _register_commands(subparsers):
     _add_ci_check_command(subparsers)
     _add_install_hook_command(subparsers)
     _add_install_command(subparsers)
+    _add_knowledge_command(subparsers)
     _add_plugins_command(subparsers)
     _add_team_command(subparsers)
     _add_trigger_agent_command(subparsers)
@@ -176,6 +181,45 @@ def _register_commands(subparsers):
     _add_migrate_command(subparsers)
     _add_context_command(subparsers)
     _add_docs_command(subparsers)
+    _add_doctor_command(subparsers)
+
+
+def _add_doctor_command(subparsers):
+    doctor_parser = subparsers.add_parser(
+        "doctor",
+        help="Report current wiki knowledge health with CI-friendly exit codes",
+    )
+    doctor_parser.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Wiki directory to inspect (default: docs/llm_wiki)",
+    )
+    doctor_parser.add_argument(
+        "--src-dir",
+        default=".",
+        help="Source directory to compare with the wiki",
+    )
+    doctor_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    doctor_parser.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (default: text)",
+    )
+    doctor_parser.add_argument(
+        "--strict",
+        action="store_true",
+        help=(
+            "Classify indeterminate or nonsemantic source drift as unhealthy"
+        ),
+    )
+    _add_helper_cache_argument(doctor_parser)
+    _add_include_tests_argument(doctor_parser)
+    _add_jobs_argument(doctor_parser)
 
 
 def _add_init_command(subparsers):
@@ -304,6 +348,14 @@ def _add_lint_command(subparsers):
         help="Require core wiki structure and a fresh sync manifest",
     )
     lint_parser.add_argument(
+        "--knowledge-drift-report",
+        action="store_true",
+        help=(
+            "Run strict lint and include native freshness/drift findings as "
+            "nonblocking diagnostics (default: disabled)"
+        ),
+    )
+    lint_parser.add_argument(
         "--profile",
         action="store_true",
         help="Print combined lint report and phase timings as JSON",
@@ -394,6 +446,14 @@ def _add_ci_check_command(subparsers):
         default=".git/llm-wiki-ci-report.md",
         help="Markdown report path (default: .git/llm-wiki-ci-report.md)",
     )
+    ci_parser.add_argument(
+        "--knowledge-drift-report",
+        action="store_true",
+        help=(
+            "Include native freshness/drift findings as nonblocking diagnostics "
+            "(default: disabled)"
+        ),
+    )
     _add_helper_cache_argument(ci_parser)
     _add_include_tests_argument(ci_parser)
     _add_jobs_argument(ci_parser)
@@ -444,6 +504,266 @@ def _add_install_command(subparsers):
     install_parser.add_argument(
         "--yes", action="store_true", help="Install without prompting for confirmation"
     )
+
+
+def _add_knowledge_wiki_argument(parser):
+    parser.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Wiki directory (default: docs/llm_wiki)",
+    )
+
+
+def _add_knowledge_dry_run(parser):
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate and preview the complete change without writing files",
+    )
+
+
+def _add_governance_actor_arguments(parser):
+    parser.add_argument(
+        "--actor-kind",
+        choices=sorted(knowledge_cmd.ACTOR_KINDS),
+        required=True,
+        help="Explicit lifecycle-event actor kind",
+    )
+    parser.add_argument(
+        "--actor-id",
+        required=True,
+        help="Explicit lifecycle-event actor identifier",
+    )
+    parser.add_argument(
+        "--authored-at",
+        required=True,
+        metavar="RFC3339",
+        help="Real authored event time with timezone",
+    )
+
+
+def _add_lifecycle_arguments(
+    parser,
+    *,
+    reason: str,
+    successor: bool = False,
+):
+    _add_knowledge_wiki_argument(parser)
+    parser.add_argument("--uid", required=True, help="Stable concept UID")
+    if successor:
+        parser.add_argument(
+            "--successor-uid",
+            required=True,
+            help="Different existing UID that supersedes this concept",
+        )
+    _add_governance_actor_arguments(parser)
+    parser.add_argument(
+        "--reason",
+        default=reason,
+        help="Lowercase machine reason recorded with the event",
+    )
+    _add_knowledge_dry_run(parser)
+
+
+def _add_knowledge_command(subparsers):
+    knowledge = subparsers.add_parser(
+        "knowledge",
+        help="Manage durable concept identity, lifecycle, review, and verification",
+    )
+    actions = knowledge.add_subparsers(dest="knowledge_action", required=True)
+
+    initialize = actions.add_parser(
+        "init",
+        help="Initialize stable bundle identity and allocate concept UIDs",
+    )
+    _add_knowledge_wiki_argument(initialize)
+    initialize.add_argument(
+        "--bundle-id",
+        default=None,
+        help="Explicit stable bundle ID; generated securely when omitted",
+    )
+    _add_knowledge_dry_run(initialize)
+
+    status = actions.add_parser(
+        "status",
+        help="Show validated governance, lifecycle, and review state",
+    )
+    _add_knowledge_wiki_argument(status)
+    status.add_argument(
+        "--format",
+        choices=("text", "json"),
+        default="text",
+        help="Output format (default: text)",
+    )
+    status.add_argument(
+        "--event-limit",
+        type=_positive_int,
+        default=20,
+        help="Maximum lifecycle and review events shown per concept",
+    )
+
+    move = actions.add_parser(
+        "move",
+        help="Explicitly carry one UID to a new current locator and natural key",
+    )
+    _add_knowledge_wiki_argument(move)
+    move.add_argument("--uid", required=True, help="Stable concept UID")
+    move.add_argument(
+        "--locator",
+        "--to-locator",
+        dest="locator",
+        required=True,
+        help="New canonical concept locator",
+    )
+    move.add_argument(
+        "--natural-key",
+        "--to-natural-key",
+        dest="natural_key",
+        required=True,
+        help="New stable-allocation natural key",
+    )
+    _add_knowledge_dry_run(move)
+
+    alias = actions.add_parser(
+        "alias",
+        help="Add one explicit historical locator or natural-key alias",
+    )
+    _add_knowledge_wiki_argument(alias)
+    alias.add_argument("--uid", required=True, help="Stable concept UID")
+    alias.add_argument(
+        "--type",
+        dest="alias_type",
+        choices=(
+            knowledge_cmd.ALIAS_LOCATOR,
+            knowledge_cmd.ALIAS_NATURAL_KEY,
+        ),
+        required=True,
+        help="Alias coordinate type",
+    )
+    alias.add_argument("--value", required=True, help="Historical alias value")
+    _add_knowledge_dry_run(alias)
+
+    lifecycle = actions.add_parser(
+        "lifecycle",
+        help="Append an explicit lifecycle transition",
+    )
+    lifecycle_actions = lifecycle.add_subparsers(
+        dest="lifecycle_action",
+        required=True,
+    )
+    lifecycle_set = lifecycle_actions.add_parser(
+        "set",
+        help="Set an allowed lifecycle state",
+    )
+    _add_lifecycle_arguments(
+        lifecycle_set,
+        reason="explicit-lifecycle-change",
+    )
+    lifecycle_set.add_argument(
+        "--state",
+        choices=("draft", "active", "deprecated", "superseded"),
+        required=True,
+    )
+    lifecycle_set.add_argument(
+        "--successor-uid",
+        default=None,
+        help="Required only when --state superseded",
+    )
+
+    lifecycle_deprecate = lifecycle_actions.add_parser(
+        "deprecate",
+        help="Explicitly deprecate one concept",
+    )
+    _add_lifecycle_arguments(
+        lifecycle_deprecate,
+        reason="explicit-deprecation",
+    )
+    lifecycle_supersede = lifecycle_actions.add_parser(
+        "supersede",
+        help="Explicitly supersede one concept",
+    )
+    _add_lifecycle_arguments(
+        lifecycle_supersede,
+        reason="explicit-supersession",
+        successor=True,
+    )
+
+    deprecate = actions.add_parser(
+        "deprecate",
+        help="Explicitly deprecate one concept",
+    )
+    _add_lifecycle_arguments(
+        deprecate,
+        reason="explicit-deprecation",
+    )
+    supersede = actions.add_parser(
+        "supersede",
+        help="Explicitly supersede one concept",
+    )
+    _add_lifecycle_arguments(
+        supersede,
+        reason="explicit-supersession",
+        successor=True,
+    )
+
+    review = actions.add_parser(
+        "review",
+        help="Record a digest-bound human review of one semantic section",
+    )
+    _add_knowledge_wiki_argument(review)
+    review.add_argument("--uid", required=True, help="Stable concept UID")
+    review.add_argument(
+        "--section",
+        required=True,
+        help="Exact semantic section locator",
+    )
+    review.add_argument(
+        "--reviewer-kind",
+        choices=("human",),
+        required=True,
+        help="Explicit reviewer actor kind",
+    )
+    review.add_argument(
+        "--reviewer-id",
+        required=True,
+        help="Explicit reviewer identifier",
+    )
+    review.add_argument(
+        "--method",
+        required=True,
+        help="Review method identifier",
+    )
+    review.add_argument(
+        "--method-version",
+        required=True,
+        help="Review method version",
+    )
+    review.add_argument(
+        "--authored-at",
+        required=True,
+        metavar="RFC3339",
+        help="Real authored event time with timezone",
+    )
+    _add_knowledge_dry_run(review)
+
+    verify = actions.add_parser(
+        "verify",
+        help="Explicitly run application-owned pure knowledge checkers",
+    )
+    _add_knowledge_wiki_argument(verify)
+    verify.add_argument(
+        "--checker",
+        action="append",
+        choices=("artifact-integrity", "internal-links"),
+        default=None,
+        help="Application-owned checker ID; may be repeated (default: all)",
+    )
+    verify.add_argument(
+        "--uid",
+        default=None,
+        help="Limit checker scope to one current governed concept UID",
+    )
+    _add_knowledge_dry_run(verify)
 
 
 def _add_plugins_command(subparsers):
@@ -596,7 +916,7 @@ def _add_bootstrap_command(subparsers):
     bootstrap_parser.add_argument(
         "--overwrite",
         action="store_true",
-        help="Overwrite existing entity/module pages",
+        help=argparse.SUPPRESS,
     )
     bootstrap_parser.add_argument(
         "--depth",
@@ -858,7 +1178,14 @@ def _add_obsidian_command(subparsers):
     obs_export = obsidian_sub.add_parser(
         "export", help="Export an Obsidian mirror vault"
     )
-    obs_export.add_argument("--src-dir", default=".", help="Source directory to scan")
+    obs_export.add_argument(
+        "--src-dir",
+        default=".",
+        help=(
+            "Source directory for the legacy unenriched relationship scan; "
+            "knowledge-enriched export does not scan it"
+        ),
+    )
     obs_export.add_argument(
         "--wiki-dir",
         default=DEFAULT_WIKI_DIR,
@@ -885,6 +1212,10 @@ def _add_obsidian_command(subparsers):
         default="text",
         help="Output format (default: text)",
     )
+    _add_projection_metadata_arguments(
+        obs_export,
+        public_identity_dest="knowledge_public_repository_identity",
+    )
     obs_check = obsidian_sub.add_parser(
         "check", help="Check an Obsidian mirror for missing pages and broken wikilinks"
     )
@@ -901,6 +1232,10 @@ def _add_obsidian_command(subparsers):
         choices=["text", "json"],
         default="text",
         help="Output format (default: text)",
+    )
+    _add_projection_metadata_arguments(
+        obs_check,
+        public_identity_dest="knowledge_public_repository_identity",
     )
     obs_install = obsidian_sub.add_parser(
         "install-plugin", help="Install the companion Obsidian plugin into a vault"
@@ -976,6 +1311,10 @@ def _add_site_command(subparsers):
         default="text",
         help="Console output format (default: text)",
     )
+    _add_projection_metadata_arguments(
+        site_export,
+        public_identity_dest="public_repository_identity",
+    )
     site_check = site_sub.add_parser(
         "check", help="Check a static-site mirror for missing pages and links"
     )
@@ -991,6 +1330,15 @@ def _add_site_command(subparsers):
         help="Output directory for the derived static-site mirror",
     )
     site_check.add_argument(
+        "--format",
+        choices=site_cmd.SITE_FORMAT_CHOICES,
+        default=None,
+        help=(
+            "Require the mirror receipt to use this static-site format "
+            "(default: use the recorded format)"
+        ),
+    )
+    site_check.add_argument(
         "--built-site-dir",
         default=None,
         help="Built static site directory to validate for internal HTML links",
@@ -999,7 +1347,10 @@ def _add_site_command(subparsers):
         "--link-mode",
         choices=site_cmd.LINK_MODE_CHOICES,
         default="http",
-        help="Built HTML link contract: HTTP routing or direct file browsing",
+        help=(
+            "Required publication distribution and built-link contract: "
+            "HTTP routing or direct file browsing (default: http)"
+        ),
     )
     site_check.add_argument(
         "--profile",
@@ -1017,6 +1368,38 @@ def _add_site_command(subparsers):
         choices=["text", "json"],
         default="text",
         help="Console output format (default: text)",
+    )
+    _add_projection_metadata_arguments(
+        site_check,
+        public_identity_dest="public_repository_identity",
+    )
+
+
+def _add_projection_metadata_arguments(parser, *, public_identity_dest: str):
+    parser.add_argument(
+        "--knowledge-metadata",
+        choices=site_cmd.KNOWLEDGE_METADATA_CHOICES,
+        default=None,
+        help=(
+            "Opt in to validated native-knowledge front matter "
+            "(currently: summary)"
+        ),
+    )
+    parser.add_argument(
+        "--knowledge-profile",
+        choices=site_cmd.KNOWLEDGE_PROFILE_CHOICES,
+        default="public-portable",
+        help="Knowledge redaction profile (default: public-portable)",
+    )
+    parser.add_argument(
+        "--knowledge-public-repository-identity",
+        dest=public_identity_dest,
+        default=None,
+        metavar="IDENTITY",
+        help=(
+            "Disclose an exact configured-public repository identity in the "
+            "public projection"
+        ),
     )
 
 
@@ -1266,8 +1649,8 @@ def _add_sync_command(subparsers):
         "--dry-run",
         action="store_true",
         help=(
-            "Preview optional-surface initialization without modifying files; "
-            "requires --initialize-surfaces"
+            "Preview source, optional-surface, and knowledge artifact actions "
+            "without modifying files"
         ),
     )
     sync_parser.add_argument(
@@ -1334,9 +1717,9 @@ def _add_context_command(subparsers):
     )
     context_parser.add_argument(
         "--format",
-        choices=["json", "markdown"],
+        choices=["json", "markdown", "packet"],
         default="json",
-        help="Output format (default: json)",
+        help="Output format; packet emits canonical Qualified Context Packet JSON (default: json)",
     )
     context_parser.add_argument(
         "--focus",
@@ -1363,6 +1746,11 @@ def _add_context_command(subparsers):
         "--allow-external-src",
         action="store_true",
         help="Allow --src-dir to point outside the current working directory",
+    )
+    context_parser.add_argument(
+        "--prefer-fresh",
+        action="store_true",
+        help="Under budget pressure, prefer CURRENT context within an existing relevance tier",
     )
 
 
@@ -1502,6 +1890,23 @@ def _add_docs_command(subparsers):
         help="Persist direct-file link mode for local browsing",
     )
     prepare.add_argument(
+        "--knowledge-mode",
+        choices=docs_cmd.KNOWLEDGE_MODE_CHOICES,
+        default="off",
+        help=(
+            "Persist native metadata policy: off, public-portable, or explicitly "
+            "authorized internal (default: off)"
+        ),
+    )
+    prepare.add_argument(
+        "--knowledge-public-repository-identity",
+        default=None,
+        metavar="IDENTITY",
+        help=(
+            "Corroborated configured-public identity for public-portable metadata"
+        ),
+    )
+    prepare.add_argument(
         "--refresh",
         action="store_true",
         help="Archive owned run artifacts and explicitly rebuild the workspace baseline",
@@ -1604,6 +2009,18 @@ def _add_docs_command(subparsers):
         help="Console output format (default: text)",
     )
     export.add_argument(
+        "--knowledge-mode",
+        choices=docs_cmd.KNOWLEDGE_MODE_CHOICES,
+        default=None,
+        help="Assert the native metadata policy selected during prepare",
+    )
+    export.add_argument(
+        "--knowledge-public-repository-identity",
+        default=None,
+        metavar="IDENTITY",
+        help="Assert the public repository identity selected during prepare",
+    )
+    export.add_argument(
         "--builder-command",
         nargs=argparse.REMAINDER,
         default=None,
@@ -1616,7 +2033,7 @@ def _add_docs_command(subparsers):
 
     calibration = docs_sub.add_parser(
         "calibration",
-        help="Supervise an evidence-backed P0 calibration cohort",
+        help="Supervise an evidence-backed documentation calibration cohort",
     )
     calibration_sub = calibration.add_subparsers(
         dest="calibration_action",

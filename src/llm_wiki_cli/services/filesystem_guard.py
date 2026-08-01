@@ -732,6 +732,99 @@ def windows_current_user_sid() -> str:
     return _current_windows_user_sid()
 
 
+def windows_path_owner_sid(path: str | Path) -> str:
+    """Return the owner SID of one Windows path without following its leaf."""
+
+    if os.name != "nt":
+        raise WindowsSecurityGuardError(
+            "Windows path-owner lookup is unavailable on this platform."
+        )
+    from ctypes import wintypes
+
+    target = Path(path)
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    create_file = kernel32.CreateFileW
+    create_file.argtypes = (
+        wintypes.LPCWSTR,
+        wintypes.DWORD,
+        wintypes.DWORD,
+        wintypes.LPVOID,
+        wintypes.DWORD,
+        wintypes.DWORD,
+        wintypes.HANDLE,
+    )
+    create_file.restype = wintypes.HANDLE
+    handle = create_file(
+        _windows_api_path(target),
+        _FILE_READ_ATTRIBUTES | _READ_CONTROL,
+        _FILE_SHARE_READ | _FILE_SHARE_WRITE,
+        None,
+        _OPEN_EXISTING,
+        _FILE_FLAG_OPEN_REPARSE_POINT | _FILE_FLAG_BACKUP_SEMANTICS,
+        None,
+    )
+    invalid_handle = wintypes.HANDLE(-1).value
+    if handle == invalid_handle:
+        error = ctypes.WinError(ctypes.get_last_error())
+        raise WindowsSecurityGuardError(
+            f"Cannot open Windows path-owner metadata for {target}: {error}"
+        ) from error
+    native_handle = int(handle)
+    try:
+        return _windows_handle_owner_sid(native_handle, context=str(target))
+    finally:
+        _close_windows_handle(native_handle)
+
+
+def _windows_handle_owner_sid(handle: int, *, context: str) -> str:
+    from ctypes import wintypes
+
+    advapi32 = ctypes.WinDLL("advapi32", use_last_error=True)
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    get_security_info = advapi32.GetSecurityInfo
+    get_security_info.argtypes = (
+        wintypes.HANDLE,
+        ctypes.c_int,
+        wintypes.DWORD,
+        ctypes.POINTER(wintypes.LPVOID),
+        ctypes.POINTER(wintypes.LPVOID),
+        ctypes.POINTER(wintypes.LPVOID),
+        ctypes.POINTER(wintypes.LPVOID),
+        ctypes.POINTER(wintypes.LPVOID),
+    )
+    get_security_info.restype = wintypes.DWORD
+    local_free = kernel32.LocalFree
+    local_free.argtypes = (wintypes.LPVOID,)
+    local_free.restype = wintypes.LPVOID
+
+    owner = wintypes.LPVOID()
+    descriptor = wintypes.LPVOID()
+    result = get_security_info(
+        wintypes.HANDLE(handle),
+        1,  # SE_FILE_OBJECT
+        0x00000001,  # OWNER_SECURITY_INFORMATION
+        ctypes.byref(owner),
+        None,
+        None,
+        None,
+        ctypes.byref(descriptor),
+    )
+    if result != 0:
+        error = ctypes.WinError(result)
+        raise WindowsSecurityGuardError(
+            f"Cannot inspect Windows owner for {context}: {error}"
+        ) from error
+    try:
+        if not owner:
+            raise WindowsSecurityGuardError(
+                f"Windows returned no owner SID for {context}."
+            )
+        return _windows_sid_string(owner)
+    finally:
+        if descriptor:
+            local_free(descriptor)
+
+
 def _open_windows_file_metadata_guard(path: Path) -> int:
     from ctypes import wintypes
 

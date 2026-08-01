@@ -18,7 +18,7 @@ class ExtractionJobRequest:
     resolved_jobs: int
 
     @classmethod
-    def parse(cls, value: str) -> "ExtractionJobRequest":
+    def parse(cls, value: object) -> "ExtractionJobRequest":
         raw_value = str(value)
         if raw_value == "auto":
             return cls("auto", max(1, os.cpu_count() or 1))

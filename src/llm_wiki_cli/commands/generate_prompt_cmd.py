@@ -9,6 +9,7 @@ from ..config import DEFAULT_WIKI_DIR, validate_path
 from ..services.metrics import record_event, resolve_agent
 from ..services.paths import shell_quote
 from ..services.plugins import PluginError, render_prompt_template
+from ..services.redaction import redact_credentials
 from ..services.secure_file import write_private_text
 from ..services.team import TeamConfigError, team_prompt_template_default
 
@@ -262,17 +263,20 @@ Change type: `{change_type}`.
 
 Your work is done when **all** of the following are true:
 
-1. **`llm-wiki lint` exits 0** — no broken links, no orphan pages, no undocumented \
+1. **Final owning sync/re-anchor completed after semantic edits** — the \
+canonical Markdown, surface, knowledge, and manifest snapshot was committed \
+before validation.
+2. **`llm-wiki lint --strict` exits 0** — no broken links, no orphan pages, no undocumented \
 classes, no stale entities, no missing modules, no broken workflow links, \
 no undocumented infrastructure files.
-2. **Semantic pass complete** — affected entity/module pages contain \
+3. **Semantic pass complete** — affected entity/module pages contain \
 project-specific explanations, not just generated AST/docstring skeletons, \
 copied docstrings, `_Auto-generated from ..._`, or knowable `—` placeholders.
-3. **Only affected pages changed** — modify wiki pages that correspond to code \
+4. **Only affected pages changed** — modify wiki pages that correspond to code \
 touched in the diff. Do not edit unrelated pages or reformat existing content.
-4. **`{wiki_dir}/log.md` has a new entry** — one concise line describing what changed, \
+5. **`{wiki_dir}/log.md` has a new entry** — one concise line describing what changed, \
 appended at the bottom.
-5. **`CHANGELOG.md` updated** (if applicable) — add an entry under `## [Unreleased]` \
+6. **`CHANGELOG.md` updated** (if applicable) — add an entry under `## [Unreleased]` \
 for user-facing changes. Skip for pure refactors, test-only, or doc-only commits. \
 *(Not verified by lint.)*
 
@@ -281,10 +285,16 @@ for user-facing changes. Skip for pure refactors, test-only, or doc-only commits
 After making your changes, run:
 
 ```bash
-llm-wiki lint --jobs 1 --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}
+llm-wiki sync --jobs 1 --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}
+llm-wiki lint --strict --jobs 1 --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}
 ```
 
-If lint reports issues, fix them and re-run until it exits 0. Then commit:
+The final sync preserves supported semantic prose and re-anchors the canonical
+Markdown, surface, knowledge, and manifest snapshot. If lint reports issues,
+fix them; when a fix changes Markdown, restart at the owning sync before
+re-running strict lint. Report expired human section reviews and stale
+machine-verification receipts with their existing reasons; do not fabricate
+replacements. Then commit:
 
 ```bash
 git add {quoted_wiki_dir_slash} CHANGELOG.md
@@ -359,6 +369,13 @@ def _build_prompt(
     )
 
 
+def _redact_prompt_artifact(prompt: str) -> str:
+    redacted, count = redact_credentials(prompt)
+    if not count:
+        return redacted
+    return redacted.rstrip("\n") + f"\n\n[{count} credential-like values redacted]\n"
+
+
 def run(args) -> None:
     wiki_dir: str = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     src_dir: str = getattr(args, "src_dir", ".")
@@ -382,6 +399,7 @@ def run(args) -> None:
     except PluginError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         raise SystemExit(1)
+    prompt = _redact_prompt_artifact(prompt)
     effective_type = resolve_change_type(change_type, _git_diff())
     agent, mode = resolve_agent(None, wiki_dir)
 

@@ -13,7 +13,11 @@ from .common import (
     discover_source_files,
     filter_bundled_inventory,
 )
-from ..services.extractor_helpers import get_prepared_binary
+from ..services.extractor_helpers import (
+    ENV_EXTRACTOR_TIMEOUT,
+    extractor_timeout_seconds,
+    get_prepared_binary,
+)
 
 _HASKELL_SCRIPTS_DIR = Path(__file__).parent / "haskell_scripts"
 
@@ -130,13 +134,14 @@ class HaskellExtractor:
         cmd: list[str],
         helper_binary: Path,
     ) -> subprocess.CompletedProcess | None:
+        timeout_seconds = extractor_timeout_seconds()
         try:
             return subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
                 check=True,
-                timeout=120,
+                timeout=timeout_seconds,
                 cwd=str(helper_binary.parent),
             )
         except subprocess.CalledProcessError as exc:
@@ -147,9 +152,12 @@ class HaskellExtractor:
             )
             return None
         except subprocess.TimeoutExpired:
-            self.last_error = "extraction timed out after 120 s"
+            self.last_error = (
+                f"extraction timed out after {timeout_seconds} s; configure "
+                f"{ENV_EXTRACTOR_TIMEOUT} to allow more time"
+            )
             print(
-                "llm-wiki Haskell extractor: extraction timed out after 120 s.",
+                f"llm-wiki Haskell extractor: {self.last_error}.",
                 file=sys.stderr,
             )
             return None

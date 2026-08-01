@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
 
-from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS, read_config, get_agent_config_path
+from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS, get_agent_config_path, read_config
 from ..services import circuit_breaker
+from ..services.knowledge_observability import (
+    knowledge_status_payload,
+    load_snapshot_knowledge_observability,
+)
 from ..services.skills import reference_skill_state
 from ..services.wiki_surface import PageKind, canonical_path, iter_page_kinds
 
@@ -40,8 +45,37 @@ def _architecture_page_count(wiki_path: Path) -> int:
     )
 
 
+def _format_counts(counts: object) -> str:
+    if not isinstance(counts, dict):
+        return "unavailable"
+    return ", ".join(f"{key}={value}" for key, value in sorted(counts.items()))
+
+
+def _print_knowledge_status(wiki_path: Path, src_dir: str) -> None:
+    observability = load_snapshot_knowledge_observability(
+        wiki_path,
+        src_dir=src_dir,
+    )
+    status = knowledge_status_payload(observability.view)
+    summary = observability.summary.to_payload()
+
+    print(f"Knowledge:       {status['availability']} (reason: {status['reason']})")
+    print(f"  Concepts evaluated: {summary['concepts_evaluated']}")
+    print(f"  Evidence issues: {_format_counts(summary['evidence_issue_counts'])}")
+    print(f"  Freshness: {status['freshness']}")
+    phase_durations = summary["phase_durations_ms"]
+    load_ms = (
+        phase_durations.get("load")
+        if isinstance(phase_durations, Mapping)
+        else None
+    )
+    if load_ms is not None:
+        print(f"  Snapshot load: {load_ms} ms")
+
+
 def run(args) -> None:
     wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
+    src_dir = getattr(args, "src_dir", ".")
     wiki_path = Path(wiki_dir)
     git_dir = Path(".git")
 
@@ -58,6 +92,8 @@ def run(args) -> None:
         print(f"  {'Architecture pages:':<15}{_architecture_page_count(wiki_path)}")
     else:
         print(f"Wiki directory:  {wiki_dir} (not found)")
+
+    _print_knowledge_status(wiki_path, src_dir)
 
     # Agent config
     agent_config = get_agent_config_path(wiki_dir)
@@ -114,9 +150,33 @@ def run(args) -> None:
         failures = state.get("consecutive_failures", 0)
         if breaker_state == "open":
             print(f"Circuit breaker: OPEN ({failures} consecutive failures)")
+            ttl_seconds = circuit_breaker.breaker_ttl_seconds()
+            if ttl_seconds == 0:
+                print(
+                    "                 Automatic recovery is disabled; run "
+                    "`llm-wiki trigger-agent --reset-breaker` to re-enable"
+                )
+            else:
+                print(
+                    "                 The next trigger evaluates automatic recovery "
+                    f"after {ttl_seconds:g}s; use `--reset-breaker` to recover now"
+                )
+        elif breaker_state == "half-open":
             print(
-                "                 Run `llm-wiki trigger-agent --reset-breaker` to re-enable"
+                "Circuit breaker: HALF-OPEN "
+                f"({failures} consecutive failures; recovery probe lease persisted)"
             )
+            ttl_seconds = circuit_breaker.breaker_ttl_seconds()
+            if ttl_seconds == 0:
+                print(
+                    "                 Automatic recovery is disabled; run "
+                    "`llm-wiki trigger-agent --reset-breaker` to re-enable"
+                )
+            else:
+                print(
+                    "                 The next trigger evaluates the probe lease "
+                    f"after {ttl_seconds:g}s; use `--reset-breaker` to recover now"
+                )
         else:
             print(f"Circuit breaker: closed ({failures} recent failures)")
     else:

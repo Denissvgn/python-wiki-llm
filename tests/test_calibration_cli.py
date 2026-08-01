@@ -1,4 +1,4 @@
-"""Focused public CLI coverage for the P0 calibration lifecycle."""
+"""Focused public CLI coverage for the documentation calibration lifecycle."""
 
 from __future__ import annotations
 
@@ -143,7 +143,7 @@ def test_calibration_prepare_reads_manifest_and_requires_two_controls(
     manifest_path.write_text('{"schema_version":"manifest/v1"}', encoding="utf-8")
     captured = {}
     controller = SimpleNamespace(
-        prepare_p0_calibration_run=lambda root, **kwargs: (
+        prepare_calibration_run=lambda root, **kwargs: (
             captured.update(root=root, **kwargs)
             or _Payload(schema_version="run/v1", state="BASELINE_FROZEN")
         )
@@ -208,12 +208,12 @@ def test_calibration_admit_status_and_dispatch_forward_strict_inputs(
         )
 
     controller = SimpleNamespace(
-        admit_p0_calibration_run=admit,
-        get_p0_calibration_run_status=lambda root: (
+        admit_calibration_run=admit,
+        get_calibration_run_status=lambda root: (
             captured.update(status=root)
             or _Payload(cohort_id="cohort-1", state="ADMISSION_AUTHORIZED")
         ),
-        dispatch_p0_calibration_agent=dispatch,
+        dispatch_calibration_agent=dispatch,
     )
     monkeypatch.setattr(docs_cmd, "_calibration_controller", lambda: controller)
 
@@ -280,7 +280,7 @@ def test_calibration_packet_writes_bounded_json_only_to_explicit_output(
 
     controller = SimpleNamespace(
         validate_p0_calibration_packet_output=validate_output,
-        build_p0_calibration_agent_packet=lambda root, *, role: _Payload(
+        build_calibration_agent_packet=lambda root, *, role: _Payload(
             schema_version="packet/v1",
             root=root,
             role=role,
@@ -324,7 +324,7 @@ def test_calibration_packet_writes_bounded_json_only_to_explicit_output(
 
     bounded_output = tmp_path / "oversized.json"
     args.output = str(bounded_output)
-    monkeypatch.setattr(docs_cmd, "_MAX_CALIBRATION_PACKET_BYTES", 16)
+    monkeypatch.setattr(docs_cmd, "CALIBRATION_CONTROLLER_MAX_PACKET_BYTES", 16)
     with pytest.raises(SystemExit) as exc_info:
         docs_cmd.run(args)
     assert exc_info.value.code == 1
@@ -354,7 +354,7 @@ def test_calibration_record_result_parses_both_contracts_before_import(
     controller = SimpleNamespace(
         P0CalibrationDispatchReceipt=_ParsedReceipt,
         P0CalibrationAgentResult=_ParsedResult,
-        record_p0_calibration_agent_result=lambda root, **kwargs: (
+        record_calibration_agent_result=lambda root, **kwargs: (
             captured.update(root=root, **kwargs)
             or _Payload(schema_version="run/v1", state="INTAKE_OPEN")
         ),
@@ -388,7 +388,7 @@ def test_calibration_verify_forwards_no_advance_and_fails_closed(
 ):
     captured = {}
     controller = SimpleNamespace(
-        verify_p0_calibration_run=lambda root, *, advance: (
+        verify_calibration_run=lambda root, *, advance: (
             captured.update(root=root, advance=advance)
             or _Payload(schema_version="verification/v1", ok=False)
         )
@@ -421,7 +421,7 @@ def test_calibration_admit_reports_terminal_failure_with_nonzero_exit(
     authority = tmp_path / "authority.json"
     authority.write_text('{"grant_id":"grant-1"}', encoding="utf-8")
     controller = SimpleNamespace(
-        admit_p0_calibration_run=lambda *_args, **_kwargs: _Payload(
+        admit_calibration_run=lambda *_args, **_kwargs: _Payload(
             schema_version="run/v1",
             state="BLOCKED_NO_SHIP",
         )
@@ -451,7 +451,7 @@ def test_calibration_dispatch_reports_failed_receipt_with_nonzero_exit(
     capsys,
 ):
     controller = SimpleNamespace(
-        dispatch_p0_calibration_agent=lambda *_args, **_kwargs: _Payload(
+        dispatch_calibration_agent=lambda *_args, **_kwargs: _Payload(
             schema_version="receipt/v1",
             receipt_id="receipt-1",
             status="timed_out",

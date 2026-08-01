@@ -13,3 +13,5 @@ build/
 .git/llm-wiki-breaker.json
 .git/llm-wiki-sync.log
 reports/
+docs/adr/
+AGENTS.md

@@ -14,7 +14,6 @@ import os
 import re
 import shutil
 import stat
-import unicodedata
 from contextlib import ExitStack, contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
@@ -35,7 +34,24 @@ from .filesystem_guard import (
     windows_object_identity_from_values,
     _windows_path_handle_metadata,
 )
+from .knowledge_artifacts import (
+    KNOWLEDGE_INDEX_FILENAME,
+    KnowledgeArtifactError,
+    ValidatedKnowledgeArtifacts,
+    validate_knowledge_artifacts,
+    validate_surface_index_bytes,
+)
+from .knowledge_envelope import KnowledgeEnvelopeError, hash_markdown_snapshot
+from .knowledge_model import ComputedFreshness
+from .knowledge_observability import knowledge_freshness_hint
 from .source_snapshot import build_source_snapshot
+from .sync_manifest import (
+    LEGACY_MANIFEST_VERSION,
+    MANIFEST_VERSION,
+    ManifestArtifactHashes,
+    SyncManifest,
+    SyncManifestError,
+)
 from .wiki_media import (
     iter_markdown_link_targets,
     local_link_path,
@@ -45,11 +61,23 @@ from .wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,
 )
-from .wiki_surface import is_safe_page_id
+from .wiki_surface import is_safe_page_id, iter_page_kinds
+from .validation import (
+    is_portable_relative_path,
+    path_is_within as shared_path_is_within,
+    paths_overlap as shared_paths_overlap,
+    require_portable_relative_path,
+)
 
 
 MANIFEST_FILENAME = ".llm-wiki-manifest.json"
-SUPPORTED_MANIFEST_VERSION = 4
+# Keep the singular legacy name until the documentation-run v1 baseline
+# validator is widened to represent both accepted forms.  Import validation
+# itself uses the explicit set below.
+SUPPORTED_MANIFEST_VERSION = LEGACY_MANIFEST_VERSION
+SUPPORTED_MANIFEST_VERSIONS = frozenset(
+    {LEGACY_MANIFEST_VERSION, MANIFEST_VERSION}
+)
 
 # Fixed fail-closed bounds for untrusted existing-wiki inputs.  These limits are
 # deliberately well above the 352-file/~1.6 MiB stable Documentator archive
@@ -117,6 +145,7 @@ _CANONICAL_ROOT_FILES = frozenset(
         "bootstrap-remainder.md",
         MANIFEST_FILENAME,
         SURFACE_INDEX_FILENAME,
+        KNOWLEDGE_INDEX_FILENAME,
     }
 )
 _CANONICAL_MARKDOWN_DIRS = frozenset(
@@ -207,6 +236,9 @@ class DocumentationWikiSnapshot:
     workspace_refresh_required: bool
     resource_usage: Mapping[str, int]
     resource_limits: Mapping[str, int]
+    knowledge_schema_version: str | None = None
+    artifact_form: str = "legacy_index_only"
+    freshness_diagnostics: tuple[Mapping[str, str], ...] = ()
     baseline_strategy: str = field(default="adopt_existing_wiki", init=False)
 
     @property
@@ -226,6 +258,8 @@ class DocumentationWikiSnapshot:
             schemas["manifest"] = self.manifest_schema_version
         if self.surface_schema_version is not None:
             schemas["surface"] = self.surface_schema_version
+        if self.knowledge_schema_version is not None:
+            schemas["knowledge"] = self.knowledge_schema_version
         return schemas
 
     @property
@@ -250,7 +284,7 @@ class DocumentationWikiSnapshot:
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-serializable evidence payload."""
 
-        return {
+        payload = {
             "baseline_strategy": self.baseline_strategy,
             "input_wiki_dir": self.input_wiki_dir,
             "workspace_wiki_dir": self.workspace_wiki_dir,
@@ -263,6 +297,8 @@ class DocumentationWikiSnapshot:
             "recognized_schemas": self.recognized_schemas,
             "manifest_version": self.manifest_schema_version,
             "surface_schema_version": self.surface_schema_version,
+            "knowledge_schema_version": self.knowledge_schema_version,
+            "artifact_form": self.artifact_form,
             "compatibility": self.compatibility,
             "legacy_index_only": self.legacy_index_only,
             "unknown_entries": list(self.unknown_entries),
@@ -286,6 +322,11 @@ class DocumentationWikiSnapshot:
                 "source_verified_publish_ready": self.source_verified_publish_ready,
             },
         }
+        if self.freshness_diagnostics:
+            payload["freshness_diagnostics"] = [
+                dict(diagnostic) for diagnostic in self.freshness_diagnostics
+            ]
+        return payload
 
 
 @dataclass(frozen=True)
@@ -337,6 +378,42 @@ class _InputTree:
             "total_bytes": self.total_bytes,
             "maximum_depth": self.maximum_depth,
         }
+
+
+@dataclass(frozen=True)
+class _ValidatedWikiMetadata:
+    """One fully classified metadata form built only from guarded input bytes."""
+
+    manifest_payload: Mapping[str, Any] | None
+    surface_payload: Mapping[str, Any] | None
+    sync_manifest: SyncManifest | None
+    knowledge_artifacts: ValidatedKnowledgeArtifacts | None
+    artifact_form: str
+    legacy_index_only: bool
+
+    @property
+    def manifest_version(self) -> int | None:
+        if self.manifest_payload is None:
+            return None
+        version = self.manifest_payload.get("version")
+        return (
+            version
+            if isinstance(version, int) and not isinstance(version, bool)
+            else None
+        )
+
+    @property
+    def surface_schema_version(self) -> str | None:
+        if self.surface_payload is None:
+            return None
+        schema = self.surface_payload.get("schema_version")
+        return schema if isinstance(schema, str) else None
+
+    @property
+    def knowledge_schema_version(self) -> str | None:
+        if self.knowledge_artifacts is None:
+            return None
+        return self.knowledge_artifacts.knowledge.schema_version
 
 
 @dataclass(frozen=True)
@@ -557,7 +634,30 @@ def adopt_documentation_wiki_snapshot(
     deterministic refresh must target only ``workspace_wiki_dir``.
     """
 
+    return _adopt_documentation_wiki_snapshot_with_runtime(
+        input_wiki_dir,
+        workspace_wiki_dir,
+        source_root=source_root,
+        freshness_policy=freshness_policy,
+        trust_source_plugins=False,
+        helper_cache_dir=None,
+    )
+
+
+def _adopt_documentation_wiki_snapshot_with_runtime(
+    input_wiki_dir: str | Path,
+    workspace_wiki_dir: str | Path,
+    *,
+    source_root: str | Path | None,
+    freshness_policy: str,
+    trust_source_plugins: bool,
+    helper_cache_dir: str | Path | None,
+) -> DocumentationWikiSnapshot:
+    """Adopt with controller-approved native live-evaluation inputs."""
+
     _validate_freshness_policy(freshness_policy)
+    if not isinstance(trust_source_plugins, bool):
+        raise TypeError("trust_source_plugins must be a bool")
     input_root, input_identity = _validate_input_root(input_wiki_dir)
     workspace_root = _validate_workspace_root(workspace_wiki_dir)
     resolved_source_root = _validate_source_root(source_root)
@@ -573,6 +673,8 @@ def adopt_documentation_wiki_snapshot(
             source_root=resolved_source_root,
             freshness_policy=freshness_policy,
             root_descriptor=root_descriptor,
+            trust_source_plugins=trust_source_plugins,
+            helper_cache_dir=helper_cache_dir,
         )
 
 
@@ -583,6 +685,8 @@ def _adopt_validated_wiki_snapshot(
     source_root: Path | None,
     freshness_policy: str,
     root_descriptor: int | None,
+    trust_source_plugins: bool,
+    helper_cache_dir: str | Path | None,
 ) -> DocumentationWikiSnapshot:
     """Adopt from already validated roots while the input root remains pinned."""
 
@@ -599,7 +703,9 @@ def _adopt_validated_wiki_snapshot(
             path="index.md",
         )
 
-    manifest, surface, legacy = _load_and_validate_metadata(input_files)
+    metadata = _load_and_validate_metadata(input_files)
+    surface = metadata.surface_payload
+    legacy = metadata.legacy_index_only
     unknown_entries = _unknown_entries(input_tree.files)
     markdown_inspection = _inspect_markdown(input_tree.files)
     semantic_pages = _semantic_page_records(
@@ -607,10 +713,16 @@ def _adopt_validated_wiki_snapshot(
         surface,
         generated_marker_counts=markdown_inspection.generated_marker_counts,
     )
-    freshness, source_mismatches, diagnostics = _resolve_freshness(
-        manifest,
-        legacy=legacy,
+    (
+        freshness,
+        source_mismatches,
+        diagnostics,
+        freshness_diagnostics,
+    ) = _resolve_metadata_freshness(
+        metadata,
         source_root=source_root,
+        trust_source_plugins=trust_source_plugins,
+        helper_cache_dir=helper_cache_dir,
     )
     refresh_required = _enforce_freshness_policy(
         freshness_policy,
@@ -689,12 +801,8 @@ def _adopt_validated_wiki_snapshot(
         initial_snapshot_hash=snapshot_tree.tree_hash,
         file_hashes=input_tree.file_hashes,
         copied_paths=tuple(entry.relative_path for entry in input_tree.files),
-        manifest_schema_version=(
-            int(manifest["version"]) if manifest is not None else None
-        ),
-        surface_schema_version=(
-            str(surface["schema_version"]) if surface is not None else None
-        ),
+        manifest_schema_version=metadata.manifest_version,
+        surface_schema_version=metadata.surface_schema_version,
         legacy_index_only=legacy,
         unknown_entries=unknown_entries,
         rejected_entries=(),
@@ -714,6 +822,9 @@ def _adopt_validated_wiki_snapshot(
             "semantic_total_bytes": markdown_inspection.semantic_total_bytes,
         },
         resource_limits=documentation_wiki_input_resource_limits(),
+        knowledge_schema_version=metadata.knowledge_schema_version,
+        artifact_form=metadata.artifact_form,
+        freshness_diagnostics=freshness_diagnostics,
     )
 
 
@@ -859,15 +970,11 @@ def _validate_root_isolation(
 
 
 def _paths_overlap(left: Path, right: Path) -> bool:
-    return _is_relative_to(left, right) or _is_relative_to(right, left)
+    return shared_paths_overlap(left, right)
 
 
 def _is_relative_to(path: Path, root: Path) -> bool:
-    try:
-        path.relative_to(root)
-    except ValueError:
-        return False
-    return True
+    return shared_path_is_within(path, root)
 
 
 def _supports_secure_input_fd_traversal() -> bool:
@@ -1794,45 +1901,48 @@ def _open_input_entry(entry: _InputFile):
 def _validate_portable_relative_path(
     relative: PurePosixPath, seen: dict[str, str]
 ) -> None:
-    if relative.is_absolute() or ".." in relative.parts:
-        raise DocumentationWikiInputError(
-            f"Wiki entry escapes its root: {relative.as_posix()}",
+    rendered = relative.as_posix()
+    require_portable_relative_path(
+        rendered,
+        escape_error=DocumentationWikiInputError(
+            f"Wiki entry escapes its root: {rendered}",
             category="path_escape",
-            path=relative.as_posix(),
-        )
-    for component in relative.parts:
-        if component in {"", ".", ".."}:
-            raise DocumentationWikiInputError(
-                f"Invalid wiki path component in {relative.as_posix()!r}.",
-                category="nonportable_path",
-                path=relative.as_posix(),
-            )
-        if component.endswith((" ", ".")) or any(
-            char in _WINDOWS_FORBIDDEN_CHARS or ord(char) < 32 for char in component
-        ):
-            raise DocumentationWikiInputError(
-                f"Wiki path is not portable across supported systems: {relative.as_posix()}",
-                category="nonportable_path",
-                path=relative.as_posix(),
-            )
-        stem = component.split(".", 1)[0].casefold()
-        if stem in _WINDOWS_RESERVED_NAMES:
-            raise DocumentationWikiInputError(
-                f"Wiki path uses a reserved Windows name: {relative.as_posix()}",
-                category="nonportable_path",
-                path=relative.as_posix(),
-            )
-
-    portable_key = unicodedata.normalize("NFC", relative.as_posix()).casefold()
-    previous = seen.setdefault(portable_key, relative.as_posix())
-    if previous != relative.as_posix():
-        raise DocumentationWikiInputError(
+            path=rendered,
+        ),
+        relative_error=DocumentationWikiInputError(
+            f"Invalid wiki path component in {rendered!r}.",
+            category="nonportable_path",
+            path=rendered,
+        ),
+        separator_error=DocumentationWikiInputError(
+            f"Wiki path is not portable across supported systems: {rendered}",
+            category="nonportable_path",
+            path=rendered,
+        ),
+        non_nfc_error=DocumentationWikiInputError(
+            f"Wiki path is not NFC-normalized: {rendered}",
+            category="nonportable_path",
+            path=rendered,
+        ),
+        nonportable_error=DocumentationWikiInputError(
+            f"Wiki path is not portable across supported systems: {rendered}",
+            category="nonportable_path",
+            path=rendered,
+        ),
+        reserved_error=DocumentationWikiInputError(
+            f"Wiki path uses a reserved Windows name: {rendered}",
+            category="nonportable_path",
+            path=rendered,
+        ),
+        collision_seen=seen,
+        collision_error=lambda previous, current: DocumentationWikiInputError(
             "Wiki paths collide on a case-insensitive or Unicode-normalizing "
-            f"filesystem: {previous!r} and {relative.as_posix()!r}",
+            f"filesystem: {previous!r} and {current!r}",
             category="nonportable_path_collision",
-            path=relative.as_posix(),
-            rejected_entries=(previous, relative.as_posix()),
-        )
+            path=current,
+            rejected_entries=(previous, current),
+        ),
+    )
 
 
 def _is_reparse_point(entry_stat: os.stat_result) -> bool:
@@ -1986,11 +2096,26 @@ def _tree_hash(files: tuple[_InputFile, ...]) -> str:
 
 def _load_and_validate_metadata(
     files: Mapping[str, _InputFile],
-) -> tuple[dict[str, Any] | None, dict[str, Any] | None, bool]:
+) -> _ValidatedWikiMetadata:
     manifest_entry = files.get(MANIFEST_FILENAME)
     surface_entry = files.get(SURFACE_INDEX_FILENAME)
+    knowledge_entry = files.get(KNOWLEDGE_INDEX_FILENAME)
     if manifest_entry is None and surface_entry is None:
-        return None, None, True
+        if knowledge_entry is not None:
+            raise DocumentationWikiInputError(
+                "A knowledge index cannot be adopted without a manifest and "
+                "surface index.",
+                category="knowledge_artifact_orphan",
+                path=KNOWLEDGE_INDEX_FILENAME,
+            )
+        return _ValidatedWikiMetadata(
+            manifest_payload=None,
+            surface_payload=None,
+            sync_manifest=None,
+            knowledge_artifacts=None,
+            artifact_form="legacy_index_only",
+            legacy_index_only=True,
+        )
     if manifest_entry is None or surface_entry is None:
         missing = (
             MANIFEST_FILENAME if manifest_entry is None else SURFACE_INDEX_FILENAME
@@ -2002,18 +2127,122 @@ def _load_and_validate_metadata(
             path=missing,
         )
 
-    manifest = _read_json_object(manifest_entry, "manifest")
-    surface = _read_json_object(surface_entry, "surface index")
-    _validate_manifest(manifest)
-    _validate_surface_index(surface, files)
-    return manifest, surface, False
+    manifest_bytes = _read_verified_bytes(manifest_entry)
+    manifest = _decode_json_object(
+        manifest_bytes,
+        manifest_entry,
+        "manifest",
+    )
+    manifest_version = _validated_manifest_version(manifest)
+
+    surface_bytes = _read_verified_bytes(surface_entry)
+    if manifest_version == LEGACY_MANIFEST_VERSION:
+        if "artifact_hashes" in manifest or knowledge_entry is not None:
+            raise DocumentationWikiInputError(
+                "Manifest v4 supports only the legacy manifest/surface pair; "
+                "native knowledge requires a marked manifest v5 trio.",
+                category="native_artifact_form_invalid",
+                path=(
+                    KNOWLEDGE_INDEX_FILENAME
+                    if knowledge_entry is not None
+                    else MANIFEST_FILENAME
+                ),
+            )
+        _validate_legacy_manifest(manifest)
+        sync_manifest = _validated_sync_manifest(manifest)
+        surface = _decode_json_object(
+            surface_bytes,
+            surface_entry,
+            "surface index",
+        )
+        _validate_surface_index(surface, files)
+        return _ValidatedWikiMetadata(
+            manifest_payload=manifest,
+            surface_payload=surface,
+            sync_manifest=sync_manifest,
+            knowledge_artifacts=None,
+            artifact_form="manifest_v4_surface",
+            legacy_index_only=False,
+        )
+
+    sync_manifest = _validated_sync_manifest(manifest)
+    surface = _validated_native_surface(surface_bytes)
+    canonical_markdown = _validate_native_page_parity(surface, files)
+    marker = sync_manifest.artifact_hashes
+    if marker is None:
+        if knowledge_entry is not None:
+            raise DocumentationWikiInputError(
+                "A present knowledge index requires the complete manifest v5 "
+                "artifact marker.",
+                category="native_artifact_marker_missing",
+                path=MANIFEST_FILENAME,
+            )
+        return _ValidatedWikiMetadata(
+            manifest_payload=manifest,
+            surface_payload=surface,
+            sync_manifest=sync_manifest,
+            knowledge_artifacts=None,
+            artifact_form="manifest_v5_surface",
+            legacy_index_only=False,
+        )
+
+    if knowledge_entry is None:
+        raise DocumentationWikiInputError(
+            "The manifest v5 artifact marker commits a knowledge index that is "
+            "absent.",
+            category="native_artifact_set_incomplete",
+            path=KNOWLEDGE_INDEX_FILENAME,
+        )
+    knowledge_bytes = _read_verified_bytes(knowledge_entry)
+    validated = _validated_native_artifacts(
+        surface_bytes=surface_bytes,
+        knowledge_bytes=knowledge_bytes,
+        manifest=sync_manifest,
+    )
+    _validate_native_marker(marker, validated)
+    _validate_native_markdown_snapshot(
+        canonical_markdown,
+        files,
+        validated,
+    )
+    return _ValidatedWikiMetadata(
+        manifest_payload=manifest,
+        surface_payload=validated.surface_payload,
+        sync_manifest=sync_manifest,
+        knowledge_artifacts=validated,
+        artifact_form="manifest_v5_native",
+        legacy_index_only=False,
+    )
 
 
 def _read_json_object(entry: _InputFile, label: str) -> dict[str, Any]:
     raw = _read_verified_bytes(entry)
+    return _decode_json_object(raw, entry, label)
+
+
+def _decode_json_object(
+    raw: bytes,
+    entry: _InputFile,
+    label: str,
+) -> dict[str, Any]:
+    def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError(f"duplicate object key {key!r}")
+            result[key] = value
+        return result
+
+    def reject_constant(value: str) -> None:
+        raise ValueError(f"non-finite number {value!r}")
+
     try:
-        payload = json.loads(raw.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        payload = json.loads(
+            raw.decode("utf-8"),
+            object_pairs_hook=unique_object,
+            parse_constant=reject_constant,
+        )
+    except (UnicodeDecodeError, ValueError) as exc:
         raise DocumentationWikiInputError(
             f"Corrupt {label} metadata in {entry.relative_path}: {exc}",
             category="metadata_corrupt",
@@ -2057,7 +2286,7 @@ def _read_verified_bytes(entry: _InputFile) -> bytes:
     return raw
 
 
-def _validate_manifest(manifest: Mapping[str, Any]) -> None:
+def _validated_manifest_version(manifest: Mapping[str, Any]) -> int:
     version = manifest.get("version")
     if not isinstance(version, int) or isinstance(version, bool):
         raise DocumentationWikiInputError(
@@ -2065,12 +2294,38 @@ def _validate_manifest(manifest: Mapping[str, Any]) -> None:
             category="manifest_schema_invalid",
             path=MANIFEST_FILENAME,
         )
-    if version != SUPPORTED_MANIFEST_VERSION:
-        relation = "future" if version > SUPPORTED_MANIFEST_VERSION else "unsupported"
+    if version not in SUPPORTED_MANIFEST_VERSIONS:
+        relation = "future" if version > MANIFEST_VERSION else "unsupported"
         raise DocumentationWikiInputError(
-            f"Manifest version {version} is {relation}; supported version is "
-            f"{SUPPORTED_MANIFEST_VERSION}.",
+            f"Manifest version {version} is {relation}; supported versions are "
+            f"{LEGACY_MANIFEST_VERSION} and {MANIFEST_VERSION}.",
             category="manifest_schema_unsupported",
+            path=MANIFEST_FILENAME,
+        )
+    return version
+
+
+def _validated_sync_manifest(manifest: Mapping[str, Any]) -> SyncManifest:
+    try:
+        return SyncManifest.from_payload(manifest)
+    except SyncManifestError as exc:
+        raise DocumentationWikiInputError(
+            f"Manifest metadata is invalid: {exc}",
+            category=(
+                "manifest_schema_unsupported"
+                if exc.code == "unsupported-version"
+                else "manifest_schema_invalid"
+            ),
+            path=MANIFEST_FILENAME,
+            diagnostics=(f"field={exc.field}",),
+        ) from exc
+
+
+def _validate_legacy_manifest(manifest: Mapping[str, Any]) -> None:
+    if manifest.get("version") != LEGACY_MANIFEST_VERSION:
+        raise DocumentationWikiInputError(
+            "Legacy manifest validation requires manifest version 4.",
+            category="manifest_schema_invalid",
             path=MANIFEST_FILENAME,
         )
     sources = manifest.get("sources")
@@ -2147,7 +2402,7 @@ def _validate_generation_inputs(generation_inputs: Mapping[str, Any]) -> None:
         )
 
     openapi_path = openapi["path"]
-    if not isinstance(openapi_path, str) or not _is_portable_source_relative_path(
+    if not isinstance(openapi_path, str) or not _is_safe_posix_relative(
         openapi_path
     ):
         raise DocumentationWikiInputError(
@@ -2168,6 +2423,181 @@ def _validate_generation_inputs(generation_inputs: Mapping[str, Any]) -> None:
             "Manifest generation_inputs.openapi.format must be 'json' or 'yaml'.",
             category="manifest_schema_invalid",
             path=MANIFEST_FILENAME,
+        )
+
+
+def _validated_native_surface(surface_bytes: bytes) -> Mapping[str, Any]:
+    try:
+        return validate_surface_index_bytes(surface_bytes)
+    except KnowledgeArtifactError as exc:
+        raise DocumentationWikiInputError(
+            f"Native surface index is invalid: {exc}",
+            category=(
+                "surface_schema_unsupported"
+                if exc.code == "unsupported-schema-version"
+                else "surface_schema_invalid"
+            ),
+            path=SURFACE_INDEX_FILENAME,
+            diagnostics=(f"field={exc.field}",),
+        ) from exc
+
+
+def _validated_native_artifacts(
+    *,
+    surface_bytes: bytes,
+    knowledge_bytes: bytes,
+    manifest: SyncManifest,
+) -> ValidatedKnowledgeArtifacts:
+    try:
+        return validate_knowledge_artifacts(
+            surface_index_bytes=surface_bytes,
+            knowledge_index_bytes=knowledge_bytes,
+            manifest=manifest,
+        )
+    except KnowledgeArtifactError as exc:
+        if exc.field.startswith("knowledge_index"):
+            path = KNOWLEDGE_INDEX_FILENAME
+            category = (
+                "knowledge_schema_unsupported"
+                if exc.code == "unsupported-schema-version"
+                else "native_artifact_invalid"
+            )
+        elif exc.field.startswith("surface_index"):
+            path = SURFACE_INDEX_FILENAME
+            category = (
+                "surface_schema_unsupported"
+                if exc.code == "unsupported-schema-version"
+                else "native_artifact_invalid"
+            )
+        else:
+            path = MANIFEST_FILENAME
+            category = "native_artifact_invalid"
+        raise DocumentationWikiInputError(
+            f"Native artifact set is invalid: {exc}",
+            category=category,
+            path=path,
+            diagnostics=(f"field={exc.field}",),
+        ) from exc
+
+
+def _validate_native_marker(
+    marker: ManifestArtifactHashes,
+    validated: ValidatedKnowledgeArtifacts,
+) -> None:
+    for field_name, committed, actual in (
+        (
+            "surface_index_hash",
+            marker.surface_index_hash,
+            validated.surface_index_hash,
+        ),
+        (
+            "knowledge_index_hash",
+            marker.knowledge_index_hash,
+            validated.knowledge_index_hash,
+        ),
+        (
+            "evaluated_envelope_hash",
+            marker.evaluated_envelope_hash,
+            validated.evaluated_envelope_hash,
+        ),
+    ):
+        if committed == actual:
+            continue
+        raise DocumentationWikiInputError(
+            f"Manifest artifact marker {field_name} does not match the validated "
+            "native projection.",
+            category="native_artifact_marker_mismatch",
+            path=MANIFEST_FILENAME,
+            diagnostics=(f"field=artifact_hashes.{field_name}",),
+        )
+
+
+def _validate_native_page_parity(
+    surface: Mapping[str, Any],
+    files: Mapping[str, _InputFile],
+) -> Mapping[str, _InputFile]:
+    canonical = _canonical_markdown_entries(files)
+    pages = surface["pages"]
+    assert isinstance(pages, list)
+    surface_paths = {
+        str(page["canonical_path"]) for page in pages if isinstance(page, Mapping)
+    }
+    canonical_paths = set(canonical)
+    if surface_paths != canonical_paths:
+        missing = sorted(canonical_paths - surface_paths)
+        if missing:
+            detail = f"surface index is missing active canonical page {missing[0]!r}"
+        else:
+            extra = sorted(surface_paths - canonical_paths)
+            detail = f"surface index points to missing canonical page {extra[0]!r}"
+        raise DocumentationWikiInputError(
+            f"Native surface/page parity is invalid: {detail}.",
+            category="native_page_parity_mismatch",
+            path=SURFACE_INDEX_FILENAME,
+        )
+    return canonical
+
+
+def _canonical_markdown_entries(
+    files: Mapping[str, _InputFile],
+) -> dict[str, _InputFile]:
+    root_paths: set[str] = set()
+    directories: set[str] = set()
+    for entry in iter_page_kinds():
+        if entry.requires_page_id:
+            if entry.directory is not None:
+                directories.add(entry.directory)
+        else:
+            root_paths.add(entry.path_pattern)
+
+    canonical: dict[str, _InputFile] = {}
+    for relative_path, input_file in files.items():
+        if relative_path in root_paths:
+            canonical[relative_path] = input_file
+            continue
+        path = PurePosixPath(relative_path)
+        if (
+            len(path.parts) == 2
+            and path.parts[0] in directories
+            and path.suffix.casefold() == ".md"
+            and is_safe_page_id(path.stem)
+        ):
+            canonical[relative_path] = input_file
+    return canonical
+
+
+def _validate_native_markdown_snapshot(
+    canonical_markdown: Mapping[str, _InputFile],
+    files: Mapping[str, _InputFile],
+    validated: ValidatedKnowledgeArtifacts,
+) -> None:
+    # Require the exact mapping returned by the parity check to still identify
+    # the guarded inventory before any file bytes are read.
+    if any(files.get(path) is not entry for path, entry in canonical_markdown.items()):
+        raise DocumentationWikiInputError(
+            "Canonical Markdown inventory changed during native validation.",
+            category="input_changed_during_snapshot",
+        )
+    markdown_bytes = {
+        path: _read_verified_bytes(entry)
+        for path, entry in sorted(canonical_markdown.items())
+    }
+    try:
+        markdown_hash = hash_markdown_snapshot(markdown_bytes)
+    except (KnowledgeEnvelopeError, TypeError, UnicodeError, ValueError) as exc:
+        raise DocumentationWikiInputError(
+            f"Canonical Markdown cannot be validated: {exc}",
+            category="native_markdown_snapshot_invalid",
+            path=getattr(exc, "field", None),
+        ) from exc
+    committed_hash = validated.knowledge.bundle.snapshot.markdown_snapshot_hash
+    if markdown_hash != committed_hash:
+        raise DocumentationWikiInputError(
+            "Canonical Markdown does not match the committed native knowledge "
+            "snapshot.",
+            category="native_markdown_snapshot_mismatch",
+            path=KNOWLEDGE_INDEX_FILENAME,
+            diagnostics=("field=bundle.snapshot.markdown_snapshot_hash",),
         )
 
 
@@ -2230,26 +2660,7 @@ def _validate_surface_index(
 
 
 def _is_safe_posix_relative(value: str) -> bool:
-    if not value or "\\" in value or "\x00" in value:
-        return False
-    path = PurePosixPath(value)
-    return not path.is_absolute() and ".." not in path.parts and "." not in path.parts
-
-
-def _is_portable_source_relative_path(value: str) -> bool:
-    raw_components = value.split("/")
-    if not _is_safe_posix_relative(value) or any(
-        component in {"", ".", ".."} for component in raw_components
-    ):
-        return False
-    for component in raw_components:
-        if component.endswith((" ", ".")) or any(
-            char in _WINDOWS_FORBIDDEN_CHARS or ord(char) < 32 for char in component
-        ):
-            return False
-        if component.split(".", 1)[0].casefold() in _WINDOWS_RESERVED_NAMES:
-            return False
-    return True
+    return is_portable_relative_path(value)
 
 
 def _is_sha256(value: object) -> bool:
@@ -2569,6 +2980,161 @@ def _semantic_page_records(
     return tuple(records)
 
 
+def _resolve_metadata_freshness(
+    metadata: _ValidatedWikiMetadata,
+    *,
+    source_root: Path | None,
+    trust_source_plugins: bool,
+    helper_cache_dir: str | Path | None,
+) -> tuple[
+    str,
+    tuple[str, ...],
+    list[str],
+    tuple[Mapping[str, str], ...],
+]:
+    """Select legacy comparison or the fail-closed native evaluation seam.
+
+    A run-specific private adapter can extend this function with trusted plugin
+    and helper-cache inputs while the exported adoption signature remains
+    unchanged.  The validated v5 ``SyncManifest`` and knowledge bundle are
+    available together on ``metadata`` and no input path needs to be reopened.
+    """
+
+    if metadata.artifact_form == "manifest_v5_surface":
+        if source_root is None:
+            return (
+                "unverified",
+                (),
+                ["source_unavailable: source freshness cannot be verified"],
+                (),
+            )
+        return (
+            "unverified",
+            (),
+            [
+                "native_freshness_pending: validated manifest v5 state requires "
+                "shared live generation and producer evaluation"
+            ],
+            (),
+        )
+    if metadata.artifact_form == "manifest_v5_native":
+        if source_root is None:
+            return (
+                "unverified",
+                (),
+                ["source_unavailable: source freshness cannot be verified"],
+                (),
+            )
+        if (
+            metadata.sync_manifest is None
+            or metadata.knowledge_artifacts is None
+        ):
+            return (
+                "unverified",
+                (),
+                [
+                    "native_freshness_invalid: validated native state is "
+                    "incomplete"
+                ],
+                (),
+            )
+        from .documentation_native import evaluate_documentation_native_freshness
+
+        try:
+            evaluated = evaluate_documentation_native_freshness(
+                knowledge=metadata.knowledge_artifacts.knowledge,
+                manifest=metadata.sync_manifest,
+                source_root=source_root,
+                trust_source_plugins=trust_source_plugins,
+                helper_cache_dir=helper_cache_dir,
+            )
+            freshness_diagnostics = _basis_incompatible_diagnostics(
+                evaluated.report
+            )
+        except Exception:  # Fail closed across extractor/plugin/runtime boundaries.
+            return (
+                "unverified",
+                (),
+                [
+                    "native_freshness_invalid: live native evaluation could not "
+                    "be constructed"
+                ],
+                (),
+            )
+        if evaluated.current:
+            return (
+                "verified_current",
+                (),
+                [
+                    "native_verified_current: source inventory and native "
+                    "generation and producer bases match"
+                ],
+                (),
+            )
+        basis_by_reason = {
+            f"{item['locator']}:{item['reason_code']}": item
+            for item in freshness_diagnostics
+        }
+        diagnostics = []
+        for reason in evaluated.reasons:
+            basis = basis_by_reason.get(reason)
+            if basis is None:
+                diagnostics.append(f"native_freshness_not_current:{reason}")
+                continue
+            diagnostics.append(
+                f"native_basis_incompatible:{reason}; hint={basis['hint']}"
+            )
+        if not diagnostics:
+            diagnostics.append(
+                "native_freshness_not_current: live native evaluation did not "
+                "establish a current state"
+            )
+        return (
+            "verified_stale",
+            tuple(evaluated.source_mismatches),
+            diagnostics,
+            freshness_diagnostics,
+        )
+    freshness, source_mismatches, diagnostics = _resolve_freshness(
+        metadata.manifest_payload,
+        legacy=metadata.legacy_index_only,
+        source_root=source_root,
+    )
+    return freshness, source_mismatches, diagnostics, ()
+
+
+def _basis_incompatible_diagnostics(
+    report: object,
+) -> tuple[Mapping[str, str], ...]:
+    by_locator = getattr(report, "by_locator", None)
+    if not isinstance(by_locator, Mapping):
+        raise ValueError("native freshness report has no locator results")
+    diagnostics: list[Mapping[str, str]] = []
+    for locator, result in sorted(by_locator.items()):
+        state = getattr(result, "state", None)
+        reason_code = getattr(result, "reason_code", None)
+        if state is not ComputedFreshness.BASIS_INCOMPATIBLE:
+            continue
+        hint = knowledge_freshness_hint(state, reason_code)
+        if (
+            hint is None
+            or not isinstance(locator, str)
+            or not isinstance(reason_code, str)
+        ):
+            raise ValueError(
+                "basis-incompatible native freshness lacks actionable guidance"
+            )
+        diagnostics.append(
+            {
+                "locator": locator,
+                "state": ComputedFreshness.BASIS_INCOMPATIBLE.value,
+                "reason_code": reason_code,
+                "hint": hint,
+            }
+        )
+    return tuple(diagnostics)
+
+
 def _resolve_freshness(
     manifest: Mapping[str, Any] | None,
     *,
@@ -2585,7 +3151,6 @@ def _resolve_freshness(
             "to compare"
         )
         return "unverified", (), diagnostics
-
     sources = manifest["sources"]
     include_tests = (
         ("go",)
@@ -2691,9 +3256,11 @@ def _enforce_freshness_policy(
     if freshness == "verified_current":
         return False
     if policy == "require-current":
+        details = "; ".join(diagnostics)
         raise DocumentationWikiInputError(
             f"Input wiki freshness is {freshness}; require-current refuses adoption. "
-            "Choose allow-unverified or refresh-snapshot explicitly.",
+            "Choose allow-unverified or refresh-snapshot explicitly."
+            + (f" Diagnostics: {details}" if details else ""),
             category="freshness_not_current",
             diagnostics=tuple(diagnostics),
         )

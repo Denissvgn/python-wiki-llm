@@ -65,10 +65,20 @@ of recomputing a second ranking.
 | Entity/module `## Description` prose | Yes, when packet-owned and evidence-backed | Generated table rows/shape and ownership markers |
 | Flow `## Behavior` | Yes | Call/data-flow diagrams and generated metadata |
 | API/dependency/load-order `## Notes` | Yes | Generated inventories, graphs, diagnostics |
-| Manifest, surface index, generated front matter/Mermaid blocks | No | Entire artifact/block |
+| Infrastructure `## Notes` | Yes | Generated source observations, inventories, and diagnostics |
+| `.llm-wiki-manifest.json`, `.llm-wiki-surface.json`, `.llm-wiki-knowledge.json`, generated front matter/Mermaid blocks | No | Entire artifact/block |
 
 If ownership is ambiguous, do not edit. Report the path as a generator or
 ownership defect and defer the work item.
+
+The three native JSON artifacts are one controller-owned projection. After an
+accepted semantic Markdown change, the supervisor refreshes that projection
+from verified source evidence and re-anchors generated ownership. The worker
+must not regenerate the artifacts or include their paths in
+`changed_wiki_paths`. Strict lint/CI runs after that owning refresh, never
+against the mixed pre-refresh Markdown snapshot. The refresh may expire a human
+section review or stale a machine-verification receipt; retain and report the
+existing reasons, and do not manufacture replacements.
 
 ## Imported enrichment decisions
 
@@ -99,6 +109,68 @@ ownership defect and defer the work item.
   ]
 }
 ```
+
+## Native-qualified claim evidence
+
+`claims_evidence_pages` is the versioned page-only compatibility record. Add
+`claim_evidence` only when a claim depends on native identity, section
+ownership/review, lifecycle, or typed-graph scope. The worker supplies query
+intent and the observed result. Before refresh, the supervisor structurally
+preflights citations, internal references, capture paths/digests, query shape,
+and limits. A malformed result is rejected without consuming the attempt or
+refreshing native artifacts. It then refreshes and reconciles a structurally
+valid result as one supervisor transaction; any changed UID, locator, page,
+section, native state, runtime-capture binding, or bound rejects the result and
+rolls back supervisor-owned refresh state.
+
+The reconciliation service follows the immutable run basis. A
+`verified_current` run with its bound source available uses live, read-only
+freshness evaluation under the bound helper/plugin/cache policy. An unverified
+run, or one whose bound source is unavailable, uses the committed snapshot
+only and reports freshness as unevaluated. Neither mode upgrades governance,
+review, verification, or runtime evidence, and snapshot-only evidence must
+never be described as live-current.
+
+```json
+{
+  "claim_evidence": [
+    {
+      "schema_version": "llm-wiki-documentation-claim-evidence/v1",
+      "claim_id": "work:stable-work-id",
+      "canonical_page": "modules/api.md",
+      "concept_query": "uid_example",
+      "resolution": "exact",
+      "concept_uid": "uid_example",
+      "concept_locator": "llm-wiki://modules/api",
+      "section_locator": null,
+      "structural_evidence": {"state": "present", "reason": null},
+      "freshness": {
+        "evaluated": true,
+        "disclosure": "evaluated (6 concepts)",
+        "state": "current",
+        "reason": "recorded-basis-matches-live-evaluation"
+      },
+      "lifecycle_review": {"lifecycle": "active", "section_review": null},
+      "graph_query": null,
+      "bounds": {
+        "matches": {"total": 1, "returned": 1, "truncated": false},
+        "sections": null,
+        "edges": null,
+        "analyzers": []
+      },
+      "safe_evidence_link": "modules/api.md",
+      "internal_evidence_ref": null
+    }
+  ]
+}
+```
+
+Use the exact section locator returned by the public section query; never parse
+the private ownership extension. Preserve `missing`, `ambiguous`,
+`native-unavailable`, `typed-graph-unavailable`, and every `truncated` bound.
+Detailed edge samples remain in `.llm-wiki-docs/evidence/` and may be named by
+`internal_evidence_ref`; they are not copied into a public page or result
+summary.
 
 For a run whose source baseline is not `verified_current`, primary guides must
 not link to an imported semantic page as canonical evidence. Keep such material

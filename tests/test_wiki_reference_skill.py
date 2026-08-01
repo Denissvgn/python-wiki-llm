@@ -97,6 +97,12 @@ def test_reference_documents_dependency_reconciliation_and_flows():
     assert "nested Python `pyproject.toml` and `requirements*.txt` files" in text
     assert "Go `// indirect` requirements are transitive" in text
     assert "optional lockfile-backed `versions`" in content
+    assert "`dependencies.version_details`" in content
+    assert "llm-wiki-dependency-version-details/v1" in content
+    assert "`go.mod` selections remain distinct from `go.sum` observations" in text
+    assert "`data_flow_details` sibling" in text
+    assert "llm-wiki-extract-data-flow-details/v1" in content
+    assert "`not_evaluated`, `unsupported`, and `evaluated`" in content
     assert "Raw Node `http.createServer` and `https.createServer` calls" in content
     assert "javascript_flow_unsupported" in content
 
@@ -117,6 +123,134 @@ def test_reference_documents_site_export_and_context():
     assert "do not bound scan work" in content
     assert "For a narrow task" in content
     assert "skip context" in content
+
+
+def test_reference_covers_all_strict_native_categories_without_conflation():
+    content = _reference_text()
+    section = content[
+        content.index("## Strict knowledge lint") :
+        content.index("## Knowledge query, API, and MCP boundaries")
+    ]
+
+    for category in (
+        "knowledge_schema",
+        "knowledge_projection",
+        "knowledge_snapshot",
+        "knowledge_evidence",
+        "knowledge_freshness",
+        "knowledge_governance",
+        "knowledge_review",
+        "knowledge_verification",
+    ):
+        assert f"`{category}`" in section
+    normalized = _squash_ws(section)
+    assert "human review" in normalized
+    assert "disposable machine receipt" in normalized
+    assert "never runs a checker" in normalized
+
+
+def test_reference_documents_typed_context_traversal_and_independent_bounds():
+    content = _reference_text()
+    normalized = _squash_ws(content)
+
+    for refinement in (
+        "relationship_kind",
+        "relationship_origin",
+        "relationship_resolution",
+        "relationship_direction",
+    ):
+        assert f'"{refinement}"' in content
+    for wrapper in (
+        "get_concept",
+        "list_concept_sections",
+        "related_concepts",
+        "traverse_typed_graph",
+        "explain_evidence",
+    ):
+        assert wrapper in content
+    assert "Build one Python service" in content
+    assert "pass `service=` to every wrapper" in normalized
+    assert "query `truncated: false` does not prove an analyzer was complete" in (
+        normalized
+    )
+    assert "`bounds.edges` describes post-filter response limiting" in normalized
+    assert "evidence-sample omission" in normalized
+    assert "Resolved, ambiguous, external, and unresolved endpoints remain" in (
+        normalized
+    )
+    assert "legacy MCP `query_graph`" in normalized
+    assert "does not alter core results" in normalized
+
+
+def test_reference_documents_exact_identity_and_governance_lifecycle():
+    content = _reference_text()
+    normalized = _squash_ws(content)
+    governance = content[
+        content.index("## Durable governance, lifecycle, review, and verification") :
+        content.index("## JavaScript and TypeScript flows")
+    ]
+
+    assert "current concept locator/MCP URI" in normalized
+    assert "exact canonical wiki path" in normalized
+    assert "durable UID" in normalized
+    assert "persisted governance alias" in normalized
+    for action in (
+        "knowledge init",
+        "knowledge status",
+        "knowledge move",
+        "knowledge alias",
+        "knowledge lifecycle set",
+        "knowledge deprecate",
+        "knowledge supersede",
+        "knowledge review",
+        "knowledge verify",
+    ):
+        assert action in governance
+    normalized_governance = _squash_ws(governance)
+    assert "All governance mutations support `--dry-run`" in normalized_governance
+    assert "no implicit merge, reallocation, or overwrite" in normalized_governance
+    assert "Source disappearance does not deprecate" in normalized_governance
+    assert "agent review cannot satisfy it" in normalized_governance
+    assert "restore the exact `.llm-wiki-governance.json`" in normalized_governance
+    assert "Never run `knowledge init` or reconstruct it" in normalized_governance
+
+
+def test_reference_documents_safe_site_and_obsidian_projection_boundary():
+    content = _reference_text()
+    section = content[
+        content.index("### Opt-in native metadata for Site and Obsidian") :
+        content.index("## Resource-aware execution")
+    ]
+    normalized = _squash_ws(section)
+
+    for required in (
+        "--knowledge-metadata summary",
+        "--knowledge-profile public-portable",
+        "--knowledge-public-repository-identity",
+        "`internal`",
+        "`not-evaluated`",
+        "configured-public",
+    ):
+        assert required in section
+    assert "Canonical Markdown bodies and copied media are preserved" in normalized
+    assert "not redacted or reviewed by the knowledge projection" in normalized
+    assert "rebuild them from the validated canonical snapshot" in normalized
+
+
+def test_reference_skill_routes_native_contracts_by_task():
+    manifest = (
+        BUNDLED_SKILLS_ROOT / REFERENCE_SKILL_ID / "SKILL.md"
+    ).read_text(encoding="utf-8")
+
+    for route in (
+        "Knowledge observations and freshness",
+        "Knowledge lint and context",
+        "Knowledge query/API/MCP contract",
+        "Durable governance, review, and verification",
+        "Static-site and Obsidian export",
+    ):
+        assert route in manifest
+    assert "open [reference.md](reference.md) at the section" in manifest
 
 
 def test_reference_documents_resource_aware_execution():

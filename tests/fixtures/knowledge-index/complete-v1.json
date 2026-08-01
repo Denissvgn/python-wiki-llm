@@ -1,0 +1,427 @@
+{
+  "bundle": {
+    "producer": {
+      "extractors": [
+        {
+          "configuration_hash": "sha256:7109dd992fe5fb5a692c53ba340dc344741cb77cd71082fbf28e97d69e802dc7",
+          "id": "llm-wiki/extractor/python",
+          "version": "1.5.0"
+        }
+      ],
+      "plugins": [],
+      "tool": {
+        "configuration_hash": "sha256:a80e5eb5cfa0c29d9c66529b073c46169c3869f4ccfa3852bb44b5a88e6bd950",
+        "id": "agent-wiki-cli",
+        "version": "1.5.0"
+      }
+    },
+    "repository": {
+      "evaluated_revision": "git:0123456789abcdef0123456789abcdef01234567",
+      "extensions": {
+        "llm-wiki/identity-source": "configured-public"
+      },
+      "identity": "example.invalid/acme/knowledge-fixture",
+      "working_tree": "clean"
+    },
+    "snapshot": {
+      "extensions": {
+        "llm-wiki/inventory-hash": "sha256:453cf516b1c34a87fba6532789851e133c08f3ee4d0ed8332b153c0f28cb31e5"
+      },
+      "generation_options_hash": "sha256:45fc4f49f4dc762b03917464de135c8c14735cfbc342504e353a6ce1cc897d20",
+      "markdown_snapshot_hash": "sha256:77eea3041e54b014d12705aa672b288d2bb44c6080442a4930ee9c074e135105",
+      "source_snapshot_hash": "sha256:636170023b50cc4f8f4841dc6d4e9b0bb8505c0548bc6574662f2234e0090da5",
+      "surface_index_hash": "sha256:632e44fcc87ee5ae85ddc9cbf175dcda660dee9f31bee92c0cec0644c7638e52"
+    }
+  },
+  "concepts": [
+    {
+      "concept_kind": "code-entity",
+      "document": {
+        "canonical_path": "entities/AccountService.md",
+        "page_id": "AccountService",
+        "page_kind": "entities",
+        "role": "semantic"
+      },
+      "facets": {
+        "semantics": {
+          "authorship": {
+            "kind": "unknown"
+          },
+          "ownership": "semantic",
+          "page_hash": "sha256:d962e90ad58e88a604160a0de33cee3578493abf1f8f1d06e9e8a49e1cd39175",
+          "verification": "untracked"
+        },
+        "structure": {
+          "basis": {
+            "concept_observation_hash": "sha256:9fed76bcca61180ca26a0763e7edd43b5f84679ae0fdfdc7dc38a1b8376f9097",
+            "extractor_ref": "llm-wiki/extractor/python",
+            "scope": "entity",
+            "source_content_hash": "sha256:f0b34a588d21c2dab7508e4f6557a411b8a5035afe8f79cc94dc7e669167e6d3",
+            "source_path": "src/accounts.py"
+          },
+          "evidence": "present",
+          "origin": "extracted"
+        }
+      },
+      "lifecycle": "unknown",
+      "locator": "llm-wiki://entities/AccountService",
+      "title": "AccountService"
+    },
+    {
+      "concept_kind": "code-entity",
+      "document": {
+        "canonical_path": "entities/User.md",
+        "page_id": "User",
+        "page_kind": "entities",
+        "role": "semantic"
+      },
+      "facets": {
+        "semantics": {
+          "authorship": {
+            "kind": "unknown"
+          },
+          "ownership": "semantic",
+          "page_hash": "sha256:8a5033d142feaa4b1407d68412c5cd52c8fc97275ad01b9160458034c4b3bc80",
+          "verification": "untracked"
+        },
+        "structure": {
+          "basis": {
+            "concept_observation_hash": "sha256:169f7c3cf114a7158caf5347329aa7b0eb0a00278a0bbe2699fd27b2ef100c85",
+            "extractor_ref": "llm-wiki/extractor/python",
+            "scope": "entity",
+            "source_content_hash": "sha256:f0b34a588d21c2dab7508e4f6557a411b8a5035afe8f79cc94dc7e669167e6d3",
+            "source_path": "src/accounts.py"
+          },
+          "evidence": "present",
+          "origin": "extracted"
+        }
+      },
+      "lifecycle": "unknown",
+      "locator": "llm-wiki://entities/User",
+      "title": "User"
+    },
+    {
+      "concept_kind": "navigation-document",
+      "document": {
+        "canonical_path": "index.md",
+        "page_id": "index",
+        "page_kind": "index",
+        "role": "mixed"
+      },
+      "facets": {
+        "semantics": {
+          "authorship": {
+            "kind": "unknown"
+          },
+          "ownership": "mixed",
+          "page_hash": "sha256:1f079b4fed5ff98656fe1aad1a8ddafcec2f9833d28f759ba35d76db1904accb",
+          "verification": "untracked"
+        },
+        "structure": {
+          "evidence": "not-applicable",
+          "origin": "unknown"
+        }
+      },
+      "lifecycle": "unknown",
+      "locator": "llm-wiki://index",
+      "title": "LLM Wiki Index"
+    },
+    {
+      "concept_kind": "change-log-document",
+      "document": {
+        "canonical_path": "log.md",
+        "page_id": "log",
+        "page_kind": "log",
+        "role": "generated"
+      },
+      "facets": {
+        "semantics": {
+          "authorship": {
+            "kind": "unknown"
+          },
+          "ownership": "generated",
+          "page_hash": "sha256:4e4124aae37a73a13adc3631e6abf79667acbf8bb6cbd5d2c44fb41d67d981a8",
+          "verification": "untracked"
+        },
+        "structure": {
+          "evidence": "not-applicable",
+          "origin": "unknown"
+        }
+      },
+      "lifecycle": "unknown",
+      "locator": "llm-wiki://log",
+      "title": "Architectural Log"
+    },
+    {
+      "concept_kind": "source-module",
+      "document": {
+        "canonical_path": "modules/accounts.md",
+        "page_id": "accounts",
+        "page_kind": "modules",
+        "role": "semantic"
+      },
+      "facets": {
+        "semantics": {
+          "authorship": {
+            "kind": "unknown"
+          },
+          "ownership": "semantic",
+          "page_hash": "sha256:28a98ee471adfaf6157bb79d11918f14f2062c4aa905f18685b7619cb57a9018",
+          "verification": "untracked"
+        },
+        "structure": {
+          "basis": {
+            "concept_observation_hash": "sha256:c5aca1b4baa3afc794a436a56c6dfb4263c07a31c635c4a4cc35f3766b69ccef",
+            "extractor_ref": "llm-wiki/extractor/python",
+            "scope": "module",
+            "source_content_hash": "sha256:f0b34a588d21c2dab7508e4f6557a411b8a5035afe8f79cc94dc7e669167e6d3",
+            "source_path": "src/accounts.py"
+          },
+          "evidence": "present",
+          "origin": "extracted"
+        }
+      },
+      "lifecycle": "unknown",
+      "locator": "llm-wiki://modules/accounts",
+      "title": "accounts Module"
+    },
+    {
+      "concept_kind": "workflow",
+      "document": {
+        "canonical_path": "workflows/onboarding.md",
+        "page_id": "onboarding",
+        "page_kind": "workflows",
+        "role": "mixed"
+      },
+      "facets": {
+        "semantics": {
+          "authorship": {
+            "kind": "unknown"
+          },
+          "ownership": "mixed",
+          "page_hash": "sha256:81093cba194c10fd71e72d437b879f03555ade293263bd425c3deafe3e4eee47",
+          "verification": "untracked"
+        },
+        "structure": {
+          "evidence": "unknown",
+          "origin": "unknown"
+        }
+      },
+      "lifecycle": "unknown",
+      "locator": "llm-wiki://workflows/onboarding",
+      "title": "onboarding"
+    }
+  ],
+  "relationships": [
+    {
+      "evidence": {
+        "concept_observation_hash": "sha256:169f7c3cf114a7158caf5347329aa7b0eb0a00278a0bbe2699fd27b2ef100c85",
+        "source_content_hash": "sha256:f0b34a588d21c2dab7508e4f6557a411b8a5035afe8f79cc94dc7e669167e6d3",
+        "state": "present"
+      },
+      "from": "llm-wiki://entities/User",
+      "kind": "derived_from",
+      "origin": "extracted",
+      "resolution": "resolved",
+      "target": {
+        "source_path": "src/accounts.py",
+        "target_class": "source"
+      }
+    },
+    {
+      "evidence": {
+        "concept_observation_hash": "sha256:9fed76bcca61180ca26a0763e7edd43b5f84679ae0fdfdc7dc38a1b8376f9097",
+        "source_content_hash": "sha256:f0b34a588d21c2dab7508e4f6557a411b8a5035afe8f79cc94dc7e669167e6d3",
+        "state": "present"
+      },
+      "from": "llm-wiki://entities/AccountService",
+      "kind": "derived_from",
+      "origin": "extracted",
+      "resolution": "resolved",
+      "target": {
+        "source_path": "src/accounts.py",
+        "target_class": "source"
+      }
+    },
+    {
+      "evidence": {
+        "concept_observation_hash": "sha256:c5aca1b4baa3afc794a436a56c6dfb4263c07a31c635c4a4cc35f3766b69ccef",
+        "source_content_hash": "sha256:f0b34a588d21c2dab7508e4f6557a411b8a5035afe8f79cc94dc7e669167e6d3",
+        "state": "present"
+      },
+      "from": "llm-wiki://modules/accounts",
+      "kind": "derived_from",
+      "origin": "extracted",
+      "resolution": "resolved",
+      "target": {
+        "source_path": "src/accounts.py",
+        "target_class": "source"
+      }
+    },
+    {
+      "evidence": {
+        "page_hash": "sha256:28a98ee471adfaf6157bb79d11918f14f2062c4aa905f18685b7619cb57a9018",
+        "state": "present"
+      },
+      "extensions": {
+        "llm-wiki/link-syntax": "markdown"
+      },
+      "from": "llm-wiki://modules/accounts",
+      "kind": "links_to",
+      "origin": "markdown",
+      "resolution": "external",
+      "target": {
+        "external_uri": "https://example.invalid/reference",
+        "label": "reference",
+        "location": {
+          "end": 201,
+          "start": 155
+        },
+        "normalized_target": "https://example.invalid/reference",
+        "raw_target": "https://example.invalid/reference",
+        "target_class": "external"
+      }
+    },
+    {
+      "evidence": {
+        "page_hash": "sha256:28a98ee471adfaf6157bb79d11918f14f2062c4aa905f18685b7619cb57a9018",
+        "state": "present"
+      },
+      "extensions": {
+        "llm-wiki/link-syntax": "markdown"
+      },
+      "from": "llm-wiki://modules/accounts",
+      "kind": "links_to",
+      "origin": "markdown",
+      "resolution": "external",
+      "target": {
+        "external_uri": "mailto:support@example.invalid",
+        "label": "support",
+        "location": {
+          "end": 248,
+          "start": 207
+        },
+        "normalized_target": "mailto:support@example.invalid",
+        "raw_target": "mailto:support@example.invalid",
+        "target_class": "mail"
+      }
+    },
+    {
+      "evidence": {
+        "page_hash": "sha256:28a98ee471adfaf6157bb79d11918f14f2062c4aa905f18685b7619cb57a9018",
+        "state": "present"
+      },
+      "extensions": {
+        "llm-wiki/link-syntax": "markdown"
+      },
+      "from": "llm-wiki://modules/accounts",
+      "kind": "links_to",
+      "origin": "markdown",
+      "resolution": "resolved",
+      "target": {
+        "canonical_path": "entities/User.md",
+        "label": "User",
+        "location": {
+          "end": 149,
+          "start": 122
+        },
+        "normalized_target": "../entities/User.md",
+        "raw_target": "../entities/User.md",
+        "target_class": "concept"
+      }
+    },
+    {
+      "evidence": {
+        "page_hash": "sha256:28a98ee471adfaf6157bb79d11918f14f2062c4aa905f18685b7619cb57a9018",
+        "state": "present"
+      },
+      "extensions": {
+        "llm-wiki/link-syntax": "markdown"
+      },
+      "from": "llm-wiki://modules/accounts",
+      "kind": "links_to",
+      "origin": "markdown",
+      "resolution": "resolved",
+      "target": {
+        "label": "diagram",
+        "location": {
+          "end": 312,
+          "start": 275
+        },
+        "normalized_target": "../assets/account-flow.svg",
+        "raw_target": "../assets/account-flow.svg",
+        "target_class": "asset"
+      }
+    },
+    {
+      "evidence": {
+        "page_hash": "sha256:28a98ee471adfaf6157bb79d11918f14f2062c4aa905f18685b7619cb57a9018",
+        "state": "present"
+      },
+      "extensions": {
+        "llm-wiki/link-syntax": "markdown"
+      },
+      "from": "llm-wiki://modules/accounts",
+      "kind": "links_to",
+      "origin": "markdown",
+      "resolution": "resolved",
+      "target": {
+        "label": "usage",
+        "location": {
+          "end": 269,
+          "start": 254
+        },
+        "normalized_target": "#usage",
+        "raw_target": "#usage",
+        "target_class": "anchor"
+      }
+    },
+    {
+      "evidence": {
+        "page_hash": "sha256:28a98ee471adfaf6157bb79d11918f14f2062c4aa905f18685b7619cb57a9018",
+        "state": "present"
+      },
+      "extensions": {
+        "llm-wiki/link-syntax": "markdown"
+      },
+      "from": "llm-wiki://modules/accounts",
+      "kind": "links_to",
+      "origin": "markdown",
+      "resolution": "unresolved",
+      "target": {
+        "label": "Missing",
+        "location": {
+          "end": 367,
+          "start": 334
+        },
+        "normalized_target": "..\\entities\\Missing.md",
+        "raw_target": "..\\entities\\Missing.md",
+        "target_class": "concept"
+      }
+    },
+    {
+      "evidence": {
+        "page_hash": "sha256:28a98ee471adfaf6157bb79d11918f14f2062c4aa905f18685b7619cb57a9018",
+        "state": "present"
+      },
+      "extensions": {
+        "llm-wiki/link-syntax": "markdown"
+      },
+      "from": "llm-wiki://modules/accounts",
+      "kind": "links_to",
+      "origin": "markdown",
+      "resolution": "unresolved",
+      "target": {
+        "label": "broken",
+        "location": {
+          "end": 328,
+          "start": 318
+        },
+        "normalized_target": "",
+        "raw_target": "",
+        "target_class": "malformed"
+      }
+    }
+  ],
+  "schema_version": "llm-wiki-knowledge/v1"
+}

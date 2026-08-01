@@ -2,8 +2,8 @@
 
 import ast
 import inspect
-import os
 import json
+import os
 import textwrap
 import types
 from pathlib import Path
@@ -11,18 +11,49 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli import cli
-from llm_wiki_cli.config import PathValidationError
-from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd, sync_cmd
+from llm_wiki_cli.commands import (
+    bootstrap_cmd,
+    init_cmd,
+    knowledge_cmd,
+    lint_cmd,
+    sync_cmd,
+)
+from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.commands.sync_cmd import (
     MANIFEST_FILENAME,
     SyncManifest,
     _compute_diff,
     _hash_file,
 )
-from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
-from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME, InventoryCacheStats
+from llm_wiki_cli.config import PathValidationError
+from llm_wiki_cli.services import knowledge_orchestration, plugins
+from llm_wiki_cli.services.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
 from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
-from llm_wiki_cli.services import plugins
+from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME, InventoryCacheStats
+from llm_wiki_cli.services.knowledge_governance import (
+    current_review_evidence,
+    evaluate_review_event,
+    load_governance,
+    review_scope_hash,
+)
+from llm_wiki_cli.services.knowledge_evidence import (
+    is_valid_sha256,
+    semantic_hash_for_file,
+)
+from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
+from llm_wiki_cli.services.sync_manifest import (
+    MANIFEST_FILENAME as SERVICE_MANIFEST_FILENAME,
+)
+from llm_wiki_cli.services.sync_manifest import (
+    PRODUCER_BASIS_INCOMPATIBLE,
+    TOMBSTONE_UNKNOWN_PROVENANCE,
+    ManifestEvidenceBaseline,
+)
+from llm_wiki_cli.services.sync_manifest import (
+    SyncManifest as ServiceSyncManifest,
+)
+from llm_wiki_cli.services.wiki_lifecycle import bootstrap_guidance
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -124,6 +155,58 @@ def _write_diagram_style_plugin(root: Path, *, body: str) -> None:
     plugins.install_plugin(str(plugin_dir), root=root, yes=True)
 
 
+def _write_toy_extractor_plugin(root: Path) -> None:
+    plugin_dir = root / "vendor" / "toy-extractor-plugin"
+    plugin_dir.mkdir(parents=True)
+    module_name = "toy_extractor_" + "_".join(root.parts[-3:])
+    module_name = "".join(
+        ch if ch.isalnum() or ch == "_" else "_" for ch in module_name
+    )
+    (plugin_dir / plugins.MANIFEST_FILENAME).write_text(
+        textwrap.dedent(f"""\
+        {{
+          "id": "toy-extractor",
+          "version": "0.1.0",
+          "llm_wiki_version": "*",
+          "components": [
+            {{
+              "type": "extractor",
+              "id": "toy",
+              "language": "javascript",
+              "entry_point": "{module_name}:ToyExtractor",
+              "parallel_safe": false
+            }}
+          ]
+        }}
+        """),
+        encoding="utf-8",
+    )
+    (plugin_dir / f"{module_name}.py").write_text(
+        textwrap.dedent("""\
+        from pathlib import Path
+
+
+        class ToyExtractor:
+            def extract(self, src_dir, only_files=None, deep=False):
+                files = sorted(Path(src_dir).glob("*.jscustom"))
+                if only_files is not None:
+                    selected = set(only_files)
+                    files = [path for path in files if path.name in selected]
+                return {
+                    path.name: {
+                        "language": "javascript",
+                        "classes": [],
+                        "functions": [{"name": path.stem, "line": 1}],
+                        "imports": [],
+                    }
+                    for path in files
+                }
+        """),
+        encoding="utf-8",
+    )
+    plugins.install_plugin(str(plugin_dir), root=root, yes=True)
+
+
 class TestSyncRunStructure:
     def test_run_stays_a_small_coordinator(self):
         assert _body_line_count(sync_cmd.run) <= 40
@@ -199,13 +282,173 @@ def _write_manifest_from_bootstrap(proj: Path, wiki_dir: Path) -> None:
 # ── Tests ─────────────────────────────────────────────────────────────────────
 
 
+def test_sync_manifest_command_import_is_a_compatibility_reexport():
+    assert SyncManifest is ServiceSyncManifest
+    assert MANIFEST_FILENAME == SERVICE_MANIFEST_FILENAME
+    assert sync_cmd.SyncManifest is ServiceSyncManifest
+    assert sync_cmd.MANIFEST_VERSION == 5
+
+
+def test_shared_evidence_preserves_manifest_v4_semantic_hash_bytes():
+    expected = "sha256:0162de6dd06ce9b209c525ce4b845a54c2463f32bc327739343ea2cf551e401c"
+
+    assert semantic_hash_for_file({"docstring": "café", "line": 1}) == expected
+    assert semantic_hash_for_file({"line": 99, "docstring": "café"}) == expected
+    assert is_valid_sha256(expected)
+    assert not is_valid_sha256(expected.upper())
+    assert not is_valid_sha256("sha256:abc")
+    assert not is_valid_sha256(None)
+
+
+def test_service_manifest_preserves_occurrence_map_fallback(tmp_path):
+    inventory = {
+        "pkg_a/models.py": {
+            "language": "python",
+            "classes": [{"name": "User"}, {"name": "User"}],
+        },
+        "pkg_b/models.py": {
+            "language": "python",
+            "classes": [{"name": "User"}],
+        },
+    }
+    module_page_map = bootstrap_cmd.build_module_page_map(inventory)
+    entity_page_map = bootstrap_cmd.build_entity_page_map(inventory)
+    expected = bootstrap_cmd.build_entity_occurrence_page_map(
+        inventory, module_page_map
+    )
+
+    manifest = ServiceSyncManifest.build_from_inventory(
+        inventory,
+        str(tmp_path),
+        entity_page_map,
+        module_page_map,
+    )
+
+    actual = {
+        (entry["name"], filepath, entry["occurrence"]): entry["page"]
+        for filepath, source in manifest.sources.items()
+        for entry in source["entity_page_occurrences"]
+    }
+    assert actual == expected
+
+    empty_module_map_manifest = ServiceSyncManifest.build_from_inventory(
+        inventory,
+        str(tmp_path),
+        entity_page_map,
+        {},
+    )
+    empty_module_map_actual = {
+        (entry["name"], filepath, entry["occurrence"]): entry["page"]
+        for filepath, source in empty_module_map_manifest.sources.items()
+        for entry in source["entity_page_occurrences"]
+    }
+    assert empty_module_map_actual == expected
+
+
+def test_service_manifest_load_preserves_missing_and_malformed_behavior(tmp_path):
+    wiki_dir = tmp_path / "wiki"
+
+    with pytest.raises(FileNotFoundError):
+        ServiceSyncManifest.load(wiki_dir)
+
+    wiki_dir.mkdir()
+    manifest_path = wiki_dir / SERVICE_MANIFEST_FILENAME
+    manifest_path.write_text("{", encoding="utf-8")
+    with pytest.raises(json.JSONDecodeError):
+        ServiceSyncManifest.load(wiki_dir)
+
+    manifest_path.write_bytes(b"\xff")
+    with pytest.raises(UnicodeDecodeError):
+        ServiceSyncManifest.load(wiki_dir)
+
+
+def test_service_manifest_load_keeps_legacy_optional_mapping_defaults(tmp_path):
+    wiki_dir = tmp_path / "wiki"
+    wiki_dir.mkdir()
+    (wiki_dir / SERVICE_MANIFEST_FILENAME).write_text(
+        json.dumps(
+            {
+                "version": 3,
+                "sources": {},
+                "surfaces": [],
+                "generation_inputs": None,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    manifest = ServiceSyncManifest.load(wiki_dir)
+
+    assert manifest.sources == {}
+    assert manifest.surfaces == {}
+    assert manifest.generation_inputs == {}
+
+
 class TestNoManifest:
     """sync exits 1 with a clear message when no manifest exists."""
 
-    def test_exits_one_and_prints_error(self, tmp_path, capsys):
+    def test_init_only_scaffold_routes_to_bootstrap_without_seeding(
+        self, tmp_path, capsys, monkeypatch
+    ):
+        """An actual ``init`` scaffold is not a manifestless legacy wiki."""
+        project = tmp_path / "project"
+        project.mkdir()
+        (project / ".git").mkdir()
+        monkeypatch.chdir(project)
+
+        wiki_dir = Path("docs/llm_wiki")
+        init_cmd.run(
+            types.SimpleNamespace(
+                agent="generic",
+                wiki_dir=str(wiki_dir),
+                no_skills=True,
+            )
+        )
+        (project / "app.py").write_text(
+            "class Example:\n    def run(self) -> str:\n        return 'ok'\n",
+            encoding="utf-8",
+        )
+        before = {
+            path.relative_to(wiki_dir).as_posix(): path.read_bytes()
+            for path in sorted(wiki_dir.rglob("*"))
+            if path.is_file()
+        }
+        monkeypatch.setattr(
+            sync_cmd,
+            "_extract_current_inventory",
+            lambda *_args, **_kwargs: pytest.fail(
+                "init-only routing must happen before extraction or seeding"
+            ),
+        )
+
+        with pytest.raises(SystemExit) as exc_info:
+            sync_cmd.run(_make_sync_args(src_dir=".", wiki_dir=str(wiki_dir)))
+
+        assert exc_info.value.code == 1
+        assert not (wiki_dir / MANIFEST_FILENAME).exists()
+        after = {
+            path.relative_to(wiki_dir).as_posix(): path.read_bytes()
+            for path in sorted(wiki_dir.rglob("*"))
+            if path.is_file()
+        }
+        assert after == before
+        captured = capsys.readouterr()
+        assert bootstrap_guidance(src_dir=".", wiki_dir=wiki_dir) in captured.err
+        assert "seeding" not in captured.err.lower()
+
+    def test_exits_one_and_prints_exact_bootstrap_before_extraction(
+        self, tmp_path, capsys, monkeypatch
+    ):
         wiki_dir = tmp_path / "docs" / "llm_wiki"
         wiki_dir.mkdir(parents=True)
         args = _make_sync_args(src_dir=str(tmp_path), wiki_dir=str(wiki_dir))
+        monkeypatch.setattr(
+            sync_cmd,
+            "_extract_current_inventory",
+            lambda *_args, **_kwargs: pytest.fail(
+                "first-use routing must happen before extraction"
+            ),
+        )
 
         old_cwd = os.getcwd()
         os.chdir(tmp_path)  # validate_path checks relative to cwd
@@ -217,11 +460,72 @@ class TestNoManifest:
 
         assert exc_info.value.code == 1
         captured = capsys.readouterr()
-        assert "bootstrap" in captured.err.lower()
+        assert (
+            f"`llm-wiki bootstrap --src-dir {tmp_path} "
+            f"--wiki-dir {wiki_dir}`"
+        ) in captured.err
+        assert "llm-wiki sync --jobs 1" not in captured.err
+        assert "llm-wiki migrate --dry-run" not in captured.err
         assert MANIFEST_FILENAME in captured.err
+
+    def test_partial_manifestless_wiki_routes_to_migration_before_extraction(
+        self, tmp_path, capsys, monkeypatch
+    ):
+        wiki_dir = tmp_path / "docs" / "llm_wiki"
+        page = wiki_dir / "modules" / "custom.md"
+        page.parent.mkdir(parents=True)
+        page.write_text("# Custom\n\nHuman-authored content.\n", encoding="utf-8")
+        before = page.read_bytes()
+        args = _make_sync_args(src_dir=str(tmp_path), wiki_dir=str(wiki_dir))
+        monkeypatch.setattr(
+            sync_cmd,
+            "_extract_current_inventory",
+            lambda *_args, **_kwargs: pytest.fail(
+                "partial-wiki routing must happen before extraction"
+            ),
+        )
+
+        old_cwd = os.getcwd()
+        os.chdir(tmp_path)
+        try:
+            with pytest.raises(SystemExit) as exc_info:
+                sync_cmd.run(args)
+        finally:
+            os.chdir(old_cwd)
+
+        assert exc_info.value.code == 1
+        assert page.read_bytes() == before
+        captured = capsys.readouterr()
+        assert "llm-wiki migrate --dry-run" in captured.err
+        assert "--src-dir" in captured.err
+        assert "--wiki-dir" in captured.err
+        assert "bootstrap" not in captured.err.lower()
 
 
 class TestSyncSurfaceIndex:
+    def test_noop_sync_preserves_canonical_markdown_with_knowledge_sidecars(
+        self, bootstrapped_project, capsys
+    ):
+        proj, wiki_dir = bootstrapped_project
+        before = {
+            path.relative_to(wiki_dir).as_posix(): path.read_bytes()
+            for path in sorted(wiki_dir.rglob("*.md"))
+        }
+        capsys.readouterr()
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
+        after = {
+            path.relative_to(wiki_dir).as_posix(): path.read_bytes()
+            for path in sorted(wiki_dir.rglob("*.md"))
+        }
+        assert after == before
+        assert (wiki_dir / ".llm-wiki-knowledge.json").is_file()
+        surface = json.loads(
+            (wiki_dir / SURFACE_INDEX_FILENAME).read_text(encoding="utf-8")
+        )
+        assert surface["schema_version"] == "llm-wiki-surface-index/v1"
+
     def test_sync_regenerates_missing_surface_index_without_source_changes(
         self, bootstrapped_project, capsys
     ):
@@ -266,6 +570,7 @@ class TestSyncSurfaceIndex:
         index = (wiki_dir / "index.md").read_text(encoding="utf-8")
         assert "| Guides | 1 | [Open section](#guides) |" in index
         assert "[Operator onboarding](guides/operator-onboarding.md)" in index
+        assert load_knowledge_state(wiki_dir).status is KnowledgeLoadState.VALID
 
     def test_sync_leaves_agent_owned_assets_untouched(
         self, bootstrapped_project, capsys
@@ -287,6 +592,48 @@ class TestSyncSurfaceIndex:
 
 class TestSeedManifest:
     """When no manifest exists but a wiki does, sync seeds a baseline manifest."""
+
+    @pytest.mark.parametrize(
+        "retained_page",
+        ("modules/Retired.md", "entities/Retired.md"),
+    )
+    def test_deleted_manifest_reseed_records_unmapped_retained_page_tombstone(
+        self,
+        bootstrapped_project,
+        retained_page,
+        monkeypatch,
+        capsys,
+    ):
+        proj, wiki_dir = bootstrapped_project
+        retained_path = wiki_dir / retained_page
+        retained_path.write_text(
+            "# Retired\n\nHuman-maintained history.\n",
+            encoding="utf-8",
+        )
+        before = retained_path.read_bytes()
+        (wiki_dir / MANIFEST_FILENAME).unlink()
+        capsys.readouterr()
+        monkeypatch.setattr(
+            sync_cmd,
+            "write_md",
+            lambda *args, **kwargs: pytest.fail(
+                "manifest reseed must not rewrite retained wiki pages"
+            ),
+        )
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
+        assert retained_path.read_bytes() == before
+        seeded = SyncManifest.load(wiki_dir)
+        assert retained_page not in seeded.page_source_mappings
+        assert retained_page not in seeded.evidence_baselines
+        assert seeded.tombstones[retained_page].to_payload() == {
+            "reason": "unknown-provenance",
+            "unknown_reason": "manifest-state-unavailable",
+        }
+        output = capsys.readouterr().out.lower()
+        assert "seeding" in output
+        assert "unknown provenance: 1" in output
 
     def test_seeds_manifest_when_wiki_exists(self, tmp_path, capsys):
         """sync creates a manifest without modifying any wiki pages."""
@@ -406,10 +753,19 @@ class TestSeedManifest:
         finally:
             os.chdir(old_cwd)
 
-    def test_does_not_seed_empty_manifest(self, tmp_path, monkeypatch, capsys):
+    def test_empty_inventory_reseed_records_retained_pages_as_unknown(
+        self, tmp_path, monkeypatch, capsys
+    ):
         wiki_dir = tmp_path / "docs" / "llm_wiki"
-        wiki_dir.mkdir(parents=True)
+        (wiki_dir / "modules").mkdir(parents=True)
+        (wiki_dir / "entities").mkdir()
         (wiki_dir / "index.md").write_text("# Index\n", encoding="utf-8")
+        (wiki_dir / "modules" / "Retired.md").write_text(
+            "# Retired module\n", encoding="utf-8"
+        )
+        (wiki_dir / "entities" / "Former.md").write_text(
+            "# Former entity\n", encoding="utf-8"
+        )
         monkeypatch.setattr(
             sync_cmd,
             "get_inventory_result",
@@ -426,8 +782,24 @@ class TestSeedManifest:
         finally:
             os.chdir(old_cwd)
 
-        assert not (wiki_dir / MANIFEST_FILENAME).exists()
-        assert "manifest not written" in capsys.readouterr().out.lower()
+        seeded = SyncManifest.load(wiki_dir)
+        assert seeded.sources == {}
+        assert set(seeded.tombstones) == {
+            "modules/Retired.md",
+            "entities/Former.md",
+        }
+        assert all(
+            tombstone.to_payload()
+            == {
+                "reason": "unknown-provenance",
+                "unknown_reason": "manifest-state-unavailable",
+            }
+            for tombstone in seeded.tombstones.values()
+        )
+        assert load_knowledge_state(wiki_dir).status is KnowledgeLoadState.VALID
+        output = capsys.readouterr().out.lower()
+        assert "manifest written" in output
+        assert "unknown provenance: 2" in output
 
 
 class TestManifestLanguage:
@@ -537,7 +909,7 @@ class TestSyncInventoryRuntime:
 
         def fake_snapshot(src_dir, **kwargs):
             seen["snapshot_include_tests"] = kwargs.get("include_tests")
-            return real_build_source_snapshot(src_dir)
+            return real_build_source_snapshot(src_dir, **kwargs)
 
         def fake_inventory(src_dir, *args, **kwargs):
             seen["inventory_include_tests"] = kwargs["include_tests"]
@@ -912,7 +1284,7 @@ class TestSyncInventoryRuntime:
         assert (cache_dir / CACHE_FILENAME).exists()
         assert not (proj / ".git" / CACHE_FILENAME).exists()
 
-    def test_cache_stats_prints_for_seed_manifest_not_written(
+    def test_cache_stats_prints_for_empty_inventory_manifest_seed(
         self, tmp_path, monkeypatch, capsys
     ):
         wiki_dir = tmp_path / "docs" / "llm_wiki"
@@ -942,7 +1314,7 @@ class TestSyncInventoryRuntime:
             os.chdir(old_cwd)
 
         out = capsys.readouterr().out
-        assert "manifest not written" in out.lower()
+        assert "manifest written" in out.lower()
         assert "Cache:" in out
         assert "status: miss" in out
 
@@ -1047,6 +1419,176 @@ class TestSyncSafetyGuards:
             info["hash"].startswith("sha256:") for info in repaired.sources.values()
         )
 
+    def test_manifest_repair_preserves_unknown_generation_state_and_clears_commit(
+        self,
+        bootstrapped_project,
+        monkeypatch,
+        capsys,
+    ):
+        proj, wiki_dir = bootstrapped_project
+        manifest = SyncManifest.load(wiki_dir)
+        unknown_reason = "evidence-intentionally-unavailable"
+        baseline_paths = set(manifest.evidence_baselines)
+        manifest.evidence_baselines = {
+            page_path: ManifestEvidenceBaseline.unknown(unknown_reason)
+            for page_path in baseline_paths
+        }
+        surfaces = {
+            "flows": {
+                "enabled": True,
+                "categories": ["startup", "background"],
+                "exclude_tests": True,
+            },
+            "future_surface": {
+                "enabled": False,
+                "settings": {"order": [2, 1]},
+            },
+        }
+        generation_inputs = {
+            "fixture": {
+                "path": "inputs/fixture.json",
+                "flags": ["alpha", "beta"],
+            }
+        }
+        manifest = manifest.with_generation_state(
+            surfaces=surfaces,
+            generation_inputs=generation_inputs,
+        ).with_artifact_hashes(
+            surface_index_hash="sha256:" + "1" * 64,
+            knowledge_index_hash="sha256:" + "2" * 64,
+            evaluated_envelope_hash="sha256:" + "3" * 64,
+        )
+        manifest.save(wiki_dir)
+        assert SyncManifest.load(wiki_dir).artifact_hashes is not None
+
+        (proj / "models.py").write_text(
+            "class User:\n    changed: str = ''\n",
+            encoding="utf-8",
+        )
+        self._poison_manifest_hashes(wiki_dir)
+        monkeypatch.setattr(
+            sync_cmd,
+            "write_md",
+            lambda *args, **kwargs: pytest.fail(
+                "manifest repair must not rewrite wiki pages"
+            ),
+        )
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
+        assert "manifest repaired" in capsys.readouterr().out.lower()
+        repaired = SyncManifest.load(wiki_dir)
+        assert repaired.surfaces == surfaces
+        assert repaired.generation_inputs == generation_inputs
+        assert repaired.artifact_hashes is not None
+        assert "artifact_hashes" in repaired.to_payload()
+        assert set(repaired.evidence_baselines) == baseline_paths
+        assert all(
+            not baseline.is_known
+            and baseline.basis is None
+            and baseline.unknown_reason == unknown_reason
+            for baseline in repaired.evidence_baselines.values()
+        )
+
+    def test_dry_run_rejects_external_symlink_without_touching_target(
+        self,
+        bootstrapped_project,
+        capsys,
+    ):
+        proj, wiki_dir = bootstrapped_project
+        external_modules = proj.parent / "external-modules"
+        modules_dir = wiki_dir / "modules"
+        modules_dir.rename(external_modules)
+        try:
+            modules_dir.symlink_to(external_modules, target_is_directory=True)
+        except OSError as exc:
+            pytest.skip(f"directory symlinks are unavailable: {exc}")
+        before = {
+            path.relative_to(external_modules).as_posix(): path.read_bytes()
+            for path in external_modules.rglob("*")
+            if path.is_file()
+        }
+        (proj / "models.py").write_text(
+            "class User:\n    changed: str = ''\n",
+            encoding="utf-8",
+        )
+        capsys.readouterr()
+
+        with pytest.raises(SystemExit) as exc_info:
+            sync_cmd.run(
+                _make_sync_args(
+                    src_dir=str(proj),
+                    wiki_dir=str(wiki_dir),
+                    dry_run=True,
+                )
+            )
+
+        assert exc_info.value.code == 2
+        assert {
+            path.relative_to(external_modules).as_posix(): path.read_bytes()
+            for path in external_modules.rglob("*")
+            if path.is_file()
+        } == before
+        captured = capsys.readouterr()
+        assert "cannot safely stage" in captured.err
+        assert "modules" in captured.err
+
+    def test_large_manifest_diff_dry_run_reports_force_requirement(
+        self,
+        tmp_path,
+        monkeypatch,
+        capsys,
+    ):
+        wiki_dir = tmp_path / "docs" / "llm_wiki"
+        wiki_dir.mkdir(parents=True)
+        inventory = {}
+        sources = {}
+        for index in range(10):
+            path = f"f{index}.py"
+            source_path = tmp_path / path
+            source_path.write_text(
+                f"class C{index}: pass\n",
+                encoding="utf-8",
+            )
+            sources[path] = {
+                "hash": (
+                    "sha256:" + "0" * 64 if index < 4 else _hash_file(source_path)
+                ),
+                "language": "python",
+                "entities": [f"C{index}"],
+                "module_page": f"f{index}",
+            }
+            inventory[path] = {
+                "language": "python",
+                "classes": [{"name": f"C{index}", "line": 1, "bases": []}],
+                "functions": [],
+            }
+        SyncManifest(sources=sources).save(wiki_dir)
+        monkeypatch.setattr(
+            sync_cmd,
+            "get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                inventory,
+                {"python": ExtractorStatus("python", "ok", 10)},
+            ),
+        )
+
+        old_cwd = os.getcwd()
+        os.chdir(tmp_path)
+        try:
+            sync_cmd.run(
+                _make_sync_args(
+                    src_dir=str(tmp_path),
+                    wiki_dir=str(wiki_dir),
+                    dry_run=True,
+                )
+            )
+        finally:
+            os.chdir(old_cwd)
+
+        output = capsys.readouterr().out
+        assert "requires --force: yes" in output
+
     def test_large_diff_count_guard_aborts_before_page_writes(
         self, tmp_path, monkeypatch, capsys
     ):
@@ -1066,6 +1608,8 @@ class TestSyncSafetyGuards:
             path: {"language": "python", "classes": [], "functions": []}
             for path in sources
         }
+        for path in sources:
+            (tmp_path / path).write_text("# changed\n", encoding="utf-8")
         monkeypatch.setattr(
             sync_cmd,
             "get_inventory_result",
@@ -1165,6 +1709,8 @@ class TestSyncSafetyGuards:
             path: {"language": "python", "classes": [], "functions": []}
             for path in sources
         }
+        for path in sources:
+            (tmp_path / path).write_text("# changed\n", encoding="utf-8")
         SyncManifest(sources=sources).save(wiki_dir)
         monkeypatch.setattr(
             sync_cmd,
@@ -1182,6 +1728,13 @@ class TestSyncSafetyGuards:
         monkeypatch.setattr(sync_cmd, "_apply_diff", fake_apply)
         monkeypatch.setattr(sync_cmd, "_rebuild_index", lambda *args, **kwargs: None)
         monkeypatch.setattr(sync_cmd, "_append_log", lambda *args, **kwargs: None)
+        monkeypatch.setattr(
+            sync_cmd,
+            "_finalize_prepared_sync",
+            lambda _options, prepared, result, **kwargs: sync_cmd._print_sync_summary(
+                result, prepared.diff
+            ),
+        )
 
         old_cwd = os.getcwd()
         os.chdir(tmp_path)
@@ -1557,7 +2110,9 @@ class TestSemanticPreservation:
             r"| Name | `str \| None` | Human \| description |"
         ) == ["Name", r"`str \| None`", r"Human \| description"]
 
-    def test_generated_field_description_updates_unedited_text_and_preserves_edits(self):
+    def test_generated_field_description_updates_unedited_text_and_preserves_edits(
+        self,
+    ):
         old_generated = textwrap.dedent("""\
             # Request
 
@@ -1874,6 +2429,7 @@ class TestMovedClass:
         # The entity page should be updated (now points at users.py)
         entity_content = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
         assert "users.py" in entity_content
+        assert not entity_content.startswith("> ⚠️ **Stale:**")
 
         # Moved entities should be mentioned in summary
         assert "User" in captured.out
@@ -1894,6 +2450,38 @@ class TestMovedClass:
 
 class TestDeletedClass:
     """When a source file is removed, existing pages get a deprecation warning."""
+
+    def test_removed_source_retains_known_basis_in_source_missing_tombstones(
+        self,
+        bootstrapped_project,
+    ):
+        proj, _legacy_wiki_dir = bootstrapped_project
+        wiki_dir = proj / "docs" / "known-basis-wiki"
+        bootstrap_cmd.run(
+            _make_bootstrap_args(
+                src_dir=str(proj),
+                wiki_dir=str(wiki_dir),
+            )
+        )
+        manifest = SyncManifest.load(wiki_dir)
+        expected_bases = {
+            page_path: manifest.evidence_baselines[page_path].basis
+            for page_path in ("modules/models.md", "entities/User.md")
+        }
+        assert all(
+            basis is not None and basis.is_known for basis in expected_bases.values()
+        )
+        (proj / "models.py").unlink()
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
+        reconciled = SyncManifest.load(wiki_dir)
+        for page_path, expected_basis in expected_bases.items():
+            assert page_path not in reconciled.evidence_baselines
+            tombstone = reconciled.tombstones[page_path]
+            assert tombstone.reason == "source-missing"
+            assert tombstone.last_valid_basis == expected_basis
+            assert tombstone.unknown_reason is None
 
     def test_deprecation_header_added_to_entity(self, bootstrapped_project, capsys):
         proj, wiki_dir = bootstrapped_project
@@ -2369,6 +2957,16 @@ class TestSyncFlowRegeneration:
         assert "```mermaid\nflowchart RL" in original
         assert "    class s1 entry" in original
         assert "# injected" not in original
+        bootstrap_knowledge = load_knowledge_state(wiki).knowledge
+        assert bootstrap_knowledge is not None
+        assert [
+            component.component_id
+            for component in bootstrap_knowledge.bundle.producer.plugins
+        ] == ["diagram-style-plugin"]
+        assert bootstrap_knowledge.bundle.producer.plugins[0].version == "0.1.0"
+        assert str(proj) not in (wiki / ".llm-wiki-knowledge.json").read_text(
+            encoding="utf-8"
+        )
 
         self._write_svc_with_arg(proj, "beta")
         sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
@@ -2379,6 +2977,153 @@ class TestSyncFlowRegeneration:
         assert "    class s1 entry" in updated
         assert "    classDef worker fill:#123456,stroke:#123456" in updated
         assert "# injected" not in updated
+        sync_knowledge = load_knowledge_state(wiki).knowledge
+        assert sync_knowledge is not None
+        assert sync_knowledge.bundle.producer == (bootstrap_knowledge.bundle.producer)
+
+    def test_plugin_lock_change_updates_producer_basis_without_source_change(
+        self,
+        tmp_path,
+        monkeypatch,
+        capsys,
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        _write_diagram_style_plugin(
+            proj,
+            body="""
+            def style(context):
+                return {"direction": "RL"}
+            """,
+        )
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        before = load_knowledge_state(wiki).knowledge
+        assert before is not None
+        lock = plugins.lock_path(proj)
+        lock_payload = json.loads(lock.read_text(encoding="utf-8"))
+        lock_payload["plugins"]["diagram-style-plugin"]["version"] = "0.2.0"
+        lock.write_text(
+            json.dumps(lock_payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        capsys.readouterr()
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        after = load_knowledge_state(wiki).knowledge
+        assert after is not None
+        assert after.bundle.producer.plugins[0].version == "0.2.0"
+        assert after.bundle.producer != before.bundle.producer
+        assert after.bundle.snapshot.source_snapshot_hash != (
+            before.bundle.snapshot.source_snapshot_hash
+        )
+        assert after.bundle.snapshot.generation_options_hash == (
+            before.bundle.snapshot.generation_options_hash
+        )
+
+    def test_removed_source_does_not_bind_tombstone_to_upgraded_same_id_extractor(
+        self,
+        tmp_path,
+        monkeypatch,
+        capsys,
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        (proj / "alpha.jscustom").write_text("function alpha() { return 1; }\n")
+        (proj / "beta.jscustom").write_text("function beta() { return 2; }\n")
+        _write_toy_extractor_plugin(proj)
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        before = load_knowledge_state(wiki)
+        assert before.status is KnowledgeLoadState.VALID
+        assert before.manifest_basis is not None
+        assert before.knowledge is not None
+        prior_extractor = {
+            component.component_id: component
+            for component in before.knowledge.bundle.producer.extractors
+        }["toy-extractor/toy"]
+        prior = before.manifest_basis.evidence_baselines["modules/alpha.md"]
+        assert prior.is_known
+        assert prior.basis is not None
+        assert prior.basis.extractor_ref == "toy-extractor/toy"
+
+        (proj / "alpha.jscustom").unlink()
+        lock = plugins.lock_path(proj)
+        lock_payload = json.loads(lock.read_text(encoding="utf-8"))
+        plugin = lock_payload["plugins"]["toy-extractor"]
+        plugin["version"] = "0.2.0"
+        plugin["components"][0]["parallel_safe"] = True
+        lock.write_text(
+            json.dumps(lock_payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        capsys.readouterr()
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        after = load_knowledge_state(wiki)
+        assert after.status is KnowledgeLoadState.VALID
+        assert after.manifest_basis is not None
+        assert after.knowledge is not None
+        tombstone = after.manifest_basis.tombstones["modules/alpha.md"]
+        assert tombstone.reason == TOMBSTONE_UNKNOWN_PROVENANCE
+        assert tombstone.last_valid_basis is None
+        assert tombstone.unknown_reason == PRODUCER_BASIS_INCOMPATIBLE
+        alpha = next(
+            concept
+            for concept in after.knowledge.concepts
+            if concept.document.canonical_path == "modules/alpha.md"
+        )
+        assert alpha.facets.structure.basis is None
+        current = {
+            component.component_id: component
+            for component in after.knowledge.bundle.producer.extractors
+        }["toy-extractor/toy"]
+        assert current.version == "0.2.0"
+        assert current.configuration_hash != prior_extractor.configuration_hash
+
+    def test_removed_source_does_not_bind_tombstone_to_upgraded_tool(
+        self,
+        tmp_path,
+        monkeypatch,
+        capsys,
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        (proj / "alpha.jscustom").write_text("function alpha() { return 1; }\n")
+        (proj / "beta.jscustom").write_text("function beta() { return 2; }\n")
+        _write_toy_extractor_plugin(proj)
+        monkeypatch.chdir(proj)
+        monkeypatch.setattr(knowledge_orchestration, "__version__", "1.0.0")
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        before = load_knowledge_state(wiki)
+        assert before.status is KnowledgeLoadState.VALID
+        assert before.knowledge is not None
+        prior_producer = before.knowledge.bundle.producer
+        assert prior_producer.tool.version == "1.0.0"
+
+        (proj / "alpha.jscustom").unlink()
+        monkeypatch.setattr(knowledge_orchestration, "__version__", "2.0.0")
+        capsys.readouterr()
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        after = load_knowledge_state(wiki)
+        assert after.status is KnowledgeLoadState.VALID
+        assert after.manifest_basis is not None
+        assert after.knowledge is not None
+        current_producer = after.knowledge.bundle.producer
+        assert current_producer.tool.version == "2.0.0"
+        prior_toy = {
+            component.component_id: component for component in prior_producer.extractors
+        }["toy-extractor/toy"]
+        current_toy = {
+            component.component_id: component
+            for component in current_producer.extractors
+        }["toy-extractor/toy"]
+        assert current_toy == prior_toy
+        tombstone = after.manifest_basis.tombstones["modules/alpha.md"]
+        assert tombstone.reason == TOMBSTONE_UNKNOWN_PROVENANCE
+        assert tombstone.last_valid_basis is None
+        assert tombstone.unknown_reason == PRODUCER_BASIS_INCOMPATIBLE
 
     def test_sync_uses_source_root_plugin_style_when_cwd_differs(
         self, tmp_path, monkeypatch, capsys
@@ -2411,6 +3156,12 @@ class TestSyncFlowRegeneration:
         flow_page = wiki / "flows" / "api-run.md"
         original = flow_page.read_text(encoding="utf-8")
         assert "```mermaid\nflowchart RL" in original
+        source_root_knowledge = load_knowledge_state(wiki).knowledge
+        assert source_root_knowledge is not None
+        assert [
+            component.component_id
+            for component in source_root_knowledge.bundle.producer.plugins
+        ] == ["diagram-style-plugin"]
 
         self._write_svc_with_arg(proj, "beta")
         sync_cmd.run(_make_sync_args(src_dir="proj", wiki_dir="proj/docs/llm_wiki"))
@@ -2440,6 +3191,90 @@ class TestSyncFlowRegeneration:
 
         assert calls == 1
         assert "helper_b" in (wiki / "flows" / "api-run.md").read_text(encoding="utf-8")
+
+    def test_runtime_plan_receives_reused_graph_analyzer_observations(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        capsys.readouterr()
+        (proj / "pyproject.toml").write_text(
+            '[project]\nname = "p"\nversion = "0.1.0"\n'
+            'dependencies = ["requests"]\n',
+            encoding="utf-8",
+        )
+        constants = "\n".join(f"CONFIG_{index} = {index}" for index in range(20))
+        reads = ", ".join(f"CONFIG_{index}" for index in range(20))
+        (proj / "svc.py").write_text(
+            "import requests\n\n"
+            f"{constants}\n\n"
+            '__all__ = ["run"]\n\n'
+            "def run():\n"
+            f"    values = ({reads})\n"
+            '    requests.get("https://example.invalid")\n'
+            "    return helper_b()\n\n"
+            "def helper_b():\n"
+            "    return 2\n",
+            encoding="utf-8",
+        )
+        captured = []
+        detailed_results = []
+        real_build_plan = knowledge_orchestration.build_runtime_knowledge_plan
+        real_analyze = sync_cmd.analyze_data_flow_detailed
+
+        def capture_plan(inputs):
+            captured.append(inputs)
+            return real_build_plan(inputs)
+
+        def capture_data_flow(*args, **kwargs):
+            result = real_analyze(*args, **kwargs)
+            detailed_results.append(result)
+            return result
+
+        monkeypatch.setattr(
+            knowledge_orchestration,
+            "build_runtime_knowledge_plan",
+            capture_plan,
+        )
+        monkeypatch.setattr(
+            sync_cmd,
+            "analyze_data_flow_detailed",
+            capture_data_flow,
+        )
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        assert len(captured) == 1
+        runtime = captured[0]
+        assert runtime.call_edges["schema_version"] == "llm-wiki-call-observations/v1"
+        assert runtime.call_edges["observations"]
+        assert any(
+            observation["module"] == "requests"
+            for observation in runtime.dependency_observations["observations"]
+        )
+        assert next(
+            observation
+            for observation in runtime.dependency_observations["observations"]
+            if observation["module"] == "requests"
+        )["line"] == 1
+        assert runtime.entrypoint_observations["observations"][0]["detector"][
+            "id"
+        ].startswith("builtin.")
+        assert runtime.flows[0]["entry"]["id"] == "api-run"
+        assert runtime.flows[0]["schema_version"] == "llm-wiki-flow-observations/v1"
+        assert runtime.data_flows[0] is detailed_results[0]
+        assert runtime.data_flows[0]["coverage"]["steps"]["observed"] >= 1
+        reads_coverage = runtime.data_flows[0]["coverage"]["effects"]["by_kind"][
+            "reads"
+        ]
+        assert reads_coverage["observed"] == 20
+        assert reads_coverage["emitted"] == 8
+        assert reads_coverage["omitted"] == 12
+        assert any(
+            dependency["package"] == "requests" and dependency["explicit"]
+            for dependency in runtime.external_dependencies
+        )
 
     def test_regenerates_plugin_detector_flow_and_surface_index(
         self, tmp_path, monkeypatch, capsys
@@ -2716,6 +3551,146 @@ class TestSyncGeneratedRelationshipSections:
         assert "service.py" not in relationships
         assert "No generated relationships detected" in relationships
         assert "UPDATE entity relationships: User" in out
+
+    def test_generated_relationship_churn_preserves_matching_human_review(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path)
+        self._write_relationship_project(
+            proj,
+            textwrap.dedent("""\
+                from models import User
+
+                def make_user(user: User) -> User:
+                    return user
+            """),
+        )
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(
+            _make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki))
+        )
+
+        entity_path = wiki / "entities" / "User.md"
+        original = entity_path.read_text(encoding="utf-8")
+        entity_path.write_text(
+            sync_cmd._replace_section_body(
+                original,
+                "Description",
+                "Human-reviewed user entity.",
+            ),
+            encoding="utf-8",
+        )
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        init_args = cli._build_parser().parse_args(
+            [
+                "knowledge",
+                "init",
+                "--wiki-dir",
+                str(wiki),
+                "--bundle-id",
+                "kb_sync_review_churn",
+            ]
+        )
+        knowledge_cmd.run(init_args)
+        state_before = load_knowledge_state(wiki)
+        assert state_before.knowledge is not None
+        knowledge_before = state_before.knowledge
+        pages = knowledge_before.extensions[
+            SECTION_OWNERSHIP_EXTENSION_KEY
+        ]["pages"]
+        user_sections = next(
+            page["sections"]
+            for page in pages
+            if page["page_locator"] == "llm-wiki://entities/User"
+        )
+        description = next(
+            section
+            for section in user_sections
+            if section["title"] == "Description"
+        )
+        ledger_before = load_governance(wiki).ledger
+        uid = next(
+            uid
+            for uid, allocation in ledger_before.concepts.items()
+            if allocation.locator == "llm-wiki://entities/User"
+        )
+        concept_before = next(
+            concept
+            for concept in knowledge_before.concepts
+            if concept.locator == "llm-wiki://entities/User"
+        )
+        scope_hash_before = review_scope_hash(
+            knowledge_before,
+            description["locator"],
+        )
+        evidence_before = current_review_evidence(concept_before)
+        assert evidence_before is not None
+
+        review_args = cli._build_parser().parse_args(
+            [
+                "knowledge",
+                "review",
+                "--wiki-dir",
+                str(wiki),
+                "--uid",
+                uid,
+                "--section",
+                description["locator"],
+                "--reviewer-kind",
+                "human",
+                "--reviewer-id",
+                "alice",
+                "--method",
+                "manual-review",
+                "--method-version",
+                "1",
+                "--authored-at",
+                "2026-07-27T12:00:00Z",
+            ]
+        )
+        knowledge_cmd.run(review_args)
+        reviewed = load_governance(wiki).ledger
+        event = next(iter(reviewed.review_events.values()))
+        before_relationships = entity_path.read_text(encoding="utf-8").split(
+            "## Relationships",
+            1,
+        )[1]
+        assert "service.py" in before_relationships
+
+        (proj / "service.py").write_text(
+            "def make_value() -> int:\n    return 1\n",
+            encoding="utf-8",
+        )
+        capsys.readouterr()
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        state_after = load_knowledge_state(wiki)
+        assert state_after.knowledge is not None
+        knowledge_after = state_after.knowledge
+        concept_after = next(
+            concept
+            for concept in knowledge_after.concepts
+            if concept.locator == "llm-wiki://entities/User"
+        )
+        after_relationships = entity_path.read_text(encoding="utf-8").split(
+            "## Relationships",
+            1,
+        )[1]
+        assert before_relationships != after_relationships
+        assert "No generated relationships detected" in after_relationships
+        assert review_scope_hash(
+            knowledge_after,
+            description["locator"],
+        ) == scope_hash_before
+        assert current_review_evidence(concept_after) == evidence_before
+        current_ledger = load_governance(wiki).ledger
+        assert current_ledger.review_events[event.event_id] == event
+        assert evaluate_review_event(
+            event,
+            current_ledger,
+            knowledge_after,
+        ).reasons == ()
 
     def test_changed_import_graph_updates_unchanged_module_local_maps(
         self, tmp_path, monkeypatch, capsys

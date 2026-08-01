@@ -1,2 +1,5 @@
-recursive-include examples/plugins/m4-documentation-hooks *.py *.json
+recursive-include examples/plugins/documentation-hooks *.py *.json
+include release_build_backend.py
+include src/llm_wiki_cli/schemas/llm-wiki-knowledge-v1.schema.json
+include src/llm_wiki_cli/extractors/ts_scripts/package-lock.json
 include docs/standalone-documentation.md

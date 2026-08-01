@@ -24,6 +24,10 @@ from ..services.skills import (
     install_reference_skill,
     list_bundled_skills,
 )
+from ..services.wiki_scaffold import (
+    INITIAL_WIKI_INDEX_MARKDOWN,
+    INITIAL_WIKI_LOG_MARKDOWN,
+)
 from ..services.wiki_surface import iter_directory_kinds
 
 
@@ -72,14 +76,11 @@ def run(args):
     # 2. Create core files if they don't exist
     index_path = base_dir / "index.md"
     if not index_path.exists():
-        write_md(
-            index_path,
-            "# LLM Wiki Index\n\nCatalog of project modules and entities.\n\n## Entities\n\n## Modules\n\n## Workflows\n\n## Guides\n\n## Infrastructure\n",
-        )
+        write_md(index_path, INITIAL_WIKI_INDEX_MARKDOWN)
 
     log_path = base_dir / "log.md"
     if not log_path.exists():
-        write_md(log_path, "# Architectural Log\n\nAppend-only chronological log.\n\n")
+        write_md(log_path, INITIAL_WIKI_LOG_MARKDOWN)
 
     # 3. Create or refresh the Agent Schema. Unspecified preferences preserve an
     # existing installation's choices; a new installation receives config defaults.

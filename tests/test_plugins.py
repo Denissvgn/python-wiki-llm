@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
+import sys
 import textwrap
 import types
 from pathlib import Path
@@ -17,6 +20,8 @@ from llm_wiki_cli.commands import (
 )
 from llm_wiki_cli.services import plugins
 from llm_wiki_cli.services.schema import refresh_skill_blocks
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _ns(**kwargs):
@@ -64,6 +69,56 @@ class TestPluginManifestValidation:
 
         assert manifest["id"] == "demo-plugin"
         assert manifest["components"][0]["type"] == "skill"
+
+    def test_catalog_loads_string_and_object_entries(self, tmp_project):
+        catalog = tmp_project / "catalog.json"
+        catalog.write_text(
+            json.dumps(
+                {
+                    "plugins": {
+                        "direct": "vendor/direct",
+                        "nested": {"path": "vendor/nested"},
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        assert plugins._load_catalog(catalog) == {
+            "direct": "vendor/direct",
+            "nested": "vendor/nested",
+        }
+        assert plugins._load_catalog(tmp_project / "missing.json") == {}
+
+    @pytest.mark.parametrize(
+        ("content", "message"),
+        [
+            ("{bad", "Invalid plugin catalog"),
+            ("[]", "expected an object"),
+            ('{"broken": 42}', "expected a path"),
+        ],
+    )
+    def test_catalog_rejects_malformed_data(
+        self, tmp_project, content, message
+    ):
+        catalog = tmp_project / "catalog.json"
+        catalog.write_text(content, encoding="utf-8")
+
+        with pytest.raises(plugins.PluginError, match=message):
+            plugins._load_catalog(catalog)
+
+    def test_version_requirements_have_deterministic_semantics(self):
+        assert plugins._parse_version("release") == (0, 0, 0)
+        assert plugins._parse_version("1.2") == (1, 2, 0)
+        assert plugins._version_satisfies("1.5.0", "*")
+        assert plugins._version_satisfies("1.5.0", ">=1.4")
+        assert plugins._version_satisfies("1.5.0", "==1.5")
+        assert not plugins._version_satisfies("1.5.0", "1.4.0")
+
+    def test_safe_prompt_format_preserves_unknown_placeholders(self):
+        values = plugins._SafeFormat({"known": "yes"})
+
+        assert "{known} {missing}".format_map(values) == "yes {missing}"
 
     @pytest.mark.parametrize("component_type", ["prompt_template", "skill"])
     def test_rejects_component_path_escape(self, tmp_project, component_type):
@@ -427,11 +482,23 @@ class TestPluginRuntimeIntegration:
         )
         plugins.install_plugin(str(plugin_dir), yes=True)
 
-        inventory = extract_cmd.get_inventory(".")
+        result = extract_cmd.get_inventory_result(".")
+        inventory = result.inventory
 
         assert "models.py" in inventory
         assert inventory["models.py"]["language"] == "python"
         assert inventory["flow.toy"]["language"] == "toy"
+        assert result.extractor_registry["toy"] == "toy_plugin:ToyExtractor"
+        assert [component["ref"] for component in result.plugin_components] == [
+            "toy-extractor/toy"
+        ]
+        assert [
+            component["ref"] for component in result.producer_plugin_components
+        ] == ["toy-extractor/toy"]
+        assert result.plugin_lock_path == ".llm-wiki/plugins.lock.json"
+        assert result.plugin_lock_hash is not None
+        assert result.source_snapshot is not None
+        assert set(result.source_snapshot.hashes_for(["flow.toy"])) == {"flow.toy"}
 
     def test_installed_lint_rule_adds_issue(self, tmp_project, tmp_wiki):
         plugin_dir = _write_plugin(
@@ -608,11 +675,13 @@ class TestPluginCliSmoke:
     def test_cli_lists_and_exports_bundled_plugin_sample(
         self, tmp_project, capsys, monkeypatch
     ):
-        dest = tmp_project / "vendor" / "m4-documentation-hooks"
+        dest = tmp_project / "vendor" / "documentation-hooks"
 
         monkeypatch.setattr("sys.argv", ["llm-wiki", "plugins", "samples", "list"])
         cli.main()
-        assert "m4-documentation-hooks" in capsys.readouterr().out
+        listed = capsys.readouterr().out
+        assert "documentation-hooks: Documentation hooks sample plugin" in listed
+        assert "m4-documentation-hooks" not in listed
 
         monkeypatch.setattr(
             "sys.argv",
@@ -621,20 +690,63 @@ class TestPluginCliSmoke:
                 "plugins",
                 "samples",
                 "export",
-                "m4-documentation-hooks",
+                "documentation-hooks",
                 "--dest",
                 str(dest),
             ],
         )
         cli.main()
         assert (
-            "Exported plugin sample: m4-documentation-hooks" in capsys.readouterr().out
+            "Exported plugin sample: documentation-hooks" in capsys.readouterr().out
         )
 
         monkeypatch.setattr("sys.argv", ["llm-wiki", "plugins", "validate", str(dest)])
         cli.main()
-        assert "Plugin valid: m4-documentation-hooks" in capsys.readouterr().out
+        assert "Plugin valid: documentation-hooks" in capsys.readouterr().out
 
         monkeypatch.setattr("sys.argv", ["llm-wiki", "install", str(dest), "--yes"])
         cli.main()
-        assert "Installed plugin: m4-documentation-hooks" in capsys.readouterr().out
+        assert "Installed plugin: documentation-hooks" in capsys.readouterr().out
+
+    def test_cli_legacy_sample_alias_warns_and_exports_canonical_plugin(
+        self, tmp_project
+    ):
+        dest = tmp_project / "vendor" / "legacy-export"
+        env = os.environ.copy()
+        source_root = str(PROJECT_ROOT / "src")
+        current_pythonpath = env.get("PYTHONPATH")
+        env["PYTHONPATH"] = (
+            os.pathsep.join((source_root, current_pythonpath))
+            if current_pythonpath
+            else source_root
+        )
+
+        completed = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                "from llm_wiki_cli.cli import main; main()",
+                "plugins",
+                "samples",
+                "export",
+                "m4-documentation-hooks",
+                "--dest",
+                str(dest),
+            ],
+            cwd=tmp_project,
+            env=env,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        assert completed.returncode == 0, completed.stderr
+        assert "Exported plugin sample: documentation-hooks" in completed.stdout
+        assert (
+            "Plugin sample 'm4-documentation-hooks' is deprecated; use "
+            "'documentation-hooks' instead."
+        ) in completed.stderr
+        manifest = json.loads(
+            (dest / plugins.MANIFEST_FILENAME).read_text(encoding="utf-8")
+        )
+        assert manifest["id"] == "documentation-hooks"

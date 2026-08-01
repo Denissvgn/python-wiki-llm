@@ -55,6 +55,65 @@ def _sha256(raw: bytes) -> str:
     return "sha256:" + hashlib.sha256(raw).hexdigest()
 
 
+class _InMemoryEgressCanary:
+    """Deterministic host-canary double for broker-contract tests."""
+
+    def __init__(self, *, probe_id: str) -> None:
+        challenge_bytes = hashlib.sha256(probe_id.encode("utf-8")).digest()
+        challenge = challenge_bytes.hex()
+        response = broker._network_canary_response(challenge)
+        transcript = b"host-control\x00" + challenge_bytes + response
+        self.binding = broker.OciNetworkCanaryBinding(
+            canary_id=f"canary-{challenge[:16]}",
+            host="127.0.0.1",
+            port=43123,
+            challenge=challenge,
+            challenge_sha256=_sha256(challenge_bytes),
+            response_sha256=_sha256(response),
+            control_sha256=_sha256(transcript),
+        )
+        self._response = response
+        self._post_control_connections = 0
+        self._closed = False
+
+    @property
+    def post_control_connections(self) -> int:
+        return self._post_control_connections
+
+    def assert_ready(self) -> None:
+        if self._closed:
+            raise OciBrokerError(
+                "Deterministic egress canary stopped before probe completion."
+            )
+
+    def record_connection(self, challenge: str) -> bytes:
+        self.assert_ready()
+        self._post_control_connections += 1
+        if challenge == self.binding.challenge:
+            return self._response
+        return b""
+
+    def close(self) -> None:
+        self._closed = True
+
+
+@pytest.fixture
+def deterministic_egress_canary(monkeypatch):
+    """Keep semantic broker tests independent of host listener permission."""
+
+    monkeypatch.setattr(broker, "_LocalEgressCanary", _InMemoryEgressCanary)
+
+
+def _record_deterministic_canary_connection(
+    probe_environment,
+    *,
+    challenge: str,
+) -> bytes:
+    canary = probe_environment._canary
+    assert isinstance(canary, _InMemoryEgressCanary)
+    return canary.record_connection(challenge)
+
+
 def _runtime_path(tmp_path: Path) -> Path:
     name = "docker.exe" if os.name == "nt" else "docker"
     runtime = tmp_path / name
@@ -944,7 +1003,237 @@ def test_result_directory_accounts_aggregate_stat_size_before_read(
     assert exc_info.value.status == "result_oversized"
 
 
-def test_probe_request_binds_real_host_controls_and_is_strict():
+@pytest.mark.parametrize(
+    "failure_stage",
+    ("create", "setsockopt", "bind", "listen", "settimeout"),
+)
+def test_local_egress_canary_normalizes_setup_failure_and_closes_socket(
+    monkeypatch,
+    failure_stage: str,
+):
+    created = []
+    injected = PermissionError(1, "host-specific sensitive detail")
+
+    class _FailingSetupSocket:
+        def __init__(self) -> None:
+            self.closed = False
+            created.append(self)
+
+        def _fail_at(self, stage: str) -> None:
+            if failure_stage == stage:
+                raise injected
+
+        def setsockopt(self, *_args) -> None:
+            self._fail_at("setsockopt")
+
+        def bind(self, _address) -> None:
+            self._fail_at("bind")
+
+        def listen(self, _backlog: int) -> None:
+            self._fail_at("listen")
+
+        def settimeout(self, _seconds: float) -> None:
+            self._fail_at("settimeout")
+
+        def close(self) -> None:
+            self.closed = True
+
+    def socket_factory(*_args):
+        if failure_stage == "create":
+            raise injected
+        return _FailingSetupSocket()
+
+    monkeypatch.setattr(broker.socket, "socket", socket_factory)
+
+    with pytest.raises(
+        OciBrokerError,
+        match=r"^Local egress canary enforcement is unavailable\.$",
+    ) as exc_info:
+        broker._LocalEgressCanary(probe_id="probe-setup-failure")
+
+    assert exc_info.value.__cause__ is injected
+    assert "host-specific sensitive detail" not in str(exc_info.value)
+    if created:
+        assert len(created) == 1
+        assert created[0].closed is True
+
+
+@pytest.mark.parametrize("failure_stage", ("thread_create", "thread_start"))
+def test_local_egress_canary_closes_listener_when_thread_cannot_start(
+    monkeypatch,
+    failure_stage: str,
+):
+    class _ConfiguredListener:
+        closed = False
+
+        def setsockopt(self, *_args) -> None:
+            pass
+
+        def bind(self, _address) -> None:
+            pass
+
+        def listen(self, _backlog: int) -> None:
+            pass
+
+        def settimeout(self, _seconds: float) -> None:
+            pass
+
+        def close(self) -> None:
+            self.closed = True
+
+    class _UnstartableThread:
+        def start(self) -> None:
+            raise RuntimeError("host-specific thread detail")
+
+    listener = _ConfiguredListener()
+    injected = RuntimeError("host-specific thread detail")
+    monkeypatch.setattr(broker.socket, "socket", lambda *_args: listener)
+
+    def thread_factory(**_kwargs):
+        if failure_stage == "thread_create":
+            raise injected
+        return _UnstartableThread()
+
+    monkeypatch.setattr(broker.threading, "Thread", thread_factory)
+
+    with pytest.raises(
+        OciBrokerError,
+        match=r"^Local egress canary enforcement is unavailable\.$",
+    ) as exc_info:
+        broker._LocalEgressCanary(probe_id="probe-thread-failure")
+
+    assert isinstance(exc_info.value.__cause__, RuntimeError)
+    assert "host-specific thread detail" not in str(exc_info.value)
+    assert listener.closed is True
+
+
+@pytest.mark.parametrize("failure_stage", ("getsockname", "binding"))
+def test_local_egress_canary_cleans_started_thread_after_finalization_failure(
+    monkeypatch,
+    failure_stage: str,
+):
+    injected = PermissionError(1, "host-specific finalization detail")
+
+    class _ConfiguredListener:
+        closed = False
+
+        def setsockopt(self, *_args) -> None:
+            pass
+
+        def bind(self, _address) -> None:
+            pass
+
+        def listen(self, _backlog: int) -> None:
+            pass
+
+        def settimeout(self, _seconds: float) -> None:
+            pass
+
+        def getsockname(self):
+            if failure_stage == "getsockname":
+                raise injected
+            return ("127.0.0.1", 43123)
+
+        def close(self) -> None:
+            self.closed = True
+
+    class _StartedThread:
+        started = False
+        joined = False
+
+        def start(self) -> None:
+            self.started = True
+
+        def join(self, *, timeout: float) -> None:
+            assert timeout == 2
+            self.joined = True
+
+        def is_alive(self) -> bool:
+            return self.started and not self.joined
+
+    listener = _ConfiguredListener()
+    thread = _StartedThread()
+    monkeypatch.setattr(broker.socket, "socket", lambda *_args: listener)
+    monkeypatch.setattr(broker.threading, "Thread", lambda **_kwargs: thread)
+    monkeypatch.setattr(
+        broker.socket,
+        "create_connection",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            OSError("wake-up unavailable")
+        ),
+    )
+
+    def complete_host_control(canary) -> None:
+        canary._pre_control_connections = 1
+        canary._pre_control_authenticated = 1
+
+    monkeypatch.setattr(
+        broker._LocalEgressCanary,
+        "_run_host_control",
+        complete_host_control,
+    )
+    if failure_stage == "binding":
+        monkeypatch.setattr(
+            broker,
+            "OciNetworkCanaryBinding",
+            lambda **_kwargs: (_ for _ in ()).throw(
+                OciBrokerError("Injected binding failure.")
+            ),
+        )
+
+    with pytest.raises(OciBrokerError) as exc_info:
+        broker._LocalEgressCanary(probe_id="probe-finalization-failure")
+
+    if failure_stage == "getsockname":
+        assert str(exc_info.value) == (
+            "Local egress canary enforcement is unavailable."
+        )
+        assert exc_info.value.__cause__ is injected
+    else:
+        assert str(exc_info.value) == "Injected binding failure."
+    assert thread.started is True
+    assert thread.joined is True
+    assert listener.closed is True
+
+
+def test_live_loopback_egress_canary_when_host_capability_is_available():
+    capability_socket = None
+    try:
+        capability_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        capability_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        capability_socket.bind(("127.0.0.1", 0))
+        capability_socket.listen(1)
+        capability_socket.settimeout(0.2)
+        with socket.create_connection(
+            capability_socket.getsockname()[:2],
+            timeout=0.2,
+        ):
+            pass
+    except OSError:
+        pytest.skip("host does not permit a complete loopback listener round trip")
+    finally:
+        if capability_socket is not None:
+            capability_socket.close()
+
+    with create_oci_admission_probe_environment(
+        probe_id="probe-live-loopback"
+    ) as probe_environment:
+        canary = probe_environment.network_canary
+        with socket.create_connection((canary.host, canary.port), timeout=2) as conn:
+            conn.sendall(canary.challenge.encode("ascii") + b"\n")
+            assert broker._read_socket_line(
+                conn,
+                maximum=256,
+            ) == broker._network_canary_response(
+                canary.challenge,
+            )
+
+        assert probe_environment.post_control_network_connections == 1
+
+
+def test_probe_request_binds_host_control_contract_and_is_strict(
+    deterministic_egress_canary,
+):
     with create_oci_admission_probe_environment(
         probe_id="probe-001"
     ) as probe_environment:
@@ -983,7 +1272,10 @@ def test_probe_request_binds_real_host_controls_and_is_strict():
             OciAdmissionProbeRequest.from_dict(tampered)
 
 
-def test_admission_probe_requires_all_denied_access_events(tmp_path: Path):
+def test_admission_probe_requires_all_denied_access_events(
+    tmp_path: Path,
+    deterministic_egress_canary,
+):
     config = _config(tmp_path)
     with create_oci_admission_probe_environment(
         probe_id="probe-001"
@@ -1036,6 +1328,7 @@ def test_admission_probe_requires_all_denied_access_events(tmp_path: Path):
 
 def test_probe_rejects_a_denial_claim_after_the_host_canary_was_reached(
     tmp_path: Path,
+    deterministic_egress_canary,
 ):
     config = _config(tmp_path)
     with create_oci_admission_probe_environment(
@@ -1056,11 +1349,10 @@ def test_probe_rejects_a_denial_claim_after_the_host_canary_was_reached(
         def runner(argv, **kwargs):
             del argv, kwargs
             canary = request.network_canary
-            with socket.create_connection(
-                (canary.host, canary.port), timeout=2
-            ) as conn:
-                conn.sendall(canary.challenge.encode("ascii") + b"\n")
-                assert conn.recv(256)
+            assert _record_deterministic_canary_connection(
+                probe_environment,
+                challenge=canary.challenge,
+            )
             (output / "probe-result.json").write_bytes(
                 canonical_result_json_bytes(_passing_probe_result(request))
             )
@@ -1080,7 +1372,10 @@ def test_probe_rejects_a_denial_claim_after_the_host_canary_was_reached(
         assert probe_environment.post_control_network_connections == 1
 
 
-def test_probe_rejects_changed_host_sentinel_before_process_start(tmp_path: Path):
+def test_probe_rejects_changed_host_sentinel_before_process_start(
+    tmp_path: Path,
+    deterministic_egress_canary,
+):
     config = _config(tmp_path)
     with create_oci_admission_probe_environment(
         probe_id="probe-sentinel-audit"
@@ -1121,7 +1416,10 @@ def test_probe_rejects_changed_host_sentinel_before_process_start(tmp_path: Path
         assert called is False
 
 
-def test_probe_result_must_bind_every_host_target(tmp_path: Path):
+def test_probe_result_must_bind_every_host_target(
+    tmp_path: Path,
+    deterministic_egress_canary,
+):
     config = _config(tmp_path)
     with create_oci_admission_probe_environment(
         probe_id="probe-target-binding"
@@ -1160,7 +1458,10 @@ def test_probe_result_must_bind_every_host_target(tmp_path: Path):
         assert "target evidence" in (outcome.error or "")
 
 
-def test_admission_probe_access_or_missing_event_cannot_pass(tmp_path: Path):
+def test_admission_probe_access_or_missing_event_cannot_pass(
+    tmp_path: Path,
+    deterministic_egress_canary,
+):
     config = _config(tmp_path)
     with create_oci_admission_probe_environment(
         probe_id="probe-001"
@@ -1221,7 +1522,9 @@ def test_admission_probe_access_or_missing_event_cannot_pass(tmp_path: Path):
         assert "every access event" in (missing.error or "")
 
 
-def test_admission_probe_result_contract_rejects_false_pass_status():
+def test_admission_probe_result_contract_rejects_false_pass_status(
+    deterministic_egress_canary,
+):
     with create_oci_admission_probe_environment(
         probe_id="probe-001"
     ) as probe_environment:
@@ -1239,7 +1542,9 @@ def test_admission_probe_result_contract_rejects_false_pass_status():
             OciAdmissionProbeResult.from_dict(payload)
 
 
-def test_output_bound_probe_rejects_forged_denial_evidence():
+def test_output_bound_probe_rejects_forged_denial_evidence(
+    deterministic_egress_canary,
+):
     with create_oci_admission_probe_environment(
         probe_id="probe-output-bound"
     ) as probe_environment:

@@ -127,6 +127,57 @@ def test_canonical_paths_and_mcp_uris_are_posix():
     )
 
 
+def test_exact_page_coordinate_accepts_all_registered_canonical_forms():
+    for entry in wiki_surface.iter_root_pages():
+        assert wiki_surface.validate_exact_page_coordinate(
+            f"  {wiki_surface.canonical_path(entry.kind)}  "
+        ) == wiki_surface.canonical_path(entry.kind)
+        assert wiki_surface.validate_exact_page_coordinate(
+            f"  {wiki_surface.mcp_uri(entry.kind)}  "
+        ) == wiki_surface.mcp_uri(entry.kind)
+
+    for entry in wiki_surface.iter_directory_kinds():
+        assert wiki_surface.validate_exact_page_coordinate(
+            wiki_surface.canonical_path(entry.kind, "Page(1)")
+        ) == wiki_surface.canonical_path(entry.kind, "Page(1)")
+        assert wiki_surface.validate_exact_page_coordinate(
+            wiki_surface.mcp_uri(entry.kind, "Page(1)")
+        ) == wiki_surface.mcp_uri(entry.kind, "Page(1)")
+
+
+@pytest.mark.parametrize(
+    "coordinate",
+    [
+        None,
+        "",
+        "/entities/User.md",
+        "../entities/User.md",
+        "entities/../User.md",
+        "entities//User.md",
+        "entities/nested/User.md",
+        "entities\\User.md",
+        "entities/User.md\nignored",
+        "unknown/User.md",
+        "https://example.test/entities/User",
+        "llm-wiki://user@entities/User",
+        "llm-wiki://entities:80/User",
+        "llm-wiki://entities/User?view=full",
+        "llm-wiki://entities/User#details",
+        "llm-wiki://entities/User/",
+        "llm-wiki://entities/%",
+        "llm-wiki://entities/%2FUser",
+        "llm-wiki://entities/%2E%2E",
+        "llm-wiki://entities/%55ser",
+    ],
+)
+def test_exact_page_coordinate_rejects_unsafe_or_noncanonical_forms(coordinate):
+    with pytest.raises(
+        wiki_surface.WikiSurfaceError,
+        match="wiki page coordinate",
+    ):
+        wiki_surface.validate_exact_page_coordinate(coordinate)
+
+
 def test_page_id_validation_rejects_unsafe_ids():
     for page_id in ["User", "pkg.module", "docker_Dockerfile", "api-run", "flow_1"]:
         assert wiki_surface.is_safe_page_id(page_id)
@@ -211,4 +262,32 @@ def test_collect_wiki_pages_accepts_legacy_layout_without_optional_surfaces(tmp_
         (PageKind.INDEX, "index.md"),
         (PageKind.ENTITIES, "entities/User.md"),
         (PageKind.MODULES, "modules/models.md"),
+    ]
+
+
+def test_knowledge_sidecars_do_not_change_page_ids_paths_or_mcp_uris(tmp_path):
+    wiki = tmp_path / "docs" / "llm_wiki"
+    _write(wiki / "index.md")
+    _write(wiki / "entities" / "User.md")
+    _write(wiki / "modules" / "models.md")
+
+    before = [
+        (page.page_id, page.relative_path, page.mcp_uri)
+        for page in wiki_surface.collect_wiki_pages(wiki)
+    ]
+    for name in (
+        ".llm-wiki-manifest.json",
+        ".llm-wiki-surface.json",
+        ".llm-wiki-knowledge.json",
+    ):
+        _write(wiki / name, "{}\n")
+    after = [
+        (page.page_id, page.relative_path, page.mcp_uri)
+        for page in wiki_surface.collect_wiki_pages(wiki)
+    ]
+
+    assert after == before == [
+        ("index", "index.md", "llm-wiki://index"),
+        ("User", "entities/User.md", "llm-wiki://entities/User"),
+        ("models", "modules/models.md", "llm-wiki://modules/models"),
     ]

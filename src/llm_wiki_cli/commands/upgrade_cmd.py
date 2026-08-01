@@ -41,6 +41,10 @@ from ..services.skills import (
     reference_skill_state,
     skills_install_dir,
 )
+from ..services.wiki_scaffold import (
+    INITIAL_WIKI_INDEX_MARKDOWN,
+    INITIAL_WIKI_LOG_MARKDOWN,
+)
 from ..services.wiki_surface import iter_directory_kinds
 
 # Re-use hook builders from hook_cmd to avoid duplication
@@ -184,15 +188,11 @@ def _upgrade_dirs(wiki_dir: str) -> StructureUpgradeResult:
     # Ensure core files exist
     index_path = base / "index.md"
     if not index_path.exists():
-        write_md(
-            index_path,
-            "# LLM Wiki Index\n\nCatalog of project modules and entities.\n\n"
-            "## Entities\n\n## Modules\n\n## Workflows\n\n## Infrastructure\n",
-        )
+        write_md(index_path, INITIAL_WIKI_INDEX_MARKDOWN)
         created_files.append("index.md")
     log_path = base / "log.md"
     if not log_path.exists():
-        write_md(log_path, "# Architectural Log\n\nAppend-only chronological log.\n\n")
+        write_md(log_path, INITIAL_WIKI_LOG_MARKDOWN)
         created_files.append("log.md")
     return StructureUpgradeResult(
         directories=tuple(created_dirs),

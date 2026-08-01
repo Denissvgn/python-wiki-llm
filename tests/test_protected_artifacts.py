@@ -6,6 +6,7 @@ import errno
 import os
 import stat
 import subprocess
+import threading
 from contextlib import contextmanager
 from pathlib import Path
 from types import SimpleNamespace
@@ -20,9 +21,32 @@ from llm_wiki_cli.services.protected_artifacts import (
     ProtectedArtifactLimitError,
     ProtectedArtifactLockError,
     ProtectedArtifactStore,
+    ROOT_LOCK_FILENAME,
     canonical_json_bytes,
     validate_portable_relative_path,
 )
+
+
+def test_integrity_contract_discloses_same_user_trust_assumptions():
+    module_claims = " ".join((protected_artifacts.__doc__ or "").split())
+    public_guide = " ".join(
+        (
+            Path(__file__).resolve().parents[1]
+            / "docs"
+            / "standalone-documentation.md"
+        )
+        .read_text(encoding="utf-8")
+        .split()
+    )
+
+    for disclosure in (
+        "same-user",
+        "filesystem owner, root, or offline modification",
+        "content-integrity",
+        "not authenticity",
+    ):
+        assert disclosure in module_claims
+        assert disclosure in public_guide
 
 
 def test_create_requires_new_or_empty_regular_root(tmp_path: Path):
@@ -427,6 +451,203 @@ def test_snapshot_and_projection_replace_atomically(tmp_path: Path):
     assert not list(store.root.rglob("*.protected-tmp"))
 
 
+@pytest.mark.parametrize("limit", [0, -1, True, 1.5, "10"])
+def test_root_byte_quota_requires_a_positive_integer_before_create(
+    tmp_path: Path, limit: object
+):
+    root = tmp_path / "root"
+
+    with pytest.raises(ProtectedArtifactLimitError, match="root.*positive"):
+        ProtectedArtifactStore(root, create=True, max_root_bytes=limit)  # type: ignore[arg-type]
+
+    assert not root.exists()
+
+
+def test_root_byte_quota_is_optional_and_enforces_cumulative_exact_boundary(
+    tmp_path: Path,
+):
+    unbounded = ProtectedArtifactStore(tmp_path / "unbounded", create=True)
+    assert unbounded.max_root_bytes is None
+    unbounded._write_bytes("one.bin", b"1234", immutable=True)
+    unbounded._write_bytes("two.bin", b"5678", immutable=True)
+
+    store = ProtectedArtifactStore(
+        tmp_path / "bounded",
+        create=True,
+        max_root_bytes=5,
+    )
+    assert store.max_root_bytes == 5
+    store._write_bytes("one.bin", b"123", immutable=True)
+    with store.lock():
+        store._write_bytes("nested/two.bin", b"45", immutable=True)
+
+    # The coordination lock is not artifact payload and does not consume quota.
+    assert (store.root / ROOT_LOCK_FILENAME).exists()
+    assert store.read_text("one.bin") == "123"
+    assert store.read_text("nested/two.bin") == "45"
+    with pytest.raises(ProtectedArtifactLimitError, match="5-byte protected-root"):
+        store._write_bytes("three.bin", b"x", immutable=True)
+    assert not (store.root / "three.bin").exists()
+
+
+def test_root_byte_quota_accounts_for_replacement_delta_and_preserves_failure(
+    tmp_path: Path,
+):
+    store = ProtectedArtifactStore(
+        tmp_path / "root",
+        create=True,
+        max_root_bytes=6,
+    )
+    store._write_bytes("mutable.bin", b"1234", immutable=False)
+    store._write_bytes("fixed.bin", b"56", immutable=True)
+
+    # Replacing four bytes with one frees three cumulative bytes.
+    store._write_bytes("mutable.bin", b"1", immutable=False)
+    store._write_bytes("new.bin", b"abc", immutable=True)
+    assert store.read_text("mutable.bin") == "1"
+    assert store.read_text("new.bin") == "abc"
+
+    with pytest.raises(ProtectedArtifactLimitError, match="7 bytes"):
+        store._write_bytes("new.bin", b"abcd", immutable=False)
+    assert store.read_text("new.bin") == "abc"
+    assert not list(store.root.rglob("*.protected-tmp"))
+
+
+def test_root_byte_quota_allows_idempotent_replay_and_overquota_shrink(
+    tmp_path: Path,
+):
+    root = tmp_path / "root"
+    seed = ProtectedArtifactStore(root, create=True)
+    seed._write_bytes("immutable.bin", b"12345", immutable=True)
+    seed._write_bytes("mutable.bin", b"67890", immutable=False)
+
+    store = ProtectedArtifactStore(root, max_root_bytes=6)
+    store._write_bytes("mutable.bin", b"6", immutable=False)
+    store._write_bytes("immutable.bin", b"12345", immutable=True)
+
+    assert store.read_text("immutable.bin") == "12345"
+    assert store.read_text("mutable.bin") == "6"
+    with pytest.raises(ProtectedArtifactLimitError, match="protected-root"):
+        store._write_bytes("extra.bin", b"x", immutable=True)
+
+
+def test_root_byte_quota_serializes_accounting_and_commit(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    store = ProtectedArtifactStore(
+        tmp_path / "root",
+        create=True,
+        max_root_bytes=4,
+    )
+    competing_store = ProtectedArtifactStore(store.root, max_root_bytes=4)
+    quota_checked = threading.Event()
+    allow_commit = threading.Event()
+    failures: list[BaseException] = []
+    enforce_quota = store._enforce_root_quota
+
+    def pause_after_quota_check(
+        parts: tuple[str, ...],
+        data: bytes,
+        *,
+        immutable: bool,
+    ) -> bool:
+        idempotent = enforce_quota(parts, data, immutable=immutable)
+        if parts == ("first.bin",):
+            quota_checked.set()
+            if not allow_commit.wait(timeout=5):
+                raise AssertionError("timed out waiting to finish the quota write")
+        return idempotent
+
+    monkeypatch.setattr(store, "_enforce_root_quota", pause_after_quota_check)
+
+    def write_first() -> None:
+        try:
+            store._write_bytes("first.bin", b"1234", immutable=True)
+        except BaseException as exc:  # pragma: no cover - asserted below
+            failures.append(exc)
+
+    writer = threading.Thread(target=write_first)
+    writer.start()
+    assert quota_checked.wait(timeout=5)
+    try:
+        with pytest.raises(ProtectedArtifactLockError, match="already holds"):
+            competing_store._write_bytes("second.bin", b"5678", immutable=True)
+    finally:
+        allow_commit.set()
+        writer.join(timeout=5)
+
+    assert not writer.is_alive()
+    assert failures == []
+    assert store.read_text("first.bin") == "1234"
+    assert not (store.root / "second.bin").exists()
+    with pytest.raises(ProtectedArtifactLimitError, match="8 bytes"):
+        competing_store._write_bytes("second.bin", b"5678", immutable=True)
+
+
+def test_root_byte_quota_reserves_controller_lock_path(tmp_path: Path):
+    store = ProtectedArtifactStore(
+        tmp_path / "root",
+        create=True,
+        max_root_bytes=5,
+    )
+
+    with pytest.raises(ProtectedArtifactIntegrityError, match="reserved"):
+        store.write_projection_text(
+            ROOT_LOCK_FILENAME,
+            "X" * 100,
+            max_bytes=200,
+        )
+
+    assert (store.root / ROOT_LOCK_FILENAME).read_text(
+        encoding="ascii"
+    ) == f"{os.getpid()}\n"
+
+
+def test_overquota_root_allows_identical_immutable_replay(tmp_path: Path):
+    root = tmp_path / "root"
+    seed = ProtectedArtifactStore(root, create=True)
+    seed.write_immutable_json("a.json", {"a": 1})
+    seed.write_immutable_json("b.json", {"b": 2})
+    replay = (root / "a.json").read_bytes()
+    assert sum(
+        path.stat().st_size
+        for path in root.iterdir()
+        if path.name != ROOT_LOCK_FILENAME
+    ) > len(replay)
+
+    bounded = ProtectedArtifactStore(root, max_root_bytes=len(replay))
+    assert bounded.write_immutable_json("a.json", {"a": 1}) == root / "a.json"
+    assert (root / "a.json").read_bytes() == replay
+
+
+def test_quota_write_failure_cleans_partially_written_temporary(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    store = ProtectedArtifactStore(
+        tmp_path / "root",
+        create=True,
+        max_root_bytes=5,
+    )
+    store.write_projection_text("value.txt", "12345")
+    original_write_all = protected_artifacts._write_all
+
+    def fail_after_partial_write(descriptor: int, data: bytes) -> None:
+        if data == b"abcde":
+            os.write(descriptor, data[:2])
+            raise OSError(errno.EIO, "injected partial write")
+        original_write_all(descriptor, data)
+
+    monkeypatch.setattr(protected_artifacts, "_write_all", fail_after_partial_write)
+
+    with pytest.raises(ProtectedArtifactIntegrityError, match="partial write"):
+        store.write_projection_text("value.txt", "abcde")
+
+    assert (store.root / "value.txt").read_text(encoding="utf-8") == "12345"
+    assert not list(store.root.glob("*.protected-tmp"))
+
+
 def test_reads_require_bounded_canonical_utf8(tmp_path: Path):
     root = tmp_path / "root"
     store = ProtectedArtifactStore(root, create=True)
@@ -625,6 +846,39 @@ def test_nonblocking_controller_lock_is_dedicated_to_root(tmp_path: Path):
     ) == f"{os.getpid()}\n"
     with second.lock():
         pass
+
+
+@pytest.mark.skipif(
+    not protected_artifacts._supports_descriptor_relative_io(),
+    reason="requires descriptor-relative POSIX locking",
+)
+def test_first_controller_lock_creation_retries_transient_enoent(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    store = ProtectedArtifactStore(tmp_path / "root", create=True)
+    real_open = protected_artifacts.os.open
+    lock_open_flags: list[int] = []
+
+    def transient_open(path, flags, mode=0o777, *, dir_fd=None):
+        if path == ROOT_LOCK_FILENAME:
+            lock_open_flags.append(flags)
+            if len(lock_open_flags) == 1:
+                raise FileNotFoundError(
+                    errno.ENOENT,
+                    "transient descriptor-relative create race",
+                    path,
+                )
+        return real_open(path, flags, mode, dir_fd=dir_fd)
+
+    monkeypatch.setattr(protected_artifacts.os, "open", transient_open)
+
+    with store.lock():
+        pass
+
+    assert len(lock_open_flags) == 2
+    assert all(flags & os.O_NOFOLLOW for flags in lock_open_flags)
+    assert all(flags & os.O_EXCL for flags in lock_open_flags)
 
 
 def test_lock_rejects_redirected_lock_file(tmp_path: Path):

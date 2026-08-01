@@ -2,15 +2,19 @@
 
 from __future__ import annotations
 
+import shutil
+import warnings
 from importlib import resources
 from pathlib import Path
-import shutil
 from typing import Any
 
 from .plugins import MANIFEST_FILENAME, PluginError
 
 _SAMPLES = {
-    "m4-documentation-hooks": "M4 documentation hooks sample plugin",
+    "documentation-hooks": "Documentation hooks sample plugin",
+}
+_DEPRECATED_SAMPLE_ALIASES = {
+    "m4-documentation-hooks": "documentation-hooks",
 }
 _RESOURCE_ROOT = ("examples", "plugins")
 
@@ -31,11 +35,29 @@ def export_sample(
     root: str | Path = ".",
 ) -> dict[str, Any]:
     """Copy a bundled plugin sample to ``dest``."""
-    source = _sample_resource(sample_id)
+    canonical_id = _resolve_sample_id(sample_id)
+    source = _sample_resource(canonical_id)
     target = _resolve_destination(dest, root=root)
     _prepare_destination(target, force=force)
     _copy_resource_tree(source, target)
-    return {"id": sample_id, "path": str(target)}
+    return {"id": canonical_id, "path": str(target)}
+
+
+def _resolve_sample_id(sample_id: str) -> str:
+    canonical_id = _DEPRECATED_SAMPLE_ALIASES.get(sample_id, sample_id)
+    if canonical_id != sample_id:
+        warnings.warn(
+            f"Plugin sample {sample_id!r} is deprecated; use "
+            f"{canonical_id!r} instead.",
+            FutureWarning,
+            stacklevel=3,
+        )
+    if canonical_id not in _SAMPLES:
+        available = ", ".join(sorted(_SAMPLES))
+        raise PluginError(
+            f"Unknown plugin sample {sample_id!r}. Available: {available}"
+        )
+    return canonical_id
 
 
 def _sample_resource(sample_id: str):

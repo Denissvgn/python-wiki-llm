@@ -25,7 +25,11 @@ from .common import (
     filter_bundled_inventory,
     inventory_language_for_path,
 )
-from ..services.extractor_helpers import typescript_dependencies_ready
+from ..services.extractor_helpers import (
+    ENV_EXTRACTOR_TIMEOUT,
+    extractor_timeout_seconds,
+    get_prepared_typescript_root,
+)
 
 _TS_SCRIPTS_DIR = Path(__file__).parent / "ts_scripts"
 
@@ -74,13 +78,14 @@ class TypeScriptExtractor:
         if not source_files:
             return {}
 
-        if not self._toolchain_ready():
+        helper_root = self._toolchain_root(src_dir)
+        if helper_root is None:
             return {}
 
         inventory: dict = {}
         for chunk in chunk_source_files_for_cli(source_files):
-            cmd = self._build_command(src_dir, chunk, deep)
-            result = self._run_node_extractor(cmd)
+            cmd = self._build_command(src_dir, chunk, deep, helper_root)
+            result = self._run_node_extractor(cmd, helper_root)
             if result is None:
                 return {}
             chunk_inventory = self._load_inventory(result)
@@ -90,7 +95,7 @@ class TypeScriptExtractor:
         if not inventory:
             return {}
 
-        return self._normalize_inventory(src_dir, inventory)
+        return self._normalize_inventory(src_dir, inventory, helper_root)
 
     def _resolve_source_files(
         self,
@@ -107,31 +112,38 @@ class TypeScriptExtractor:
             )
         return source_files
 
-    def _toolchain_ready(self) -> bool:
+    def _toolchain_root(self, src_dir: str) -> Path | None:
         if not shutil.which("node"):
             self.last_error = (
                 "node not found. Install Node.js (https://nodejs.org) "
                 "to enable TypeScript extraction."
             )
             print(f"llm-wiki TypeScript extractor: {self.last_error}", file=sys.stderr)
-            return False
+            return None
 
-        if not typescript_dependencies_ready():
+        helper_root = get_prepared_typescript_root(
+            src_dir
+        ) or get_prepared_typescript_root()
+        if helper_root is None:
             self.last_error = (
                 "TypeScript extractor dependencies are not prepared. "
                 "Run `llm-wiki prepare-extractors --language typescript` before lint/extract."
             )
             print(f"llm-wiki TypeScript extractor: {self.last_error}", file=sys.stderr)
-            return False
+            return None
 
-        return True
+        return helper_root
 
     def _build_command(
-        self, src_dir: str, source_files: list[str], deep: bool
+        self,
+        src_dir: str,
+        source_files: list[str],
+        deep: bool,
+        helper_root: Path,
     ) -> list[str]:
         cmd = [
             "node",
-            str(_TS_SCRIPTS_DIR / "extract.js"),
+            str(helper_root / "extract.js"),
             "--src-dir",
             str(Path(src_dir).resolve()),
         ]
@@ -142,15 +154,18 @@ class TypeScriptExtractor:
 
         return cmd
 
-    def _run_node_extractor(self, cmd: list[str]) -> subprocess.CompletedProcess | None:
+    def _run_node_extractor(
+        self, cmd: list[str], helper_root: Path
+    ) -> subprocess.CompletedProcess | None:
+        timeout_seconds = extractor_timeout_seconds()
         try:
             return subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
                 check=True,
-                timeout=120,
-                cwd=_TS_SCRIPTS_DIR,
+                timeout=timeout_seconds,
+                cwd=helper_root,
             )
         except subprocess.CalledProcessError as exc:
             self.last_error = "extraction failed"
@@ -160,9 +175,12 @@ class TypeScriptExtractor:
             )
             return None
         except subprocess.TimeoutExpired:
-            self.last_error = "extraction timed out after 120 s"
+            self.last_error = (
+                f"extraction timed out after {timeout_seconds} s; configure "
+                f"{ENV_EXTRACTOR_TIMEOUT} to allow more time"
+            )
             print(
-                "llm-wiki TypeScript extractor: extraction timed out after 120 s.",
+                f"llm-wiki TypeScript extractor: {self.last_error}.",
                 file=sys.stderr,
             )
             return None
@@ -198,7 +216,10 @@ class TypeScriptExtractor:
         inventory = filter_bundled_inventory(inventory, _TS_SCRIPTS_DIR)
         return inventory
 
-    def _normalize_inventory(self, src_dir: str, inventory: dict) -> dict:
+    def _normalize_inventory(
+        self, src_dir: str, inventory: dict, helper_root: Path
+    ) -> dict:
+        inventory = filter_bundled_inventory(inventory, helper_root)
         src_root = Path(src_dir).resolve()
         normalized_inventory: dict = {}
         for fp, data in inventory.items():

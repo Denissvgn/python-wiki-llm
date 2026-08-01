@@ -17,6 +17,7 @@ from llm_wiki_cli.commands import extract_cmd
 from llm_wiki_cli.commands.extract_cmd import (
     get_inventory,
     get_call_graph,
+    resolve_call_observations,
     resolve_call_edges,
     _summarize_inventory,
 )
@@ -25,21 +26,18 @@ from llm_wiki_cli.extractors.python_extractor import (
     PythonExtractor,
     _summarize_expression,
 )
-from llm_wiki_cli.services.dependencies import analyze_dependencies
+from llm_wiki_cli.services.dependencies import (
+    analyze_dependencies,
+    build_dependency_observations,
+)
 from llm_wiki_cli.services.extraction_jobs import ExtractionJobRequest
+from llm_wiki_cli.services.extractor_helpers import typescript_dependencies_ready
 from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
 from llm_wiki_cli.services.packages import discover_packages, stamp_inventory_packages
 from llm_wiki_cli.services import plugins
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
-TS_NODE_MODULES = (
-    Path(__file__).parents[1]
-    / "src"
-    / "llm_wiki_cli"
-    / "extractors"
-    / "ts_scripts"
-    / "node_modules"
-)
+PROJECT_ROOT = Path(__file__).parents[1]
 
 
 def _body_line_count(function) -> int:
@@ -190,6 +188,44 @@ class TestGetInventory:
         )
 
         assert sorted(result.inventory) == ["app.py"]
+
+    def test_inventory_with_plugins_disabled_has_no_plugin_provenance(
+        self, tmp_path, monkeypatch
+    ):
+        (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
+
+        def unexpected_plugin_call(*_args, **_kwargs):
+            pytest.fail("disabled plugins must not be discovered or inspected")
+
+        monkeypatch.setattr(
+            extract_cmd, "get_extractor_registry", unexpected_plugin_call
+        )
+        monkeypatch.setattr(
+            extract_cmd, "_selected_runtime_plugin_components", unexpected_plugin_call
+        )
+        monkeypatch.setattr(
+            extract_cmd, "_captured_plugin_lock", unexpected_plugin_call
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "parallel_safe_extractor_entry_points",
+            unexpected_plugin_call,
+        )
+
+        result = extract_cmd.get_inventory_result(
+            extract_cmd.InventoryRequest(
+                src_dir=str(tmp_path),
+                deep=True,
+                include_plugins=False,
+            )
+        )
+
+        assert sorted(result.inventory) == ["app.py"]
+        assert result.extractor_registry == extract_cmd.EXTRACTOR_REGISTRY
+        assert result.plugin_components == ()
+        assert result.producer_plugin_components == ()
+        assert result.plugin_lock_path is None
+        assert result.plugin_lock_hash is None
 
     def test_empty_dir(self, tmp_path):
         inventory = get_inventory(str(tmp_path))
@@ -1071,6 +1107,100 @@ class TestGetInventory:
         import_names = {imp["name"] for imp in data["imports"]}
         assert "Path" in import_names
         assert "os" in import_names
+
+    def test_python_import_locations_use_additive_versioned_sidecar(self, tmp_path):
+        (tmp_path / "main.py").write_text(
+            textwrap.dedent("""\
+            import os, json as codec
+            from .local import (
+                Alpha as A,
+                Beta,
+            )
+
+            def run():
+                import nested.module as nested
+        """)
+        )
+        extractor = PythonExtractor()
+
+        inventory = extractor.extract(
+            str(tmp_path),
+            deep=True,
+            capture_import_observations=True,
+        )
+
+        assert inventory["main.py"]["imports"] == [
+            {"module": "os", "name": "os", "type": "import"},
+            {"module": "json", "name": "codec", "type": "import"},
+            {"module": ".local", "name": "Alpha", "alias": "A", "type": "from"},
+            {"module": ".local", "name": "Beta", "alias": None, "type": "from"},
+            {
+                "module": "nested.module",
+                "name": "nested",
+                "type": "import",
+            },
+        ]
+        assert all("line" not in item for item in inventory["main.py"]["imports"])
+        sidecar = extractor.last_import_observations
+        assert sidecar == {
+            "schema_version": "llm-wiki-import-location-observations/v1",
+            "observations": [
+                {
+                    "source_path": "main.py",
+                    "import_index": 0,
+                    "module": "os",
+                    "name": "os",
+                    "line": 1,
+                },
+                {
+                    "source_path": "main.py",
+                    "import_index": 1,
+                    "module": "json",
+                    "name": "codec",
+                    "line": 1,
+                },
+                {
+                    "source_path": "main.py",
+                    "import_index": 2,
+                    "module": ".local",
+                    "name": "Alpha",
+                    "line": 2,
+                },
+                {
+                    "source_path": "main.py",
+                    "import_index": 3,
+                    "module": ".local",
+                    "name": "Beta",
+                    "line": 2,
+                },
+                {
+                    "source_path": "main.py",
+                    "import_index": 4,
+                    "module": "nested.module",
+                    "name": "nested",
+                    "line": 8,
+                },
+            ],
+            "coverage": {
+                "observed": 5,
+                "emitted": 5,
+                "omitted": 0,
+                "limit": None,
+                "truncated": False,
+                "limitations": [
+                    "static-import-observation-does-not-claim-runtime-completeness"
+                ],
+            },
+        }
+        detailed = build_dependency_observations(
+            inventory,
+            tmp_path,
+            import_observations=sidecar,
+        )
+        assert [item["line"] for item in detailed["observations"]] == [2, 2, 1, 8, 1]
+        legacy_extractor = PythonExtractor()
+        assert legacy_extractor.extract(str(tmp_path), deep=True) == inventory
+        assert legacy_extractor.last_import_observations is None
 
     def test_deep_mode_preserves_relative_import_level(self, tmp_path):
         pkg = tmp_path / "pkg" / "sub"
@@ -1960,6 +2090,131 @@ class TestDataEffects:
             f"CONFIG_{idx}" for idx in range(8)
         ]
 
+    def test_effect_observation_sidecar_preserves_raw_totals_without_inventory_keys(
+        self, tmp_path
+    ):
+        module_constants = "\n".join(f"CONFIG_{idx} = {idx}" for idx in range(20))
+        reads = ", ".join(f"CONFIG_{idx}" for idx in range(20))
+        (tmp_path / "m.py").write_text(
+            f"{module_constants}\n\n\ndef run():\n    return ({reads})\n"
+        )
+
+        legacy_extractor = PythonExtractor()
+        legacy = legacy_extractor.extract(str(tmp_path), deep=True)
+        detailed_extractor = PythonExtractor()
+        captured = detailed_extractor.extract(
+            str(tmp_path),
+            deep=True,
+            capture_data_effect_observations=True,
+        )
+
+        assert captured == legacy
+        assert legacy_extractor.last_data_effect_observations is None
+        assert all(
+            "data_effect_observations" not in callable_record
+            for callable_record in captured["m.py"]["functions"]
+        )
+        sidecar = detailed_extractor.last_data_effect_observations
+        assert sidecar is not None
+        assert sidecar["schema_version"] == "llm-wiki-data-effect-observations/v1"
+        reads_coverage = sidecar["callables"][0]["coverage"]["reads"]
+        assert reads_coverage == {
+            "observed": 20,
+            "emitted": 8,
+            "omitted": 12,
+            "limit": 8,
+            "truncated": True,
+        }
+
+    def test_effect_observation_sidecar_is_deterministic_for_file_order(
+        self, tmp_path
+    ):
+        for filename, constant in (("b.py", "B"), ("a.py", "A")):
+            (tmp_path / filename).write_text(
+                f"{constant} = 1\n\n\ndef read():\n    return {constant}\n"
+            )
+
+        first = PythonExtractor()
+        first.extract(
+            str(tmp_path),
+            deep=True,
+            source_files=["b.py", "a.py"],
+            capture_data_effect_observations=True,
+        )
+        second = PythonExtractor()
+        second.extract(
+            str(tmp_path),
+            deep=True,
+            source_files=["a.py", "b.py"],
+            capture_data_effect_observations=True,
+        )
+
+        assert first.last_data_effect_observations == (
+            second.last_data_effect_observations
+        )
+
+    def test_inventory_result_carries_opt_in_effect_sidecar(self, tmp_path):
+        module_constants = "\n".join(f"CONFIG_{idx} = {idx}" for idx in range(20))
+        reads = ", ".join(f"CONFIG_{idx}" for idx in range(20))
+        (tmp_path / "m.py").write_text(
+            f"{module_constants}\n\n\ndef run():\n    return ({reads})\n"
+        )
+
+        result = extract_cmd.get_inventory_result(
+            extract_cmd.InventoryRequest(
+                src_dir=tmp_path,
+                deep=True,
+                include_plugins=False,
+                capture_data_effect_observations=True,
+            )
+        )
+
+        assert result.inventory == get_inventory(str(tmp_path), deep=True)
+        assert result.data_effect_observations is not None
+        reads_coverage = result.data_effect_observations["callables"][0]["coverage"][
+            "reads"
+        ]
+        assert reads_coverage["observed"] == 20
+        assert reads_coverage["emitted"] == 8
+        assert reads_coverage["omitted"] == 12
+
+    def test_inventory_result_carries_opt_in_import_sidecar(self, tmp_path):
+        (tmp_path / "m.py").write_text(
+            "from pathlib import Path\n\n\ndef run():\n    return Path.cwd()\n"
+        )
+
+        legacy = extract_cmd.get_inventory_result(
+            extract_cmd.InventoryRequest(
+                src_dir=tmp_path,
+                deep=True,
+                include_plugins=False,
+            )
+        )
+        detailed = extract_cmd.get_inventory_result(
+            extract_cmd.InventoryRequest(
+                src_dir=tmp_path,
+                deep=True,
+                include_plugins=False,
+                capture_import_observations=True,
+            )
+        )
+
+        assert detailed.inventory == legacy.inventory
+        assert legacy.import_observations is None
+        assert detailed.import_observations is not None
+        assert detailed.import_observations["schema_version"] == (
+            "llm-wiki-import-location-observations/v1"
+        )
+        assert detailed.import_observations["observations"] == [
+            {
+                "source_path": "m.py",
+                "import_index": 0,
+                "module": "pathlib",
+                "name": "Path",
+                "line": 1,
+            }
+        ]
+
 
 class TestModuleCalls:
     def test_assignment_call_records_target(self, tmp_path):
@@ -2446,6 +2701,48 @@ class TestExtractDataFlows:
 
         assert result.payload["inventory"] == {}
         assert result.payload["data_flows"] == []
+
+    def test_empty_changed_deep_reuses_one_snapshot_for_dependencies(
+        self,
+        tmp_path,
+        monkeypatch,
+    ):
+        snapshot = object()
+        analysis = {
+            "graph": {"edges": []},
+            "cycles": [],
+            "load_order": {"order": [], "cycle_groups": []},
+            "reconciliation": {"languages": {}},
+        }
+        calls = {"snapshot": 0, "dependencies": 0}
+
+        def fake_snapshot(src_dir, *, only_files, include_tests):
+            calls["snapshot"] += 1
+            assert src_dir == str(tmp_path.resolve())
+            assert only_files == ()
+            assert include_tests == frozenset()
+            return snapshot
+
+        def fake_dependencies(inventory, project_root, *, source_snapshot):
+            calls["dependencies"] += 1
+            assert inventory == {}
+            assert project_root == str(tmp_path.resolve())
+            assert source_snapshot is snapshot
+            return analysis
+
+        monkeypatch.setattr(extract_cmd, "_git_changed_files", lambda _root: [])
+        monkeypatch.setattr(extract_cmd, "build_source_snapshot", fake_snapshot)
+        monkeypatch.setattr(extract_cmd, "analyze_dependencies", fake_dependencies)
+        monkeypatch.chdir(tmp_path)
+
+        result = extract_cmd.build_extract_payload(
+            ".",
+            changed=True,
+            deep=True,
+        )
+
+        assert calls == {"snapshot": 1, "dependencies": 1}
+        assert result.dependency_analysis is analysis
 
 
 class TestExtractDependencies:
@@ -3278,6 +3575,65 @@ class TestResolveCallEdges:
         assert edge["kind"] == "unresolved"
         assert edge["to"]["file"] is None
 
+    def test_detailed_observations_preserve_ambiguity_without_changing_legacy(self):
+        inventory = {
+            "a.py": {
+                "functions": [{"name": "target", "calls": []}],
+                "classes": [],
+            },
+            "b.py": {
+                "functions": [{"name": "target", "calls": []}],
+                "classes": [],
+            },
+            "main.py": {
+                "imports": [{"module": "", "name": "target"}],
+                "functions": [
+                    {
+                        "name": "run",
+                        "calls": [{"name": "target", "attr": ""}],
+                    }
+                ],
+                "classes": [],
+            },
+        }
+
+        legacy = resolve_call_edges(inventory)
+        detailed = resolve_call_observations(inventory)
+
+        assert legacy[-1]["kind"] == "external"
+        assert legacy[-1]["line"] == 0
+        assert detailed["schema_version"] == "llm-wiki-call-observations/v1"
+        assert detailed["coverage"]["observed"] == 1
+        observation = detailed["observations"][0]
+        assert observation["kind"] == "ambiguous"
+        assert observation["line"] is None
+        assert observation["candidates"] == [
+            {"file": "a.py", "symbol": "target"},
+            {"file": "b.py", "symbol": "target"},
+        ]
+        assert resolve_call_edges(inventory) == legacy
+
+    def test_detailed_observations_are_deterministic_under_inventory_shuffle(self):
+        inventory = {
+            "a.py": {
+                "functions": [{"name": "target", "calls": []}],
+                "classes": [],
+            },
+            "main.py": {
+                "imports": [],
+                "functions": [
+                    {
+                        "name": "run",
+                        "calls": [{"name": "target", "line": 4}],
+                    }
+                ],
+                "classes": [],
+            },
+        }
+        assert resolve_call_observations(inventory) == resolve_call_observations(
+            dict(reversed(list(inventory.items())))
+        )
+
 
 class TestOnlyFiles:
     def test_restricts_to_specified_files(self, tmp_path):
@@ -3362,6 +3718,41 @@ class TestInventoryCache:
         assert second.cache_stats is not None
         assert second.cache_stats.hits == 1
         assert second.cache_stats.fresh_extracted == 0
+
+    def test_import_sidecar_opt_in_bypasses_warm_python_cache(self, tmp_path):
+        (tmp_path / "app.py").write_text(
+            "import os\n\n\ndef run():\n    return os.getcwd()\n",
+            encoding="utf-8",
+        )
+        options = self._cache_options(tmp_path)
+        legacy = extract_cmd.get_inventory_result(
+            str(tmp_path),
+            deep=True,
+            cache_options=options,
+        )
+
+        captured = extract_cmd.get_inventory_result(
+            extract_cmd.InventoryRequest(
+                src_dir=tmp_path,
+                deep=True,
+                cache_options=options,
+                capture_import_observations=True,
+            )
+        )
+        warm_legacy = extract_cmd.get_inventory_result(
+            str(tmp_path),
+            deep=True,
+            cache_options=options,
+        )
+
+        assert captured.inventory == legacy.inventory == warm_legacy.inventory
+        assert captured.import_observations is not None
+        assert captured.import_observations["observations"][0]["line"] == 1
+        assert captured.cache_stats is not None
+        assert captured.cache_stats.fresh_extracted == 1
+        assert warm_legacy.import_observations is None
+        assert warm_legacy.cache_stats is not None
+        assert warm_legacy.cache_stats.hits == 1
 
     def test_changed_file_invalidates_only_that_file(self, tmp_path, monkeypatch):
         (tmp_path / "a.py").write_text("class A: pass\n", encoding="utf-8")
@@ -3616,7 +4007,7 @@ class TestSummarizeInventory:
 
 
 @pytest.mark.skipif(
-    not (TS_NODE_MODULES / "ts-morph").exists() or shutil.which("node") is None,
+    not typescript_dependencies_ready(PROJECT_ROOT) or shutil.which("node") is None,
     reason="Node.js/ts-morph dependencies not installed",
 )
 class TestTypeScriptModuleOnlyExtraction:

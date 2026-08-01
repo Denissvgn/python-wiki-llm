@@ -195,12 +195,18 @@ def _prepare_source_run_at_review(tmp_path: Path):
         "[application evidence](../modules/app.md).\n",
         encoding="utf-8",
     )
+    index = workspace / "wiki" / "index.md"
+    index.write_text(
+        index.read_text(encoding="utf-8")
+        + "\nSee the [run guide](guides/run-application.md).\n",
+        encoding="utf-8",
+    )
     run = record_documentation_agent_result(
         workspace,
         _agent_result(
             run.run_id,
             "user-docs",
-            changed=["guides/run-application.md"],
+            changed=["guides/run-application.md", "index.md"],
             claims=["modules/app.md"],
         ),
     )
@@ -239,6 +245,37 @@ def test_run_schema_tolerates_additive_fields_but_rejects_unknown_state(tmp_path
 
     payload["state"] = "future_required_state"
     with pytest.raises(DocumentationSchemaError, match="Unsupported run state"):
+        DocumentationRun.from_dict(payload)
+
+
+def test_run_schema_accepts_global_review_ledger_before_review_stage(tmp_path):
+    _, _, _, run = _prepare_wiki_only_run(tmp_path)
+    payload = run.to_dict()
+    payload["evidence"]["review_ledger"] = (
+        ".llm-wiki-docs/evidence/review-ledger.json"
+    )
+
+    loaded = DocumentationRun.from_dict(payload)
+
+    assert loaded.evidence["review_ledger"] == (
+        ".llm-wiki-docs/evidence/review-ledger.json"
+    )
+
+
+def test_run_schema_rejects_unknown_review_stage_evidence():
+    payload = json.loads(
+        Path("tests/fixtures/documentation_runs/complete.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    payload["evidence"]["review_unrecognized"] = (
+        ".llm-wiki-docs/evidence/review-unrecognized.json"
+    )
+
+    with pytest.raises(
+        DocumentationSchemaError,
+        match="not supported stage evidence",
+    ):
         DocumentationRun.from_dict(payload)
 
 
@@ -925,12 +962,17 @@ def test_source_backed_built_run_requires_supervisor_ledger_approval(tmp_path):
         "# Run the example\n\nFollow the [application evidence](../modules/app.md).\n",
         encoding="utf-8",
     )
+    index.write_text(
+        index.read_text(encoding="utf-8")
+        + "\nSee the [run guide](guides/run-example.md).\n",
+        encoding="utf-8",
+    )
     run = record_documentation_agent_result(
         workspace,
         _agent_result(
             run.run_id,
             "user-docs",
-            changed=["guides/run-example.md"],
+            changed=["guides/run-example.md", "index.md"],
         ),
     )
     build_documentation_agent_packet(workspace, stage="review")
@@ -962,9 +1004,11 @@ def test_source_backed_built_run_requires_supervisor_ledger_approval(tmp_path):
     )
 
     builder_code = (
-        "from pathlib import Path; "
+        "from pathlib import Path; import shutil; "
         "p=Path('_site'); p.mkdir(exist_ok=True); "
-        "(p/'index.html').write_text('<h1>Publishable Example</h1>', encoding='utf-8')"
+        "(p/'index.html').write_text('<h1>Publishable Example</h1>', encoding='utf-8'); "
+        "shutil.copyfile('site/llm-wiki-site-selection.json', "
+        "'_site/llm-wiki-site-selection.json')"
     )
     report = export_documentation_run(
         workspace,
@@ -986,7 +1030,7 @@ def test_source_backed_built_run_requires_supervisor_ledger_approval(tmp_path):
     assert builder_evidence["built_site_recreated"] is True
     assert builder_evidence["built_site_has_html"] is True
     assert builder_evidence["built_site_changed"] is True
-    assert builder_evidence["built_site_after_file_count"] == 1
+    assert builder_evidence["built_site_after_file_count"] == 2
     assert (
         builder_evidence["built_site_before_tree_hash"]
         != (builder_evidence["built_site_after_tree_hash"])

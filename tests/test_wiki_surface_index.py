@@ -94,10 +94,10 @@ def test_build_surface_index_describes_pages_links_counts_and_flows(tmp_path):
         "modules": 1,
         "workflows": 0,
         "guides": 0,
-            "flows": 1,
-            "infrastructure": 1,
-            "api-contracts": 0,
-            "dependencies": 1,
+        "flows": 1,
+        "infrastructure": 1,
+        "api-contracts": 0,
+        "dependencies": 1,
         "load-order": 1,
     }
     assert payload["counts"]["dependency_architecture"] == 2
@@ -152,6 +152,29 @@ def test_write_surface_index_is_deterministic_and_skips_unchanged_payload(tmp_pa
     assert first_state == "created"
     assert second_state == "unchanged"
     assert first_content == second_content
+
+
+def test_knowledge_sidecars_do_not_change_surface_index_v1(tmp_path):
+    wiki = tmp_path / "wiki"
+    _write(wiki / "index.md", "# Index\n\n[User](entities/User.md)\n")
+    _write(wiki / "entities" / "User.md", "# User\n")
+
+    before = build_surface_index(wiki, {}, src_dir=str(tmp_path))
+    _write(wiki / ".llm-wiki-knowledge.json", '{"malformed-for-loader": true}\n')
+    _write(wiki / ".llm-wiki-manifest.json", '{"artifact_hashes": null}\n')
+    after = build_surface_index(wiki, {}, src_dir=str(tmp_path))
+
+    assert after == before
+    assert after["schema_version"] == WIKI_SURFACE_INDEX_SCHEMA_VERSION
+    assert [
+        (page["canonical_path"], page["id"], page["mcp_uri"])
+        for page in after["pages"]
+    ] == [
+        ("index.md", "index", "llm-wiki://index"),
+        ("entities/User.md", "User", "llm-wiki://entities/User"),
+    ]
+    assert "generated_at" not in after
+    assert "timestamp" not in after
 
 
 def test_surface_index_preserves_bounded_flow_evidence(tmp_path):
@@ -270,3 +293,49 @@ def test_surface_index_resolves_titled_internal_links_with_parentheses(tmp_path)
 
     by_path = {page["canonical_path"]: page for page in payload["pages"]}
     assert by_path["index.md"]["outgoing_internal_links"] == ["guides/setup(1).md"]
+
+
+def test_surface_index_preserves_legacy_outgoing_internal_link_behavior(tmp_path):
+    wiki = tmp_path / "wiki"
+    _write(
+        wiki / "index.md",
+        "\n".join(
+            [
+                "# Index",
+                "",
+                "[Core](modules/core.md)",
+                "[Core duplicate](modules/core.md)",
+                "[Core encoded](modules/%63ore.md)",
+                "[Core backslash](modules\\core.md)",
+                "[Core fragment](modules/core.md#overview)",
+                "[Missing](modules/missing.md)",
+                "[External](https://example.com/reference)",
+                "[Mail](mailto:docs@example.com)",
+                "[Anchor](#overview)",
+                "![Asset](assets/diagram.svg)",
+                "",
+                "```mermaid",
+                'click core "modules/core.md"',
+                'click mermaid "modules/mermaid.md"',
+                "```",
+                "",
+                "```text",
+                "[Fenced pseudo-link](modules/fenced.md)",
+                "```",
+                "",
+            ]
+        ),
+    )
+    _write(wiki / "modules" / "core.md", "# Core\n")
+    _write(wiki / "modules" / "fenced.md", "# Fenced\n")
+    _write(wiki / "modules" / "mermaid.md", "# Mermaid\n")
+    _write(wiki / "assets" / "diagram.svg", "<svg></svg>\n")
+
+    payload = build_surface_index(wiki, {}, src_dir=str(tmp_path))
+
+    by_path = {page["canonical_path"]: page for page in payload["pages"]}
+    assert by_path["index.md"]["outgoing_internal_links"] == [
+        "modules/core.md",
+        "modules/fenced.md",
+        "modules/mermaid.md",
+    ]

@@ -18,10 +18,17 @@ The skill consumes existing diagnostics. It does not require an unimplemented de
 | Status | Meaning | Typical action |
 |---|---|---|
 | valid dependency issue | Source and metadata disagree in a way that affects runtime or packaging. | Fix source or manifest, then verify. |
-| documentation-only mismatch | Code is correct but wiki prose or notes are stale. | Update semantic wiki notes and rerun lint. |
+| documentation-only mismatch | Code is correct but wiki prose or notes are stale. | Update semantic wiki notes, run the owning sync/re-anchor, then rerun lint. |
 | expected/generated dependency | Dynamic, generated, optional, or plugin-provided dependency is intentional. | Document intent or add a deferral note. |
 | third-party/vendor noise | Diagnostic points at vendored, dependency, cache, or build output. | Exclude from action unless the user explicitly owns it. |
 | needs human confirmation | Evidence is insufficient or policy-sensitive. | Record the exact question and stop before edits. |
+
+Report-only audit output outside the wiki does not require a wiki refresh. When
+the selected action changes canonical dependency/load-order Markdown, the
+managed command order is final semantic edit, owning `llm-wiki sync --jobs 1
+...`, strict lint, then CI. That refresh may expose expired human review or a
+stale machine-verification receipt; preserve its reason and do not manufacture
+a replacement.
 
 ## Source verification checklist
 

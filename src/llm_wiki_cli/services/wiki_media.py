@@ -10,18 +10,29 @@ from pathlib import Path
 from typing import Iterator, Mapping, Optional, Union
 from urllib.parse import unquote, urlsplit
 
-
 IMAGE_EXTENSIONS = frozenset({".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"})
 VIDEO_EXTENSIONS = frozenset({".mp4", ".webm"})
 MEDIA_EXTENSIONS = IMAGE_EXTENSIONS | VIDEO_EXTENSIONS
 DEFAULT_MEDIA_SIZE_WARN_BYTES = 2 * 1024 * 1024
 
 _MARKDOWN_TITLE_RE = re.compile(
-    r"^(?P<target><[^>]+>|[^\s]+)(?:\s+(?:\"[^\"]*\"|'[^']*'))?\s*$"
+    r"^(?P<target><[^>]+>|[^\s]+)"
+    r"(?:\s+(?:\"(?P<double_title>[^\"]*)\"|'(?P<single_title>[^']*)'))?\s*$"
+)
+_AUTHORITY_USERINFO_RE = re.compile(r"^(?:[A-Za-z][A-Za-z0-9+.-]*:)?//[^/?#\s<>'\"]*@")
+_URI_AUTHORITY_PREFIX_RE = re.compile(r"^(?:[A-Za-z][A-Za-z0-9+.-]*:)?//")
+_URI_TOKEN_START_RE = re.compile(
+    r"(?:^|[^A-Za-z0-9._~/%+-])"
+    r"(?P<uri><?(?:[A-Za-z][A-Za-z0-9+.-]*:)?//)"
 )
 _REFERENCE_DEFINITION_RE = re.compile(r"^[ \t]{0,3}\[([^\]]+)\]:[ \t]*(.+?)\s*$")
 _REFERENCE_IMAGE_RE = re.compile(r"!\[([^\]]*)\]\[([^\]]*)\]")
 _README_ASSET_RE = re.compile(r"^README(?:\..+)?$", re.IGNORECASE)
+_MERMAID_CLICK_RE = re.compile(
+    r"^[ \t]*(?P<directive>click[ \t]+(?P<label>\S+)[ \t]+"
+    r'"(?P<target>[^"]*)")',
+    re.MULTILINE,
+)
 
 
 @dataclass(frozen=True)
@@ -53,6 +64,7 @@ class AssetIndex:
     referenced: list[str]
     unreferenced: list[str]
     expected_pages: dict[str, Optional[str]]
+    existing_paths: frozenset[str] = frozenset()
 
 
 class _HtmlMediaParser(HTMLParser):
@@ -110,6 +122,62 @@ def strip_fenced_code_blocks(content: str) -> str:
     return "".join(stripped)
 
 
+def mask_fenced_code_blocks(content: str) -> str:
+    """Blank fenced code blocks without changing character offsets.
+
+    Unlike :func:`strip_fenced_code_blocks`, this helper retains the width of
+    every fenced line.  Parsers can therefore report half-open offsets against
+    the original Markdown string while excluding fenced pseudo-syntax.
+    """
+
+    masked: list[str] = []
+    in_fence = False
+    fence_char = ""
+    fence_len = 0
+    for line in content.splitlines(keepends=True):
+        marker = _fence_marker(line)
+        if in_fence:
+            masked.append(_mask_line(line))
+            if (
+                marker is not None
+                and marker[0] == fence_char
+                and marker[1] >= fence_len
+            ):
+                in_fence = False
+            continue
+        if marker is not None:
+            in_fence = True
+            fence_char, fence_len = marker
+            masked.append(_mask_line(line))
+            continue
+        masked.append(line)
+    return "".join(masked)
+
+
+def iter_mermaid_click_targets(content: str) -> Iterator[MarkdownLinkTarget]:
+    """Yield URL-bearing ``click`` directives from explicit Mermaid fences.
+
+    The supported form intentionally matches generated wiki diagrams:
+    ``click <node> "<target>"``.  Callback, ``href``, and single-quoted forms
+    are outside this narrow observation boundary.
+    """
+
+    for info, block_start, block_end in _iter_fenced_blocks(content):
+        if info.casefold() != "mermaid":
+            continue
+        block = content[block_start:block_end]
+        for match in _MERMAID_CLICK_RE.finditer(block):
+            raw_target = match.group("target")
+            yield MarkdownLinkTarget(
+                raw_target=raw_target,
+                target=normalize_markdown_link_target(raw_target),
+                label=match.group("label"),
+                is_image=False,
+                start=block_start + match.start("directive"),
+                end=block_start + match.end("directive"),
+            )
+
+
 def _fence_marker(line: str) -> Optional[tuple[str, int]]:
     stripped = line.lstrip()
     if stripped.startswith("```"):
@@ -125,6 +193,46 @@ def _blank_line(line: str) -> str:
     if line.endswith("\n"):
         return "\n"
     return ""
+
+
+def _mask_line(line: str) -> str:
+    if line.endswith("\r\n"):
+        return (" " * (len(line) - 2)) + "\r\n"
+    if line.endswith(("\n", "\r")):
+        return (" " * (len(line) - 1)) + line[-1]
+    return " " * len(line)
+
+
+def _iter_fenced_blocks(content: str) -> Iterator[tuple[str, int, int]]:
+    """Yield ``(info, body_start, body_end)`` using the established policy."""
+
+    in_fence = False
+    fence_char = ""
+    fence_len = 0
+    info = ""
+    body_start = 0
+    offset = 0
+    for line in content.splitlines(keepends=True):
+        marker = _fence_marker(line)
+        if in_fence:
+            if (
+                marker is not None
+                and marker[0] == fence_char
+                and marker[1] >= fence_len
+            ):
+                yield info, body_start, offset
+                in_fence = False
+            offset += len(line)
+            continue
+        if marker is not None:
+            fence_char, fence_len = marker
+            stripped = line.lstrip()
+            info = stripped[fence_len:].strip()
+            body_start = offset + len(line)
+            in_fence = True
+        offset += len(line)
+    if in_fence:
+        yield info, body_start, len(content)
 
 
 def iter_markdown_link_targets(content: str) -> Iterator[MarkdownLinkTarget]:
@@ -218,6 +326,58 @@ def normalize_markdown_link_target(raw_target: str) -> str:
     if target.startswith("<") and target.endswith(">"):
         target = target[1:-1].strip()
     return target
+
+
+def contains_uri_authority_userinfo(value: str) -> bool:
+    """Detect authority userinfo without scanning URI query/fragment values.
+
+    The first Markdown destination token is inspected as one URI. Any
+    whitespace-delimited trailing text is inspected as separate URI tokens,
+    covering supported titles and malformed scanner tails without interpreting
+    nested URI-looking query or fragment data as another authority.
+    """
+
+    text = value.strip()
+    if text.startswith("<") and ">" in text:
+        destination_end = text.index(">") + 1
+        destination = text[:destination_end]
+        tail = text[destination_end:].strip()
+    else:
+        parts = text.split(maxsplit=1)
+        destination = parts[0] if parts else ""
+        tail = parts[1] if len(parts) == 2 else ""
+    if destination.startswith("<"):
+        destination = destination[1:]
+    if destination.endswith(">"):
+        destination = destination[:-1]
+    destination = destination.strip()
+    if _uri_candidate_contains_authority_userinfo(destination):
+        return True
+
+    for token in tail.split():
+        candidate = token.lstrip("\"'(<[")
+        if _URI_AUTHORITY_PREFIX_RE.match(candidate):
+            if _uri_candidate_contains_authority_userinfo(candidate):
+                return True
+            continue
+        match = _URI_TOKEN_START_RE.search(candidate)
+        if match is not None:
+            uri_candidate = candidate[match.start("uri") :].lstrip("<")
+            if _uri_candidate_contains_authority_userinfo(uri_candidate):
+                return True
+    return False
+
+
+def _uri_candidate_contains_authority_userinfo(candidate: str) -> bool:
+    if _AUTHORITY_USERINFO_RE.match(candidate):
+        return True
+    try:
+        parsed = urlsplit(candidate)
+    except ValueError:
+        return False
+    return bool(
+        parsed.netloc and (parsed.username is not None or parsed.password is not None)
+    )
 
 
 def local_link_path(raw_target: str) -> Optional[str]:
@@ -408,6 +568,7 @@ def build_asset_index(
                 unreferenced, key=lambda value: (value.casefold(), value)
             )
         },
+        existing_paths=frozenset(asset_paths),
     )
 
 

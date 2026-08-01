@@ -18,10 +18,54 @@ Supporting detail for [SKILL.md](SKILL.md).
 |---|---|---|
 | valid documentation defect | The finding is correct and the docs are wrong or incomplete. | Fix wiki/source docs and verify. |
 | stale generated content | Generated wiki data is stale. | Run `llm-wiki sync`; do not hand-edit generated blocks. |
-| source-code truth mismatch | Documentation and source disagree; source is authoritative. | Update docs, or escalate if source appears wrong. |
+| source-code truth mismatch | Documentation and source disagree about observed code structure or behavior, for which source is authoritative. | Update docs, or escalate if source appears wrong. Do not use this status for product intent, policy, audience, or approval. |
 | duplicate finding | Another finding covers the same defect. | Link to the kept finding ID. |
 | out-of-scope request | The finding asks for work outside the requested docs review. | Record and defer. |
-| needs human confirmation | Product or policy intent is ambiguous. | Ask or record unresolved finding. |
+| needs human confirmation | Product intent, policy, audience promise, approval, or another human-owned decision is ambiguous. | Ask or record an unresolved finding; trusted intake/human decisions are authoritative for these fields. |
+
+## Managed versus external mutation contract
+
+| Mode | Reads | Allowed writes | Refresh and validation |
+|---|---|---|---|
+| Managed review | User-supplied findings, branch/diff, source, wiki, and deterministic reports | Authorized semantic wiki prose and authorized source docs; never generated blocks or native artifacts | Preview generated drift with `sync --dry-run`; after the last Markdown edit, run the owning sync, then strict lint/CI |
+| External `external_agent_docs` review | Packet-named evidence, worker result, readiness state, and normalized ledger | Only the exact review-result path and ledger fields the packet permits | No source, input-wiki, workspace-wiki, generated-artifact, governance-ledger, or receipt mutation; return defects/check requests to the owning stage or supervisor |
+
+The external review worker must not use the workspace-level allowlist as write
+authority. It preserves each original finding ID across handoffs. Agent review
+does not author or satisfy a native human section review, and a review result
+cannot self-authorize `publish_ready`.
+
+## Native human-review handoff
+
+Agent review, native human section review, and machine verification are three
+separate records. When managed review changes a semantic section that has a
+native human review event—or policy names it as human-reviewed scope—capture
+this handoff before the edit and reconcile it after the final re-anchor:
+
+| Field | Required value |
+|---|---|
+| Concept identity | Durable UID when governed, current locator, and canonical page path |
+| Review scope | Exact semantic section locator and heading |
+| Prior assurance | Review event ID, reviewer identity, method/version, prior state, and all prior expiry reasons |
+| Change evidence | Focused semantic diff plus the source/intake/evidence basis that justified it |
+| Post-refresh state | Valid/expired and every computed reason such as `scope-changed`, `evidence-changed`, or `basis-incompatible` |
+| Owner action | Named human/governance owner asked to inspect the new scope and, if accepted, author a new explicit `knowledge review` event |
+
+The reviewing agent never runs that owner action on the human's behalf. It
+cannot convert an agent result, lint pass, machine receipt, source truth, or
+trusted intake into `reviewer-kind human`. Generated-only churn that leaves the
+semantic hash and evidence basis unchanged keeps a valid review; do not create
+noise by requesting a replacement event.
+
+## Native lint finding map
+
+| Native category | Fact class | Review handling |
+|---|---|---|
+| `knowledge_projection`, `knowledge_schema`, `knowledge_snapshot` | Projection/schema/snapshot integrity | Treat the native model as unavailable or mixed. In managed mode preview and use the owning generator/repair path; never hand-edit generated artifacts. In external mode return the defect to the supervisor. |
+| `knowledge_evidence`, `knowledge_freshness` | Structural evidence and live-comparison qualification | Preserve the reason. `nonsemantic-source-change` remains a qualified diagnostic; `source-changed` asks for inspection or refresh and is not automatically false prose; unknown/incompatible/missing states cannot support negative facts. |
+| `knowledge_governance` | Durable identity, alias, lifecycle, or governance-ledger integrity | Route to the explicit governance owner/command. Never initialize governance or rewrite its ledger as review repair. |
+| `knowledge_review` | Native human review of an exact semantic section | Report valid versus expired state and every expiry reason. This agent review cannot create, replace, or stand in for the human event. |
+| `knowledge_verification` | Disposable machine-verification receipt/check state | Report failed, invalid, or stale receipt reasons separately. Rerun a fixed checker only under caller/supervisor authority; stored checker metadata cannot authorize execution or a replacement receipt. |
 
 ## Published user-docs finding classes
 
@@ -29,7 +73,7 @@ Use these classes when reviewing `site export --profile user` or `site check --p
 
 | Finding class | Typical signal | Action |
 |---|---|---|
-| broken distribution-mode link | Built-site validation reports HTTP/file mode link issues, including file-directory URLs in direct-file handoffs | Fix export mode, link target, or handoff instructions; re-run `site check --built-site-dir ... --link-mode http|file`. |
+| broken distribution-mode link | Built-site validation reports HTTP/file mode link issues, including a missing/mismatched publication marker or file-directory URLs in direct-file handoffs | Fix export mode, marker handoff, link target, or instructions; rebuild from the matching receipted mirror, then re-run `site check --format ... --built-site-dir ... --link-mode http|file`. |
 | missing human landing page | Root `index.md` is absent, still starts as a raw generated inventory, or does not use the configured site name | Regenerate/export with `--profile user --site-name <project>` or fix the human root page. |
 | missing guide surface | `missing_user_guides` or no `guides/*.md` pages in the user profile | Run `onboarding-guide` before publishing user docs. |
 | bootstrap placeholder in primary docs | `published_placeholder` in root or guide pages | Replace placeholder prose with source-backed narrative or defer the page from primary docs. |
@@ -41,9 +85,20 @@ Checker output from these classes can feed the `user-docs-author` adjustment loo
 ## Safe edit rules
 
 - Generated tables, diagrams, manifests, and "Do not edit by hand" blocks are protected.
-- Semantic wiki sections, overview prose, `## Behavior`, and `## Notes` are editable when source evidence supports the change.
+- Supported semantic wiki sections, overview prose, `## Behavior`, and
+  dependency/API `## Notes` are editable when the applicable authority supports
+  the change. Infrastructure `## Notes` is the sole semantic section on its
+  incrementally regenerated page; unsupported custom headings are dropped and
+  generated fields remain protected. Security findings belong in a separate
+  redacted report based on current raw source or an authorized fresh dedicated
+  extraction.
 - A branch/diff workflow can include source documentation edits, but only when the reviewed truth surface is source docs rather than generated wiki output.
 - Review JSON is evidence, not authority; verify against source before edits.
+- Source settles observed code structure/behavior. Trusted intake and explicit
+  human decisions settle product intent, policy, audience, and approval.
+- In managed mode, preview generated drift with `sync --dry-run`; after the
+  final authorized semantic edit run the owning sync before strict lint/CI.
+- External review is report-only under the allowed-write row above.
 
 ## Report format
 
@@ -55,6 +110,9 @@ Checker output from these classes can feed the `user-docs-author` adjustment loo
 
 Always include an "Unresolved finding" section when anything remains open.
 Mention duplicate finding IDs and false-positive rationale explicitly.
+When a reviewed semantic scope changed, also include a separate "Native
+human-review handoff" table with the coordinates and post-refresh reasons
+above. Do not bury it among fixed agent-review findings.
 
 For `external_agent_docs`, also keep severity, status, evidence hashes,
 originating stage, iteration count, terminal rationale, and returned-to-stage
@@ -65,6 +123,30 @@ resolution. Three repeated unresolved high-severity iterations block the run;
 the reviewer cannot self-authorize `publish_ready`. The supervisor reconciles
 the review result against source/input hashes, generated ownership, actual
 diffs, and deterministic checks.
+
+Original finding IDs are immutable across the review result, ledger update,
+returned-to-stage handoff, and later adjustment result. A duplicate points to
+the kept original ID; it does not replace either identity.
+
+## Native-qualified finding evidence
+
+`claims_evidence_pages` remains the page-only compatibility record. A finding
+that depends on exact native identity, semantic section ownership/review,
+lifecycle, or graph scope also returns
+`llm-wiki-documentation-claim-evidence/v1` with its stable finding ID,
+canonical page, UID or current locator, optional section locator, structural
+evidence and freshness state/reason/evaluation flag, applicable
+lifecycle/review summary, exact query/analyzer bounds, and safe page link.
+Reference detailed samples only under `.llm-wiki-docs/evidence/`; never copy
+them into public review output.
+
+The reviewer preserves ambiguous, missing, unavailable, and truncated state.
+It does not assert that a section is missing merely because a bounded list did
+not return it. The supervisor preflights result structure before refresh, then
+resolves and recomputes each record live/read-only only for a verified-current
+source-bound run; other runs use the committed snapshot with freshness
+unevaluated. A mismatched coordinate, native fact, capture binding, or bound is
+an integrity failure, not a finding the reviewer may waive.
 
 ## Usage examples handoff
 

@@ -1,0 +1,7 @@
+tests/fixtures/knowledge/*.json text eol=lf
+tests/fixtures/knowledge-index/*.json text eol=lf
+tests/fixtures/knowledge-evidence/*.json text eol=lf
+tests/fixtures/knowledge-m1/** text eol=lf
+tests/fixtures/context-prefer-fresh-off-v1.json text eol=lf
+tests/fixtures/context-prefer-fresh-on-v1.json text eol=lf
+tests/fixtures/context-packet-v1.json text eol=lf

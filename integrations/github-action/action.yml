@@ -1,0 +1,95 @@
+name: LLM Wiki context health gate
+description: Check wiki freshness, snapshot parity, governance, drift, and verification state.
+
+inputs:
+  wiki-dir:
+    description: Repository-relative path to the LLM Wiki directory.
+    required: false
+    default: docs/llm_wiki
+  src-dir:
+    description: Repository-relative source directory evaluated by the wiki.
+    required: false
+    default: .
+  strict:
+    description: Classify indeterminate or nonsemantic source drift as unhealthy.
+    required: false
+    default: "true"
+  fail-on:
+    description: Lowest health level that fails the action (unhealthy or degraded).
+    required: false
+    default: unhealthy
+
+outputs:
+  status:
+    description: Overall doctor status.
+    value: ${{ steps.summary.outputs.status }}
+  exit-code:
+    description: Native doctor exit code before the configured threshold is applied.
+    value: ${{ steps.doctor.outputs.exit-code }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+      with:
+        python-version: "3.13"
+
+    - name: Install LLM Wiki CLI
+      shell: bash
+      run: >-
+        python -m pip install
+        --disable-pip-version-check
+        --no-input
+        "${GITHUB_ACTION_PATH}/../.."
+
+    - name: Build knowledge health report
+      id: doctor
+      shell: bash
+      env:
+        INPUT_WIKI_DIR: ${{ inputs.wiki-dir }}
+        INPUT_SRC_DIR: ${{ inputs.src-dir }}
+        INPUT_STRICT: ${{ inputs.strict }}
+        DOCTOR_JSON: ${{ runner.temp }}/llm-wiki-doctor.json
+      run: |
+        set -euo pipefail
+        strict_value="${INPUT_STRICT}"
+        case "${strict_value}" in
+          true|false) ;;
+          *)
+            echo "strict must be true or false" >&2
+            exit 2
+            ;;
+        esac
+
+        doctor_args=(
+          --wiki-dir "${INPUT_WIKI_DIR}"
+          --src-dir "${INPUT_SRC_DIR}"
+          --format json
+        )
+        if [[ "${strict_value}" == "true" ]]; then
+          doctor_args+=(--strict)
+        fi
+
+        set +e
+        llm-wiki doctor "${doctor_args[@]}" > "${DOCTOR_JSON}"
+        doctor_exit=$?
+        set -e
+        if (( doctor_exit < 0 || doctor_exit > 3 )); then
+          echo "llm-wiki doctor failed outside its documented exit contract" >&2
+          exit "${doctor_exit}"
+        fi
+        echo "exit-code=${doctor_exit}" >> "${GITHUB_OUTPUT}"
+
+    - name: Publish health summary and apply threshold
+      id: summary
+      shell: bash
+      env:
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+        DOCTOR_JSON: ${{ runner.temp }}/llm-wiki-doctor.json
+        DOCTOR_EXIT_CODE: ${{ steps.doctor.outputs.exit-code }}
+      run: >-
+        python "${GITHUB_ACTION_PATH}/render_summary.py"
+        --report "${DOCTOR_JSON}"
+        --fail-on "${INPUT_FAIL_ON}"
+        --doctor-exit-code "${DOCTOR_EXIT_CODE}"

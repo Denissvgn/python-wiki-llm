@@ -18,6 +18,12 @@ def _fmt_ms(value) -> str:
     return f"{value:.1f} ms"
 
 
+def _fmt_counts(value: object) -> str:
+    if not isinstance(value, dict):
+        return "n/a"
+    return ", ".join(f"{key}={count}" for key, count in sorted(value.items())) or "none"
+
+
 def render_text(summary: dict, last: str) -> str:
     accuracy = summary["accuracy"]
     coverage = summary["coverage"]
@@ -27,15 +33,28 @@ def render_text(summary: dict, last: str) -> str:
     lines = [
         f"LLM Wiki metrics (last {last})",
         "",
-        f"Accuracy: {_fmt_percent(accuracy['strict_validation_pass_percent'])} strict validation pass rate "
-        f"({accuracy['validations']} run(s), {accuracy['failures']} failure(s))",
-        f"Coverage: {_fmt_percent(coverage['percent'])} "
-        f"({coverage['entities']['documented']}/{coverage['entities']['total']} entities, "
-        f"{coverage['modules']['documented']}/{coverage['modules']['total']} modules)",
-        f"Speed: {_fmt_ms(speed['average_successful_sync_ms'])} average successful sync "
-        f"({speed['successful_syncs']} run(s))",
-        f"Totals: {totals['sync_attempts']} sync attempt(s), {totals['validations']} validation(s), "
-        f"{totals['failures']} failure(s), {totals['events']} event(s)",
+        (
+            f"Accuracy: "
+            f"{_fmt_percent(accuracy['strict_validation_pass_percent'])} "
+            f"strict validation pass rate ({accuracy['validations']} run(s), "
+            f"{accuracy['failures']} failure(s))"
+        ),
+        (
+            f"Coverage: {_fmt_percent(coverage['percent'])} "
+            f"({coverage['entities']['documented']}/"
+            f"{coverage['entities']['total']} entities, "
+            f"{coverage['modules']['documented']}/"
+            f"{coverage['modules']['total']} modules)"
+        ),
+        (
+            f"Speed: {_fmt_ms(speed['average_successful_sync_ms'])} "
+            f"average successful sync ({speed['successful_syncs']} run(s))"
+        ),
+        (
+            f"Totals: {totals['sync_attempts']} sync attempt(s), "
+            f"{totals['validations']} validation(s), "
+            f"{totals['failures']} failure(s), {totals['events']} event(s)"
+        ),
     ]
 
     if summary["recent_failures"]:
@@ -44,7 +63,47 @@ def render_text(summary: dict, last: str) -> str:
             label = event.get("command") or event.get("agent") or event.get("event")
             detail = event.get("issue_count", event.get("exit_code", "unknown"))
             lines.append(f"- {event.get('ts', '?')} {label}: {detail}")
+
+    knowledge = summary.get("knowledge_summary")
+    if isinstance(knowledge, dict):
+        degraded_reason = knowledge.get("degraded_reason")
+        reason = degraded_reason or knowledge.get("reason", "unknown")
+        lines.extend(
+            [
+                "",
+                "Knowledge:",
+                (
+                    f"- Availability: {knowledge.get('availability', 'unknown')} "
+                    f"({reason})"
+                ),
+                (f"- Concepts evaluated: {knowledge.get('concepts_evaluated', 0)}"),
+                (
+                    "- Freshness: "
+                    f"{knowledge.get('freshness', 'unevaluated (snapshot-only read)')}"
+                ),
+                (
+                    "- Freshness counts: "
+                    f"{_fmt_counts(knowledge.get('freshness_counts'))}"
+                ),
+                (
+                    "- Evidence issues: "
+                    f"{_fmt_counts(knowledge.get('evidence_issue_counts'))}"
+                ),
+                (
+                    "- Phases: "
+                    f"{_fmt_phase_durations(knowledge.get('phase_durations_ms'))}"
+                ),
+            ]
+        )
     return "\n".join(lines) + "\n"
+
+
+def _fmt_phase_durations(value: object) -> str:
+    durations = value if isinstance(value, dict) else {}
+    return ", ".join(
+        f"{phase}={_fmt_ms(durations.get(phase))}"
+        for phase in ("load", "evaluate", "check")
+    )
 
 
 def run(args) -> None:

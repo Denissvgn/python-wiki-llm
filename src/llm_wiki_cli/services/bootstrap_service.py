@@ -19,6 +19,10 @@ class BootstrapContractError(BootstrapServiceError):
     """Raised when bootstrap input or generated contracts are invalid."""
 
 
+class BootstrapRequestError(BootstrapContractError):
+    """Raised when caller-supplied bootstrap options violate the contract."""
+
+
 @dataclass(frozen=True)
 class BootstrapRequest:
     """Runner-neutral deterministic bootstrap inputs.
@@ -26,6 +30,10 @@ class BootstrapRequest:
     ``source_adapter`` defaults to true because library callers should not
     mutate agent integration files.  The existing CLI explicitly supplies its
     historical value when translating argparse options.
+
+    ``overwrite`` is retained only as a compatibility tombstone.  Public
+    bootstrap is first-use only and rejects ``overwrite=True`` before source
+    extraction or target writes.
     """
 
     source_root: str | Path
@@ -66,6 +74,7 @@ class BootstrapResult:
 __all__ = [
     "BootstrapContractError",
     "BootstrapExtractionError",
+    "BootstrapRequestError",
     "BootstrapRequest",
     "BootstrapResult",
     "BootstrapServiceError",

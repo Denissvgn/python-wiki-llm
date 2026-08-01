@@ -1,0 +1,16 @@
+target-version = "py310"
+
+[lint]
+select = ["E4", "E7", "E9", "F"]
+
+[lint.per-file-ignores]
+"src/llm_wiki_cli/services/documentation_run/contracts.py" = ["F403", "F405"]
+"src/llm_wiki_cli/services/documentation_run/export.py" = ["F403", "F405"]
+"src/llm_wiki_cli/services/documentation_run/integrity.py" = ["F403", "F405"]
+"src/llm_wiki_cli/services/documentation_run/packet.py" = ["F403", "F405"]
+"src/llm_wiki_cli/services/documentation_run/prepare.py" = ["F403", "F405"]
+"src/llm_wiki_cli/services/documentation_run/record.py" = ["F403", "F405"]
+"src/llm_wiki_cli/services/documentation_run/refresh.py" = ["F403", "F405"]
+"src/llm_wiki_cli/services/documentation_run/schema.py" = ["F403", "F405"]
+"src/llm_wiki_cli/services/documentation_run/verify.py" = ["F403", "F405"]
+"src/llm_wiki_cli/services/documentation_run/workspace.py" = ["F403", "F405"]

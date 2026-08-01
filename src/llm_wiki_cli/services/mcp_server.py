@@ -9,21 +9,41 @@ from __future__ import annotations
 
 import ipaddress
 import json
+import re
 import sys
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
-from pathlib import Path, PurePosixPath
-from typing import Mapping
+from pathlib import Path
+from typing import Any, Protocol, cast
 from urllib.parse import unquote, urlparse
 
 from ..api import LlmWikiApiError, build_documentation_query_service
 from ..config import IDE_AGENTS, get_agent_config_path, read_config, validate_path
-from ..commands import context_cmd, lint_cmd
-from ..commands.bootstrap_cmd import build_module_page_map
-from ..commands.extract_cmd import get_inventory
-from . import circuit_breaker, wiki_surface
+from . import circuit_breaker, context_service as context_cmd
+from . import lint_service as lint_cmd
+from . import wiki_surface
+from .bootstrap_runtime import build_module_page_map
+from .concept_identity import (
+    ConceptIdentityError,
+    validate_concept_uid,
+    validate_natural_key,
+)
 from .documentation_queries import DocumentationQueryError
+from .extraction_service import get_inventory
 from .io import read_md
-
+from .knowledge_graph import (
+    CORE_RELATIONSHIP_KINDS,
+    GRAPH_ORIGINS,
+    GRAPH_RESOLUTIONS,
+)
+from .knowledge_observability import (
+    knowledge_status_payload,
+    load_snapshot_knowledge_observability,
+)
+from .validation import (
+    posix_path_text as shared_posix_path_text,
+    require_portable_relative_path,
+)
 
 MCP_PACKAGE_HINT = "Install it with: pip install 'agent-wiki-cli[mcp]'"
 RESOURCE_SCHEME = "llm-wiki"
@@ -40,6 +60,7 @@ _ROOT_RESOURCES = {
 }
 _SEARCH_KINDS = set(_PAGE_KINDS_BY_MCP_KIND)
 _ARCHITECTURE_PAGE_KINDS = {"api-contracts", "dependencies", "load-order"}
+_MAX_QUERY_LIMIT = 100
 _GRAPH_QUERY_METHODS = {
     "flow_for_entrypoint": "flow_for_entrypoint",
     "data_flow_for_entrypoint": "data_flow_for_entrypoint",
@@ -48,6 +69,13 @@ _GRAPH_QUERY_METHODS = {
     "dependency_neighborhood": "dependency_neighborhood",
     "pages_for_symbol": "pages_for_symbol",
 }
+_KNOWLEDGE_DIRECTIONS = ("inbound", "outbound", "both")
+_KNOWLEDGE_RELATIONSHIP_KINDS = ("derived_from", "links_to")
+_SECTION_OWNERSHIP_VALUES = ("generated", "semantic", "mixed", "unknown")
+_TYPED_GRAPH_DIRECTIONS = ("incoming", "outgoing", "both")
+_QUALIFIED_GRAPH_KIND_RE = re.compile(
+    r"^[A-Za-z][A-Za-z0-9._-]*/[A-Za-z][A-Za-z0-9._-]*$"
+)
 
 
 class MCPDependencyError(RuntimeError):
@@ -56,6 +84,20 @@ class MCPDependencyError(RuntimeError):
 
 class McpWikiError(ValueError):
     """Raised for invalid MCP wiki requests."""
+
+
+class _McpHttpApplication(Protocol):
+    def add_middleware(
+        self,
+        middleware_class: type[object],
+        **options: object,
+    ) -> None: ...
+
+
+class _RunnableMcpServer(Protocol):
+    def run(self, *, transport: str, **kwargs: object) -> None: ...
+
+    def streamable_http_app(self) -> _McpHttpApplication: ...
 
 
 @dataclass(frozen=True)
@@ -230,13 +272,116 @@ class McpWikiService:
         try:
             query_service = build_documentation_query_service(
                 self.src_dir,
-                wiki_dir=str(self.wiki_dir),
+                wiki_dir=_posix_string(self.wiki_dir),
                 limit=limit,
             )
             method = getattr(query_service, _GRAPH_QUERY_METHODS[query_type])
             return method(value)
         except (LlmWikiApiError, DocumentationQueryError) as exc:
             raise McpWikiError(str(exc)) from exc
+
+    def get_concept(
+        self,
+        locator_or_exact_route: str,
+        limit: int = 20,
+    ) -> dict:
+        """Return one concept by current coordinate, durable UID, or alias."""
+        locator = _knowledge_locator(locator_or_exact_route)
+        bounded_limit = _bounded_query_limit(limit)
+        return self._run_documentation_query(
+            "get_concept",
+            locator,
+            limit=bounded_limit,
+        )
+
+    def related_concepts(
+        self,
+        locator_or_exact_route: str,
+        direction: str = "both",
+        kinds: list[str] | None = None,
+        limit: int = 20,
+    ) -> dict:
+        """Return bounded relationships for one exact concept identity."""
+        locator = _knowledge_locator(locator_or_exact_route)
+        selected_direction = _knowledge_direction(direction)
+        selected_kinds = _knowledge_kinds(kinds)
+        bounded_limit = _bounded_query_limit(limit)
+        return self._run_documentation_query(
+            "related_concepts",
+            locator,
+            limit=bounded_limit,
+            direction=selected_direction,
+            kinds=selected_kinds,
+        )
+
+    def list_concept_sections(
+        self,
+        locator_or_exact_route: str,
+        ownership: str | None = None,
+        limit: int = 20,
+    ) -> dict:
+        """Return bounded document-order sections for one exact concept."""
+        locator = _knowledge_locator(locator_or_exact_route)
+        selected_ownership = _section_ownership(ownership)
+        bounded_limit = _bounded_query_limit(limit)
+        return self._run_documentation_query(
+            "list_concept_sections",
+            locator,
+            limit=bounded_limit,
+            ownership=selected_ownership,
+        )
+
+    def traverse_typed_graph(
+        self,
+        locator_or_exact_route: str,
+        direction: str = "both",
+        kinds: list[str] | None = None,
+        origins: list[str] | None = None,
+        resolutions: list[str] | None = None,
+        include_evidence: bool = False,
+        limit: int = 20,
+    ) -> dict:
+        """Traverse bounded persisted typed relationships for one concept."""
+        locator = _knowledge_locator(locator_or_exact_route)
+        selected_direction = _typed_graph_direction(direction)
+        selected_kinds = _typed_graph_kinds(kinds)
+        selected_origins = _typed_graph_enum_values(
+            origins,
+            field="origins",
+            allowed=GRAPH_ORIGINS,
+        )
+        selected_resolutions = _typed_graph_enum_values(
+            resolutions,
+            field="resolutions",
+            allowed=GRAPH_RESOLUTIONS,
+        )
+        if not isinstance(include_evidence, bool):
+            raise McpWikiError("include_evidence must be a boolean.")
+        bounded_limit = _bounded_query_limit(limit)
+        return self._run_documentation_query(
+            "traverse_typed_graph",
+            locator,
+            limit=bounded_limit,
+            direction=selected_direction,
+            kinds=selected_kinds,
+            origins=selected_origins,
+            resolutions=selected_resolutions,
+            include_evidence=include_evidence,
+        )
+
+    def explain_evidence(
+        self,
+        locator_or_exact_route: str,
+        limit: int = 20,
+    ) -> dict:
+        """Return bounded evidence for one exact concept identity."""
+        locator = _knowledge_locator(locator_or_exact_route)
+        bounded_limit = _bounded_query_limit(limit)
+        return self._run_documentation_query(
+            "explain_evidence",
+            locator,
+            limit=bounded_limit,
+        )
 
     def search_wiki(
         self,
@@ -246,9 +391,7 @@ class McpWikiService:
     ) -> dict:
         if not isinstance(query, str) or not query.strip():
             raise McpWikiError("query must be a non-empty string.")
-        if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
-            raise McpWikiError("limit must be a positive integer.")
-        limit = min(limit, 100)
+        limit = _bounded_query_limit(limit)
 
         requested = set(kinds or _SEARCH_KINDS)
         unknown = requested - _SEARCH_KINDS
@@ -257,11 +400,15 @@ class McpWikiService:
 
         needle = query.casefold()
         matches: list[dict] = []
+        total = 0
         for page in self._iter_pages(requested):
             content = read_md(page.path)
             haystack = content.casefold()
             idx = haystack.find(needle)
             if idx == -1:
+                continue
+            total += 1
+            if len(matches) == limit:
                 continue
             matches.append(
                 {
@@ -273,10 +420,22 @@ class McpWikiService:
                     "snippet": _snippet(content, idx, len(query)),
                 }
             )
-            if len(matches) >= limit:
-                break
 
-        return {"query": query, "count": len(matches), "results": matches}
+        returned = len(matches)
+        bounds = {
+            "total": total,
+            "returned": returned,
+            "truncated": total > returned,
+        }
+        return {
+            "query": query,
+            "total": total,
+            "returned": returned,
+            "count": returned,
+            "truncated": bounds["truncated"],
+            "bounds": {"results": bounds},
+            "results": matches,
+        }
 
     def get_context(
         self,
@@ -284,6 +443,7 @@ class McpWikiService:
         focus: list[str] | None = None,
         format: str = "markdown",
         filters: dict | None = None,
+        prefer_fresh: bool = False,
     ) -> dict:
         request = {
             "protocol": context_cmd.PROTOCOL_VERSION,
@@ -291,26 +451,93 @@ class McpWikiService:
             "focus": focus or ["changed", "neighbors"],
             "format": format,
             "filters": filters or {},
+            "prefer_fresh": prefer_fresh,
         }
         try:
             validated = context_cmd._validate_protocol_request(request)
+            build_options = {
+                "emit_warnings": False,
+                "wiki_dir": _posix_string(self.wiki_dir),
+            }
+            if validated["prefer_fresh"]:
+                build_options["prefer_fresh"] = True
             payload, warnings = context_cmd._build_context(
                 self.src_dir,
                 validated["budget_tokens"],
                 validated["format"],
                 validated["focus"],
                 validated["filters"],
-                emit_warnings=False,
-                wiki_dir=str(self.wiki_dir),
+                **build_options,
             )
         except context_cmd.ProtocolRequestError as exc:
             raise McpWikiError(str(exc)) from exc
         return context_cmd._protocol_success_payload(validated, payload, warnings)
 
-    def check_wiki(self, strict: bool = False, format: str = "json") -> dict:
+    def get_context_packet(
+        self,
+        budget_tokens: int = 32000,
+        focus: list[str] | None = None,
+        format: str = "json",
+        filters: dict | None = None,
+        prefer_fresh: bool = False,
+        if_packet_id: str | None = None,
+    ) -> dict:
+        """Return a fresh qualified packet or an unchanged cache marker."""
+
+        from .context_packet import ContextPacketError, build_qualified_context
+
+        if if_packet_id is not None and (
+            not isinstance(if_packet_id, str)
+            or re.fullmatch(r"sha256:[0-9a-f]{64}", if_packet_id) is None
+        ):
+            raise McpWikiError(
+                "if_packet_id must be a sha256:<64 lowercase hex> value or None."
+            )
+        request = {
+            "protocol": context_cmd.PROTOCOL_VERSION,
+            "budget_tokens": budget_tokens,
+            "focus": focus or ["changed", "neighbors"],
+            "format": format,
+            "filters": filters or {},
+            "prefer_fresh": prefer_fresh,
+        }
+        try:
+            packet = build_qualified_context(
+                self.src_dir,
+                _posix_string(self.wiki_dir),
+                request,
+                read_only=True,
+            )
+        except (ContextPacketError, context_cmd.ProtocolRequestError) as exc:
+            raise McpWikiError(str(exc)) from exc
+
+        if packet.packet_id == if_packet_id:
+            return {
+                "state": "unchanged",
+                "unchanged": True,
+                "packet_id": packet.packet_id,
+            }
+        return {
+            "state": "fresh",
+            "unchanged": False,
+            "packet_id": packet.packet_id,
+            "packet": packet.to_payload(),
+        }
+
+    def check_wiki(
+        self,
+        strict: bool = False,
+        format: str = "json",
+        knowledge_drift_report: bool = False,
+    ) -> dict:
         if format not in {"json", "text", "markdown"}:
             raise McpWikiError("format must be 'json', 'text', or 'markdown'.")
-        report = lint_cmd.build_report(self.wiki_dir, self.src_dir, strict=strict)
+        report = lint_cmd.build_report(
+            self.wiki_dir,
+            self.src_dir,
+            strict=strict,
+            knowledge_drift_report=knowledge_drift_report,
+        )
         payload = lint_cmd.report_to_dict(report)
         _normalise_report_paths(payload)
         if format == "text":
@@ -329,11 +556,19 @@ class McpWikiService:
         pages["architecture_pages"] = sum(
             pages[kind] for kind in _ARCHITECTURE_PAGE_KINDS
         )
+        knowledge_observability = load_snapshot_knowledge_observability(
+            wiki,
+            src_dir=self.src_dir,
+        )
+        knowledge_status = knowledge_status_payload(knowledge_observability.view)
         status: dict[str, object] = {
             "wiki_dir": _posix_string(wiki),
             "wiki_exists": wiki.exists(),
             "pages": pages,
+            "knowledge": knowledge_status,
         }
+        if knowledge_status["availability"] != "absent":
+            status["knowledge_summary"] = knowledge_observability.summary.to_payload()
 
         agent_config = get_agent_config_path(wiki)
         if agent_config.exists():
@@ -363,6 +598,26 @@ class McpWikiService:
             "consecutive_failures": state.get("consecutive_failures", 0),
         }
         return status
+
+    def _run_documentation_query(
+        self,
+        method_name: str,
+        value: str,
+        *,
+        limit: int,
+        **query_options,
+    ) -> dict:
+        try:
+            query_service = build_documentation_query_service(
+                self.src_dir,
+                wiki_dir=_posix_string(self.wiki_dir),
+                limit=limit,
+                read_only=True,
+            )
+            method = getattr(query_service, method_name)
+            return method(value, **query_options)
+        except (LlmWikiApiError, DocumentationQueryError) as exc:
+            raise McpWikiError(str(exc)) from exc
 
     def read_resource(self, uri: str) -> dict:
         page = self._page_from_uri(uri)
@@ -496,9 +751,12 @@ def create_mcp_server(config: McpServerConfig):
         "llm-wiki",
         instructions=(
             "Read-only access to the local LLM Wiki. Use tools to fetch wiki pages, "
-            "search documentation, query documentation graphs, request generated "
-            "context, and run checks."
+            "search documentation, query documentation and knowledge graphs, "
+            "request generated context, and run checks."
         ),
+        host=config.host,
+        port=config.port,
+        streamable_http_path=config.path,
     )
 
     _register_mcp_tools(server, service)
@@ -534,6 +792,71 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         return service.query_graph(query)
 
     @server.tool()
+    def get_concept(
+        locator_or_exact_route: str,
+        limit: int = 20,
+    ) -> dict:
+        """Return one concept by current coordinate, durable UID, or alias."""
+        return service.get_concept(locator_or_exact_route, limit=limit)
+
+    @server.tool()
+    def related_concepts(
+        locator_or_exact_route: str,
+        direction: str = "both",
+        kinds: list[str] | None = None,
+        limit: int = 20,
+    ) -> dict:
+        """Return bounded relationships for one exact concept identity."""
+        return service.related_concepts(
+            locator_or_exact_route,
+            direction=direction,
+            kinds=kinds,
+            limit=limit,
+        )
+
+    @server.tool()
+    def list_concept_sections(
+        locator_or_exact_route: str,
+        ownership: str | None = None,
+        limit: int = 20,
+    ) -> dict:
+        """Return bounded document-order sections for one exact concept."""
+        return service.list_concept_sections(
+            locator_or_exact_route,
+            ownership=ownership,
+            limit=limit,
+        )
+
+    @server.tool()
+    def traverse_typed_graph(
+        locator_or_exact_route: str,
+        direction: str = "both",
+        kinds: list[str] | None = None,
+        origins: list[str] | None = None,
+        resolutions: list[str] | None = None,
+        include_evidence: bool = False,
+        limit: int = 20,
+    ) -> dict:
+        """Traverse bounded persisted typed relationships for one concept."""
+        return service.traverse_typed_graph(
+            locator_or_exact_route,
+            direction=direction,
+            kinds=kinds,
+            origins=origins,
+            resolutions=resolutions,
+            include_evidence=include_evidence,
+            limit=limit,
+        )
+
+    @server.tool()
+    def explain_evidence(
+        locator_or_exact_route: str,
+        limit: int = 20,
+    ) -> dict:
+        """Return bounded evidence for one exact concept identity."""
+        return service.explain_evidence(locator_or_exact_route, limit=limit)
+
+    @server.tool()
     def search_wiki(
         query: str, kinds: list[str] | None = None, limit: int = 20
     ) -> dict:
@@ -546,6 +869,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         focus: list[str] | None = None,
         format: str = "markdown",
         filters: dict | None = None,
+        prefer_fresh: bool = False,
     ) -> dict:
         """Return priority-ranked codebase context from llm-wiki context."""
         return service.get_context(
@@ -553,12 +877,40 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
             focus=focus,
             format=format,
             filters=filters,
+            prefer_fresh=prefer_fresh,
         )
 
     @server.tool()
-    def check_wiki(strict: bool = False, format: str = "json") -> dict:
+    def get_context_packet(
+        budget_tokens: int = 32000,
+        focus: list[str] | None = None,
+        format: str = "json",
+        filters: dict | None = None,
+        prefer_fresh: bool = False,
+        if_packet_id: str | None = None,
+    ) -> dict:
+        """Return a qualified packet with packet-id cache revalidation."""
+        return service.get_context_packet(
+            budget_tokens=budget_tokens,
+            focus=focus,
+            format=format,
+            filters=filters,
+            prefer_fresh=prefer_fresh,
+            if_packet_id=if_packet_id,
+        )
+
+    @server.tool()
+    def check_wiki(
+        strict: bool = False,
+        format: str = "json",
+        knowledge_drift_report: bool = False,
+    ) -> dict:
         """Run read-only wiki lint checks and return a structured report."""
-        return service.check_wiki(strict=strict, format=format)
+        return service.check_wiki(
+            strict=strict,
+            format=format,
+            knowledge_drift_report=knowledge_drift_report,
+        )
 
     @server.tool()
     def get_status() -> dict:
@@ -612,28 +964,25 @@ def run_mcp_server(config: McpServerConfig) -> None:
         for origin in config.allowed_origins:
             _normalise_origin(origin)
 
-    server = create_mcp_server(config)
+    server = cast(_RunnableMcpServer, create_mcp_server(config))
 
     if config.transport == "stdio":
-        server.run(transport="stdio", show_banner=False)
+        server.run(transport="stdio")
         return
 
-    from starlette.middleware import Middleware  # type: ignore[reportMissingImports]
+    import uvicorn  # type: ignore[reportMissingImports]
 
-    middleware = [
-        Middleware(
-            OriginValidationMiddleware,
-            port=config.port,
-            allowed_origins=list(config.allowed_origins),
-        )
-    ]
-    server.run(
-        transport="streamable-http",
-        show_banner=False,
+    application = server.streamable_http_app()
+    application.add_middleware(
+        OriginValidationMiddleware,
+        port=config.port,
+        allowed_origins=list(config.allowed_origins),
+    )
+    uvicorn.run(
+        cast(Any, application),
         host=config.host,
         port=config.port,
-        path=config.path,
-        middleware=middleware,
+        log_level="warning",
     )
 
 
@@ -644,6 +993,10 @@ def _resource_uri(kind: str, page_id: str) -> str:
 def _graph_query_args(query: Mapping[str, object]) -> tuple[str, str, int]:
     if not isinstance(query, Mapping):
         raise McpWikiError("query must be an object.")
+
+    unknown = sorted(set(query) - {"type", "value", "limit"})
+    if unknown:
+        raise McpWikiError(f"Unknown query field: {unknown[0]}")
 
     query_type = query.get("type")
     if not isinstance(query_type, str) or not query_type.strip():
@@ -656,11 +1009,145 @@ def _graph_query_args(query: Mapping[str, object]) -> tuple[str, str, int]:
     if not isinstance(value, str) or not value.strip():
         raise McpWikiError("value must be a non-empty string.")
 
-    limit = query.get("limit", 20)
-    if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
-        raise McpWikiError("limit must be a positive integer.")
+    limit = _bounded_query_limit(query.get("limit", 20))
 
-    return query_type, value.strip(), min(limit, 100)
+    return query_type, value.strip(), limit
+
+
+def _knowledge_locator(value: object) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise McpWikiError(
+            "locator_or_exact_route must be a non-empty string."
+        )
+    selected = value.strip()
+    try:
+        return wiki_surface.validate_exact_page_coordinate(selected)
+    except wiki_surface.WikiSurfaceError:
+        pass
+    for validator in (validate_concept_uid, validate_natural_key):
+        try:
+            return validator(selected)
+        except ConceptIdentityError:
+            continue
+    raise McpWikiError(
+        "locator_or_exact_route must be an exact canonical wiki path or "
+        "llm-wiki URI, durable concept UID, or natural-key alias."
+    )
+
+
+def _knowledge_direction(value: object) -> str:
+    if not isinstance(value, str) or value not in _KNOWLEDGE_DIRECTIONS:
+        choices = ", ".join(repr(item) for item in _KNOWLEDGE_DIRECTIONS)
+        raise McpWikiError(f"direction must be one of {choices}.")
+    return value
+
+
+def _section_ownership(value: object) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or value not in _SECTION_OWNERSHIP_VALUES:
+        choices = ", ".join(repr(item) for item in _SECTION_OWNERSHIP_VALUES)
+        raise McpWikiError(f"ownership must be one of {choices}, or None.")
+    return value
+
+
+def _knowledge_kinds(values: object) -> list[str] | None:
+    if values is None:
+        return None
+    if isinstance(values, (str, bytes, Mapping)):
+        raise McpWikiError(
+            "kinds must be an iterable of relationship kind strings."
+        )
+    if not isinstance(values, Iterable):
+        raise McpWikiError(
+            "kinds must be an iterable of relationship kind strings."
+        )
+    requested = list(values)
+    if any(not isinstance(value, str) for value in requested):
+        raise McpWikiError(
+            "kinds must contain only relationship kind strings."
+        )
+    unsupported = sorted(
+        set(requested) - set(_KNOWLEDGE_RELATIONSHIP_KINDS)
+    )
+    if unsupported:
+        raise McpWikiError(
+            f"unsupported relationship kind: {unsupported[0]!r}."
+        )
+    selected = set(requested)
+    return [
+        kind for kind in _KNOWLEDGE_RELATIONSHIP_KINDS if kind in selected
+    ]
+
+
+def _typed_graph_direction(value: object) -> str:
+    if not isinstance(value, str) or value not in _TYPED_GRAPH_DIRECTIONS:
+        choices = ", ".join(repr(item) for item in _TYPED_GRAPH_DIRECTIONS)
+        raise McpWikiError(f"direction must be one of {choices}.")
+    return value
+
+
+def _typed_graph_kinds(values: object) -> list[str] | None:
+    if values is None:
+        return None
+    if isinstance(values, (str, bytes, Mapping)) or not isinstance(
+        values, Iterable
+    ):
+        raise McpWikiError(
+            "kinds must be an iterable of typed relationship kind strings."
+        )
+    requested = list(values)
+    if any(not isinstance(value, str) for value in requested):
+        raise McpWikiError(
+            "kinds must contain only typed relationship kind strings."
+        )
+    invalid = sorted(
+        {
+            value
+            for value in requested
+            if value not in CORE_RELATIONSHIP_KINDS
+            and not _QUALIFIED_GRAPH_KIND_RE.fullmatch(value)
+        }
+    )
+    if invalid:
+        raise McpWikiError(
+            f"unsupported typed relationship kind: {invalid[0]!r}."
+        )
+    selected = set(requested)
+    return [
+        *[kind for kind in CORE_RELATIONSHIP_KINDS if kind in selected],
+        *sorted(selected - set(CORE_RELATIONSHIP_KINDS)),
+    ]
+
+
+def _typed_graph_enum_values(
+    values: object,
+    *,
+    field: str,
+    allowed: tuple[str, ...],
+) -> list[str] | None:
+    if values is None:
+        return None
+    if isinstance(values, (str, bytes, Mapping)) or not isinstance(
+        values, Iterable
+    ):
+        raise McpWikiError(f"{field} must be an iterable of strings.")
+    requested = list(values)
+    if any(not isinstance(value, str) for value in requested):
+        raise McpWikiError(f"{field} must contain only strings.")
+    unsupported = sorted(set(requested) - set(allowed))
+    if unsupported:
+        raise McpWikiError(
+            f"unsupported {field[:-1]}: {unsupported[0]!r}."
+        )
+    selected = set(requested)
+    return [value for value in allowed if value in selected]
+
+
+def _bounded_query_limit(value: object) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+        raise McpWikiError("limit must be a positive integer.")
+    return min(value, _MAX_QUERY_LIMIT)
 
 
 def _validate_page_id(page_id: str) -> str:
@@ -677,10 +1164,20 @@ def _is_safe_page_id(page_id: str) -> bool:
 
 
 def _normalise_source_path(path: str) -> str:
-    posix = PurePosixPath(path.replace("\\", "/"))
-    if posix.is_absolute() or ".." in posix.parts:
-        raise McpWikiError(f"Unsafe source path: {path}")
-    return posix.as_posix().lstrip("./")
+    error = McpWikiError(f"Unsafe source path: {path}")
+    return require_portable_relative_path(
+        path,
+        text_error=error,
+        relative_error=error,
+        escape_error=error,
+        traversal_error=error,
+        separator_error=error,
+        utf8_error=error,
+        control_error=error,
+        non_nfc_error=error,
+        nonportable_error=error,
+        reserved_error=error,
+    )
 
 
 def _ensure_inside(root: Path, path: Path) -> None:
@@ -698,7 +1195,7 @@ def _relative_posix(path: Path, root: Path) -> str:
 
 
 def _posix_string(value: object) -> str:
-    return str(value).replace("\\", "/")
+    return shared_posix_path_text(value)
 
 
 def _normalise_report_paths(payload: dict) -> None:

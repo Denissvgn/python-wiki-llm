@@ -4,6 +4,7 @@ Covers: init → bootstrap → lint → extract → bump → uninstall
 Does NOT test trigger-agent (requires a real LLM agent).
 """
 
+import json
 import os
 import subprocess
 import textwrap
@@ -120,6 +121,23 @@ class TestE2ELifecycle:
         assert Path(f"{wiki_dir}/entities/Team.md").exists()
         assert Path(f"{wiki_dir}/modules/models.md").exists()
         assert Path(f"{wiki_dir}/modules/api.md").exists()
+
+        # Knowledge is an additive sidecar: canonical page identity and MCP
+        # resource addresses remain defined by surface-index v1.
+        assert Path(f"{wiki_dir}/.llm-wiki-knowledge.json").exists()
+        surface = json.loads(
+            Path(f"{wiki_dir}/.llm-wiki-surface.json").read_text(encoding="utf-8")
+        )
+        assert surface["schema_version"] == "llm-wiki-surface-index/v1"
+        by_path = {page["canonical_path"]: page for page in surface["pages"]}
+        assert (
+            by_path["entities/User.md"]["id"],
+            by_path["entities/User.md"]["mcp_uri"],
+        ) == ("User", "llm-wiki://entities/User")
+        assert (
+            by_path["modules/models.md"]["id"],
+            by_path["modules/models.md"]["mcp_uri"],
+        ) == ("models", "llm-wiki://modules/models")
 
         # Index should link all entities and modules
         index = Path(f"{wiki_dir}/index.md").read_text(encoding="utf-8")

@@ -1,7 +1,9 @@
 """Incremental wiki sync — update only pages whose source has changed.
 
 Workflow:
-    1. Load ``wiki_dir/.llm-wiki-manifest.json`` (error if missing — run bootstrap first).
+    1. Classify the wiki lifecycle, loading a managed manifest, safely seeding a
+       legacy wiki with ``index.md``, or routing pristine/partial targets to
+       bootstrap/migration before source extraction.
     2. Hash every source file in the current AST inventory.
     3. Compute a diff: new / changed / unchanged / removed files, moved classes.
     4. Apply changes surgically: regenerate pages for new/changed files, add a
@@ -12,42 +14,19 @@ Workflow:
 
 from __future__ import annotations
 
-import hashlib
-import json
+import os
 import re
+import shutil
 import sys
+import tempfile
 from collections import Counter
 from copy import deepcopy
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date
 from pathlib import Path
 from typing import Callable, Iterable, Mapping, Optional
 
-from .extract_cmd import (
-    InventoryResult,
-    get_inventory_result,
-    infer_language_from_path,
-    print_inventory_failures,
-    resolve_call_edges,
-)
-from .bootstrap_cmd import (
-    _build_entity_relationship_summary_map,
-    _build_relationships,
-    _generate_dependencies_md,
-    _generate_entity_md,
-    _generate_flow_md,
-    _generated_diagram_style,
-    _generate_index_md,
-    _generate_load_order_md,
-    _generate_module_md,
-    _module_name_from_path,
-    _page_name_for_module,
-    build_entity_page_map,
-    build_entity_occurrence_page_map,
-    build_module_page_map,
-)
 from ..config import validate_path, validate_source_root
-from ..services.data_flow import analyze_data_flow, build_data_flow_context
 from ..services.api_contracts import (
     ApiContractError,
     attach_routes_to_entry_points,
@@ -55,11 +34,21 @@ from ..services.api_contracts import (
     load_openapi_document,
     render_api_contracts_markdown,
 )
-from ..services.dependencies import analyze_dependencies
+from ..services.data_flow import (
+    analyze_data_flow,
+    analyze_data_flow_detailed,
+    build_data_flow_context,
+)
+from ..services.dependencies import (
+    analyze_dependencies,
+    build_dependency_observations,
+    build_external_dependency_observations,
+)
 from ..services.entrypoints import (
-    EntryPointDetectionResult,
     build_flow,
-    detect_entry_points,
+    build_flow_detailed,
+    entry_points_from_detailed_observations,
+    get_detailed_entry_points,
     read_console_scripts,
 )
 from ..services.extraction_jobs import (
@@ -73,24 +62,131 @@ from ..services.inventory_cache import (
     InventoryCacheStats,
     format_cache_stats,
 )
+from ..services.infrastructure_inventory import get_yaml_infrastructure_inventory
+from ..services.infrastructure_sync import (
+    InfrastructureSyncError,
+    InfrastructureSyncPlan,
+    build_infrastructure_sync_plan,
+    with_infrastructure_generation_input,
+)
 from ..services.io import read_md, write_md
+from ..services.knowledge_artifacts import (
+    ArtifactWriteState,
+    KnowledgeCommitResult,
+)
+from ..services.knowledge_envelope import RepositoryEvidence
+from ..services.knowledge_evidence import hash_file
+from ..services.knowledge_evidence import (
+    is_valid_sha256,
+)
+from ..services.knowledge_evidence import semantic_hash_for_file
+from ..services.knowledge_governance import (
+    GOVERNANCE_FILENAME,
+    GovernanceError,
+    load_governance,
+)
+from ..services.knowledge_orchestration import (
+    RUNTIME_GENERATION_OPTION_DEFAULTS,
+    RuntimeKnowledgeInputs,
+    collect_runtime_repository_evidence,
+    committed_governance_bundle_id,
+    finalize_runtime_knowledge,
+    runtime_generation_options,
+)
+from ..services.markdown_sections import (
+    format_table_row as _service_format_table_row,
+    is_placeholder_description as _service_is_placeholder_description,
+    is_table_separator as _service_is_table_separator,
+    normalize_markdown as _service_normalize_markdown,
+    preserve_index_custom_sections as _service_preserve_index_custom_sections,
+    preserve_level_two_section_exact as _service_preserve_level_two_section_exact,
+    preserve_table_description_cells as _service_preserve_table_description_cells,
+    replace_section_body as _service_replace_section_body,
+    section_body as _service_section_body,
+    section_bounds as _service_section_bounds,
+    semantic_table_key as _service_semantic_table_key,
+    should_preserve_semantic_value as _service_should_preserve_semantic_value,
+    split_table_row as _service_split_table_row,
+    table_description_cells as _service_table_description_cells,
+    trim_blank_lines as _service_trim_blank_lines,
+)
 from ..services.module_maps import build_module_dependency_maps
 from ..services.paths import is_test_source_path
 from ..services.source_snapshot import (
+    SourceSnapshot,
     build_source_snapshot,
     format_unsupported_source_summary,
     unsupported_source_summary,
 )
-from ..services.wiki_surface import PageKind, canonical_path, collect_wiki_pages
-from ..services.wiki_surface_index import write_surface_index
+from ..services.sync_manifest import (
+    EVIDENCE_NOT_RECORDED,
+    MANIFEST_FILENAME,
+    MANIFEST_REPAIR_UNAVAILABLE,
+    MANIFEST_STATE_UNAVAILABLE,
+    MANIFEST_VERSION,  # noqa: F401 - compatibility re-export
+    SyncManifest,
+    retained_concept_page_paths,
+)
+from ..services.sync_analysis import SyncDiff, compute_sync_diff as _compute_diff
+from ..services.wiki_lifecycle import (
+    WikiLifecycleState,
+    bootstrap_guidance,
+    classify_wiki_lifecycle,
+    migration_guidance,
+)
+from ..services.section_ownership import (
+    SemanticMergeResult,
+    merge_entity_semantics as _service_merge_entity_semantics,
+    merge_module_semantics as _service_merge_module_semantics,
+    merge_semantic_markdown as _service_merge_semantic_markdown,
+    replace_generated_section as _service_replace_generated_section,
+)
+from ..services.wiki_surface import (
+    PageKind,
+    WikiSurfaceError,
+    canonical_path,
+    collect_wiki_pages,
+    mcp_uri,
+)
+from ..services.wiki_surface_index import evaluate_surface_index
+from ..services.bootstrap_runtime import (
+    _build_entity_relationship_summary_map,
+    _build_relationships,
+    _generate_dependencies_md,
+    _generate_entity_md,
+    _generate_flow_md,
+    _generate_index_md,
+    _generate_load_order_md,
+    _generate_module_md,
+    _generate_infrastructure_md,
+    _generated_diagram_style,
+    _module_name_from_path,
+    _page_name_for_module,
+    build_entity_occurrence_page_map,
+    build_entity_page_map,
+    build_module_page_map,
+)
+from ..services.extraction_service import (
+    InventoryResult,
+    get_inventory_result,
+    get_docker_inventory,
+    print_inventory_failures,
+    resolve_call_observations,
+    resolve_call_edges,
+)
+
+# Historical private aliases are imported by downstream integrations.
+_hash_file = hash_file
+_semantic_hash_for_file = semantic_hash_for_file
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
-MANIFEST_FILENAME = ".llm-wiki-manifest.json"
-MANIFEST_VERSION = 4
 MAX_SYNC_AFFECTED_FILES = 50
 MAX_SYNC_AFFECTED_RATIO = 0.30
 MIN_SOURCES_FOR_RATIO_GUARD = 10
+MAX_INFRASTRUCTURE_AFFECTED_FILES = MAX_SYNC_AFFECTED_FILES
+MAX_INFRASTRUCTURE_AFFECTED_RATIO = MAX_SYNC_AFFECTED_RATIO
+MIN_INFRASTRUCTURE_SOURCES_FOR_RATIO_GUARD = MIN_SOURCES_FOR_RATIO_GUARD
 INITIALIZABLE_SURFACES = ("flows", "dependencies", "api-contracts")
 _SURFACE_POLICY_KEYS = {
     "flows": "flows",
@@ -100,10 +196,7 @@ _SURFACE_POLICY_KEYS = {
 MAX_SURFACE_CREATED_PAGES = MAX_SYNC_AFFECTED_FILES
 MAX_SURFACE_CREATED_RATIO = MAX_SYNC_AFFECTED_RATIO
 MIN_PAGES_FOR_SURFACE_RATIO_GUARD = MIN_SOURCES_FOR_RATIO_GUARD
-_HASH_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 _FLOW_CATEGORY_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
-_AUTO_GENERATED_RE = re.compile(r"^_Auto-generated from `.+`(?: in `.+`)?\._$")
-_HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 _DEPRECATION_HEADER = (
     "> ⚠️ **Stale:** Source no longer found in codebase. "
     "Run `llm-wiki lint` to audit.\n\n"
@@ -128,7 +221,7 @@ def _print_cache_stats(stats: InventoryCacheStats | None, *, enabled: bool) -> N
 
 
 def _is_valid_manifest_hash(value: object) -> bool:
-    return isinstance(value, str) and bool(_HASH_RE.match(value))
+    return is_valid_sha256(value)
 
 
 def _invalid_manifest_hash_paths(manifest: "SyncManifest") -> list[str]:
@@ -148,6 +241,10 @@ def _build_manifest_from_inventory(
     module_page_map: dict[str, str] | None = None,
     surfaces: Mapping[str, Mapping] | None = None,
     generation_inputs: Mapping[str, object] | None = None,
+    previous_manifest: SyncManifest | None = None,
+    retained_page_paths: Iterable[str] | None = None,
+    unknown_evidence_reason: str = EVIDENCE_NOT_RECORDED,
+    source_content_hashes: Mapping[str, str] | None = None,
 ) -> "SyncManifest":
     if entity_page_cache is None:
         _, _, entity_page_cache = _collision_maps(inventory, src_dir)
@@ -165,11 +262,15 @@ def _build_manifest_from_inventory(
         entity_occurrence_page_cache=entity_occurrence_page_cache,
         surfaces=surfaces,
         generation_inputs=generation_inputs,
+        previous_manifest=previous_manifest,
+        retained_page_paths=retained_page_paths,
+        unknown_evidence_reason=unknown_evidence_reason,
+        source_content_hashes=source_content_hashes,
     )
 
 
 def _normalize_md(text: str) -> str:
-    return text.replace("\r\n", "\n").replace("\r", "\n")
+    return _service_normalize_markdown(text)
 
 
 def _write_md_if_changed(path: Path, text: str) -> str:
@@ -188,143 +289,32 @@ def _write_md_if_changed(path: Path, text: str) -> str:
     return "created"
 
 
-def _without_line_metadata(value):
-    """Return inventory data with line-only metadata removed."""
-    if isinstance(value, dict):
-        return {
-            key: _without_line_metadata(item)
-            for key, item in sorted(value.items())
-            if key != "line"
-        }
-    if isinstance(value, list):
-        return [_without_line_metadata(item) for item in value]
-    return value
-
-
-def _semantic_hash_for_file(file_data: dict) -> str:
-    """Fingerprint extracted source semantics while ignoring line shifts."""
-    payload = _without_line_metadata(file_data)
-    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"))
-    digest = hashlib.sha256(encoded.encode("utf-8")).hexdigest()
-    return f"sha256:{digest}"
-
-
-def _first_doc_line(info: dict) -> str:
-    docstring = info.get("docstring", "")
-    return docstring.split("\n")[0] if docstring else "—"
-
-
-def _generated_semantics_for_file(filepath: str, file_data: dict) -> dict:
-    """Return the generated description fields that sync may later preserve over."""
-    module_docstring = file_data.get("module_docstring", "")
-    module_description = module_docstring or f"_Auto-generated from `{filepath}`._"
-    return {
-        "module": {
-            "description": module_description,
-            "classes": {
-                cls["name"]: _first_doc_line(cls)
-                for cls in file_data.get("classes", [])
-            },
-            "functions": {
-                fn["name"]: _first_doc_line(fn) for fn in file_data.get("functions", [])
-            },
-        },
-        "entities": {
-            cls["name"]: {
-                "description": cls.get("docstring", "")
-                or f"_Auto-generated from `{cls['name']}` in `{filepath}`._",
-                "attributes": {
-                    attr["name"]: attr.get("description") or "—"
-                    for attr in cls.get("attributes", [])
-                },
-                "methods": {
-                    method["name"]: _first_doc_line(method)
-                    for method in cls.get("methods", [])
-                },
-            }
-            for cls in file_data.get("classes", [])
-        },
-    }
-
-
 def _section_bounds(lines: list[str], heading: str) -> tuple[int, int, int] | None:
     """Return ``(heading_index, body_start, body_end)`` for a level-2 heading."""
-    target = heading.casefold()
-    for i, line in enumerate(lines):
-        match = _HEADING_RE.match(line.strip())
-        if not match:
-            continue
-        level = len(match.group(1))
-        title = match.group(2).strip().casefold()
-        if level != 2 or title != target:
-            continue
-        end = len(lines)
-        for j in range(i + 1, len(lines)):
-            next_match = _HEADING_RE.match(lines[j].strip())
-            if next_match and len(next_match.group(1)) <= level:
-                end = j
-                break
-        return i, i + 1, end
-    return None
+    return _service_section_bounds(lines, heading)
 
 
 def _trim_blank_lines(lines: list[str]) -> list[str]:
-    start = 0
-    end = len(lines)
-    while start < end and lines[start].strip() == "":
-        start += 1
-    while end > start and lines[end - 1].strip() == "":
-        end -= 1
-    return lines[start:end]
+    return _service_trim_blank_lines(lines)
 
 
 def _section_body(markdown: str, heading: str) -> str | None:
-    lines = _normalize_md(markdown).splitlines()
-    bounds = _section_bounds(lines, heading)
-    if not bounds:
-        return None
-    _, start, end = bounds
-    body_lines = _trim_blank_lines(lines[start:end])
-    return "\n".join(body_lines).strip()
+    return _service_section_body(markdown, heading)
 
 
 def _replace_section_body(markdown: str, heading: str, body: str) -> str:
-    lines = _normalize_md(markdown).splitlines()
-    bounds = _section_bounds(lines, heading)
-    if not bounds:
-        return markdown
-    heading_idx, _, end = bounds
-    replacement = [""] + body.splitlines() + [""]
-    return "\n".join(lines[: heading_idx + 1] + replacement + lines[end:])
+    return _service_replace_section_body(markdown, heading, body)
 
 
 def _preserve_level_two_section_exact(
     existing: str, generated: str, heading: str
 ) -> str:
     """Splice a human-owned level-two section without normalizing its body."""
-    pattern = re.compile(
-        rf"(?ms)^##[ \t]+{re.escape(heading)}[ \t]*\r?\n.*?"
-        rf"(?=^##[ \t]+|\Z)"
-    )
-    old_match = pattern.search(existing)
-    new_match = pattern.search(generated)
-    if old_match is None or new_match is None:
-        return generated
-    old_section = old_match.group(0)
-    if old_section == new_match.group(0):
-        return generated
-    return generated[: new_match.start()] + old_section + generated[new_match.end() :]
+    return _service_preserve_level_two_section_exact(existing, generated, heading)
 
 
 def _is_placeholder_description(value: str | None) -> bool:
-    if value is None:
-        return True
-    stripped = value.strip()
-    if not stripped or stripped in {"—", "-"}:
-        return True
-    if _AUTO_GENERATED_RE.match(stripped):
-        return True
-    return False
+    return _service_is_placeholder_description(value)
 
 
 def _should_preserve_semantic_value(
@@ -332,100 +322,31 @@ def _should_preserve_semantic_value(
     generated: str | None,
     old_generated: str | None,
 ) -> bool:
-    if _is_placeholder_description(existing):
-        return False
-    existing_stripped = (existing or "").strip()
-    generated_stripped = (generated or "").strip()
-    if old_generated is None:
-        return existing_stripped != generated_stripped
-    old_stripped = old_generated.strip()
-    if existing_stripped == old_stripped:
-        return False
-    return existing_stripped != generated_stripped
+    return _service_should_preserve_semantic_value(
+        existing,
+        generated,
+        old_generated,
+    )
 
 
 def _split_table_row(line: str) -> list[str]:
-    stripped = line.strip()
-    if not stripped.startswith("|") or not stripped.endswith("|"):
-        return []
-    body = stripped[1:-1]
-    cells: list[str] = []
-    current: list[str] = []
-    code_fence = 0
-    index = 0
-    while index < len(body):
-        char = body[index]
-        if char == "\\" and index + 1 < len(body):
-            current.extend((char, body[index + 1]))
-            index += 2
-            continue
-        if char == "`":
-            end = index + 1
-            while end < len(body) and body[end] == "`":
-                end += 1
-            run = end - index
-            current.append(body[index:end])
-            if code_fence == 0:
-                code_fence = run
-            elif run == code_fence:
-                code_fence = 0
-            index = end
-            continue
-        if char == "|" and code_fence == 0:
-            cells.append("".join(current).strip())
-            current = []
-        else:
-            current.append(char)
-        index += 1
-    cells.append("".join(current).strip())
-    return cells
+    return _service_split_table_row(line)
 
 
 def _format_table_row(cells: list[str]) -> str:
-    return "| " + " | ".join(cells) + " |"
+    return _service_format_table_row(cells)
 
 
 def _is_table_separator(cells: list[str]) -> bool:
-    if not cells:
-        return False
-    return all(re.fullmatch(r":?-{3,}:?", cell.replace(" ", "")) for cell in cells)
+    return _service_is_table_separator(cells)
 
 
 def _semantic_table_key(cell: str) -> str:
-    key = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", cell)
-    key = key.replace("`", "").replace("*", "").replace("\\|", "|")
-    return key.strip()
+    return _service_semantic_table_key(cell)
 
 
 def _table_description_cells(markdown: str, heading: str) -> dict[str, str]:
-    lines = _normalize_md(markdown).splitlines()
-    bounds = _section_bounds(lines, heading)
-    if not bounds:
-        return {}
-    _, start, end = bounds
-
-    for i in range(start, end):
-        headers = _split_table_row(lines[i])
-        if not headers or "Description" not in headers:
-            continue
-        desc_idx = headers.index("Description")
-        row_start = i + 1
-        if row_start < end and _is_table_separator(_split_table_row(lines[row_start])):
-            row_start += 1
-
-        descriptions: dict[str, str] = {}
-        for row_idx in range(row_start, end):
-            row = _split_table_row(lines[row_idx])
-            if not row:
-                break
-            if len(row) <= desc_idx:
-                continue
-            key = _semantic_table_key(row[0])
-            description = row[desc_idx].strip()
-            if key and not _is_placeholder_description(description):
-                descriptions[key] = description
-        return descriptions
-    return {}
+    return _service_table_description_cells(markdown, heading)
 
 
 def _preserve_table_description_cells(
@@ -434,59 +355,12 @@ def _preserve_table_description_cells(
     descriptions: dict[str, str],
     old_descriptions: dict[str, str] | None = None,
 ) -> tuple[str, int]:
-    if not descriptions:
-        return markdown, 0
-
-    lines = _normalize_md(markdown).splitlines()
-    bounds = _section_bounds(lines, heading)
-    if not bounds:
-        return markdown, 0
-    _, start, end = bounds
-
-    preserved = 0
-    for i in range(start, end):
-        headers = _split_table_row(lines[i])
-        if not headers or "Description" not in headers:
-            continue
-        desc_idx = headers.index("Description")
-        row_start = i + 1
-        if row_start < end and _is_table_separator(_split_table_row(lines[row_start])):
-            row_start += 1
-
-        for row_idx in range(row_start, end):
-            row = _split_table_row(lines[row_idx])
-            if not row:
-                break
-            if len(row) <= desc_idx:
-                continue
-            key = _semantic_table_key(row[0])
-            existing_description = descriptions.get(key)
-            old_description = (old_descriptions or {}).get(key)
-            if existing_description is None:
-                continue
-            if not _should_preserve_semantic_value(
-                existing_description,
-                row[desc_idx],
-                old_description,
-            ):
-                continue
-            row[desc_idx] = existing_description
-            lines[row_idx] = _format_table_row(row)
-            preserved += 1
-        break
-
-    if preserved == 0:
-        return markdown, 0
-    updated = "\n".join(lines)
-    if markdown.endswith("\n"):
-        updated += "\n"
-    return updated, preserved
-
-
-@dataclass
-class SemanticMergeResult:
-    text: str
-    preserved: int = 0
+    return _service_preserve_table_description_cells(
+        markdown,
+        heading,
+        descriptions,
+        old_descriptions,
+    )
 
 
 def _merge_semantic_markdown(
@@ -498,30 +372,13 @@ def _merge_semantic_markdown(
     old_table_descriptions: dict[str, dict[str, str]] | None = None,
 ) -> SemanticMergeResult:
     """Preserve human-written semantic fields in regenerated wiki markdown."""
-    merged = _normalize_md(generated)
-    preserved = 0
-
-    existing_description = _section_body(existing, "Description")
-    generated_description = _section_body(generated, "Description")
-    if existing_description is not None and _should_preserve_semantic_value(
-        existing_description,
-        generated_description,
-        old_description,
-    ):
-        merged = _replace_section_body(merged, "Description", existing_description)
-        preserved += 1
-
-    for heading in table_headings:
-        descriptions = _table_description_cells(existing, heading)
-        merged, table_preserved = _preserve_table_description_cells(
-            merged,
-            heading,
-            descriptions,
-            (old_table_descriptions or {}).get(heading),
-        )
-        preserved += table_preserved
-
-    return SemanticMergeResult(merged, preserved)
+    return _service_merge_semantic_markdown(
+        existing,
+        generated,
+        table_headings,
+        old_description=old_description,
+        old_table_descriptions=old_table_descriptions,
+    )
 
 
 def _merge_entity_semantics(
@@ -529,17 +386,7 @@ def _merge_entity_semantics(
     generated: str,
     old_semantics: dict | None = None,
 ) -> SemanticMergeResult:
-    old_semantics = old_semantics or {}
-    return _merge_semantic_markdown(
-        existing,
-        generated,
-        ("Attributes", "Methods"),
-        old_description=old_semantics.get("description"),
-        old_table_descriptions={
-            "Attributes": old_semantics.get("attributes", {}),
-            "Methods": old_semantics.get("methods", {}),
-        },
-    )
+    return _service_merge_entity_semantics(existing, generated, old_semantics)
 
 
 def _merge_module_semantics(
@@ -547,226 +394,80 @@ def _merge_module_semantics(
     generated: str,
     old_semantics: dict | None = None,
 ) -> SemanticMergeResult:
-    old_semantics = old_semantics or {}
-    return _merge_semantic_markdown(
-        existing,
-        generated,
-        ("Classes", "Functions"),
-        old_description=old_semantics.get("description"),
-        old_table_descriptions={
-            "Classes": old_semantics.get("classes", {}),
-            "Functions": old_semantics.get("functions", {}),
-        },
-    )
+    return _service_merge_module_semantics(existing, generated, old_semantics)
 
 
-# ── Manifest ──────────────────────────────────────────────────────────────────
-
-
-@dataclass
-class SyncManifest:
-    """Persistent record of what the wiki was generated from.
-
-    Schema v4::
-
-        {
-            "version": 4,
-            "sources": {
-                "src/models.py": {
-                    "hash": "sha256:<hex>",
-                    "semantic_hash": "sha256:<hex>",
-                    "generated_semantics": {
-                        "module": {
-                            "description": "...",
-                            "classes": {"User": "..."},
-                            "functions": {}
-                        },
-                        "entities": {
-                            "User": {
-                                "description": "...",
-                                "attributes": {"name": "—"},
-                                "methods": {}
-                            }
-                        }
-                    },
-                    "language": "python",
-                    "entities": ["User", "Role"],
-                    "entity_pages": {"User": "User", "Role": "Role"},
-                    "module_page": "models"
-                }
-            },
-            "surfaces": {
-                "flows": {
-                    "enabled": true,
-                    "categories": ["http"],
-                    "exclude_tests": true
-                }
-            }
-        }
-    """
-
-    sources: dict[str, dict] = field(default_factory=dict)
-    surfaces: dict[str, dict] = field(default_factory=dict)
-    generation_inputs: dict[str, object] = field(default_factory=dict)
-
-    # ── Persistence ───────────────────────────────────────────────────────────
-
-    @classmethod
-    def load(cls, wiki_dir: Path) -> "SyncManifest":
-        """Load manifest from *wiki_dir*; raise ``FileNotFoundError`` if absent."""
-        manifest_path = wiki_dir / MANIFEST_FILENAME
-        if not manifest_path.exists():
-            raise FileNotFoundError(manifest_path)
-        data = json.loads(manifest_path.read_text(encoding="utf-8"))
-        sources = data.get("sources", {})
-        surfaces = data.get("surfaces", {})
-        if not isinstance(surfaces, dict):
-            surfaces = {}
-        generation_inputs = data.get("generation_inputs", {})
-        if not isinstance(generation_inputs, dict):
-            generation_inputs = {}
-        for filepath, info in sources.items():
-            if "language" not in info:
-                info["language"] = infer_language_from_path(filepath)
-        return cls(
-            sources=sources,
-            surfaces=deepcopy(surfaces),
-            generation_inputs=deepcopy(generation_inputs),
-        )
-
-    def to_payload(self) -> dict:
-        """Return the canonical payload shared by manifest writers."""
-        return {
-            "version": MANIFEST_VERSION,
-            "sources": self.sources,
-            "surfaces": self.surfaces,
-            "generation_inputs": self.generation_inputs,
-        }
-
-    def to_json(self) -> str:
-        return json.dumps(self.to_payload(), indent=2, sort_keys=True)
-
-    def save(self, wiki_dir: Path) -> None:
-        """Write manifest to *wiki_dir* atomically (write + rename)."""
-        manifest_path = wiki_dir / MANIFEST_FILENAME
-        tmp_path = manifest_path.with_suffix(".json.tmp")
-        tmp_path.write_text(self.to_json(), encoding="utf-8")
-        tmp_path.replace(manifest_path)
-
-    # ── Factory ───────────────────────────────────────────────────────────────
-
-    @classmethod
-    def build_from_inventory(
-        cls,
-        inventory: dict,
-        src_dir: str,
-        entity_page_cache: dict[tuple[str, str], str],
-        module_page_map: dict[str, str],
-        *,
-        entity_occurrence_page_cache: dict[tuple[str, str, int], str] | None = None,
-        surfaces: Mapping[str, Mapping] | None = None,
-        generation_inputs: Mapping[str, object] | None = None,
-    ) -> "SyncManifest":
-        """Create a manifest that reflects the current inventory state."""
-        sources: dict[str, dict] = {}
-        if entity_occurrence_page_cache is None:
-            entity_occurrence_page_cache = build_entity_occurrence_page_map(
-                inventory, module_page_map
-            )
-        for filepath, file_data in inventory.items():
-            seen_entity_names: dict[str, int] = {}
-            entity_page_occurrences = []
-            first_entity_pages: dict[str, str] = {}
-            for cls_info in file_data.get("classes", []):
-                name = str(cls_info["name"])
-                seen_entity_names[name] = seen_entity_names.get(name, 0) + 1
-                occurrence = seen_entity_names[name]
-                page_name = entity_occurrence_page_cache.get(
-                    (name, filepath, occurrence),
-                    entity_page_cache.get((name, filepath), name),
-                )
-                first_entity_pages.setdefault(name, page_name)
-                entity_page_occurrences.append(
-                    {
-                        "name": name,
-                        "page": page_name,
-                        "occurrence": occurrence,
-                    }
-                )
-            sources[filepath] = {
-                "hash": _hash_file(Path(src_dir) / filepath),
-                "semantic_hash": _semantic_hash_for_file(file_data),
-                "generated_semantics": _generated_semantics_for_file(
-                    filepath, file_data
-                ),
-                "language": file_data.get("language")
-                or infer_language_from_path(filepath),
-                "entities": [str(c["name"]) for c in file_data.get("classes", [])],
-                "entity_pages": first_entity_pages,
-                "entity_page_occurrences": entity_page_occurrences,
-                "module_page": module_page_map.get(
-                    filepath, _module_name_from_path(filepath)
-                ),
-            }
-        return cls(
-            sources=sources,
-            surfaces={
-                str(key): deepcopy(dict(value))
-                for key, value in (surfaces or {}).items()
-                if isinstance(value, Mapping)
-            },
-            generation_inputs=deepcopy(dict(generation_inputs or {})),
-        )
-
-
-# ── Helpers ───────────────────────────────────────────────────────────────────
-
-
-def _hash_file(path: Path) -> str:
-    """Return a ``"sha256:<hexdigest>"`` fingerprint of *path*'s raw bytes.
-
-    If the file cannot be read (deleted between inventory scan and hash)
-    return an empty sentinel so the caller treats it as changed.
-    """
-    try:
-        digest = hashlib.sha256(path.read_bytes()).hexdigest()
-        return f"sha256:{digest}"
-    except OSError:
-        return ""
+# ``SyncManifest`` and its manifest constants are imported above and intentionally
+# remain module attributes for one compatibility cycle.
 
 
 # ── Diff ──────────────────────────────────────────────────────────────────────
 
 
-@dataclass
-class SyncDiff:
-    """Categorised difference between the persisted manifest and live inventory."""
+def _governance_moves_for_sync(
+    diff: SyncDiff,
+    manifest: SyncManifest,
+    *,
+    entity_page_cache: Mapping[tuple[str, str], str],
+) -> dict[str, str]:
+    """Return only unambiguous old-to-current concept locator moves.
 
-    new_files: list[str] = field(default_factory=list)
-    changed_files: list[str] = field(default_factory=list)
-    metadata_only_files: list[str] = field(default_factory=list)
-    unchanged_files: list[str] = field(default_factory=list)
-    removed_files: list[str] = field(default_factory=list)
-    # {class_name: (old_filepath, new_filepath)}
-    moved_entities: dict[str, tuple[str, str]] = field(default_factory=dict)
-    # {(class_name, filepath): (old_page_name, new_page_name)}
-    renamed_entity_pages: dict[tuple[str, str], tuple[str, str]] = field(
-        default_factory=dict
-    )
-    # {filepath: (old_page_name, new_page_name)}
-    renamed_module_pages: dict[str, tuple[str, str]] = field(default_factory=dict)
+    Diff detection is the source of authority for automatic carry-forward.
+    Multiple candidates for one prior route are intentionally omitted: a
+    collision expansion is not enough evidence to decide which new concept
+    should inherit the old UID and must be handled by ``knowledge move``.
+    """
 
-    @property
-    def has_changes(self) -> bool:
-        return bool(
-            self.new_files
-            or self.changed_files
-            or self.metadata_only_files
-            or self.removed_files
-            or self.moved_entities
-            or self.renamed_entity_pages
-            or self.renamed_module_pages
+    candidates: dict[str, set[str]] = {}
+
+    def add(kind: PageKind, old_page: str, new_page: str) -> None:
+        if old_page == new_page:
+            return
+        try:
+            old_locator = mcp_uri(kind, old_page)
+            new_locator = mcp_uri(kind, new_page)
+        except WikiSurfaceError:
+            return
+        candidates.setdefault(old_locator, set()).add(new_locator)
+
+    for (_entity_name, _filepath), (old_page, new_page) in sorted(
+        diff.renamed_entity_pages.items()
+    ):
+        add(PageKind.ENTITIES, old_page, new_page)
+
+    for _filepath, (old_page, new_page) in sorted(
+        diff.renamed_module_pages.items()
+    ):
+        add(PageKind.MODULES, old_page, new_page)
+
+    for entity_name, (old_filepath, new_filepath) in sorted(
+        diff.moved_entities.items()
+    ):
+        old_source = manifest.sources.get(old_filepath)
+        if not isinstance(old_source, Mapping):
+            continue
+        old_entity_pages = old_source.get("entity_pages")
+        old_page = (
+            str(old_entity_pages[entity_name])
+            if isinstance(old_entity_pages, Mapping)
+            and entity_name in old_entity_pages
+            else entity_name
         )
+        new_page = entity_page_cache.get((entity_name, new_filepath))
+        if new_page is not None:
+            add(PageKind.ENTITIES, old_page, new_page)
+
+    one_target_per_source = {
+        old_locator: next(iter(targets))
+        for old_locator, targets in sorted(candidates.items())
+        if len(targets) == 1
+    }
+    source_count_by_target = Counter(one_target_per_source.values())
+    return {
+        old_locator: target_locator
+        for old_locator, target_locator in one_target_per_source.items()
+        if source_count_by_target[target_locator] == 1
+    }
 
 
 def _affected_source_files(diff: SyncDiff) -> set[str]:
@@ -805,100 +506,26 @@ def _large_diff_message(diff: SyncDiff, manifest: SyncManifest) -> str | None:
     return None
 
 
-def _compute_diff(
-    manifest: SyncManifest,
-    inventory: dict,
-    src_dir: str,
-    *,
-    entity_page_cache: dict[tuple[str, str], str] | None = None,
-    module_page_map: dict[str, str] | None = None,
-) -> SyncDiff:
-    """Compare *manifest* against the live *inventory*.
-
-    Move detection: a class that appears in the manifest under one filepath
-    but now lives in a *different* filepath is considered moved rather than
-    deleted+created.  Its source-file hash is therefore refreshed from the
-    *new* filepath.
-    """
-    diff = SyncDiff()
-
-    # Build reverse lookups. Keep sets so duplicate class names do not collapse
-    # into false moves when a new same-named entity appears.
-    old_cls_to_files: dict[str, set[str]] = {}
-    for fp, info in manifest.sources.items():
-        for cls_name in info.get("entities", []):
-            old_cls_to_files.setdefault(cls_name, set()).add(fp)
-
-    new_cls_to_files: dict[str, set[str]] = {}
-    for fp, file_data in inventory.items():
-        for cls in file_data.get("classes", []):
-            new_cls_to_files.setdefault(cls["name"], set()).add(fp)
-
-    # Detect moves only when the entity name is unambiguous before and after.
-    # If both old and new paths still contain the same class name, this is a
-    # naming collision, not a move.
-    for cls_name, old_files in old_cls_to_files.items():
-        new_files = new_cls_to_files.get(cls_name, set())
-        if len(old_files) == 1 and len(new_files) == 1:
-            old_fp = next(iter(old_files))
-            new_fp = next(iter(new_files))
-        else:
-            continue
-        if old_fp != new_fp:
-            diff.moved_entities[cls_name] = (old_fp, new_fp)
-
-    # Categorise each file in the new inventory
-    for filepath, file_data in inventory.items():
-        if filepath not in manifest.sources:
-            diff.new_files.append(filepath)
-        else:
-            # Re-hash to detect content changes
-            current_hash = _hash_file(Path(src_dir) / filepath)
-            if current_hash != manifest.sources[filepath].get("hash", ""):
-                current_semantic_hash = _semantic_hash_for_file(file_data)
-                if current_semantic_hash == manifest.sources[filepath].get(
-                    "semantic_hash"
-                ):
-                    diff.metadata_only_files.append(filepath)
-                else:
-                    diff.changed_files.append(filepath)
-            else:
-                diff.unchanged_files.append(filepath)
-
-    # Detect removals: in manifest but not in new inventory
-    for filepath in manifest.sources:
-        if filepath not in inventory:
-            diff.removed_files.append(filepath)
-
-    if entity_page_cache is None:
-        entity_page_cache = build_entity_page_map(inventory)
-    if module_page_map is None:
-        module_page_map = build_module_page_map(inventory)
-
-    for filepath, file_data in inventory.items():
-        old_info = manifest.sources.get(filepath)
-        if not old_info:
-            continue
-        old_module_page = str(
-            old_info.get("module_page") or _module_name_from_path(filepath)
+def _large_infrastructure_message(plan: InfrastructureSyncPlan) -> str | None:
+    affected_count = plan.affected_count
+    prior_count = len(plan.prior_sources)
+    if affected_count > MAX_INFRASTRUCTURE_AFFECTED_FILES:
+        return (
+            "sync would affect "
+            f"{affected_count} infrastructure source(s), which exceeds the safety "
+            f"limit of {MAX_INFRASTRUCTURE_AFFECTED_FILES}."
         )
-        new_module_page = module_page_map.get(filepath, _page_name_for_module(filepath))
-        if old_module_page != new_module_page:
-            diff.renamed_module_pages[filepath] = (old_module_page, new_module_page)
-
-        entity_pages = old_info.get("entity_pages")
-        for cls in file_data.get("classes", []):
-            cls_name = str(cls["name"])
-            new_page = entity_page_cache.get((cls_name, filepath), cls_name)
-            old_page = (
-                str(entity_pages[cls_name])
-                if isinstance(entity_pages, dict) and cls_name in entity_pages
-                else cls_name
+    if prior_count >= MIN_INFRASTRUCTURE_SOURCES_FOR_RATIO_GUARD:
+        affected_ratio = affected_count / prior_count
+        if affected_ratio > MAX_INFRASTRUCTURE_AFFECTED_RATIO:
+            percent = int(affected_ratio * 100)
+            limit_percent = int(MAX_INFRASTRUCTURE_AFFECTED_RATIO * 100)
+            return (
+                "sync would affect "
+                f"{affected_count} of {prior_count} infrastructure source(s) "
+                f"({percent}%), which exceeds the {limit_percent}% safety limit."
             )
-            if old_page != new_page:
-                diff.renamed_entity_pages[(cls_name, filepath)] = (old_page, new_page)
-
-    return diff
+    return None
 
 
 # ── Apply ─────────────────────────────────────────────────────────────────────
@@ -968,17 +595,23 @@ def _has_existing_module_dependency_sections(wiki_dir: Path) -> bool:
 def _build_generated_section_context(
     options: "_SyncRunOptions",
     inventory: dict,
+    *,
+    call_edges: list[dict] | None = None,
+    dependency_analysis: dict | None = None,
 ) -> "_GeneratedSectionContext":
-    call_edges = resolve_call_edges(inventory)
+    call_edges = call_edges if call_edges is not None else resolve_call_edges(inventory)
     entity_relationship_summaries = _build_entity_relationship_summary_map(
         inventory,
         call_edges,
     )
-    dependency_analysis = None
     module_dependency_maps = None
     if _has_existing_module_dependency_sections(options.wiki_dir):
-        dependency_analysis = analyze_dependencies(inventory, options.src_dir)
+        dependency_analysis = dependency_analysis or analyze_dependencies(
+            inventory, options.src_dir
+        )
         module_dependency_maps = build_module_dependency_maps(dependency_analysis)
+    else:
+        dependency_analysis = None
     return _GeneratedSectionContext(
         entity_relationship_summaries=entity_relationship_summaries,
         module_dependency_maps=module_dependency_maps,
@@ -1370,12 +1003,14 @@ def _deprecate_removed_entities(
     filepath: str,
     old_info: dict,
     result: SyncResult,
+    *,
+    retained_page_names: frozenset[str] = frozenset(),
 ) -> None:
     for cls_name in old_info.get("entities", []):
         entity_page_name = _removed_entity_page_name(
             wiki_dir, cls_name, filepath, old_info
         )
-        if entity_page_name:
+        if entity_page_name and entity_page_name not in retained_page_names:
             entity_path = wiki_dir / "entities" / f"{entity_page_name}.md"
             _deprecate_existing_page(entity_path, result, "entity", entity_page_name)
 
@@ -1397,21 +1032,95 @@ def _deprecate_removed_files(
     result: SyncResult,
 ) -> None:
     for filepath in diff.removed_files:
-        old_info = ctx.manifest.sources[filepath]
-        _deprecate_removed_entities(ctx.wiki_dir, filepath, old_info, result)
+        old_info = ctx.manifest.sources.get(filepath)
+        if old_info is None:
+            old_info = _removed_source_info_from_mappings(ctx.manifest, filepath)
+        retained_entity_pages = _moved_entity_retained_page_names(
+            ctx,
+            diff,
+            filepath,
+            old_info,
+        )
+        _deprecate_removed_entities(
+            ctx.wiki_dir,
+            filepath,
+            old_info,
+            result,
+            retained_page_names=retained_entity_pages,
+        )
         _deprecate_removed_module(ctx.wiki_dir, filepath, old_info, result)
 
 
+def _moved_entity_retained_page_names(
+    ctx: _ApplyDiffContext,
+    diff: SyncDiff,
+    old_source_path: str,
+    old_info: Mapping[str, object],
+) -> frozenset[str]:
+    """Return moved entity pages whose current path rule keeps the locator."""
+
+    retained: set[str] = set()
+    for entity_name, (old_path, new_path) in diff.moved_entities.items():
+        if old_path != old_source_path:
+            continue
+        old_page_name = _removed_entity_page_name(
+            ctx.wiki_dir,
+            entity_name,
+            old_source_path,
+            dict(old_info),
+        )
+        if old_page_name is None:
+            continue
+        current_pages = {
+            page_name
+            for (name, source_path, _occurrence), page_name in (
+                ctx.entity_occurrence_page_cache.items()
+            )
+            if name == entity_name and source_path == new_path
+        }
+        if old_page_name in current_pages:
+            retained.add(old_page_name)
+    return frozenset(retained)
+
+
+def _removed_source_info_from_mappings(
+    manifest: SyncManifest,
+    source_path: str,
+) -> dict:
+    """Recover page coordinates for a repair-pending removed source."""
+
+    module_page = _module_name_from_path(source_path)
+    entities: list[str] = []
+    entity_pages: dict[str, str] = {}
+    occurrences: list[dict[str, object]] = []
+    for page_path, mapping in manifest.page_source_mappings.items():
+        if mapping.source_path != source_path:
+            continue
+        page_name = Path(page_path).stem
+        if mapping.scope == "module":
+            module_page = page_name
+            continue
+        assert mapping.entity_name is not None
+        assert mapping.occurrence is not None
+        entities.append(mapping.entity_name)
+        entity_pages.setdefault(mapping.entity_name, page_name)
+        occurrences.append(
+            {
+                "name": mapping.entity_name,
+                "page": page_name,
+                "occurrence": mapping.occurrence,
+            }
+        )
+    return {
+        "entities": entities,
+        "entity_pages": entity_pages,
+        "entity_page_occurrences": occurrences,
+        "module_page": module_page,
+    }
+
+
 def _replace_generated_section(existing: str, generated: str, heading: str) -> str:
-    if _section_body(existing, heading) is None:
-        return existing
-    generated_body = _section_body(generated, heading)
-    if generated_body is None:
-        return existing
-    updated = _replace_section_body(existing, heading, generated_body)
-    if existing.endswith("\n") and not updated.endswith("\n"):
-        updated += "\n"
-    return updated
+    return _service_replace_generated_section(existing, generated, heading)
 
 
 def _record_generated_section_write(
@@ -1713,6 +1422,33 @@ class _SyncPageMaps:
 
 
 @dataclass(frozen=True)
+class _ExtractedSyncInventory:
+    result: InventoryResult
+    source_snapshot: SourceSnapshot
+
+
+@dataclass(frozen=True)
+class _SyncEntryPointAnalysis:
+    entries: list[dict]
+    observations: dict
+
+
+@dataclass(frozen=True)
+class _RuntimeGraphObservations:
+    resolved_call_edges: list[dict]
+    call_observations: dict
+    dependency_observations: dict
+    entrypoint_observations: dict
+    flows: list[dict]
+    rendering_flows: list[dict]
+    data_flows: list[dict]
+    rendering_data_flows: list[dict]
+    external_dependencies: list[dict]
+    dependency_analysis: dict | None
+    analyzer_limitations: dict[str, tuple[str, ...]] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
 class _SurfaceInitializationPlan:
     surfaces: dict[str, dict]
     policy_changed: bool
@@ -1752,12 +1488,17 @@ class _SurfaceInitializationPlan:
 class _PreparedSyncRun:
     manifest: "SyncManifest"
     seed_manifest: bool
+    repair_only: bool
     inventory_result: InventoryResult
+    source_snapshot: SourceSnapshot
     inventory: dict
     page_maps: _SyncPageMaps
     entry_points: list[dict]
     diff: "SyncDiff"
     surface_plan: _SurfaceInitializationPlan
+    repository_evidence: RepositoryEvidence
+    graph_observations: _RuntimeGraphObservations
+    infrastructure_plan: InfrastructureSyncPlan
 
 
 def _updated_surface_policies(
@@ -1805,9 +1546,11 @@ def _flow_plan(
     allow_legacy_creation: bool,
 ) -> tuple[tuple[dict, ...], tuple[dict, ...], int]:
     flows_dir = options.wiki_dir / PageKind.FLOWS.value
-    existing_ids = {
-        path.stem for path in flows_dir.glob("*.md") if path.is_file()
-    } if flows_dir.exists() else set()
+    existing_ids = (
+        {path.stem for path in flows_dir.glob("*.md") if path.is_file()}
+        if flows_dir.exists()
+        else set()
+    )
     policy = _surface_policy(surfaces, "flows")
     if policy is None:
         enabled = bool(existing_ids) and allow_legacy_creation
@@ -1854,6 +1597,8 @@ def _dependency_plan(
     options: _SyncRunOptions,
     surfaces: Mapping[str, Mapping],
     inventory: dict,
+    *,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> tuple[dict, dict | None, tuple[str, ...], tuple[str, ...], int]:
     existing = tuple(
         stem
@@ -1876,7 +1621,11 @@ def _dependency_plan(
     )
     excluded_tests = len(inventory) - len(dependency_inventory)
     analysis = (
-        analyze_dependencies(dependency_inventory, options.src_dir)
+        analyze_dependencies(
+            dependency_inventory,
+            options.src_dir,
+            source_snapshot=source_snapshot,
+        )
         if target_pages
         else None
     )
@@ -1899,6 +1648,7 @@ def _build_surface_initialization_plan(
     source_changed: bool,
     api_contracts: dict | None,
     generation_inputs: Mapping[str, object],
+    source_snapshot: SourceSnapshot | None = None,
 ) -> _SurfaceInitializationPlan:
     surfaces, policy_changed = _updated_surface_policies(options, manifest)
     include_all_enabled = not options.initialize_surfaces
@@ -1918,8 +1668,11 @@ def _build_surface_initialization_plan(
             target_pages,
             new_pages,
             excluded_dependency_tests,
-        ) = (
-            _dependency_plan(options, surfaces, inventory)
+        ) = _dependency_plan(
+            options,
+            surfaces,
+            inventory,
+            source_snapshot=source_snapshot,
         )
     else:
         dependency_inventory = inventory
@@ -2008,22 +1761,44 @@ def _print_dry_run_plan(
     options: _SyncRunOptions,
     diff: "SyncDiff",
     plan: _SurfaceInitializationPlan,
+    infrastructure_plan: InfrastructureSyncPlan,
+    manifest: SyncManifest,
     *,
     seed_manifest: bool,
+    repair_only: bool,
 ) -> None:
     print("\nSync dry-run plan:")
+    source_label = (
+        "deferred source files" if options.initialize_surfaces else "source files"
+    )
     print(
-        "  deferred source files: "
+        f"  {source_label}: "
         f"{len(diff.new_files)} new, {len(diff.changed_files)} changed, "
         f"{len(diff.metadata_only_files)} metadata-only, "
         f"{len(diff.removed_files)} removed"
     )
+    infrastructure_label = (
+        "deferred infrastructure sources"
+        if options.initialize_surfaces
+        else "infrastructure sources"
+    )
+    print(
+        f"  {infrastructure_label}: "
+        f"{len(infrastructure_plan.new_sources)} new, "
+        f"{len(infrastructure_plan.changed_sources)} changed, "
+        f"{len(infrastructure_plan.moved_sources)} moved, "
+        f"{len(infrastructure_plan.removed_sources)} removed, "
+        f"{len(infrastructure_plan.unsupported_yaml)} unsupported YAML"
+    )
     categories = Counter(
         str(entry.get("category") or "unknown") for entry in plan.new_flow_entries
     )
-    category_text = ", ".join(
-        f"{category}: {count}" for category, count in sorted(categories.items())
-    ) or "none"
+    category_text = (
+        ", ".join(
+            f"{category}: {count}" for category, count in sorted(categories.items())
+        )
+        or "none"
+    )
     print(
         f"  flows: {len(plan.new_flow_entries)} create "
         f"({category_text}); {plan.excluded_flow_tests} test candidate(s) excluded"
@@ -2062,10 +1837,25 @@ def _print_dry_run_plan(
         "index.md",
         "log.md",
         ".llm-wiki-surface.json",
+        ".llm-wiki-knowledge.json",
         MANIFEST_FILENAME,
     ]
     print(f"  ancillary files considered: {', '.join(ancillary)}")
-    requires_force = bool(_large_surface_message(plan, options.wiki_dir))
+    source_requires_force = (
+        not options.initialize_surfaces
+        and not seed_manifest
+        and not repair_only
+        and (
+            _large_diff_message(diff, manifest) is not None
+            or _large_infrastructure_message(infrastructure_plan) is not None
+        )
+    )
+    surface_requires_force = (
+        not seed_manifest
+        and not repair_only
+        and _large_surface_message(plan, options.wiki_dir) is not None
+    )
+    requires_force = source_requires_force or surface_requires_force
     print(f"  requires --force: {'yes' if requires_force else 'no'}")
     print("DRY-RUN: no files modified.")
 
@@ -2079,9 +1869,7 @@ def _surface_args(value: object) -> frozenset[str]:
         nested = list(raw) if isinstance(raw, (list, tuple, set)) else [raw]
         for item in nested:
             surfaces.update(
-                part.strip().lower()
-                for part in str(item).split(",")
-                if part.strip()
+                part.strip().lower() for part in str(item).split(",") if part.strip()
             )
     invalid = sorted(surfaces - set(INITIALIZABLE_SURFACES))
     if invalid:
@@ -2115,9 +1903,7 @@ def _manifest_openapi_path(manifest: "SyncManifest") -> str | None:
         return None
     value = manifest.generation_inputs.get("openapi")
     if not isinstance(value, Mapping):
-        raise ApiContractError(
-            "Persisted generation_inputs.openapi must be an object."
-        )
+        raise ApiContractError("Persisted generation_inputs.openapi must be an object.")
     path = value.get("path")
     if not isinstance(path, str) or not path.strip():
         raise ApiContractError(
@@ -2210,12 +1996,6 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
             file=sys.stderr,
         )
         sys.exit(2)
-    if dry_run and not initialize_surfaces:
-        print(
-            "Error: --dry-run requires --initialize-surfaces.",
-            file=sys.stderr,
-        )
-        sys.exit(2)
     allow_external_src = bool(getattr(args, "allow_external_src", False))
     src_root = validate_source_root(
         src_dir, "--src-dir", allow_external=allow_external_src
@@ -2249,52 +2029,25 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
 def _load_or_seed_manifest(
     options: _SyncRunOptions,
 ) -> tuple[Optional["SyncManifest"], bool]:
-    try:
+    state = classify_wiki_lifecycle(options.wiki_dir)
+    if state is WikiLifecycleState.MANAGED:
         return SyncManifest.load(options.wiki_dir), False
-    except FileNotFoundError:
-        if (options.wiki_dir / "index.md").exists():
-            if (
-                options.initialize_surfaces
-                or options.dry_run
-                or options.openapi_file
-                or options.clear_openapi_file
-            ):
-                return None, True
-            _seed_manifest_from_existing_wiki(options)
-            return None, False
-        print(
-            f"Error: no sync manifest found at {options.wiki_dir / MANIFEST_FILENAME}.\n"
-            "Run `llm-wiki bootstrap` first to create the initial wiki and manifest.",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-
-
-def _seed_manifest_from_existing_wiki(options: _SyncRunOptions) -> None:
+    if state is WikiLifecycleState.SYNC_SEEDABLE:
+        return None, True
+    guidance = (
+        bootstrap_guidance(src_dir=options.src_dir, wiki_dir=options.wiki_dir)
+        if state is WikiLifecycleState.FIRST_USE
+        else migration_guidance(src_dir=options.src_dir, wiki_dir=options.wiki_dir)
+    )
     print(
-        "No sync manifest found — seeding from current source state.\n"
-        "Existing wiki pages will NOT be modified.\n"
-        "Future `llm-wiki sync` runs will update incrementally.\n"
+        f"Error: no sync manifest found at {options.wiki_dir / MANIFEST_FILENAME}.\n"
+        f"{guidance}",
+        file=sys.stderr,
     )
-    inventory_result = _extract_current_inventory(options)
-    inventory = inventory_result.inventory
-
-    if not inventory:
-        print("No supported source files found; manifest not written.")
-        _print_cache_stats(
-            inventory_result.cache_stats, enabled=options.cache_stats_enabled
-        )
-        return
-
-    seed = _build_manifest_from_inventory(inventory, options.src_dir)
-    seed.save(options.wiki_dir)
-    print(f"Manifest written to {options.wiki_dir / MANIFEST_FILENAME}")
-    _print_cache_stats(
-        inventory_result.cache_stats, enabled=options.cache_stats_enabled
-    )
+    sys.exit(1)
 
 
-def _extract_current_inventory(options: _SyncRunOptions) -> InventoryResult:
+def _extract_current_inventory(options: _SyncRunOptions) -> _ExtractedSyncInventory:
     print("Extracting current source inventory...")
     source_snapshot = build_source_snapshot(
         options.src_dir,
@@ -2310,10 +2063,13 @@ def _extract_current_inventory(options: _SyncRunOptions) -> InventoryResult:
         plan_reporter=options.plan_reporter,
         helper_cache_dir=options.helper_cache_dir,
         include_tests=options.include_tests,
+        capture_data_effect_observations=True,
+        capture_import_observations=True,
     )
     if inventory_result.failed:
         print_inventory_failures(inventory_result)
         sys.exit(1)
+    source_snapshot = inventory_result.source_snapshot or source_snapshot
     unsupported_message = format_unsupported_source_summary(
         unsupported_source_summary(
             source_snapshot, supported_languages=inventory_result.statuses
@@ -2324,71 +2080,10 @@ def _extract_current_inventory(options: _SyncRunOptions) -> InventoryResult:
     print(
         f"Extracted current source inventory: {len(inventory_result.inventory)} file(s)."
     )
-    return inventory_result
-
-
-def _finish_if_empty_inventory(
-    options: _SyncRunOptions,
-    manifest: "SyncManifest",
-    inventory_result: InventoryResult,
-) -> bool:
-    if inventory_result.inventory or manifest.sources:
-        return False
-    if (
-        options.openapi_file
-        or options.clear_openapi_file
-        or "api-contracts" in options.initialize_surfaces
-        or "openapi" in manifest.generation_inputs
-        or (options.wiki_dir / f"{PageKind.API_CONTRACTS.value}.md").exists()
-    ):
-        return False
-    print("No supported source files with documentable inventory found.")
-    _print_cache_stats(
-        inventory_result.cache_stats, enabled=options.cache_stats_enabled
+    return _ExtractedSyncInventory(
+        result=inventory_result,
+        source_snapshot=source_snapshot,
     )
-    return True
-
-
-def _repair_manifest_if_needed(
-    options: _SyncRunOptions,
-    manifest: "SyncManifest",
-    inventory: dict,
-    inventory_result: InventoryResult,
-) -> bool:
-    invalid_hash_paths = _invalid_manifest_hash_paths(manifest)
-    if not invalid_hash_paths:
-        return False
-
-    if options.dry_run:
-        print(
-            "DRY-RUN: sync manifest has "
-            f"{len(invalid_hash_paths)} invalid or missing source hash(es); "
-            "a normal sync would repair the manifest before changing pages."
-        )
-        print("DRY-RUN: no files modified.")
-        _print_cache_stats(
-            inventory_result.cache_stats, enabled=options.cache_stats_enabled
-        )
-        return True
-
-    repaired = _build_manifest_from_inventory(
-        inventory,
-        options.src_dir,
-        surfaces=manifest.surfaces,
-        generation_inputs=manifest.generation_inputs,
-    )
-    repaired.save(options.wiki_dir)
-    print(
-        f"Sync manifest repaired: {len(invalid_hash_paths)} source entr"
-        f"{'y has' if len(invalid_hash_paths) == 1 else 'ies have'} invalid or missing hashes."
-    )
-    print(
-        "Wiki pages were not modified. Run `llm-wiki sync` again to apply source changes."
-    )
-    _print_cache_stats(
-        inventory_result.cache_stats, enabled=options.cache_stats_enabled
-    )
-    return True
 
 
 def _prepare_sync_page_maps(inventory: dict) -> _SyncPageMaps:
@@ -2411,58 +2106,58 @@ def _compute_sync_diff(
     inventory: dict,
     options: _SyncRunOptions,
     page_maps: _SyncPageMaps,
+    source_content_hashes: Mapping[str, str],
 ) -> "SyncDiff":
-    return _compute_diff(
+    diff = _compute_diff(
         manifest,
         inventory,
         options.src_dir,
         entity_page_cache=page_maps.entity_page_cache,
         module_page_map=page_maps.module_page_map,
+        source_content_hashes=source_content_hashes,
     )
+    _mark_pending_repair_sources_changed(manifest, inventory, diff)
+    return diff
 
 
-def _finish_if_no_changes(
-    options: _SyncRunOptions,
+def _mark_pending_repair_sources_changed(
+    manifest: SyncManifest,
+    inventory: Mapping[str, Mapping],
     diff: "SyncDiff",
-    inventory_result: InventoryResult,
-    inventory: dict,
-    page_maps: _SyncPageMaps,
-    entry_points: list[dict],
-    surface_plan: _SurfaceInitializationPlan,
-) -> bool:
-    if options.initialize_surfaces:
-        if surface_plan.has_work:
-            return False
-        deferred = len(_affected_source_files(diff))
-        print("Requested optional surfaces are up to date.")
-        if deferred:
-            print(f"Deferred source changes: {deferred} file(s).")
-        _print_cache_stats(
-            inventory_result.cache_stats, enabled=options.cache_stats_enabled
+) -> None:
+    """Force one trusted regeneration after a provenance-only repair."""
+
+    pending_live = {
+        mapping.source_path
+        for page_path, baseline in manifest.evidence_baselines.items()
+        if (
+            not baseline.is_known
+            and baseline.unknown_reason == MANIFEST_REPAIR_UNAVAILABLE
+            and (mapping := manifest.page_source_mappings.get(page_path)) is not None
+            and mapping.source_path in inventory
         )
-        return True
-    if diff.has_changes or surface_plan.has_work:
-        return False
-    # Guide pages under guides/ are agent-owned: sync never creates or
-    # rewrites them, but must still keep index.md's links current even when
-    # source hasn't changed (adding a guide touches no source file, so the
-    # diff above is empty). _rebuild_index is idempotent — it no-ops when
-    # nothing on the wiki side actually changed.
-    _rebuild_index(
-        options.wiki_dir,
-        inventory,
-        options.src_dir,
-        entity_page_cache=page_maps.entity_page_cache,
-        entity_occurrence_page_cache=page_maps.entity_occurrence_page_cache,
-        module_page_map=page_maps.module_page_map,
-        preserve_semantic=options.preserve_semantic,
-    )
-    _write_sync_surface_index(options, inventory, page_maps, entry_points)
-    print("Wiki is up to date.")
-    _print_cache_stats(
-        inventory_result.cache_stats, enabled=options.cache_stats_enabled
-    )
-    return True
+    }
+    unchanged = set(diff.unchanged_files)
+    promote = unchanged & pending_live
+    if promote:
+        diff.unchanged_files = [
+            source_path
+            for source_path in diff.unchanged_files
+            if source_path not in promote
+        ]
+        diff.changed_files.extend(sorted(promote))
+
+    pending_removed = {
+        mapping.source_path
+        for page_path, tombstone in manifest.tombstones.items()
+        if (
+            tombstone.unknown_reason == MANIFEST_REPAIR_UNAVAILABLE
+            and (mapping := manifest.page_source_mappings.get(page_path)) is not None
+            and mapping.source_path not in inventory
+        )
+    }
+    existing_removed = set(diff.removed_files)
+    diff.removed_files.extend(sorted(pending_removed - existing_removed))
 
 
 def _exit_if_large_unforced_diff(
@@ -2470,8 +2165,11 @@ def _exit_if_large_unforced_diff(
     diff: "SyncDiff",
     manifest: "SyncManifest",
     inventory_result: InventoryResult,
+    infrastructure_plan: InfrastructureSyncPlan,
 ) -> None:
-    large_diff_message = _large_diff_message(diff, manifest)
+    large_diff_message = _large_diff_message(diff, manifest) or (
+        _large_infrastructure_message(infrastructure_plan)
+    )
     if not large_diff_message or options.force:
         return
 
@@ -2494,8 +2192,16 @@ def _apply_sync_changes(
     diff: "SyncDiff",
     page_maps: _SyncPageMaps,
     surface_plan: _SurfaceInitializationPlan,
+    graph_observations: _RuntimeGraphObservations,
+    infrastructure_plan: InfrastructureSyncPlan,
+    source_snapshot: SourceSnapshot,
 ) -> "SyncResult":
-    generated_sections = _build_generated_section_context(options, inventory)
+    generated_sections = _build_generated_section_context(
+        options,
+        inventory,
+        call_edges=graph_observations.resolved_call_edges,
+        dependency_analysis=graph_observations.dependency_analysis,
+    )
     result = _apply_diff(
         diff,
         options.wiki_dir,
@@ -2508,8 +2214,21 @@ def _apply_sync_changes(
         generated_sections=generated_sections,
         preserve_semantic=options.preserve_semantic,
     )
+    _apply_infrastructure_plan(
+        options,
+        infrastructure_plan,
+        result,
+        page_maps=page_maps,
+        source_snapshot=source_snapshot,
+    )
 
-    _apply_surface_page_changes(options, inventory, page_maps, surface_plan)
+    _apply_surface_page_changes(
+        options,
+        inventory,
+        page_maps,
+        surface_plan,
+        graph_observations=graph_observations,
+    )
 
     _rebuild_index(
         options.wiki_dir,
@@ -2527,6 +2246,7 @@ def _apply_sync_changes(
         diff,
         result,
         surface_plan=surface_plan,
+        infrastructure_plan=infrastructure_plan,
     )
     return result
 
@@ -2536,19 +2256,39 @@ def _apply_surface_page_changes(
     inventory: dict,
     page_maps: _SyncPageMaps,
     surface_plan: _SurfaceInitializationPlan,
+    *,
+    graph_observations: _RuntimeGraphObservations | None = None,
 ) -> None:
     initializing = bool(options.initialize_surfaces)
+    generation_options = runtime_generation_options(
+        surfaces=surface_plan.surfaces,
+        generation_inputs=surface_plan.generation_inputs,
+        include_tests=options.include_tests,
+        preserve_semantic=options.preserve_semantic,
+    )
     _regenerate_flow_pages(
         options,
         inventory,
         page_maps.module_page_map,
-        entry_points=list(
-            surface_plan.new_flow_entries
-            if initializing
-            else surface_plan.flow_entries
-        ),
+        entry_points=_selected_sync_flow_entries(options, surface_plan),
         allow_create=_surface_policy(surface_plan.surfaces, "flows") is not None,
         api_contracts=surface_plan.api_contracts,
+        data_flow_enabled=bool(generation_options["data_flow_enabled"]),
+        call_edges=(
+            graph_observations.resolved_call_edges
+            if graph_observations is not None
+            else None
+        ),
+        evaluated_flows=(
+            graph_observations.rendering_flows
+            if graph_observations is not None
+            else None
+        ),
+        evaluated_data_flows=(
+            graph_observations.rendering_data_flows
+            if graph_observations is not None
+            else None
+        ),
     )
     _regenerate_dependency_pages(
         options,
@@ -2560,68 +2300,136 @@ def _apply_surface_page_changes(
             if initializing
             else surface_plan.dependency_target_pages
         ),
+        detail=str(generation_options["dependency_graph_detail"]),
     )
     _regenerate_api_contracts_page(options, page_maps, surface_plan)
 
 
-def _write_updated_manifest(
-    options: _SyncRunOptions,
-    inventory: dict,
-    page_maps: _SyncPageMaps,
-    surfaces: Mapping[str, Mapping] | None = None,
-    generation_inputs: Mapping[str, object] | None = None,
-) -> None:
-    print("Writing sync manifest...", flush=True)
-    updated_manifest = _build_manifest_from_inventory(
-        inventory,
-        options.src_dir,
-        entity_page_cache=page_maps.entity_page_cache,
-        entity_occurrence_page_cache=page_maps.entity_occurrence_page_cache,
-        module_page_map=page_maps.module_page_map,
-        surfaces=surfaces,
-        generation_inputs=generation_inputs,
-    )
-    updated_manifest.save(options.wiki_dir)
-    print(f"Manifest written to {options.wiki_dir / MANIFEST_FILENAME}", flush=True)
-
-
 def _detect_sync_entry_points(
     inventory: dict, src_dir: str
-) -> EntryPointDetectionResult:
+) -> _SyncEntryPointAnalysis:
     console_scripts = read_console_scripts(src_dir)
-    result = detect_entry_points(
+    observations = get_detailed_entry_points(
         inventory,
         console_scripts=console_scripts,
         root=src_dir,
         fallback_root=Path.cwd(),
+        include_warnings=True,
     )
-    for warning in result.warnings:
+    for warning in observations.pop("warnings", []):
         print(f"Warning: {warning}", flush=True)
-    return result
+    return _SyncEntryPointAnalysis(
+        entries=entry_points_from_detailed_observations(observations),
+        observations=observations,
+    )
 
 
-def _write_sync_surface_index(
+def _selected_sync_flow_entries(
+    options: _SyncRunOptions,
+    surface_plan: _SurfaceInitializationPlan,
+) -> list[dict]:
+    initializing = bool(options.initialize_surfaces)
+    selected = (
+        surface_plan.new_flow_entries if initializing else surface_plan.flow_entries
+    )
+    return [dict(entry) for entry in selected]
+
+
+def _build_sync_graph_observations(
     options: _SyncRunOptions,
     inventory: dict,
-    page_maps: _SyncPageMaps,
-    entry_points: list[dict] | None = None,
-) -> None:
-    if entry_points is None:
-        entry_points = _detect_sync_entry_points(inventory, options.src_dir).entries
-    surface_path, write_state = write_surface_index(
-        options.wiki_dir,
-        inventory,
-        src_dir=options.src_dir,
-        entity_page_cache=page_maps.entity_page_cache,
-        entity_occurrence_page_cache=page_maps.entity_occurrence_page_cache,
-        module_page_map=page_maps.module_page_map,
-        entry_points=entry_points,
+    source_snapshot: SourceSnapshot,
+    entrypoint_observations: dict,
+    surface_plan: _SurfaceInitializationPlan,
+    dependency_analysis: dict | None,
+    *,
+    data_effect_observations: Mapping | None = None,
+    import_observations: Mapping | None = None,
+) -> _RuntimeGraphObservations:
+    call_edges = [dict(edge) for edge in resolve_call_edges(inventory)]
+    call_observations = resolve_call_observations(inventory)
+    flow_entries = _selected_sync_flow_entries(options, surface_plan)
+    rendering_flows = [build_flow(entry, call_edges) for entry in flow_entries]
+    flows = [build_flow_detailed(entry, call_edges) for entry in flow_entries]
+    generation_options = runtime_generation_options(
+        surfaces=surface_plan.surfaces,
+        generation_inputs=surface_plan.generation_inputs,
+        include_tests=options.include_tests,
+        preserve_semantic=options.preserve_semantic,
     )
-    if write_state != "unchanged":
-        print(f"Surface index written to {surface_path}", flush=True)
+    data_flow_enabled = bool(generation_options["data_flow_enabled"])
+    context = (
+        build_data_flow_context(
+            inventory,
+            call_edges,
+            data_effect_observations=data_effect_observations,
+        )
+        if data_flow_enabled and flows
+        else None
+    )
+    data_flows: list[dict] = []
+    rendering_data_flows: list[dict] = []
+    if data_flow_enabled:
+        for rendering_flow, flow in zip(rendering_flows, flows):
+            # The versioned graph projection uses unknown locations instead of
+            # legacy line-zero placeholders. Retain the old analyzer result
+            # separately so regenerated Markdown remains byte-compatible.
+            rendering_data_flows.append(
+                analyze_data_flow(
+                    inventory,
+                    rendering_flow,
+                    call_edges,
+                    context=context,
+                )
+            )
+            data_flows.append(
+                analyze_data_flow_detailed(
+                    inventory,
+                    flow,
+                    call_edges,
+                    context=context,
+                )
+            )
+    limitations: dict[str, tuple[str, ...]] = {}
+    if not data_flow_enabled:
+        limitations["data-flows"] = ("data-flow-analysis-disabled",)
+    if dependency_analysis is None:
+        limitations["external-dependencies"] = (
+            "dependency-analysis-not-evaluated",
+        )
+    elif surface_plan.excluded_dependency_tests:
+        limitations["external-dependencies"] = (
+            "dependency-analysis-excludes-test-sources",
+        )
+    return _RuntimeGraphObservations(
+        resolved_call_edges=call_edges,
+        call_observations=call_observations,
+        dependency_observations=build_dependency_observations(
+            inventory,
+            options.src_dir,
+            source_snapshot=source_snapshot,
+            import_observations=import_observations,
+        ),
+        entrypoint_observations=entrypoint_observations,
+        flows=flows,
+        rendering_flows=rendering_flows,
+        data_flows=data_flows,
+        rendering_data_flows=rendering_data_flows,
+        external_dependencies=(
+            build_external_dependency_observations(dependency_analysis)
+            if dependency_analysis is not None
+            else []
+        ),
+        dependency_analysis=dependency_analysis,
+        analyzer_limitations=limitations,
+    )
 
 
-def _print_sync_summary(result: "SyncResult", diff: "SyncDiff") -> None:
+def _print_sync_summary(
+    result: "SyncResult",
+    diff: "SyncDiff",
+    infrastructure_plan: InfrastructureSyncPlan | None = None,
+) -> None:
     print(
         f"\nSync complete: {result.created} created, {result.updated} updated, "
         f"{result.metadata_only} metadata-only, {result.skipped} skipped, "
@@ -2632,6 +2440,15 @@ def _print_sync_summary(result: "SyncResult", diff: "SyncDiff") -> None:
     if diff.moved_entities:
         names = ", ".join(diff.moved_entities.keys())
         print(f"Moved entities detected (pages updated in-place): {names}")
+    if infrastructure_plan is not None:
+        print(
+            "Infrastructure observations: "
+            f"{len(infrastructure_plan.new_sources)} added, "
+            f"{len(infrastructure_plan.changed_sources)} changed, "
+            f"{len(infrastructure_plan.moved_sources)} moved, "
+            f"{len(infrastructure_plan.removed_sources)} removed, "
+            f"{len(infrastructure_plan.unsupported_yaml)} unsupported YAML."
+        )
 
 
 def _print_surface_summary(plan: _SurfaceInitializationPlan) -> None:
@@ -2646,25 +2463,78 @@ def _print_surface_summary(plan: _SurfaceInitializationPlan) -> None:
     )
 
 
+def _discover_infrastructure_plan(
+    source_snapshot: SourceSnapshot,
+    generation_inputs: Mapping[str, object],
+) -> InfrastructureSyncPlan:
+    docker_inventory = get_docker_inventory(
+        str(source_snapshot.root),
+        source_snapshot=source_snapshot,
+    )
+    yaml_inventory = get_yaml_infrastructure_inventory(
+        source_snapshot.root,
+        source_snapshot=source_snapshot,
+    )
+    infrastructure_inventory = dict(docker_inventory)
+    for source_path, info in yaml_inventory.items():
+        infrastructure_inventory.setdefault(source_path, info)
+    plan = build_infrastructure_sync_plan(
+        source_snapshot,
+        infrastructure_inventory,
+        generation_inputs=generation_inputs,
+    )
+    print(
+        "Infrastructure discovery roots: "
+        f"{', '.join(plan.discovery_roots)} "
+        f"({len(plan.current_sources)} supported source(s), "
+        f"{len(plan.unsupported_yaml)} unsupported YAML candidate(s))."
+    )
+    if plan.unsupported_yaml:
+        print(
+            "Unsupported infrastructure YAML: "
+            + ", ".join(str(item["path"]) for item in plan.unsupported_yaml)
+        )
+    return plan
+
+
+def _with_planned_infrastructure_state(
+    plan: _SurfaceInitializationPlan,
+    infrastructure_plan: InfrastructureSyncPlan,
+) -> _SurfaceInitializationPlan:
+    if not infrastructure_plan.state_changed:
+        return plan
+    generation_inputs = with_infrastructure_generation_input(
+        plan.generation_inputs,
+        infrastructure_plan,
+    )
+    return replace(
+        plan,
+        generation_inputs=generation_inputs,
+        generation_inputs_changed=(
+            plan.generation_inputs_changed
+            or generation_inputs != plan.generation_inputs
+        ),
+    )
+
+
 def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
     manifest, seed_manifest = _load_or_seed_manifest(options)
     if manifest is None and not seed_manifest:
         return None
 
     baseline_manifest = manifest or SyncManifest()
+    _preflight_sync_governance(options.wiki_dir, baseline_manifest)
     selected_openapi, generation_inputs = _resolve_openapi_generation_input(
         options, baseline_manifest
     )
     print(f"Syncing wiki from source: {options.src_dir}")
     print(f"Wiki directory: {options.wiki_dir}")
-    inventory_result = _extract_current_inventory(options)
+    extracted = _extract_current_inventory(options)
+    inventory_result = extracted.result
+    source_snapshot = extracted.source_snapshot
     inventory = inventory_result.inventory
-    if _finish_if_empty_inventory(options, baseline_manifest, inventory_result):
-        return None
-    if manifest is not None and _repair_manifest_if_needed(
-        options, manifest, inventory, inventory_result
-    ):
-        return None
+    source_content_hashes = source_snapshot.hashes_for(inventory)
+    repair_only = manifest is not None and bool(_invalid_manifest_hash_paths(manifest))
     maps = _prepare_sync_page_maps(inventory)
     if manifest is None:
         manifest = _build_manifest_from_inventory(
@@ -2673,18 +2543,25 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
             entity_page_cache=maps.entity_page_cache,
             entity_occurrence_page_cache=maps.entity_occurrence_page_cache,
             module_page_map=maps.module_page_map,
+            retained_page_paths=retained_concept_page_paths(options.wiki_dir),
+            unknown_evidence_reason=MANIFEST_STATE_UNAVAILABLE,
+            source_content_hashes=source_content_hashes,
         )
     contracts = build_api_contracts(
         inventory,
         openapi_file=selected_openapi,
         source_root=options.src_dir,
     )
-    entries = attach_routes_to_entry_points(
-        _detect_sync_entry_points(inventory, options.src_dir).entries,
-        contracts,
-    )
+    entrypoint_analysis = _detect_sync_entry_points(inventory, options.src_dir)
+    entries = attach_routes_to_entry_points(entrypoint_analysis.entries, contracts)
     contracts = _linked_api_contracts(contracts, entries)
-    diff = _compute_sync_diff(manifest, inventory, options, maps)
+    diff = _compute_sync_diff(
+        manifest,
+        inventory,
+        options,
+        maps,
+        source_content_hashes,
+    )
     surface_plan = _build_surface_initialization_plan(
         options,
         manifest,
@@ -2693,22 +2570,313 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
         source_changed=diff.has_changes,
         api_contracts=contracts,
         generation_inputs=generation_inputs,
+        source_snapshot=source_snapshot,
+    )
+    infrastructure_plan = _discover_infrastructure_plan(
+        source_snapshot,
+        manifest.generation_inputs,
+    )
+    infrastructure_plan = _qualify_infrastructure_page_drift(
+        options,
+        infrastructure_plan,
+        page_maps=maps,
+        source_snapshot=source_snapshot,
+    )
+    if not seed_manifest and not repair_only and not options.initialize_surfaces:
+        surface_plan = _with_planned_infrastructure_state(
+            surface_plan,
+            infrastructure_plan,
+        )
+    graph_observations = _build_sync_graph_observations(
+        options,
+        inventory,
+        source_snapshot,
+        entrypoint_analysis.observations,
+        surface_plan,
+        surface_plan.dependency_analysis,
+        data_effect_observations=inventory_result.data_effect_observations,
+        import_observations=inventory_result.import_observations,
+    )
+    repository_evidence = collect_runtime_repository_evidence(
+        options.src_dir,
+        options.wiki_dir,
     )
     return _PreparedSyncRun(
-        manifest,
-        seed_manifest,
-        inventory_result,
-        inventory,
-        maps,
-        entries,
-        diff,
-        surface_plan,
+        manifest=manifest,
+        seed_manifest=seed_manifest,
+        repair_only=repair_only,
+        inventory_result=inventory_result,
+        source_snapshot=source_snapshot,
+        inventory=inventory,
+        page_maps=maps,
+        entry_points=entries,
+        diff=diff,
+        surface_plan=surface_plan,
+        repository_evidence=repository_evidence,
+        graph_observations=graph_observations,
+        infrastructure_plan=infrastructure_plan,
     )
+
+
+def _preflight_sync_governance(
+    wiki_dir: Path,
+    manifest: SyncManifest,
+) -> None:
+    """Reject corrupt or missing committed governance before page mutation."""
+
+    try:
+        load_governance(
+            wiki_dir,
+            expected_bundle_id=committed_governance_bundle_id(
+                wiki_dir,
+                manifest,
+            ),
+        )
+    except FileNotFoundError:
+        marker = manifest.artifact_hashes
+        if getattr(marker, "governance_hash", None) is not None:
+            raise GovernanceError(
+                GOVERNANCE_FILENAME,
+                "is missing but the sync manifest commits governed artifacts; "
+                "restore the ledger from version control before syncing",
+                code="governance-missing",
+            )
+
+
+def _infrastructure_page_path(wiki_dir: Path, record: Mapping[str, object]) -> Path:
+    relative = str(record.get("page_path") or "")
+    parts = Path(relative).parts
+    if (
+        len(parts) != 2
+        or parts[0] != "infrastructure"
+        or not parts[1].endswith(".md")
+        or parts[1] in {".md", "..md"}
+    ):
+        raise ValueError(f"invalid persisted infrastructure page path: {relative!r}")
+    return wiki_dir / relative
+
+
+def _merge_infrastructure_notes(existing: str | None, generated: str) -> str:
+    if existing is None or _section_body(existing, "Notes") is None:
+        return generated
+    return _preserve_level_two_section_exact(existing, generated, "Notes")
+
+
+def _record_infrastructure_write(
+    result: SyncResult,
+    state: str,
+    *,
+    label: str,
+) -> None:
+    if state == "created":
+        result.created += 1
+        print(f"  CREATE infrastructure: {label}")
+    elif state == "updated":
+        result.updated += 1
+        print(f"  UPDATE infrastructure: {label}")
+    else:
+        result.skipped += 1
+        print(f"  SKIP infrastructure (unchanged): {label}")
+
+
+def _write_current_infrastructure_page(
+    options: _SyncRunOptions,
+    plan: InfrastructureSyncPlan,
+    result: SyncResult,
+    source_path: str,
+    *,
+    module_page_map: Mapping[str, str],
+    unsupported_sources: Mapping[str, Mapping[str, object]],
+    semantic_source: Path | None = None,
+) -> Path:
+    record = plan.current_sources[source_path]
+    path = _infrastructure_page_path(options.wiki_dir, record)
+    existing_path = (
+        (path if path.is_file() else semantic_source)
+        if options.preserve_semantic
+        else None
+    )
+    existing = read_md(existing_path) if existing_path and existing_path.is_file() else None
+    generated = _generate_infrastructure_md(
+        source_path,
+        plan.inventory[source_path],
+        module_page_map,
+        {
+            source: dict(details)
+            for source, details in unsupported_sources.items()
+        },
+    )
+    merged = _merge_infrastructure_notes(existing, generated)
+    state = _write_md_if_changed(path, merged)
+    _record_infrastructure_write(result, state, label=source_path)
+    return path
+
+
+def _infrastructure_tombstone_markdown(
+    source_path: str,
+    record: Mapping[str, object],
+) -> str:
+    adapter = str(record.get("adapter") or "unknown")
+    return (
+        f"# Removed infrastructure: {source_path}\n\n"
+        "> ⚠️ **Stale observation:** The mapped infrastructure source is no longer "
+        "present in the current discovery snapshot.\n\n"
+        f"**Path:** `{source_path}`\n"
+        f"**Type:** `{adapter}`\n"
+        "**Observation State:** `source-removed`\n\n"
+        "## Notes\n\n"
+        "_Add retained operational context here; this page is not current source "
+        "evidence._\n"
+    )
+
+
+def _qualify_infrastructure_page_drift(
+    options: _SyncRunOptions,
+    plan: InfrastructureSyncPlan,
+    *,
+    page_maps: _SyncPageMaps,
+    source_snapshot: SourceSnapshot,
+) -> InfrastructureSyncPlan:
+    """Promote page drift without treating the semantic Notes body as generated."""
+
+    changed = set(plan.changed_sources)
+    unsupported_sources = unsupported_source_summary(source_snapshot)
+    for source_path in plan.unchanged_sources:
+        record = plan.current_sources[source_path]
+        path = _infrastructure_page_path(options.wiki_dir, record)
+        existing = read_md(path) if path.is_file() else None
+        generated = _generate_infrastructure_md(
+            source_path,
+            plan.inventory[source_path],
+            page_maps.module_page_map,
+            unsupported_sources,
+        )
+        expected = _merge_infrastructure_notes(
+            existing if options.preserve_semantic else None,
+            generated,
+        )
+        if existing is None or _normalize_md(existing) != _normalize_md(expected):
+            changed.add(source_path)
+
+    repair_tombstones: list[str] = []
+    cleanup_moved_pages: list[str] = []
+    raw_tombstones = plan.next_state.get("tombstones")
+    tombstones = raw_tombstones if isinstance(raw_tombstones, Mapping) else {}
+    for source_path, raw_record in sorted(tombstones.items()):
+        if not isinstance(source_path, str) or not isinstance(raw_record, Mapping):
+            continue
+        if source_path in plan.removed_sources or source_path in plan.moved_sources:
+            continue
+        path = _infrastructure_page_path(options.wiki_dir, raw_record)
+        reason = raw_record.get("reason")
+        if reason == "source-moved":
+            if path.is_file():
+                cleanup_moved_pages.append(source_path)
+            continue
+        if reason != "source-removed":
+            continue
+        existing = read_md(path) if path.is_file() else None
+        expected = _merge_infrastructure_notes(
+            existing if options.preserve_semantic else None,
+            _infrastructure_tombstone_markdown(source_path, raw_record),
+        )
+        if existing is None or _normalize_md(existing) != _normalize_md(expected):
+            repair_tombstones.append(source_path)
+
+    unchanged = tuple(
+        source_path
+        for source_path in plan.unchanged_sources
+        if source_path not in changed
+    )
+    return replace(
+        plan,
+        changed_sources=tuple(sorted(changed)),
+        unchanged_sources=unchanged,
+        repair_tombstones=tuple(repair_tombstones),
+        cleanup_moved_pages=tuple(cleanup_moved_pages),
+    )
+
+
+def _apply_infrastructure_plan(
+    options: _SyncRunOptions,
+    plan: InfrastructureSyncPlan,
+    result: SyncResult,
+    *,
+    page_maps: _SyncPageMaps,
+    source_snapshot: SourceSnapshot,
+) -> None:
+    unsupported_sources = unsupported_source_summary(source_snapshot)
+    for old_path, new_path in plan.moved_sources.items():
+        old_page = _infrastructure_page_path(options.wiki_dir, plan.prior_sources[old_path])
+        new_page = _write_current_infrastructure_page(
+            options,
+            plan,
+            result,
+            new_path,
+            module_page_map=page_maps.module_page_map,
+            unsupported_sources=unsupported_sources,
+            semantic_source=old_page,
+        )
+        if old_page != new_page and old_page.is_file():
+            old_page.unlink()
+            print(f"  MOVE infrastructure: {old_path} -> {new_path}")
+    for source_path in (*plan.new_sources, *plan.changed_sources):
+        prior_record = plan.prior_sources.get(source_path)
+        old_page = (
+            _infrastructure_page_path(options.wiki_dir, prior_record)
+            if prior_record is not None
+            else None
+        )
+        new_page = _write_current_infrastructure_page(
+            options,
+            plan,
+            result,
+            source_path,
+            module_page_map=page_maps.module_page_map,
+            unsupported_sources=unsupported_sources,
+            semantic_source=old_page,
+        )
+        if old_page is not None and old_page != new_page and old_page.is_file():
+            old_page.unlink()
+            print(f"  RENAME infrastructure page mapping: {source_path}")
+    for source_path in plan.removed_sources:
+        record = plan.prior_sources[source_path]
+        path = _infrastructure_page_path(options.wiki_dir, record)
+        existing = read_md(path) if path.is_file() else None
+        tombstone = _merge_infrastructure_notes(
+            existing if options.preserve_semantic else None,
+            _infrastructure_tombstone_markdown(source_path, record),
+        )
+        state = _write_md_if_changed(path, tombstone)
+        _record_infrastructure_write(result, state, label=f"{source_path} (removed)")
+        result.deprecated += 1
+    raw_tombstones = plan.next_state.get("tombstones")
+    tombstones = raw_tombstones if isinstance(raw_tombstones, Mapping) else {}
+    for source_path in plan.repair_tombstones:
+        record = tombstones[source_path]
+        path = _infrastructure_page_path(options.wiki_dir, record)
+        existing = read_md(path) if path.is_file() else None
+        tombstone = _merge_infrastructure_notes(
+            existing if options.preserve_semantic else None,
+            _infrastructure_tombstone_markdown(source_path, record),
+        )
+        state = _write_md_if_changed(path, tombstone)
+        _record_infrastructure_write(result, state, label=f"{source_path} (removed)")
+    for source_path in plan.cleanup_moved_pages:
+        record = tombstones[source_path]
+        path = _infrastructure_page_path(options.wiki_dir, record)
+        if path.is_file():
+            path.unlink()
+            print(f"  REMOVE moved infrastructure page: {source_path}")
 
 
 def _apply_prepared_sync(
     options: _SyncRunOptions, prepared: _PreparedSyncRun
 ) -> SyncResult:
+    if prepared.repair_only or (
+        prepared.seed_manifest and not options.initialize_surfaces
+    ):
+        return SyncResult()
     if prepared.diff.has_changes and not options.initialize_surfaces:
         return _apply_sync_changes(
             options,
@@ -2717,10 +2885,25 @@ def _apply_prepared_sync(
             prepared.diff,
             prepared.page_maps,
             prepared.surface_plan,
+            prepared.graph_observations,
+            prepared.infrastructure_plan,
+            prepared.source_snapshot,
         )
     result = SyncResult()
+    if not options.initialize_surfaces:
+        _apply_infrastructure_plan(
+            options,
+            prepared.infrastructure_plan,
+            result,
+            page_maps=prepared.page_maps,
+            source_snapshot=prepared.source_snapshot,
+        )
     _apply_surface_page_changes(
-        options, prepared.inventory, prepared.page_maps, prepared.surface_plan
+        options,
+        prepared.inventory,
+        prepared.page_maps,
+        prepared.surface_plan,
+        graph_observations=prepared.graph_observations,
     )
     if options.initialize_surfaces:
         _rebuild_surface_only_index(
@@ -2740,89 +2923,293 @@ def _apply_prepared_sync(
             module_page_map=prepared.page_maps.module_page_map,
             preserve_semantic=options.preserve_semantic,
         )
-    _append_log(
-        options.wiki_dir,
-        options.src_dir,
-        prepared.diff,
-        result,
-        surface_plan=prepared.surface_plan,
-    )
+    if (
+        prepared.diff.has_changes
+        or prepared.surface_plan.has_work
+        or prepared.infrastructure_plan.has_changes
+    ):
+        _append_log(
+            options.wiki_dir,
+            options.src_dir,
+            prepared.diff,
+            result,
+            surface_plan=prepared.surface_plan,
+            infrastructure_plan=prepared.infrastructure_plan,
+        )
     return result
 
 
 def _finalize_prepared_sync(
-    options: _SyncRunOptions, prepared: _PreparedSyncRun, result: SyncResult
-) -> None:
-    _write_sync_surface_index(
-        options,
+    options: _SyncRunOptions,
+    prepared: _PreparedSyncRun,
+    result: SyncResult,
+    *,
+    target_wiki_dir: Path | None = None,
+    dry_run: bool = False,
+) -> KnowledgeCommitResult:
+    target = target_wiki_dir or options.wiki_dir
+    page_source_overrides = None
+    if options.initialize_surfaces and not prepared.repair_only:
+        page_source_overrides = {
+            page_path: mapping.source_path
+            for page_path, mapping in prepared.manifest.page_source_mappings.items()
+        }
+    surface = evaluate_surface_index(
+        options.wiki_dir,
         prepared.inventory,
-        prepared.page_maps,
-        prepared.entry_points,
+        src_dir=options.src_dir,
+        entity_page_cache=prepared.page_maps.entity_page_cache,
+        entity_occurrence_page_cache=(prepared.page_maps.entity_occurrence_page_cache),
+        module_page_map=prepared.page_maps.module_page_map,
+        entry_points=prepared.entry_points,
+        page_source_overrides=page_source_overrides,
     )
-    if options.initialize_surfaces:
-        print("Writing sync manifest...", flush=True)
-        SyncManifest(
-            sources=deepcopy(prepared.manifest.sources),
-            surfaces=deepcopy(prepared.surface_plan.surfaces),
-            generation_inputs=deepcopy(prepared.surface_plan.generation_inputs),
-        ).save(options.wiki_dir)
-        print(f"Manifest written to {options.wiki_dir / MANIFEST_FILENAME}", flush=True)
+    next_manifest = None
+    if options.initialize_surfaces and not prepared.repair_only:
+        next_manifest = prepared.manifest.with_generation_state(
+            surfaces=prepared.surface_plan.surfaces,
+            generation_inputs=prepared.surface_plan.generation_inputs,
+        )
+    artifact_result = finalize_runtime_knowledge(
+        RuntimeKnowledgeInputs(
+            target_wiki_dir=target,
+            inventory=prepared.inventory,
+            surface=surface,
+            source_snapshot=prepared.source_snapshot,
+            module_page_map=prepared.page_maps.module_page_map,
+            entity_occurrence_page_map=(
+                prepared.page_maps.entity_occurrence_page_cache
+            ),
+            repository_evidence=prepared.repository_evidence,
+            inventory_complete=True,
+            previous_manifest=prepared.manifest,
+            next_manifest=next_manifest,
+            manifest_surfaces=prepared.surface_plan.surfaces,
+            manifest_generation_inputs=prepared.surface_plan.generation_inputs,
+            unknown_evidence_reason=(
+                MANIFEST_REPAIR_UNAVAILABLE
+                if prepared.repair_only
+                else MANIFEST_STATE_UNAVAILABLE
+                if prepared.seed_manifest
+                else EVIDENCE_NOT_RECORDED
+            ),
+            force_unknown_evidence=(prepared.seed_manifest or prepared.repair_only),
+            extractor_registry=prepared.inventory_result.extractor_registry,
+            plugin_extractor_components=(prepared.inventory_result.plugin_components),
+            plugin_components=(prepared.inventory_result.producer_plugin_components),
+            plugin_lock_path=prepared.inventory_result.plugin_lock_path,
+            plugin_lock_hash=prepared.inventory_result.plugin_lock_hash,
+            generation_options=runtime_generation_options(
+                surfaces=prepared.surface_plan.surfaces,
+                generation_inputs=prepared.surface_plan.generation_inputs,
+                include_tests=options.include_tests,
+                preserve_semantic=options.preserve_semantic,
+            ),
+            generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS,
+            generation_option_allowlist=tuple(RUNTIME_GENERATION_OPTION_DEFAULTS),
+            call_edges=prepared.graph_observations.call_observations,
+            dependency_observations=(
+                prepared.graph_observations.dependency_observations
+            ),
+            entrypoint_observations=(
+                prepared.graph_observations.entrypoint_observations
+            ),
+            flows=prepared.graph_observations.flows,
+            data_flows=prepared.graph_observations.data_flows,
+            external_dependencies=(
+                prepared.graph_observations.external_dependencies
+            ),
+            graph_analyzer_limitations=(
+                prepared.graph_observations.analyzer_limitations
+            ),
+            governance_moves=_governance_moves_for_sync(
+                prepared.diff,
+                prepared.manifest,
+                entity_page_cache=prepared.page_maps.entity_page_cache,
+            )
+            if (target / GOVERNANCE_FILENAME).is_file()
+            else {},
+        ),
+        dry_run=dry_run,
+    )
+    _print_sync_artifact_actions(artifact_result)
+    if dry_run:
+        return artifact_result
+
+    if prepared.repair_only:
+        invalid_hashes = len(_invalid_manifest_hash_paths(prepared.manifest))
+        print(
+            "Sync manifest repaired: "
+            f"{invalid_hashes} source entr"
+            f"{'y has' if invalid_hashes == 1 else 'ies have'} invalid or missing hashes."
+        )
+        print(
+            "Wiki pages were not modified. Run `llm-wiki sync` again to apply "
+            "source changes."
+        )
+    elif prepared.seed_manifest:
+        print(
+            "No sync manifest found — seeding from current source state.\n"
+            "Existing wiki pages were not modified.\n"
+            "Future `llm-wiki sync` runs will update incrementally."
+        )
+        print(f"Manifest written to {target / MANIFEST_FILENAME}")
+        if artifact_result.committed_manifest.tombstones:
+            print(
+                "Retained stale pages with unknown provenance: "
+                f"{len(artifact_result.committed_manifest.tombstones)}."
+            )
+        if options.initialize_surfaces:
+            _print_surface_summary(prepared.surface_plan)
+    elif options.initialize_surfaces:
         _print_surface_summary(prepared.surface_plan)
         deferred = len(_affected_source_files(prepared.diff))
         if deferred:
             print(f"Deferred source changes: {deferred} file(s).")
+        elif not prepared.surface_plan.has_work:
+            print("Requested optional surfaces are up to date.")
     else:
-        _write_updated_manifest(
-            options,
-            prepared.inventory,
-            prepared.page_maps,
-            prepared.surface_plan.surfaces,
-            prepared.surface_plan.generation_inputs,
+        if (
+            prepared.diff.has_changes
+            or prepared.surface_plan.has_work
+            or prepared.infrastructure_plan.has_changes
+        ):
+            _print_sync_summary(
+                result,
+                prepared.diff,
+                prepared.infrastructure_plan,
+            )
+        else:
+            print("Wiki is up to date.")
+    _print_cache_stats(
+        prepared.inventory_result.cache_stats,
+        enabled=options.cache_stats_enabled,
+    )
+    return artifact_result
+
+
+def _print_sync_artifact_actions(result: KnowledgeCommitResult) -> None:
+    prefix = "DRY-RUN: " if result.dry_run else ""
+    labels = (
+        ("Surface index", result.surface_index),
+        ("Knowledge index", result.knowledge_index),
+        ("Manifest", result.manifest),
+    )
+    for label, artifact in labels:
+        if artifact.state is ArtifactWriteState.UNCHANGED:
+            action = "unchanged"
+        else:
+            action = artifact.state.value
+        print(f"{prefix}{label}: {action} ({artifact.relative_path})", flush=True)
+
+
+def _run_sync_dry_run(
+    options: _SyncRunOptions,
+    prepared: _PreparedSyncRun,
+) -> None:
+    unsafe_symlink = _unsafe_dry_run_symlink(options.wiki_dir)
+    if unsafe_symlink is not None:
+        print(
+            "Error: sync dry-run cannot safely stage a wiki containing an "
+            f"external or broken symbolic link: {unsafe_symlink}.",
+            file=sys.stderr,
         )
-        _print_sync_summary(result, prepared.diff)
+        sys.exit(2)
+    _print_dry_run_plan(
+        options,
+        prepared.diff,
+        prepared.surface_plan,
+        prepared.infrastructure_plan,
+        prepared.manifest,
+        seed_manifest=prepared.seed_manifest,
+        repair_only=prepared.repair_only,
+    )
+    with tempfile.TemporaryDirectory(prefix="llm-wiki-sync-preview-") as temp_dir:
+        staged_wiki = Path(temp_dir) / "wiki"
+        if options.wiki_dir.exists():
+            shutil.copytree(
+                options.wiki_dir,
+                staged_wiki,
+                symlinks=True,
+            )
+        else:
+            staged_wiki.mkdir(parents=True)
+        staged_options = replace(
+            options,
+            wiki_dir=staged_wiki,
+            dry_run=False,
+        )
+        result = _apply_prepared_sync(staged_options, prepared)
+        _finalize_prepared_sync(
+            staged_options,
+            prepared,
+            result,
+            target_wiki_dir=options.wiki_dir,
+            dry_run=True,
+        )
     _print_cache_stats(
         prepared.inventory_result.cache_stats,
         enabled=options.cache_stats_enabled,
     )
 
 
+def _unsafe_dry_run_symlink(wiki_dir: Path) -> str | None:
+    """Return the first symlink that would escape an isolated preview tree."""
+
+    if not wiki_dir.exists():
+        return None
+    resolved_root = wiki_dir.resolve()
+    for directory, directory_names, filenames in os.walk(
+        wiki_dir,
+        followlinks=False,
+    ):
+        directory_names.sort()
+        filenames.sort()
+        parent = Path(directory)
+        for name in (*directory_names, *filenames):
+            candidate = parent / name
+            if not candidate.is_symlink():
+                continue
+            relative_path = candidate.relative_to(wiki_dir).as_posix()
+            try:
+                raw_target = Path(os.readlink(candidate))
+                if raw_target.is_absolute():
+                    return relative_path
+                resolved_target = candidate.resolve(strict=True)
+                if not resolved_target.is_relative_to(resolved_root):
+                    return relative_path
+            except (OSError, RuntimeError):
+                return relative_path
+    return None
+
+
 def run(args) -> None:
     options = _sync_run_options_from_args(args)
     try:
         prepared = _prepare_sync_run(options)
-    except ApiContractError as exc:
+    except (ApiContractError, GovernanceError, InfrastructureSyncError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(2)
     if prepared is None:
         return
 
     if options.dry_run:
-        _print_dry_run_plan(
+        _run_sync_dry_run(options, prepared)
+        return
+    if (
+        not options.initialize_surfaces
+        and not prepared.seed_manifest
+        and not prepared.repair_only
+    ):
+        _exit_if_large_unforced_diff(
             options,
             prepared.diff,
-            prepared.surface_plan,
-            seed_manifest=prepared.seed_manifest,
+            prepared.manifest,
+            prepared.inventory_result,
+            prepared.infrastructure_plan,
         )
-        _print_cache_stats(
-            prepared.inventory_result.cache_stats,
-            enabled=options.cache_stats_enabled,
-        )
-        return
-    if _finish_if_no_changes(
-        options,
-        prepared.diff,
-        prepared.inventory_result,
-        prepared.inventory,
-        prepared.page_maps,
-        prepared.entry_points,
-        prepared.surface_plan,
-    ):
-        return
-    if not options.initialize_surfaces:
-        _exit_if_large_unforced_diff(
-            options, prepared.diff, prepared.manifest, prepared.inventory_result
-        )
-    _exit_if_large_unforced_surface_plan(options, prepared.surface_plan)
+    if not prepared.seed_manifest and not prepared.repair_only:
+        _exit_if_large_unforced_surface_plan(options, prepared.surface_plan)
     result = _apply_prepared_sync(options, prepared)
     _finalize_prepared_sync(options, prepared, result)
 
@@ -2830,113 +3217,8 @@ def run(args) -> None:
 # ── Index + log helpers ───────────────────────────────────────────────────────
 
 
-_INDEX_GENERATED_HEADINGS = frozenset(
-    heading.casefold()
-    for heading in (
-        "Surface Overview",
-        "Entities",
-        "Modules",
-        "Workflows",
-        "Guides",
-        "User Flows",
-        "Infrastructure",
-        "Architecture",
-        "Dependency Architecture",
-        "API Contracts",
-        "Log",
-    )
-)
-_INDEX_GENERATED_INTROS = {
-    ("Catalog of project modules and entities.",),
-    ("Use this landing page to choose the right wiki surface.",),
-}
-
-
-def _heading_title(line: str) -> str | None:
-    match = _HEADING_RE.match(line.strip())
-    if not match:
-        return None
-    return match.group(2).strip()
-
-
-def _iter_level_two_sections(
-    lines: list[str],
-) -> list[tuple[str, list[str]]]:
-    sections: list[tuple[str, list[str]]] = []
-    for i, line in enumerate(lines):
-        match = _HEADING_RE.match(line.strip())
-        if not match or len(match.group(1)) != 2:
-            continue
-        end = len(lines)
-        for j in range(i + 1, len(lines)):
-            next_match = _HEADING_RE.match(lines[j].strip())
-            if next_match and len(next_match.group(1)) <= 2:
-                end = j
-                break
-        sections.append((line.strip(), _trim_blank_lines(lines[i + 1 : end])))
-    return sections
-
-
-def _index_intro_lines(lines: list[str]) -> list[str]:
-    start = 0
-    if lines and lines[0].startswith("# "):
-        start = 1
-    first_section = len(lines)
-    for i, line in enumerate(lines[start:], start=start):
-        match = _HEADING_RE.match(line.strip())
-        if match and len(match.group(1)) == 2:
-            first_section = i
-            break
-    return _trim_blank_lines(lines[start:first_section])
-
-
-def _merge_intro_into_notes(
-    sections: list[tuple[str, list[str]]], intro: list[str]
-) -> list[tuple[str, list[str]]]:
-    if not intro:
-        return sections
-    merged: list[tuple[str, list[str]]] = []
-    inserted = False
-    for heading, body in sections:
-        title = _heading_title(heading)
-        if title and title.casefold() == "notes" and not inserted:
-            new_body = intro + ([""] if body else []) + body
-            merged.append((heading, new_body))
-            inserted = True
-        else:
-            merged.append((heading, body))
-    if not inserted:
-        merged.insert(0, ("## Notes", intro))
-    return merged
-
-
-def _preserved_index_sections(old_md: str) -> list[tuple[str, list[str]]]:
-    lines = _normalize_md(old_md).splitlines()
-    custom_sections = [
-        (heading, body)
-        for heading, body in _iter_level_two_sections(lines)
-        if (_heading_title(heading) or "").casefold() not in _INDEX_GENERATED_HEADINGS
-    ]
-    intro = _index_intro_lines(lines)
-    if tuple(intro) in _INDEX_GENERATED_INTROS:
-        intro = []
-    return _merge_intro_into_notes(custom_sections, intro)
-
-
 def _preserve_index_custom_sections(old_md: str, new_md: str) -> str:
-    preserved = _preserved_index_sections(old_md)
-    if not preserved:
-        return new_md
-    lines = _normalize_md(new_md).splitlines()
-    while lines and lines[-1].strip() == "":
-        lines.pop()
-    lines.append("")
-    for heading, body in preserved:
-        lines.append(heading)
-        lines.append("")
-        lines.extend(body)
-        lines.append("")
-    return "\n".join(lines)
+    return _service_preserve_index_custom_sections(old_md, new_md)
 
 
 def _rebuild_index(
@@ -3055,18 +3337,13 @@ def _rebuild_surface_only_index(
             wiki_dir / PageKind.WORKFLOWS.value, "entry"
         )
         or None,
-        guide_entries=_list_existing_pages(
-            wiki_dir / PageKind.GUIDES.value, "topic"
-        )
+        guide_entries=_list_existing_pages(wiki_dir / PageKind.GUIDES.value, "topic")
         or None,
         infra_entries=_list_existing_pages(
             wiki_dir / PageKind.INFRASTRUCTURE.value, "type"
         )
         or None,
-        flow_entries=_list_existing_flow_pages(
-            wiki_dir / PageKind.FLOWS.value
-        )
-        or None,
+        flow_entries=_list_existing_flow_pages(wiki_dir / PageKind.FLOWS.value) or None,
         architecture_entries=_list_existing_architecture_pages(wiki_dir) or None,
         api_contracts_present=(
             wiki_dir / canonical_path(PageKind.API_CONTRACTS)
@@ -3170,6 +3447,10 @@ def _regenerate_flow_pages(
     entry_points: list[dict] | None = None,
     allow_create: bool = False,
     api_contracts: Mapping[str, object] | None = None,
+    data_flow_enabled: bool = True,
+    call_edges: list[dict] | None = None,
+    evaluated_flows: list[dict] | None = None,
+    evaluated_data_flows: list[dict] | None = None,
 ) -> int:
     """Regenerate flow pages from the current inventory, preserving Behavior.
 
@@ -3185,24 +3466,57 @@ def _regenerate_flow_pages(
 
     if entry_points is None:
         entry_points = _detect_sync_entry_points(inventory, options.src_dir).entries
-    edges = resolve_call_edges(inventory) if entry_points else []
-    data_flow_context = (
-        build_data_flow_context(inventory, edges) if entry_points else None
+    edges = (
+        call_edges
+        if call_edges is not None
+        else resolve_call_edges(inventory)
+        if entry_points
+        else []
     )
+    data_flow_context = (
+        build_data_flow_context(inventory, edges)
+        if data_flow_enabled and entry_points and evaluated_data_flows is None
+        else None
+    )
+    flow_by_id = {
+        str(entry.get("id")): flow
+        for flow in evaluated_flows or []
+        if isinstance(flow, Mapping)
+        and isinstance((entry := flow.get("entry")), Mapping)
+        and entry.get("id")
+    }
+    data_flow_by_id = {
+        str(entry.get("id")): data_flow
+        for data_flow in evaluated_data_flows or []
+        if isinstance(data_flow, Mapping)
+        and isinstance((entry := data_flow.get("entry")), Mapping)
+        and entry.get("id")
+    }
     regenerated = 0
     for entry_point in entry_points:
-        flow = build_flow(entry_point, edges)
-        data_flow = analyze_data_flow(inventory, flow, edges, context=data_flow_context)
+        flow = flow_by_id.get(str(entry_point.get("id"))) or build_flow(
+            entry_point, edges
+        )
+        data_flow = (
+            data_flow_by_id.get(str(entry_point.get("id")))
+            or analyze_data_flow(inventory, flow, edges, context=data_flow_context)
+            if data_flow_enabled
+            else None
+        )
         new_md = _generate_flow_md(
             flow,
             module_page_map,
             data_flow=data_flow,
-            diagram_style=_generated_diagram_style(
-                "data_flow",
-                root=options.src_dir,
-                fallback_root=Path.cwd(),
-                flow_id=entry_point.get("id"),
-                category=entry_point.get("category"),
+            diagram_style=(
+                _generated_diagram_style(
+                    "data_flow",
+                    root=options.src_dir,
+                    fallback_root=Path.cwd(),
+                    flow_id=entry_point.get("id"),
+                    category=entry_point.get("category"),
+                )
+                if data_flow is not None
+                else None
             ),
             api_contract_operations=_api_operations_for_flow(
                 api_contracts, entry_point
@@ -3261,6 +3575,7 @@ def _regenerate_dependency_pages(
     *,
     dependency_analysis: dict | None = None,
     target_pages: Iterable[str] | None = None,
+    detail: str = "auto",
 ) -> int:
     """Regenerate dependencies.md / load-order.md, preserving ``## Notes``.
 
@@ -3290,11 +3605,12 @@ def _regenerate_dependency_pages(
             _generate_dependencies_md(
                 analysis,
                 module_page_map,
+                detail=detail,
                 diagram_style=_generated_diagram_style(
                     "dependencies",
                     root=options.src_dir,
                     fallback_root=Path.cwd(),
-                    detail="auto",
+                    detail=detail,
                 ),
             ),
         ),
@@ -3322,6 +3638,7 @@ def _append_log(
     result: SyncResult,
     *,
     surface_plan: _SurfaceInitializationPlan | None = None,
+    infrastructure_plan: InfrastructureSyncPlan | None = None,
 ) -> None:
     log_path = wiki_dir / "log.md"
     today = date.today().isoformat()
@@ -3339,9 +3656,12 @@ def _append_log(
             str(entry.get("category") or "unknown")
             for entry in surface_plan.new_flow_entries
         )
-        category_text = ", ".join(
-            f"{category}={count}" for category, count in sorted(categories.items())
-        ) or "none"
+        category_text = (
+            ", ".join(
+                f"{category}={count}" for category, count in sorted(categories.items())
+            )
+            or "none"
+        )
         surface_lines = (
             f"- Flow pages initialized: {len(surface_plan.new_flow_entries)} "
             f"({category_text})\n"
@@ -3352,14 +3672,23 @@ def _append_log(
         )
         if surface_plan.requested_surfaces:
             surface_lines += (
-                "- Source files deferred: "
-                f"{len(_affected_source_files(diff))}\n"
+                f"- Source files deferred: {len(_affected_source_files(diff))}\n"
             )
     operation = (
         "surface initialization"
         if surface_plan is not None and surface_plan.requested_surfaces
         else "incremental sync"
     )
+    infrastructure_lines = ""
+    if infrastructure_plan is not None and infrastructure_plan.has_changes:
+        infrastructure_lines = (
+            f"- Infrastructure added: {len(infrastructure_plan.new_sources)}\n"
+            f"- Infrastructure changed: {len(infrastructure_plan.changed_sources)}\n"
+            f"- Infrastructure moved: {len(infrastructure_plan.moved_sources)}\n"
+            f"- Infrastructure removed: {len(infrastructure_plan.removed_sources)}\n"
+            "- Unsupported infrastructure YAML: "
+            f"{len(infrastructure_plan.unsupported_yaml)}\n"
+        )
     entry = (
         f"\n## {today}\n\n"
         f"### feat: {operation}\n"
@@ -3372,6 +3701,7 @@ def _append_log(
         f"- Semantic fields preserved: {result.preserved_semantic}\n"
         f"- Moved entities: {moved_str}\n"
         f"{surface_lines}"
+        f"{infrastructure_lines}"
     )
     if log_path.exists():
         existing_log = read_md(log_path)

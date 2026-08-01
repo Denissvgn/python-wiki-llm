@@ -17,8 +17,23 @@ import json
 import re
 from collections.abc import Iterable as IterableABC
 from dataclasses import asdict, dataclass, is_dataclass, replace
-from pathlib import PurePosixPath
 from typing import Any, Iterable, Mapping, Sequence
+
+from .validation import (
+    coerce_nonnegative_int,
+    coerce_positive_int,
+    coerce_trimmed_text,
+    normalize_observational_posix_path,
+    require_bool as require_shared_bool,
+    require_choice as require_shared_choice,
+    require_exact_fields as require_shared_exact_fields,
+    require_mapping as require_shared_mapping,
+    require_nonempty_text,
+    require_nonnegative_int as require_shared_nonnegative_int,
+    require_positive_int as require_shared_positive_int,
+    require_string,
+    require_trimmed_text_list,
+)
 
 
 DOCUMENTATION_REVIEW_LEDGER_SCHEMA_VERSION = "llm-wiki-documentation-review-ledger/v1"
@@ -1154,17 +1169,18 @@ def _normalise_status(value: object) -> str:
 
 
 def _normalise_paths(values: object) -> tuple[str, ...]:
-    paths: list[str] = []
-    for value in _iter_scalar_values(values):
-        raw = str(value).strip().replace("\\", "/")
-        while raw.startswith("./"):
-            raw = raw[2:]
-        if not raw:
-            continue
-        # PurePosixPath removes redundant separators and dot components without
-        # consulting the host filesystem or changing path case.
-        paths.append(PurePosixPath(raw).as_posix())
-    return tuple(sorted(set(paths), key=lambda item: (item.casefold(), item)))
+    """Keep unsafe spellings visible in non-authoritative review metadata."""
+
+    paths = (
+        normalize_observational_posix_path(value)
+        for value in _iter_scalar_values(values)
+    )
+    return tuple(
+        sorted(
+            {path for path in paths if path is not None},
+            key=lambda item: (item.casefold(), item),
+        )
+    )
 
 
 def _normalise_targets(values: object) -> tuple[str, ...]:
@@ -1213,7 +1229,7 @@ def _iter_scalar_values(value: object) -> list[Any]:
         return []
     if isinstance(value, (str, bytes, Mapping)):
         return [value]
-    if _is_sequence(value) or isinstance(value, (set, frozenset)):
+    if isinstance(value, (Sequence, set, frozenset)):
         return list(value)
     if isinstance(value, IterableABC):
         return list(value)
@@ -1295,109 +1311,149 @@ def _validate_packet_evidence(packet: DocumentationReviewPacket) -> None:
 
 
 def _validate_text_items(values: object, label: str) -> None:
-    if not isinstance(values, tuple) or any(
-        not isinstance(value, str) or not value.strip() for value in values
-    ):
-        raise DocumentationReviewError(f"{label} must contain only non-empty strings.")
+    """Preserve free-form tuple items stored by the review-ledger contract."""
+
+    require_trimmed_text_list(
+        values,
+        error=DocumentationReviewError(
+            f"{label} must contain only non-empty strings."
+        ),
+        require_trimmed_items=False,
+        reject_control_characters=False,
+        container_type=tuple,
+    )
 
 
 def _require_exact_fields(
     payload: Mapping[str, Any], expected: frozenset[str], label: str
 ) -> None:
-    actual = set(payload)
-    missing = expected - actual
-    unknown = actual - expected
-    if missing:
-        raise DocumentationReviewError(
-            f"{label} is missing required fields: {', '.join(sorted(missing))}."
-        )
-    if unknown:
-        rendered = ", ".join(sorted(str(item) for item in unknown))
-        raise DocumentationReviewError(
-            f"{label} contains unsupported fields: {rendered}."
-        )
+    return require_shared_exact_fields(
+        payload,
+        allowed=expected,
+        required=expected,
+        mapping_error=DocumentationReviewError(
+            f"Review-ledger {label} must be an object."
+        ),
+        missing_error=lambda fields: DocumentationReviewError(
+            f"{label} is missing required fields: {', '.join(fields)}."
+        ),
+        unknown_error=lambda fields: DocumentationReviewError(
+            f"{label} contains unsupported fields: "
+            f"{', '.join(str(field) for field in fields)}."
+        ),
+    )
 
 
 def _required_json_string(value: object, label: str) -> str:
-    if not isinstance(value, str):
-        raise DocumentationReviewError(f"{label} must be a string.")
-    return value
+    return require_string(
+        value,
+        error=DocumentationReviewError(f"{label} must be a string."),
+    )
 
 
 def _required_json_text(value: object, label: str) -> str:
-    text = _required_json_string(value, label).strip()
-    if not text:
-        raise DocumentationReviewError(f"{label} must not be empty.")
-    return text
+    """Preserve review-ledger whitespace normalization and embedded controls."""
+
+    text = _required_json_string(value, label)
+    return require_nonempty_text(
+        text,
+        error=DocumentationReviewError(f"{label} must not be empty."),
+        normalize=True,
+        reject_control_characters=False,
+    )
 
 
 def _required_enum(value: object, supported: frozenset[str], label: str) -> str:
     text = _required_json_text(value, label)
-    if text not in supported:
-        raise DocumentationReviewError(f"Unsupported {label}: {value!r}")
-    return text
+    error = DocumentationReviewError(f"Unsupported {label}: {value!r}")
+    return require_shared_choice(
+        text,
+        supported,
+        text_error=error,
+        choice_error=lambda _allowed: error,
+    )
 
 
 def _required_string_list(value: object, label: str) -> tuple[str, ...]:
-    if not isinstance(value, list) or any(
-        not isinstance(item, str) or not item.strip() for item in value
-    ):
-        raise DocumentationReviewError(f"{label} must be a list of non-empty strings.")
-    return tuple(value)
+    """Preserve untrimmed free-form strings in persisted review arrays."""
+
+    return tuple(
+        require_trimmed_text_list(
+            value,
+            error=DocumentationReviewError(
+                f"{label} must be a list of non-empty strings."
+            ),
+            require_trimmed_items=False,
+            reject_control_characters=False,
+        )
+    )
 
 
 def _required_positive_int(value: object, label: str) -> int:
-    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
-        raise DocumentationReviewError(f"{label} must be a positive integer.")
-    return value
+    error = DocumentationReviewError(f"{label} must be a positive integer.")
+    return require_shared_positive_int(
+        value,
+        invalid_error=error,
+        zero_error=error,
+    )
 
 
 def _required_non_negative_int(value: object, label: str) -> int:
-    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
-        raise DocumentationReviewError(f"{label} must be a non-negative integer.")
-    return value
+    return require_shared_nonnegative_int(
+        value,
+        error=DocumentationReviewError(
+            f"{label} must be a non-negative integer."
+        ),
+    )
 
 
 def _required_text(value: object, label: str) -> str:
-    text = _optional_text(value)
-    if not text:
-        raise DocumentationReviewError(f"{label} must not be empty.")
-    return text
+    """Preserve the v1 review contract's coercion of scalar display values."""
+
+    return require_nonempty_text(
+        coerce_trimmed_text(value),
+        error=DocumentationReviewError(f"{label} must not be empty."),
+        reject_control_characters=False,
+    )
 
 
 def _optional_text(value: object) -> str:
-    return "" if value is None else str(value).strip()
+    """Preserve the v1 review contract's loose optional display-text coercion."""
+
+    return coerce_trimmed_text(value)
 
 
 def _required_bool(value: object, label: str) -> bool:
-    if not isinstance(value, bool):
-        raise DocumentationReviewError(f"{label} must be a boolean.")
-    return value
+    return require_shared_bool(
+        value,
+        error=DocumentationReviewError(f"{label} must be a boolean."),
+    )
 
 
 def _positive_int(value: object, label: str) -> int:
-    try:
-        result = int(value)  # type: ignore[arg-type]
-    except (TypeError, ValueError) as exc:
-        raise DocumentationReviewError(f"{label} must be a positive integer.") from exc
-    if isinstance(value, bool) or result < 1:
-        raise DocumentationReviewError(f"{label} must be a positive integer.")
-    return result
+    """Preserve legacy integer coercion while still requiring a positive result."""
+
+    return coerce_positive_int(
+        value,
+        error=DocumentationReviewError(f"{label} must be a positive integer."),
+    )
 
 
 def _non_negative_int(value: object, label: str) -> int:
-    try:
-        result = int(value)  # type: ignore[arg-type]
-    except (TypeError, ValueError) as exc:
-        raise DocumentationReviewError(
+    """Preserve legacy integer coercion for review summary counters."""
+
+    return coerce_nonnegative_int(
+        value,
+        error=DocumentationReviewError(
             f"{label} must be a non-negative integer."
-        ) from exc
-    if isinstance(value, bool) or result < 0:
-        raise DocumentationReviewError(f"{label} must be a non-negative integer.")
-    return result
+        ),
+    )
 
 
 def _require_mapping(value: object, label: str) -> Mapping[str, Any]:
-    if not isinstance(value, Mapping):
-        raise DocumentationReviewError(f"Review-ledger {label} must be an object.")
-    return value
+    return require_shared_mapping(
+        value,
+        error=DocumentationReviewError(
+            f"Review-ledger {label} must be an object."
+        ),
+    )

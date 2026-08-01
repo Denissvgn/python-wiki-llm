@@ -135,7 +135,7 @@ def test_init_issue_toggle_without_agent_reuses_stored_agent(
 
 
 @pytest.mark.parametrize(
-    "command", ["extract", "bootstrap", "lint", "sync", "ci-check"]
+    "command", ["extract", "bootstrap", "lint", "sync", "ci-check", "doctor"]
 )
 def test_inventory_commands_help_lists_include_tests_go(command, monkeypatch, capsys):
     monkeypatch.setattr("sys.argv", ["llm-wiki", command, "--help"])
@@ -157,6 +157,7 @@ def test_inventory_commands_help_lists_include_tests_go(command, monkeypatch, ca
         ("lint", "lint_cmd"),
         ("sync", "sync_cmd"),
         ("ci-check", "ci_check_cmd"),
+        ("doctor", "doctor_cmd"),
     ],
 )
 def test_inventory_commands_parse_include_tests_go(command, module_name, monkeypatch):
@@ -175,7 +176,7 @@ def test_inventory_commands_parse_include_tests_go(command, module_name, monkeyp
 
 
 @pytest.mark.parametrize(
-    "command", ["extract", "bootstrap", "lint", "sync", "ci-check"]
+    "command", ["extract", "bootstrap", "lint", "sync", "ci-check", "doctor"]
 )
 def test_inventory_commands_reject_unsupported_include_tests_language(
     command, monkeypatch
@@ -189,7 +190,7 @@ def test_inventory_commands_reject_unsupported_include_tests_language(
 
 
 @pytest.mark.parametrize(
-    "command", ["extract", "bootstrap", "lint", "sync", "ci-check"]
+    "command", ["extract", "bootstrap", "lint", "sync", "ci-check", "doctor"]
 )
 def test_inventory_commands_help_lists_helper_cache_dir(command, monkeypatch, capsys):
     monkeypatch.setattr("sys.argv", ["llm-wiki", command, "--help"])
@@ -294,6 +295,7 @@ def test_site_check_parses_built_site_dir_and_link_mode(monkeypatch):
                 "action": args.site_action,
                 "built_site_dir": args.built_site_dir,
                 "link_mode": args.link_mode,
+                "format": args.format,
             }
         ),
     )
@@ -311,6 +313,8 @@ def test_site_check_parses_built_site_dir_and_link_mode(monkeypatch):
             "_site",
             "--link-mode",
             "file",
+            "--format",
+            "mkdocs",
         ],
     )
 
@@ -320,6 +324,7 @@ def test_site_check_parses_built_site_dir_and_link_mode(monkeypatch):
         "action": "check",
         "built_site_dir": "_site",
         "link_mode": "file",
+        "format": "mkdocs",
     }
 
 
@@ -358,6 +363,117 @@ def test_site_export_parses_user_profile_and_site_name(monkeypatch):
         "profile": "user",
         "site_name": "Assistant",
     }
+
+
+def test_site_export_parses_knowledge_projection_options(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(
+        cli.site_cmd,
+        "run",
+        lambda args: seen.update(
+            {
+                "metadata": args.knowledge_metadata,
+                "profile": args.knowledge_profile,
+                "identity": args.public_repository_identity,
+            }
+        ),
+    )
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "llm-wiki",
+            "site",
+            "export",
+            "--out-dir",
+            "site",
+            "--knowledge-metadata",
+            "summary",
+            "--knowledge-profile",
+            "internal",
+            "--knowledge-public-repository-identity",
+            "example.invalid/acme/wiki",
+        ],
+    )
+
+    cli.main()
+
+    assert seen == {
+        "metadata": "summary",
+        "profile": "internal",
+        "identity": "example.invalid/acme/wiki",
+    }
+
+
+def test_obsidian_check_parses_knowledge_projection_options(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(
+        cli.obsidian_cmd,
+        "run",
+        lambda args: seen.update(
+            {
+                "metadata": args.knowledge_metadata,
+                "profile": args.knowledge_profile,
+                "identity": args.knowledge_public_repository_identity,
+            }
+        ),
+    )
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "llm-wiki",
+            "obsidian",
+            "check",
+            "--vault-dir",
+            "vault",
+            "--knowledge-metadata",
+            "summary",
+            "--knowledge-profile",
+            "public-portable",
+            "--knowledge-public-repository-identity",
+            "example.invalid/acme/wiki",
+        ],
+    )
+
+    cli.main()
+
+    assert seen == {
+        "metadata": "summary",
+        "profile": "public-portable",
+        "identity": "example.invalid/acme/wiki",
+    }
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [
+        [
+            "llm-wiki",
+            "site",
+            "export",
+            "--out-dir",
+            "site",
+            "--knowledge-profile",
+            "internal",
+        ],
+        [
+            "llm-wiki",
+            "obsidian",
+            "check",
+            "--vault-dir",
+            "vault",
+            "--knowledge-public-repository-identity",
+            "example.invalid/acme/wiki",
+        ],
+    ],
+)
+def test_projection_options_require_metadata_mode(argv, monkeypatch, capsys):
+    monkeypatch.setattr("sys.argv", argv)
+
+    with pytest.raises(SystemExit) as exc:
+        cli.main()
+
+    assert exc.value.code == 1
+    assert "require --knowledge-metadata summary" in capsys.readouterr().err
 
 
 def test_site_check_parses_user_profile_and_site_name(monkeypatch):
@@ -403,6 +519,7 @@ def test_site_check_parses_user_profile_and_site_name(monkeypatch):
         ("lint", cli.lint_cmd),
         ("sync", cli.sync_cmd),
         ("ci-check", cli.ci_check_cmd),
+        ("doctor", cli.doctor_cmd),
     ],
 )
 def test_extraction_commands_default_resolved_and_requested_jobs(

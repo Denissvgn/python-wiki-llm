@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import os
 import shutil
+import subprocess
 import sys
 import textwrap
 import types
@@ -11,31 +13,42 @@ from pathlib import Path
 
 import pytest
 
-from llm_wiki_cli.commands import lint_cmd, migrate_cmd
+from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd, migrate_cmd
 from llm_wiki_cli.commands.migrate_cmd import (
     ExistingPage,
     TargetPage,
-    _build_match_lookups,
     _build_chunks,
+    _build_match_lookups,
     _match_existing_page,
     _read_existing_page,
     _rewrite_links_in_content,
     _split_location,
 )
 from llm_wiki_cli.commands.sync_cmd import MANIFEST_FILENAME
-
+from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from llm_wiki_cli.services.extractor_helpers import typescript_dependencies_ready
+from llm_wiki_cli.services.knowledge_evidence import (
+    MODULE_OBSERVATION_SCOPE,
+    ConceptObservationBasis,
+    hash_file,
+    sha256_bytes,
+)
+from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState, WorkingTreeState
+from llm_wiki_cli.services.knowledge_orchestration import (
+    build_runtime_knowledge_plan,
+)
+from llm_wiki_cli.services.sync_manifest import (
+    ManifestEvidenceBaseline,
+    ManifestPageSource,
+    SyncManifest,
+)
+from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 NODE_AVAILABLE = shutil.which("node") is not None
-TS_NODE_MODULES = (
-    Path(__file__).parents[1]
-    / "src"
-    / "llm_wiki_cli"
-    / "extractors"
-    / "ts_scripts"
-    / "node_modules"
-).exists()
+TYPESCRIPT_READY = typescript_dependencies_ready(Path(__file__).parents[1])
 skip_no_ts = pytest.mark.skipif(
-    not (NODE_AVAILABLE and TS_NODE_MODULES),
+    not (NODE_AVAILABLE and TYPESCRIPT_READY),
     reason="Node.js/ts-morph dependencies not available",
 )
 
@@ -48,7 +61,7 @@ def _make_args(**kwargs):
 
 def _write(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(textwrap.dedent(content), encoding="utf-8")
+    path.write_bytes(textwrap.dedent(content).encode("utf-8"))
 
 
 def _make_wiki(proj: Path) -> Path:
@@ -75,6 +88,207 @@ def _legacy_archive_names(wiki: Path) -> list[str]:
 
 
 class TestMigrateHelpers:
+    def test_canonical_saved_manifest_is_not_planned_for_rewrite(self, tmp_path):
+        wiki = tmp_path / "wiki"
+        manifest = SyncManifest(
+            surfaces={"flows": {"enabled": True}},
+            generation_inputs={"openapi_file": "openapi.json"},
+        )
+        manifest.save(wiki)
+
+        assert migrate_cmd._manifest_payload(manifest) == (
+            wiki / MANIFEST_FILENAME
+        ).read_text(encoding="utf-8")
+        assert migrate_cmd._manifest_needs_write(wiki, manifest) is False
+
+    def test_command_migrates_v4_generation_state_and_commits_current_evidence(
+        self, tmp_path, monkeypatch
+    ):
+        project = tmp_path / "project"
+        project.mkdir()
+        _write(project / "alpha.py", "def alpha():\n    return 1\n")
+        wiki = _make_wiki(project)
+        legacy_state = {
+            "version": 4,
+            "sources": {},
+            "surfaces": {"flows": {"enabled": True}},
+            "generation_inputs": {"openapi_file": "openapi.json"},
+        }
+        (wiki / MANIFEST_FILENAME).write_text(
+            json.dumps(legacy_state), encoding="utf-8"
+        )
+        monkeypatch.chdir(project)
+
+        migrate_cmd.run(_make_args())
+
+        payload = json.loads((wiki / MANIFEST_FILENAME).read_text(encoding="utf-8"))
+        assert payload["version"] == 5
+        assert payload["surfaces"] == legacy_state["surfaces"]
+        assert payload["generation_inputs"] == legacy_state["generation_inputs"]
+        assert "artifact_hashes" in payload
+        assert payload["tombstones"] == {}
+        assert {
+            baseline["state"] for baseline in payload["evidence_baselines"].values()
+        } == {"known"}
+        assert load_knowledge_state(wiki).status is KnowledgeLoadState.VALID
+
+    def test_v4_same_path_regeneration_promotes_unknown_evidence(
+        self, tmp_path, monkeypatch
+    ):
+        project = tmp_path / "project"
+        project.mkdir()
+        source = project / "alpha.py"
+        _write(source, "def alpha():\n    return 1\n")
+        wiki = _make_wiki(project)
+        _write(
+            wiki / "modules" / "alpha.md",
+            "# Legacy Alpha\n\n**Path:** `alpha.py`\n\nRetained migration notes.\n",
+        )
+        source_hash = hash_file(source)
+        legacy_state = {
+            "version": 4,
+            "sources": {
+                "alpha.py": {
+                    "hash": source_hash,
+                    "semantic_hash": sha256_bytes(b"legacy semantics"),
+                    "generated_semantics": {},
+                    "language": "python",
+                    "entities": [],
+                    "entity_pages": {},
+                    "entity_page_occurrences": [],
+                    "module_page": "alpha",
+                }
+            },
+            "surfaces": {},
+            "generation_inputs": {},
+        }
+        (wiki / MANIFEST_FILENAME).write_text(
+            json.dumps(legacy_state), encoding="utf-8"
+        )
+        prior = SyncManifest.load(wiki)
+        assert not prior.evidence_baselines["modules/alpha.md"].is_known
+        monkeypatch.chdir(project)
+
+        migrate_cmd.run(_make_args())
+
+        migrated = SyncManifest.load(wiki)
+        assert migrated.evidence_baselines["modules/alpha.md"].is_known
+        assert load_knowledge_state(wiki).status is KnowledgeLoadState.VALID
+
+    def test_chunked_v4_regeneration_promotes_every_rewritten_page(
+        self,
+        tmp_path,
+        monkeypatch,
+    ):
+        project = tmp_path / "project"
+        project.mkdir()
+        sources = {}
+        wiki = _make_wiki(project)
+        for name in ("alpha", "beta"):
+            source = project / f"{name}.py"
+            _write(source, f"def {name}():\n    return 1\n")
+            _write(
+                wiki / "modules" / f"{name}.md",
+                f"# Legacy {name.title()}\n\n**Path:** `{name}.py`\n",
+            )
+            sources[f"{name}.py"] = {
+                "hash": hash_file(source),
+                "semantic_hash": sha256_bytes(f"{name} semantics".encode()),
+                "generated_semantics": {},
+                "language": "python",
+                "entities": [],
+                "entity_pages": {},
+                "entity_page_occurrences": [],
+                "module_page": name,
+            }
+        (wiki / MANIFEST_FILENAME).write_text(
+            json.dumps(
+                {
+                    "version": 4,
+                    "sources": sources,
+                    "surfaces": {},
+                    "generation_inputs": {},
+                }
+            ),
+            encoding="utf-8",
+        )
+        monkeypatch.chdir(project)
+
+        migrate_cmd.run(_make_args(chunk_size=1))
+        assert (wiki / migrate_cmd.MIGRATION_PROGRESS_FILENAME).is_file()
+        migrate_cmd.run(_make_args(chunk_size=1))
+
+        migrated = SyncManifest.load(wiki)
+        assert {
+            page_path: baseline.is_known
+            for page_path, baseline in migrated.evidence_baselines.items()
+            if page_path in {"modules/alpha.md", "modules/beta.md"}
+        } == {
+            "modules/alpha.md": True,
+            "modules/beta.md": True,
+        }
+        assert not (wiki / migrate_cmd.MIGRATION_PROGRESS_FILENAME).exists()
+        assert load_knowledge_state(wiki).status is KnowledgeLoadState.VALID
+
+        (wiki / migrate_cmd.MIGRATION_PROGRESS_FILENAME).write_text(
+            "{}\n",
+            encoding="utf-8",
+        )
+        migrate_cmd.run(_make_args(chunk_size=1))
+        assert not (wiki / migrate_cmd.MIGRATION_PROGRESS_FILENAME).exists()
+
+    def test_canonical_page_rename_does_not_invent_source_missing_tombstone(
+        self, tmp_path, monkeypatch
+    ):
+        project = tmp_path / "project"
+        project.mkdir()
+        source = project / "current.py"
+        _write(source, "def current():\n    return 1\n")
+        wiki = _make_wiki(project)
+        _write(
+            wiki / "modules" / "legacy.md",
+            "# Legacy\n\n**Path:** `current.py`\n",
+        )
+        source_hash = hash_file(source)
+        mapping = ManifestPageSource(
+            scope=MODULE_OBSERVATION_SCOPE,
+            source_path="current.py",
+        )
+        basis = ConceptObservationBasis(
+            scope=MODULE_OBSERVATION_SCOPE,
+            source_path="current.py",
+            extractor_ref="python-ast",
+            source_content_hash=source_hash,
+            concept_observation_hash=sha256_bytes(b"legacy observation"),
+        )
+        SyncManifest(
+            sources={
+                "current.py": {
+                    "hash": source_hash,
+                    "semantic_hash": sha256_bytes(b"legacy semantics"),
+                    "generated_semantics": {},
+                    "language": "python",
+                    "entities": [],
+                    "entity_pages": {},
+                    "entity_page_occurrences": [],
+                    "module_page": "legacy",
+                }
+            },
+            page_source_mappings={"modules/legacy.md": mapping},
+            evidence_baselines={
+                "modules/legacy.md": ManifestEvidenceBaseline.from_basis(basis)
+            },
+        ).save(wiki)
+        monkeypatch.chdir(project)
+
+        migrate_cmd.run(_make_args())
+
+        migrated = SyncManifest.load(wiki)
+        assert "modules/legacy.md" not in migrated.page_source_mappings
+        assert "modules/legacy.md" not in migrated.tombstones
+        assert migrated.page_source_mappings["modules/current.md"] == mapping
+        assert migrated.evidence_baselines["modules/current.md"].is_known
+
     def test_chunk_plan_splits_pending_page_operations(self, tmp_path):
         wiki = tmp_path / "wiki"
         wiki.mkdir()
@@ -744,9 +958,229 @@ class TestMigrateIntegration:
         }
         output = capsys.readouterr().out
         assert "DRY-RUN" in output
+        assert "DRY-RUN: surface index created" in output
+        assert "DRY-RUN: knowledge index created" in output
+        assert "DRY-RUN: manifest created" in output
         assert after == before
         assert not (wiki / "legacy").exists()
         assert not Path(".gitignore").exists()
+
+    def test_bootstrap_migration_route_preview_is_byte_immutable(
+        self,
+        tmp_path,
+        monkeypatch,
+        capsys,
+    ):
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        _write(proj / "models.py", "class User:\n    pass\n")
+        wiki = _make_wiki(proj)
+        (wiki / "index.md").unlink()
+        _write(
+            wiki / "modules" / "models.md",
+            "# models\n\n**Path:** `models.py`\n\nCustom operational notes.\n",
+        )
+        before = {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in wiki.rglob("*")
+            if path.is_file()
+        }
+        monkeypatch.chdir(proj)
+
+        with pytest.raises(SystemExit) as exc_info:
+            bootstrap_cmd.run(
+                types.SimpleNamespace(
+                    src_dir=".",
+                    wiki_dir="docs/llm_wiki",
+                    overwrite=False,
+                )
+            )
+
+        assert exc_info.value.code == 2
+        route_output = capsys.readouterr().out
+        assert "Bootstrap is first-use only" in route_output
+        assert "llm-wiki migrate --dry-run" in route_output
+        assert {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in wiki.rglob("*")
+            if path.is_file()
+        } == before
+
+        migrate_cmd.run(_make_args(dry_run=True))
+
+        preview_output = capsys.readouterr().out
+        assert "DRY-RUN" in preview_output
+        assert {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in wiki.rglob("*")
+            if path.is_file()
+        } == before
+        assert not (wiki / "legacy").exists()
+
+    def test_dry_run_reports_exact_unchanged_artifact_actions(
+        self,
+        tmp_path,
+        capsys,
+    ):
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        _write(proj / "models.py", "class User:\n    pass\n")
+        wiki = _make_wiki(proj)
+        _write(
+            wiki / "modules" / "models.md",
+            "# models\n\n**Path:** `models.py`\n",
+        )
+        os.chdir(proj)
+        migrate_cmd.run(_make_args())
+        capsys.readouterr()
+        migrate_cmd.run(_make_args())
+        capsys.readouterr()
+        before = {
+            filename: (wiki / filename).read_bytes()
+            for filename in (
+                SURFACE_INDEX_FILENAME,
+                KNOWLEDGE_INDEX_FILENAME,
+                MANIFEST_FILENAME,
+            )
+        }
+
+        migrate_cmd.run(_make_args(dry_run=True))
+
+        output = capsys.readouterr().out
+        assert "DRY-RUN: surface index unchanged" in output
+        assert "DRY-RUN: knowledge index unchanged" in output
+        assert "DRY-RUN: manifest unchanged" in output
+        assert {
+            filename: (wiki / filename).read_bytes() for filename in before
+        } == before
+
+    def test_clean_git_sibling_wiki_dry_run_matches_apply_artifact_bytes(
+        self,
+        tmp_path,
+        monkeypatch,
+        capsys,
+    ):
+        proj = tmp_path / "proj"
+        source = proj / "src"
+        source.mkdir(parents=True)
+        _write(source / "models.py", "class User:\n    pass\n")
+        wiki = _make_wiki(proj)
+        _write(
+            wiki / "modules" / "models.md",
+            "# models\n\n**Path:** `models.py`\n\nManual.\n",
+        )
+        subprocess.run(["git", "init", str(proj)], capture_output=True, check=True)
+        subprocess.run(
+            ["git", "-C", str(proj), "config", "user.email", "test@example.com"],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(proj), "config", "user.name", "Test"],
+            check=True,
+        )
+        subprocess.run(
+            [
+                "git",
+                "-C",
+                str(proj),
+                "config",
+                "--local",
+                "core.autocrlf",
+                "false",
+            ],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(proj), "config", "--local", "core.eol", "lf"],
+            check=True,
+        )
+        subprocess.run(["git", "-C", str(proj), "add", "."], check=True)
+        subprocess.run(
+            ["git", "-C", str(proj), "commit", "-m", "initial"],
+            capture_output=True,
+            check=True,
+        )
+        monkeypatch.chdir(proj)
+
+        captured = []
+        real_build = migrate_cmd.build_runtime_knowledge_plan
+        real_finalize = migrate_cmd.finalize_runtime_knowledge
+
+        def capture_build(inputs):
+            plan = real_build(inputs)
+            captured.append(
+                (
+                    "preview",
+                    inputs.repository_evidence.working_tree,
+                    tuple(
+                        (artifact.state, artifact.content)
+                        for artifact in (
+                            plan.surface_index,
+                            plan.knowledge_index,
+                            plan.manifest,
+                        )
+                    ),
+                )
+            )
+            return plan
+
+        def capture_finalize(inputs, *, dry_run=False, fault_injector=None):
+            plan = build_runtime_knowledge_plan(inputs)
+            captured.append(
+                (
+                    "apply",
+                    inputs.repository_evidence.working_tree,
+                    tuple(
+                        (artifact.state, artifact.content)
+                        for artifact in (
+                            plan.surface_index,
+                            plan.knowledge_index,
+                            plan.manifest,
+                        )
+                    ),
+                )
+            )
+            return real_finalize(
+                inputs,
+                dry_run=dry_run,
+                fault_injector=fault_injector,
+            )
+
+        monkeypatch.setattr(
+            migrate_cmd,
+            "build_runtime_knowledge_plan",
+            capture_build,
+        )
+        monkeypatch.setattr(
+            migrate_cmd,
+            "finalize_runtime_knowledge",
+            capture_finalize,
+        )
+
+        migrate_cmd.run(
+            _make_args(
+                src_dir="src",
+                wiki_dir="docs/llm_wiki",
+                dry_run=True,
+            )
+        )
+        assert len(captured) == 1
+        assert captured[0][0] == "preview"
+        assert captured[0][1] is WorkingTreeState.CLEAN
+        capsys.readouterr()
+
+        migrate_cmd.run(
+            _make_args(
+                src_dir="src",
+                wiki_dir="docs/llm_wiki",
+            )
+        )
+
+        assert len(captured) == 2
+        assert captured[1][0] == "apply"
+        assert captured[1][1] is WorkingTreeState.CLEAN
+        assert captured[1][2] == captured[0][2]
+        assert load_knowledge_state(wiki).status is KnowledgeLoadState.VALID
 
     def test_cli_plan_chunks_does_not_modify_wiki(self, tmp_path, monkeypatch, capsys):
         from llm_wiki_cli import cli
@@ -790,6 +1224,9 @@ class TestMigrateIntegration:
         }
         output = capsys.readouterr().out
         assert "Migration chunk plan" in output
+        assert "DRY-RUN: surface index created" in output
+        assert "DRY-RUN: knowledge index created" in output
+        assert "DRY-RUN: manifest created" in output
         assert "PLAN: no files modified" in output
         assert after == before
         assert not (wiki / "legacy").exists()

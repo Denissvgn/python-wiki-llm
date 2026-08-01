@@ -5,6 +5,7 @@ import json
 import os
 import subprocess
 import sys
+from collections.abc import Mapping
 from contextlib import contextmanager
 from pathlib import Path, PurePosixPath
 from types import SimpleNamespace
@@ -20,6 +21,21 @@ from llm_wiki_cli.services.documentation_wiki_input import (
     adopt_documentation_wiki_snapshot,
     fingerprint_documentation_wiki_input,
 )
+from llm_wiki_cli.services.knowledge_artifacts import (
+    KNOWLEDGE_INDEX_FILENAME,
+    commit_knowledge_artifacts,
+)
+from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
+from llm_wiki_cli.services.knowledge_freshness import (
+    REASON_GENERATION_OPTIONS_CHANGED,
+)
+from llm_wiki_cli.services.knowledge_index import serialize_knowledge_index
+from llm_wiki_cli.services.knowledge_model import ComputedFreshness
+from llm_wiki_cli.services.knowledge_observability import knowledge_freshness_hint
+from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME, SyncManifest
+from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
+from tests.knowledge_fixtures import one_module_two_entities_fixture
+from tests.test_knowledge_artifacts import _plan as _knowledge_commit_plan
 
 
 def _sha256(data: bytes) -> str:
@@ -32,6 +48,21 @@ def _write(path: Path, data: str | bytes) -> None:
         path.write_bytes(data)
     else:
         path.write_text(data, encoding="utf-8")
+
+
+def _materialize_evaluated_fixture_source(
+    root: Path,
+    source_files: Mapping[str, str],
+) -> None:
+    """Write evaluated fixture inputs as their exact UTF-8 evidence bytes."""
+
+    expected = {
+        relative_path: content.encode("utf-8")
+        for relative_path, content in source_files.items()
+    }
+    for relative_path, content in expected.items():
+        _write(root / relative_path, content)
+    assert _tree_bytes(root) == expected
 
 
 def _tree_bytes(root: Path) -> dict[str, bytes]:
@@ -100,6 +131,29 @@ def _write_current_metadata(
     }
     _write(wiki / ".llm-wiki-manifest.json", json.dumps(manifest))
     _write(wiki / ".llm-wiki-surface.json", json.dumps(surface))
+
+
+def _write_v5_metadata(
+    wiki: Path,
+    *,
+    marked: bool,
+):
+    fixture = one_module_two_entities_fixture()
+    for page in fixture.pages:
+        _write(wiki / page.canonical_path, page.content)
+    for relative_path, content in fixture.assets.items():
+        _write(wiki / relative_path, content)
+
+    plan = _knowledge_commit_plan(wiki, fixture)
+    if marked:
+        commit_knowledge_artifacts(plan)
+    else:
+        _write(wiki / SURFACE_INDEX_FILENAME, plan.surface_index.content)
+        _write(
+            wiki / MANIFEST_FILENAME,
+            plan.committed_manifest.without_artifact_hashes().to_json(),
+        )
+    return fixture, plan
 
 
 def test_legacy_import_preserves_semantic_and_unknown_files_byte_for_byte(
@@ -953,10 +1007,343 @@ def test_metadata_must_be_present_as_a_pair(
     assert not (tmp_path / "workspace").exists()
 
 
+def test_markerless_v5_surface_form_is_validated_and_adopted_without_knowledge(
+    tmp_path: Path,
+) -> None:
+    wiki = tmp_path / "wiki"
+    workspace = tmp_path / "workspace" / "wiki"
+    _fixture, plan = _write_v5_metadata(wiki, marked=False)
+
+    snapshot = adopt_documentation_wiki_snapshot(
+        wiki,
+        workspace,
+        freshness_policy="allow-unverified",
+    )
+
+    assert snapshot.artifact_form == "manifest_v5_surface"
+    assert snapshot.recognized_schemas == {
+        "manifest": 5,
+        "surface": "llm-wiki-surface-index/v1",
+    }
+    assert snapshot.knowledge_schema_version is None
+    assert snapshot.freshness == "unverified"
+    assert KNOWLEDGE_INDEX_FILENAME not in snapshot.copied_paths
+    assert (workspace / SURFACE_INDEX_FILENAME).read_bytes() == (
+        plan.surface_index.content
+    )
+
+
+def test_marked_v5_trio_uses_guarded_bytes_and_exposes_validated_schema_metadata(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    wiki = tmp_path / "wiki"
+    source = tmp_path / "source"
+    workspace = tmp_path / "workspace" / "wiki"
+    fixture, plan = _write_v5_metadata(wiki, marked=True)
+    _materialize_evaluated_fixture_source(source, fixture.source_files)
+
+    monkeypatch.setattr(
+        SyncManifest,
+        "load",
+        lambda *_args, **_kwargs: pytest.fail(
+            "input validation must not reopen the manifest by path"
+        ),
+    )
+
+    snapshot = adopt_documentation_wiki_snapshot(
+        wiki,
+        workspace,
+        source_root=source,
+        freshness_policy="allow-unverified",
+    )
+
+    assert snapshot.artifact_form == "manifest_v5_native"
+    assert snapshot.recognized_schemas == {
+        "manifest": 5,
+        "surface": "llm-wiki-surface-index/v1",
+        "knowledge": "llm-wiki-knowledge/v1",
+    }
+    assert snapshot.knowledge_schema_version == "llm-wiki-knowledge/v1"
+    assert snapshot.freshness == "verified_current"
+    assert snapshot.source_mismatches == ()
+    assert any("native_verified_current" in item for item in snapshot.diagnostics)
+    assert KNOWLEDGE_INDEX_FILENAME in snapshot.copied_paths
+    assert KNOWLEDGE_INDEX_FILENAME not in snapshot.unknown_entries
+    assert (workspace / KNOWLEDGE_INDEX_FILENAME).read_bytes() == (
+        plan.knowledge_index.content
+    )
+
+
+def test_marked_v5_trio_rejects_changed_source_through_shared_live_evaluation(
+    tmp_path: Path,
+) -> None:
+    wiki = tmp_path / "wiki"
+    source = tmp_path / "source"
+    fixture, _plan = _write_v5_metadata(wiki, marked=True)
+    for relative_path, content in fixture.source_files.items():
+        _write(
+            source / relative_path,
+            (content + "\n# changed after generation\n").encode("utf-8"),
+        )
+
+    with pytest.raises(DocumentationWikiInputError) as exc_info:
+        adopt_documentation_wiki_snapshot(
+            wiki,
+            tmp_path / "workspace" / "wiki",
+            source_root=source,
+        )
+
+    assert exc_info.value.category == "freshness_not_current"
+    assert any(
+        "native_freshness_not_current:changed:src/accounts.py" in item
+        for item in exc_info.value.diagnostics
+    )
+    assert not (tmp_path / "workspace").exists()
+
+
+def test_native_basis_incompatibility_exposes_structured_actionable_diagnostic(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    wiki = tmp_path / "wiki"
+    source = tmp_path / "source"
+    fixture, _plan = _write_v5_metadata(wiki, marked=True)
+    _materialize_evaluated_fixture_source(source, fixture.source_files)
+
+    locator = "llm-wiki://entities/User"
+    reason = REASON_GENERATION_OPTIONS_CHANGED
+    hint = knowledge_freshness_hint(ComputedFreshness.BASIS_INCOMPATIBLE, reason)
+    assert hint is not None
+
+    from llm_wiki_cli.services import documentation_native
+
+    monkeypatch.setattr(
+        documentation_native,
+        "evaluate_documentation_native_freshness",
+        lambda **_kwargs: SimpleNamespace(
+            current=False,
+            reasons=(f"{locator}:{reason}",),
+            source_mismatches=(),
+            report=SimpleNamespace(
+                by_locator={
+                    locator: SimpleNamespace(
+                        state=ComputedFreshness.BASIS_INCOMPATIBLE,
+                        reason_code=reason,
+                    )
+                }
+            ),
+        ),
+    )
+
+    snapshot = adopt_documentation_wiki_snapshot(
+        wiki,
+        tmp_path / "allow-unverified" / "wiki",
+        source_root=source,
+        freshness_policy="allow-unverified",
+    )
+
+    expected = {
+        "locator": locator,
+        "state": ComputedFreshness.BASIS_INCOMPATIBLE.value,
+        "reason_code": reason,
+        "hint": hint,
+    }
+    assert snapshot.freshness == "verified_stale"
+    assert snapshot.freshness_diagnostics == (expected,)
+    assert snapshot.to_dict()["freshness_diagnostics"] == [expected]
+    assert any(
+        item == f"native_basis_incompatible:{locator}:{reason}; hint={hint}"
+        for item in snapshot.diagnostics
+    )
+
+    with pytest.raises(DocumentationWikiInputError) as exc_info:
+        adopt_documentation_wiki_snapshot(
+            wiki,
+            tmp_path / "require-current" / "wiki",
+            source_root=source,
+            freshness_policy="require-current",
+        )
+
+    assert exc_info.value.category == "freshness_not_current"
+    assert reason in str(exc_info.value)
+    assert hint in str(exc_info.value)
+
+
+def test_native_unknown_basis_incompatibility_fails_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    wiki = tmp_path / "wiki"
+    source = tmp_path / "source"
+    fixture, _plan = _write_v5_metadata(wiki, marked=True)
+    _materialize_evaluated_fixture_source(source, fixture.source_files)
+
+    unknown_reason = "future-basis-reason"
+    locator = "llm-wiki://entities/User"
+    from llm_wiki_cli.services import documentation_native
+
+    monkeypatch.setattr(
+        documentation_native,
+        "evaluate_documentation_native_freshness",
+        lambda **_kwargs: SimpleNamespace(
+            current=False,
+            reasons=(f"{locator}:{unknown_reason}",),
+            source_mismatches=(),
+            report=SimpleNamespace(
+                by_locator={
+                    locator: SimpleNamespace(
+                        state=ComputedFreshness.BASIS_INCOMPATIBLE,
+                        reason_code=unknown_reason,
+                    )
+                }
+            ),
+        ),
+    )
+
+    snapshot = adopt_documentation_wiki_snapshot(
+        wiki,
+        tmp_path / "workspace" / "wiki",
+        source_root=source,
+        freshness_policy="allow-unverified",
+    )
+
+    assert snapshot.freshness == "unverified"
+    assert snapshot.freshness_diagnostics == ()
+    assert "freshness_diagnostics" not in snapshot.to_dict()
+    assert any(
+        item.startswith("native_freshness_invalid:") for item in snapshot.diagnostics
+    )
+    assert all(unknown_reason not in item for item in snapshot.diagnostics)
+
+
+@pytest.mark.parametrize(
+    ("artifact_form", "category"),
+    [
+        ("orphan-knowledge", "knowledge_artifact_orphan"),
+        ("v4-with-knowledge", "native_artifact_form_invalid"),
+        ("markerless-v5-with-knowledge", "native_artifact_marker_missing"),
+        ("marked-v5-without-knowledge", "native_artifact_set_incomplete"),
+        ("marked-v5-without-surface", "metadata_pair_incomplete"),
+    ],
+)
+def test_partial_or_orphan_native_artifact_forms_fail_closed(
+    tmp_path: Path,
+    artifact_form: str,
+    category: str,
+) -> None:
+    wiki = tmp_path / artifact_form
+    _write(wiki / "index.md", "# Index\n")
+    fixture = one_module_two_entities_fixture()
+    if artifact_form == "orphan-knowledge":
+        _write(wiki / KNOWLEDGE_INDEX_FILENAME, fixture.knowledge_bytes)
+    elif artifact_form == "v4-with-knowledge":
+        _write_current_metadata(wiki, {})
+        _write(wiki / KNOWLEDGE_INDEX_FILENAME, fixture.knowledge_bytes)
+    elif artifact_form == "markerless-v5-with-knowledge":
+        fixture, plan = _write_v5_metadata(wiki, marked=False)
+        _write(wiki / KNOWLEDGE_INDEX_FILENAME, plan.knowledge_index.content)
+    else:
+        _fixture, _plan = _write_v5_metadata(wiki, marked=True)
+        if artifact_form == "marked-v5-without-knowledge":
+            (wiki / KNOWLEDGE_INDEX_FILENAME).unlink()
+        else:
+            (wiki / SURFACE_INDEX_FILENAME).unlink()
+
+    workspace = tmp_path / f"{artifact_form}-workspace"
+    with pytest.raises(DocumentationWikiInputError) as exc_info:
+        adopt_documentation_wiki_snapshot(
+            wiki,
+            workspace,
+            freshness_policy="allow-unverified",
+        )
+
+    assert exc_info.value.category == category
+    assert not workspace.exists()
+
+
+@pytest.mark.parametrize(
+    ("mutation", "category"),
+    [
+        ("corrupt-surface", "surface_schema_invalid"),
+        ("future-surface", "surface_schema_unsupported"),
+        ("corrupt-knowledge", "native_artifact_invalid"),
+        ("future-knowledge", "knowledge_schema_unsupported"),
+        ("surface-knowledge-parity", "native_artifact_invalid"),
+        ("marker-mismatch", "native_artifact_marker_mismatch"),
+        ("markdown-mismatch", "native_markdown_snapshot_mismatch"),
+        ("page-parity-mismatch", "native_page_parity_mismatch"),
+    ],
+)
+def test_invalid_v5_native_artifact_state_fails_closed_before_copy(
+    tmp_path: Path,
+    mutation: str,
+    category: str,
+) -> None:
+    wiki = tmp_path / mutation
+    _fixture, plan = _write_v5_metadata(wiki, marked=True)
+    if mutation == "corrupt-surface":
+        _write(wiki / SURFACE_INDEX_FILENAME, "{")
+    elif mutation == "future-surface":
+        surface = json.loads(plan.surface_index.content)
+        surface["schema_version"] = "llm-wiki-surface-index/v2"
+        _write(
+            wiki / SURFACE_INDEX_FILENAME,
+            (json.dumps(surface, indent=2, sort_keys=True) + "\n").encode("utf-8"),
+        )
+    elif mutation == "corrupt-knowledge":
+        _write(wiki / KNOWLEDGE_INDEX_FILENAME, "{")
+    elif mutation == "future-knowledge":
+        knowledge = json.loads(plan.knowledge_index.content)
+        knowledge["schema_version"] = "llm-wiki-knowledge/v2"
+        _write(
+            wiki / KNOWLEDGE_INDEX_FILENAME,
+            (json.dumps(knowledge, indent=2, sort_keys=True) + "\n").encode("utf-8"),
+        )
+    elif mutation == "surface-knowledge-parity":
+        surface = json.loads(plan.surface_index.content)
+        surface["pages"][0]["title"] += " changed"
+        surface_bytes = (
+            json.dumps(surface, indent=2, sort_keys=True) + "\n"
+        ).encode("utf-8")
+        knowledge = json.loads(plan.knowledge_index.content)
+        knowledge["bundle"]["snapshot"]["surface_index_hash"] = sha256_bytes(
+            surface_bytes
+        )
+        _write(wiki / SURFACE_INDEX_FILENAME, surface_bytes)
+        _write(
+            wiki / KNOWLEDGE_INDEX_FILENAME,
+            serialize_knowledge_index(knowledge).encode("utf-8"),
+        )
+    elif mutation == "marker-mismatch":
+        manifest = json.loads((wiki / MANIFEST_FILENAME).read_bytes())
+        manifest["artifact_hashes"]["surface_index_hash"] = "sha256:" + "0" * 64
+        _write(
+            wiki / MANIFEST_FILENAME,
+            (json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode("utf-8"),
+        )
+    elif mutation == "markdown-mismatch":
+        with (wiki / "index.md").open("ab") as handle:
+            handle.write(b"\nChanged after commit.\n")
+    else:
+        _write(wiki / "guides" / "extra.md", "# Extra\n")
+
+    workspace = tmp_path / f"{mutation}-workspace"
+    with pytest.raises(DocumentationWikiInputError) as exc_info:
+        adopt_documentation_wiki_snapshot(
+            wiki,
+            workspace,
+            freshness_policy="allow-unverified",
+        )
+
+    assert exc_info.value.category == category
+    assert not workspace.exists()
+
+
 @pytest.mark.parametrize(
     ("manifest_version", "surface_schema", "category"),
     [
-        (5, "llm-wiki-surface-index/v1", "manifest_schema_unsupported"),
+        (6, "llm-wiki-surface-index/v1", "manifest_schema_unsupported"),
         (3, "llm-wiki-surface-index/v1", "manifest_schema_unsupported"),
         (4, "llm-wiki-surface-index/v2", "surface_schema_unsupported"),
     ],

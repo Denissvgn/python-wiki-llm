@@ -3,8 +3,11 @@
 import json
 import types
 
-
-from llm_wiki_cli.commands import status_cmd
+from llm_wiki_cli.commands import context_cmd, extract_cmd, status_cmd
+from llm_wiki_cli.services import knowledge_consumption
+from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from tests.knowledge_fixtures import fail_if_extraction_runs
+from tests.test_knowledge_loader import _committed_state
 
 
 def _make_args(**kwargs):
@@ -21,6 +24,29 @@ def _status_counts(output: str) -> dict[str, int]:
         if value.isdigit():
             counts[label] = int(value)
     return counts
+
+
+def _guard_live_knowledge_evaluation(monkeypatch) -> None:
+    monkeypatch.setattr(
+        extract_cmd,
+        "build_extract_payload",
+        fail_if_extraction_runs,
+    )
+    monkeypatch.setattr(
+        extract_cmd,
+        "get_inventory_result",
+        fail_if_extraction_runs,
+    )
+    monkeypatch.setattr(
+        context_cmd,
+        "get_inventory_result",
+        fail_if_extraction_runs,
+    )
+    monkeypatch.setattr(
+        knowledge_consumption,
+        "evaluate_knowledge_freshness",
+        fail_if_extraction_runs,
+    )
 
 
 class TestStatusWiki:
@@ -113,6 +139,74 @@ class TestStatusWiki:
         status_cmd.run(_make_args(wiki_dir="nonexistent"))
         out = capsys.readouterr().out
         assert "not found" in out
+
+
+class TestStatusKnowledge:
+    def test_ready_projection_reports_snapshot_only_aggregates(
+        self,
+        tmp_project,
+        capsys,
+        monkeypatch,
+    ):
+        wiki = tmp_project / "docs" / "llm_wiki"
+        _committed_state(wiki)
+        _guard_live_knowledge_evaluation(monkeypatch)
+
+        status_cmd.run(_make_args(wiki_dir=str(wiki), src_dir="."))
+
+        out = capsys.readouterr().out
+        assert (
+            "Knowledge:       ready (reason: all-projection-commitments-match)"
+        ) in out
+        assert "Concepts evaluated: 0" in out
+        assert "Evidence issues: invalid=0, missing=0, unknown=1" in out
+        assert "Freshness: unevaluated (snapshot-only read)" in out
+        assert "llm-wiki://entities/User" not in out
+        assert "sha256:" not in out
+
+    def test_legacy_projection_reports_absent_without_live_evaluation(
+        self,
+        tmp_project,
+        capsys,
+        monkeypatch,
+    ):
+        wiki = tmp_project / "docs" / "llm_wiki"
+        wiki.mkdir(parents=True)
+        (wiki / "index.md").write_bytes(b"\xff")
+        _guard_live_knowledge_evaluation(monkeypatch)
+
+        status_cmd.run(_make_args(wiki_dir=str(wiki)))
+
+        out = capsys.readouterr().out
+        assert (
+            "Knowledge:       absent (reason: knowledge-projection-not-present)"
+        ) in out
+        assert "Evidence issues: unavailable" in out
+        assert "Freshness: unevaluated (snapshot-only read)" in out
+
+    def test_invalid_projection_reports_degraded_without_serving_evidence(
+        self,
+        tmp_project,
+        capsys,
+        monkeypatch,
+    ):
+        wiki = tmp_project / "docs" / "llm_wiki"
+        _committed_state(wiki)
+        (wiki / KNOWLEDGE_INDEX_FILENAME).write_bytes(b"{not-json\n")
+        _guard_live_knowledge_evaluation(monkeypatch)
+
+        status_cmd.run(_make_args(wiki_dir=str(wiki)))
+
+        out = capsys.readouterr().out
+        assert (
+            "Knowledge:       degraded "
+            "(reason: policy-selected-surface-only-fallback-after-invalid)"
+        ) in out
+        assert "Concepts evaluated: 0" in out
+        assert "Evidence issues: unavailable" in out
+        assert "Freshness: unevaluated (snapshot-only read)" in out
+        assert "llm-wiki://entities/User" not in out
+        assert "sha256:" not in out
 
 
 class TestStatusAgent:
@@ -210,6 +304,26 @@ class TestStatusBreaker:
         out = capsys.readouterr().out
         assert "OPEN" in out
         assert "3" in out
+        assert "next trigger evaluates automatic recovery" in out.lower()
+
+    def test_shows_active_half_open_recovery_probe(self, tmp_project, capsys):
+        git_dir = tmp_project / ".git"
+        state = {
+            "consecutive_failures": 3,
+            "last_failure_ts": "2026-01-01T00:00:00+00:00",
+            "probe_started_ts": "2026-01-01T01:00:00+00:00",
+            "state": "half-open",
+        }
+        (git_dir / "llm-wiki-breaker.json").write_text(json.dumps(state))
+        wiki = tmp_project / "docs" / "llm_wiki"
+        wiki.mkdir(parents=True)
+
+        status_cmd.run(_make_args(wiki_dir=str(wiki)))
+
+        out = capsys.readouterr().out
+        assert "HALF-OPEN" in out
+        assert "recovery probe lease persisted" in out
+        assert "next trigger evaluates the probe lease" in out.lower()
 
 
 class TestStatusReferenceSkill:

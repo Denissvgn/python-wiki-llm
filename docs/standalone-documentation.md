@@ -56,12 +56,15 @@ project-docs/
 │   ├── results/
 │   ├── skills/
 │   └── stages/
-├── wiki/      # canonical editable documentation source
+├── wiki/      # canonical documentation plus controller-owned native metadata
 ├── site/      # derived user-profile Markdown mirror
 └── _site/     # optional output from an authorized real builder
 ```
 
-### P0 calibration evidence is diagnostic
+### Documentation calibration evidence is diagnostic
+
+Protocol and artifact strings containing `p0-calibration` are historical wire
+identifiers retained for compatibility; they do not name the feature in prose.
 
 Every prepared run now records two supervisor-owned artifacts beside the
 semantic worklist:
@@ -215,13 +218,21 @@ grant, manifest, evidence bundle, and cohort. A root whose ownership, POSIX
 mode, or Windows DACL is not restrictive fails closed.
 
 The root must be new or empty and must not overlap a source, documentation
-control, worker output, packet output, or implementation worktree. Immutable
-numbered artifacts and transition records are canonical; `run.json` is a
-rebuildable current-state snapshot. A dedicated controller lock, generation
-and transition-head comparisons, guarded no-follow I/O, and crash recovery
-protect state changes. Unknown files, ambiguous recovery, an indeterminate
-dispatch, or unavailable enforcement blocks the cohort without erasing
-evidence. Source/control mutation or ledger tampering rejects it.
+control, worker output, packet output, or implementation worktree.
+Application-level, create-once numbered artifacts and transition records are
+canonical; `run.json` is a rebuildable current-state snapshot. A dedicated
+controller lock, generation and transition-head comparisons, guarded no-follow
+I/O, and crash recovery protect state changes. Unknown files, ambiguous
+recovery, an indeterminate dispatch, or unavailable enforcement blocks the
+cohort without erasing evidence. Within this trust domain, source/control
+mutation or a ledger integrity mismatch rejects the cohort.
+
+These protections are same-user, application-level guarantees within one trust
+domain. Here “immutable” means that the application creates an artifact path
+once and accepts only a byte-identical replay. The mechanisms do not resist the
+filesystem owner, root, or offline modification; they provide content-integrity
+checks, not authenticity. Stronger assurance requires host controls outside
+the workspace.
 
 For `local_no_egress`, the frozen manifest supplies the Docker or Podman
 executable identity, digest-pinned worker and probe images, fixed entrypoints,
@@ -250,7 +261,7 @@ package ships no provider credential, SDK, external-provider adapter, or
 self-authenticating receipt path. The ordinary CLI exposes no authenticator
 selector and remains fail-closed. An embedding Python host that has already
 authenticated the broker scopes lifecycle calls with
-`use_p0_calibration_host_broker_authenticator`.
+`use_calibration_host_broker_authenticator`.
 
 After admission, write each private packet to an explicit path:
 
@@ -315,7 +326,9 @@ operating-system, container, agent-platform, or brokered file permissions:
   surfaces and one bounded result handoff. If that handoff is placed under
   `.llm-wiki-docs/results/`, grant the exact stage result file or broker it back
   to the supervisor; never grant write access to the results directory or the
-  rest of the control tree.
+  rest of the control tree. Keep `.llm-wiki-manifest.json`,
+  `.llm-wiki-surface.json`, and `.llm-wiki-knowledge.json` under supervisor-only
+  write control even though they live in the wiki directory.
 - Let the supervisor invoke `record-result` and own the persisted result,
   reconciliation evidence, stage receipts, and later transitions. A path named
   in a packet is contract metadata, not an operating-system permission grant.
@@ -435,8 +448,8 @@ llm-wiki docs prepare \
 
 At import time the snapshot service:
 
-- requires `index.md` and recognizes current manifest/surface metadata or a
-  legacy index-only wiki;
+- requires `index.md` and recognizes legacy, manifest v4, and current manifest
+  v5 metadata forms;
 - copies eligible regular files byte-for-byte before any workspace refresh;
 - records input-tree, per-file, initial-snapshot, schema, generated-owner, and
   semantic-page evidence;
@@ -451,6 +464,28 @@ At import time the snapshot service:
   them;
 - leaves the input wiki unchanged.
 
+The accepted metadata forms are deliberately distinct:
+
+| Input form | Adoption behavior |
+|---|---|
+| No metadata and a canonical `index.md` | Preserve the legacy index-only behavior. |
+| Manifest v4 plus its surface index, with no knowledge index | Validate and preserve the pre-native pair. |
+| Markerless manifest v5 plus its surface index, with no knowledge index | Validate the v5 surface-only state without claiming native knowledge. |
+| Marked manifest v5 plus matching surface and knowledge indexes | Validate the complete native projection as one committed trio. |
+
+An orphan artifact, partial or mixed trio, unexpected knowledge index, corrupt
+JSON, unsupported future version, marker mismatch, cross-artifact mismatch, or
+canonical Markdown snapshot mismatch is rejected. Validation uses the exact
+guarded bytes collected during the bounded snapshot; it does not reopen an
+untrusted artifact by pathname. Artifact metadata is inert and cannot select or
+execute a source plugin.
+
+Manifest v5 is the current writer format. The manifest, surface index, and
+knowledge index are controller-owned generated artifacts in the workspace.
+Their fingerprints are part of generated ownership, and workers must never
+edit, remove, add, or regenerate them. A v4 or markerless v5 input remains
+representable without fabricating a knowledge fingerprint.
+
 Imported pages are classified independently for reuse and grounding. Existing
 prose is not rewritten merely for style. Important claims must still be
 grounded in current source/wiki evidence before they are used in published
@@ -460,19 +495,26 @@ human documentation.
 
 Choose the policy explicitly:
 
-- `require-current` fails closed unless the source is available, the current
-  supported-source inventory has the same paths and hashes as the imported
-  manifest, and recorded generation inputs such as OpenAPI still match. It
-  detects supported files that were added, removed, or changed. It does not
-  prove semantic completeness, the relevance of unsupported files, or the
-  accuracy of prior human/LLM prose.
+- `require-current` fails closed unless the source is available and compatible.
+  For manifest v4, the current supported-source inventory must have the same
+  paths and hashes as the imported manifest, and recorded generation inputs
+  such as OpenAPI must still match. For a manifest v5 native trio, the same
+  source comparison is combined with independent live evaluation of the
+  effective generation options, deep-inventory policy, semantic-preservation
+  default, extractor registry, and explicitly trusted producer commitments.
+  The recorded generation-options hash is never accepted as live evidence. A
+  failed live projection remains unverified; a computed source or
+  generation-basis mismatch is verified stale. Neither can pass this policy.
 - `refresh-snapshot` requires a readable source. It first records and copies the
   input, then refreshes only `<workspace>/wiki` from source. Imported semantic
-  prose is retained for later grounding/reuse; the original input wiki is never
-  refreshed or modified.
+  prose is retained for later grounding/reuse, and the controller commits the
+  refreshed native projection in the workspace; the original input wiki is
+  never refreshed or modified.
 - `allow-unverified` permits wiki-only adoption when source is unavailable. The
   limitation remains visible in packets and reports and cannot support a
-  source-verified `publish_ready` verdict.
+  source-verified `publish_ready` verdict. A validated native projection may be
+  used as snapshot-only evidence, but live freshness is not evaluated and the
+  run never upgrades it to a current-source claim.
 
 Example workspace-only refresh:
 
@@ -600,6 +642,16 @@ hashes, evidence, and rationale. A completed review must cite at least one
 sampled canonical Markdown page; partial or blocked reviews may return without
 one and remain resumable. A false claim or forbidden write blocks the run.
 
+After accepting a worker result that changes canonical Markdown, the supervisor
+refreshes the manifest v5 surface/knowledge projection from the verified source,
+records the native commit, and re-anchors generated ownership before running
+later validation or dispatching another packet. This applies to both semantic
+wiki enrichment and user-documentation edits. Workers report only their
+authorized Markdown paths; controller-generated artifact paths are recorded
+separately. If source is unavailable or cannot be verified, the controller
+skips native refresh, records the snapshot-only limitation, and does not claim
+current native knowledge.
+
 ## Bundled skills
 
 Preparation exports a versioned, hashed run-local copy of the relevant skills
@@ -652,8 +704,8 @@ compatible runner, and persist the returned selection receipt outside the
 provider-neutral lifecycle packet. The lifecycle does not record or prove
 which concrete model actually ran. First-class publisher/backend/transport
 bindings, concrete adapters, price evidence, and runner receipts remain the
-separate multi-provider routing backlog rather than part of this deterministic
-core contract.
+responsibility of a separate multi-provider routing layer rather than this
+deterministic core contract.
 
 Example `model-routing.json` (the model IDs are placeholders to replace with
 your runner's configured IDs):
@@ -849,6 +901,30 @@ llm-wiki docs verify --workspace ./project-docs --format json --no-advance
 `--no-advance` reports the result without advancing an eligible review run.
 Remote deployment is always a separate, explicitly authorized workflow.
 
+## Protocol versioning
+
+Shared machine-readable payload identifiers declared in
+`llm_wiki_cli.services.contracts` are registered in that module's
+`PROTOCOL_VERSIONS` tuple. Component-owned identifiers follow the same
+versioning rules below. Adding optional fields to an open record is
+backward-compatible and never bumps the protocol version. Readers of open
+records must ignore unknown fields from the same major version while
+continuing to validate fields they understand.
+
+Request, authority-bearing, and other explicitly closed records may reject
+unknown fields so misspellings or unrecognized instructions cannot be treated
+as accepted input. A closed record evolves additively through a declared
+extension container or by first publishing reader support for the new field;
+otherwise changing its accepted top-level fields requires a new major version.
+
+Renaming or removing a field, changing its meaning or type incompatibly, or
+otherwise making an existing reader misinterpret a payload requires a new
+major protocol version. Before support for an older major version is removed,
+it remains deprecated for at least one minor package release. During that
+window, writers should emit both representations where doing so is feasible;
+otherwise they must retain an explicit reader or conversion path and document
+the handoff.
+
 ## Python lifecycle API
 
 The supported API mirrors the CLI without `argparse`, console scraping, or
@@ -913,18 +989,18 @@ from llm_wiki_cli.api import (
     HostBrokerAuthenticator,
     P0CalibrationAgentResult,
     P0CalibrationDispatchReceipt,
-    admit_p0_calibration_run,
-    build_p0_calibration_agent_packet,
-    dispatch_p0_calibration_agent,
-    get_p0_calibration_run_status,
-    prepare_p0_calibration_run,
-    record_p0_calibration_agent_result,
-    use_p0_calibration_host_broker_authenticator,
-    verify_p0_calibration_run,
+    admit_calibration_run,
+    build_calibration_agent_packet,
+    dispatch_calibration_agent,
+    get_calibration_run_status,
+    prepare_calibration_run,
+    record_calibration_agent_result,
+    use_calibration_host_broker_authenticator,
+    verify_calibration_run,
 )
 
 calibration_root = Path("/path/to/operator-calibration/controller")
-calibration = prepare_p0_calibration_run(
+calibration = prepare_calibration_run(
     calibration_root,
     control_workspaces=(
         "/path/to/operator-calibration/control-a",
@@ -932,22 +1008,22 @@ calibration = prepare_p0_calibration_run(
     ),
     execution_manifest=execution_manifest,
 )
-calibration = admit_p0_calibration_run(
+calibration = admit_calibration_run(
     calibration_root,
     authority_grant=authority_grant,
 )
-packet = build_p0_calibration_agent_packet(
+packet = build_calibration_agent_packet(
     calibration_root,
     role="intake-a",
 )
-status = get_p0_calibration_run_status(calibration_root)
+status = get_calibration_run_status(calibration_root)
 ```
 
-For the local profile, call `dispatch_p0_calibration_agent`; for an
+For the local profile, call `dispatch_calibration_agent`; for an
 independently authenticated external broker, construct the versioned
 `P0CalibrationDispatchReceipt` and `P0CalibrationAgentResult` types before
-calling `record_p0_calibration_agent_result`. Use
-`verify_p0_calibration_run(..., advance=False)` for a read-only eligibility
+calling `record_calibration_agent_result`. Use
+`verify_calibration_run(..., advance=False)` for a read-only eligibility
 report.
 
 An embedding host supplies an object implementing `HostBrokerAuthenticator`
@@ -955,13 +1031,13 @@ only after authenticating the external broker through its own protected
 mechanism. Scope admission and receipt imports explicitly:
 
 ```python
-with use_p0_calibration_host_broker_authenticator(authenticated_host_broker):
-    admitted = admit_p0_calibration_run(
+with use_calibration_host_broker_authenticator(authenticated_host_broker):
+    admitted = admit_calibration_run(
         calibration_root,
         authority_grant=authority_grant,
         broker_attestation=broker_attestation,
     )
-    record_p0_calibration_agent_result(
+    record_calibration_agent_result(
         calibration_root,
         dispatch_receipt=dispatch_receipt,
         result=agent_result,
@@ -996,13 +1072,17 @@ The supported API also exports the lifecycle protocol constants
 `DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION`, so hosts do not need to duplicate
 version strings when accepting packets, results, verification evidence, or the
 final report.
-Lifecycle failures use typed `DocumentationRunError`,
-`DocumentationSchemaError`, `DocumentationTransitionError`, and
-`DocumentationIntegrityError` exceptions. Preparation may also surface
-`DocumentationPolicyError`, `BootstrapServiceError`, or
-`DocumentationWikiInputError` from its deterministic policy, bootstrap, and
-import boundaries. Model selection uses `DocumentationModelPolicyError`. These
-public base errors are exported from `llm_wiki_cli.api`.
+Supported API entry points translate lifecycle implementation failures into
+the stable `LlmWikiApiError` taxonomy. Invalid policy, path, query, model, and
+submitted-schema input raises `InvalidRequestError`; unavailable bootstrap,
+ordinary source/input, or documentation-workspace operations raise
+`WorkspaceStateError`; and missing or corrupt protected
+calibration/controller state, corrupt persisted documentation-run schemas,
+plus hash, metadata, native-artifact, or recovery mismatches raise
+`ArtifactIntegrityError`. The original implementation exception is retained
+as `__cause__`. Internal lifecycle exception classes remain exported for
+contract and compatibility references, but callers should catch the three
+stable API categories.
 
 ## Resume and troubleshooting
 
@@ -1055,7 +1135,8 @@ Common conditions:
   accept the visible `allow-unverified` limitation.
 - **Changed-path mismatch/generated edit:** fix or revert the workspace edit and
   return an accurate result. Never alter source, the input wiki, a generated
-  manifest/surface, or CLI-owned generated Markdown sections.
+  `.llm-wiki-manifest.json`, `.llm-wiki-surface.json`,
+  `.llm-wiki-knowledge.json`, or CLI-owned generated Markdown sections.
 - **Run is blocked:** resolve the recorded finding; a blocked run resumes only
   at its recorded stage.
 - **Review loop exhausted:** unresolved or repeated high-severity findings stay

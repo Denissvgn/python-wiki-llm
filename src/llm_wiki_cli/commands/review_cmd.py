@@ -7,12 +7,12 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from ..config import DEFAULT_WIKI_DIR, validate_path
-from .bootstrap_cmd import (
+from ..services.bootstrap_runtime import (
     build_entity_occurrence_page_map,
     build_entity_page_map,
     build_module_page_map,
 )
-from .extract_cmd import get_inventory
+from ..services.extraction_service import get_inventory
 from ..services.entrypoints import get_entry_points, read_console_scripts
 from ..services.wiki_surface import PageKind, collect_wiki_pages
 from ..services.wiki_surface_index import (

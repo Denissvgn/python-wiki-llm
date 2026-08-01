@@ -96,7 +96,7 @@ def test_host_authenticator_returns_structured_bound_proofs():
         "runtime": {"broker_id": "broker-001"},
         "authentication": {"reference": "broker-session-001"},
     }
-    with host_broker.use_p0_calibration_host_broker_authenticator(authenticator):
+    with host_broker.use_calibration_host_broker_authenticator(authenticator):
         proof = host_broker.require_attestation_authentication(
             cohort_id="cohort-001",
             authority_grant={},
@@ -148,7 +148,7 @@ def test_host_authenticator_binds_dispatch_failure_result_bytes():
         },
     }
 
-    with host_broker.use_p0_calibration_host_broker_authenticator(authenticator):
+    with host_broker.use_calibration_host_broker_authenticator(authenticator):
         proof = host_broker.require_receipt_authentication(
             cohort_id="cohort-001",
             execution_manifest={},
@@ -170,7 +170,7 @@ def test_boolean_authentication_result_is_rejected():
         def authenticate_attestation(self, **_kwargs):  # type: ignore[no-untyped-def]
             return True
 
-    with host_broker.use_p0_calibration_host_broker_authenticator(
+    with host_broker.use_calibration_host_broker_authenticator(
         _BooleanAuthenticator()  # type: ignore[arg-type]
     ):
         with pytest.raises(

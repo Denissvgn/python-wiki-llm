@@ -8,9 +8,11 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from ..config import PathValidationError, validate_source_root
+from ..services.contracts import CALIBRATION_CONTROLLER_MAX_PACKET_BYTES
 from ..services.documentation_run import (
     DocumentationAgentResult,
     DocumentationRunError,
+    SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES,
     build_documentation_agent_packet,
     export_documentation_run,
     get_documentation_run_status,
@@ -24,11 +26,13 @@ from ..services.filesystem_guard import atomic_write_private_bytes
 
 _MAX_INTAKE_BYTES = 1_000_000
 _MAX_CALIBRATION_JSON_BYTES = 4 * 1024 * 1024
-_MAX_CALIBRATION_PACKET_BYTES = 16 * 1024 * 1024
 _BASELINE_STRATEGIES = {
     "bootstrap-source": "bootstrap_source",
     "existing-wiki": "adopt_existing_wiki",
 }
+KNOWLEDGE_MODE_CHOICES = tuple(
+    sorted(SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES)
+)
 _INTAKE_KEYS = {
     "project_purpose",
     "audiences",
@@ -306,6 +310,10 @@ def _prepare(args) -> None:
         adjustment_loop_limit=args.adjustment_loop_limit,
         distribution_format=args.site_format,
         link_mode=link_mode,
+        knowledge_mode=getattr(args, "knowledge_mode", "off"),
+        knowledge_public_repository_identity=(
+            getattr(args, "knowledge_public_repository_identity", None)
+        ),
         refresh=bool(args.refresh),
         **intake,
     )
@@ -357,14 +365,15 @@ def _verify(args) -> None:
 
 
 def _calibration_controller():
-    # Keep the controller dependency scoped to the nested lifecycle handlers.
-    from ..services import documentation_calibration_controller
+    # Calibration is intentionally isolated from ordinary CLI imports.  This
+    # command-only loader is the supported boundary into the subsystem.
+    from ..services.calibration import controller
 
-    return documentation_calibration_controller
+    return controller
 
 
 def _calibration_error_type() -> type[RuntimeError]:
-    from ..services.documentation_calibration_controller import P0CalibrationError
+    from ..services.calibration.controller import P0CalibrationError
 
     return P0CalibrationError
 
@@ -432,7 +441,7 @@ def _calibration_prepare(args) -> None:
         label="execution manifest",
     )
     controller = _calibration_controller()
-    run = controller.prepare_p0_calibration_run(
+    run = controller.prepare_calibration_run(
         args.root,
         control_workspaces=controls,
         execution_manifest=manifest,
@@ -455,7 +464,7 @@ def _calibration_admit(args) -> None:
         else None
     )
     controller = _calibration_controller()
-    run = controller.admit_p0_calibration_run(
+    run = controller.admit_calibration_run(
         args.root,
         authority_grant=authority,
         broker_attestation=attestation,
@@ -467,7 +476,7 @@ def _calibration_admit(args) -> None:
 
 
 def _calibration_status(args) -> None:
-    status = _calibration_controller().get_p0_calibration_run_status(args.root)
+    status = _calibration_controller().get_calibration_run_status(args.root)
     _print_calibration_json(status, label="calibration status")
 
 
@@ -481,14 +490,14 @@ def _calibration_packet(args) -> None:
         args.root,
         args.output,
     )
-    packet = controller.build_p0_calibration_agent_packet(
+    packet = controller.build_calibration_agent_packet(
         args.root,
         role=args.role,
     )
     rendered = _bounded_calibration_json(
         packet,
         label="calibration agent packet",
-        max_bytes=_MAX_CALIBRATION_PACKET_BYTES,
+        max_bytes=CALIBRATION_CONTROLLER_MAX_PACKET_BYTES,
         canonical=True,
     )
     output = controller.validate_p0_calibration_packet_output(args.root, output)
@@ -501,7 +510,7 @@ def _calibration_packet(args) -> None:
 
 
 def _calibration_dispatch(args) -> None:
-    receipt = _calibration_controller().dispatch_p0_calibration_agent(
+    receipt = _calibration_controller().dispatch_calibration_agent(
         args.root,
         role=args.role,
     )
@@ -524,7 +533,7 @@ def _calibration_record_result(args) -> None:
     controller = _calibration_controller()
     receipt = controller.P0CalibrationDispatchReceipt.from_dict(receipt_payload)
     result = controller.P0CalibrationAgentResult.from_dict(result_payload)
-    run = controller.record_p0_calibration_agent_result(
+    run = controller.record_calibration_agent_result(
         args.root,
         dispatch_receipt=receipt,
         result=result,
@@ -533,7 +542,7 @@ def _calibration_record_result(args) -> None:
 
 
 def _calibration_verify(args) -> None:
-    report = _calibration_controller().verify_p0_calibration_run(
+    report = _calibration_controller().verify_calibration_run(
         args.root,
         advance=not bool(args.no_advance),
     )
@@ -583,6 +592,31 @@ def _assert_export_options(args) -> None:
             "--file-friendly was not selected when the run was prepared; rerun docs "
             "prepare with --refresh --file-friendly."
         )
+    requested_knowledge_mode = getattr(args, "knowledge_mode", None)
+    recorded_knowledge_mode = run.publication.get("knowledge_mode", "off")
+    if (
+        requested_knowledge_mode is not None
+        and requested_knowledge_mode != recorded_knowledge_mode
+    ):
+        raise DocumentationRunError(
+            "Export knowledge mode differs from the prepared run contract; rerun "
+            "docs prepare with --refresh and the intended --knowledge-mode."
+        )
+    requested_public_identity = getattr(
+        args,
+        "knowledge_public_repository_identity",
+        None,
+    )
+    if (
+        requested_public_identity is not None
+        and requested_public_identity
+        != run.publication.get("knowledge_public_repository_identity")
+    ):
+        raise DocumentationRunError(
+            "Export public repository identity differs from the prepared run "
+            "contract; rerun docs prepare with --refresh and the intended "
+            "--knowledge-public-repository-identity."
+        )
 
 
 def _export(args) -> None:
@@ -591,6 +625,12 @@ def _export(args) -> None:
         args.workspace,
         build=bool(args.build),
         builder_command=args.builder_command,
+        knowledge_mode=getattr(args, "knowledge_mode", None),
+        knowledge_public_repository_identity=getattr(
+            args,
+            "knowledge_public_repository_identity",
+            None,
+        ),
     )
     if args.output_format == "json":
         print(json.dumps(report, indent=2, sort_keys=True))

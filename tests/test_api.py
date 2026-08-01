@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import inspect
+import json
 import textwrap
+import types
 
 import pytest
 
 import llm_wiki_cli.api as api
+from llm_wiki_cli.services import mcp_server
 from llm_wiki_cli.api import (
     EXTRACT_SCHEMA_VERSION,
     ExtractionError,
@@ -24,6 +27,50 @@ from llm_wiki_cli.api import (
     list_wiki_pages,
     pages_for_symbol,
 )
+from llm_wiki_cli.services.knowledge_artifacts import (
+    build_knowledge_commit_plan,
+    commit_knowledge_artifacts,
+)
+from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
+from llm_wiki_cli.services.knowledge_governance import (
+    ALIAS_LOCATOR,
+    ALIAS_NATURAL_KEY,
+    GovernanceActor,
+    GovernanceLedger,
+    add_alias,
+    add_review_event,
+    apply_governance_projection,
+    concept_references_from_knowledge,
+    current_review_evidence,
+    reconcile_concepts,
+    save_governance,
+    set_lifecycle,
+)
+from llm_wiki_cli.services.knowledge_loader import (
+    KnowledgeLoadResult,
+    load_knowledge_state,
+)
+from llm_wiki_cli.services.knowledge_model import (
+    KnowledgeLoadState,
+    parse_knowledge_index,
+    serialize_knowledge_index,
+)
+from llm_wiki_cli.services.verification_contracts import (
+    ARTIFACT_INTEGRITY_CHECKER_ID,
+    build_artifact_verification_context,
+    verify_and_write_receipt,
+)
+from tests.knowledge_fixtures import (
+    fail_if_extraction_runs,
+    fixture_hash,
+    materialize_fixture_tree,
+    one_module_two_entities_fixture,
+)
+from tests.test_knowledge_artifacts import _plan as _knowledge_commit_plan
+from tests.test_knowledge_compatibility import (
+    COMPATIBILITY_CASES,
+    _materialize_case,
+)
 
 
 def test_supported_api_exports_are_additive_contract():
@@ -36,6 +83,7 @@ def test_supported_api_exports_are_additive_contract():
         "DOCUMENTATION_MODEL_SELECTION_SCHEMA_VERSION",
         "DOCUMENTATION_RUN_SCHEMA_VERSION",
         "DOCUMENTATION_VERIFICATION_SCHEMA_VERSION",
+        "DOCTOR_SCHEMA_VERSION",
         "EXTRACT_SCHEMA_VERSION",
         "P0_CALIBRATION_AGENT_PACKET_SCHEMA_VERSION",
         "P0_CALIBRATION_AGENT_RESULT_SCHEMA_VERSION",
@@ -43,6 +91,15 @@ def test_supported_api_exports_are_additive_contract():
         "P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION",
         "P0_CALIBRATION_RUN_SCHEMA_VERSION",
         "P0_CALIBRATION_VERIFICATION_REPORT_SCHEMA_VERSION",
+        "QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION",
+        "ContextBasisComparison",
+        "ContextPacketError",
+        "ContextPacketMalformedError",
+        "ContextPacketPathPolicyError",
+        "ContextPacketReconciliation",
+        "ContextPacketSourceMutationError",
+        "ContextPacketUnavailableError",
+        "ContextPacketValidation",
         "DocumentationGraphQueryService",
         "DocumentationAgentPacket",
         "DocumentationAgentResult",
@@ -53,6 +110,7 @@ def test_supported_api_exports_are_additive_contract():
         "DocumentationRunStatus",
         "DocumentationVerificationReport",
         "DocumentationWikiSnapshot",
+        "DoctorResult",
         "ExtractionError",
         "HostBrokerAuthenticationError",
         "HostBrokerAuthenticationProof",
@@ -71,33 +129,52 @@ def test_supported_api_exports_are_additive_contract():
         "P0CalibrationTransitionError",
         "P0CalibrationVerificationReport",
         "PathPolicyError",
+        "QualifiedContextPacket",
+        "admit_calibration_run",
         "admit_p0_calibration_run",
         "adopt_documentation_wiki_snapshot",
+        "build_calibration_agent_packet",
         "build_p0_calibration_agent_packet",
         "build_documentation_agent_packet",
         "build_context",
+        "build_qualified_context",
         "build_documentation_query_service",
         "callees",
         "callers",
+        "compare_context_packet_basis",
         "data_flow_for_entrypoint",
         "dependency_neighborhood",
+        "dispatch_calibration_agent",
         "dispatch_p0_calibration_agent",
+        "doctor",
         "export_documentation_run",
         "extract_source",
+        "explain_evidence",
         "flow_for_entrypoint",
         "fingerprint_documentation_wiki_input",
+        "get_calibration_run_status",
+        "get_concept",
         "get_documentation_run_status",
         "get_p0_calibration_run_status",
+        "list_concept_sections",
         "list_wiki_pages",
         "pages_for_symbol",
+        "prepare_calibration_run",
         "prepare_documentation_run",
         "prepare_p0_calibration_run",
-        "record_p0_calibration_agent_result",
+        "record_calibration_agent_result",
         "record_documentation_agent_result",
+        "record_p0_calibration_agent_result",
+        "reconcile_context_packet",
+        "related_concepts",
         "select_documentation_model",
+        "traverse_typed_graph",
+        "use_calibration_host_broker_authenticator",
+        "use_p0_calibration_host_broker_authenticator",
+        "validate_context_packet",
+        "verify_calibration_run",
         "verify_documentation_run",
         "verify_p0_calibration_run",
-        "use_p0_calibration_host_broker_authenticator",
     }
 
     assert expected_exports <= set(api.__all__)
@@ -129,6 +206,7 @@ def test_supported_api_signatures_preserve_existing_callers():
         "focus",
         "filters",
         "wiki_dir",
+        "prefer_fresh",
         "allow_external_src",
         "read_only",
     ]
@@ -136,6 +214,95 @@ def test_supported_api_signatures_preserve_existing_callers():
     assert context_params["budget"].default == 32000
     assert context_params["filters"].default is None
     assert context_params["wiki_dir"].kind is inspect.Parameter.KEYWORD_ONLY
+
+
+def test_knowledge_api_signatures_are_explicit_and_builder_stays_compatible():
+    builder_params = inspect.signature(
+        build_documentation_query_service
+    ).parameters
+    assert list(builder_params) == [
+        "src_dir",
+        "wiki_dir",
+        "limit",
+        "allow_external_src",
+        "read_only",
+    ]
+    assert builder_params["src_dir"].default == "."
+    assert builder_params["wiki_dir"].kind is inspect.Parameter.KEYWORD_ONLY
+    assert builder_params["limit"].default == 20
+    assert builder_params["read_only"].default is True
+
+    common = [
+        "locator_or_exact_route",
+        "service",
+        "src_dir",
+        "wiki_dir",
+        "limit",
+        "allow_external_src",
+        "read_only",
+    ]
+    assert list(inspect.signature(api.get_concept).parameters) == common
+    assert list(inspect.signature(api.explain_evidence).parameters) == common
+    assert list(inspect.signature(api.list_concept_sections).parameters) == [
+        "locator_or_exact_route",
+        "ownership",
+        "service",
+        "src_dir",
+        "wiki_dir",
+        "limit",
+        "allow_external_src",
+        "read_only",
+    ]
+    assert list(inspect.signature(api.related_concepts).parameters) == [
+        "locator_or_exact_route",
+        "direction",
+        "kinds",
+        "service",
+        "src_dir",
+        "wiki_dir",
+        "limit",
+        "allow_external_src",
+        "read_only",
+    ]
+    assert list(inspect.signature(api.traverse_typed_graph).parameters) == [
+        "locator_or_exact_route",
+        "direction",
+        "kinds",
+        "origins",
+        "resolutions",
+        "include_evidence",
+        "service",
+        "src_dir",
+        "wiki_dir",
+        "limit",
+        "allow_external_src",
+        "read_only",
+    ]
+
+    for function in (
+        api.get_concept,
+        api.list_concept_sections,
+        api.related_concepts,
+        api.explain_evidence,
+    ):
+        params = inspect.signature(function).parameters
+        assert (
+            params["locator_or_exact_route"].kind
+            is inspect.Parameter.POSITIONAL_OR_KEYWORD
+        )
+        assert params["service"].kind is inspect.Parameter.KEYWORD_ONLY
+        assert params["service"].default is None
+        assert params["limit"].default == 20
+        assert params["read_only"].default is True
+    related_params = inspect.signature(api.related_concepts).parameters
+    assert related_params["direction"].default == "both"
+    assert related_params["kinds"].default is None
+    assert (
+        inspect.signature(api.list_concept_sections)
+        .parameters["ownership"]
+        .default
+        is None
+    )
 
 
 def test_documentation_lifecycle_api_signatures_match_cli_contract():
@@ -160,6 +327,8 @@ def test_documentation_lifecycle_api_signatures_match_cli_contract():
         "adjustment_loop_limit",
         "distribution_format",
         "link_mode",
+        "knowledge_mode",
+        "knowledge_public_repository_identity",
         "refresh",
     ]
     assert prepare_params["workspace"].kind is inspect.Parameter.POSITIONAL_OR_KEYWORD
@@ -170,7 +339,13 @@ def test_documentation_lifecycle_api_signatures_match_cli_contract():
         "build_documentation_agent_packet": ["workspace", "stage"],
         "record_documentation_agent_result": ["workspace", "result"],
         "verify_documentation_run": ["workspace", "advance"],
-        "export_documentation_run": ["workspace", "build", "builder_command"],
+        "export_documentation_run": [
+            "workspace",
+            "build",
+            "builder_command",
+            "knowledge_mode",
+            "knowledge_public_repository_identity",
+        ],
     }
     for name, parameters in expected.items():
         assert list(inspect.signature(getattr(api, name)).parameters) == parameters
@@ -189,7 +364,9 @@ def test_documentation_lifecycle_api_signatures_match_cli_contract():
             "capture_root: 'str | Path | None' = None, trust_source_plugins: "
             "'bool' = False, semantic_budget: 'int' = 30, "
             "adjustment_loop_limit: 'int' = 3, distribution_format: 'str' = "
-            "'mkdocs', link_mode: 'str' = 'http', refresh: 'bool' = False) -> "
+            "'mkdocs', link_mode: 'str' = 'http', knowledge_mode: 'str' = "
+            "'off', knowledge_public_repository_identity: 'str | None' = None, "
+            "refresh: 'bool' = False) -> "
             "'DocumentationRun'"
         ),
         "get_documentation_run_status": (
@@ -208,35 +385,37 @@ def test_documentation_lifecycle_api_signatures_match_cli_contract():
         ),
         "export_documentation_run": (
             "(workspace: 'str | Path', *, build: 'bool' = False, "
-            "builder_command: 'Iterable[str] | None' = None) -> "
-            "'dict[str, Any]'"
+            "builder_command: 'Iterable[str] | None' = None, knowledge_mode: "
+            "'str | None' = None, knowledge_public_repository_identity: "
+            "'str | None' = None) -> "
+            "'DocumentationExportResult'"
         ),
     }
     for name, expected_signature in exact_signatures.items():
         assert str(inspect.signature(getattr(api, name))) == expected_signature
 
 
-def test_p0_calibration_lifecycle_api_signatures_are_supported():
+def test_calibration_lifecycle_api_signatures_are_supported():
     expected = {
-        "prepare_p0_calibration_run": [
+        "prepare_calibration_run": [
             "root",
             "control_workspaces",
             "execution_manifest",
         ],
-        "admit_p0_calibration_run": [
+        "admit_calibration_run": [
             "root",
             "authority_grant",
             "broker_attestation",
         ],
-        "get_p0_calibration_run_status": ["root"],
-        "build_p0_calibration_agent_packet": ["root", "role"],
-        "dispatch_p0_calibration_agent": ["root", "role"],
-        "record_p0_calibration_agent_result": [
+        "get_calibration_run_status": ["root"],
+        "build_calibration_agent_packet": ["root", "role"],
+        "dispatch_calibration_agent": ["root", "role"],
+        "record_calibration_agent_result": [
             "root",
             "dispatch_receipt",
             "result",
         ],
-        "verify_p0_calibration_run": ["root", "advance"],
+        "verify_calibration_run": ["root", "advance"],
     }
 
     for name, parameters in expected.items():
@@ -251,50 +430,79 @@ def test_p0_calibration_lifecycle_api_signatures_are_supported():
             )
 
     assert (
-        inspect.signature(api.admit_p0_calibration_run)
+        inspect.signature(api.admit_calibration_run)
         .parameters["broker_attestation"]
         .default
         is None
     )
     assert (
-        inspect.signature(api.verify_p0_calibration_run).parameters["advance"].default
+        inspect.signature(api.verify_calibration_run).parameters["advance"].default
         is True
     )
 
     exact_signatures = {
-        "prepare_p0_calibration_run": (
+        "prepare_calibration_run": (
             "(root: 'str | Path', *, control_workspaces: 'Sequence[str | Path]', "
             "execution_manifest: 'Mapping[str, Any]') -> 'P0CalibrationRun'"
         ),
-        "admit_p0_calibration_run": (
+        "admit_calibration_run": (
             "(root: 'str | Path', *, authority_grant: 'Mapping[str, Any]', "
             "broker_attestation: 'Mapping[str, Any] | None' = None) -> "
             "'P0CalibrationRun'"
         ),
-        "get_p0_calibration_run_status": (
+        "get_calibration_run_status": (
             "(root: 'str | Path') -> 'P0CalibrationStatus'"
         ),
-        "build_p0_calibration_agent_packet": (
+        "build_calibration_agent_packet": (
             "(root: 'str | Path', *, role: 'str') -> 'P0CalibrationAgentPacket'"
         ),
-        "dispatch_p0_calibration_agent": (
+        "dispatch_calibration_agent": (
             "(root: 'str | Path', *, role: 'str') -> 'P0CalibrationDispatchReceipt'"
         ),
-        "record_p0_calibration_agent_result": (
+        "record_calibration_agent_result": (
             "(root: 'str | Path', *, dispatch_receipt: "
             "'P0CalibrationDispatchReceipt | Mapping[str, Any]', result: "
             "'P0CalibrationAgentResult | Mapping[str, Any]') -> 'P0CalibrationRun'"
         ),
-        "verify_p0_calibration_run": (
+        "verify_calibration_run": (
             "(root: 'str | Path', *, advance: 'bool' = True) -> "
             "'P0CalibrationVerificationReport'"
         ),
-        "use_p0_calibration_host_broker_authenticator": (
+        "use_calibration_host_broker_authenticator": (
             "(authenticator: 'HostBrokerAuthenticator') -> 'Iterator[None]'"
         ),
     }
     for name, expected_signature in exact_signatures.items():
         assert str(inspect.signature(getattr(api, name))) == expected_signature
+
+
+@pytest.mark.parametrize(
+    ("legacy_name", "replacement_name"),
+    [
+        ("prepare_p0_calibration_run", "prepare_calibration_run"),
+        ("admit_p0_calibration_run", "admit_calibration_run"),
+        ("get_p0_calibration_run_status", "get_calibration_run_status"),
+        ("build_p0_calibration_agent_packet", "build_calibration_agent_packet"),
+        ("dispatch_p0_calibration_agent", "dispatch_calibration_agent"),
+        ("record_p0_calibration_agent_result", "record_calibration_agent_result"),
+        ("verify_p0_calibration_run", "verify_calibration_run"),
+        (
+            "use_p0_calibration_host_broker_authenticator",
+            "use_calibration_host_broker_authenticator",
+        ),
+    ],
+)
+def test_p0_calibration_api_names_warn_and_delegate(
+    legacy_name,
+    replacement_name,
+):
+    legacy = getattr(api, legacy_name)
+    replacement = getattr(api, replacement_name)
+
+    assert legacy.__wrapped__ is replacement
+    with pytest.warns(DeprecationWarning, match=f"use {replacement_name} instead"):
+        with pytest.raises(TypeError):
+            legacy()
 
 
 def test_api_error_types_remain_structured_subclasses():
@@ -304,6 +512,67 @@ def test_api_error_types_remain_structured_subclasses():
     assert issubclass(api.P0CalibrationIntegrityError, api.P0CalibrationError)
     assert issubclass(api.P0CalibrationTransitionError, api.P0CalibrationError)
     assert issubclass(api.P0CalibrationRecoveryError, api.P0CalibrationError)
+
+
+@pytest.mark.parametrize(
+    "case",
+    COMPATIBILITY_CASES,
+    ids=lambda case: case.id,
+)
+def test_python_knowledge_api_uses_shared_compatibility_policy(
+    tmp_path,
+    monkeypatch,
+    case,
+):
+    root = tmp_path / "checkout"
+    wiki = root / "docs" / "llm_wiki"
+    wiki.mkdir(parents=True)
+    fixture = _materialize_case(wiki, case)
+    for relative_path, content in fixture.source_files.items():
+        source = root / relative_path
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text(content, encoding="utf-8")
+    monkeypatch.chdir(root)
+    service = build_documentation_query_service(
+        ".",
+        wiki_dir="docs/llm_wiki",
+    )
+
+    concept = api.get_concept(
+        "llm-wiki://entities/User",
+        service=service,
+    )
+    related = api.related_concepts(
+        "llm-wiki://entities/User",
+        service=service,
+    )
+    evidence = api.explain_evidence(
+        "llm-wiki://entities/User",
+        service=service,
+    )
+
+    expected_status = {
+        "availability": case.expected_availability.value,
+        "reason": case.expected_reason.value,
+        "freshness": (
+            "evaluated (6 concepts)"
+            if case.serves_knowledge
+            else "unevaluated (snapshot-only read)"
+        ),
+        "freshness_evaluated": case.serves_knowledge,
+    }
+    assert concept["knowledge"] == expected_status
+    assert related["knowledge"] == expected_status
+    assert evidence["knowledge"] == expected_status
+    assert concept["found"] is case.serves_knowledge
+    assert related["found"] is case.serves_knowledge
+    assert evidence["found"] is case.serves_knowledge
+    if case.serves_knowledge:
+        assert concept["concept"]["locator"] == "llm-wiki://entities/User"
+    else:
+        assert concept["concept"] is None
+        assert related["relationships"] == []
+        assert evidence["evidence"] is None
 
 
 def _write_query_project(root):
@@ -418,6 +687,11 @@ def test_build_context_returns_json_payload(tmp_project):
 
     assert payload["budget"] == 100000
     assert payload["files"]
+    assert payload["bounds"]["files"] == {
+        "total": len(payload["files"]),
+        "returned": len(payload["files"]),
+        "truncated": False,
+    }
 
 
 def test_build_context_returns_markdown_content_and_raw_payload(tmp_project):
@@ -425,6 +699,9 @@ def test_build_context_returns_markdown_content_and_raw_payload(tmp_project):
 
     assert "Context Budget" in payload["content"]
     assert payload["payload"]["files"]
+    assert payload["payload"]["bounds"]["files"]["returned"] == len(
+        payload["payload"]["files"]
+    )
 
 
 def test_build_context_accepts_graph_filters_and_wiki_dir(tmp_project):
@@ -443,6 +720,10 @@ def test_build_context_accepts_graph_filters_and_wiki_dir(tmp_project):
     assert payload["graphs"]["symbol"]["callees"]["found"] is True
     assert payload["graphs"]["symbol"]["pages"]["pages"]
     assert payload["surface"]["kind"] == "flows"
+    assert payload["surface"]["count"] == payload["surface"]["returned"]
+    assert payload["surface"]["bounds"]["pages"]["returned"] == len(
+        payload["surface"]["pages"]
+    )
     assert "files" in payload
     assert [page["canonical_path"] for page in payload["surface"]["pages"]] == [
         "flows/api-run.md"
@@ -476,6 +757,410 @@ def test_build_context_graph_sections_are_optional_additions(tmp_project):
     assert enriched_payload["surface"]["pages"][0]["canonical_path"] == (
         "flows/api-run.md"
     )
+
+
+def test_build_context_passes_knowledge_refinements_and_preserves_results(
+    monkeypatch,
+):
+    refinements = {
+        "surface": "entities",
+        "freshness": "source-changed",
+        "evidence": "present",
+    }
+    knowledge_status = {
+        "availability": "ready",
+        "reason": "all-projection-commitments-match",
+        "freshness": "evaluated (1 concepts)",
+        "freshness_evaluated": True,
+    }
+    seen = {}
+
+    def fake_build_context(
+        src_dir,
+        budget,
+        fmt,
+        focus,
+        filters,
+        **kwargs,
+    ):
+        seen.update(
+            {
+                "src_dir": src_dir,
+                "budget": budget,
+                "format": fmt,
+                "focus": focus,
+                "filters": filters,
+                "wiki_dir": kwargs["wiki_dir"],
+            }
+        )
+        return (
+            {
+                "budget": budget,
+                "used": 0,
+                "files": {},
+                "knowledge": knowledge_status,
+                "surface": {
+                    "kind": "entities",
+                    "count": 1,
+                    "total": 1,
+                    "truncated": False,
+                    "knowledge_selection": {
+                        "unfiltered_total": 2,
+                        "filtered_total": 1,
+                        "returned": 1,
+                        "truncated": False,
+                    },
+                    "pages": [
+                        {
+                            "canonical_path": "entities/User.md",
+                            "mcp_uri": "llm-wiki://entities/User",
+                            "knowledge": {
+                                **knowledge_status,
+                                "freshness_disclosure": knowledge_status["freshness"],
+                                "evidence": "present",
+                                "freshness": {
+                                    "state": "source-changed",
+                                    "reason": "concept-observation-changed",
+                                    "live_comparison_performed": True,
+                                },
+                            },
+                        }
+                    ],
+                },
+            },
+            ["Knowledge context includes stale concept references."],
+        )
+
+    monkeypatch.setattr(api.context_cmd, "_build_context", fake_build_context)
+
+    result = build_context(
+        "source-root",
+        budget=4096,
+        focus="all",
+        format="json",
+        filters=refinements,
+        wiki_dir="agent_wiki",
+    )
+
+    assert seen == {
+        "src_dir": "source-root",
+        "budget": 4096,
+        "format": "json",
+        "focus": ["all"],
+        "filters": refinements,
+        "wiki_dir": "agent_wiki",
+    }
+    assert result["knowledge"] == knowledge_status
+    assert result["surface"]["knowledge_selection"]["unfiltered_total"] == 2
+    assert result["surface"]["knowledge_selection"]["filtered_total"] == 1
+    assert result["surface"]["pages"][0]["knowledge"]["freshness"]["state"] == (
+        "source-changed"
+    )
+    assert result["warnings"] == [
+        "Knowledge context includes stale concept references."
+    ]
+    assert api.context_cmd.PROTOCOL_VERSION == "llm-wiki-context/v1"
+
+
+def test_build_context_preserves_compact_typed_relationship_selection(
+    monkeypatch,
+):
+    refinements = {
+        "surface": "entities",
+        "relationship_kind": "calls",
+        "relationship_origin": "extracted",
+        "relationship_resolution": "resolved",
+        "relationship_direction": "incoming",
+    }
+    graph_status = {
+        "availability": "ready",
+        "reason": "typed-graph-extension-ready",
+        "coverage": [],
+    }
+    graph_selection = {
+        **graph_status,
+        "found": True,
+        "direction": "incoming",
+        "filters": {
+            key: value
+            for key, value in refinements.items()
+            if key.startswith("relationship_")
+        },
+        "unfiltered_total": 4,
+        "filtered_total": 2,
+        "returned": 2,
+        "truncated": False,
+        "coverage": {
+            "scope": "returned-edges",
+            "edges": 2,
+            "observed": 2,
+            "emitted": 2,
+            "omitted": 0,
+            "truncated": False,
+            "limitations": [],
+        },
+    }
+    seen = {}
+
+    def fake_build_context(
+        _src_dir,
+        budget,
+        _fmt,
+        _focus,
+        filters,
+        **_kwargs,
+    ):
+        seen["filters"] = filters
+        return (
+            {
+                "budget": budget,
+                "used": 0,
+                "files": {},
+                "typed_graph": graph_status,
+                "surface": {
+                    "kind": "entities",
+                    "count": 1,
+                    "pages": [
+                        {
+                            "canonical_path": "entities/User.md",
+                            "typed_graph": graph_selection,
+                        }
+                    ],
+                },
+            },
+            [],
+        )
+
+    monkeypatch.setattr(api.context_cmd, "_build_context", fake_build_context)
+
+    result = build_context(
+        ".",
+        focus="all",
+        filters=refinements,
+    )
+
+    assert seen["filters"] == refinements
+    assert result["typed_graph"] == graph_status
+    assert result["surface"]["pages"][0]["typed_graph"] == graph_selection
+    encoded = json.dumps(result, sort_keys=True)
+    assert "samples" not in encoded
+    assert "aggregate_input_hash" not in encoded
+
+
+@pytest.mark.parametrize(
+    ("filters", "field"),
+    [
+        ({"freshness": "current"}, "freshness"),
+        ({"evidence": "present"}, "evidence"),
+    ],
+)
+def test_build_context_maps_knowledge_refinement_dependency_errors(filters, field):
+    with pytest.raises(
+        LlmWikiApiError,
+        match=rf"filters\.{field} requires filters\.surface or filters\.symbol",
+    ):
+        build_context(".", filters=filters)
+
+
+def test_build_context_markdown_preserves_knowledge_status_and_warnings(
+    monkeypatch,
+):
+    status = {
+        "availability": "degraded",
+        "reason": "policy-selected-surface-only-fallback-after-invalid",
+        "freshness": "unevaluated (snapshot-only read)",
+        "freshness_evaluated": False,
+    }
+
+    def fake_build_context(_src_dir, budget, _fmt, _focus, _filters, **_kwargs):
+        return (
+            {
+                "budget": budget,
+                "used": 0,
+                "files": {},
+                "knowledge": status,
+            },
+            ["Knowledge context is degraded; no candidates were dropped."],
+        )
+
+    monkeypatch.setattr(api.context_cmd, "_build_context", fake_build_context)
+
+    result = build_context(
+        ".",
+        format="markdown",
+        filters={"surface": "entities"},
+    )
+
+    assert result["payload"]["knowledge"] == status
+    assert result["warnings"] == [
+        "Knowledge context is degraded; no candidates were dropped."
+    ]
+    assert "## Knowledge" in result["content"]
+    assert "- availability: degraded" in result["content"]
+    assert "- freshness: unevaluated (snapshot-only read)" in result["content"]
+
+
+def test_build_context_legacy_json_shape_remains_context_v1(monkeypatch):
+    legacy_payload = {
+        "budget": 1000,
+        "used": 0,
+        "truncated": False,
+        "omitted_files": [],
+        "downgraded_files": {},
+        "files": {},
+    }
+
+    def fake_build_context(*_args, **_kwargs):
+        return dict(legacy_payload), []
+
+    monkeypatch.setattr(api.context_cmd, "_build_context", fake_build_context)
+
+    result = build_context(".", budget=1000, focus="all")
+
+    assert result == legacy_payload
+    assert "knowledge" not in result
+    assert api.context_cmd.PROTOCOL_VERSION == "llm-wiki-context/v1"
+
+
+def test_build_context_forwards_opt_in_freshness_policy(monkeypatch):
+    seen = {}
+
+    def fake_build_context(
+        _src_dir,
+        budget,
+        _format,
+        _focus,
+        _filters,
+        **kwargs,
+    ):
+        seen.update(kwargs)
+        return (
+            {
+                "budget": budget,
+                "used": 0,
+                "truncated": False,
+                "omitted_files": [],
+                "downgraded_files": {},
+                "bounds": {
+                    "files": {
+                        "total": 0,
+                        "returned": 0,
+                        "truncated": False,
+                    }
+                },
+                "files": {},
+                "ranking_policy": {
+                    "name": "relevance-then-current-freshness",
+                    "prefer_fresh": True,
+                },
+            },
+            [],
+        )
+
+    monkeypatch.setattr(api.context_cmd, "_build_context", fake_build_context)
+
+    result = api.build_context(".", prefer_fresh=True)
+
+    assert seen["prefer_fresh"] is True
+    assert result["ranking_policy"]["prefer_fresh"] is True
+
+
+def test_qualified_context_api_build_validate_and_reconcile_are_typed(
+    monkeypatch,
+):
+    packet_payload = {
+        "schema_version": "llm-wiki-qualified-context-packet/v1",
+        "packet_id": "sha256:" + "a" * 64,
+        "assurance": {},
+        "request": {},
+        "response": {},
+        "basis": {},
+        "delivery": {},
+        "path_policy": {},
+    }
+    seen = {}
+
+    packet = types.SimpleNamespace(
+        packet_id=packet_payload["packet_id"],
+        to_payload=lambda: dict(packet_payload),
+        to_bytes=lambda: b"packet\n",
+    )
+
+    def fake_build(src_dir, wiki_dir, request, **kwargs):
+        seen.update(
+            {
+                "src_dir": src_dir,
+                "wiki_dir": wiki_dir,
+                "request": request,
+                **kwargs,
+            }
+        )
+        return packet
+
+    validation = types.SimpleNamespace(
+        valid=True,
+        packet_id=packet_payload["packet_id"],
+    )
+    comparison = types.SimpleNamespace(
+        packet_id=packet_payload["packet_id"],
+        matches_expected=True,
+        current=None,
+    )
+    reconciliation = types.SimpleNamespace(
+        packet_id=packet_payload["packet_id"],
+        state="current",
+        current=True,
+    )
+    monkeypatch.setattr(
+        api.context_packet_service,
+        "build_qualified_context",
+        fake_build,
+    )
+    monkeypatch.setattr(
+        api.context_packet_service,
+        "validate_context_packet",
+        lambda _raw: validation,
+    )
+    monkeypatch.setattr(
+        api.context_packet_service,
+        "compare_context_packet_basis",
+        lambda _raw, _basis: comparison,
+    )
+    monkeypatch.setattr(
+        api.context_packet_service,
+        "reconcile_context_packet",
+        lambda *_args, **_kwargs: reconciliation,
+    )
+
+    request = {
+        "budget_tokens": 2048,
+        "focus": ["all"],
+        "format": "json",
+        "filters": {},
+        "prefer_fresh": True,
+    }
+    built = api.build_qualified_context(
+        "src",
+        "agent_wiki",
+        request,
+    )
+    validated = api.validate_context_packet(b"packet\n")
+    compared = api.compare_context_packet_basis(
+        b"packet\n",
+        {"source_snapshot": {}},
+    )
+    reconciled = api.reconcile_context_packet(
+        b"packet\n",
+        "src",
+        wiki_dir="agent_wiki",
+    )
+
+    assert built is packet
+    assert validated is validation
+    assert compared is comparison
+    assert reconciled is reconciliation
+    assert seen["request"] is request
+    assert seen["read_only"] is True
 
 
 def test_list_wiki_pages_returns_registry_metadata_without_running_extraction(
@@ -537,6 +1222,490 @@ def test_list_wiki_pages_exposes_api_contract_root_surface(tmp_project, monkeypa
     assert page["mcp_uri"] == "llm-wiki://api-contracts"
 
 
+def test_query_service_builder_reuses_one_inventory_snapshot_surface_and_view(
+    tmp_project,
+    monkeypatch,
+):
+    wiki = _write_api_wiki(tmp_project)
+    inventory = {
+        "api.py": {
+            "language": "python",
+            "classes": [],
+            "functions": [],
+            "imports": [],
+        }
+    }
+    source_snapshot = object()
+    retained_inventory = api.extract_cmd.InventoryResult(
+        inventory=inventory,
+        statuses={},
+        source_snapshot=source_snapshot,
+    )
+    extract_result = api.extract_cmd.ExtractPayloadResult(
+        payload={
+            "inventory": inventory,
+            "entrypoints": [],
+            "data_flows": [],
+        },
+        inventory_count=1,
+        docker_count=0,
+        inventory_result=retained_inventory,
+    )
+    surface_payload = {"schema_version": "surface-fixture", "pages": []}
+    surface_evaluation = types.SimpleNamespace(payload=surface_payload)
+    knowledge_view = object()
+    machine_verification = {}
+    query_surface = {"schema_version": "query-surface", "pages": []}
+    dependency_analysis = {"graph": {"nodes": [], "edges": []}}
+    call_edges = []
+    built_service = object()
+    calls = {
+        "extract": 0,
+        "surface": 0,
+        "view": 0,
+        "query_surface": 0,
+        "dependencies": 0,
+        "service": 0,
+    }
+
+    def fake_extract(src_dir, **kwargs):
+        calls["extract"] += 1
+        assert src_dir == str(tmp_project.resolve())
+        assert kwargs == {
+            "deep": True,
+            "allow_external_src": True,
+            "read_only": True,
+        }
+        return extract_result
+
+    def fake_surface(wiki_root, selected_inventory, **kwargs):
+        calls["surface"] += 1
+        assert wiki_root == wiki.resolve()
+        assert selected_inventory is inventory
+        assert kwargs == {
+            "src_dir": tmp_project.resolve(),
+            "entry_points": [],
+        }
+        return surface_evaluation
+
+    def fake_view(wiki_root, evaluation, selected_inventory, inventory_result):
+        calls["view"] += 1
+        assert wiki_root == wiki.resolve()
+        assert evaluation is surface_evaluation
+        assert selected_inventory is inventory
+        assert inventory_result is retained_inventory
+        return knowledge_view
+
+    def fake_query_surface(payload, view):
+        calls["query_surface"] += 1
+        assert payload is surface_payload
+        assert view is knowledge_view
+        return query_surface
+
+    def fake_dependencies(
+        selected_inventory,
+        src_root,
+        *,
+        source_snapshot,
+    ):
+        calls["dependencies"] += 1
+        assert selected_inventory is inventory
+        assert src_root == str(tmp_project.resolve())
+        assert source_snapshot is retained_inventory.source_snapshot
+        return dependency_analysis
+
+    def fake_service(selected_inventory, **kwargs):
+        calls["service"] += 1
+        assert selected_inventory is inventory
+        assert kwargs["call_edges"] is call_edges
+        assert kwargs["flows"] == []
+        assert kwargs["data_flows"] == []
+        assert kwargs["dependency_analysis"] is dependency_analysis
+        assert kwargs["surface_index"] is query_surface
+        assert kwargs["knowledge_view"] is knowledge_view
+        assert kwargs["machine_verification"] == machine_verification
+        assert kwargs["limit"] == 7
+        return built_service
+
+    monkeypatch.setattr(
+        api.extract_cmd,
+        "build_extract_payload",
+        fake_extract,
+    )
+    monkeypatch.setattr(
+        api.extract_cmd,
+        "resolve_call_edges",
+        lambda selected_inventory: (
+            call_edges
+            if selected_inventory is inventory
+            else pytest.fail("builder replaced the retained inventory")
+        ),
+    )
+    monkeypatch.setattr(api, "evaluate_surface_index", fake_surface)
+    monkeypatch.setattr(
+        api.context_cmd,
+        "_build_context_knowledge_view",
+        fake_view,
+    )
+    monkeypatch.setattr(
+        api.context_cmd,
+        "_context_query_surface",
+        fake_query_surface,
+    )
+    monkeypatch.setattr(api, "analyze_dependencies", fake_dependencies)
+    monkeypatch.setattr(api, "DocumentationGraphQueryService", fake_service)
+
+    result = build_documentation_query_service(
+        ".",
+        wiki_dir="docs/llm_wiki",
+        limit=7,
+        read_only=True,
+    )
+
+    assert result is built_service
+    assert calls == {
+        "extract": 1,
+        "surface": 1,
+        "view": 1,
+        "query_surface": 1,
+        "dependencies": 1,
+        "service": 1,
+    }
+
+
+def test_query_service_builder_exposes_committed_knowledge_end_to_end(
+    tmp_path,
+    monkeypatch,
+):
+    fixture = one_module_two_entities_fixture()
+    tree = materialize_fixture_tree(
+        fixture,
+        tmp_path / "checkout",
+        consumer="api",
+    )
+    commit_knowledge_artifacts(
+        _knowledge_commit_plan(tree["wiki_root"], fixture)
+    )
+    monkeypatch.chdir(tree["root"])
+
+    service = build_documentation_query_service(
+        ".",
+        wiki_dir="docs/llm_wiki",
+    )
+    result = api.get_concept(
+        "llm-wiki://entities/User",
+        service=service,
+    )
+
+    assert result["knowledge"] == {
+        "availability": "ready",
+        "reason": "all-projection-commitments-match",
+        "freshness": "evaluated (6 concepts)",
+        "freshness_evaluated": True,
+    }
+    assert result["found"] is True
+    assert result["concept"]["locator"] == "llm-wiki://entities/User"
+    assert result["concept"]["freshness"]["state"] == "current"
+
+
+def test_governed_api_and_mcp_concept_summaries_have_bounded_parity(
+    tmp_path,
+    monkeypatch,
+):
+    fixture = one_module_two_entities_fixture()
+    tree = materialize_fixture_tree(
+        fixture,
+        tmp_path / "checkout",
+        consumer="api",
+    )
+    base_plan = _knowledge_commit_plan(tree["wiki_root"], fixture)
+    knowledge = parse_knowledge_index(
+        json.loads(base_plan.knowledge_index.content)
+    )
+    ledger = reconcile_concepts(
+        GovernanceLedger.empty("kb_consumer-parity"),
+        concept_references_from_knowledge(knowledge),
+    )
+    user_uid = next(
+        uid
+        for uid, allocation in ledger.concepts.items()
+        if allocation.locator == "llm-wiki://entities/User"
+    )
+    successor_uid = next(
+        uid
+        for uid, allocation in ledger.concepts.items()
+        if allocation.locator == "llm-wiki://entities/AccountService"
+    )
+    ledger = add_alias(
+        ledger,
+        user_uid,
+        ALIAS_LOCATOR,
+        "llm-wiki://entities/LegacyUser",
+    )
+    ledger = add_alias(
+        ledger,
+        user_uid,
+        ALIAS_NATURAL_KEY,
+        "code-entity:entities/LegacyUser.md",
+    )
+    reviewer = GovernanceActor("human", "reviewer.example")
+    ledger = set_lifecycle(
+        ledger,
+        user_uid,
+        "active",
+        actor=reviewer,
+        authored_at="2026-07-27T10:00:00Z",
+    )
+    ledger = set_lifecycle(
+        ledger,
+        user_uid,
+        "superseded",
+        successor_uid=successor_uid,
+        actor=reviewer,
+        authored_at="2026-07-27T11:00:00Z",
+    )
+    user = next(
+        concept
+        for concept in knowledge.concepts
+        if concept.locator == "llm-wiki://entities/User"
+    )
+    review_evidence = current_review_evidence(user)
+    assert review_evidence is not None
+    for version, authored_at in (
+        ("1", "2026-07-27T11:30:00Z"),
+        ("2", "2026-07-27T11:40:00Z"),
+    ):
+        ledger = add_review_event(
+            ledger,
+            user_uid,
+            section_locator=(
+                "llm-wiki://entities/User#section/User~1/Review~1"
+            ),
+            scope_hash=fixture_hash("consumer-review"),
+            evidence=review_evidence,
+            reviewer=reviewer,
+            method="manual-review",
+            method_version=version,
+            authored_at=authored_at,
+        )
+
+    projected = apply_governance_projection(
+        knowledge,
+        ledger,
+        event_limit=1,
+    )
+    save_governance(
+        tree["wiki_root"],
+        ledger,
+        expected_hash=None,
+    )
+    commit_knowledge_artifacts(
+        build_knowledge_commit_plan(
+            tree["wiki_root"],
+            surface_index_bytes=fixture.surface_bytes,
+            knowledge_index_bytes=serialize_knowledge_index(
+                projected
+            ).encode("utf-8"),
+            manifest=base_plan.committed_manifest,
+        )
+    )
+    monkeypatch.chdir(tree["root"])
+    mcp = mcp_server.McpWikiService(
+        src_dir=".",
+        wiki_dir="docs/llm_wiki",
+    )
+
+    coordinates = (
+        user_uid,
+        "llm-wiki://entities/LegacyUser",
+        "code-entity:entities/LegacyUser.md",
+        "llm-wiki://entities/User",
+    )
+    concepts = []
+    for coordinate in coordinates:
+        api_result = api.get_concept(
+            coordinate,
+            src_dir=".",
+            wiki_dir="docs/llm_wiki",
+            limit=1,
+        )
+        mcp_result = mcp.get_concept(coordinate, limit=1)
+
+        assert api_result == mcp_result
+        assert api_result["found"] is True
+        concepts.append(api_result["concept"])
+
+    assert all(concept == concepts[0] for concept in concepts)
+    concept = concepts[0]
+    assert concept["uid"] == user_uid
+    assert concept["lifecycle"] == "superseded"
+    assert concept["successor_uid"] == successor_uid
+    assert concept["aliases"] == [
+        {
+            "type": "locator",
+            "value": "llm-wiki://entities/LegacyUser",
+        }
+    ]
+    assert concept["alias_coverage"] == {
+        "total": 2,
+        "returned": 1,
+        "truncated": True,
+    }
+    assert concept["lifecycle_events"] == {
+        "items": [
+            {
+                "event_id": concept["lifecycle_events"]["items"][0][
+                    "event_id"
+                ],
+                "from": "active",
+                "to": "superseded",
+                "actor": {"kind": "human", "id": "reviewer.example"},
+                "authored_at": "2026-07-27T11:00:00Z",
+                "reason": "explicit-lifecycle-change",
+                "successor_uid": successor_uid,
+            }
+        ],
+        "total": 2,
+        "returned": 1,
+        "limit": 1,
+        "truncated": True,
+    }
+    assert concept["reviews"] == {
+        "items": [
+            {
+                "event_id": concept["reviews"]["items"][0]["event_id"],
+                "section_locator": (
+                    "llm-wiki://entities/User#section/User~1/Review~1"
+                ),
+                "state": "expired",
+                "reasons": ["section-missing"],
+                "reviewer": {"kind": "human", "id": "reviewer.example"},
+                "method": {"id": "manual-review", "version": "2"},
+                "authored_at": "2026-07-27T11:40:00Z",
+            }
+        ],
+        "total": 2,
+        "returned": 1,
+        "limit": 1,
+        "truncated": True,
+    }
+
+
+def test_api_exposes_machine_receipt_as_separate_read_only_dimension(
+    tmp_path,
+    monkeypatch,
+):
+    fixture = one_module_two_entities_fixture()
+    tree = materialize_fixture_tree(
+        fixture,
+        tmp_path / "checkout",
+        consumer="api",
+    )
+    commit_knowledge_artifacts(
+        _knowledge_commit_plan(tree["wiki_root"], fixture)
+    )
+    loaded = load_knowledge_state(tree["wiki_root"])
+    assert loaded.knowledge is not None
+    assert loaded.manifest_basis is not None
+    assert loaded.manifest_basis.artifact_hashes is not None
+    hashes = loaded.manifest_basis.artifact_hashes
+    context = build_artifact_verification_context(
+        loaded.knowledge,
+        knowledge_hash=hashes.knowledge_index_hash,
+        surface_index_hash=hashes.surface_index_hash,
+        evaluated_envelope_hash=hashes.evaluated_envelope_hash,
+        governance_hash=hashes.governance_hash,
+    )
+    verify_and_write_receipt(
+        tree["wiki_root"],
+        context,
+        [ARTIFACT_INTEGRITY_CHECKER_ID],
+    )
+    monkeypatch.chdir(tree["root"])
+
+    service = api.build_documentation_query_service(
+        src_dir=".",
+        wiki_dir="docs/llm_wiki",
+    )
+    assert service.knowledge_view is not None
+    assert (
+        service.knowledge_view.machine_verification.availability.value
+        == "recorded"
+    )
+
+    result = api.get_concept(
+        "llm-wiki://entities/User",
+        service=service,
+    )
+
+    assert result["concept"]["verification"] == "untracked"
+    assert result["concept"]["machine_verification"] == {
+        "availability": "recorded",
+        "scope_uid": "bundle:locator-only",
+        "valid": True,
+        "invalidation_reasons": [],
+        "recorded_result": "passed",
+        "passed": True,
+        "checks": {
+            "artifact-integrity": {
+                "version": "1",
+                "result": "passed",
+                "diagnostics": [],
+                "diagnostic_coverage": {
+                    "observed": 0,
+                    "emitted": 0,
+                    "omitted": 0,
+                    "limit": 50,
+                    "truncated": False,
+                },
+            }
+        },
+    }
+
+
+def test_query_service_builder_uses_snapshot_only_on_live_option_failure(
+    tmp_path,
+    monkeypatch,
+):
+    fixture = one_module_two_entities_fixture()
+    tree = materialize_fixture_tree(
+        fixture,
+        tmp_path / "checkout",
+        consumer="api",
+    )
+    commit_knowledge_artifacts(
+        _knowledge_commit_plan(tree["wiki_root"], fixture)
+    )
+    monkeypatch.chdir(tree["root"])
+
+    def fail_live_options(**_kwargs):
+        raise ValueError("invalid runtime generation policy")
+
+    monkeypatch.setattr(
+        api.context_cmd,
+        "runtime_generation_options",
+        fail_live_options,
+    )
+
+    result = api.get_concept(
+        "llm-wiki://entities/User",
+        src_dir=".",
+        wiki_dir="docs/llm_wiki",
+    )
+
+    assert result["knowledge"] == {
+        "availability": "ready",
+        "reason": "all-projection-commitments-match",
+        "freshness": "unevaluated (snapshot-only read)",
+        "freshness_evaluated": False,
+    }
+    assert result["concept"]["freshness"] == {
+        "state": None,
+        "reason": "not-evaluated",
+        "live_comparison_performed": False,
+    }
+
+
 def test_graph_query_service_and_wrappers_return_documentation_answers(tmp_project):
     _write_query_project(tmp_project)
     _write_api_wiki(tmp_project)
@@ -581,6 +1750,15 @@ def test_graph_query_service_and_wrappers_return_documentation_answers(tmp_proje
         "flows/api-run.md",
         "modules/api.md",
     }
+    concept = api.get_concept("llm-wiki://modules/api", service=service)
+    assert concept["knowledge"] == {
+        "availability": "absent",
+        "reason": "knowledge-projection-not-present",
+        "freshness": "unevaluated (snapshot-only read)",
+        "freshness_evaluated": False,
+    }
+    assert concept["found"] is False
+    assert concept["concept"] is None
 
 
 def test_api_wrappers_map_path_and_query_errors(tmp_project):
@@ -590,3 +1768,301 @@ def test_api_wrappers_map_path_and_query_errors(tmp_project):
     service = build_documentation_query_service(".", wiki_dir="docs/llm_wiki")
     with pytest.raises(LlmWikiApiError, match="symbol must be a non-empty string"):
         callers("", service=service)
+
+
+class _RecordingKnowledgeService:
+    def __init__(self):
+        self.calls = []
+        self.concept_result = {"operation": "get_concept"}
+        self.sections_result = {"operation": "list_concept_sections"}
+        self.related_result = {"operation": "related_concepts"}
+        self.evidence_result = {"operation": "explain_evidence"}
+
+    def get_concept(self, locator_or_exact_route):
+        self.calls.append(("get_concept", locator_or_exact_route))
+        return self.concept_result
+
+    def list_concept_sections(
+        self,
+        locator_or_exact_route,
+        *,
+        ownership=None,
+    ):
+        self.calls.append(
+            ("list_concept_sections", locator_or_exact_route, ownership)
+        )
+        return self.sections_result
+
+    def related_concepts(
+        self,
+        locator_or_exact_route,
+        *,
+        direction="both",
+        kinds=None,
+    ):
+        self.calls.append(
+            (
+                "related_concepts",
+                locator_or_exact_route,
+                direction,
+                kinds,
+            )
+        )
+        return self.related_result
+
+    def explain_evidence(self, locator_or_exact_route):
+        self.calls.append(("explain_evidence", locator_or_exact_route))
+        return self.evidence_result
+
+
+def test_knowledge_wrappers_reuse_supplied_service_without_building_or_extracting(
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        api,
+        "build_documentation_query_service",
+        fail_if_extraction_runs,
+    )
+    monkeypatch.setattr(
+        api.extract_cmd,
+        "build_extract_payload",
+        fail_if_extraction_runs,
+    )
+    monkeypatch.setattr(
+        api,
+        "evaluate_surface_index",
+        fail_if_extraction_runs,
+    )
+    monkeypatch.setattr(
+        api.context_cmd,
+        "_build_context_knowledge_view",
+        fail_if_extraction_runs,
+    )
+    service = _RecordingKnowledgeService()
+    common = {
+        "service": service,
+        "src_dir": "../unused-source",
+        "wiki_dir": "../unused-wiki",
+        "limit": 0,
+        "allow_external_src": False,
+        "read_only": True,
+    }
+
+    concept = api.get_concept("llm-wiki://entities/User", **common)
+    sections = api.list_concept_sections(
+        "llm-wiki://entities/User",
+        ownership="semantic",
+        **common,
+    )
+    related = api.related_concepts(
+        "entities/User.md",
+        direction="outbound",
+        kinds=["links_to"],
+        **common,
+    )
+    evidence = api.explain_evidence("llm-wiki://entities/User", **common)
+
+    assert concept is service.concept_result
+    assert sections is service.sections_result
+    assert related is service.related_result
+    assert evidence is service.evidence_result
+    assert service.calls == [
+        ("get_concept", "llm-wiki://entities/User"),
+        (
+            "list_concept_sections",
+            "llm-wiki://entities/User",
+            "semantic",
+        ),
+        (
+            "related_concepts",
+            "entities/User.md",
+            "outbound",
+            ["links_to"],
+        ),
+        ("explain_evidence", "llm-wiki://entities/User"),
+    ]
+
+
+def test_section_query_python_api_and_mcp_results_are_identical(monkeypatch):
+    query_service = api.DocumentationGraphQueryService({})
+    monkeypatch.setattr(
+        mcp_server,
+        "build_documentation_query_service",
+        lambda *_args, **_kwargs: query_service,
+    )
+
+    python_result = api.list_concept_sections(
+        "llm-wiki://entities/User",
+        ownership="unknown",
+        service=query_service,
+    )
+    mcp_result = mcp_server.McpWikiService().list_concept_sections(
+        "llm-wiki://entities/User",
+        ownership="unknown",
+    )
+
+    assert mcp_result == python_result
+
+
+class _FailingKnowledgeService:
+    @staticmethod
+    def _fail():
+        raise api.DocumentationQueryError("knowledge query failed")
+
+    def get_concept(self, _locator_or_exact_route):
+        self._fail()
+
+    def list_concept_sections(
+        self,
+        _locator_or_exact_route,
+        *,
+        ownership=None,
+    ):
+        del ownership
+        self._fail()
+
+    def related_concepts(
+        self,
+        _locator_or_exact_route,
+        *,
+        direction="both",
+        kinds=None,
+    ):
+        del direction, kinds
+        self._fail()
+
+    def explain_evidence(self, _locator_or_exact_route):
+        self._fail()
+
+
+@pytest.mark.parametrize(
+    ("function_name", "kwargs"),
+    [
+        ("get_concept", {}),
+        ("list_concept_sections", {"ownership": "semantic"}),
+        (
+            "related_concepts",
+            {"direction": "outbound", "kinds": ["derived_from"]},
+        ),
+        ("explain_evidence", {}),
+    ],
+)
+def test_knowledge_wrappers_map_query_errors_without_building_service(
+    monkeypatch,
+    function_name,
+    kwargs,
+):
+    monkeypatch.setattr(
+        api,
+        "build_documentation_query_service",
+        fail_if_extraction_runs,
+    )
+    service = _FailingKnowledgeService()
+
+    with pytest.raises(
+        LlmWikiApiError,
+        match="knowledge query failed",
+    ) as exc_info:
+        getattr(api, function_name)(
+            "llm-wiki://entities/User",
+            service=service,
+            **kwargs,
+        )
+
+    assert isinstance(exc_info.value.__cause__, api.DocumentationQueryError)
+
+
+@pytest.mark.parametrize(
+    ("load_result", "availability", "reason"),
+    [
+        (
+            KnowledgeLoadResult(
+                status=KnowledgeLoadState.ABSENT,
+                surface={},
+                knowledge=None,
+                manifest_basis=None,
+            ),
+            "absent",
+            "knowledge-projection-not-present",
+        ),
+        (
+            KnowledgeLoadResult(
+                status=KnowledgeLoadState.DEGRADED,
+                surface={},
+                knowledge=None,
+                manifest_basis=None,
+                underlying_status=KnowledgeLoadState.INVALID,
+            ),
+            "degraded",
+            "policy-selected-surface-only-fallback-after-invalid",
+        ),
+    ],
+)
+def test_knowledge_wrappers_preserve_structured_non_ready_state_without_extraction(
+    monkeypatch,
+    load_result,
+    availability,
+    reason,
+):
+    view = build_knowledge_read_view(load_result)
+    service = api.DocumentationGraphQueryService(
+        {},
+        knowledge_view=view,
+    )
+    monkeypatch.setattr(
+        api,
+        "build_documentation_query_service",
+        fail_if_extraction_runs,
+    )
+    monkeypatch.setattr(
+        api.extract_cmd,
+        "build_extract_payload",
+        fail_if_extraction_runs,
+    )
+
+    concept = api.get_concept(
+        "llm-wiki://entities/User",
+        service=service,
+    )
+    sections = api.list_concept_sections(
+        "llm-wiki://entities/User",
+        ownership="semantic",
+        service=service,
+    )
+    related = api.related_concepts(
+        "llm-wiki://entities/User",
+        direction="outbound",
+        kinds=["links_to"],
+        service=service,
+    )
+    evidence = api.explain_evidence(
+        "llm-wiki://entities/User",
+        service=service,
+    )
+
+    status = {
+        "availability": availability,
+        "reason": reason,
+        "freshness": "unevaluated (snapshot-only read)",
+        "freshness_evaluated": False,
+    }
+    assert concept["knowledge"] == status
+    assert concept["found"] is False
+    assert concept["concept"] is None
+    assert sections["knowledge"] == status
+    assert sections["found"] is False
+    assert sections["section_ownership"] == {
+        "availability": availability,
+        "reason": reason,
+        "schema_version": None,
+    }
+    assert sections["ownership"] == "semantic"
+    assert sections["sections"] == []
+    assert related["knowledge"] == status
+    assert related["found"] is False
+    assert related["direction"] == "outbound"
+    assert related["kinds"] == ["links_to"]
+    assert related["relationships"] == []
+    assert evidence["knowledge"] == status
+    assert evidence["found"] is False
+    assert evidence["evidence"] is None

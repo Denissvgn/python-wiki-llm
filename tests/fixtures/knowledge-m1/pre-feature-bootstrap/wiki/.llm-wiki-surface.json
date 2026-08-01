@@ -1,0 +1,118 @@
+{
+  "assets": {
+    "by_page": {},
+    "referenced": [],
+    "unreferenced": []
+  },
+  "counts": {
+    "assets": {
+      "by_media_type": {
+        "image": 0,
+        "other": 0,
+        "video": 0
+      },
+      "referenced": 0,
+      "total": 0,
+      "unreferenced": 0
+    },
+    "by_kind": {
+      "api-contracts": 0,
+      "dependencies": 1,
+      "entities": 1,
+      "flows": 0,
+      "guides": 0,
+      "index": 1,
+      "infrastructure": 0,
+      "load-order": 1,
+      "log": 1,
+      "modules": 1,
+      "workflows": 0
+    },
+    "dependency_architecture": 2,
+    "total": 6
+  },
+  "dependency_pages": {
+    "count": 2,
+    "dependencies": true,
+    "load_order": true
+  },
+  "flows": [],
+  "pages": [
+    {
+      "canonical_path": "index.md",
+      "id": "index",
+      "kind": "index",
+      "mcp_uri": "llm-wiki://index",
+      "outgoing_internal_links": [
+        "dependencies.md",
+        "entities/User.md",
+        "load-order.md",
+        "log.md",
+        "modules/models.md"
+      ],
+      "role": "mixed",
+      "source_path": null,
+      "title": "LLM Wiki Index"
+    },
+    {
+      "canonical_path": "log.md",
+      "id": "log",
+      "kind": "log",
+      "mcp_uri": "llm-wiki://log",
+      "outgoing_internal_links": [],
+      "role": "generated",
+      "source_path": null,
+      "title": "Architectural Log"
+    },
+    {
+      "canonical_path": "entities/User.md",
+      "id": "User",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/User",
+      "outgoing_internal_links": [
+        "modules/models.md"
+      ],
+      "role": "semantic",
+      "source_path": "models.py",
+      "title": "User"
+    },
+    {
+      "canonical_path": "modules/models.md",
+      "id": "models",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/models",
+      "outgoing_internal_links": [
+        "entities/User.md"
+      ],
+      "role": "semantic",
+      "source_path": "models.py",
+      "title": "models Module"
+    },
+    {
+      "canonical_path": "dependencies.md",
+      "id": "dependencies",
+      "kind": "dependencies",
+      "mcp_uri": "llm-wiki://dependencies",
+      "outgoing_internal_links": [
+        "modules/models.md"
+      ],
+      "role": "mixed",
+      "source_path": null,
+      "title": "Dependencies"
+    },
+    {
+      "canonical_path": "load-order.md",
+      "id": "load-order",
+      "kind": "load-order",
+      "mcp_uri": "llm-wiki://load-order",
+      "outgoing_internal_links": [
+        "modules/models.md"
+      ],
+      "role": "mixed",
+      "source_path": null,
+      "title": "Load order"
+    }
+  ],
+  "schema_version": "llm-wiki-surface-index/v1",
+  "source_hash": "sha256:10f25cbb585f9ba113262b3b1749f05dd4323a04ccb0e0ce21bcddeaa325014a"
+}

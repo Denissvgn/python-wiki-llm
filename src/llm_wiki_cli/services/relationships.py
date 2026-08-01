@@ -12,8 +12,10 @@ from pathlib import PurePosixPath
 from typing import Iterable, Mapping, Optional
 
 from .imports import build_module_path_resolver
+from .validation import positive_int_or_none
 
 _RELATION_LIMIT = 12
+_RELATIONSHIP_SUMMARIES_SCHEMA = "llm-wiki-relationship-summaries/v1"
 
 
 def _sort_key(value: object) -> tuple[str, str]:
@@ -42,8 +44,11 @@ def _endpoint_ref(endpoint: Mapping, edge: Mapping) -> dict:
     }
 
 
-def _bounded(records: Iterable[dict]) -> list[dict]:
-    return list(records)[:_RELATION_LIMIT]
+def _bounded(
+    records: Iterable[dict], limit: int | None = _RELATION_LIMIT
+) -> list[dict]:
+    values = list(records)
+    return values if limit is None else values[:limit]
 
 
 def _record_sort_key(record: Mapping) -> tuple:
@@ -66,13 +71,15 @@ def _record_sort_key(record: Mapping) -> tuple:
     return tuple(parts)
 
 
-def _dedupe_sorted(records: Iterable[dict]) -> list[dict]:
+def _dedupe_sorted(
+    records: Iterable[dict], limit: int | None = _RELATION_LIMIT
+) -> list[dict]:
     unique = {}
     for record in records:
         key = tuple(sorted(record.items()))
         unique[key] = dict(record)
     ordered = sorted(unique, key=lambda item: _record_sort_key(unique[item]))
-    return _bounded(unique[key] for key in ordered)
+    return _bounded((unique[key] for key in ordered), limit)
 
 
 def _iter_class_records(inventory: Mapping) -> Iterable[tuple[str, str, Mapping]]:
@@ -158,6 +165,7 @@ def _resolved_bases(
     inventory: Mapping,
     by_key: Mapping[tuple[str, str], Mapping],
     by_name: Mapping[str, list[tuple[str, str]]],
+    relation_limit: int | None = _RELATION_LIMIT,
 ) -> dict[tuple[str, str], list[dict]]:
     resolver = build_module_path_resolver(dict(inventory))
     imported_cache = {}
@@ -181,12 +189,13 @@ def _resolved_bases(
                 resolved.append(_class_ref(raw_text, None))
             else:
                 resolved.append(_class_ref(key[1], key[0]))
-        bases[(filepath, name)] = _dedupe_sorted(resolved)
+        bases[(filepath, name)] = _dedupe_sorted(resolved, relation_limit)
     return bases
 
 
 def _subclasses_by_base(
     bases_by_class: Mapping[tuple[str, str], list[dict]],
+    relation_limit: int | None = _RELATION_LIMIT,
 ) -> dict[tuple[str, str], list[dict]]:
     subclasses = defaultdict(list)
     for (filepath, name), bases in bases_by_class.items():
@@ -194,7 +203,10 @@ def _subclasses_by_base(
         for base in bases:
             if base.get("file"):
                 subclasses[(base["file"], base["name"])].append(child)
-    return {key: _dedupe_sorted(value) for key, value in subclasses.items()}
+    return {
+        key: _dedupe_sorted(value, relation_limit)
+        for key, value in subclasses.items()
+    }
 
 
 def _iter_callable_records(inventory: Mapping) -> Iterable[tuple[str, str, dict]]:
@@ -363,16 +375,24 @@ def _import_reference_records(
     return references
 
 
-def _merge_reference_maps(*maps: Mapping[tuple[str, str], list[dict]]) -> dict:
+def _merge_reference_maps(
+    *maps: Mapping[tuple[str, str], list[dict]],
+    relation_limit: int | None = _RELATION_LIMIT,
+) -> dict:
     merged = defaultdict(list)
     for reference_map in maps:
         for key, records in reference_map.items():
             merged[key].extend(records)
-    return {key: _dedupe_sorted(records) for key, records in merged.items()}
+    return {
+        key: _dedupe_sorted(records, relation_limit)
+        for key, records in merged.items()
+    }
 
 
 def _function_links(
-    call_edges: Iterable[Mapping], callables: Mapping[tuple[str, str], dict]
+    call_edges: Iterable[Mapping],
+    callables: Mapping[tuple[str, str], dict],
+    relation_limit: int | None = _RELATION_LIMIT,
 ) -> tuple[dict, dict]:
     callers = defaultdict(list)
     callees = defaultdict(list)
@@ -386,8 +406,14 @@ def _function_links(
         if target_key in callables:
             callers[target_key].append(_endpoint_ref(source, edge))
     return (
-        {key: _dedupe_sorted(value) for key, value in callers.items()},
-        {key: _dedupe_sorted(value) for key, value in callees.items()},
+        {
+            key: _dedupe_sorted(value, relation_limit)
+            for key, value in callers.items()
+        },
+        {
+            key: _dedupe_sorted(value, relation_limit)
+            for key, value in callees.items()
+        },
     )
 
 
@@ -407,7 +433,9 @@ def _flow_label(flow: Mapping) -> str:
 
 
 def _flow_memberships(
-    flows: Iterable[Mapping], callables: Mapping[tuple[str, str], dict]
+    flows: Iterable[Mapping],
+    callables: Mapping[tuple[str, str], dict],
+    relation_limit: int | None = _RELATION_LIMIT,
 ) -> dict[tuple[str, str], list[dict]]:
     memberships = defaultdict(list)
     for flow in flows or []:
@@ -429,7 +457,10 @@ def _flow_memberships(
                     "depth": step.get("depth", 0),
                 }
             )
-    return {key: _dedupe_sorted(value) for key, value in memberships.items()}
+    return {
+        key: _dedupe_sorted(value, relation_limit)
+        for key, value in memberships.items()
+    }
 
 
 def _class_summary(
@@ -439,6 +470,7 @@ def _class_summary(
     bases_by_class: Mapping[tuple[str, str], list[dict]],
     subclasses_by_class: Mapping[tuple[str, str], list[dict]],
     references_by_class: Mapping[tuple[str, str], list[dict]],
+    relation_limit: int | None = _RELATION_LIMIT,
 ) -> dict:
     key = (filepath, name)
     attributes = sorted(
@@ -456,7 +488,11 @@ def _class_summary(
         "bases": bases_by_class.get(key, []),
         "subclasses": subclasses_by_class.get(key, []),
         "methods_count": len(cls.get("methods", []) or []),
-        "attributes": list(attributes)[:_RELATION_LIMIT],
+        "attributes": (
+            list(attributes)
+            if relation_limit is None
+            else list(attributes)[:relation_limit]
+        ),
         "references": references_by_class.get(key, []),
     }
     if cls.get("kind"):
@@ -486,36 +522,43 @@ def _function_summary(
     }
 
 
-def build_entity_relationship_summaries(
+def _build_entity_relationship_summaries(
     inventory: Mapping,
     call_edges: Optional[Iterable[Mapping]] = None,
     flows: Optional[Iterable[Mapping]] = None,
+    *,
+    relation_limit: int | None,
 ) -> dict:
-    """Build bounded class and callable relationship summaries.
-
-    ``inventory`` is the existing deep or shallow extractor inventory. Optional
-    ``call_edges`` should use the shape returned by
-    ``extract_cmd.resolve_call_edges``; optional ``flows`` should use the shape
-    returned by ``entrypoints.build_flow``. Missing optional metadata simply
-    yields empty relationship lists.
-    """
     inventory = inventory or {}
     edges = list(call_edges or [])
     flow_list = list(flows or [])
 
     classes_by_key, classes_by_name = _build_class_index(inventory)
-    bases_by_class = _resolved_bases(inventory, classes_by_key, classes_by_name)
-    subclasses = _subclasses_by_base(bases_by_class)
+    bases_by_class = _resolved_bases(
+        inventory,
+        classes_by_key,
+        classes_by_name,
+        relation_limit,
+    )
+    subclasses = _subclasses_by_base(bases_by_class, relation_limit)
     callables = _callable_index(inventory)
     type_references = _type_reference_records(inventory, classes_by_key, callables)
     call_references = _class_call_references(edges, classes_by_key)
-    specific_references = _merge_reference_maps(type_references, call_references)
+    specific_references = _merge_reference_maps(
+        type_references,
+        call_references,
+        relation_limit=relation_limit,
+    )
     import_references = _import_reference_records(
         inventory, classes_by_key, specific_references
     )
-    class_references = _merge_reference_maps(specific_references, import_references)
-    callers, callees = _function_links(edges, callables)
-    entrypoints = _flow_memberships(flow_list, callables)
+    class_references = _merge_reference_maps(
+        specific_references,
+        import_references,
+        relation_limit=relation_limit,
+    )
+    callers, callees = _function_links(edges, callables, relation_limit)
+    entrypoints = _flow_memberships(flow_list, callables, relation_limit)
 
     class_summaries = [
         _class_summary(
@@ -525,6 +568,7 @@ def build_entity_relationship_summaries(
             bases_by_class,
             subclasses,
             class_references,
+            relation_limit,
         )
         for (filepath, name), cls in sorted(
             classes_by_key.items(),
@@ -539,3 +583,142 @@ def build_entity_relationship_summaries(
         )
     ]
     return {"classes": class_summaries, "functions": function_summaries}
+
+
+def _detail_line(value: object) -> int | None:
+    return positive_int_or_none(value)
+
+
+def _normalize_detailed_record(value: object, *, key: str | None = None) -> object:
+    if key == "line":
+        return _detail_line(value)
+    if isinstance(value, Mapping):
+        return {
+            str(child_key): _normalize_detailed_record(
+                child_value, key=str(child_key)
+            )
+            for child_key, child_value in value.items()
+        }
+    if isinstance(value, list):
+        return [_normalize_detailed_record(item) for item in value]
+    return value
+
+
+def _summary_collection_coverage(observed: int, emitted: int) -> dict:
+    omitted = max(0, observed - emitted)
+    return {
+        "observed": observed,
+        "emitted": emitted,
+        "limit": _RELATION_LIMIT,
+        "truncated": omitted > 0,
+        "omitted": omitted,
+        "limitations": ["presentation-summary-limit"],
+    }
+
+
+def _detailed_summary(summary: Mapping, collection_fields: tuple[str, ...]) -> dict:
+    detailed = dict(summary)
+    coverage = {}
+    for field in collection_fields:
+        values = list(summary.get(field, []) or [])
+        emitted = values[:_RELATION_LIMIT]
+        detailed[field] = _normalize_detailed_record(emitted)
+        coverage[field] = _summary_collection_coverage(len(values), len(emitted))
+    detailed["coverage"] = coverage
+    normalized = _normalize_detailed_record(detailed)
+    assert isinstance(normalized, dict)
+    return normalized
+
+
+def _unbounded_summary_coverage(observed: int) -> dict:
+    return {
+        "observed": observed,
+        "emitted": observed,
+        "limit": None,
+        "truncated": False,
+        "omitted": 0,
+        "limitations": [],
+    }
+
+
+def build_detailed_entity_relationship_summaries(
+    inventory: Mapping,
+    call_edges: Optional[Iterable[Mapping]] = None,
+    flows: Optional[Iterable[Mapping]] = None,
+) -> dict:
+    """Build a versioned relationship-summary view with exact omissions."""
+    full = _build_entity_relationship_summaries(
+        inventory,
+        call_edges,
+        flows,
+        relation_limit=None,
+    )
+    classes = [
+        _detailed_summary(
+            summary,
+            ("bases", "subclasses", "attributes", "references"),
+        )
+        for summary in full["classes"]
+    ]
+    functions = [
+        _detailed_summary(summary, ("callers", "callees", "entrypoints"))
+        for summary in full["functions"]
+    ]
+    collection_coverages = [
+        coverage
+        for summary in [*classes, *functions]
+        for coverage in summary["coverage"].values()
+    ]
+    observed = sum(item["observed"] for item in collection_coverages)
+    emitted = sum(item["emitted"] for item in collection_coverages)
+    omitted = sum(item["omitted"] for item in collection_coverages)
+    return {
+        "schema_version": _RELATIONSHIP_SUMMARIES_SCHEMA,
+        "classes": classes,
+        "functions": functions,
+        "coverage": {
+            "classes": _unbounded_summary_coverage(len(classes)),
+            "functions": _unbounded_summary_coverage(len(functions)),
+            "relationships": {
+                "observed": observed,
+                "emitted": emitted,
+                "limit": None,
+                "truncated": omitted > 0,
+                "omitted": omitted,
+                "limitations": [
+                    "limit-applies-per-summary-relationship-collection"
+                ],
+            },
+        },
+    }
+
+
+def build_entity_relationship_summaries(
+    inventory: Mapping,
+    call_edges: Optional[Iterable[Mapping]] = None,
+    flows: Optional[Iterable[Mapping]] = None,
+    *,
+    detailed: bool = False,
+) -> dict:
+    """Build bounded class and callable relationship summaries.
+
+    ``inventory`` is the existing deep or shallow extractor inventory. Optional
+    ``call_edges`` should use the shape returned by
+    ``extract_cmd.resolve_call_edges``; optional ``flows`` should use the shape
+    returned by ``entrypoints.build_flow``. Missing optional metadata simply
+    yields empty relationship lists.  Set ``detailed=True`` for the explicit
+    versioned shape with per-collection totals and omissions; the default
+    result remains the legacy byte/shape-compatible mapping.
+    """
+    if detailed:
+        return build_detailed_entity_relationship_summaries(
+            inventory,
+            call_edges,
+            flows,
+        )
+    return _build_entity_relationship_summaries(
+        inventory,
+        call_edges,
+        flows,
+        relation_limit=_RELATION_LIMIT,
+    )

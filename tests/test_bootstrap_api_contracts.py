@@ -11,6 +11,12 @@ import pytest
 
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import bootstrap_cmd
+from llm_wiki_cli.services import knowledge_orchestration
+from llm_wiki_cli.services.infrastructure_sync import (
+    INFRASTRUCTURE_GENERATION_INPUT_KEY,
+    INFRASTRUCTURE_SYNC_SCHEMA_VERSION,
+)
+from llm_wiki_cli.services.knowledge_envelope import ConsumedInputKind
 
 
 def _args(project: Path, wiki: Path, **overrides):
@@ -101,7 +107,7 @@ def test_bootstrap_api_contracts_is_opt_in_and_links_matching_flow(
     assert "## API contract" in flow
     assert "`POST /api/v1/items`" in flow
     assert "[Production HTTP API inventory](api-contracts.md)" in index
-    assert manifest["version"] == 4
+    assert manifest["version"] == 5
     assert manifest["surfaces"]["flows"] == {
         "enabled": True,
         "categories": None,
@@ -112,7 +118,27 @@ def test_bootstrap_api_contracts_is_opt_in_and_links_matching_flow(
         "exclude_tests": False,
     }
     assert manifest["surfaces"]["api_contracts"] == {"enabled": True}
-    assert manifest["generation_inputs"] == {}
+    generation_inputs = manifest["generation_inputs"]
+    assert generation_inputs[
+        knowledge_orchestration.RUNTIME_GENERATION_INPUT_KEY
+    ] == {
+        "data_flow_enabled": False,
+        "dependency_graph_detail": "auto",
+        "workflows_enabled": False,
+    }
+    assert generation_inputs[INFRASTRUCTURE_GENERATION_INPUT_KEY] == {
+        "schema_version": INFRASTRUCTURE_SYNC_SCHEMA_VERSION,
+        "status": "nothing-discovered",
+        "discovery": {
+            "roots": ["."],
+            "candidate_count": 0,
+            "supported_count": 0,
+            "unsupported_yaml_count": 0,
+            "unsupported_yaml": [],
+        },
+        "sources": {},
+        "tombstones": {},
+    }
 
 
 def test_openapi_implies_full_contract_surface_and_persists_generation_input(
@@ -146,6 +172,19 @@ def test_openapi_implies_full_contract_surface_and_persists_generation_input(
     )
     monkeypatch.chdir(project)
     wiki = project / "wiki"
+    captured_consumed_inputs = ()
+    real_build_plan = knowledge_orchestration.build_knowledge_generation_plan
+
+    def capture_build_plan(inputs):
+        nonlocal captured_consumed_inputs
+        captured_consumed_inputs = tuple(inputs.consumed_inputs)
+        return real_build_plan(inputs)
+
+    monkeypatch.setattr(
+        knowledge_orchestration,
+        "build_knowledge_generation_plan",
+        capture_build_plan,
+    )
 
     bootstrap_cmd.run(
         _args(
@@ -176,9 +215,14 @@ def test_openapi_implies_full_contract_surface_and_persists_generation_input(
     assert openapi_input["path"] == "openapi.json"
     assert openapi_input["format"] == "json"
     assert openapi_input["sha256"].startswith("sha256:")
+    consumed_openapi = next(
+        item for item in captured_consumed_inputs if item.path == "openapi.json"
+    )
+    assert consumed_openapi.kind is ConsumedInputKind.OPENAPI
+    assert consumed_openapi.content_hash == openapi_input["sha256"]
 
 
-def test_bootstrap_overwrite_preserves_contract_notes_and_flow_behavior(
+def test_bootstrap_rejects_overwrite_without_touching_contract_semantics(
     tmp_path, monkeypatch, capsys
 ):
     project = tmp_path / "project"
@@ -206,19 +250,20 @@ def test_bootstrap_overwrite_preserves_contract_notes_and_flow_behavior(
         ),
         encoding="utf-8",
     )
-
-    bootstrap_cmd.run(_args(project, wiki, api_contracts=True, overwrite=True))
+    contract_before = contract_path.read_bytes()
+    flow_before = flow_path.read_bytes()
     capsys.readouterr()
 
-    assert "Runtime contract reviewed by the API team." in contract_path.read_text(
-        encoding="utf-8"
-    )
-    assert "Creates one inventory item." in flow_path.read_text(encoding="utf-8")
+    with pytest.raises(SystemExit) as exc_info:
+        bootstrap_cmd.run(_args(project, wiki, api_contracts=True, overwrite=True))
+
+    assert exc_info.value.code == 2
+    assert contract_path.read_bytes() == contract_before
+    assert flow_path.read_bytes() == flow_before
+    assert "overwrite` option is no longer supported" in capsys.readouterr().out
 
 
-def test_invalid_openapi_fails_before_generated_pages(
-    tmp_path, monkeypatch, capsys
-):
+def test_invalid_openapi_fails_before_generated_pages(tmp_path, monkeypatch, capsys):
     project = tmp_path / "project"
     project.mkdir()
     _write_fastapi_project(project)
@@ -227,9 +272,7 @@ def test_invalid_openapi_fails_before_generated_pages(
     wiki = project / "wiki"
 
     with pytest.raises(SystemExit) as exc_info:
-        bootstrap_cmd.run(
-            _args(project, wiki, openapi_file="openapi.json")
-        )
+        bootstrap_cmd.run(_args(project, wiki, openapi_file="openapi.json"))
 
     assert exc_info.value.code == 2
     assert "Invalid OpenAPI" in capsys.readouterr().out

@@ -1,0 +1,215 @@
+{
+  "budgets": {
+    "calls_query_payload_bytes": {
+      "maximum": 20000,
+      "observed": 4433,
+      "passed": true
+    },
+    "depends_on_query_payload_bytes": {
+      "maximum": 20000,
+      "observed": 5955,
+      "passed": true
+    },
+    "graph_serialized_bytes": {
+      "maximum": 1000000,
+      "observed": 252258,
+      "passed": true
+    },
+    "knowledge_index_serialized_bytes": {
+      "maximum": 2000000,
+      "observed": 490304,
+      "passed": true
+    }
+  },
+  "environment": {
+    "execution": "synthetic deterministic fixture",
+    "filesystem": "temporary fixture directory",
+    "network": "not used",
+    "python": "project-supported Python >=3.10",
+    "serialization": "UTF-8 deterministic JSON",
+    "tool": "agent-wiki-cli 1.5.0"
+  },
+  "fixture": {
+    "call_observations": {
+      "count": 200,
+      "first_line": 1,
+      "last_line": 200,
+      "source_symbol": "AccountService.create",
+      "target_symbol": "User"
+    },
+    "external_dependencies": {
+      "count": 300,
+      "name_pattern": "package-{index:04d}"
+    },
+    "input_order_variants": [
+      "ascending",
+      "reversed"
+    ],
+    "name": "m3-high-fanout-v1",
+    "section_ownership": {
+      "headings": [
+        "User",
+        "Description",
+        "Attributes",
+        "Relationships",
+        "Description",
+        "Custom"
+      ],
+      "page_locator": "llm-wiki://entities/User"
+    },
+    "source_path": "src/accounts.py"
+  },
+  "limits": {
+    "edge_evidence_samples": 3,
+    "query_edges": 7
+  },
+  "measurements": {
+    "analyzer_coverage": [
+      {
+        "analyzer": "calls",
+        "emitted": 200,
+        "limit": null,
+        "limitations": [],
+        "observed": 200,
+        "omitted": 0,
+        "truncated": false
+      },
+      {
+        "analyzer": "concept-map",
+        "emitted": 2,
+        "limit": null,
+        "limitations": [],
+        "observed": 2,
+        "omitted": 0,
+        "truncated": false
+      },
+      {
+        "analyzer": "data-flows",
+        "emitted": 0,
+        "limit": null,
+        "limitations": [],
+        "observed": 0,
+        "omitted": 0,
+        "truncated": false
+      },
+      {
+        "analyzer": "dependencies",
+        "emitted": 0,
+        "limit": null,
+        "limitations": [],
+        "observed": 0,
+        "omitted": 0,
+        "truncated": false
+      },
+      {
+        "analyzer": "entrypoints",
+        "emitted": 0,
+        "limit": null,
+        "limitations": [],
+        "observed": 0,
+        "omitted": 0,
+        "truncated": false
+      },
+      {
+        "analyzer": "external-dependencies",
+        "emitted": 300,
+        "limit": null,
+        "limitations": [],
+        "observed": 300,
+        "omitted": 0,
+        "truncated": false
+      },
+      {
+        "analyzer": "flows",
+        "emitted": 0,
+        "limit": null,
+        "limitations": [],
+        "observed": 0,
+        "omitted": 0,
+        "truncated": false
+      }
+    ],
+    "concepts": 6,
+    "edges": {
+      "by_kind": {
+        "calls": 1,
+        "contains": 2,
+        "depends_on": 300
+      },
+      "total": 303
+    },
+    "evidence": {
+      "by_kind": {
+        "calls": {
+          "edges": 1,
+          "emitted": 3,
+          "observed": 200,
+          "omitted": 197,
+          "unique": 200
+        },
+        "contains": {
+          "edges": 2,
+          "emitted": 2,
+          "observed": 2,
+          "omitted": 0,
+          "unique": 2
+        },
+        "depends_on": {
+          "edges": 300,
+          "emitted": 300,
+          "observed": 300,
+          "omitted": 0,
+          "unique": 300
+        }
+      },
+      "emitted": 305,
+      "observed": 502,
+      "omitted": 197,
+      "unique": 502
+    },
+    "graph": {
+      "serialized_bytes": 252258,
+      "sha256": "sha256:5690eb071a4fd8b50e7c195c44e930b862c9905c1dd148182013f7433f35648b"
+    },
+    "knowledge_index": {
+      "serialized_bytes": 490304,
+      "sha256": "sha256:aa8f358ae44d96d6254c8d6f32ad564af3dbf4d5685f5b4c8b31ef988118aff7"
+    },
+    "queries": {
+      "calls_with_evidence": {
+        "bounds": {
+          "returned": 1,
+          "total": 1,
+          "truncated": false
+        },
+        "include_evidence": true,
+        "serialized_bytes": 4433,
+        "sha256": "sha256:70e9930bf6d8d6292c89f2a992190f5e2f61b203e902102d4ba215407cb02437"
+      },
+      "depends_on": {
+        "bounds": {
+          "returned": 7,
+          "total": 300,
+          "truncated": true
+        },
+        "include_evidence": false,
+        "serialized_bytes": 5955,
+        "sha256": "sha256:f69d9cf68faf8a873669c7afdfad891e1e2623b236ec0c7b6393994c0d39b2a4"
+      }
+    },
+    "sections": {
+      "by_ownership": {
+        "generated": 1,
+        "mixed": 1,
+        "semantic": 1,
+        "unknown": 3
+      },
+      "pages": 1,
+      "total": 6
+    }
+  },
+  "record_kind": "internal-scale-gate",
+  "reproduce": ".venv/bin/python -m tests.knowledge_m3_scale_gate",
+  "result": "pass",
+  "schema_version": "llm-wiki-m3-scale-gate/v1"
+}

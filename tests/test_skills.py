@@ -109,7 +109,7 @@ class TestBundledAgentDocsSkill:
         assert "separately authenticated host broker" in combined
         assert "`candidate_evaluated=true`" in combined
         assert "`INTAKE_FROZEN`" in combined
-        assert "use_p0_calibration_host_broker_authenticator" in combined
+        assert "use_calibration_host_broker_authenticator" in combined
 
 
 class TestBundledWikiSyncSkill:
@@ -197,13 +197,37 @@ class TestBundledWikiBootstrapSkill:
         assert "auto-update [bot]" in manifest
         # Centrality ranking and the budgeted semantic pass.
         assert "fan_in * 100 + cycle_bonus * 25" in manifest
-        assert "dependencies.metrics.most_depended_on" in manifest
+        assert "dependency_evidence.most_depended_on" in manifest
         # Ranking detail and the remainder-backlog artifact format live in
         # the bundled reference file.
         assert "bootstrap-remainder.md" in reference
         assert "WB-<YYYYMMDD>-<4-digit sequence>" in reference
         assert "skipped_no_safe_context" in reference
         assert "## Bootstrap Remainder" in reference
+
+    def test_wiki_bootstrap_is_permanently_first_use_only(self):
+        skill_dir = skills.BUNDLED_SKILLS_ROOT / "wiki-bootstrap"
+        manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+        reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
+        combined = f"{manifest}\n{reference}"
+
+        assert "Use only for first-time wiki creation" in manifest
+        assert "llm-wiki migrate --dry-run" in combined
+        assert "phrase 're-bootstrap' never authorizes replacement" in combined
+        assert "bootstrap deliberately has no public existing-target mode" in manifest
+        assert "intentional full re-bootstrap" not in combined
+        assert "unless the request explicitly says to re-bootstrap" not in combined
+
+    def test_adjacent_skills_never_route_existing_wikis_to_bootstrap_repair(self):
+        for skill_id in ("onboarding-guide", "usage-examples", "publish-docs"):
+            manifest = (
+                skills.BUNDLED_SKILLS_ROOT / skill_id / "SKILL.md"
+            ).read_text(encoding="utf-8")
+            normalized = " ".join(manifest.split())
+
+            assert "bootstrap is never an existing-wiki repair path" in normalized
+            assert "llm-wiki migrate --dry-run" in normalized
+            assert "exact untouched `llm-wiki init` scaffold" in normalized
 
     def test_wiki_bootstrap_skill_documents_external_helper_and_team_contracts(self):
         skill_dir = skills.BUNDLED_SKILLS_ROOT / "wiki-bootstrap"
@@ -234,6 +258,34 @@ class TestBundledWikiBootstrapSkill:
         assert "external_agent_docs" in combined
         assert "wiki-semantic-enhance" in combined
         assert "never stage or commit the source or adopted input wiki" in combined
+
+    def test_infrastructure_ownership_is_consistent_across_authoring_skills(self):
+        bootstrap = "\n".join(
+            (
+                (
+                    skills.BUNDLED_SKILLS_ROOT / "wiki-bootstrap" / "SKILL.md"
+                ).read_text(encoding="utf-8"),
+                (
+                    skills.BUNDLED_SKILLS_ROOT / "wiki-bootstrap" / "reference.md"
+                ).read_text(encoding="utf-8"),
+            )
+        )
+        semantic = (
+            skills.BUNDLED_SKILLS_ROOT
+            / "wiki-semantic-enhance"
+            / "reference.md"
+        ).read_text(encoding="utf-8")
+        user_docs = (
+            skills.BUNDLED_SKILLS_ROOT / "user-docs-author" / "reference.md"
+        ).read_text(encoding="utf-8")
+
+        assert "ordinary sync regenerates them incrementally" in bootstrap
+        assert "Infrastructure `## Notes`" in bootstrap
+        assert "| Infrastructure `## Notes` | Yes |" in semantic
+        assert "matches a live freshness evaluation" in user_docs
+        assert "bootstrap snapshots, not supported semantic" not in bootstrap
+        assert "have no agent-owned `## Notes`" not in bootstrap
+        assert "current raw source" in bootstrap
 
 
 class TestBundledWikiSemanticEnhanceSkill:
@@ -332,6 +384,11 @@ class TestBundledAttackSurfaceSkill:
         assert "`data_flows[].boundaries`" in combined
         assert "`data_flows[].gaps`" in combined
         assert "`data_flows[].truncated`" in combined
+        assert "`data_flow_details`" in combined
+        assert "llm-wiki-extract-data-flow-details/v1" in combined
+        assert "`observed`, `emitted`, `omitted`" in combined
+        assert "`not_evaluated`" in combined
+        assert "`unsupported`" in combined
         assert "entry_points" not in combined
         assert "summary.entry_points" not in combined
 
@@ -419,6 +476,9 @@ class TestBundledDepVulnTriageSkill:
         # Live payload field names, not invented ones.
         assert "`dependencies.external.<language>`" in combined
         assert "resolved_from" in combined
+        assert "`dependencies.version_details`" in combined
+        assert "llm-wiki-dependency-version-details/v1" in combined
+        assert "`selection_confidence`" in combined
         # Fail-open version capture means missing versions are unknowns.
         assert "unknown-version" in combined
         assert "never evidence of safety" in combined
@@ -466,7 +526,7 @@ class TestBundledOnboardingGuideSkill:
         assert "onboarding-guide" in by_id
         onboarding_guide = by_id["onboarding-guide"]
         assert onboarding_guide.name == "onboarding-guide"
-        assert "onboarding" in onboarding_guide.description.lower()
+        assert "navigation guides" in onboarding_guide.description.lower()
         assert onboarding_guide.files[0] == "SKILL.md"
         assert "reference.md" in onboarding_guide.files
 
@@ -500,7 +560,11 @@ class TestBundledOnboardingGuideSkill:
 
         assert "lint --strict" in combined
         assert "llm-wiki ci-check" in combined
-        assert "docs(wiki): add onboarding guides" in combined
+        assert "docs(wiki): add navigation guides" in combined
+        assert "guides/<persona>-navigation.md" in combined
+        assert "# <Persona> navigation guide" in combined
+        assert "docs(wiki): add onboarding guides" not in combined
+        assert "guides/<persona>-onboarding.md" not in combined
         # Hook-path markers are reserved, not reused.
         assert "LLM_WIKI_AUTO_COMMIT" in combined
         assert "auto-update [bot]" in combined
@@ -598,9 +662,12 @@ class TestBundledDocHubSkill:
         # Live CLI contract, not invented flags.
         assert "site export --wiki-root" in combined
         assert "site check --wiki-root" in combined
-        # The pilot-confirmed guardrail: never fabricate a cross-repo
-        # relationship when repos are only incidentally co-located.
-        assert "do not write an overview page" in combined.lower()
+        assert "--format docusaurus" in combined
+        assert ".llm-wiki-site-selection.json" in combined
+        assert "ordered normalized" in combined
+        # There is no durable authored hub input/navigation/check surface.
+        assert "no canonical hub-overview input" in combined.lower()
+        assert "do not author a hub overview in derived output" in combined.lower()
         assert "never fabricate" in combined.lower() or "fabricated" in combined.lower()
         assert "genuinely related" in combined.lower()
         assert "doc_hub_pilot_2026-07-04.md" not in combined
@@ -645,6 +712,89 @@ class TestBundledImpactAnalysisSkill:
         # Truncation/ambiguity must be reported, never silently dropped.
         assert "ambiguous" in combined.lower()
         assert "truncated" in combined.lower()
+
+    def test_impact_analysis_is_native_qualified_with_labeled_legacy_supplement(
+        self,
+    ):
+        skill_dir = skills.BUNDLED_SKILLS_ROOT / "impact-analysis"
+        manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+        reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
+        combined = " ".join(f"{manifest}\n{reference}".split())
+
+        for required in (
+            "get_concept",
+            "traverse_typed_graph",
+            "explain_evidence",
+            "freshness_evaluated",
+            "lifecycle",
+            "successor",
+            "include_evidence=false",
+            "resolved",
+            "ambiguous",
+            "external",
+            "unresolved",
+            "typed_graph.coverage",
+            "bounds.edges",
+            "legacy live supplement",
+            "semantic section",
+        ):
+            assert required.lower() in combined.lower()
+        assert (
+            "A non-truncated query is not a complete neighborhood when analyzer "
+            "coverage is truncated"
+        ) in combined
+        assert "must not overwrite a native limitation" in combined
+        assert "Do not copy raw detailed evidence into public output" in combined
+
+    def test_impact_analysis_reuses_one_service_for_native_query_sequence(self):
+        reference = (
+            skills.BUNDLED_SKILLS_ROOT / "impact-analysis" / "reference.md"
+        ).read_text(encoding="utf-8")
+        example = reference[
+            reference.index("```python") + len("```python") :
+            reference.index("```", reference.index("```python") + len("```python"))
+        ]
+
+        assert example.count("build_documentation_query_service(") == 1
+        for wrapper in (
+            "get_concept(",
+            "traverse_typed_graph(",
+            "explain_evidence(",
+        ):
+            assert wrapper in example
+        assert example.count("service=service") == 3
+
+    @pytest.mark.parametrize(
+        ("row", "required"),
+        [
+            ("| `ready` + typed graph `ready` |", "analyzer bounds"),
+            (
+                "| `ready` + `typed-graph-extension-not-present` |",
+                "no typed-neighborhood conclusion",
+            ),
+            ("| `absent` (`knowledge-projection-not-present`) |", "legacy live"),
+            ("| `degraded`, `unsupported`, invalid, or mixed snapshot |", "no rejected"),
+            ("| Ambiguous exact identity or persisted alias |", "owner choice"),
+            ("| `ready` with `freshness_evaluated: false` |", "snapshot-only"),
+        ],
+    )
+    def test_impact_analysis_fallback_table_preserves_native_limitations(
+        self,
+        row,
+        required,
+    ):
+        reference = (
+            skills.BUNDLED_SKILLS_ROOT / "impact-analysis" / "reference.md"
+        ).read_text(encoding="utf-8")
+        selected = next(
+            line for line in reference.splitlines() if line.startswith(row)
+        )
+
+        assert required in selected
+        assert (
+            "Legacy detail can increase the known blast radius, but it cannot "
+            "erase native"
+        ) in reference
 
 
 class TestBundledInfraReviewSkill:
@@ -716,16 +866,25 @@ class TestBundledPublishDocsSkill:
         assert "--site-name" in combined
         assert "at least one guide page" in combined
         assert "site check --profile user" in combined
-        assert "site check --built-site-dir" in combined
+        assert "--format mkdocs" in combined
+        assert "--built-site-dir" in combined
         assert "--link-mode http" in combined
         assert "--file-friendly" in combined
         assert "--link-mode file" in combined
+        assert ".llm-wiki-site-selection.json" in combined
+        assert "llm-wiki-site-selection.json" in combined
+        assert (
+            "cp site/llm-wiki-site-selection.json "
+            "build/llm-wiki-site-selection.json"
+        ) in combined
+        assert "_site-http" in combined
+        assert "_site-file" in combined
 
     def test_publish_docs_direct_file_sequence_rebuilds_before_file_check(self):
         manifest = (skills.BUNDLED_SKILLS_ROOT / "publish-docs" / "SKILL.md").read_text(
             encoding="utf-8"
         )
-        start = manifest.index("Direct-file handoffs use file-friendly export")
+        start = manifest.index("Direct-file handoffs use")
         end = manifest.index("5. **Hand off", start)
         direct = manifest[start:end]
 
@@ -804,10 +963,9 @@ class TestBundledUserDocsAuthorSkill:
         reference = (
             skills.BUNDLED_SKILLS_ROOT / "user-docs-author" / "reference.md"
         ).read_text(encoding="utf-8")
-        assert (
-            "Reusing `_site` from a previous HTTP-mode build is invalid evidence"
-            in reference
-        )
+        assert "`site-user-http` and `_site-user-http`" in reference
+        assert "`site-user-file`" in reference
+        assert "mismatched marker" in reference
 
 
 class TestBundledUsageExamplesSkill:
@@ -836,6 +994,10 @@ class TestBundledUsageExamplesSkill:
         assert "alt text" in combined
         assert "caption" in combined
         assert "capture blocker" in combined
+        assert (
+            "a row added to canonical wiki Markdown is a semantic edit" in combined
+        )
+        assert "restart at the step 5 owning sync/re-anchor" in combined
         assert "media_link_broken" in combined
         assert "media_missing_alt_text" in combined
         assert "media_oversize" in combined
@@ -913,7 +1075,7 @@ class TestExternalDocumentationSkillChain:
         assert "resume from the recorded wiki snapshot" in sync
         assert "never stage or commit the source or" in sync
 
-        assert "docs(wiki): add onboarding guides" in onboarding
+        assert "docs(wiki): add navigation guides" in onboarding
         assert "recorded audiences and per-audience intent" in onboarding
         assert "Never re-ask intake on resume" in onboarding
         assert "wiki-only runs" in onboarding.lower()

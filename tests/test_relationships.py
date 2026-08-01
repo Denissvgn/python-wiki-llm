@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from llm_wiki_cli.services.relationships import build_entity_relationship_summaries
+from llm_wiki_cli.services.relationships import (
+    build_detailed_entity_relationship_summaries,
+    build_entity_relationship_summaries,
+)
 
 
 def _by_class(result):
@@ -290,3 +293,114 @@ def test_haskell_declaration_kind_survives_relationship_summaries():
     classes = _by_class(result)
 
     assert classes[("User", "hls-analysis/src/HLSAnalysis/API.hs")]["kind"] == "data"
+
+
+def test_detailed_relationship_summaries_report_exact_totals_and_omissions():
+    functions = [{"name": "run"}, *[{"name": f"helper_{i}"} for i in range(14)]]
+    inventory = {
+        "api.py": {
+            "classes": [],
+            "functions": functions,
+        }
+    }
+    call_edges = [
+        {
+            "from": {"file": "api.py", "symbol": "run"},
+            "to": {"file": "api.py", "symbol": f"helper_{i}"},
+            "name": f"helper_{i}",
+            "kind": "internal",
+        }
+        for i in range(14)
+    ]
+    legacy = build_entity_relationship_summaries(
+        inventory, call_edges=call_edges
+    )
+
+    detailed = build_detailed_entity_relationship_summaries(
+        inventory, call_edges=call_edges
+    )
+    opt_in = build_entity_relationship_summaries(
+        inventory, call_edges=call_edges, detailed=True
+    )
+
+    assert detailed == opt_in
+    assert build_entity_relationship_summaries(
+        inventory, call_edges=call_edges
+    ) == legacy
+    assert set(legacy) == {"classes", "functions"}
+    assert all("coverage" not in summary for summary in legacy["functions"])
+    legacy_run = _by_symbol(legacy)[("run", "api.py")]
+    assert len(legacy_run["callees"]) == 12
+    assert legacy_run["callees"][0]["line"] == 0
+
+    assert detailed["schema_version"] == "llm-wiki-relationship-summaries/v1"
+    detailed_run = _by_symbol(detailed)[("run", "api.py")]
+    assert len(detailed_run["callees"]) == 12
+    assert detailed_run["callees"][0]["line"] is None
+    assert detailed_run["coverage"]["callees"] == {
+        "observed": 14,
+        "emitted": 12,
+        "limit": 12,
+        "truncated": True,
+        "omitted": 2,
+        "limitations": ["presentation-summary-limit"],
+    }
+    assert detailed["coverage"] == {
+        "classes": {
+            "observed": 0,
+            "emitted": 0,
+            "limit": None,
+            "truncated": False,
+            "omitted": 0,
+            "limitations": [],
+        },
+        "functions": {
+            "observed": 15,
+            "emitted": 15,
+            "limit": None,
+            "truncated": False,
+            "omitted": 0,
+            "limitations": [],
+        },
+        "relationships": {
+            "observed": 28,
+            "emitted": 26,
+            "limit": None,
+            "truncated": True,
+            "omitted": 2,
+            "limitations": [
+                "limit-applies-per-summary-relationship-collection"
+            ],
+        },
+    }
+
+
+def test_detailed_relationship_summaries_are_deterministic_for_shuffled_inputs():
+    functions = [{"name": "run"}, {"name": "alpha"}, {"name": "beta"}]
+    inventory = {"api.py": {"classes": [], "functions": functions}}
+    edges = [
+        {
+            "from": {"file": "api.py", "symbol": "run"},
+            "to": {"file": "api.py", "symbol": "beta"},
+            "name": "beta",
+            "kind": "internal",
+            "line": 4,
+        },
+        {
+            "from": {"file": "api.py", "symbol": "run"},
+            "to": {"file": "api.py", "symbol": "alpha"},
+            "name": "alpha",
+            "kind": "internal",
+            "line": 3,
+        },
+    ]
+    shuffled_inventory = {
+        "api.py": {"classes": [], "functions": list(reversed(functions))}
+    }
+
+    first = build_detailed_entity_relationship_summaries(inventory, edges)
+    second = build_detailed_entity_relationship_summaries(
+        shuffled_inventory, list(reversed(edges))
+    )
+
+    assert first == second

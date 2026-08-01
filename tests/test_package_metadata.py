@@ -45,6 +45,12 @@ def test_package_data_includes_rust_lockfile():
     assert "extractors/rust_scripts/Cargo.lock" in package_data
 
 
+def test_package_data_includes_typescript_lockfile():
+    data = _pyproject()
+    package_data = data["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]
+    assert "extractors/ts_scripts/package-lock.json" in package_data
+
+
 def test_package_data_includes_haskell_helper_sources():
     data = _pyproject()
     package_data = data["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]
@@ -53,6 +59,47 @@ def test_package_data_includes_haskell_helper_sources():
     assert "extractors/haskell_scripts/Parser.hs" in package_data
     assert "extractors/haskell_scripts/Paths.hs" in package_data
     assert "extractors/haskell_scripts/Json.hs" in package_data
+
+
+def test_package_data_includes_knowledge_schema():
+    data = _pyproject()
+    package_data = data["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]
+    assert "schemas/llm-wiki-knowledge-v1.schema.json" in package_data
+
+
+def test_jsonschema_is_a_dev_only_dependency():
+    data = _pyproject()
+    assert "jsonschema>=4.18" in data["project"]["optional-dependencies"]["dev"]
+    assert not any(
+        dependency.lower().startswith("jsonschema")
+        for dependency in data["project"]["dependencies"]
+    )
+
+
+def test_build_backend_requirement_is_a_dev_only_dependency():
+    data = _pyproject()
+    backend_requirement = data["build-system"]["requires"][0]
+
+    assert backend_requirement == "setuptools==83.0.0"
+    assert backend_requirement in data["project"]["optional-dependencies"]["dev"]
+    assert not any(
+        dependency.lower().startswith("setuptools")
+        for dependency in data["project"]["dependencies"]
+    )
+
+
+def test_sdist_manifest_includes_knowledge_schema():
+    manifest = (PROJECT_ROOT / "MANIFEST.in").read_text(encoding="utf-8")
+    assert (
+        "include src/llm_wiki_cli/schemas/llm-wiki-knowledge-v1.schema.json"
+        in manifest.splitlines()
+    )
+
+
+def test_ci_verifies_schema_from_wheel_and_sdist_installations():
+    ci = (PROJECT_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    assert "python -m build" in ci
+    assert "python tests/verify_installed_knowledge_schema.py dist" in ci
 
 
 def test_package_data_includes_bundled_skills():
@@ -109,20 +156,20 @@ def test_core_dependencies_do_not_install_model_provider_sdks():
     )
 
 
-def test_package_data_includes_bundled_m4_plugin_sample():
+def test_package_data_includes_bundled_documentation_hooks_plugin_sample():
     data = _pyproject()
     package_data = data["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]
     assert (
-        "examples/plugins/m4-documentation-hooks/llm-wiki-plugin.json" in package_data
+        "examples/plugins/documentation-hooks/llm-wiki-plugin.json" in package_data
     )
-    assert "examples/plugins/m4-documentation-hooks/detectors.py" in package_data
-    assert "examples/plugins/m4-documentation-hooks/styles.py" in package_data
+    assert "examples/plugins/documentation-hooks/detectors.py" in package_data
+    assert "examples/plugins/documentation-hooks/styles.py" in package_data
 
 
-def test_sdist_manifest_includes_source_m4_plugin_sample():
+def test_sdist_manifest_includes_source_documentation_hooks_plugin_sample():
     manifest = (PROJECT_ROOT / "MANIFEST.in").read_text(encoding="utf-8")
     assert (
-        "recursive-include examples/plugins/m4-documentation-hooks *.py *.json"
+        "recursive-include examples/plugins/documentation-hooks *.py *.json"
         in manifest
     )
 
@@ -139,7 +186,25 @@ def test_project_distribution_name_is_pypi_safe_name():
 
 def test_project_version_is_release_target():
     data = _pyproject()
-    assert data["project"]["version"] == "1.4.0"
+    assert data["project"]["version"] == "1.5.0"
+
+
+def test_standalone_guide_is_installed_as_canonical_shared_documentation():
+    data = _pyproject()
+    assert data["tool"]["setuptools"]["data-files"] == {
+        "share/doc/agent-wiki-cli": ["docs/standalone-documentation.md"]
+    }
+
+
+def test_release_metadata_uses_current_license_fields_and_pinned_backend():
+    data = _pyproject()
+    assert data["project"]["license"] == "MIT"
+    assert data["project"]["license-files"] == ["LICENSE"]
+    assert data["build-system"] == {
+        "requires": ["setuptools==83.0.0"],
+        "build-backend": "release_build_backend",
+        "backend-path": ["."],
+    }
 
 
 def test_project_requires_python_3_10_or_newer():
@@ -150,9 +215,9 @@ def test_project_requires_python_3_10_or_newer():
 def test_ci_pairs_selected_python_versions_with_one_os_each():
     assert _ci_test_matrix() == {
         "include": [
-            {"os": "ubuntu-latest", "python-version": "3.10"},
-            {"os": "windows-latest", "python-version": "3.13"},
-            {"os": "macos-latest", "python-version": "3.14"},
+            {"os": "ubuntu-24.04", "python-version": "3.10"},
+            {"os": "windows-2025", "python-version": "3.13"},
+            {"os": "macos-15", "python-version": "3.14"},
         ]
     }
 
@@ -262,7 +327,7 @@ def test_readme_documents_resource_aware_execution():
     assert "the `llm-wiki-context/v1` protocol stay unchanged" in text
 
 
-def test_release_metadata_documents_surfaces_and_verification():
+def test_release_metadata_documents_surfaces_and_platforms():
     readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
     release_notes = _changelog_section("## [1.0.0]")
     release_metadata = " ".join("\n".join([readme, release_notes]).split())
@@ -284,10 +349,7 @@ def test_release_metadata_documents_surfaces_and_verification():
         "Ubuntu",
         "macOS",
         "Windows",
-        "Python 3.9, 3.12, and 3.13",
-        ".venv/bin/pytest -q",
-        ".venv/bin/python -m build",
-        "git diff --check",
+        "package metadata",
     ]:
         assert required in release_metadata
 
@@ -308,8 +370,9 @@ def test_readme_release_verification_uses_project_virtualenv():
     assert not any(line.startswith("python -m pytest") for line in readme_lines)
 
 
-def test_changelog_1_0_0_documents_m4_public_surfaces():
+def test_changelog_1_0_0_documents_public_surfaces():
     release_notes = _changelog_section("## [1.0.0]")
+    release_text = " ".join(release_notes.split())
 
     for required in [
         "static-site",
@@ -319,10 +382,9 @@ def test_changelog_1_0_0_documents_m4_public_surfaces():
         "context",
         "plugin",
         "migration",
-        "dogfood",
-        "release-readiness",
+        "self-hosted documentation",
     ]:
-        assert required in release_notes
+        assert required in release_text
 
 
 def test_changelog_1_1_0_documents_haskell_release_boundaries():

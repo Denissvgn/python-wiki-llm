@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 from llm_wiki_cli import cli
-from llm_wiki_cli.commands import bootstrap_cmd
+from llm_wiki_cli.commands import bootstrap_cmd, init_cmd
 from llm_wiki_cli.commands.extract_cmd import (
     ExtractorStatus,
     InventoryResult,
@@ -22,7 +22,7 @@ from llm_wiki_cli.commands.extract_cmd import (
 from llm_wiki_cli.services.data_flow import analyze_data_flow
 from llm_wiki_cli.services.dependencies import analyze_dependencies
 from llm_wiki_cli.services.entrypoints import build_flow, get_entry_points
-from llm_wiki_cli.services import plugins
+from llm_wiki_cli.services import knowledge_orchestration, plugins
 from llm_wiki_cli.services.wiki_surface import is_safe_page_id
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 
@@ -46,6 +46,14 @@ def _make_args(**kwargs):
     }
     defaults.update(kwargs)
     return types.SimpleNamespace(**defaults)
+
+
+def _tree_bytes(root: Path) -> dict[str, bytes]:
+    return {
+        path.relative_to(root).as_posix(): path.read_bytes()
+        for path in sorted(root.rglob("*"))
+        if path.is_file()
+    }
 
 
 def _body_line_count(function) -> int:
@@ -177,6 +185,17 @@ def test_bootstrap_parser_accepts_skip_data_flow_flag():
     assert args.skip_data_flow is True
 
 
+def test_bootstrap_help_hides_overwrite_compatibility_tombstone(capsys):
+    parser = cli._build_parser()
+
+    with pytest.raises(SystemExit) as exc_info:
+        parser.parse_args(["bootstrap", "--help"])
+
+    assert exc_info.value.code == 0
+    assert "--overwrite" not in capsys.readouterr().out
+    assert parser.parse_args(["bootstrap", "--overwrite"]).overwrite is True
+
+
 def test_bootstrap_excludes_agent_worktree_surfaces(tmp_path, monkeypatch, capsys):
     (tmp_path / "app.py").write_text(
         textwrap.dedent("""\
@@ -287,6 +306,72 @@ class TestBootstrapCollisions:
         assert data["manifest_path"].endswith(".llm-wiki-manifest.json")
         assert data["created_files"]
         assert "Bootstrapping wiki" in captured.err
+
+    def test_bootstrap_empty_inventory_json_includes_knowledge_state(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        monkeypatch.chdir(tmp_path)
+        wiki_dir = tmp_path / "wiki"
+
+        bootstrap_cmd.run(
+            _make_args(
+                src_dir=".",
+                wiki_dir=str(wiki_dir),
+                format="json",
+                source_adapter=True,
+            )
+        )
+
+        captured = capsys.readouterr()
+        data = json.loads(captured.out)
+        assert data["manifest_path"] is None
+        assert data["knowledge_path"] is None
+        assert data["knowledge_status"] is None
+        assert data["knowledge_schema_version"] == "llm-wiki-knowledge/v1"
+        assert "Nothing to bootstrap" in captured.err
+
+    def test_bootstrap_artifact_reporting_accounts_for_each_action(
+        self, tmp_path, monkeypatch
+    ):
+        state = types.SimpleNamespace(
+            created_files=[],
+            updated_files=[],
+            skipped_files=[],
+        )
+        messages = []
+        monkeypatch.setattr(
+            bootstrap_cmd,
+            "_emit_bootstrap",
+            lambda _state, message, **_kwargs: messages.append(message),
+        )
+        created = tmp_path / ".llm-wiki-surface.json"
+        updated = tmp_path / ".llm-wiki-knowledge.json"
+        unchanged = tmp_path / ".llm-wiki-manifest.json"
+
+        bootstrap_cmd._record_bootstrap_artifact(
+            state,
+            path=created,
+            write_state=bootstrap_cmd.ArtifactWriteState.CREATED,
+        )
+        bootstrap_cmd._record_bootstrap_artifact(
+            state,
+            path=updated,
+            write_state=bootstrap_cmd.ArtifactWriteState.UPDATED,
+        )
+        bootstrap_cmd._record_bootstrap_artifact(
+            state,
+            path=unchanged,
+            write_state=bootstrap_cmd.ArtifactWriteState.UNCHANGED,
+        )
+
+        assert state.created_files == [str(created).replace("\\", "/")]
+        assert state.updated_files == [str(updated).replace("\\", "/")]
+        assert state.skipped_files == [str(unchanged).replace("\\", "/")]
+        assert messages == [
+            f"  CREATE {created}",
+            f"  UPDATE {updated}",
+            f"  SKIP {unchanged} (unchanged)",
+        ]
 
     def test_bootstrap_reports_missing_haskell_helper_failure(
         self, tmp_path, monkeypatch, capsys
@@ -529,6 +614,11 @@ class TestBootstrapCollisions:
     ):
         from llm_wiki_cli.commands import lint_cmd
 
+        (tmp_path / "foo.py").write_text("class Thing:\n    pass\n", encoding="utf-8")
+        (tmp_path / "foo.ts").write_text(
+            "export class Thing {}\n",
+            encoding="utf-8",
+        )
         inventory = {
             "foo.py": {
                 "language": "python",
@@ -825,15 +915,13 @@ class TestBootstrapEntityPages:
         assert "```mermaid" not in relationships
 
     def test_entity_relationship_section_is_deterministic(self, tmp_project, capsys):
-        wiki_dir = tmp_project / "docs" / "llm_wiki"
-        args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
-        bootstrap_cmd.run(args)
-        first = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
+        first_wiki = tmp_project / "docs" / "first"
+        second_wiki = tmp_project / "docs" / "second"
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir=str(first_wiki)))
+        first = (first_wiki / "entities" / "User.md").read_text(encoding="utf-8")
 
-        bootstrap_cmd.run(
-            _make_args(src_dir=".", wiki_dir=str(wiki_dir), overwrite=True)
-        )
-        second = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir=str(second_wiki)))
+        second = (second_wiki / "entities" / "User.md").read_text(encoding="utf-8")
 
         assert first == second
 
@@ -885,15 +973,22 @@ class TestBootstrapModulePages:
             "required: bool, mode: str | None = None, **extras: object) -> str | None"
         )
         assert bootstrap_cmd._table_inline_code(signature).count("\\|") == 2
-        assert bootstrap_cmd._format_signature(
-            {
-                "params": [
-                    {"name": "source", "kind": "positional_or_keyword", "type": "str"},
-                    {"name": "required", "kind": "keyword_only", "type": "bool"},
-                ],
-                "return_type": "",
-            }
-        ) == "(source: str, *, required: bool)"
+        assert (
+            bootstrap_cmd._format_signature(
+                {
+                    "params": [
+                        {
+                            "name": "source",
+                            "kind": "positional_or_keyword",
+                            "type": "str",
+                        },
+                        {"name": "required", "kind": "keyword_only", "type": "bool"},
+                    ],
+                    "return_type": "",
+                }
+            )
+            == "(source: str, *, required: bool)"
+        )
 
     def test_python_contract_entity_renders_model_metadata(self):
         content = bootstrap_cmd._generate_entity_md(
@@ -1036,9 +1131,7 @@ class TestBootstrapModulePages:
 
         bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
 
-        module = (tmp_path / "wiki" / "modules" / "api.md").read_text(
-            encoding="utf-8"
-        )
+        module = (tmp_path / "wiki" / "modules" / "api.md").read_text(encoding="utf-8")
         entity = (tmp_path / "wiki" / "entities" / "Request.md").read_text(
             encoding="utf-8"
         )
@@ -1501,31 +1594,146 @@ class TestBootstrapLog:
 
 
 class TestBootstrapOverwrite:
-    def test_skip_existing_without_flag(self, tmp_project, capsys):
+    def test_existing_wiki_is_rejected_without_mutation(self, tmp_project, capsys):
         wiki_dir = tmp_project / "docs" / "llm_wiki"
         args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
         bootstrap_cmd.run(args)
 
-        # Modify a page
         user_page = wiki_dir / "entities" / "User.md"
         user_page.write_text("CUSTOM CONTENT")
+        before = _tree_bytes(wiki_dir)
+        capsys.readouterr()
 
-        # Run again without --overwrite
-        bootstrap_cmd.run(args)
+        with pytest.raises(SystemExit) as exc_info:
+            bootstrap_cmd.run(args)
+
+        assert exc_info.value.code == 2
+        assert _tree_bytes(wiki_dir) == before
         assert user_page.read_text(encoding="utf-8") == "CUSTOM CONTENT"
+        output = capsys.readouterr().out
+        assert "Bootstrap is first-use only" in output
+        assert "llm-wiki sync --jobs 1" in output
+        assert "llm-wiki migrate --dry-run" not in output
+        assert "No files were changed" in output
 
-    def test_overwrite_flag(self, tmp_project, capsys):
+    def test_overwrite_compatibility_flag_is_rejected_before_mutation(
+        self, tmp_project, capsys
+    ):
         wiki_dir = tmp_project / "docs" / "llm_wiki"
         args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))
         bootstrap_cmd.run(args)
 
         user_page = wiki_dir / "entities" / "User.md"
         user_page.write_text("CUSTOM CONTENT")
+        before = _tree_bytes(wiki_dir)
+        capsys.readouterr()
 
         args_ow = _make_args(src_dir=".", wiki_dir=str(wiki_dir), overwrite=True)
-        bootstrap_cmd.run(args_ow)
-        assert user_page.read_text(encoding="utf-8") != "CUSTOM CONTENT"
-        assert "# User" in user_page.read_text(encoding="utf-8")
+        with pytest.raises(SystemExit) as exc_info:
+            bootstrap_cmd.run(args_ow)
+
+        assert exc_info.value.code == 2
+        assert _tree_bytes(wiki_dir) == before
+        assert user_page.read_text(encoding="utf-8") == "CUSTOM CONTENT"
+        assert "compatibility `overwrite` option is no longer supported" in (
+            capsys.readouterr().out
+        )
+
+    def test_exact_init_scaffold_is_accepted(self, tmp_project, capsys):
+        wiki_dir = tmp_project / "docs" / "llm_wiki"
+        init_cmd.run(
+            types.SimpleNamespace(
+                agent="generic",
+                wiki_dir=str(wiki_dir),
+                no_skills=True,
+            )
+        )
+        assert not (wiki_dir / ".llm-wiki-manifest.json").exists()
+        capsys.readouterr()
+
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir=str(wiki_dir)))
+
+        assert (wiki_dir / ".llm-wiki-manifest.json").is_file()
+
+    def test_exact_init_scaffold_with_fallback_agent_config_is_accepted(
+        self,
+        tmp_path,
+        monkeypatch,
+        capsys,
+    ):
+        project = tmp_path / "non_git_project"
+        project.mkdir()
+        (project / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        monkeypatch.chdir(project)
+        wiki_dir = project / "docs" / "llm_wiki"
+        init_cmd.run(
+            types.SimpleNamespace(
+                agent="generic",
+                wiki_dir=str(wiki_dir),
+                no_skills=True,
+            )
+        )
+        config_path = wiki_dir / ".llm-wiki-agent"
+        assert config_path.is_file()
+        capsys.readouterr()
+
+        bootstrap_cmd.run(
+            _make_args(
+                src_dir=".",
+                wiki_dir=str(wiki_dir),
+                source_adapter=True,
+            )
+        )
+
+        assert (wiki_dir / ".llm-wiki-manifest.json").is_file()
+
+    def test_modified_fallback_agent_config_is_rejected_without_mutation(
+        self,
+        tmp_path,
+        monkeypatch,
+        capsys,
+    ):
+        project = tmp_path / "non_git_project"
+        project.mkdir()
+        (project / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        monkeypatch.chdir(project)
+        wiki_dir = project / "docs" / "llm_wiki"
+        init_cmd.run(
+            types.SimpleNamespace(
+                agent="generic",
+                wiki_dir=str(wiki_dir),
+                no_skills=True,
+            )
+        )
+        config_path = wiki_dir / ".llm-wiki-agent"
+        config_path.write_text(
+            config_path.read_text(encoding="utf-8").replace(
+                '"agent": "generic"',
+                '"agent": "custom"',
+            ),
+            encoding="utf-8",
+        )
+        before = _tree_bytes(wiki_dir)
+        capsys.readouterr()
+        monkeypatch.setattr(
+            bootstrap_cmd,
+            "get_inventory_result",
+            lambda *_args, **_kwargs: pytest.fail(
+                "modified-config preflight must run before extraction"
+            ),
+        )
+
+        with pytest.raises(SystemExit) as exc_info:
+            bootstrap_cmd.run(
+                _make_args(
+                    src_dir=".",
+                    wiki_dir=str(wiki_dir),
+                    source_adapter=True,
+                )
+            )
+
+        assert exc_info.value.code == 2
+        assert _tree_bytes(wiki_dir) == before
 
 
 class TestBootstrapShallow:
@@ -1666,7 +1874,7 @@ class TestBootstrapCreatesManifest:
 
         def fake_snapshot(src_dir, **kwargs):
             seen["snapshot_include_tests"] = kwargs.get("include_tests")
-            return real_build_source_snapshot(src_dir)
+            return real_build_source_snapshot(src_dir, **kwargs)
 
         def fake_inventory(src_dir, *args, **kwargs):
             seen["inventory_include_tests"] = kwargs["include_tests"]
@@ -1827,6 +2035,47 @@ class TestBootstrapCreatesManifest:
         assert any(page["canonical_path"] == "index.md" for page in data["pages"])
         assert all(
             not Path(page["source_path"] or "").is_absolute() for page in data["pages"]
+        )
+        by_path = {page["canonical_path"]: page for page in data["pages"]}
+        assert (
+            by_path["entities/User.md"]["id"],
+            by_path["entities/User.md"]["mcp_uri"],
+        ) == ("User", "llm-wiki://entities/User")
+        assert (
+            by_path["modules/models.md"]["id"],
+            by_path["modules/models.md"]["mcp_uri"],
+        ) == ("models", "llm-wiki://modules/models")
+
+        deterministic_payloads = [
+            data,
+            json.loads(
+                (wiki_dir / ".llm-wiki-knowledge.json").read_text(encoding="utf-8")
+            ),
+            json.loads(
+                (wiki_dir / ".llm-wiki-manifest.json").read_text(encoding="utf-8")
+            ),
+        ]
+
+        def nested_keys(value):
+            if isinstance(value, dict):
+                return set(value).union(
+                    *(nested_keys(item) for item in value.values())
+                )
+            if isinstance(value, list):
+                return set().union(*(nested_keys(item) for item in value))
+            return set()
+
+        forbidden_time_keys = {
+            "created_at",
+            "generated_at",
+            "mtime",
+            "mtime_ns",
+            "timestamp",
+            "updated_at",
+        }
+        assert all(
+            nested_keys(payload).isdisjoint(forbidden_time_keys)
+            for payload in deterministic_payloads
         )
 
     def test_sync_succeeds_after_bootstrap(self, tmp_project, capsys):
@@ -2200,6 +2449,21 @@ class TestBootstrapFlows:
         assert "## Call sequence" in text
         assert "## Data flow" not in text
         assert "## Behavior" in text
+        knowledge = json.loads(
+            (tmp_path / "wiki" / ".llm-wiki-knowledge.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        coverage = {
+            item["analyzer"]: item
+            for item in knowledge["extensions"]["llm-wiki/typed-graph-v1"][
+                "coverage"
+            ]
+        }
+        assert "data-flow-analysis-disabled" in coverage["data-flows"][
+            "limitations"
+        ]
+        assert coverage["flows"]["observed"] >= coverage["flows"]["emitted"]
 
     def test_index_lists_user_flows(self, tmp_path, monkeypatch, capsys):
         self._write_project(tmp_path)
@@ -2271,6 +2535,113 @@ class TestBootstrapFlows:
 
         assert calls == 1
         assert (tmp_path / "wiki" / "flows" / "api-run.md").exists()
+
+    def test_runtime_plan_receives_graph_analyzer_observations(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\nname = "sample"\nversion = "0.1.0"\n'
+            'dependencies = ["requests"]\n',
+            encoding="utf-8",
+        )
+        constants = "\n".join(f"CONFIG_{index} = {index}" for index in range(20))
+        reads = ", ".join(f"CONFIG_{index}" for index in range(20))
+        (tmp_path / "api.py").write_text(
+            "import requests\n\n"
+            f"{constants}\n\n"
+            '__all__ = ["run"]\n\n'
+            "def run():\n"
+            f"    values = ({reads})\n"
+            '    requests.get("https://example.invalid")\n'
+            "    return helper()\n\n"
+            "def helper():\n"
+            "    return 1\n",
+            encoding="utf-8",
+        )
+        captured = []
+        detailed_results = []
+        real_build_plan = knowledge_orchestration.build_runtime_knowledge_plan
+        real_analyze = bootstrap_cmd.analyze_data_flow_detailed
+
+        def capture_plan(inputs):
+            captured.append(inputs)
+            return real_build_plan(inputs)
+
+        def capture_data_flow(*args, **kwargs):
+            result = real_analyze(*args, **kwargs)
+            detailed_results.append(result)
+            return result
+
+        monkeypatch.setattr(
+            knowledge_orchestration,
+            "build_runtime_knowledge_plan",
+            capture_plan,
+        )
+        monkeypatch.setattr(
+            bootstrap_cmd,
+            "analyze_data_flow_detailed",
+            capture_data_flow,
+        )
+        monkeypatch.chdir(tmp_path)
+
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
+
+        assert len(captured) == 1
+        runtime = captured[0]
+        assert runtime.call_edges["schema_version"] == "llm-wiki-call-observations/v1"
+        assert runtime.call_edges["observations"]
+        assert runtime.dependency_observations["observations"]
+        assert next(
+            observation
+            for observation in runtime.dependency_observations["observations"]
+            if observation["module"] == "requests"
+        )["line"] == 1
+        assert runtime.entrypoint_observations["observations"][0]["detector"][
+            "id"
+        ].startswith("builtin.")
+        assert runtime.flows[0]["entry"]["id"] == "api-run"
+        assert runtime.flows[0]["schema_version"] == "llm-wiki-flow-observations/v1"
+        assert runtime.data_flows[0] is detailed_results[0]
+        assert runtime.data_flows[0]["schema_version"].endswith("/v1")
+        reads_coverage = runtime.data_flows[0]["coverage"]["effects"]["by_kind"][
+            "reads"
+        ]
+        assert reads_coverage["observed"] == 20
+        assert reads_coverage["emitted"] == 8
+        assert reads_coverage["omitted"] == 12
+        assert any(
+            dependency["package"] == "requests" and dependency["explicit"]
+            for dependency in runtime.external_dependencies
+        )
+
+    def test_runtime_keeps_call_observations_without_entrypoints(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        (tmp_path / "module.py").write_text(
+            "def caller():\n    return helper()\n\n\ndef helper():\n    return 1\n",
+            encoding="utf-8",
+        )
+        captured = []
+        real_build_plan = knowledge_orchestration.build_runtime_knowledge_plan
+
+        def capture_plan(inputs):
+            captured.append(inputs)
+            return real_build_plan(inputs)
+
+        monkeypatch.setattr(
+            knowledge_orchestration,
+            "build_runtime_knowledge_plan",
+            capture_plan,
+        )
+        monkeypatch.chdir(tmp_path)
+
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
+
+        runtime = captured[0]
+        assert runtime.entrypoint_observations["observations"] == []
+        assert runtime.flows == []
+        assert runtime.call_edges["coverage"]["observed"] == 1
+        assert runtime.call_edges["observations"][0]["kind"] == "internal"
 
     def test_skip_flows_writes_no_flow_pages(self, tmp_path, monkeypatch, capsys):
         self._write_project(tmp_path)
@@ -2498,6 +2869,26 @@ class TestBootstrapArchitecturePages:
         monkeypatch.chdir(tmp_path)
         bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki", depth="shallow"))
         assert not (tmp_path / "wiki" / "dependencies.md").exists()
+        knowledge = json.loads(
+            (tmp_path / "wiki" / ".llm-wiki-knowledge.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        coverage = {
+            item["analyzer"]: item
+            for item in knowledge["extensions"]["llm-wiki/typed-graph-v1"][
+                "coverage"
+            ]
+        }
+        for analyzer in (
+            "calls",
+            "dependencies",
+            "entrypoints",
+            "flows",
+            "data-flows",
+            "external-dependencies",
+        ):
+            assert "deep-analysis-disabled" in coverage[analyzer]["limitations"]
 
     def test_deep_bootstrap_skips_pages_when_dependency_graph_is_empty(
         self, tmp_path, monkeypatch, capsys

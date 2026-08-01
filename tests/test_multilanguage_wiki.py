@@ -20,12 +20,6 @@ from llm_wiki_cli.services.extractor_helpers import (
 )
 
 
-PROJECT_ROOT = Path(__file__).parents[1]
-TS_NODE_MODULES = (
-    PROJECT_ROOT / "src" / "llm_wiki_cli" / "extractors" / "ts_scripts" / "node_modules"
-)
-
-
 def _command_available(*cmd: str) -> bool:
     if shutil.which(cmd[0]) is None:
         return False
@@ -46,16 +40,9 @@ def _command_available(*cmd: str) -> bool:
         return False
 
 
-TS_READY = _command_available("node", "--version") and (
-    TS_NODE_MODULES.exists() or _command_available("npm", "--version")
-)
 GO_READY = _command_available("go", "version")
 RUST_READY = _command_available("cargo", "--version")
 
-skip_no_ts_go_rust = pytest.mark.skipif(
-    not (TS_READY and GO_READY and RUST_READY),
-    reason="TypeScript, Go, and Rust toolchains are not all available",
-)
 skip_no_go_rust = pytest.mark.skipif(
     not (GO_READY and RUST_READY),
     reason="Go and Rust toolchains are not both available",
@@ -66,7 +53,7 @@ def _make_args(**kwargs):
     defaults = {
         "src_dir": ".",
         "wiki_dir": "docs/llm_wiki",
-        "overwrite": True,
+        "overwrite": False,
         "depth": "full",
         "skip_workflows": True,
         "dry_run": False,
@@ -184,7 +171,6 @@ def test_bootstrap_python_plus_haskell_inventory_without_haskell_toolchain(
     assert (wiki / "entities" / "instance_Renderable_User.md").exists()
 
 
-@skip_no_ts_go_rust
 def test_bootstrap_multilanguage_collision_pages_lint_passes(
     tmp_path, monkeypatch, capsys
 ):
@@ -193,11 +179,38 @@ def test_bootstrap_multilanguage_collision_pages_lint_passes(
     _write(proj / "web" / "client.ts", "export class Client {}\n")
     _write(proj / "go" / "api" / "client.go", "package api\n\ntype Client struct{}\n")
     _write(proj / "rust" / "native" / "client.rs", "pub struct Client;\n")
-    _prepare_helpers_or_fail(
-        proj,
-        ["typescript", "go", "rust"],
-        _short_cache_base(tmp_path),
-        monkeypatch,
+    inventory = {
+        "web/client.ts": {
+            "language": "typescript",
+            "classes": [{"name": "Client", "kind": "class", "line": 1}],
+            "functions": [],
+            "imports": [],
+        },
+        "go/api/client.go": {
+            "language": "go",
+            "classes": [{"name": "Client", "kind": "struct", "line": 3}],
+            "functions": [],
+            "imports": [],
+        },
+        "rust/native/client.rs": {
+            "language": "rust",
+            "classes": [{"name": "Client", "kind": "struct", "line": 1}],
+            "functions": [],
+            "imports": [],
+        },
+    }
+    inventory_result = InventoryResult(
+        inventory,
+        {
+            language: ExtractorStatus(language, "ok", 1)
+            for language in ("typescript", "go", "rust")
+        },
+    )
+    monkeypatch.setattr(
+        bootstrap_cmd, "get_inventory_result", lambda *args, **kwargs: inventory_result
+    )
+    monkeypatch.setattr(
+        lint_cmd, "get_inventory_result", lambda *args, **kwargs: inventory_result
     )
 
     monkeypatch.chdir(proj)

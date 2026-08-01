@@ -96,6 +96,30 @@ class TestGeneratePromptWritesFile:
         out = capsys.readouterr().out
         assert "cat '.git/wiki prompt.txt'" in out
 
+    def test_redacts_credential_like_diff_values_and_appends_count(
+        self, tmp_project, monkeypatch
+    ):
+        secrets = (
+            "sk-abcdefghijklmnopqrstuvwxyz",
+            "Bearer abc",
+            "ghp_abcdefghijklmnopqrstuvwxyz",
+        )
+        diff = "\n".join(f"+{value}" for value in secrets)
+        monkeypatch.setattr(generate_prompt_cmd, "_git_diff", lambda: diff)
+        monkeypatch.setattr(
+            generate_prompt_cmd,
+            "render_prompt_template",
+            lambda _template, values: "Git diff:\n" + values["diff"] + "\n",
+        )
+        args = _make_args(template="test-template")
+
+        generate_prompt_cmd.run(args)
+
+        content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
+        assert not any(secret in content for secret in secrets)
+        assert content.count("[REDACTED:credential]") == 3
+        assert content.endswith("[3 credential-like values redacted]\n")
+
 
 class TestGeneratePromptPrintMode:
     def test_print_goes_to_stdout(self, tmp_project, capsys):

@@ -39,6 +39,13 @@ brokered handoff. If the worker must write under `.llm-wiki-docs/results/`,
 scope access to the exact stage result file; never expose the directory or the
 remaining control tree for writing. The supervisor runs `record-result` and
 owns the persisted result, reconciliation evidence, and stage receipts.
+Within `wiki/`, the supervisor also owns `.llm-wiki-manifest.json`,
+`.llm-wiki-surface.json`, and `.llm-wiki-knowledge.json`. It refreshes and
+re-anchors that projection after accepted semantic changes; a worker never
+edits or reports those paths as its changes. The supervisor runs that owning
+refresh before strict lint/CI, then reports expired human section reviews and
+stale machine-verification receipts with their existing reasons. It never
+creates replacement review events or receipts merely to clear a gate.
 
 Control-tree checks and hash/receipt comparisons detect ordinary accidental or
 partial tampering. They do not form a cryptographic boundary against a worker
@@ -136,6 +143,9 @@ The local execution manifest is exact-field and must have this shape. Replace
 the schematic executable, hashes, and image identities with canonical
 host-specific values; mutable image tags are rejected:
 
+The `p0-calibration` fragments in the following schema values are historical
+wire identifiers retained for compatibility.
+
 ```json
 {
   "schema_version": "llm-wiki-p0-calibration-execution-manifest/v1",
@@ -226,7 +236,7 @@ Use `dispatch` for the frozen local OCI backend. Use `record-result` only for a
 separately authenticated host broker whose identity is established outside its
 JSON receipt. The ordinary CLI remains fail-closed without a host authenticator;
 an embedding Python host scopes authenticated calls with
-`use_p0_calibration_host_broker_authenticator`. Local OCI entrypoints overwrite
+`use_calibration_host_broker_authenticator`. Local OCI entrypoints overwrite
 the supplied pre-created result file; its parent is not writable, its exact
 byte ceiling is enforced during execution, and admission must deny both an
 over-limit extension and sibling creation. Unavailable enforcement blocks the

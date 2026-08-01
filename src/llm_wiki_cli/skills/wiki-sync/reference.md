@@ -12,6 +12,7 @@ Supporting detail for [SKILL.md](SKILL.md).
 | Flow pages `## Data flow`, call-sequence diagram | No | Regenerated from inventory each `sync` |
 | `api-contracts.md` `## Notes` | Yes — document reviewed contract caveats and unresolved runtime knowledge | Operation inventory, parameters, responses, source links, and diagnostics — regenerated |
 | `dependencies.md` / `load-order.md` `## Notes` | Yes — document intentional cycles, dynamic imports, rationale | Rest of the page (cycles/load-order tables) — regenerated |
+| Infrastructure page `## Notes` | Yes — reviewed, non-sensitive operational context only | Every other section — incrementally regenerated from the bounded source adapter; unsupported custom headings are dropped |
 | `index.md` custom trailing sections | Yes | Registry-backed overview/per-surface link sections — regenerated |
 | `log.md` | Append-only, new content at the bottom | Existing entries — never edit or reorder past log lines |
 
@@ -20,16 +21,53 @@ Rule of thumb: if a section is bounded by an explicit "Do not edit by hand" comm
 ## Validation loop details
 
 - Normal `lint` runs the structural checks; `--strict` additionally requires core structure (`index.md`, `log.md`, `entities/`, `modules/`, `workflows/`, `infrastructure/`) and a fresh, non-stale sync manifest.
+- When this skill changes canonical Markdown, its final validation loop begins
+  with a second owning `llm-wiki sync --jobs 1 ...`. That pass preserves
+  supported semantic content and commits the new Markdown/surface/knowledge/
+  manifest snapshot. A generated-only run with no semantic edit does not repeat
+  sync. Any Markdown fix made after validation restarts at the owning sync.
 - Dependency-cycle / undeclared-dependency / unused-dependency diagnostics are non-blocking warnings, not lint failures — they are not part of this skill's exit criteria. Documenting an intentional cycle in `## Notes` answers the warning; it is not required to make lint pass.
 - Use `--profile` for machine-readable `issues[]` / `diagnostics[]` when iterating, rather than parsing the human-readable text report.
 - If the project has team policy configured, resolve `team check` failures before calling the skill done. `team resolve-conflicts` only auto-resolves generated-page conflicts; manual workflow-page conflicts are left for this skill (or a human) to resolve by hand.
+- Treat post-refresh `knowledge_review` and `knowledge_verification` findings as
+  independent lifecycle results. Report expired review reasons and stale
+  receipt reasons; sync never authors a human review or fabricates a new
+  verification receipt.
+
+## Governed rename decision table
+
+| Preview evidence | Identity action before mutating sync |
+|---|---|
+| One prior route maps unambiguously to one new route and the target is unowned | Let sync/migration carry the UID automatically and retain the old locator/natural key as aliases. Do not duplicate the move manually. |
+| One prior route fans out to multiple targets | Stop and obtain an owner decision. Preview one exact `knowledge move`; never choose by filename similarity or target order. |
+| Multiple prior governed concepts claim one target | Reject the implicit merge. The owner must preserve both allocations and choose distinct targets or explicitly redesign the concepts outside this workflow. |
+| Target locator or natural key is already owned by another UID | Treat it as `governance-allocation-conflict`; make no mutation and never overwrite/reallocate the target owner. |
+| Source/page disappeared without continuity evidence | Retain the allocation and lifecycle. A surface deprecation notice does not author native deprecation or deletion. |
+| Ledger is missing but manifest/projection commits governance | Stop before page mutation and restore the exact ledger from version control or backup. Never run `knowledge init` or reconstruct from the disposable projection. |
+
+An explicit move is ordered: filesystem/source rename, sync dry-run and
+`knowledge status`, dry-run `knowledge move`, governance-owner confirmation,
+real `knowledge move`, immediate sync, then strict validation. Between the real
+move and sync the ledger is authoritative but projection parity is pending;
+that temporary rejected read state is expected and must not be prolonged.
 
 ## Failure modes and edge cases
 
 - **No lock on plain `sync`.** Locking and circuit-breaking (`.git/llm-wiki.lock`, `.git/llm-wiki-breaker.json`) only exist in `trigger-agent`. This skill assumes a single interactive session. If it is ever wired into unattended automation (cron, CI, a bot), shell out through `trigger-agent` (`--timeout`, `--max-diff-lines`, `--max-prompt-bytes`, `--reset-breaker`) rather than reimplementing locking/backoff — and in that path only, set `LLM_WIKI_AUTO_COMMIT=1` on the commit so the post-commit hook does not re-trigger itself.
 - **Sync's broad-diff guard.** `sync` aborts when a change would affect more than 50 files or more than 30% of sources (once the manifest tracks ≥10 sources). Distinguish "expected, force it" (mass rename) from "manifest is stale/corrupt" (repair, don't force).
+- **Infrastructure regeneration guard and recovery.** Infrastructure has its
+  own 50-source/30-percent guard. Dry-run reports add/change/move/remove,
+  discovery roots, and unsupported YAML. Manifest v5 persists the
+  repository-relative mapping, source-content hash, normalized observation
+  hash, and removal/move tombstones under
+  `generation_inputs.infrastructure`. Page writes are atomic; if final artifact
+  commitment is interrupted, the unchanged old manifest makes the next sync
+  reapply and finish the same deterministic plan. The knowledge projection
+  binds each active/removal page to the same `infrastructure`-scoped evidence
+  basis; strict freshness recomputes supported observations and never treats
+  an unsupported YAML candidate or removed source as current.
 - **Surface initialization guard.** An explicit backfill also requires `--force` above 50 new pages or 30% of the current canonical wiki once it has at least 10 pages. Run the same initialization with `--dry-run` first; persisted category/test policy prevents later syncs from broadening the chosen surface silently.
-- **Persisted OpenAPI input.** Manifest v4 stores a source-relative OpenAPI
+- **Persisted OpenAPI input.** Manifest v5 stores a source-relative OpenAPI
   path, SHA-256, and format under `generation_inputs.openapi`. Ordinary sync
   reparses and re-hashes that source-contained OpenAPI 3.0/3.1 document, so a
   specification-only change refreshes `api-contracts.md`. A missing or invalid
@@ -37,6 +75,13 @@ Rule of thumb: if a section is bounded by an explicit "Do not edit by hand" comm
   writes; replace it with `--openapi-file PATH` or remove it with
   `--clear-openapi-file`. Those two flags are mutually exclusive.
 - **Oversized diff.** Bound how much diff text is read into context — large diffs should lean on `extract --changed --summary` instead of full `git diff` text.
+- **Missing governance ledger.** A previously governed repository fails closed
+  before sync writes. Restore `.llm-wiki-governance.json` from version control
+  or backup. Generated `.llm-wiki-knowledge.json`, the manifest, and aliases in
+  derived exports are not sufficient recovery authority.
+- **Governance target collision.** Never use `--force`, ledger deletion,
+  reinitialization, or a hand-edited alias to bypass a target-owner conflict.
+  Preserve both UIDs and return the choice to the governance owner.
 - **No machine-readable sync summary.** Unlike `bootstrap --format json`, `sync` prints text lines with fixed prefixes (`CREATE` / `UPDATE` / `METADATA` / `SKIP` / `DEPRECATE` / `RENAME`, plus the tally and `APPEND log.md`); parse those rather than expecting JSON.
 - **Source-adapter / multi-repo wikis.** `--allow-external-src` must be passed to `sync`, `lint`, `ci-check`, and `team check` consistently. For example: `llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki`. `--wiki-dir` itself always stays inside the current project root.
 - **External documentation workspace.** Treat this as a packet-driven refresh of

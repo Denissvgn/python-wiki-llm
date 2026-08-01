@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping
 
 from .plugins import PluginError, diagram_style_components, load_entry_point
+from .validation import resolved_paths_equal
 
 _FENCE = "```mermaid"
 _LABEL_SAFE = re.compile(r"[^A-Za-z0-9 _.\-/]+")
@@ -116,7 +117,7 @@ def _load_style_hook(component: Mapping[str, Any], root: str | Path):
 
 
 def _roots_equal(left: str | Path, right: str | Path) -> bool:
-    return Path(left).resolve() == Path(right).resolve()
+    return resolved_paths_equal(left, right)
 
 
 def _read_style_components(

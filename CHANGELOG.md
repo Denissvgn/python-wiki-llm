@@ -7,8 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-07-31
+
 ### Added
 
+- Opt-in, allowlisted native-knowledge summaries for static-site and Obsidian
+  mirrors, including governed identities, lifecycle, scoped review,
+  verification, and freshness. Obsidian mirrors can additionally render native
+  typed-relationship metadata.
+- Native context, graph, knowledge, and MCP search responses now disclose exact
+  response-layer totals, returned counts, and truncation through additive
+  `bounds` metadata.
 - A protected calibration sibling lifecycle through `llm-wiki docs calibration`
   and matching typed Python APIs. It freezes matching evidence from two
   independent documentation controls, admits a fresh cohort only after
@@ -23,8 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   attempts. External-broker contracts remain credential-free and require
   separately established host authentication; no provider SDK or adapter is
   included.
-- Priority-blind standalone P0 calibration evidence: bootstrap and surface
-  artifacts now preserve detector/language provenance, routes, bounded
+- Priority-blind standalone documentation calibration evidence: bootstrap and
+  surface artifacts now preserve detector/language provenance, routes, bounded
   call/data-flow details, boundary confidence and gaps, and dependency metrics;
   `docs prepare` records a source-cited complete census and an evidence-only
   shadow without changing the v1 priority rule. Fail-closed preflight and
@@ -39,9 +48,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   deploys.
 - Two baseline strategies: deterministic source bootstrap and path-safe
   adoption of an existing canonical wiki, including pages previously enriched
-  by LLM-backed `llm-wiki` workflows. Runs record a source content-hash baseline
-  and byte-preserving input-wiki snapshot provenance, generated ownership,
-  semantic-page classifications, and explicit `require-current`, workspace-only
+  by LLM-backed `llm-wiki` workflows. Adoption preserves legacy index-only
+  inputs, pre-native manifest v4/surface pairs, and manifest v5 inputs while
+  validating a marked v5 manifest/surface/knowledge trio as one committed
+  projection. Runs record a source content-hash baseline and byte-preserving
+  input-wiki snapshot provenance, generated ownership, semantic-page
+  classifications, and explicit `require-current`, workspace-only
   `refresh-snapshot`, or limited `allow-unverified` freshness decisions.
 - Versioned documentation run, worklist/readiness, agent packet/result, review
   ledger, verification, final-report, and model-routing contracts. Result
@@ -56,8 +68,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   configured escalation signals or explicit user overrides. The routing API
   returns serializable host-owned selection metadata and does not invoke a
   provider. Mistral, DeepSeek, Qwen, gateway, and cloud labels currently use the
-  v1 `other` family; first-class backend/publisher/transport bindings remain
-  proposed. Provider families and tiers are caller-maintained labels: the core
+  v1 `other` family; first-class backend/publisher/transport bindings are not
+  included. Provider families and tiers are caller-maintained labels: the core
   includes no native provider adapter, current-price lookup, or proof of the
   concrete model used.
 - Bundled `agent-docs` and `wiki-semantic-enhance` skills plus external-mode
@@ -68,14 +80,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   covering source and enriched-wiki setup, trust/isolation, agent handoffs,
   result schemas, low-cost routing, Python APIs, refresh/resume behavior,
   builders, limitations, and troubleshooting.
+- Bounded trigger lock waiting through `LLM_WIKI_LOCK_WAIT`, one-hour circuit
+  breaker auto-recovery with `LLM_WIKI_BREAKER_TTL_SECONDS` control, and
+  configurable helper runtimes through `LLM_WIKI_EXTRACTOR_TIMEOUT`.
+- Typed return contracts for the supported Python API, a shared protocol
+  version registry with documented migration rules, and stable
+  `InvalidRequestError`, `WorkspaceStateError`, and `ArtifactIntegrityError`
+  failure categories across every public API function.
 
 ### Changed
 
-- CI now uses a resource-bounded three-job qualification matrix: Python 3.10
-  on Ubuntu, Python 3.13 on Windows, and Python 3.14 on macOS.
+- Site and Obsidian enrichment now share a validated snapshot projection. The
+  default remains disabled and byte-compatible, while portable enrichment uses
+  public redaction unless a caller explicitly selects the internal profile.
+- Calibration packet validation now uses one 16 MiB ceiling across the CLI,
+  controller, and OCI broker. The broker previously retained a separate,
+  unused 64 MiB ceiling even though it receives the direct packet bytes.
+- Manifest v5 is the current native wiki format. Standalone adoption retains
+  manifest v4/surface compatibility, distinguishes markerless v5 surface-only
+  inputs from complete marked v5 trios, and exposes unevaluable inputs as
+  unverified snapshot-only evidence instead of claiming current knowledge.
+- Standalone result reconciliation refreshes the controller-owned native
+  projection after accepted semantic Markdown changes and re-anchors generated
+  ownership before later validation or dispatch.
+
+### Deprecated
+
+- Documentation calibration lifecycle APIs now use the canonical
+  `prepare_calibration_run`, `get_calibration_run_status`,
+  `admit_calibration_run`, `build_calibration_agent_packet`,
+  `dispatch_calibration_agent`, `record_calibration_agent_result`,
+  `verify_calibration_run`, and
+  `use_calibration_host_broker_authenticator` names. The corresponding
+  `prepare_p0_calibration_run`, `get_p0_calibration_run_status`,
+  `admit_p0_calibration_run`, `build_p0_calibration_agent_packet`,
+  `dispatch_p0_calibration_agent`, `record_p0_calibration_agent_result`,
+  `verify_p0_calibration_run`, and
+  `use_p0_calibration_host_broker_authenticator` compatibility aliases now emit
+  `DeprecationWarning`.
+- The bundled sample plugin is now `documentation-hooks`. The legacy
+  `m4-documentation-hooks` sample ID remains a compatibility alias and emits a
+  warning when used.
 
 ### Fixed
 
+- `sync` now recognizes an untouched `init` scaffold and requires `bootstrap`
+  before manifest seeding, preventing generated index links to pages that do
+  not exist.
+- Public projection output now omits native-only actors, private identities,
+  credentials, absolute paths, source snippets, and unapproved extensions.
+- Live knowledge freshness now recomputes the effective generation-options
+  commitment instead of assuming the recorded snapshot hash is still current.
+- MCP knowledge tools reject malformed or noncanonical concept coordinates
+  before constructing the source-backed query service.
 - Windows guarded reads now hold rename-blocking directory handles throughout
   traversal and compare path/handle metadata using values with stable semantics
   across supported Python versions.
@@ -92,18 +149,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-- Calibration state uses a dedicated protected root with immutable numbered
-  artifacts, guarded no-follow writes, atomic snapshots, a cross-platform
-  controller lock, generation/head compare-and-swap checks, bounded canonical
-  JSON, replay detection, and fail-closed crash recovery. Intake-role packets
+- Calibration state uses a dedicated protected root with application-level
+  create-once numbered artifacts, guarded no-follow writes, atomic snapshots, a
+  cross-platform controller lock, generation/head compare-and-swap checks,
+  bounded canonical JSON, replay detection, and fail-closed crash recovery.
+  These are same-user content-integrity controls, not authentication against
+  the filesystem owner, root, or offline modification. Intake-role packets
   exclude priorities, credentials, host paths, and other-role outputs; the
   verifier receives only the three frozen, sanitized proposals.
+- Generated prompt artifacts now apply best-effort credential-pattern
+  redaction and report the number of matched values. This pattern matching is
+  not secret detection, so generated artifacts still require review before
+  sharing.
+- External source roots now disclose same-owner and
+  system-administrator-owned symlink resolution while rejecting links owned by
+  another user. Protected artifact stores also support an optional cumulative
+  payload quota, coordinated by the existing root lock.
 - Standalone runs treat source trees, adopted wikis, target instructions, and
   live-service responses as untrusted evidence. Source plugins are disabled by
   default, helper/build preparation is explicit, symlink/non-regular/path-escape
   inputs and overlapping roots are rejected, writes are constrained to declared
   roots, live-service flags record permission without making a request or
   capture, and remote publication remains a separately authorized handoff.
+- Existing-wiki adoption validates descriptor-pinned manifest, surface, and
+  knowledge bytes, their exact marker hashes, cross-artifact commitments, and
+  canonical Markdown snapshot before accepting a native projection. Artifact
+  metadata never selects or executes source plugins.
 - Frozen standalone run contracts now reject coercible trusted-field values,
   inconsistent intake/policy provenance, unsupported imported schemas,
   noncanonical source revisions, and missing or id/path-mismatched run-local
@@ -237,8 +308,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
   for attaching evidence-linked screenshots or recordings under
   `assets/<surface>/<page-stem>/` and validating the media pipeline before
   publishing.
-- Bundled `attack-surface` agent skill (from the 2026-07-04 workflow
-  dogfood): defensive security-review preparation — prepare extractor
+- Bundled `attack-surface` agent skill (from the 2026-07-04 self-hosted
+  workflow review): defensive security-review preparation — prepare extractor
   helpers, run `extract --deep --read-only`, seed required coverage from
   `SECURITY.md`, treat data-flow gaps as unknown surface (never as
   evidence of safety), supplement bounded flow walks with a source-level
@@ -283,7 +354,7 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
   discovered as built-in source files, extracted through an explicitly prepared
   helper-backed GHC parser, rendered in generated wiki pages, and included in
   declared-module dependency maps.
-- Haskell inventory is syntax-only for this milestone: it records module names,
+- Haskell inventory is syntax-only in this release: it records module names,
   imports, top-level signatures and values, and type-oriented declarations
   without typechecking the target project, starting Haskell Language Server, or
   reconciling Cabal, Stack, or Nix dependency manifests.
@@ -307,8 +378,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
   call targets (additive under `llm-wiki-extract/v1`; omitted when empty and
   absent in slim mode). A new internal `resolve_call_edges` resolver maps those
   calls to project symbols, tagging each caller→callee edge `internal`,
-  `external`, or `unresolved`. This is the call-edge foundation for upcoming
-  user-flow documentation (Milestone 1 — Flow Foundations).
+  `external`, or `unresolved`. This is the call-edge foundation for
+  user-flow documentation.
 - Deep extraction now records optional `all_exports` (names listed in `__all__`)
   and `main_block` (presence of an `if __name__ == "__main__"` guard) file-level
   fields (additive under `llm-wiki-extract/v1`; omitted when absent or in slim
@@ -345,14 +416,12 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
   dependency architecture links only when those pages exist, and a log link.
   `sync` preserves custom top-level index sections by default while
   regenerating the landing-page structure.
-- Milestone 4 release-readiness is documented with a verification matrix for
-  static-site export/check, documentation graph query access through MCP,
-  Python API wrappers and context filters, deterministic plugin component
-  types, migration and upgrade closure, and this repo's dogfood smoke.
-- The M4 release-readiness matrix records the local `.venv` verification
-  commands, package build check, and the compatible CI matrix for
-  Ubuntu/macOS/Windows on Python 3.9, 3.12, and 3.13 without stamping a release
-  or publishing artifacts.
+- Supported public integration surfaces include static-site export and checks,
+  documentation graph queries through MCP, Python API context filters,
+  deterministic plugin component types, migration and upgrade commands, and
+  self-hosted documentation workflows.
+- Cross-platform behavior covers Ubuntu, macOS, and Windows. Current Python
+  requirements are declared by the package metadata.
 
 ## [0.6.2] - 2026-06-23
 
@@ -541,7 +610,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Test suite** — 89 unit + integration tests with pytest
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.3.1...v1.4.0
 [1.3.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.2.0...v1.3.0

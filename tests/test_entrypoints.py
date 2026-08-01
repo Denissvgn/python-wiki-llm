@@ -7,10 +7,13 @@ import inspect
 import textwrap
 
 from llm_wiki_cli.commands.extract_cmd import get_inventory, resolve_call_edges
+from llm_wiki_cli.services import entrypoints as entrypoint_service
 from llm_wiki_cli.services import plugins
 from llm_wiki_cli.services.entrypoints import (
     build_flow,
+    build_flow_detailed,
     detect_entry_points,
+    get_detailed_entry_points,
     get_entry_points,
     javascript_flow_limitations,
     read_console_scripts,
@@ -485,6 +488,105 @@ class TestGetEntryPoints:
         assert {"api-run-a", "api-run-b"} == set(ids)
         assert get_entry_points(inventory) == eps  # deterministic across runs
 
+    def test_detailed_entries_add_detector_evidence_without_changing_legacy(
+        self, tmp_path
+    ):
+        (tmp_path / "api.py").write_text(
+            '__all__ = ["run"]\n\ndef run():\n    pass\n', encoding="utf-8"
+        )
+        inventory = get_inventory(str(tmp_path), deep=True)
+        legacy = get_entry_points(inventory, include_plugins=False)
+
+        result = get_detailed_entry_points(inventory, include_plugins=False)
+
+        assert get_entry_points(inventory, include_plugins=False) == legacy
+        assert legacy == [
+            {
+                "category": "api",
+                "file": "api.py",
+                "symbol": "run",
+                "label": "run",
+                "id": "api-run",
+            }
+        ]
+        assert result == {
+            "schema_version": "llm-wiki-entrypoint-observations/v1",
+            "observations": [
+                {
+                    "entry": legacy[0],
+                    "detector": {
+                        "id": "builtin.api-export",
+                        "version": "1",
+                        "reason": "symbol is a local definition listed in __all__",
+                        "source_location": {
+                            "source_path": "api.py",
+                            "line": 3,
+                        },
+                        "plugin_component": None,
+                    },
+                    "selected": True,
+                }
+            ],
+            "coverage": {
+                "observed": 1,
+                "emitted": 1,
+                "limit": None,
+                "truncated": False,
+                "omitted": 0,
+                "limitations": [
+                    "static-entrypoint-detection-does-not-claim-runtime-reachability"
+                ],
+            },
+        }
+
+    def test_detailed_javascript_observations_preserve_each_detection(self):
+        calls = [
+            {"name": "createServer", "target": "server", "line": 12},
+            {"name": "createServer", "target": "server", "line": 7},
+        ]
+        forward = {
+            "server.js": {
+                "language": "javascript",
+                "imports": [{"module": "node:http", "name": "http"}],
+                "functions": [],
+                "classes": [],
+                "module_calls": list(calls),
+            },
+            "other.js": {
+                "language": "javascript",
+                "imports": [],
+                "functions": [],
+                "classes": [],
+            },
+        }
+        reverse = {
+            "other.js": forward["other.js"],
+            "server.js": {
+                **forward["server.js"],
+                "module_calls": list(reversed(calls)),
+            },
+        }
+
+        first = get_detailed_entry_points(forward, include_plugins=False)
+        second = get_detailed_entry_points(reverse, include_plugins=False)
+
+        assert get_entry_points(forward, include_plugins=False) == [
+            {
+                "category": "http",
+                "file": "server.js",
+                "symbol": "server",
+                "label": "server",
+                "id": "http-server",
+            }
+        ]
+        assert first == second
+        assert first["coverage"]["observed"] == 2
+        assert first["coverage"]["emitted"] == 2
+        assert [
+            observation["detector"]["source_location"]["line"]
+            for observation in first["observations"]
+        ] == [7, 12]
+
     def test_installed_plugin_detector_adds_entry_point(self, tmp_path):
         _write_detector_plugin(
             tmp_path,
@@ -523,6 +625,116 @@ class TestGetEntryPoints:
             entry for entry in with_provenance.entries if entry["category"] == "task"
         )
         assert plugin_entry["detector"] == "plugin:detector-plugin/worker@0.1.0"
+
+    def test_detailed_plugin_entry_identifies_component_reason_and_location(
+        self, tmp_path
+    ):
+        _write_detector_plugin(
+            tmp_path,
+            body="""
+            def detect(inventory):
+                return [{
+                    "category": "task",
+                    "file": "tasks.py",
+                    "symbol": "handle",
+                    "label": "task-handler",
+                    "reason": "registered by the task worker",
+                    "line": 1,
+                }]
+            """,
+        )
+        (tmp_path / "tasks.py").write_text(
+            "def handle():\n    return 1\n", encoding="utf-8"
+        )
+        inventory = get_inventory(str(tmp_path), deep=True)
+
+        result = get_detailed_entry_points(inventory, root=tmp_path)
+        observation = result["observations"][0]
+
+        assert observation["entry"]["id"] == "task-task-handler"
+        assert observation["detector"] == {
+            "id": "plugin:detector-plugin/worker",
+            "version": "0.1.0",
+            "reason": "registered by the task worker",
+            "source_location": {"source_path": "tasks.py", "line": 1},
+            "plugin_component": "detector-plugin/worker",
+        }
+        assert observation["selected"] is True
+
+    def test_detailed_recovery_preserves_the_legacy_winning_detector(
+        self, tmp_path
+    ):
+        _write_detector_plugin(
+            tmp_path,
+            body="""
+            def detect(inventory):
+                return [{
+                    "category": "http",
+                    "file": "server.js",
+                    "symbol": "server",
+                    "label": "public-http-server",
+                }]
+            """,
+        )
+        inventory = {
+            "server.js": {
+                "language": "javascript",
+                "imports": [{"module": "node:http", "name": "http"}],
+                "functions": [],
+                "classes": [],
+                "module_calls": [
+                    {"name": "createServer", "target": "server", "line": 7}
+                ],
+            }
+        }
+
+        legacy = detect_entry_points(
+            inventory,
+            root=tmp_path,
+            include_provenance=True,
+        ).entries
+        detailed = get_detailed_entry_points(inventory, root=tmp_path)
+        recovered = entrypoint_service.entry_points_from_detailed_observations(
+            detailed,
+            include_provenance=True,
+        )
+
+        assert recovered == legacy
+        selected = [
+            observation
+            for observation in detailed["observations"]
+            if observation["selected"]
+        ]
+        assert len(selected) == 1
+        assert selected[0]["detector"]["id"].startswith("plugin:")
+
+    def test_get_entry_points_can_exclude_plugin_discovery(
+        self, tmp_path, monkeypatch
+    ):
+        inventory = {
+            "api.py": {
+                "classes": [],
+                "functions": [{"name": "run"}],
+                "all_exports": ["run"],
+            }
+        }
+
+        monkeypatch.setattr(
+            entrypoint_service,
+            "entrypoint_detector_components",
+            lambda **_kwargs: (_ for _ in ()).throw(
+                AssertionError("plugin discovery must remain disabled")
+            ),
+        )
+
+        entries = get_entry_points(
+            inventory,
+            root=tmp_path,
+            fallback_root=tmp_path.parent,
+            include_plugins=False,
+        )
+
+        assert [entry["id"] for entry in entries] == ["api-run"]
 
     def test_plugin_detector_falls_back_to_cwd_root(self, tmp_path):
         source = tmp_path / "source"
@@ -636,6 +848,20 @@ class TestGetEntryPoints:
         assert len(result.warnings) == 1
         assert "bad category" in result.warnings[0]
 
+        detailed = get_detailed_entry_points({}, root=tmp_path)
+        assert detailed["observations"] == []
+        assert detailed["coverage"] == {
+            "observed": 1,
+            "emitted": 0,
+            "limit": None,
+            "truncated": True,
+            "omitted": 1,
+            "limitations": [
+                "plugin-entrypoint-records-invalid",
+                "static-entrypoint-detection-does-not-claim-runtime-reachability",
+            ],
+        }
+
 
 class TestBuildFlow:
     def test_stays_decomposed(self):
@@ -718,6 +944,42 @@ class TestBuildFlow:
         flow = build_flow(_entry("m.py", "a"), edges, max_depth=2)
         assert max(s["depth"] for s in flow["steps"]) == 2
         assert flow["truncated"] is True
+
+    def test_detailed_flow_preserves_exact_reachable_step_coverage(self, tmp_path):
+        edges = self._edges(
+            tmp_path,
+            "m.py",
+            """\
+            def a():
+                b()
+            def b():
+                c()
+            def c():
+                d()
+            def d():
+                pass
+        """,
+        )
+        entry = _entry("m.py", "a")
+
+        legacy = build_flow(entry, edges, max_depth=2)
+        detailed = build_flow_detailed(entry, edges, max_depth=2)
+
+        assert {
+            key: value
+            for key, value in detailed.items()
+            if key not in {"schema_version", "coverage"}
+        } == legacy
+        assert detailed["schema_version"] == "llm-wiki-flow-observations/v1"
+        assert detailed["coverage"]["steps"] == {
+            "observed": 4,
+            "emitted": 3,
+            "omitted": 1,
+            "limit": None,
+            "depth_limit": 2,
+            "truncated": True,
+            "limitations": ["flow-steps-are-statically-inferred"],
+        }
 
     def test_async_main_guard_process_flow_expands_to_wrapped_entrypoint(
         self, tmp_path

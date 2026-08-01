@@ -44,6 +44,7 @@ def test_docs_help_lists_all_lifecycle_actions(monkeypatch, capsys):
 
     assert exc_info.value.code == 0
     help_text = capsys.readouterr().out
+    normalized_help = " ".join(help_text.split())
     for action in (
         "prepare",
         "status",
@@ -54,6 +55,8 @@ def test_docs_help_lists_all_lifecycle_actions(monkeypatch, capsys):
         "calibration",
     ):
         assert action in help_text
+    assert "evidence-backed documentation calibration cohort" in normalized_help
+    assert "P0 calibration" not in normalized_help
 
 
 @pytest.mark.parametrize(
@@ -138,6 +141,10 @@ def test_docs_prepare_maps_supervisor_intake_without_prompting(
             "--site-format",
             "mkdocs",
             "--file-friendly",
+            "--knowledge-mode",
+            "public-portable",
+            "--knowledge-public-repository-identity",
+            "example.invalid/operator-guide",
             "--output-format",
             "json",
         ]
@@ -155,10 +162,34 @@ def test_docs_prepare_maps_supervisor_intake_without_prompting(
         "operator": "complete the first safe operation"
     }
     assert captured["link_mode"] == "file"
+    assert captured["knowledge_mode"] == "public-portable"
+    assert captured["knowledge_public_repository_identity"] == (
+        "example.invalid/operator-guide"
+    )
     assert captured["trust_source_plugins"] is False
     assert json.loads(capsys.readouterr().out)["integration_mode"] == (
         "external_agent_docs"
     )
+
+
+def test_docs_projection_policy_defaults_to_explicit_off_contract():
+    args = cli._build_parser().parse_args(
+        [
+            "docs",
+            "prepare",
+            "--workspace",
+            "docs-work",
+            "--baseline",
+            "bootstrap-source",
+            "--src-dir",
+            ".",
+            "--site-name",
+            "Operator Guide",
+        ]
+    )
+
+    assert args.knowledge_mode == "off"
+    assert args.knowledge_public_repository_identity is None
 
 
 def test_docs_prepare_reads_structured_intake_and_external_existing_wiki(
@@ -418,16 +449,32 @@ def test_docs_export_passes_builder_as_argv_without_shell_parsing(monkeypatch, c
         docs_cmd,
         "load_documentation_run",
         lambda _workspace: SimpleNamespace(
-            publication={"format": "mkdocs", "link_mode": "file"}
+            publication={
+                "format": "mkdocs",
+                "link_mode": "file",
+                "knowledge_mode": "public-portable",
+                "knowledge_public_repository_identity": None,
+            }
         ),
     )
     captured = {}
 
-    def fake_export(workspace, *, build, builder_command):
+    def fake_export(
+        workspace,
+        *,
+        build,
+        builder_command,
+        knowledge_mode,
+        knowledge_public_repository_identity,
+    ):
         captured.update(
             workspace=workspace,
             build=build,
             builder_command=builder_command,
+            knowledge_mode=knowledge_mode,
+            knowledge_public_repository_identity=(
+                knowledge_public_repository_identity
+            ),
         )
         return {
             "run_id": "doc-run-1",
@@ -447,6 +494,8 @@ def test_docs_export_passes_builder_as_argv_without_shell_parsing(monkeypatch, c
             "--format",
             "mkdocs",
             "--file-friendly",
+            "--knowledge-mode",
+            "public-portable",
             "--build",
             "--output-format",
             "json",
@@ -463,6 +512,8 @@ def test_docs_export_passes_builder_as_argv_without_shell_parsing(monkeypatch, c
         "workspace": "docs-work",
         "build": True,
         "builder_command": ["mkdocs", "build", "--strict"],
+        "knowledge_mode": "public-portable",
+        "knowledge_public_repository_identity": None,
     }
     assert json.loads(capsys.readouterr().out)["verdict"] == (
         "local_artifact_ready_with_limitations"

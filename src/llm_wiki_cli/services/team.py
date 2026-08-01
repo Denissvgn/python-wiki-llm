@@ -8,11 +8,15 @@ from copy import deepcopy
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from ..config import DEFAULT_WIKI_DIR
-from .io import read_md, write_md
+from .io import read_md, write_json_atomic, write_md
 from .plugins import PluginError, iter_components
+from .validation import require_exact_fields, require_string_list
+
+if TYPE_CHECKING:
+    from .sync_manifest import SyncManifest
 
 TEAM_CONFIG_PATH = Path(".llm-wiki") / "team.json"
 TEAM_CONFIG_VERSION = 1
@@ -90,24 +94,27 @@ def write_default_team_config(
     wiki_dir: str = DEFAULT_WIKI_DIR, *, root: str | Path = "."
 ) -> Path:
     path = team_config_path(root)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(default_team_config(wiki_dir), indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
-    return path
+    return write_json_atomic(path, default_team_config(wiki_dir))
 
 
 def _reject_unknown_keys(data: dict[str, Any], allowed: set[str], scope: str) -> None:
-    unknown = sorted(set(data) - allowed)
-    if unknown:
-        raise TeamConfigError(f"{scope} contains unknown key(s): {', '.join(unknown)}")
+    return require_exact_fields(
+        data,
+        allowed=allowed,
+        required=(),
+        mapping_error=TeamConfigError(f"{scope} must be a mapping"),
+        missing_error=lambda _fields: AssertionError("no required fields"),
+        unknown_error=lambda fields: TeamConfigError(
+            f"{scope} contains unknown key(s): {', '.join(fields)}"
+        ),
+    )
 
 
 def _ensure_string_list(value: Any, field: str) -> list[str]:
-    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
-        raise TeamConfigError(f"{field} must be a list of strings.")
-    return value
+    return require_string_list(
+        value,
+        error=TeamConfigError(f"{field} must be a list of strings."),
+    )
 
 
 def validate_team_config(data: Any) -> dict[str, Any]:
@@ -265,11 +272,11 @@ def check_plugin_requirements(
 def check_team_conventions(
     request: TeamConventionRequest,
 ) -> list[dict[str, str | None]]:
-    from ..commands.bootstrap_cmd import (
+    from .bootstrap_runtime import (
         build_entity_occurrence_page_map,
         build_module_page_map,
     )
-    from ..commands.extract_cmd import get_docker_inventory
+    from .extraction_service import get_docker_inventory
 
     wiki_path = request.wiki_path
     conventions = request.config["conventions"]
@@ -438,7 +445,7 @@ def _existing_page_entries(directory: Path, extra_key: str) -> list[dict[str, st
 
 
 def _index_content(wiki_dir: Path, inventory: dict) -> str:
-    from ..commands.bootstrap_cmd import (
+    from .bootstrap_runtime import (
         _generate_index_md,
         build_entity_occurrence_page_map,
         build_module_page_map,
@@ -497,15 +504,21 @@ def _manifest_content(
     inventory: dict,
     src_dir: str,
     *,
+    wiki_dir: Path | None = None,
     surfaces: dict[str, dict] | None = None,
     generation_inputs: dict[str, object] | None = None,
+    previous_manifest: SyncManifest | None = None,
 ) -> str:
-    from ..commands.bootstrap_cmd import (
+    from .bootstrap_runtime import (
         build_entity_occurrence_page_map,
         build_entity_page_map,
         build_module_page_map,
     )
-    from ..commands.sync_cmd import SyncManifest
+    from .sync_manifest import (
+        MANIFEST_STATE_UNAVAILABLE,
+        SyncManifest,
+        retained_concept_page_paths,
+    )
 
     module_page_map = build_module_page_map(inventory)
     manifest = SyncManifest.build_from_inventory(
@@ -518,6 +531,11 @@ def _manifest_content(
         ),
         surfaces=surfaces,
         generation_inputs=generation_inputs,
+        previous_manifest=previous_manifest,
+        retained_page_paths=(
+            retained_concept_page_paths(wiki_dir) if wiki_dir is not None else None
+        ),
+        unknown_evidence_reason=MANIFEST_STATE_UNAVAILABLE,
     )
     return manifest.to_json()
 
@@ -543,11 +561,21 @@ def _conflict_variants(text: str) -> tuple[str, str]:
     return "\n".join(ours), "\n".join(theirs)
 
 
-def _manifest_state_from_conflict(
+def _manifest_resolution_state_from_conflict(
     text: str,
-) -> tuple[dict[str, dict] | None, dict[str, object] | None, str]:
+) -> tuple[
+    dict[str, dict] | None,
+    dict[str, object] | None,
+    SyncManifest | None,
+    str,
+]:
+    from .sync_manifest import MANIFEST_VERSION, SyncManifest, SyncManifestError
+
     variants = _conflict_variants(text)
     parsed: list[dict] = []
+    v5_manifests: list[SyncManifest] = []
+    v5_advertised = False
+    invalid_v5 = False
     for variant in variants:
         try:
             payload = json.loads(variant)
@@ -555,8 +583,45 @@ def _manifest_state_from_conflict(
             continue
         if isinstance(payload, dict):
             parsed.append(payload)
+            if payload.get("version") == MANIFEST_VERSION:
+                v5_advertised = True
+                try:
+                    v5_manifests.append(SyncManifest.from_payload(payload))
+                except (SyncManifestError, TypeError, ValueError):
+                    invalid_v5 = True
     if not parsed:
-        return {}, {}, ""
+        return {}, {}, None, ""
+
+    if v5_advertised:
+        if invalid_v5 or len(v5_manifests) != len(variants):
+            return (
+                None,
+                None,
+                None,
+                "manifest v5 state cannot be validated on both sides and "
+                "requires manual resolution",
+            )
+        operational_fields = (
+            "surfaces",
+            "generation_inputs",
+            "page_source_mappings",
+            "evidence_baselines",
+            "tombstones",
+        )
+        manifest_payloads = [manifest.to_payload() for manifest in v5_manifests]
+        operational_payloads = [
+            {field: payload[field] for field in operational_fields}
+            for payload in manifest_payloads
+        ]
+        if operational_payloads[0] != operational_payloads[1]:
+            return (
+                None,
+                None,
+                None,
+                "manifest v5 operational state differs and requires manual resolution",
+            )
+        agreed = v5_manifests[0].without_artifact_hashes()
+        return agreed.surfaces, agreed.generation_inputs, agreed, ""
 
     preserved: dict[str, dict] = {}
     for key in ("surfaces", "generation_inputs"):
@@ -569,13 +634,29 @@ def _manifest_state_from_conflict(
         unique = {json.dumps(value, sort_keys=True) for value in values}
         if len(unique) > 1:
             label = key.replace("_", " ")
-            return None, None, f"manifest {label} differ and require manual resolution"
+            return (
+                None,
+                None,
+                None,
+                f"manifest {label} differ and require manual resolution",
+            )
         preserved[key] = values[0]
-    return preserved["surfaces"], preserved["generation_inputs"], ""
+    return preserved["surfaces"], preserved["generation_inputs"], None, ""
+
+
+def _manifest_state_from_conflict(
+    text: str,
+) -> tuple[dict[str, dict] | None, dict[str, object] | None, str]:
+    """Return the legacy three-field view used by callers and tests."""
+
+    surfaces, generation_inputs, _manifest, error = (
+        _manifest_resolution_state_from_conflict(text)
+    )
+    return surfaces, generation_inputs, error
 
 
 def _module_content(page_stem: str, inventory: dict) -> tuple[str | None, str]:
-    from ..commands.bootstrap_cmd import (
+    from .bootstrap_runtime import (
         _generate_module_md,
         build_entity_occurrence_page_map,
         build_module_page_map,
@@ -607,7 +688,7 @@ def _module_content(page_stem: str, inventory: dict) -> tuple[str | None, str]:
 
 
 def _entity_content(page_stem: str, inventory: dict) -> tuple[str | None, str]:
-    from ..commands.bootstrap_cmd import (
+    from .bootstrap_runtime import (
         _build_relationships,
         _generate_entity_md,
         build_entity_occurrence_page_map,
@@ -644,8 +725,8 @@ def _entity_content(page_stem: str, inventory: dict) -> tuple[str | None, str]:
 def _infrastructure_content(
     page_stem: str, inventory: dict, src_dir: str
 ) -> tuple[str | None, str]:
-    from ..commands.bootstrap_cmd import _generate_docker_md, build_module_page_map
-    from ..commands.extract_cmd import get_docker_inventory
+    from .bootstrap_runtime import _generate_docker_md, build_module_page_map
+    from .extraction_service import get_docker_inventory
 
     docker_inventory = get_docker_inventory(src_dir)
     matches = [
@@ -718,17 +799,26 @@ def _resolution_for_path(
             wiki_dir, inventory
         ), "rebuilt index from current inventory"
     if rel_path == ".llm-wiki-manifest.json":
-        surfaces, generation_inputs, error = _manifest_state_from_conflict(
-            read_md(path)
-        )
+        (
+            surfaces,
+            generation_inputs,
+            previous_manifest,
+            error,
+        ) = _manifest_resolution_state_from_conflict(read_md(path))
         if surfaces is None:
             return None, error
         return _manifest_content(
             inventory,
             src_dir,
+            wiki_dir=wiki_dir,
             surfaces=surfaces,
             generation_inputs=generation_inputs,
-        ), "rebuilt sync manifest from current inventory"
+            previous_manifest=previous_manifest,
+        ), (
+            "reconciled agreed v5 manifest state with current inventory"
+            if previous_manifest is not None
+            else "rebuilt sync manifest from current inventory"
+        )
     if rel_path == "log.md":
         return _merge_conflicted_log(
             read_md(path)
@@ -750,7 +840,7 @@ def resolve_conflicts(
     *,
     write: bool = False,
 ) -> dict[str, Any]:
-    from ..commands.extract_cmd import get_inventory
+    from .extraction_service import get_inventory
 
     wiki_path = Path(wiki_dir)
     inventory = get_inventory(src_dir, deep=True)

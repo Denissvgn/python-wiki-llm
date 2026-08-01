@@ -37,11 +37,17 @@ import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable, Mapping, Optional
 
 from ..config import is_agent_worktree_path
+from .dependency_versions import build_dependency_version_details
 from .imports import build_module_path_resolver
 from .source_snapshot import SourceSnapshot, build_source_snapshot
+from .validation import (
+    path_is_under as shared_path_is_under,
+    path_is_under_scope as shared_path_is_under_scope,
+    positive_int_or_none,
+)
 
 try:  # Python 3.11+
     import tomllib  # type: ignore[reportMissingImports]
@@ -106,7 +112,10 @@ def _resolve_internal_targets(
 
 
 def build_dependency_graph(
-    inventory: dict, project_root: str | Path | None = None
+    inventory: dict,
+    project_root: str | Path | None = None,
+    *,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> dict:
     """Resolve each file's imports into an internal module-dependency graph.
 
@@ -121,7 +130,11 @@ def build_dependency_graph(
     node. Slim/non-Python entries (no ``imports``) contribute no edges and never
     raise.
     """
-    resolver = build_module_path_resolver(inventory, project_root=project_root)
+    resolver = build_module_path_resolver(
+        inventory,
+        project_root=project_root,
+        source_snapshot=source_snapshot,
+    )
     symbol_index = _build_symbol_file_index(inventory)
 
     edges: set[tuple[str, str]] = set()
@@ -162,6 +175,273 @@ def build_dependency_graph(
             unresolved, key=lambda u: (u["file"], u["module"], u["name"])
         ),
     }
+
+
+_DEPENDENCY_OBSERVATIONS_SCHEMA = "llm-wiki-dependency-observations/v1"
+_IMPORT_LOCATION_OBSERVATIONS_SCHEMA = (
+    "llm-wiki-import-location-observations/v1"
+)
+
+
+def _positive_line(value: object) -> int | None:
+    """Return a source line only when the extractor supplied a real line."""
+    return positive_int_or_none(value)
+
+
+def _unresolved_import_resolution(
+    module: str, name: str, filepath: str, resolver
+) -> str:
+    """Classify a no-candidate import without claiming missing code is external."""
+    target_module = _resolve_target_module(module, name)
+    if (
+        not target_module
+        or target_module.startswith((".", "/"))
+        or resolver.typescript_path_alias_matched(target_module, filepath)
+    ):
+        return "unresolved"
+    return "external"
+
+
+def _dependency_observation_sort_key(observation: Mapping) -> tuple:
+    return (
+        str(observation.get("source_path") or ""),
+        str(observation.get("module") or ""),
+        str(observation.get("name") or ""),
+        observation.get("line") or -1,
+        str(observation.get("resolution") or ""),
+        tuple(observation.get("candidates") or ()),
+        str(observation.get("target_path") or ""),
+    )
+
+
+def _import_location_index(
+    import_observations: Mapping | None,
+) -> tuple[dict[tuple[str, int], Mapping], bool]:
+    """Validate an extractor sidecar without turning bad metadata into evidence."""
+    if import_observations is None:
+        return {}, False
+    if (
+        not isinstance(import_observations, Mapping)
+        or import_observations.get("schema_version")
+        != _IMPORT_LOCATION_OBSERVATIONS_SCHEMA
+        or not isinstance(import_observations.get("observations"), list)
+    ):
+        return {}, True
+
+    index: dict[tuple[str, int], Mapping] = {}
+    duplicate_keys: set[tuple[str, int]] = set()
+    invalid = False
+    for observation in import_observations["observations"]:
+        if not isinstance(observation, Mapping):
+            invalid = True
+            continue
+        source_path = observation.get("source_path")
+        import_index = observation.get("import_index")
+        module = observation.get("module")
+        name = observation.get("name")
+        line = _positive_line(observation.get("line"))
+        if (
+            not isinstance(source_path, str)
+            or not source_path
+            or isinstance(import_index, bool)
+            or not isinstance(import_index, int)
+            or import_index < 0
+            or not isinstance(module, str)
+            or not isinstance(name, str)
+            or line is None
+        ):
+            invalid = True
+            continue
+        key = (source_path, import_index)
+        if key in index or key in duplicate_keys:
+            index.pop(key, None)
+            duplicate_keys.add(key)
+            invalid = True
+            continue
+        index[key] = observation
+    return index, invalid
+
+
+def build_dependency_observations(
+    inventory: dict,
+    project_root: str | Path | None = None,
+    *,
+    source_snapshot: SourceSnapshot | None = None,
+    import_observations: Mapping | None = None,
+) -> dict:
+    """Return lossless, versioned import-resolution observations.
+
+    Unlike :func:`build_dependency_graph`, this collector emits one observation
+    per well-formed inventory import and does not collapse imports into
+    ``(from_file, to_file)`` tuples.  A unique internal candidate is
+    ``resolved`` (including self-imports), multiple candidates are
+    ``ambiguous``, absolute imports outside the selected inventory are
+    ``external``, and relative/path-alias misses remain ``unresolved``.
+
+    Source lines are positive integers or ``None``.  An extractor may supply
+    the additive ``llm-wiki-import-location-observations/v1`` sidecar to retain
+    locations without changing its legacy inventory records. Sidecar records
+    are matched by source path and import ordinal, then checked against the
+    legacy module/name before use. Absence is explicit rather than encoded as
+    line zero.
+    """
+    resolver = build_module_path_resolver(
+        inventory,
+        project_root=project_root,
+        source_snapshot=source_snapshot,
+    )
+    symbol_index = _build_symbol_file_index(inventory)
+    location_index, invalid_location_observations = _import_location_index(
+        import_observations
+    )
+    observations: list[dict] = []
+    malformed = 0
+    mismatched_locations = 0
+    consumed_location_keys: set[tuple[str, int]] = set()
+
+    for filepath in sorted(inventory):
+        data = inventory[filepath]
+        if not isinstance(data, Mapping) or "imports" not in data:
+            continue
+        imports = data.get("imports", [])
+        if not isinstance(imports, list):
+            malformed += 1
+            continue
+        for import_index, raw_import in enumerate(imports):
+            if not isinstance(raw_import, Mapping):
+                malformed += 1
+                continue
+            module = str(raw_import.get("module") or "")
+            name = str(raw_import.get("name") or "")
+            line = _positive_line(raw_import.get("line"))
+            location_key = (filepath, import_index)
+            location_observation = location_index.get(location_key)
+            if location_observation is not None:
+                consumed_location_keys.add(location_key)
+                location_line = _positive_line(location_observation.get("line"))
+                if (
+                    location_observation.get("module") == module
+                    and location_observation.get("name") == name
+                    and (line is None or location_line == line)
+                ):
+                    line = location_line
+                else:
+                    mismatched_locations += 1
+            candidates = sorted(
+                _resolve_internal_targets(
+                    dict(raw_import), filepath, resolver, symbol_index
+                )
+            )
+            if len(candidates) == 1:
+                resolution = "resolved"
+                target_path = candidates[0]
+            elif candidates:
+                resolution = "ambiguous"
+                target_path = None
+            else:
+                resolution = _unresolved_import_resolution(
+                    module, name, filepath, resolver
+                )
+                target_path = None
+            observations.append(
+                {
+                    "source_path": filepath,
+                    "module": module,
+                    "name": name,
+                    "line": line,
+                    "candidates": candidates,
+                    "target_path": target_path,
+                    "resolution": resolution,
+                }
+            )
+
+    mismatched_locations += len(set(location_index) - consumed_location_keys)
+    observations.sort(key=_dependency_observation_sort_key)
+    limitations = [
+        "external-resolution-is-relative-to-the-selected-inventory",
+        "import-locations-depend-on-extractor-support",
+        "static-import-resolution-does-not-claim-runtime-completeness",
+    ]
+    if malformed:
+        limitations.append("malformed-import-records")
+    if invalid_location_observations:
+        limitations.append("invalid-import-location-observations")
+    if mismatched_locations:
+        limitations.append("mismatched-import-location-observations")
+    limitations.sort()
+    emitted = len(observations)
+    return {
+        "schema_version": _DEPENDENCY_OBSERVATIONS_SCHEMA,
+        "observations": observations,
+        "coverage": {
+            "observed": emitted + malformed,
+            "emitted": emitted,
+            "limit": None,
+            "truncated": malformed > 0,
+            "omitted": malformed,
+            "limitations": limitations,
+        },
+    }
+
+
+def build_external_dependency_observations(analysis: Mapping) -> list[dict]:
+    """Lift an existing reconciliation report into source/package observations.
+
+    This is deliberately a projection over an already-computed dependency
+    analysis: it performs no manifest reads or import resolution.  Both
+    declared and undeclared packages are retained so the typed graph can
+    distinguish explicit ``depends_on`` evidence without turning every
+    external import into such an edge.
+    """
+    reconciliation = analysis.get("reconciliation", {})
+    if not isinstance(reconciliation, Mapping):
+        return []
+    languages = reconciliation.get("languages", {})
+    if not isinstance(languages, Mapping):
+        return []
+
+    observations: list[dict] = []
+    for language, raw_report in sorted(
+        languages.items(),
+        key=lambda item: str(item[0]),
+    ):
+        if not isinstance(raw_report, Mapping):
+            continue
+        used = raw_report.get("used", {})
+        if not isinstance(used, Mapping):
+            continue
+        required = {
+            str(package) for package in raw_report.get("required", []) or []
+        }
+        optional = {
+            str(package) for package in raw_report.get("optional", []) or []
+        }
+        for package, raw_paths in sorted(used.items(), key=lambda item: str(item[0])):
+            package_name = str(package)
+            declaration = (
+                "required"
+                if package_name in required
+                else "optional"
+                if package_name in optional
+                else None
+            )
+            paths = raw_paths if isinstance(raw_paths, (list, tuple, set)) else ()
+            for source_path in sorted(
+                {str(path) for path in paths if isinstance(path, str) and path}
+            ):
+                observation = {
+                    "source_path": source_path,
+                    "package": package_name,
+                    "language": str(language),
+                    "explicit": declaration is not None,
+                }
+                if declaration is not None:
+                    observation["declaration"] = declaration
+                    observation["reason"] = (
+                        f"declared as a {declaration} {language} dependency"
+                    )
+                observations.append(observation)
+    return observations
 
 
 # ── Cycle detection (DL-102) ──────────────────────────────────────────
@@ -1404,7 +1684,7 @@ def _classify_go(
 
 
 def _path_under(path: str, prefix: str) -> bool:
-    return bool(prefix) and (path == prefix or path.startswith(prefix + "/"))
+    return shared_path_is_under(path, prefix)
 
 
 # ── Rust (DL-204) ─────────────────────────────────────────────────────
@@ -1947,10 +2227,7 @@ def classify_imports(
 
 
 def _path_under_scope(filepath: str, scope_root: str) -> bool:
-    normalized = filepath.replace("\\", "/").strip("/")
-    if not scope_root:
-        return True
-    return normalized == scope_root or normalized.startswith(scope_root + "/")
+    return shared_path_is_under_scope(filepath, scope_root)
 
 
 def _nearest_manifest_scope(
@@ -2155,9 +2432,12 @@ def _lockfile_dirs(root: Path, excluded_dirs: frozenset[str]) -> list[Path]:
     return dirs
 
 
-def _go_sum_versions(project_root: Path) -> dict[str, dict[str, str]]:
+def _go_sum_versions(
+    project_root: Path,
+    source_snapshot: SourceSnapshot | None = None,
+) -> dict[str, dict[str, str]]:
     versions: dict[str, dict[str, str]] = {}
-    for go_mod in _walk_go_manifest_files(project_root):
+    for go_mod in _walk_go_manifest_files(project_root, source_snapshot):
         go_sum = go_mod.parent / "go.sum"
         try:
             lines = go_sum.read_text(encoding="utf-8").splitlines()
@@ -2197,9 +2477,12 @@ def _cargo_lock_versions(project_root: Path) -> dict[str, dict[str, str]]:
 _REQUIREMENTS_PIN_RE = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)\s*==\s*([^;\s]+)")
 
 
-def _requirements_pin_versions(project_root: Path) -> dict[str, dict[str, str]]:
+def _requirements_pin_versions(
+    project_root: Path,
+    source_snapshot: SourceSnapshot | None = None,
+) -> dict[str, dict[str, str]]:
     versions: dict[str, dict[str, str]] = {}
-    for path in _walk_python_manifest_files(project_root):
+    for path in _walk_python_manifest_files(project_root, source_snapshot):
         if not _is_python_requirements_manifest_name(path.name):
             continue
         try:
@@ -2221,9 +2504,25 @@ def _requirements_pin_versions(project_root: Path) -> dict[str, dict[str, str]]:
     return versions
 
 
-def _poetry_lock_versions(project_root: Path) -> dict[str, dict[str, str]]:
+def _poetry_lock_versions(
+    project_root: Path,
+    source_snapshot: SourceSnapshot | None = None,
+) -> dict[str, dict[str, str]]:
     versions: dict[str, dict[str, str]] = {}
-    for directory in _lockfile_dirs(project_root, _PYTHON_MANIFEST_EXCLUDED_DIRS):
+    if source_snapshot is None:
+        directories = _lockfile_dirs(project_root, _PYTHON_MANIFEST_EXCLUDED_DIRS)
+    else:
+        directories = sorted(
+            {
+                path.parent
+                for path in _walk_python_manifest_files(
+                    project_root,
+                    source_snapshot,
+                )
+            },
+            key=lambda path: path.relative_to(project_root).as_posix(),
+        )
+    for directory in directories:
         data = _load_toml(directory / "poetry.lock")
         if data is None:
             continue
@@ -2242,9 +2541,12 @@ def _poetry_lock_versions(project_root: Path) -> dict[str, dict[str, str]]:
     return versions
 
 
-def _python_lock_versions(project_root: Path) -> dict[str, dict[str, str]]:
-    versions = _requirements_pin_versions(project_root)
-    versions.update(_poetry_lock_versions(project_root))
+def _python_lock_versions(
+    project_root: Path,
+    source_snapshot: SourceSnapshot | None = None,
+) -> dict[str, dict[str, str]]:
+    versions = _requirements_pin_versions(project_root, source_snapshot)
+    versions.update(_poetry_lock_versions(project_root, source_snapshot))
     return versions
 
 
@@ -2254,9 +2556,12 @@ def _package_lock_name(package_path: str) -> str:
     return package_path.rsplit("node_modules/", 1)[1].strip("/").lower()
 
 
-def _package_lock_versions(project_root: Path) -> dict[str, dict[str, str]]:
+def _package_lock_versions(
+    project_root: Path,
+    source_snapshot: SourceSnapshot | None = None,
+) -> dict[str, dict[str, str]]:
     versions: dict[str, dict[str, str]] = {}
-    for package_json in _walk_ts_manifest_files(project_root):
+    for package_json in _walk_ts_manifest_files(project_root, source_snapshot):
         lockfile = package_json.parent / "package-lock.json"
         try:
             data = json.loads(lockfile.read_text(encoding="utf-8"))
@@ -2291,9 +2596,12 @@ def _pnpm_package_key(line: str) -> tuple[str, str]:
     return name.lower(), version
 
 
-def _pnpm_lock_versions(project_root: Path) -> dict[str, dict[str, str]]:
+def _pnpm_lock_versions(
+    project_root: Path,
+    source_snapshot: SourceSnapshot | None = None,
+) -> dict[str, dict[str, str]]:
     versions: dict[str, dict[str, str]] = {}
-    for package_json in _walk_ts_manifest_files(project_root):
+    for package_json in _walk_ts_manifest_files(project_root, source_snapshot):
         lockfile = package_json.parent / "pnpm-lock.yaml"
         try:
             lines = lockfile.read_text(encoding="utf-8").splitlines()
@@ -2315,19 +2623,28 @@ def _pnpm_lock_versions(project_root: Path) -> dict[str, dict[str, str]]:
     return versions
 
 
-def _typescript_lock_versions(project_root: Path) -> dict[str, dict[str, str]]:
-    versions = _package_lock_versions(project_root)
-    for package, record in _pnpm_lock_versions(project_root).items():
+def _typescript_lock_versions(
+    project_root: Path,
+    source_snapshot: SourceSnapshot | None = None,
+) -> dict[str, dict[str, str]]:
+    versions = _package_lock_versions(project_root, source_snapshot)
+    for package, record in _pnpm_lock_versions(
+        project_root,
+        source_snapshot,
+    ).items():
         versions.setdefault(package, record)
     return versions
 
 
-def _lockfile_versions(project_root: Path) -> dict[str, dict[str, dict[str, str]]]:
+def _lockfile_versions(
+    project_root: Path,
+    source_snapshot: SourceSnapshot | None = None,
+) -> dict[str, dict[str, dict[str, str]]]:
     return {
-        "go": _go_sum_versions(project_root),
+        "go": _go_sum_versions(project_root, source_snapshot),
         "rust": _cargo_lock_versions(project_root),
-        "python": _python_lock_versions(project_root),
-        "typescript": _typescript_lock_versions(project_root),
+        "python": _python_lock_versions(project_root, source_snapshot),
+        "typescript": _typescript_lock_versions(project_root, source_snapshot),
     }
 
 
@@ -2387,7 +2704,11 @@ def reconcile_dependencies(
     imports (all required → unused); never raises.
     """
     if graph is None:
-        graph = build_dependency_graph(inventory, project_root)
+        graph = build_dependency_graph(
+            inventory,
+            project_root,
+            source_snapshot=source_snapshot,
+        )
     manifests = _parse_manifests(Path(project_root), source_snapshot=source_snapshot)
     used = classify_imports(inventory, graph=graph, manifests=manifests)
     _merge_used_packages(
@@ -2396,7 +2717,10 @@ def reconcile_dependencies(
         _python_internal_distribution_uses(inventory, graph, manifests.get("python")),
     )
     path_aliases = _unresolved_path_aliases_by_language(inventory, graph)
-    versions_by_language = _lockfile_versions(Path(project_root).resolve())
+    versions_by_language = _lockfile_versions(
+        Path(project_root).resolve(),
+        source_snapshot,
+    )
 
     languages: dict[str, dict] = {}
     for key in sorted(set(used) | set(manifests) | set(path_aliases)):
@@ -2428,7 +2752,14 @@ def reconcile_dependencies(
         "undeclared_count": sum(len(lang["undeclared"]) for lang in languages.values()),
         "unused_count": sum(len(lang["unused"]) for lang in languages.values()),
     }
-    return {"languages": languages, "summary": summary}
+    return {
+        "languages": languages,
+        "summary": summary,
+        "version_details": build_dependency_version_details(
+            project_root,
+            source_snapshot=source_snapshot,
+        ),
+    }
 
 
 # ══ Aggregation + scale guard (Epic 2.4) ══════════════════════════════════
@@ -2450,7 +2781,11 @@ def analyze_dependencies(
     ``{"graph", "cycles", "metrics", "load_order", "side_effects",
     "reconciliation"}``; deterministic and never raises on slim inventories.
     """
-    graph = build_dependency_graph(inventory, project_root)
+    graph = build_dependency_graph(
+        inventory,
+        project_root,
+        source_snapshot=source_snapshot,
+    )
     return {
         "graph": graph,
         "cycles": detect_cycles(graph),

@@ -772,20 +772,27 @@ class TestRustExtractorWrapper:
         assert inv == {}
         assert "malformed JSON" in capsys.readouterr().err
 
-    def test_timeout_returns_empty(self, tmp_path, capsys):
+    def test_timeout_returns_empty_and_names_configuration(
+        self, tmp_path, capsys, monkeypatch
+    ):
         _make_rs(tmp_path, "client.rs", "pub struct Client;\n")
+        monkeypatch.setenv("LLM_WIKI_EXTRACTOR_TIMEOUT", "39")
         with patch(
             "llm_wiki_cli.extractors.rust_extractor.get_prepared_binary",
             return_value=Path("/tmp/rust-helper"),
         ):
             with patch(
                 "llm_wiki_cli.extractors.rust_extractor.subprocess.run",
-                side_effect=subprocess.TimeoutExpired(["cargo"], 180),
-            ):
-                inv = RustExtractor().extract(str(tmp_path))
+                side_effect=subprocess.TimeoutExpired(["cargo"], 39),
+            ) as mock_run:
+                extractor = RustExtractor()
+                inv = extractor.extract(str(tmp_path))
 
         assert inv == {}
-        assert "timed out" in capsys.readouterr().err
+        assert mock_run.call_args.kwargs["timeout"] == 39
+        assert extractor.last_error is not None
+        assert "LLM_WIKI_EXTRACTOR_TIMEOUT" in extractor.last_error
+        assert "LLM_WIKI_EXTRACTOR_TIMEOUT" in capsys.readouterr().err
 
     def test_stderr_forwarded_on_success(self, tmp_path, capsys):
         _make_rs(tmp_path, "client.rs", "pub struct Client;\n")

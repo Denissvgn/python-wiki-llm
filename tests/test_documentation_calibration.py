@@ -116,6 +116,16 @@ def test_new_calibration_contract_versions_and_decision_scope_are_stable():
     assert contracts.P0_CALIBRATION_DECISION_SCOPE == "p0_policy_default"
 
 
+def test_calibration_transport_packet_limit_covers_controller_packet_limit():
+    assert contracts.CALIBRATION_CONTROLLER_MAX_PACKET_BYTES == 16 * 1024 * 1024
+    assert contracts.OCI_MAX_PACKET_BYTES == 16 * 1024 * 1024
+    assert (
+        contracts.OCI_MAX_PACKET_BYTES
+        == contracts.CALIBRATION_CONTROLLER_MAX_PACKET_BYTES
+        == contracts.CALIBRATION_MAX_PACKET_BYTES
+    )
+
+
 def _write(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")

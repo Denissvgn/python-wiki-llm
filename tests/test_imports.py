@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import json
+
 from llm_wiki_cli.commands.bootstrap_cmd import _build_relationships
+from llm_wiki_cli.services import imports as imports_service
 from llm_wiki_cli.services.imports import build_module_path_resolver
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
 
 def test_indexed_resolver_handles_common_import_shapes():
@@ -238,6 +242,57 @@ def test_typescript_resolver_uses_nearest_tsconfig_paths(tmp_path):
         )
         is False
     )
+
+
+def test_resolver_reuses_snapshot_for_go_and_typescript_scopes(
+    tmp_path,
+    monkeypatch,
+):
+    frontend = tmp_path / "frontend"
+    (frontend / "src").mkdir(parents=True)
+    (tmp_path / "go.mod").write_text(
+        "module example.com/project\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "cmd").mkdir()
+    (frontend / "tsconfig.json").write_text(
+        json.dumps(
+            {
+                "compilerOptions": {
+                    "baseUrl": ".",
+                    "paths": {"@/*": ["./src/*"]},
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "cmd" / "main.go").write_text("package main\n", encoding="utf-8")
+    (tmp_path / "internal.go").write_text("package project\n", encoding="utf-8")
+    (frontend / "src" / "app.ts").write_text("", encoding="utf-8")
+    (frontend / "src" / "client.ts").write_text("", encoding="utf-8")
+    snapshot = build_source_snapshot(tmp_path)
+    inventory = {
+        "cmd/main.go": {"language": "go"},
+        "internal.go": {"language": "go"},
+        "frontend/src/app.ts": {"language": "typescript"},
+        "frontend/src/client.ts": {"language": "typescript"},
+    }
+
+    def fail_if_walked(*_args, **_kwargs):
+        raise AssertionError("module resolver must reuse the source snapshot")
+
+    monkeypatch.setattr(imports_service.os, "walk", fail_if_walked)
+
+    resolver = build_module_path_resolver(
+        inventory,
+        project_root=tmp_path,
+        source_snapshot=snapshot,
+    )
+
+    assert resolver.candidates("example.com/project", "cmd/main.go") == {"internal.go"}
+    assert resolver.candidates("@/client", "frontend/src/app.ts") == {
+        "frontend/src/client.ts"
+    }
 
 
 def test_target_scoped_relationships_match_full_relationships_for_targets():

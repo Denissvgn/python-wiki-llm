@@ -1,29 +1,252 @@
-name: Publish to PyPI
+name: Promote qualified artifacts to PyPI
 
 on:
-  workflow_dispatch:  # manual safeguard: select the exact v* release tag as the ref
+  workflow_dispatch:
+    inputs:
+      qualification-run-id:
+        description: GitHub Actions run ID that produced qualified-release
+        required: true
+        type: string
+      candidate-sha:
+        description: Full Git SHA qualified by that run
+        required: true
+        type: string
+      qualification-ref:
+        description: Full branch ref used to dispatch qualification
+        required: true
+        type: string
+      wheel-sha256:
+        description: Qualified wheel SHA-256
+        required: true
+        type: string
+      sdist-sha256:
+        description: Qualified sdist SHA-256
+        required: true
+        type: string
+      publish:
+        description: Upload after verification (dry-run by default)
+        required: true
+        default: false
+        type: boolean
 
 permissions:
+  actions: read
   contents: read
-  id-token: write
 
 jobs:
-  publish:
-    runs-on: ubuntu-latest
-
+  verify:
+    name: Verify qualified promotion input
+    runs-on: ubuntu-24.04
+    env:
+      CANDIDATE_SHA: ${{ inputs.candidate-sha }}
+      PUBLISH_REQUESTED: ${{ inputs.publish }}
+      QUALIFICATION_REF: ${{ inputs.qualification-ref }}
+      QUALIFICATION_RUN_ID: ${{ inputs.qualification-run-id }}
+      REPOSITORY: ${{ github.repository }}
+      SDIST_SHA256: ${{ inputs.sdist-sha256 }}
+      WHEEL_SHA256: ${{ inputs.wheel-sha256 }}
+    outputs:
+      version: ${{ steps.verify.outputs.version }}
+      tag: ${{ steps.verify.outputs.tag }}
+      wheel-filename: ${{ steps.verify.outputs.wheel-filename }}
+      sdist-filename: ${{ steps.verify.outputs.sdist-filename }}
     steps:
-      - uses: actions/checkout@v6
+      - name: Bind promotion to the protected default-branch workflow
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          RUN_REF: ${{ github.ref }}
+          RUN_SHA: ${{ github.sha }}
+          WORKFLOW_EVENT: ${{ github.event_name }}
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+        run: |
+          set -euo pipefail
+          test "${WORKFLOW_EVENT}" = "workflow_dispatch"
+          default_ref="refs/heads/${DEFAULT_BRANCH}"
+          expected_workflow_ref="${REPOSITORY}/.github/workflows/publish.yml@${default_ref}"
+          test "${RUN_REF}" = "${default_ref}"
+          test "${WORKFLOW_REF}" = "${expected_workflow_ref}"
+          test "${WORKFLOW_SHA}" = "${RUN_SHA}"
+          [[ "${WORKFLOW_SHA}" =~ ^[0-9a-f]{40}$ ]]
+          git check-ref-format "${default_ref}"
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - name: Check out the trusted default-branch verifier
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
-          python-version: "3.12"
+          ref: ${{ github.workflow_sha }}
+          path: trusted-verifier
+          fetch-depth: 1
+          persist-credentials: false
 
-      - name: Install build tools
-        run: python -m pip install --no-cache-dir build
+      - name: Verify the qualification run before candidate checkout
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          python -I trusted-verifier/release/qualification.py verify-workflow-run
+          --repository "${REPOSITORY}"
+          --workflow-run-id "${QUALIFICATION_RUN_ID}"
+          --candidate-sha "${CANDIDATE_SHA}"
+          --workflow-path .github/workflows/release-qualification.yml
+          --workflow-name "Release qualification"
+          --workflow-ref "${QUALIFICATION_REF}"
+          --workflow-revision "${CANDIDATE_SHA}"
+          --event workflow_dispatch
+          --output workflow-run-verification.json
 
-      - name: Build package
-        run: python -m build
+      - name: Download the immutable qualification bundle
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: qualified-release
+          path: qualified-release
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.qualification-run-id }}
 
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Check out the candidate for read-only identity verification
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: ${{ inputs.candidate-sha }}
+          path: candidate-source
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+
+      - name: Verify GitHub provenance and SPDX attestations
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SIGNER_WORKFLOW: ${{ github.repository }}/.github/workflows/release-qualification.yml
+        run: |
+          set -euo pipefail
+          : > build-provenance-attestations.jsonl
+          : > sbom-attestations.jsonl
+          for artifact in qualified-release/dist/*; do
+            gh attestation verify "${artifact}" \
+              --repo "${REPOSITORY}" \
+              --signer-workflow "${SIGNER_WORKFLOW}" \
+              --signer-digest "${CANDIDATE_SHA}" \
+              --source-digest "${CANDIDATE_SHA}" \
+              --source-ref "${QUALIFICATION_REF}" \
+              --deny-self-hosted-runners \
+              --predicate-type https://slsa.dev/provenance/v1 \
+              --format json | jq -c . >> build-provenance-attestations.jsonl
+            gh attestation verify "${artifact}" \
+              --repo "${REPOSITORY}" \
+              --signer-workflow "${SIGNER_WORKFLOW}" \
+              --signer-digest "${CANDIDATE_SHA}" \
+              --source-digest "${CANDIDATE_SHA}" \
+              --source-ref "${QUALIFICATION_REF}" \
+              --deny-self-hosted-runners \
+              --predicate-type https://spdx.dev/Document/v2.3 \
+              --format json | jq -c . >> sbom-attestations.jsonl
+          done
+          test "$(wc -l < build-provenance-attestations.jsonl)" -eq 2
+          test "$(wc -l < sbom-attestations.jsonl)" -eq 2
+
+      - name: Verify identity, gates, contents, and registry vacancy
+        id: verify
+        env:
+          PYTHONUTF8: "1"
+          PYTHONIOENCODING: "utf-8"
+        run: >-
+          python -I trusted-verifier/release/qualification.py verify-bundle
+          --bundle qualified-release
+          --repository "${REPOSITORY}"
+          --workflow-run-id "${QUALIFICATION_RUN_ID}"
+          --candidate-sha "${CANDIDATE_SHA}"
+          --wheel-sha256 "${WHEEL_SHA256}"
+          --sdist-sha256 "${SDIST_SHA256}"
+          --repository-root candidate-source
+          --verify-repository
+          --check-registry
+          --output bundle-verification.json
+
+      - name: Require the release tag only for a real publication
+        if: ${{ inputs.publish }}
+        env:
+          PYTHONUTF8: "1"
+          PYTHONIOENCODING: "utf-8"
+        run: >-
+          python -I trusted-verifier/release/qualification.py verify-bundle
+          --bundle qualified-release
+          --repository "${REPOSITORY}"
+          --workflow-run-id "${QUALIFICATION_RUN_ID}"
+          --candidate-sha "${CANDIDATE_SHA}"
+          --wheel-sha256 "${WHEEL_SHA256}"
+          --sdist-sha256 "${SDIST_SHA256}"
+          --repository-root candidate-source
+          --verify-repository
+          --check-registry
+          --require-tag
+          --output bundle-verification.json
+
+      - name: Emit the final technical release decision
+        run: |
+          tag_requirement=()
+          if [[ "${PUBLISH_REQUESTED}" == "true" ]]; then
+            tag_requirement=(--require-tag)
+          fi
+          python -I trusted-verifier/release/qualification.py finalize-promotion \
+            --manifest qualified-release/qualification-manifest.json \
+            --verification bundle-verification.json \
+            --repository "${REPOSITORY}" \
+            --workflow-run-id "${QUALIFICATION_RUN_ID}" \
+            --candidate-sha "${CANDIDATE_SHA}" \
+            --rd13-evidence "workflow-run=workflow-run-verification.json" \
+            --rd13-evidence "build-provenance=build-provenance-attestations.jsonl" \
+            --rd13-evidence "sbom-attestation=sbom-attestations.jsonl" \
+            "${tag_requirement[@]}" \
+            --output promotion-decision.json
+
+      - name: Preserve final promotion evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: promotion-decision
+          path: |
+            promotion-decision.json
+            workflow-run-verification.json
+            bundle-verification.json
+            build-provenance-attestations.jsonl
+            sbom-attestations.jsonl
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Record dry-run result
+        if: ${{ !inputs.publish }}
+        env:
+          VERIFIED_TAG: ${{ steps.verify.outputs.tag }}
+        run: |
+          {
+            printf '%s\n' "## Qualified promotion dry-run"
+            printf '\n'
+            printf 'Verified `%s` without uploading.\n' "${VERIFIED_TAG}"
+            printf '\n'
+            printf '%s\n' "- qualification run: \`${QUALIFICATION_RUN_ID}\`"
+            printf '%s\n' "- candidate: \`${CANDIDATE_SHA}\`"
+            printf '%s\n' "- wheel: \`${WHEEL_SHA256}\`"
+            printf '%s\n' "- sdist: \`${SDIST_SHA256}\`"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+  publish:
+    name: Publish the already-qualified distributions
+    if: ${{ inputs.publish && needs.verify.result == 'success' }}
+    needs: verify
+    runs-on: ubuntu-24.04
+    environment:
+      name: pypi
+      url: https://pypi.org/project/agent-wiki-cli/${{ needs.verify.outputs.version }}/
+    permissions:
+      actions: read
+      id-token: write
+    steps:
+      - name: Download the exact verified bundle
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: qualified-release
+          path: qualified-release
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.qualification-run-id }}
+
+      - name: Publish to PyPI using Trusted Publishing
+        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0
+        with:
+          packages-dir: qualified-release/dist/
+          attestations: true

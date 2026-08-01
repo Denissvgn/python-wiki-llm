@@ -75,6 +75,19 @@ def test_agent_schema_is_scope_and_resource_aware():
     assert "mark unfinished gates inconclusive" in text
 
 
+def test_agent_schema_distinguishes_aggregate_and_concept_freshness():
+    content = build_schema_content("generic", "docs/llm_wiki")
+    text = _squash_ws(content)
+
+    assert "`freshness`, and `freshness_evaluated`" in text
+    assert "`evaluated (N concepts)`" in text
+    assert "`unevaluated (snapshot-only read)`" in text
+    assert "one result per concept" in text
+    assert "does not mean every concept had a live comparison" in text
+    assert "state, reason, and `live_comparison_performed`" in text
+    assert "`live_comparison_performed: false` remains non-live" in text
+
+
 def test_agent_schema_mentions_dependency_architecture_responsibilities():
     content = build_schema_content("generic", "docs/llm_wiki")
 

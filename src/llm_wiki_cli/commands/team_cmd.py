@@ -6,7 +6,7 @@ from pathlib import Path
 
 from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from ..services import team
-from .extract_cmd import get_inventory
+from ..services.extraction_service import get_inventory
 
 
 def _render_issues_text(title: str, issues: list[dict]) -> str:

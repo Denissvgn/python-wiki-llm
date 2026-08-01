@@ -13,13 +13,12 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli import cli
-from llm_wiki_cli.config import PathValidationError
-from llm_wiki_cli.commands import extract_cmd
-from llm_wiki_cli.commands import lint_cmd
+from llm_wiki_cli.commands import extract_cmd, lint_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
+from llm_wiki_cli.config import PathValidationError
+from llm_wiki_cli.services import metrics, team, wiki_media
 from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
 from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME, InventoryCacheStats
-from llm_wiki_cli.services import team, wiki_media
 
 TS_NODE_MODULES = (
     Path(__file__).parents[1]
@@ -29,6 +28,31 @@ TS_NODE_MODULES = (
     / "ts_scripts"
     / "node_modules"
 )
+
+
+def _ready_knowledge_lint_summary():
+    freshness = {
+        "basis-incompatible": 0,
+        "current": 3,
+        "nonsemantic-source-change": 0,
+        "source-changed": 0,
+        "source-missing": 0,
+        "unknown": 3,
+    }
+    return lint_cmd.KnowledgeLintSummary(
+        availability="ready",
+        reason="all-projection-commitments-match",
+        concepts_evaluated=6,
+        freshness_counts=freshness,
+        evidence_issue_counts={"invalid": 0, "missing": 0, "unknown": 1},
+        degraded_reason=None,
+        phase_durations_ms={"load": 1, "evaluate": 2, "check": 3},
+        freshness_evaluated=True,
+        concepts_total=6,
+        concepts_by_kind={"code-entity": 2},
+        evidence_by_state={"present": 3},
+        freshness_by_state=freshness,
+    )
 
 
 def _make_args(**kwargs):
@@ -1191,6 +1215,9 @@ class TestLintProfile:
             "modules",
             "workflows",
             "infrastructure",
+            "knowledge_load",
+            "knowledge_freshness",
+            "knowledge_checks",
             "strict",
             "plugins",
             "team",
@@ -1568,6 +1595,94 @@ class TestLintProfile:
         cli.main()
 
         assert seen == {"allow_external_src": True, "jobs": 4}
+
+    def test_knowledge_drift_report_implies_strict_and_reaches_report(
+        self,
+        tmp_path,
+        monkeypatch,
+    ):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "wiki").mkdir()
+        seen = {}
+
+        def fake_build_report(wiki_dir, src_dir, **kwargs):
+            seen["strict"] = kwargs["strict"]
+            seen["knowledge_drift_report"] = kwargs["knowledge_drift_report"]
+            return lint_cmd.LintReport(
+                wiki_dir=str(wiki_dir),
+                src_dir=src_dir,
+                strict=kwargs["strict"],
+                knowledge_drift_report=kwargs["knowledge_drift_report"],
+            )
+
+        monkeypatch.setattr(lint_cmd, "build_report", fake_build_report)
+
+        args = cli._build_parser().parse_args(
+            [
+                "lint",
+                "--wiki-dir",
+                "wiki",
+                "--knowledge-drift-report",
+            ]
+        )
+        lint_cmd.run(args)
+
+        assert seen == {
+            "strict": True,
+            "knowledge_drift_report": True,
+        }
+
+    def test_build_report_mode_implies_strict_for_direct_callers(
+        self,
+        tmp_path,
+        monkeypatch,
+    ):
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+        seen = {}
+
+        monkeypatch.setattr(
+            lint_cmd,
+            "_collect_lint_inputs",
+            lambda *args, **kwargs: object(),
+        )
+
+        def fake_run_report_checks(
+            report,
+            wiki_path,
+            src_dir,
+            strict,
+            *args,
+        ):
+            seen["strict"] = strict
+            seen["report_strict"] = report.strict
+
+        monkeypatch.setattr(
+            lint_cmd,
+            "_run_report_checks",
+            fake_run_report_checks,
+        )
+
+        report = lint_cmd.build_report(
+            wiki,
+            ".",
+            knowledge_drift_report=True,
+        )
+
+        assert seen == {"strict": True, "report_strict": True}
+        assert report.knowledge_drift_report is True
+        payload = lint_cmd.report_to_dict(report)
+        assert payload["knowledge_drift_report"] is True
+        assert payload["knowledge_drift_gate"] is False
+
+    def test_lint_report_additive_mode_preserves_original_positional_fields(self):
+        issues = [lint_cmd.LintIssue("broken_links", "broken")]
+
+        report = lint_cmd.LintReport("wiki", "src", True, issues)
+
+        assert report.strict is True
+        assert report.issues is issues
+        assert report.knowledge_drift_report is False
 
     def test_lint_allow_external_src_reaches_report_build(
         self, tmp_path, monkeypatch, capsys
@@ -2003,6 +2118,43 @@ class TestLintFlowCoverage:
         assert calls[0]["root"] == str(external_src)
         assert calls[0]["fallback_root"] == Path.cwd()
 
+    def test_flow_checks_propagate_disabled_plugin_policy(self, tmp_path, monkeypatch):
+        wiki = tmp_path / "wiki"
+        (wiki / "flows").mkdir(parents=True)
+        (wiki / "flows" / "api-run.md").write_text("# api-run\n")
+        calls = []
+
+        def spy(_inventory, **kwargs):
+            calls.append(kwargs)
+            return []
+
+        monkeypatch.setattr(lint_cmd, "get_entry_points", spy)
+        report = lint_cmd.LintReport(wiki_dir=str(wiki), src_dir=str(tmp_path))
+
+        lint_cmd._check_flow_coverage(
+            report,
+            wiki,
+            {},
+            str(tmp_path),
+            include_plugins=False,
+        )
+        lint_cmd._check_data_flow_diagnostics(
+            report,
+            wiki,
+            {},
+            str(tmp_path),
+            include_plugins=False,
+        )
+        lint_cmd._check_javascript_flow_diagnostics(
+            report,
+            {},
+            str(tmp_path),
+            include_plugins=False,
+        )
+
+        assert len(calls) == 3
+        assert all(call["include_plugins"] is False for call in calls)
+
 
 class TestLintDependencyCoverage:
     """DL-501: architecture-page cycle / reconciliation warnings + staleness."""
@@ -2430,3 +2582,89 @@ class TestLintDependencyCoverage:
             diagnostic.category == "undeclared_dependencies"
             for diagnostic in report.diagnostics
         )
+
+
+def test_strict_lint_metrics_receive_only_safe_aggregate_knowledge(
+    tmp_path,
+    monkeypatch,
+    capsys,
+):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "wiki").mkdir()
+    summary = _ready_knowledge_lint_summary()
+    report = lint_cmd.LintReport(wiki_dir="wiki", src_dir=".", strict=True)
+    report.knowledge_summary = summary
+    recorded = []
+
+    monkeypatch.setattr(lint_cmd, "build_report", lambda *args, **kwargs: report)
+    monkeypatch.setattr(
+        metrics,
+        "record_validation_event",
+        lambda **kwargs: recorded.append(kwargs),
+    )
+
+    lint_cmd.run(
+        _make_args(
+            wiki_dir="wiki",
+            src_dir=".",
+            strict=True,
+        )
+    )
+
+    assert capsys.readouterr().out
+    assert len(recorded) == 1
+    assert recorded[0]["knowledge_summary"] == summary.aggregate_payload()
+    assert set(recorded[0]["knowledge_summary"]) == {
+        "availability",
+        "reason",
+        "freshness",
+        "concepts_evaluated",
+        "freshness_counts",
+        "evidence_issue_counts",
+        "degraded_reason",
+        "phase_durations_ms",
+        "freshness_evaluated",
+    }
+    assert {
+        "concepts_total",
+        "concepts_by_kind",
+        "evidence_by_state",
+        "freshness_by_state",
+    }.isdisjoint(recorded[0]["knowledge_summary"])
+
+
+@pytest.mark.parametrize(
+    "metrics_error",
+    [
+        OSError("read-only"),
+        TypeError("not serializable"),
+        ValueError("invalid metrics payload"),
+        RuntimeError("metrics unavailable"),
+    ],
+)
+def test_strict_lint_metrics_failures_do_not_change_success(
+    tmp_path,
+    monkeypatch,
+    capsys,
+    metrics_error,
+):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "wiki").mkdir()
+    report = lint_cmd.LintReport(wiki_dir="wiki", src_dir=".", strict=True)
+    report.knowledge_summary = _ready_knowledge_lint_summary()
+
+    def fail_metrics(**_kwargs):
+        raise metrics_error
+
+    monkeypatch.setattr(lint_cmd, "build_report", lambda *args, **kwargs: report)
+    monkeypatch.setattr(metrics, "record_validation_event", fail_metrics)
+
+    lint_cmd.run(
+        _make_args(
+            wiki_dir="wiki",
+            src_dir=".",
+            strict=True,
+        )
+    )
+
+    assert "Lint passed" in capsys.readouterr().out
