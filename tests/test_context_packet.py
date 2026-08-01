@@ -63,15 +63,19 @@ def _write_snapshot_project(root: Path, *, opaque_text: bool = False) -> None:
         if opaque_text
         else ""
     )
-    (root / "app.py").write_text(
+    app_source = (
         docstring
         + "def greet(name: str) -> str:\n"
-        + '    return f"Hello {name}"\n',
-        encoding="utf-8",
+        + '    return f"Hello {name}"\n'
     )
+    app_bytes = app_source.encode("utf-8")
+    assert b"\r" not in app_bytes
+    (root / "app.py").write_bytes(app_bytes)
     wiki = root / "docs" / "llm_wiki"
     wiki.mkdir(parents=True)
-    (wiki / "index.md").write_text("# Project index\n", encoding="utf-8")
+    index_bytes = b"# Project index\n"
+    assert b"\r" not in index_bytes
+    (wiki / "index.md").write_bytes(index_bytes)
 
 
 def _build_snapshot_packet(

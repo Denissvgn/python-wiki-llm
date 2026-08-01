@@ -206,12 +206,24 @@ def test_first_unsafe_path_component_checks_symlink_target_chain_with_owner_pred
         outer_link.symlink_to(inner_link, target_is_directory=True)
     except OSError:
         pytest.skip("Directory symlinks are unavailable to this test account.")
-    assert (
-        first_unsafe_path_component(
-            outer_link,
-            trusted_symlink_owner=lambda path: path == outer_link,
-        )
-        == inner_link
+    predicate_calls: list[str] = []
+
+    def trusts_outer_link(path: Path) -> bool:
+        predicate_calls.append(path.name)
+        return path.name == outer_link.name
+
+    unsafe_path = first_unsafe_path_component(
+        outer_link,
+        trusted_symlink_owner=trusts_outer_link,
+    )
+
+    assert predicate_calls == [outer_link.name, inner_link.name]
+    assert unsafe_path is not None
+    assert unsafe_path.name == inner_link.name
+    metadata = unsafe_path.lstat()
+    reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+    assert stat.S_ISLNK(metadata.st_mode) or bool(
+        reparse_flag and metadata.st_file_attributes & reparse_flag
     )
 
 
@@ -297,10 +309,22 @@ def test_first_unsafe_path_component_owner_predicate_preserves_target_traversal(
 
     raw_path = project / ".." / "outer-link"
 
-    assert (
-        first_unsafe_path_component(
-            raw_path,
-            trusted_symlink_owner=lambda path: path == outer_link,
-        )
-        == inner_link
+    predicate_calls: list[str] = []
+
+    def trusts_outer_link(path: Path) -> bool:
+        predicate_calls.append(path.name)
+        return path.name == outer_link.name
+
+    unsafe_path = first_unsafe_path_component(
+        raw_path,
+        trusted_symlink_owner=trusts_outer_link,
+    )
+
+    assert predicate_calls == [outer_link.name, inner_link.name]
+    assert unsafe_path is not None
+    assert unsafe_path.name == inner_link.name
+    metadata = unsafe_path.lstat()
+    reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+    assert stat.S_ISLNK(metadata.st_mode) or bool(
+        reparse_flag and metadata.st_file_attributes & reparse_flag
     )

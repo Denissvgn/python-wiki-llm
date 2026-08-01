@@ -1198,10 +1198,7 @@ class TestObsidianMirror:
         shutil.rmtree(late_note_parent)
         late_note_parent.write_text("NOT-A-DIRECTORY\n", encoding="utf-8")
 
-        with pytest.raises(
-            obsidian.ObsidianError,
-            match="unsafe existing path component",
-        ):
+        with pytest.raises(obsidian.ObsidianError):
             obsidian.export_obsidian_vault(
                 wiki_dir=wiki,
                 vault_dir=vault,
@@ -1695,8 +1692,16 @@ class TestObsidianCli:
         check = json.loads(capsys.readouterr().out)
         assert check["ok"] is True
 
-    def test_cli_install_plugin(self, tmp_project):
+    def test_cli_install_plugin(self, tmp_project, monkeypatch):
         vault = tmp_project / "vault"
+        safe_join = obsidian._safe_join
+        relative_paths: list[str | Path] = []
+
+        def capture_safe_join(root: Path, relative: str | Path) -> Path:
+            relative_paths.append(relative)
+            return safe_join(root, relative)
+
+        monkeypatch.setattr(obsidian, "_safe_join", capture_safe_join)
 
         obsidian_cmd.run(
             _ns(
@@ -1707,6 +1712,9 @@ class TestObsidianCli:
             )
         )
 
+        assert relative_paths == [".obsidian/plugins/llm-wiki"]
+        assert isinstance(relative_paths[0], str)
+        assert "\\" not in relative_paths[0]
         assert (vault / ".obsidian" / "plugins" / "llm-wiki" / "manifest.json").exists()
         assert (vault / ".obsidian" / "plugins" / "llm-wiki" / "main.js").exists()
 

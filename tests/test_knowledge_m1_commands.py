@@ -19,6 +19,9 @@ from llm_wiki_cli.services.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     CommitStage,
 )
+from llm_wiki_cli.services.knowledge_envelope import (
+    collect_git_repository_evidence,
+)
 from llm_wiki_cli.services.contracts import (
     SECTION_OWNERSHIP_EXTENSION_KEY,
     TYPED_GRAPH_EXTENSION_KEY,
@@ -55,6 +58,12 @@ _PRE_FEATURE_BOOTSTRAP_DATE = date(2025, 1, 2)
 _PROJECT_ROOT_TOKEN = b"<PROJECT_ROOT>"
 
 
+def _write_canonical_utf8_lf(path: Path, text: str) -> None:
+    payload = text.encode("utf-8")
+    assert b"\r" not in payload
+    path.write_bytes(payload)
+
+
 def _bootstrap_args(project, wiki_dir):
     return types.SimpleNamespace(
         src_dir=str(project),
@@ -84,6 +93,32 @@ def m1_command_project(tmp_path):
         check=True,
     )
     subprocess.run(
+        [
+            "git",
+            "-C",
+            str(project),
+            "config",
+            "--local",
+            "core.autocrlf",
+            "false",
+        ],
+        capture_output=True,
+        check=True,
+    )
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(project),
+            "config",
+            "--local",
+            "core.eol",
+            "lf",
+        ],
+        capture_output=True,
+        check=True,
+    )
+    subprocess.run(
         ["git", "-C", str(project), "config", "user.email", "test@example.com"],
         capture_output=True,
         check=True,
@@ -93,11 +128,12 @@ def m1_command_project(tmp_path):
         capture_output=True,
         check=True,
     )
-    (project / "pyproject.toml").write_text(
+    _write_canonical_utf8_lf(
+        project / "pyproject.toml",
         '[project]\nname = "sample"\nversion = "0.1.0"\n',
-        encoding="utf-8",
     )
-    (project / "models.py").write_text(
+    _write_canonical_utf8_lf(
+        project / "models.py",
         textwrap.dedent(
             """\
             class User:
@@ -106,7 +142,6 @@ def m1_command_project(tmp_path):
                 email: str = ""
             """
         ),
-        encoding="utf-8",
     )
     wiki_dir = project / "docs" / "llm_wiki"
     previous_cwd = os.getcwd()
@@ -164,7 +199,8 @@ def _relationship_topology(relationships):
 
 
 def _write_changed_source(project):
-    (project / "models.py").write_text(
+    _write_canonical_utf8_lf(
+        project / "models.py",
         textwrap.dedent(
             """\
             class User:
@@ -174,7 +210,6 @@ def _write_changed_source(project):
                 role: str = "viewer"
             """
         ),
-        encoding="utf-8",
     )
 
 
@@ -732,6 +767,10 @@ def test_clean_git_sync_dry_run_matches_apply_artifact_bytes(
             text=True,
         ).stdout
         == ""
+    )
+    assert (
+        collect_git_repository_evidence(project).working_tree
+        is WorkingTreeState.CLEAN
     )
 
     captured = []

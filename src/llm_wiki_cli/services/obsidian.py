@@ -449,7 +449,10 @@ def install_obsidian_plugin(
         raise ObsidianError(f"Obsidian plugin source directory not found: {source}")
     _ensure_safe_base(vault)
 
-    dest = _safe_join(vault, Path(".obsidian") / "plugins" / PLUGIN_ID)
+    plugin_relative = (
+        PurePosixPath(".obsidian") / "plugins" / PLUGIN_ID
+    ).as_posix()
+    dest = _safe_join(vault, plugin_relative)
     dest.parent.mkdir(parents=True, exist_ok=True)
     shutil.copytree(source, dest, dirs_exist_ok=True, ignore=_plugin_copy_ignore)
 
