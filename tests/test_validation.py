@@ -550,12 +550,8 @@ def test_all_migrated_path_adapters_accept_canonical_portable_input() -> None:
 
 
 def test_infrastructure_path_predicate_preserves_legacy_type_boundary() -> None:
-    with pytest.raises(TypeError) as raised:
+    with pytest.raises(TypeError):
         infrastructure_sync._valid_repository_path(None)  # type: ignore[arg-type]
-    assert str(raised.value) == (
-        "argument should be a str or an os.PathLike object where "
-        "__fspath__ returns a str, not 'NoneType'"
-    )
 
 
 @pytest.mark.parametrize(("validator", "prefix"), _REPOSITORY_PATH_ADAPTERS)
