@@ -53,6 +53,7 @@ from llm_wiki_cli.services.sync_manifest import (
 from llm_wiki_cli.services.sync_manifest import (
     SyncManifest as ServiceSyncManifest,
 )
+from llm_wiki_cli.services.wiki_lifecycle import bootstrap_guidance
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -432,7 +433,7 @@ class TestNoManifest:
         }
         assert after == before
         captured = capsys.readouterr()
-        assert "llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki" in captured.err
+        assert bootstrap_guidance(src_dir=".", wiki_dir=wiki_dir) in captured.err
         assert "seeding" not in captured.err.lower()
 
     def test_exits_one_and_prints_exact_bootstrap_before_extraction(
