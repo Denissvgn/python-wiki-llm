@@ -210,16 +210,19 @@ jobs:
         run: python -m pip install --no-cache-dir "./candidate[dev]"
 
       - name: Run strict core suite and coverage
+        env:
+          LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE: ${{ github.workspace }}/incoming/source/candidate-source.tar
+        working-directory: candidate
         run: >-
-          python -m pytest candidate/tests -q
+          python -m pytest tests -q
           -p no:cacheprovider
           --strict-config
           --strict-markers
           -W error
           -o xfail_strict=true
-          --junitxml="evidence/${{ matrix.lane }}.xml"
+          --junitxml="../evidence/${{ matrix.lane }}.xml"
           --cov=llm_wiki_cli
-          --cov-report="xml:evidence/coverage-${{ matrix.lane }}.xml"
+          --cov-report="xml:../evidence/coverage-${{ matrix.lane }}.xml"
           --cov-fail-under=87
 
       - name: Enforce exact skip tuples and minimum inventory
@@ -341,24 +344,25 @@ jobs:
       - name: Install the frozen source non-editably
         run: python -m pip install --no-cache-dir "./candidate[dev]"
       - name: Run slow and canonical deterministic tests
+        working-directory: candidate
         run: |
           python -m pytest -q \
-            candidate/tests/test_knowledge_m1_hardening.py::test_representative_m1_generation_stays_deterministic_and_within_budget \
+            tests/test_knowledge_m1_hardening.py::test_representative_m1_generation_stays_deterministic_and_within_budget \
             -p no:cacheprovider --strict-config --strict-markers \
-            -W error -o xfail_strict=true --junitxml=evidence/slow.xml
+            -W error -o xfail_strict=true --junitxml=../evidence/slow.xml
           python -m pytest -q \
-            candidate/tests/test_knowledge_performance.py::test_query_operation_uses_one_snapshot_one_deep_extraction_and_one_view \
-            candidate/tests/test_knowledge_performance.py::test_one_freshness_evaluation_and_zero_query_method_io \
-            candidate/tests/test_knowledge_performance.py::test_default_and_mcp_bounds_disclose_stress_truncation \
-            candidate/tests/test_knowledge_performance.py::test_exact_lookup_is_indexed_and_neighbor_work_is_local \
-            candidate/tests/test_knowledge_performance.py::test_thousands_scale_output_is_deterministic_across_shuffled_inputs \
-            candidate/tests/test_m3_scale.py::test_high_fanout_graph_keeps_evidence_and_query_output_bounded \
-            candidate/tests/test_m3_scale.py::test_recorded_scale_gate_is_reproducible_current_and_sanitized \
-            candidate/tests/test_context_packet.py::test_packet_is_byte_stable_immutable_and_matches_cross_platform_golden \
-            candidate/tests/test_context.py::TestBuildContextPayload::test_prefer_fresh_flag_off_matches_protocol_baseline_golden \
-            candidate/tests/test_context.py::TestBuildContextPayload::test_prefer_fresh_flag_on_matches_deterministic_protocol_golden \
+            tests/test_knowledge_performance.py::test_query_operation_uses_one_snapshot_one_deep_extraction_and_one_view \
+            tests/test_knowledge_performance.py::test_one_freshness_evaluation_and_zero_query_method_io \
+            tests/test_knowledge_performance.py::test_default_and_mcp_bounds_disclose_stress_truncation \
+            tests/test_knowledge_performance.py::test_exact_lookup_is_indexed_and_neighbor_work_is_local \
+            tests/test_knowledge_performance.py::test_thousands_scale_output_is_deterministic_across_shuffled_inputs \
+            tests/test_m3_scale.py::test_high_fanout_graph_keeps_evidence_and_query_output_bounded \
+            tests/test_m3_scale.py::test_recorded_scale_gate_is_reproducible_current_and_sanitized \
+            tests/test_context_packet.py::test_packet_is_byte_stable_immutable_and_matches_cross_platform_golden \
+            tests/test_context.py::TestBuildContextPayload::test_prefer_fresh_flag_off_matches_protocol_baseline_golden \
+            tests/test_context.py::TestBuildContextPayload::test_prefer_fresh_flag_on_matches_deterministic_protocol_golden \
             -p no:cacheprovider --strict-config --strict-markers \
-            -W error -o xfail_strict=true --junitxml=evidence/determinism.xml
+            -W error -o xfail_strict=true --junitxml=../evidence/determinism.xml
       - name: Upload gate evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -413,25 +417,26 @@ jobs:
       - name: Install the frozen source non-editably
         run: python -m pip install --no-cache-dir "./candidate[dev]"
       - name: Run security owner suites
+        working-directory: candidate
         run: >-
           python -m pytest -q
-          candidate/tests/test_lockfile.py
-          candidate/tests/test_circuit_breaker.py
-          candidate/tests/test_redaction.py
-          candidate/tests/test_metrics.py
-          candidate/tests/test_config.py
-          candidate/tests/test_io.py
-          candidate/tests/test_protected_artifacts.py
-          candidate/tests/test_documentation_adversarial.py
-          candidate/tests/test_documentation_control_integrity.py
-          candidate/tests/test_documentation_input_recheck.py
-          candidate/tests/test_documentation_native_lifecycle.py
-          candidate/tests/test_resource_diagnostics.py
-          candidate/tests/test_api_exception_taxonomy.py
+          tests/test_lockfile.py
+          tests/test_circuit_breaker.py
+          tests/test_redaction.py
+          tests/test_metrics.py
+          tests/test_config.py
+          tests/test_io.py
+          tests/test_protected_artifacts.py
+          tests/test_documentation_adversarial.py
+          tests/test_documentation_control_integrity.py
+          tests/test_documentation_input_recheck.py
+          tests/test_documentation_native_lifecycle.py
+          tests/test_resource_diagnostics.py
+          tests/test_api_exception_taxonomy.py
           -p no:cacheprovider --strict-config --strict-markers
           -W error
           -o xfail_strict=true
-          --junitxml="evidence/security-${{ matrix.os }}.xml"
+          --junitxml="../evidence/security-${{ matrix.os }}.xml"
       - name: Upload gate evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -487,20 +492,21 @@ jobs:
         run: python -m pip install --no-cache-dir "./candidate[dev]"
       - name: Run knowledge, documentation, and export vectors
         shell: bash
+        working-directory: candidate
         run: >-
           python -m pytest -q
-          candidate/tests/test_knowledge_*.py
-          candidate/tests/test_documentation_*.py
-          candidate/tests/test_doctor.py
-          candidate/tests/test_context_packet.py
-          candidate/tests/test_eval_lite.py
-          candidate/tests/test_github_action.py
-          candidate/tests/test_site_*.py
-          candidate/tests/test_obsidian.py
+          tests/test_knowledge_*.py
+          tests/test_documentation_*.py
+          tests/test_doctor.py
+          tests/test_context_packet.py
+          tests/test_eval_lite.py
+          tests/test_github_action.py
+          tests/test_site_*.py
+          tests/test_obsidian.py
           -p no:cacheprovider --strict-config --strict-markers
           -W error
           -o xfail_strict=true
-          --junitxml="evidence/product-${{ matrix.os }}.xml"
+          --junitxml="../evidence/product-${{ matrix.os }}.xml"
       - name: Upload gate evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -554,12 +560,13 @@ jobs:
       - name: Run MCP contract
         env:
           LLM_WIKI_REQUIRE_MCP_SDK: "1"
+        working-directory: candidate
         run: >-
-          python -m pytest candidate/tests/test_mcp.py -q
+          python -m pytest tests/test_mcp.py -q
           -p no:cacheprovider --strict-config --strict-markers
           -W error
           -o xfail_strict=true
-          --junitxml="evidence/mcp-${{ matrix.python }}.xml"
+          --junitxml="../evidence/mcp-${{ matrix.python }}.xml"
       - name: Upload gate evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -707,21 +714,28 @@ jobs:
             "${RUNNER_TEMP}/qualified-bin/govulncheck"
       - name: Record and enforce tool versions
         run: |
+          set -euo pipefail
           mkdir -p evidence
           node --version | tee evidence/node.txt
           npm --version | tee evidence/npm.txt
           go version | tee evidence/go.txt
           cargo --version | tee evidence/cargo.txt
           ghc --numeric-version | tee evidence/ghc.txt
-          cargo audit --version | tee evidence/cargo-audit.txt
+          cargo-audit --version | tee evidence/cargo-audit.txt
           govulncheck -version 2>&1 | tee evidence/govulncheck.txt
-          test "$(node --version)" = "$(python -I incoming/tools/release/qualification.py lock-value --lock candidate/release/toolchain-lock.json --key toolchains.node.version_output)"
-          test "$(npm --version)" = "$(python -I incoming/tools/release/qualification.py lock-value --lock candidate/release/toolchain-lock.json --key toolchains.npm.version_output)"
-          test "$(go version | cut -d' ' -f1-3)" = "$(python -I incoming/tools/release/qualification.py lock-value --lock candidate/release/toolchain-lock.json --key toolchains.go.version_output)"
-          test "$(cargo --version)" = "$(python -I incoming/tools/release/qualification.py lock-value --lock candidate/release/toolchain-lock.json --key toolchains.rust.version_output)"
-          test "$(ghc --numeric-version)" = "$(python -I incoming/tools/release/qualification.py lock-value --lock candidate/release/toolchain-lock.json --key toolchains.haskell.version_output)"
-          test "$(cargo audit --version)" = "$(python -I incoming/tools/release/qualification.py lock-value --lock candidate/release/toolchain-lock.json --key qualification_tools.cargo-audit.version_output)"
-          grep -Fx "$(python -I incoming/tools/release/qualification.py lock-value --lock candidate/release/toolchain-lock.json --key qualification_tools.govulncheck.version_output)" evidence/govulncheck.txt
+          lock_value() {
+            python -I incoming/tools/release/qualification.py lock-value \
+              --lock candidate/release/toolchain-lock.json --key "$1"
+          }
+          test "$(cat evidence/node.txt)" = "$(lock_value toolchains.node.version_output)"
+          test "$(cat evidence/npm.txt)" = "$(lock_value toolchains.npm.version_output)"
+          test "$(cut -d' ' -f1-3 evidence/go.txt)" = "$(lock_value toolchains.go.version_output)"
+          test "$(cat evidence/cargo.txt)" = "$(lock_value toolchains.rust.version_output)"
+          test "$(cat evidence/ghc.txt)" = "$(lock_value toolchains.haskell.version_output)"
+          test "$(cat evidence/cargo-audit.txt)" = "$(lock_value qualification_tools.cargo-audit.version_output)"
+          expected_govulncheck="$(lock_value qualification_tools.govulncheck.version_output)"
+          test "$(grep -c '^Scanner: ' evidence/govulncheck.txt)" -eq 1
+          grep -Fx "Scanner: ${expected_govulncheck}" evidence/govulncheck.txt > /dev/null
       - name: Install source and prepare every extractor
         run: |
           python -m pip install --no-cache-dir "./candidate[dev]"
@@ -735,19 +749,20 @@ jobs:
       - name: Run toolchain owner suites
         env:
           LLM_WIKI_CACHE_DIR: ${{ runner.temp }}/extractor-cache
+        working-directory: candidate
         run: >-
           python -m pytest -q
-          candidate/tests/test_ts_extract.py
-          candidate/tests/test_go_extract.py
-          candidate/tests/test_rust_extract.py
-          candidate/tests/test_haskell_extract.py
-          candidate/tests/test_multilanguage_wiki.py
-          candidate/tests/test_migrate.py
-          candidate/tests/test_extract.py
-          candidate/tests/test_lint.py
-          candidate/tests/test_m4_dogfood.py
+          tests/test_ts_extract.py
+          tests/test_go_extract.py
+          tests/test_rust_extract.py
+          tests/test_haskell_extract.py
+          tests/test_multilanguage_wiki.py
+          tests/test_migrate.py
+          tests/test_extract.py
+          tests/test_lint.py
+          tests/test_m4_dogfood.py
           -p no:cacheprovider --strict-config --strict-markers
-          -W error -o xfail_strict=true --junitxml=evidence/toolchains.xml
+          -W error -o xfail_strict=true --junitxml=../evidence/toolchains.xml
       - name: Audit exact helper dependency trees
         run: |
           set -euo pipefail
@@ -898,14 +913,15 @@ jobs:
       - name: Run no-egress broker qualification
         env:
           LLM_WIKI_RUN_OCI_INTEGRATION: "1"
+        working-directory: candidate
         run: >-
           python -m pytest -q
           -m oci_integration
           -p no:cacheprovider --strict-config --strict-markers
           -W error
           -o xfail_strict=true
-          --junitxml=evidence/oci.xml
-          candidate/tests/test_documentation_calibration_oci_integration.py
+          --junitxml=../evidence/oci.xml
+          tests/test_documentation_calibration_oci_integration.py
       - name: Upload gate evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

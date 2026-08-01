@@ -217,7 +217,7 @@ jobs:
           {
             printf '%s\n' "## Qualified promotion dry-run"
             printf '\n'
-            printf 'Verified `%s` without uploading.\n' "${VERIFIED_TAG}"
+            printf "Verified \`%s\` without uploading.\n" "${VERIFIED_TAG}"
             printf '\n'
             printf '%s\n' "- qualification run: \`${QUALIFICATION_RUN_ID}\`"
             printf '%s\n' "- candidate: \`${CANDIDATE_SHA}\`"

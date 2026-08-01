@@ -151,6 +151,16 @@ def test_publish_is_dry_run_by_default_and_publisher_cannot_build() -> None:
     assert "pip install" not in combined
     assert "python -m build" not in combined
     assert "skip-existing" not in combined
+    dry_run = next(
+        step
+        for step in verify_steps
+        if step.get("name") == "Record dry-run result"
+    )
+    assert (
+        'printf "Verified \\`%s\\` without uploading.\\n"'
+        in dry_run["run"]
+    )
+    assert "printf 'Verified `%s` without uploading." not in dry_run["run"]
 
 
 def test_publish_uses_trusted_verifier_before_candidate_checkout() -> None:
@@ -406,6 +416,19 @@ def test_locked_toolchain_archives_and_oci_digests_are_the_executed_inputs() -> 
     assert "go install -mod=readonly" in toolchains
     assert "golang.org/x/vuln/cmd/govulncheck" in toolchains
     assert "go install ./cmd/govulncheck" not in toolchains
+    versions = next(
+        step["run"]
+        for step in workflow["jobs"]["toolchains"]["steps"]
+        if step.get("name") == "Record and enforce tool versions"
+    )
+    assert versions.lstrip().startswith("set -euo pipefail")
+    assert "cargo-audit --version | tee evidence/cargo-audit.txt" in versions
+    assert "cargo audit --version" not in versions
+    assert "cat evidence/cargo-audit.txt" in versions
+    assert "qualification_tools.cargo-audit.version_output" in versions
+    assert "qualification_tools.govulncheck.version_output" in versions
+    assert "grep -c '^Scanner: '" in versions
+    assert "Scanner: ${expected_govulncheck}" in versions
     audit = next(
         step["run"]
         for step in workflow["jobs"]["toolchains"]["steps"]
@@ -475,3 +498,36 @@ def test_core_qualification_preserves_the_supported_cross_platform_contract() ->
     assert "--junitxml=" in core_text
     assert "verify-junit" in core_text
     assert "--cov-fail-under=87" in core_text
+
+    source_test_jobs = (
+        "core",
+        "slow",
+        "security-behavior",
+        "product",
+        "mcp",
+        "toolchains",
+        "oci",
+    )
+    for job_name in source_test_jobs:
+        pytest_steps = [
+            step
+            for step in qualification["jobs"][job_name]["steps"]
+            if "python -m pytest" in str(step.get("run", ""))
+        ]
+        assert pytest_steps, job_name
+        for step in pytest_steps:
+            assert step["working-directory"] == "candidate", job_name
+            run = step["run"]
+            assert "candidate/tests" not in run, job_name
+            assert "--junitxml" in run, job_name
+            assert "../evidence/" in run, job_name
+
+    core_suite = next(
+        step
+        for step in core["steps"]
+        if step.get("name") == "Run strict core suite and coverage"
+    )
+    assert core_suite["env"]["LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE"] == (
+        "${{ github.workspace }}/incoming/source/candidate-source.tar"
+    )
+    assert "--cov-report=\"xml:../evidence/" in core_suite["run"]
