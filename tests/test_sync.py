@@ -13,6 +13,7 @@ import pytest
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import (
     bootstrap_cmd,
+    init_cmd,
     knowledge_cmd,
     lint_cmd,
     sync_cmd,
@@ -384,6 +385,55 @@ def test_service_manifest_load_keeps_legacy_optional_mapping_defaults(tmp_path):
 
 class TestNoManifest:
     """sync exits 1 with a clear message when no manifest exists."""
+
+    def test_init_only_scaffold_routes_to_bootstrap_without_seeding(
+        self, tmp_path, capsys, monkeypatch
+    ):
+        """An actual ``init`` scaffold is not a manifestless legacy wiki."""
+        project = tmp_path / "project"
+        project.mkdir()
+        (project / ".git").mkdir()
+        monkeypatch.chdir(project)
+
+        wiki_dir = Path("docs/llm_wiki")
+        init_cmd.run(
+            types.SimpleNamespace(
+                agent="generic",
+                wiki_dir=str(wiki_dir),
+                no_skills=True,
+            )
+        )
+        (project / "app.py").write_text(
+            "class Example:\n    def run(self) -> str:\n        return 'ok'\n",
+            encoding="utf-8",
+        )
+        before = {
+            path.relative_to(wiki_dir).as_posix(): path.read_bytes()
+            for path in sorted(wiki_dir.rglob("*"))
+            if path.is_file()
+        }
+        monkeypatch.setattr(
+            sync_cmd,
+            "_extract_current_inventory",
+            lambda *_args, **_kwargs: pytest.fail(
+                "init-only routing must happen before extraction or seeding"
+            ),
+        )
+
+        with pytest.raises(SystemExit) as exc_info:
+            sync_cmd.run(_make_sync_args(src_dir=".", wiki_dir=str(wiki_dir)))
+
+        assert exc_info.value.code == 1
+        assert not (wiki_dir / MANIFEST_FILENAME).exists()
+        after = {
+            path.relative_to(wiki_dir).as_posix(): path.read_bytes()
+            for path in sorted(wiki_dir.rglob("*"))
+            if path.is_file()
+        }
+        assert after == before
+        captured = capsys.readouterr()
+        assert "llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki" in captured.err
+        assert "seeding" not in captured.err.lower()
 
     def test_exits_one_and_prints_exact_bootstrap_before_extraction(
         self, tmp_path, capsys, monkeypatch

@@ -124,6 +124,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `sync` now recognizes an untouched `init` scaffold and requires `bootstrap`
+  before manifest seeding, preventing generated index links to pages that do
+  not exist.
 - Public projection output now omits native-only actors, private identities,
   credentials, absolute paths, source snippets, and unapproved extensions.
 - Live knowledge freshness now recomputes the effective generation-options
