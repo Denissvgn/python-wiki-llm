@@ -124,6 +124,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Media discovery now ignores Markdown and HTML examples inside backtick code
+  spans, while persisted surface asset maps retain only canonical `assets/`
+  paths without changing lint warnings or static-site copying for page-local
+  media.
 - `sync` now recognizes an untouched `init` scaffold and requires `bootstrap`
   before manifest seeding, preventing generated index links to pages that do
   not exist.

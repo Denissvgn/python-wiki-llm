@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from llm_wiki_cli.services.knowledge_artifacts import validate_surface_index_bytes
 from llm_wiki_cli.services.wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,
@@ -279,6 +280,62 @@ def test_surface_index_records_reference_style_and_other_asset_counts(tmp_path):
         "assets/guides/tour/notes.txt",
         "assets/guides/tour/README.md",
     ]
+
+
+def test_surface_index_serializes_only_canonical_asset_paths(tmp_path):
+    wiki = tmp_path / "wiki"
+    guide = wiki / "guides" / "tour.md"
+    _write(
+        guide,
+        "# Tour\n\n"
+        "![Canonical](../assets/guides/canonical.png)\n"
+        "![Page-local](local.png)\n"
+        "`![Inline pseudo-media](../assets/guides/pseudo.png)`\n",
+    )
+    _write(wiki / "assets" / "guides" / "canonical.png", "canonical")
+    _write(wiki / "guides" / "local.png", "page-local")
+
+    payload = build_surface_index(wiki, {}, src_dir=str(tmp_path))
+
+    assert payload["counts"]["assets"] == {
+        "total": 1,
+        "referenced": 1,
+        "unreferenced": 0,
+        "by_media_type": {"image": 1, "video": 0, "other": 0},
+    }
+    assert payload["assets"] == {
+        "by_page": {
+            "guides/tour.md": ["assets/guides/canonical.png"],
+        },
+        "referenced": ["assets/guides/canonical.png"],
+        "unreferenced": [],
+    }
+    assert all(
+        asset_path.startswith("assets/")
+        for asset_paths in payload["assets"]["by_page"].values()
+        for asset_path in asset_paths
+    )
+    serialized = (
+        json.dumps(payload, indent=2, sort_keys=True, allow_nan=False) + "\n"
+    ).encode("utf-8")
+    assert validate_surface_index_bytes(serialized) == payload
+
+    _write(
+        guide,
+        "# Tour\n\n"
+        "![Canonical](../assets/guides/canonical.png)\n"
+        "![Other page-local](other.png)\n"
+        "`![Other inline pseudo-media](../assets/guides/other-pseudo.png)`\n",
+    )
+    _write(wiki / "guides" / "other.png", "other-page-local")
+
+    changed_noncanonical_references = build_surface_index(
+        wiki,
+        {},
+        src_dir=str(tmp_path),
+    )
+    assert changed_noncanonical_references["assets"] == payload["assets"]
+    assert changed_noncanonical_references["source_hash"] == payload["source_hash"]
 
 
 def test_surface_index_resolves_titled_internal_links_with_parentheses(tmp_path):

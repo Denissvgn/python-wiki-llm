@@ -556,13 +556,14 @@ class TestLintMediaLinks:
             item for item in report.diagnostics if item.category == "media_orphan"
         ] == []
 
-    def test_fenced_media_examples_are_ignored_by_media_lint(
+    def test_code_span_media_examples_are_ignored_by_media_lint(
         self, tmp_path, monkeypatch
     ):
         self._stub_source_inputs(monkeypatch)
         src, wiki = self._wiki_with_guide(tmp_path)
         (wiki / "assets" / "example.png").write_bytes(b"example")
-        (wiki / "guides" / "tour.md").write_text(
+        (wiki / "assets" / "real.png").write_bytes(b"real")
+        content = (
             "# Tour\n\n"
             "```html\n"
             '<img src="../assets/missing-from-fence.png">\n'
@@ -571,14 +572,47 @@ class TestLintMediaLinks:
             "![Example](../assets/example.png)\n"
             "[Demo](../assets/fenced-demo.webm)\n"
             "```\n\n"
-            "![Missing](../assets/unfenced-missing.png)\n",
+            "`![Inline](../assets/inline-image.png) "
+            "[Demo](../assets/inline-demo.webm)`\n\n"
+            '`<img src="../assets/inline-html.png" '
+            'srcset="../assets/inline-small.png 1x, '
+            '../assets/inline-large.png 2x">`\n\n'
+            "``![Multi](../assets/multi-image.png) ```embedded``` "
+            '<video src="../assets/multi-video.mp4"></video>``\n\n'
+            "`![Reference][multiline]\n"
+            "[multiline]: ../assets/multiline-reference.png\n"
+            "`\n\n"
+            "![Real](../assets/real.png)\n"
+            "![Missing](../assets/unfenced-missing.png)\n"
+            "\\`![Escaped](../assets/escaped-opener.png)`\n\n"
+            "\\``![Escaped then code](../assets/escaped-then-code.png)`\n\n"
+            "``![Unmatched](../assets/unmatched-opener.png)\n"
+        )
+        (wiki / "guides" / "tour.md").write_text(
+            content,
             encoding="utf-8",
         )
+
+        masked = wiki_media._mask_inline_code_spans(
+            wiki_media.mask_fenced_code_blocks(content)
+        )
+        assert len(masked) == len(content)
+        assert [
+            (index, char)
+            for index, char in enumerate(masked)
+            if char in {"\r", "\n"}
+        ] == [
+            (index, char)
+            for index, char in enumerate(content)
+            if char in {"\r", "\n"}
+        ]
 
         report = lint_cmd.build_report(wiki, str(src))
 
         assert [(issue.category, issue.target) for issue in report.issues] == [
-            ("media_link_broken", "../assets/unfenced-missing.png")
+            ("media_link_broken", "../assets/unfenced-missing.png"),
+            ("media_link_broken", "../assets/escaped-opener.png"),
+            ("media_link_broken", "../assets/unmatched-opener.png"),
         ]
         assert [
             (item.category, item.path)

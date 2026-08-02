@@ -817,13 +817,13 @@ When guide or other semantic pages embed local media, lint treats image and
 video targets separately from Markdown page links. It recognizes inline
 Markdown images and media links, same-page reference-style images, and raw
 `<img>`, `<video>`, and `<source>` tags, including local `srcset` candidates.
-Fenced code blocks are ignored by the media pass so examples do not create
-media diagnostics; the general page-link check is unchanged. Missing local
-media files are hard `media_link_broken` issues. Missing image alt text, media
-files over the default 2 MB warning threshold, unreferenced media files under
-`assets/`, media stored outside the preferred `assets/` convention,
-unrecognized non-hidden files under `assets/`, and symlinked media that
-resolves outside the wiki root are warning diagnostics
+Fenced code blocks and backtick code spans are ignored by the media pass so
+examples do not create media diagnostics; the general page-link check is
+unchanged. Missing local media files are hard `media_link_broken` issues.
+Missing image alt text, media files over the default 2 MB warning threshold,
+unreferenced media files under `assets/`, media stored outside the preferred
+`assets/` convention, unrecognized non-hidden files under `assets/`, and
+symlinked media that resolves outside the wiki root are warning diagnostics
 (`media_missing_alt_text`, `media_oversize`, `media_orphan`,
 `media_outside_assets`, `asset_unrecognized_type`, and
 `media_symlink_escape`). Use `--media-size-warn-bytes` to tune the size warning
