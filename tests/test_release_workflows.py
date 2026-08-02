@@ -459,6 +459,34 @@ def test_locked_toolchain_archives_and_oci_digests_are_the_executed_inputs() -> 
     assert "--platform linux/amd64" in oci
 
 
+def test_toolchain_audits_require_complete_owner_suite_evidence() -> None:
+    workflow = _yaml("release-qualification.yml")
+    steps = workflow["jobs"]["toolchains"]["steps"]
+    names = [step.get("name") for step in steps]
+    suite_index = names.index("Run toolchain owner suites")
+    verifier_index = names.index("Enforce complete toolchain owner evidence")
+    audit_index = names.index("Audit exact helper dependency trees")
+    assert suite_index < verifier_index < audit_index
+
+    verifier = steps[verifier_index]
+    assert verifier.get("continue-on-error") is None
+    assert verifier.get("if") is None
+    command = verifier["run"]
+    assert "verify-junit" in command
+    assert "--junit evidence/toolchains.xml" in command
+    assert "--lane toolchains" in command
+    assert "--allowlist candidate/release/skip-allowlist.json" in command
+    assert "--minimum-collected 488" in command
+    assert "--minimum-passed 488" in command
+    assert "--output evidence/result-toolchains.json" in command
+    assert "--discovery" not in command
+    assert "DISCOVERY_MODE" not in str(verifier)
+
+    audit = steps[audit_index]
+    assert audit.get("if") is None
+    assert audit.get("continue-on-error") is None
+
+
 def test_release_runners_and_ci_runners_are_explicit() -> None:
     for name in (
         "ci.yml",

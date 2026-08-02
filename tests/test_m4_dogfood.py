@@ -11,7 +11,11 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.commands import bootstrap_cmd, site_cmd, sync_cmd
-from llm_wiki_cli.services.extractor_helpers import get_prepared_binary
+from llm_wiki_cli.services.extractor_helpers import (
+    get_prepared_binary,
+    resolve_helper_cache_root,
+)
+from llm_wiki_cli.services.inventory_cache import ENV_CACHE_DIR
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 
@@ -79,15 +83,18 @@ def _mermaid_body_lengths(wiki_dir: Path) -> list[int]:
 
 def test_m4_dogfood_bootstrap_sync_and_site_export(tmp_path, monkeypatch, capsys):
     repo_root = Path(__file__).resolve().parents[1]
-    helper_cache_dir = repo_root / ".git"
-    if not get_prepared_binary("go", repo_root, str(helper_cache_dir)):
+    helper_root = resolve_helper_cache_root(repo_root)
+    if helper_root is None:
         pytest.skip("prepared Go helper cache is required for full-repo dogfood")
-    if not get_prepared_binary("rust", repo_root, str(helper_cache_dir)):
+    helper_cache_base = helper_root.parent
+    if not get_prepared_binary("go", repo_root, str(helper_cache_base)):
+        pytest.skip("prepared Go helper cache is required for full-repo dogfood")
+    if not get_prepared_binary("rust", repo_root, str(helper_cache_base)):
         pytest.skip("prepared Rust helper cache is required for full-repo dogfood")
     source = tmp_path / "python-wiki-llm"
     _copy_repo(repo_root, source)
     before = _file_hashes(source)
-    monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(helper_cache_dir))
+    monkeypatch.setenv(ENV_CACHE_DIR, str(helper_cache_base))
     monkeypatch.chdir(source)
 
     bootstrap_cmd.run(

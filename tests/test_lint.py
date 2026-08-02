@@ -18,15 +18,11 @@ from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.services import metrics, team, wiki_media
 from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
-from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME, InventoryCacheStats
-
-TS_NODE_MODULES = (
-    Path(__file__).parents[1]
-    / "src"
-    / "llm_wiki_cli"
-    / "extractors"
-    / "ts_scripts"
-    / "node_modules"
+from llm_wiki_cli.services.extractor_helpers import get_prepared_typescript_root
+from llm_wiki_cli.services.inventory_cache import (
+    CACHE_FILENAME,
+    ENV_CACHE_DIR,
+    InventoryCacheStats,
 )
 
 
@@ -331,7 +327,11 @@ class TestUnsupportedSources:
         app_dir.mkdir(parents=True)
         (app_dir / "Main.hs").write_text("module Main where\n", encoding="utf-8")
 
-        report = lint_cmd.build_report(str(wiki), ".")
+        report = lint_cmd.build_report(
+            str(wiki),
+            ".",
+            helper_cache_dir=str(tmp_path / "unprepared-helper-cache"),
+        )
 
         diagnostics = [
             diagnostic
@@ -1788,6 +1788,7 @@ class TestLintProfile:
         assert exc.value.code == 2
 
     def test_lint_creates_default_git_cache(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.delenv(ENV_CACHE_DIR, raising=False)
         monkeypatch.chdir(tmp_path)
         (tmp_path / ".git").mkdir()
         (tmp_path / "app.py").write_text("class A: pass\n", encoding="utf-8")
@@ -2229,11 +2230,13 @@ class TestLintDependencyCoverage:
         assert [d.target for d in undeclared] == []
         assert report.passed
 
-    @pytest.mark.skipif(
-        not (TS_NODE_MODULES / "ts-morph").exists() or shutil.which("node") is None,
-        reason="Node.js/ts-morph dependencies not installed",
-    )
     def test_typescript_src_lib_alias_resolves_under_root_lib_ignore(self, tmp_path):
+        typescript_root = get_prepared_typescript_root(
+            tmp_path
+        ) or get_prepared_typescript_root()
+        if typescript_root is None or shutil.which("node") is None:
+            pytest.skip("Node.js/ts-morph dependencies not installed")
+
         (tmp_path / ".gitignore").write_text("lib/\n", encoding="utf-8")
         wiki = tmp_path / "wiki"
         wiki.mkdir()

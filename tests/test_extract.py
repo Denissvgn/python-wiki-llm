@@ -3232,7 +3232,10 @@ class TestUnsupportedSources:
             "module HLSAnalysis.API where\n", encoding="utf-8"
         )
 
-        result = extract_cmd.get_inventory_result(".")
+        result = extract_cmd.get_inventory_result(
+            ".",
+            helper_cache_dir=str(tmp_path / "unprepared-helper-cache"),
+        )
 
         assert result.inventory == {}
         assert result.statuses["haskell"].state == "failed"

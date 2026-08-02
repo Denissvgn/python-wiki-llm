@@ -763,6 +763,15 @@ jobs:
           tests/test_m4_dogfood.py
           -p no:cacheprovider --strict-config --strict-markers
           -W error -o xfail_strict=true --junitxml=../evidence/toolchains.xml
+      - name: Enforce complete toolchain owner evidence
+        run: >-
+          python -I incoming/tools/release/qualification.py verify-junit
+          --junit evidence/toolchains.xml
+          --lane toolchains
+          --allowlist candidate/release/skip-allowlist.json
+          --minimum-collected 488
+          --minimum-passed 488
+          --output evidence/result-toolchains.json
       - name: Audit exact helper dependency trees
         run: |
           set -euo pipefail
