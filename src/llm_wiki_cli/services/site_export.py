@@ -43,8 +43,8 @@ from .wiki_media import (
     build_asset_index,
     collect_media_references,
     iter_markdown_link_targets as iter_wiki_markdown_link_targets,
+    mask_markdown_code,
     media_type_for_path,
-    strip_fenced_code_blocks,
 )
 
 
@@ -3325,27 +3325,49 @@ def _rewrite_markdown_links(
     page: wiki_surface.WikiSurfacePage,
     export_rel_by_source: dict[Path, str],
 ) -> str:
-    lines: list[str] = []
-    in_fence = False
-    for line in content.splitlines(keepends=True):
-        if line.lstrip().startswith("```"):
-            in_fence = not in_fence
-            lines.append(line)
+    masked = mask_markdown_code(content)
+    original_lines = content.splitlines(keepends=True)
+    masked_lines = masked.splitlines(keepends=True)
+    rewritten_lines = (
+        _rewrite_markdown_link_line(
+            original_line,
+            masked_line,
+            page,
+            export_rel_by_source,
+        )
+        for original_line, masked_line in zip(
+            original_lines,
+            masked_lines,
+            strict=True,
+        )
+    )
+    return "".join(rewritten_lines)
+
+
+def _rewrite_markdown_link_line(
+    original_line: str,
+    masked_line: str,
+    page: wiki_surface.WikiSurfacePage,
+    export_rel_by_source: dict[Path, str],
+) -> str:
+    rewritten: list[str] = []
+    cursor = 0
+    for masked_match in MARKDOWN_LINK_RE.finditer(masked_line):
+        start, end = masked_match.span()
+        original_match = MARKDOWN_LINK_RE.fullmatch(original_line[start:end])
+        if original_match is None:
             continue
-        if in_fence:
-            lines.append(line)
-            continue
-        lines.append(
-            MARKDOWN_LINK_RE.sub(
-                lambda match: _rewrite_markdown_link(
-                    match,
-                    page,
-                    export_rel_by_source,
-                ),
-                line,
+        rewritten.append(original_line[cursor:start])
+        rewritten.append(
+            _rewrite_markdown_link(
+                original_match,
+                page,
+                export_rel_by_source,
             )
         )
-    return "".join(lines)
+        cursor = end
+    rewritten.append(original_line[cursor:])
+    return "".join(rewritten)
 
 
 def _check_mirror_markdown_links(
@@ -4047,7 +4069,7 @@ def _front_matter_mismatch_issue(
 def _iter_markdown_link_targets(content: str) -> list[str]:
     return [
         link.raw_target
-        for link in iter_wiki_markdown_link_targets(strip_fenced_code_blocks(content))
+        for link in iter_wiki_markdown_link_targets(mask_markdown_code(content))
         if not link.is_image
     ]
 

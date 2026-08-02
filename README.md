@@ -1490,11 +1490,13 @@ the mirror, writes MkDocs config comments that point users at a Mermaid plugin
 when diagram rendering is desired, and refuses source/output overlap unless
 explicitly allowed. Docusaurus exports also escape MDX-sensitive text outside
 code fences and inline code spans while preserving fenced Mermaid diagrams.
-`site check` validates the generated mirror without external builders: missing
-pages, broken or unsafe local Markdown links, malformed generated front matter,
-metadata mismatches, duplicate Docusaurus document ids, and output paths outside
-the mirror are hard `issues`; mixed mirrors that omit front matter on some pages
-emit non-failing `warnings` in JSON and text reports.
+Link rewriting and `site check` ignore Markdown-looking links inside fenced code
+blocks and backtick code spans, while resolvable live links are rewritten and
+broken or unsafe live links remain hard `issues`. `site check` validates the
+generated mirror without external builders: missing pages, malformed generated
+front matter, metadata mismatches, duplicate Docusaurus document ids, and output
+paths outside the mirror are also hard `issues`; mixed mirrors that omit front
+matter on some pages emit non-failing `warnings` in JSON and text reports.
 
 ### `skills`
 

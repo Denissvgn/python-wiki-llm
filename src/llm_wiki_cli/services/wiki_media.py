@@ -221,6 +221,12 @@ def _is_escaped_backtick_run(content: str, offset: int) -> bool:
     return backslashes % 2 == 1
 
 
+def mask_markdown_code(content: str) -> str:
+    """Blank fenced and inline Markdown code while preserving offsets."""
+
+    return _mask_inline_code_spans(mask_fenced_code_blocks(content))
+
+
 def iter_mermaid_click_targets(content: str) -> Iterator[MarkdownLinkTarget]:
     """Yield URL-bearing ``click`` directives from explicit Mermaid fences.
 
@@ -484,7 +490,7 @@ def collect_media_references(
     content: str,
 ) -> list[MediaReference]:
     page = Path(page_path)
-    content = _mask_inline_code_spans(mask_fenced_code_blocks(content))
+    content = mask_markdown_code(content)
     references: list[MediaReference] = []
     for link in iter_markdown_link_targets(content):
         target = local_link_path(link.raw_target)

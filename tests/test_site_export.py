@@ -881,6 +881,25 @@ def test_docusaurus_export_preserves_multiline_video_embed(tmp_path):
 
 def test_rewrites_internal_markdown_links_and_preserves_fences(tmp_path):
     wiki = _write_wiki(tmp_path)
+    user_source = wiki / "entities" / "User.md"
+    user_source.write_text(
+        user_source.read_text(encoding="utf-8")
+        + "\nInline code `[models](../modules/./models.md)` stays.\n"
+        + "Double code ``[models](../modules/./models.md)`` stays.\n"
+        + "Multiline code ``before\n"
+        + "[models](../modules/./models.md)\n"
+        + "after`` stays.\n"
+        + "~~~text\n"
+        + "[models](../modules/./models.md)\n"
+        + "~~~\n"
+        + "Live [use `models`](../modules/./models.md#classes).\n"
+        + "Escaped opener \\` and [escaped live](../modules/./models.md).\n"
+        + "Ordinary multiline [models](\n"
+        + "../modules/./models.md\n"
+        + ") stays.\n"
+        + "Unmatched opener ` and [unmatched live](../modules/./models.md).\n",
+        encoding="utf-8",
+    )
     out = tmp_path / "site"
 
     export_site_mirror(wiki_dir=wiki, out_dir=out)
@@ -896,6 +915,26 @@ def test_rewrites_internal_markdown_links_and_preserves_fences(tmp_path):
     assert "![image](../assets/logo.png)" in user_content
     assert "[models](../modules/./models.md)" in user_content
     assert 'click M "../modules/models.md"' in user_content
+    assert "Inline code `[models](../modules/./models.md)` stays." in user_content
+    assert "Double code ``[models](../modules/./models.md)`` stays." in user_content
+    assert (
+        "Multiline code ``before\n[models](../modules/./models.md)\n"
+        "after`` stays."
+    ) in user_content
+    assert "~~~text\n[models](../modules/./models.md)\n~~~" in user_content
+    assert "Live [use `models`](../modules/models.md#classes)." in user_content
+    assert (
+        "Escaped opener \\` and [escaped live](../modules/models.md)."
+        in user_content
+    )
+    assert (
+        "Ordinary multiline [models](\n../modules/./models.md\n) stays."
+        in user_content
+    )
+    assert (
+        "Unmatched opener ` and [unmatched live](../modules/models.md)."
+        in user_content
+    )
 
 
 def test_check_succeeds_after_export(tmp_path):
@@ -997,7 +1036,26 @@ def test_check_reports_broken_and_unsafe_local_markdown_links(tmp_path):
     user_page = out / "entities" / "User.md"
     user_page.write_text(
         user_page.read_text(encoding="utf-8")
-        + "\n[Broken](../modules/missing.md)\n[Unsafe](../../outside.md)\n",
+        + "\n`[Broken](../modules/missing.md)` "
+        + "and `[Unsafe](../../outside.md)`\n"
+        + "``[Broken](../modules/missing.md)`` "
+        + "and ``[Unsafe](../../outside.md)``\n"
+        + "``before\n"
+        + "[Broken](../modules/missing.md)\n"
+        + "[Unsafe](../../outside.md)\n"
+        + "after``\n"
+        + "```text\n"
+        + "[Broken](../modules/missing.md)\n"
+        + "[Unsafe](../../outside.md)\n"
+        + "```\n"
+        + "~~~text\n"
+        + "[Broken](../modules/missing.md)\n"
+        + "[Unsafe](../../outside.md)\n"
+        + "~~~\n"
+        + "[Broken](../modules/missing.md)\n"
+        + "[Unsafe](../../outside.md)\n"
+        + "Escaped opener \\` [Escaped](../modules/escaped-missing.md)\n"
+        + "Unmatched opener ` [Unmatched](../modules/unmatched-missing.md)\n",
         encoding="utf-8",
     )
 
@@ -1006,16 +1064,23 @@ def test_check_reports_broken_and_unsafe_local_markdown_links(tmp_path):
     ).check_site_mirror(wiki_dir=wiki, out_dir=out)
 
     assert report.ok is False
-    assert any(
-        issue["category"] == "broken_markdown_link"
-        and issue["target"] == "../modules/missing.md"
+    markdown_issues = [
+        (issue["category"], issue["target"])
         for issue in report.issues
-    )
-    assert any(
-        issue["category"] == "unsafe_markdown_link"
-        and issue["target"] == "../../outside.md"
-        for issue in report.issues
-    )
+        if issue["target"]
+        in {
+            "../modules/missing.md",
+            "../../outside.md",
+            "../modules/escaped-missing.md",
+            "../modules/unmatched-missing.md",
+        }
+    ]
+    assert markdown_issues == [
+        ("broken_markdown_link", "../modules/missing.md"),
+        ("unsafe_markdown_link", "../../outside.md"),
+        ("broken_markdown_link", "../modules/escaped-missing.md"),
+        ("broken_markdown_link", "../modules/unmatched-missing.md"),
+    ]
 
 
 def test_check_reports_malformed_front_matter(tmp_path):

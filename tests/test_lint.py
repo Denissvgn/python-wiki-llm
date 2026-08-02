@@ -572,6 +572,9 @@ class TestLintMediaLinks:
             "![Example](../assets/example.png)\n"
             "[Demo](../assets/fenced-demo.webm)\n"
             "```\n\n"
+            "~~~html\n"
+            '<img src="../assets/missing-from-tilde-fence.png">\n'
+            "~~~\n\n"
             "`![Inline](../assets/inline-image.png) "
             "[Demo](../assets/inline-demo.webm)`\n\n"
             '`<img src="../assets/inline-html.png" '
@@ -593,9 +596,7 @@ class TestLintMediaLinks:
             encoding="utf-8",
         )
 
-        masked = wiki_media._mask_inline_code_spans(
-            wiki_media.mask_fenced_code_blocks(content)
-        )
+        masked = wiki_media.mask_markdown_code(content)
         assert len(masked) == len(content)
         assert [
             (index, char)
@@ -606,6 +607,43 @@ class TestLintMediaLinks:
             for index, char in enumerate(content)
             if char in {"\r", "\n"}
         ]
+        crlf_content = (
+            "Before\r\n"
+            "`[Pseudo](../assets/crlf.png)\r\nstill code`\r\n"
+            "After\r\n"
+        )
+        crlf_masked = wiki_media.mask_markdown_code(crlf_content)
+        assert len(crlf_masked) == len(crlf_content)
+        assert [
+            (index, char)
+            for index, char in enumerate(crlf_masked)
+            if char in {"\r", "\n"}
+        ] == [
+            (index, char)
+            for index, char in enumerate(crlf_content)
+            if char in {"\r", "\n"}
+        ]
+        assert crlf_masked.startswith("Before\r\n")
+        assert crlf_masked.endswith("\r\nAfter\r\n")
+        assert "../assets/crlf.png" not in crlf_masked
+        assert "# Tour" in masked
+        assert "![Real](../assets/real.png)" in masked
+        assert "![Missing](../assets/unfenced-missing.png)" in masked
+        assert "\\`![Escaped](../assets/escaped-opener.png)" in masked
+        assert "``![Unmatched](../assets/unmatched-opener.png)" in masked
+        assert "../assets/missing-from-fence.png" not in masked
+        assert "../assets/missing-from-tilde-fence.png" not in masked
+        assert "../assets/inline-image.png" not in masked
+        assert "../assets/multi-image.png" not in masked
+        assert "../assets/multi-video.mp4" not in masked
+        assert "../assets/multiline-reference.png" not in masked
+        assert "../assets/escaped-then-code.png" not in masked
+        assert wiki_media.mask_markdown_code(r"\`escaped opener`") == (
+            r"\`escaped opener`"
+        )
+        assert wiki_media.mask_markdown_code("``unmatched opener`") == (
+            "``unmatched opener`"
+        )
 
         report = lint_cmd.build_report(wiki, str(src))
 
