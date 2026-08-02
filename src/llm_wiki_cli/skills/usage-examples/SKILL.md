@@ -7,6 +7,16 @@ description: Capture evidence-linked usage examples for user docs - run document
 
 Add worked examples to user-facing docs without weakening the deterministic wiki contract. The core rule: examples are evidence, not decoration. A capture is valid only when it demonstrates a flow already documented by a guide and backed by wiki/source evidence. This skill uses the current agent session for judgment and capture; package code never calls an LLM or installs tooling. See [reference.md](reference.md) for capture tooling checks, media policy, redaction rules, command matrix, deferred rows, and failure modes.
 
+## Managed repository preflight
+
+Before a managed wiki mutation, follow the user's instructions and applicable
+local repository rules, then run
+`git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md`; repeat it
+before handoff. Exit 0 is local-only, exit 1 is conditionally Git-eligible but
+not authorization, and any other result fails closed to local-only. Never
+force-add or change ignore/exclude rules. Read `wiki-reference`'s
+"Repository-aware Git handoff" section for details.
+
 ## Preconditions
 
 - A maintained wiki exists and strict lint is clean. Use `wiki-bootstrap` only

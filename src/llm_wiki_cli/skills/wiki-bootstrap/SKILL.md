@@ -1,17 +1,27 @@
 ---
 name: wiki-bootstrap
-description: Bootstrap an LLM Wiki for an existing codebase — prepare extractor helpers, run deterministic `llm-wiki bootstrap --format json`, perform a centrality-ranked semantic pass, write an explicit remainder backlog for deferred pages, validate with lint/ci-check, and commit the wiki. Use only for first-time wiki creation; route every existing wiki to wiki-sync or migration.
+description: Bootstrap an LLM Wiki for an existing codebase — prepare extractor helpers, run deterministic `llm-wiki bootstrap --format json`, perform a centrality-ranked semantic pass, write an explicit remainder backlog for deferred pages, validate with lint/ci-check, and deliver through a repository-policy-aware handoff. Use only for first-time wiki creation; route every existing wiki to wiki-sync or migration.
 ---
 
 # wiki-bootstrap
 
-Create a first useful wiki without pretending every generated page can be hand-polished in one session. The default output is reference-oriented: a complete generated wiki surface for agents, maintainers, and future documentation work, not finished user-facing product docs. The loop is: **prepare helpers → bootstrap → review summary → P0 semantic pages → centrality-ranked P1 pages → remainder backlog → final owning sync/re-anchor → lint/ci-check → commit**. Finish the central pages first, then record the long-tail remainder in a format another agent or human can resume. For user docs, follow this skill with `onboarding-guide` and then `publish-docs` / `site export --profile user --site-name <project>`. See [reference.md](reference.md) for the ranking policy, the remainder-backlog artifact format, validation expectations, and failure modes.
+Create a first useful wiki without pretending every generated page can be hand-polished in one session. The default output is reference-oriented: a complete generated wiki surface for agents, maintainers, and future documentation work, not finished user-facing product docs. The loop is: **prepare helpers → bootstrap → review summary → P0 semantic pages → centrality-ranked P1 pages → remainder backlog → final owning sync/re-anchor → lint/ci-check → policy-aware handoff**. Finish the central pages first, then record the long-tail remainder in a format another agent or human can resume. For user docs, follow this skill with `onboarding-guide` and then `publish-docs` / `site export --profile user --site-name <project>`. See [reference.md](reference.md) for the ranking policy, the remainder-backlog artifact format, validation expectations, and failure modes.
 
 In an `external_agent_docs` run, this skill supplies the deterministic
 `bootstrap-source` baseline only. Write the wiki inside the explicit
 documentation workspace, leave the source read-only, and hand the worklist to
 `wiki-semantic-enhance`; do not perform the target-repository commit steps.
 Managed knowledge-base behavior remains the default outside that explicit mode.
+
+## Managed repository preflight
+
+Follow the user's instructions and applicable local repository rules. Before
+the first wiki write and again before handoff, run
+`git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md`: exit 0 is
+local-only, exit 1 is conditionally Git-eligible but not authorization, and any
+other result fails closed to local-only. Never force-add or change
+ignore/exclude rules. Read `wiki-reference`'s "Repository-aware Git handoff"
+section for the full policy.
 
 ## Preconditions
 
@@ -156,7 +166,7 @@ it from generated artifacts.
 
    This second sync preserves supported semantic content while re-anchoring
    canonical Markdown, `.llm-wiki-surface.json`, `.llm-wiki-knowledge.json`,
-   and the manifest as one committed snapshot. Run it only when canonical
+   and the manifest as one persisted snapshot. Run it only when canonical
    Markdown actually changed; a generated-only no-op proceeds directly to
    validation and must not create an authoring loop. If a validation fix changes
    Markdown, restart this sequence at sync. Fix broken links, orphan pages,
@@ -183,7 +193,16 @@ it from generated artifacts.
    llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki
    ```
 
-10. **Review the diff, then commit in managed mode only.** Confirm the final diff contains only generated wiki pages, semantic edits, the remainder backlog, and optional report/log artifacts. Commit the wiki separately from unrelated code changes with a `docs(wiki): bootstrap <project>` style message. Never reuse the hook path's literal `auto-update [bot]` message and never set `LLM_WIKI_AUTO_COMMIT` — both are reserved for the post-commit hook path so it can detect its own commits. In `external_agent_docs`, return the workspace paths and result to the supervisor; never stage or commit the source or adopted input wiki.
+10. **Review, then use the permitted handoff.** Repeat the managed repository
+    preflight. For a local-only or indeterminate wiki, report the changed local
+    paths and validation result without staging, committing, force-adding, or
+    changing ignore rules. Only when exit 1 and the user plus applicable local
+    rules authorize a commit, confirm the diff contains only workflow-owned
+    paths and commit `<wiki-dir>` separately from unrelated code changes with a
+    `docs(wiki): bootstrap <project>` style message. Never reuse the hook
+    path's literal `auto-update [bot]` message or set
+    `LLM_WIKI_AUTO_COMMIT`. In `external_agent_docs`, return workspace paths
+    and results to the supervisor; never stage or commit the source or adopted input wiki.
 
 ## Context budget
 

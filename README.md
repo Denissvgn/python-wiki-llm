@@ -323,7 +323,9 @@ The trigger command:
 - filters credential-like values from the generated prompt on a best-effort
   basis, then writes `.git/llm-wiki-prompt.txt` with owner-only permissions
   where supported;
-- invokes the selected agent with a prompt that asks it to update, lint, and commit wiki changes.
+- invokes the selected agent with a prompt that asks it to update, lint, and
+  follow a repository-aware handoff. A Git-ignored or indeterminate wiki stays
+  local and is never force-added or committed.
 
 Useful trigger options:
 
@@ -1081,7 +1083,16 @@ llm-wiki generate-prompt --template compact
 The generated prompt includes change-type guidance. Installed prompt templates
 can override the default prompt body. The default prompt asks agents to run
 `sync` first, then perform a semantic pass on affected pages before accepting a
-lint-clean wiki as complete.
+lint-clean wiki as complete. LLM Wiki always appends the final repository-policy
+handoff: Git-ignored or indeterminate wiki paths remain local-only, while a
+nonignored path is merely eligible for a separate commit when the user and
+applicable repository rules authorize it. The handoff never force-adds a wiki
+or changes ignore/exclude rules.
+
+Prompt templates may use `{wiki_git_disposition}`, `{wiki_git_reason}`,
+`{wiki_git_handoff_eligible}`, and `{wiki_git_handoff}` for explanatory prose.
+They cannot contain `git add`, `git commit`, or `LLM_WIKI_AUTO_COMMIT`;
+application-owned prompt rendering supplies the guarded Git or local handoff.
 
 ### `mcp`
 
@@ -1137,6 +1148,11 @@ Python files inside the plugin directory; installed entry points are checked
 again before runtime import. Extractor components may set `"parallel_safe": true`
 to opt into `--jobs` parallel execution; omit it unless the extractor is safe to
 run concurrently in a fresh instance.
+
+Prompt templates own task prose but not version-control mutation. Templates
+containing Git staging/commit commands or `LLM_WIKI_AUTO_COMMIT` are rejected;
+the generated prompt's final repository-policy handoff cannot be replaced by a
+plugin.
 
 A tested sample documentation-hooks plugin lives at
 `examples/plugins/documentation-hooks` in source checkouts. It can be
@@ -1573,17 +1589,19 @@ Sixteen skills are bundled:
   prepare extractor helpers, run deterministic `bootstrap --format json`, do
   a centrality-ranked semantic pass on the most central pages, write an
   explicit `bootstrap-remainder.md` record for deferred pages, validate with
-  `lint --strict`/`ci-check`, and commit the wiki.
+  `lint --strict`/`ci-check`, and use a repository-policy-aware local or Git
+  handoff.
 - `wiki-reference`: progressive-disclosure reference for extractor contracts,
   helper toolchains/caches, dependency reconciliation, static-site profiles,
-  resource-aware execution, and context budgets.
+  repository-aware Git handoff, resource-aware execution, and context budgets.
 - `wiki-semantic-enhance`: resumable standalone semantic-enrichment pass —
   ground or reuse imported LLM prose, complete/defer stable worklist IDs within
   budget, edit only agent-owned semantic surfaces, and return readiness/result
   evidence without changing source, the input wiki, or generated owners.
 - `wiki-sync`: the post-change documentation loop — deterministic `sync`, a
   semantic-only prose pass, a `lint --strict` validation loop, and a
-  separate `docs(wiki):` commit.
+  repository-policy-aware handoff. A separate `docs(wiki):` commit is used only
+  when the wiki is nonignored and applicable instructions authorize it.
 
 ```bash
 llm-wiki skills list
@@ -1599,6 +1617,12 @@ Both are idempotent: identical existing files are kept, and files that were
 edited locally are never overwritten without `--force` — the run reports
 `existing_file_differs` and exits non-zero instead, so local skill
 customizations survive package upgrades by default.
+
+`llm-wiki upgrade` refreshes the generated agent constraints and the
+CLI-owned `wiki-reference` policy. Existing installed workflow-skill copies
+remain untouched; review local changes before deliberately refreshing
+`wiki-sync`, `wiki-bootstrap`, or `onboarding-guide` with repeated `--skill`
+options and `--force`.
 
 ### `metrics`
 

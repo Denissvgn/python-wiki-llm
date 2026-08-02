@@ -12,6 +12,7 @@ from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS, validate_path
 from ..services import circuit_breaker
 from ..services.lockfile import LockAcquisitionError, WikiLock
 from ..services.metrics import record_event
+from ..services.plugins import PluginError
 from ..services.secure_file import write_private_text
 from ..services.team import TeamConfigError, team_prompt_template_default
 from .generate_prompt_cmd import _build_prompt, _redact_prompt_artifact
@@ -199,19 +200,19 @@ def _build_sync_prompt(args, wiki_dir, started: float, diff_text: str) -> str | 
 
     try:
         template = team_prompt_template_default()
-    except TeamConfigError as exc:
-        print(f"Invalid team config: {exc}")
+        return _build_prompt(
+            wiki_dir,
+            ".",
+            template=template,
+            diff_text=diff_text,
+            ast_json=ast_json,
+            graph_json=graph_json,
+            cli_agent=True,
+        )
+    except (PluginError, TeamConfigError) as exc:
+        print(f"Invalid agent prompt configuration: {exc}")
         _record_trigger_failure(args, wiki_dir, started, exit_code=1)
         return None
-    return _build_prompt(
-        wiki_dir,
-        ".",
-        template=template,
-        diff_text=diff_text,
-        ast_json=ast_json,
-        graph_json=graph_json,
-        cli_agent=True,
-    )
 
 
 def _skip_large_prompt(args, wiki_dir, started: float, prompt: str) -> bool:

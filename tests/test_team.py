@@ -334,9 +334,10 @@ class TestTeamPromptAndPluginRequirements:
             )
         )
 
-        assert "TEAM TEMPLATE docs/llm_wiki bugfix" in Path(
-            ".git/llm-wiki-prompt.txt"
-        ).read_text(encoding="utf-8")
+        prompt = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
+        assert "TEAM TEMPLATE docs/llm_wiki bugfix" in prompt
+        assert prompt.count("## Repository Policy & Handoff") == 1
+        assert "eligibility, not authorization" in prompt
 
     def test_explicit_template_overrides_team_default(self, tmp_project):
         plugins.install_plugin(
@@ -356,6 +357,7 @@ class TestTeamPromptAndPluginRequirements:
         )
 
         assert "OVERRIDE TEMPLATE docs/llm_wiki" in prompt
+        assert prompt.count("## Repository Policy & Handoff") == 1
 
     def test_missing_required_plugin_components_are_reported(self, tmp_project):
         config = team.default_team_config("docs/llm_wiki")

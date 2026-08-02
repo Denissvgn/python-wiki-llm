@@ -122,5 +122,7 @@ def test_onboarding_skill_disclaims_human_outcomes_and_runtime_assurance():
     assert "guides/<persona>-navigation.md" in combined
     assert "# <Persona> navigation guide" in combined
     assert "docs(wiki): add navigation guides" in combined
+    assert "Only when exit 1" in combined
+    assert "applicable local rules authorize a commit" in combined
     assert "guides/<persona>-onboarding.md" not in combined
     assert "docs(wiki): add onboarding guides" not in combined

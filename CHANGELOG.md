@@ -124,6 +124,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Generated agent prompts, repository instructions, and bundled wiki-mutating
+  skills now respect effective Git ignore rules: ignored or indeterminate wiki
+  paths remain local-only, while commits require a nonignored path plus
+  explicit user and repository authorization.
 - Dense module dependency diagrams now prioritize direct and cyclic
   relationships while bounding visualization edges; complete inbound and
   outbound dependency tables remain unchanged.

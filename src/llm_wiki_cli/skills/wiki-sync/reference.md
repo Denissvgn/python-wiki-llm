@@ -23,7 +23,7 @@ Rule of thumb: if a section is bounded by an explicit "Do not edit by hand" comm
 - Normal `lint` runs the structural checks; `--strict` additionally requires core structure (`index.md`, `log.md`, `entities/`, `modules/`, `workflows/`, `infrastructure/`) and a fresh, non-stale sync manifest.
 - When this skill changes canonical Markdown, its final validation loop begins
   with a second owning `llm-wiki sync --jobs 1 ...`. That pass preserves
-  supported semantic content and commits the new Markdown/surface/knowledge/
+  supported semantic content and persists the new Markdown/surface/knowledge/
   manifest snapshot. A generated-only run with no semantic edit does not repeat
   sync. Any Markdown fix made after validation restarts at the owning sync.
 - Dependency-cycle / undeclared-dependency / unused-dependency diagnostics are non-blocking warnings, not lint failures — they are not part of this skill's exit criteria. Documenting an intentional cycle in `## Notes` answers the warning; it is not required to make lint pass.
@@ -53,7 +53,7 @@ that temporary rejected read state is expected and must not be prolonged.
 
 ## Failure modes and edge cases
 
-- **No lock on plain `sync`.** Locking and circuit-breaking (`.git/llm-wiki.lock`, `.git/llm-wiki-breaker.json`) only exist in `trigger-agent`. This skill assumes a single interactive session. If it is ever wired into unattended automation (cron, CI, a bot), shell out through `trigger-agent` (`--timeout`, `--max-diff-lines`, `--max-prompt-bytes`, `--reset-breaker`) rather than reimplementing locking/backoff — and in that path only, set `LLM_WIKI_AUTO_COMMIT=1` on the commit so the post-commit hook does not re-trigger itself.
+- **No lock on plain `sync`.** Locking and circuit-breaking (`.git/llm-wiki.lock`, `.git/llm-wiki-breaker.json`) only exist in `trigger-agent`. This skill assumes a single interactive session. If it is ever wired into unattended automation (cron, CI, a bot), shell out through `trigger-agent` (`--timeout`, `--max-diff-lines`, `--max-prompt-bytes`, `--reset-breaker`) rather than reimplementing locking/backoff. Automation still follows the repository-aware handoff: ignored or indeterminate wikis remain local-only. Only for a conditionally eligible, separately authorized automated commit may that application-owned path set `LLM_WIKI_AUTO_COMMIT=1` so the post-commit hook does not re-trigger itself.
 - **Sync's broad-diff guard.** `sync` aborts when a change would affect more than 50 files or more than 30% of sources (once the manifest tracks ≥10 sources). Distinguish "expected, force it" (mass rename) from "manifest is stale/corrupt" (repair, don't force).
 - **Infrastructure regeneration guard and recovery.** Infrastructure has its
   own 50-source/30-percent guard. Dry-run reports add/change/move/remove,

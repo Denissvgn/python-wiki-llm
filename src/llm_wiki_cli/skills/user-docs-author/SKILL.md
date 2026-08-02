@@ -9,6 +9,16 @@ Build a user-facing documentation layer on top of a current LLM Wiki without wea
 
 After evidence-backed guides exist, use `usage-examples` to capture and attach validated screenshots, recordings, or command-output examples; do not duplicate that capture contract here.
 
+## Managed repository preflight
+
+Before a managed wiki mutation, follow the user's instructions and applicable
+local repository rules, then run
+`git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md`; repeat it
+before handoff. Exit 0 is local-only, exit 1 is conditionally Git-eligible but
+not authorization, and any other result fails closed to local-only. Never
+force-add or change ignore/exclude rules. Read `wiki-reference`'s
+"Repository-aware Git handoff" section for details.
+
 ## Preconditions
 
 - A maintained wiki exists. In managed mode its source root is known; if no wiki
