@@ -4,6 +4,7 @@ import ast
 import inspect
 import json
 import os
+import re
 import textwrap
 import types
 from pathlib import Path
@@ -28,6 +29,11 @@ from llm_wiki_cli.commands.sync_cmd import (
 from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.services import knowledge_orchestration, plugins
 from llm_wiki_cli.services.contracts import SECTION_OWNERSHIP_EXTENSION_KEY
+from llm_wiki_cli.services.diagrams import (
+    GENERATED_DIAGRAM_CHAR_LIMIT,
+    GENERATED_DIAGRAM_LINE_LIMIT,
+    GENERATED_DIAGRAM_NODE_LIMIT,
+)
 from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
 from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME, InventoryCacheStats
 from llm_wiki_cli.services.knowledge_governance import (
@@ -2924,6 +2930,23 @@ class TestSyncFlowRegeneration:
         assert "helper('alpha')" not in updated
         assert "| filesystem_write | `path.write_text` | `run` |" in updated
         assert "Keeps the reviewed behavior notes." in updated
+        mermaid_blocks = re.findall(
+            r"```mermaid\n(.*?)\n```", updated, flags=re.DOTALL
+        )
+        assert mermaid_blocks
+        for body in mermaid_blocks:
+            lines = body.splitlines()
+            nodes = sum(
+                line.lstrip().startswith("participant ")
+                or re.match(
+                    r"^\s+[A-Za-z_][A-Za-z0-9_]*\s*[\[({]", line
+                )
+                is not None
+                for line in lines
+            )
+            assert nodes <= GENERATED_DIAGRAM_NODE_LIMIT
+            assert len(lines) <= GENERATED_DIAGRAM_LINE_LIMIT
+            assert len(body) <= GENERATED_DIAGRAM_CHAR_LIMIT
 
     def test_sync_preserves_bounded_plugin_style_on_regenerated_data_flow(
         self, tmp_path, monkeypatch, capsys

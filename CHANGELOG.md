@@ -124,6 +124,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Generated Mermaid diagrams now contextually escape bounded Unicode labels,
+  validate plugin class names, percent-encode validated relative links,
+  deduplicate graph edges, and omit excess visual detail without truncating
+  authoritative tables.
 - Generated agent prompts, repository instructions, and bundled wiki-mutating
   skills now respect effective Git ignore rules: ignored or indeterminate wiki
   paths remain local-only, while commits require a nonignored path plus

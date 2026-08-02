@@ -59,6 +59,12 @@ instead:
 descriptions, workflow notes, guide prose, `flows/*` `## Behavior` sections,
 architecture-page `## Notes` sections, custom `index.md` notes, and concise
 `log.md` summaries.
+The renderer normalizes and bounds labels while preserving printable Unicode,
+grammar-escapes source-derived text, and emits only validated relative diagram
+links with URL characters percent-encoded. When a visualization cannot show
+every analyzed item within its node, line, and character budgets, its omission
+note identifies the bounded projection; the generated tables remain the complete
+authoritative view.
 Full bootstrap renders entity `## Relationships` sections with bounded Mermaid
 diagrams and compact reference tables when relationship metadata exists. When
 dependency analysis is enabled, module pages also get a generated
@@ -1189,11 +1195,13 @@ remain authoritative. Detector exceptions or invalid records become warnings in
 A `diagram_style` hook is called with a plain context object such as
 `{"surface": "relationships"}` or `{"surface": "data_flow"}` and may return
 only bounded style hints: `direction` (`TB`, `TD`, `BT`, `RL`, or `LR`),
-`node_classes` mapping exact generated node labels to safe Mermaid class names,
-and `category_colors` mapping safe class names to `#RGB` or `#RRGGBB` colors.
-LLM Wiki ignores invalid values and unknown keys, so plugins cannot inject
-Markdown, labels, hrefs, or raw Mermaid lines. Labels and `click` hrefs remain
-sanitized by the core diagram renderers.
+`node_classes` mapping exact generated node labels to non-reserved Mermaid class
+identifiers no longer than 64 characters, and `category_colors` mapping those
+class names to `#RGB` or `#RRGGBB` colors. Runtime rendering ignores invalid
+values and unknown keys, while explicit plugin validation rejects them, so
+plugins cannot inject Markdown, labels, hrefs, or raw Mermaid lines. Core
+renderers keep labels Unicode-safe and bounded, and validate and percent-encode
+relative `click` hrefs.
 
 These hooks are deterministic local extension contracts over explicit inputs;
 they do not perform network discovery and they do not mutate Markdown directly.
