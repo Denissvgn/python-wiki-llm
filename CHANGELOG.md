@@ -124,6 +124,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Dense module dependency diagrams now prioritize direct and cyclic
+  relationships while bounding visualization edges; complete inbound and
+  outbound dependency tables remain unchanged.
 - Media discovery now ignores Markdown and HTML examples inside backtick code
   spans, while persisted surface asset maps retain only canonical `assets/`
   paths without changing lint warnings or static-site copying for page-local

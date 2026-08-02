@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.commands import bootstrap_cmd, site_cmd, sync_cmd
+from llm_wiki_cli.services.diagrams import GENERATED_DIAGRAM_LINE_LIMIT
 from llm_wiki_cli.services.extractor_helpers import (
     get_prepared_binary,
     resolve_helper_cache_root,
@@ -61,24 +62,35 @@ def _file_hashes(root: Path) -> dict[str, str]:
     return hashes
 
 
-def _mermaid_body_lengths(wiki_dir: Path) -> list[int]:
-    lengths: list[int] = []
-    for path in wiki_dir.rglob("*.md"):
+def _mermaid_body_measurements(wiki_dir: Path) -> list[dict[str, int | str]]:
+    measurements: list[dict[str, int | str]] = []
+    paths = sorted(
+        wiki_dir.rglob("*.md"),
+        key=lambda path: path.relative_to(wiki_dir).as_posix(),
+    )
+    for path in paths:
         lines = path.read_text(encoding="utf-8").splitlines()
         index = 0
         while index < len(lines):
             if lines[index].strip() != "```mermaid":
                 index += 1
                 continue
+            opening_line = index + 1
             index += 1
             body_lines = 0
             while index < len(lines) and lines[index].strip() != "```":
                 body_lines += 1
                 index += 1
-            lengths.append(body_lines)
+            measurements.append(
+                {
+                    "path": path.relative_to(wiki_dir).as_posix(),
+                    "line": opening_line,
+                    "body_lines": body_lines,
+                }
+            )
             if index < len(lines):
                 index += 1
-    return lengths
+    return measurements
 
 
 def test_m4_dogfood_bootstrap_sync_and_site_export(tmp_path, monkeypatch, capsys):
@@ -178,9 +190,14 @@ def test_m4_dogfood_bootstrap_sync_and_site_export(tmp_path, monkeypatch, capsys
     assert (wiki_dir / "flows" / "cli-lint.md").exists()
     assert (wiki_dir / "flows" / "process-llm-wiki.md").exists()
 
-    mermaid_lengths = _mermaid_body_lengths(wiki_dir)
-    assert mermaid_lengths
-    assert max(mermaid_lengths) <= 80
+    mermaid_measurements = _mermaid_body_measurements(wiki_dir)
+    assert mermaid_measurements
+    oversized_mermaid = [
+        measurement
+        for measurement in mermaid_measurements
+        if measurement["body_lines"] > GENERATED_DIAGRAM_LINE_LIMIT
+    ]
+    assert oversized_mermaid == []
     assert "```mermaid" in (wiki_dir / "dependencies.md").read_text(encoding="utf-8")
     assert "```mermaid" in (wiki_dir / "flows" / "process-llm-wiki.md").read_text(
         encoding="utf-8"

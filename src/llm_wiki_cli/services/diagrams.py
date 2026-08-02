@@ -23,6 +23,10 @@ _CLASS_SAFE = re.compile(r"^[A-Za-z_][A-Za-z0-9_-]*$")
 _COLOR_SAFE = re.compile(r"^#[0-9A-Fa-f]{3}([0-9A-Fa-f]{3})?$")
 _ALLOWED_DIRECTIONS = {"TB", "TD", "BT", "RL", "LR"}
 
+GENERATED_DIAGRAM_NODE_LIMIT = 40
+GENERATED_DIAGRAM_LINE_LIMIT = 80
+GENERATED_DIAGRAM_CHAR_LIMIT = 6000
+
 
 def _sanitize(text: str) -> str:
     """Reduce *text* to characters that are safe inside a Mermaid label."""

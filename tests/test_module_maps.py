@@ -247,6 +247,35 @@ def test_module_maps_collapse_large_neighborhoods_to_packages_with_overflow():
     }
 
 
+def test_module_maps_preserve_dense_local_edges_for_rendering():
+    module = "pkg/focal.py"
+    neighbors = [f"pkg/n{index:02d}.py" for index in range(11)]
+    direct_edges = [
+        *((neighbor, module) for neighbor in neighbors[:6]),
+        *((module, neighbor) for neighbor in neighbors[6:]),
+    ]
+    contextual_edges = [
+        (source, target)
+        for source_index, source in enumerate(neighbors)
+        for target in neighbors[source_index + 1 :]
+    ][:49]
+
+    result = build_module_dependency_maps(
+        _analysis([module, *neighbors], [*direct_edges, *contextual_edges])
+    )
+    summary = result[module]
+
+    assert summary["detail"] == "module"
+    assert len(summary["nodes"]) == 12
+    assert len(summary["edges"]) == 60
+    assert set(direct_edges).issubset(set(summary["edges"]))
+    assert summary["overflow"] == {
+        "node_limit": 12,
+        "total_neighbor_count": 11,
+        "omitted_count": 0,
+    }
+
+
 def test_module_maps_are_deterministic_for_graph_order():
     forward = _analysis(
         ["pkg/service.py", "adapters/http.py", "storage/repo.py"],

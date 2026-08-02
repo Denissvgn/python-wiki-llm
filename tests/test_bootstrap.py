@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import textwrap
 import types
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
@@ -21,6 +22,10 @@ from llm_wiki_cli.commands.extract_cmd import (
 )
 from llm_wiki_cli.services.data_flow import analyze_data_flow
 from llm_wiki_cli.services.dependencies import analyze_dependencies
+from llm_wiki_cli.services.diagrams import (
+    GENERATED_DIAGRAM_CHAR_LIMIT,
+    GENERATED_DIAGRAM_LINE_LIMIT,
+)
 from llm_wiki_cli.services.entrypoints import build_flow, get_entry_points
 from llm_wiki_cli.services import knowledge_orchestration, plugins
 from llm_wiki_cli.services.wiki_surface import is_safe_page_id
@@ -54,6 +59,41 @@ def _tree_bytes(root: Path) -> dict[str, bytes]:
         for path in sorted(root.rglob("*"))
         if path.is_file()
     }
+
+
+def _dense_module_dependency_summary():
+    module = "pkg/focal.py"
+    neighbors = [f"pkg/n{index:02d}.py" for index in range(11)]
+    direct_edges = [
+        *((neighbor, module) for neighbor in neighbors[:6]),
+        *((module, neighbor) for neighbor in neighbors[6:]),
+    ]
+    contextual_edges = [
+        (source, target)
+        for source_index, source in enumerate(neighbors)
+        for target in neighbors[source_index + 1 :]
+    ][:49]
+    cycle_edge = contextual_edges[-1]
+    return (
+        {
+            "file": module,
+            "detail": "module",
+            "inbound": neighbors[:6],
+            "outbound": neighbors[6:],
+            "nodes": [module, *neighbors],
+            "edges": [*direct_edges, *contextual_edges],
+            "cycle_participation": True,
+            "cycle_edges": [cycle_edge],
+            "external": {},
+            "overflow": {
+                "node_limit": 12,
+                "total_neighbor_count": 11,
+                "omitted_count": 0,
+            },
+        },
+        direct_edges,
+        cycle_edge,
+    )
 
 
 def _body_line_count(function) -> int:
@@ -1214,13 +1254,152 @@ class TestBootstrapModulePages:
         content = "\n".join(
             bootstrap_cmd._generate_module_dependency_section(
                 summary,
-                {"pkg/service.py": "service"},
+                {
+                    "adapters": "adapters-collision",
+                    "pkg/service.py": "service",
+                    "storage": "storage-collision",
+                },
             )
         )
+        rendered = bootstrap_cmd._module_dependency_graph(
+            summary,
+            {
+                "adapters": "adapters-collision",
+                "pkg/service.py": "service",
+                "storage": "storage-collision",
+            },
+            {},
+        )
 
+        assert rendered is not None
+        assert rendered.projection == "package"
         assert 'click n1 "../modules/service.md"' in content
         assert "../modules/adapters.md" not in content
         assert "../modules/storage.md" not in content
+        assert "adapters-collision" not in content
+        assert "storage-collision" not in content
+
+    def test_dense_module_dependency_map_bounds_only_visual_edges(self):
+        summary, direct_edges, cycle_edge = _dense_module_dependency_summary()
+        original = deepcopy(summary)
+        page_map = {
+            node: Path(node).stem for node in summary["nodes"]
+        }
+
+        rendered = bootstrap_cmd._module_dependency_graph(summary, page_map, {})
+        repeated = bootstrap_cmd._module_dependency_graph(summary, page_map, {})
+
+        assert rendered == repeated
+        assert rendered is not None
+        assert rendered.diagram is not None
+        assert rendered.projection == "module"
+        assert (
+            rendered.total_edges,
+            rendered.shown_edges,
+            rendered.omitted_edges,
+        ) == (60, 55, 5)
+        body = rendered.diagram.splitlines()[1:-1]
+        assert len(body) == GENERATED_DIAGRAM_LINE_LIMIT
+
+        aliases = {
+            node: f"n{index}" for index, node in enumerate(summary["nodes"])
+        }
+        for source, target in direct_edges:
+            assert f"    {aliases[source]} --> {aliases[target]}" in rendered.diagram
+        assert (
+            f"    {aliases[cycle_edge[0]]} ==> {aliases[cycle_edge[1]]}"
+            in rendered.diagram
+        )
+
+        content = "\n".join(
+            bootstrap_cmd._generate_module_dependency_section(summary, page_map, {})
+        )
+        assert (
+            "> Diagram shows 55 of 60 local dependency edges; 5 omitted to keep "
+            "the visualization within 80 lines. Complete inbound and outbound "
+            "dependencies remain in the tables below."
+        ) in content
+        assert content.count("| Inbound |") == 6
+        assert content.count("| Outbound |") == 5
+        assert summary == original
+
+    def test_module_dependency_map_falls_back_to_packages_then_tables(self):
+        summary, _, _ = _dense_module_dependency_summary()
+        page_map = {
+            node: Path(node).stem for node in summary["nodes"]
+        }
+        package_style = {
+            "category_colors": {
+                f"c{index:03d}": "#abc" for index in range(60)
+            }
+        }
+
+        rendered = bootstrap_cmd._module_dependency_graph(
+            summary, page_map, package_style
+        )
+
+        assert rendered is not None
+        assert rendered.diagram is not None
+        assert rendered.projection == "package"
+        assert rendered.total_edges == rendered.shown_edges == 2
+        assert rendered.omitted_edges == 0
+        assert len(rendered.diagram.splitlines()[1:-1]) <= (
+            GENERATED_DIAGRAM_LINE_LIMIT
+        )
+        assert 'click n1 "../modules/focal.md"' in rendered.diagram
+        assert "../modules/pkg.md" not in rendered.diagram
+        package_content = "\n".join(
+            bootstrap_cmd._generate_module_dependency_section(
+                summary, page_map, package_style
+            )
+        )
+        assert "collapsed to package relationships" in package_content
+        assert package_content.count("| Inbound |") == 6
+        assert package_content.count("| Outbound |") == 5
+
+        table_only_style = {
+            "category_colors": {
+                f"c{index:03d}": "#abc" for index in range(100)
+            }
+        }
+        table_only = bootstrap_cmd._module_dependency_graph(
+            summary, page_map, table_only_style
+        )
+        table_content = "\n".join(
+            bootstrap_cmd._generate_module_dependency_section(
+                summary, page_map, table_only_style
+            )
+        )
+
+        assert table_only is not None
+        assert table_only.diagram is None
+        assert (
+            table_only.total_edges,
+            table_only.shown_edges,
+            table_only.omitted_edges,
+        ) == (60, 0, 60)
+        assert "```mermaid" not in table_content
+        assert "Diagram omitted because its fixed nodes" in table_content
+        assert "No internal module dependencies detected" not in table_content
+        assert table_content.count("| Inbound |") == 6
+        assert table_content.count("| Outbound |") == 5
+
+        character_page_map = {
+            node: f"{Path(node).stem}-{'x' * 440}"
+            for node in summary["nodes"]
+        }
+        character_limited = bootstrap_cmd._module_dependency_graph(
+            summary, character_page_map, {}
+        )
+
+        assert character_limited is not None
+        assert character_limited.diagram is not None
+        assert character_limited.projection == "module"
+        assert 0 < character_limited.shown_edges < 55
+        assert character_limited.omitted_edges > 5
+        character_body = character_limited.diagram.splitlines()[1:-1]
+        assert len(character_body) <= GENERATED_DIAGRAM_LINE_LIMIT
+        assert len("\n".join(character_body)) <= GENERATED_DIAGRAM_CHAR_LIMIT
 
     def test_entity_docstrings_escape_source_symbol_links(self):
         content = bootstrap_cmd._generate_entity_md(

@@ -16,6 +16,11 @@ from ..extractors.common import normalize_include_tests
 from . import wiki_media
 from .data_flow import analyze_data_flow
 from .dependencies import analyze_dependencies
+from .diagrams import (
+    GENERATED_DIAGRAM_CHAR_LIMIT,
+    GENERATED_DIAGRAM_LINE_LIMIT,
+    GENERATED_DIAGRAM_NODE_LIMIT,
+)
 from .entrypoints import (
     build_flow,
     get_entry_points,
@@ -123,9 +128,6 @@ MERMAID_CLICK_RE = re.compile(r'^\s*click\s+\S+\s+"([^"]+)"', re.MULTILINE)
 MERMAID_NODE_RE = re.compile(r'^\s*[A-Za-z][A-Za-z0-9_]*\s*\["')
 MERMAID_FENCE = "```mermaid"
 FENCE_END = "```"
-GENERATED_DIAGRAM_NODE_LIMIT = 40
-GENERATED_DIAGRAM_LINE_LIMIT = 80
-GENERATED_DIAGRAM_CHAR_LIMIT = 6000
 GENERATED_DIAGRAM_SECTIONS = {
     "Relationships": (
         "<!-- Auto-generated relationship summary. Do not edit by hand. -->"

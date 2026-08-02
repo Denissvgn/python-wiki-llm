@@ -46,8 +46,12 @@ from .dependencies import (
     build_dependency_observations,
     build_external_dependency_observations,
     package_dependency_graph,
+    top_level_package,
 )
 from .diagrams import (
+    GENERATED_DIAGRAM_CHAR_LIMIT,
+    GENERATED_DIAGRAM_LINE_LIMIT,
+    GENERATED_DIAGRAM_NODE_LIMIT,
     data_flow_diagram,
     flowchart,
     resolve_diagram_style,
@@ -833,33 +837,260 @@ def _module_map_node_link(
     return None
 
 
+@dataclass(frozen=True)
+class _ModuleDependencyDiagram:
+    diagram: str | None
+    total_edges: int
+    shown_edges: int
+    omitted_edges: int
+    projection: str
+
+
+def _dependency_sort_key(value: object) -> tuple[str, str]:
+    text = str(value)
+    return text.casefold(), text
+
+
+def _normalized_dependency_nodes(summary: Mapping) -> list[str]:
+    return list(dict.fromkeys(str(node) for node in summary.get("nodes", []) or []))
+
+
+def _normalized_dependency_edges(
+    raw_edges: Iterable[object], nodes: Iterable[str]
+) -> list[tuple[str, str]]:
+    known_nodes = set(nodes)
+    edges: list[tuple[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+    for raw_edge in raw_edges:
+        if isinstance(raw_edge, (str, bytes)):
+            continue
+        try:
+            values = list(raw_edge)  # type: ignore[arg-type]
+        except TypeError:
+            continue
+        if len(values) < 2:
+            continue
+        edge = str(values[0]), str(values[1])
+        if edge in seen or edge[0] not in known_nodes or edge[1] not in known_nodes:
+            continue
+        seen.add(edge)
+        edges.append(edge)
+    return edges
+
+
+def _mermaid_body(diagram: str) -> list[str]:
+    lines = diagram.splitlines()
+    if len(lines) < 2:
+        return []
+    return lines[1:-1]
+
+
+def _generated_diagram_fits(diagram: str, *, node_count: int) -> bool:
+    body = _mermaid_body(diagram)
+    return (
+        node_count <= GENERATED_DIAGRAM_NODE_LIMIT
+        and len(body) <= GENERATED_DIAGRAM_LINE_LIMIT
+        and len("\n".join(body)) <= GENERATED_DIAGRAM_CHAR_LIMIT
+    )
+
+
+def _dependency_edge_priority(
+    edge: tuple[str, str],
+    *,
+    focal_module: str,
+    cycle_edges: set[tuple[str, str]],
+) -> tuple[int, tuple[str, str], tuple[str, str]]:
+    if focal_module in edge:
+        priority = 0
+    elif edge in cycle_edges:
+        priority = 1
+    else:
+        priority = 2
+    return priority, _dependency_sort_key(edge[0]), _dependency_sort_key(edge[1])
+
+
+def _render_module_dependency_projection(
+    *,
+    nodes: list[str],
+    edges: list[tuple[str, str]],
+    links: Mapping[str, str],
+    cycle_edges: set[tuple[str, str]],
+    focal_module: str,
+    diagram_style: Mapping[str, Any] | None,
+    projection: str,
+    allow_edge_omission: bool,
+) -> _ModuleDependencyDiagram | None:
+    diagram = flowchart(
+        nodes,
+        edges,
+        direction="LR",
+        links=links,
+        highlight_edges=cycle_edges,
+        style=diagram_style,
+    )
+    if _generated_diagram_fits(diagram, node_count=len(nodes)):
+        return _ModuleDependencyDiagram(
+            diagram=diagram,
+            total_edges=len(edges),
+            shown_edges=len(edges),
+            omitted_edges=0,
+            projection=projection,
+        )
+    if not allow_edge_omission or len(nodes) > GENERATED_DIAGRAM_NODE_LIMIT:
+        return None
+
+    fixed_diagram = flowchart(
+        nodes,
+        [],
+        direction="LR",
+        links=links,
+        highlight_edges=cycle_edges,
+        style=diagram_style,
+    )
+    if not _generated_diagram_fits(fixed_diagram, node_count=len(nodes)):
+        return None
+
+    prioritized = sorted(
+        edges,
+        key=lambda edge: _dependency_edge_priority(
+            edge,
+            focal_module=focal_module,
+            cycle_edges=cycle_edges,
+        ),
+    )
+    selected: set[tuple[str, str]] = set()
+    bounded_diagram = fixed_diagram
+    for edge in prioritized:
+        candidate_edges = selected | {edge}
+        candidate_diagram = flowchart(
+            nodes,
+            [candidate for candidate in edges if candidate in candidate_edges],
+            direction="LR",
+            links=links,
+            highlight_edges=cycle_edges,
+            style=diagram_style,
+        )
+        if not _generated_diagram_fits(candidate_diagram, node_count=len(nodes)):
+            break
+        selected = candidate_edges
+        bounded_diagram = candidate_diagram
+    if not selected:
+        return None
+
+    shown_edges = [edge for edge in edges if edge in selected]
+    return _ModuleDependencyDiagram(
+        diagram=bounded_diagram,
+        total_edges=len(edges),
+        shown_edges=len(shown_edges),
+        omitted_edges=len(edges) - len(shown_edges),
+        projection=projection,
+    )
+
+
+def _package_dependency_projection(
+    summary: Mapping,
+    cycle_edges: set[tuple[str, str]],
+) -> tuple[list[str], list[tuple[str, str]], set[tuple[str, str]]] | None:
+    if summary.get("detail") != "module":
+        return None
+    focal_module = str(summary.get("file") or "")
+    if not focal_module:
+        return None
+
+    package_edges: set[tuple[str, str]] = set()
+    projected_cycle_edges: set[tuple[str, str]] = set()
+    for inbound in summary.get("inbound", []) or []:
+        source = str(inbound)
+        edge = top_level_package(source), focal_module
+        package_edges.add(edge)
+        if (source, focal_module) in cycle_edges:
+            projected_cycle_edges.add(edge)
+    for outbound in summary.get("outbound", []) or []:
+        target = str(outbound)
+        edge = focal_module, top_level_package(target)
+        package_edges.add(edge)
+        if (focal_module, target) in cycle_edges:
+            projected_cycle_edges.add(edge)
+
+    edges = sorted(
+        package_edges,
+        key=lambda edge: (_dependency_sort_key(edge[0]), _dependency_sort_key(edge[1])),
+    )
+    if not edges:
+        return None
+    nodes = sorted(
+        {focal_module, *(node for edge in edges for node in edge)},
+        key=_dependency_sort_key,
+    )
+    return nodes, edges, projected_cycle_edges
+
+
 def _module_dependency_graph(
     summary: Mapping,
     module_page_map: Mapping[str, str] | None,
     diagram_style: Mapping[str, Any] | None = None,
-) -> str | None:
-    edges = list(summary.get("edges", []) or [])
+) -> _ModuleDependencyDiagram | None:
+    nodes = _normalized_dependency_nodes(summary)
+    edges = _normalized_dependency_edges(summary.get("edges", []) or [], nodes)
     if not edges:
         return None
-    nodes = list(summary.get("nodes", []) or [])
-    links = {
-        str(node): link
-        for node in nodes
-        for link in [_module_map_node_link(str(node), module_page_map)]
-        if link
-    }
+    focal_module = str(summary.get("file") or "")
+    cycle_edges = set(
+        _normalized_dependency_edges(summary.get("cycle_edges", []) or [], nodes)
+    )
+    projection = str(summary.get("detail") or "module")
+    if projection == "package":
+        focal_link = _module_map_node_link(focal_module, module_page_map)
+        links = {focal_module: focal_link} if focal_link else {}
+    else:
+        links = {
+            str(node): link
+            for node in nodes
+            for link in [_module_map_node_link(str(node), module_page_map)]
+            if link
+        }
     if diagram_style is None:
         diagram_style = _generated_diagram_style(
             "module_dependency",
             file=summary.get("file"),
         )
-    return flowchart(
-        nodes,
-        edges,
-        direction="LR",
+    rendered = _render_module_dependency_projection(
+        nodes=nodes,
+        edges=edges,
         links=links,
-        highlight_edges=summary.get("cycle_edges", []),
-        style=diagram_style,
+        cycle_edges=cycle_edges,
+        focal_module=focal_module,
+        diagram_style=diagram_style,
+        projection=projection,
+        allow_edge_omission=True,
+    )
+    if rendered is not None:
+        return rendered
+
+    package_projection = _package_dependency_projection(summary, cycle_edges)
+    if package_projection is not None:
+        package_nodes, package_edges, package_cycle_edges = package_projection
+        focal_link = _module_map_node_link(focal_module, module_page_map)
+        package_links = {focal_module: focal_link} if focal_link else {}
+        rendered = _render_module_dependency_projection(
+            nodes=package_nodes,
+            edges=package_edges,
+            links=package_links,
+            cycle_edges=package_cycle_edges,
+            focal_module=focal_module,
+            diagram_style=diagram_style,
+            projection="package",
+            allow_edge_omission=False,
+        )
+        if rendered is not None:
+            return rendered
+
+    return _ModuleDependencyDiagram(
+        diagram=None,
+        total_edges=len(edges),
+        shown_edges=0,
+        omitted_edges=len(edges),
+        projection="none",
     )
 
 
@@ -925,13 +1156,36 @@ def _generate_module_dependency_section(
         lines.extend(["*No internal module dependencies detected.*", ""])
         return lines
 
-    diagram = _module_dependency_graph(summary, module_page_map, diagram_style)
-    if diagram:
-        if summary.get("cycle_participation"):
+    rendered = _module_dependency_graph(summary, module_page_map, diagram_style)
+    if rendered and rendered.diagram:
+        if summary.get("cycle_participation") and "==>" in rendered.diagram:
             lines.append(
                 "<!-- Thick arrows (==>) mark edges inside an import cycle. -->"
             )
-        lines.append(diagram)
+        lines.append(rendered.diagram)
+        if rendered.projection == "package":
+            lines.append("")
+            lines.append(
+                "> Module-level visualization was collapsed to package "
+                "relationships to keep the diagram within the generated-diagram "
+                "limits. Complete inbound and outbound dependencies remain in the "
+                "tables below."
+            )
+        elif rendered.omitted_edges:
+            lines.append("")
+            lines.append(
+                f"> Diagram shows {rendered.shown_edges} of "
+                f"{rendered.total_edges} local dependency edges; "
+                f"{rendered.omitted_edges} omitted to keep the visualization "
+                f"within {GENERATED_DIAGRAM_LINE_LIMIT} lines. Complete inbound "
+                "and outbound dependencies remain in the tables below."
+            )
+    elif rendered:
+        lines.append(
+            "> Diagram omitted because its fixed nodes, links, or style exceed "
+            "the generated-diagram limits. Complete inbound and outbound "
+            "dependencies remain in the tables below."
+        )
     else:
         lines.append("*No internal module dependencies detected.*")
     lines.append("")
