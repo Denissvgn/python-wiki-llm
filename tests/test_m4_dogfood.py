@@ -173,6 +173,9 @@ def test_m4_dogfood_bootstrap_sync_and_site_export(tmp_path, monkeypatch, capsys
     assert (wiki_dir / "dependencies.md").exists()
     assert (wiki_dir / "load-order.md").exists()
     assert (wiki_dir / "flows" / "cli-bootstrap.md").exists()
+    assert (wiki_dir / "flows" / "cli-context.md").exists()
+    assert (wiki_dir / "flows" / "cli-extract.md").exists()
+    assert (wiki_dir / "flows" / "cli-lint.md").exists()
     assert (wiki_dir / "flows" / "process-llm-wiki.md").exists()
 
     mermaid_lengths = _mermaid_body_lengths(wiki_dir)

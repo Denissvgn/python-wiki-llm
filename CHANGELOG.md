@@ -131,6 +131,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Static-site link rewriting and validation now ignore Markdown-looking links
   inside fenced code blocks and backtick code spans, while continuing to
   rewrite resolvable live links and reject broken or unsafe live links.
+- CLI documentation generation once again includes per-command flow pages for
+  `bootstrap`, `context`, `extract`, and `lint` when their implementations are
+  provided by service modules.
 - `sync` now recognizes an untouched `init` scaffold and requires `bootstrap`
   before manifest seeding, preventing generated index links to pages that do
   not exist.

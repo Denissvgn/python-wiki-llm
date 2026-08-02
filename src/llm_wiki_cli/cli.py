@@ -2,19 +2,15 @@ import argparse
 import os
 import sys
 from .commands import (
-    bootstrap_cmd,
     bump_cmd,
     ci_check_cmd,
-    context_cmd,
     docs_cmd,
     doctor_cmd,
-    extract_cmd,
     generate_prompt_cmd,
     hook_cmd,
     init_cmd,
     install_cmd,
     knowledge_cmd,
-    lint_cmd,
     mcp_cmd,
     metrics_cmd,
     migrate_cmd,
@@ -33,6 +29,12 @@ from .commands import (
     upgrade_cmd,
 )
 from .config import AGENT_CHOICES, DEFAULT_WIKI_DIR, PathValidationError
+from .services import (
+    bootstrap_runtime as bootstrap_cmd,
+    context_service as context_cmd,
+    extraction_service as extract_cmd,
+    lint_service as lint_cmd,
+)
 from .services.contracts import BOOTSTRAP_SKIP_DATA_FLOW_FLAG
 from .services.extraction_jobs import ExtractionJobsAction
 from .services.resource_diagnostics import resource_failure_hint
