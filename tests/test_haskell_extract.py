@@ -56,6 +56,8 @@ def haskell_helper(tmp_path_factory: pytest.TempPathFactory) -> Path:
         subprocess.run(
             [
                 ghc,
+                "-Wall",
+                "-Werror",
                 "-package",
                 "ghc",
                 "-outputdir",

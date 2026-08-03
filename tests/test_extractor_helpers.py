@@ -695,6 +695,7 @@ def test_prepare_haskell_builds_cached_binary_and_manifest(tmp_path, monkeypatch
     build_cmd, build_kwargs = commands[0]
     assert build_cmd[0] == "/usr/bin/ghc"
     assert "-Wall" in build_cmd
+    assert "-Werror" not in build_cmd
     assert build_cmd[build_cmd.index("-package") + 1] == "ghc"
     assert build_cmd[build_cmd.index("-o") + 1] == result.path
     assert build_kwargs["cwd"] == str(extractor_helpers.HASKELL_SCRIPTS_DIR)
