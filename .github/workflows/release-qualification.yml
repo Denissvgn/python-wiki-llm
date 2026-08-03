@@ -808,7 +808,7 @@ jobs:
           )
           (
             cd candidate/src/llm_wiki_cli/extractors/haskell_scripts
-            ghc -Wall -Werror -fno-code Main.hs
+            ghc -Wall -Werror -package ghc -fno-code Main.hs
           )
       - name: Upload gate evidence
         if: always()

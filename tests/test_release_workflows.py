@@ -440,6 +440,18 @@ def test_locked_toolchain_archives_and_oci_digests_are_the_executed_inputs() -> 
     assert audit.index("govulncheck -json ./...") < audit.index(
         "govulncheck ./... 2>&1"
     )
+    audit_lines = [line.strip() for line in audit.splitlines() if line.strip()]
+    haskell_command = "ghc -Wall -Werror -package ghc -fno-code Main.hs"
+    assert [line for line in audit_lines if line.startswith("ghc ")] == [
+        haskell_command
+    ]
+    haskell_audit_index = audit_lines.index(haskell_command)
+    assert audit_lines[haskell_audit_index - 2 : haskell_audit_index + 2] == [
+        "(",
+        "cd candidate/src/llm_wiki_cli/extractors/haskell_scripts",
+        haskell_command,
+        ")",
+    ]
 
     static = "\n".join(
         str(step) for step in workflow["jobs"]["static"]["steps"]
