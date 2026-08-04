@@ -1,4 +1,2327 @@
 {
-  "entries": [],
+  "entries": [
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_documentation_calibration_oci_integration.py::test_real_docker_probe_and_worker_are_isolated",
+      "owner_lane": "oci",
+      "reason": "Set LLM_WIKI_RUN_OCI_INTEGRATION=1 only in the dedicated OCI lane."
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_documentation_input_recheck.py::test_fingerprint_rejects_windows_input_junction",
+      "owner_lane": "security-windows-2025",
+      "reason": "Windows junction semantics only"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_documentation_wiki_input.py::test_copy_rejects_target_parent_replaced_with_windows_junction",
+      "owner_lane": "product-windows-2025",
+      "reason": "Windows junction semantics only"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_documentation_wiki_input.py::test_windows_input_inventory_rejects_junction",
+      "owner_lane": "product-windows-2025",
+      "reason": "Windows junction semantics only"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_documentation_wiki_input.py::test_windows_input_root_guard_blocks_replacement",
+      "owner_lane": "product-windows-2025",
+      "reason": "Windows guard semantics only"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_documentation_workspace.py::test_tree_baseline_rejects_windows_junction",
+      "owner_lane": "product-windows-2025",
+      "reason": "Windows junction semantics only"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_documentation_workspace.py::test_windows_directory_guard_blocks_rename_until_release[child]",
+      "owner_lane": "product-windows-2025",
+      "reason": "Windows rename sharing semantics only"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_documentation_workspace.py::test_windows_directory_guard_blocks_rename_until_release[root]",
+      "owner_lane": "product-windows-2025",
+      "reason": "Windows rename sharing semantics only"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_extract.py::TestTypeScriptModuleOnlyExtraction::test_deep_payload_includes_javascript_http_entrypoint_and_data_flow",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_extract.py::TestTypeScriptModuleOnlyExtraction::test_full_scan_keeps_pto_style_src_lib_modules_under_root_lib_ignore",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_extract.py::TestTypeScriptModuleOnlyExtraction::test_paths_keep_pto_style_typescript_modules_in_deep_inventory",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_extract.py::TestTypeScriptModuleOnlyExtraction::test_summary_keeps_module_only_javascript_inventory",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_cross_file_method",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_function_params",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_import_alias",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_imports",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_interface_methods",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_receiver_methods",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_struct_attributes",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_struct_docstring",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_empty_dir",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_exported_function",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_interface_extraction",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_interface_with_embedded",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_language_field_stamped",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_multiple_files",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_named_type",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_named_type_method_attachment",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_only_files",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_only_files_respects_excluded_dirs",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_shallow_cross_file_stays_function",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_shallow_receiver_methods_as_functions",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_single_struct",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_struct_with_embedded_type",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_syntax_error_graceful",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_test_files_excluded_by_default",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_test_files_included_when_request_opts_in",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_true_type_alias",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_type_alias",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_unexported_skipped",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_unexported_type_exported_method",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_vendor_excluded",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_haskell_extract.py::test_haskell_helper_extracts_syntax_inventory",
+      "owner_lane": "toolchains",
+      "reason": "GHC is not available"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_haskell_extract.py::test_haskell_helper_rejects_outside_root_only_files",
+      "owner_lane": "toolchains",
+      "reason": "GHC is not available"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_haskell_extract.py::test_haskell_helper_reports_parse_errors_without_stdout",
+      "owner_lane": "toolchains",
+      "reason": "GHC is not available"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_haskell_extract.py::test_haskell_helper_requires_src_dir_argument",
+      "owner_lane": "toolchains",
+      "reason": "GHC is not available"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_haskell_extract.py::test_literate_haskell_code_blocks_are_extracted",
+      "owner_lane": "toolchains",
+      "reason": "GHC is not available"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_haskell_extract.py::test_literate_haskell_helper_preserves_inventory_shape",
+      "owner_lane": "toolchains",
+      "reason": "GHC is not available"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_lint.py::TestLintDependencyCoverage::test_typescript_src_lib_alias_resolves_under_root_lib_ignore",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_m4_dogfood.py::test_m4_dogfood_bootstrap_sync_and_site_export",
+      "owner_lane": "toolchains",
+      "reason": "prepared Go helper cache is required for full-repo dogfood"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_mcp.py::TestMcpCli::test_optional_sdk_registration_when_installed",
+      "owner_lane": "mcp-3.13",
+      "reason": "MCP SDK is not installed."
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_migrate.py::TestMigrateIntegration::test_typescript_absolute_page_names_migrate_to_relative_names",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not available"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_multilanguage_wiki.py::test_migrate_reconciles_legacy_go_page_with_rust_name_collision",
+      "owner_lane": "toolchains",
+      "reason": "Go and Rust toolchains are not both available"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_protected_artifacts.py::test_native_windows_reopen_rejects_hard_linked_artifact",
+      "owner_lane": "security-windows-2025",
+      "reason": "native Windows protected-tree checks"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_protected_artifacts.py::test_native_windows_reopen_rejects_hard_linked_controller_lock",
+      "owner_lane": "security-windows-2025",
+      "reason": "native Windows protected-tree checks"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_protected_artifacts.py::test_native_windows_reopens_store_with_lock_and_artifact",
+      "owner_lane": "security-windows-2025",
+      "reason": "native Windows protected-tree checks"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_async_function",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_cfg_test_skipped",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_cross_file_impl",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_enum_variants",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_function_params",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_impl_methods",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_imports",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_struct_attributes",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_struct_docstring",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_trait_methods",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_derive_as_decorators",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_empty_dir",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_enum_extraction",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_exported_function",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_impl_bases",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_language_field_stamped",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_multiple_files",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_only_files",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_only_files_respects_excluded_dirs",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_private_skipped",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_shallow_impl_methods_as_functions",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_single_struct",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_supertrait_as_bases",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_syntax_error_graceful",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_target_excluded",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_trait_extraction",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_type_alias",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestExtractorRegistryIntegration::test_extract_command_merges_both_languages",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestExtractorRegistryIntegration::test_typescript_entry_in_registry",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_arrow_function_export",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_bases_extracted",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_deep_mode_decorators",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_deep_mode_includes_attributes",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_deep_mode_includes_imports",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_deep_mode_includes_jsdoc",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_deep_mode_includes_methods",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_empty_dir",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_enum_deep_members",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_enum_extraction",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_interface_deep_methods",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_interface_extraction",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_jsx_support",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_language_field_stamped",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_only_files_filter",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_only_files_respects_node_modules",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_single_file_with_class",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_single_file_with_function",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_skips_node_modules",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_skips_syntax_errors",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_tsx_support",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_type_alias_extraction",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_anonymous_class_disambiguated",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_commonjs_default_assignment_surfaces_top_level_function",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_deep_includes_entrypoint_setup_module",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_deep_includes_exported_query_client_constant",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_deep_includes_service_client_setup_module",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_dts_files_included",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_empty_typescript_file_reports_deep_skip_diagnostic",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_file_named_like_excluded_dir",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_interface_bases_external_type",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_inventory_keys_are_relative",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_module_docstring_captured",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_non_exported_typescript_family_functions_stay_private",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_plain_js_commonjs_service_surfaces_top_level_functions",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_plain_js_create_server_named_handler_records_argument",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_shallow_module_only_javascript_file_is_retained",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_stderr_forwarded_on_success",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_tsconfig_walk_up",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_documentation_calibration_oci_integration.py::test_real_docker_probe_and_worker_are_isolated",
+      "owner_lane": "oci",
+      "reason": "Set LLM_WIKI_RUN_OCI_INTEGRATION=1 only in the dedicated OCI lane."
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_documentation_input_recheck.py::test_fingerprint_rejects_windows_input_junction",
+      "owner_lane": "security-windows-2025",
+      "reason": "Windows junction semantics only"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_documentation_wiki_input.py::test_copy_rejects_target_parent_replaced_with_windows_junction",
+      "owner_lane": "product-windows-2025",
+      "reason": "Windows junction semantics only"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_documentation_wiki_input.py::test_windows_input_inventory_rejects_junction",
+      "owner_lane": "product-windows-2025",
+      "reason": "Windows junction semantics only"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_documentation_wiki_input.py::test_windows_input_root_guard_blocks_replacement",
+      "owner_lane": "product-windows-2025",
+      "reason": "Windows guard semantics only"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_documentation_workspace.py::test_tree_baseline_rejects_windows_junction",
+      "owner_lane": "product-windows-2025",
+      "reason": "Windows junction semantics only"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_documentation_workspace.py::test_windows_directory_guard_blocks_rename_until_release[child]",
+      "owner_lane": "product-windows-2025",
+      "reason": "Windows rename sharing semantics only"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_documentation_workspace.py::test_windows_directory_guard_blocks_rename_until_release[root]",
+      "owner_lane": "product-windows-2025",
+      "reason": "Windows rename sharing semantics only"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_extract.py::TestPythonContractExtraction::test_pep_695_type_alias_is_captured_when_parser_supports_it",
+      "owner_lane": "core-windows-3.13",
+      "reason": "requires Python 3.12"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_extract.py::TestTypeScriptModuleOnlyExtraction::test_deep_payload_includes_javascript_http_entrypoint_and_data_flow",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_extract.py::TestTypeScriptModuleOnlyExtraction::test_full_scan_keeps_pto_style_src_lib_modules_under_root_lib_ignore",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_extract.py::TestTypeScriptModuleOnlyExtraction::test_paths_keep_pto_style_typescript_modules_in_deep_inventory",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_extract.py::TestTypeScriptModuleOnlyExtraction::test_summary_keeps_module_only_javascript_inventory",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_cross_file_method",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_function_params",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_import_alias",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_imports",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_interface_methods",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_receiver_methods",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_struct_attributes",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_struct_docstring",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_empty_dir",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_exported_function",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_interface_extraction",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_interface_with_embedded",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_language_field_stamped",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_multiple_files",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_named_type",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_named_type_method_attachment",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_only_files",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_only_files_respects_excluded_dirs",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_shallow_cross_file_stays_function",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_shallow_receiver_methods_as_functions",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_single_struct",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_struct_with_embedded_type",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_syntax_error_graceful",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_test_files_excluded_by_default",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_test_files_included_when_request_opts_in",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_true_type_alias",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_type_alias",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_unexported_skipped",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_unexported_type_exported_method",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_vendor_excluded",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_haskell_extract.py::test_haskell_helper_extracts_syntax_inventory",
+      "owner_lane": "toolchains",
+      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_haskell_extract.py::test_haskell_helper_rejects_outside_root_only_files",
+      "owner_lane": "toolchains",
+      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_haskell_extract.py::test_haskell_helper_reports_parse_errors_without_stdout",
+      "owner_lane": "toolchains",
+      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_haskell_extract.py::test_haskell_helper_requires_src_dir_argument",
+      "owner_lane": "toolchains",
+      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_haskell_extract.py::test_literate_haskell_code_blocks_are_extracted",
+      "owner_lane": "toolchains",
+      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_haskell_extract.py::test_literate_haskell_helper_preserves_inventory_shape",
+      "owner_lane": "toolchains",
+      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_lint.py::TestLintDependencyCoverage::test_typescript_src_lib_alias_resolves_under_root_lib_ignore",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_m4_dogfood.py::test_m4_dogfood_bootstrap_sync_and_site_export",
+      "owner_lane": "toolchains",
+      "reason": "prepared Go helper cache is required for full-repo dogfood"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_mcp.py::TestMcpCli::test_optional_sdk_registration_when_installed",
+      "owner_lane": "mcp-3.13",
+      "reason": "MCP SDK is not installed."
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_migrate.py::TestMigrateIntegration::test_typescript_absolute_page_names_migrate_to_relative_names",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not available"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_protected_artifacts.py::test_darwin_native_new_private_file_has_no_extended_acl",
+      "owner_lane": "security-macos-15",
+      "reason": "native Darwin extended ACL inspection"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_protected_artifacts.py::test_darwin_native_non_empty_extended_acl_is_rejected",
+      "owner_lane": "security-macos-15",
+      "reason": "native Darwin extended ACL inspection"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_protected_artifacts.py::test_native_windows_reopen_rejects_hard_linked_artifact",
+      "owner_lane": "security-windows-2025",
+      "reason": "native Windows protected-tree checks"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_protected_artifacts.py::test_native_windows_reopen_rejects_hard_linked_controller_lock",
+      "owner_lane": "security-windows-2025",
+      "reason": "native Windows protected-tree checks"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_protected_artifacts.py::test_native_windows_reopens_store_with_lock_and_artifact",
+      "owner_lane": "security-windows-2025",
+      "reason": "native Windows protected-tree checks"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_async_function",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_cfg_test_skipped",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_cross_file_impl",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_enum_variants",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_function_params",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_impl_methods",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_imports",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_struct_attributes",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_struct_docstring",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_trait_methods",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_derive_as_decorators",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_empty_dir",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_enum_extraction",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_exported_function",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_impl_bases",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_language_field_stamped",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_multiple_files",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_only_files",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_only_files_respects_excluded_dirs",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_private_skipped",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_shallow_impl_methods_as_functions",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_single_struct",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_supertrait_as_bases",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_syntax_error_graceful",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_target_excluded",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_trait_extraction",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_type_alias",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestExtractorRegistryIntegration::test_extract_command_merges_both_languages",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestExtractorRegistryIntegration::test_typescript_entry_in_registry",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_arrow_function_export",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_bases_extracted",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_deep_mode_decorators",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_deep_mode_includes_attributes",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_deep_mode_includes_imports",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_deep_mode_includes_jsdoc",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_deep_mode_includes_methods",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_empty_dir",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_enum_deep_members",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_enum_extraction",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_interface_deep_methods",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_interface_extraction",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_jsx_support",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_language_field_stamped",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_only_files_filter",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_only_files_respects_node_modules",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_single_file_with_class",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_single_file_with_function",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_skips_node_modules",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_skips_syntax_errors",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_tsx_support",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_type_alias_extraction",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_anonymous_class_disambiguated",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_commonjs_default_assignment_surfaces_top_level_function",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_deep_includes_entrypoint_setup_module",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_deep_includes_exported_query_client_constant",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_deep_includes_service_client_setup_module",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_dts_files_included",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_empty_typescript_file_reports_deep_skip_diagnostic",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_file_named_like_excluded_dir",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_interface_bases_external_type",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_inventory_keys_are_relative",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_module_docstring_captured",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_non_exported_typescript_family_functions_stay_private",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_plain_js_commonjs_service_surfaces_top_level_functions",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_plain_js_create_server_named_handler_records_argument",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_shallow_module_only_javascript_file_is_retained",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_stderr_forwarded_on_success",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_tsconfig_walk_up",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_config.py::TestValidatePath::test_external_source_root_allows_parent_relative_same_owner_symlink",
+      "owner_lane": "security-ubuntu-24.04",
+      "reason": "Symlink ownership is not verifiable on this platform."
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_config.py::TestValidatePath::test_external_source_root_detects_other_owner_end_to_end",
+      "owner_lane": "security-ubuntu-24.04",
+      "reason": "Symlink ownership is not verifiable on this platform."
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_config.py::TestValidatePath::test_external_source_root_discloses_symlink_target_chain_once",
+      "owner_lane": "security-ubuntu-24.04",
+      "reason": "Symlink-owner disclosure requires POSIX UID semantics."
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_config.py::TestValidatePath::test_external_source_root_fails_closed_for_invalid_uid",
+      "owner_lane": "security-ubuntu-24.04",
+      "reason": "This exercises the POSIX UID validation branch."
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_config.py::TestValidatePath::test_external_source_root_fails_closed_when_uid_lookup_fails[failure0]",
+      "owner_lane": "security-ubuntu-24.04",
+      "reason": "This exercises the POSIX UID lookup branch."
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_config.py::TestValidatePath::test_external_source_root_fails_closed_when_uid_lookup_fails[failure1]",
+      "owner_lane": "security-ubuntu-24.04",
+      "reason": "This exercises the POSIX UID lookup branch."
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_config.py::TestValidatePath::test_external_source_root_fails_closed_without_verifiable_uid",
+      "owner_lane": "security-ubuntu-24.04",
+      "reason": "This exercises the POSIX UID-unavailable branch."
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_documentation_calibration_controller.py::test_posix_control_json_read_does_not_reopen_by_path",
+      "owner_lane": "product-ubuntu-24.04",
+      "reason": "POSIX descriptor-relative traversal is unavailable"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_documentation_calibration_controller.py::test_posix_evidence_read_rejects_linked_directory",
+      "owner_lane": "product-ubuntu-24.04",
+      "reason": "POSIX symlink traversal test"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_documentation_calibration_controller.py::test_posix_evidence_read_uses_one_no_follow_leaf_handle",
+      "owner_lane": "product-ubuntu-24.04",
+      "reason": "POSIX descriptor-relative traversal is unavailable"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_documentation_calibration_oci_integration.py::test_real_docker_probe_and_worker_are_isolated",
+      "owner_lane": "oci",
+      "reason": "Set LLM_WIKI_RUN_OCI_INTEGRATION=1 only in the dedicated OCI lane."
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_documentation_control_integrity.py::test_result_write_pins_parent_against_swap_before_temp_creation",
+      "owner_lane": "security-ubuntu-24.04",
+      "reason": "descriptor-relative writer is unavailable on this platform"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_documentation_wiki_input.py::test_descriptor_copy_rejects_parent_swap_between_inspection_and_open",
+      "owner_lane": "product-ubuntu-24.04",
+      "reason": "descriptor-relative no-follow directory opens unavailable"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_documentation_wiki_input.py::test_descriptor_input_read_rejects_parent_swap_between_inspection_and_open",
+      "owner_lane": "product-ubuntu-24.04",
+      "reason": "descriptor-rooted no-follow input traversal unavailable"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_documentation_wiki_input.py::test_non_regular_input_is_rejected",
+      "owner_lane": "product-ubuntu-24.04",
+      "reason": "FIFOs unavailable"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_extract.py::TestTypeScriptModuleOnlyExtraction::test_deep_payload_includes_javascript_http_entrypoint_and_data_flow",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_extract.py::TestTypeScriptModuleOnlyExtraction::test_full_scan_keeps_pto_style_src_lib_modules_under_root_lib_ignore",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_extract.py::TestTypeScriptModuleOnlyExtraction::test_paths_keep_pto_style_typescript_modules_in_deep_inventory",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_extract.py::TestTypeScriptModuleOnlyExtraction::test_summary_keeps_module_only_javascript_inventory",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_cross_file_method",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_function_params",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_import_alias",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_imports",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_interface_methods",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_receiver_methods",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_struct_attributes",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_struct_docstring",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_empty_dir",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_exported_function",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_interface_extraction",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_interface_with_embedded",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_language_field_stamped",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_multiple_files",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_named_type",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_named_type_method_attachment",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_only_files",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_only_files_respects_excluded_dirs",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_shallow_cross_file_stays_function",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_shallow_receiver_methods_as_functions",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_single_struct",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_struct_with_embedded_type",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_syntax_error_graceful",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_test_files_excluded_by_default",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_test_files_included_when_request_opts_in",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_true_type_alias",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_type_alias",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_unexported_skipped",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_unexported_type_exported_method",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::TestGoExtractor::test_vendor_excluded",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_haskell_extract.py::test_haskell_helper_extracts_syntax_inventory",
+      "owner_lane": "toolchains",
+      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_haskell_extract.py::test_haskell_helper_rejects_outside_root_only_files",
+      "owner_lane": "toolchains",
+      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_haskell_extract.py::test_haskell_helper_reports_parse_errors_without_stdout",
+      "owner_lane": "toolchains",
+      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_haskell_extract.py::test_haskell_helper_requires_src_dir_argument",
+      "owner_lane": "toolchains",
+      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_haskell_extract.py::test_literate_haskell_code_blocks_are_extracted",
+      "owner_lane": "toolchains",
+      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_haskell_extract.py::test_literate_haskell_helper_preserves_inventory_shape",
+      "owner_lane": "toolchains",
+      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_lint.py::TestLintDependencyCoverage::test_typescript_src_lib_alias_resolves_under_root_lib_ignore",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_m4_dogfood.py::test_m4_dogfood_bootstrap_sync_and_site_export",
+      "owner_lane": "toolchains",
+      "reason": "prepared Go helper cache is required for full-repo dogfood"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_mcp.py::TestMcpCli::test_optional_sdk_registration_when_installed",
+      "owner_lane": "mcp-3.13",
+      "reason": "MCP SDK is not installed."
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_migrate.py::TestMigrateIntegration::test_typescript_absolute_page_names_migrate_to_relative_names",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not available"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_protected_artifacts.py::test_darwin_native_new_private_file_has_no_extended_acl",
+      "owner_lane": "security-macos-15",
+      "reason": "native Darwin extended ACL inspection"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_protected_artifacts.py::test_darwin_native_non_empty_extended_acl_is_rejected",
+      "owner_lane": "security-macos-15",
+      "reason": "native Darwin extended ACL inspection"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_protected_artifacts.py::test_emulated_darwin_absent_extended_acl_is_admissible",
+      "owner_lane": "security-macos-15",
+      "reason": "Darwin descriptor ACL emulation"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_protected_artifacts.py::test_emulated_darwin_present_extended_acl_is_rejected",
+      "owner_lane": "security-macos-15",
+      "reason": "Darwin descriptor ACL emulation"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_protected_artifacts.py::test_emulated_darwin_replacement_during_acl_inspection_fails_closed",
+      "owner_lane": "security-macos-15",
+      "reason": "Darwin descriptor ACL emulation"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_protected_artifacts.py::test_emulated_darwin_unavailable_acl_inspection_fails_closed",
+      "owner_lane": "security-macos-15",
+      "reason": "Darwin descriptor ACL emulation"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_protected_artifacts.py::test_existing_posix_root_must_already_be_private",
+      "owner_lane": "security-ubuntu-24.04",
+      "reason": "POSIX ownership and modes"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_protected_artifacts.py::test_first_controller_lock_creation_retries_transient_enoent",
+      "owner_lane": "security-ubuntu-24.04",
+      "reason": "requires descriptor-relative POSIX locking"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_protected_artifacts.py::test_posix_owner_mismatch_is_rejected",
+      "owner_lane": "security-ubuntu-24.04",
+      "reason": "POSIX ownership and modes"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_protected_artifacts.py::test_posix_store_enforces_owner_only_modes_on_every_open",
+      "owner_lane": "security-ubuntu-24.04",
+      "reason": "POSIX ownership and modes"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_async_function",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_cfg_test_skipped",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_cross_file_impl",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_enum_variants",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_function_params",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_impl_methods",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_imports",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_struct_attributes",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_struct_docstring",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_deep_trait_methods",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_derive_as_decorators",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_empty_dir",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_enum_extraction",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_exported_function",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_impl_bases",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_language_field_stamped",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_multiple_files",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_only_files",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_only_files_respects_excluded_dirs",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_private_skipped",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_shallow_impl_methods_as_functions",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_single_struct",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_supertrait_as_bases",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_syntax_error_graceful",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_target_excluded",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_trait_extraction",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_type_alias",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestExtractorRegistryIntegration::test_extract_command_merges_both_languages",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestExtractorRegistryIntegration::test_typescript_entry_in_registry",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_arrow_function_export",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_bases_extracted",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_deep_mode_decorators",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_deep_mode_includes_attributes",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_deep_mode_includes_imports",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_deep_mode_includes_jsdoc",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_deep_mode_includes_methods",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_empty_dir",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_enum_deep_members",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_enum_extraction",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_interface_deep_methods",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_interface_extraction",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_jsx_support",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_language_field_stamped",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_only_files_filter",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_only_files_respects_node_modules",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_single_file_with_class",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_single_file_with_function",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_skips_node_modules",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_skips_syntax_errors",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_tsx_support",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_type_alias_extraction",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_anonymous_class_disambiguated",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_commonjs_default_assignment_surfaces_top_level_function",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_deep_includes_entrypoint_setup_module",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_deep_includes_exported_query_client_constant",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_deep_includes_service_client_setup_module",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_dts_files_included",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_empty_typescript_file_reports_deep_skip_diagnostic",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_file_named_like_excluded_dir",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_interface_bases_external_type",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_inventory_keys_are_relative",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_module_docstring_captured",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_non_exported_typescript_family_functions_stay_private",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_plain_js_commonjs_service_surfaces_top_level_functions",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_plain_js_create_server_named_handler_records_argument",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_shallow_module_only_javascript_file_is_retained",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_stderr_forwarded_on_success",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_tsconfig_walk_up",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    }
+  ],
   "schema_version": "agent-wiki-release-skip-allowlist/v1"
 }

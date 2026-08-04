@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import shutil
 import types
 from pathlib import Path
@@ -11,8 +12,27 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.commands import bootstrap_cmd, site_cmd, sync_cmd
-from llm_wiki_cli.services.extractor_helpers import get_prepared_binary
+from llm_wiki_cli.services.diagrams import (
+    GENERATED_DIAGRAM_CHAR_LIMIT,
+    GENERATED_DIAGRAM_LINE_LIMIT,
+    GENERATED_DIAGRAM_NODE_LIMIT,
+)
+from llm_wiki_cli.services.extractor_helpers import (
+    get_prepared_binary,
+    resolve_helper_cache_root,
+)
+from llm_wiki_cli.services.inventory_cache import ENV_CACHE_DIR
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
+
+
+_MERMAID_NODE_DECLARATION_RE = re.compile(
+    r'^\s*(?:[A-Za-z][A-Za-z0-9_]*\s*\["|'
+    r"participant\s+[A-Za-z][A-Za-z0-9_]*\s+as\b)"
+)
+_LEGACY_RAW_DOTTED_LABEL_RE = re.compile(
+    r'^\s*[A-Za-z][A-Za-z0-9_]*\s+-\.\s+(?!")[^\r\n]+\s+\.->\s+'
+    r"[A-Za-z][A-Za-z0-9_]*\s*$"
+)
 
 
 def _ns(**kwargs):
@@ -57,37 +77,70 @@ def _file_hashes(root: Path) -> dict[str, str]:
     return hashes
 
 
-def _mermaid_body_lengths(wiki_dir: Path) -> list[int]:
-    lengths: list[int] = []
-    for path in wiki_dir.rglob("*.md"):
+def _mermaid_body_measurements(
+    wiki_dir: Path,
+) -> tuple[list[dict[str, int | str]], list[dict[str, int | str]]]:
+    measurements: list[dict[str, int | str]] = []
+    legacy_raw_dotted_labels: list[dict[str, int | str]] = []
+    paths = sorted(
+        wiki_dir.rglob("*.md"),
+        key=lambda path: path.relative_to(wiki_dir).as_posix(),
+    )
+    for path in paths:
         lines = path.read_text(encoding="utf-8").splitlines()
         index = 0
+        block_index = 0
         while index < len(lines):
             if lines[index].strip() != "```mermaid":
                 index += 1
                 continue
+            block_index += 1
+            opening_line = index + 1
             index += 1
-            body_lines = 0
+            body: list[str] = []
             while index < len(lines) and lines[index].strip() != "```":
-                body_lines += 1
+                body.append(lines[index])
+                if _LEGACY_RAW_DOTTED_LABEL_RE.match(lines[index]):
+                    legacy_raw_dotted_labels.append(
+                        {
+                            "path": path.relative_to(wiki_dir).as_posix(),
+                            "block": block_index,
+                            "line": index + 1,
+                            "text": lines[index].strip(),
+                        }
+                    )
                 index += 1
-            lengths.append(body_lines)
+            measurements.append(
+                {
+                    "path": path.relative_to(wiki_dir).as_posix(),
+                    "block": block_index,
+                    "line": opening_line,
+                    "node_declarations": sum(
+                        1 for line in body if _MERMAID_NODE_DECLARATION_RE.match(line)
+                    ),
+                    "body_lines": len(body),
+                    "characters": len("\n".join(body)),
+                }
+            )
             if index < len(lines):
                 index += 1
-    return lengths
+    return measurements, legacy_raw_dotted_labels
 
 
 def test_m4_dogfood_bootstrap_sync_and_site_export(tmp_path, monkeypatch, capsys):
     repo_root = Path(__file__).resolve().parents[1]
-    helper_cache_dir = repo_root / ".git"
-    if not get_prepared_binary("go", repo_root, str(helper_cache_dir)):
+    helper_root = resolve_helper_cache_root(repo_root)
+    if helper_root is None:
         pytest.skip("prepared Go helper cache is required for full-repo dogfood")
-    if not get_prepared_binary("rust", repo_root, str(helper_cache_dir)):
+    helper_cache_base = helper_root.parent
+    if not get_prepared_binary("go", repo_root, str(helper_cache_base)):
+        pytest.skip("prepared Go helper cache is required for full-repo dogfood")
+    if not get_prepared_binary("rust", repo_root, str(helper_cache_base)):
         pytest.skip("prepared Rust helper cache is required for full-repo dogfood")
     source = tmp_path / "python-wiki-llm"
     _copy_repo(repo_root, source)
     before = _file_hashes(source)
-    monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(helper_cache_dir))
+    monkeypatch.setenv(ENV_CACHE_DIR, str(helper_cache_base))
     monkeypatch.chdir(source)
 
     bootstrap_cmd.run(
@@ -166,11 +219,38 @@ def test_m4_dogfood_bootstrap_sync_and_site_export(tmp_path, monkeypatch, capsys
     assert (wiki_dir / "dependencies.md").exists()
     assert (wiki_dir / "load-order.md").exists()
     assert (wiki_dir / "flows" / "cli-bootstrap.md").exists()
+    assert (wiki_dir / "flows" / "cli-context.md").exists()
+    assert (wiki_dir / "flows" / "cli-extract.md").exists()
+    assert (wiki_dir / "flows" / "cli-lint.md").exists()
     assert (wiki_dir / "flows" / "process-llm-wiki.md").exists()
 
-    mermaid_lengths = _mermaid_body_lengths(wiki_dir)
-    assert mermaid_lengths
-    assert max(mermaid_lengths) <= 80
+    mermaid_measurements, legacy_raw_dotted_labels = _mermaid_body_measurements(
+        wiki_dir
+    )
+    assert mermaid_measurements
+    budget_limits = {
+        "node_declarations": GENERATED_DIAGRAM_NODE_LIMIT,
+        "body_lines": GENERATED_DIAGRAM_LINE_LIMIT,
+        "characters": GENERATED_DIAGRAM_CHAR_LIMIT,
+    }
+    budget_violations: list[dict[str, int | str]] = []
+    for measurement in mermaid_measurements:
+        for metric, limit in budget_limits.items():
+            value = measurement[metric]
+            assert isinstance(value, int)
+            if value > limit:
+                budget_violations.append(
+                    {
+                        "path": measurement["path"],
+                        "block": measurement["block"],
+                        "line": measurement["line"],
+                        "measurement": metric,
+                        "value": value,
+                        "limit": limit,
+                    }
+                )
+    assert budget_violations == []
+    assert legacy_raw_dotted_labels == []
     assert "```mermaid" in (wiki_dir / "dependencies.md").read_text(encoding="utf-8")
     assert "```mermaid" in (wiki_dir / "flows" / "process-llm-wiki.md").read_text(
         encoding="utf-8"

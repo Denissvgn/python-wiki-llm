@@ -14,6 +14,16 @@ exploitability and hands deeper questions to `/security-review`. See
 [reference.md](reference.md) for the exact parser/renderer boundary, discovery
 roots, coverage outcomes, and report format.
 
+## Managed repository preflight
+
+Before a managed wiki mutation, follow the user's instructions and applicable
+local repository rules, then run
+`git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md`; repeat it
+before handoff. Exit 0 is local-only, exit 1 is conditionally Git-eligible but
+not authorization, and any other result fails closed to local-only. Never
+force-add or change ignore/exclude rules. Read `wiki-reference`'s
+"Repository-aware Git handoff" section for details.
+
 ## Preconditions
 
 - This is a defensive review of a repository the user owns, maintains, or is authorized to assess.
@@ -108,7 +118,7 @@ roots, coverage outcomes, and report format.
 
    A report-only review makes no wiki change and needs no sync. If the review
    does add or update a page's `## Notes` in managed mode, that canonical
-   Markdown edit leaves the committed snapshot mixed — strict lint correctly
+   Markdown edit leaves the persisted snapshot mixed — strict lint correctly
    fails until the owning sync re-anchors it. After the last Notes edit and
    before any strict lint or CI gate, run:
 

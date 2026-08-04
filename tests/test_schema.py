@@ -170,10 +170,29 @@ def test_agent_schema_mentions_user_docs_usage_example_workflow():
     assert "generated blocks are CLI-owned" in content
     assert "source targets read-only" in content
     assert "no toolchain installs" in content
-    assert "validation loop before commit" in content
-    assert "wiki commits separate from code commits" in content
+    assert "validation loop before delivery" in content
+    assert "When repository policy permits a wiki commit" in content
+    assert "keep it separate from code commits" in text
     assert "capture tooling" in content
     assert "agent platform" in content
+
+
+def test_agent_schema_requires_repository_aware_git_handoff():
+    content = build_schema_content("generic", "docs/llm_wiki")
+    text = _squash_ws(content)
+
+    assert "## Repository delivery preflight" in content
+    assert (
+        "git check-ignore --no-index -- docs/llm_wiki/ "
+        "docs/llm_wiki/index.md" in content
+    )
+    assert "user's instructions and every applicable local repository rule" in text
+    assert "Exit 0 means the wiki is local-only" in text
+    assert "Exit 1 is only conditionally Git-eligible" in text
+    assert "Any other result is indeterminate and fails closed" in text
+    assert "do not stage, commit, force-add, or change ignore/exclude rules" in text
+    assert '"Repository-aware Git handoff" policy in `wiki-reference`' in text
+    assert "`external_agent_docs` keeps its stricter packet boundary" in text
 
 
 def test_agent_schema_omits_tool_issue_reporting_by_default():

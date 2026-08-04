@@ -153,18 +153,34 @@ class TestGetEntryPoints:
 
     def test_detects_top_level_argparse_dispatch_commands_only(self, tmp_path):
         (tmp_path / "commands").mkdir()
-        (tmp_path / "commands" / "bootstrap_cmd.py").write_text(
-            "def run(args):\n    return args\n", encoding="utf-8"
-        )
         (tmp_path / "commands" / "site_cmd.py").write_text(
             "def run(args):\n    return args\n", encoding="utf-8"
         )
+        (tmp_path / "services").mkdir()
+        for service_name in (
+            "bootstrap_runtime",
+            "context_service",
+            "extraction_service",
+            "lint_service",
+        ):
+            (tmp_path / "services" / f"{service_name}.py").write_text(
+                "def run(args):\n    return args\n", encoding="utf-8"
+            )
         (tmp_path / "cli.py").write_text(
             textwrap.dedent("""\
-            from .commands import bootstrap_cmd, site_cmd
+            from .commands import site_cmd
+            from .services import (
+                bootstrap_runtime as bootstrap_cmd,
+                context_service as context_cmd,
+                extraction_service as extract_cmd,
+                lint_service as lint_cmd,
+            )
 
             _COMMAND_MODULES = {
                 "bootstrap": bootstrap_cmd,
+                "context": context_cmd,
+                "extract": extract_cmd,
+                "lint": lint_cmd,
                 "site": site_cmd,
             }
 
@@ -186,17 +202,38 @@ class TestGetEntryPoints:
         assert cli_entries == [
             {
                 "category": "cli",
-                "file": "commands/bootstrap_cmd.py",
+                "file": "commands/site_cmd.py",
+                "symbol": "run",
+                "label": "site",
+                "id": "cli-site",
+            },
+            {
+                "category": "cli",
+                "file": "services/bootstrap_runtime.py",
                 "symbol": "run",
                 "label": "bootstrap",
                 "id": "cli-bootstrap",
             },
             {
                 "category": "cli",
-                "file": "commands/site_cmd.py",
+                "file": "services/context_service.py",
                 "symbol": "run",
-                "label": "site",
-                "id": "cli-site",
+                "label": "context",
+                "id": "cli-context",
+            },
+            {
+                "category": "cli",
+                "file": "services/extraction_service.py",
+                "symbol": "run",
+                "label": "extract",
+                "id": "cli-extract",
+            },
+            {
+                "category": "cli",
+                "file": "services/lint_service.py",
+                "symbol": "run",
+                "label": "lint",
+                "id": "cli-lint",
             },
         ]
 

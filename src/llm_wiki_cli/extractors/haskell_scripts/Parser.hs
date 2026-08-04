@@ -257,7 +257,7 @@ lineFromLocatedA :: GenLocated (SrcSpanAnn' ann) value -> Int
 lineFromLocatedA = lineFromSrcSpan . getLocA
 
 lineFromSrcSpan :: SrcSpan -> Int
-lineFromSrcSpan (RealSrcSpan span _) = srcSpanStartLine span
+lineFromSrcSpan (RealSrcSpan realSpan _) = srcSpanStartLine realSpan
 lineFromSrcSpan _ = 0
 
 prepareSource :: FilePath -> String -> String

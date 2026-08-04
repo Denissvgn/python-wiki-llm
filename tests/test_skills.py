@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import types
 from pathlib import Path
 
@@ -17,6 +18,16 @@ _CUSTOM_SKILL_MANIFEST_LF = (
     b"---\nname: demo\ndescription: A demo skill.\n---\n\n# demo\n"
 )
 _CUSTOM_SKILL_EXTRA_LF = b"# extra\n"
+_CANONICAL_WIKI_MUTATORS = (
+    "wiki-bootstrap",
+    "wiki-sync",
+    "onboarding-guide",
+    "user-docs-author",
+    "usage-examples",
+    "dep-audit",
+    "doc-review",
+    "infra-review",
+)
 
 
 def _ns(**kwargs):
@@ -29,6 +40,70 @@ def _write_custom_skill(root: Path, skill_id: str = "demo") -> Path:
     (skill_dir / "SKILL.md").write_bytes(_CUSTOM_SKILL_MANIFEST_LF)
     (skill_dir / "extra.md").write_bytes(_CUSTOM_SKILL_EXTRA_LF)
     return skill_dir
+
+
+def test_canonical_wiki_mutators_require_repository_aware_handoff():
+    for skill_id in _CANONICAL_WIKI_MUTATORS:
+        manifest = (
+            skills.BUNDLED_SKILLS_ROOT / skill_id / "SKILL.md"
+        ).read_text(encoding="utf-8")
+        normalized = " ".join(manifest.split())
+        normalized_lower = normalized.lower()
+
+        assert "## Managed repository preflight" in manifest, skill_id
+        assert (
+            "git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md"
+            in manifest
+        ), skill_id
+        assert "exit 0 is local-only" in normalized_lower, skill_id
+        assert (
+            "exit 1 is conditionally git-eligible but not authorization"
+            in normalized_lower
+        ), skill_id
+        assert (
+            "any other result fails closed to local-only" in normalized_lower
+        ), skill_id
+        assert (
+            "never force-add or change ignore/exclude rules" in normalized_lower
+        ), skill_id
+        assert '"Repository-aware Git handoff"' in manifest, skill_id
+
+
+def test_bundled_skills_never_stage_a_wiki_unconditionally():
+    git_mutation = re.compile(r"(?m)^[ \t]*(?:\$[ \t]+)?git (?:add|commit)\b")
+    command_files: list[str] = []
+
+    for path in sorted(skills.BUNDLED_SKILLS_ROOT.rglob("*.md")):
+        text = path.read_text(encoding="utf-8")
+        if not git_mutation.search(text):
+            continue
+        command_files.append(path.relative_to(skills.BUNDLED_SKILLS_ROOT).as_posix())
+        normalized = " ".join(text.split())
+        assert "Only if exit 1" in normalized
+        assert "applicable local rules authorize a commit" in normalized
+        assert "never force-add" in normalized.lower()
+
+    assert command_files == ["wiki-sync/SKILL.md"]
+
+
+def test_wiki_reference_defines_fail_closed_git_policy():
+    reference = (
+        skills.BUNDLED_SKILLS_ROOT / "wiki-reference" / "reference.md"
+    ).read_text(encoding="utf-8")
+    normalized = " ".join(reference.split())
+
+    assert "## Repository-aware Git handoff" in reference
+    assert (
+        "git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md"
+        in reference
+    )
+    assert "Exit 0 means **local-only**" in reference
+    assert "Exit 1 means **conditionally Git-eligible**" in reference
+    assert "Any other exit" in reference
+    assert "fails closed to the local-only handoff" in normalized
+    assert "nested `.gitignore`, `.git/info/exclude`" in normalized
+    assert "never stage a partial native snapshot" in normalized
+    assert "never stage or commit the source or adopted input wiki" in normalized
 
 
 class TestBundledAgentDocsSkill:
@@ -127,10 +202,12 @@ class TestBundledWikiSyncSkill:
         manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
         reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
 
-        # Deterministic pass, validation loop, and commit convention.
+        # Deterministic pass, validation loop, and conditional commit convention.
         assert "llm-wiki sync --jobs 1" in manifest
         assert "lint --strict" in manifest
         assert "docs(wiki):" in manifest
+        assert "Only if exit 1" in manifest
+        assert "applicable local rules authorize a commit" in manifest
         assert "The supervisor owns heavy-gate scheduling" in manifest
         assert "must not launch a heavy gate unless explicitly assigned" in manifest
         assert "report unfinished gates as" in manifest
@@ -184,11 +261,13 @@ class TestBundledWikiBootstrapSkill:
         reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
 
         # Helper preparation, deterministic bootstrap, validation loop, and
-        # commit convention.
+        # conditional commit convention.
         assert "llm-wiki prepare-extractors" in manifest
         assert "--depth full --format json" in manifest
         assert "lint --strict" in manifest
         assert "docs(wiki): bootstrap" in manifest
+        assert "Only when exit 1" in manifest
+        assert "applicable local" in manifest
         # Manifest-exists handoff to the incremental workflow.
         assert ".llm-wiki-manifest.json" in manifest
         assert "wiki-sync" in manifest
@@ -561,6 +640,8 @@ class TestBundledOnboardingGuideSkill:
         assert "lint --strict" in combined
         assert "llm-wiki ci-check" in combined
         assert "docs(wiki): add navigation guides" in combined
+        assert "Only when exit 1" in combined
+        assert "applicable local rules authorize a commit" in combined
         assert "guides/<persona>-navigation.md" in combined
         assert "# <Persona> navigation guide" in combined
         assert "docs(wiki): add onboarding guides" not in combined
@@ -1070,7 +1151,8 @@ class TestExternalDocumentationSkillChain:
         assert "external_agent_docs" in bootstrap
         assert "wiki-semantic-enhance" in bootstrap
 
-        assert "Commit wiki changes separately" in sync
+        assert "Use the permitted managed-mode handoff" in sync
+        assert "local-only handoff" in sync
         assert "external_agent_docs" in sync
         assert "resume from the recorded wiki snapshot" in sync
         assert "never stage or commit the source or" in sync

@@ -121,9 +121,11 @@ After guide prose exists and validates, use `usage-examples` to attach evidence-
   preserve it as evidence and defer or revise only the workspace copy.
 - For wiki-only runs, cite the snapshot's wiki evidence and retain the
   `unverified` freshness limitation. Do not claim source-backed prerequisites.
-- Write guide/remainder paths only inside the workspace. Managed mode keeps its
-  normal `docs(wiki):` commit contract; external mode returns a result packet
-  and does not stage or commit source/input paths.
+- Write guide/remainder paths only inside the workspace. Managed mode uses a
+  separate `docs(wiki):` commit only when the repository preflight and
+  applicable instructions authorize it; ignored or indeterminate wikis use a
+  local-only handoff. External mode returns a result packet and does not stage
+  or commit source/input paths.
 - Keep `claims_evidence_pages` for page-only compatibility. When a guide claim
   relies on native identity, an exact semantic section, lifecycle/review, or a
   bounded graph result, also return

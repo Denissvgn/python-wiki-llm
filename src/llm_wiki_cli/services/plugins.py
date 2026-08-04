@@ -42,6 +42,9 @@ SUPPORTED_COMPONENT_TYPES = {
 _ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
 _MODULE_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$")
 _ATTR_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$")
+_PROMPT_GIT_MUTATION_RE = re.compile(
+    r"(?i)(?<![A-Za-z0-9_-])git\b[^\r\n]*?(?<![A-Za-z0-9_-])(?:add|commit)\b"
+)
 
 
 class PluginError(ValueError):
@@ -303,6 +306,9 @@ def _normalize_component(plugin_dir: Path, raw: Any) -> dict[str, Any]:
     elif component_type == "prompt_template":
         component["path"] = _safe_component_path(
             plugin_dir, raw.get("path"), "prompt_template.path"
+        )
+        _validate_prompt_template_vcs_boundary(
+            (plugin_dir / component["path"]).read_text(encoding="utf-8")
         )
     elif component_type == "skill":
         component["path"] = _safe_component_path(
@@ -614,11 +620,22 @@ class _SafeFormat(dict):
         return "{" + key + "}"
 
 
+def _validate_prompt_template_vcs_boundary(template: str) -> None:
+    if "LLM_WIKI_AUTO_COMMIT" in template or _PROMPT_GIT_MUTATION_RE.search(
+        template
+    ):
+        raise PluginError(
+            "Prompt templates cannot contain Git staging or commit commands; "
+            "repository-policy handoff is owned by llm-wiki."
+        )
+
+
 def render_prompt_template(
     template_id: str, values: dict[str, Any], *, root: str | Path = "."
 ) -> str:
     component = find_prompt_template(template_id, root=root)
     template = read_component_text(component)
+    _validate_prompt_template_vcs_boundary(template)
     return template.format_map(
         _SafeFormat(
             {key: "" if value is None else str(value) for key, value in values.items()}

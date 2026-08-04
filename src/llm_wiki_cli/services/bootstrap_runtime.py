@@ -46,8 +46,12 @@ from .dependencies import (
     build_dependency_observations,
     build_external_dependency_observations,
     package_dependency_graph,
+    top_level_package,
 )
 from .diagrams import (
+    GENERATED_DIAGRAM_CHAR_LIMIT,
+    GENERATED_DIAGRAM_LINE_LIMIT,
+    GENERATED_DIAGRAM_NODE_LIMIT,
     data_flow_diagram,
     flowchart,
     resolve_diagram_style,
@@ -656,56 +660,117 @@ def _reference_label(ref: Mapping) -> str:
     return f"{symbol} ({file_label})" if symbol else str(file_label)
 
 
-def _entity_relationship_graph(
+@dataclass(frozen=True)
+class _BoundedGeneratedDiagram:
+    diagram: str | None
+    total_items: int
+    shown_items: int
+    omitted_items: int
+
+
+def _entity_relationship_projection(
     summary: Mapping,
     module_page_map: Mapping[str, str] | None,
     diagram_style: Mapping[str, Any] | None = None,
-) -> str | None:
-    current = _entity_node_label(summary)
-    nodes = [current]
-    edges: list[tuple[str, str]] = []
-    links: dict[str, str] = {}
+) -> _BoundedGeneratedDiagram:
+    """Render the longest bounded relationship prefix.
 
+    The focal entity is fixed. Relationship priority is bases, subclasses, and
+    then references, matching the order of the authoritative tables below the
+    visualization.
+    """
+    current = _entity_node_label(summary)
     current_file = summary.get("file")
     current_stem = _module_page_stem(
         str(current_file) if current_file else None, module_page_map
     )
-    if current_stem:
-        links[current] = f"../modules/{current_stem}.md"
+    fixed_links = (
+        {current: f"../modules/{current_stem}.md"} if current_stem else {}
+    )
+    relationships: list[tuple[str, tuple[str, str], str | None]] = []
+    seen_edges: set[tuple[str, str]] = set()
+
+    def add_relationship(
+        node: str,
+        edge: tuple[str, str],
+        filepath: object,
+    ) -> None:
+        if edge in seen_edges:
+            return
+        seen_edges.add(edge)
+        stem = _module_page_stem(
+            str(filepath) if filepath not in (None, "") else None,
+            module_page_map,
+        )
+        relationships.append(
+            (node, edge, f"../modules/{stem}.md" if stem else None)
+        )
 
     for base in summary.get("bases", []) or []:
         target = _class_ref_label(base)
-        nodes.append(target)
-        edges.append((current, target))
-        stem = _module_page_stem(base.get("file"), module_page_map)
-        if stem:
-            links[target] = f"../modules/{stem}.md"
-
+        add_relationship(target, (current, target), base.get("file"))
     for subclass in summary.get("subclasses", []) or []:
         source = _class_ref_label(subclass)
-        nodes.append(source)
-        edges.append((source, current))
-        stem = _module_page_stem(subclass.get("file"), module_page_map)
-        if stem:
-            links[source] = f"../modules/{stem}.md"
-
+        add_relationship(source, (source, current), subclass.get("file"))
     for reference in summary.get("references", []) or []:
         source = _reference_label(reference)
-        nodes.append(source)
-        edges.append((source, current))
-        stem = _module_page_stem(reference.get("file"), module_page_map)
-        if stem:
-            links[source] = f"../modules/{stem}.md"
+        add_relationship(source, (source, current), reference.get("file"))
 
-    if not edges:
-        return None
+    total = len(relationships)
+    if not total:
+        return _BoundedGeneratedDiagram(None, 0, 0, 0)
     if diagram_style is None:
         diagram_style = _generated_diagram_style(
             "relationships",
             entity=summary.get("name"),
             file=summary.get("file"),
         )
-    return flowchart(nodes, edges, direction="LR", links=links, style=diagram_style)
+
+    selected: list[tuple[str, tuple[str, str], str | None]] = []
+    bounded_diagram: str | None = None
+    for relationship in relationships:
+        candidate = [*selected, relationship]
+        nodes = list(
+            dict.fromkeys([current, *(node for node, _edge, _link in candidate)])
+        )
+        edges = [edge for _node, edge, _link in candidate]
+        links = dict(fixed_links)
+        links.update(
+            {
+                node: link
+                for node, _edge, link in candidate
+                if link is not None
+            }
+        )
+        diagram = flowchart(
+            nodes,
+            edges,
+            direction="LR",
+            links=links,
+            style=diagram_style,
+        )
+        if not _generated_diagram_fits(diagram, node_count=len(nodes)):
+            break
+        selected = candidate
+        bounded_diagram = diagram
+
+    shown = len(selected)
+    return _BoundedGeneratedDiagram(
+        bounded_diagram,
+        total,
+        shown,
+        total - shown,
+    )
+
+
+def _entity_relationship_graph(
+    summary: Mapping,
+    module_page_map: Mapping[str, str] | None,
+    diagram_style: Mapping[str, Any] | None = None,
+) -> str | None:
+    return _entity_relationship_projection(
+        summary, module_page_map, diagram_style
+    ).diagram
 
 
 def _relationship_source_cell(
@@ -814,9 +879,29 @@ def _generate_entity_relationship_section(
         lines.extend(["*No generated relationships detected.*", ""])
         return lines
 
-    diagram = _entity_relationship_graph(summary, module_page_map, diagram_style)
-    if diagram:
-        lines.append(diagram)
+    rendered = _entity_relationship_projection(
+        summary, module_page_map, diagram_style
+    )
+    if rendered.diagram:
+        lines.append(rendered.diagram)
+        if rendered.omitted_items:
+            lines.extend(
+                [
+                    "",
+                    f"> Relationship diagram shows {rendered.shown_items} of "
+                    f"{rendered.total_items} relationships; "
+                    f"{rendered.omitted_items} omitted to keep the visualization "
+                    "within the generated-diagram limits. Complete structure and "
+                    "reference data remain in the tables below.",
+                ]
+            )
+    elif rendered.total_items:
+        lines.append(
+            f"> Relationship diagram shows 0 of {rendered.total_items} "
+            f"relationships; {rendered.omitted_items} omitted because its focal "
+            "node, links, or style exceed the generated-diagram limits. Complete "
+            "structure and reference data remain in the tables below."
+        )
     else:
         lines.append("*No generated relationships detected.*")
     lines.append("")
@@ -833,33 +918,270 @@ def _module_map_node_link(
     return None
 
 
+@dataclass(frozen=True)
+class _ModuleDependencyDiagram:
+    diagram: str | None
+    total_edges: int
+    shown_edges: int
+    omitted_edges: int
+    projection: str
+
+
+def _dependency_sort_key(value: object) -> tuple[str, str]:
+    text = str(value)
+    return text.casefold(), text
+
+
+def _normalized_dependency_nodes(summary: Mapping) -> list[str]:
+    return list(dict.fromkeys(str(node) for node in summary.get("nodes", []) or []))
+
+
+def _normalized_dependency_edges(
+    raw_edges: Iterable[object], nodes: Iterable[str]
+) -> list[tuple[str, str]]:
+    known_nodes = set(nodes)
+    edges: list[tuple[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+    for raw_edge in raw_edges:
+        if isinstance(raw_edge, (str, bytes)):
+            continue
+        try:
+            values = list(raw_edge)  # type: ignore[arg-type]
+        except TypeError:
+            continue
+        if len(values) < 2:
+            continue
+        edge = str(values[0]), str(values[1])
+        if edge in seen or edge[0] not in known_nodes or edge[1] not in known_nodes:
+            continue
+        seen.add(edge)
+        edges.append(edge)
+    return edges
+
+
+def _mermaid_body(diagram: str) -> list[str]:
+    lines = diagram.splitlines()
+    if len(lines) < 2:
+        return []
+    return lines[1:-1]
+
+
+def _generated_diagram_fits(diagram: str, *, node_count: int) -> bool:
+    body = _mermaid_body(diagram)
+    return (
+        node_count <= GENERATED_DIAGRAM_NODE_LIMIT
+        and len(body) <= GENERATED_DIAGRAM_LINE_LIMIT
+        and len("\n".join(body)) <= GENERATED_DIAGRAM_CHAR_LIMIT
+    )
+
+
+_FLOWCHART_NODE_LINE = re.compile(r"^\s+[A-Za-z_][A-Za-z0-9_]*\s*[\[({]")
+
+
+def _rendered_flowchart_node_count(diagram: str) -> int:
+    """Count serialized flowchart node declarations, excluding edges/styles."""
+    return sum(
+        1 for line in _mermaid_body(diagram) if _FLOWCHART_NODE_LINE.match(line)
+    )
+
+
+def _dependency_edge_priority(
+    edge: tuple[str, str],
+    *,
+    focal_module: str,
+    cycle_edges: set[tuple[str, str]],
+) -> tuple[int, tuple[str, str], tuple[str, str]]:
+    if focal_module in edge:
+        priority = 0
+    elif edge in cycle_edges:
+        priority = 1
+    else:
+        priority = 2
+    return priority, _dependency_sort_key(edge[0]), _dependency_sort_key(edge[1])
+
+
+def _render_module_dependency_projection(
+    *,
+    nodes: list[str],
+    edges: list[tuple[str, str]],
+    links: Mapping[str, str],
+    cycle_edges: set[tuple[str, str]],
+    focal_module: str,
+    diagram_style: Mapping[str, Any] | None,
+    projection: str,
+    allow_edge_omission: bool,
+) -> _ModuleDependencyDiagram | None:
+    diagram = flowchart(
+        nodes,
+        edges,
+        direction="LR",
+        links=links,
+        highlight_edges=cycle_edges,
+        style=diagram_style,
+    )
+    if _generated_diagram_fits(diagram, node_count=len(nodes)):
+        return _ModuleDependencyDiagram(
+            diagram=diagram,
+            total_edges=len(edges),
+            shown_edges=len(edges),
+            omitted_edges=0,
+            projection=projection,
+        )
+    if not allow_edge_omission or len(nodes) > GENERATED_DIAGRAM_NODE_LIMIT:
+        return None
+
+    fixed_diagram = flowchart(
+        nodes,
+        [],
+        direction="LR",
+        links=links,
+        highlight_edges=cycle_edges,
+        style=diagram_style,
+    )
+    if not _generated_diagram_fits(fixed_diagram, node_count=len(nodes)):
+        return None
+
+    prioritized = sorted(
+        edges,
+        key=lambda edge: _dependency_edge_priority(
+            edge,
+            focal_module=focal_module,
+            cycle_edges=cycle_edges,
+        ),
+    )
+    selected: set[tuple[str, str]] = set()
+    bounded_diagram = fixed_diagram
+    for edge in prioritized:
+        candidate_edges = selected | {edge}
+        candidate_diagram = flowchart(
+            nodes,
+            [candidate for candidate in edges if candidate in candidate_edges],
+            direction="LR",
+            links=links,
+            highlight_edges=cycle_edges,
+            style=diagram_style,
+        )
+        if not _generated_diagram_fits(candidate_diagram, node_count=len(nodes)):
+            break
+        selected = candidate_edges
+        bounded_diagram = candidate_diagram
+    if not selected:
+        return None
+
+    shown_edges = [edge for edge in edges if edge in selected]
+    return _ModuleDependencyDiagram(
+        diagram=bounded_diagram,
+        total_edges=len(edges),
+        shown_edges=len(shown_edges),
+        omitted_edges=len(edges) - len(shown_edges),
+        projection=projection,
+    )
+
+
+def _package_dependency_projection(
+    summary: Mapping,
+    cycle_edges: set[tuple[str, str]],
+) -> tuple[list[str], list[tuple[str, str]], set[tuple[str, str]]] | None:
+    if summary.get("detail") != "module":
+        return None
+    focal_module = str(summary.get("file") or "")
+    if not focal_module:
+        return None
+
+    package_edges: set[tuple[str, str]] = set()
+    projected_cycle_edges: set[tuple[str, str]] = set()
+    for inbound in summary.get("inbound", []) or []:
+        source = str(inbound)
+        edge = top_level_package(source), focal_module
+        package_edges.add(edge)
+        if (source, focal_module) in cycle_edges:
+            projected_cycle_edges.add(edge)
+    for outbound in summary.get("outbound", []) or []:
+        target = str(outbound)
+        edge = focal_module, top_level_package(target)
+        package_edges.add(edge)
+        if (focal_module, target) in cycle_edges:
+            projected_cycle_edges.add(edge)
+
+    edges = sorted(
+        package_edges,
+        key=lambda edge: (_dependency_sort_key(edge[0]), _dependency_sort_key(edge[1])),
+    )
+    if not edges:
+        return None
+    nodes = sorted(
+        {focal_module, *(node for edge in edges for node in edge)},
+        key=_dependency_sort_key,
+    )
+    return nodes, edges, projected_cycle_edges
+
+
 def _module_dependency_graph(
     summary: Mapping,
     module_page_map: Mapping[str, str] | None,
     diagram_style: Mapping[str, Any] | None = None,
-) -> str | None:
-    edges = list(summary.get("edges", []) or [])
+) -> _ModuleDependencyDiagram | None:
+    nodes = _normalized_dependency_nodes(summary)
+    edges = _normalized_dependency_edges(summary.get("edges", []) or [], nodes)
     if not edges:
         return None
-    nodes = list(summary.get("nodes", []) or [])
-    links = {
-        str(node): link
-        for node in nodes
-        for link in [_module_map_node_link(str(node), module_page_map)]
-        if link
-    }
+    focal_module = str(summary.get("file") or "")
+    cycle_edges = set(
+        _normalized_dependency_edges(summary.get("cycle_edges", []) or [], nodes)
+    )
+    projection = str(summary.get("detail") or "module")
+    if projection == "package":
+        focal_link = _module_map_node_link(focal_module, module_page_map)
+        links = {focal_module: focal_link} if focal_link else {}
+    else:
+        links = {
+            str(node): link
+            for node in nodes
+            for link in [_module_map_node_link(str(node), module_page_map)]
+            if link
+        }
     if diagram_style is None:
         diagram_style = _generated_diagram_style(
             "module_dependency",
             file=summary.get("file"),
         )
-    return flowchart(
-        nodes,
-        edges,
-        direction="LR",
+    rendered = _render_module_dependency_projection(
+        nodes=nodes,
+        edges=edges,
         links=links,
-        highlight_edges=summary.get("cycle_edges", []),
-        style=diagram_style,
+        cycle_edges=cycle_edges,
+        focal_module=focal_module,
+        diagram_style=diagram_style,
+        projection=projection,
+        allow_edge_omission=True,
+    )
+    if rendered is not None:
+        return rendered
+
+    package_projection = _package_dependency_projection(summary, cycle_edges)
+    if package_projection is not None:
+        package_nodes, package_edges, package_cycle_edges = package_projection
+        focal_link = _module_map_node_link(focal_module, module_page_map)
+        package_links = {focal_module: focal_link} if focal_link else {}
+        rendered = _render_module_dependency_projection(
+            nodes=package_nodes,
+            edges=package_edges,
+            links=package_links,
+            cycle_edges=package_cycle_edges,
+            focal_module=focal_module,
+            diagram_style=diagram_style,
+            projection="package",
+            allow_edge_omission=False,
+        )
+        if rendered is not None:
+            return rendered
+
+    return _ModuleDependencyDiagram(
+        diagram=None,
+        total_edges=len(edges),
+        shown_edges=0,
+        omitted_edges=len(edges),
+        projection="none",
     )
 
 
@@ -925,13 +1247,37 @@ def _generate_module_dependency_section(
         lines.extend(["*No internal module dependencies detected.*", ""])
         return lines
 
-    diagram = _module_dependency_graph(summary, module_page_map, diagram_style)
-    if diagram:
-        if summary.get("cycle_participation"):
+    rendered = _module_dependency_graph(summary, module_page_map, diagram_style)
+    if rendered and rendered.diagram:
+        if summary.get("cycle_participation") and "==>" in rendered.diagram:
             lines.append(
                 "<!-- Thick arrows (==>) mark edges inside an import cycle. -->"
             )
-        lines.append(diagram)
+        lines.append(rendered.diagram)
+        if rendered.projection == "package":
+            lines.append("")
+            lines.append(
+                "> Module-level visualization was collapsed to package "
+                "relationships to keep the diagram within the generated-diagram "
+                "limits. Complete inbound and outbound dependencies remain in the "
+                "tables below."
+            )
+        elif rendered.omitted_edges:
+            lines.append("")
+            lines.append(
+                f"> Diagram shows {rendered.shown_edges} of "
+                f"{rendered.total_edges} local dependency edges; "
+                f"{rendered.omitted_edges} omitted to keep the visualization "
+                "within the generated-diagram limits. Complete inbound and "
+                "outbound dependencies remain in the tables below."
+            )
+    elif rendered:
+        lines.append(
+            f"> Diagram shows 0 of {rendered.total_edges} local dependency edges; "
+            f"{rendered.omitted_edges} omitted because its fixed nodes, links, "
+            "or style exceed the generated-diagram limits. Complete inbound and "
+            "outbound dependencies remain in the tables below."
+        )
     else:
         lines.append("*No internal module dependencies detected.*")
     lines.append("")
@@ -1993,9 +2339,31 @@ def _flow_interactions(flow: dict) -> list[dict]:
 _FLOW_SEQUENCE_INTERACTION_LIMIT = 30
 
 
-def _bounded_flow_interactions(interactions: list[dict]) -> tuple[list[dict], int]:
-    shown = interactions[:_FLOW_SEQUENCE_INTERACTION_LIMIT]
-    return shown, max(0, len(interactions) - len(shown))
+def _bounded_sequence_diagram(
+    interactions: list[dict],
+) -> _BoundedGeneratedDiagram:
+    total = len(interactions)
+    selected: list[dict] = []
+    bounded_diagram: str | None = None
+    for interaction in interactions[:_FLOW_SEQUENCE_INTERACTION_LIMIT]:
+        candidate = [*selected, interaction]
+        diagram = sequence_diagram(candidate)
+        participants = {
+            actor
+            for item in candidate
+            for actor in (item["from"], item["to"])
+        }
+        if not _generated_diagram_fits(diagram, node_count=len(participants)):
+            break
+        selected = candidate
+        bounded_diagram = diagram
+    shown = len(selected)
+    return _BoundedGeneratedDiagram(
+        bounded_diagram,
+        total,
+        shown,
+        total - shown,
+    )
 
 
 def _md_cell(value: object) -> str:
@@ -2022,23 +2390,117 @@ def _effects_cell(effects: list[Mapping]) -> str:
     return ", ".join(f"`{_md_cell(_effect_label(effect))}`" for effect in effects)
 
 
+def _bounded_data_flow_diagram(
+    data_flow: Mapping,
+    module_page_map: Mapping[str, str] | None,
+    diagram_style: Mapping[str, Any] | None,
+) -> _BoundedGeneratedDiagram:
+    """Keep all step nodes and the longest fitting transfer/boundary prefixes."""
+    steps = list(data_flow.get("steps", []) or [])
+    transfers = list(data_flow.get("transfers", []) or [])
+    boundaries = list(data_flow.get("boundaries", []) or [])
+    total = len(transfers) + len(boundaries)
+
+    def render(
+        shown_transfers: list[object],
+        shown_boundaries: list[object],
+    ) -> str:
+        projection = dict(data_flow)
+        projection["steps"] = steps
+        projection["transfers"] = shown_transfers
+        projection["boundaries"] = shown_boundaries
+        return data_flow_diagram(
+            projection,
+            module_page_map,
+            style=diagram_style,
+        )
+
+    selected_transfers: list[object] = []
+    selected_boundaries: list[object] = []
+    bounded_diagram = render(selected_transfers, selected_boundaries)
+    if not _generated_diagram_fits(
+        bounded_diagram,
+        node_count=_rendered_flowchart_node_count(bounded_diagram),
+    ):
+        return _BoundedGeneratedDiagram(None, total, 0, total)
+
+    for transfer in transfers:
+        candidate = [*selected_transfers, transfer]
+        diagram = render(candidate, selected_boundaries)
+        if not _generated_diagram_fits(
+            diagram,
+            node_count=_rendered_flowchart_node_count(diagram),
+        ):
+            break
+        selected_transfers = candidate
+        bounded_diagram = diagram
+
+    for boundary in boundaries:
+        candidate = [*selected_boundaries, boundary]
+        diagram = render(selected_transfers, candidate)
+        if not _generated_diagram_fits(
+            diagram,
+            node_count=_rendered_flowchart_node_count(diagram),
+        ):
+            break
+        selected_boundaries = candidate
+        bounded_diagram = diagram
+
+    shown = len(selected_transfers) + len(selected_boundaries)
+    return _BoundedGeneratedDiagram(
+        bounded_diagram,
+        total,
+        shown,
+        total - shown,
+    )
+
+
 def _generate_data_flow_section(
     data_flow: Mapping,
     module_page_map: Mapping[str, str] | None = None,
     diagram_style: Mapping[str, Any] | None = None,
 ) -> list[str]:
+    rendered = _bounded_data_flow_diagram(
+        data_flow, module_page_map, diagram_style
+    )
     lines = [
         "## Data flow",
         "",
         "<!-- Auto-generated static analysis. Treat values and boundaries as "
         "best-effort hints, not runtime proof. -->",
-        data_flow_diagram(data_flow, module_page_map, style=diagram_style),
-        "",
-        "### Step data",
-        "",
-        "| Step | Inputs | Reads | Writes | Returns |",
-        "|---|---|---|---|---|",
     ]
+    if rendered.diagram:
+        lines.append(rendered.diagram)
+        if rendered.omitted_items:
+            lines.extend(
+                [
+                    "",
+                    f"> Data-flow diagram shows {rendered.shown_items} of "
+                    f"{rendered.total_items} transfer and boundary relationships; "
+                    f"{rendered.omitted_items} omitted to keep the visualization "
+                    "within the generated-diagram limits. Complete step, call, "
+                    "boundary, and gap data remain in the tables below.",
+                ]
+            )
+    else:
+        step_count = len(list(data_flow.get("steps", []) or []))
+        lines.append(
+            f"> Data-flow diagram shows 0 of {step_count} step nodes "
+            f"({step_count} omitted) and 0 of {rendered.total_items} transfer "
+            f"and boundary relationships ({rendered.omitted_items} omitted) "
+            "because its fixed step nodes, links, or style exceed the "
+            "generated-diagram limits. Complete step, call, boundary, and gap "
+            "data remain in the tables below."
+        )
+    lines.extend(
+        [
+            "",
+            "### Step data",
+            "",
+            "| Step | Inputs | Reads | Writes | Returns |",
+            "|---|---|---|---|---|",
+        ]
+    )
     for step in data_flow.get("steps", []):
         lines.append(
             "| "
@@ -2156,16 +2618,24 @@ def _generate_flow_md(
         "or unresolved calls. Refine order and conditions after review. -->"
     )
     if interactions:
-        shown_interactions, omitted_interactions = _bounded_flow_interactions(
-            interactions
-        )
-        lines.append(sequence_diagram(shown_interactions))
-        if omitted_interactions:
+        rendered_sequence = _bounded_sequence_diagram(interactions)
+        if rendered_sequence.diagram:
+            lines.append(rendered_sequence.diagram)
+        else:
+            lines.append(
+                f"> Call sequence diagram shows 0 of "
+                f"{rendered_sequence.total_items} interactions; "
+                f"{rendered_sequence.omitted_items} omitted because its fixed "
+                "participants exceed the generated-diagram limits."
+            )
+        if rendered_sequence.diagram and rendered_sequence.omitted_items:
             lines.append("")
             lines.append(
-                f"> Call sequence truncated for readability: first "
-                f"{_FLOW_SEQUENCE_INTERACTION_LIMIT} interactions shown; "
-                f"{omitted_interactions} omitted."
+                f"> Call sequence diagram shows {rendered_sequence.shown_items} of "
+                f"{rendered_sequence.total_items} interactions; "
+                f"{rendered_sequence.omitted_items} omitted to keep the "
+                f"visualization within the {_FLOW_SEQUENCE_INTERACTION_LIMIT}-"
+                "interaction and generated-diagram limits."
             )
     else:
         lines.append("*No outbound calls detected — describe the behavior manually.*")
@@ -2208,11 +2678,6 @@ def _preserve_level_two_section(existing: str, generated: str, heading: str) -> 
 
 # ── Architecture pages: dependencies + load order (Epic 2.4) ──────────
 
-# Above this many module nodes, the ``auto`` graph detail collapses the
-# flowchart to top-level packages so large repos stay readable (DL-404).
-_DEPENDENCY_GRAPH_NODE_LIMIT = 40
-
-
 def _dependency_module_link(filepath: str, module_page_map: Mapping[str, str]) -> str:
     """Markdown link from an architecture page (wiki root) to a module page."""
     stem = module_page_map.get(filepath, _module_name_from_path(filepath))
@@ -2234,51 +2699,186 @@ def _cyclic_edges(
     }
 
 
+@dataclass(frozen=True)
+class _RootDependencyDiagram:
+    diagram: str | None
+    rendered_detail: str
+    total_edges: int
+    shown_edges: int
+    omitted_edges: int
+    node_count: int
+
+
+def _render_root_dependency_projection(
+    *,
+    nodes: list[str],
+    edges: list[tuple[str, str]],
+    links: Mapping[str, str],
+    highlight_edges: set[tuple[str, str]],
+    diagram_style: Mapping[str, Any] | None,
+    rendered_detail: str,
+) -> _RootDependencyDiagram:
+    """Render cycle-first edges within the shared generated-diagram limits."""
+    prioritized = sorted(
+        edges,
+        key=lambda edge: (
+            0 if edge in highlight_edges else 1,
+            _dependency_sort_key(edge[0]),
+            _dependency_sort_key(edge[1]),
+        ),
+    )
+    full_diagram = flowchart(
+        nodes,
+        prioritized,
+        links=links,
+        highlight_edges=highlight_edges,
+        style=diagram_style,
+    )
+    if _generated_diagram_fits(full_diagram, node_count=len(nodes)):
+        return _RootDependencyDiagram(
+            full_diagram,
+            rendered_detail,
+            len(edges),
+            len(edges),
+            0,
+            len(nodes),
+        )
+
+    fixed_diagram = flowchart(
+        nodes,
+        [],
+        links=links,
+        highlight_edges=highlight_edges,
+        style=diagram_style,
+    )
+    if not _generated_diagram_fits(fixed_diagram, node_count=len(nodes)):
+        return _RootDependencyDiagram(
+            None,
+            rendered_detail,
+            len(edges),
+            0,
+            len(edges),
+            len(nodes),
+        )
+
+    selected: set[tuple[str, str]] = set()
+    bounded_diagram = fixed_diagram
+    for edge in prioritized:
+        candidate_edges = selected | {edge}
+        candidate_diagram = flowchart(
+            nodes,
+            [
+                candidate
+                for candidate in prioritized
+                if candidate in candidate_edges
+            ],
+            links=links,
+            highlight_edges=highlight_edges,
+            style=diagram_style,
+        )
+        if not _generated_diagram_fits(candidate_diagram, node_count=len(nodes)):
+            break
+        selected = candidate_edges
+        bounded_diagram = candidate_diagram
+
+    return _RootDependencyDiagram(
+        bounded_diagram,
+        rendered_detail,
+        len(edges),
+        len(selected),
+        len(edges) - len(selected),
+        len(nodes),
+    )
+
+
+def _package_cycle_edges(
+    cyclic_edges: Iterable[tuple[str, str]],
+) -> set[tuple[str, str]]:
+    projected: set[tuple[str, str]] = set()
+    for source, target in cyclic_edges:
+        edge = top_level_package(source), top_level_package(target)
+        if edge[0] != edge[1]:
+            projected.add(edge)
+    return projected
+
+
+def _render_dependency_graph_result(
+    analysis: dict,
+    module_page_map: Mapping[str, str],
+    detail: str,
+    diagram_style: Mapping[str, Any] | None = None,
+) -> _RootDependencyDiagram:
+    """Render a bounded dependency projection, choosing module or package detail."""
+    graph = analysis["graph"]
+    nodes = _normalized_dependency_nodes(graph)
+    edges = _normalized_dependency_edges(graph.get("edges", []) or [], nodes)
+    if diagram_style is None:
+        diagram_style = _generated_diagram_style("dependencies", detail=detail)
+    if not nodes:
+        rendered_detail = "package" if detail == "package" else "module"
+        return _RootDependencyDiagram(None, rendered_detail, 0, 0, 0, 0)
+    use_package = detail == "package" or (
+        detail == "auto" and len(nodes) > GENERATED_DIAGRAM_NODE_LIMIT
+    )
+
+    cyclic_edges = _cyclic_edges(edges, analysis["cycles"])
+    if not use_package:
+        links = {
+            node: f"modules/{module_page_map.get(node, _module_name_from_path(node))}.md"
+            for node in nodes
+        }
+        rendered = _render_root_dependency_projection(
+            nodes=nodes,
+            edges=edges,
+            links=links,
+            highlight_edges=cyclic_edges,
+            diagram_style=diagram_style,
+            rendered_detail="module",
+        )
+        if rendered.diagram is not None or detail != "auto":
+            return rendered
+        use_package = True
+
+    if use_package:
+        collapsed = package_dependency_graph(graph)
+        package_nodes = _normalized_dependency_nodes(collapsed)
+        package_edges = _normalized_dependency_edges(
+            collapsed.get("edges", []) or [],
+            package_nodes,
+        )
+        return _render_root_dependency_projection(
+            nodes=package_nodes,
+            edges=package_edges,
+            links={},
+            highlight_edges=_package_cycle_edges(cyclic_edges),
+            diagram_style=diagram_style,
+            rendered_detail="package",
+        )
+
+    return _RootDependencyDiagram(
+        None,
+        "module",
+        len(edges),
+        0,
+        len(edges),
+        len(nodes),
+    )
+
+
 def _render_dependency_graph(
     analysis: dict,
     module_page_map: Mapping[str, str],
     detail: str,
     diagram_style: Mapping[str, Any] | None = None,
 ) -> tuple[str | None, str]:
-    """Render the dependency flowchart, choosing module vs package detail.
-
-    Returns ``(diagram_or_None, rendered_detail)``. ``auto`` collapses to a
-    package-level graph past :data:`_DEPENDENCY_GRAPH_NODE_LIMIT`; ``package``
-    always collapses; ``module`` keeps the full graph with per-module links and
-    cyclic edges highlighted. ``None`` when there is nothing to draw.
-    """
-    graph = analysis["graph"]
-    nodes = graph["nodes"]
-    if diagram_style is None:
-        diagram_style = _generated_diagram_style("dependencies", detail=detail)
-    use_package = detail == "package" or (
-        detail == "auto" and len(nodes) > _DEPENDENCY_GRAPH_NODE_LIMIT
+    """Return the bounded diagram and rendered detail for compatibility."""
+    rendered = _render_dependency_graph_result(
+        analysis,
+        module_page_map,
+        detail,
+        diagram_style,
     )
-    if use_package:
-        collapsed = package_dependency_graph(graph)
-        if not collapsed["nodes"]:
-            return None, "package"
-        return (
-            flowchart(collapsed["nodes"], collapsed["edges"], style=diagram_style),
-            "package",
-        )
-    if not nodes:
-        return None, "module"
-    links = {
-        node: f"modules/{module_page_map.get(node, _module_name_from_path(node))}.md"
-        for node in nodes
-    }
-    highlight = _cyclic_edges(graph["edges"], analysis["cycles"])
-    return (
-        flowchart(
-            nodes,
-            graph["edges"],
-            links=links,
-            highlight_edges=highlight,
-            style=diagram_style,
-        ),
-        "module",
-    )
+    return rendered.diagram, rendered.rendered_detail
 
 
 def _format_package_list(packages: list[str]) -> str:
@@ -2340,20 +2940,39 @@ def _generate_dependencies_md(
         "## Module graph",
         "",
     ]
-    diagram, rendered_detail = _render_dependency_graph(
+    rendered = _render_dependency_graph_result(
         analysis, page_map, detail, diagram_style
     )
-    if diagram and rendered_detail == "package":
+    if rendered.diagram and rendered.rendered_detail == "package":
         lines.append(
             "<!-- Collapsed to top-level packages; the full module list is in the "
             "Fan-in / Fan-out table below. -->"
         )
-        lines.append(diagram)
-    elif diagram:
+        lines.append(rendered.diagram)
+    elif rendered.diagram:
         lines.append("<!-- Thick arrows (==>) mark edges inside an import cycle. -->")
-        lines.append(diagram)
+        lines.append(rendered.diagram)
+    elif rendered.node_count:
+        lines.append(
+            f"> Dependency diagram shows 0 of {rendered.total_edges} "
+            f"{rendered.rendered_detail} dependency edges; "
+            f"{rendered.omitted_edges} omitted because its fixed nodes, links, "
+            "or style exceed the generated-diagram limits. Complete module "
+            "fan-in and fan-out data remain in the table below."
+        )
     else:
         lines.append("*No internal module dependencies detected.*")
+    if rendered.diagram and rendered.omitted_edges:
+        lines.extend(
+            [
+                "",
+                f"> Dependency diagram shows {rendered.shown_edges} of "
+                f"{rendered.total_edges} {rendered.rendered_detail} dependency "
+                f"edges; {rendered.omitted_edges} omitted to keep the "
+                "visualization within the generated-diagram limits. Complete "
+                "module fan-in and fan-out data remain in the table below.",
+            ]
+        )
     lines.append("")
 
     lines.append("## Cycles")

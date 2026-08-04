@@ -10,30 +10,129 @@ boundary.
 from __future__ import annotations
 
 import re
+import unicodedata
 from pathlib import Path
 from typing import Any, Iterable, Mapping
+from urllib.parse import quote, unquote, urlsplit
 
 from .plugins import PluginError, diagram_style_components, load_entry_point
 from .validation import resolved_paths_equal
 
 _FENCE = "```mermaid"
-_LABEL_SAFE = re.compile(r"[^A-Za-z0-9 _.\-/]+")
-_HREF_SAFE = re.compile(r'[\s"`]+')
 _CLASS_SAFE = re.compile(r"^[A-Za-z_][A-Za-z0-9_-]*$")
 _COLOR_SAFE = re.compile(r"^#[0-9A-Fa-f]{3}([0-9A-Fa-f]{3})?$")
 _ALLOWED_DIRECTIONS = {"TB", "TD", "BT", "RL", "LR"}
+_DISPLAY_LABEL_LIMIT = 160
+_HREF_LIMIT = 512
+_RESERVED_CLASS_NAMES = {
+    "accdescr",
+    "acctitle",
+    "bt",
+    "callback",
+    "call",
+    "class",
+    "classdef",
+    "click",
+    "default",
+    "direction",
+    "end",
+    "flowchart",
+    "graph",
+    "href",
+    "interpolate",
+    "linkstyle",
+    "lr",
+    "rl",
+    "style",
+    "subgraph",
+    "tb",
+    "td",
+    "title",
+}
+_FLOWCHART_ENTITIES = {
+    '"': "#34;",
+    "#": "#35;",
+    "&": "#38;",
+    "<": "#60;",
+    ">": "#62;",
+    "`": "#96;",
+}
+_HREF_SAFE = "/:@?&=+$,;~-._!()*#"
+_STEP_INDEX_DIGIT_LIMIT = 128
+
+GENERATED_DIAGRAM_NODE_LIMIT = 40
+GENERATED_DIAGRAM_LINE_LIMIT = 80
+GENERATED_DIAGRAM_CHAR_LIMIT = 6000
 
 
-def _sanitize(text: str) -> str:
-    """Reduce *text* to characters that are safe inside a Mermaid label."""
-    cleaned = _LABEL_SAFE.sub(" ", str(text)).strip()
-    cleaned = re.sub(r"\s+", " ", cleaned)
-    return cleaned or "unknown"
+def _normalize_display_text(value: Any, *, replacements: str = "") -> str:
+    """Return bounded NFC text with controls and whitespace collapsed."""
+    normalized = unicodedata.normalize("NFC", str(value))
+    replacement_chars = set(replacements)
+    cleaned = "".join(
+        " "
+        if char in replacement_chars
+        or char.isspace()
+        or not char.isprintable()
+        else char
+        for char in normalized
+    )
+    cleaned = re.sub(r"\s+", " ", cleaned).strip() or "unknown"
+    if len(cleaned) > _DISPLAY_LABEL_LIMIT:
+        cleaned = cleaned[: _DISPLAY_LABEL_LIMIT - 1].rstrip() + "…"
+    return cleaned
+
+
+def _flowchart_label(value: Any) -> str:
+    """Serialize arbitrary display text for a quoted Mermaid flowchart label."""
+    return "".join(
+        _FLOWCHART_ENTITIES.get(char, char) for char in _normalize_display_text(value)
+    )
+
+
+def _sequence_text(value: Any) -> str:
+    """Serialize a participant or message for Mermaid sequence syntax."""
+    cleaned = _normalize_display_text(value, replacements="#;%")
+    return "(end)" if cleaned == "end" else cleaned
 
 
 def _sanitize_href(href: str) -> str:
-    """Strip whitespace/quotes that would break a Mermaid ``click`` directive."""
-    return _HREF_SAFE.sub("", str(href))
+    """Return a safe encoded relative reference, or ``""`` when invalid."""
+    raw = unicodedata.normalize("NFC", str(href))
+    if (
+        not raw
+        or "\\" in raw
+        or any(
+            char.isspace() and char not in {" "}
+            or not char.isprintable()
+            for char in raw
+        )
+    ):
+        return ""
+    decoded = unicodedata.normalize("NFC", unquote(raw))
+    if (
+        "\\" in decoded
+        or any(not char.isprintable() for char in decoded)
+        or decoded.startswith("/")
+    ):
+        return ""
+    try:
+        parsed = urlsplit(decoded)
+    except ValueError:
+        return ""
+    if parsed.scheme or parsed.netloc:
+        return ""
+    encoded = quote(decoded, safe=_HREF_SAFE)
+    return encoded if len(encoded) <= _HREF_LIMIT else ""
+
+
+def _class_name_is_safe(value: Any) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) <= 64
+        and _CLASS_SAFE.fullmatch(value) is not None
+        and value.casefold() not in _RESERVED_CLASS_NAMES
+    )
 
 
 def _normalize_direction(value: Any) -> str | None:
@@ -49,10 +148,13 @@ def _normalize_node_classes(value: Any, *, strict: bool = False) -> dict[str, st
         return {}
     classes: dict[str, str] = {}
     for node, class_name in value.items():
-        if isinstance(class_name, str) and _CLASS_SAFE.match(class_name):
+        if _class_name_is_safe(class_name):
             classes[str(node)] = class_name
         elif strict:
-            raise PluginError(f"node class for {node!r} must be a safe identifier.")
+            raise PluginError(
+                f"node class for {node!r} must be a non-reserved safe identifier "
+                "of at most 64 characters."
+            )
     return classes
 
 
@@ -64,15 +166,15 @@ def _normalize_category_colors(value: Any, *, strict: bool = False) -> dict[str,
     colors: dict[str, str] = {}
     for class_name, color in value.items():
         if (
-            isinstance(class_name, str)
-            and _CLASS_SAFE.match(class_name)
+            _class_name_is_safe(class_name)
             and isinstance(color, str)
-            and _COLOR_SAFE.match(color)
+            and _COLOR_SAFE.fullmatch(color)
         ):
             colors[class_name] = color
         elif strict:
             raise PluginError(
-                f"category color for {class_name!r} must use a safe class name and #RGB or #RRGGBB color."
+                f"category color for {class_name!r} must use a non-reserved safe "
+                "class name of at most 64 characters and #RGB or #RRGGBB color."
             )
     return colors
 
@@ -186,7 +288,7 @@ def resolve_diagram_style(
 
 def _append_style_lines(
     lines: list[str],
-    alias_by_node: Mapping[str, str],
+    aliases_by_node: Mapping[str, str] | Iterable[tuple[str, str]],
     style: Mapping[str, Any] | None,
     *,
     reserved_classes: set[str] | None = None,
@@ -195,15 +297,25 @@ def _append_style_lines(
     node_classes = normalized.get("node_classes", {})
     category_colors = normalized.get("category_colors", {})
     reserved = reserved_classes or set()
-    for class_name in sorted(category_colors):
+    aliases = (
+        list(aliases_by_node.items())
+        if isinstance(aliases_by_node, Mapping)
+        else list(aliases_by_node)
+    )
+    assigned = [
+        (alias, node_classes[node])
+        for node, alias in aliases
+        if node in node_classes
+        and node_classes[node] not in reserved
+    ]
+    used_classes = {class_name for _alias, class_name in assigned}
+    for class_name in sorted(used_classes & set(category_colors)):
         if class_name in reserved:
             continue
         color = category_colors[class_name]
         lines.append(f"    classDef {class_name} fill:{color},stroke:{color}")
-    for node, alias in alias_by_node.items():
-        class_name = node_classes.get(node)
-        if class_name:
-            lines.append(f"    class {alias} {class_name}")
+    for alias, class_name in assigned:
+        lines.append(f"    class {alias} {class_name}")
 
 
 def _ordered_participants(interactions: list[Mapping]) -> dict[str, str]:
@@ -228,12 +340,12 @@ def sequence_diagram(interactions: Iterable[Mapping]) -> str:
     aliases = _ordered_participants(interactions)
     lines = [_FENCE, "sequenceDiagram"]
     for actor, alias in aliases.items():
-        lines.append(f"    participant {alias} as {_sanitize(actor)}")
+        lines.append(f"    participant {alias} as {_sequence_text(actor)}")
     for interaction in interactions:
         arrow = "-->>" if interaction.get("dashed") else "->>"
         src = aliases[interaction["from"]]
         dst = aliases[interaction["to"]]
-        lines.append(f"    {src}{arrow}{dst}: {_sanitize(interaction['label'])}")
+        lines.append(f"    {src}{arrow}{dst}: {_sequence_text(interaction['label'])}")
     lines.append("```")
     return "\n".join(lines)
 
@@ -259,48 +371,66 @@ def flowchart(
     link_map = dict(links or {})
     highlight = set(highlight_edges or ())
     normalized_style = _normalize_style(style)
-    direction = normalized_style.get("direction", direction)
+    direction = normalized_style.get(
+        "direction", _normalize_direction(direction) or "TD"
+    )
     alias: dict[str, str] = {}
     lines = [_FENCE, f"flowchart {direction}"]
     for node in dict.fromkeys(nodes):
         alias[node] = f"n{len(alias)}"
-        lines.append(f'    {alias[node]}["{_sanitize(node)}"]')
+        lines.append(f'    {alias[node]}["{_flowchart_label(node)}"]')
+    seen_edges: set[tuple[str, str]] = set()
     for src, dst in edges:
-        if src in alias and dst in alias:
-            arrow = "==>" if (src, dst) in highlight else "-->"
-            lines.append(f"    {alias[src]} {arrow} {alias[dst]}")
+        edge = (src, dst)
+        if edge in seen_edges or src not in alias or dst not in alias:
+            continue
+        seen_edges.add(edge)
+        arrow = "==>" if edge in highlight else "-->"
+        lines.append(f"    {alias[src]} {arrow} {alias[dst]}")
     for node in alias:
         href = link_map.get(node)
         if href:
-            lines.append(f'    click {alias[node]} "{_sanitize_href(href)}"')
+            safe_href = _sanitize_href(href)
+            if safe_href:
+                lines.append(f'    click {alias[node]} "{safe_href}"')
     _append_style_lines(lines, alias, normalized_style)
     lines.append("```")
     return "\n".join(lines)
 
 
-def _step_number(step: Mapping, fallback: int) -> int:
-    try:
-        return int(step.get("index") or fallback)
-    except (TypeError, ValueError):
-        return fallback
+def _positive_index(value: Any) -> int | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value if value > 0 else None
+    if isinstance(value, str) and re.fullmatch(r"[0-9]+", value):
+        digits = value.lstrip("0")
+        if not digits or len(digits) > _STEP_INDEX_DIGIT_LIMIT:
+            return None
+        try:
+            parsed = int(digits)
+        except (ValueError, OverflowError):
+            return None
+        return parsed if parsed > 0 else None
+    return None
 
 
 def _transfer_endpoint(
     transfer: Mapping,
     key: str,
     symbol_key: str,
-    aliases_by_index: Mapping[int, str],
+    aliases_by_source_index: Mapping[int, str],
+    aliases_by_ordinal: Mapping[int, str],
     aliases_by_symbol: Mapping[str, str],
 ) -> str | None:
-    try:
-        raw_step = transfer.get(key)
-        if not isinstance(raw_step, (int, float, str)) or isinstance(raw_step, bool):
-            raise TypeError
-        step_index = int(raw_step)
-    except (TypeError, ValueError):
-        step_index = 0
-    if step_index in aliases_by_index:
-        return aliases_by_index[step_index]
+    step_index = _positive_index(transfer.get(key))
+    if step_index is not None:
+        source_alias = aliases_by_source_index.get(step_index)
+        if source_alias is not None:
+            return source_alias
+        ordinal_alias = aliases_by_ordinal.get(step_index)
+        if ordinal_alias is not None:
+            return ordinal_alias
     symbol = str(transfer.get(symbol_key) or "")
     return aliases_by_symbol.get(symbol)
 
@@ -313,6 +443,15 @@ def _link_for_step(step: Mapping, module_page_map: Mapping[str, str]) -> str:
     return f"../modules/{page}.md" if page else ""
 
 
+def _render_labeled_edge(
+    source: str, destination: str, label: Any, *, dashed: bool
+) -> str:
+    safe_label = _flowchart_label(label)
+    if dashed:
+        return f'    {source} -. "{safe_label}" .-> {destination}'
+    return f'    {source} -->|"{safe_label}"| {destination}'
+
+
 def data_flow_diagram(
     data_flow: Mapping,
     module_page_map: Mapping[str, str] | None = None,
@@ -322,64 +461,80 @@ def data_flow_diagram(
     """Render a labeled Mermaid diagram for one static data-flow summary."""
     page_map = dict(module_page_map or {})
     steps = list(data_flow.get("steps", []))
-    aliases_by_index: dict[int, str] = {}
+    aliases_by_source_index: dict[int, str] = {}
+    aliases_by_ordinal: dict[int, str] = {}
     aliases_by_symbol: dict[str, str] = {}
     normalized_style = _normalize_style(style)
     direction = normalized_style.get("direction", "LR")
     lines = [_FENCE, f"flowchart {direction}"]
-    style_aliases: dict[str, str] = {}
+    style_aliases: list[tuple[str, str]] = []
+    step_records: list[tuple[Mapping, str]] = []
 
-    for fallback, step in enumerate(steps, start=1):
-        number = _step_number(step, fallback)
-        alias = f"s{number}"
-        aliases_by_index[number] = alias
+    for ordinal, step in enumerate(steps, start=1):
+        source_index = _positive_index(step.get("index"))
+        number = source_index or ordinal
+        alias = f"s{ordinal}"
+        aliases_by_ordinal[ordinal] = alias
+        if source_index is not None:
+            aliases_by_source_index.setdefault(source_index, alias)
         symbol = str(step.get("symbol") or "?")
         aliases_by_symbol.setdefault(symbol, alias)
         label = f"{number}. {symbol}"
-        style_aliases[label] = alias
-        lines.append(f'    {alias}["{_sanitize(label)}"]')
+        style_aliases.append((label, alias))
+        step_records.append((step, alias))
+        lines.append(f'    {alias}["{_flowchart_label(label)}"]')
 
+    seen_edges: set[tuple[str, str, str, bool]] = set()
     for transfer in data_flow.get("transfers", []):
         src = _transfer_endpoint(
-            transfer, "from_step", "from", aliases_by_index, aliases_by_symbol
+            transfer,
+            "from_step",
+            "from",
+            aliases_by_source_index,
+            aliases_by_ordinal,
+            aliases_by_symbol,
         )
         dst = _transfer_endpoint(
-            transfer, "to_step", "to", aliases_by_index, aliases_by_symbol
+            transfer,
+            "to_step",
+            "to",
+            aliases_by_source_index,
+            aliases_by_ordinal,
+            aliases_by_symbol,
         )
         if not src or not dst:
             continue
-        label = _sanitize(transfer.get("call") or transfer.get("kind") or "data")
-        if transfer.get("kind") in {"external", "unresolved"}:
-            lines.append(f"    {src} -. {label} .-> {dst}")
-        else:
-            lines.append(f"    {src} -->|{label}| {dst}")
+        label = transfer.get("call") or transfer.get("kind") or "data"
+        dashed = transfer.get("kind") in {"external", "unresolved"}
+        edge_key = (src, dst, _normalize_display_text(label), dashed)
+        if edge_key in seen_edges:
+            continue
+        seen_edges.add(edge_key)
+        lines.append(_render_labeled_edge(src, dst, label, dashed=dashed))
 
     boundary_aliases = []
     for offset, boundary in enumerate(data_flow.get("boundaries", [])):
         src = None
-        try:
-            step_index = int(boundary.get("step_index"))
-        except (TypeError, ValueError):
-            step_index = 0
-        if step_index:
-            src = aliases_by_index.get(step_index)
+        step_index = _positive_index(boundary.get("step_index"))
+        if step_index is not None:
+            src = aliases_by_source_index.get(step_index)
+            if src is None:
+                src = aliases_by_ordinal.get(step_index)
         if src is None:
             src = aliases_by_symbol.get(str(boundary.get("step") or ""))
         if src is None:
             continue
         alias = f"b{offset}"
-        label = _sanitize(
-            f"{boundary.get('kind', 'boundary')} {boundary.get('target', '?')}"
-        )
-        lines.append(f'    {alias}["{label}"]')
-        lines.append(f"    {src} -. {label} .-> {alias}")
+        label = f"{boundary.get('kind', 'boundary')} {boundary.get('target', '?')}"
+        lines.append(f'    {alias}["{_flowchart_label(label)}"]')
+        lines.append(_render_labeled_edge(src, alias, label, dashed=True))
         boundary_aliases.append(alias)
 
-    for fallback, step in enumerate(steps, start=1):
-        number = _step_number(step, fallback)
+    for step, alias in step_records:
         href = _link_for_step(step, page_map)
-        if href:
-            lines.append(f'    click s{number} "{_sanitize_href(href)}"')
+        safe_href = _sanitize_href(href) if href else ""
+        if safe_href:
+            lines.append(f'    click {alias} "{safe_href}"')
 
     if boundary_aliases:
         lines.append("    classDef boundary stroke:#b45309,stroke-dasharray: 4 2")

@@ -15,6 +15,7 @@ from .paths import normalize_source_path
 from .validation import normalize_optional_portable_relative_path
 from .wiki_media import (
     build_asset_index,
+    is_assets_path,
     iter_markdown_link_targets,
     normalize_markdown_link_target,
 )
@@ -105,6 +106,22 @@ def evaluate_surface_index(
     counts = _counts(page_entries)
     assets = build_asset_index(wiki, content_by_path)
     counts["assets"] = assets.counts
+    surface_asset_by_page: dict[str, list[str]] = {}
+    for page_path, asset_paths in assets.by_page.items():
+        canonical_paths = [
+            asset_path for asset_path in asset_paths if is_assets_path(asset_path)
+        ]
+        if canonical_paths:
+            surface_asset_by_page[page_path] = canonical_paths
+    surface_assets = {
+        "by_page": surface_asset_by_page,
+        "referenced": [
+            asset_path
+            for asset_path in assets.referenced
+            if is_assets_path(asset_path)
+        ],
+        "unreferenced": assets.unreferenced,
+    }
     dependency_pages = {
         "dependencies": counts["by_kind"][PageKind.DEPENDENCIES.value] > 0,
         "load_order": counts["by_kind"][PageKind.LOAD_ORDER.value] > 0,
@@ -116,11 +133,7 @@ def evaluate_surface_index(
         "schema_version": WIKI_SURFACE_INDEX_SCHEMA_VERSION,
         "counts": counts,
         "dependency_pages": dependency_pages,
-        "assets": {
-            "by_page": assets.by_page,
-            "referenced": assets.referenced,
-            "unreferenced": assets.unreferenced,
-        },
+        "assets": surface_assets,
         "flows": flows,
         "pages": page_entries,
     }
@@ -131,9 +144,7 @@ def evaluate_surface_index(
             "dependency_pages": dependency_pages,
             "assets": {
                 "counts": assets.counts,
-                "by_page": assets.by_page,
-                "referenced": assets.referenced,
-                "unreferenced": assets.unreferenced,
+                **surface_assets,
             },
             "flows": flows,
             "pages": page_entries,

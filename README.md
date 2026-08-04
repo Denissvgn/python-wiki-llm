@@ -59,6 +59,12 @@ instead:
 descriptions, workflow notes, guide prose, `flows/*` `## Behavior` sections,
 architecture-page `## Notes` sections, custom `index.md` notes, and concise
 `log.md` summaries.
+The renderer normalizes and bounds labels while preserving printable Unicode,
+grammar-escapes source-derived text, and emits only validated relative diagram
+links with URL characters percent-encoded. When a visualization cannot show
+every analyzed item within its node, line, and character budgets, its omission
+note identifies the bounded projection; the generated tables remain the complete
+authoritative view.
 Full bootstrap renders entity `## Relationships` sections with bounded Mermaid
 diagrams and compact reference tables when relationship metadata exists. When
 dependency analysis is enabled, module pages also get a generated
@@ -323,7 +329,9 @@ The trigger command:
 - filters credential-like values from the generated prompt on a best-effort
   basis, then writes `.git/llm-wiki-prompt.txt` with owner-only permissions
   where supported;
-- invokes the selected agent with a prompt that asks it to update, lint, and commit wiki changes.
+- invokes the selected agent with a prompt that asks it to update, lint, and
+  follow a repository-aware handoff. A Git-ignored or indeterminate wiki stays
+  local and is never force-added or committed.
 
 Useful trigger options:
 
@@ -817,13 +825,13 @@ When guide or other semantic pages embed local media, lint treats image and
 video targets separately from Markdown page links. It recognizes inline
 Markdown images and media links, same-page reference-style images, and raw
 `<img>`, `<video>`, and `<source>` tags, including local `srcset` candidates.
-Fenced code blocks are ignored by the media pass so examples do not create
-media diagnostics; the general page-link check is unchanged. Missing local
-media files are hard `media_link_broken` issues. Missing image alt text, media
-files over the default 2 MB warning threshold, unreferenced media files under
-`assets/`, media stored outside the preferred `assets/` convention,
-unrecognized non-hidden files under `assets/`, and symlinked media that
-resolves outside the wiki root are warning diagnostics
+Fenced code blocks and backtick code spans are ignored by the media pass so
+examples do not create media diagnostics; the general page-link check is
+unchanged. Missing local media files are hard `media_link_broken` issues.
+Missing image alt text, media files over the default 2 MB warning threshold,
+unreferenced media files under `assets/`, media stored outside the preferred
+`assets/` convention, unrecognized non-hidden files under `assets/`, and
+symlinked media that resolves outside the wiki root are warning diagnostics
 (`media_missing_alt_text`, `media_oversize`, `media_orphan`,
 `media_outside_assets`, `asset_unrecognized_type`, and
 `media_symlink_escape`). Use `--media-size-warn-bytes` to tune the size warning
@@ -1081,7 +1089,16 @@ llm-wiki generate-prompt --template compact
 The generated prompt includes change-type guidance. Installed prompt templates
 can override the default prompt body. The default prompt asks agents to run
 `sync` first, then perform a semantic pass on affected pages before accepting a
-lint-clean wiki as complete.
+lint-clean wiki as complete. LLM Wiki always appends the final repository-policy
+handoff: Git-ignored or indeterminate wiki paths remain local-only, while a
+nonignored path is merely eligible for a separate commit when the user and
+applicable repository rules authorize it. The handoff never force-adds a wiki
+or changes ignore/exclude rules.
+
+Prompt templates may use `{wiki_git_disposition}`, `{wiki_git_reason}`,
+`{wiki_git_handoff_eligible}`, and `{wiki_git_handoff}` for explanatory prose.
+They cannot contain `git add`, `git commit`, or `LLM_WIKI_AUTO_COMMIT`;
+application-owned prompt rendering supplies the guarded Git or local handoff.
 
 ### `mcp`
 
@@ -1138,6 +1155,11 @@ again before runtime import. Extractor components may set `"parallel_safe": true
 to opt into `--jobs` parallel execution; omit it unless the extractor is safe to
 run concurrently in a fresh instance.
 
+Prompt templates own task prose but not version-control mutation. Templates
+containing Git staging/commit commands or `LLM_WIKI_AUTO_COMMIT` are rejected;
+the generated prompt's final repository-policy handoff cannot be replaced by a
+plugin.
+
 A tested sample documentation-hooks plugin lives at
 `examples/plugins/documentation-hooks` in source checkouts. It can be
 inspected or installed like any other local plugin:
@@ -1173,11 +1195,13 @@ remain authoritative. Detector exceptions or invalid records become warnings in
 A `diagram_style` hook is called with a plain context object such as
 `{"surface": "relationships"}` or `{"surface": "data_flow"}` and may return
 only bounded style hints: `direction` (`TB`, `TD`, `BT`, `RL`, or `LR`),
-`node_classes` mapping exact generated node labels to safe Mermaid class names,
-and `category_colors` mapping safe class names to `#RGB` or `#RRGGBB` colors.
-LLM Wiki ignores invalid values and unknown keys, so plugins cannot inject
-Markdown, labels, hrefs, or raw Mermaid lines. Labels and `click` hrefs remain
-sanitized by the core diagram renderers.
+`node_classes` mapping exact generated node labels to non-reserved Mermaid class
+identifiers no longer than 64 characters, and `category_colors` mapping those
+class names to `#RGB` or `#RRGGBB` colors. Runtime rendering ignores invalid
+values and unknown keys, while explicit plugin validation rejects them, so
+plugins cannot inject Markdown, labels, hrefs, or raw Mermaid lines. Core
+renderers keep labels Unicode-safe and bounded, and validate and percent-encode
+relative `click` hrefs.
 
 These hooks are deterministic local extension contracts over explicit inputs;
 they do not perform network discovery and they do not mutate Markdown directly.
@@ -1490,11 +1514,13 @@ the mirror, writes MkDocs config comments that point users at a Mermaid plugin
 when diagram rendering is desired, and refuses source/output overlap unless
 explicitly allowed. Docusaurus exports also escape MDX-sensitive text outside
 code fences and inline code spans while preserving fenced Mermaid diagrams.
-`site check` validates the generated mirror without external builders: missing
-pages, broken or unsafe local Markdown links, malformed generated front matter,
-metadata mismatches, duplicate Docusaurus document ids, and output paths outside
-the mirror are hard `issues`; mixed mirrors that omit front matter on some pages
-emit non-failing `warnings` in JSON and text reports.
+Link rewriting and `site check` ignore Markdown-looking links inside fenced code
+blocks and backtick code spans, while resolvable live links are rewritten and
+broken or unsafe live links remain hard `issues`. `site check` validates the
+generated mirror without external builders: missing pages, malformed generated
+front matter, metadata mismatches, duplicate Docusaurus document ids, and output
+paths outside the mirror are also hard `issues`; mixed mirrors that omit front
+matter on some pages emit non-failing `warnings` in JSON and text reports.
 
 ### `skills`
 
@@ -1571,17 +1597,19 @@ Sixteen skills are bundled:
   prepare extractor helpers, run deterministic `bootstrap --format json`, do
   a centrality-ranked semantic pass on the most central pages, write an
   explicit `bootstrap-remainder.md` record for deferred pages, validate with
-  `lint --strict`/`ci-check`, and commit the wiki.
+  `lint --strict`/`ci-check`, and use a repository-policy-aware local or Git
+  handoff.
 - `wiki-reference`: progressive-disclosure reference for extractor contracts,
   helper toolchains/caches, dependency reconciliation, static-site profiles,
-  resource-aware execution, and context budgets.
+  repository-aware Git handoff, resource-aware execution, and context budgets.
 - `wiki-semantic-enhance`: resumable standalone semantic-enrichment pass —
   ground or reuse imported LLM prose, complete/defer stable worklist IDs within
   budget, edit only agent-owned semantic surfaces, and return readiness/result
   evidence without changing source, the input wiki, or generated owners.
 - `wiki-sync`: the post-change documentation loop — deterministic `sync`, a
   semantic-only prose pass, a `lint --strict` validation loop, and a
-  separate `docs(wiki):` commit.
+  repository-policy-aware handoff. A separate `docs(wiki):` commit is used only
+  when the wiki is nonignored and applicable instructions authorize it.
 
 ```bash
 llm-wiki skills list
@@ -1597,6 +1625,12 @@ Both are idempotent: identical existing files are kept, and files that were
 edited locally are never overwritten without `--force` — the run reports
 `existing_file_differs` and exits non-zero instead, so local skill
 customizations survive package upgrades by default.
+
+`llm-wiki upgrade` refreshes the generated agent constraints and the
+CLI-owned `wiki-reference` policy. Existing installed workflow-skill copies
+remain untouched; review local changes before deliberately refreshing
+`wiki-sync`, `wiki-bootstrap`, or `onboarding-guide` with repeated `--skill`
+options and `--force`.
 
 ### `metrics`
 

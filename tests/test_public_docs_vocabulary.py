@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import io
+import os
 import posixpath
 import re
 import subprocess
+import tarfile
 import unicodedata
 from dataclasses import dataclass
 from html.parser import HTMLParser
@@ -17,6 +20,9 @@ import pytest
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+_QUALIFICATION_SOURCE_ARCHIVE_ENV = (
+    "LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE"
+)
 MARKDOWN = MarkdownIt("commonmark").enable(("strikethrough", "table"))
 _PROSE_GAP = r"(?:[^\S\r\n]+|[^\S\r\n]*(?:\r\n?|\n)[^\S\r\n]*)"
 _URI_SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
@@ -104,7 +110,58 @@ class PublicDocsFinding:
         return f"{self.path}:{self.line}: {self.rule}: {self.detail}"
 
 
+def _canonical_archive_member_name(member: tarfile.TarInfo) -> str:
+    name = member.name
+    parts = name.split("/")
+    if (
+        not name
+        or "\0" in name
+        or "\\" in name
+        or re.match(r"^[A-Za-z]:", name)
+        or any(part in {"", ".", ".."} for part in parts)
+    ):
+        raise AssertionError(
+            f"unsafe source archive member path: {name!r}"
+        )
+    pure = PurePosixPath(name)
+    if pure.is_absolute() or pure.as_posix() != name:
+        raise AssertionError(
+            f"non-canonical source archive member path: {name!r}"
+        )
+    return name
+
+
+def _tracked_files_from_archive(archive_path: Path) -> tuple[str, ...]:
+    tracked: list[str] = []
+    seen: set[str] = set()
+    with tarfile.open(archive_path, mode="r:") as archive:
+        for member in archive:
+            name = _canonical_archive_member_name(member)
+            if name in seen:
+                raise AssertionError(
+                    f"duplicate source archive member path: {name!r}"
+                )
+            seen.add(name)
+            if member.isdir():
+                continue
+            if not (member.isreg() or member.issym()):
+                raise AssertionError(
+                    "unsupported source archive member type for "
+                    f"{name!r}"
+                )
+            tracked.append(name)
+    return tuple(sorted(tracked))
+
+
 def _tracked_files() -> tuple[str, ...]:
+    archive_path = os.environ.get(_QUALIFICATION_SOURCE_ARCHIVE_ENV)
+    if archive_path is not None:
+        if not archive_path:
+            raise AssertionError(
+                f"{_QUALIFICATION_SOURCE_ARCHIVE_ENV} must not be empty"
+            )
+        return _tracked_files_from_archive(Path(archive_path))
+
     result = subprocess.run(
         ["git", "ls-files", "-z"],
         cwd=REPO_ROOT,
@@ -805,6 +862,153 @@ def scan_public_document(
             )
         )
     return sorted(findings, key=lambda finding: (finding.line, finding.rule))
+
+
+def _write_inventory_test_archive(
+    path: Path,
+    members: Iterable[tuple[str, str]],
+) -> None:
+    with tarfile.open(path, mode="w") as archive:
+        for name, kind in members:
+            member = tarfile.TarInfo(name)
+            if kind == "directory":
+                member.type = tarfile.DIRTYPE
+                archive.addfile(member)
+            elif kind == "file":
+                payload = b"tracked\n"
+                member.size = len(payload)
+                archive.addfile(member, io.BytesIO(payload))
+            elif kind == "symlink":
+                member.type = tarfile.SYMTYPE
+                member.linkname = "guide.md"
+                archive.addfile(member)
+            elif kind == "hardlink":
+                member.type = tarfile.LNKTYPE
+                member.linkname = "README.md"
+                archive.addfile(member)
+            else:
+                raise AssertionError(f"unsupported test member kind: {kind}")
+
+
+def test_archive_inventory_matches_git_file_semantics_and_posix_spelling(
+    tmp_path,
+):
+    archive_path = tmp_path / "candidate-source.tar"
+    _write_inventory_test_archive(
+        archive_path,
+        (
+            ("docs", "directory"),
+            ("docs/guide.md", "file"),
+            ("README.md", "file"),
+            ("docs/current.md", "symlink"),
+        ),
+    )
+
+    tracked = _tracked_files_from_archive(archive_path)
+
+    assert tracked == (
+        "README.md",
+        "docs/current.md",
+        "docs/guide.md",
+    )
+    assert all("\\" not in path for path in tracked)
+
+
+def test_qualification_archive_inventory_never_invokes_git(
+    tmp_path,
+    monkeypatch,
+):
+    archive_path = tmp_path / "candidate-source.tar"
+    _write_inventory_test_archive(
+        archive_path,
+        (
+            ("docs", "directory"),
+            ("README.md", "file"),
+            ("docs/guide.md", "file"),
+        ),
+    )
+    monkeypatch.setenv(
+        _QUALIFICATION_SOURCE_ARCHIVE_ENV,
+        str(archive_path),
+    )
+
+    def fail_if_git_runs(*_args, **_kwargs):
+        pytest.fail("archive inventory must not invoke Git")
+
+    monkeypatch.setattr(subprocess, "run", fail_if_git_runs)
+
+    assert _tracked_files() == ("README.md", "docs/guide.md")
+
+
+def test_tracked_inventory_preserves_git_ls_files_fallback(monkeypatch):
+    monkeypatch.delenv(_QUALIFICATION_SOURCE_ARCHIVE_ENV, raising=False)
+    calls = []
+
+    def fake_run(command, *, cwd, check, capture_output):
+        calls.append((command, cwd, check, capture_output))
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            stdout=b"README.md\0docs/guide.md\0",
+        )
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    assert _tracked_files() == ("README.md", "docs/guide.md")
+    assert calls == [
+        (["git", "ls-files", "-z"], REPO_ROOT, True, True)
+    ]
+
+
+@pytest.mark.parametrize(
+    "member_name",
+    [
+        "/README.md",
+        "../README.md",
+        "docs/../README.md",
+        r"docs\guide.md",
+        "docs//guide.md",
+        "docs/./guide.md",
+        "C:/README.md",
+    ],
+)
+def test_archive_inventory_rejects_unsafe_or_noncanonical_names(
+    tmp_path,
+    member_name,
+):
+    archive_path = tmp_path / "candidate-source.tar"
+    _write_inventory_test_archive(
+        archive_path,
+        ((member_name, "file"),),
+    )
+
+    with pytest.raises(AssertionError, match="archive member path"):
+        _tracked_files_from_archive(archive_path)
+
+
+def test_archive_inventory_rejects_duplicate_names(tmp_path):
+    archive_path = tmp_path / "candidate-source.tar"
+    _write_inventory_test_archive(
+        archive_path,
+        (
+            ("README.md", "file"),
+            ("README.md", "file"),
+        ),
+    )
+
+    with pytest.raises(AssertionError, match="duplicate source archive"):
+        _tracked_files_from_archive(archive_path)
+
+
+def test_archive_inventory_rejects_non_file_member_types(tmp_path):
+    archive_path = tmp_path / "candidate-source.tar"
+    _write_inventory_test_archive(
+        archive_path,
+        (("README-hardlink.md", "hardlink"),),
+    )
+
+    with pytest.raises(AssertionError, match="unsupported source archive"):
+        _tracked_files_from_archive(archive_path)
 
 
 @pytest.mark.parametrize(

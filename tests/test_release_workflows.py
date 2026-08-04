@@ -151,6 +151,16 @@ def test_publish_is_dry_run_by_default_and_publisher_cannot_build() -> None:
     assert "pip install" not in combined
     assert "python -m build" not in combined
     assert "skip-existing" not in combined
+    dry_run = next(
+        step
+        for step in verify_steps
+        if step.get("name") == "Record dry-run result"
+    )
+    assert (
+        'printf "Verified \\`%s\\` without uploading.\\n"'
+        in dry_run["run"]
+    )
+    assert "printf 'Verified `%s` without uploading." not in dry_run["run"]
 
 
 def test_publish_uses_trusted_verifier_before_candidate_checkout() -> None:
@@ -406,6 +416,19 @@ def test_locked_toolchain_archives_and_oci_digests_are_the_executed_inputs() -> 
     assert "go install -mod=readonly" in toolchains
     assert "golang.org/x/vuln/cmd/govulncheck" in toolchains
     assert "go install ./cmd/govulncheck" not in toolchains
+    versions = next(
+        step["run"]
+        for step in workflow["jobs"]["toolchains"]["steps"]
+        if step.get("name") == "Record and enforce tool versions"
+    )
+    assert versions.lstrip().startswith("set -euo pipefail")
+    assert "cargo-audit --version | tee evidence/cargo-audit.txt" in versions
+    assert "cargo audit --version" not in versions
+    assert "cat evidence/cargo-audit.txt" in versions
+    assert "qualification_tools.cargo-audit.version_output" in versions
+    assert "qualification_tools.govulncheck.version_output" in versions
+    assert "grep -c '^Scanner: '" in versions
+    assert "Scanner: ${expected_govulncheck}" in versions
     audit = next(
         step["run"]
         for step in workflow["jobs"]["toolchains"]["steps"]
@@ -417,6 +440,18 @@ def test_locked_toolchain_archives_and_oci_digests_are_the_executed_inputs() -> 
     assert audit.index("govulncheck -json ./...") < audit.index(
         "govulncheck ./... 2>&1"
     )
+    audit_lines = [line.strip() for line in audit.splitlines() if line.strip()]
+    haskell_command = "ghc -Wall -Werror -package ghc -fno-code Main.hs"
+    assert [line for line in audit_lines if line.startswith("ghc ")] == [
+        haskell_command
+    ]
+    haskell_audit_index = audit_lines.index(haskell_command)
+    assert audit_lines[haskell_audit_index - 2 : haskell_audit_index + 2] == [
+        "(",
+        "cd candidate/src/llm_wiki_cli/extractors/haskell_scripts",
+        haskell_command,
+        ")",
+    ]
 
     static = "\n".join(
         str(step) for step in workflow["jobs"]["static"]["steps"]
@@ -434,6 +469,34 @@ def test_locked_toolchain_archives_and_oci_digests_are_the_executed_inputs() -> 
     assert "docker pull python:3.13-alpine" not in oci
     assert "docker pull registry:2" not in oci
     assert "--platform linux/amd64" in oci
+
+
+def test_toolchain_audits_require_complete_owner_suite_evidence() -> None:
+    workflow = _yaml("release-qualification.yml")
+    steps = workflow["jobs"]["toolchains"]["steps"]
+    names = [step.get("name") for step in steps]
+    suite_index = names.index("Run toolchain owner suites")
+    verifier_index = names.index("Enforce complete toolchain owner evidence")
+    audit_index = names.index("Audit exact helper dependency trees")
+    assert suite_index < verifier_index < audit_index
+
+    verifier = steps[verifier_index]
+    assert verifier.get("continue-on-error") is None
+    assert verifier.get("if") is None
+    command = verifier["run"]
+    assert "verify-junit" in command
+    assert "--junit evidence/toolchains.xml" in command
+    assert "--lane toolchains" in command
+    assert "--allowlist candidate/release/skip-allowlist.json" in command
+    assert "--minimum-collected 488" in command
+    assert "--minimum-passed 488" in command
+    assert "--output evidence/result-toolchains.json" in command
+    assert "--discovery" not in command
+    assert "DISCOVERY_MODE" not in str(verifier)
+
+    audit = steps[audit_index]
+    assert audit.get("if") is None
+    assert audit.get("continue-on-error") is None
 
 
 def test_release_runners_and_ci_runners_are_explicit() -> None:
@@ -475,3 +538,36 @@ def test_core_qualification_preserves_the_supported_cross_platform_contract() ->
     assert "--junitxml=" in core_text
     assert "verify-junit" in core_text
     assert "--cov-fail-under=87" in core_text
+
+    source_test_jobs = (
+        "core",
+        "slow",
+        "security-behavior",
+        "product",
+        "mcp",
+        "toolchains",
+        "oci",
+    )
+    for job_name in source_test_jobs:
+        pytest_steps = [
+            step
+            for step in qualification["jobs"][job_name]["steps"]
+            if "python -m pytest" in str(step.get("run", ""))
+        ]
+        assert pytest_steps, job_name
+        for step in pytest_steps:
+            assert step["working-directory"] == "candidate", job_name
+            run = step["run"]
+            assert "candidate/tests" not in run, job_name
+            assert "--junitxml" in run, job_name
+            assert "../evidence/" in run, job_name
+
+    core_suite = next(
+        step
+        for step in core["steps"]
+        if step.get("name") == "Run strict core suite and coverage"
+    )
+    assert core_suite["env"]["LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE"] == (
+        "${{ github.workspace }}/incoming/source/candidate-source.tar"
+    )
+    assert "--cov-report=\"xml:../evidence/" in core_suite["run"]

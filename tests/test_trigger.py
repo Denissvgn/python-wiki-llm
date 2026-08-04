@@ -13,9 +13,13 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from llm_wiki_cli.commands import trigger_cmd
+from llm_wiki_cli.commands import generate_prompt_cmd, trigger_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
-from llm_wiki_cli.services import circuit_breaker
+from llm_wiki_cli.services import circuit_breaker, plugins
+from llm_wiki_cli.services.wiki_git_policy import (
+    WikiGitDisposition,
+    WikiGitPolicy,
+)
 
 
 def _make_args(**kwargs):
@@ -48,6 +52,20 @@ def _body_line_count(function) -> int:
     first_body_line = min(stmt.lineno for stmt in body)
     last_body_line = max(stmt.end_lineno or stmt.lineno for stmt in body)
     return last_body_line - first_body_line + 1
+
+
+@pytest.fixture(autouse=True)
+def _included_prompt_policy(monkeypatch):
+    monkeypatch.setattr(
+        generate_prompt_cmd,
+        "classify_wiki_git_policy",
+        lambda *_args, **_kwargs: WikiGitPolicy(
+            disposition=WikiGitDisposition.INCLUDED,
+            reason="included",
+            repository_root=Path.cwd(),
+            wiki_path="docs/llm_wiki",
+        ),
+    )
 
 
 class TestTriggerRunStructure:
@@ -259,6 +277,44 @@ class TestTriggerPromptHandling:
             assert Path(".git/llm-wiki-prompt.txt").is_file()
         else:
             assert mode == 0o600
+
+    def test_invalid_template_records_failure_without_running_agent(
+        self, tmp_project, monkeypatch, capsys
+    ):
+        monkeypatch.setattr(
+            "llm_wiki_cli.commands.extract_cmd.get_inventory_result",
+            lambda *a, **k: InventoryResult(
+                {"a.py": {"language": "python", "classes": [], "functions": []}},
+                {"python": ExtractorStatus("python", "ok", 1)},
+            ),
+        )
+        monkeypatch.setattr(
+            "llm_wiki_cli.commands.extract_cmd.get_call_graph", lambda inv: {}
+        )
+        monkeypatch.setattr(
+            trigger_cmd,
+            "_build_prompt",
+            MagicMock(side_effect=plugins.PluginError("reserved Git directive")),
+        )
+        calls = []
+
+        def fake_run(cmd, *args, **kwargs):
+            calls.append(list(cmd))
+            if cmd[:2] == ["git", "diff"]:
+                return subprocess.CompletedProcess(
+                    cmd, 0, stdout="diff\n", stderr=""
+                )
+            raise AssertionError(f"agent must not run: {cmd}")
+
+        with patch(
+            "llm_wiki_cli.commands.trigger_cmd.subprocess.run", side_effect=fake_run
+        ):
+            trigger_cmd.run(_make_args(agent="claude"))
+
+        assert calls == [["git", "diff", "HEAD~1..HEAD"]]
+        assert "Invalid agent prompt configuration" in capsys.readouterr().out
+        state = circuit_breaker.load_state(tmp_project / ".git")
+        assert state["consecutive_failures"] == 1
 
     def test_agent_nonzero_records_failure(self, tmp_project, monkeypatch):
         monkeypatch.setattr(

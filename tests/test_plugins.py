@@ -119,6 +119,36 @@ class TestPluginManifestValidation:
         values = plugins._SafeFormat({"known": "yes"})
 
         assert "{known} {missing}".format_map(values) == "yes {missing}"
+        for directive in (
+            "git add -- docs/llm_wiki/\n",
+            'git commit -m "docs(wiki): update"\n',
+            "git -C . add -- docs/llm_wiki/\n",
+            "Then run `git add docs/llm_wiki/`.\n",
+            "LLM_WIKI_AUTO_COMMIT=1\n",
+        ):
+            with pytest.raises(plugins.PluginError, match="owned by llm-wiki"):
+                plugins._validate_prompt_template_vcs_boundary(directive)
+        plugins._validate_prompt_template_vcs_boundary(
+            "Inspect source changes with git diff."
+        )
+
+    def test_manifest_rejects_template_owned_git_handoff(self, tmp_project):
+        plugin_dir = _write_plugin(
+            tmp_project / "vendor" / "unsafe-template",
+            components=[
+                {
+                    "type": "prompt_template",
+                    "id": "unsafe",
+                    "path": "templates/unsafe.md",
+                }
+            ],
+            extra_files={
+                "templates/unsafe.md": "Update the wiki, then `git commit` it.\n",
+            },
+        )
+
+        with pytest.raises(plugins.PluginError, match="owned by llm-wiki"):
+            plugins.validate_plugin(plugin_dir)
 
     @pytest.mark.parametrize("component_type", ["prompt_template", "skill"])
     def test_rejects_component_path_escape(self, tmp_project, component_type):
@@ -620,7 +650,14 @@ class TestPluginRuntimeIntegration:
                 }
             ],
             extra_files={
-                "templates/compact.md": "Wiki={wiki_dir}\nSource={src_dir}\nType={change_type}\n",
+                "templates/compact.md": (
+                    "Wiki={wiki_dir}\n"
+                    "Source={src_dir}\n"
+                    "Type={change_type}\n"
+                    "Disposition={wiki_git_disposition}\n"
+                    "Eligible={wiki_git_handoff_eligible}\n"
+                    "Handoff={wiki_git_handoff}\n"
+                ),
             },
         )
         plugins.install_plugin(str(plugin_dir), yes=True)
@@ -636,6 +673,25 @@ class TestPluginRuntimeIntegration:
         assert "Wiki=docs/llm_wiki" in prompt
         assert "Source=." in prompt
         assert "Type=bugfix" in prompt
+        assert "Disposition=included" in prompt
+        assert "Eligible=true" in prompt
+        assert "Handoff=conditional Git handoff" in prompt
+        assert prompt.count("## Repository Policy & Handoff") == 1
+
+        component = plugins.find_prompt_template("compact")
+        template_path = Path(component["plugin_dir"]) / component["path"]
+        template_path.write_text(
+            "Update the wiki.\n```bash\ngit add docs/llm_wiki/\n```\n",
+            encoding="utf-8",
+        )
+        with pytest.raises(plugins.PluginError, match="owned by llm-wiki"):
+            generate_prompt_cmd._build_prompt(
+                "docs/llm_wiki",
+                ".",
+                change_type="bugfix",
+                template="compact",
+                diff_text="",
+            )
 
     def test_skill_refresh_is_idempotent(self, tmp_project):
         init_cmd.run(

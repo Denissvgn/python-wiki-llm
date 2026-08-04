@@ -1701,11 +1701,13 @@ def test_mocked_windows_inventory_accepts_path_ctime_difference_and_uses_handle(
     wiki = tmp_path / "wiki"
     source_path = wiki / "index.md"
     _write(source_path, b"# Index\n")
-    handle_stat = source_path.stat()
+    with source_path.open("rb") as baseline_handle:
+        baseline_handle_stat = os.fstat(baseline_handle.fileno())
     path_stat = _stat_with(
-        handle_stat,
-        st_ctime_ns=handle_stat.st_ctime_ns + 1,
+        baseline_handle_stat,
+        st_ctime_ns=baseline_handle_stat.st_ctime_ns + 1,
     )
+    guarded_handle_stats: list[os.stat_result] = []
     real_fresh_stat = wiki_input_module.fresh_no_follow_stat
 
     @contextmanager
@@ -1717,6 +1719,8 @@ def test_mocked_windows_inventory_accepts_path_ctime_difference_and_uses_handle(
     @contextmanager
     def fake_file_guard(path):
         with path.open("rb") as handle:
+            handle_stat = os.fstat(handle.fileno())
+            guarded_handle_stats.append(handle_stat)
             yield handle, handle_stat
 
     def fake_fresh_stat(path):
@@ -1751,6 +1755,8 @@ def test_mocked_windows_inventory_accepts_path_ctime_difference_and_uses_handle(
     )
 
     assert len(tree.files) == 1
+    assert guarded_handle_stats
+    handle_stat = guarded_handle_stats[0]
     entry = tree.files[0]
     assert entry.ctime_ns == handle_stat.st_ctime_ns
     assert entry.ctime_ns != path_stat.st_ctime_ns

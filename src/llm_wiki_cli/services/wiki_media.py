@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import re
+from bisect import bisect_right
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
@@ -152,6 +153,78 @@ def mask_fenced_code_blocks(content: str) -> str:
             continue
         masked.append(line)
     return "".join(masked)
+
+
+def _mask_inline_code_spans(content: str) -> str:
+    """Blank matched backtick code spans without changing offsets or newlines.
+
+    Backtick runs are considered as maximal delimiters and only an exact-length
+    later run closes a span.  Different-length runs remain part of the span.
+    An escaped first backtick remains literal, while any remaining run can open
+    a span.  Opening runs without a matching closer are left untouched.
+    """
+
+    runs: list[tuple[int, int]] = []
+    offset = 0
+    while offset < len(content):
+        run_start = content.find("`", offset)
+        if run_start == -1:
+            break
+        run_end = run_start + 1
+        while run_end < len(content) and content[run_end] == "`":
+            run_end += 1
+        runs.append((run_start, run_end))
+        offset = run_end
+
+    runs_by_length: dict[int, list[int]] = {}
+    for run_index, (run_start, run_end) in enumerate(runs):
+        runs_by_length.setdefault(run_end - run_start, []).append(run_index)
+
+    def matching_closer(run_index: int, delimiter_length: int) -> Optional[int]:
+        candidates = runs_by_length.get(delimiter_length, [])
+        candidate_offset = bisect_right(candidates, run_index)
+        if candidate_offset == len(candidates):
+            return None
+        return candidates[candidate_offset]
+
+    masked = list(content)
+    run_index = 0
+    while run_index < len(runs):
+        run_start, run_end = runs[run_index]
+        delimiter_length = run_end - run_start
+        opener_start = run_start
+        if _is_escaped_backtick_run(content, run_start):
+            opener_start += 1
+            delimiter_length -= 1
+        if delimiter_length == 0:
+            run_index += 1
+            continue
+        closer_index = matching_closer(run_index, delimiter_length)
+        if closer_index is None:
+            run_index += 1
+            continue
+        closer_end = runs[closer_index][1]
+        for index in range(opener_start, closer_end):
+            if content[index] not in {"\r", "\n"}:
+                masked[index] = " "
+        run_index = closer_index + 1
+
+    return "".join(masked)
+
+
+def _is_escaped_backtick_run(content: str, offset: int) -> bool:
+    backslashes = 0
+    cursor = offset - 1
+    while cursor >= 0 and content[cursor] == "\\":
+        backslashes += 1
+        cursor -= 1
+    return backslashes % 2 == 1
+
+
+def mask_markdown_code(content: str) -> str:
+    """Blank fenced and inline Markdown code while preserving offsets."""
+
+    return _mask_inline_code_spans(mask_fenced_code_blocks(content))
 
 
 def iter_mermaid_click_targets(content: str) -> Iterator[MarkdownLinkTarget]:
@@ -417,7 +490,7 @@ def collect_media_references(
     content: str,
 ) -> list[MediaReference]:
     page = Path(page_path)
-    content = strip_fenced_code_blocks(content)
+    content = mask_markdown_code(content)
     references: list[MediaReference] = []
     for link in iter_markdown_link_targets(content):
         target = local_link_path(link.raw_target)

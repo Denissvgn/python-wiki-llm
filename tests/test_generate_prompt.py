@@ -10,8 +10,14 @@ import textwrap
 import types
 from pathlib import Path
 
+import pytest
 
 from llm_wiki_cli.commands import generate_prompt_cmd
+from llm_wiki_cli.services.wiki_git_policy import (
+    WikiGitDisposition,
+    WikiGitPolicy,
+    classify_wiki_git_policy,
+)
 
 
 def _make_args(**kwargs):
@@ -33,6 +39,24 @@ def _body_line_count(function) -> int:
     first_body_line = min(stmt.lineno for stmt in body)
     last_body_line = max(stmt.end_lineno or stmt.lineno for stmt in body)
     return last_body_line - first_body_line + 1
+
+
+def _policy(disposition: WikiGitDisposition) -> WikiGitPolicy:
+    return WikiGitPolicy(
+        disposition=disposition,
+        reason=disposition.value,
+        repository_root=Path.cwd(),
+        wiki_path="docs/llm_wiki",
+    )
+
+
+@pytest.fixture(autouse=True)
+def _default_included_policy(monkeypatch):
+    monkeypatch.setattr(
+        generate_prompt_cmd,
+        "classify_wiki_git_policy",
+        lambda *_args, **_kwargs: _policy(WikiGitDisposition.INCLUDED),
+    )
 
 
 class TestGeneratePromptWritesFile:
@@ -87,7 +111,32 @@ class TestGeneratePromptWritesFile:
             "llm-wiki lint --jobs 1 --wiki-dir 'my docs/wiki' --src-dir 'src dir'"
             in content
         )
-        assert "git add 'my docs/wiki/' CHANGELOG.md" in content
+        assert "git add -- 'my docs/wiki/'" in content
+        assert (
+            "git check-ignore --no-index -- 'my docs/wiki/' "
+            "'my docs/wiki/index.md'"
+        ) in content
+        assert "CHANGELOG.md" not in content.split("git add --", 1)[1].splitlines()[0]
+
+    def test_ignored_wiki_run_emits_local_only_handoff(
+        self, tmp_project, monkeypatch
+    ):
+        (tmp_project / ".gitignore").write_text(
+            "docs/llm_wiki/\n", encoding="utf-8"
+        )
+        monkeypatch.setattr(
+            generate_prompt_cmd,
+            "classify_wiki_git_policy",
+            classify_wiki_git_policy,
+        )
+
+        generate_prompt_cmd.run(_make_args())
+
+        content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
+        assert "Wiki Git disposition: **ignored**" in content
+        assert "\ngit add " not in content
+        assert "\nLLM_WIKI_AUTO_COMMIT" not in content
+        assert "local-only" in content
 
     def test_output_message_quotes_output_path_with_spaces(self, tmp_project, capsys):
         args = _make_args(output=".git/wiki prompt.txt")
@@ -143,7 +192,8 @@ class TestGeneratePromptBuildPrompt:
         content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
         assert "## Context" in content
         assert "## Success Criteria" in content
-        assert "## Verify & Commit" in content
+        assert "## Verify & Handoff" in content
+        assert "## Repository Policy & Handoff" in content
 
     def test_prompt_contains_lint_success_criterion(self, tmp_project):
         """Prompt should frame lint exit 0 as a success criterion."""
@@ -217,3 +267,42 @@ class TestGeneratePromptBuildPrompt:
             'LLM_WIKI_AUTO_COMMIT=1 git commit -m "docs(wiki): auto-update [bot]"'
             in content
         )
+
+    @pytest.mark.parametrize(
+        "disposition",
+        [WikiGitDisposition.IGNORED, WikiGitDisposition.INDETERMINATE],
+    )
+    def test_local_only_policy_omits_git_mutation_commands(self, disposition):
+        prompt = generate_prompt_cmd._build_prompt(
+            "docs/llm_wiki",
+            ".",
+            change_type="generic",
+            diff_text="",
+            policy=_policy(disposition),
+        )
+
+        assert f"Wiki Git disposition: **{disposition.value}**" in prompt
+        assert "\ngit add " not in prompt
+        assert "\nLLM_WIKI_AUTO_COMMIT" not in prompt
+        assert "local-only" in prompt
+        assert "do not stage, commit, push, tag" in prompt
+
+    def test_included_handoff_is_conditional_and_rechecked(self):
+        prompt = generate_prompt_cmd._build_prompt(
+            "docs/llm_wiki",
+            ".",
+            change_type="generic",
+            diff_text="",
+            policy=_policy(WikiGitDisposition.INCLUDED),
+        )
+
+        assert (
+            "git check-ignore --no-index -- docs/llm_wiki/ "
+            "docs/llm_wiki/index.md"
+        ) in prompt
+        assert "Exit status 1" in prompt
+        assert "Exit status 0 or any other outcome" in prompt
+        assert "eligibility, not authorization" in prompt
+        assert "git add -- docs/llm_wiki/" in prompt
+        assert "git add -- docs/llm_wiki/ CHANGELOG.md" not in prompt
+        assert "Never force-add" in prompt

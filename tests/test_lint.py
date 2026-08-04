@@ -18,15 +18,11 @@ from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.services import metrics, team, wiki_media
 from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
-from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME, InventoryCacheStats
-
-TS_NODE_MODULES = (
-    Path(__file__).parents[1]
-    / "src"
-    / "llm_wiki_cli"
-    / "extractors"
-    / "ts_scripts"
-    / "node_modules"
+from llm_wiki_cli.services.extractor_helpers import get_prepared_typescript_root
+from llm_wiki_cli.services.inventory_cache import (
+    CACHE_FILENAME,
+    ENV_CACHE_DIR,
+    InventoryCacheStats,
 )
 
 
@@ -331,7 +327,11 @@ class TestUnsupportedSources:
         app_dir.mkdir(parents=True)
         (app_dir / "Main.hs").write_text("module Main where\n", encoding="utf-8")
 
-        report = lint_cmd.build_report(str(wiki), ".")
+        report = lint_cmd.build_report(
+            str(wiki),
+            ".",
+            helper_cache_dir=str(tmp_path / "unprepared-helper-cache"),
+        )
 
         diagnostics = [
             diagnostic
@@ -556,13 +556,14 @@ class TestLintMediaLinks:
             item for item in report.diagnostics if item.category == "media_orphan"
         ] == []
 
-    def test_fenced_media_examples_are_ignored_by_media_lint(
+    def test_code_span_media_examples_are_ignored_by_media_lint(
         self, tmp_path, monkeypatch
     ):
         self._stub_source_inputs(monkeypatch)
         src, wiki = self._wiki_with_guide(tmp_path)
         (wiki / "assets" / "example.png").write_bytes(b"example")
-        (wiki / "guides" / "tour.md").write_text(
+        (wiki / "assets" / "real.png").write_bytes(b"real")
+        content = (
             "# Tour\n\n"
             "```html\n"
             '<img src="../assets/missing-from-fence.png">\n'
@@ -571,14 +572,85 @@ class TestLintMediaLinks:
             "![Example](../assets/example.png)\n"
             "[Demo](../assets/fenced-demo.webm)\n"
             "```\n\n"
-            "![Missing](../assets/unfenced-missing.png)\n",
+            "~~~html\n"
+            '<img src="../assets/missing-from-tilde-fence.png">\n'
+            "~~~\n\n"
+            "`![Inline](../assets/inline-image.png) "
+            "[Demo](../assets/inline-demo.webm)`\n\n"
+            '`<img src="../assets/inline-html.png" '
+            'srcset="../assets/inline-small.png 1x, '
+            '../assets/inline-large.png 2x">`\n\n'
+            "``![Multi](../assets/multi-image.png) ```embedded``` "
+            '<video src="../assets/multi-video.mp4"></video>``\n\n'
+            "`![Reference][multiline]\n"
+            "[multiline]: ../assets/multiline-reference.png\n"
+            "`\n\n"
+            "![Real](../assets/real.png)\n"
+            "![Missing](../assets/unfenced-missing.png)\n"
+            "\\`![Escaped](../assets/escaped-opener.png)`\n\n"
+            "\\``![Escaped then code](../assets/escaped-then-code.png)`\n\n"
+            "``![Unmatched](../assets/unmatched-opener.png)\n"
+        )
+        (wiki / "guides" / "tour.md").write_text(
+            content,
             encoding="utf-8",
+        )
+
+        masked = wiki_media.mask_markdown_code(content)
+        assert len(masked) == len(content)
+        assert [
+            (index, char)
+            for index, char in enumerate(masked)
+            if char in {"\r", "\n"}
+        ] == [
+            (index, char)
+            for index, char in enumerate(content)
+            if char in {"\r", "\n"}
+        ]
+        crlf_content = (
+            "Before\r\n"
+            "`[Pseudo](../assets/crlf.png)\r\nstill code`\r\n"
+            "After\r\n"
+        )
+        crlf_masked = wiki_media.mask_markdown_code(crlf_content)
+        assert len(crlf_masked) == len(crlf_content)
+        assert [
+            (index, char)
+            for index, char in enumerate(crlf_masked)
+            if char in {"\r", "\n"}
+        ] == [
+            (index, char)
+            for index, char in enumerate(crlf_content)
+            if char in {"\r", "\n"}
+        ]
+        assert crlf_masked.startswith("Before\r\n")
+        assert crlf_masked.endswith("\r\nAfter\r\n")
+        assert "../assets/crlf.png" not in crlf_masked
+        assert "# Tour" in masked
+        assert "![Real](../assets/real.png)" in masked
+        assert "![Missing](../assets/unfenced-missing.png)" in masked
+        assert "\\`![Escaped](../assets/escaped-opener.png)" in masked
+        assert "``![Unmatched](../assets/unmatched-opener.png)" in masked
+        assert "../assets/missing-from-fence.png" not in masked
+        assert "../assets/missing-from-tilde-fence.png" not in masked
+        assert "../assets/inline-image.png" not in masked
+        assert "../assets/multi-image.png" not in masked
+        assert "../assets/multi-video.mp4" not in masked
+        assert "../assets/multiline-reference.png" not in masked
+        assert "../assets/escaped-then-code.png" not in masked
+        assert wiki_media.mask_markdown_code(r"\`escaped opener`") == (
+            r"\`escaped opener`"
+        )
+        assert wiki_media.mask_markdown_code("``unmatched opener`") == (
+            "``unmatched opener`"
         )
 
         report = lint_cmd.build_report(wiki, str(src))
 
         assert [(issue.category, issue.target) for issue in report.issues] == [
-            ("media_link_broken", "../assets/unfenced-missing.png")
+            ("media_link_broken", "../assets/unfenced-missing.png"),
+            ("media_link_broken", "../assets/escaped-opener.png"),
+            ("media_link_broken", "../assets/unmatched-opener.png"),
         ]
         assert [
             (item.category, item.path)
@@ -1788,6 +1860,7 @@ class TestLintProfile:
         assert exc.value.code == 2
 
     def test_lint_creates_default_git_cache(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.delenv(ENV_CACHE_DIR, raising=False)
         monkeypatch.chdir(tmp_path)
         (tmp_path / ".git").mkdir()
         (tmp_path / "app.py").write_text("class A: pass\n", encoding="utf-8")
@@ -2229,11 +2302,13 @@ class TestLintDependencyCoverage:
         assert [d.target for d in undeclared] == []
         assert report.passed
 
-    @pytest.mark.skipif(
-        not (TS_NODE_MODULES / "ts-morph").exists() or shutil.which("node") is None,
-        reason="Node.js/ts-morph dependencies not installed",
-    )
     def test_typescript_src_lib_alias_resolves_under_root_lib_ignore(self, tmp_path):
+        typescript_root = get_prepared_typescript_root(
+            tmp_path
+        ) or get_prepared_typescript_root()
+        if typescript_root is None or shutil.which("node") is None:
+            pytest.skip("Node.js/ts-morph dependencies not installed")
+
         (tmp_path / ".gitignore").write_text("lib/\n", encoding="utf-8")
         wiki = tmp_path / "wiki"
         wiki.mkdir()

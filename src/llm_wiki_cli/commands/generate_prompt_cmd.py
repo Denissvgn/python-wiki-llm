@@ -12,6 +12,11 @@ from ..services.plugins import PluginError, render_prompt_template
 from ..services.redaction import redact_credentials
 from ..services.secure_file import write_private_text
 from ..services.team import TeamConfigError, team_prompt_template_default
+from ..services.wiki_git_policy import (
+    WikiGitDisposition,
+    WikiGitPolicy,
+    classify_wiki_git_policy,
+)
 
 _DEFAULT_PROMPT_FILE = ".git/llm-wiki-prompt.txt"
 CHANGE_TYPES = ("auto", "refactor", "feature", "bugfix", "dependency", "generic")
@@ -193,7 +198,9 @@ def _template_values(
     ast_json: str | None,
     graph_json: str | None,
     cli_agent: bool,
+    policy: WikiGitPolicy,
 ) -> dict[str, str]:
+    included = policy.disposition is WikiGitDisposition.INCLUDED
     return {
         "wiki_dir": wiki_dir,
         "src_dir": src_dir,
@@ -204,6 +211,12 @@ def _template_values(
         "ast_json": ast_json or "",
         "graph_json": graph_json or "",
         "cli_agent": "true" if cli_agent else "false",
+        "wiki_git_disposition": policy.disposition.value,
+        "wiki_git_reason": policy.reason,
+        "wiki_git_handoff_eligible": "true" if included else "false",
+        "wiki_git_handoff": (
+            "conditional Git handoff" if included else "local-only handoff"
+        ),
     }
 
 
@@ -264,7 +277,7 @@ Change type: `{change_type}`.
 Your work is done when **all** of the following are true:
 
 1. **Final owning sync/re-anchor completed after semantic edits** — the \
-canonical Markdown, surface, knowledge, and manifest snapshot was committed \
+canonical Markdown, surface, knowledge, and manifest snapshot was persisted \
 before validation.
 2. **`llm-wiki lint --strict` exits 0** — no broken links, no orphan pages, no undocumented \
 classes, no stale entities, no missing modules, no broken workflow links, \
@@ -280,7 +293,7 @@ appended at the bottom.
 for user-facing changes. Skip for pure refactors, test-only, or doc-only commits. \
 *(Not verified by lint.)*
 
-## Verify & Commit
+## Verify & Handoff
 
 After making your changes, run:
 
@@ -294,12 +307,7 @@ Markdown, surface, knowledge, and manifest snapshot. If lint reports issues,
 fix them; when a fix changes Markdown, restart at the owning sync before
 re-running strict lint. Report expired human section reviews and stale
 machine-verification receipts with their existing reasons; do not fabricate
-replacements. Then commit:
-
-```bash
-git add {quoted_wiki_dir_slash} CHANGELOG.md
-LLM_WIKI_AUTO_COMMIT=1 git commit -m "docs(wiki): auto-update [bot]"
-```
+replacements. Follow the repository-policy handoff below.
 """
 
 
@@ -315,11 +323,76 @@ def _render_default_prompt(
         subagent_suffix=" subagent" if cli_agent else "",
         wiki_dir=wiki_dir,
         quoted_wiki_dir=shell_quote(wiki_dir),
-        quoted_wiki_dir_slash=shell_quote(f"{wiki_dir}/"),
         quoted_src_dir=shell_quote(src_dir),
         rich_context_block=rich_context_block,
         change_type=change_type,
         change_type_guidance=_change_type_guidance(change_type),
+    )
+
+
+def _render_repository_handoff(policy: WikiGitPolicy, wiki_dir: str) -> str:
+    heading = "## Repository Policy & Handoff"
+    disposition = policy.disposition.value
+    reason = policy.reason
+    shared = (
+        f"{heading}\n\n"
+        f"Wiki Git disposition: **{disposition}** (`{reason}`). "
+        "Applicable user instructions and repository-local rules remain "
+        "authoritative. Never force-add the wiki or change ignore/exclude rules "
+        "to bypass this disposition."
+    )
+    if policy.disposition is WikiGitDisposition.INCLUDED:
+        quoted_wiki_dir_slash = shell_quote(f"{wiki_dir}/")
+        return (
+            f"{shared}\n\nImmediately before staging, re-read all applicable "
+            "instructions and recheck the wiki path against the current Git "
+            "ignore rules:\n\n```bash\n"
+            f"git check-ignore --no-index -- {quoted_wiki_dir_slash} "
+            f"{shell_quote(f'{wiki_dir}/index.md')}\n"
+            "```\n\nExit status 1 means neither probe is ignored and establishes "
+            "eligibility, not authorization. Exit status 0 or any other outcome "
+            "requires a local-only handoff. Only if that recheck is eligible and "
+            "the current repository rules and user instructions explicitly "
+            "authorize a separate wiki commit, run:\n\n"
+            "```bash\n"
+            f"git add -- {quoted_wiki_dir_slash}\n"
+            'LLM_WIKI_AUTO_COMMIT=1 git commit -m "docs(wiki): auto-update [bot]"\n'
+            "```\n\nOtherwise, finish with a local handoff that lists changed "
+            "wiki paths and validation results. Handle any changelog change only "
+            "in a separately authorized surrounding workflow."
+        )
+    detail = (
+        "Git marks this wiki as ignored, so it is local-only."
+        if policy.disposition is WikiGitDisposition.IGNORED
+        else "Git eligibility could not be established, so fail closed with a local-only handoff."
+    )
+    return (
+        f"{shared}\n\n{detail} Continue the owning sync/re-anchor and strict "
+        "validation, but do not stage, commit, push, tag, or open a pull request "
+        "for the wiki. Report the changed local wiki paths and validation "
+        "results. Handle any independently tracked changelog change only in a "
+        "separately authorized code-change workflow."
+    )
+
+
+def _render_prompt_body(
+    *,
+    template: str | None,
+    values: dict[str, str],
+    wiki_dir: str,
+    src_dir: str,
+    change_type: str,
+    rich_context_block: str,
+    cli_agent: bool,
+) -> str:
+    if template:
+        return render_prompt_template(template, values)
+    return _render_default_prompt(
+        wiki_dir=wiki_dir,
+        src_dir=src_dir,
+        change_type=change_type,
+        rich_context_block=rich_context_block,
+        cli_agent=cli_agent,
     )
 
 
@@ -333,9 +406,12 @@ def _build_prompt(
     ast_json: str | None = None,
     graph_json: str | None = None,
     cli_agent: bool = False,
+    policy: WikiGitPolicy | None = None,
 ) -> str:
     if diff_text is None:
         diff_text = _git_diff()
+    if policy is None:
+        policy = classify_wiki_git_policy(wiki_dir, cwd=Path.cwd())
     effective_type = resolve_change_type(change_type, diff_text)
     rich_context, rich_context_block = _rich_prompt_context(
         diff_text=diff_text,
@@ -343,30 +419,28 @@ def _build_prompt(
         graph_json=graph_json,
         cli_agent=cli_agent,
     )
-
-    if template:
-        return render_prompt_template(
-            template,
-            _template_values(
-                wiki_dir=wiki_dir,
-                src_dir=src_dir,
-                change_type=effective_type,
-                rich_context=rich_context,
-                rich_context_block=rich_context_block,
-                diff_text=diff_text,
-                ast_json=ast_json,
-                graph_json=graph_json,
-                cli_agent=cli_agent,
-            ),
-        )
-
-    return _render_default_prompt(
+    values = _template_values(
+        wiki_dir=wiki_dir,
+        src_dir=src_dir,
+        change_type=effective_type,
+        rich_context=rich_context,
+        rich_context_block=rich_context_block,
+        diff_text=diff_text,
+        ast_json=ast_json,
+        graph_json=graph_json,
+        cli_agent=cli_agent,
+        policy=policy,
+    )
+    body = _render_prompt_body(
+        template=template,
+        values=values,
         wiki_dir=wiki_dir,
         src_dir=src_dir,
         change_type=effective_type,
         rich_context_block=rich_context_block,
         cli_agent=cli_agent,
     )
+    return body.rstrip() + "\n\n" + _render_repository_handoff(policy, wiki_dir) + "\n"
 
 
 def _redact_prompt_artifact(prompt: str) -> str:
@@ -392,9 +466,14 @@ def run(args) -> None:
             print(f"Error: {exc}", file=sys.stderr)
             raise SystemExit(1)
 
+    policy = classify_wiki_git_policy(wiki_dir, cwd=Path.cwd())
     try:
         prompt = _build_prompt(
-            wiki_dir, src_dir, change_type=change_type, template=template
+            wiki_dir,
+            src_dir,
+            change_type=change_type,
+            template=template,
+            policy=policy,
         )
     except PluginError as exc:
         print(f"Error: {exc}", file=sys.stderr)
@@ -414,6 +493,8 @@ def run(args) -> None:
                 "template": template,
                 "wiki_dir": wiki_dir,
                 "src_dir": src_dir,
+                "wiki_git_disposition": policy.disposition.value,
+                "wiki_git_reason": policy.reason,
             },
         )
         return
@@ -430,6 +511,8 @@ def run(args) -> None:
             "wiki_dir": wiki_dir,
             "src_dir": src_dir,
             "output": str(out_path),
+            "wiki_git_disposition": policy.disposition.value,
+            "wiki_git_reason": policy.reason,
         },
     )
 

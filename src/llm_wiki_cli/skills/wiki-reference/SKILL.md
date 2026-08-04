@@ -37,5 +37,8 @@ a task actually needs:
   boundary.
 - **Resource-aware execution** — interactive, isolated-terminal, and controlled
   CI scheduling plus requested/resolved/effective extractor-job semantics.
+- **Repository-aware Git handoff** — effective ignore-policy checks,
+  conditional commit eligibility, local-only delivery, and fail-closed mixed
+  or indeterminate state.
 - **`llm-wiki context` for large codebases** — token-budgeted snapshots and
   flag semantics, including the full-inventory cost boundary.

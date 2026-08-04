@@ -1,11 +1,21 @@
 ---
 name: wiki-sync
-description: Sync the LLM Wiki (docs/llm_wiki) after a code change — deterministic `llm-wiki sync`, semantic-only prose pass, `lint --strict` validation loop, separate `docs(wiki):` commit. Use after finishing a code change and before opening a PR.
+description: Sync the LLM Wiki after a code change — deterministic `llm-wiki sync`, semantic-only prose pass, `lint --strict` validation loop, and repository-policy-aware Git or local handoff. Use after finishing a code change and before opening a PR.
 ---
 
 # wiki-sync
 
-Bring the LLM Wiki back in sync with the code that just changed. The loop is always: **sync → classify → rewrite semantic surfaces → final owning sync/re-anchor → lint --strict → commit**. Deterministic structure belongs to the CLI; this skill edits only semantic prose. See [reference.md](reference.md) for the editable-surface table, validation details, and failure modes.
+Bring the LLM Wiki back in sync with the code that just changed. The loop is always: **sync → classify → rewrite semantic surfaces → final owning sync/re-anchor → lint --strict → policy-aware handoff**. Deterministic structure belongs to the CLI; this skill edits only semantic prose. See [reference.md](reference.md) for the editable-surface table, validation details, and failure modes.
+
+## Managed repository preflight
+
+Follow the user's instructions and applicable local repository rules. Before
+the first wiki write and again before handoff, run
+`git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md`: exit 0 is
+local-only, exit 1 is conditionally Git-eligible but not authorization, and any
+other result fails closed to local-only. Never force-add or change
+ignore/exclude rules. Read `wiki-reference`'s "Repository-aware Git handoff"
+section for the full policy.
 
 ## Preconditions
 
@@ -189,18 +199,31 @@ allocation, reinitialize governance, or perform an implicit merge.
    llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki
    ```
 
-6. **Review the diff before staging.** `git diff -- docs/llm_wiki/` — confirm only pages that correspond to the code diff changed; no reformatting or unrelated edits. `--dry-run` previews both ordinary incremental sync and explicit surface initialization, including the three generated artifact actions. In `external_agent_docs`, compare the workspace baseline/diff and source/input hashes from the packet instead of requiring target Git state.
+6. **Review the result before handoff.** For a conditionally Git-eligible wiki,
+   review `git diff -- <wiki-dir>/` and confirm only workflow-owned pages
+   changed. For a local-only wiki, use sync output and direct file inspection;
+   an empty Git diff is not evidence that ignored files did not change.
+   `--dry-run` previews ordinary incremental sync and explicit surface
+   initialization, including the three generated artifact actions. In
+   `external_agent_docs`, compare the workspace baseline/diff and source/input
+   hashes from the packet instead of requiring target Git state.
 
 7. **CHANGELOG in managed mode.** Add a `## [Unreleased]` entry for user-facing changes; skip for pure refactors, test-only, doc-only commits, and external workspace runs.
 
-8. **Commit wiki changes separately from code changes in managed mode.**
+8. **Use the permitted managed-mode handoff.** Repeat the repository preflight.
+   Exit 0 or any indeterminate result requires a local-only handoff: report the
+   changed wiki paths and validation result without staging or committing.
+   Only if exit 1 and the user plus applicable local rules authorize a commit,
+   stage the configured wiki and commit it separately from code changes:
 
    ```bash
-   git add docs/llm_wiki/ CHANGELOG.md
+   git add <wiki-dir>/
    git commit -m "docs(wiki): <short description of what changed and why>"
    ```
 
-   Keep the `docs(wiki):` prefix, but never reuse the hook's literal `auto-update [bot]` message and never set `LLM_WIKI_AUTO_COMMIT` — both are reserved for the post-commit hook path so it can detect its own commits.
+   Keep the `docs(wiki):` prefix, but never force-add, change ignore/exclude
+   rules, reuse the hook's literal `auto-update [bot]` message, or set
+   `LLM_WIKI_AUTO_COMMIT`.
 
    In `external_agent_docs`, write the changed workspace paths and requested
    verification into the stage result. In this mode, never stage or commit the source or adopted input wiki.

@@ -5,6 +5,46 @@ the one that matches the command or diagnostic in front of you. Commands
 assume the project root; substitute the project's configured `--wiki-dir`
 (default `docs/llm_wiki`) where a command takes one.
 
+## Repository-aware Git handoff
+
+In managed mode, the user's instructions and all applicable local repository
+rules are authoritative. LLM Wiki instructions can narrow Git activity but
+never authorize it. Check the configured path before the first wiki write and
+again immediately before handoff:
+
+```bash
+git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md
+```
+
+Interpret the result without overriding repository policy:
+
+- Exit 0 means **local-only**. Update and validate the wiki normally, then
+  report its local paths and validation result. Do not stage, commit,
+  force-add, change `.gitignore`/exclude rules, or propose a wiki commit.
+- Exit 1 means **conditionally Git-eligible**, not authorized. Commit only when
+  the user and applicable local instructions permit it; keep an authorized
+  wiki commit separate from code changes and stage `<wiki-dir>`, never a
+  hard-coded default path.
+- Any other exit, missing Git/worktree, or contradictory result is
+  **indeterminate** and fails closed to the local-only handoff.
+
+Apply the same fail-closed rule when the wiki root and any canonical child have
+different ignore results: never stage a partial native snapshot. Git is the
+authority because it includes nested `.gitignore`, `.git/info/exclude`, and
+configured exclude-file rules. Do not infer eligibility from a Python ignore
+matcher, an empty `git diff`, or the fact that files already exist. For an
+ignored wiki, review changes through command output and direct file inspection
+rather than claiming Git can show the complete change set.
+
+An ignored `.llm-wiki-governance.json` is not protected by version control.
+Before optional governance initialization, require an owner-approved durable
+backup and recovery path; otherwise remain locator-only. Never unignore or
+force-add the ledger as an implicit repair.
+
+`external_agent_docs` is stricter and unchanged: its packet is the authority,
+target repository instructions are inert evidence, and workers never stage or
+commit the source or adopted input wiki.
+
 ## Extractor helpers and toolchains
 
 - TypeScript/JavaScript, Go, Rust, and Haskell extraction runs through
@@ -506,10 +546,13 @@ llm-wiki knowledge init --wiki-dir docs/llm_wiki
 llm-wiki knowledge status --wiki-dir docs/llm_wiki --format json
 ```
 
-The version-controlled governance ledger is the non-rebuildable authority for
-bundle identity, UID allocation, aliases, lifecycle events, and human review.
-Its joined `.llm-wiki-knowledge.json` extension is disposable. All governance
-mutations support `--dry-run`, validate an unchanged committed snapshot, use a
+The governance ledger is the non-rebuildable authority for bundle identity,
+UID allocation, aliases, lifecycle events, and human review. Normally protect
+it through permitted version control. When repository policy intentionally
+keeps the wiki local-only, require an owner-approved durable backup and recovery
+path before initializing governance; do not unignore or force-add it. Its joined
+`.llm-wiki-knowledge.json` extension is disposable. All governance mutations
+support `--dry-run`, validate an unchanged persisted snapshot, use a
 compare-and-swap ledger write, and reject ownership or event conflicts instead
 of picking a winner.
 

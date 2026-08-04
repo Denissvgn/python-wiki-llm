@@ -4,10 +4,12 @@ import ast
 import inspect
 import json
 import os
+import re
 import shutil
 import subprocess
 import textwrap
 import types
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
@@ -21,6 +23,11 @@ from llm_wiki_cli.commands.extract_cmd import (
 )
 from llm_wiki_cli.services.data_flow import analyze_data_flow
 from llm_wiki_cli.services.dependencies import analyze_dependencies
+from llm_wiki_cli.services.diagrams import (
+    GENERATED_DIAGRAM_CHAR_LIMIT,
+    GENERATED_DIAGRAM_LINE_LIMIT,
+    GENERATED_DIAGRAM_NODE_LIMIT,
+)
 from llm_wiki_cli.services.entrypoints import build_flow, get_entry_points
 from llm_wiki_cli.services import knowledge_orchestration, plugins
 from llm_wiki_cli.services.wiki_surface import is_safe_page_id
@@ -54,6 +61,56 @@ def _tree_bytes(root: Path) -> dict[str, bytes]:
         for path in sorted(root.rglob("*"))
         if path.is_file()
     }
+
+
+def _assert_generated_diagram_budgets(markdown: str) -> None:
+    blocks = re.findall(r"```mermaid\n(.*?)\n```", markdown, flags=re.DOTALL)
+    assert blocks
+    for body in blocks:
+        lines = body.splitlines()
+        nodes = sum(
+            line.lstrip().startswith("participant ")
+            or re.match(r"^\s+[A-Za-z_][A-Za-z0-9_]*\s*[\[({]", line) is not None
+            for line in lines
+        )
+        assert nodes <= GENERATED_DIAGRAM_NODE_LIMIT
+        assert len(lines) <= GENERATED_DIAGRAM_LINE_LIMIT
+        assert len(body) <= GENERATED_DIAGRAM_CHAR_LIMIT
+
+
+def _dense_module_dependency_summary():
+    module = "pkg/focal.py"
+    neighbors = [f"pkg/n{index:02d}.py" for index in range(11)]
+    direct_edges = [
+        *((neighbor, module) for neighbor in neighbors[:6]),
+        *((module, neighbor) for neighbor in neighbors[6:]),
+    ]
+    contextual_edges = [
+        (source, target)
+        for source_index, source in enumerate(neighbors)
+        for target in neighbors[source_index + 1 :]
+    ][:49]
+    cycle_edge = contextual_edges[-1]
+    return (
+        {
+            "file": module,
+            "detail": "module",
+            "inbound": neighbors[:6],
+            "outbound": neighbors[6:],
+            "nodes": [module, *neighbors],
+            "edges": [*direct_edges, *contextual_edges],
+            "cycle_participation": True,
+            "cycle_edges": [cycle_edge],
+            "external": {},
+            "overflow": {
+                "node_limit": 12,
+                "total_neighbor_count": 11,
+                "omitted_count": 0,
+            },
+        },
+        direct_edges,
+        cycle_edge,
+    )
 
 
 def _body_line_count(function) -> int:
@@ -865,6 +922,42 @@ class TestBootstrapEntityPages:
             "| `list_items` | type_reference | [main](../modules/main.md) |" in content
         )
 
+        dense_summary = {
+            "name": "Dense",
+            "file": None,
+            "methods_count": 0,
+            "attributes": [],
+            "bases": [{"name": f"Base{index}"} for index in range(20)],
+            "subclasses": [{"name": f"Subclass{index}"} for index in range(20)],
+            "references": [
+                {
+                    "symbol": f"reference_{index}",
+                    "module": f"module_{index}",
+                    "kind": "call",
+                }
+                for index in range(20)
+            ],
+        }
+        dense = "\n".join(
+            bootstrap_cmd._generate_entity_relationship_section(
+                dense_summary,
+                {},
+                {},
+            )
+        )
+        dense_diagram = re.findall(
+            r"```mermaid\n(.*?)\n```", dense, flags=re.DOTALL
+        )[0]
+
+        assert len(dense_diagram.splitlines()) == GENERATED_DIAGRAM_LINE_LIMIT
+        assert "Relationship diagram shows 39 of 60 relationships; 21 omitted" in dense
+        assert "Base19" in dense_diagram
+        assert "Subclass18" in dense_diagram
+        assert "Subclass19" not in dense_diagram
+        assert "reference_0" not in dense_diagram
+        assert "| `reference_19` | call |" in dense
+        _assert_generated_diagram_budgets(dense)
+
     def test_entity_relationship_diagram_uses_bounded_plugin_style(
         self, tmp_project, capsys
     ):
@@ -1214,13 +1307,177 @@ class TestBootstrapModulePages:
         content = "\n".join(
             bootstrap_cmd._generate_module_dependency_section(
                 summary,
-                {"pkg/service.py": "service"},
+                {
+                    "adapters": "adapters-collision",
+                    "pkg/service.py": "service",
+                    "storage": "storage-collision",
+                },
             )
         )
+        rendered = bootstrap_cmd._module_dependency_graph(
+            summary,
+            {
+                "adapters": "adapters-collision",
+                "pkg/service.py": "service",
+                "storage": "storage-collision",
+            },
+            {},
+        )
 
+        assert rendered is not None
+        assert rendered.projection == "package"
         assert 'click n1 "../modules/service.md"' in content
         assert "../modules/adapters.md" not in content
         assert "../modules/storage.md" not in content
+        assert "adapters-collision" not in content
+        assert "storage-collision" not in content
+
+    def test_dense_module_dependency_map_bounds_only_visual_edges(self):
+        summary, direct_edges, cycle_edge = _dense_module_dependency_summary()
+        original = deepcopy(summary)
+        page_map = {
+            node: Path(node).stem for node in summary["nodes"]
+        }
+
+        rendered = bootstrap_cmd._module_dependency_graph(summary, page_map, {})
+        repeated = bootstrap_cmd._module_dependency_graph(summary, page_map, {})
+
+        assert rendered == repeated
+        assert rendered is not None
+        assert rendered.diagram is not None
+        assert rendered.projection == "module"
+        assert (
+            rendered.total_edges,
+            rendered.shown_edges,
+            rendered.omitted_edges,
+        ) == (60, 55, 5)
+        body = rendered.diagram.splitlines()[1:-1]
+        assert len(body) == GENERATED_DIAGRAM_LINE_LIMIT
+
+        aliases = {
+            node: f"n{index}" for index, node in enumerate(summary["nodes"])
+        }
+        for source, target in direct_edges:
+            assert f"    {aliases[source]} --> {aliases[target]}" in rendered.diagram
+        assert (
+            f"    {aliases[cycle_edge[0]]} ==> {aliases[cycle_edge[1]]}"
+            in rendered.diagram
+        )
+
+        content = "\n".join(
+            bootstrap_cmd._generate_module_dependency_section(summary, page_map, {})
+        )
+        assert (
+            "> Diagram shows 55 of 60 local dependency edges; 5 omitted to keep "
+            "the visualization within the generated-diagram limits. Complete "
+            "inbound and outbound dependencies remain in the tables below."
+        ) in content
+        assert content.count("| Inbound |") == 6
+        assert content.count("| Outbound |") == 5
+        assert summary == original
+
+    def test_module_dependency_map_falls_back_to_packages_then_tables(self):
+        summary, _, _ = _dense_module_dependency_summary()
+        page_map = {
+            node: Path(node).stem for node in summary["nodes"]
+        }
+        oversized_summary = deepcopy(summary)
+        oversized_summary["nodes"] = [
+            *summary["nodes"],
+            *(f"extra/module_{index}.py" for index in range(29)),
+        ]
+
+        rendered = bootstrap_cmd._module_dependency_graph(
+            oversized_summary, page_map, {}
+        )
+
+        assert rendered is not None
+        assert rendered.diagram is not None
+        assert rendered.projection == "package"
+        assert rendered.total_edges == rendered.shown_edges == 2
+        assert rendered.omitted_edges == 0
+        assert len(rendered.diagram.splitlines()[1:-1]) <= (
+            GENERATED_DIAGRAM_LINE_LIMIT
+        )
+        assert 'click n1 "../modules/focal.md"' in rendered.diagram
+        assert "../modules/pkg.md" not in rendered.diagram
+        package_content = "\n".join(
+            bootstrap_cmd._generate_module_dependency_section(
+                oversized_summary, page_map, {}
+            )
+        )
+        assert "collapsed to package relationships" in package_content
+        assert package_content.count("| Inbound |") == 6
+        assert package_content.count("| Outbound |") == 5
+
+        table_only_summary = {
+            "file": "pkg/focal.py",
+            "detail": "module",
+            "inbound": [f"package_{index}" for index in range(40)],
+            "outbound": [],
+            "nodes": [
+                "pkg/focal.py",
+                *(f"package_{index}" for index in range(40)),
+            ],
+            "edges": [
+                (f"package_{index}", "pkg/focal.py") for index in range(40)
+            ],
+            "cycle_participation": False,
+            "cycle_edges": [],
+            "external": {},
+            "overflow": {},
+        }
+        table_only = bootstrap_cmd._module_dependency_graph(
+            table_only_summary, page_map, {}
+        )
+        table_content = "\n".join(
+            bootstrap_cmd._generate_module_dependency_section(
+                table_only_summary, page_map, {}
+            )
+        )
+
+        assert table_only is not None
+        assert table_only.diagram is None
+        assert (
+            table_only.total_edges,
+            table_only.shown_edges,
+            table_only.omitted_edges,
+        ) == (40, 0, 40)
+        assert "```mermaid" not in table_content
+        assert (
+            "Diagram shows 0 of 40 local dependency edges; 40 omitted because "
+            "its fixed nodes"
+        ) in table_content
+        assert "No internal module dependencies detected" not in table_content
+        assert table_content.count("| Inbound |") == 40
+        assert table_content.count("| Outbound |") == 0
+
+        character_page_map = {
+            node: f"{Path(node).stem}-{'x' * 440}"
+            for node in summary["nodes"]
+        }
+        character_limited = bootstrap_cmd._module_dependency_graph(
+            summary, character_page_map, {}
+        )
+
+        assert character_limited is not None
+        assert character_limited.diagram is not None
+        assert character_limited.projection == "module"
+        assert 0 < character_limited.shown_edges < 55
+        assert character_limited.omitted_edges > 5
+        character_body = character_limited.diagram.splitlines()[1:-1]
+        assert len(character_body) <= GENERATED_DIAGRAM_LINE_LIMIT
+        assert len("\n".join(character_body)) <= GENERATED_DIAGRAM_CHAR_LIMIT
+        character_content = "\n".join(
+            bootstrap_cmd._generate_module_dependency_section(
+                summary, character_page_map, {}
+            )
+        )
+        assert (
+            f"Diagram shows {character_limited.shown_edges} of 60 local "
+            f"dependency edges; {character_limited.omitted_edges} omitted to "
+            "keep the visualization within the generated-diagram limits."
+        ) in character_content
 
     def test_entity_docstrings_escape_source_symbol_links(self):
         content = bootstrap_cmd._generate_entity_md(
@@ -2201,7 +2458,7 @@ class TestGenerateFlowMd:
         assert "sequenceDiagram" in md
         assert md.index("## Data flow") < md.index("## Behavior")
         assert "flowchart LR" in md
-        assert "work payload" in md
+        assert 's1 -->|"work(payload)"| s2' in md
         assert 'click s1 "../modules/api.md"' in md
         assert 'click s2 "../modules/helper.md"' in md
         assert "| filesystem_write | `path.write_text` | `run` | 5 |" in md
@@ -2210,6 +2467,97 @@ class TestGenerateFlowMd:
         assert "-->>" in md  # external call rendered as a dashed arrow
         assert "truncated" in md
         assert "## Behavior" in md
+
+        dense_data_flow = {
+            "steps": [
+                {
+                    "index": index,
+                    "symbol": f"step_{index}",
+                    "kind": "internal",
+                }
+                for index in range(1, 11)
+            ],
+            "transfers": [
+                {
+                    "from": "step_1",
+                    "to": f"step_{(index % 9) + 2}",
+                    "from_step": 1,
+                    "to_step": (index % 9) + 2,
+                    "line": index + 1,
+                    "call": f"call_{index}()",
+                    "kind": "internal",
+                }
+                for index in range(50)
+            ],
+            "boundaries": [
+                {
+                    "step": "step_1",
+                    "step_index": 1,
+                    "kind": "filesystem_write",
+                    "target": f"target_{index}",
+                    "line": index + 1,
+                }
+                for index in range(50)
+            ],
+            "gaps": [],
+        }
+        dense = "\n".join(
+            bootstrap_cmd._generate_data_flow_section(dense_data_flow, {}, {})
+        )
+
+        assert (
+            "Data-flow diagram shows 56 of 100 transfer and boundary "
+            "relationships; 44 omitted"
+        ) in dense
+        assert 's1 -->|"call_49()"|' in dense
+        assert "target_5" in re.findall(
+            r"```mermaid\n(.*?)\n```", dense, flags=re.DOTALL
+        )[0]
+        assert "| step_1 | step_6 | 50 | `call_49()` |" in dense
+        assert "| filesystem_write | `target_49` | `step_1` | 50 |" in dense
+        _assert_generated_diagram_budgets(dense)
+
+        oversized_steps = {
+            "steps": [
+                {"index": index, "symbol": f"step_{index}", "kind": "internal"}
+                for index in range(1, 42)
+            ],
+            "transfers": [
+                {
+                    "from": "step_1",
+                    "to": "step_41",
+                    "from_step": 1,
+                    "to_step": 41,
+                    "line": 42,
+                    "call": "finish()",
+                    "kind": "internal",
+                }
+            ],
+            "boundaries": [],
+            "gaps": [],
+        }
+        table_only = "\n".join(
+            bootstrap_cmd._generate_data_flow_section(oversized_steps, {}, {})
+        )
+
+        assert "```mermaid" not in table_only
+        assert (
+            "Data-flow diagram shows 0 of 41 step nodes (41 omitted) and 0 of 1 "
+            "transfer and boundary relationships (1 omitted)"
+        ) in table_only
+        assert "| step_1 | step_41 | 42 | `finish()` |" in table_only
+
+        no_relationships = dict(oversized_steps)
+        no_relationships["transfers"] = []
+        no_relationships_table = "\n".join(
+            bootstrap_cmd._generate_data_flow_section(no_relationships, {}, {})
+        )
+
+        assert "```mermaid" not in no_relationships_table
+        assert (
+            "Data-flow diagram shows 0 of 41 step nodes (41 omitted) and 0 of 0 "
+            "transfer and boundary relationships (0 omitted)"
+        ) in no_relationships_table
 
     def test_no_calls_uses_placeholder(self):
         flow = {
@@ -2283,10 +2631,34 @@ class TestGenerateFlowMd:
 
         md = bootstrap_cmd._generate_flow_md(flow, {"m.py": "m"})
 
-        assert "first 30 interactions shown; 10 omitted" in md
+        assert "Call sequence diagram shows 30 of 40 interactions; 10 omitted" in md
         assert "call_30" in md
         assert "call_31" not in md
         assert md.count("->>") == 30
+        _assert_generated_diagram_budgets(md)
+
+        long_flow = deepcopy(flow)
+        long_flow["steps"] = [
+            {"depth": 0, "file": "m.py", "symbol": "run", "kind": "entry"}
+        ] + [
+            {
+                "depth": 1,
+                "file": "m.py",
+                "symbol": f"call_{index}_{'x' * 300}",
+                "kind": "internal",
+            }
+            for index in range(1, 41)
+        ]
+        long_md = bootstrap_cmd._generate_flow_md(long_flow, {"m.py": "m"})
+        shown = long_md.count("->>")
+
+        assert long_md == bootstrap_cmd._generate_flow_md(long_flow, {"m.py": "m"})
+        assert 0 < shown < bootstrap_cmd._FLOW_SEQUENCE_INTERACTION_LIMIT
+        assert (
+            f"Call sequence diagram shows {shown} of 40 interactions; "
+            f"{40 - shown} omitted"
+        ) in long_md
+        _assert_generated_diagram_budgets(long_md)
 
 
 class TestBootstrapFlows:
@@ -2754,6 +3126,83 @@ class TestGenerateDependenciesMd:
         assert md.rstrip().endswith("Replace this placeholder._")
         assert "## Notes" in md
 
+        nodes = [f"pkg/m{index}.py" for index in range(12)]
+        edges = [
+            (source, target)
+            for source in nodes
+            for target in nodes
+            if source != target
+        ][:60]
+        dense_analysis = {
+            "graph": {"nodes": nodes, "edges": edges},
+            "cycles": [[nodes[0], nodes[1]]],
+            "metrics": {
+                "metrics": {
+                    node: {
+                        "fan_in": sum(target == node for _source, target in edges),
+                        "fan_out": sum(source == node for source, _target in edges),
+                    }
+                    for node in nodes
+                },
+                "most_depended_on": nodes,
+            },
+            "reconciliation": {"languages": {}},
+        }
+        dense_page_map = {
+            node: Path(node).stem for node in dense_analysis["graph"]["nodes"]
+        }
+        rendered = bootstrap_cmd._render_dependency_graph_result(
+            dense_analysis,
+            dense_page_map,
+            "module",
+            {},
+        )
+        repeated = bootstrap_cmd._render_dependency_graph_result(
+            dense_analysis,
+            dense_page_map,
+            "module",
+            {},
+        )
+
+        assert rendered == repeated
+        assert rendered.diagram is not None
+        assert (
+            rendered.total_edges,
+            rendered.shown_edges,
+            rendered.omitted_edges,
+        ) == (60, 55, 5)
+        aliases = {node: f"n{index}" for index, node in enumerate(nodes)}
+        assert (
+            f"    {aliases[nodes[0]]} ==> {aliases[nodes[1]]}"
+            in rendered.diagram
+        )
+        assert (
+            f"    {aliases[nodes[1]]} ==> {aliases[nodes[0]]}"
+            in rendered.diagram
+        )
+        rendered_edges = [
+            line
+            for line in rendered.diagram.splitlines()
+            if " --> " in line or " ==> " in line
+        ]
+        assert rendered_edges[:2] == [
+            f"    {aliases[nodes[0]]} ==> {aliases[nodes[1]]}",
+            f"    {aliases[nodes[1]]} ==> {aliases[nodes[0]]}",
+        ]
+
+        dense_md = bootstrap_cmd._generate_dependencies_md(
+            dense_analysis,
+            dense_page_map,
+            detail="module",
+            diagram_style={},
+        )
+        assert (
+            "Dependency diagram shows 55 of 60 module dependency edges; "
+            "5 omitted"
+        ) in dense_md
+        assert "| [m11](modules/m11.md) |" in dense_md
+        _assert_generated_diagram_budgets(dense_md)
+
     def test_degrades_cleanly_without_cycles_or_external(self, tmp_path):
         inventory = {"solo.py": _pymod()}
         analysis = analyze_dependencies(inventory, str(tmp_path))
@@ -2969,6 +3418,20 @@ class TestBootstrapArchitecturePages:
         assert "| [pkg0_mod0](modules/pkg0_mod0.md) |" in md
         assert "| [pkg4_mod39](modules/pkg4_mod39.md) |" in md
         assert md.count("    ") < 30
+        _assert_generated_diagram_budgets(md)
+
+        explicit_module = bootstrap_cmd._generate_dependencies_md(
+            analysis,
+            page_map,
+            detail="module",
+        )
+        assert "```mermaid" not in explicit_module
+        assert "Dependency diagram shows 0 of" in explicit_module
+        assert "module dependency edges" in explicit_module
+        assert "fixed nodes, links, or style exceed" in explicit_module
+        assert "| [pkg0_mod0](modules/pkg0_mod0.md) |" in explicit_module
+        assert "| [pkg4_mod39](modules/pkg4_mod39.md) |" in explicit_module
+        assert "Collapsed to top-level packages" not in explicit_module
 
     def test_dependency_pages_and_module_maps_reuse_single_dependency_analysis(
         self, tmp_path, monkeypatch, capsys

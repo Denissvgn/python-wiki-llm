@@ -144,7 +144,7 @@ The reviewer preserves ambiguous, missing, unavailable, and truncated state.
 It does not assert that a section is missing merely because a bounded list did
 not return it. The supervisor preflights result structure before refresh, then
 resolves and recomputes each record live/read-only only for a verified-current
-source-bound run; other runs use the committed snapshot with freshness
+source-bound run; other runs use the persisted snapshot with freshness
 unevaluated. A mismatched coordinate, native fact, capture binding, or bound is
 an integrity failure, not a finding the reviewer may waive.
 

@@ -107,8 +107,8 @@ layout or migration's dry-run/archive workflow for an older or partial layout.
 | Artifact/surface | Authority and owner | Permitted bootstrap handling |
 |---|---|---|
 | Canonical Markdown semantic sections | Human/agent-authored under the supported section policy | Edit only the semantic surfaces listed by this skill, then run the owning sync/re-anchor. |
-| Generated Markdown blocks/tables plus `.llm-wiki-manifest.json`, `.llm-wiki-surface.json`, and `.llm-wiki-knowledge.json` | CLI-owned disposable projection | Never hand-edit or reconstruct one member independently. Bootstrap/sync commits the generated set together. |
-| `.llm-wiki-governance.json` | Version-controlled, non-rebuildable governance authority for bundle identity, UIDs, aliases, lifecycle, and human review | Absent by default. Create only through separately confirmed `knowledge init`; mutate only through explicit governance commands; restore a missing committed ledger from version control/backup. |
+| Generated Markdown blocks/tables plus `.llm-wiki-manifest.json`, `.llm-wiki-surface.json`, and `.llm-wiki-knowledge.json` | CLI-owned disposable projection | Never hand-edit or reconstruct one member independently. Bootstrap/sync persists the generated set together. |
+| `.llm-wiki-governance.json` | Durable, non-rebuildable governance authority for bundle identity, UIDs, aliases, lifecycle, and human review | Absent by default. Create only through separately confirmed `knowledge init`; mutate only through explicit governance commands. Normally protect it through permitted version control; for an intentionally ignored wiki, require an owner-approved durable backup and recovery path before initialization. |
 | Governance data joined into `.llm-wiki-knowledge.json` | Disposable projection of the ledger | Regenerate from the intact ledger through the owning writer; it cannot replace or recover the ledger. |
 | `.llm-wiki-verification.json` | Disposable receipt from explicit application-owned `knowledge verify` checkers | Never fabricate, edit, or treat as review. Report stale/failed state; an authorized caller may rerun the fixed checker. |
 
@@ -123,8 +123,8 @@ invent a missing governance ledger or replacement review/verification event.
 
 The final managed refresh is conditional on an actual canonical Markdown
 change; generated-only bootstrap output does not need a second no-op authoring
-cycle. The refresh preserves supported semantic sections while committing the
-new Markdown tree. Its validation result may expose expired human section
+cycle. The refresh preserves supported semantic sections while persisting the
+new Markdown tree atomically. Its validation result may expose expired human section
 reviews or stale machine-verification receipts. Preserve and report their
 existing reasons; never create replacement review events or receipts as part
 of bootstrap.
