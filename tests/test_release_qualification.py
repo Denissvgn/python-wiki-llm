@@ -437,7 +437,7 @@ def test_workflow_run_identity_is_bound_to_repo_workflow_and_sha() -> None:
     payload = {
         "repository": {"full_name": REPOSITORY},
         "head_repository": {"full_name": REPOSITORY},
-        "path": ".github/workflows/release-qualification.yml@knowledge_layer",
+        "path": ".github/workflows/release-qualification.yml",
         "head_branch": "knowledge_layer",
         "event": "workflow_dispatch",
         "name": "Release qualification",
@@ -461,6 +461,12 @@ def test_workflow_run_identity_is_bound_to_repo_workflow_and_sha() -> None:
 
     validate(payload)
 
+    legacy_payload = deepcopy(payload)
+    legacy_payload["path"] = (
+        ".github/workflows/release-qualification.yml@knowledge_layer"
+    )
+    validate(legacy_payload)
+
     for field, value in (
         ("name", "Different workflow"),
         ("status", "in_progress"),
@@ -469,6 +475,7 @@ def test_workflow_run_identity_is_bound_to_repo_workflow_and_sha() -> None:
         ("head_branch", "main"),
         ("event", "push"),
         ("path", ".github/workflows/release-qualification.yml@main"),
+        ("path", ".github/workflows/release-qualification.yml@"),
     ):
         changed = deepcopy(payload)
         changed[field] = value

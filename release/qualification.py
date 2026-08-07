@@ -2123,13 +2123,10 @@ def validate_workflow_run(
             "GitHub workflow run has no head repository identity"
         )
     run_path, separator, run_ref = str(payload.get("path", "")).partition("@")
-    expected_run_refs = (ref_name, workflow_ref)
     expected = {
         "repository": (run_repository.get("full_name"), repository),
         "head repository": (head_repository.get("full_name"), repository),
         "workflow path": (run_path, workflow_path),
-        "workflow path ref marker": (separator, "@"),
-        "workflow ref": (run_ref in expected_run_refs, True),
         "head branch": (payload.get("head_branch"), ref_name),
         "event": (payload.get("event"), event),
         "workflow name": (payload.get("name"), workflow_name),
@@ -2137,6 +2134,15 @@ def validate_workflow_run(
         "conclusion": (payload.get("conclusion"), "success"),
         "head SHA": (payload.get("head_sha"), workflow_revision),
     }
+    # GitHub's workflow-run API returns either a bare workflow path or the
+    # legacy ``path@ref`` form.  A present ref remains an additional identity
+    # check; for a bare path, head_branch and head_sha bind the branch and
+    # revision instead.
+    if separator:
+        expected["workflow ref"] = (
+            run_ref in (ref_name, workflow_ref),
+            True,
+        )
     mismatches = [
         f"{field}={actual!r} (expected {wanted!r})"
         for field, (actual, wanted) in expected.items()
