@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 
 import llm_wiki_cli.api as api
-from llm_wiki_cli.services import mcp_server
+from llm_wiki_cli.services import mcp_server, plugins
 from llm_wiki_cli.api import (
     EXTRACT_SCHEMA_VERSION,
     ExtractionError,
@@ -1536,6 +1536,82 @@ def test_context_rejects_truncated_manifest_before_broad_extraction(
 
     with pytest.raises(api.InvalidRequestError, match="sync manifest is invalid"):
         build_context(".", focus="all", wiki_dir=wiki.as_posix())
+
+
+@pytest.mark.parametrize("operation", ["extract", "context"])
+def test_configured_external_api_does_not_execute_source_plugins(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    operation: str,
+) -> None:
+    host = tmp_path / "host"
+    host.mkdir()
+    source = tmp_path / "external-source"
+    selected = source / "selected"
+    selected.mkdir(parents=True)
+    (selected / "tasks.py").write_text("def run():\n    return 1\n", encoding="utf-8")
+    profile = source / "config" / "sources.json"
+    profile.parent.mkdir()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["selected"],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    plugin_dir = source / "vendor" / "external-detector"
+    plugin_dir.mkdir(parents=True)
+    module_name = "external_api_detector"
+    marker = source / "SOURCE_PLUGIN_EXECUTED"
+    (plugin_dir / plugins.MANIFEST_FILENAME).write_text(
+        json.dumps(
+            {
+                "id": "external-api-detector",
+                "version": "1.0.0",
+                "llm_wiki_version": "*",
+                "components": [
+                    {
+                        "type": "entrypoint_detector",
+                        "id": "detector",
+                        "entry_point": f"{module_name}:detect",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (plugin_dir / f"{module_name}.py").write_text(
+        "from pathlib import Path\n"
+        f"Path({str(marker)!r}).write_text('executed')\n"
+        "def detect(inventory):\n"
+        "    return []\n",
+        encoding="utf-8",
+    )
+    plugins.install_plugin(str(plugin_dir), root=source, yes=True)
+    monkeypatch.chdir(host)
+
+    if operation == "extract":
+        extract_source(
+            str(source),
+            deep=True,
+            allow_external_src=True,
+            source_selection="config/sources.json",
+        )
+    else:
+        wiki = host / "wiki"
+        wiki.mkdir()
+        build_context(
+            str(source),
+            focus="all",
+            wiki_dir="wiki",
+            allow_external_src=True,
+            source_selection="config/sources.json",
+        )
+
+    assert not marker.exists()
 
 
 def test_governed_api_and_mcp_concept_summaries_have_bounded_parity(

@@ -117,7 +117,10 @@ from ..services.markdown_sections import (
 )
 from ..services.module_maps import build_module_dependency_maps
 from ..services.paths import is_test_source_path
-from ..services.plugins import runtime_plugin_fallback_root
+from ..services.plugins import (
+    runtime_plugin_fallback_root,
+    runtime_project_plugins_enabled,
+)
 from ..services.source_selection import (
     SourceSelectionError,
     SourceSelectionPolicy,
@@ -884,6 +887,12 @@ def _apply_entity_page(
                     ctx.source_selection_policy is not None
                 ),
             ),
+            include_plugins=runtime_project_plugins_enabled(
+                ctx.src_dir,
+                source_selection_configured=(
+                    ctx.source_selection_policy is not None
+                ),
+            ),
             entity=relationship_summary.get("name"),
             file=relationship_summary.get("file"),
         ),
@@ -939,6 +948,12 @@ def _apply_module_page(
             "module_dependency",
             root=ctx.src_dir,
             fallback_root=runtime_plugin_fallback_root(
+                ctx.src_dir,
+                source_selection_configured=(
+                    ctx.source_selection_policy is not None
+                ),
+            ),
+            include_plugins=runtime_project_plugins_enabled(
                 ctx.src_dir,
                 source_selection_configured=(
                     ctx.source_selection_policy is not None
@@ -1283,6 +1298,12 @@ def _refresh_entity_relationship_sections(
                             ctx.source_selection_policy is not None
                         ),
                     ),
+                    include_plugins=runtime_project_plugins_enabled(
+                        ctx.src_dir,
+                        source_selection_configured=(
+                            ctx.source_selection_policy is not None
+                        ),
+                    ),
                     entity=relationship_summary.get("name"),
                     file=relationship_summary.get("file"),
                 ),
@@ -1334,6 +1355,12 @@ def _refresh_module_dependency_sections(
                 "module_dependency",
                 root=ctx.src_dir,
                 fallback_root=runtime_plugin_fallback_root(
+                    ctx.src_dir,
+                    source_selection_configured=(
+                        ctx.source_selection_policy is not None
+                    ),
+                ),
+                include_plugins=runtime_project_plugins_enabled(
                     ctx.src_dir,
                     source_selection_configured=(
                         ctx.source_selection_policy is not None
@@ -2644,6 +2671,13 @@ def _detect_sync_entry_points(
         console_scripts=console_scripts,
         root=src_dir,
         fallback_root=runtime_plugin_fallback_root(
+            src_dir,
+            source_selection_configured=(
+                source_snapshot is not None
+                and source_snapshot.source_selection_policy is not None
+            ),
+        ),
+        include_plugins=runtime_project_plugins_enabled(
             src_dir,
             source_selection_configured=(
                 source_snapshot is not None
@@ -4266,6 +4300,13 @@ def _regenerate_flow_pages(
                             and source_snapshot.source_selection_policy is not None
                         ),
                     ),
+                    include_plugins=runtime_project_plugins_enabled(
+                        options.src_dir,
+                        source_selection_configured=(
+                            source_snapshot is not None
+                            and source_snapshot.source_selection_policy is not None
+                        ),
+                    ),
                     flow_id=entry_point.get("id"),
                     category=entry_point.get("category"),
                 )
@@ -4369,6 +4410,13 @@ def _regenerate_dependency_pages(
                     "dependencies",
                     root=options.src_dir,
                     fallback_root=runtime_plugin_fallback_root(
+                        options.src_dir,
+                        source_selection_configured=(
+                            source_snapshot is not None
+                            and source_snapshot.source_selection_policy is not None
+                        ),
+                    ),
+                    include_plugins=runtime_project_plugins_enabled(
                         options.src_dir,
                         source_selection_configured=(
                             source_snapshot is not None

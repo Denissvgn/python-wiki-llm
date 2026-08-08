@@ -30,6 +30,7 @@ from llm_wiki_cli.services.diagrams import (
 )
 from llm_wiki_cli.services.entrypoints import build_flow, get_entry_points
 from llm_wiki_cli.services import knowledge_orchestration, plugins
+from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
 from llm_wiki_cli.services.wiki_surface import is_safe_page_id
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 
@@ -246,6 +247,62 @@ def _write_diagram_style_plugin(root: Path, *, body: str) -> None:
     )
     (plugin_dir / f"{module_name}.py").write_text(
         textwrap.dedent(body), encoding="utf-8"
+    )
+    plugins.install_plugin(str(plugin_dir), root=root, yes=True)
+
+
+def _write_toy_extractor_plugin(root: Path) -> None:
+    plugin_dir = root / "vendor" / "toy-extractor-plugin"
+    plugin_dir.mkdir(parents=True)
+    module_name = "bootstrap_toy_" + "_".join(root.parts[-3:])
+    module_name = "".join(
+        character if character.isalnum() or character == "_" else "_"
+        for character in module_name
+    )
+    (plugin_dir / plugins.MANIFEST_FILENAME).write_text(
+        json.dumps(
+            {
+                "id": "bootstrap-toy-extractor",
+                "version": "0.1.0",
+                "llm_wiki_version": "*",
+                "components": [
+                    {
+                        "type": "extractor",
+                        "id": "toy",
+                        "language": "javascript",
+                        "entry_point": f"{module_name}:ToyExtractor",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (plugin_dir / f"{module_name}.py").write_text(
+        textwrap.dedent(
+            """\
+            from pathlib import Path
+
+
+            class ToyExtractor:
+                last_error = None
+
+                def extract(self, src_dir, only_files=None, deep=False):
+                    selected = set(only_files or ())
+                    files = sorted(Path(src_dir).glob("*.jscustom"))
+                    if only_files is not None:
+                        files = [path for path in files if path.name in selected]
+                    return {
+                        path.name: {
+                            "language": "javascript",
+                            "classes": [],
+                            "functions": [{"name": path.stem, "line": 1}],
+                            "imports": [],
+                        }
+                        for path in files
+                    }
+            """
+        ),
+        encoding="utf-8",
     )
     plugins.install_plugin(str(plugin_dir), root=root, yes=True)
 
@@ -2398,6 +2455,86 @@ class TestBootstrapExternalSource:
         data = json.loads(capsys.readouterr().out)
         assert data["src_dir"] == str(source)
         assert (workspace / "docs" / "llm_wiki" / "modules" / "app.md").exists()
+
+    def test_managed_configured_external_bootstrap_uses_trusted_source_extractor(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys,
+    ) -> None:
+        workspace = tmp_path / "workspace"
+        source = tmp_path / "external-source"
+        workspace.mkdir()
+        source.mkdir()
+        (source / "app.jscustom").write_text("run\n", encoding="utf-8")
+        profile = source / "config" / "sources.json"
+        profile.parent.mkdir()
+        profile.write_text(
+            json.dumps(
+                {
+                    "schema_version": "llm-wiki-source-selection/v1",
+                    "include": ["app.jscustom"],
+                    "exclude": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        _write_toy_extractor_plugin(source)
+        monkeypatch.chdir(workspace)
+
+        bootstrap_cmd.run(
+            _make_args(
+                src_dir=str(source),
+                wiki_dir="wiki",
+                allow_external_src=True,
+                source_selection="config/sources.json",
+            )
+        )
+        capsys.readouterr()
+
+        wiki = workspace / "wiki"
+        assert (wiki / "modules" / "app.md").exists()
+        knowledge = load_knowledge_state(wiki).knowledge
+        assert knowledge is not None
+        assert [
+            (component.component_id, component.version)
+            for component in knowledge.bundle.producer.plugins
+        ] == [("bootstrap-toy-extractor", "0.1.0")]
+        assert "bootstrap-toy-extractor/toy" in (
+            wiki / ".llm-wiki-knowledge.json"
+        ).read_text(encoding="utf-8")
+
+    def test_managed_unconfigured_external_bootstrap_keeps_legacy_ambient_extractor(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys,
+    ) -> None:
+        workspace = tmp_path / "workspace"
+        source = tmp_path / "external-source"
+        workspace.mkdir()
+        source.mkdir()
+        (source / "app.jscustom").write_text("run\n", encoding="utf-8")
+        _write_toy_extractor_plugin(workspace)
+        monkeypatch.chdir(workspace)
+
+        bootstrap_cmd.run(
+            _make_args(
+                src_dir=str(source),
+                wiki_dir="wiki",
+                allow_external_src=True,
+            )
+        )
+        capsys.readouterr()
+
+        wiki = workspace / "wiki"
+        assert (wiki / "modules" / "app.md").exists()
+        knowledge = load_knowledge_state(wiki).knowledge
+        assert knowledge is not None
+        assert [
+            (component.component_id, component.version)
+            for component in knowledge.bundle.producer.plugins
+        ] == [("bootstrap-toy-extractor", "0.1.0")]
 
 
 class TestGenerateFlowMd:

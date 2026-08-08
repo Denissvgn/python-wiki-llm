@@ -3816,6 +3816,18 @@ class TestSyncFlowRegeneration:
                 return {{"direction": "RL"}}
             """,
         )
+        source_marker = source_root / "source-style-executed.txt"
+        _write_diagram_style_plugin(
+            source_root,
+            body=f"""
+            from pathlib import Path
+
+            Path({str(source_marker)!r}).write_text("executed", encoding="utf-8")
+
+            def style(context):
+                return {{"direction": "BT"}}
+            """,
+        )
         self._write_svc(selected, "helper_b")
         capsys.readouterr()
 
@@ -3830,6 +3842,7 @@ class TestSyncFlowRegeneration:
         )
 
         assert not marker.exists()
+        assert not source_marker.exists()
         assert "helper_b" in (wiki / "flows" / "api-run.md").read_text(
             encoding="utf-8"
         )

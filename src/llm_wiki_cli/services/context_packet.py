@@ -602,6 +602,7 @@ def capture_context_read(
                         source_snapshot.source_selection_policy is not None
                     ),
                 ),
+                include_plugins=False,
             )
         )
         call_edges = tuple(

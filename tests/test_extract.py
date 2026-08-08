@@ -228,6 +228,232 @@ class TestGetInventory:
         assert result.plugin_lock_path is None
         assert result.plugin_lock_hash is None
 
+    @pytest.mark.parametrize(
+        (
+            "include_plugins",
+            "source_plugins_only",
+            "configured",
+            "same_root",
+            "expected_discovery",
+        ),
+        [
+            pytest.param(False, False, False, True, None, id="plugins-disabled"),
+            pytest.param(
+                True,
+                True,
+                True,
+                False,
+                "source-root",
+                id="explicit-source-plugins",
+            ),
+            pytest.param(
+                True,
+                False,
+                True,
+                False,
+                None,
+                id="configured-external-source",
+            ),
+            pytest.param(
+                True,
+                False,
+                True,
+                True,
+                "source-root",
+                id="configured-project-root",
+            ),
+            pytest.param(
+                True,
+                False,
+                False,
+                True,
+                "legacy",
+                id="unconfigured-legacy",
+            ),
+        ],
+    )
+    def test_inventory_request_plugin_authority_and_provenance_matrix(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        include_plugins: bool,
+        source_plugins_only: bool,
+        configured: bool,
+        same_root: bool,
+        expected_discovery: str | None,
+    ) -> None:
+        host = tmp_path / "host"
+        host.mkdir()
+        source = host if same_root else tmp_path / "external-source"
+        source.mkdir(exist_ok=True)
+        monkeypatch.chdir(host)
+        (source / "app.py").write_text("class App: pass\n", encoding="utf-8")
+        (source / "flow.toy").write_text("run\n", encoding="utf-8")
+        if configured:
+            profile = source / ".llm-wiki" / "source-selection.json"
+            profile.parent.mkdir()
+            profile.write_text(
+                json.dumps(
+                    {
+                        "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                        "include": ["app.py", "flow.toy"],
+                        "exclude": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+        entry_point = "authority_matrix_plugin:ToyExtractor"
+        component = {
+            "type": "extractor",
+            "id": "toy",
+            "language": "toy",
+            "entry_point": entry_point,
+            "plugin_id": "authority-matrix",
+            "plugin_version": "1.0.0",
+            "ref": "authority-matrix/toy",
+        }
+        calls: dict[str, list] = {
+            "configured": [],
+            "legacy": [],
+            "registry": [],
+            "parallel_safe": [],
+            "lock": [],
+            "legacy_load": [],
+            "source_load": [],
+        }
+
+        class ToyExtractor:
+            last_error = None
+
+            def extract(self, **_kwargs):
+                return {
+                    "flow.toy": {
+                        "language": "toy",
+                        "classes": [],
+                        "functions": [{"name": "run", "line": 1}],
+                    }
+                }
+
+        def configured_components(source_root):
+            resolved = Path(source_root).resolve()
+            calls["configured"].append(resolved)
+            return (component,), resolved
+
+        def legacy_components(source_root):
+            calls["legacy"].append(Path(source_root).resolve())
+            return (component,), host
+
+        def extractor_registry(*args, **kwargs):
+            calls["registry"].append((args, kwargs))
+            return {**extract_cmd.EXTRACTOR_REGISTRY, "toy": entry_point}
+
+        def parallel_safe(*args, **kwargs):
+            calls["parallel_safe"].append((args, kwargs))
+            return set()
+
+        def captured_lock(source_root, *, plugin_root="."):
+            calls["lock"].append(
+                (Path(source_root).resolve(), Path(plugin_root).resolve())
+            )
+            return ".llm-wiki/plugins.lock.json", "sha256:authority-matrix"
+
+        original_load_extractor = extract_cmd._load_extractor
+
+        def load_extractor(candidate_entry_point):
+            if candidate_entry_point == entry_point:
+                calls["legacy_load"].append(candidate_entry_point)
+                return ToyExtractor()
+            return original_load_extractor(candidate_entry_point)
+
+        def load_source_extractor(candidate_entry_point, plugin_root):
+            assert candidate_entry_point == entry_point
+            calls["source_load"].append(Path(plugin_root).resolve())
+            return ToyExtractor()
+
+        monkeypatch.setattr(
+            extract_cmd,
+            "_configured_runtime_plugin_components",
+            configured_components,
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_selected_runtime_plugin_components",
+            legacy_components,
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "get_extractor_registry",
+            extractor_registry,
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "parallel_safe_extractor_entry_points",
+            parallel_safe,
+        )
+        monkeypatch.setattr(extract_cmd, "_captured_plugin_lock", captured_lock)
+        monkeypatch.setattr(extract_cmd, "_load_extractor", load_extractor)
+        monkeypatch.setattr(
+            extract_cmd,
+            "_load_plugin_extractor",
+            load_source_extractor,
+        )
+
+        result = extract_cmd.get_inventory_result(
+            extract_cmd.InventoryRequest(
+                src_dir=source,
+                deep=True,
+                include_plugins=include_plugins,
+                source_plugins_only=source_plugins_only,
+            )
+        )
+
+        assert "app.py" in result.inventory
+        if expected_discovery is None:
+            assert "flow.toy" not in result.inventory
+            assert result.extractor_registry == extract_cmd.EXTRACTOR_REGISTRY
+            assert result.plugin_components == ()
+            assert result.producer_plugin_components == ()
+            assert result.plugin_lock_path is None
+            assert result.plugin_lock_hash is None
+            assert calls == {
+                "configured": [],
+                "legacy": [],
+                "registry": [],
+                "parallel_safe": [],
+                "lock": [],
+                "legacy_load": [],
+                "source_load": [],
+            }
+            return
+
+        assert result.inventory["flow.toy"]["language"] == "toy"
+        assert result.extractor_registry["toy"] == entry_point
+        assert result.plugin_components == (component,)
+        assert result.producer_plugin_components == (component,)
+        assert result.plugin_lock_path == ".llm-wiki/plugins.lock.json"
+        assert result.plugin_lock_hash == "sha256:authority-matrix"
+        assert result.source_snapshot is not None
+        assert set(result.source_snapshot.hashes_for(["flow.toy"])) == {"flow.toy"}
+        assert len(calls["registry"]) == 1
+        assert len(calls["parallel_safe"]) == 1
+        assert calls["lock"] == [(source.resolve(), source.resolve())]
+        if expected_discovery == "source-root":
+            assert calls["configured"] == [source.resolve()]
+            assert calls["legacy"] == []
+            assert calls["legacy_load"] == []
+            assert calls["source_load"] == [source.resolve()]
+            assert calls["registry"][0] == ((), {"root": source.resolve()})
+            assert calls["parallel_safe"][0] == ((), {"root": source.resolve()})
+        else:
+            assert expected_discovery == "legacy"
+            assert calls["configured"] == []
+            assert calls["legacy"] == [source.resolve()]
+            assert calls["legacy_load"] == [entry_point]
+            assert calls["source_load"] == []
+            assert calls["registry"][0] == ((), {})
+            assert calls["parallel_safe"][0] == ((), {})
+
     def test_plugin_inventory_excludes_owned_helper_and_keeps_consumer_suffix(
         self, tmp_path, monkeypatch
     ):
@@ -329,6 +555,9 @@ class TestGetInventory:
         language: str,
         selected_paths: list[str],
     ) -> None:
+        # A configured profile preserves existing project-plugin authority only
+        # when the selected source is the active project root.
+        monkeypatch.chdir(tmp_path)
         for rel_path in selected_paths:
             path = tmp_path / rel_path
             path.parent.mkdir(parents=True, exist_ok=True)

@@ -14,7 +14,10 @@ from ..services.bootstrap_runtime import (
 )
 from ..services.extraction_service import filter_source_diff, get_inventory_result
 from ..services.entrypoints import get_entry_points, read_console_scripts
-from ..services.plugins import runtime_plugin_fallback_root
+from ..services.plugins import (
+    runtime_plugin_fallback_root,
+    runtime_project_plugins_enabled,
+)
 from ..services.source_selection import (
     resolve_source_selection,
     validate_persisted_source_selection_identity,
@@ -237,6 +240,13 @@ def _build_surface_index_pages(
         console_scripts=console_scripts,
         root=src_dir,
         fallback_root=runtime_plugin_fallback_root(
+            src_dir,
+            source_selection_configured=(
+                source_snapshot is not None
+                and source_snapshot.source_selection_policy is not None
+            ),
+        ),
+        include_plugins=runtime_project_plugins_enabled(
             src_dir,
             source_selection_configured=(
                 source_snapshot is not None

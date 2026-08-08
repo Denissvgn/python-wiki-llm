@@ -210,11 +210,17 @@ def _generated_diagram_style(
     *,
     root: str | Path = ".",
     fallback_root: str | Path | None = None,
+    include_plugins: bool = True,
     **context: Any,
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {"surface": surface}
     payload.update(context)
-    return resolve_diagram_style(payload, root=root, fallback_root=fallback_root)
+    return resolve_diagram_style(
+        payload,
+        root=root,
+        fallback_root=fallback_root,
+        include_plugins=include_plugins,
+    )
 
 
 def _module_name_from_path(filepath: str) -> str:
@@ -4234,7 +4240,11 @@ def _extract_bootstrap_inventory(state: _BootstrapRunState):
         include_plugins=options.trust_source_plugins,
         capture_data_effect_observations=options.deep,
         capture_import_observations=options.deep,
-        source_plugins_only=options.source_adapter and options.trust_source_plugins,
+        source_plugins_only=options.trust_source_plugins
+        and (
+            options.source_adapter
+            or state.source_snapshot.source_selection_policy is not None
+        ),
     )
     if inventory_result.failed:
         print_inventory_failures(inventory_result, file=options.progress_stream)

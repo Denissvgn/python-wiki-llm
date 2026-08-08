@@ -552,6 +552,28 @@ def runtime_plugin_fallback_root(
     return Path.cwd()
 
 
+def runtime_project_plugins_enabled(
+    source_root: str | Path,
+    *,
+    source_selection_configured: bool,
+    source_plugins_only: bool = False,
+    include_plugins: bool = True,
+) -> bool:
+    """Return whether project plugin code is authorized for this source read.
+
+    A source-selection profile constrains readable data; it is not consent to
+    execute code from an external source tree.  Explicit trusted-source modes
+    retain that authority, while same-project and unconfigured legacy reads
+    preserve their existing plugin behavior.
+    """
+
+    if not include_plugins:
+        return False
+    if source_plugins_only or not source_selection_configured:
+        return True
+    return Path(source_root).resolve() == Path.cwd().resolve()
+
+
 def _entry_point_components(
     entry_point: str, *, root: str | Path = "."
 ) -> list[dict[str, Any]]:

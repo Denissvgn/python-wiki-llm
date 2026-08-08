@@ -68,6 +68,7 @@ from .knowledge_model import (
     KnowledgeLoadState,
 )
 from .knowledge_observability import knowledge_freshness_hint
+from .plugins import runtime_project_plugins_enabled
 from .knowledge_orchestration import (
     RUNTIME_GENERATION_OPTION_DEFAULTS,
     RuntimeLiveEvaluationInputs,
@@ -1156,6 +1157,13 @@ def _build_protocol_enrichment(
                 and source_snapshot.source_selection_policy is not None
                 and src_root.resolve() != Path.cwd().resolve()
                 else Path.cwd()
+            ),
+            include_plugins=runtime_project_plugins_enabled(
+                src_root,
+                source_selection_configured=(
+                    source_snapshot is not None
+                    and source_snapshot.source_selection_policy is not None
+                ),
             ),
         )
         call_edges = resolve_call_edges(inventory) if entrypoints else []

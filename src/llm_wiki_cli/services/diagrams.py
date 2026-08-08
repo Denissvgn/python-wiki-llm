@@ -254,6 +254,7 @@ def resolve_diagram_style(
     *,
     root: str | Path = ".",
     fallback_root: str | Path | None = None,
+    include_plugins: bool = True,
     strict_plugin_errors: bool = False,
 ) -> dict[str, Any]:
     """Return normalized style options from installed diagram-style hooks.
@@ -263,6 +264,8 @@ def resolve_diagram_style(
     results are ignored unless ``strict_plugin_errors`` is true.
     """
     merged: dict[str, Any] = {}
+    if not include_plugins:
+        return merged
     style_context = dict(context or {})
     components = sorted(
         _style_components(

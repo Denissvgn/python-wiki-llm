@@ -93,6 +93,7 @@ from .plugins import (
     iter_components,
     load_entry_point,
     runtime_plugin_fallback_root,
+    runtime_project_plugins_enabled,
 )
 from .source_snapshot import (
     SourceSnapshot,
@@ -559,6 +560,14 @@ def _run_plugin_lint_rules(
     source_plugins_only: bool,
 ) -> None:
     source_root = Path(src_dir)
+    if not runtime_project_plugins_enabled(
+        source_root,
+        source_selection_configured=(
+            source_snapshot.source_selection_policy is not None
+        ),
+        source_plugins_only=source_plugins_only,
+    ):
+        return
     plugin_root = (
         source_root
         if source_plugins_only
@@ -2319,6 +2328,14 @@ def _run_report_checks(
     include_plugins: bool,
     source_plugins_only: bool,
 ) -> None:
+    runtime_plugins_enabled = runtime_project_plugins_enabled(
+        src_dir,
+        source_selection_configured=(
+            inputs.source_snapshot.source_selection_policy is not None
+        ),
+        source_plugins_only=source_plugins_only,
+        include_plugins=include_plugins,
+    )
     with _profile_phase(profiler, "unsupported_sources"):
         _check_unsupported_source_diagnostics(report, inputs.unsupported_sources)
     with _profile_phase(profiler, "links"):
@@ -2347,7 +2364,7 @@ def _run_report_checks(
             wiki_path,
             inputs.deep_inventory,
             src_dir,
-            include_plugins=include_plugins,
+            include_plugins=runtime_plugins_enabled,
             source_plugins_only=source_plugins_only,
             source_snapshot=inputs.source_snapshot,
         )
@@ -2357,7 +2374,7 @@ def _run_report_checks(
             wiki_path,
             inputs.deep_inventory,
             src_dir,
-            include_plugins=include_plugins,
+            include_plugins=runtime_plugins_enabled,
             source_plugins_only=source_plugins_only,
             source_snapshot=inputs.source_snapshot,
         )
@@ -2366,7 +2383,7 @@ def _run_report_checks(
             report,
             inputs.deep_inventory,
             src_dir,
-            include_plugins=include_plugins,
+            include_plugins=runtime_plugins_enabled,
             source_plugins_only=source_plugins_only,
             source_snapshot=inputs.source_snapshot,
         )

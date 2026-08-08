@@ -75,6 +75,7 @@ from .plugins import (
     load_entry_point,
     lock_path,
     parallel_safe_extractor_entry_points,
+    runtime_project_plugins_enabled,
 )
 from .resource_diagnostics import format_resource_failure
 from .source_selection import (
@@ -642,7 +643,15 @@ def _prepare_inventory_build_context(
     request: InventoryRequest,
 ) -> _InventoryBuildContext:
     source_snapshot = _source_snapshot_for_inventory_request(request)
-    if request.include_plugins:
+    project_plugins_enabled = runtime_project_plugins_enabled(
+        source_snapshot.root,
+        source_selection_configured=(
+            source_snapshot.source_selection_policy is not None
+        ),
+        source_plugins_only=request.source_plugins_only,
+        include_plugins=request.include_plugins,
+    )
+    if project_plugins_enabled:
         if (
             source_snapshot.source_selection_policy is None
             and not request.source_plugins_only
@@ -2039,6 +2048,14 @@ def build_extract_payload(
     # before any summary collapse.
     entrypoint_warnings: list[str] = []
     if deep:
+        generation_plugins_enabled = runtime_project_plugins_enabled(
+            src_root,
+            source_selection_configured=(
+                source_snapshot.source_selection_policy is not None
+            ),
+            source_plugins_only=source_plugins_only,
+            include_plugins=include_plugins,
+        )
         entrypoint_result = detect_entry_points(
             inventory,
             console_scripts=read_console_scripts(
@@ -2055,6 +2072,7 @@ def build_extract_payload(
                 and src_root.resolve() != Path.cwd().resolve()
                 else Path.cwd()
             ),
+            include_plugins=generation_plugins_enabled,
         )
         entrypoints = entrypoint_result.entries
         entrypoints = attach_routes_to_entry_points(entrypoints, api_contracts or {})
