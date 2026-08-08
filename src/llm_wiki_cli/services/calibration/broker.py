@@ -685,7 +685,7 @@ class BoundedProcessResult:
         stdout: bytes = b"",
         stderr: bytes = b"",
     ) -> "BoundedProcessResult":
-        """Build deterministic non-truncated evidence for injected tests/runners."""
+        """Build deterministic bounded-process evidence with fully captured output."""
 
         return cls(
             started=True,
@@ -706,7 +706,7 @@ class BoundedProcessResult:
     def timeout(
         cls, *, stdout: bytes = b"", stderr: bytes = b""
     ) -> "BoundedProcessResult":
-        """Build deterministic timeout evidence for an injected runner."""
+        """Build deterministic bounded-process evidence for a timeout."""
 
         return cls(
             started=True,

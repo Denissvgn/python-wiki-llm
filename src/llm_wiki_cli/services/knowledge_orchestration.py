@@ -2,8 +2,8 @@
 
 The bootstrap, sync, and migration commands already own source discovery,
 inventory extraction, Markdown generation, and surface evaluation.  This
-module adapts those exact in-memory results to the pure KNOW-109/110 planner
-and applies the shared KNOW-107 commit protocol.  It performs no discovery or
+module adapts those exact in-memory results to the pure generation planner and
+applies the shared atomic commit protocol.  It performs no discovery or
 extraction of its own.
 """
 

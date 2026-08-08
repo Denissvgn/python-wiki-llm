@@ -283,7 +283,7 @@ class SourceSnapshot:
         self,
         paths: Iterable[str] | None = None,
     ) -> tuple[ConsumedInput, ...]:
-        """Return canonical KNOW-104 inputs from already captured hashes."""
+        """Return canonical consumed inputs from already captured hashes."""
 
         from .knowledge_envelope import consumed_inputs_from_captured_hashes
 

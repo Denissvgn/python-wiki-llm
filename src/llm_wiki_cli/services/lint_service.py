@@ -1475,7 +1475,7 @@ def _check_dependency_coverage(
     **diagnostics** so they never break ``ci-check`` on their own; a page that
     exists but whose analysis found no modules is flagged **stale** as a hard
     issue. Reuses the already-built deep inventory, so no extra extraction pass
-    runs (DL-010).
+    runs.
     """
     pages = [
         p
@@ -1926,8 +1926,8 @@ def _check_knowledge_concepts(
             concept.document.page_kind is PageKind.INFRASTRUCTURE
             and not _manifest_promises_infrastructure_evidence(manifest)
         ):
-            # Pre-NKC-108 infrastructure snapshots remain readable and do not
-            # acquire a retrospective live-evidence promise.
+            # Infrastructure snapshots created before evidence capture remain
+            # readable and do not acquire a retrospective live-evidence promise.
             continue
         expected_scope = _promised_structural_scope(concept)
         if expected_scope is None:

@@ -37,7 +37,7 @@ _MARKDOWN_PATH_RE = re.compile(r"\*\*Path:\*\*\s+`([^`]+)`")
 
 @dataclass(frozen=True)
 class SurfaceIndexEvaluation:
-    """One collected canonical-page view reused by M1 projection builders."""
+    """One collected canonical-page view reused by projection builders."""
 
     pages: tuple[WikiSurfacePage, ...]
     content_by_path: Mapping[str, str]

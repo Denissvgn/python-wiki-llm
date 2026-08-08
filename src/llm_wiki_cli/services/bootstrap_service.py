@@ -25,7 +25,7 @@ class BootstrapRequestError(BootstrapContractError):
 
 @dataclass(frozen=True)
 class BootstrapRequest:
-    """Runner-neutral deterministic bootstrap inputs.
+    """Deterministic bootstrap inputs shared by CLI and library callers.
 
     ``source_adapter`` defaults to true because library callers should not
     mutate agent integration files.  The existing CLI explicitly supplies its

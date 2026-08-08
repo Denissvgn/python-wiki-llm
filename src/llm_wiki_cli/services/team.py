@@ -682,7 +682,7 @@ def _manifest_resolution_state_from_conflict(
 def _manifest_state_from_conflict(
     text: str,
 ) -> tuple[dict[str, dict] | None, dict[str, object] | None, str]:
-    """Return the legacy three-field view used by callers and tests."""
+    """Return the compatibility three-field manifest-conflict view."""
 
     surfaces, generation_inputs, _manifest, error = (
         _manifest_resolution_state_from_conflict(text)

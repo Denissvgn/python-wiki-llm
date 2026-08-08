@@ -4158,7 +4158,7 @@ def _markdown_title(path: Path) -> str:
 
 
 # Top-level architecture pages (stem → index label), regenerated and re-linked
-# on sync so they neither go stale nor get orphaned (DL-502).
+# on sync so they neither go stale nor get orphaned.
 _ARCHITECTURE_PAGES: tuple[tuple[str, str], ...] = (
     (PageKind.DEPENDENCIES.value, "Dependencies"),
     (PageKind.LOAD_ORDER.value, "Load order"),

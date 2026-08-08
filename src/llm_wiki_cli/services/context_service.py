@@ -190,7 +190,7 @@ def get_inventory(
     source_selection: str | Path | None = None,
     source_snapshot: SourceSnapshot | None = None,
 ) -> dict | InventoryResult:
-    """Context-local inventory helper kept patchable for protocol tests."""
+    """Build command inventory, optionally returning extraction metadata."""
     inventory_options: dict[str, Any] = {
         "deep": deep,
         "parallel_jobs": (

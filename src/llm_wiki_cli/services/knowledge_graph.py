@@ -1,6 +1,6 @@
 """Pure typed-graph contract and materializer.
 
-The M3 graph is an independently versioned, namespaced extension of the
+The typed graph is an independently versioned, namespaced extension of the
 ``llm-wiki-knowledge/v1`` read model.  Keeping it behind that extension
 preserves the frozen v1 ``derived_from``/``links_to`` relationship contract
 while allowing structural analyzers to publish richer endpoints, evidence,

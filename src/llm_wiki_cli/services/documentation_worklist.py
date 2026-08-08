@@ -818,7 +818,7 @@ def _add_missing_flow_candidates(
 
 
 def _flow_priority(flow_id: str, evidence: Mapping[str, Any]) -> str:
-    """Classify only externally meaningful boundary workflows as P0."""
+    """Classify only externally meaningful boundaries as required work."""
 
     category = str(evidence.get("category") or flow_id.split("-", 1)[0]).casefold()
     boundary_effect_count = _safe_non_negative_int(

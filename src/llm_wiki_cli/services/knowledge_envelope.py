@@ -261,7 +261,7 @@ class EnvelopeInputs:
 
 @dataclass(frozen=True)
 class EvaluatedEnvelope:
-    """Version-tagged evaluated basis committed by manifest v5 in KNOW-107."""
+    """Version-tagged evaluated basis committed through manifest v5."""
 
     bundle: BundleRecord
     schema_version: str = EVALUATED_ENVELOPE_VERSION

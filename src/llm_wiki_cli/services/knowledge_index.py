@@ -244,7 +244,7 @@ def validate_knowledge_index(
     *,
     inputs: KnowledgeIndexInputs | None = None,
 ) -> KnowledgeIndex:
-    """Validate a model or decoded payload against the KNOW-106 contract.
+    """Validate a model or decoded payload against the knowledge-index contract.
 
     Supplying ``inputs`` additionally proves that the model is exactly the
     projection of those evaluated inputs.
@@ -387,7 +387,7 @@ def _validated_bundle(envelope: object):
     if not isinstance(envelope, EvaluatedEnvelope):
         raise KnowledgeIndexBuildError(
             "envelope",
-            "must be an already evaluated KNOW-104 envelope",
+            "must be an already evaluated envelope",
         )
     try:
         evaluated_envelope_to_payload(envelope)
@@ -1218,8 +1218,8 @@ def _expected_observation_outcome(
         or is_assets_path(candidate)
         or media_type_for_path(local_path) is not None
     ):
-        # Existing asset membership was evaluated by KNOW-105 but is
-        # intentionally not reintroduced as a KNOW-106 input. Its class is
+        # Existing asset membership was evaluated during link collection but is
+        # intentionally not reintroduced as a knowledge-index input. Its class is
         # deterministic here; resolved versus unresolved remains trusted.
         return _ExpectedLinkOutcome(TargetClass.ASSET, None)
     if candidate in page_locator_by_path:
@@ -1389,23 +1389,23 @@ def _validate_builder_model(model: KnowledgeIndex) -> None:
         if concept.concept_kind is not expected_kind:
             raise KnowledgeModelError(
                 f"{concept_path}.concept_kind",
-                f"must be {expected_kind.value!r} for KNOW-106 construction",
+                f"must be {expected_kind.value!r} for knowledge-index construction",
             )
         if not governed and concept.lifecycle is not Lifecycle.UNKNOWN:
             raise KnowledgeModelError(
                 f"{concept_path}.lifecycle",
-                "must be 'unknown' for KNOW-106 construction without governance",
+                "must be 'unknown' for knowledge-index construction without governance",
             )
         semantics = concept.facets.semantics
         if semantics.authorship.kind is not ActorKind.UNKNOWN:
             raise KnowledgeModelError(
                 f"{concept_path}.facets.semantics.authorship.kind",
-                "must be 'unknown' for KNOW-106 construction",
+                "must be 'unknown' for knowledge-index construction",
             )
         if semantics.verification is not Verification.UNTRACKED:
             raise KnowledgeModelError(
                 f"{concept_path}.facets.semantics.verification",
-                "must be 'untracked' for KNOW-106 construction",
+                "must be 'untracked' for knowledge-index construction",
             )
 
         structure = concept.facets.structure
@@ -1482,7 +1482,7 @@ def _validate_builder_model(model: KnowledgeIndex) -> None:
         else:
             raise KnowledgeModelError(
                 f"{path}.kind",
-                "KNOW-106 emits only 'derived_from' and 'links_to'",
+                "the knowledge index emits only 'derived_from' and 'links_to'",
             )
 
     for index, concept in enumerate(model.concepts):
@@ -1509,17 +1509,17 @@ def _require_structure_state(
     if structure.origin is not origin:
         raise KnowledgeModelError(
             f"{path}.origin",
-            f"must be {origin.value!r} for KNOW-106 construction",
+            f"must be {origin.value!r} for knowledge-index construction",
         )
     if structure.evidence is not evidence:
         raise KnowledgeModelError(
             f"{path}.evidence",
-            f"must be {evidence.value!r} for KNOW-106 construction",
+            f"must be {evidence.value!r} for knowledge-index construction",
         )
     if not allows_basis and structure.basis is not None:
         raise KnowledgeModelError(
             f"{path}.basis",
-            "must be absent for this KNOW-106 structural state",
+            "must be absent for this knowledge-index structural state",
         )
 
 
@@ -1532,13 +1532,13 @@ def _validate_builder_link(
     if relationship.origin is not Origin.MARKDOWN:
         raise KnowledgeModelError(
             f"{path}.origin",
-            "must be 'markdown' for a KNOW-106 link observation",
+            "must be 'markdown' for a knowledge-index link observation",
         )
     evidence = relationship.evidence
     if evidence.state is not EvidenceState.PRESENT:
         raise KnowledgeModelError(
             f"{path}.evidence.state",
-            "must be 'present' for a KNOW-106 link observation",
+            "must be 'present' for a knowledge-index link observation",
         )
     if evidence.page_hash != source.facets.semantics.page_hash:
         raise KnowledgeModelError(
@@ -1553,7 +1553,7 @@ def _validate_builder_link(
         if getattr(evidence, name) is not None:
             raise KnowledgeModelError(
                 f"{path}.evidence.{name}",
-                "is not emitted for a KNOW-106 link observation",
+                "is not emitted for a knowledge-index link observation",
             )
     syntax = relationship.extensions.get(LINK_SYNTAX_EXTENSION)
     if syntax not in _LINK_SYNTAX_VALUES:
@@ -1582,7 +1582,7 @@ def _validate_builder_link(
     if target.locator is not None or target.source_path is not None:
         raise KnowledgeModelError(
             f"{path}.target",
-            "KNOW-106 links never emit locator or source_path endpoints",
+            "knowledge-index links never emit locator or source_path endpoints",
         )
     observation = LinkObservation(
         source_locator=relationship.source_locator,
@@ -1675,12 +1675,12 @@ def _validate_builder_derived(
     if relationship.origin is not Origin.EXTRACTED:
         raise KnowledgeModelError(
             f"{path}.origin",
-            "must be 'extracted' for KNOW-106 derived evidence",
+            "must be 'extracted' for knowledge-index derived evidence",
         )
     if relationship.target.target_class is not TargetClass.SOURCE:
         raise KnowledgeModelError(
             f"{path}.target.target_class",
-            "must be 'source' for KNOW-106 derived evidence",
+            "must be 'source' for knowledge-index derived evidence",
         )
     target = relationship.target
     if any(
@@ -1697,7 +1697,7 @@ def _validate_builder_derived(
     ):
         raise KnowledgeModelError(
             f"{path}.target",
-            "KNOW-106 derived evidence emits only source_path and target_class",
+            "knowledge-index derived evidence emits only source_path and target_class",
         )
     if relationship.target.source_path != basis.source_path:
         raise KnowledgeModelError(
@@ -1728,7 +1728,7 @@ def _validate_builder_derived(
         if getattr(relationship.evidence, name) is not None:
             raise KnowledgeModelError(
                 f"{path}.evidence.{name}",
-                "is not emitted for KNOW-106 derived evidence",
+                "is not emitted for knowledge-index derived evidence",
             )
 
 

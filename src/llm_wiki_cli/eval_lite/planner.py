@@ -1,9 +1,9 @@
-"""Deterministic, inspection-only planning for qualified-context experiments.
+"""Deterministic, inspection-only planning for qualified-context packets.
 
 This module treats oracle commands as inert manifest data.  It validates and
 compares already materialized packets, or asks the read-only packet builder to
-materialize them, but it has no task runner, provider adapter, repository
-mutation, or capability probe.
+materialize them, but it does not execute tasks, contact providers, mutate
+repositories, or probe capabilities.
 """
 
 from __future__ import annotations

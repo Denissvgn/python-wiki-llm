@@ -1,8 +1,8 @@
 """Read-only MCP service helpers for exposing an LLM Wiki to agents.
 
 The pure ``McpWikiService`` methods intentionally do not import the optional
-MCP SDK.  This keeps the default install dependency-free and gives tests a
-stable surface that does not require an MCP runtime.
+MCP SDK.  This keeps the default install dependency-free and provides a stable
+surface that does not require an MCP runtime.
 """
 
 from __future__ import annotations
@@ -1417,5 +1417,5 @@ def _installed_hooks() -> list[str]:
 
 
 def to_json(data: object) -> str:
-    """Stable JSON helper for tests and debugging."""
+    """Serialize data as stable, human-readable JSON."""
     return json.dumps(data, indent=2, sort_keys=True)

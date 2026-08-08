@@ -138,7 +138,7 @@ def assemble_documentation_query_service(
     machine_verification: Mapping[str, Mapping[str, Any]],
     service_factory: Any = DocumentationGraphQueryService,
 ) -> DocumentationGraphQueryService:
-    """Assemble the shared service while permitting public API test adapters."""
+    """Assemble the shared service with a caller-supplied service factory."""
 
     return service_factory(
         inventory,

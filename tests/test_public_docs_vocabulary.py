@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import ast
 import io
+import json
 import os
 import posixpath
 import re
@@ -61,8 +63,8 @@ FORBIDDEN_INTERNAL_PROSE: Mapping[str, ForbiddenProse] = {
     "internal-task-id": ForbiddenProse(
         re.compile(
             r"(?<![\w-])"
-            r"(?:KNOW|NKC|PUB|SKL|SEC|ARC|KUX|VEC|HYG|DEC|QCP|CLX|M2MAIN)"
-            r"-[0-9]{3}(?![\w-])"
+            r"(?:KNOW|DL|NKC|PUB|SKL|SEC|ARC|KUX|VEC|HYG|DEC|QCP|CLX|M2MAIN)"
+            r"-[0-9]+(?![\w-])"
         ),
         "These prefixes identify internal remediation or delivery tasks.",
     ),
@@ -97,6 +99,31 @@ PUBLIC_LEGACY_IDENTIFIERS: Mapping[str, str] = {}
 _SOURCE_IDENTITY_RULES = frozenset(
     {"delivery-stage-label", "internal-task-id"}
 )
+_SELECTED_SOURCE_INTERNAL_IDENTIFIER = re.compile(
+    r"\b(?:KNOW|DL|NKC)-\d+\b|\bM\d+\b"
+)
+_RUNTIME_DOC_INTERNAL_PROSE = re.compile(
+    r"\btests?\s*/\s*runners?\b",
+    re.IGNORECASE,
+)
+_SOURCE_SELECTION_PAYLOAD = json.loads(
+    (REPO_ROOT / ".llm-wiki/source-selection.json").read_text(
+        encoding="utf-8"
+    )
+)
+_SELECTED_SOURCE_INCLUDES = tuple(_SOURCE_SELECTION_PAYLOAD["include"])
+_SELECTED_SOURCE_EXCLUDES = tuple(_SOURCE_SELECTION_PAYLOAD["exclude"])
+
+
+def _is_selected_source_path(path: str) -> bool:
+    """Return whether the committed profile selects a repository path."""
+
+    def matches(root: str) -> bool:
+        return path == root or path.startswith(f"{root}/")
+
+    return any(matches(root) for root in _SELECTED_SOURCE_INCLUDES) and not any(
+        matches(root) for root in _SELECTED_SOURCE_EXCLUDES
+    )
 
 
 @dataclass(frozen=True)
@@ -1537,3 +1564,45 @@ def test_tracked_public_documentation_has_no_internal_vocabulary_or_dead_links()
     assert not findings, "\n" + "\n".join(
         finding.render() for finding in findings
     )
+
+
+def test_selected_source_has_no_internal_delivery_identifiers():
+    """Keep source-derived public pages free of development identifiers."""
+
+    findings: list[str] = []
+    for path in _tracked_files():
+        if not _is_selected_source_path(path):
+            continue
+        text = (REPO_ROOT / path).read_text(encoding="utf-8")
+        for match in _SELECTED_SOURCE_INTERNAL_IDENTIFIER.finditer(text):
+            line = text.count("\n", 0, match.start()) + 1
+            findings.append(f"{path}:{line}: {match.group(0)!r}")
+
+    assert not findings, "\n" + "\n".join(findings)
+
+
+def test_selected_python_docstrings_have_no_test_runner_prose():
+    """Reject development-harness language from extracted descriptions."""
+
+    findings: list[str] = []
+    for path in _tracked_files():
+        if not (_is_selected_source_path(path) and path.endswith(".py")):
+            continue
+        source = (REPO_ROOT / path).read_text(encoding="utf-8")
+        tree = ast.parse(source, filename=path)
+        for node in ast.walk(tree):
+            if not isinstance(
+                node,
+                (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef),
+            ):
+                continue
+            docstring = ast.get_docstring(node, clean=False)
+            if docstring is None:
+                continue
+            for match in _RUNTIME_DOC_INTERNAL_PROSE.finditer(docstring):
+                line = getattr(node, "lineno", 1) + docstring.count(
+                    "\n", 0, match.start()
+                )
+                findings.append(f"{path}:{line}: {match.group(0)!r}")
+
+    assert not findings, "\n" + "\n".join(findings)

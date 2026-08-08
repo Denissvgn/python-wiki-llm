@@ -2898,7 +2898,7 @@ def _format_package_list(packages: list[str]) -> str:
 
 
 def _append_external_dependencies(lines: list[str], reconciliation: dict) -> None:
-    """Append the per-language external-dependency section (DL-205) to *lines*."""
+    """Append the per-language external-dependency section to *lines*."""
     lines.append("## External dependencies")
     lines.append("")
     languages = reconciliation.get("languages", {})

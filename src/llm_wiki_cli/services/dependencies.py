@@ -58,7 +58,7 @@ except ModuleNotFoundError:  # pragma: no cover - exercised on Python 3.9/3.10
         tomllib = None  # type: ignore[assignment]
 
 
-# ── Internal dependency graph (DL-101) ────────────────────────────────
+# Internal dependency graph
 
 
 def _build_symbol_file_index(inventory: dict) -> dict[str, set[str]]:
@@ -444,7 +444,7 @@ def build_external_dependency_observations(analysis: Mapping) -> list[dict]:
     return observations
 
 
-# ── Cycle detection (DL-102) ──────────────────────────────────────────
+# Cycle detection
 
 
 def _build_adjacency(graph: dict) -> tuple[dict[str, list[str]], set[str], set[str]]:
@@ -527,7 +527,7 @@ def detect_cycles(graph: dict) -> list[list[str]]:
     return cycles
 
 
-# ── Fan-in / fan-out metrics (DL-103) ─────────────────────────────────
+# Fan-in / fan-out metrics
 
 
 def dependency_metrics(graph: dict) -> dict:
@@ -653,7 +653,7 @@ def _factory_kind(name: str) -> str:
 def detect_side_effects(inventory: dict) -> dict:
     """List import-time side effects and factory/wiring functions per module.
 
-    Reads the deep extractor's ``module_calls`` (DL-301) to report each module's
+    Reads the deep extractor's ``module_calls`` to report each module's
     top-level side effects, and flags top-level functions whose names match the
     app-factory / dependency-wiring heuristics (``create_app``, ``configure``,
     ``setup``, ``wire``, ``register_*``, …). Returns ``{"side_effects":
@@ -737,7 +737,7 @@ class _LanguagePlugin:
     classify: Callable[[str, str, str, "Optional[_Manifest]"], "Optional[str]"]
 
 
-# ── Python (DL-201) ───────────────────────────────────────────────────
+# Python import classification
 
 
 # Import top-level name → distribution name where they differ. Keys are the
@@ -1374,7 +1374,7 @@ def _classify_python(
     return _normalize_python(aliases.get(top, top))
 
 
-# ── TypeScript / JavaScript (DL-202) ──────────────────────────────────
+# TypeScript / JavaScript import classification
 
 
 _NODE_BUILTINS: frozenset[str] = frozenset(
@@ -1540,7 +1540,7 @@ def _classify_ts(
     return pkg.lower()
 
 
-# ── Go (DL-203) ───────────────────────────────────────────────────────
+# Go import classification
 
 
 _GO_MANIFEST_EXCLUDED_DIRS: frozenset[str] = frozenset(
@@ -1740,7 +1740,7 @@ def _path_under(path: str, prefix: str) -> bool:
     return shared_path_is_under(path, prefix)
 
 
-# ── Rust (DL-204) ─────────────────────────────────────────────────────
+# Rust import classification
 
 
 _RUST_INTERNAL_ROOTS: frozenset[str] = frozenset(
@@ -1797,7 +1797,7 @@ def _classify_rust(
     return _normalize_rust(crate)
 
 
-# ── Haskell (DL-205) ──────────────────────────────────────────────────
+# Haskell import classification
 
 
 _HASKELL_MANIFEST_EXCLUDED_DIRS: frozenset[str] = frozenset(
@@ -2188,7 +2188,7 @@ def _load_toml(path: Path) -> Optional[dict]:
     return data if isinstance(data, dict) else None
 
 
-# ── Dispatcher + reconciliation (DL-201, DL-205) ──────────────────────
+# Language dispatch and reconciliation
 
 
 _PLUGINS: tuple[_LanguagePlugin, ...] = (
@@ -2255,7 +2255,7 @@ def classify_imports(
     """Group each file's external imports by language and package.
 
     Routes the graph's ``unresolved`` imports (those that resolve to no internal
-    file — DL-101) through their file's per-language classifier, dropping
+    file) through their file's per-language classifier, dropping
     relative, stdlib/builtin, and intra-module imports. Returns
     ``{language: {package: [importing_files]}}`` with every collection sorted.
 
@@ -2952,7 +2952,7 @@ def package_dependency_graph(graph: dict) -> dict:
 
     Every module node maps to its :func:`top_level_package`; intra-package edges
     are dropped and parallel inter-package edges de-duplicated, bounding the
-    diagram for large repositories (DL-404). Returns the same
+    diagram for large repositories. Returns the same
     ``{"nodes", "edges"}`` shape as :func:`build_dependency_graph` (minus
     ``unresolved``), stably sorted.
     """

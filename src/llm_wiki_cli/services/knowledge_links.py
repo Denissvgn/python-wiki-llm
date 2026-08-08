@@ -97,7 +97,7 @@ class LinkObservation:
 
     @property
     def resolved_canonical_route(self) -> str | None:
-        """Terminology alias used by the KNOW-105 backlog."""
+        """Compatibility alias for the resolved canonical page path."""
 
         return self.resolved_canonical_path
 
@@ -334,8 +334,8 @@ def _build_observation(
     if contains_uri_authority_userinfo(link.raw_target) or (
         contains_uri_authority_userinfo(link.target)
     ):
-        # M0 treats authority userinfo as credential-bearing.  The complete
-        # observation is omitted instead of emitting a redacted pseudo-record.
+        # Authority userinfo is credential-bearing. The complete observation is
+        # omitted instead of emitting a redacted pseudo-record.
         return None
 
     outcome = _classify_target(

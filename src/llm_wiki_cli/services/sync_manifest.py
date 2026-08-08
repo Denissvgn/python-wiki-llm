@@ -1341,13 +1341,13 @@ class SyncManifest:
         """Build current state and reconcile retained prior page evidence.
 
         No evidence is inferred from page text. Callers may supply already
-        evaluated KNOW-102 bases keyed by canonical page path. Without one, a
+        evaluated evidence bases keyed by canonical page path. Without one, a
         compatible prior basis is retained or the page is explicitly unknown.
         ``source_content_hashes`` lets orchestration reuse hashes captured by
         its source snapshot; when omitted, the compatibility path reads and
         hashes each source as before. Rebuilding always clears artifact hashes;
-        KNOW-107 installs a complete commitment only after both projections
-        have been written.
+        the atomic commit protocol installs a complete commitment only after
+        both projections have been written.
         """
 
         sources: dict[str, dict] = {}
