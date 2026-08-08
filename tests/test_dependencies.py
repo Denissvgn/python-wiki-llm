@@ -86,6 +86,57 @@ class TestBuildDependencyGraph:
         graph = build_dependency_graph(inventory)
         assert graph["edges"] == [("pkg/a.py", "pkg/b.py")]
 
+    def test_from_package_import_submodule_resolves(self):
+        inventory = {
+            "src/pkg/cli.py": _mod(
+                {
+                    "module": ".commands",
+                    "name": "build_cmd",
+                    "type": "from",
+                },
+                {
+                    "module": ".services",
+                    "name": "runtime",
+                    "type": "from",
+                },
+            ),
+            "src/pkg/commands/build_cmd.py": _mod(),
+            "src/pkg/services/runtime.py": _mod(),
+        }
+
+        graph = build_dependency_graph(inventory)
+
+        assert graph["edges"] == [
+            ("src/pkg/cli.py", "src/pkg/commands/build_cmd.py"),
+            ("src/pkg/cli.py", "src/pkg/services/runtime.py"),
+        ]
+        order = topological_order(graph)["order"]
+        assert order.index("src/pkg/commands/build_cmd.py") < order.index(
+            "src/pkg/cli.py"
+        )
+        assert order.index("src/pkg/services/runtime.py") < order.index(
+            "src/pkg/cli.py"
+        )
+
+    def test_from_package_import_prefers_child_over_package_initializer(self):
+        inventory = {
+            "src/pkg/cli.py": _mod(
+                {
+                    "module": ".commands",
+                    "name": "build_cmd",
+                    "type": "from",
+                }
+            ),
+            "src/pkg/commands/__init__.py": _mod(),
+            "src/pkg/commands/build_cmd.py": _mod(),
+        }
+
+        graph = build_dependency_graph(inventory)
+
+        assert graph["edges"] == [
+            ("src/pkg/cli.py", "src/pkg/commands/build_cmd.py")
+        ]
+
     def test_bare_package_import_resolves_to_init_module(self):
         inventory = {
             "service/server.py": _mod(_imp("tools", "Widget")),
@@ -247,6 +298,43 @@ class TestBuildDependencyObservations:
         assert self_import["resolution"] == "resolved"
         assert self_import["target_path"] == "a.py"
         assert self_import["line"] is None
+
+    def test_package_child_import_observations_preserve_resolution_semantics(self):
+        inventory = {
+            "app.py": _mod(
+                {
+                    "module": "commands",
+                    "name": "build",
+                    "type": "from",
+                },
+                {
+                    "module": "requests",
+                    "name": "Session",
+                    "type": "from",
+                },
+            ),
+            "one/commands/build.py": _mod(),
+            "two/commands/build.py": _mod(),
+        }
+
+        result = build_dependency_observations(inventory)
+        by_module = {item["module"]: item for item in result["observations"]}
+
+        assert by_module["commands"] == {
+            "source_path": "app.py",
+            "module": "commands",
+            "name": "build",
+            "line": None,
+            "candidates": [
+                "one/commands/build.py",
+                "two/commands/build.py",
+            ],
+            "target_path": None,
+            "resolution": "ambiguous",
+        }
+        assert by_module["requests"]["candidates"] == []
+        assert by_module["requests"]["target_path"] is None
+        assert by_module["requests"]["resolution"] == "external"
 
     def test_versioned_location_sidecar_is_matched_and_validated(self):
         inventory = {

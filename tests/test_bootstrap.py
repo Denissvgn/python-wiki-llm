@@ -1345,6 +1345,48 @@ class TestBootstrapModulePages:
         assert "| Outbound | [service](../modules/service.md) |" in content
         assert "| python | 1 | 0 |" in content
 
+    def test_package_submodule_imports_drive_module_map_and_load_order(
+        self, tmp_path, monkeypatch
+    ):
+        package = tmp_path / "pkg"
+        commands = package / "commands"
+        services = package / "services"
+        commands.mkdir(parents=True)
+        services.mkdir()
+        (package / "cli.py").write_text(
+            "from .commands import build_cmd\n"
+            "from .services import runtime\n\n"
+            "def main():\n"
+            "    return build_cmd.run(), runtime.start()\n",
+            encoding="utf-8",
+        )
+        (commands / "build_cmd.py").write_text(
+            "def run():\n    return 1\n",
+            encoding="utf-8",
+        )
+        (services / "runtime.py").write_text(
+            "def start():\n    return 2\n",
+            encoding="utf-8",
+        )
+        monkeypatch.chdir(tmp_path)
+
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
+
+        module = (tmp_path / "wiki" / "modules" / "cli.md").read_text(
+            encoding="utf-8"
+        )
+        load_order = (tmp_path / "wiki" / "load-order.md").read_text(
+            encoding="utf-8"
+        )
+        assert "| Outbound | [build_cmd](../modules/build_cmd.md) |" in module
+        assert "| Outbound | [runtime](../modules/runtime.md) |" in module
+        assert load_order.index("[build_cmd](modules/build_cmd.md)") < load_order.index(
+            "[cli](modules/cli.md)"
+        )
+        assert load_order.index("[runtime](modules/runtime.md)") < load_order.index(
+            "[cli](modules/cli.md)"
+        )
+
     def test_module_local_dependency_map_uses_note_without_blank_diagram(
         self, tmp_path, monkeypatch, capsys
     ):
@@ -2109,6 +2151,44 @@ class TestBootstrapSkipWorkflows:
         assert "](EventTarget)" not in content
         assert "> Emits to targets (`EventTarget`)." in content
         assert "[docs](https://example.test)" in content
+        assert "## Behavior" in content
+        assert "This workflow starts at `lib.emit_to`." in content
+        assert "No call-chain steps were detected by static analysis." in content
+        assert "belong in Behavior" in content
+        assert "placeholder" not in content.casefold()
+        assert "refine" not in content.casefold()
+
+    def test_workflow_regeneration_preserves_reviewed_behavior(self):
+        original = bootstrap_cmd._generate_workflow_md(
+            "dispatch",
+            {
+                "entry": "app.dispatch",
+                "modules_touched": ["app"],
+                "chain": ["app.dispatch", "app.prepare"],
+            },
+        )
+        reviewed = original.replace(
+            "This workflow starts at `app.dispatch`. The generated sequence is "
+            "a bounded static projection; runtime ordering, branching, and side "
+            "effects require source-level confirmation.",
+            "Dispatches a reviewed request through the primary path.",
+        )
+        regenerated = bootstrap_cmd._generate_workflow_md(
+            "dispatch",
+            {
+                "entry": "app.dispatch",
+                "modules_touched": ["app"],
+                "chain": ["app.dispatch", "app.finish"],
+            },
+        )
+
+        merged = bootstrap_cmd._preserve_level_two_section(
+            reviewed, regenerated, "Behavior"
+        )
+
+        assert "app.finish" in merged
+        assert "app.prepare" not in merged
+        assert "Dispatches a reviewed request through the primary path." in merged
 
 
 class TestBootstrapUpdatesAgentConstraints:
@@ -2626,6 +2706,10 @@ class TestGenerateFlowMd:
         assert "-->>" in md  # external call rendered as a dashed arrow
         assert "truncated" in md
         assert "## Behavior" in md
+        assert "This flow starts at `run` and is classified as `api`." in md
+        assert "belong in Behavior" in md
+        assert "placeholder" not in md.casefold()
+        assert "refine" not in md.casefold()
 
         dense_data_flow = {
             "steps": [
@@ -2718,7 +2802,7 @@ class TestGenerateFlowMd:
             "transfer and boundary relationships (0 omitted)"
         ) in no_relationships_table
 
-    def test_no_calls_uses_placeholder(self):
+    def test_no_calls_uses_neutral_static_empty_state(self):
         flow = {
             "entry": {
                 "id": "api-x",
@@ -2732,8 +2816,10 @@ class TestGenerateFlowMd:
             "truncated": False,
         }
         md = bootstrap_cmd._generate_flow_md(flow, {"m.py": "m"})
-        assert "No outbound calls detected" in md
+        assert "No outbound calls were detected by static analysis." in md
         assert "sequenceDiagram" not in md
+        assert "manually" not in md.casefold()
+        assert "placeholder" not in md.casefold()
 
     def test_async_process_main_renders_dispatch_and_related_modules(self, tmp_path):
         _write_project_team_open_style_async_main(tmp_path)
@@ -3282,8 +3368,12 @@ class TestGenerateDependenciesMd:
         assert "| [a](modules/a.md) |" in md
         assert "### python" in md
         assert "⚠️ **Undeclared:** `requests`" in md
-        assert md.rstrip().endswith("Replace this placeholder._")
+        assert md.rstrip().endswith(
+            "Dynamic or conditional imports and runtime-loaded integrations may "
+            "not appear in the generated sections."
+        )
         assert "## Notes" in md
+        assert "placeholder" not in md.casefold()
 
         nodes = [f"pkg/m{index}.py" for index in range(12)]
         edges = [
@@ -3407,6 +3497,8 @@ class TestGenerateLoadOrderMd:
         assert "## Factory / wiring" in md
         assert "`create_app`" in md
         assert "## Notes" in md
+        assert "This page presents a static dependency projection." in md
+        assert "placeholder" not in md.casefold()
 
     def test_cyclic_group_marked_indeterminate(self, tmp_path):
         inventory = {"a.py": _pymod(("b", "x")), "b.py": _pymod(("a", "y"))}

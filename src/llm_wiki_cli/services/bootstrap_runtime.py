@@ -2248,7 +2248,7 @@ def _generate_workflow_md(
     wf: dict,
     module_page_map: Mapping[str, str] | None = None,
 ) -> str:
-    """Generate a skeleton workflow page from call-graph data."""
+    """Generate a workflow page from call-graph data."""
     entry = wf["entry"]
     modules = _workflow_module_refs(wf, module_page_map)
     chain = wf.get("chain", [])
@@ -2269,19 +2269,29 @@ def _generate_workflow_md(
     lines.append("## Sequence")
     lines.append("")
     lines.append(
-        "<!-- Auto-detected call chain. Refine order and conditions after review. -->"
+        "<!-- Auto-generated static call-chain projection. Reviewed runtime "
+        "ordering, branching, and side effects belong in Behavior. -->"
     )
     if chain:
         for i, step in enumerate(chain, 1):
             lines.append(f"{i}. `{step}`")
     else:
-        lines.append("*No detailed chain extracted — refine manually.*")
+        lines.append("*No call-chain steps were detected by static analysis.*")
     lines.append("")
 
     lines.append("## Touches")
     lines.append("")
     for label, page in modules:
         lines.append(f"- [{label}](../modules/{page}.md)")
+    lines.append("")
+
+    lines.append("## Behavior")
+    lines.append("")
+    lines.append(
+        f"This workflow starts at `{entry}`. The generated sequence is a bounded "
+        "static projection; runtime ordering, branching, and side effects require "
+        "source-level confirmation."
+    )
     lines.append("")
 
     return "\n".join(lines)
@@ -2627,7 +2637,8 @@ def _generate_flow_md(
     lines.append("")
     lines.append(
         "<!-- Auto-generated from static call edges. Dashed arrows are external "
-        "or unresolved calls. Refine order and conditions after review. -->"
+        "or unresolved calls. Reviewed runtime conditions and side effects belong "
+        "in Behavior. -->"
     )
     if interactions:
         rendered_sequence = _bounded_sequence_diagram(interactions)
@@ -2650,7 +2661,7 @@ def _generate_flow_md(
                 "interaction and generated-diagram limits."
             )
     else:
-        lines.append("*No outbound calls detected — describe the behavior manually.*")
+        lines.append("*No outbound calls were detected by static analysis.*")
     if flow.get("truncated"):
         lines.append("")
         lines.append("> Trace truncated at the depth limit; deeper calls are omitted.")
@@ -2675,8 +2686,10 @@ def _generate_flow_md(
     lines.append("## Behavior")
     lines.append("")
     lines.append(
-        "_Describe what this flow does, when it is triggered, and its key side "
-        "effects or outputs. Replace this placeholder._"
+        f"This flow starts at `{entry['symbol']}` and is classified as "
+        f"`{entry['category']}`. The generated call and data-flow sections are "
+        "bounded static projections; runtime conditions and side effects require "
+        "source-level confirmation."
     )
     lines.append("")
 
@@ -2937,7 +2950,7 @@ def _generate_dependencies_md(
 
     Sections: a linked internal-module Mermaid ``flowchart`` (cyclic edges
     thickened), import **Cycles**, a **Fan-in / Fan-out** table, **External
-    dependencies** grouped by language, and a ``## Notes`` semantic placeholder.
+    dependencies** grouped by language, and semantic ``## Notes``.
     Deterministic; degrades cleanly with no cycles or no external deps.
     """
     page_map = module_page_map or {}
@@ -3021,8 +3034,9 @@ def _generate_dependencies_md(
     lines.append("## Notes")
     lines.append("")
     lines.append(
-        "_Document dynamic or conditional imports, intentional cycles, and the "
-        "rationale behind notable dependencies. Replace this placeholder._"
+        "This page reflects statically observed imports and declared dependencies. "
+        "Dynamic or conditional imports and runtime-loaded integrations may not "
+        "appear in the generated sections."
     )
     lines.append("")
     return "\n".join(lines)
@@ -3044,7 +3058,7 @@ def _generate_load_order_md(
     Sections: the topological **Load order** (numbered, dependency-first),
     **Module-level side effects**, a heuristic **Factory / wiring** table,
     **Indeterminate (cyclic) groups** whose order cannot be resolved, and a
-    ``## Notes`` placeholder. Deterministic; degrades cleanly when empty.
+    semantic ``## Notes``. Deterministic; degrades cleanly when empty.
     """
     page_map = module_page_map or {}
     load_order = analysis["load_order"]
@@ -3119,8 +3133,9 @@ def _generate_load_order_md(
     lines.append("## Notes")
     lines.append("")
     lines.append(
-        "_Document required initialization order, lazy imports, and side effects "
-        "that must run before others. Replace this placeholder._"
+        "This page presents a static dependency projection. Lazy imports, "
+        "conditional initialization, and runtime side effects can change the "
+        "effective order."
     )
     lines.append("")
     return "\n".join(lines)
@@ -4564,10 +4579,17 @@ def _write_bootstrap_workflow_pages(
             state.skipped_files.append(_path_text(wf_path))
             _emit_bootstrap(state, f"  SKIP workflow (exists): {wf_name}")
         else:
+            workflow_markdown = _generate_workflow_md(
+                wf_name, wf_data, module_page_map
+            )
+            if wf_path.exists():
+                workflow_markdown = _preserve_level_two_section(
+                    read_md(wf_path), workflow_markdown, "Behavior"
+                )
             _write_bootstrap_file(
                 state,
                 wf_path,
-                _generate_workflow_md(wf_name, wf_data, module_page_map),
+                workflow_markdown,
             )
             workflows_created += 1
             _emit_bootstrap(state, f"  CREATE workflow: {wf_name}")

@@ -103,7 +103,12 @@ def _resolve_internal_targets(
     """
     module = imp.get("module", "") or ""
     name = imp.get("name", "") or ""
-    targets = resolver.candidates(_resolve_target_module(module, name), filepath)
+    targets = resolver.import_candidates(
+        module,
+        name,
+        filepath,
+        import_type=imp.get("type"),
+    )
     if len(targets) > 1:
         narrowed = targets & symbol_index.get(name, set())
         if narrowed:

@@ -336,6 +336,12 @@ def _top_level_policy(
             )
         return SectionOwnership.UNKNOWN
     if page_kind is PageKind.WORKFLOWS:
+        if folded == "behavior":
+            return (
+                SectionOwnership.SEMANTIC
+                if canonical_occurrence == 1
+                else SectionOwnership.UNKNOWN
+            )
         if folded in _WORKFLOW_GENERATED_HEADINGS and canonical_occurrence == 1:
             return SectionOwnership.GENERATED
         return SectionOwnership.UNKNOWN

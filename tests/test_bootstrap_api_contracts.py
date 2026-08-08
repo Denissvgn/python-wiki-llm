@@ -245,7 +245,7 @@ def test_bootstrap_rejects_overwrite_without_touching_contract_semantics(
     )
     flow_path.write_text(
         flow_path.read_text(encoding="utf-8").replace(
-            "_Describe what this flow does, when it is triggered, and its key side effects or outputs. Replace this placeholder._",
+            "This flow starts at `create_item` and is classified as `http`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.",
             "Creates one inventory item.",
         ),
         encoding="utf-8",

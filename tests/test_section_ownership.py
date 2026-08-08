@@ -148,6 +148,7 @@ def test_guides_are_semantic_and_index_custom_is_semantic_only_when_preserved():
 
 def test_only_first_behavior_and_notes_sections_are_semantic():
     fixtures = (
+        (PageKind.WORKFLOWS, "Behavior", "Sequence"),
         (PageKind.FLOWS, "Behavior", "Call sequence"),
         (PageKind.API_CONTRACTS, "Notes", "Applications"),
         (PageKind.DEPENDENCIES, "Notes", "Module graph"),
@@ -178,6 +179,38 @@ def test_only_first_behavior_and_notes_sections_are_semantic():
             SectionOwnership.UNKNOWN,
         ]
         assert page.sections[1].ownership is SectionOwnership.GENERATED
+
+
+def test_workflow_behavior_semantics_are_stable_across_generated_churn():
+    before = """# Workflow
+## Sequence
+1. `start`
+## Touches
+- [service](../modules/service.md)
+## Behavior
+Runs the reviewed primary path.
+"""
+    after = before.replace("1. `start`", "1. `start`\n2. `finish`")
+
+    first = observe_page_sections(
+        before,
+        "llm-wiki://workflows/example",
+        PageKind.WORKFLOWS,
+    )
+    changed = observe_page_sections(
+        after,
+        "llm-wiki://workflows/example",
+        PageKind.WORKFLOWS,
+    )
+    first_sequence, first_touches, first_behavior = first.sections[1:]
+    changed_sequence, changed_touches, changed_behavior = changed.sections[1:]
+
+    assert first_sequence.structural_hash != changed_sequence.structural_hash
+    assert first_sequence.semantic_hash is None
+    assert first_touches.structural_hash == changed_touches.structural_hash
+    assert first_touches.semantic_hash is None
+    assert first_behavior.semantic_hash == changed_behavior.semantic_hash
+    assert first_behavior.structural_hash is None
 
 
 def test_policy_is_explicit_for_every_page_kind_and_custom_never_optimistic():
