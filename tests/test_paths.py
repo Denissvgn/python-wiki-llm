@@ -6,7 +6,11 @@ from pathlib import Path
 
 import pytest
 
-from llm_wiki_cli.services.paths import normalize_source_path, shell_quote
+from llm_wiki_cli.services.paths import (
+    normalize_source_path,
+    portable_source_root_label,
+    shell_quote,
+)
 
 
 @pytest.mark.parametrize("value", [None, "", "   ", "``", "`   `", '""', "''"])
@@ -68,3 +72,38 @@ def test_shell_quote_quotes_strings_and_paths_for_posix_shell():
     assert shell_quote("plain") == "plain"
     assert shell_quote("docs/My File.md") == "'docs/My File.md'"
     assert shell_quote(Path("docs/My File.md")) == "'docs/My File.md'"
+
+
+def test_portable_source_root_label_is_relative_or_redacted(tmp_path):
+    source_root = tmp_path / "source"
+    nested_root = source_root / "packages" / "app"
+    external_root = tmp_path / "external"
+    nested_root.mkdir(parents=True)
+    external_root.mkdir()
+
+    assert portable_source_root_label(source_root, base=source_root) == "."
+    assert (
+        portable_source_root_label(nested_root, base=source_root)
+        == "packages/app"
+    )
+    assert (
+        portable_source_root_label(external_root, base=source_root)
+        == "<external-source-root>"
+    )
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        r"C:\Users\owner\project",
+        r"C:project",
+        "/home/owner/project",
+    ],
+)
+def test_portable_source_root_label_redacts_foreign_absolute_path(
+    tmp_path,
+    value,
+):
+    assert (
+        portable_source_root_label(value, base=tmp_path) == "<external-source-root>"
+    )

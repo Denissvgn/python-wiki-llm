@@ -116,7 +116,7 @@ from ..services.markdown_sections import (
     trim_blank_lines as _service_trim_blank_lines,
 )
 from ..services.module_maps import build_module_dependency_maps
-from ..services.paths import is_test_source_path
+from ..services.paths import is_test_source_path, portable_source_root_label
 from ..services.plugins import (
     runtime_plugin_fallback_root,
     runtime_project_plugins_enabled,
@@ -4520,7 +4520,7 @@ def _append_log(
     entry = (
         f"\n## {today}\n\n"
         f"### feat: {operation}\n"
-        f"- Source: `{src_dir}`\n"
+        f"- Source: `{portable_source_root_label(src_dir)}`\n"
         f"- Pages created: {result.created}\n"
         f"- Pages updated: {result.updated}\n"
         f"- Pages metadata-only: {result.metadata_only}\n"

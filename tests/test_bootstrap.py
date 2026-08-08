@@ -1925,6 +1925,8 @@ class TestBootstrapLog:
 
         log = (wiki_dir / "log.md").read_text(encoding="utf-8")
         assert "bootstrap" in log.lower()
+        assert "- Source: `.`" in log
+        assert str(tmp_project.resolve()) not in log
 
 
 class TestBootstrapOverwrite:

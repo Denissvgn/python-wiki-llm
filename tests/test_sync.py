@@ -3201,6 +3201,8 @@ class TestDiffOutput:
         log_after = (wiki_dir / "log.md").read_text(encoding="utf-8")
         assert len(log_after) > len(log_before)
         assert "incremental sync" in log_after
+        assert "- Source: `.`" in log_after
+        assert str(proj.resolve()) not in log_after
 
 
 class TestSyncFlowReindex:

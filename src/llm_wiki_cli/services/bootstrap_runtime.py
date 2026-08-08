@@ -102,7 +102,7 @@ from .markdown_sections import (
     preserve_level_two_section_exact as _service_preserve_level_two_section_exact,
 )
 from .module_maps import build_module_dependency_maps
-from .paths import normalize_source_path
+from .paths import normalize_source_path, portable_source_root_label
 from .relationships import build_entity_relationship_summaries
 from .schema import (
     ALL_SCHEMA_FILES as _AGENT_SCHEMA_FILES,
@@ -5074,7 +5074,7 @@ def _append_bootstrap_log(
     log_entry = (
         f"\n## {date.today().isoformat()}\n\n"
         f"### feat: bootstrap wiki from existing codebase\n"
-        f"- Source: `{state.options.src_dir_for_scan}`\n"
+        f"- Source: `{portable_source_root_label(state.options.src_dir_for_scan)}`\n"
         f"- Depth: `{state.options.depth}`\n"
         f"- Entities created: {entity_result.entities_created}\n"
         f"- Modules created: {entity_result.modules_created}\n"
