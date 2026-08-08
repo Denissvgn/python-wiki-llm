@@ -95,6 +95,16 @@ def _make_rs(tmp_path: Path, filename: str, content: str) -> Path:
     return p
 
 
+def _write_owned_package_sentinels(root: Path) -> None:
+    for rel_path in (
+        "src/llm_wiki_cli/__init__.py",
+        "src/llm_wiki_cli/cli.py",
+        "src/llm_wiki_cli/extractors/__init__.py",
+        "src/llm_wiki_cli/extractors/common.py",
+    ):
+        _make_rs(root, rel_path, "# package source\n")
+
+
 def _extract_rust(
     tmp_path: Path,
     *,
@@ -664,6 +674,46 @@ class TestRustExtractorWrapper:
         params = list(inspect.signature(RustExtractor.extract).parameters)
 
         assert params == ["self", "src_dir", "only_files", "deep"]
+
+    def test_normalization_filters_checkout_helper_but_not_unrelated_suffix(
+        self, tmp_path
+    ):
+        _write_owned_package_sentinels(tmp_path)
+        bundled = "src/llm_wiki_cli/extractors/rust_scripts/src/main.rs"
+        unrelated = "vendor/llm_wiki_cli/extractors/rust_scripts/src/main.rs"
+        _make_rs(tmp_path, bundled, "fn main() {}\n")
+        _make_rs(tmp_path, unrelated, "pub fn consumer() {}\n")
+        inventory = {
+            bundled: {"classes": [], "functions": []},
+            unrelated: {"classes": [], "functions": []},
+        }
+
+        normalized = RustExtractor()._normalize_inventory(str(tmp_path), inventory)
+
+        assert list(normalized) == [unrelated]
+
+    def test_relative_external_helper_suffix_fails_open_across_both_filter_stages(
+        self, tmp_path, monkeypatch
+    ):
+        external_root = tmp_path / "external-consumer"
+        relative_path = "src/llm_wiki_cli/extractors/rust_scripts/src/main.rs"
+        _make_rs(external_root, relative_path, "pub fn consumer() {}\n")
+        monkeypatch.chdir(Path(__file__).parents[1])
+        result = subprocess.CompletedProcess(
+            args=["rust-helper"],
+            returncode=0,
+            stdout=json.dumps(
+                {relative_path: {"classes": [], "functions": []}}
+            ),
+            stderr="",
+        )
+        extractor = RustExtractor()
+
+        loaded = extractor._load_inventory(result)
+        normalized = extractor._normalize_inventory(str(external_root), loaded)
+
+        assert list(loaded) == [relative_path]
+        assert list(normalized) == [relative_path]
 
     def test_request_object_passes_cached_source_files_to_helper(
         self, tmp_path, monkeypatch

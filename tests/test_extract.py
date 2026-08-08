@@ -227,6 +227,93 @@ class TestGetInventory:
         assert result.plugin_lock_path is None
         assert result.plugin_lock_hash is None
 
+    def test_plugin_inventory_excludes_owned_helper_and_keeps_consumer_suffix(
+        self, tmp_path, monkeypatch
+    ):
+        for rel_path in (
+            "src/llm_wiki_cli/__init__.py",
+            "src/llm_wiki_cli/cli.py",
+            "src/llm_wiki_cli/extractors/__init__.py",
+            "src/llm_wiki_cli/extractors/common.py",
+        ):
+            path = tmp_path / rel_path
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("# package source\n", encoding="utf-8")
+        protected = "src/llm_wiki_cli/extractors/go_scripts/main.go"
+        ordinary = "flow.toy"
+        unrelated = "vendor/llm_wiki_cli/extractors/go_scripts/main.go"
+        for rel_path, content in (
+            (protected, "package main\n"),
+            (ordinary, "flow\n"),
+            (unrelated, "package consumer\n"),
+        ):
+            path = tmp_path / rel_path
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(content, encoding="utf-8")
+
+        entry_point = "plugin.extractor:CustomExtractor"
+        component = {
+            "type": "extractor",
+            "id": "custom",
+            "language": "custom",
+            "entry_point": entry_point,
+            "plugin_id": "custom-plugin",
+            "plugin_version": "1.0.0",
+            "ref": "custom-plugin/custom",
+        }
+
+        class PluginExtractor:
+            last_error = None
+
+            def extract(self, **_kwargs):
+                return {
+                    rel_path: {
+                        "language": "custom",
+                        "classes": [],
+                        "functions": [],
+                    }
+                    for rel_path in (protected, ordinary, unrelated)
+                }
+
+        monkeypatch.setattr(
+            extract_cmd,
+            "get_extractor_registry",
+            lambda: {"custom": entry_point},
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_selected_runtime_plugin_components",
+            lambda _source_root: ((component,), "."),
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_captured_plugin_lock",
+            lambda *_args, **_kwargs: (None, None),
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "parallel_safe_extractor_entry_points",
+            lambda: set(),
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_load_extractor",
+            lambda _entry_point: PluginExtractor(),
+        )
+
+        result = extract_cmd.get_inventory_result(str(tmp_path))
+
+        assert sorted(result.inventory) == [ordinary, unrelated]
+        assert result.source_snapshot is not None
+        assert protected not in result.source_snapshot.all_source_paths
+        assert protected not in result.source_snapshot.captured_content_hashes
+        assert ordinary in result.source_snapshot.all_source_paths
+        assert unrelated in result.source_snapshot.all_source_paths
+        assert set(result.source_snapshot.hashes_for([ordinary, unrelated])) == {
+            ordinary,
+            unrelated,
+        }
+
     def test_empty_dir(self, tmp_path):
         inventory = get_inventory(str(tmp_path))
         assert inventory == {}

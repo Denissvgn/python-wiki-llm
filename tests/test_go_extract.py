@@ -62,6 +62,16 @@ def _make_go(tmp_path: Path, filename: str, content: str) -> Path:
     return p
 
 
+def _write_owned_package_sentinels(root: Path) -> None:
+    for rel_path in (
+        "src/llm_wiki_cli/__init__.py",
+        "src/llm_wiki_cli/cli.py",
+        "src/llm_wiki_cli/extractors/__init__.py",
+        "src/llm_wiki_cli/extractors/common.py",
+    ):
+        _make_go(root, rel_path, "# package source\n")
+
+
 def _body_line_count(function) -> int:
     source = textwrap.dedent(inspect.getsource(function))
     function_node = ast.parse(source).body[0]
@@ -790,6 +800,46 @@ class TestGoExtractorWrapper:
         ]
 
         assert public_parameters == ["src_dir", "only_files", "deep"]
+
+    def test_normalization_filters_checkout_helper_but_not_unrelated_suffix(
+        self, tmp_path
+    ):
+        _write_owned_package_sentinels(tmp_path)
+        bundled = "src/llm_wiki_cli/extractors/go_scripts/main.go"
+        unrelated = "vendor/llm_wiki_cli/extractors/go_scripts/main.go"
+        _make_go(tmp_path, bundled, "package main\n")
+        _make_go(tmp_path, unrelated, "package consumer\n")
+        inventory = {
+            bundled: {"classes": [], "functions": []},
+            unrelated: {"classes": [], "functions": []},
+        }
+
+        normalized = GoExtractor()._normalize_inventory(str(tmp_path), inventory)
+
+        assert list(normalized) == [unrelated]
+
+    def test_relative_external_helper_suffix_fails_open_across_both_filter_stages(
+        self, tmp_path, monkeypatch
+    ):
+        external_root = tmp_path / "external-consumer"
+        relative_path = "src/llm_wiki_cli/extractors/go_scripts/main.go"
+        _make_go(external_root, relative_path, "package consumer\n")
+        monkeypatch.chdir(Path(__file__).parents[1])
+        result = subprocess.CompletedProcess(
+            args=["go-helper"],
+            returncode=0,
+            stdout=json.dumps(
+                {relative_path: {"classes": [], "functions": []}}
+            ),
+            stderr="",
+        )
+        extractor = GoExtractor()
+
+        loaded = extractor._load_inventory(result)
+        normalized = extractor._normalize_inventory(str(external_root), loaded)
+
+        assert list(loaded) == [relative_path]
+        assert list(normalized) == [relative_path]
 
     def test_windows_style_inventory_keys_are_normalized(self, tmp_path):
         _make_go(tmp_path, "pkg/client.go", "package pkg\n\ntype Client struct{}\n")

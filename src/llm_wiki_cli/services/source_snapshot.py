@@ -22,6 +22,7 @@ from ..config import (
 from ..extractors.common import (
     GENERATED_JAVASCRIPT_BUNDLE_LANGUAGE,
     LANGUAGE_EXTENSIONS,
+    is_bundled_helper_implementation_path,
     is_generated_javascript_bundle_path,
     normalize_include_tests,
 )
@@ -207,6 +208,8 @@ class SourceSnapshot:
             if path in content_hashes:
                 continue
             candidate = root / path
+            if is_bundled_helper_implementation_path(candidate):
+                continue
             try:
                 resolved = candidate.resolve(strict=True)
                 resolved.relative_to(root)
@@ -215,6 +218,8 @@ class SourceSnapshot:
                     f"inventory_paths[{index}]",
                     f"must resolve to a readable file inside the source root: {path!r}",
                 ) from exc
+            if is_bundled_helper_implementation_path(resolved):
+                continue
             content_hash = _sha256_file(resolved)
             if content_hash is None or not resolved.is_file():
                 raise SourceSnapshotError(
@@ -297,10 +302,15 @@ def _normalize_only_files(
 
     normalized: set[str] = set()
     for raw_path in only_files:
+        candidate = root / raw_path
+        if is_bundled_helper_implementation_path(candidate):
+            continue
         try:
-            resolved = (root / raw_path).resolve()
+            resolved = candidate.resolve()
             rel = resolved.relative_to(root)
         except (OSError, ValueError):
+            continue
+        if is_bundled_helper_implementation_path(resolved):
             continue
         normalized.add(rel.as_posix())
     return normalized
@@ -572,6 +582,8 @@ def _record_language_candidate(
     only_set: set[str] | None,
     buckets: _SnapshotBuckets,
 ) -> None:
+    if is_bundled_helper_implementation_path(resolved):
+        return
     language = _language_for_path(resolved, buckets.include_tests)
     if language is None:
         return
@@ -636,11 +648,15 @@ def _record_source_file(
     buckets: _SnapshotBuckets,
 ) -> None:
     path = current_dir / filename
+    if is_bundled_helper_implementation_path(path):
+        return
     rel = _relative_to_root(path, root)
     if rel is None:
         return
 
     resolved = path.resolve()
+    if is_bundled_helper_implementation_path(resolved):
+        return
     rel_posix = rel.as_posix()
     if not resolved.is_file() or not EXCLUDED_DIRS.isdisjoint(rel.parts):
         return

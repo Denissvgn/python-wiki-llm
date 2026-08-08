@@ -100,6 +100,16 @@ def _write_haskell(root: Path, rel_path: str, content: str) -> Path:
     return path
 
 
+def _write_owned_package_sentinels(root: Path) -> None:
+    for rel_path in (
+        "src/llm_wiki_cli/__init__.py",
+        "src/llm_wiki_cli/cli.py",
+        "src/llm_wiki_cli/extractors/__init__.py",
+        "src/llm_wiki_cli/extractors/common.py",
+    ):
+        _write_haskell(root, rel_path, "# package source\n")
+
+
 def _body_line_count(function) -> int:
     source = textwrap.dedent(inspect.getsource(function))
     function_node = ast.parse(source).body[0]
@@ -170,6 +180,48 @@ class TestHaskellExtractorWrapper:
 
         assert inventory == {}
         assert helper_calls == []
+
+    def test_normalization_filters_checkout_helper_but_not_unrelated_suffix(
+        self, tmp_path
+    ):
+        _write_owned_package_sentinels(tmp_path)
+        bundled = "src/llm_wiki_cli/extractors/haskell_scripts/Main.hs"
+        unrelated = "vendor/llm_wiki_cli/extractors/haskell_scripts/Main.hs"
+        _write_haskell(tmp_path, bundled, "module Main where\n")
+        _write_haskell(tmp_path, unrelated, "module Consumer where\n")
+        inventory = {
+            bundled: {"classes": [], "functions": []},
+            unrelated: {"classes": [], "functions": []},
+        }
+
+        normalized = HaskellExtractor()._normalize_inventory(
+            str(tmp_path), inventory
+        )
+
+        assert list(normalized) == [unrelated]
+
+    def test_relative_external_helper_suffix_fails_open_across_both_filter_stages(
+        self, tmp_path, monkeypatch
+    ):
+        external_root = tmp_path / "external-consumer"
+        relative_path = "src/llm_wiki_cli/extractors/haskell_scripts/Main.hs"
+        _write_haskell(external_root, relative_path, "module Consumer where\n")
+        monkeypatch.chdir(Path(__file__).parents[1])
+        result = subprocess.CompletedProcess(
+            args=["haskell-helper"],
+            returncode=0,
+            stdout=json.dumps(
+                {relative_path: {"classes": [], "functions": []}}
+            ),
+            stderr="",
+        )
+        extractor = HaskellExtractor()
+
+        loaded = extractor._load_inventory(result)
+        normalized = extractor._normalize_inventory(str(external_root), loaded)
+
+        assert list(loaded) == [relative_path]
+        assert list(normalized) == [relative_path]
 
     def test_request_object_passes_source_files_cache_dir_and_deep_to_helper(
         self, tmp_path, monkeypatch

@@ -21,6 +21,7 @@ from ..config import (
 )
 from ..extractors.common import (
     LANGUAGE_EXTENSIONS,
+    filter_bundled_source_inventory,
     inventory_language_for_path,
     normalize_include_tests,
 )
@@ -434,6 +435,9 @@ def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
     )
     inventory = _merge_inventory_results(
         context, planning.cached_by_language, extracted_by_language
+    )
+    inventory = filter_bundled_source_inventory(
+        inventory, source_root=context.source_snapshot.root
     )
     statuses = _ordered_inventory_statuses(
         context.registry, planning.status_by_language
