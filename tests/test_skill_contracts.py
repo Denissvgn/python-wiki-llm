@@ -490,7 +490,10 @@ def test_wiki_reference_native_command_examples_cover_public_actions_and_modes()
 
 def test_enumerated_inline_bootstrap_context_example_parses_with_real_parser():
     path = skills.BUNDLED_SKILLS_ROOT / "wiki-bootstrap" / "SKILL.md"
-    command = "llm-wiki context --budget 12000 --focus all --format json"
+    command = (
+        "llm-wiki context --budget 12000 --focus all --format json "
+        "--source-selection <profile>"
+    )
     lines = path.read_text(encoding="utf-8").splitlines()
     line_number = next(
         index for index, line in enumerate(lines, 1) if command in line
@@ -505,6 +508,30 @@ def test_enumerated_inline_bootstrap_context_example_parses_with_real_parser():
 
     assert args.budget == 12000
     assert args.focus == "all"
+    assert args.source_selection == "config/contract-profile.json"
+
+
+def test_wiki_bootstrap_carries_active_selection_through_source_recipes():
+    skill_root = skills.BUNDLED_SKILLS_ROOT / "wiki-bootstrap"
+    documented = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (skill_root / "SKILL.md", skill_root / "reference.md")
+    )
+
+    assert "never replace a configured non-default profile" in documented
+    for command in (
+        "prepare-extractors",
+        "bootstrap",
+        "sync",
+        "lint",
+        "ci-check",
+        "team check",
+        "context",
+    ):
+        assert any(
+            command in line and "--source-selection <profile>" in line
+            for line in documented.splitlines()
+        ), command
 
 
 def test_all_fenced_context_requests_validate_with_real_protocol_parser():
@@ -546,7 +573,7 @@ def test_native_mcp_examples_validate_through_public_tool_methods():
             assert result["method"] == example.tool_name
 
 
-def test_impact_analysis_mcp_examples_validate_and_dispatch(monkeypatch):
+def test_impact_analysis_mcp_examples_validate_and_dispatch(monkeypatch, tmp_path):
     skill_dir = skills.BUNDLED_SKILLS_ROOT / "impact-analysis"
     examples = tuple(
         example
@@ -586,7 +613,14 @@ def test_impact_analysis_mcp_examples_validate_and_dispatch(monkeypatch):
         "build_documentation_query_service",
         lambda _src, *, wiki_dir, limit: FixtureQueryService(limit),
     )
-    service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+    source_root = tmp_path / "source"
+    wiki_root = tmp_path / "wiki"
+    source_root.mkdir()
+    wiki_root.mkdir()
+    service = mcp_server.McpWikiService(
+        src_dir=source_root,
+        wiki_dir=wiki_root,
+    )
 
     for example in examples:
         query_type, value, limit = validate_query_graph_example(example)
@@ -649,6 +683,35 @@ def test_read_only_context_example_discloses_fresh_inventory_contract():
     )
     assert "performs a fresh source inventory" in normalized
     assert "does not reuse a previously persisted deep inventory" in normalized
+
+
+def test_independent_source_reading_skills_preserve_active_selection():
+    required_fragments = {
+        "attack-surface": (
+            "prepare-extractors --src-dir . --cache-dir <helper-cache>",
+            "extract --src-dir . --deep --read-only",
+        ),
+        "dep-vuln-triage": (
+            "prepare-extractors --src-dir . --source-selection <profile>",
+            "extract --src-dir . --deep --read-only --source-selection <profile>",
+        ),
+        "impact-analysis": (
+            "context --src-dir . --wiki-dir docs/llm_wiki",
+        ),
+        "dep-audit": (
+            "lint --strict --profile --src-dir .",
+            "ci-check --src-dir .",
+        ),
+    }
+    for skill_id, fragments in required_fragments.items():
+        text = (
+            skills.BUNDLED_SKILLS_ROOT / skill_id / "SKILL.md"
+        ).read_text(encoding="utf-8")
+        normalized = " ".join(text.split())
+        assert "--source-selection <profile>" in normalized
+        assert "omit the whole option only when no profile exists" in normalized
+        for fragment in fragments:
+            assert fragment in normalized
 
 
 def test_known_invalid_skill_contracts_are_absent_and_cache_handoff_is_explicit():

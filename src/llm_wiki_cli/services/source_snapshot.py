@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import stat
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from fnmatch import fnmatch
@@ -26,7 +27,17 @@ from ..extractors.common import (
     is_generated_javascript_bundle_path,
     normalize_include_tests,
 )
-from .validation import require_repository_relative_path
+from .source_selection import (
+    SOURCE_SELECTION_INPUTS_SCHEMA_VERSION,
+    SourceSelectionError,
+    SourceSelectionPolicy,
+    locate_exact_repository_path,
+    path_is_link_or_reparse,
+    path_is_selected,
+    resolve_source_selection,
+    selection_may_contain_path,
+)
+from .validation import portable_path_key, require_repository_relative_path
 
 if TYPE_CHECKING:
     from .knowledge_envelope import ConsumedInput
@@ -74,6 +85,7 @@ _INPUT_KIND_ORDER = (
     _YAML_INPUT_KIND,
     _SOURCE_INPUT_KIND,
 )
+_UNSET_EXPECTED_SELECTION_INPUTS = object()
 
 
 class SourceSnapshotError(ValueError):
@@ -112,6 +124,106 @@ class SourceSnapshot:
     gitignore_fingerprint: str
     captured_content_hashes: dict[str, str]
     captured_input_kinds: dict[str, tuple[str, ...]]
+    source_selection_policy: SourceSelectionPolicy | None = None
+    selected_regular_paths: frozenset[str] = frozenset()
+    gitignore_rules: tuple[_GitignoreRule, ...] = ()
+
+    @property
+    def source_selection_path(self) -> str | None:
+        """Return the repository-relative policy path, when configured."""
+        policy = self.source_selection_policy
+        return None if policy is None else policy.path
+
+    @property
+    def source_selection_origin(self) -> str | None:
+        """Return whether selection was discovered by default or explicitly."""
+        policy = self.source_selection_policy
+        return None if policy is None else policy.origin
+
+    @property
+    def source_selection_fingerprint(self) -> str | None:
+        """Return the semantic policy fingerprint, when configured."""
+        policy = self.source_selection_policy
+        return None if policy is None else policy.fingerprint
+
+    @property
+    def source_selection_identity(self) -> dict[str, str] | None:
+        """Return the canonical persisted policy identity, when configured."""
+        policy = self.source_selection_policy
+        return None if policy is None else policy.identity
+
+    @property
+    def source_selection_inputs(self) -> dict[str, object] | None:
+        """Return exact configured profile/gitignore content commitments."""
+
+        if self.source_selection_policy is None:
+            return None
+        inputs = [
+            {
+                "path": path,
+                "content_hash": self.captured_content_hashes[path],
+            }
+            for path, kinds in sorted(self.captured_input_kinds.items())
+            if _SELECTION_INPUT_KIND in kinds
+        ]
+        return {
+            "schema_version": SOURCE_SELECTION_INPUTS_SCHEMA_VERSION,
+            "inputs": inputs,
+        }
+
+    def path_is_effectively_selected(self, path: str) -> bool:
+        """Evaluate configured selection rules for an existing or missing path.
+
+        ``selected_regular_paths`` is the finite, readable boundary for live
+        reads.  This predicate intentionally omits the existence requirement so
+        Git deletions can still be classified without re-admitting ignored,
+        globally excluded, agent-worktree, or bundled-helper paths.
+        """
+
+        normalized = _validate_repository_path(path, "selected_path")
+        policy = self.source_selection_policy
+        if policy is None:
+            return True
+        if normalized == policy.path or not path_is_selected(policy, normalized):
+            return False
+        relative = Path(normalized)
+        if not EXCLUDED_DIRS.isdisjoint(relative.parts):
+            return False
+        if is_agent_worktree_path(normalized):
+            return False
+        if is_bundled_helper_implementation_path(self.root / relative):
+            return False
+        matcher = GitIgnoreMatcher(list(self.gitignore_rules))
+        ignored = matcher.is_ignored(normalized)
+        language = _language_for_path(relative, frozenset())
+        return not ignored or _is_rescuable_typescript_src_lib_file(
+            matcher,
+            relative,
+            language,
+        )
+
+    def path_may_contain_effective_selection(self, path: str) -> bool:
+        """Return whether a directory remains reachable by the live rules."""
+
+        normalized = path.replace("\\", "/").strip("/")
+        if normalized in {"", "."}:
+            return True
+        normalized = _validate_repository_path(normalized, "selected_directory")
+        policy = self.source_selection_policy
+        if policy is None:
+            return True
+        if not selection_may_contain_path(policy, normalized):
+            return False
+        relative = Path(normalized)
+        if not EXCLUDED_DIRS.isdisjoint(relative.parts):
+            return False
+        if is_agent_worktree_path(normalized):
+            return False
+        matcher = GitIgnoreMatcher(list(self.gitignore_rules))
+        return not _directory_ignored(
+            matcher,
+            normalized,
+        ) or _is_rescuable_typescript_src_lib_directory(matcher, relative)
 
     def language_paths(self, language: str) -> list[str]:
         """Return deterministic relative paths for a language."""
@@ -199,17 +311,50 @@ class SourceSnapshot:
         content_hashes = dict(self.captured_content_hashes)
         input_kinds = dict(self.captured_input_kinds)
         all_source_paths = set(self.all_source_paths)
+        portable_paths = {
+            portable_path_key(path): path for path in self.selected_regular_paths
+        }
         root = self.root.resolve()
         for index, raw_path in enumerate(paths):
             path = _validate_repository_path(
                 raw_path,
                 f"inventory_paths[{index}]",
             )
+            if self.source_selection_policy is not None:
+                if path == self.source_selection_policy.path or not path_is_selected(
+                    self.source_selection_policy, path
+                ):
+                    continue
             if path in content_hashes:
                 continue
+            key = portable_path_key(path)
+            previous = portable_paths.setdefault(key, path)
+            if previous != path:
+                raise SourceSnapshotError(
+                    f"inventory_paths[{index}]",
+                    "collides across supported filesystems with "
+                    f"{previous!r}: {path!r}",
+                )
             candidate = root / path
             if is_bundled_helper_implementation_path(candidate):
                 continue
+            if self.source_selection_policy is not None:
+                try:
+                    exact_candidate = locate_exact_repository_path(root, path)
+                except SourceSelectionError as exc:
+                    raise SourceSnapshotError(
+                        f"inventory_paths[{index}]",
+                        "must not traverse a symlink or reparse point and must "
+                        f"use exact filesystem case: {path!r}",
+                    ) from exc
+                if exact_candidate is None:
+                    raise SourceSnapshotError(
+                        f"inventory_paths[{index}]",
+                        f"must use exact filesystem case for a selected file: {path!r}",
+                    )
+                candidate = exact_candidate
+                if path not in self.selected_regular_paths:
+                    continue
             try:
                 resolved = candidate.resolve(strict=True)
                 resolved.relative_to(root)
@@ -241,6 +386,9 @@ class SourceSnapshot:
             gitignore_fingerprint=self.gitignore_fingerprint,
             captured_content_hashes=content_hashes,
             captured_input_kinds=input_kinds,
+            source_selection_policy=self.source_selection_policy,
+            selected_regular_paths=self.selected_regular_paths,
+            gitignore_rules=self.gitignore_rules,
         )
 
 
@@ -255,10 +403,13 @@ class _SnapshotBuckets:
     gitignore_contents: dict[str, bytes | None]
     gitignore_rules: list[_GitignoreRule]
     include_tests: frozenset[str]
+    source_selection_policy: SourceSelectionPolicy | None
+    selected_regular_paths: set[str]
 
 
 def _new_snapshot_buckets(
     include_tests: Iterable[str] | None = None,
+    source_selection_policy: SourceSelectionPolicy | None = None,
 ) -> _SnapshotBuckets:
     return _SnapshotBuckets(
         files_by_language={language: [] for language in LANGUAGE_EXTENSIONS},
@@ -276,6 +427,8 @@ def _new_snapshot_buckets(
         gitignore_contents={},
         gitignore_rules=[],
         include_tests=normalize_include_tests(include_tests),
+        source_selection_policy=source_selection_policy,
+        selected_regular_paths=set(),
     )
 
 
@@ -465,7 +618,10 @@ def _is_rescuable_typescript_src_lib_file(
     )
 
 
-def _empty_source_snapshot(root: Path) -> SourceSnapshot:
+def _empty_source_snapshot(
+    root: Path,
+    source_selection_policy: SourceSelectionPolicy | None = None,
+) -> SourceSnapshot:
     return SourceSnapshot(
         root=root,
         files_by_language={language: () for language in LANGUAGE_EXTENSIONS},
@@ -484,6 +640,9 @@ def _empty_source_snapshot(root: Path) -> SourceSnapshot:
         gitignore_fingerprint=_sha256_labeled_contents({}),
         captured_content_hashes={},
         captured_input_kinds={},
+        source_selection_policy=source_selection_policy,
+        selected_regular_paths=frozenset(),
+        gitignore_rules=(),
     )
 
 
@@ -512,20 +671,61 @@ def _record_gitignore_rules(
     buckets: _SnapshotBuckets,
 ) -> None:
     gitignore = current_dir / ".gitignore"
-    if not gitignore.is_file():
+    policy = buckets.source_selection_policy
+    if policy is None:
+        if not gitignore.is_file():
+            return
+        base = "" if rel_dir == Path(".") else rel_dir.as_posix()
+        rel_path = gitignore.relative_to(root).as_posix()
+        try:
+            content = gitignore.read_bytes()
+        except OSError:
+            content = None
+        buckets.gitignore_contents[rel_path] = content
+        if content is not None:
+            buckets.gitignore_rules.extend(
+                _parse_gitignore_text(content.decode("utf-8"), base)
+            )
+        return
+
+    rel_path = gitignore.relative_to(root).as_posix()
+    try:
+        metadata = gitignore.lstat()
+    except FileNotFoundError:
+        return
+    except OSError as exc:
+        raise SourceSnapshotError(
+            "source_selection",
+            f"cannot inspect applicable selection input: {rel_path!r}",
+        ) from exc
+    if path_is_link_or_reparse(gitignore):
+        rel_path = gitignore.relative_to(root).as_posix()
+        raise SourceSnapshotError(
+            "source_selection",
+            f"applicable selection input must not be a symlink or reparse "
+            f"point: {rel_path!r}",
+        )
+    if not stat.S_ISREG(metadata.st_mode):
         return
 
     base = "" if rel_dir == Path(".") else rel_dir.as_posix()
-    rel_path = gitignore.relative_to(root).as_posix()
     try:
         content = gitignore.read_bytes()
-    except OSError:
-        content = None
+    except OSError as exc:
+        raise SourceSnapshotError(
+            "source_selection",
+            f"cannot read applicable selection input: {rel_path!r}",
+        ) from exc
     buckets.gitignore_contents[rel_path] = content
-    if content is not None:
+    try:
         buckets.gitignore_rules.extend(
             _parse_gitignore_text(content.decode("utf-8"), base)
         )
+    except UnicodeDecodeError as exc:
+        raise SourceSnapshotError(
+            "source_selection",
+            f"applicable selection input must contain UTF-8 text: {rel_path!r}",
+        ) from exc
 
 
 def _only_set_contains_path_under(only_set: set[str] | None, rel_path: str) -> bool:
@@ -537,24 +737,46 @@ def _only_set_contains_path_under(only_set: set[str] | None, rel_path: str) -> b
 
 
 def _prune_dirnames(
+    root: Path,
     dirnames: list[str],
     rel_dir: Path,
     matcher: GitIgnoreMatcher,
     only_set: set[str] | None,
+    buckets: _SnapshotBuckets,
 ) -> None:
     kept_dirnames = []
     for name in dirnames:
         if name in EXCLUDED_DIRS:
             continue
         child_rel = name if rel_dir == Path(".") else (rel_dir / name).as_posix()
+        policy = buckets.source_selection_policy
+        if policy is not None:
+            try:
+                if not selection_may_contain_path(policy, child_rel):
+                    continue
+            except SourceSelectionError as exc:
+                raise SourceSnapshotError(
+                    "source_selection",
+                    f"selected directory is not portable: {child_rel!r}",
+                ) from exc
         child_is_agent_worktree = is_agent_worktree_path(child_rel)
-        if child_is_agent_worktree and not _only_set_contains_path_under(
-            only_set, child_rel
+        if child_is_agent_worktree and (
+            policy is not None
+            or not _only_set_contains_path_under(only_set, child_rel)
         ):
             continue
+        if policy is not None and path_is_link_or_reparse(root / child_rel):
+            raise SourceSnapshotError(
+                "source_selection",
+                f"selected directory must not be a symlink or reparse point: "
+                f"{child_rel!r}",
+            )
         if (
             _directory_ignored(matcher, child_rel)
-            and not _only_set_contains_path_under(only_set, child_rel)
+            and (
+                policy is not None
+                or not _only_set_contains_path_under(only_set, child_rel)
+            )
             and not _is_rescuable_typescript_src_lib_directory(matcher, Path(child_rel))
         ):
             continue
@@ -650,6 +872,28 @@ def _record_source_file(
     path = current_dir / filename
     if is_bundled_helper_implementation_path(path):
         return
+    try:
+        lexical_rel = path.relative_to(root).as_posix()
+    except ValueError:
+        return
+    policy = buckets.source_selection_policy
+    if policy is not None:
+        if lexical_rel == policy.path:
+            return
+        try:
+            if not path_is_selected(policy, lexical_rel):
+                return
+        except SourceSelectionError as exc:
+            raise SourceSnapshotError(
+                "source_selection",
+                f"selected file is not portable: {lexical_rel!r}",
+            ) from exc
+        if path_is_link_or_reparse(path):
+            raise SourceSnapshotError(
+                "source_selection",
+                f"selected file must not be a symlink or reparse point: "
+                f"{lexical_rel!r}",
+            )
     rel = _relative_to_root(path, root)
     if rel is None:
         return
@@ -661,21 +905,35 @@ def _record_source_file(
     if not resolved.is_file() or not EXCLUDED_DIRS.isdisjoint(rel.parts):
         return
     if is_agent_worktree_path(rel_posix) and (
-        only_set is None or rel_posix not in only_set
+        policy is not None or only_set is None or rel_posix not in only_set
     ):
         return
 
     package_source_file = _make_source_file(root, resolved, rel, None)
-    if _is_package_marker(resolved):
+    if policy is None and _is_package_marker(resolved):
         _append_sorted(buckets.package_markers, package_source_file)
 
     language = _language_for_path(resolved, buckets.include_tests)
+    ignored = matcher.is_ignored(rel_posix)
+    rescued_typescript = _is_rescuable_typescript_src_lib_file(
+        matcher, rel, language
+    )
     if (
-        matcher.is_ignored(rel_posix)
-        and (only_set is None or rel_posix not in only_set)
-        and not _is_rescuable_typescript_src_lib_file(matcher, rel, language)
+        ignored
+        and (
+            policy is not None
+            or only_set is None
+            or rel_posix not in only_set
+        )
+        and not rescued_typescript
     ):
         return
+
+    if policy is not None and (not ignored or rescued_typescript):
+        if filename != ".gitignore":
+            buckets.selected_regular_paths.add(rel_posix)
+        if policy is not None and _is_package_marker(resolved):
+            _append_sorted(buckets.package_markers, package_source_file)
 
     _record_infrastructure_candidates(resolved, package_source_file, buckets)
     if _record_generated_javascript_bundle_candidate(
@@ -698,10 +956,73 @@ def _collect_source_tree(
 
         _record_gitignore_rules(root, current_dir, rel_dir, buckets)
         matcher = GitIgnoreMatcher(buckets.gitignore_rules)
-        _prune_dirnames(dirnames, rel_dir, matcher, only_set)
+        _prune_dirnames(root, dirnames, rel_dir, matcher, only_set, buckets)
 
         for filename in filenames:
             _record_source_file(root, current_dir, filename, matcher, only_set, buckets)
+
+
+def _collect_source_selection_controls(
+    root: Path,
+    buckets: _SnapshotBuckets,
+) -> None:
+    """Capture only applicable profile/ignore inputs without reading source files."""
+
+    for dirpath, dirnames, _filenames in os.walk(
+        root,
+        topdown=True,
+        followlinks=False,
+    ):
+        current_dir = Path(dirpath)
+        rel_dir = _relative_to_root(current_dir, root)
+        if rel_dir is None or _is_excluded_walk_directory(rel_dir, None):
+            dirnames[:] = []
+            continue
+        _record_gitignore_rules(root, current_dir, rel_dir, buckets)
+        matcher = GitIgnoreMatcher(buckets.gitignore_rules)
+        _prune_dirnames(root, dirnames, rel_dir, matcher, None, buckets)
+
+
+def capture_source_selection_inputs(
+    src_dir: str | Path,
+    *,
+    source_selection: str | Path | None = None,
+    selection_policy: SourceSelectionPolicy | None = None,
+) -> dict[str, object] | None:
+    """Capture exact selection-control commitments before any selected-file read."""
+
+    root = Path(src_dir).resolve()
+    policy = _resolve_snapshot_selection(
+        root,
+        source_selection=source_selection,
+        selection_policy=selection_policy,
+    )
+    if policy is None:
+        return None
+    buckets = _new_snapshot_buckets(None, policy)
+    if root.exists():
+        _collect_source_selection_controls(root, buckets)
+    return _selection_inputs_from_buckets(buckets)
+
+
+def _selection_inputs_from_buckets(
+    buckets: _SnapshotBuckets,
+) -> dict[str, object] | None:
+    policy = buckets.source_selection_policy
+    if policy is None:
+        return None
+    inputs = [
+        {"path": policy.path, "content_hash": policy.raw_content_hash},
+        *[
+            {"path": path, "content_hash": _sha256_bytes(content)}
+            for path, content in sorted(buckets.gitignore_contents.items())
+            if content is not None and path != policy.path
+        ],
+    ]
+    return {
+        "schema_version": SOURCE_SELECTION_INPUTS_SCHEMA_VERSION,
+        "inputs": sorted(inputs, key=lambda item: str(item["path"])),
+    }
 
 
 def _add_captured_input_candidates(
@@ -721,6 +1042,7 @@ def _captured_snapshot_inputs(
     yaml_files: tuple[SourceFile, ...],
     package_markers: tuple[SourceFile, ...],
     gitignore_contents: Mapping[str, bytes | None],
+    source_selection_policy: SourceSelectionPolicy | None,
 ) -> tuple[dict[str, str], dict[str, tuple[str, ...]]]:
     candidates: dict[str, set[str]] = {}
     files_by_path: dict[str, SourceFile] = {}
@@ -739,16 +1061,21 @@ def _captured_snapshot_inputs(
     for path, content in gitignore_contents.items():
         if content is not None:
             candidates.setdefault(path, set()).add(_SELECTION_INPUT_KIND)
+    if source_selection_policy is not None:
+        candidates.setdefault(source_selection_policy.path, set()).add(
+            _SELECTION_INPUT_KIND
+        )
 
     content_hashes: dict[str, str] = {}
     input_kinds: dict[str, tuple[str, ...]] = {}
     for path in sorted(candidates):
         gitignore_content = gitignore_contents.get(path)
-        content_hash = (
-            _sha256_bytes(gitignore_content)
-            if gitignore_content is not None
-            else _sha256_file(files_by_path[path].abs_path)
-        )
+        if source_selection_policy is not None and path == source_selection_policy.path:
+            content_hash = source_selection_policy.raw_content_hash
+        elif gitignore_content is not None:
+            content_hash = _sha256_bytes(gitignore_content)
+        else:
+            content_hash = _sha256_file(files_by_path[path].abs_path)
         if content_hash is None:
             continue
         content_hashes[path] = content_hash
@@ -758,6 +1085,15 @@ def _captured_snapshot_inputs(
 
 
 def _build_source_snapshot(root: Path, buckets: _SnapshotBuckets) -> SourceSnapshot:
+    if (
+        buckets.source_selection_policy is not None
+        and not buckets.selected_regular_paths
+    ):
+        raise SourceSnapshotError(
+            "source_selection",
+            "configured selection is effectively empty after ignore and global "
+            "source exclusions",
+        )
     sorted_languages = {
         language: tuple(sorted(source_files, key=lambda item: item.rel_path))
         for language, source_files in buckets.files_by_language.items()
@@ -790,6 +1126,7 @@ def _build_source_snapshot(root: Path, buckets: _SnapshotBuckets) -> SourceSnaps
         yaml_files=yaml_files,
         package_markers=package_markers,
         gitignore_contents=buckets.gitignore_contents,
+        source_selection_policy=buckets.source_selection_policy,
     )
 
     return SourceSnapshot(
@@ -804,6 +1141,9 @@ def _build_source_snapshot(root: Path, buckets: _SnapshotBuckets) -> SourceSnaps
         gitignore_fingerprint=_sha256_labeled_contents(buckets.gitignore_contents),
         captured_content_hashes=captured_content_hashes,
         captured_input_kinds=captured_input_kinds,
+        source_selection_policy=buckets.source_selection_policy,
+        selected_regular_paths=frozenset(buckets.selected_regular_paths),
+        gitignore_rules=tuple(buckets.gitignore_rules),
     )
 
 
@@ -860,10 +1200,63 @@ def _format_unsupported_language_count(language: str, data: dict[str, object]) -
     return f"{label}={count} ({', '.join(shown)}{suffix})"
 
 
+def _policies_match(
+    left: SourceSelectionPolicy,
+    right: SourceSelectionPolicy,
+) -> bool:
+    return (
+        left.source_root == right.source_root
+        and left.path == right.path
+        and left.fingerprint == right.fingerprint
+        and left.raw_content_hash == right.raw_content_hash
+    )
+
+
+def _resolve_snapshot_selection(
+    root: Path,
+    *,
+    source_selection: str | Path | None,
+    selection_policy: SourceSelectionPolicy | None,
+) -> SourceSelectionPolicy | None:
+    if selection_policy is None:
+        return resolve_source_selection(root, source_selection)
+    if not isinstance(selection_policy, SourceSelectionPolicy):
+        raise SourceSnapshotError(
+            "selection_policy", "must be a resolved source-selection policy"
+        )
+    if selection_policy.source_root != root:
+        raise SourceSnapshotError(
+            "selection_policy",
+            "must be bound to the same resolved source root as the snapshot",
+        )
+    requested_path: str | Path = (
+        selection_policy.path if source_selection is None else source_selection
+    )
+    try:
+        current = resolve_source_selection(root, requested_path)
+    except SourceSelectionError as exc:
+        raise SourceSnapshotError(
+            "selection_policy",
+            "does not match a current readable explicit selection file",
+        ) from exc
+    if current is None or not _policies_match(selection_policy, current):
+        raise SourceSnapshotError(
+            "selection_policy",
+            "does not match the current explicit selection file",
+        )
+    return selection_policy
+
+
 def build_source_snapshot(
     src_dir: str | Path,
     only_files: Iterable[str] | None = None,
     include_tests: Iterable[str] | None = None,
+    *,
+    source_selection: str | Path | None = None,
+    selection_policy: SourceSelectionPolicy | None = None,
+    expected_selection_inputs: Mapping[str, object] | None | object = (
+        _UNSET_EXPECTED_SELECTION_INPUTS
+    ),
 ) -> SourceSnapshot:
     """Build a deterministic source-tree snapshot rooted at *src_dir*.
 
@@ -873,11 +1266,23 @@ def build_source_snapshot(
     existing infrastructure and package behavior.
     """
     root = Path(src_dir).resolve()
+    policy = _resolve_snapshot_selection(
+        root,
+        source_selection=source_selection,
+        selection_policy=selection_policy,
+    )
     only_set = _normalize_only_files(root, only_files)
 
     if not root.exists():
-        return _empty_source_snapshot(root)
+        return _empty_source_snapshot(root, policy)
 
-    buckets = _new_snapshot_buckets(include_tests)
+    buckets = _new_snapshot_buckets(include_tests, policy)
     _collect_source_tree(root, only_set, buckets)
+    if expected_selection_inputs is not _UNSET_EXPECTED_SELECTION_INPUTS:
+        current_inputs = _selection_inputs_from_buckets(buckets)
+        if current_inputs != expected_selection_inputs:
+            raise SourceSnapshotError(
+                "source_selection",
+                "applicable source-selection inputs changed during snapshot capture",
+            )
     return _build_source_snapshot(root, buckets)

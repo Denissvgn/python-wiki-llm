@@ -55,6 +55,7 @@ def build_surface_index(
     entity_occurrence_page_cache: Optional[Mapping[tuple[str, str, int], str]] = None,
     module_page_map: Optional[Mapping[str, str]] = None,
     entry_points: Optional[Sequence[Mapping[str, Any]]] = None,
+    workflow_entries: Optional[Sequence[Mapping[str, Any]]] = None,
     page_source_overrides: Optional[Mapping[str, Optional[str]]] = None,
 ) -> dict[str, Any]:
     """Build the deterministic wiki surface index payload."""
@@ -67,6 +68,7 @@ def build_surface_index(
             entity_occurrence_page_cache=entity_occurrence_page_cache,
             module_page_map=module_page_map,
             entry_points=entry_points,
+            workflow_entries=workflow_entries,
             page_source_overrides=page_source_overrides,
         ).payload
     )
@@ -81,6 +83,7 @@ def evaluate_surface_index(
     entity_occurrence_page_cache: Optional[Mapping[tuple[str, str, int], str]] = None,
     module_page_map: Optional[Mapping[str, str]] = None,
     entry_points: Optional[Sequence[Mapping[str, Any]]] = None,
+    workflow_entries: Optional[Sequence[Mapping[str, Any]]] = None,
     page_source_overrides: Optional[Mapping[str, Optional[str]]] = None,
 ) -> SurfaceIndexEvaluation:
     """Collect pages/assets once and build exact surface-index v1 bytes."""
@@ -99,6 +102,7 @@ def evaluate_surface_index(
             entity_occurrence_page_cache=entity_occurrence_page_cache,
             module_page_map=module_page_map,
             entry_points=entry_points,
+            workflow_entries=workflow_entries,
         ),
         src_root,
         page_source_overrides=page_source_overrides,
@@ -169,6 +173,7 @@ def write_surface_index(
     entity_occurrence_page_cache: Optional[Mapping[tuple[str, str, int], str]] = None,
     module_page_map: Optional[Mapping[str, str]] = None,
     entry_points: Optional[Sequence[Mapping[str, Any]]] = None,
+    workflow_entries: Optional[Sequence[Mapping[str, Any]]] = None,
     page_source_overrides: Optional[Mapping[str, Optional[str]]] = None,
 ) -> tuple[Path, str]:
     """Write the surface index artifact and return ``(path, state)``."""
@@ -183,6 +188,7 @@ def write_surface_index(
         entity_occurrence_page_cache=entity_occurrence_page_cache,
         module_page_map=module_page_map,
         entry_points=entry_points,
+        workflow_entries=workflow_entries,
         page_source_overrides=page_source_overrides,
     )
     if existed and path.read_bytes() == evaluation.serialized_bytes:
@@ -280,6 +286,7 @@ def _source_maps(
     entity_occurrence_page_cache: Optional[Mapping[tuple[str, str, int], str]],
     module_page_map: Optional[Mapping[str, str]],
     entry_points: Optional[Sequence[Mapping[str, Any]]],
+    workflow_entries: Optional[Sequence[Mapping[str, Any]]],
 ) -> dict[tuple[PageKind, str], Optional[str]]:
     sources: dict[tuple[PageKind, str], Optional[str]] = {}
     for filepath, file_data in inventory.items():
@@ -312,6 +319,13 @@ def _source_maps(
         if flow_id:
             sources[(PageKind.FLOWS, str(flow_id))] = _safe_source_path(
                 entry.get("file") or entry.get("source_path"),
+                src_root,
+            )
+    for workflow in workflow_entries or []:
+        name = workflow.get("name")
+        if name:
+            sources[(PageKind.WORKFLOWS, str(name))] = _safe_source_path(
+                workflow.get("source_path"),
                 src_root,
             )
     return sources

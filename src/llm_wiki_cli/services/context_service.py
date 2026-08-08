@@ -37,6 +37,7 @@ from .documentation_queries import (
     DocumentationGraphQueryService,
     DocumentationQueryError,
 )
+from .documentation_query_builder import validate_live_query_source_selection
 from .extraction_jobs import (
     ExtractionJobPlan,
     ExtractionJobRequest,
@@ -78,6 +79,12 @@ from .knowledge_verification import (
     verification_summaries_for_concepts,
 )
 from .sync_manifest import SyncManifest
+from .source_snapshot import (
+    SourceSnapshot,
+    build_source_snapshot,
+    capture_source_selection_inputs,
+)
+from .source_selection import SourceSelectionError, resolve_source_selection
 from .validation import nonnegative_int_or_none
 from .wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
@@ -87,6 +94,7 @@ from .wiki_surface_index import (
 from .extraction_service import (
     InventoryResult,
     _git_changed_files,
+    _partition_snapshot_git_changes,
     analyze_data_flow,
     build_data_flow_context,
     build_flow,
@@ -178,6 +186,8 @@ def get_inventory(
     job_request: ExtractionJobRequest | None = None,
     plan_reporter: Callable[[ExtractionJobPlan], None] | None = None,
     include_plugins: bool = True,
+    source_selection: str | Path | None = None,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> dict | InventoryResult:
     """Context-local inventory helper kept patchable for protocol tests."""
     inventory_options: dict[str, Any] = {
@@ -187,6 +197,8 @@ def get_inventory(
         ),
         "job_request": job_request,
         "plan_reporter": plan_reporter,
+        "source_selection": source_selection,
+        "source_snapshot": source_snapshot,
     }
     if not include_plugins:
         inventory_options["include_plugins"] = False
@@ -199,6 +211,26 @@ def get_inventory(
             _extractor_failure_message(inventory_result), "src_dir"
         )
     return inventory_result if return_result else inventory_result.inventory
+
+
+def _selected_git_changed_files(
+    src_dir: str,
+    source_snapshot: SourceSnapshot | None,
+) -> list[str] | None:
+    changed = _git_changed_files(src_dir)
+    if (
+        changed is None
+        or source_snapshot is None
+        or source_snapshot.source_selection_policy is None
+    ):
+        return changed
+    selected, boundary_changed = _partition_snapshot_git_changes(
+        changed,
+        source_snapshot,
+    )
+    if boundary_changed:
+        return list(source_snapshot.all_source_paths)
+    return selected
 
 
 # ── Token estimation ──────────────────────────────────────────────────
@@ -1106,11 +1138,25 @@ def _build_protocol_enrichment(
 
     try:
         wiki_root = validate_path(wiki_dir, "--wiki-dir")
+        source_snapshot = (
+            inventory_result.source_snapshot
+            if inventory_result is not None
+            else None
+        )
         entrypoints = get_entry_points(
             inventory,
-            console_scripts=read_console_scripts(str(src_root)),
+            console_scripts=read_console_scripts(
+                str(src_root),
+                source_snapshot=source_snapshot,
+            ),
             root=src_root,
-            fallback_root=Path.cwd(),
+            fallback_root=(
+                None
+                if source_snapshot is not None
+                and source_snapshot.source_selection_policy is not None
+                and src_root.resolve() != Path.cwd().resolve()
+                else Path.cwd()
+            ),
         )
         call_edges = resolve_call_edges(inventory) if entrypoints else []
         flows = [build_flow(entrypoint, call_edges) for entrypoint in entrypoints]
@@ -2131,12 +2177,40 @@ def _build_context(
     wiki_dir: str = DEFAULT_WIKI_DIR,
     job_request: ExtractionJobRequest | None = None,
     plan_reporter: Callable[[ExtractionJobPlan], None] | None = None,
+    source_selection: str | Path | None = None,
 ) -> tuple[dict, list[str]]:
     """Build a context payload and return ``(payload, warnings)``."""
     src_root = validate_source_root(
         src_dir,
         "--src-dir",
         allow_external=allow_external_src,
+    )
+    try:
+        selection_policy = resolve_source_selection(src_root, source_selection)
+        selection_inputs = capture_source_selection_inputs(
+            src_root,
+            source_selection=source_selection,
+            selection_policy=selection_policy,
+        )
+        validate_live_query_source_selection(
+            source_root=src_root,
+            wiki_root=validate_path(wiki_dir, "--wiki-dir"),
+            live_identity=(
+                selection_policy.identity if selection_policy is not None else None
+            ),
+            live_selection_inputs=selection_inputs,
+            operation="context query",
+            allow_empty_wiki=True,
+        )
+    except PathValidationError as exc:
+        raise ProtocolRequestError(str(exc), "wiki_dir") from exc
+    except (DocumentationQueryError, SourceSelectionError) as exc:
+        raise ProtocolRequestError(str(exc), "source_selection") from exc
+    source_snapshot = build_source_snapshot(
+        src_root,
+        source_selection=source_selection,
+        selection_policy=selection_policy,
+        expected_selection_inputs=selection_inputs,
     )
 
     collected_inventory = get_inventory(
@@ -2145,6 +2219,8 @@ def _build_context(
         return_result=True,
         job_request=job_request,
         plan_reporter=plan_reporter,
+        source_selection=source_selection,
+        source_snapshot=source_snapshot,
     )
     inventory_result = (
         collected_inventory
@@ -2160,6 +2236,38 @@ def _build_context(
         raise ProtocolRequestError(
             "Source extraction returned an invalid inventory.", "src_dir"
         )
+    try:
+        source_snapshot = (
+            inventory_result.source_snapshot
+            if inventory_result is not None
+            else None
+        )
+        snapshot_identity = getattr(
+            source_snapshot,
+            "source_selection_identity",
+            None,
+        )
+        if snapshot_identity is not None:
+            live_selection_identity = snapshot_identity
+        else:
+            policy = resolve_source_selection(src_root, source_selection)
+            live_selection_identity = policy.identity if policy is not None else None
+        validate_live_query_source_selection(
+            source_root=src_root,
+            wiki_root=validate_path(wiki_dir, "--wiki-dir"),
+            live_identity=live_selection_identity,
+            live_selection_inputs=getattr(
+                source_snapshot,
+                "source_selection_inputs",
+                None,
+            ),
+            operation="context query",
+            allow_empty_wiki=True,
+        )
+    except PathValidationError as exc:
+        raise ProtocolRequestError(str(exc), "wiki_dir") from exc
+    except (DocumentationQueryError, SourceSelectionError) as exc:
+        raise ProtocolRequestError(str(exc), "source_selection") from exc
     filters = filters or {}
     inventory = _apply_protocol_filters(raw_inventory, filters)
     warnings: list[str] = []
@@ -2207,7 +2315,10 @@ def _build_context(
     include_neighbors = "neighbors" in focus_values
 
     if focus_mode == "changed":
-        changed = _git_changed_files(str(src_root))
+        changed = _selected_git_changed_files(
+            str(src_root),
+            inventory_result.source_snapshot if inventory_result is not None else None,
+        )
         if changed is None:
             warnings.append(
                 "Could not get changed files from git. Treating all files as high priority."
@@ -2328,6 +2439,7 @@ def _run_protocol(args) -> None:
             wiki_dir=getattr(args, "wiki_dir", DEFAULT_WIKI_DIR),
             job_request=ExtractionJobRequest.resolved(1),
             plan_reporter=print_extraction_job_plan,
+            source_selection=getattr(args, "source_selection", None),
         )
     except ProtocolRequestError as exc:
         _emit_protocol_error(exc)
@@ -2352,6 +2464,7 @@ def _run_packet_output(
     prefer_fresh: bool,
     output_path: str | None,
     allow_external_src: bool,
+    source_selection: str | Path | None,
 ) -> None:
     """Build and emit canonical QCP bytes for the CLI-only packet format."""
 
@@ -2374,6 +2487,7 @@ def _run_packet_output(
             read_only=True,
             job_request=ExtractionJobRequest.resolved(1),
             plan_reporter=print_extraction_job_plan,
+            source_selection=source_selection,
         )
     except (ContextPacketError, PathValidationError, ProtocolRequestError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
@@ -2404,6 +2518,7 @@ def run(args) -> None:
     read_only: bool = getattr(args, "read_only", False)
     wiki_dir: str = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     prefer_fresh: bool = bool(getattr(args, "prefer_fresh", False))
+    source_selection = getattr(args, "source_selection", None)
 
     if budget is None:
         print("Error: --budget is required unless --request is used.", file=sys.stderr)
@@ -2422,6 +2537,7 @@ def run(args) -> None:
             prefer_fresh=prefer_fresh,
             output_path=output_path,
             allow_external_src=allow_external_src,
+            source_selection=source_selection,
         )
         return
     try:
@@ -2437,6 +2553,7 @@ def run(args) -> None:
             wiki_dir=wiki_dir,
             job_request=ExtractionJobRequest.resolved(1),
             plan_reporter=print_extraction_job_plan,
+            source_selection=source_selection,
         )
     except ProtocolRequestError as exc:
         print(f"Error: {exc}", file=sys.stderr)

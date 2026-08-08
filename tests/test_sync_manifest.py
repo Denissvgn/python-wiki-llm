@@ -15,6 +15,12 @@ from llm_wiki_cli.services.knowledge_evidence import (
     hash_file,
     sha256_bytes,
 )
+from llm_wiki_cli.services.source_selection import (
+    SOURCE_SELECTION_IDENTITY_SCHEMA_VERSION,
+    SOURCE_SELECTION_INPUTS_SCHEMA_VERSION,
+    SOURCE_SELECTION_SCHEMA_VERSION,
+    SourceSelectionPolicy,
+)
 from llm_wiki_cli.services.sync_manifest import (
     EVIDENCE_NOT_RECORDED,
     LEGACY_EVIDENCE_UNAVAILABLE,
@@ -30,6 +36,7 @@ from llm_wiki_cli.services.sync_manifest import (
     ManifestTombstone,
     SyncManifest,
     SyncManifestError,
+    prune_manifest_for_source_selection,
 )
 
 EXTRACTOR_REF = "python-ast"
@@ -186,6 +193,145 @@ def _valid_v5_payload() -> dict:
         },
         "tombstones": {},
     }
+
+
+def _selection_policy(root: Path) -> SourceSelectionPolicy:
+    return SourceSelectionPolicy(
+        schema_version=SOURCE_SELECTION_SCHEMA_VERSION,
+        include=("src",),
+        exclude=(),
+        source_root=root,
+        path=".llm-wiki/source-selection.json",
+        origin="default",
+        raw_content_hash=sha256_bytes(b"selection bytes"),
+    )
+
+
+def test_manifest_strictly_validates_optional_source_selection_identity():
+    payload = _valid_v5_payload()
+    payload["generation_inputs"] = {
+        "source_selection": {
+            "schema_version": SOURCE_SELECTION_IDENTITY_SCHEMA_VERSION,
+            "path": ".llm-wiki/source-selection.json",
+            "fingerprint": sha256_bytes(b"semantic policy"),
+        },
+        "source_selection_inputs": {
+            "schema_version": SOURCE_SELECTION_INPUTS_SCHEMA_VERSION,
+            "inputs": [
+                {
+                    "path": ".llm-wiki/source-selection.json",
+                    "content_hash": sha256_bytes(b"selection bytes"),
+                }
+            ],
+        },
+    }
+
+    assert SyncManifest.from_payload(payload).generation_inputs == payload[
+        "generation_inputs"
+    ]
+
+    malformed = deepcopy(payload)
+    malformed["generation_inputs"]["source_selection"]["fingerprint"] = "invalid"
+    with pytest.raises(
+        SyncManifestError,
+        match=r"generation_inputs\.source_selection\.fingerprint",
+    ):
+        SyncManifest.from_payload(malformed)
+
+    identity_only = deepcopy(payload)
+    del identity_only["generation_inputs"]["source_selection_inputs"]
+    with pytest.raises(
+        SyncManifestError,
+        match=r"generation_inputs\.source_selection_inputs",
+    ):
+        SyncManifest.from_payload(identity_only)
+
+    inputs_only = deepcopy(payload)
+    del inputs_only["generation_inputs"]["source_selection"]
+    with pytest.raises(
+        SyncManifestError,
+        match=r"generation_inputs\.source_selection",
+    ):
+        SyncManifest.from_payload(inputs_only)
+
+
+def test_legacy_manifest_without_source_selection_identity_remains_compatible():
+    manifest = SyncManifest.from_payload(_valid_v5_payload())
+
+    assert "source_selection" not in manifest.generation_inputs
+    assert SyncManifest.from_payload(manifest.to_payload()).to_json() == (
+        manifest.to_json()
+    )
+
+
+def test_source_selection_pruning_erases_excluded_prior_state(tmp_path: Path):
+    payload = _valid_v5_payload()
+    source_hash = sha256_bytes(b"excluded source")
+    payload["sources"]["tests/test_app.py"] = {
+        "hash": source_hash,
+        "semantic_hash": sha256_bytes(b"excluded semantic"),
+        "language": "python",
+        "entities": [],
+        "entity_pages": {},
+        "entity_page_occurrences": [],
+        "module_page": "test_app",
+    }
+    payload["page_source_mappings"]["modules/test_app.md"] = {
+        "scope": MODULE_OBSERVATION_SCOPE,
+        "source_path": "tests/test_app.py",
+    }
+    payload["evidence_baselines"]["modules/test_app.md"] = {
+        "state": "known",
+        "basis": {
+            "scope": MODULE_OBSERVATION_SCOPE,
+            "source_path": "tests/test_app.py",
+            "extractor_ref": EXTRACTOR_REF,
+            "source_content_hash": source_hash,
+            "concept_observation_hash": SECOND_CONCEPT_HASH,
+        },
+    }
+    payload["page_source_mappings"]["modules/old.md"] = {
+        "scope": MODULE_OBSERVATION_SCOPE,
+        "source_path": "old/out.py",
+    }
+    payload["tombstones"]["modules/old.md"] = {
+        "reason": TOMBSTONE_UNKNOWN_PROVENANCE,
+        "unknown_reason": MANIFEST_STATE_UNAVAILABLE,
+    }
+    payload["artifact_hashes"] = {
+        "surface_index_hash": SURFACE_HASH,
+        "knowledge_index_hash": KNOWLEDGE_HASH,
+        "evaluated_envelope_hash": ENVELOPE_HASH,
+    }
+    manifest = SyncManifest.from_payload(payload)
+
+    result = prune_manifest_for_source_selection(
+        manifest,
+        _selection_policy(tmp_path),
+    )
+
+    assert result.deselected_source_paths == ("old/out.py", "tests/test_app.py")
+    assert result.deselected_page_paths == (
+        "modules/old.md",
+        "modules/test_app.md",
+    )
+    assert set(result.manifest.sources) == {"src/app.py"}
+    assert set(result.manifest.page_source_mappings) == {"modules/app.md"}
+    assert set(result.manifest.evidence_baselines) == {"modules/app.md"}
+    assert result.manifest.tombstones == {}
+    assert result.manifest.artifact_hashes is None
+
+
+def test_source_selection_pruning_has_exact_no_policy_compatibility():
+    manifest = SyncManifest.from_payload(_valid_v5_payload())
+    before = manifest.to_json()
+
+    result = prune_manifest_for_source_selection(manifest, None)
+
+    assert result.manifest is manifest
+    assert result.deselected_source_paths == ()
+    assert result.deselected_page_paths == ()
+    assert result.manifest.to_json() == before
 
 
 def test_v4_migration_preserves_values_and_recovers_duplicate_occurrences():

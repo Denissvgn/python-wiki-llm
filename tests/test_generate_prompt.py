@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import inspect
+import json
 import os
 import stat
 import textwrap
@@ -13,6 +14,14 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.commands import generate_prompt_cmd
+from llm_wiki_cli.services.documentation_queries import DocumentationQueryError
+from llm_wiki_cli.services.source_selection import (
+    SOURCE_SELECTION_SCHEMA_VERSION,
+    resolve_source_selection,
+    with_source_selection_generation_input,
+)
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
+from llm_wiki_cli.services.sync_manifest import SyncManifest
 from llm_wiki_cli.services.wiki_git_policy import (
     WikiGitDisposition,
     WikiGitPolicy,
@@ -47,6 +56,20 @@ def _policy(disposition: WikiGitDisposition) -> WikiGitPolicy:
         reason=disposition.value,
         repository_root=Path.cwd(),
         wiki_path="docs/llm_wiki",
+    )
+
+
+def _write_selection_profile(path: Path, include: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": [include],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
     )
 
 
@@ -169,6 +192,225 @@ class TestGeneratePromptWritesFile:
         assert content.count("[REDACTED:credential]") == 3
         assert content.endswith("[3 credential-like values redacted]\n")
 
+    def test_configured_prompt_pins_profile_and_uses_selected_diffs_only(
+        self, tmp_project, monkeypatch
+    ):
+        Path("selected").mkdir()
+        Path("excluded").mkdir()
+        Path("selected/app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        Path("excluded/secret.py").write_text("SECRET = 1\n", encoding="utf-8")
+        profile = Path("config/team selection.json")
+        _write_selection_profile(profile, "selected")
+        policy = resolve_source_selection(".", profile.as_posix())
+        assert policy is not None
+        snapshot = build_source_snapshot(
+            ".",
+            source_selection=profile.as_posix(),
+        )
+        wiki = Path("docs/llm_wiki")
+        wiki.mkdir(parents=True)
+        SyncManifest(
+            generation_inputs=with_source_selection_generation_input(
+                {},
+                policy.identity,
+                snapshot.source_selection_inputs,
+            )
+        ).save(wiki)
+        diff = (
+            "diff --git a/selected/app.py b/selected/app.py\n"
+            "--- a/selected/app.py\n+++ b/selected/app.py\n@@ -1 +1 @@\n"
+            "+VALUE = 2\n"
+            "diff --git a/excluded/secret.py b/excluded/secret.py\n"
+            "--- a/excluded/secret.py\n+++ b/excluded/secret.py\n@@ -1 +1 @@\n"
+            "+SECRET = 2\n"
+        )
+        monkeypatch.setattr(generate_prompt_cmd, "_git_diff", lambda: diff)
+
+        generate_prompt_cmd.run(
+            _make_args(source_selection=profile.as_posix())
+        )
+
+        content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
+        assert "--source-selection 'config/team selection.json'" in content
+        assert "Never run an unrestricted Git diff" in content
+        assert "git diff --stat HEAD~1..HEAD" not in content
+        assert "excluded/secret.py" not in content
+        selected_diff = generate_prompt_cmd._selected_prompt_diff(
+            diff,
+            src_dir=".",
+            wiki_dir=wiki.as_posix(),
+            source_selection=profile.as_posix(),
+        )
+        assert "selected/app.py" in selected_diff
+        assert "excluded/secret.py" not in selected_diff
+
+    def test_external_prompt_recipes_preserve_source_authorization(
+        self, tmp_project, monkeypatch
+    ):
+        external = tmp_project.parent / "external source"
+        selected = external / "selected"
+        selected.mkdir(parents=True)
+        (selected / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        profile = external / "selection.json"
+        _write_selection_profile(profile, "selected")
+        snapshot = build_source_snapshot(
+            external,
+            source_selection="selection.json",
+        )
+        wiki = Path("docs/llm_wiki")
+        wiki.mkdir(parents=True)
+        SyncManifest(
+            generation_inputs=with_source_selection_generation_input(
+                {},
+                snapshot.source_selection_identity,
+                snapshot.source_selection_inputs,
+            )
+        ).save(wiki)
+        monkeypatch.setattr(
+            generate_prompt_cmd,
+            "_prompt_git_diff",
+            lambda _src_dir: (
+                "diff --git a/selected/app.py b/selected/app.py\n"
+                "--- a/selected/app.py\n"
+                "+++ b/selected/app.py\n"
+                "@@ -1 +1 @@\n"
+                "+VALUE = 2\n"
+            ),
+        )
+
+        generate_prompt_cmd.run(
+            _make_args(
+                src_dir=str(external),
+                allow_external_src=True,
+                source_selection="selection.json",
+            )
+        )
+
+        content = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
+        source_commands = [
+            line
+            for line in content.splitlines()
+            if line.startswith(("llm-wiki extract", "llm-wiki sync", "llm-wiki lint"))
+        ]
+        assert source_commands
+        assert all("--allow-external-src" in line for line in source_commands)
+        assert all("--source-selection selection.json" in line for line in source_commands)
+        assert f"git -C '{external}' diff" in content
+        assert "\ngit diff" not in content
+
+    def test_selection_preflight_runs_before_git_diff(
+        self, tmp_project, monkeypatch
+    ):
+        Path("selected-a").mkdir()
+        Path("selected-b").mkdir()
+        Path("selected-a/app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        Path("selected-b/app.py").write_text("VALUE = 2\n", encoding="utf-8")
+        profile_a = Path("config/a.json")
+        profile_b = Path("config/b.json")
+        _write_selection_profile(profile_a, "selected-a")
+        _write_selection_profile(profile_b, "selected-b")
+        policy_a = resolve_source_selection(".", profile_a.as_posix())
+        assert policy_a is not None
+        snapshot_a = build_source_snapshot(
+            ".",
+            source_selection=profile_a.as_posix(),
+        )
+        wiki = Path("docs/llm_wiki")
+        wiki.mkdir(parents=True)
+        SyncManifest(
+            generation_inputs=with_source_selection_generation_input(
+                {},
+                policy_a.identity,
+                snapshot_a.source_selection_inputs,
+            )
+        ).save(wiki)
+        monkeypatch.setattr(
+            generate_prompt_cmd,
+            "_git_diff",
+            lambda: pytest.fail("Git diff must not run before selection validation"),
+        )
+
+        with pytest.raises(DocumentationQueryError, match="llm-wiki sync"):
+            generate_prompt_cmd.run(
+                _make_args(source_selection=profile_b.as_posix())
+            )
+
+    def test_omitted_persisted_profile_fails_before_source_snapshot(
+        self, tmp_project, monkeypatch
+    ):
+        Path("selected").mkdir()
+        Path("selected/app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        profile = Path("config/explicit.json")
+        _write_selection_profile(profile, "selected")
+        snapshot = build_source_snapshot(
+            ".",
+            source_selection=profile.as_posix(),
+        )
+        wiki = Path("docs/llm_wiki")
+        wiki.mkdir(parents=True)
+        SyncManifest(
+            generation_inputs=with_source_selection_generation_input(
+                {},
+                snapshot.source_selection_identity,
+                snapshot.source_selection_inputs,
+            )
+        ).save(wiki)
+        monkeypatch.setattr(
+            generate_prompt_cmd,
+            "build_source_snapshot",
+            lambda *_args, **_kwargs: pytest.fail(
+                "source snapshot must not be built before persisted-boundary validation"
+            ),
+        )
+        monkeypatch.setattr(
+            generate_prompt_cmd,
+            "_prompt_git_diff",
+            lambda _src_dir: pytest.fail(
+                "Git diff must not run before persisted-boundary validation"
+            ),
+        )
+
+        with pytest.raises(DocumentationQueryError, match="source-selection"):
+            generate_prompt_cmd.run(_make_args())
+
+    def test_changed_selection_controls_fail_before_source_snapshot(
+        self, tmp_project, monkeypatch
+    ):
+        selected = Path("selected")
+        selected.mkdir()
+        (selected / "keep.py").write_text("KEEP = 1\n", encoding="utf-8")
+        (selected / "secret.py").write_text("SECRET = 1\n", encoding="utf-8")
+        ignore = selected / ".gitignore"
+        ignore.write_text("secret.py\n", encoding="utf-8")
+        profile = Path("config/explicit.json")
+        _write_selection_profile(profile, "selected")
+        snapshot = build_source_snapshot(
+            ".",
+            source_selection=profile.as_posix(),
+        )
+        wiki = Path("docs/llm_wiki")
+        wiki.mkdir(parents=True)
+        SyncManifest(
+            generation_inputs=with_source_selection_generation_input(
+                {},
+                snapshot.source_selection_identity,
+                snapshot.source_selection_inputs,
+            )
+        ).save(wiki)
+        ignore.write_text("", encoding="utf-8")
+        monkeypatch.setattr(
+            generate_prompt_cmd,
+            "build_source_snapshot",
+            lambda *_args, **_kwargs: pytest.fail(
+                "source snapshot must not be built after selection controls change"
+            ),
+        )
+
+        with pytest.raises(DocumentationQueryError, match="inputs changed"):
+            generate_prompt_cmd.run(
+                _make_args(source_selection=profile.as_posix())
+            )
+
 
 class TestGeneratePromptPrintMode:
     def test_print_goes_to_stdout(self, tmp_project, capsys):
@@ -272,7 +514,9 @@ class TestGeneratePromptBuildPrompt:
         "disposition",
         [WikiGitDisposition.IGNORED, WikiGitDisposition.INDETERMINATE],
     )
-    def test_local_only_policy_omits_git_mutation_commands(self, disposition):
+    def test_local_only_policy_omits_git_mutation_commands(
+        self, tmp_project, disposition
+    ):
         prompt = generate_prompt_cmd._build_prompt(
             "docs/llm_wiki",
             ".",
@@ -287,7 +531,7 @@ class TestGeneratePromptBuildPrompt:
         assert "local-only" in prompt
         assert "do not stage, commit, push, tag" in prompt
 
-    def test_included_handoff_is_conditional_and_rechecked(self):
+    def test_included_handoff_is_conditional_and_rechecked(self, tmp_project):
         prompt = generate_prompt_cmd._build_prompt(
             "docs/llm_wiki",
             ".",

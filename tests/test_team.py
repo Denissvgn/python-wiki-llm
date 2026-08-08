@@ -18,12 +18,20 @@ from llm_wiki_cli.commands import (
     team_cmd,
 )
 from llm_wiki_cli.config import PathValidationError
-from llm_wiki_cli.services import plugins, team
+from llm_wiki_cli.services import extraction_service, plugins, team
 from llm_wiki_cli.services.knowledge_evidence import (
     MODULE_OBSERVATION_SCOPE,
     ConceptObservationBasis,
     sha256_bytes,
 )
+from llm_wiki_cli.services.source_selection import (
+    SOURCE_SELECTION_IDENTITY_SCHEMA_VERSION,
+    SOURCE_SELECTION_SCHEMA_VERSION,
+    SourceSelectionError,
+    resolve_source_selection,
+    with_source_selection_generation_input,
+)
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 from llm_wiki_cli.services.sync_manifest import (
     MANIFEST_REPAIR_UNAVAILABLE,
     TOMBSTONE_SOURCE_MISSING,
@@ -162,9 +170,7 @@ class TestTeamConfig:
             (("agent", "prompt_template"), 7, "prompt_template"),
         ],
     )
-    def test_invalid_config_field_types_are_rejected(
-        self, path, value, message
-    ):
+    def test_invalid_config_field_types_are_rejected(self, path, value, message):
         config = team.default_team_config()
         container = config
         for key in path[:-1]:
@@ -269,11 +275,24 @@ class TestTeamLintAndCheck:
         (project / "docs" / "llm_wiki").mkdir(parents=True)
         monkeypatch.chdir(project)
         seen = {}
+        def fake_inventory_result(src_dir, **kwargs):
+            seen["src_dir"] = src_dir
+            seen["gated_snapshot"] = kwargs["source_snapshot"]
+            return types.SimpleNamespace(
+                inventory={}, source_snapshot=kwargs["source_snapshot"]
+            )
+
+        def fake_docker_inventory(src_dir, *, source_snapshot):
+            seen["docker_src_dir"] = src_dir
+            seen["source_snapshot"] = source_snapshot
+            return {}
+
         monkeypatch.setattr(
             team_cmd,
-            "get_inventory",
-            lambda src_dir: seen.setdefault("src_dir", src_dir) or {},
+            "get_inventory_result",
+            fake_inventory_result,
         )
+        monkeypatch.setattr(team_cmd, "get_docker_inventory", fake_docker_inventory)
         monkeypatch.setattr(team, "build_team_issues", lambda *args, **kwargs: [])
 
         team_cmd.run(
@@ -287,7 +306,123 @@ class TestTeamLintAndCheck:
         )
 
         assert Path(seen["src_dir"]) == outside
+        assert Path(seen["docker_src_dir"]) == outside
+        assert seen["source_snapshot"] is seen["gated_snapshot"]
         assert "No team issues found" in capsys.readouterr().out
+
+    def test_team_check_filters_excluded_docker_and_yaml_sources(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        project = tmp_path / "project"
+        selected = project / "selected"
+        private = selected / "private"
+        private.mkdir(parents=True)
+        (selected / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        (selected / "Dockerfile").write_text("FROM alpine\n", encoding="utf-8")
+        (private / "Dockerfile").write_text("FROM busybox\n", encoding="utf-8")
+        (private / "deploy.yaml").write_text(
+            "services:\n  secret:\n    image: private\n",
+            encoding="utf-8",
+        )
+        profile = project / ".llm-wiki" / "source-selection.json"
+        profile.parent.mkdir()
+        profile.write_text(
+            json.dumps(
+                {
+                    "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                    "include": ["selected"],
+                    "exclude": ["selected/private"],
+                }
+            ),
+            encoding="utf-8",
+        )
+        (project / "docs" / "llm_wiki").mkdir(parents=True)
+        monkeypatch.chdir(project)
+        seen = {}
+
+        def capture_issues(*args, **kwargs):
+            seen["inventory"] = args[2]
+            seen["docker_inventory"] = kwargs["docker_inventory"]
+            return []
+
+        monkeypatch.setattr(team, "build_team_issues", capture_issues)
+
+        team_cmd.run(
+            _ns(
+                team_action="check",
+                src_dir=".",
+                wiki_dir="docs/llm_wiki",
+                format="text",
+                allow_external_src=False,
+            )
+        )
+
+        assert set(seen["inventory"]) == {"selected/app.py"}
+        assert set(seen["docker_inventory"]) == {"selected/Dockerfile"}
+        assert "No team issues found" in capsys.readouterr().out
+
+    @pytest.mark.parametrize("with_manifest", (False, True))
+    def test_team_check_gates_configured_unmanaged_or_mismatched_wiki_before_reads(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        with_manifest: bool,
+    ) -> None:
+        project = tmp_path / "project"
+        for directory in ("selected", "outside"):
+            path = project / directory
+            path.mkdir(parents=True, exist_ok=True)
+            (path / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        config = project / "config"
+        config.mkdir()
+        broad_path = config / "broad.json"
+        narrow_path = config / "narrow.json"
+        for path, include in (
+            (broad_path, ["selected", "outside"]),
+            (narrow_path, ["selected"]),
+        ):
+            path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                        "include": include,
+                        "exclude": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+        wiki = project / "docs" / "llm_wiki"
+        wiki.mkdir(parents=True)
+        (wiki / "index.md").write_text("SECRET SURFACE\n", encoding="utf-8")
+        if with_manifest:
+            broad = resolve_source_selection(project, "config/broad.json")
+            assert broad is not None
+            broad_snapshot = build_source_snapshot(project, selection_policy=broad)
+            SyncManifest(
+                generation_inputs=with_source_selection_generation_input(
+                    {},
+                    broad_snapshot.source_selection_identity,
+                    broad_snapshot.source_selection_inputs,
+                )
+            ).save(wiki)
+        monkeypatch.chdir(project)
+
+        def fail_issues(*_args, **_kwargs):
+            pytest.fail("team check must gate before conventions and wiki pages")
+
+        monkeypatch.setattr(team, "build_team_issues", fail_issues)
+
+        with pytest.raises(SourceSelectionError, match="persisted"):
+            team_cmd.run(
+                _ns(
+                    team_action="check",
+                    src_dir=".",
+                    wiki_dir=str(wiki),
+                    source_selection="config/narrow.json",
+                    format="text",
+                    allow_external_src=False,
+                )
+            )
 
     def test_team_check_allow_external_source_still_rejects_external_wiki(
         self, tmp_path, monkeypatch
@@ -389,6 +524,212 @@ class TestTeamPromptAndPluginRequirements:
 
 
 class TestTeamConflictResolver:
+    @pytest.mark.parametrize("write", [False, True])
+    def test_resolve_conflicts_rejects_unusable_manifest_before_extraction(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        write: bool,
+    ) -> None:
+        source = tmp_path / "source"
+        source.mkdir()
+        (source / "secret.py").write_text(
+            "class MustNotRead:\n    pass\n", encoding="utf-8"
+        )
+        wiki = tmp_path / "wiki"
+        module = wiki / "modules" / "secret.md"
+        module.parent.mkdir(parents=True)
+        module.write_text(_conflicted("ours", "theirs"), encoding="utf-8")
+        (wiki / ".llm-wiki-manifest.json").write_text(
+            '{"generation_inputs":{"source_selection":{"schema_version":'
+            '"llm-wiki-source-selection-identity/v1"',
+            encoding="utf-8",
+        )
+        monkeypatch.setattr(
+            extraction_service,
+            "get_inventory_result",
+            lambda *_args, **_kwargs: pytest.fail(
+                "an unusable managed manifest must fail before extraction"
+            ),
+        )
+
+        with pytest.raises(SourceSelectionError, match="cannot validate"):
+            team.resolve_conflicts(wiki, str(source), write=write)
+
+        assert "<<<<<<<" in module.read_text(encoding="utf-8")
+
+    def test_resolve_conflicts_gates_selection_before_page_scan_or_extraction(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        source = tmp_path / "source"
+        for directory in ("selected", "outside"):
+            path = source / directory
+            path.mkdir(parents=True, exist_ok=True)
+            (path / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        config = source / "config"
+        config.mkdir()
+        for name, include in (
+            ("broad.json", ["selected", "outside"]),
+            ("narrow.json", ["selected"]),
+        ):
+            (config / name).write_text(
+                json.dumps(
+                    {
+                        "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                        "include": include,
+                        "exclude": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+        broad = resolve_source_selection(source, "config/broad.json")
+        assert broad is not None
+        broad_snapshot = build_source_snapshot(source, selection_policy=broad)
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+        (wiki / "index.md").write_text(
+            _conflicted("SECRET OURS", "SECRET THEIRS"),
+            encoding="utf-8",
+        )
+        SyncManifest(
+            generation_inputs=with_source_selection_generation_input(
+                {},
+                broad_snapshot.source_selection_identity,
+                broad_snapshot.source_selection_inputs,
+            )
+        ).save(wiki)
+
+        def fail_inventory(*_args, **_kwargs):
+            pytest.fail("resolve-conflicts must gate before extraction/page scan")
+
+        monkeypatch.setattr(
+            extraction_service,
+            "get_inventory_result",
+            fail_inventory,
+        )
+
+        with pytest.raises(SourceSelectionError, match="persisted"):
+            team.resolve_conflicts(
+                wiki,
+                str(source),
+                write=True,
+                source_selection="config/narrow.json",
+            )
+
+    def test_infrastructure_conflicts_use_selected_docker_and_yaml_snapshot(
+        self,
+        tmp_path: Path,
+    ):
+        source = tmp_path / "source"
+        selected = source / "selected"
+        private = selected / "private"
+        private.mkdir(parents=True)
+        (selected / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        (selected / "Dockerfile").write_text("FROM alpine\n", encoding="utf-8")
+        (private / "deploy.yaml").write_text(
+            "services:\n  secret:\n    image: private\n",
+            encoding="utf-8",
+        )
+        profile = source / ".llm-wiki" / "source-selection.json"
+        profile.parent.mkdir()
+        profile.write_text(
+            json.dumps(
+                {
+                    "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                    "include": ["selected"],
+                    "exclude": ["selected/private"],
+                }
+            ),
+            encoding="utf-8",
+        )
+        infrastructure = tmp_path / "wiki" / "infrastructure"
+        infrastructure.mkdir(parents=True)
+        selected_page = infrastructure / "selected_Dockerfile.md"
+        excluded_page = infrastructure / "selected_private_deploy_yaml.md"
+        selected_page.write_text(_conflicted("ours", "theirs"), encoding="utf-8")
+        excluded_page.write_text(_conflicted("ours", "theirs"), encoding="utf-8")
+        snapshot = build_source_snapshot(source)
+        SyncManifest(
+            generation_inputs=with_source_selection_generation_input(
+                {},
+                snapshot.source_selection_identity,
+                snapshot.source_selection_inputs,
+            )
+        ).save(tmp_path / "wiki")
+
+        result = team.resolve_conflicts(
+            tmp_path / "wiki",
+            str(source),
+            write=False,
+        )
+
+        assert result["resolved"] == [
+            {
+                "path": "infrastructure/selected_Dockerfile.md",
+                "action": "regenerated infrastructure page",
+            }
+        ]
+        assert result["unresolved"] == [
+            {
+                "path": "infrastructure/selected_private_deploy_yaml.md",
+                "reason": (
+                    "infrastructure page does not map unambiguously to a live "
+                    "Docker/Compose file"
+                ),
+            }
+        ]
+
+    def test_manifest_writer_replaces_conflict_identity_with_live_selection(
+        self,
+        tmp_path: Path,
+    ):
+        source = tmp_path / "source"
+        selected = source / "selected"
+        selected.mkdir(parents=True)
+        (selected / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        profile = source / ".llm-wiki" / "source-selection.json"
+        profile.parent.mkdir()
+        profile.write_text(
+            json.dumps(
+                {
+                    "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                    "include": ["selected"],
+                    "exclude": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        snapshot = build_source_snapshot(source)
+        inventory = {
+            "selected/app.py": {
+                "language": "python",
+                "classes": [],
+                "functions": [],
+            }
+        }
+
+        content = team._manifest_content(
+            inventory,
+            str(source),
+            generation_inputs={
+                "preserved": True,
+                "source_selection": {
+                    "schema_version": SOURCE_SELECTION_IDENTITY_SCHEMA_VERSION,
+                    "path": "old/profile.json",
+                    "fingerprint": sha256_bytes(b"old selection"),
+                },
+            },
+            source_snapshot=snapshot,
+        )
+        manifest = SyncManifest.from_payload(json.loads(content))
+
+        assert manifest.generation_inputs["preserved"] is True
+        assert manifest.generation_inputs["source_selection"] == (
+            snapshot.source_selection_identity
+        )
+
     def test_dry_run_does_not_write_safe_module_resolution(self, tmp_project, capsys):
         _bootstrap()
         module_path = Path("docs/llm_wiki/modules/models.md")
@@ -501,7 +842,7 @@ class TestTeamConflictResolver:
         assert resolved.generation_inputs == manifest.generation_inputs
         assert resolved.artifact_hashes is None
 
-    def test_differing_v5_operational_state_requires_manual_resolution(
+    def test_differing_v5_operational_state_fails_closed_before_resolution(
         self, tmp_project
     ):
         _bootstrap()
@@ -517,18 +858,12 @@ class TestTeamConflictResolver:
             encoding="utf-8",
         )
 
-        result = team.resolve_conflicts(wiki, ".", write=True)
+        with pytest.raises(
+            SourceSelectionError,
+            match="cannot validate the managed wiki boundary from its conflicted manifest",
+        ):
+            team.resolve_conflicts(wiki, ".", write=True)
 
-        assert result["ok"] is False
-        assert result["unresolved"] == [
-            {
-                "path": ".llm-wiki-manifest.json",
-                "reason": (
-                    "manifest v5 operational state differs and requires "
-                    "manual resolution"
-                ),
-            }
-        ]
         assert "<<<<<<<" in manifest_path.read_text(encoding="utf-8")
 
     def test_workflow_conflict_is_left_unresolved(self, tmp_project):

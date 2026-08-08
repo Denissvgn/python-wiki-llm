@@ -21,7 +21,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .. import __version__
-from ..config import DEFAULT_WIKI_DIR, validate_path
+from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from ..services.concept_identity import AliasType, identity_coordinate_key
 from ..services.io import read_md, write_json_atomic, write_md
 from ..services.knowledge_artifacts import (
@@ -49,7 +49,15 @@ from ..services.knowledge_orchestration import (
     runtime_generation_options,
 )
 from ..services.paths import normalize_source_path
-from ..services.source_snapshot import SourceSnapshot, build_source_snapshot
+from ..services.source_selection import (
+    resolve_source_selection,
+    validate_persisted_source_selection_identity,
+)
+from ..services.source_snapshot import (
+    SourceSnapshot,
+    build_source_snapshot,
+    capture_source_selection_inputs,
+)
 from ..services.sync_manifest import (
     MANIFEST_FILENAME,
     MANIFEST_STATE_UNAVAILABLE,
@@ -591,8 +599,56 @@ def _match_existing_page(
     return None
 
 
-def _build_migration_plan(wiki_dir: Path, src_dir: str) -> MigrationPlan:
-    source_snapshot = build_source_snapshot(src_dir)
+def _build_migration_plan(
+    wiki_dir: Path,
+    src_dir: str,
+    *,
+    source_selection: str | Path | None = None,
+) -> MigrationPlan:
+    try:
+        previous_manifest = SyncManifest.load(wiki_dir)
+    except FileNotFoundError:
+        previous_manifest = None
+    selection_policy = resolve_source_selection(src_dir, source_selection)
+    persisted_generation_inputs = (
+        previous_manifest.generation_inputs
+        if previous_manifest is not None
+        else (
+            {}
+            if selection_policy is not None
+            and wiki_dir.is_dir()
+            and next(wiki_dir.iterdir(), None) is not None
+            else None
+        )
+    )
+    validate_persisted_source_selection_identity(
+        persisted_generation_inputs,
+        None if selection_policy is None else selection_policy.identity,
+        operation="migrate",
+    )
+    selection_inputs = capture_source_selection_inputs(
+        src_dir,
+        source_selection=source_selection,
+        selection_policy=selection_policy,
+    )
+    validate_persisted_source_selection_identity(
+        persisted_generation_inputs,
+        None if selection_policy is None else selection_policy.identity,
+        operation="migrate",
+        live_selection_inputs=selection_inputs,
+    )
+    source_snapshot = build_source_snapshot(
+        src_dir,
+        source_selection=source_selection,
+        selection_policy=selection_policy,
+        expected_selection_inputs=selection_inputs,
+    )
+    validate_persisted_source_selection_identity(
+        persisted_generation_inputs,
+        source_snapshot.source_selection_identity,
+        operation="migrate",
+        live_selection_inputs=source_snapshot.source_selection_inputs,
+    )
     inventory_result = get_inventory_result(
         src_dir,
         deep=True,
@@ -609,10 +665,6 @@ def _build_migration_plan(wiki_dir: Path, src_dir: str) -> MigrationPlan:
         inventory,
         module_page_map,
     )
-    try:
-        previous_manifest = SyncManifest.load(wiki_dir)
-    except (FileNotFoundError, json.JSONDecodeError, TypeError, ValueError):
-        previous_manifest = None
     targets, index_content = _build_targets(
         wiki_dir,
         src_dir,
@@ -632,7 +684,11 @@ def _build_migration_plan(wiki_dir: Path, src_dir: str) -> MigrationPlan:
         module_page_map=module_page_map,
         entity_occurrence_page_map=entity_occurrence_page_map,
         inventory_result=inventory_result,
-        repository_evidence=collect_runtime_repository_evidence(src_dir, wiki_dir),
+        repository_evidence=collect_runtime_repository_evidence(
+            src_dir,
+            wiki_dir,
+            source_snapshot=source_snapshot,
+        ),
     )
 
     active_pages = _active_managed_pages(wiki_dir, src_dir)
@@ -1318,6 +1374,7 @@ def _migration_runtime_inputs(
         or collect_runtime_repository_evidence(
             source_root,
             repository_wiki_dir or wiki_dir,
+            source_snapshot=plan.source_snapshot,
         )
     )
     return RuntimeKnowledgeInputs(
@@ -1577,7 +1634,14 @@ def run(args) -> None:
     chunk_size = getattr(args, "chunk_size", None)
     chunk_number = getattr(args, "chunk", None)
     plan_chunks = getattr(args, "plan_chunks", False)
-    validate_path(src_dir, "--src-dir")
+    allow_external = bool(getattr(args, "allow_external_src", False))
+    source_root = validate_source_root(
+        src_dir,
+        "--src-dir",
+        allow_external=allow_external,
+    )
+    if allow_external:
+        src_dir = str(source_root)
     validate_path(str(wiki_dir), "--wiki-dir")
 
     if chunk_size is None and (chunk_number is not None or plan_chunks):
@@ -1591,7 +1655,11 @@ def run(args) -> None:
     print(f"{'Planning' if dry_run else 'Migrating'} wiki at: {wiki_dir}")
     print(f"Source directory: {src_dir}")
 
-    plan = _build_migration_plan(wiki_dir, src_dir)
+    plan = _build_migration_plan(
+        wiki_dir,
+        src_dir,
+        source_selection=getattr(args, "source_selection", None),
+    )
     _print_migration_governance_plan(plan)
     if dry_run:
         print("DRY-RUN: no files will be modified.")

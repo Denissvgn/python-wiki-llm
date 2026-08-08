@@ -155,6 +155,7 @@ def _refresh_prepared_native_projection(
     source_root: Path,
     trust_source_plugins: bool,
     helper_cache_root: Path | None,
+    source_selection: str | Path | None,
 ) -> dict[str, Any]:
     before = capture_generated_ownership(wiki_root)
     artifact_snapshot = _capture_native_artifact_bytes(wiki_root)
@@ -171,6 +172,7 @@ def _refresh_prepared_native_projection(
             wiki_root=wiki_root,
             trust_source_plugins=trust_source_plugins,
             helper_cache_dir=helper_cache_root,
+            source_selection=source_selection,
         )
     except BaseException as exc:
         _rollback_native_artifact_bytes(
@@ -245,6 +247,7 @@ def _refresh_and_reanchor_native_projection(
         return None, None
 
     assert source_root is not None
+    selection_argument = _bound_source_selection_argument(run.policy)
     wiki_root = workspace_root / run.paths["wiki"]
     ownership_path = _workspace_path(
         workspace_root,
@@ -291,6 +294,7 @@ def _refresh_and_reanchor_native_projection(
                 run.policy.get("source_plugins_trusted", False)
             ),
             helper_cache_dir=runtime_paths.get("helper_cache_root"),
+            source_selection=selection_argument,
         )
     except BaseException as exc:
         _rollback_native_artifact_bytes(
@@ -720,17 +724,49 @@ def _assert_resume_compatible(
             "Prepared workspace uses a different source-plugin trust decision; request "
             "an explicit refresh or choose a new workspace."
         )
+    current_portable_policy = policy.to_portable_dict()
+    if (
+        run.policy.get("source_selection")
+        != current_portable_policy.get("source_selection")
+        or run.policy.get("source_selection_origin")
+        != current_portable_policy.get("source_selection_origin")
+    ):
+        raise DocumentationRunError(
+            "Prepared workspace uses a different source selection; request an "
+            "explicit refresh or choose a new workspace."
+        )
 
     source_evidence = run.evidence.get("source_baseline")
     if source_evidence and policy.source_root is not None:
         payload = _read_json(_workspace_path(workspace_root, source_evidence))
-        difference = compare_tree_baseline(
-            TreeBaseline.from_dict(payload), policy.source_root
+        difference = _compare_bound_source_baseline(
+            TreeBaseline.from_dict(payload),
+            policy.source_root,
+            current_portable_policy,
         )
         if not difference.ok:
             raise DocumentationRunError(
                 "Source content changed since prepare; use an explicit refresh or a "
                 f"new workspace. Differences: {difference.to_dict()}"
+            )
+    plugin_evidence = run.evidence.get("source_plugins_baseline")
+    if recorded_trust and policy.source_root is not None:
+        if not plugin_evidence:
+            raise DocumentationRunError(
+                "Prepared workspace lacks trusted source-plugin integrity evidence; "
+                "request an explicit refresh or choose a new workspace."
+            )
+        plugin_difference = _compare_bound_source_plugin_baseline(
+            TreeBaseline.from_dict(
+                _read_json(_workspace_path(workspace_root, plugin_evidence))
+            ),
+            policy.source_root,
+        )
+        if not plugin_difference.ok:
+            raise DocumentationRunError(
+                "Trusted source plugins changed since prepare; use an explicit "
+                "refresh or a new workspace. Differences: "
+                f"{plugin_difference.to_dict()}"
             )
     input_baseline = run.baseline.get("input_wiki")
     if isinstance(input_baseline, dict) and policy.input_wiki_root is not None:

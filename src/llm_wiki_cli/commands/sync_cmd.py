@@ -15,6 +15,7 @@ Workflow:
 from __future__ import annotations
 
 import os
+import json
 import re
 import shutil
 import sys
@@ -70,6 +71,7 @@ from ..services.infrastructure_sync import (
     InfrastructureSyncError,
     InfrastructureSyncPlan,
     build_infrastructure_sync_plan,
+    with_infrastructure_deselection_generation_input,
     with_infrastructure_generation_input,
 )
 from ..services.io import read_md, write_md
@@ -115,6 +117,14 @@ from ..services.markdown_sections import (
 )
 from ..services.module_maps import build_module_dependency_maps
 from ..services.paths import is_test_source_path
+from ..services.plugins import runtime_plugin_fallback_root
+from ..services.source_selection import (
+    SourceSelectionError,
+    SourceSelectionPolicy,
+    path_is_selected,
+    resolve_source_selection,
+    validate_persisted_source_selection_identity,
+)
 from ..services.source_snapshot import (
     SourceSnapshot,
     build_source_snapshot,
@@ -127,7 +137,9 @@ from ..services.sync_manifest import (
     MANIFEST_REPAIR_UNAVAILABLE,
     MANIFEST_STATE_UNAVAILABLE,
     MANIFEST_VERSION,  # noqa: F401 - compatibility re-export
+    SourceSelectionPruneResult,
     SyncManifest,
+    prune_manifest_for_source_selection,
     retained_concept_page_paths,
 )
 from ..services.sync_analysis import SyncDiff, compute_sync_diff as _compute_diff
@@ -151,7 +163,11 @@ from ..services.wiki_surface import (
     collect_wiki_pages,
     mcp_uri,
 )
-from ..services.wiki_surface_index import evaluate_surface_index
+from ..services.wiki_surface_index import (
+    SURFACE_INDEX_FILENAME,
+    WIKI_SURFACE_INDEX_SCHEMA_VERSION,
+    evaluate_surface_index,
+)
 from ..services.bootstrap_runtime import (
     _build_entity_relationship_summary_map,
     _build_relationships,
@@ -573,6 +589,7 @@ class _ApplyDiffContext:
     current_entity_pages: set[str]
     current_module_pages: set[str]
     preserve_semantic: bool
+    source_selection_policy: SourceSelectionPolicy | None = None
 
 
 @dataclass(frozen=True)
@@ -596,12 +613,36 @@ def _has_existing_module_dependency_sections(wiki_dir: Path) -> bool:
     return False
 
 
+def _fallback_dependency_analysis(
+    options: "_SyncRunOptions",
+    inventory: dict,
+    source_snapshot: SourceSnapshot | None,
+) -> dict:
+    if source_snapshot is None:
+        policy = resolve_source_selection(
+            options.src_dir,
+            options.source_selection,
+        )
+        if policy is not None:
+            raise SourceSelectionError(
+                "source_snapshot",
+                "configured sync dependency analysis requires the operation "
+                "source snapshot",
+            )
+    return analyze_dependencies(
+        inventory,
+        options.src_dir,
+        source_snapshot=source_snapshot,
+    )
+
+
 def _build_generated_section_context(
     options: "_SyncRunOptions",
     inventory: dict,
     *,
     call_edges: list[dict] | None = None,
     dependency_analysis: dict | None = None,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> "_GeneratedSectionContext":
     call_edges = call_edges if call_edges is not None else resolve_call_edges(inventory)
     entity_relationship_summaries = _build_entity_relationship_summary_map(
@@ -610,8 +651,10 @@ def _build_generated_section_context(
     )
     module_dependency_maps = None
     if _has_existing_module_dependency_sections(options.wiki_dir):
-        dependency_analysis = dependency_analysis or analyze_dependencies(
-            inventory, options.src_dir
+        dependency_analysis = dependency_analysis or _fallback_dependency_analysis(
+            options,
+            inventory,
+            source_snapshot,
         )
         module_dependency_maps = build_module_dependency_maps(dependency_analysis)
     else:
@@ -835,7 +878,12 @@ def _apply_entity_page(
         diagram_style=_generated_diagram_style(
             "relationships",
             root=ctx.src_dir,
-            fallback_root=Path.cwd(),
+            fallback_root=runtime_plugin_fallback_root(
+                ctx.src_dir,
+                source_selection_configured=(
+                    ctx.source_selection_policy is not None
+                ),
+            ),
             entity=relationship_summary.get("name"),
             file=relationship_summary.get("file"),
         ),
@@ -890,7 +938,12 @@ def _apply_module_page(
         diagram_style=_generated_diagram_style(
             "module_dependency",
             root=ctx.src_dir,
-            fallback_root=Path.cwd(),
+            fallback_root=runtime_plugin_fallback_root(
+                ctx.src_dir,
+                source_selection_configured=(
+                    ctx.source_selection_policy is not None
+                ),
+            ),
             file=filepath,
         )
         if module_dependency_map is not None
@@ -1039,6 +1092,12 @@ def _deprecate_removed_files(
         old_info = ctx.manifest.sources.get(filepath)
         if old_info is None:
             old_info = _removed_source_info_from_mappings(ctx.manifest, filepath)
+        if (
+            ctx.source_selection_policy is not None
+            and not path_is_selected(ctx.source_selection_policy, filepath)
+        ):
+            _remove_deselected_file_pages(ctx, filepath, old_info, result)
+            continue
         retained_entity_pages = _moved_entity_retained_page_names(
             ctx,
             diff,
@@ -1053,6 +1112,47 @@ def _deprecate_removed_files(
             retained_page_names=retained_entity_pages,
         )
         _deprecate_removed_module(ctx.wiki_dir, filepath, old_info, result)
+
+
+def _remove_deselected_file_pages(
+    ctx: _ApplyDiffContext,
+    filepath: str,
+    old_info: Mapping[str, object],
+    result: SyncResult,
+) -> None:
+    """Remove generated pages whose still-existing source left the policy set."""
+
+    raw_entities = old_info.get("entities", [])
+    entity_names = (
+        raw_entities
+        if isinstance(raw_entities, list | tuple)
+        else ()
+    )
+    for entity_name in entity_names:
+        page_name = _removed_entity_page_name(
+            ctx.wiki_dir,
+            str(entity_name),
+            filepath,
+            dict(old_info),
+        )
+        if page_name is None or page_name in ctx.current_entity_pages:
+            continue
+        page = ctx.wiki_dir / "entities" / f"{page_name}.md"
+        if page.is_file():
+            page.unlink()
+            result.deprecated += 1
+            print(f"  REMOVE deselected entity: {page_name}")
+
+    module_name = str(
+        old_info.get("module_page") or _module_name_from_path(filepath)
+    )
+    if module_name in ctx.current_module_pages:
+        return
+    module_page = ctx.wiki_dir / "modules" / f"{module_name}.md"
+    if module_page.is_file():
+        module_page.unlink()
+        result.deprecated += 1
+        print(f"  REMOVE deselected module: {module_name}")
 
 
 def _moved_entity_retained_page_names(
@@ -1177,7 +1277,12 @@ def _refresh_entity_relationship_sections(
                 diagram_style=_generated_diagram_style(
                     "relationships",
                     root=ctx.src_dir,
-                    fallback_root=Path.cwd(),
+                    fallback_root=runtime_plugin_fallback_root(
+                        ctx.src_dir,
+                        source_selection_configured=(
+                            ctx.source_selection_policy is not None
+                        ),
+                    ),
                     entity=relationship_summary.get("name"),
                     file=relationship_summary.get("file"),
                 ),
@@ -1228,7 +1333,12 @@ def _refresh_module_dependency_sections(
             diagram_style=_generated_diagram_style(
                 "module_dependency",
                 root=ctx.src_dir,
-                fallback_root=Path.cwd(),
+                fallback_root=runtime_plugin_fallback_root(
+                    ctx.src_dir,
+                    source_selection_configured=(
+                        ctx.source_selection_policy is not None
+                    ),
+                ),
                 file=filepath,
             ),
         )
@@ -1292,6 +1402,7 @@ def _build_apply_diff_context(
     generated_sections: _GeneratedSectionContext | None,
     diff: SyncDiff,
     preserve_semantic: bool,
+    source_selection_policy: SourceSelectionPolicy | None,
 ) -> _ApplyDiffContext:
     return _ApplyDiffContext(
         wiki_dir=wiki_dir,
@@ -1307,6 +1418,7 @@ def _build_apply_diff_context(
         current_entity_pages=set(entity_occurrence_page_cache.values()),
         current_module_pages=set(module_page_map.values()),
         preserve_semantic=preserve_semantic,
+        source_selection_policy=source_selection_policy,
     )
 
 
@@ -1322,6 +1434,7 @@ def _apply_diff(
     module_page_map: dict[str, str] | None = None,
     generated_sections: _GeneratedSectionContext | None = None,
     preserve_semantic: bool = True,
+    source_selection_policy: SourceSelectionPolicy | None = None,
 ) -> SyncResult:
     """Regenerate pages for new/changed files, deprecate pages for removed files."""
     entity_page_cache, entity_occurrence_page_cache, module_page_map = (
@@ -1352,6 +1465,7 @@ def _apply_diff(
         generated_sections=generated_sections,
         diff=diff,
         preserve_semantic=preserve_semantic,
+        source_selection_policy=source_selection_policy,
     )
 
     print("Applying wiki page changes...", flush=True)
@@ -1416,6 +1530,7 @@ class _SyncRunOptions:
     dry_run: bool
     openapi_file: str | None
     clear_openapi_file: bool
+    source_selection: str | Path | None
 
 
 @dataclass(frozen=True)
@@ -1503,6 +1618,16 @@ class _PreparedSyncRun:
     repository_evidence: RepositoryEvidence
     graph_observations: _RuntimeGraphObservations
     infrastructure_plan: InfrastructureSyncPlan
+    source_selection_prune: SourceSelectionPruneResult
+
+
+def _selection_pruning_has_changes(prepared: _PreparedSyncRun) -> bool:
+    return bool(
+        prepared.source_selection_prune.deselected_source_paths
+        or prepared.source_selection_prune.deselected_page_paths
+        or prepared.source_selection_prune.deselected_surface_page_paths
+        or prepared.infrastructure_plan.deselected_records
+    )
 
 
 def _updated_surface_policies(
@@ -1766,6 +1891,7 @@ def _print_dry_run_plan(
     diff: "SyncDiff",
     plan: _SurfaceInitializationPlan,
     infrastructure_plan: InfrastructureSyncPlan,
+    source_selection_prune: SourceSelectionPruneResult,
     manifest: SyncManifest,
     *,
     seed_manifest: bool,
@@ -1780,6 +1906,14 @@ def _print_dry_run_plan(
         f"{len(diff.new_files)} new, {len(diff.changed_files)} changed, "
         f"{len(diff.metadata_only_files)} metadata-only, "
         f"{len(diff.removed_files)} removed"
+    )
+    print(
+        "  source selection pruning: "
+        f"{len(source_selection_prune.deselected_source_paths)} source(s), "
+        f"{len(source_selection_prune.deselected_page_paths)} concept page(s), "
+        f"{len(source_selection_prune.deselected_surface_page_paths)} "
+        "generated surface page(s), "
+        f"{len(infrastructure_plan.deselected_records)} infrastructure record(s)"
     )
     infrastructure_label = (
         "deferred infrastructure sources"
@@ -1919,6 +2053,7 @@ def _manifest_openapi_path(manifest: "SyncManifest") -> str | None:
 def _resolve_openapi_generation_input(
     options: _SyncRunOptions,
     manifest: "SyncManifest",
+    source_snapshot: SourceSnapshot,
 ) -> tuple[str | None, dict[str, object]]:
     """Validate OpenAPI state before inventory/cache writes and update metadata."""
     generation_inputs = deepcopy(manifest.generation_inputs)
@@ -1929,7 +2064,11 @@ def _resolve_openapi_generation_input(
     selected = options.openapi_file or _manifest_openapi_path(manifest)
     if not selected:
         return None, generation_inputs
-    loaded = load_openapi_document(selected, source_root=options.src_dir)
+    loaded = load_openapi_document(
+        selected,
+        source_root=options.src_dir,
+        source_snapshot=source_snapshot,
+    )
     generation_inputs["openapi"] = {
         key: loaded[key] for key in ("path", "sha256", "format")
     }
@@ -1982,6 +2121,7 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
     exclude_tests = bool(getattr(args, "exclude_tests", False))
     openapi_file = getattr(args, "openapi_file", None)
     clear_openapi_file = bool(getattr(args, "clear_openapi_file", False))
+    source_selection = getattr(args, "source_selection", None)
     if openapi_file and clear_openapi_file:
         print(
             "Error: --openapi-file and --clear-openapi-file are mutually exclusive.",
@@ -2027,6 +2167,7 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
         dry_run=dry_run,
         openapi_file=str(openapi_file) if openapi_file else None,
         clear_openapi_file=clear_openapi_file,
+        source_selection=source_selection,
     )
 
 
@@ -2051,11 +2192,32 @@ def _load_or_seed_manifest(
     sys.exit(1)
 
 
-def _extract_current_inventory(options: _SyncRunOptions) -> _ExtractedSyncInventory:
+def _validate_persisted_source_selection(
+    options: _SyncRunOptions,
+    manifest: SyncManifest | None,
+) -> None:
+    if manifest is None:
+        return
+    current = resolve_source_selection(options.src_dir, options.source_selection)
+    validate_persisted_source_selection_identity(
+        manifest.generation_inputs,
+        None if current is None else current.identity,
+        operation="sync",
+        explicit_path_authorized=options.source_selection is not None,
+        allow_same_path_update=True,
+    )
+
+
+def _extract_current_inventory(
+    options: _SyncRunOptions,
+    *,
+    source_snapshot: SourceSnapshot | None = None,
+) -> _ExtractedSyncInventory:
     print("Extracting current source inventory...")
-    source_snapshot = build_source_snapshot(
+    source_snapshot = source_snapshot or build_source_snapshot(
         options.src_dir,
         include_tests=options.include_tests,
+        source_selection=options.source_selection,
     )
     inventory_result = get_inventory_result(
         options.src_dir,
@@ -2199,12 +2361,14 @@ def _apply_sync_changes(
     graph_observations: _RuntimeGraphObservations,
     infrastructure_plan: InfrastructureSyncPlan,
     source_snapshot: SourceSnapshot,
+    source_selection_prune: SourceSelectionPruneResult,
 ) -> "SyncResult":
     generated_sections = _build_generated_section_context(
         options,
         inventory,
         call_edges=graph_observations.resolved_call_edges,
         dependency_analysis=graph_observations.dependency_analysis,
+        source_snapshot=source_snapshot,
     )
     result = _apply_diff(
         diff,
@@ -2217,6 +2381,13 @@ def _apply_sync_changes(
         module_page_map=page_maps.module_page_map,
         generated_sections=generated_sections,
         preserve_semantic=options.preserve_semantic,
+        source_selection_policy=source_snapshot.source_selection_policy,
+    )
+    _apply_source_selection_prune(
+        options.wiki_dir,
+        source_selection_prune,
+        page_maps,
+        result,
     )
     _apply_infrastructure_plan(
         options,
@@ -2232,6 +2403,7 @@ def _apply_sync_changes(
         page_maps,
         surface_plan,
         graph_observations=graph_observations,
+        source_snapshot=source_snapshot,
     )
 
     _rebuild_index(
@@ -2263,8 +2435,141 @@ def _apply_sync_changes(
         result,
         surface_plan=surface_plan,
         infrastructure_plan=infrastructure_plan,
+        source_selection_prune=source_selection_prune,
     )
     return result
+
+
+def _apply_source_selection_prune(
+    wiki_dir: Path,
+    prune: SourceSelectionPruneResult,
+    page_maps: _SyncPageMaps,
+    result: SyncResult,
+) -> None:
+    retained = {
+        *(f"modules/{name}.md" for name in page_maps.module_page_map.values()),
+        *(
+            f"entities/{name}.md"
+            for name in page_maps.entity_occurrence_page_cache.values()
+        ),
+    }
+    for relative in prune.deselected_page_paths:
+        parts = Path(relative).parts
+        if (
+            len(parts) != 2
+            or parts[0] not in {"modules", "entities"}
+            or not parts[1].endswith(".md")
+            or parts[1] in {".md", "..md"}
+        ):
+            raise ValueError(
+                f"invalid persisted deselected concept page path: {relative!r}"
+            )
+        if relative in retained:
+            continue
+        path = wiki_dir / relative
+        if path.is_symlink():
+            raise ValueError(
+                f"refusing to remove symlinked deselected concept page: {relative}"
+            )
+        if path.is_file():
+            path.unlink()
+            result.deprecated += 1
+            print(f"  REMOVE deselected concept page: {relative}")
+    for relative in prune.deselected_surface_page_paths:
+        parts = Path(relative).parts
+        if (
+            len(parts) != 2
+            or parts[0] not in {PageKind.WORKFLOWS.value, PageKind.FLOWS.value}
+            or not parts[1].endswith(".md")
+            or parts[1] in {".md", "..md"}
+        ):
+            raise ValueError(
+                f"invalid persisted deselected surface page path: {relative!r}"
+            )
+        path = wiki_dir / relative
+        if path.is_symlink():
+            raise ValueError(
+                f"refusing to remove symlinked deselected surface page: {relative}"
+            )
+        if path.is_file():
+            path.unlink()
+            result.deprecated += 1
+            print(f"  REMOVE deselected generated surface page: {relative}")
+
+
+def _planned_generated_surface_prune(
+    wiki_dir: Path,
+    source_snapshot: SourceSnapshot,
+    inventory: Mapping[str, Mapping],
+    graph_observations: _RuntimeGraphObservations,
+) -> tuple[str, ...]:
+    """Return prior generated flow/workflow pages absent from the live boundary."""
+
+    if source_snapshot.source_selection_policy is None:
+        return ()
+    surface_path = wiki_dir / SURFACE_INDEX_FILENAME
+    if not surface_path.is_file():
+        return ()
+    try:
+        payload = json.loads(surface_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ValueError(
+            "cannot prove generated flow/workflow ownership from the prior "
+            "surface index"
+        ) from exc
+    if (
+        not isinstance(payload, Mapping)
+        or payload.get("schema_version") != WIKI_SURFACE_INDEX_SCHEMA_VERSION
+        or not isinstance(payload.get("pages"), list)
+    ):
+        raise ValueError(
+            "cannot prove generated flow/workflow ownership from the prior "
+            "surface index"
+        )
+
+    live_paths = {
+        canonical_path(PageKind.WORKFLOWS, name)
+        for name in get_call_graph(dict(inventory))
+    }
+    live_paths.update(
+        canonical_path(PageKind.FLOWS, str(entry["id"]))
+        for entry in graph_observations.surface_flow_entries
+        if entry.get("id")
+    )
+    deselected: set[str] = set()
+    for index, raw_page in enumerate(payload["pages"]):
+        if not isinstance(raw_page, Mapping):
+            raise ValueError(f"surface index pages[{index}] must be an object")
+        kind = raw_page.get("kind")
+        if kind not in {PageKind.WORKFLOWS.value, PageKind.FLOWS.value}:
+            continue
+        source_path = raw_page.get("source_path")
+        if source_path is None:
+            # No persisted source association means user ownership is not
+            # disproven; retain the page instead of deleting it speculatively.
+            continue
+        canonical = raw_page.get("canonical_path")
+        page_id = raw_page.get("id")
+        if not isinstance(source_path, str) or not isinstance(canonical, str):
+            raise ValueError(
+                f"surface index pages[{index}] has invalid generated ownership"
+            )
+        try:
+            expected = canonical_path(PageKind(kind), str(page_id))
+            source_selected = source_snapshot.path_is_effectively_selected(
+                source_path
+            )
+        except (SourceSelectionError, ValueError, WikiSurfaceError) as exc:
+            raise ValueError(
+                f"surface index pages[{index}] has invalid generated ownership"
+            ) from exc
+        if canonical != expected:
+            raise ValueError(
+                f"surface index pages[{index}] has a noncanonical generated path"
+            )
+        if not source_selected or canonical not in live_paths:
+            deselected.add(canonical)
+    return tuple(sorted(deselected))
 
 
 def _apply_surface_page_changes(
@@ -2274,6 +2579,7 @@ def _apply_surface_page_changes(
     surface_plan: _SurfaceInitializationPlan,
     *,
     graph_observations: _RuntimeGraphObservations | None = None,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> None:
     initializing = bool(options.initialize_surfaces)
     generation_options = runtime_generation_options(
@@ -2305,12 +2611,14 @@ def _apply_surface_page_changes(
             if graph_observations is not None
             else None
         ),
+        source_snapshot=source_snapshot,
     )
     _regenerate_dependency_pages(
         options,
         surface_plan.dependency_inventory,
         page_maps.module_page_map,
         dependency_analysis=surface_plan.dependency_analysis,
+        source_snapshot=source_snapshot,
         target_pages=(
             surface_plan.new_dependency_pages
             if initializing
@@ -2322,14 +2630,26 @@ def _apply_surface_page_changes(
 
 
 def _detect_sync_entry_points(
-    inventory: dict, src_dir: str
+    inventory: dict,
+    src_dir: str,
+    *,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> _SyncEntryPointAnalysis:
-    console_scripts = read_console_scripts(src_dir)
+    console_scripts = read_console_scripts(
+        src_dir,
+        source_snapshot=source_snapshot,
+    )
     observations = get_detailed_entry_points(
         inventory,
         console_scripts=console_scripts,
         root=src_dir,
-        fallback_root=Path.cwd(),
+        fallback_root=runtime_plugin_fallback_root(
+            src_dir,
+            source_selection_configured=(
+                source_snapshot is not None
+                and source_snapshot.source_selection_policy is not None
+            ),
+        ),
         include_warnings=True,
     )
     for warning in observations.pop("warnings", []):
@@ -2653,19 +2973,58 @@ def _with_planned_infrastructure_state(
     )
 
 
+def _with_planned_infrastructure_deselection_state(
+    plan: _SurfaceInitializationPlan,
+    infrastructure_plan: InfrastructureSyncPlan,
+) -> _SurfaceInitializationPlan:
+    if not infrastructure_plan.has_deselection_changes:
+        return plan
+    generation_inputs = with_infrastructure_deselection_generation_input(
+        plan.generation_inputs,
+        infrastructure_plan,
+    )
+    return replace(
+        plan,
+        generation_inputs=generation_inputs,
+        generation_inputs_changed=(
+            plan.generation_inputs_changed
+            or generation_inputs != plan.generation_inputs
+        ),
+    )
+
+
 def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
     manifest, seed_manifest = _load_or_seed_manifest(options)
     if manifest is None and not seed_manifest:
         return None
 
     baseline_manifest = manifest or SyncManifest()
+    _validate_persisted_source_selection(options, manifest)
     _preflight_sync_governance(options.wiki_dir, baseline_manifest)
-    selected_openapi, generation_inputs = _resolve_openapi_generation_input(
-        options, baseline_manifest
-    )
     print(f"Syncing wiki from source: {options.src_dir}")
     print(f"Wiki directory: {options.wiki_dir}")
-    extracted = _extract_current_inventory(options)
+    source_snapshot = build_source_snapshot(
+        options.src_dir,
+        include_tests=options.include_tests,
+        source_selection=options.source_selection,
+    )
+    source_selection_prune = prune_manifest_for_source_selection(
+        baseline_manifest,
+        source_snapshot.source_selection_policy,
+        source_snapshot=source_snapshot,
+    )
+    baseline_manifest = source_selection_prune.manifest
+    if manifest is not None:
+        manifest = baseline_manifest
+    selected_openapi, generation_inputs = _resolve_openapi_generation_input(
+        options,
+        baseline_manifest,
+        source_snapshot,
+    )
+    extracted = _extract_current_inventory(
+        options,
+        source_snapshot=source_snapshot,
+    )
     inventory_result = extracted.result
     source_snapshot = extracted.source_snapshot
     inventory = inventory_result.inventory
@@ -2687,8 +3046,13 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
         inventory,
         openapi_file=selected_openapi,
         source_root=options.src_dir,
+        source_snapshot=source_snapshot,
     )
-    entrypoint_analysis = _detect_sync_entry_points(inventory, options.src_dir)
+    entrypoint_analysis = _detect_sync_entry_points(
+        inventory,
+        options.src_dir,
+        source_snapshot=source_snapshot,
+    )
     entries = attach_routes_to_entry_points(entrypoint_analysis.entries, contracts)
     contracts = _linked_api_contracts(contracts, entries)
     diff = _compute_sync_diff(
@@ -2718,11 +3082,17 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
         page_maps=maps,
         source_snapshot=source_snapshot,
     )
-    if not seed_manifest and not repair_only and not options.initialize_surfaces:
-        surface_plan = _with_planned_infrastructure_state(
-            surface_plan,
-            infrastructure_plan,
-        )
+    if not seed_manifest:
+        if repair_only or options.initialize_surfaces:
+            surface_plan = _with_planned_infrastructure_deselection_state(
+                surface_plan,
+                infrastructure_plan,
+            )
+        else:
+            surface_plan = _with_planned_infrastructure_state(
+                surface_plan,
+                infrastructure_plan,
+            )
     graph_observations = _build_sync_graph_observations(
         options,
         inventory,
@@ -2734,9 +3104,23 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
         data_effect_observations=inventory_result.data_effect_observations,
         import_observations=inventory_result.import_observations,
     )
+    source_selection_prune = replace(
+        source_selection_prune,
+        deselected_surface_page_paths=(
+            _planned_generated_surface_prune(
+                options.wiki_dir,
+                source_snapshot,
+                inventory,
+                graph_observations,
+            )
+            if source_selection_prune.deselected_source_paths
+            else ()
+        ),
+    )
     repository_evidence = collect_runtime_repository_evidence(
         options.src_dir,
         options.wiki_dir,
+        source_snapshot=source_snapshot,
     )
     return _PreparedSyncRun(
         manifest=manifest,
@@ -2751,6 +3135,7 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
         repository_evidence=repository_evidence,
         graph_observations=graph_observations,
         infrastructure_plan=infrastructure_plan,
+        source_selection_prune=source_selection_prune,
     )
 
 
@@ -2941,6 +3326,44 @@ def _apply_infrastructure_plan(
     page_maps: _SyncPageMaps,
     source_snapshot: SourceSnapshot,
 ) -> None:
+    _apply_deselected_infrastructure_pages(options, plan, result)
+    _apply_current_infrastructure_plan(
+        options,
+        plan,
+        result,
+        page_maps=page_maps,
+        source_snapshot=source_snapshot,
+    )
+
+
+def _apply_deselected_infrastructure_pages(
+    options: _SyncRunOptions,
+    plan: InfrastructureSyncPlan,
+    result: SyncResult,
+) -> None:
+    for relative in plan.deselected_page_paths:
+        path = _infrastructure_page_path(
+            options.wiki_dir,
+            {"page_path": relative},
+        )
+        if path.is_symlink():
+            raise ValueError(
+                f"refusing to remove symlinked deselected infrastructure page: {relative}"
+            )
+        if path.is_file():
+            path.unlink()
+            result.deprecated += 1
+            print(f"  REMOVE deselected infrastructure page: {relative}")
+
+
+def _apply_current_infrastructure_plan(
+    options: _SyncRunOptions,
+    plan: InfrastructureSyncPlan,
+    result: SyncResult,
+    *,
+    page_maps: _SyncPageMaps,
+    source_snapshot: SourceSnapshot,
+) -> None:
     unsupported_sources = unsupported_source_summary(source_snapshot)
     for old_path, new_path in plan.moved_sources.items():
         old_page = _infrastructure_page_path(options.wiki_dir, plan.prior_sources[old_path])
@@ -3009,10 +3432,24 @@ def _apply_infrastructure_plan(
 def _apply_prepared_sync(
     options: _SyncRunOptions, prepared: _PreparedSyncRun
 ) -> SyncResult:
-    if prepared.repair_only or (
-        prepared.seed_manifest and not options.initialize_surfaces
-    ):
+    if prepared.repair_only and not _selection_pruning_has_changes(prepared):
         return SyncResult()
+    if prepared.seed_manifest and not options.initialize_surfaces:
+        return SyncResult()
+    if prepared.repair_only:
+        result = SyncResult()
+        _apply_source_selection_prune(
+            options.wiki_dir,
+            prepared.source_selection_prune,
+            prepared.page_maps,
+            result,
+        )
+        _apply_deselected_infrastructure_pages(
+            options,
+            prepared.infrastructure_plan,
+            result,
+        )
+        return result
     if prepared.diff.has_changes and not options.initialize_surfaces:
         return _apply_sync_changes(
             options,
@@ -3024,9 +3461,22 @@ def _apply_prepared_sync(
             prepared.graph_observations,
             prepared.infrastructure_plan,
             prepared.source_snapshot,
+            prepared.source_selection_prune,
         )
     result = SyncResult()
-    if not options.initialize_surfaces:
+    _apply_source_selection_prune(
+        options.wiki_dir,
+        prepared.source_selection_prune,
+        prepared.page_maps,
+        result,
+    )
+    if options.initialize_surfaces:
+        _apply_deselected_infrastructure_pages(
+            options,
+            prepared.infrastructure_plan,
+            result,
+        )
+    else:
         _apply_infrastructure_plan(
             options,
             prepared.infrastructure_plan,
@@ -3040,6 +3490,7 @@ def _apply_prepared_sync(
         prepared.page_maps,
         prepared.surface_plan,
         graph_observations=prepared.graph_observations,
+        source_snapshot=prepared.source_snapshot,
     )
     if options.initialize_surfaces:
         _rebuild_surface_only_index(
@@ -3087,6 +3538,7 @@ def _apply_prepared_sync(
         prepared.diff.has_changes
         or prepared.surface_plan.has_work
         or prepared.infrastructure_plan.has_changes
+        or _selection_pruning_has_changes(prepared)
     ):
         _append_log(
             options.wiki_dir,
@@ -3095,6 +3547,7 @@ def _apply_prepared_sync(
             result,
             surface_plan=prepared.surface_plan,
             infrastructure_plan=prepared.infrastructure_plan,
+            source_selection_prune=prepared.source_selection_prune,
         )
     return result
 
@@ -3122,6 +3575,10 @@ def _finalize_prepared_sync(
         entity_occurrence_page_cache=(prepared.page_maps.entity_occurrence_page_cache),
         module_page_map=prepared.page_maps.module_page_map,
         entry_points=prepared.graph_observations.surface_flow_entries,
+        workflow_entries=_sync_workflow_index_entries(
+            options.wiki_dir,
+            prepared.inventory,
+        ),
         page_source_overrides=page_source_overrides,
     )
     next_manifest = None
@@ -3203,10 +3660,17 @@ def _finalize_prepared_sync(
             f"{invalid_hashes} source entr"
             f"{'y has' if invalid_hashes == 1 else 'ies have'} invalid or missing hashes."
         )
-        print(
-            "Wiki pages were not modified. Run `llm-wiki sync` again to apply "
-            "source changes."
-        )
+        if _selection_pruning_has_changes(prepared):
+            _print_selection_prune_summary(prepared)
+            print(
+                "Only pages excluded by the current source selection were "
+                "removed; run `llm-wiki sync` again to apply other source changes."
+            )
+        else:
+            print(
+                "Wiki pages were not modified. Run `llm-wiki sync` again to "
+                "apply source changes."
+            )
     elif prepared.seed_manifest:
         print(
             "No sync manifest found — seeding from current source state.\n"
@@ -3223,6 +3687,7 @@ def _finalize_prepared_sync(
             _print_surface_summary(prepared.surface_plan)
     elif options.initialize_surfaces:
         _print_surface_summary(prepared.surface_plan)
+        _print_selection_prune_summary(prepared)
         deferred = len(_affected_source_files(prepared.diff))
         if deferred:
             print(f"Deferred source changes: {deferred} file(s).")
@@ -3233,12 +3698,14 @@ def _finalize_prepared_sync(
             prepared.diff.has_changes
             or prepared.surface_plan.has_work
             or prepared.infrastructure_plan.has_changes
+            or _selection_pruning_has_changes(prepared)
         ):
             _print_sync_summary(
                 result,
                 prepared.diff,
                 prepared.infrastructure_plan,
             )
+            _print_selection_prune_summary(prepared)
         else:
             print("Wiki is up to date.")
     _print_cache_stats(
@@ -3246,6 +3713,22 @@ def _finalize_prepared_sync(
         enabled=options.cache_stats_enabled,
     )
     return artifact_result
+
+
+def _print_selection_prune_summary(prepared: _PreparedSyncRun) -> None:
+    if not _selection_pruning_has_changes(prepared):
+        return
+    print(
+        "Source selection pruning: "
+        f"{len(prepared.source_selection_prune.deselected_source_paths)} "
+        "source(s), "
+        f"{len(prepared.source_selection_prune.deselected_page_paths)} "
+        "concept page(s), "
+        f"{len(prepared.source_selection_prune.deselected_surface_page_paths)} "
+        "generated surface page(s), "
+        f"{len(prepared.infrastructure_plan.deselected_records)} "
+        "infrastructure record(s)."
+    )
 
 
 def _print_sync_artifact_actions(result: KnowledgeCommitResult) -> None:
@@ -3280,6 +3763,7 @@ def _run_sync_dry_run(
         prepared.diff,
         prepared.surface_plan,
         prepared.infrastructure_plan,
+        prepared.source_selection_prune,
         prepared.manifest,
         seed_manifest=prepared.seed_manifest,
         repair_only=prepared.repair_only,
@@ -3397,7 +3881,11 @@ def _overlay_live_index_metadata(
 
 def _sync_workflow_index_entries(wiki_dir: Path, inventory: dict) -> list[dict]:
     live_entries = [
-        {"name": name, "entry": workflow["entry"]}
+        {
+            "name": name,
+            "entry": workflow["entry"],
+            "source_path": workflow["entry_module_path"],
+        }
         for name, workflow in get_call_graph(inventory).items()
     ]
     return _overlay_live_index_metadata(
@@ -3433,11 +3921,19 @@ def _sync_infrastructure_index_entries(
                 "label": infrastructure_display_label(source_path, info),
             }
         )
-    return _overlay_live_index_metadata(
-        _list_existing_pages(
+    deselected_names = {
+        Path(relative).stem for relative in plan.deselected_page_paths
+    }
+    existing = [
+        entry
+        for entry in _list_existing_pages(
             wiki_dir / PageKind.INFRASTRUCTURE.value,
             "type",
-        ),
+        )
+        if str(entry.get("name", "")) not in deselected_names
+    ]
+    return _overlay_live_index_metadata(
+        existing,
         live_entries,
         key="name",
     )
@@ -3698,6 +4194,7 @@ def _regenerate_flow_pages(
     call_edges: list[dict] | None = None,
     evaluated_flows: list[dict] | None = None,
     evaluated_data_flows: list[dict] | None = None,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> int:
     """Regenerate flow pages from the current inventory, preserving Behavior.
 
@@ -3712,7 +4209,11 @@ def _regenerate_flow_pages(
         return 0
 
     if entry_points is None:
-        entry_points = _detect_sync_entry_points(inventory, options.src_dir).entries
+        entry_points = _detect_sync_entry_points(
+            inventory,
+            options.src_dir,
+            source_snapshot=source_snapshot,
+        ).entries
     edges = (
         call_edges
         if call_edges is not None
@@ -3758,7 +4259,13 @@ def _regenerate_flow_pages(
                 _generated_diagram_style(
                     "data_flow",
                     root=options.src_dir,
-                    fallback_root=Path.cwd(),
+                    fallback_root=runtime_plugin_fallback_root(
+                        options.src_dir,
+                        source_selection_configured=(
+                            source_snapshot is not None
+                            and source_snapshot.source_selection_policy is not None
+                        ),
+                    ),
                     flow_id=entry_point.get("id"),
                     category=entry_point.get("category"),
                 )
@@ -3821,6 +4328,7 @@ def _regenerate_dependency_pages(
     module_page_map: dict[str, str],
     *,
     dependency_analysis: dict | None = None,
+    source_snapshot: SourceSnapshot | None = None,
     target_pages: Iterable[str] | None = None,
     detail: str = "auto",
 ) -> int:
@@ -3845,7 +4353,11 @@ def _regenerate_dependency_pages(
     if not selected_pages:
         return 0
 
-    analysis = dependency_analysis or analyze_dependencies(inventory, options.src_dir)
+    analysis = dependency_analysis or _fallback_dependency_analysis(
+        options,
+        inventory,
+        source_snapshot,
+    )
     pages = (
         (
             deps_path,
@@ -3856,7 +4368,13 @@ def _regenerate_dependency_pages(
                 diagram_style=_generated_diagram_style(
                     "dependencies",
                     root=options.src_dir,
-                    fallback_root=Path.cwd(),
+                    fallback_root=runtime_plugin_fallback_root(
+                        options.src_dir,
+                        source_selection_configured=(
+                            source_snapshot is not None
+                            and source_snapshot.source_selection_policy is not None
+                        ),
+                    ),
                     detail=detail,
                 ),
             ),
@@ -3886,6 +4404,7 @@ def _append_log(
     *,
     surface_plan: _SurfaceInitializationPlan | None = None,
     infrastructure_plan: InfrastructureSyncPlan | None = None,
+    source_selection_prune: SourceSelectionPruneResult | None = None,
 ) -> None:
     log_path = wiki_dir / "log.md"
     today = date.today().isoformat()
@@ -3936,6 +4455,20 @@ def _append_log(
             "- Unsupported infrastructure YAML: "
             f"{len(infrastructure_plan.unsupported_yaml)}\n"
         )
+    selection_lines = ""
+    if source_selection_prune is not None and (
+        source_selection_prune.deselected_source_paths
+        or source_selection_prune.deselected_page_paths
+        or source_selection_prune.deselected_surface_page_paths
+    ):
+        selection_lines = (
+            "- Sources removed by selection: "
+            f"{len(source_selection_prune.deselected_source_paths)}\n"
+            "- Concept pages removed by selection: "
+            f"{len(source_selection_prune.deselected_page_paths)}\n"
+            "- Generated surface pages removed by selection: "
+            f"{len(source_selection_prune.deselected_surface_page_paths)}\n"
+        )
     entry = (
         f"\n## {today}\n\n"
         f"### feat: {operation}\n"
@@ -3949,6 +4482,7 @@ def _append_log(
         f"- Moved entities: {moved_str}\n"
         f"{surface_lines}"
         f"{infrastructure_lines}"
+        f"{selection_lines}"
     )
     if log_path.exists():
         existing_log = read_md(log_path)

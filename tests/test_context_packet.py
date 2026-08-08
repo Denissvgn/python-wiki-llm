@@ -11,7 +11,12 @@ from typing import Any
 
 import pytest
 
-from llm_wiki_cli.services import context_packet, extraction_service
+from llm_wiki_cli.services import (
+    context_packet,
+    extraction_service,
+    plugins,
+    source_snapshot as source_snapshot_module,
+)
 from llm_wiki_cli.services.context_packet import (
     CONTEXT_PACKET_ASSURANCE_LEVEL,
     CONTEXT_PACKET_RECONCILIATION_POLICY,
@@ -27,6 +32,12 @@ from llm_wiki_cli.services.context_packet import (
     validate_context_packet,
 )
 from llm_wiki_cli.services.knowledge_artifacts import commit_knowledge_artifacts
+from llm_wiki_cli.services.source_selection import (
+    SOURCE_SELECTION_SCHEMA_VERSION,
+    with_source_selection_generation_input,
+)
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
+from llm_wiki_cli.services.sync_manifest import SyncManifest
 from tests.knowledge_fixtures import (
     materialize_fixture_tree,
     one_module_two_entities_fixture,
@@ -76,6 +87,45 @@ def _write_snapshot_project(root: Path, *, opaque_text: bool = False) -> None:
     index_bytes = b"# Project index\n"
     assert b"\r" not in index_bytes
     (wiki / "index.md").write_bytes(index_bytes)
+
+
+def _install_entrypoint_detector_plugin(
+    root: Path,
+    *,
+    marker: Path,
+) -> None:
+    plugin_dir = root / "vendor" / "ambient-entrypoint-detector"
+    plugin_dir.mkdir(parents=True)
+    module_name = "ambient_context_detector_" + "_".join(root.parts[-3:])
+    module_name = "".join(
+        character if character.isalnum() or character == "_" else "_"
+        for character in module_name
+    )
+    (plugin_dir / plugins.MANIFEST_FILENAME).write_text(
+        json.dumps(
+            {
+                "id": "ambient-entrypoint-detector",
+                "version": "0.1.0",
+                "llm_wiki_version": "*",
+                "components": [
+                    {
+                        "type": "entrypoint_detector",
+                        "id": "ambient",
+                        "entry_point": f"{module_name}:detect",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (plugin_dir / f"{module_name}.py").write_text(
+        "from pathlib import Path\n"
+        f"Path({str(marker)!r}).write_text('executed', encoding='utf-8')\n"
+        "def detect(inventory):\n"
+        "    return []\n",
+        encoding="utf-8",
+    )
+    plugins.install_plugin(str(plugin_dir), root=root, yes=True)
 
 
 def _build_snapshot_packet(
@@ -510,6 +560,125 @@ def test_packet_construction_does_not_load_project_extractor_plugins(
     assert validate_context_packet(packet.to_bytes()).valid is True
 
 
+def test_configured_external_context_never_executes_ambient_entrypoint_detector(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    ambient_root = tmp_path / "ambient"
+    source_root = tmp_path / "external-source"
+    selected = source_root / "selected"
+    selected.mkdir(parents=True)
+    (selected / "app.py").write_text(
+        "def selected_entrypoint():\n    return 1\n",
+        encoding="utf-8",
+    )
+    profile = source_root / "config" / "sources.json"
+    profile.parent.mkdir()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["selected"],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    ambient_root.mkdir()
+    wiki = ambient_root / "wiki"
+    wiki.mkdir()
+    snapshot = build_source_snapshot(
+        source_root,
+        source_selection="config/sources.json",
+    )
+    SyncManifest(
+        generation_inputs=with_source_selection_generation_input(
+            {},
+            snapshot.source_selection_identity,
+            snapshot.source_selection_inputs,
+        )
+    ).save(wiki)
+    marker = ambient_root / "ambient-detector-executed.txt"
+    _install_entrypoint_detector_plugin(ambient_root, marker=marker)
+    monkeypatch.chdir(ambient_root)
+
+    packet = build_qualified_context(
+        str(source_root),
+        "wiki",
+        _request(),
+        allow_external_src=True,
+        source_selection="config/sources.json",
+    )
+
+    assert validate_context_packet(packet.to_bytes()).valid is True
+    assert not marker.exists()
+
+
+def test_context_read_revalidates_selection_after_wiki_anchor_gap(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = tmp_path / "project"
+    selected = root / "selected"
+    selected.mkdir(parents=True)
+    (selected / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+    profile = root / "config" / "sources.json"
+    profile.parent.mkdir()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["selected"],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    wiki = root / "wiki"
+    wiki.mkdir()
+    snapshot = build_source_snapshot(
+        root,
+        source_selection="config/sources.json",
+    )
+    SyncManifest(
+        generation_inputs=with_source_selection_generation_input(
+            {},
+            snapshot.source_selection_identity,
+            snapshot.source_selection_inputs,
+        )
+    ).save(wiki)
+    monkeypatch.chdir(root)
+    real_wiki_anchor = context_packet._wiki_anchor
+    mutated = False
+
+    def mutate_at_first_anchor(path: Path) -> str:
+        nonlocal mutated
+        if not mutated:
+            mutated = True
+            mismatched_identity = dict(snapshot.source_selection_identity or {})
+            mismatched_identity["fingerprint"] = "sha256:" + "f" * 64
+            SyncManifest(
+                generation_inputs=with_source_selection_generation_input(
+                    {},
+                    mismatched_identity,
+                    snapshot.source_selection_inputs,
+                )
+            ).save(wiki)
+        return real_wiki_anchor(path)
+
+    monkeypatch.setattr(context_packet, "_wiki_anchor", mutate_at_first_anchor)
+
+    with pytest.raises(
+        context_packet.context_service.ProtocolRequestError,
+        match="source-selection boundary",
+    ):
+        capture_context_read(
+            ".",
+            "wiki",
+            source_selection="config/sources.json",
+        )
+
+
 def test_captured_context_builder_performs_no_second_read(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -565,6 +734,46 @@ def test_mutation_before_final_encoding_aborts_without_returning_a_packet(
 
     with pytest.raises(ContextPacketSourceMutationError, match=facet):
         build_qualified_context(".", "docs/llm_wiki", _request())
+
+
+def test_source_recheck_rejects_gitignore_broadening_before_secret_hash(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = tmp_path / "project"
+    selected = root / "selected"
+    selected.mkdir(parents=True)
+    (selected / "keep.py").write_text("KEEP = True\n", encoding="utf-8")
+    secret = selected / "secret.py"
+    secret.write_text("MUST_NOT_READ = True\n", encoding="utf-8")
+    ignore = selected / ".gitignore"
+    ignore.write_text("secret.py\n", encoding="utf-8")
+    profile = root / ".llm-wiki" / "source-selection.json"
+    profile.parent.mkdir()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": "llm-wiki-source-selection/v1",
+                "include": ["selected"],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    snapshot = build_source_snapshot(root)
+    expected_anchor = context_packet._source_anchor(snapshot)
+    ignore.write_text("", encoding="utf-8")
+    real_hash = source_snapshot_module._sha256_file
+
+    def guarded_hash(path: Path) -> str:
+        if path == secret:
+            pytest.fail("newly admitted source must not be hashed before rejection")
+        return real_hash(path)
+
+    monkeypatch.setattr(source_snapshot_module, "_sha256_file", guarded_hash)
+
+    with pytest.raises(ContextPacketSourceMutationError, match="source"):
+        context_packet._assert_source_unchanged(snapshot, expected_anchor)
 
 
 def test_malformed_packet_fails_before_any_live_read(

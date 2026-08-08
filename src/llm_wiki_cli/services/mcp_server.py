@@ -14,11 +14,17 @@ import sys
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Protocol, cast
+from typing import Any, Protocol, TypedDict, cast
 from urllib.parse import unquote, urlparse
 
 from ..api import LlmWikiApiError, build_documentation_query_service
-from ..config import IDE_AGENTS, get_agent_config_path, read_config, validate_path
+from ..config import (
+    IDE_AGENTS,
+    get_agent_config_path,
+    read_config,
+    validate_path,
+    validate_source_root,
+)
 from . import circuit_breaker, context_service as context_cmd
 from . import lint_service as lint_cmd
 from . import wiki_surface
@@ -29,7 +35,8 @@ from .concept_identity import (
     validate_natural_key,
 )
 from .documentation_queries import DocumentationQueryError
-from .extraction_service import get_inventory
+from .documentation_query_builder import validate_live_query_source_selection
+from .extraction_service import InventoryRequest, get_inventory_result
 from .io import read_md
 from .knowledge_graph import (
     CORE_RELATIONSHIP_KINDS,
@@ -39,6 +46,16 @@ from .knowledge_graph import (
 from .knowledge_observability import (
     knowledge_status_payload,
     load_snapshot_knowledge_observability,
+)
+from .source_selection import (
+    SourceSelectionError,
+    SourceSelectionPolicy,
+    resolve_source_selection,
+)
+from .source_snapshot import (
+    SourceSnapshot,
+    build_source_snapshot,
+    capture_source_selection_inputs,
 )
 from .validation import (
     posix_path_text as shared_posix_path_text,
@@ -86,6 +103,14 @@ class McpWikiError(ValueError):
     """Raised for invalid MCP wiki requests."""
 
 
+class _SourceSelectionOptions(TypedDict, total=False):
+    source_selection: str
+
+
+class _ExternalSourceOptions(TypedDict, total=False):
+    allow_external_src: bool
+
+
 class _McpHttpApplication(Protocol):
     def add_middleware(
         self,
@@ -109,6 +134,27 @@ class McpServerConfig:
     port: int = 8765
     path: str = "/mcp"
     allowed_origins: tuple[str, ...] = field(default_factory=tuple)
+    source_selection: str | None = None
+    allow_external_src: bool = False
+
+
+@dataclass(frozen=True)
+class _SourceSelectionPin:
+    identity: tuple[tuple[str, str], ...] | None
+    origin: str | None
+    path: str | None
+
+
+def _source_selection_pin(
+    policy: SourceSelectionPolicy | None,
+) -> _SourceSelectionPin:
+    if policy is None:
+        return _SourceSelectionPin(identity=None, origin=None, path=None)
+    return _SourceSelectionPin(
+        identity=tuple(sorted(policy.identity.items())),
+        origin=policy.origin,
+        path=policy.path,
+    )
 
 
 @dataclass
@@ -244,24 +290,109 @@ class OriginValidationMiddleware:
 class McpWikiService:
     """Pure read/check operations exposed through MCP tools and resources."""
 
-    def __init__(self, src_dir: str = ".", wiki_dir: str = "docs/llm_wiki"):
+    def __init__(
+        self,
+        src_dir: str = ".",
+        wiki_dir: str = "docs/llm_wiki",
+        *,
+        source_selection: str | None = None,
+        allow_external_src: bool = False,
+    ):
         self.src_dir = src_dir
         self.wiki_dir = Path(wiki_dir)
+        self.source_selection = source_selection
+        self.allow_external_src = allow_external_src
+        try:
+            initial_policy = resolve_source_selection(src_dir, source_selection)
+        except SourceSelectionError as exc:
+            raise McpWikiError(f"Invalid MCP source selection: {exc}") from exc
+        self._source_selection_pin = _source_selection_pin(initial_policy)
+        self._source_selection_identity = (
+            initial_policy.identity if initial_policy is not None else None
+        )
+
+    def _assert_source_selection_current(
+        self,
+    ) -> SourceSnapshot:
+        try:
+            current_policy = resolve_source_selection(
+                self.src_dir,
+                self.source_selection,
+            )
+        except SourceSelectionError as exc:
+            raise McpWikiError(
+                "MCP source selection changed during the server lifetime; "
+                "restart the server with the intended profile."
+            ) from exc
+        if _source_selection_pin(current_policy) != self._source_selection_pin:
+            raise McpWikiError(
+                "MCP source selection changed during the server lifetime; "
+                "restart the server with the intended profile."
+            )
+        try:
+            selection_inputs = capture_source_selection_inputs(
+                self.src_dir,
+                source_selection=self.source_selection,
+                selection_policy=current_policy,
+            )
+            validate_live_query_source_selection(
+                source_root=Path(self.src_dir),
+                wiki_root=self.wiki_dir,
+                live_identity=(
+                    current_policy.identity if current_policy is not None else None
+                ),
+                live_selection_inputs=selection_inputs,
+                operation="MCP wiki read",
+            )
+            snapshot = build_source_snapshot(
+                self.src_dir,
+                source_selection=self.source_selection,
+                selection_policy=current_policy,
+                expected_selection_inputs=selection_inputs,
+            )
+            validate_live_query_source_selection(
+                source_root=snapshot.root,
+                wiki_root=self.wiki_dir,
+                live_identity=snapshot.source_selection_identity,
+                live_selection_inputs=snapshot.source_selection_inputs,
+                operation="MCP wiki read",
+            )
+        except DocumentationQueryError as exc:
+            raise McpWikiError(str(exc)) from exc
+        return snapshot
+
+    def _source_selection_options(self) -> _SourceSelectionOptions:
+        snapshot = self._assert_source_selection_current()
+        if snapshot.source_selection_path is None:
+            return {}
+        return {"source_selection": snapshot.source_selection_path}
+
+    def _external_source_options(self) -> _ExternalSourceOptions:
+        if not self.allow_external_src:
+            return {}
+        return {"allow_external_src": True}
 
     def get_entity(self, entity_id: str) -> dict:
+        self._assert_source_selection_current()
         page = self._page_for("entities", entity_id)
         return self._read_page_result(page)
 
     def get_module(self, module_id_or_source_path: str) -> dict:
-        page_id = self._resolve_module_page_id(module_id_or_source_path)
+        source_snapshot = self._assert_source_selection_current()
+        page_id = self._resolve_module_page_id(
+            module_id_or_source_path,
+            source_snapshot=source_snapshot,
+        )
         page = self._page_for("modules", page_id)
         return self._read_page_result(page)
 
     def get_flow(self, flow_id: str) -> dict:
+        self._assert_source_selection_current()
         page = self._page_for("flows", flow_id)
         return self._read_page_result(page)
 
     def get_architecture_page(self, page: str) -> dict:
+        self._assert_source_selection_current()
         if not isinstance(page, str) or page.strip() not in _ARCHITECTURE_PAGE_KINDS:
             raise McpWikiError(f"Unknown architecture page: {page}")
         root_page = self._page_from_uri(wiki_surface.mcp_uri(page.strip()))
@@ -274,6 +405,8 @@ class McpWikiService:
                 self.src_dir,
                 wiki_dir=_posix_string(self.wiki_dir),
                 limit=limit,
+                **self._external_source_options(),
+                **self._source_selection_options(),
             )
             method = getattr(query_service, _GRAPH_QUERY_METHODS[query_type])
             return method(value)
@@ -389,6 +522,7 @@ class McpWikiService:
         kinds: list[str] | None = None,
         limit: int = 20,
     ) -> dict:
+        self._assert_source_selection_current()
         if not isinstance(query, str) or not query.strip():
             raise McpWikiError("query must be a non-empty string.")
         limit = _bounded_query_limit(limit)
@@ -468,6 +602,8 @@ class McpWikiService:
                 validated["focus"],
                 validated["filters"],
                 **build_options,
+                **self._external_source_options(),
+                **self._source_selection_options(),
             )
         except context_cmd.ProtocolRequestError as exc:
             raise McpWikiError(str(exc)) from exc
@@ -507,6 +643,8 @@ class McpWikiService:
                 _posix_string(self.wiki_dir),
                 request,
                 read_only=True,
+                **self._external_source_options(),
+                **self._source_selection_options(),
             )
         except (ContextPacketError, context_cmd.ProtocolRequestError) as exc:
             raise McpWikiError(str(exc)) from exc
@@ -537,6 +675,7 @@ class McpWikiService:
             self.src_dir,
             strict=strict,
             knowledge_drift_report=knowledge_drift_report,
+            **self._source_selection_options(),
         )
         payload = lint_cmd.report_to_dict(report)
         _normalise_report_paths(payload)
@@ -548,6 +687,7 @@ class McpWikiService:
         return payload
 
     def get_status(self) -> dict:
+        self._assert_source_selection_current()
         wiki = self.wiki_dir
         pages = {
             entry.mcp_uri_kind: _count_surface_pages(wiki, entry)
@@ -559,6 +699,7 @@ class McpWikiService:
         knowledge_observability = load_snapshot_knowledge_observability(
             wiki,
             src_dir=self.src_dir,
+            **self._source_selection_options(),
         )
         knowledge_status = knowledge_status_payload(knowledge_observability.view)
         status: dict[str, object] = {
@@ -613,6 +754,8 @@ class McpWikiService:
                 wiki_dir=_posix_string(self.wiki_dir),
                 limit=limit,
                 read_only=True,
+                **self._external_source_options(),
+                **self._source_selection_options(),
             )
             method = getattr(query_service, method_name)
             return method(value, **query_options)
@@ -620,6 +763,7 @@ class McpWikiService:
             raise McpWikiError(str(exc)) from exc
 
     def read_resource(self, uri: str) -> dict:
+        self._assert_source_selection_current()
         page = self._page_from_uri(uri)
         result = self._read_page_result(page)
         return {
@@ -635,6 +779,7 @@ class McpWikiService:
         }
 
     def list_resources(self) -> list[dict]:
+        self._assert_source_selection_current()
         resources = []
         for page in self._iter_pages(_SEARCH_KINDS):
             resources.append(
@@ -649,7 +794,12 @@ class McpWikiService:
             )
         return resources
 
-    def _resolve_module_page_id(self, value: str) -> str:
+    def _resolve_module_page_id(
+        self,
+        value: str,
+        *,
+        source_snapshot: SourceSnapshot,
+    ) -> str:
         if not isinstance(value, str) or not value.strip():
             raise McpWikiError("module_id_or_source_path must be a non-empty string.")
         candidate = value.strip()
@@ -659,7 +809,13 @@ class McpWikiService:
         ):
             return candidate
 
-        inventory = get_inventory(self.src_dir)
+        inventory = get_inventory_result(
+            InventoryRequest(
+                src_dir=self.src_dir,
+                source_snapshot=source_snapshot,
+                source_selection=source_snapshot.source_selection_path,
+            )
+        ).inventory
         page_map = build_module_page_map(inventory)
         normalised = _normalise_source_path(candidate)
         if normalised in page_map:
@@ -746,7 +902,12 @@ def create_mcp_server(config: McpServerConfig):
     ensure_mcp_runtime()
     from mcp.server.fastmcp import FastMCP  # type: ignore[reportMissingImports]
 
-    service = McpWikiService(src_dir=config.src_dir, wiki_dir=config.wiki_dir)
+    service = McpWikiService(
+        src_dir=config.src_dir,
+        wiki_dir=config.wiki_dir,
+        source_selection=config.source_selection,
+        allow_external_src=config.allow_external_src,
+    )
     server = FastMCP(
         "llm-wiki",
         instructions=(
@@ -951,7 +1112,11 @@ def _register_directory_resource(server, service: McpWikiService, entry) -> None
 
 def run_mcp_server(config: McpServerConfig) -> None:
     """Validate, build, and run the MCP server."""
-    validate_path(config.src_dir, "--src-dir")
+    validate_source_root(
+        config.src_dir,
+        "--src-dir",
+        allow_external=config.allow_external_src,
+    )
     validate_path(config.wiki_dir, "--wiki-dir")
     if config.transport not in {"stdio", "http"}:
         raise McpWikiError("transport must be 'stdio' or 'http'.")

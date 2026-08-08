@@ -29,6 +29,7 @@ from llm_wiki_cli.services.extractor_helpers import (
     prepare_typescript,
     resolve_helper_cache_root,
 )
+from llm_wiki_cli.services.source_selection import SourceSelectionError
 
 
 def _write_fixture(root: Path, rel_path: str, content: str = "fixture\n") -> None:
@@ -453,6 +454,48 @@ def test_prepare_extractors_repeated_language_forces_selection(
 
     assert calls == ["typescript", "go", "rust", "haskell"]
     assert "already_current" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    "profile_text, expected",
+    [
+        ("{not-json}\n", "valid bounded JSON"),
+        (
+            json.dumps(
+                {
+                    "schema_version": "llm-wiki-source-selection/v1",
+                    "include": ["missing"],
+                    "exclude": [],
+                }
+            )
+            + "\n",
+            "select at least one readable regular file",
+        ),
+    ],
+)
+def test_prepare_extractors_explicit_language_still_validates_default_selection(
+    tmp_path,
+    monkeypatch,
+    profile_text,
+    expected,
+):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / ".git").mkdir()
+    profile = tmp_path / ".llm-wiki" / "source-selection.json"
+    profile.parent.mkdir()
+    profile.write_text(profile_text, encoding="utf-8")
+    monkeypatch.setattr(
+        prepare_extractors_cmd,
+        "prepare_helper",
+        lambda *_args, **_kwargs: pytest.fail(
+            "helpers must not be prepared before selection validation"
+        ),
+    )
+
+    with pytest.raises(SourceSelectionError, match=expected):
+        prepare_extractors_cmd.run(
+            types.SimpleNamespace(src_dir=".", cache_dir=None, language=["go"])
+        )
 
 
 def test_prepare_extractors_missing_cache_location_exits(tmp_path, monkeypatch, capsys):

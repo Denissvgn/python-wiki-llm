@@ -2,6 +2,21 @@
 
 Supporting detail for [SKILL.md](SKILL.md).
 
+## Source-selection continuity
+
+When generated project instructions name a source-selection profile, every
+source-reading recipe in the skill carries that exact
+`--source-selection <profile>` argument. This includes sync, extract, lint,
+ci-check, team checks, context reads, migration previews, and helper
+preparation. Omit it only for an unconfigured project; never replace a pinned
+profile with discovery or a broader profile during one workflow.
+
+An active profile also changes diff handling. Do not run repository-wide
+`git diff` or `git diff --stat`, because excluded path names can leak through
+the summary. Start from selected inventory paths and request only targeted
+`git diff ... -- <selected-path>` output. The unrestricted stat is compatible
+only when no source-selection profile is configured.
+
 ## Semantic-only edit guardrail
 
 | Surface | Editable by this skill | Protected — never hand-edit |
@@ -22,7 +37,7 @@ Rule of thumb: if a section is bounded by an explicit "Do not edit by hand" comm
 
 - Normal `lint` runs the structural checks; `--strict` additionally requires core structure (`index.md`, `log.md`, `entities/`, `modules/`, `workflows/`, `infrastructure/`) and a fresh, non-stale sync manifest.
 - When this skill changes canonical Markdown, its final validation loop begins
-  with a second owning `llm-wiki sync --jobs 1 ...`. That pass preserves
+  with a second owning `llm-wiki sync --jobs 1 ... --source-selection <profile>`. That pass preserves
   supported semantic content and persists the new Markdown/surface/knowledge/
   manifest snapshot. A generated-only run with no semantic edit does not repeat
   sync. Any Markdown fix made after validation restarts at the owning sync.
@@ -74,7 +89,7 @@ that temporary rejected read state is expected and must not be prolonged.
   file, an outside-root path, or malformed persisted state fails before wiki
   writes; replace it with `--openapi-file PATH` or remove it with
   `--clear-openapi-file`. Those two flags are mutually exclusive.
-- **Oversized diff.** Bound how much diff text is read into context — large diffs should lean on `extract --changed --summary` instead of full `git diff` text.
+- **Oversized diff.** Bound how much diff text is read into context — large diffs should lean on `extract --changed --summary --source-selection <profile>` instead of full diff text. With an active profile, only request targeted diffs for selected paths; never read an unrestricted diff or stat.
 - **Missing governance ledger.** A previously governed repository fails closed
   before sync writes. Restore `.llm-wiki-governance.json` from version control
   or backup. Generated `.llm-wiki-knowledge.json`, the manifest, and aliases in
@@ -83,7 +98,7 @@ that temporary rejected read state is expected and must not be prolonged.
   reinitialization, or a hand-edited alias to bypass a target-owner conflict.
   Preserve both UIDs and return the choice to the governance owner.
 - **No machine-readable sync summary.** Unlike `bootstrap --format json`, `sync` prints text lines with fixed prefixes (`CREATE` / `UPDATE` / `METADATA` / `SKIP` / `DEPRECATE` / `RENAME`, plus the tally and `APPEND log.md`); parse those rather than expecting JSON.
-- **Source-adapter / multi-repo wikis.** `--allow-external-src` must be passed to `sync`, `lint`, `ci-check`, and `team check` consistently. For example: `llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki`. `--wiki-dir` itself always stays inside the current project root.
+- **Source-adapter / multi-repo wikis.** `--allow-external-src` must be passed to `sync`, `lint`, `ci-check`, and `team check` consistently. Carry the generated source-selection argument as well. For example: `llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki --source-selection <profile>`. `--wiki-dir` itself always stays inside the current project root.
 - **External documentation workspace.** Treat this as a packet-driven refresh of
   the workspace copy, not the managed repo-local commit workflow. Verify the
   recorded source revision first, preserve the immutable adopted-input hash,

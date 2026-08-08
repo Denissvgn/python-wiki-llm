@@ -14,6 +14,7 @@ from llm_wiki_cli.services.inventory_cache import (
     resolve_inventory_cache_path,
 )
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
+from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.commands.extract_cmd import get_inventory_result
 
 
@@ -104,7 +105,9 @@ def test_save_writes_schema_and_prunes_to_given_files(tmp_path):
     )
 
     payload = json.loads((cache_dir / CACHE_FILENAME).read_text(encoding="utf-8"))
-    assert payload["schema"] == "inventory-v1"
+    assert payload["schema"] == "inventory-v2"
+    assert payload["version"] == 2
+    assert payload["source_selection_identity"] is None
     assert sorted(payload["files"]) == ["app.py"]
     assert payload["files"]["app.py"]["hash"] == "sha256:test"
 
@@ -205,6 +208,55 @@ def test_cache_key_uses_snapshot_gitignore_fingerprint_without_rescan(
     )
 
     assert cache_key["gitignore_fingerprint"] == snapshot.gitignore_fingerprint
+
+
+def test_cache_key_uses_semantic_source_selection_identity(tmp_path):
+    for root in ("a", "b"):
+        path = tmp_path / root
+        path.mkdir()
+        (path / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+    profile = tmp_path / ".llm-wiki" / "source-selection.json"
+    profile.parent.mkdir()
+
+    def write_profile(include: list[str], *, indent: int | None = None) -> None:
+        profile.write_text(
+            json.dumps(
+                {
+                    "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                    "include": include,
+                    "exclude": [],
+                },
+                indent=indent,
+            ),
+            encoding="utf-8",
+        )
+
+    def key() -> dict:
+        snapshot = build_source_snapshot(tmp_path)
+        return build_inventory_cache_key(
+            tmp_path,
+            snapshot,
+            deep=True,
+            include_empty=False,
+            extractor_registry={"python": "builtin"},
+        )
+
+    write_profile(["a", "b"])
+    first = key()
+    write_profile(["b", "a"], indent=2)
+    formatting_only = key()
+    write_profile(["a"])
+    narrowed = key()
+
+    assert first["schema"] == "inventory-v2"
+    assert first["source_selection_identity"] == formatting_only[
+        "source_selection_identity"
+    ]
+    assert first == formatting_only
+    assert narrowed["source_selection_identity"] != first[
+        "source_selection_identity"
+    ]
+    assert narrowed != first
 
 
 def test_pure_warm_cache_hit_does_not_rewrite_cache(tmp_path):

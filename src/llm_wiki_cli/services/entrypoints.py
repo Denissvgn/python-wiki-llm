@@ -22,6 +22,7 @@ from typing import Any
 
 from .imports import build_module_path_resolver
 from .plugins import PluginError, entrypoint_detector_components, load_entry_point
+from .source_snapshot import SourceSnapshot
 from .validation import positive_int_or_none, resolved_paths_equal
 
 # ── Entry-point categories ────────────────────────────────────────────
@@ -641,9 +642,31 @@ def _parse_scripts_section(text: str) -> list[dict]:
     return scripts
 
 
-def read_console_scripts(project_root: str = ".") -> list[dict]:
+def read_console_scripts(
+    project_root: str = ".",
+    *,
+    source_snapshot: SourceSnapshot | None = None,
+) -> list[dict]:
     """Read ``[project.scripts]`` from ``pyproject.toml`` (best-effort)."""
-    pyproject = Path(project_root) / "pyproject.toml"
+    root = Path(project_root).resolve()
+    if source_snapshot is None:
+        pyproject = root / "pyproject.toml"
+    else:
+        if source_snapshot.root.resolve() != root:
+            raise ValueError(
+                "source_snapshot root must match the console-script project root"
+            )
+        marker = next(
+            (
+                item
+                for item in source_snapshot.package_markers
+                if item.rel_path == "pyproject.toml"
+            ),
+            None,
+        )
+        if marker is None:
+            return []
+        pyproject = marker.abs_path
     try:
         text = pyproject.read_text(encoding="utf-8")
     except OSError:

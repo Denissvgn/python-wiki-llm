@@ -45,6 +45,7 @@ def run(args) -> None:
     helper_cache_dir: str | None = getattr(args, "helper_cache_dir", None)
     include_tests = getattr(args, "include_tests", None)
     allow_external_src = bool(getattr(args, "allow_external_src", False))
+    source_selection = getattr(args, "source_selection", None)
 
     src_root = validate_source_root(
         src_dir, "--src-dir", allow_external=allow_external_src
@@ -68,6 +69,7 @@ def run(args) -> None:
         include_tests=include_tests,
         job_request=job_request,
         plan_reporter=print_extraction_job_plan,
+        source_selection=source_selection,
     )
     duration_ms = int((time.monotonic() - started) * 1000)
 

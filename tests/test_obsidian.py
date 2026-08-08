@@ -15,9 +15,16 @@ import pytest
 
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import obsidian_cmd
-from llm_wiki_cli.services import obsidian
+from llm_wiki_cli.services import obsidian, source_snapshot as source_snapshot_module
 from llm_wiki_cli.services.knowledge_model import KnowledgeProjectionProfile
 from llm_wiki_cli.services.knowledge_projection import KnowledgeProjection
+from llm_wiki_cli.services.source_selection import (
+    SOURCE_SELECTION_SCHEMA_VERSION,
+    resolve_source_selection,
+    with_source_selection_generation_input,
+)
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
+from llm_wiki_cli.services.sync_manifest import SyncManifest
 
 
 def _ns(**kwargs):
@@ -80,6 +87,20 @@ def _write_wiki(root: Path) -> Path:
     )
     (wiki / "legacy" / "Old.md").write_text("# Old\n\n", encoding="utf-8")
     return wiki
+
+
+def _write_selection_profile(path: Path, include: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": [include],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
 
 
 def _knowledge_projection(
@@ -400,6 +421,140 @@ class TestObsidianMirror:
         assert set(reads) == canonical_paths
         assert sum(reads.values()) == len(canonical_paths)
 
+    def test_export_rejects_stale_selection_before_projection_or_page_reads(
+        self, tmp_project, monkeypatch
+    ):
+        Path("selected-a").mkdir()
+        Path("selected-b").mkdir()
+        Path("selected-a/app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        Path("selected-b/app.py").write_text("VALUE = 2\n", encoding="utf-8")
+        profile_a = Path("config/a.json")
+        profile_b = Path("config/b.json")
+        _write_selection_profile(profile_a, "selected-a")
+        _write_selection_profile(profile_b, "selected-b")
+        policy_a = resolve_source_selection(".", profile_a.as_posix())
+        assert policy_a is not None
+        snapshot_a = build_source_snapshot(".", selection_policy=policy_a)
+        wiki = _write_wiki(tmp_project)
+        SyncManifest(
+            generation_inputs=with_source_selection_generation_input(
+                {},
+                snapshot_a.source_selection_identity,
+                snapshot_a.source_selection_inputs,
+            )
+        ).save(wiki)
+        monkeypatch.setattr(
+            obsidian,
+            "collect_wiki_pages",
+            lambda *_args, **_kwargs: pytest.fail(
+                "wiki pages must not be read before selection validation"
+            ),
+        )
+        vault = tmp_project / "vault"
+
+        with pytest.raises(obsidian.ObsidianError, match="llm-wiki sync"):
+            obsidian.export_obsidian_vault(
+                src_dir=".",
+                wiki_dir=wiki,
+                vault_dir=vault,
+                source_selection=profile_b.as_posix(),
+            )
+
+        assert not vault.exists()
+
+    def test_export_rejects_changed_gitignore_inputs_until_sync_state_advances(
+        self, tmp_project, monkeypatch
+    ):
+        selected = Path("selected")
+        selected.mkdir()
+        (selected / "keep.py").write_text("KEEP = 1\n", encoding="utf-8")
+        (selected / "drop.py").write_text("DROP = 1\n", encoding="utf-8")
+        profile = Path(".llm-wiki/source-selection.json")
+        _write_selection_profile(profile, "selected")
+        before = build_source_snapshot(".")
+        wiki = _write_wiki(tmp_project)
+        (wiki / "entities" / "SecretDrop.md").write_text(
+            "# SecretDrop\n",
+            encoding="utf-8",
+        )
+        SyncManifest(
+            generation_inputs=with_source_selection_generation_input(
+                {},
+                before.source_selection_identity,
+                before.source_selection_inputs,
+            )
+        ).save(wiki)
+        (selected / ".gitignore").write_text("drop.py\n", encoding="utf-8")
+        after = build_source_snapshot(".")
+        assert after.source_selection_identity == before.source_selection_identity
+        monkeypatch.setattr(
+            obsidian,
+            "collect_wiki_pages",
+            lambda *_args, **_kwargs: pytest.fail(
+                "wiki pages must not be read before selection-input validation"
+            ),
+        )
+
+        with pytest.raises(obsidian.ObsidianError, match="selection inputs changed"):
+            obsidian.export_obsidian_vault(
+                src_dir=".",
+                wiki_dir=wiki,
+                vault_dir=tmp_project / "vault",
+            )
+
+        SyncManifest(
+            generation_inputs=with_source_selection_generation_input(
+                {},
+                after.source_selection_identity,
+                after.source_selection_inputs,
+            )
+        ).save(wiki)
+        validated = obsidian.validate_obsidian_export_source_selection(
+            src_dir=".",
+            wiki_dir=wiki,
+            source_selection=None,
+        )
+        assert validated.source_selection_inputs == after.source_selection_inputs
+
+    def test_export_rejects_gitignore_broadening_before_new_source_is_hashed(
+        self, tmp_project, monkeypatch
+    ):
+        selected = Path("selected")
+        selected.mkdir()
+        (selected / "keep.py").write_text("KEEP = 1\n", encoding="utf-8")
+        secret = selected / "secret.py"
+        secret.write_text("SECRET = 1\n", encoding="utf-8")
+        ignore = selected / ".gitignore"
+        ignore.write_text("secret.py\n", encoding="utf-8")
+        profile = Path(".llm-wiki/source-selection.json")
+        _write_selection_profile(profile, "selected")
+        before = build_source_snapshot(".")
+        assert "selected/secret.py" not in before.selected_regular_paths
+        wiki = _write_wiki(tmp_project)
+        SyncManifest(
+            generation_inputs=with_source_selection_generation_input(
+                {},
+                before.source_selection_identity,
+                before.source_selection_inputs,
+            )
+        ).save(wiki)
+        ignore.unlink()
+        real_hash = source_snapshot_module._sha256_file
+
+        def reject_secret_hash(path):
+            if Path(path).resolve() == secret.resolve():
+                pytest.fail("newly admitted source must not be hashed before sync")
+            return real_hash(path)
+
+        monkeypatch.setattr(source_snapshot_module, "_sha256_file", reject_secret_hash)
+
+        with pytest.raises(obsidian.ObsidianError, match="selection inputs changed"):
+            obsidian.export_obsidian_vault(
+                src_dir=".",
+                wiki_dir=wiki,
+                vault_dir=tmp_project / "vault",
+            )
+
     def test_export_dry_run_does_not_write(self, tmp_project):
         wiki = _write_wiki(tmp_project)
         vault = tmp_project / "vault"
@@ -435,10 +590,7 @@ class TestObsidianMirror:
             '{"schema_version": "future"}\n',
             encoding="utf-8",
         )
-        (wiki / ".llm-wiki-manifest.json").write_text(
-            '{"artifact_hashes": {}}\n',
-            encoding="utf-8",
-        )
+        SyncManifest().save(wiki)
         after_report = obsidian.export_obsidian_vault(
             src_dir=str(tmp_project),
             wiki_dir=wiki,
@@ -469,15 +621,17 @@ class TestObsidianMirror:
         vault = tmp_project / "vault"
         calls: list[tuple[str, bool]] = []
 
-        def fixed_inventory(src_dir, *, deep=False):
-            calls.append((src_dir, deep))
-            return {
-                "models.py": {
-                    "classes": [{"name": "User", "line": 3}],
+        def fixed_inventory(request):
+            calls.append((request.src_dir, request.deep))
+            return types.SimpleNamespace(
+                inventory={
+                    "models.py": {
+                        "classes": [{"name": "User", "line": 3}],
+                    }
                 }
-            }
+            )
 
-        monkeypatch.setattr(obsidian, "get_inventory", fixed_inventory)
+        monkeypatch.setattr(obsidian, "get_inventory_result", fixed_inventory)
 
         report = obsidian.export_obsidian_vault(
             src_dir=str(tmp_project),
@@ -550,11 +704,11 @@ class TestObsidianMirror:
         missing_source = tmp_project / "source-does-not-exist"
         calls: list[tuple[str, bool]] = []
 
-        def failed_inventory(src_dir, *, deep=False):
-            calls.append((src_dir, deep))
-            raise FileNotFoundError(src_dir)
+        def failed_inventory(request):
+            calls.append((request.src_dir, request.deep))
+            raise FileNotFoundError(request.src_dir)
 
-        monkeypatch.setattr(obsidian, "get_inventory", failed_inventory)
+        monkeypatch.setattr(obsidian, "get_inventory_result", failed_inventory)
         vault = tmp_project / "legacy-vault"
         obsidian.export_obsidian_vault(
             src_dir=str(missing_source),
@@ -1662,6 +1816,51 @@ class TestObsidianCli:
                 "include_machine_verification": True,
             }
         ]
+
+    def test_cli_rejects_stale_selection_before_knowledge_projection(
+        self, tmp_project, monkeypatch
+    ):
+        Path("selected-a").mkdir()
+        Path("selected-b").mkdir()
+        Path("selected-a/app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        Path("selected-b/app.py").write_text("VALUE = 2\n", encoding="utf-8")
+        profile_a = Path("config/a.json")
+        profile_b = Path("config/b.json")
+        _write_selection_profile(profile_a, "selected-a")
+        _write_selection_profile(profile_b, "selected-b")
+        policy_a = resolve_source_selection(".", profile_a.as_posix())
+        assert policy_a is not None
+        snapshot_a = build_source_snapshot(".", selection_policy=policy_a)
+        wiki = _write_wiki(tmp_project)
+        SyncManifest(
+            generation_inputs=with_source_selection_generation_input(
+                {},
+                snapshot_a.source_selection_identity,
+                snapshot_a.source_selection_inputs,
+            )
+        ).save(wiki)
+        monkeypatch.setattr(
+            obsidian_cmd,
+            "_knowledge_projection",
+            lambda *_args, **_kwargs: pytest.fail(
+                "knowledge projection must follow selection validation"
+            ),
+        )
+
+        with pytest.raises(SystemExit) as exc_info:
+            obsidian_cmd.run(
+                _ns(
+                    obsidian_action="export",
+                    src_dir=".",
+                    wiki_dir=str(wiki),
+                    vault_dir=str(tmp_project / "vault"),
+                    source_selection=profile_b.as_posix(),
+                    knowledge_metadata="summary",
+                    format="json",
+                )
+            )
+
+        assert exc_info.value.code == 1
 
     def test_cli_export_and_check_json(self, tmp_project, capsys):
         _write_wiki(tmp_project)

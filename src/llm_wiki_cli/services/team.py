@@ -16,6 +16,7 @@ from .plugins import PluginError, iter_components
 from .validation import require_exact_fields, require_string_list
 
 if TYPE_CHECKING:
+    from .source_snapshot import SourceSnapshot
     from .sync_manifest import SyncManifest
 
 TEAM_CONFIG_PATH = Path(".llm-wiki") / "team.json"
@@ -508,6 +509,7 @@ def _manifest_content(
     surfaces: dict[str, dict] | None = None,
     generation_inputs: dict[str, object] | None = None,
     previous_manifest: SyncManifest | None = None,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> str:
     from .bootstrap_runtime import (
         build_entity_occurrence_page_map,
@@ -517,10 +519,40 @@ def _manifest_content(
     from .sync_manifest import (
         MANIFEST_STATE_UNAVAILABLE,
         SyncManifest,
+        prune_manifest_for_source_selection,
         retained_concept_page_paths,
     )
+    from .source_selection import with_source_selection_generation_input
 
     module_page_map = build_module_page_map(inventory)
+    effective_generation_inputs = generation_inputs
+    if source_snapshot is not None:
+        effective_generation_inputs = with_source_selection_generation_input(
+            generation_inputs,
+            source_snapshot.source_selection_identity,
+            source_snapshot.source_selection_inputs,
+        )
+    retained_page_paths = (
+        retained_concept_page_paths(wiki_dir) if wiki_dir is not None else None
+    )
+    if (
+        source_snapshot is not None
+        and source_snapshot.source_selection_policy is not None
+        and previous_manifest is not None
+    ):
+        prune_result = prune_manifest_for_source_selection(
+            previous_manifest,
+            source_snapshot.source_selection_policy,
+            source_snapshot=source_snapshot,
+        )
+        previous_manifest = prune_result.manifest
+        if retained_page_paths is not None:
+            retained_page_paths = tuple(
+                sorted(
+                    set(retained_page_paths)
+                    - set(prune_result.deselected_page_paths)
+                )
+            )
     manifest = SyncManifest.build_from_inventory(
         inventory,
         src_dir,
@@ -530,12 +562,15 @@ def _manifest_content(
             inventory, module_page_map
         ),
         surfaces=surfaces,
-        generation_inputs=generation_inputs,
+        generation_inputs=effective_generation_inputs,
         previous_manifest=previous_manifest,
-        retained_page_paths=(
-            retained_concept_page_paths(wiki_dir) if wiki_dir is not None else None
-        ),
+        retained_page_paths=retained_page_paths,
         unknown_evidence_reason=MANIFEST_STATE_UNAVAILABLE,
+        source_content_hashes=(
+            source_snapshot.hashes_for(inventory)
+            if source_snapshot is not None
+            else None
+        ),
     )
     return manifest.to_json()
 
@@ -723,12 +758,19 @@ def _entity_content(page_stem: str, inventory: dict) -> tuple[str | None, str]:
 
 
 def _infrastructure_content(
-    page_stem: str, inventory: dict, src_dir: str
+    page_stem: str,
+    inventory: dict,
+    src_dir: str,
+    *,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> tuple[str | None, str]:
     from .bootstrap_runtime import _generate_docker_md, build_module_page_map
     from .extraction_service import get_docker_inventory
 
-    docker_inventory = get_docker_inventory(src_dir)
+    docker_inventory = get_docker_inventory(
+        src_dir,
+        source_snapshot=source_snapshot,
+    )
     matches = [
         (docker_file, docker_info)
         for docker_file, docker_info in docker_inventory.items()
@@ -792,7 +834,13 @@ def _merge_conflicted_log(text: str) -> str:
 
 
 def _resolution_for_path(
-    rel_path: str, path: Path, wiki_dir: Path, inventory: dict, src_dir: str
+    rel_path: str,
+    path: Path,
+    wiki_dir: Path,
+    inventory: dict,
+    src_dir: str,
+    *,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> tuple[str | None, str]:
     if rel_path == "index.md":
         return _index_content(
@@ -814,6 +862,7 @@ def _resolution_for_path(
             surfaces=surfaces,
             generation_inputs=generation_inputs,
             previous_manifest=previous_manifest,
+            source_snapshot=source_snapshot,
         ), (
             "reconciled agreed v5 manifest state with current inventory"
             if previous_manifest is not None
@@ -828,7 +877,12 @@ def _resolution_for_path(
     if rel_path.startswith("entities/") and path.suffix == ".md":
         return _entity_content(path.stem, inventory)
     if rel_path.startswith("infrastructure/") and path.suffix == ".md":
-        return _infrastructure_content(path.stem, inventory, src_dir)
+        return _infrastructure_content(
+            path.stem,
+            inventory,
+            src_dir,
+            source_snapshot=source_snapshot,
+        )
     if rel_path.startswith("workflows/"):
         return None, "workflow conflicts require manual resolution"
     return None, "file is not a supported safe wiki conflict target"
@@ -839,11 +893,87 @@ def resolve_conflicts(
     src_dir: str,
     *,
     write: bool = False,
+    source_selection: str | Path | None = None,
 ) -> dict[str, Any]:
-    from .extraction_service import get_inventory
+    from .extraction_service import get_inventory_result
+    from .source_selection import (
+        SourceSelectionError,
+        resolve_source_selection,
+        validate_persisted_source_selection_identity,
+    )
+    from .source_snapshot import (
+        build_source_snapshot,
+        capture_source_selection_inputs,
+    )
+    from .sync_manifest import SyncManifest
 
     wiki_path = Path(wiki_dir)
-    inventory = get_inventory(src_dir, deep=True)
+    policy = resolve_source_selection(src_dir, source_selection)
+    try:
+        previous_manifest = SyncManifest.load(wiki_path)
+    except FileNotFoundError:
+        generation_inputs = (
+            {}
+            if wiki_path.is_dir() and next(wiki_path.iterdir(), None) is not None
+            else None
+        )
+    except (OSError, TypeError, UnicodeError, ValueError):
+        manifest_path = wiki_path / ".llm-wiki-manifest.json"
+        try:
+            manifest_text = read_md(manifest_path)
+        except OSError:
+            manifest_text = ""
+        if has_conflict_markers(manifest_text):
+            _surfaces, conflict_inputs, _manifest, _error = (
+                _manifest_resolution_state_from_conflict(manifest_text)
+            )
+        else:
+            conflict_inputs = None
+        if conflict_inputs is not None:
+            generation_inputs = conflict_inputs
+        else:
+            raise SourceSelectionError(
+                "source_selection",
+                "team resolve-conflicts cannot validate the managed wiki "
+                "boundary from its conflicted manifest; restore it or run sync",
+            )
+    else:
+        generation_inputs = previous_manifest.generation_inputs
+    validate_persisted_source_selection_identity(
+        generation_inputs,
+        None if policy is None else policy.identity,
+        operation="team resolve-conflicts",
+    )
+    selection_inputs = capture_source_selection_inputs(
+        src_dir,
+        source_selection=source_selection,
+        selection_policy=policy,
+    )
+    validate_persisted_source_selection_identity(
+        generation_inputs,
+        None if policy is None else policy.identity,
+        operation="team resolve-conflicts",
+        live_selection_inputs=selection_inputs,
+    )
+    source_snapshot = build_source_snapshot(
+        src_dir,
+        source_selection=source_selection,
+        selection_policy=policy,
+        expected_selection_inputs=selection_inputs,
+    )
+    validate_persisted_source_selection_identity(
+        generation_inputs,
+        source_snapshot.source_selection_identity,
+        operation="team resolve-conflicts",
+        live_selection_inputs=source_snapshot.source_selection_inputs,
+    )
+    inventory_result = get_inventory_result(
+        src_dir,
+        deep=True,
+        source_snapshot=source_snapshot,
+    )
+    inventory = inventory_result.inventory
+    source_snapshot = inventory_result.source_snapshot or source_snapshot
     resolved: list[dict[str, str]] = []
     unresolved: list[dict[str, str]] = []
 
@@ -856,7 +986,12 @@ def resolve_conflicts(
             continue
         rel_path = path.relative_to(wiki_path).as_posix()
         new_content, reason = _resolution_for_path(
-            rel_path, path, wiki_path, inventory, src_dir
+            rel_path,
+            path,
+            wiki_path,
+            inventory,
+            src_dir,
+            source_snapshot=source_snapshot,
         )
         if new_content is None:
             unresolved.append({"path": rel_path, "reason": reason})

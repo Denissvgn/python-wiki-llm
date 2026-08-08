@@ -78,6 +78,26 @@ def _assert_generated_diagram_budgets(markdown: str) -> None:
         assert len(body) <= GENERATED_DIAGRAM_CHAR_LIMIT
 
 
+def test_bootstrap_constraint_refresh_pins_selection_for_default_wiki(
+    tmp_project,
+):
+    init_cmd.run(
+        types.SimpleNamespace(
+            agent="generic",
+            wiki_dir="docs/llm_wiki",
+            no_skills=True,
+        )
+    )
+
+    bootstrap_cmd._update_agent_constraints(
+        "docs/llm_wiki",
+        source_selection="config/selection.json",
+    )
+
+    constraints = Path("AGENTS.md").read_text(encoding="utf-8")
+    assert "--source-selection config/selection.json" in constraints
+
+
 def _dense_module_dependency_summary():
     module = "pkg/focal.py"
     neighbors = [f"pkg/n{index:02d}.py" for index in range(11)]

@@ -65,6 +65,14 @@ from .source_snapshot import (
     SourceSnapshot,
     SourceSnapshotError,
     build_source_snapshot,
+    capture_source_selection_inputs,
+)
+from .source_selection import (
+    SourceSelectionError,
+    resolve_source_selection,
+    source_selection_identity_from_generation_inputs,
+    source_selection_inputs_from_generation_inputs,
+    validate_persisted_source_selection_identity,
 )
 from .sync_manifest import (
     LEGACY_MANIFEST_VERSION,
@@ -136,6 +144,50 @@ class _DocumentationPageMaps:
     occurrence: Mapping[tuple[str, str, int], str]
 
 
+def _native_source_snapshot_preflight(
+    *,
+    source_root: str | Path,
+    manifest: SyncManifest,
+    source_selection: str | Path | None,
+    operation: str,
+    allow_same_path_identity_update: bool = False,
+) -> tuple[Path, SourceSnapshot]:
+    source = _validated_directory(source_root, "source_root")
+    try:
+        policy = resolve_source_selection(source, source_selection)
+        live_identity = None if policy is None else policy.identity
+        selection_inputs = capture_source_selection_inputs(
+            source,
+            source_selection=source_selection,
+            selection_policy=policy,
+        )
+        persisted_identity = source_selection_identity_from_generation_inputs(
+            manifest.generation_inputs
+        )
+        validate_persisted_source_selection_identity(
+            manifest.generation_inputs,
+            live_identity,
+            operation=operation,
+            allow_same_path_update=(
+                allow_same_path_identity_update
+                and persisted_identity != live_identity
+            ),
+            live_selection_inputs=selection_inputs,
+        )
+        snapshot = build_source_snapshot(
+            source,
+            include_tests=(),
+            source_selection=source_selection,
+            selection_policy=policy,
+            expected_selection_inputs=selection_inputs,
+        )
+    except (OSError, SourceSelectionError, SourceSnapshotError, ValueError) as exc:
+        raise DocumentationNativeError(
+            f"Cannot validate {operation} source-selection inputs: {exc}"
+        ) from exc
+    return source, snapshot
+
+
 def evaluate_documentation_native_freshness(
     *,
     knowledge: KnowledgeIndex,
@@ -143,6 +195,7 @@ def evaluate_documentation_native_freshness(
     source_root: str | Path,
     trust_source_plugins: bool = False,
     helper_cache_dir: str | Path | None = None,
+    source_selection: str | Path | None = None,
 ) -> DocumentationNativeFreshness:
     """Evaluate one validated v5 snapshot against live standalone defaults."""
 
@@ -150,12 +203,20 @@ def evaluate_documentation_native_freshness(
         raise TypeError("knowledge must be a KnowledgeIndex")
     if not isinstance(manifest, SyncManifest):
         raise TypeError("manifest must be a SyncManifest")
+    source, source_snapshot = _native_source_snapshot_preflight(
+        source_root=source_root,
+        manifest=manifest,
+        source_selection=source_selection,
+        operation="native freshness",
+    )
     generation_input_paths = _generation_input_paths(manifest)
     runtime = _collect_runtime(
-        source_root=source_root,
+        source_root=source,
         trust_source_plugins=trust_source_plugins,
         helper_cache_dir=helper_cache_dir,
+        source_selection=source_selection,
         generation_input_paths=generation_input_paths,
+        source_snapshot=source_snapshot,
     )
     try:
         generation_options = _runtime_generation_options(manifest)
@@ -244,6 +305,7 @@ def refresh_documentation_native_projection(
     wiki_root: str | Path,
     trust_source_plugins: bool = False,
     helper_cache_dir: str | Path | None = None,
+    source_selection: str | Path | None = None,
     fault_injector: Callable[[CommitStage], None] | None = None,
 ) -> DocumentationNativeRefresh:
     """Recompute the native trio without mutating canonical Markdown."""
@@ -262,12 +324,21 @@ def refresh_documentation_native_projection(
         manifest,
         manifest_version=manifest_version,
     )
+    source, source_snapshot = _native_source_snapshot_preflight(
+        source_root=source,
+        manifest=manifest,
+        source_selection=source_selection,
+        operation="native refresh",
+        allow_same_path_identity_update=True,
+    )
     generation_input_paths = _generation_input_paths(manifest)
     runtime = _collect_runtime(
         source_root=source,
         trust_source_plugins=trust_source_plugins,
         helper_cache_dir=helper_cache_dir,
+        source_selection=source_selection,
         generation_input_paths=generation_input_paths,
+        source_snapshot=source_snapshot,
     )
     page_maps = _page_maps(runtime.inventory)
     generation_options = _runtime_generation_options(manifest)
@@ -293,6 +364,7 @@ def refresh_documentation_native_projection(
                 repository_evidence=collect_runtime_repository_evidence(
                     source,
                     wiki,
+                    source_snapshot=runtime.source_snapshot,
                 ),
                 inventory_complete=True,
                 previous_manifest=manifest,
@@ -367,7 +439,9 @@ def _collect_runtime(
     source_root: str | Path,
     trust_source_plugins: bool,
     helper_cache_dir: str | Path | None,
+    source_selection: str | Path | None,
     generation_input_paths: tuple[str, ...] = (),
+    source_snapshot: SourceSnapshot | None = None,
 ) -> _DocumentationNativeRuntime:
     source = _validated_directory(source_root, "source_root")
     if not isinstance(trust_source_plugins, bool):
@@ -379,7 +453,16 @@ def _collect_runtime(
     )
 
     try:
-        source_snapshot = build_source_snapshot(source, include_tests=())
+        if source_snapshot is None:
+            source_snapshot = build_source_snapshot(
+                source,
+                include_tests=(),
+                source_selection=source_selection,
+            )
+        elif source_snapshot.root.resolve() != source:
+            raise DocumentationNativeError(
+                "Native source snapshot belongs to a different source root."
+            )
         source_snapshot, uncaptured_generation_inputs = (
             _capture_generation_inputs(
                 source_snapshot,
@@ -399,6 +482,7 @@ def _collect_runtime(
                 include_tests=(),
                 job_request=ExtractionJobRequest.resolved(1),
                 include_plugins=trust_source_plugins,
+                source_plugins_only=trust_source_plugins,
             )
         )
     except (OSError, TypeError, UnicodeError, ValueError) as exc:
@@ -492,9 +576,16 @@ def _runtime_flow_entries(
 
     detected = detect_entry_points(
         dict(runtime.inventory),
-        console_scripts=read_console_scripts(str(source_root)),
+        console_scripts=read_console_scripts(
+            str(source_root),
+            source_snapshot=runtime.source_snapshot,
+        ),
         root=source_root,
-        fallback_root=Path.cwd(),
+        fallback_root=(
+            None
+            if source_root.resolve() != Path.cwd().resolve()
+            else Path.cwd()
+        ),
         include_plugins=trust_source_plugins,
         include_provenance=True,
     )
@@ -518,6 +609,7 @@ def _runtime_flow_entries(
             source_root=source_root,
             inventory=runtime.inventory,
             manifest=manifest,
+            source_snapshot=runtime.source_snapshot,
         )
     entries = attach_routes_to_entry_points(entries, contracts)
 
@@ -587,6 +679,7 @@ def _runtime_api_contracts(
     source_root: Path,
     inventory: Mapping[str, Mapping[str, Any]],
     manifest: SyncManifest,
+    source_snapshot: SourceSnapshot,
 ) -> Mapping[str, Any]:
     openapi = manifest.generation_inputs.get("openapi")
     openapi_file = openapi.get("path") if isinstance(openapi, Mapping) else None
@@ -594,6 +687,7 @@ def _runtime_api_contracts(
         inventory,
         openapi_file=openapi_file,
         source_root=source_root,
+        source_snapshot=source_snapshot,
     )
     if isinstance(openapi, Mapping):
         evaluated = contracts.get("openapi")
@@ -718,6 +812,14 @@ def _source_mismatches(
     mismatches.extend(
         f"removed:{path}" for path in sorted(recorded_paths - current_paths)
     )
+    if source_selection_identity_from_generation_inputs(
+        manifest.generation_inputs
+    ) != runtime.source_snapshot.source_selection_identity:
+        mismatches.append("generation_input_changed:source_selection")
+    if source_selection_inputs_from_generation_inputs(
+        manifest.generation_inputs
+    ) != runtime.source_snapshot.source_selection_inputs:
+        mismatches.append("generation_input_changed:source_selection_inputs")
     current_hashes = runtime.source_snapshot.hashes_for(current_paths)
     for path in sorted(recorded_paths & current_paths):
         recorded_hash = manifest.sources[path].get("hash")

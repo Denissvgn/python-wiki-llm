@@ -88,15 +88,30 @@ from .knowledge_orchestration import (
     runtime_generation_options,
 )
 from .knowledge_verification import attach_machine_verification_read_view
-from .plugins import PluginError, iter_components, load_entry_point
+from .plugins import (
+    PluginError,
+    iter_components,
+    load_entry_point,
+    runtime_plugin_fallback_root,
+)
 from .source_snapshot import (
     SourceSnapshot,
     build_source_snapshot,
+    capture_source_selection_inputs,
     format_unsupported_source_summary,
     unsupported_source_label,
     unsupported_source_summary,
 )
-from .sync_manifest import MANIFEST_FILENAME, SyncManifest
+from .source_selection import (
+    SourceSelectionError,
+    resolve_source_selection,
+    validate_persisted_source_selection_identity,
+)
+from .sync_manifest import (
+    MANIFEST_FILENAME,
+    SyncManifest,
+    SyncManifestError,
+)
 from .verification_contracts import (
     VERIFICATION_RECEIPT_FILENAME,
     VerificationResult,
@@ -448,9 +463,18 @@ def _add(
     *,
     path: str | None = None,
     target: str | None = None,
+    reason_code: str | None = None,
+    hint: str | None = None,
 ) -> None:
     report.issues.append(
-        LintIssue(category=category, message=message, path=path, target=target)
+        LintIssue(
+            category=category,
+            message=message,
+            path=path,
+            target=target,
+            reason_code=reason_code,
+            hint=hint,
+        )
     )
 
 
@@ -530,11 +554,21 @@ def _run_plugin_lint_rules(
     src_dir: str,
     inventory: dict,
     pages: list[Path],
+    *,
+    source_snapshot: SourceSnapshot,
+    source_plugins_only: bool,
 ) -> None:
-    for component in iter_components("lint_rule"):
+    source_root = Path(src_dir)
+    plugin_root = (
+        source_root
+        if source_plugins_only
+        or source_snapshot.source_selection_policy is not None
+        else Path.cwd()
+    )
+    for component in iter_components("lint_rule", root=plugin_root):
         component_ref = component["ref"]
         try:
-            rule = load_entry_point(component["entry_point"])
+            rule = load_entry_point(component["entry_point"], root=plugin_root)
             issues = rule(wiki_dir, src_dir, inventory, pages)
         except (PluginError, Exception) as exc:
             _add(
@@ -597,6 +631,11 @@ def _check_sync_manifest(
 ) -> None:
     from .sync_analysis import compute_sync_diff
 
+    if any(
+        issue.category == "source-selection-mismatch" for issue in report.issues
+    ):
+        return
+
     try:
         manifest = SyncManifest.load(wiki_dir)
     except FileNotFoundError:
@@ -611,6 +650,27 @@ def _check_sync_manifest(
             report,
             "sync_manifest",
             f"Missing sync manifest: {MANIFEST_FILENAME}. {guidance}",
+            path=MANIFEST_FILENAME,
+        )
+        return
+    except SyncManifestError as exc:
+        if exc.field.startswith("generation_inputs.source_selection"):
+            _add(
+                report,
+                "source-selection-mismatch",
+                f"Sync manifest source-selection identity is invalid: {exc}.",
+                path=MANIFEST_FILENAME,
+                reason_code="source-selection-mismatch",
+                hint=(
+                    "Run llm-wiki sync with the same source-selection profile "
+                    "used by CI."
+                ),
+            )
+            return
+        _add(
+            report,
+            "sync_manifest",
+            f"Invalid sync manifest {MANIFEST_FILENAME}: {exc}",
             path=MANIFEST_FILENAME,
         )
         return
@@ -634,6 +694,28 @@ def _check_sync_manifest(
                 raise RuntimeError(messages)
             inventory = inventory_result.inventory
             source_snapshot = inventory_result.source_snapshot
+        if source_snapshot is not None:
+            try:
+                validate_persisted_source_selection_identity(
+                    manifest.generation_inputs,
+                    source_snapshot.source_selection_identity,
+                    operation="lint",
+                    live_selection_inputs=source_snapshot.source_selection_inputs,
+                )
+            except SourceSelectionError:
+                _add(
+                    report,
+                    "source-selection-mismatch",
+                    "Live source selection or its applicable control inputs differ "
+                    "from the boundary committed by the sync manifest.",
+                    path=MANIFEST_FILENAME,
+                    reason_code="source-selection-mismatch",
+                    hint=(
+                        "Run llm-wiki sync with the same source-selection profile "
+                        "used by CI."
+                    ),
+                )
+                return
         source_content_hashes = (
             source_snapshot.hashes_for(inventory)
             if source_snapshot is not None
@@ -686,6 +768,64 @@ def _check_sync_manifest(
         )
 
 
+def _check_source_selection_identity(
+    report: LintReport,
+    wiki_dir: Path,
+    source_snapshot: SourceSnapshot,
+) -> None:
+    """Always verify the live/committed selection boundary.
+
+    This deliberately avoids the broader strict-manifest freshness checks so a
+    normal lint cannot silently miss a policy mismatch or pay for unrelated
+    strict validation.
+    """
+
+    try:
+        manifest = SyncManifest.load(wiki_dir)
+    except FileNotFoundError:
+        return
+    except SyncManifestError as exc:
+        if not exc.field.startswith("generation_inputs.source_selection"):
+            return
+        _add(
+            report,
+            "source-selection-mismatch",
+            f"Sync manifest source-selection identity is invalid: {exc}.",
+            path=MANIFEST_FILENAME,
+            reason_code="source-selection-mismatch",
+            hint=(
+                "Run llm-wiki sync with the same source-selection profile "
+                "used by CI."
+            ),
+        )
+        return
+    except Exception:
+        return
+
+    try:
+        validate_persisted_source_selection_identity(
+            manifest.generation_inputs,
+            source_snapshot.source_selection_identity,
+            operation="lint",
+            live_selection_inputs=source_snapshot.source_selection_inputs,
+        )
+    except SourceSelectionError:
+        pass
+    else:
+        return
+    _add(
+        report,
+        "source-selection-mismatch",
+        "Live source selection or its applicable control inputs differ from the "
+        "boundary committed by the sync manifest.",
+        path=MANIFEST_FILENAME,
+        reason_code="source-selection-mismatch",
+        hint=(
+            "Run llm-wiki sync with the same source-selection profile used by CI."
+        ),
+    )
+
+
 def _collect_lint_inputs(
     report: LintReport,
     wiki_path: Path,
@@ -698,12 +838,17 @@ def _collect_lint_inputs(
     job_request: ExtractionJobRequest | None,
     plan_reporter: Callable[[ExtractionJobPlan], None] | None,
     include_plugins: bool,
+    source_plugins_only: bool,
+    source_selection: str | Path | None,
+    expected_selection_inputs: Mapping[str, object] | None,
 ) -> _LintInputs | None:
     normalized_include_tests = normalize_include_tests(include_tests)
     with _profile_phase(profiler, "inventory"):
         source_snapshot = build_source_snapshot(
             src_dir,
             include_tests=normalized_include_tests,
+            source_selection=source_selection,
+            expected_selection_inputs=expected_selection_inputs,
         )
         inventory_result = get_inventory_result(
             src_dir,
@@ -716,6 +861,7 @@ def _collect_lint_inputs(
             job_request=job_request,
             plan_reporter=plan_reporter,
             include_plugins=include_plugins,
+            source_plugins_only=source_plugins_only,
         )
         report.extraction_job_plan = inventory_result.extraction_job_plan
         if cache_options is not None and cache_options.stats_enabled:
@@ -1177,6 +1323,8 @@ def _check_flow_coverage(
     src_dir: str,
     *,
     include_plugins: bool = True,
+    source_plugins_only: bool = False,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> None:
     """Flag user-flow pages whose entry point no longer exists in the code.
 
@@ -1191,9 +1339,19 @@ def _check_flow_coverage(
         ep["id"]
         for ep in get_entry_points(
             deep_inventory,
-            console_scripts=read_console_scripts(src_dir),
+            console_scripts=read_console_scripts(
+                src_dir,
+                source_snapshot=source_snapshot,
+            ),
             root=src_dir,
-            fallback_root=Path.cwd(),
+            fallback_root=runtime_plugin_fallback_root(
+                src_dir,
+                source_selection_configured=(
+                    source_snapshot is not None
+                    and source_snapshot.source_selection_policy is not None
+                ),
+                source_plugins_only=source_plugins_only,
+            ),
             include_plugins=include_plugins,
         )
     }
@@ -1213,6 +1371,8 @@ def _check_data_flow_diagnostics(
     src_dir: str,
     *,
     include_plugins: bool = True,
+    source_plugins_only: bool = False,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> None:
     documented_flows = _collect_documented_flows(wiki_path)
     if not documented_flows:
@@ -1221,9 +1381,19 @@ def _check_data_flow_diagnostics(
     edges = resolve_call_edges(deep_inventory)
     for entry_point in get_entry_points(
         deep_inventory,
-        console_scripts=read_console_scripts(src_dir),
+        console_scripts=read_console_scripts(
+            src_dir,
+            source_snapshot=source_snapshot,
+        ),
         root=src_dir,
-        fallback_root=Path.cwd(),
+        fallback_root=runtime_plugin_fallback_root(
+            src_dir,
+            source_selection_configured=(
+                source_snapshot is not None
+                and source_snapshot.source_selection_policy is not None
+            ),
+            source_plugins_only=source_plugins_only,
+        ),
         include_plugins=include_plugins,
     ):
         if entry_point["id"] not in documented_flows:
@@ -1251,12 +1421,24 @@ def _check_javascript_flow_diagnostics(
     src_dir: str,
     *,
     include_plugins: bool = True,
+    source_plugins_only: bool = False,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> None:
     entry_points = get_entry_points(
         deep_inventory,
-        console_scripts=read_console_scripts(src_dir),
+        console_scripts=read_console_scripts(
+            src_dir,
+            source_snapshot=source_snapshot,
+        ),
         root=src_dir,
-        fallback_root=Path.cwd(),
+        fallback_root=runtime_plugin_fallback_root(
+            src_dir,
+            source_selection_configured=(
+                source_snapshot is not None
+                and source_snapshot.source_selection_policy is not None
+            ),
+            source_plugins_only=source_plugins_only,
+        ),
         include_plugins=include_plugins,
     )
     for limitation in javascript_flow_limitations(deep_inventory, entry_points):
@@ -2135,6 +2317,7 @@ def _run_report_checks(
     inputs: _LintInputs,
     media_size_warn_bytes: int,
     include_plugins: bool,
+    source_plugins_only: bool,
 ) -> None:
     with _profile_phase(profiler, "unsupported_sources"):
         _check_unsupported_source_diagnostics(report, inputs.unsupported_sources)
@@ -2165,6 +2348,8 @@ def _run_report_checks(
             inputs.deep_inventory,
             src_dir,
             include_plugins=include_plugins,
+            source_plugins_only=source_plugins_only,
+            source_snapshot=inputs.source_snapshot,
         )
     with _profile_phase(profiler, "data_flow"):
         _check_data_flow_diagnostics(
@@ -2173,6 +2358,8 @@ def _run_report_checks(
             inputs.deep_inventory,
             src_dir,
             include_plugins=include_plugins,
+            source_plugins_only=source_plugins_only,
+            source_snapshot=inputs.source_snapshot,
         )
     with _profile_phase(profiler, "javascript_flow"):
         _check_javascript_flow_diagnostics(
@@ -2180,6 +2367,8 @@ def _run_report_checks(
             inputs.deep_inventory,
             src_dir,
             include_plugins=include_plugins,
+            source_plugins_only=source_plugins_only,
+            source_snapshot=inputs.source_snapshot,
         )
     with _profile_phase(profiler, "dependencies"):
         _check_dependency_coverage(
@@ -2195,6 +2384,12 @@ def _run_report_checks(
             wiki_path,
             inputs.docker_inventory,
             inputs.yaml_infrastructure_inventory,
+        )
+    with _profile_phase(profiler, "source_selection"):
+        _check_source_selection_identity(
+            report,
+            wiki_path,
+            inputs.source_snapshot,
         )
     knowledge_state = _KnowledgeLintState()
     if strict:
@@ -2258,9 +2453,80 @@ def _run_report_checks(
                 src_dir,
                 inputs.deep_inventory,
                 inputs.page_index.pages,
+                source_snapshot=inputs.source_snapshot,
+                source_plugins_only=source_plugins_only,
             )
     with _profile_phase(profiler, "team"):
         _check_team_issues(report, wiki_path, src_dir, inputs)
+
+
+def _add_source_selection_mismatch(report: LintReport, message: str) -> None:
+    _add(
+        report,
+        "source-selection-mismatch",
+        message,
+        path=MANIFEST_FILENAME,
+        reason_code="source-selection-mismatch",
+        hint="Run llm-wiki sync with the same source-selection profile used by CI.",
+    )
+
+
+def _preflight_lint_source_selection(
+    report: LintReport,
+    wiki_path: Path,
+    src_dir: str,
+    source_selection: str | Path | None,
+) -> tuple[bool, dict[str, object] | None]:
+    try:
+        selection_policy = resolve_source_selection(src_dir, source_selection)
+        selection_inputs = capture_source_selection_inputs(
+            src_dir,
+            source_selection=source_selection,
+            selection_policy=selection_policy,
+        )
+        try:
+            manifest = SyncManifest.load(wiki_path)
+        except FileNotFoundError:
+            return True, selection_inputs
+        validate_persisted_source_selection_identity(
+            manifest.generation_inputs,
+            selection_policy.identity if selection_policy is not None else None,
+            operation="lint",
+            live_selection_inputs=selection_inputs,
+        )
+    except SyncManifestError as exc:
+        _add_source_selection_mismatch(
+            report,
+            f"Sync manifest source-selection boundary is invalid: {exc}.",
+        )
+        return False, None
+    except SourceSelectionError as exc:
+        _add_source_selection_mismatch(report, str(exc))
+        return False, None
+    return True, selection_inputs
+
+
+def _new_lint_report(
+    wiki_path: Path,
+    src_dir: str,
+    effective_strict: bool,
+    knowledge_drift_report: bool,
+) -> LintReport:
+    return LintReport(
+        wiki_dir=str(wiki_path),
+        src_dir=src_dir,
+        strict=effective_strict,
+        knowledge_drift_report=knowledge_drift_report,
+    )
+
+
+def _add_missing_wiki(report: LintReport, wiki_path: Path) -> None:
+    _add(
+        report,
+        "wiki_missing",
+        f"Directory {wiki_path} does not exist.",
+        path=str(wiki_path),
+    )
 
 
 def build_report(
@@ -2278,23 +2544,22 @@ def build_report(
     job_request: ExtractionJobRequest | None = None,
     plan_reporter: Callable[[ExtractionJobPlan], None] | None = None,
     include_plugins: bool = True,
+    source_plugins_only: bool = False,
+    source_selection: str | Path | None = None,
 ) -> LintReport:
     """Build a structured lint report without rendering or exiting."""
     wiki_path = Path(wiki_dir)
     effective_strict = bool(strict or knowledge_drift_report)
-    report = LintReport(
-        wiki_dir=str(wiki_path),
-        src_dir=src_dir,
-        strict=effective_strict,
-        knowledge_drift_report=knowledge_drift_report,
+    report = _new_lint_report(
+        wiki_path, src_dir, effective_strict, knowledge_drift_report
     )
     if not wiki_path.exists():
-        _add(
-            report,
-            "wiki_missing",
-            f"Directory {wiki_path} does not exist.",
-            path=str(wiki_path),
-        )
+        _add_missing_wiki(report, wiki_path)
+        return report
+    selection_valid, selection_inputs = _preflight_lint_source_selection(
+        report, wiki_path, src_dir, source_selection
+    )
+    if not selection_valid:
         return report
     inputs = _collect_lint_inputs(
         report,
@@ -2308,6 +2573,9 @@ def build_report(
         job_request,
         plan_reporter,
         include_plugins,
+        source_plugins_only,
+        source_selection,
+        selection_inputs,
     )
     if inputs is None:
         return report
@@ -2320,6 +2588,7 @@ def build_report(
         inputs,
         media_size_warn_bytes,
         include_plugins,
+        source_plugins_only,
     )
     return report
 
@@ -2708,6 +2977,7 @@ def run(args):
     profile = bool(getattr(args, "profile", False))
     cache_stats = bool(getattr(args, "cache_stats", False))
     allow_external_src = bool(getattr(args, "allow_external_src", False))
+    source_selection = getattr(args, "source_selection", None)
     validate_path(str(wiki_dir), "--wiki-dir")
     src_root = validate_source_root(
         src_dir, "--src-dir", allow_external=allow_external_src
@@ -2739,6 +3009,7 @@ def run(args):
         ),
         job_request=job_request,
         plan_reporter=print_extraction_job_plan,
+        source_selection=source_selection,
     )
     if report.count("extractor_failure") and not profile:
         for issue in report.by_category().get("extractor_failure", []):

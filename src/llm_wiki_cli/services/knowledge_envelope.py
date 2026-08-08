@@ -17,7 +17,7 @@ from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 from urllib.parse import unquote, urlsplit
 
 from .contracts import GOVERNANCE_HASH_EXTENSION_KEY, KNOWLEDGE_SCHEMA_VERSION
@@ -289,15 +289,19 @@ class EvaluatedEnvelope:
 def collect_git_repository_evidence(
     root: str | Path,
     *,
+    included_worktree_paths: Iterable[str | Path] | None = None,
     excluded_worktree_paths: Iterable[str | Path] = (),
+    excluded_worktree_globs: Iterable[str] = (),
+    worktree_path_filter: Callable[[Path], bool] | None = None,
 ) -> RepositoryEvidence:
     """Collect local-only Git evidence without scanning source content.
 
     Git commands never contact a remote.  Any unavailable or malformed command
-    result is represented conservatively as unknown evidence.  Callers that
-    generate self-describing repository artifacts may exclude those exact
-    output paths from working-tree evaluation to avoid making the envelope
-    depend recursively on its own persisted bytes.
+    result is represented conservatively as unknown evidence.  A supplied
+    include set scopes working-tree evaluation to one source contract.  Callers
+    that generate self-describing repository artifacts may exclude those exact
+    output paths to avoid making the envelope depend recursively on its own
+    persisted bytes.  Omitting the include set preserves whole-tree behavior.
     """
 
     checkout = Path(root)
@@ -308,12 +312,45 @@ def collect_git_repository_evidence(
     raw_revision = _run_git(checkout, "rev-parse", "--verify", "HEAD")
     revision = raw_revision if _is_full_git_oid(raw_revision) else None
 
-    status_pathspecs = _excluded_worktree_pathspecs(
+    status_pathspecs = _worktree_pathspecs(
         checkout,
-        excluded_worktree_paths,
+        included_paths=included_worktree_paths,
+        excluded_paths=excluded_worktree_paths,
+        excluded_globs=excluded_worktree_globs,
     )
     if status_pathspecs is None:
         status = None
+        filtered_dirty = None
+    elif worktree_path_filter is not None:
+        raw_top_level = _run_git(checkout, "rev-parse", "--show-toplevel")
+        status_result = _run_git_result(
+            checkout,
+            "-c",
+            "core.fsmonitor=false",
+            "-c",
+            "status.relativePaths=false",
+            "status",
+            "--porcelain=v1",
+            "-z",
+            "--untracked-files=normal",
+            "--ignored=no",
+            *status_pathspecs,
+            preserve_output=True,
+        )
+        status = status_result.output if status_result.succeeded else None
+        if status is None or raw_top_level is None:
+            filtered_dirty = None
+        else:
+            try:
+                top_level = Path(raw_top_level).resolve()
+            except OSError:
+                filtered_dirty = None
+            else:
+                filtered_dirty = _filtered_worktree_status_is_dirty(
+                    status,
+                    top_level=top_level,
+                    path_filter=worktree_path_filter,
+                )
     else:
         status = _run_git(
             checkout,
@@ -326,9 +363,10 @@ def collect_git_repository_evidence(
             *status_pathspecs,
             preserve_empty=True,
         )
-    if status is None:
+        filtered_dirty = bool(status) if status is not None else None
+    if filtered_dirty is None:
         working_tree = WorkingTreeState.UNKNOWN
-    elif status:
+    elif filtered_dirty:
         working_tree = WorkingTreeState.DIRTY
     else:
         working_tree = WorkingTreeState.CLEAN
@@ -390,17 +428,67 @@ def collect_git_repository_evidence(
     )
 
 
-def _excluded_worktree_pathspecs(
-    checkout: Path,
-    excluded_paths: Iterable[str | Path],
-) -> tuple[str, ...] | None:
-    """Return literal top-level Git exclusions, or ``None`` if unevaluable."""
+def _filtered_worktree_status_is_dirty(
+    status: str,
+    *,
+    top_level: Path,
+    path_filter: Callable[[Path], bool],
+) -> bool | None:
+    """Interpret NUL-delimited porcelain status through an effective boundary."""
 
+    if not status:
+        return False
+    records = status.split("\0")
+    if records and records[-1] == "":
+        records.pop()
+    index = 0
+    while index < len(records):
+        record = records[index]
+        if len(record) < 4 or record[2] != " ":
+            return None
+        status_code = record[:2]
+        raw_paths = [record[3:].rstrip("/")]
+        if "R" in status_code or "C" in status_code:
+            index += 1
+            if index >= len(records):
+                return None
+            raw_paths.append(records[index].rstrip("/"))
+        for raw_path in raw_paths:
+            try:
+                path = _repository_relative_path(
+                    raw_path,
+                    "worktree_status.path",
+                )
+                if path_filter(top_level / path):
+                    return True
+            except (OSError, TypeError, ValueError):
+                return None
+        index += 1
+    return False
+
+
+def _worktree_pathspecs(
+    checkout: Path,
+    *,
+    included_paths: Iterable[str | Path] | None,
+    excluded_paths: Iterable[str | Path],
+    excluded_globs: Iterable[str] = (),
+) -> tuple[str, ...] | None:
+    """Return literal top-level Git pathspecs, or ``None`` if unevaluable."""
+
+    if isinstance(included_paths, (str, bytes)):
+        raise TypeError("included_worktree_paths must be an iterable of paths")
     if isinstance(excluded_paths, (str, bytes)):
         raise TypeError("excluded_worktree_paths must be an iterable of paths")
-    selected = tuple(excluded_paths)
-    if not selected:
+    if isinstance(excluded_globs, (str, bytes)):
+        raise TypeError("excluded_worktree_globs must be an iterable of patterns")
+    selected_includes = None if included_paths is None else tuple(included_paths)
+    selected_excludes = tuple(excluded_paths)
+    selected_exclude_globs = tuple(excluded_globs)
+    if selected_includes is None and not selected_excludes and not selected_exclude_globs:
         return ()
+    if selected_includes is not None and not selected_includes:
+        return None
 
     raw_top_level = _run_git(checkout, "rev-parse", "--show-toplevel")
     if raw_top_level is None:
@@ -411,31 +499,100 @@ def _excluded_worktree_pathspecs(
     except OSError:
         return None
 
-    normalized: set[str] = set()
-    for index, raw_path in enumerate(selected):
-        if not isinstance(raw_path, (str, Path)):
-            raise TypeError(
-                f"excluded_worktree_paths[{index}] must be a string or Path"
+    def normalized_paths(
+        selected: tuple[str | Path, ...],
+        *,
+        field: str,
+        outside_is_error: bool,
+    ) -> set[str] | None:
+        normalized: set[str] = set()
+        for index, raw_path in enumerate(selected):
+            if not isinstance(raw_path, (str, Path)):
+                raise TypeError(f"{field}[{index}] must be a string or Path")
+            candidate = Path(raw_path)
+            if not candidate.is_absolute():
+                candidate = checkout_root / candidate
+            try:
+                relative = candidate.resolve().relative_to(top_level).as_posix()
+            except (OSError, ValueError):
+                if outside_is_error:
+                    return None
+                continue
+            normalized.add(
+                _repository_relative_path(
+                    relative,
+                    f"{field}[{index}]",
+                )
             )
-        candidate = Path(raw_path)
-        if not candidate.is_absolute():
-            candidate = checkout_root / candidate
-        try:
-            relative = candidate.resolve().relative_to(top_level).as_posix()
-        except (OSError, ValueError):
-            continue
-        normalized.add(
-            _repository_relative_path(
-                relative,
-                f"excluded_worktree_paths[{index}]",
-            )
+        return normalized
+
+    normalized_includes = (
+        None
+        if selected_includes is None
+        else normalized_paths(
+            selected_includes,
+            field="included_worktree_paths",
+            outside_is_error=True,
         )
-    if not normalized:
-        return ()
+    )
+    if selected_includes is not None and not normalized_includes:
+        return None
+    normalized_excludes = normalized_paths(
+        selected_excludes,
+        field="excluded_worktree_paths",
+        outside_is_error=False,
+    )
+    assert normalized_excludes is not None
+
+    normalized_exclude_globs: set[str] = set()
+    for index, pattern in enumerate(selected_exclude_globs):
+        if not isinstance(pattern, str):
+            raise TypeError(f"excluded_worktree_globs[{index}] must be a string")
+        if (
+            not pattern
+            or pattern.startswith("/")
+            or "\\" in pattern
+            or "\0" in pattern
+            or any(part in {"", ".", ".."} for part in pattern.split("/"))
+        ):
+            raise ValueError(
+                f"excluded_worktree_globs[{index}] must be a normalized "
+                "repository-relative POSIX glob"
+            )
+        normalized_exclude_globs.add(pattern)
+
+    positive_pathspecs = (
+        (":(top)**",)
+        if normalized_includes is None
+        else tuple(
+            f":(top,literal){path}" for path in sorted(normalized_includes)
+        )
+    )
     return (
         "--",
-        ":(top)**",
-        *(f":(top,literal,exclude){path}" for path in sorted(normalized)),
+        *positive_pathspecs,
+        *(
+            f":(top,literal,exclude){path}"
+            for path in sorted(normalized_excludes)
+        ),
+        *(
+            f":(top,glob,exclude){pattern}"
+            for pattern in sorted(normalized_exclude_globs)
+        ),
+    )
+
+
+def _excluded_worktree_pathspecs(
+    checkout: Path,
+    excluded_paths: Iterable[str | Path],
+) -> tuple[str, ...] | None:
+    """Compatibility wrapper for the former exclusion-only helper."""
+
+    return _worktree_pathspecs(
+        checkout,
+        included_paths=None,
+        excluded_paths=excluded_paths,
+        excluded_globs=(),
     )
 
 
@@ -1026,7 +1183,11 @@ def _run_git(
     return None
 
 
-def _run_git_result(root: Path, *args: str) -> _GitCommandResult:
+def _run_git_result(
+    root: Path,
+    *args: str,
+    preserve_output: bool = False,
+) -> _GitCommandResult:
     git_environment = {
         key: value for key, value in os.environ.items() if not key.startswith("GIT_")
     }
@@ -1052,7 +1213,7 @@ def _run_git_result(root: Path, *args: str) -> _GitCommandResult:
         UnicodeError,
     ):
         return _GitCommandResult(available=False, returncode=None)
-    output = result.stdout.strip()
+    output = result.stdout if preserve_output else result.stdout.strip()
     return _GitCommandResult(
         available=True,
         returncode=result.returncode,

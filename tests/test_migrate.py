@@ -26,7 +26,10 @@ from llm_wiki_cli.commands.migrate_cmd import (
 )
 from llm_wiki_cli.commands.sync_cmd import MANIFEST_FILENAME
 from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
-from llm_wiki_cli.services.extractor_helpers import typescript_dependencies_ready
+from llm_wiki_cli.services.extractor_helpers import (
+    ENV_CACHE_DIR,
+    typescript_dependencies_ready,
+)
 from llm_wiki_cli.services.knowledge_evidence import (
     MODULE_OBSERVATION_SCOPE,
     ConceptObservationBasis,
@@ -38,6 +41,13 @@ from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState, WorkingTre
 from llm_wiki_cli.services.knowledge_orchestration import (
     build_runtime_knowledge_plan,
 )
+from llm_wiki_cli.services.source_selection import (
+    SOURCE_SELECTION_SCHEMA_VERSION,
+    SourceSelectionError,
+    resolve_source_selection,
+    with_source_selection_generation_input,
+)
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 from llm_wiki_cli.services.sync_manifest import (
     ManifestEvidenceBaseline,
     ManifestPageSource,
@@ -78,6 +88,115 @@ def _has_legacy_archive(wiki: Path, *parts: str) -> bool:
     return any(
         (archive / Path(*parts)).exists() for archive in legacy_root.glob("migrate-*")
     )
+
+
+def test_migration_rejects_truncated_manifest_before_broad_extraction(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    project = tmp_path / "project"
+    project.mkdir()
+    (project / "secret.py").write_text(
+        "class MustNotRead:\n    pass\n", encoding="utf-8"
+    )
+    wiki = _make_wiki(project)
+    (wiki / MANIFEST_FILENAME).write_text(
+        '{"generation_inputs":{"source_selection":{"schema_version":'
+        '"llm-wiki-source-selection-identity/v1"',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        migrate_cmd,
+        "get_inventory_result",
+        lambda *_args, **_kwargs: pytest.fail(
+            "an invalid managed manifest must fail before broad extraction"
+        ),
+    )
+
+    with pytest.raises(json.JSONDecodeError):
+        migrate_cmd._build_migration_plan(wiki, str(project))
+
+
+def test_configured_legacy_migration_fails_before_unproven_page_or_source_reads(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    project = tmp_path / "project"
+    selected = project / "selected"
+    selected.mkdir(parents=True)
+    (selected / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+    profile = project / ".llm-wiki" / "source-selection.json"
+    profile.parent.mkdir()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["selected"],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    wiki = _make_wiki(project)
+
+    def fail_inventory(*_args, **_kwargs):
+        pytest.fail("configured legacy migration must fail before extraction")
+
+    monkeypatch.setattr(migrate_cmd, "get_inventory_result", fail_inventory)
+
+    with pytest.raises(SourceSelectionError, match="run llm-wiki sync"):
+        migrate_cmd._build_migration_plan(wiki, str(project))
+
+
+def test_migration_refuses_authorized_profile_change_with_stale_surfaces(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    project = tmp_path / "project"
+    for directory in ("selected-a", "selected-b", "config"):
+        (project / directory).mkdir(parents=True)
+    (project / "selected-a" / "app.py").write_text("A = 1\n", encoding="utf-8")
+    (project / "selected-b" / "app.py").write_text("B = 1\n", encoding="utf-8")
+    for name, include in (("a", "selected-a"), ("b", "selected-b")):
+        (project / "config" / f"{name}.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                    "include": [include],
+                    "exclude": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+    wiki = _make_wiki(project)
+    _write(wiki / "workflows" / "stale-a.md", "# Stale A workflow\n")
+    (wiki / "flows").mkdir()
+    _write(wiki / "flows" / "stale-a.md", "# Stale A flow\n")
+    policy_a = resolve_source_selection(project, "config/a.json")
+    assert policy_a is not None
+    snapshot_a = build_source_snapshot(project, selection_policy=policy_a)
+    SyncManifest(
+        generation_inputs=with_source_selection_generation_input(
+            {},
+            snapshot_a.source_selection_identity,
+            snapshot_a.source_selection_inputs,
+        )
+    ).save(wiki)
+
+    def fail_inventory(*_args, **_kwargs):
+        pytest.fail("migrate must reject A-to-B before extraction or page carry")
+
+    monkeypatch.setattr(migrate_cmd, "get_inventory_result", fail_inventory)
+
+    with pytest.raises(SourceSelectionError, match="run llm-wiki sync"):
+        migrate_cmd._build_migration_plan(
+            wiki,
+            str(project),
+            source_selection="config/b.json",
+        )
+
+    assert (wiki / "workflows" / "stale-a.md").is_file()
+    assert (wiki / "flows" / "stale-a.md").is_file()
 
 
 def _legacy_archive_names(wiki: Path) -> list[str]:
@@ -888,7 +1007,7 @@ class TestMigrateIntegration:
 
     @skip_no_ts
     def test_typescript_absolute_page_names_migrate_to_relative_names(
-        self, tmp_path, capsys
+        self, tmp_path, monkeypatch, capsys
     ):
         proj = tmp_path / "proj"
         proj.mkdir()
@@ -906,6 +1025,10 @@ class TestMigrateIntegration:
             f"# Project\n\n**Location:** `{src_file}:1`\n",
         )
 
+        monkeypatch.setenv(
+            ENV_CACHE_DIR,
+            str(Path(__file__).parents[1] / ".git"),
+        )
         os.chdir(proj)
         migrate_cmd.run(_make_args())
 

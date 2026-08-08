@@ -1100,7 +1100,20 @@ def _python_scope_root(project_root: Path, path: Path) -> str:
     return "" if rel.as_posix() == "." else rel.as_posix()
 
 
-def _discover_python_local_modules(project_root: Path) -> frozenset[str]:
+def _discover_python_local_modules(
+    project_root: Path,
+    source_snapshot: SourceSnapshot,
+) -> frozenset[str]:
+    if source_snapshot.source_selection_policy is not None:
+        modules: set[str] = set()
+        for source_file in source_snapshot.files_by_language.get("python", ()):
+            parts = Path(source_file.rel_path).parts
+            if len(parts) == 1 and source_file.suffix == ".py":
+                modules.add(Path(parts[0]).stem)
+            elif len(parts) == 2 and parts[1] == "__init__.py":
+                modules.add(parts[0])
+        return frozenset(sorted(modules))
+
     modules: set[str] = set()
     try:
         children = list(project_root.iterdir())
@@ -1153,7 +1166,12 @@ def _parse_requirements_file(path: Path) -> tuple[set[str], set[str]]:
     return required, optional
 
 
-def _python_package_import_roots(path: Path, data: dict) -> frozenset[str]:
+def _python_package_import_roots(
+    path: Path,
+    data: dict,
+    project_root: Path,
+    source_snapshot: SourceSnapshot,
+) -> frozenset[str]:
     roots: set[str] = set()
     tool = data.get("tool", {})
     setuptools = tool.get("setuptools", {}) if isinstance(tool, dict) else {}
@@ -1167,8 +1185,33 @@ def _python_package_import_roots(path: Path, data: dict) -> frozenset[str]:
     else:
         wheres = [""]
 
+    selected_python_paths = {
+        source_file.rel_path
+        for source_file in source_snapshot.files_by_language.get("python", ())
+    }
+    configured = source_snapshot.source_selection_policy is not None
     for where in wheres or [""]:
         base = (path.parent / where).resolve()
+        if configured:
+            try:
+                base_rel_path = base.relative_to(project_root)
+            except ValueError:
+                continue
+            base_rel = (
+                "" if base_rel_path.as_posix() == "." else base_rel_path.as_posix()
+            )
+            base_init = f"{base_rel}/__init__.py" if base_rel else "__init__.py"
+            if base_init in selected_python_paths:
+                roots.add(base.name)
+            prefix = f"{base_rel}/" if base_rel else ""
+            for selected_path in selected_python_paths:
+                if not selected_path.startswith(prefix):
+                    continue
+                remainder = selected_path[len(prefix) :]
+                parts = remainder.split("/")
+                if len(parts) == 2 and parts[1] == "__init__.py":
+                    roots.add(parts[0])
+            continue
         if not base.is_dir():
             continue
         if (base / "__init__.py").is_file():
@@ -1189,6 +1232,8 @@ def _python_import_name_from_distribution(name: str) -> str:
 
 def _parse_python_pyproject(
     path: Path,
+    project_root: Path,
+    source_snapshot: SourceSnapshot,
 ) -> tuple[set[str], set[str], dict[str, str], str, frozenset[str]]:
     data = _load_toml(path)
     if data is None:
@@ -1223,7 +1268,12 @@ def _parse_python_pyproject(
         if isinstance(override, dict)
         else {}
     )
-    import_roots = _python_package_import_roots(path, data)
+    import_roots = _python_package_import_roots(
+        path,
+        data,
+        project_root,
+        source_snapshot,
+    )
     if project_name and not import_roots:
         fallback = _python_import_name_from_distribution(project_name)
         import_roots = frozenset({fallback}) if fallback else frozenset()
@@ -1249,7 +1299,7 @@ def _parse_python_manifest(
                 manifest_aliases,
                 project_name,
                 import_roots,
-            ) = _parse_python_pyproject(path)
+            ) = _parse_python_pyproject(path, project_root, source_snapshot)
             scoped_aliases[root].update(manifest_aliases)
             distribution = _normalize_python(project_name)
             if distribution:
@@ -1283,7 +1333,10 @@ def _parse_python_manifest(
         optional,
         aliases=local_aliases,
         scopes=scopes,
-        internal_modules=_discover_python_local_modules(project_root),
+        internal_modules=_discover_python_local_modules(
+            project_root,
+            source_snapshot,
+        ),
     )
 
 
@@ -1701,20 +1754,34 @@ def _normalize_rust(name: str) -> str:
 
 
 def _parse_rust_manifest(
-    project_root: Path, _source_snapshot: SourceSnapshot
+    project_root: Path, source_snapshot: SourceSnapshot
 ) -> Optional[_Manifest]:
-    data = _load_toml(project_root / "Cargo.toml")
-    if data is None:
-        return None
-
-    def _keys(section: str) -> set[str]:
+    def _keys(data: dict, section: str) -> set[str]:
         block = data.get(section, {})
         # The dependency-table *key* is the name used in ``use`` (``package =``
         # only renames the published crate), so reconcile against the key.
         return {_normalize_rust(k) for k in block} if isinstance(block, dict) else set()
 
-    required = _keys("dependencies")
-    optional = _keys("dev-dependencies") | _keys("build-dependencies")
+    paths = (
+        _snapshot_package_marker_paths(
+            project_root,
+            source_snapshot,
+            lambda name: name == "Cargo.toml",
+        )
+        if source_snapshot.source_selection_policy is not None
+        else [project_root / "Cargo.toml"]
+    )
+    required: set[str] = set()
+    optional: set[str] = set()
+    for path in paths:
+        current_data = _load_toml(path)
+        if current_data is None:
+            continue
+        required.update(_keys(current_data, "dependencies"))
+        optional.update(_keys(current_data, "dev-dependencies"))
+        optional.update(_keys(current_data, "build-dependencies"))
+    if not required and not optional:
+        return None
     return _Manifest(frozenset(required), frozenset(optional))
 
 
@@ -2437,8 +2504,21 @@ def _go_sum_versions(
     source_snapshot: SourceSnapshot | None = None,
 ) -> dict[str, dict[str, str]]:
     versions: dict[str, dict[str, str]] = {}
-    for go_mod in _walk_go_manifest_files(project_root, source_snapshot):
-        go_sum = go_mod.parent / "go.sum"
+    if (
+        source_snapshot is not None
+        and source_snapshot.source_selection_policy is not None
+    ):
+        go_sums = _snapshot_package_marker_paths(
+            project_root,
+            source_snapshot,
+            lambda name: name == "go.sum",
+        )
+    else:
+        go_sums = [
+            go_mod.parent / "go.sum"
+            for go_mod in _walk_go_manifest_files(project_root, source_snapshot)
+        ]
+    for go_sum in go_sums:
         try:
             lines = go_sum.read_text(encoding="utf-8").splitlines()
         except (OSError, UnicodeDecodeError):
@@ -2454,23 +2534,38 @@ def _go_sum_versions(
     return versions
 
 
-def _cargo_lock_versions(project_root: Path) -> dict[str, dict[str, str]]:
-    data = _load_toml(project_root / "Cargo.lock")
-    if data is None:
-        return {}
-    packages = data.get("package")
-    if not isinstance(packages, list):
-        return {}
+def _cargo_lock_versions(
+    project_root: Path,
+    source_snapshot: SourceSnapshot | None = None,
+) -> dict[str, dict[str, str]]:
+    if (
+        source_snapshot is not None
+        and source_snapshot.source_selection_policy is not None
+    ):
+        paths = _snapshot_package_marker_paths(
+            project_root,
+            source_snapshot,
+            lambda name: name == "Cargo.lock",
+        )
+    else:
+        paths = [project_root / "Cargo.lock"]
     versions: dict[str, dict[str, str]] = {}
-    for package in packages:
-        if not isinstance(package, dict):
+    for path in paths:
+        data = _load_toml(path)
+        if data is None:
             continue
-        name = package.get("name")
-        version = package.get("version")
-        if isinstance(name, str) and isinstance(version, str):
-            _keep_highest_version(
-                versions, _normalize_rust(name), version, "Cargo.lock"
-            )
+        packages = data.get("package")
+        if not isinstance(packages, list):
+            continue
+        for package in packages:
+            if not isinstance(package, dict):
+                continue
+            name = package.get("name")
+            version = package.get("version")
+            if isinstance(name, str) and isinstance(version, str):
+                _keep_highest_version(
+                    versions, _normalize_rust(name), version, "Cargo.lock"
+                )
     return versions
 
 
@@ -2509,9 +2604,20 @@ def _poetry_lock_versions(
     source_snapshot: SourceSnapshot | None = None,
 ) -> dict[str, dict[str, str]]:
     versions: dict[str, dict[str, str]] = {}
+    if (
+        source_snapshot is not None
+        and source_snapshot.source_selection_policy is not None
+    ):
+        paths = _snapshot_package_marker_paths(
+            project_root,
+            source_snapshot,
+            lambda name: name == "poetry.lock",
+        )
+    else:
+        paths = []
     if source_snapshot is None:
         directories = _lockfile_dirs(project_root, _PYTHON_MANIFEST_EXCLUDED_DIRS)
-    else:
+    elif source_snapshot.source_selection_policy is None:
         directories = sorted(
             {
                 path.parent
@@ -2522,8 +2628,11 @@ def _poetry_lock_versions(
             },
             key=lambda path: path.relative_to(project_root).as_posix(),
         )
-    for directory in directories:
-        data = _load_toml(directory / "poetry.lock")
+    else:
+        directories = []
+    paths.extend(directory / "poetry.lock" for directory in directories)
+    for path in paths:
+        data = _load_toml(path)
         if data is None:
             continue
         packages = data.get("package")
@@ -2561,8 +2670,21 @@ def _package_lock_versions(
     source_snapshot: SourceSnapshot | None = None,
 ) -> dict[str, dict[str, str]]:
     versions: dict[str, dict[str, str]] = {}
-    for package_json in _walk_ts_manifest_files(project_root, source_snapshot):
-        lockfile = package_json.parent / "package-lock.json"
+    if (
+        source_snapshot is not None
+        and source_snapshot.source_selection_policy is not None
+    ):
+        lockfiles = _snapshot_package_marker_paths(
+            project_root,
+            source_snapshot,
+            lambda name: name == "package-lock.json",
+        )
+    else:
+        lockfiles = [
+            package_json.parent / "package-lock.json"
+            for package_json in _walk_ts_manifest_files(project_root, source_snapshot)
+        ]
+    for lockfile in lockfiles:
         try:
             data = json.loads(lockfile.read_text(encoding="utf-8"))
         except (OSError, UnicodeDecodeError, ValueError):
@@ -2601,8 +2723,21 @@ def _pnpm_lock_versions(
     source_snapshot: SourceSnapshot | None = None,
 ) -> dict[str, dict[str, str]]:
     versions: dict[str, dict[str, str]] = {}
-    for package_json in _walk_ts_manifest_files(project_root, source_snapshot):
-        lockfile = package_json.parent / "pnpm-lock.yaml"
+    if (
+        source_snapshot is not None
+        and source_snapshot.source_selection_policy is not None
+    ):
+        lockfiles = _snapshot_package_marker_paths(
+            project_root,
+            source_snapshot,
+            lambda name: name == "pnpm-lock.yaml",
+        )
+    else:
+        lockfiles = [
+            package_json.parent / "pnpm-lock.yaml"
+            for package_json in _walk_ts_manifest_files(project_root, source_snapshot)
+        ]
+    for lockfile in lockfiles:
         try:
             lines = lockfile.read_text(encoding="utf-8").splitlines()
         except (OSError, UnicodeDecodeError):
@@ -2642,7 +2777,7 @@ def _lockfile_versions(
 ) -> dict[str, dict[str, dict[str, str]]]:
     return {
         "go": _go_sum_versions(project_root, source_snapshot),
-        "rust": _cargo_lock_versions(project_root),
+        "rust": _cargo_lock_versions(project_root, source_snapshot),
         "python": _python_lock_versions(project_root, source_snapshot),
         "typescript": _typescript_lock_versions(project_root, source_snapshot),
     }

@@ -1260,7 +1260,13 @@ def _reconcile_documentation_native_evidence(
                     include_plugins=bool(
                         run.policy.get("source_plugins_trusted", False)
                     ),
+                    source_plugins_only=bool(
+                        run.policy.get("source_plugins_trusted", False)
+                    ),
                     require_live_freshness=True,
+                    source_selection=_bound_source_selection_argument(
+                        run.policy
+                    ),
                 )
         else:
             service = build_snapshot_documentation_query_service(

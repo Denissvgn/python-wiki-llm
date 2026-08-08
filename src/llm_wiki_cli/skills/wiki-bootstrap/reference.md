@@ -2,6 +2,10 @@
 
 Supporting detail for [SKILL.md](SKILL.md).
 
+Every source-reading recipe below inherits the active profile rule from the
+main skill: when configured, replace `<profile>` with its repository-relative
+path and retain `--source-selection <profile>`; otherwise omit that option.
+
 ## Centrality-ranked semantic pass
 
 The semantic pass is intentionally budgeted. Default budget: complete all P0 items plus the top 30 P1 module/entity pages. Raise or lower that number only when the user gives a time/token budget or the bootstrap is small enough to finish safely.
@@ -47,11 +51,11 @@ Default path: `<wiki-dir>/bootstrap-remainder.md`, linked from a custom trailing
 Generated: 2026-07-04
 Source directory: .
 Wiki directory: docs/llm_wiki
-Bootstrap command: `llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki --depth full --format json`
+Bootstrap command: `llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki --depth full --format json --source-selection <profile>`
 Bootstrap summary: `logs/bootstrap.json`
 Semantic budget: P0 complete plus top 30 P1 module/entity pages
 Ranking policy: fan_in * 100 + cycle_bonus * 25 + fan_out * 5 + entrypoint_bonus * 20
-Last validation: `llm-wiki lint --strict --profile --src-dir . --wiki-dir docs/llm_wiki` exited 0
+Last validation: `llm-wiki lint --strict --profile --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>` exited 0
 
 ## Completed In This Pass
 
@@ -156,7 +160,7 @@ A successful run has:
 - **Large monorepo.** Do not attempt full semantic coverage. Complete P0, then top central pages, then backlog the rest.
 - **Unsupported sources.** Treat unsupported-language summaries as coverage notices. Include them in the validation notes and backlog if the user expects those languages to be first-class.
 - **Skipped generated pages.** Page skips can hide missing documentation due to collisions or unsafe output paths. Triage before semantic polishing.
-- **Source-adapter wikis.** Keep `--allow-external-src` consistent across `prepare-extractors`, `bootstrap`, `lint`, `sync`, `ci-check`, and `team check` after the initial run. Examples: `llm-wiki prepare-extractors --src-dir <repo> --allow-external-src` and `llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki`. The `--wiki-dir` remains project-root guarded.
+- **Source-adapter wikis.** Keep `--allow-external-src` and the active profile consistent across `prepare-extractors`, `bootstrap`, `lint`, `sync`, `ci-check`, and `team check` after the initial run. Examples: `llm-wiki prepare-extractors --src-dir <repo> --allow-external-src --source-selection <profile>` and `llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki --source-selection <profile>`. The `--wiki-dir` remains project-root guarded.
 - **Placeholder pressure.** Removing every placeholder is not the goal. The goal is to make central pages meaningful and make deferred work explicit.
 - **Custom backlog page lint.** If `bootstrap-remainder.md` is reported as an orphan, link it from `index.md`. If the target project forbids custom wiki pages, move it to `reports/` and record that fallback in `log.md`.
 

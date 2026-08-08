@@ -169,6 +169,9 @@ def _snapshot_sources(root: Path, snapshot: SourceSnapshot) -> list[Path]:
         ):
             paths.add(marker.abs_path)
 
+    if snapshot.source_selection_policy is not None:
+        return sorted(paths, key=lambda path: _source_path(root, path))
+
     rust_paths = snapshot.files_by_language.get("rust", ())
     candidate_directories = {root}
     for source_file in rust_paths:

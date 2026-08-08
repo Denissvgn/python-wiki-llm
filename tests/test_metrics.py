@@ -8,9 +8,17 @@ import pytest
 
 from llm_wiki_cli.commands import metrics_cmd
 from llm_wiki_cli.services import metrics
+from llm_wiki_cli.services.documentation_queries import DocumentationQueryError
 from llm_wiki_cli.services.knowledge_observability import (
     KnowledgeAggregateSummary,
 )
+from llm_wiki_cli.services.source_selection import (
+    SOURCE_SELECTION_SCHEMA_VERSION,
+    resolve_source_selection,
+    with_source_selection_generation_input,
+)
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
+from llm_wiki_cli.services.sync_manifest import SyncManifest
 
 
 def _knowledge_summary(**overrides) -> KnowledgeAggregateSummary:
@@ -49,6 +57,49 @@ def test_metrics_path_resolves_inside_git_dir():
         metrics.metrics_path(Path("repo") / ".git")
         == Path("repo") / ".git" / "llm-wiki-metrics.jsonl"
     )
+
+
+def test_current_coverage_rejects_stale_persisted_source_selection(tmp_project):
+    def write_profile(path: Path, include: str) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(
+                {
+                    "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                    "include": [include],
+                    "exclude": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    for directory, value in (("selected-a", 1), ("selected-b", 2)):
+        path = Path(directory)
+        path.mkdir()
+        (path / "app.py").write_text(f"VALUE = {value}\n", encoding="utf-8")
+    profile_a = Path("config/a.json")
+    profile_b = Path("config/b.json")
+    write_profile(profile_a, "selected-a")
+    write_profile(profile_b, "selected-b")
+    policy_a = resolve_source_selection(".", profile_a.as_posix())
+    assert policy_a is not None
+    snapshot_a = build_source_snapshot(".", selection_policy=policy_a)
+    wiki = Path("docs/llm_wiki")
+    wiki.mkdir(parents=True)
+    SyncManifest(
+        generation_inputs=with_source_selection_generation_input(
+            {},
+            snapshot_a.source_selection_identity,
+            snapshot_a.source_selection_inputs,
+        )
+    ).save(wiki)
+
+    with pytest.raises(DocumentationQueryError, match="llm-wiki sync"):
+        metrics.current_coverage(
+            ".",
+            wiki,
+            source_selection=profile_b.as_posix(),
+        )
 
 
 def test_record_event_appends_jsonl_and_load_events_reads_it(tmp_path):

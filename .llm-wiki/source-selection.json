@@ -1,0 +1,10 @@
+{
+  "schema_version": "llm-wiki-source-selection/v1",
+  "include": [
+    "pyproject.toml",
+    "src/llm_wiki_cli",
+    "integrations/github-action",
+    "integrations/obsidian/llm-wiki"
+  ],
+  "exclude": []
+}

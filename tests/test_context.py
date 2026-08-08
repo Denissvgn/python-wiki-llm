@@ -15,6 +15,7 @@ import pytest
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import context_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
+from llm_wiki_cli.services import context_packet as context_packet_service
 from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
 from llm_wiki_cli.services.knowledge_artifacts import (
     build_knowledge_commit_plan,
@@ -39,6 +40,12 @@ from llm_wiki_cli.services.sync_manifest import (
     ManifestPageSource,
     SyncManifest,
 )
+from llm_wiki_cli.services.source_selection import (
+    SOURCE_SELECTION_SCHEMA_VERSION,
+    resolve_source_selection,
+    with_source_selection_generation_input,
+)
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 from tests import knowledge_fixtures as knowledge_fixture_helpers
 from tests.knowledge_fixtures import (
     EvaluatedKnowledgeFixture,
@@ -80,6 +87,20 @@ def _write_request(tmp_path, data) -> str:
     path = tmp_path / "context-request.json"
     path.write_text(json.dumps(data), encoding="utf-8")
     return str(path)
+
+
+def _write_selection_profile(path: Path, include: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": [include],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
 
 
 def _protocol_request(**overrides):
@@ -742,6 +763,87 @@ class TestSerializers:
 
 
 # ── Budget payload ────────────────────────────────────────────────────
+
+
+class TestContextSourceSelectionBoundary:
+    def test_configured_source_only_context_allows_truly_empty_wiki(
+        self, tmp_project
+    ):
+        Path("selected").mkdir()
+        Path("selected/app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        profile = Path("config/selection.json")
+        _write_selection_profile(profile, "selected")
+        Path("docs/llm_wiki").mkdir(parents=True)
+
+        payload, _warnings = context_cmd._build_context(
+            ".",
+            32000,
+            "json",
+            ["all"],
+            wiki_dir="docs/llm_wiki",
+            source_selection=profile.as_posix(),
+        )
+
+        assert "selected/app.py" in payload["files"]
+
+    def test_configured_context_rejects_populated_wiki_without_manifest(
+        self, tmp_project
+    ):
+        Path("selected").mkdir()
+        Path("selected/app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        profile = Path("config/selection.json")
+        _write_selection_profile(profile, "selected")
+        wiki = Path("docs/llm_wiki")
+        wiki.mkdir(parents=True)
+        (wiki / "index.md").write_text("# Stale index\n", encoding="utf-8")
+
+        with pytest.raises(context_cmd.ProtocolRequestError, match="llm-wiki sync"):
+            context_cmd._build_context(
+                ".",
+                32000,
+                "json",
+                ["all"],
+                wiki_dir=wiki.as_posix(),
+                source_selection=profile.as_posix(),
+            )
+
+    def test_qualified_packet_rejects_selection_mismatch_before_wiki_read(
+        self, tmp_project, monkeypatch
+    ):
+        Path("selected-a").mkdir()
+        Path("selected-b").mkdir()
+        Path("selected-a/app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        Path("selected-b/app.py").write_text("VALUE = 2\n", encoding="utf-8")
+        profile_a = Path("config/a.json")
+        profile_b = Path("config/b.json")
+        _write_selection_profile(profile_a, "selected-a")
+        _write_selection_profile(profile_b, "selected-b")
+        policy_a = resolve_source_selection(".", profile_a.as_posix())
+        assert policy_a is not None
+        snapshot_a = build_source_snapshot(".", selection_policy=policy_a)
+        wiki = Path("docs/llm_wiki")
+        wiki.mkdir(parents=True)
+        SyncManifest(
+            generation_inputs=with_source_selection_generation_input(
+                {},
+                snapshot_a.source_selection_identity,
+                snapshot_a.source_selection_inputs,
+            )
+        ).save(wiki)
+        monkeypatch.setattr(
+            context_packet_service,
+            "_wiki_anchor",
+            lambda *_args, **_kwargs: pytest.fail(
+                "wiki content must not be read before selection validation"
+            ),
+        )
+
+        with pytest.raises(context_cmd.ProtocolRequestError, match="llm-wiki sync"):
+            context_packet_service.capture_context_read(
+                ".",
+                wiki.as_posix(),
+                source_selection=profile_b.as_posix(),
+            )
 
 
 class TestBuildContextPayload:

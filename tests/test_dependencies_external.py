@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import json
+
 from llm_wiki_cli.services.dependencies import (
     classify_imports,
     parse_declared_dependencies,
     reconcile_dependencies,
 )
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
 
 def _imp(module, name=None):
@@ -15,6 +18,22 @@ def _imp(module, name=None):
 
 def _file(language, *imports):
     return {"language": language, "imports": list(imports)}
+
+
+def _write_selection(root, include, exclude=None):
+    path = root / ".llm-wiki/source-selection.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": "llm-wiki-source-selection/v1",
+                "include": include,
+                "exclude": exclude or [],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
 
 # ── DL-201: classification framework + Python ─────────────────────────
@@ -102,6 +121,37 @@ class TestPythonClassification:
             "pydantic-settings",
             "pyannote-audio",
         }
+
+    def test_configured_python_import_roots_come_only_from_selected_sources(
+        self,
+        tmp_path,
+    ):
+        outside = tmp_path / "outside/secretpkg"
+        outside.mkdir(parents=True)
+        (outside / "__init__.py").write_text("SECRET = True\n", encoding="utf-8")
+        selected = tmp_path / "selected"
+        selected.mkdir()
+        (selected / "pyproject.toml").write_text(
+            "[project]\n"
+            'name = "selected-project"\n'
+            'dependencies = ["requests"]\n'
+            "[tool.setuptools.packages.find]\n"
+            'where = ["../outside"]\n',
+            encoding="utf-8",
+        )
+        (selected / "app.py").write_text("import secretpkg\n", encoding="utf-8")
+        _write_selection(tmp_path, ["selected"])
+        snapshot = build_source_snapshot(tmp_path)
+        inventory = {"selected/app.py": _file("python", _imp("secretpkg"))}
+
+        report = reconcile_dependencies(
+            inventory,
+            str(tmp_path),
+            source_snapshot=snapshot,
+        )["languages"]["python"]
+
+        assert report["used"] == {"secretpkg": ["selected/app.py"]}
+        assert report["undeclared"] == ["secretpkg"]
 
     def test_single_and_multiline_dependency_arrays_parse(self, tmp_path):
         (tmp_path / "pyproject.toml").write_text(
@@ -208,6 +258,50 @@ class TestTypeScriptClassification:
         declared = parse_declared_dependencies(str(tmp_path))["typescript"]
         assert declared["required"] == ["react", "react-dom"]
         assert declared["optional"] == ["jest"]
+
+    def test_configured_excluded_sibling_lock_is_not_dependency_evidence(
+        self,
+        tmp_path,
+    ):
+        selected = tmp_path / "selected"
+        selected.mkdir()
+        (selected / "app.ts").write_text(
+            'import React from "react";\n', encoding="utf-8"
+        )
+        (selected / "package.json").write_text(
+            json.dumps({"dependencies": {"react": "^18"}}),
+            encoding="utf-8",
+        )
+        (selected / "package-lock.json").write_text(
+            json.dumps(
+                {
+                    "packages": {
+                        "node_modules/react": {"version": "999.0.0"},
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+        _write_selection(
+            tmp_path,
+            ["selected"],
+            ["selected/package-lock.json"],
+        )
+        snapshot = build_source_snapshot(tmp_path)
+        inventory = {"selected/app.ts": _file("typescript", _imp("react"))}
+
+        report = reconcile_dependencies(
+            inventory,
+            str(tmp_path),
+            source_snapshot=snapshot,
+        )
+
+        typescript = report["languages"]["typescript"]
+        assert typescript["versions"] == {}
+        assert "package-lock.json" not in {
+            record["source_path"]
+            for record in report["version_details"]["records"]
+        }
 
     def test_devdependency_use_is_not_undeclared(self, tmp_path):
         (tmp_path / "package.json").write_text(
@@ -358,6 +452,85 @@ class TestRustClassification:
         assert report["undeclared"] == []
         assert report["unused"] == []
         assert report["optional"] == ["criterion"]
+
+    def test_configured_nested_rust_uses_only_selected_manifest_and_lock(
+        self,
+        tmp_path,
+    ):
+        (tmp_path / "Cargo.toml").write_text(
+            '[dependencies]\nroot-secret = "9"\n', encoding="utf-8"
+        )
+        (tmp_path / "Cargo.lock").write_text(
+            '[[package]]\nname = "root-secret"\nversion = "9.9.9"\n',
+            encoding="utf-8",
+        )
+        crate = tmp_path / "selected/crate"
+        crate.mkdir(parents=True)
+        (crate / "Cargo.toml").write_text(
+            '[dependencies]\nserde = "1"\n', encoding="utf-8"
+        )
+        (crate / "Cargo.lock").write_text(
+            '[[package]]\nname = "serde"\nversion = "1.0.197"\n',
+            encoding="utf-8",
+        )
+        (crate / "lib.rs").write_text("use serde::Deserialize;\n", encoding="utf-8")
+        _write_selection(tmp_path, ["selected"])
+        snapshot = build_source_snapshot(tmp_path)
+        inventory = {
+            "selected/crate/lib.rs": _file(
+                "rust", _imp("serde::Deserialize", "Deserialize")
+            )
+        }
+
+        report = reconcile_dependencies(
+            inventory,
+            str(tmp_path),
+            source_snapshot=snapshot,
+        )
+
+        rust = report["languages"]["rust"]
+        assert rust["required"] == ["serde"]
+        assert rust["undeclared"] == []
+        assert rust["versions"] == {
+            "serde": {"version": "1.0.197", "resolved_from": "Cargo.lock"}
+        }
+        assert "root-secret" not in json.dumps(report, sort_keys=True)
+        assert {
+            record["source_path"]
+            for record in report["version_details"]["records"]
+        } <= {"selected/crate/Cargo.toml", "selected/crate/Cargo.lock"}
+
+    def test_configured_standalone_rust_does_not_inherit_root_cargo_evidence(
+        self,
+        tmp_path,
+    ):
+        (tmp_path / "Cargo.toml").write_text(
+            '[dependencies]\nroot-secret = "9"\n', encoding="utf-8"
+        )
+        (tmp_path / "Cargo.lock").write_text(
+            '[[package]]\nname = "root-secret"\nversion = "9.9.9"\n',
+            encoding="utf-8",
+        )
+        (tmp_path / "selected.rs").write_text(
+            "use root_secret::Thing;\n", encoding="utf-8"
+        )
+        _write_selection(tmp_path, ["selected.rs"])
+        snapshot = build_source_snapshot(tmp_path)
+        inventory = {
+            "selected.rs": _file("rust", _imp("root_secret::Thing", "Thing"))
+        }
+
+        report = reconcile_dependencies(
+            inventory,
+            str(tmp_path),
+            source_snapshot=snapshot,
+        )
+
+        rust = report["languages"]["rust"]
+        assert rust["required"] == []
+        assert rust["undeclared"] == ["root_secret"]
+        assert rust["versions"] == {}
+        assert report["version_details"]["records"] == []
 
 
 # ── DL-205: reconcile_dependencies ────────────────────────────────────

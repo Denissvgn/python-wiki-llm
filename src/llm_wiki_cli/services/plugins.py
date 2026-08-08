@@ -7,11 +7,14 @@ runtime behavior is reproducible from project-local state.
 
 from __future__ import annotations
 
+import hashlib
 import importlib
+import importlib.util
 import json
 import re
 import shutil
 import sys
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -44,6 +47,9 @@ _MODULE_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$")
 _ATTR_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$")
 _PROMPT_GIT_MUTATION_RE = re.compile(
     r"(?i)(?<![A-Za-z0-9_-])git\b[^\r\n]*?(?<![A-Za-z0-9_-])(?:add|commit)\b"
+)
+_RUNTIME_CACHE_DIRECTORIES = frozenset(
+    {".mypy_cache", ".pytest_cache", ".ruff_cache", "__pycache__"}
 )
 
 
@@ -239,6 +245,10 @@ def _ensure_entry_point(
     module, attr = value.split(":", 1)
     if not _MODULE_RE.match(module) or not _ATTR_RE.match(attr):
         raise PluginError(f"{field} must use a valid Python module and attribute.")
+    if "__pycache__" in module.split("."):
+        raise PluginError(
+            f"{field} module must not use the reserved __pycache__ directory."
+        )
     if (
         plugin_dir is not None
         and _entry_point_module_source(plugin_dir, module) is None
@@ -247,6 +257,32 @@ def _ensure_entry_point(
             f"{field} module must resolve to a Python file inside the plugin directory: {module}"
         )
     return value
+
+
+def _ensure_no_reserved_plugin_sources(plugin_dir: Path) -> None:
+    """Reject authored Python hidden inside interpreter cache directories.
+
+    ``__pycache__`` is excluded from executable-input commitments because the
+    interpreter writes volatile bytecode there.  Python source is never a
+    legitimate cache artifact, so allowing it below that directory would make
+    executable bytes invisible to the integrity baseline.
+    """
+
+    try:
+        hidden_sources = sorted(
+            path.relative_to(plugin_dir).as_posix()
+            for path in plugin_dir.rglob("*.py")
+            if "__pycache__" in path.relative_to(plugin_dir).parts
+        )
+    except OSError as exc:
+        raise PluginError(
+            f"Cannot inspect plugin sources under {plugin_dir}: {exc}"
+        ) from exc
+    if hidden_sources:
+        raise PluginError(
+            "Plugin Python source must not be stored under the reserved "
+            f"__pycache__ directory: {hidden_sources[0]}"
+        )
 
 
 def _safe_component_path(plugin_dir: Path, value: Any, field: str) -> str:
@@ -321,6 +357,7 @@ def _normalize_component(plugin_dir: Path, raw: Any) -> dict[str, Any]:
 def validate_plugin(ref: str | Path) -> dict[str, Any]:
     """Validate and normalize a plugin manifest without installing it."""
     plugin_dir, manifest_path = _manifest_root(ref)
+    _ensure_no_reserved_plugin_sources(plugin_dir)
     try:
         raw = json.loads(manifest_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
@@ -398,7 +435,7 @@ def _check_install_collisions(manifest: dict[str, Any], lock: dict[str, Any]) ->
 
 
 def _copy_ignore(_dir: str, names: list[str]) -> set[str]:
-    ignored = {".git", "__pycache__", ".pytest_cache", ".mypy_cache"}
+    ignored = {".git", *_RUNTIME_CACHE_DIRECTORIES}
     return {name for name in names if name in ignored}
 
 
@@ -484,6 +521,8 @@ def iter_components(
 
 
 _ACTIVATED_PATHS: set[str] = set()
+_PLUGIN_CODE_FINGERPRINTS: dict[str, str] = {}
+_PLUGIN_LOAD_LOCK = threading.RLock()
 
 
 def _activate_plugin_path(path: Path) -> None:
@@ -496,6 +535,21 @@ def _activate_plugin_path(path: Path) -> None:
 def activate_plugin_paths(root: str | Path = ".") -> None:
     for plugin in list_plugins(root):
         _activate_plugin_path(plugin_store(root) / plugin["id"])
+
+
+def runtime_plugin_fallback_root(
+    source_root: str | Path,
+    *,
+    source_selection_configured: bool,
+    source_plugins_only: bool = False,
+) -> Path | None:
+    """Return the ambient plugin fallback only for legacy compatible reads."""
+
+    if (source_selection_configured or source_plugins_only) and Path(
+        source_root
+    ).resolve() != Path.cwd().resolve():
+        return None
+    return Path.cwd()
 
 
 def _entry_point_components(
@@ -548,19 +602,66 @@ def _ensure_loaded_module_not_shadowed(module_name: str, plugin_dir: Path) -> No
             )
 
 
+def _plugin_code_fingerprint(plugin_dir: Path) -> str:
+    digest = hashlib.sha256()
+    _ensure_no_reserved_plugin_sources(plugin_dir)
+    try:
+        committed_files = sorted(
+            path
+            for path in plugin_dir.rglob("*")
+            if path.is_file()
+            and not _RUNTIME_CACHE_DIRECTORIES.intersection(
+                path.relative_to(plugin_dir).parts
+            )
+        )
+        for path in committed_files:
+            digest.update(path.relative_to(plugin_dir).as_posix().encode("utf-8"))
+            digest.update(b"\0")
+            digest.update(path.read_bytes())
+            digest.update(b"\0")
+    except OSError as exc:
+        raise PluginError(
+            f"Cannot bind installed plugin code under {plugin_dir}: {exc}"
+        ) from exc
+    return "sha256:" + digest.hexdigest()
+
+
+def _purge_changed_plugin_modules(plugin_dir: Path) -> None:
+    for module_name, module in list(sys.modules.items()):
+        if module is not None and _module_loaded_from_plugin(module, plugin_dir):
+            sys.modules.pop(module_name, None)
+    for source in plugin_dir.rglob("*.py"):
+        try:
+            cache_path = Path(importlib.util.cache_from_source(str(source)))
+            cache_path.unlink(missing_ok=True)
+        except (NotImplementedError, OSError) as exc:
+            raise PluginError(
+                f"Cannot invalidate changed installed plugin code under "
+                f"{plugin_dir}: {exc}"
+            ) from exc
+
+
 def load_entry_point(entry_point: str, *, root: str | Path = ".") -> Any:
     entry_point = _ensure_entry_point(entry_point, "entry_point")
     module_name, attr_path = entry_point.split(":", 1)
     plugin_dir = _installed_entry_point_plugin_dir(entry_point, root=root)
+    _ensure_no_reserved_plugin_sources(plugin_dir)
     if _entry_point_module_source(plugin_dir, module_name) is None:
         raise PluginError(
             f"Entry point {entry_point!r} for an installed plugin must resolve to "
             "a Python file inside the plugin directory."
         )
-    _ensure_loaded_module_not_shadowed(module_name, plugin_dir)
-    _activate_plugin_path(plugin_dir)
-    importlib.invalidate_caches()
-    obj = importlib.import_module(module_name)
+    with _PLUGIN_LOAD_LOCK:
+        plugin_key = str(plugin_dir.resolve())
+        fingerprint = _plugin_code_fingerprint(plugin_dir)
+        previous_fingerprint = _PLUGIN_CODE_FINGERPRINTS.get(plugin_key)
+        if previous_fingerprint is not None and previous_fingerprint != fingerprint:
+            _purge_changed_plugin_modules(plugin_dir)
+        _PLUGIN_CODE_FINGERPRINTS[plugin_key] = fingerprint
+        _ensure_loaded_module_not_shadowed(module_name, plugin_dir)
+        _activate_plugin_path(plugin_dir)
+        importlib.invalidate_caches()
+        obj = importlib.import_module(module_name)
     if not _module_loaded_from_plugin(obj, plugin_dir):
         raise PluginError(
             f"Entry point {entry_point!r} resolved outside its installed plugin directory."

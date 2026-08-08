@@ -6,6 +6,7 @@ import inspect
 import json
 import textwrap
 import types
+from pathlib import Path
 
 import pytest
 
@@ -55,6 +56,13 @@ from llm_wiki_cli.services.knowledge_model import (
     parse_knowledge_index,
     serialize_knowledge_index,
 )
+from llm_wiki_cli.services.source_selection import (
+    SOURCE_SELECTION_SCHEMA_VERSION,
+    resolve_source_selection,
+    with_source_selection_generation_input,
+)
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
+from llm_wiki_cli.services.sync_manifest import SyncManifest
 from llm_wiki_cli.services.verification_contracts import (
     ARTIFACT_INTEGRITY_CHECKER_ID,
     build_artifact_verification_context,
@@ -194,6 +202,7 @@ def test_supported_api_signatures_preserve_existing_callers():
         "include_empty",
         "allow_external_src",
         "read_only",
+        "source_selection",
     ]
     assert extract_params["src_dir"].default == "."
     assert extract_params["changed"].kind is inspect.Parameter.KEYWORD_ONLY
@@ -209,6 +218,7 @@ def test_supported_api_signatures_preserve_existing_callers():
         "prefer_fresh",
         "allow_external_src",
         "read_only",
+        "source_selection",
     ]
     assert context_params["src_dir"].default == "."
     assert context_params["budget"].default == 32000
@@ -217,15 +227,14 @@ def test_supported_api_signatures_preserve_existing_callers():
 
 
 def test_knowledge_api_signatures_are_explicit_and_builder_stays_compatible():
-    builder_params = inspect.signature(
-        build_documentation_query_service
-    ).parameters
+    builder_params = inspect.signature(build_documentation_query_service).parameters
     assert list(builder_params) == [
         "src_dir",
         "wiki_dir",
         "limit",
         "allow_external_src",
         "read_only",
+        "source_selection",
     ]
     assert builder_params["src_dir"].default == "."
     assert builder_params["wiki_dir"].kind is inspect.Parameter.KEYWORD_ONLY
@@ -240,6 +249,7 @@ def test_knowledge_api_signatures_are_explicit_and_builder_stays_compatible():
         "limit",
         "allow_external_src",
         "read_only",
+        "source_selection",
     ]
     assert list(inspect.signature(api.get_concept).parameters) == common
     assert list(inspect.signature(api.explain_evidence).parameters) == common
@@ -252,6 +262,7 @@ def test_knowledge_api_signatures_are_explicit_and_builder_stays_compatible():
         "limit",
         "allow_external_src",
         "read_only",
+        "source_selection",
     ]
     assert list(inspect.signature(api.related_concepts).parameters) == [
         "locator_or_exact_route",
@@ -263,6 +274,7 @@ def test_knowledge_api_signatures_are_explicit_and_builder_stays_compatible():
         "limit",
         "allow_external_src",
         "read_only",
+        "source_selection",
     ]
     assert list(inspect.signature(api.traverse_typed_graph).parameters) == [
         "locator_or_exact_route",
@@ -277,6 +289,7 @@ def test_knowledge_api_signatures_are_explicit_and_builder_stays_compatible():
         "limit",
         "allow_external_src",
         "read_only",
+        "source_selection",
     ]
 
     for function in (
@@ -298,9 +311,7 @@ def test_knowledge_api_signatures_are_explicit_and_builder_stays_compatible():
     assert related_params["direction"].default == "both"
     assert related_params["kinds"].default is None
     assert (
-        inspect.signature(api.list_concept_sections)
-        .parameters["ownership"]
-        .default
+        inspect.signature(api.list_concept_sections).parameters["ownership"].default
         is None
     )
 
@@ -311,6 +322,7 @@ def test_documentation_lifecycle_api_signatures_match_cli_contract():
         "workspace",
         "baseline_strategy",
         "source_root",
+        "source_selection",
         "input_wiki_root",
         "freshness_policy",
         "site_name",
@@ -354,6 +366,7 @@ def test_documentation_lifecycle_api_signatures_match_cli_contract():
         "prepare_documentation_run": (
             "(workspace: 'str | Path', *, baseline_strategy: 'str' = "
             "'bootstrap_source', source_root: 'str | Path | None' = None, "
+            "source_selection: 'str | Path | None' = None, "
             "input_wiki_root: 'str | Path | None' = None, freshness_policy: "
             "'str' = 'require-current', site_name: 'str', audiences: "
             "'Iterable[str] | None' = None, project_purpose: 'str | None' = "
@@ -450,9 +463,7 @@ def test_calibration_lifecycle_api_signatures_are_supported():
             "broker_attestation: 'Mapping[str, Any] | None' = None) -> "
             "'P0CalibrationRun'"
         ),
-        "get_calibration_run_status": (
-            "(root: 'str | Path') -> 'P0CalibrationStatus'"
-        ),
+        "get_calibration_run_status": ("(root: 'str | Path') -> 'P0CalibrationStatus'"),
         "build_calibration_agent_packet": (
             "(root: 'str | Path', *, role: 'str') -> 'P0CalibrationAgentPacket'"
         ),
@@ -1271,6 +1282,8 @@ def test_query_service_builder_reuses_one_inventory_snapshot_surface_and_view(
     def fake_extract(src_dir, **kwargs):
         calls["extract"] += 1
         assert src_dir == str(tmp_project.resolve())
+        guarded_snapshot = kwargs.pop("source_snapshot")
+        assert guarded_snapshot.root == tmp_project.resolve()
         assert kwargs == {
             "deep": True,
             "allow_external_src": True,
@@ -1383,9 +1396,7 @@ def test_query_service_builder_exposes_committed_knowledge_end_to_end(
         tmp_path / "checkout",
         consumer="api",
     )
-    commit_knowledge_artifacts(
-        _knowledge_commit_plan(tree["wiki_root"], fixture)
-    )
+    commit_knowledge_artifacts(_knowledge_commit_plan(tree["wiki_root"], fixture))
     monkeypatch.chdir(tree["root"])
 
     service = build_documentation_query_service(
@@ -1408,6 +1419,125 @@ def test_query_service_builder_exposes_committed_knowledge_end_to_end(
     assert result["concept"]["freshness"]["state"] == "current"
 
 
+def test_query_service_rejects_stale_persisted_selection_before_wiki_reads(
+    tmp_project,
+    monkeypatch,
+):
+    def write_profile(path: Path, include: str) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(
+                {
+                    "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                    "include": [include],
+                    "exclude": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    Path("selected-a").mkdir()
+    Path("selected-b").mkdir()
+    Path("selected-a/app.py").write_text("VALUE = 1\n", encoding="utf-8")
+    Path("selected-b/app.py").write_text("VALUE = 2\n", encoding="utf-8")
+    profile_a = Path("config/a.json")
+    profile_b = Path("config/b.json")
+    write_profile(profile_a, "selected-a")
+    write_profile(profile_b, "selected-b")
+    policy_a = resolve_source_selection(".", profile_a.as_posix())
+    assert policy_a is not None
+    snapshot_a = build_source_snapshot(".", selection_policy=policy_a)
+    wiki = Path("docs/llm_wiki")
+    wiki.mkdir(parents=True)
+    SyncManifest(
+        generation_inputs=with_source_selection_generation_input(
+            {},
+            snapshot_a.source_selection_identity,
+            snapshot_a.source_selection_inputs,
+        )
+    ).save(wiki)
+    monkeypatch.setattr(
+        api,
+        "evaluate_surface_index",
+        lambda *_args, **_kwargs: pytest.fail(
+            "persisted wiki surfaces must not be read after a selection mismatch"
+        ),
+    )
+
+    with pytest.raises(api.InvalidRequestError, match="llm-wiki sync"):
+        build_documentation_query_service(
+            ".",
+            wiki_dir=wiki.as_posix(),
+            source_selection=profile_b.as_posix(),
+        )
+
+
+def test_query_service_rejects_omitted_explicit_profile_before_extraction(
+    tmp_project,
+    monkeypatch,
+):
+    Path("selected").mkdir()
+    Path("selected/app.py").write_text("VALUE = 1\n", encoding="utf-8")
+    profile = Path("config/explicit.json")
+    profile.parent.mkdir()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["selected"],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    policy = resolve_source_selection(".", profile.as_posix())
+    assert policy is not None
+    snapshot = build_source_snapshot(".", selection_policy=policy)
+    wiki = Path("docs/llm_wiki")
+    wiki.mkdir(parents=True)
+    SyncManifest(
+        generation_inputs=with_source_selection_generation_input(
+            {},
+            snapshot.source_selection_identity,
+            snapshot.source_selection_inputs,
+        )
+    ).save(wiki)
+    monkeypatch.setattr(
+        api.extract_cmd,
+        "build_extract_payload",
+        lambda *_args, **_kwargs: pytest.fail(
+            "persisted profile omission must fail before extraction or plugins"
+        ),
+    )
+
+    with pytest.raises(api.InvalidRequestError, match="--source-selection"):
+        build_documentation_query_service(".", wiki_dir=wiki.as_posix())
+
+
+def test_context_rejects_truncated_manifest_before_broad_extraction(
+    tmp_project,
+    monkeypatch,
+):
+    Path("secret.py").write_text("MUST_NOT_READ = True\n", encoding="utf-8")
+    wiki = Path("docs/llm_wiki")
+    wiki.mkdir(parents=True)
+    (wiki / ".llm-wiki-manifest.json").write_text(
+        '{"generation_inputs":{"source_selection":{"schema_version":'
+        '"llm-wiki-source-selection-identity/v1"',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        api.context_cmd,
+        "get_inventory",
+        lambda *_args, **_kwargs: pytest.fail(
+            "an invalid managed manifest must fail before broad extraction"
+        ),
+    )
+
+    with pytest.raises(api.InvalidRequestError, match="sync manifest is invalid"):
+        build_context(".", focus="all", wiki_dir=wiki.as_posix())
+
+
 def test_governed_api_and_mcp_concept_summaries_have_bounded_parity(
     tmp_path,
     monkeypatch,
@@ -1419,9 +1549,7 @@ def test_governed_api_and_mcp_concept_summaries_have_bounded_parity(
         consumer="api",
     )
     base_plan = _knowledge_commit_plan(tree["wiki_root"], fixture)
-    knowledge = parse_knowledge_index(
-        json.loads(base_plan.knowledge_index.content)
-    )
+    knowledge = parse_knowledge_index(json.loads(base_plan.knowledge_index.content))
     ledger = reconcile_concepts(
         GovernanceLedger.empty("kb_consumer-parity"),
         concept_references_from_knowledge(knowledge),
@@ -1478,9 +1606,7 @@ def test_governed_api_and_mcp_concept_summaries_have_bounded_parity(
         ledger = add_review_event(
             ledger,
             user_uid,
-            section_locator=(
-                "llm-wiki://entities/User#section/User~1/Review~1"
-            ),
+            section_locator=("llm-wiki://entities/User#section/User~1/Review~1"),
             scope_hash=fixture_hash("consumer-review"),
             evidence=review_evidence,
             reviewer=reviewer,
@@ -1503,9 +1629,7 @@ def test_governed_api_and_mcp_concept_summaries_have_bounded_parity(
         build_knowledge_commit_plan(
             tree["wiki_root"],
             surface_index_bytes=fixture.surface_bytes,
-            knowledge_index_bytes=serialize_knowledge_index(
-                projected
-            ).encode("utf-8"),
+            knowledge_index_bytes=serialize_knowledge_index(projected).encode("utf-8"),
             manifest=base_plan.committed_manifest,
         )
     )
@@ -1554,9 +1678,7 @@ def test_governed_api_and_mcp_concept_summaries_have_bounded_parity(
     assert concept["lifecycle_events"] == {
         "items": [
             {
-                "event_id": concept["lifecycle_events"]["items"][0][
-                    "event_id"
-                ],
+                "event_id": concept["lifecycle_events"]["items"][0]["event_id"],
                 "from": "active",
                 "to": "superseded",
                 "actor": {"kind": "human", "id": "reviewer.example"},
@@ -1574,9 +1696,7 @@ def test_governed_api_and_mcp_concept_summaries_have_bounded_parity(
         "items": [
             {
                 "event_id": concept["reviews"]["items"][0]["event_id"],
-                "section_locator": (
-                    "llm-wiki://entities/User#section/User~1/Review~1"
-                ),
+                "section_locator": ("llm-wiki://entities/User#section/User~1/Review~1"),
                 "state": "expired",
                 "reasons": ["section-missing"],
                 "reviewer": {"kind": "human", "id": "reviewer.example"},
@@ -1601,9 +1721,7 @@ def test_api_exposes_machine_receipt_as_separate_read_only_dimension(
         tmp_path / "checkout",
         consumer="api",
     )
-    commit_knowledge_artifacts(
-        _knowledge_commit_plan(tree["wiki_root"], fixture)
-    )
+    commit_knowledge_artifacts(_knowledge_commit_plan(tree["wiki_root"], fixture))
     loaded = load_knowledge_state(tree["wiki_root"])
     assert loaded.knowledge is not None
     assert loaded.manifest_basis is not None
@@ -1628,10 +1746,7 @@ def test_api_exposes_machine_receipt_as_separate_read_only_dimension(
         wiki_dir="docs/llm_wiki",
     )
     assert service.knowledge_view is not None
-    assert (
-        service.knowledge_view.machine_verification.availability.value
-        == "recorded"
-    )
+    assert service.knowledge_view.machine_verification.availability.value == "recorded"
 
     result = api.get_concept(
         "llm-wiki://entities/User",
@@ -1673,9 +1788,7 @@ def test_query_service_builder_uses_snapshot_only_on_live_option_failure(
         tmp_path / "checkout",
         consumer="api",
     )
-    commit_knowledge_artifacts(
-        _knowledge_commit_plan(tree["wiki_root"], fixture)
-    )
+    commit_knowledge_artifacts(_knowledge_commit_plan(tree["wiki_root"], fixture))
     monkeypatch.chdir(tree["root"])
 
     def fail_live_options(**_kwargs):
@@ -1788,9 +1901,7 @@ class _RecordingKnowledgeService:
         *,
         ownership=None,
     ):
-        self.calls.append(
-            ("list_concept_sections", locator_or_exact_route, ownership)
-        )
+        self.calls.append(("list_concept_sections", locator_or_exact_route, ownership))
         return self.sections_result
 
     def related_concepts(
@@ -1883,7 +1994,9 @@ def test_knowledge_wrappers_reuse_supplied_service_without_building_or_extractin
     ]
 
 
-def test_section_query_python_api_and_mcp_results_are_identical(monkeypatch):
+def test_section_query_python_api_and_mcp_results_are_identical(
+    tmp_path, monkeypatch
+):
     query_service = api.DocumentationGraphQueryService({})
     monkeypatch.setattr(
         mcp_server,
@@ -1896,7 +2009,9 @@ def test_section_query_python_api_and_mcp_results_are_identical(monkeypatch):
         ownership="unknown",
         service=query_service,
     )
-    mcp_result = mcp_server.McpWikiService().list_concept_sections(
+    mcp_result = mcp_server.McpWikiService(
+        src_dir=str(tmp_path)
+    ).list_concept_sections(
         "llm-wiki://entities/User",
         ownership="unknown",
     )

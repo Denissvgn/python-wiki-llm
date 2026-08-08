@@ -10,6 +10,10 @@ inputs:
     description: Repository-relative source directory evaluated by the wiki.
     required: false
     default: .
+  source-selection:
+    description: Optional source-root-relative source-selection JSON path.
+    required: false
+    default: ""
   strict:
     description: Classify indeterminate or nonsemantic source drift as unhealthy.
     required: false
@@ -49,6 +53,7 @@ runs:
       env:
         INPUT_WIKI_DIR: ${{ inputs.wiki-dir }}
         INPUT_SRC_DIR: ${{ inputs.src-dir }}
+        INPUT_SOURCE_SELECTION: ${{ inputs.source-selection }}
         INPUT_STRICT: ${{ inputs.strict }}
         DOCTOR_JSON: ${{ runner.temp }}/llm-wiki-doctor.json
       run: |
@@ -67,6 +72,9 @@ runs:
           --src-dir "${INPUT_SRC_DIR}"
           --format json
         )
+        if [[ -n "${INPUT_SOURCE_SELECTION}" ]]; then
+          doctor_args+=(--source-selection "${INPUT_SOURCE_SELECTION}")
+        fi
         if [[ "${strict_value}" == "true" ]]; then
           doctor_args+=(--strict)
         fi

@@ -35,6 +35,7 @@ from llm_wiki_cli.services.extractor_helpers import typescript_dependencies_read
 from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
 from llm_wiki_cli.services.packages import discover_packages, stamp_inventory_packages
 from llm_wiki_cli.services import plugins
+from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
 PROJECT_ROOT = Path(__file__).parents[1]
@@ -313,6 +314,132 @@ class TestGetInventory:
             ordinary,
             unrelated,
         }
+
+    @pytest.mark.parametrize(
+        ("language", "selected_paths"),
+        (
+            ("python", ["selected/app.py"]),
+            ("custom", ["selected/README.md", "selected/source.custom"]),
+        ),
+    )
+    def test_configured_plugin_receives_only_finite_selected_paths(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        language: str,
+        selected_paths: list[str],
+    ) -> None:
+        for rel_path in selected_paths:
+            path = tmp_path / rel_path
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("selected\n", encoding="utf-8")
+        outside = tmp_path / "outside" / (
+            "secret.py" if language == "python" else "secret.custom"
+        )
+        outside.parent.mkdir()
+        outside.write_text("SECRET = 'must-not-be-read'\n", encoding="utf-8")
+        extension = "py" if language == "python" else "custom"
+        ignored_rel = f"selected/ignored.{extension}"
+        build_rel = f"selected/build/secret.{extension}"
+        for rel_path in (ignored_rel, build_rel):
+            path = tmp_path / rel_path
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("SECRET = 'must-not-survive'\n", encoding="utf-8")
+        (tmp_path / "selected/.gitignore").write_text(
+            f"ignored.{extension}\n",
+            encoding="utf-8",
+        )
+        profile = tmp_path / ".llm-wiki" / "source-selection.json"
+        profile.parent.mkdir()
+        profile.write_text(
+            json.dumps(
+                {
+                    "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                    "include": ["selected"],
+                    "exclude": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        entry_point = f"plugin.extractor:{language.title()}Extractor"
+        component = {
+            "type": "extractor",
+            "id": language,
+            "language": language,
+            "entry_point": entry_point,
+            "plugin_id": "selection-test",
+            "plugin_version": "1.0.0",
+            "ref": f"selection-test/{language}",
+        }
+        calls: list[list[str] | None] = []
+
+        class SelectionAwarePlugin:
+            last_error = None
+
+            def extract(self, **kwargs):
+                only_files = kwargs.get("only_files")
+                calls.append(only_files)
+                result = {
+                    path: {
+                        "language": language,
+                        "classes": [],
+                        "functions": [],
+                    }
+                    for path in only_files or ()
+                }
+                for leaked_path in (ignored_rel, build_rel):
+                    result[leaked_path] = {
+                        "language": language,
+                        "classes": [],
+                        "functions": [],
+                    }
+                return result
+
+        monkeypatch.setattr(
+            extract_cmd,
+            "get_extractor_registry",
+            lambda *args, **kwargs: {language: entry_point},
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_configured_runtime_plugin_components",
+            lambda _root: ((component,), tmp_path),
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_captured_plugin_lock",
+            lambda *_args, **_kwargs: (None, None),
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "parallel_safe_extractor_entry_points",
+            lambda *args, **kwargs: set(),
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_load_plugin_extractor",
+            lambda _entry_point, _root: SelectionAwarePlugin(),
+        )
+
+        result = extract_cmd.get_inventory_result(str(tmp_path))
+
+        assert calls == [selected_paths]
+        assert sorted(result.inventory) == selected_paths
+        assert str(outside.relative_to(tmp_path)) not in result.inventory
+        assert ignored_rel not in result.inventory
+        assert build_rel not in result.inventory
+        assert result.source_snapshot is not None
+        assert ignored_rel not in result.source_snapshot.captured_content_hashes
+        assert build_rel not in result.source_snapshot.captured_content_hashes
+        assert result.source_snapshot.selected_regular_paths == frozenset(
+            selected_paths
+        )
+        assert not result.source_snapshot.path_is_effectively_selected(ignored_rel)
+        assert not result.source_snapshot.path_is_effectively_selected(build_rel)
+        assert result.source_snapshot.path_is_effectively_selected(
+            f"selected/deleted.{extension}"
+        )
 
     def test_empty_dir(self, tmp_path):
         inventory = get_inventory(str(tmp_path))

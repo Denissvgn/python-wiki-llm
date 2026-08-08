@@ -136,6 +136,46 @@ worktree copies such as `.claude/worktrees/**` are excluded from default
 snapshots; pass an exact `--paths` entry if you intentionally want to inspect
 one file there.
 
+### Source selection
+
+Repositories that need a narrower public source boundary can commit
+`.llm-wiki/source-selection.json`. The file uses the strict, versioned
+`llm-wiki-source-selection/v1` contract:
+
+```json
+{
+  "schema_version": "llm-wiki-source-selection/v1",
+  "include": ["pyproject.toml", "src", "integrations/public"],
+  "exclude": ["src/internal"]
+}
+```
+
+Entries are canonical POSIX paths relative to `--src-dir`; they are literal
+files or directory roots, not globs. Excludes must be strict descendants of an
+included root and always win. Traversal, absolute or backslash paths, case
+collisions, overlapping roots, selected symlinks/reparse points, and an
+effectively empty selection fail closed. `.gitignore` still composes with this
+boundary and cannot be used to re-admit a path.
+
+The default file is discovered automatically by source-reading commands. A
+non-default profile is selected explicitly and its path remains relative to
+the chosen source root, including for an authorized external source:
+
+```bash
+llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki \
+  --source-selection config/public-sources.json
+llm-wiki lint --src-dir /path/to/repo --wiki-dir docs/llm_wiki \
+  --allow-external-src --source-selection config/public-sources.json
+```
+
+Carry the same `--source-selection` argument through helper preparation,
+bootstrap, sync, lint, CI, context, review, MCP, and other source-reading wiki
+operations. Generated hooks and agent instructions preserve the resolved path.
+A managed wiki records the profile and its applicable selection-control inputs;
+if either changes, read consumers fail with sync guidance until an authorized
+`llm-wiki sync` converges the wiki. When no profile exists, the legacy broad
+source-discovery behavior is preserved.
+
 Haskell `.hs` and `.lhs` files are discovered as supported built-in source
 files. Normal CLI extraction invokes the prepared Haskell helper to emit
 syntax-only inventory for matching files. The helper does not typecheck the
@@ -372,6 +412,7 @@ configurable failure threshold:
   with:
     wiki-dir: docs/llm_wiki
     src-dir: .
+    source-selection: .llm-wiki/source-selection.json
     strict: "true"
     fail-on: unhealthy
 ```
@@ -392,6 +433,10 @@ scrape human output. Within that schema major, required fields and documented
 state values remain strict while additive object fields are ignored. A wiki
 that has not been initialized is reported as `absent` and fails either
 threshold.
+
+Omit `source-selection` to use default discovery. Set it to the same
+source-root-relative non-default profile used by local maintenance commands
+when a repository does not use `.llm-wiki/source-selection.json`.
 
 ## Command Reference
 

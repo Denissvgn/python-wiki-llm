@@ -14,7 +14,16 @@ from llm_wiki_cli.commands import (
     metrics_cmd,
     review_cmd,
 )
+from llm_wiki_cli.commands.extract_cmd import InventoryResult
 from llm_wiki_cli.services import metrics
+from llm_wiki_cli.services.source_selection import (
+    SOURCE_SELECTION_SCHEMA_VERSION,
+    SourceSelectionError,
+    resolve_source_selection,
+    with_source_selection_generation_input,
+)
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
+from llm_wiki_cli.services.sync_manifest import SyncManifest
 
 
 def _args(**kwargs):
@@ -165,7 +174,8 @@ class TestSmartPromptTemplates:
 
         assert generate_prompt_cmd.detect_change_type(diff) == "dependency"
 
-    def test_manual_change_type_adds_specific_guidance(self):
+    def test_manual_change_type_adds_specific_guidance(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
         prompt = generate_prompt_cmd._build_prompt(
             "docs/llm_wiki",
             ".",
@@ -189,7 +199,13 @@ class TestReviewMode:
             path: Path(path).stem for path in current_inventory
         }
         monkeypatch.setattr(
-            review_cmd, "get_inventory", lambda src_dir, deep=True: current_inventory
+            review_cmd,
+            "get_inventory_result",
+            lambda src_dir, deep=True, source_snapshot=None: InventoryResult(
+                current_inventory,
+                {},
+                source_snapshot=source_snapshot,
+            ),
         )
         monkeypatch.setattr(
             review_cmd,
@@ -230,6 +246,59 @@ class TestReviewMode:
                 "+Updated notes.",
             ]
         )
+
+    def test_review_rejects_live_profile_mismatch_before_inventory_or_wiki_read(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.chdir(tmp_path)
+        for directory in ("selected", "outside"):
+            path = Path(directory)
+            path.mkdir()
+            (path / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        config = Path("config")
+        config.mkdir()
+        broad_path = config / "broad.json"
+        narrow_path = config / "narrow.json"
+        for path, include in (
+            (broad_path, ["selected", "outside"]),
+            (narrow_path, ["selected"]),
+        ):
+            path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                        "include": include,
+                        "exclude": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+        broad = resolve_source_selection(tmp_path, "config/broad.json")
+        assert broad is not None
+        broad_snapshot = build_source_snapshot(tmp_path, selection_policy=broad)
+        wiki = Path("docs/llm_wiki")
+        wiki.mkdir(parents=True)
+        (wiki / "index.md").write_text("SECRET SURFACE\n", encoding="utf-8")
+        SyncManifest(
+            generation_inputs=with_source_selection_generation_input(
+                {}, broad.identity, broad_snapshot.source_selection_inputs
+            )
+        ).save(wiki)
+
+        def fail_inventory(*_args, **_kwargs):
+            pytest.fail("review must gate before inventory or persisted pages")
+
+        monkeypatch.setattr(review_cmd, "get_inventory_result", fail_inventory)
+
+        with pytest.raises(SourceSelectionError, match="persisted"):
+            review_cmd.build_findings(
+                self._source_diff("selected/app.py"),
+                src_dir=".",
+                wiki_dir=str(wiki),
+                source_selection="config/narrow.json",
+            )
 
     def test_cross_module_workflow_lookup_scales_with_unique_symbols(
         self, tmp_project, monkeypatch
@@ -276,7 +345,13 @@ class TestReviewMode:
             return "\n".join(lines)
 
         monkeypatch.setattr(
-            review_cmd, "get_inventory", lambda src_dir, deep=True: inventory
+            review_cmd,
+            "get_inventory_result",
+            lambda src_dir, deep=True, source_snapshot=None: InventoryResult(
+                inventory,
+                {},
+                source_snapshot=source_snapshot,
+            ),
         )
         monkeypatch.setattr(
             review_cmd,
@@ -382,6 +457,45 @@ class TestReviewMode:
         ]
         assert stale
         assert "flows/api-run.md" in stale[0].wiki_pages
+
+    def test_review_builds_missing_surface_index_with_active_profile(
+        self, tmp_path, monkeypatch
+    ):
+        monkeypatch.chdir(tmp_path)
+        Path("api.py").write_text("def run():\n    pass\n", encoding="utf-8")
+        profile = Path("config/selection.json")
+        profile.parent.mkdir()
+        profile.write_text(
+            json.dumps(
+                {
+                    "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                    "include": ["api.py"],
+                    "exclude": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        policy = resolve_source_selection(tmp_path, profile.as_posix())
+        assert policy is not None
+        snapshot = build_source_snapshot(tmp_path, selection_policy=policy)
+        wiki_dir = Path("docs/llm_wiki")
+        (wiki_dir / "modules").mkdir(parents=True)
+        (wiki_dir / "modules/api.md").write_text("# api\n", encoding="utf-8")
+        SyncManifest(
+            generation_inputs=with_source_selection_generation_input(
+                {}, policy.identity, snapshot.source_selection_inputs
+            )
+        ).save(wiki_dir)
+        self._patch_inventory_for_api(monkeypatch)
+
+        findings = review_cmd.build_findings(
+            self._source_diff("api.py", "+def changed():"),
+            src_dir=".",
+            wiki_dir=wiki_dir.as_posix(),
+            source_selection=profile.as_posix(),
+        )
+
+        assert isinstance(findings, list)
 
     @pytest.mark.parametrize(
         "page_path",

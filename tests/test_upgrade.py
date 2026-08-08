@@ -1,5 +1,6 @@
 """Tests for llm-wiki upgrade command."""
 
+import json
 import os
 import subprocess
 from pathlib import Path
@@ -14,6 +15,7 @@ from llm_wiki_cli.services.schema import (
     CONSTRAINT_END,
     SCHEMA_FILENAMES,
 )
+from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 
 
 # ---------------------------------------------------------------------------
@@ -61,6 +63,20 @@ def _make_args(**kwargs):
     defaults = {"wiki_dir": "docs/llm_wiki", "agent": None}
     defaults.update(kwargs)
     return SimpleNamespace(**defaults)
+
+
+def _write_selection_profile(path: Path, include: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": [include],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -268,6 +284,58 @@ class TestUpgradeReinstallsHooks:
         assert "generate-prompt" in hook_text
         assert "trigger-agent" not in hook_text
         assert "--wiki-dir 'my docs/wiki'" in hook_text
+
+
+class TestUpgradePreservesSourceSelection:
+    def test_explicit_profile_wins_and_refreshes_schema_hooks_and_config(
+        self, tmp_path
+    ):
+        _init_project(tmp_path, agent="generic")
+        os.chdir(tmp_path)
+        Path("selected-a").mkdir()
+        Path("selected-b").mkdir()
+        Path("selected-a/app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        Path("selected-b/app.py").write_text("VALUE = 2\n", encoding="utf-8")
+        _write_selection_profile(Path("config/a.json"), "selected-a")
+        _write_selection_profile(Path("config/b.json"), "selected-b")
+        stored = read_config("docs/llm_wiki")
+        stored["source_selection"] = "config/a.json"
+        write_config("docs/llm_wiki", stored)
+        pre_commit = Path(".git/hooks/pre-commit")
+        pre_commit.parent.mkdir(parents=True, exist_ok=True)
+        pre_commit.write_text("#!/bin/sh\n# LLM Wiki\nllm-wiki lint --strict\n")
+
+        upgrade_cmd.run(_make_args(source_selection="config/b.json"))
+
+        schema = Path("AGENTS.md").read_text(encoding="utf-8")
+        post = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
+        pre = pre_commit.read_text(encoding="utf-8")
+        for content in (schema, post, pre):
+            assert "--source-selection config/b.json" in content
+            assert "--source-selection config/a.json" not in content
+        assert read_config("docs/llm_wiki")["source_selection"] == "config/b.json"
+
+    def test_stored_profile_wins_over_auto_discovery(self, tmp_path):
+        _init_project(tmp_path, agent="generic")
+        os.chdir(tmp_path)
+        Path("stored").mkdir()
+        Path("discovered").mkdir()
+        Path("stored/app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        Path("discovered/app.py").write_text("VALUE = 2\n", encoding="utf-8")
+        _write_selection_profile(Path("config/stored.json"), "stored")
+        _write_selection_profile(
+            Path(".llm-wiki/source-selection.json"),
+            "discovered",
+        )
+        stored = read_config("docs/llm_wiki")
+        stored["source_selection"] = "config/stored.json"
+        write_config("docs/llm_wiki", stored)
+
+        upgrade_cmd.run(_make_args())
+
+        schema = Path("AGENTS.md").read_text(encoding="utf-8")
+        assert "--source-selection config/stored.json" in schema
+        assert "--source-selection .llm-wiki/source-selection.json" not in schema
 
 
 class TestUpgradeCreatesNewDirs:

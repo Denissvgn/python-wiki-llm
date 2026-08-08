@@ -117,6 +117,7 @@ def build_doctor_report(
     include_tests: Iterable[str] | None = None,
     parallel_jobs: int = 1,
     job_request: ExtractionJobRequest | None = None,
+    source_selection: str | Path | None = None,
 ) -> DoctorReport:
     """Build a doctor report by composing existing strict-lint results."""
 
@@ -152,6 +153,7 @@ def build_doctor_report(
         job_request=job_request,
         plan_reporter=None,
         include_plugins=False,
+        source_selection=source_selection,
     )
     return compose_doctor_report(
         lint,
@@ -185,6 +187,9 @@ def compose_doctor_report(
     verification = _verification_section(lint, view)
     status, degraded, unhealthy = _classify(
         strict=strict,
+        source_selection_mismatch=bool(
+            _issues(lint, "source-selection-mismatch")
+        ),
         availability=availability,
         freshness=freshness,
         snapshot=snapshot,
@@ -563,6 +568,7 @@ def _verification_section(
 def _classify(
     *,
     strict: bool,
+    source_selection_mismatch: bool,
     availability: Mapping[str, object],
     freshness: Mapping[str, object],
     snapshot: Mapping[str, object],
@@ -572,10 +578,14 @@ def _classify(
 ) -> tuple[DoctorStatus, tuple[str, ...], tuple[str, ...]]:
     availability_state = availability["state"]
     if availability_state == KnowledgeAvailability.ABSENT.value:
+        if source_selection_mismatch:
+            return DoctorStatus.UNHEALTHY, (), ("source-selection-mismatch",)
         return DoctorStatus.ABSENT, (), ()
 
     unhealthy: list[str] = []
     degraded: list[str] = []
+    if source_selection_mismatch:
+        unhealthy.append("source-selection-mismatch")
     if availability_state == KnowledgeAvailability.UNSUPPORTED.value:
         unhealthy.append("knowledge-unsupported")
     elif availability_state == KnowledgeAvailability.DEGRADED.value:

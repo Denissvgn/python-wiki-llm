@@ -25,8 +25,14 @@ section for the full policy.
   `index.md` can use sync's safe baseline seeding. An absent, empty, or exact
   untouched init scaffold routes to `llm-wiki bootstrap`; any other partial
   manifestless layout routes first to
-  `llm-wiki migrate --dry-run --src-dir <src> --wiki-dir <wiki>`.
+  `llm-wiki migrate --dry-run --src-dir <src> --wiki-dir <wiki> --source-selection <profile>`.
 - For continued external-source wikis (source-adapter mode), pass `--allow-external-src` consistently to `sync`, `lint`, `ci-check`, and `team check` — never to one source-reading command and not the others.
+- When the generated project instructions name a source-selection profile,
+  copy that exact `--source-selection <profile>` argument to every
+  source-reading command in this workflow. The snippets below show the
+  placeholder explicitly; omit the whole argument only when the generated
+  instructions have no configured profile. Never substitute a broader profile
+  or silently fall back to an unrestricted repository scan.
 - For an `external_agent_docs` workspace, sync only the workspace wiki after a
   supervisor-approved source revision change. The source and adopted input wiki
   remain forbidden-write roots, and target instruction/config/plugin files are
@@ -68,7 +74,7 @@ Start a governed rename with the ordinary filesystem/source rename and a
 read-only preview:
 
 ```bash
-llm-wiki sync --dry-run --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
+llm-wiki sync --dry-run --jobs 1 --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
 llm-wiki knowledge status --wiki-dir docs/llm_wiki --format json
 ```
 
@@ -97,7 +103,7 @@ llm-wiki knowledge move \
   --uid lw:module:0123456789abcdef0123456789abcdef \
   --to-locator llm-wiki://modules/accounts-renamed \
   --to-natural-key source-module:modules/accounts-renamed.md
-llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
+llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
 ```
 
 The staged move may report `projection: pending-sync`; readers reject that
@@ -110,7 +116,7 @@ allocation, reinitialize governance, or perform an implicit merge.
 1. **Deterministic pass.**
 
    ```bash
-   llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
+   llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
    ```
 
    For a governed rename, complete the preflight/owner handoff above before this
@@ -123,8 +129,8 @@ allocation, reinitialize governance, or perform an implicit merge.
    before applying it:
 
    ```bash
-   llm-wiki sync --initialize-surfaces flows,dependencies --flow-category http --exclude-tests --dry-run
-   llm-wiki sync --initialize-surfaces api-contracts --openapi-file openapi.yaml --dry-run
+   llm-wiki sync --initialize-surfaces flows,dependencies --flow-category http --exclude-tests --dry-run --source-selection <profile>
+   llm-wiki sync --initialize-surfaces api-contracts --openapi-file openapi.yaml --dry-run --source-selection <profile>
    ```
 
    This mode defers ordinary entity/module source changes. Inspect its page
@@ -144,7 +150,7 @@ allocation, reinitialize governance, or perform an implicit merge.
    basis, so strict lint compares a supported source and normalized
    observation live; removal tombstones remain explicitly `source-missing`.
 
-2. **Build the changed-page list.** Parse sync's `CREATE` / `UPDATE` / `METADATA` / `SKIP` / `DEPRECATE` / `RENAME` / `MOVE` / `REMOVE` output lines — that output is the only changed-page manifest available. Cross-reference `llm-wiki extract --src-dir . --changed --summary` to learn *why* each page changed. Run `git diff --stat HEAD~1..HEAD` (or the working-tree equivalent), then read targeted per-file diffs only where the change reason is not obvious from the summary.
+2. **Build the changed-page list.** Parse sync's `CREATE` / `UPDATE` / `METADATA` / `SKIP` / `DEPRECATE` / `RENAME` / `MOVE` / `REMOVE` output lines — that output is the only changed-page manifest available. Cross-reference `llm-wiki extract --src-dir . --changed --summary --source-selection <profile>` to learn *why* each page changed. With an active profile, never run an unrestricted `git diff` or `git diff --stat`: use the selected inventory paths and read only targeted `git diff HEAD~1..HEAD -- <selected-path>` output where the change reason is not obvious from the summary. Without a configured profile, the repository-wide stat is allowed before targeted reads.
 
    A `DEPRECATE` line for a removed source/page is a generated surface notice,
    not a native lifecycle event. Source disappearance never authors
@@ -166,10 +172,10 @@ allocation, reinitialize governance, or perform an implicit merge.
    the last semantic Markdown or log edit in managed mode, run:
 
    ```bash
-   llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
-   llm-wiki lint --strict --profile --src-dir . --wiki-dir docs/llm_wiki
-   llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki --format json
-   llm-wiki team check --src-dir . --wiki-dir docs/llm_wiki   # if team policy is configured
+   llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
+   llm-wiki lint --strict --profile --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
+   llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki --format json --source-selection <profile>
+   llm-wiki team check --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>   # if team policy is configured
    ```
 
    The second sync preserves supported semantic content and re-anchors
@@ -196,7 +202,7 @@ allocation, reinitialize governance, or perform an implicit merge.
    For source-adapter runs, use the same shape with explicit external-source reads while keeping the wiki inside the current project:
 
    ```bash
-   llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki
+   llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki --source-selection <profile>
    ```
 
 6. **Review the result before handoff.** For a conditionally Git-eligible wiki,
@@ -230,9 +236,9 @@ allocation, reinitialize governance, or perform an implicit merge.
 
 ## Context budget
 
-Prefer `llm-wiki extract --src-dir . --changed --summary` (cheap, always read)
+Prefer `llm-wiki extract --src-dir . --changed --summary --source-selection <profile>` (cheap, always read)
 for knowing what changed. Only reach for one serialized
-`llm-wiki context --budget 8000 --focus changed --format json --read-only` run
+`llm-wiki context --budget 8000 --focus changed --format json --read-only --source-selection <profile>` run
 when a page's classification genuinely needs more source context than the
 summary plus targeted diff provide. The budget and focus bound emitted output
 after a full deep inventory; they do not make the scan computationally cheap.

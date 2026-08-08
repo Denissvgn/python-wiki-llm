@@ -9,7 +9,7 @@ parser result.  It contains no timestamps, absolute paths, or source literals.
 from __future__ import annotations
 
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import PurePosixPath
 from typing import Mapping
 
@@ -406,6 +406,139 @@ def _discovery_status(
     return "nothing-discovered"
 
 
+def _selected_prior_tombstones(
+    snapshot: SourceSnapshot,
+    raw_tombstones: Mapping[str, Mapping[str, object]],
+) -> tuple[
+    dict[str, dict[str, object]],
+    dict[str, dict[str, object]],
+]:
+    """Split tombstones at the policy boundary without retaining move leaks."""
+
+    selected: dict[str, dict[str, object]] = {}
+    deselected: dict[str, dict[str, object]] = {}
+    for source_path, raw_record in raw_tombstones.items():
+        record = deepcopy(dict(raw_record))
+        if not snapshot.path_is_effectively_selected(source_path):
+            deselected[source_path] = record
+            continue
+        moved_to = record.get("moved_to")
+        if (
+            record.get("reason") == "source-moved"
+            and isinstance(moved_to, str)
+            and not snapshot.path_is_effectively_selected(moved_to)
+        ):
+            # The old source remains in policy, but its historical destination
+            # does not.  Preserve only the selected-side removal observation.
+            record["reason"] = "source-removed"
+            record.pop("moved_to", None)
+        selected[source_path] = record
+    return selected, deselected
+
+
+def _pruned_prior_discovery(
+    prior_state: Mapping[str, object],
+    snapshot: SourceSnapshot,
+    *,
+    raw_source_count: int,
+    selected_source_count: int,
+) -> dict[str, object] | None:
+    """Return prior discovery metadata with out-of-policy paths removed."""
+
+    raw_discovery = prior_state.get("discovery")
+    if not isinstance(raw_discovery, Mapping):
+        return None
+    raw_unsupported = raw_discovery.get("unsupported_yaml")
+    unsupported: list[dict[str, object]] = []
+    removed_unsupported_count = 0
+    if isinstance(raw_unsupported, (list, tuple)):
+        for raw_record in raw_unsupported:
+            if not isinstance(raw_record, Mapping):
+                removed_unsupported_count += 1
+                continue
+            source_path = raw_record.get("path")
+            if (
+                not isinstance(source_path, str)
+                or not _valid_repository_path(source_path)
+                or not snapshot.path_is_effectively_selected(source_path)
+            ):
+                removed_unsupported_count += 1
+                continue
+            unsupported.append(deepcopy(dict(raw_record)))
+
+    raw_roots = raw_discovery.get("roots")
+    roots: list[str] = []
+    if isinstance(raw_roots, (list, tuple)):
+        for raw_root in raw_roots:
+            if raw_root == INFRASTRUCTURE_DISCOVERY_ROOT:
+                roots.append(INFRASTRUCTURE_DISCOVERY_ROOT)
+            elif (
+                isinstance(raw_root, str)
+                and _valid_repository_path(raw_root)
+                and snapshot.path_may_contain_effective_selection(raw_root)
+            ):
+                roots.append(raw_root)
+    if INFRASTRUCTURE_DISCOVERY_ROOT not in roots:
+        roots.append(INFRASTRUCTURE_DISCOVERY_ROOT)
+
+    removed_source_count = raw_source_count - selected_source_count
+    raw_candidate_count = raw_discovery.get("candidate_count")
+    if isinstance(raw_candidate_count, int) and not isinstance(
+        raw_candidate_count, bool
+    ):
+        candidate_count = max(
+            0,
+            raw_candidate_count
+            - removed_source_count
+            - removed_unsupported_count,
+        )
+    else:
+        candidate_count = selected_source_count + len(unsupported)
+    return {
+        "roots": sorted(set(roots)),
+        "candidate_count": candidate_count,
+        "supported_count": selected_source_count,
+        "unsupported_yaml_count": len(unsupported),
+        "unsupported_yaml": unsupported,
+    }
+
+
+def _deselection_only_state(
+    prior_state: Mapping[str, object],
+    snapshot: SourceSnapshot,
+    *,
+    raw_prior_sources: Mapping[str, Mapping[str, object]],
+    prior_sources: Mapping[str, Mapping[str, object]],
+    tombstones: Mapping[str, Mapping[str, object]],
+) -> dict[str, object]:
+    """Prune persisted records without advancing live infrastructure changes."""
+
+    result = deepcopy(dict(prior_state))
+    policy = snapshot.source_selection_policy
+    if not result or policy is None:
+        return result
+    result["sources"] = deepcopy(dict(prior_sources))
+    result["tombstones"] = deepcopy(dict(tombstones))
+    discovery = _pruned_prior_discovery(
+        prior_state,
+        snapshot,
+        raw_source_count=len(raw_prior_sources),
+        selected_source_count=len(prior_sources),
+    )
+    if discovery is not None:
+        result["discovery"] = discovery
+        unsupported_count = discovery["unsupported_yaml_count"]
+        candidate_count = discovery["candidate_count"]
+        assert isinstance(unsupported_count, int)
+        assert isinstance(candidate_count, int)
+        result["status"] = _discovery_status(
+            current_count=len(prior_sources),
+            unsupported_count=unsupported_count,
+            candidate_count=candidate_count,
+        )
+    return result
+
+
 @dataclass(frozen=True)
 class InfrastructureSyncPlan:
     """One immutable infrastructure regeneration plan."""
@@ -421,9 +554,42 @@ class InfrastructureSyncPlan:
     unsupported_yaml: tuple[dict[str, object], ...]
     discovery_roots: tuple[str, ...]
     next_state: dict[str, object]
+    deselection_only_state: dict[str, object]
     state_changed: bool
+    deselection_state_changed: bool
     repair_tombstones: tuple[str, ...] = ()
     cleanup_moved_pages: tuple[str, ...] = ()
+    deselected_records: dict[str, dict[str, object]] = field(default_factory=dict)
+
+    @property
+    def has_deselection_changes(self) -> bool:
+        """Return whether policy narrowing changes persisted infrastructure state."""
+
+        return self.deselection_state_changed
+
+    @property
+    def deselected_page_paths(self) -> tuple[str, ...]:
+        """Return pages owned only by records removed through policy narrowing."""
+
+        candidates = {
+            str(record["page_path"])
+            for record in self.deselected_records.values()
+            if record.get("state") == "current"
+            or record.get("reason") == "source-removed"
+        }
+        retained = {
+            str(record["page_path"]) for record in self.current_sources.values()
+        }
+        raw_tombstones = self.next_state.get("tombstones", {})
+        if isinstance(raw_tombstones, Mapping):
+            retained.update(
+                str(record["page_path"])
+                for record in raw_tombstones.values()
+                if isinstance(record, Mapping)
+                and record.get("reason") == "source-removed"
+                and isinstance(record.get("page_path"), str)
+            )
+        return tuple(sorted(candidates - retained))
 
     @property
     def affected_count(self) -> int:
@@ -434,6 +600,7 @@ class InfrastructureSyncPlan:
             + len(self.moved_sources)
             + len(self.repair_tombstones)
             + len(self.cleanup_moved_pages)
+            + len(self.deselected_records)
         )
 
     @property
@@ -445,6 +612,7 @@ class InfrastructureSyncPlan:
             or self.moved_sources
             or self.repair_tombstones
             or self.cleanup_moved_pages
+            or self.deselected_records
         )
 
 
@@ -462,10 +630,43 @@ def build_infrastructure_sync_plan(
     }
     page_paths = build_infrastructure_page_map(normalized_inventory)
     prior_state = _prior_infrastructure_state(generation_inputs)
-    prior_sources = _record_mapping(
+    raw_prior_sources = _record_mapping(
         prior_state.get("sources"),
         field_name="sources",
     )
+    raw_tombstones = _record_mapping(
+        prior_state.get("tombstones"),
+        field_name="tombstones",
+    )
+    selection_policy = snapshot.source_selection_policy
+    if selection_policy is None:
+        prior_sources = raw_prior_sources
+        selected_prior_tombstones = raw_tombstones
+        deselected_records: dict[str, dict[str, object]] = {}
+    else:
+        prior_sources = {
+            source_path: record
+            for source_path, record in raw_prior_sources.items()
+            if snapshot.path_is_effectively_selected(source_path)
+        }
+        selected_prior_tombstones, deselected_records = (
+            _selected_prior_tombstones(snapshot, raw_tombstones)
+        )
+        deselected_records.update(
+            {
+                source_path: record
+                for source_path, record in raw_prior_sources.items()
+                if not snapshot.path_is_effectively_selected(source_path)
+            }
+        )
+    deselection_only_state = _deselection_only_state(
+        prior_state,
+        snapshot,
+        raw_prior_sources=raw_prior_sources,
+        prior_sources=prior_sources,
+        tombstones=selected_prior_tombstones,
+    )
+    tombstones = deepcopy(selected_prior_tombstones)
     current_sources = {
         source_path: _source_record(
             snapshot,
@@ -492,10 +693,6 @@ def build_infrastructure_sync_plan(
     unsupported_yaml = _unsupported_yaml_records(snapshot, normalized_inventory)
     discovery_roots = _candidate_roots(snapshot, normalized_inventory)
 
-    tombstones = _record_mapping(
-        prior_state.get("tombstones"),
-        field_name="tombstones",
-    )
     for source_path in current_paths:
         tombstones.pop(source_path, None)
     for source_path in sorted(removed - moved_old):
@@ -544,10 +741,13 @@ def build_infrastructure_sync_plan(
         unsupported_yaml=unsupported_yaml,
         discovery_roots=discovery_roots,
         next_state=next_state,
+        deselection_only_state=deselection_only_state,
         state_changed=(
             next_state != prior_state
             and bool(prior_state or candidate_count or current_sources)
         ),
+        deselection_state_changed=deselection_only_state != prior_state,
+        deselected_records=deselected_records,
     )
 
 
@@ -559,6 +759,20 @@ def with_infrastructure_generation_input(
 
     result = deepcopy(dict(generation_inputs))
     result[INFRASTRUCTURE_GENERATION_INPUT_KEY] = deepcopy(plan.next_state)
+    return result
+
+
+def with_infrastructure_deselection_generation_input(
+    generation_inputs: Mapping[str, object],
+    plan: InfrastructureSyncPlan,
+) -> dict[str, object]:
+    """Persist only policy pruning, without advancing live infrastructure state."""
+
+    result = deepcopy(dict(generation_inputs))
+    if plan.has_deselection_changes:
+        result[INFRASTRUCTURE_GENERATION_INPUT_KEY] = deepcopy(
+            plan.deselection_only_state
+        )
     return result
 
 
@@ -574,5 +788,6 @@ __all__ = [
     "current_infrastructure_bases",
     "infrastructure_evidence_by_page",
     "validate_infrastructure_generation_input",
+    "with_infrastructure_deselection_generation_input",
     "with_infrastructure_generation_input",
 ]

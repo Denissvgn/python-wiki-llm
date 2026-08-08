@@ -89,6 +89,18 @@ def _add_include_tests_argument(parser):
     )
 
 
+def _add_source_selection_argument(parser):
+    parser.add_argument(
+        "--source-selection",
+        default=None,
+        metavar="PATH",
+        help=(
+            "Repository-relative source-selection JSON override; otherwise "
+            "discover .llm-wiki/source-selection.json under --src-dir"
+        ),
+    )
+
+
 def _add_jobs_argument(parser):
     parser.set_defaults(requested_jobs=1)
     parser.add_argument(
@@ -221,6 +233,7 @@ def _add_doctor_command(subparsers):
     )
     _add_helper_cache_argument(doctor_parser)
     _add_include_tests_argument(doctor_parser)
+    _add_source_selection_argument(doctor_parser)
     _add_jobs_argument(doctor_parser)
 
 
@@ -265,6 +278,7 @@ def _add_init_command(subparsers):
         action="store_false",
         help="Omit local agent instructions for reporting llm-wiki tool issues (default)",
     )
+    _add_source_selection_argument(init_parser)
 
 
 def _add_extract_command(subparsers):
@@ -314,6 +328,7 @@ def _add_extract_command(subparsers):
     )
     _add_include_tests_argument(extract_parser)
     _add_helper_cache_argument(extract_parser)
+    _add_source_selection_argument(extract_parser)
     extract_parser.add_argument(
         "--output", metavar="PATH", help="Write JSON output to a file instead of stdout"
     )
@@ -392,6 +407,7 @@ def _add_lint_command(subparsers):
     )
     _add_helper_cache_argument(lint_parser)
     _add_include_tests_argument(lint_parser)
+    _add_source_selection_argument(lint_parser)
     _add_jobs_argument(lint_parser)
 
 
@@ -420,6 +436,7 @@ def _add_prepare_extractors_command(subparsers):
         choices=["typescript", "go", "rust", "haskell"],
         help="Helper language to prepare; may be repeated",
     )
+    _add_source_selection_argument(prepare_parser)
 
 
 def _add_ci_check_command(subparsers):
@@ -458,6 +475,7 @@ def _add_ci_check_command(subparsers):
     )
     _add_helper_cache_argument(ci_parser)
     _add_include_tests_argument(ci_parser)
+    _add_source_selection_argument(ci_parser)
     _add_jobs_argument(ci_parser)
 
 
@@ -486,6 +504,7 @@ def _add_install_hook_command(subparsers):
         action="store_true",
         help="Also install a pre-commit hook that runs `llm-wiki lint --strict`",
     )
+    _add_source_selection_argument(hook_parser)
 
 
 def _add_install_command(subparsers):
@@ -838,10 +857,16 @@ def _add_team_command(subparsers):
         default="text",
         help="Output format (default: text)",
     )
+    _add_source_selection_argument(team_check)
     team_resolve = team_sub.add_parser(
         "resolve-conflicts", help="Safely resolve generated wiki conflicts"
     )
     team_resolve.add_argument("--src-dir", default=".", help="Source directory to scan")
+    team_resolve.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
     team_resolve.add_argument(
         "--wiki-dir",
         default=DEFAULT_WIKI_DIR,
@@ -858,6 +883,7 @@ def _add_team_command(subparsers):
         default="text",
         help="Output format (default: text)",
     )
+    _add_source_selection_argument(team_resolve)
 
 
 def _add_trigger_agent_command(subparsers):
@@ -874,6 +900,16 @@ def _add_trigger_agent_command(subparsers):
         "--wiki-dir",
         default=DEFAULT_WIKI_DIR,
         help="Wiki directory to update (default: docs/llm_wiki)",
+    )
+    trigger_parser.add_argument(
+        "--src-dir",
+        default=".",
+        help="Source directory to scan (default: current directory)",
+    )
+    trigger_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
     )
     trigger_parser.add_argument(
         "--reset-breaker",
@@ -903,6 +939,7 @@ def _add_trigger_agent_command(subparsers):
         action="store_true",
         help="Bypass diff and prompt size guards (does not bypass lock or circuit breaker)",
     )
+    _add_source_selection_argument(trigger_parser)
 
 
 def _add_bootstrap_command(subparsers):
@@ -990,6 +1027,7 @@ def _add_bootstrap_command(subparsers):
     )
     _add_helper_cache_argument(bootstrap_parser)
     _add_include_tests_argument(bootstrap_parser)
+    _add_source_selection_argument(bootstrap_parser)
 
 
 def _add_bump_command(subparsers):
@@ -1032,6 +1070,11 @@ def _add_generate_prompt_command(subparsers):
         "--src-dir", default=".", help="Source directory to scan (default: .)"
     )
     gp_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    gp_parser.add_argument(
         "--output",
         default=".git/llm-wiki-prompt.txt",
         help="Output file path (default: .git/llm-wiki-prompt.txt)",
@@ -1051,6 +1094,7 @@ def _add_generate_prompt_command(subparsers):
     gp_parser.add_argument(
         "--template", help="Installed prompt template id (or plugin_id/template_id)"
     )
+    _add_source_selection_argument(gp_parser)
 
 
 def _add_metrics_command(subparsers):
@@ -1072,10 +1116,16 @@ def _add_metrics_command(subparsers):
         "--src-dir", default=".", help="Source directory to scan for coverage"
     )
     metrics_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    metrics_parser.add_argument(
         "--wiki-dir",
         default=DEFAULT_WIKI_DIR,
         help="Wiki directory to scan for coverage",
     )
+    _add_source_selection_argument(metrics_parser)
 
 
 def _add_review_command(subparsers):
@@ -1084,6 +1134,11 @@ def _add_review_command(subparsers):
     )
     review_parser.add_argument(
         "--src-dir", default=".", help="Source directory to scan"
+    )
+    review_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
     )
     review_parser.add_argument(
         "--wiki-dir", default=DEFAULT_WIKI_DIR, help="Wiki directory to compare against"
@@ -1099,6 +1154,7 @@ def _add_review_command(subparsers):
         default="markdown",
         help="Output format (default: markdown)",
     )
+    _add_source_selection_argument(review_parser)
 
 
 def _add_uninstall_command(subparsers):
@@ -1127,6 +1183,17 @@ def _add_status_command(subparsers):
     status_parser.add_argument(
         "--wiki-dir", default=DEFAULT_WIKI_DIR, help="Wiki directory path"
     )
+    status_parser.add_argument(
+        "--src-dir",
+        default=".",
+        help="Source directory used to evaluate source-selection identity",
+    )
+    status_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
+    )
+    _add_source_selection_argument(status_parser)
 
 
 def _add_mcp_command(subparsers):
@@ -1136,6 +1203,11 @@ def _add_mcp_command(subparsers):
     )
     mcp_parser.add_argument(
         "--src-dir", default=".", help="Source directory to scan (default: .)"
+    )
+    mcp_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
     )
     mcp_parser.add_argument(
         "--wiki-dir",
@@ -1169,6 +1241,7 @@ def _add_mcp_command(subparsers):
         action="append",
         help="Additional HTTP Origin allowed to call the local MCP endpoint",
     )
+    _add_source_selection_argument(mcp_parser)
 
 
 def _add_obsidian_command(subparsers):
@@ -1187,6 +1260,11 @@ def _add_obsidian_command(subparsers):
             "Source directory for the legacy unenriched relationship scan; "
             "knowledge-enriched export does not scan it"
         ),
+    )
+    obs_export.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
     )
     obs_export.add_argument(
         "--wiki-dir",
@@ -1214,6 +1292,7 @@ def _add_obsidian_command(subparsers):
         default="text",
         help="Output format (default: text)",
     )
+    _add_source_selection_argument(obs_export)
     _add_projection_metadata_arguments(
         obs_export,
         public_identity_dest="knowledge_public_repository_identity",
@@ -1560,6 +1639,7 @@ def _add_upgrade_command(subparsers):
         action="store_false",
         help="Omit local agent instructions for reporting llm-wiki tool issues",
     )
+    _add_source_selection_argument(upgrade_parser)
 
 
 def _add_sync_command(subparsers):
@@ -1660,6 +1740,7 @@ def _add_sync_command(subparsers):
         action="store_true",
         help="Disable preservation of existing semantic wiki descriptions",
     )
+    _add_source_selection_argument(sync_parser)
 
 
 def _add_migrate_command(subparsers):
@@ -1669,6 +1750,11 @@ def _add_migrate_command(subparsers):
     )
     migrate_parser.add_argument(
         "--src-dir", default=".", help="Source directory to scan (default: .)"
+    )
+    migrate_parser.add_argument(
+        "--allow-external-src",
+        action="store_true",
+        help="Allow --src-dir to point outside the current working directory",
     )
     migrate_parser.add_argument(
         "--wiki-dir",
@@ -1697,6 +1783,7 @@ def _add_migrate_command(subparsers):
         action="store_true",
         help="Print the current chunk plan and exit without modifying files",
     )
+    _add_source_selection_argument(migrate_parser)
 
 
 def _add_context_command(subparsers):
@@ -1754,6 +1841,7 @@ def _add_context_command(subparsers):
         action="store_true",
         help="Under budget pressure, prefer CURRENT context within an existing relevance tier",
     )
+    _add_source_selection_argument(context_parser)
 
 
 def _add_docs_command(subparsers):
@@ -1913,6 +2001,7 @@ def _add_docs_command(subparsers):
         action="store_true",
         help="Archive owned run artifacts and explicitly rebuild the workspace baseline",
     )
+    _add_source_selection_argument(prepare)
     prepare.add_argument(
         "--output-format",
         "--format",

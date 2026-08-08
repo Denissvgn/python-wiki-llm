@@ -175,6 +175,26 @@ class TestPluginManifestValidation:
         with pytest.raises(plugins.PluginError, match="plugin directory"):
             plugins.validate_plugin(plugin_dir)
 
+    def test_rejects_entry_point_source_under_python_cache_directory(
+        self, tmp_project
+    ):
+        plugin_dir = _write_plugin(
+            tmp_project / "vendor" / "cached-entry",
+            components=[
+                {
+                    "type": "lint_rule",
+                    "id": "bad",
+                    "entry_point": "__pycache__.hidden_rule:check",
+                }
+            ],
+            extra_files={
+                "__pycache__/hidden_rule.py": "def check(*args):\n    return []\n"
+            },
+        )
+
+        with pytest.raises(plugins.PluginError, match="__pycache__"):
+            plugins.validate_plugin(plugin_dir)
+
     @pytest.mark.parametrize(
         ("component_type", "entry_point", "extra_files"),
         [
@@ -585,6 +605,108 @@ class TestPluginRuntimeIntegration:
 
         with pytest.raises(plugins.PluginError, match="installed plugin"):
             plugins.load_entry_point("pathlib:Path")
+
+    def test_load_entry_point_rejects_cache_directory_lockfile_tampering(
+        self, tmp_project
+    ):
+        plugin_dir = _write_plugin(
+            tmp_project / "vendor" / "lint-cache-lock",
+            plugin_id="lint-cache-lock",
+            components=[
+                {
+                    "type": "lint_rule",
+                    "id": "always",
+                    "entry_point": "visible_rule:check",
+                }
+            ],
+            extra_files={"visible_rule.py": "def check(*args):\n    return []\n"},
+        )
+        plugins.install_plugin(str(plugin_dir), yes=True)
+        installed = plugins.plugin_store() / "lint-cache-lock"
+        hidden = installed / "__pycache__" / "hidden_rule.py"
+        hidden.parent.mkdir()
+        hidden.write_text(
+            "from pathlib import Path\n"
+            'Path("cache-entry-executed.txt").write_text("bad", encoding="utf-8")\n'
+            "def check(*args):\n    return []\n",
+            encoding="utf-8",
+        )
+        lock = plugins.read_lock()
+        lock["plugins"]["lint-cache-lock"]["components"][0]["entry_point"] = (
+            "__pycache__.hidden_rule:check"
+        )
+        plugins.write_lock(lock)
+
+        with pytest.raises(plugins.PluginError, match="__pycache__"):
+            plugins.load_entry_point("__pycache__.hidden_rule:check")
+
+        assert not (tmp_project / "cache-entry-executed.txt").exists()
+
+    def test_load_entry_point_rejects_transitive_source_under_cache_directory(
+        self, tmp_project
+    ):
+        plugin_dir = _write_plugin(
+            tmp_project / "vendor" / "lint-cache-helper",
+            plugin_id="lint-cache-helper",
+            components=[
+                {
+                    "type": "lint_rule",
+                    "id": "always",
+                    "entry_point": "visible_rule:check",
+                }
+            ],
+            extra_files={"visible_rule.py": "def check(*args):\n    return []\n"},
+        )
+        plugins.install_plugin(str(plugin_dir), yes=True)
+        installed = plugins.plugin_store() / "lint-cache-helper"
+        hidden = installed / "__pycache__" / "hidden_helper.py"
+        hidden.parent.mkdir()
+        hidden.write_text(
+            "from pathlib import Path\n"
+            'Path("cache-helper-executed.txt").write_text("bad", encoding="utf-8")\n'
+            "def check(*args):\n    return []\n",
+            encoding="utf-8",
+        )
+        (installed / "visible_rule.py").write_text(
+            "from __pycache__.hidden_helper import check\n",
+            encoding="utf-8",
+        )
+
+        with pytest.raises(plugins.PluginError, match="__pycache__"):
+            plugins.load_entry_point("visible_rule:check")
+
+        assert not (tmp_project / "cache-helper-executed.txt").exists()
+
+    @pytest.mark.parametrize(
+        ("configured", "source_plugins_only", "external", "expects_fallback"),
+        [
+            (False, False, False, True),
+            (True, False, False, True),
+            (False, True, False, True),
+            (False, False, True, True),
+            (True, False, True, False),
+            (False, True, True, False),
+        ],
+    )
+    def test_runtime_plugin_fallback_root_is_limited_to_legacy_ambient_reads(
+        self,
+        tmp_project,
+        tmp_path,
+        configured,
+        source_plugins_only,
+        external,
+        expects_fallback,
+    ):
+        source_root = tmp_path / "external" if external else tmp_project
+        source_root.mkdir(exist_ok=True)
+
+        fallback = plugins.runtime_plugin_fallback_root(
+            source_root,
+            source_selection_configured=configured,
+            source_plugins_only=source_plugins_only,
+        )
+
+        assert (fallback == tmp_project) is expects_fallback
 
     def test_plugin_extractor_entry_point_cannot_import_project_module(
         self, tmp_project

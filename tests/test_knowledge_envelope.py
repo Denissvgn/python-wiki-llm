@@ -52,6 +52,11 @@ from llm_wiki_cli.services.knowledge_model import (
     RepositoryRecord,
     WorkingTreeState,
 )
+from llm_wiki_cli.services.knowledge_orchestration import (
+    collect_runtime_repository_evidence,
+)
+from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 from tests.knowledge_fixtures import (
     producer_basis_fixtures,
     repository_identity_fixtures,
@@ -1055,6 +1060,213 @@ def test_git_collector_excludes_only_selected_application_artifacts(
         excluded_worktree_paths=artifact_paths,
     )
     assert with_unrelated_change.working_tree is WorkingTreeState.DIRTY
+
+
+@_REQUIRES_GIT
+def test_git_collector_scopes_worktree_evidence_to_literal_includes(
+    tmp_path: Path,
+):
+    repository = tmp_path / "repository"
+    _initialized_git_repository(repository)
+    selected = repository / "selected" / "app.py"
+    excluded = repository / "excluded" / "secret.py"
+    profile = repository / ".llm-wiki" / "source-selection.json"
+    selected.parent.mkdir()
+    excluded.parent.mkdir()
+    profile.parent.mkdir()
+    selected.write_text("VALUE = 1\n", encoding="utf-8")
+    excluded.write_text("SECRET = 1\n", encoding="utf-8")
+    profile.write_text("{}\n", encoding="utf-8")
+    _git(repository, "add", ".")
+    _git(repository, "commit", "--quiet", "-m", "add scoped sources")
+
+    excluded.write_text("SECRET = 2\n", encoding="utf-8")
+    scoped = collect_git_repository_evidence(
+        repository,
+        included_worktree_paths=(selected.parent, profile),
+        excluded_worktree_paths=(excluded.parent,),
+    )
+    assert scoped.working_tree is WorkingTreeState.CLEAN
+
+    selected.write_text("VALUE = 2\n", encoding="utf-8")
+    selected_dirty = collect_git_repository_evidence(
+        repository,
+        included_worktree_paths=(selected.parent, profile),
+        excluded_worktree_paths=(excluded.parent,),
+    )
+    assert selected_dirty.working_tree is WorkingTreeState.DIRTY
+
+    selected.write_text("VALUE = 1\n", encoding="utf-8")
+    profile.write_text('{"changed": true}\n', encoding="utf-8")
+    profile_dirty = collect_git_repository_evidence(
+        repository,
+        included_worktree_paths=(selected.parent, profile),
+        excluded_worktree_paths=(excluded.parent,),
+    )
+    assert profile_dirty.working_tree is WorkingTreeState.DIRTY
+
+
+@_REQUIRES_GIT
+def test_runtime_git_evidence_uses_snapshot_selection_and_selection_inputs(
+    tmp_path: Path,
+) -> None:
+    repository = tmp_path / "repository"
+    _initialized_git_repository(repository)
+    selected = repository / "selected" / "app.py"
+    retained = repository / "selected" / "keep.py"
+    ignored = repository / "selected" / "ignored.py"
+    excluded = repository / "selected" / "private" / "secret.py"
+    globally_excluded = repository / "selected" / "build" / "secret.py"
+    profile = repository / ".llm-wiki" / "source-selection.json"
+    selected.parent.mkdir()
+    excluded.parent.mkdir()
+    globally_excluded.parent.mkdir()
+    profile.parent.mkdir()
+    selected.write_text("VALUE = 1\n", encoding="utf-8")
+    retained.write_text("KEEP = 1\n", encoding="utf-8")
+    ignored.write_text("IGNORED = 1\n", encoding="utf-8")
+    excluded.write_text("SECRET = 1\n", encoding="utf-8")
+    globally_excluded.write_text("BUILD_SECRET = 1\n", encoding="utf-8")
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["selected"],
+                "exclude": ["selected/private"],
+            }
+        ),
+        encoding="utf-8",
+    )
+    gitignore = repository / ".gitignore"
+    gitignore.write_text("*.tmp\n", encoding="utf-8")
+    nested_gitignore = repository / "selected" / ".gitignore"
+    nested_gitignore.write_text("ignored.py\n", encoding="utf-8")
+    _git(repository, "add", ".")
+    _git(repository, "add", "-f", "selected/ignored.py")
+    _git(repository, "commit", "--quiet", "-m", "add selected sources")
+    snapshot = build_source_snapshot(repository)
+    wiki = repository / "docs" / "llm_wiki"
+
+    excluded.write_text("SECRET = 2\n", encoding="utf-8")
+    excluded_clean = collect_runtime_repository_evidence(
+        repository,
+        wiki,
+        source_snapshot=snapshot,
+    )
+    assert excluded_clean.working_tree is WorkingTreeState.CLEAN
+
+    globally_excluded.write_text("BUILD_SECRET = 2\n", encoding="utf-8")
+    globally_excluded_clean = collect_runtime_repository_evidence(
+        repository,
+        wiki,
+        source_snapshot=snapshot,
+    )
+    assert globally_excluded_clean.working_tree is WorkingTreeState.CLEAN
+    globally_excluded.write_text("BUILD_SECRET = 1\n", encoding="utf-8")
+
+    ignored.write_text("IGNORED = 2\n", encoding="utf-8")
+    ignored_clean = collect_runtime_repository_evidence(
+        repository,
+        wiki,
+        source_snapshot=snapshot,
+    )
+    assert ignored_clean.working_tree is WorkingTreeState.CLEAN
+    ignored.write_text("IGNORED = 1\n", encoding="utf-8")
+
+    selected.write_text("VALUE = 2\n", encoding="utf-8")
+    selected_dirty = collect_runtime_repository_evidence(
+        repository,
+        wiki,
+        source_snapshot=snapshot,
+    )
+    assert selected_dirty.working_tree is WorkingTreeState.DIRTY
+    selected.write_text("VALUE = 1\n", encoding="utf-8")
+
+    gitignore.write_text("*.cache\n", encoding="utf-8")
+    selection_input_dirty = collect_runtime_repository_evidence(
+        repository,
+        wiki,
+        source_snapshot=snapshot,
+    )
+    assert selection_input_dirty.working_tree is WorkingTreeState.DIRTY
+
+    gitignore.write_text("*.tmp\n", encoding="utf-8")
+    selected.unlink()
+    deletion_snapshot = build_source_snapshot(repository)
+    selected_deletion = collect_runtime_repository_evidence(
+        repository,
+        wiki,
+        source_snapshot=deletion_snapshot,
+    )
+    assert selected_deletion.working_tree is WorkingTreeState.DIRTY
+
+
+@_REQUIRES_GIT
+def test_runtime_git_evidence_excludes_only_bundled_helper_implementations(
+    tmp_path: Path,
+) -> None:
+    repository = tmp_path / "repository"
+    _initialized_git_repository(repository)
+    package = repository / "src" / "llm_wiki_cli"
+    files = {
+        "__init__.py": "",
+        "cli.py": "VALUE = 1\n",
+        "extractors/__init__.py": "",
+        "extractors/common.py": "COMMON = 1\n",
+        "extractors/go_scripts/main.go": "package main\n",
+        "extractors/rust_scripts/Cargo.toml": (
+            '[package]\nname = "helper"\nversion = "0.1.0"\n'
+        ),
+        "extractors/rust_scripts/Cargo.lock": (
+            '[[package]]\nname = "helper"\nversion = "0.1.0"\n'
+        ),
+    }
+    for relative, content in files.items():
+        path = package / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+    profile = repository / ".llm-wiki" / "source-selection.json"
+    profile.parent.mkdir()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["src/llm_wiki_cli"],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    _git(repository, "add", ".")
+    _git(repository, "commit", "--quiet", "-m", "add owned helper fixture")
+    snapshot = build_source_snapshot(repository)
+    helper = package / "extractors/go_scripts/main.go"
+    marker = package / "extractors/rust_scripts/Cargo.toml"
+    assert "src/llm_wiki_cli/extractors/go_scripts/main.go" not in (
+        snapshot.selected_regular_paths
+    )
+    assert "src/llm_wiki_cli/extractors/rust_scripts/Cargo.toml" in {
+        item.rel_path for item in snapshot.package_markers
+    }
+
+    helper.write_text("package main\n// implementation churn\n", encoding="utf-8")
+    helper_only = collect_runtime_repository_evidence(
+        repository,
+        repository / "docs/llm_wiki",
+        source_snapshot=snapshot,
+    )
+    assert helper_only.working_tree is WorkingTreeState.CLEAN
+
+    marker.write_text(
+        '[package]\nname = "helper"\nversion = "0.2.0"\n',
+        encoding="utf-8",
+    )
+    marker_dirty = collect_runtime_repository_evidence(
+        repository,
+        repository / "docs/llm_wiki",
+        source_snapshot=snapshot,
+    )
+    assert marker_dirty.working_tree is WorkingTreeState.DIRTY
 
 
 @_REQUIRES_GIT

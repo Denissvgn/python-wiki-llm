@@ -113,12 +113,18 @@ from .schema import (
 from .schema import (
     CONSTRAINT_START as _CONSTRAINT_START,
 )
+from .schema import pin_source_selection_command_recipes
 from .source_snapshot import (
     build_source_snapshot,
     format_unsupported_source_summary,
     unsupported_source_summary,
 )
-from .sync_manifest import SyncManifest
+from .source_selection import (
+    SourceSelectionError,
+    resolve_source_selection,
+    validate_persisted_source_selection_identity,
+)
+from .sync_manifest import SyncManifest, SyncManifestError
 from .validation import (
     portable_page_component,
     posix_path_text as shared_posix_path_text,
@@ -3948,6 +3954,7 @@ class _BootstrapRunOptions:
     helper_cache_dir: str | None
     include_tests: Iterable[str] | None
     trust_source_plugins: bool
+    source_selection: str | Path | None
     progress_stream: TextIO
 
 
@@ -4089,6 +4096,7 @@ def _bootstrap_run_options_from_args(args) -> _BootstrapRunOptions:
         helper_cache_dir=getattr(args, "helper_cache_dir", None),
         include_tests=getattr(args, "include_tests", None),
         trust_source_plugins=True,
+        source_selection=getattr(args, "source_selection", None),
         progress_stream=sys.stderr if json_mode else sys.stdout,
     )
 
@@ -4135,6 +4143,7 @@ def _bootstrap_run_options_from_request(
         helper_cache_dir=request.helper_cache_dir,
         include_tests=request.include_tests,
         trust_source_plugins=request.trust_source_plugins,
+        source_selection=request.source_selection,
         progress_stream=progress_stream,
     )
 
@@ -4166,7 +4175,17 @@ def _bootstrap_plugin_roots(
     state: _BootstrapRunState,
 ) -> tuple[str | Path, str | Path | None]:
     if state.options.trust_source_plugins:
-        return state.options.src_dir_for_scan, Path.cwd()
+        source_root = Path(state.options.src_dir_for_scan).resolve()
+        fallback_root = (
+            None
+            if (
+                state.options.source_adapter
+                or state.source_snapshot.source_selection_policy is not None
+            )
+            and source_root != Path.cwd().resolve()
+            else Path.cwd()
+        )
+        return source_root, fallback_root
     # A new workspace wiki contains no installed plugins.  Pointing plugin
     # discovery there keeps the deterministic service path inert without
     # changing the managed bootstrap default.
@@ -4204,6 +4223,7 @@ def _extract_bootstrap_inventory(state: _BootstrapRunState):
     state.source_snapshot = build_source_snapshot(
         options.src_dir_for_scan,
         include_tests=options.include_tests,
+        source_selection=options.source_selection,
     )
     inventory_result = get_inventory_result(
         options.src_dir_for_scan,
@@ -4214,6 +4234,7 @@ def _extract_bootstrap_inventory(state: _BootstrapRunState):
         include_plugins=options.trust_source_plugins,
         capture_data_effect_observations=options.deep,
         capture_import_observations=options.deep,
+        source_plugins_only=options.source_adapter and options.trust_source_plugins,
     )
     if inventory_result.failed:
         print_inventory_failures(inventory_result, file=options.progress_stream)
@@ -4540,7 +4561,13 @@ def _write_bootstrap_workflow_pages(
             )
             workflows_created += 1
             _emit_bootstrap(state, f"  CREATE workflow: {wf_name}")
-        workflow_entries.append({"name": wf_name, "entry": wf_data["entry"]})
+        workflow_entries.append(
+            {
+                "name": wf_name,
+                "entry": wf_data["entry"],
+                "source_path": wf_data["entry_module_path"],
+            }
+        )
     return _WorkflowResult(workflow_entries, workflows_created)
 
 
@@ -4554,6 +4581,7 @@ def _build_bootstrap_api_contracts(
         inventory,
         openapi_file=state.options.openapi_file,
         source_root=state.options.src_dir_for_scan,
+        source_snapshot=state.source_snapshot,
     )
     _emit_bootstrap(
         state,
@@ -4625,12 +4653,15 @@ def _write_bootstrap_flow_pages(
         return _FlowResult(flow_entries, flows_created, data_flow_summary)
 
     _emit_bootstrap(state, "Generating user-flow pages...", flush=True)
-    console_scripts = read_console_scripts(state.options.src_dir_for_scan)
+    console_scripts = read_console_scripts(
+        state.options.src_dir_for_scan,
+        source_snapshot=state.source_snapshot,
+    )
     entrypoint_observations = get_detailed_entry_points(
         inventory,
         console_scripts=console_scripts,
         root=state.options.src_dir_for_scan,
-        fallback_root=Path.cwd(),
+        fallback_root=_bootstrap_plugin_roots(state)[1],
         include_plugins=state.options.trust_source_plugins,
         include_warnings=True,
     )
@@ -5090,7 +5121,9 @@ def _emit_bootstrap_complete(
 def _update_bootstrap_agent_constraints(state: _BootstrapRunState) -> None:
     if not state.options.source_adapter:
         _update_agent_constraints(
-            str(state.options.wiki_dir), file=state.options.progress_stream
+            str(state.options.wiki_dir),
+            source_selection=state.source_snapshot.source_selection_path,
+            file=state.options.progress_stream,
         )
 
 
@@ -5325,6 +5358,7 @@ def _finalize_bootstrap_artifacts(
         entity_occurrence_page_cache=page_maps.entity_occurrence_page_name_cache,
         module_page_map=page_maps.module_page_map,
         entry_points=result.flow.entries,
+        workflow_entries=result.workflow.entries,
     )
     previous_manifest = _load_previous_bootstrap_manifest(state.options.wiki_dir)
     surfaces, generation_inputs = _bootstrap_manifest_generation_state(
@@ -5346,6 +5380,7 @@ def _finalize_bootstrap_artifacts(
             repository_evidence=collect_runtime_repository_evidence(
                 state.options.src_dir_for_scan,
                 state.options.wiki_dir,
+                source_snapshot=state.source_snapshot,
             ),
             inventory_complete=state.options.deep,
             previous_manifest=previous_manifest,
@@ -5701,6 +5736,34 @@ def _preflight_public_bootstrap(options: _BootstrapRunOptions) -> None:
         )
 
 
+def _preflight_bootstrap_source_selection(options: _BootstrapRunOptions) -> None:
+    """Protect private workspace refreshes from configured-to-broad downgrade."""
+
+    try:
+        previous = SyncManifest.load(options.wiki_dir)
+    except FileNotFoundError:
+        return
+    except (OSError, json.JSONDecodeError, SyncManifestError) as exc:
+        raise BootstrapContractError(
+            "Cannot validate the existing wiki's persisted source-selection "
+            f"boundary: {exc}"
+        ) from exc
+    try:
+        policy = resolve_source_selection(
+            options.src_dir_for_scan,
+            options.source_selection,
+        )
+        validate_persisted_source_selection_identity(
+            previous.generation_inputs,
+            None if policy is None else policy.identity,
+            operation="documentation workspace refresh",
+            explicit_path_authorized=options.source_selection is not None,
+            allow_same_path_update=True,
+        )
+    except SourceSelectionError as exc:
+        raise BootstrapContractError(str(exc)) from exc
+
+
 def _execute_bootstrap_options(
     options: _BootstrapRunOptions,
     *,
@@ -5708,6 +5771,7 @@ def _execute_bootstrap_options(
 ) -> BootstrapResult:
     if not _workspace_refresh_authorized:
         _preflight_public_bootstrap(options)
+    _preflight_bootstrap_source_selection(options)
     try:
         _preflight_bootstrap_governance(options.wiki_dir)
     except (GovernanceError, InfrastructureSyncError) as exc:
@@ -5820,7 +5884,12 @@ def run(args):
         raise SystemExit(2) from exc
 
 
-def _update_agent_constraints(wiki_dir: str, *, file=None) -> None:
+def _update_agent_constraints(
+    wiki_dir: str,
+    *,
+    source_selection: str | Path | None = None,
+    file=None,
+) -> None:
     """Replace docs/llm_wiki path references inside the constraint block
     in any existing agent schema files to match the actual wiki_dir."""
     stream = file or sys.stdout
@@ -5829,11 +5898,12 @@ def _update_agent_constraints(wiki_dir: str, *, file=None) -> None:
     default_path = Path(_DEFAULT_WIKI_DIR)
     # Nothing to do if the resolved paths are the same or wiki_dir already
     # contains the default string (handles the relative == relative case)
-    if wiki_path == default_path or wiki_dir == _DEFAULT_WIKI_DIR:
+    default_wiki_dir = wiki_path == default_path or wiki_dir == _DEFAULT_WIKI_DIR
+    if default_wiki_dir and source_selection is None:
         return
     # Also skip if the resolved absolute paths are equivalent
     try:
-        if wiki_path.resolve() == default_path.resolve():
+        if wiki_path.resolve() == default_path.resolve() and source_selection is None:
             return
     except OSError:
         pass
@@ -5851,7 +5921,15 @@ def _update_agent_constraints(wiki_dir: str, *, file=None) -> None:
         start_idx = text.index(_CONSTRAINT_START)
         end_idx = text.index(_CONSTRAINT_END, start_idx) + len(_CONSTRAINT_END)
         block = text[start_idx:end_idx]
-        new_block = block.replace(_DEFAULT_WIKI_DIR, wiki_dir)
+        new_block = (
+            block
+            if default_wiki_dir
+            else block.replace(_DEFAULT_WIKI_DIR, wiki_dir)
+        )
+        new_block = pin_source_selection_command_recipes(
+            new_block,
+            source_selection,
+        )
         if new_block != block:
             write_md(p, text[:start_idx] + new_block + text[end_idx:])
             updated.append(filename)

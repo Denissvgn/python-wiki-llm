@@ -3,7 +3,13 @@ from __future__ import annotations
 from collections.abc import Mapping
 from pathlib import Path
 
-from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS, get_agent_config_path, read_config
+from ..config import (
+    DEFAULT_WIKI_DIR,
+    IDE_AGENTS,
+    get_agent_config_path,
+    read_config,
+    validate_source_root,
+)
 from ..services import circuit_breaker
 from ..services.knowledge_observability import (
     knowledge_status_payload,
@@ -51,10 +57,16 @@ def _format_counts(counts: object) -> str:
     return ", ".join(f"{key}={value}" for key, value in sorted(counts.items()))
 
 
-def _print_knowledge_status(wiki_path: Path, src_dir: str) -> None:
+def _print_knowledge_status(
+    wiki_path: Path,
+    src_dir: str,
+    *,
+    source_selection: str | Path | None = None,
+) -> None:
     observability = load_snapshot_knowledge_observability(
         wiki_path,
         src_dir=src_dir,
+        source_selection=source_selection,
     )
     status = knowledge_status_payload(observability.view)
     summary = observability.summary.to_payload()
@@ -76,6 +88,14 @@ def _print_knowledge_status(wiki_path: Path, src_dir: str) -> None:
 def run(args) -> None:
     wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     src_dir = getattr(args, "src_dir", ".")
+    allow_external = bool(getattr(args, "allow_external_src", False))
+    source_root = validate_source_root(
+        src_dir,
+        "--src-dir",
+        allow_external=allow_external,
+    )
+    if allow_external:
+        src_dir = str(source_root)
     wiki_path = Path(wiki_dir)
     git_dir = Path(".git")
 
@@ -93,7 +113,11 @@ def run(args) -> None:
     else:
         print(f"Wiki directory:  {wiki_dir} (not found)")
 
-    _print_knowledge_status(wiki_path, src_dir)
+    _print_knowledge_status(
+        wiki_path,
+        src_dir,
+        source_selection=getattr(args, "source_selection", None),
+    )
 
     # Agent config
     agent_config = get_agent_config_path(wiki_dir)

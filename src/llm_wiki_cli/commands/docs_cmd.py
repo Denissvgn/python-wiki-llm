@@ -300,6 +300,7 @@ def _prepare(args) -> None:
         args.workspace,
         baseline_strategy=_BASELINE_STRATEGIES[args.baseline],
         source_root=source_root,
+        source_selection=getattr(args, "source_selection", None),
         input_wiki_root=input_wiki_root,
         freshness_policy=args.wiki_freshness,
         site_name=args.site_name,

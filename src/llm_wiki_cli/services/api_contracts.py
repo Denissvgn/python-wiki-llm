@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 from collections import defaultdict
 from collections.abc import Mapping, Sequence
@@ -18,6 +19,12 @@ import yaml  # pyright: ignore[reportMissingModuleSource]
 
 from .imports import build_module_path_resolver
 from .paths import is_test_source_path
+from .source_selection import (
+    SourceSelectionError,
+    path_is_link_or_reparse,
+    path_is_selected,
+)
+from .source_snapshot import SourceSnapshot
 
 
 _HTTP_METHODS = (
@@ -1170,11 +1177,22 @@ def build_static_api_contracts(inventory: Mapping[str, Mapping[str, Any]]) -> di
     }
 
 
-def _resolve_openapi_path(path: str | Path, source_root: str | Path) -> tuple[Path, str]:
+def _resolve_openapi_path(
+    path: str | Path,
+    source_root: str | Path,
+    *,
+    source_snapshot: SourceSnapshot | None = None,
+) -> tuple[Path, str]:
     root = Path(source_root).resolve()
     candidate = Path(path).expanduser()
     if not candidate.is_absolute():
         candidate = root / candidate
+    try:
+        lexical_relative = Path(os.path.abspath(candidate)).relative_to(root).as_posix()
+    except ValueError as exc:
+        raise ApiContractError(
+            f"--openapi-file '{path}' is outside source root '{root}'."
+        ) from exc
     resolved = candidate.resolve()
     try:
         relative = resolved.relative_to(root).as_posix()
@@ -1182,16 +1200,66 @@ def _resolve_openapi_path(path: str | Path, source_root: str | Path) -> tuple[Pa
         raise ApiContractError(
             f"--openapi-file '{path}' resolves outside source root '{root}'."
         ) from exc
+    if source_snapshot is not None:
+        if source_snapshot.root.resolve() != root:
+            raise ApiContractError(
+                "OpenAPI source snapshot root does not match the source root."
+            )
+        policy = source_snapshot.source_selection_policy
+        if policy is not None:
+            try:
+                lexical_selected = path_is_selected(policy, lexical_relative)
+                resolved_selected = path_is_selected(policy, relative)
+            except SourceSelectionError as exc:
+                raise ApiContractError(
+                    "OpenAPI path is invalid under source selection: "
+                    f"{lexical_relative}"
+                ) from exc
+            if not lexical_selected or not resolved_selected:
+                raise ApiContractError(
+                    "OpenAPI file is outside the selected source set: "
+                    f"{lexical_relative}"
+                )
+            if (
+                lexical_relative not in source_snapshot.selected_regular_paths
+                or relative not in source_snapshot.selected_regular_paths
+            ):
+                raise ApiContractError(
+                    "OpenAPI file is not an effective selected input after "
+                    "ignore and global exclusions: "
+                    f"{lexical_relative}"
+                )
+            if _path_contains_link_or_reparse(root, lexical_relative):
+                raise ApiContractError(
+                    "OpenAPI file must not traverse a symlink or reparse point "
+                    f"under source selection: {lexical_relative}"
+                )
     if not resolved.is_file():
         raise ApiContractError(f"OpenAPI file not found: {relative}")
     return resolved, relative
 
 
+def _path_contains_link_or_reparse(root: Path, relative: str) -> bool:
+    candidate = root
+    for component in relative.split("/"):
+        candidate /= component
+        if path_is_link_or_reparse(candidate):
+            return True
+    return False
+
+
 def load_openapi_document(
-    path: str | Path, *, source_root: str | Path = "."
+    path: str | Path,
+    *,
+    source_root: str | Path = ".",
+    source_snapshot: SourceSnapshot | None = None,
 ) -> dict[str, Any]:
     """Load and validate a source-contained OpenAPI JSON/YAML document."""
-    resolved, relative = _resolve_openapi_path(path, source_root)
+    resolved, relative = _resolve_openapi_path(
+        path,
+        source_root,
+        source_snapshot=source_snapshot,
+    )
     suffix = resolved.suffix.lower()
     try:
         data = resolved.read_bytes()
@@ -1743,10 +1811,15 @@ def build_api_contracts(
     *,
     openapi_file: str | Path | None = None,
     source_root: str | Path = ".",
+    source_snapshot: SourceSnapshot | None = None,
 ) -> dict[str, Any]:
     """Build static contracts or reconcile them with authoritative OpenAPI."""
     loaded = (
-        load_openapi_document(openapi_file, source_root=source_root)
+        load_openapi_document(
+            openapi_file,
+            source_root=source_root,
+            source_snapshot=source_snapshot,
+        )
         if openapi_file is not None
         else None
     )

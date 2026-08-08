@@ -47,7 +47,9 @@ from llm_wiki_cli.services.knowledge_evidence import (
     semantic_hash_for_file,
 )
 from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
 from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
+from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.services.sync_manifest import (
     MANIFEST_FILENAME as SERVICE_MANIFEST_FILENAME,
 )
@@ -467,8 +469,7 @@ class TestNoManifest:
         assert exc_info.value.code == 1
         captured = capsys.readouterr()
         assert (
-            f"`llm-wiki bootstrap --src-dir {tmp_path} "
-            f"--wiki-dir {wiki_dir}`"
+            f"`llm-wiki bootstrap --src-dir {tmp_path} --wiki-dir {wiki_dir}`"
         ) in captured.err
         assert "llm-wiki sync --jobs 1" not in captured.err
         assert "llm-wiki migrate --dry-run" not in captured.err
@@ -1475,6 +1476,456 @@ class TestSyncInventoryRuntime:
         out = capsys.readouterr().out
         assert "Sync complete:" in out
         assert "Cache:" in out
+
+
+class TestSourceSelectionNarrowing:
+    def test_narrowing_prunes_source_owned_flow_and_workflow_surfaces(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        project = tmp_path / "project"
+        selected = project / "selected"
+        outside = project / "outside"
+        selected.mkdir(parents=True)
+        outside.mkdir()
+        (outside / "__init__.py").write_text("", encoding="utf-8")
+        (selected / "keep.py").write_text("KEEP = True\n", encoding="utf-8")
+        (outside / "svc.py").write_text(
+            '__all__ = ["run"]\n\n\ndef run():\n    return 1\n',
+            encoding="utf-8",
+        )
+        for name in ("alpha", "beta", "gamma"):
+            (outside / f"{name}.py").write_text(
+                f"def {name}():\n    return {name!r}\n",
+                encoding="utf-8",
+            )
+        (outside / "orchestrator.py").write_text(
+            "from outside.alpha import alpha\n"
+            "from outside.beta import beta\n"
+            "from outside.gamma import gamma\n\n\n"
+            "def run(first: alpha, second: beta, third: gamma):\n"
+            "    return alpha(), beta(), gamma()\n",
+            encoding="utf-8",
+        )
+        wiki = project / "docs" / "llm_wiki"
+        monkeypatch.chdir(project)
+        bootstrap_cmd.run(
+            _make_bootstrap_args(
+                src_dir=".",
+                wiki_dir=str(wiki),
+                skip_workflows=False,
+            )
+        )
+        flow_page = wiki / "flows" / "api-run.md"
+        workflow_page = wiki / "workflows" / "orchestrator_flow.md"
+        assert flow_page.is_file()
+        assert workflow_page.is_file()
+        broad_surface = json.loads(
+            (wiki / SURFACE_INDEX_FILENAME).read_text(encoding="utf-8")
+        )
+        ownership = {
+            page["canonical_path"]: page["source_path"]
+            for page in broad_surface["pages"]
+            if page["canonical_path"]
+            in {"flows/api-run.md", "workflows/orchestrator_flow.md"}
+        }
+        assert ownership == {
+            "flows/api-run.md": "outside/svc.py",
+            "workflows/orchestrator_flow.md": "outside/orchestrator.py",
+        }
+
+        _write_selection = project / ".llm-wiki" / "source-selection.json"
+        _write_selection.parent.mkdir(exist_ok=True)
+        _write_selection.write_text(
+            json.dumps(
+                {
+                    "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                    "include": ["selected"],
+                    "exclude": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        capsys.readouterr()
+        sync_cmd.run(
+            _make_sync_args(src_dir=".", wiki_dir=str(wiki), no_cache=True)
+        )
+
+        first_output = capsys.readouterr().out
+        assert not flow_page.exists()
+        assert not workflow_page.exists()
+        assert "2 generated surface page(s)" in first_output
+        for artifact in (
+            wiki / "index.md",
+            wiki / SURFACE_INDEX_FILENAME,
+            wiki / KNOWLEDGE_INDEX_FILENAME,
+        ):
+            text = artifact.read_text(encoding="utf-8")
+            assert "api-run" not in text
+            assert "orchestrator_flow" not in text
+            assert "outside/svc.py" not in text
+            assert "outside/orchestrator.py" not in text
+
+        first_bytes = {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in sorted(wiki.rglob("*"))
+            if path.is_file()
+        }
+        sync_cmd.run(
+            _make_sync_args(src_dir=".", wiki_dir=str(wiki), no_cache=True)
+        )
+        second_bytes = {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in sorted(wiki.rglob("*"))
+            if path.is_file()
+        }
+        assert second_bytes == first_bytes
+        assert "Wiki is up to date." in capsys.readouterr().out
+
+    def test_gitignore_narrowing_prunes_effective_source_and_infrastructure_once(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        project = tmp_path / "project"
+        selected = project / "selected"
+        selected.mkdir(parents=True)
+        (selected / "keep.py").write_text(
+            "class Keep:\n    pass\n",
+            encoding="utf-8",
+        )
+        (selected / "drop.py").write_text(
+            "class Drop:\n    secret = True\n",
+            encoding="utf-8",
+        )
+        (selected / "docker-compose.drop.yml").write_text(
+            "services:\n  secret:\n    image: busybox\n",
+            encoding="utf-8",
+        )
+        profile = project / ".llm-wiki" / "source-selection.json"
+        profile.parent.mkdir()
+        profile.write_text(
+            json.dumps(
+                {
+                    "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                    "include": ["selected"],
+                    "exclude": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        wiki = project / "docs" / "llm_wiki"
+        monkeypatch.chdir(project)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=".", wiki_dir=str(wiki)))
+        broad = SyncManifest.load(wiki)
+        infrastructure_page = (
+            wiki
+            / broad.generation_inputs["infrastructure"]["sources"][
+                "selected/docker-compose.drop.yml"
+            ]["page_path"]
+        )
+        assert (wiki / "modules" / "drop.md").is_file()
+        assert (wiki / "entities" / "Drop.md").is_file()
+        assert infrastructure_page.is_file()
+
+        (selected / ".gitignore").write_text(
+            "drop.py\ndocker-compose.drop.yml\n",
+            encoding="utf-8",
+        )
+        capsys.readouterr()
+        sync_cmd.run(
+            _make_sync_args(src_dir=".", wiki_dir=str(wiki), no_cache=True)
+        )
+
+        narrowed = SyncManifest.load(wiki)
+        assert set(narrowed.sources) == {"selected/keep.py"}
+        assert all(
+            mapping.source_path != "selected/drop.py"
+            for mapping in narrowed.page_source_mappings.values()
+        )
+        assert narrowed.tombstones == {}
+        assert not (wiki / "modules" / "drop.md").exists()
+        assert not (wiki / "entities" / "Drop.md").exists()
+        assert not infrastructure_page.exists()
+        infrastructure = narrowed.generation_inputs["infrastructure"]
+        assert "selected/docker-compose.drop.yml" not in infrastructure["sources"]
+        assert "selected/docker-compose.drop.yml" not in infrastructure["tombstones"]
+        assert "selected/drop.py" not in (wiki / SURFACE_INDEX_FILENAME).read_text(
+            encoding="utf-8"
+        )
+        assert "selected/drop.py" not in (wiki / KNOWLEDGE_INDEX_FILENAME).read_text(
+            encoding="utf-8"
+        )
+
+        first_bytes = {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in sorted(wiki.rglob("*"))
+            if path.is_file()
+        }
+        capsys.readouterr()
+        sync_cmd.run(
+            _make_sync_args(src_dir=".", wiki_dir=str(wiki), no_cache=True)
+        )
+        second_bytes = {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in sorted(wiki.rglob("*"))
+            if path.is_file()
+        }
+        assert second_bytes == first_bytes
+        assert "Wiki is up to date." in capsys.readouterr().out
+
+    def test_managed_explicit_profile_cannot_silently_downgrade_when_omitted(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        project = tmp_path / "project"
+        selected = project / "selected"
+        selected.mkdir(parents=True)
+        (selected / "app.py").write_text(
+            "class App:\n    pass\n",
+            encoding="utf-8",
+        )
+        profile = project / "config" / "sources.json"
+        profile.parent.mkdir()
+        profile.write_text(
+            json.dumps(
+                {
+                    "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                    "include": ["selected"],
+                    "exclude": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        wiki = project / "docs" / "llm_wiki"
+        monkeypatch.chdir(project)
+        bootstrap_cmd.run(
+            _make_bootstrap_args(
+                src_dir=".",
+                wiki_dir=str(wiki),
+                source_selection="config/sources.json",
+            )
+        )
+        capsys.readouterr()
+        before = (wiki / MANIFEST_FILENAME).read_bytes()
+
+        def fail_extract(*_args, **_kwargs):
+            pytest.fail("persisted selection must be checked before extraction")
+
+        monkeypatch.setattr(sync_cmd, "_extract_current_inventory", fail_extract)
+
+        with pytest.raises(
+            sync_cmd.SourceSelectionError,
+            match=r"--source-selection config/sources\.json",
+        ):
+            sync_cmd.run(_make_sync_args(src_dir=".", wiki_dir=str(wiki)))
+
+        assert (wiki / MANIFEST_FILENAME).read_bytes() == before
+
+    def test_configured_dependency_fallback_requires_and_reuses_operation_snapshot(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        project = tmp_path / "project"
+        selected = project / "selected"
+        selected.mkdir(parents=True)
+        (selected / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        profile = project / ".llm-wiki" / "source-selection.json"
+        profile.parent.mkdir()
+        profile.write_text(
+            json.dumps(
+                {
+                    "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                    "include": ["selected"],
+                    "exclude": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        wiki = project / "wiki"
+        modules = wiki / "modules"
+        modules.mkdir(parents=True)
+        (modules / "app.md").write_text(
+            "# App\n\n## Local dependency map\n\nOld.\n",
+            encoding="utf-8",
+        )
+        (wiki / "dependencies.md").write_text(
+            "# Dependencies\n",
+            encoding="utf-8",
+        )
+        options = types.SimpleNamespace(
+            src_dir=str(project),
+            wiki_dir=wiki,
+            source_selection=None,
+        )
+
+        with pytest.raises(
+            sync_cmd.SourceSelectionError,
+            match="operation source snapshot",
+        ):
+            sync_cmd._build_generated_section_context(
+                options,
+                {},
+                call_edges=[],
+            )
+        with pytest.raises(
+            sync_cmd.SourceSelectionError,
+            match="operation source snapshot",
+        ):
+            sync_cmd._regenerate_dependency_pages(
+                options,
+                {},
+                {},
+                target_pages=("dependencies",),
+            )
+
+        snapshot = sync_cmd.build_source_snapshot(project)
+        seen = []
+
+        def analyze(inventory, src_dir, *, source_snapshot=None):
+            seen.append(source_snapshot)
+            return {"sentinel": True}
+
+        monkeypatch.setattr(sync_cmd, "analyze_dependencies", analyze)
+        monkeypatch.setattr(
+            sync_cmd,
+            "build_module_dependency_maps",
+            lambda analysis: {"analysis": analysis},
+        )
+
+        context = sync_cmd._build_generated_section_context(
+            options,
+            {},
+            call_edges=[],
+            source_snapshot=snapshot,
+        )
+
+        assert seen == [snapshot]
+        assert context.dependency_analysis == {"sentinel": True}
+
+    @pytest.mark.parametrize("mode", ("incremental", "initialize", "repair"))
+    def test_narrowing_changes_once_then_second_run_is_noop(
+        self,
+        tmp_path: Path,
+        monkeypatch,
+        capsys,
+        mode: str,
+    ) -> None:
+        project = tmp_path / "project"
+        selected = project / "selected"
+        outside = project / "outside"
+        selected.mkdir(parents=True)
+        outside.mkdir()
+        (selected / "keep.py").write_text(
+            "class Keep:\n    value = 1\n",
+            encoding="utf-8",
+        )
+        (outside / "drop.py").write_text(
+            "class Drop:\n    secret = True\n",
+            encoding="utf-8",
+        )
+        (selected / "Dockerfile").write_text("FROM alpine\n", encoding="utf-8")
+        (outside / "Dockerfile").write_text("FROM busybox\n", encoding="utf-8")
+        wiki_dir = project / "docs" / "llm_wiki"
+        monkeypatch.chdir(project)
+        bootstrap_cmd.run(
+            _make_bootstrap_args(
+                src_dir=".",
+                wiki_dir=str(wiki_dir),
+            )
+        )
+        broad = SyncManifest.load(wiki_dir)
+        assert set(broad.sources) == {"outside/drop.py", "selected/keep.py"}
+        assert (wiki_dir / "modules" / "drop.md").is_file()
+        assert (wiki_dir / "entities" / "Drop.md").is_file()
+        deselected_infrastructure_page = (
+            wiki_dir
+            / broad.generation_inputs["infrastructure"]["sources"][
+                "outside/Dockerfile"
+            ]["page_path"]
+        )
+        assert deselected_infrastructure_page.is_file()
+
+        profile = project / ".llm-wiki" / "source-selection.json"
+        profile.parent.mkdir(exist_ok=True)
+        profile.write_text(
+            json.dumps(
+                {
+                    "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                    "include": ["selected"],
+                    "exclude": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        if mode == "repair":
+            manifest_path = wiki_dir / MANIFEST_FILENAME
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+            payload["sources"]["selected/keep.py"].pop("hash")
+            manifest_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+        sync_kwargs = {"src_dir": ".", "wiki_dir": str(wiki_dir), "no_cache": True}
+        if mode == "initialize":
+            sync_kwargs["initialize_surfaces"] = [("dependencies",)]
+        capsys.readouterr()
+
+        sync_cmd.run(_make_sync_args(**sync_kwargs))
+
+        first_output = capsys.readouterr().out
+        narrowed = SyncManifest.load(wiki_dir)
+        assert set(narrowed.sources) == {"selected/keep.py"}
+        assert narrowed.generation_inputs["source_selection"]
+        assert not (wiki_dir / "modules" / "drop.md").exists()
+        assert not (wiki_dir / "entities" / "Drop.md").exists()
+        assert not deselected_infrastructure_page.exists()
+        infrastructure_state = narrowed.generation_inputs["infrastructure"]
+        assert set(infrastructure_state["sources"]) == {"selected/Dockerfile"}
+        assert infrastructure_state["tombstones"] == {}
+        assert "Source selection pruning: 1 source(s)" in first_output
+        assert "1 infrastructure record(s)" in first_output
+        if mode == "repair":
+            assert "manifest repaired" in first_output.lower()
+
+        def wiki_bytes():
+            return {
+                path.relative_to(wiki_dir).as_posix(): path.read_bytes()
+                for path in sorted(wiki_dir.rglob("*"))
+                if path.is_file()
+            }
+
+        after_first = wiki_bytes()
+
+        sync_cmd.run(_make_sync_args(**sync_kwargs))
+
+        second_output = capsys.readouterr().out
+        after_second = wiki_bytes()
+        assert "Source selection pruning:" not in second_output
+        assert not deselected_infrastructure_page.exists()
+        if mode == "repair":
+            converged = SyncManifest.load(wiki_dir)
+            assert set(converged.sources) == {"selected/keep.py"}
+            assert set(converged.generation_inputs["infrastructure"]["sources"]) == {
+                "selected/Dockerfile"
+            }
+
+            sync_cmd.run(_make_sync_args(**sync_kwargs))
+
+            third_output = capsys.readouterr().out
+            assert wiki_bytes() == after_second
+            assert "Source selection pruning:" not in third_output
+            assert "Wiki is up to date." in third_output
+        elif mode == "initialize":
+            assert after_second == after_first
+            assert "Requested optional surfaces are up to date." in second_output
+        else:
+            assert after_second == after_first
+            assert "Wiki is up to date." in second_output
 
 
 class TestSyncSafetyGuards:
@@ -3057,18 +3508,13 @@ class TestSyncFlowRegeneration:
         assert "helper('alpha')" not in updated
         assert "| filesystem_write | `path.write_text` | `run` |" in updated
         assert "Keeps the reviewed behavior notes." in updated
-        mermaid_blocks = re.findall(
-            r"```mermaid\n(.*?)\n```", updated, flags=re.DOTALL
-        )
+        mermaid_blocks = re.findall(r"```mermaid\n(.*?)\n```", updated, flags=re.DOTALL)
         assert mermaid_blocks
         for body in mermaid_blocks:
             lines = body.splitlines()
             nodes = sum(
                 line.lstrip().startswith("participant ")
-                or re.match(
-                    r"^\s+[A-Za-z_][A-Za-z0-9_]*\s*[\[({]", line
-                )
-                is not None
+                or re.match(r"^\s+[A-Za-z_][A-Za-z0-9_]*\s*[\[({]", line) is not None
                 for line in lines
             )
             assert nodes <= GENERATED_DIAGRAM_NODE_LIMIT
@@ -3320,6 +3766,74 @@ class TestSyncFlowRegeneration:
         assert "helper('beta')" in updated
         assert "```mermaid\nflowchart RL" in updated
 
+    def test_configured_external_sync_never_executes_ambient_diagram_style(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        import subprocess
+
+        ambient_root = tmp_path / "ambient"
+        source_root = tmp_path / "external-source"
+        selected = source_root / "selected"
+        ambient_root.mkdir()
+        selected.mkdir(parents=True)
+        subprocess.run(
+            ["git", "init", str(source_root)],
+            capture_output=True,
+            check=True,
+        )
+        self._write_svc(selected, "helper_a")
+        profile = source_root / "config" / "sources.json"
+        profile.parent.mkdir()
+        profile.write_text(
+            json.dumps(
+                {
+                    "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                    "include": ["selected"],
+                    "exclude": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        wiki = ambient_root / "docs" / "llm_wiki"
+        monkeypatch.chdir(ambient_root)
+        bootstrap_cmd.run(
+            _make_bootstrap_args(
+                src_dir=str(source_root),
+                wiki_dir=str(wiki),
+                allow_external_src=True,
+                source_selection="config/sources.json",
+            )
+        )
+        marker = ambient_root / "ambient-style-executed.txt"
+        _write_diagram_style_plugin(
+            ambient_root,
+            body=f"""
+            from pathlib import Path
+
+            Path({str(marker)!r}).write_text("executed", encoding="utf-8")
+
+            def style(context):
+                return {{"direction": "RL"}}
+            """,
+        )
+        self._write_svc(selected, "helper_b")
+        capsys.readouterr()
+
+        sync_cmd.run(
+            _make_sync_args(
+                src_dir=str(source_root),
+                wiki_dir=str(wiki),
+                allow_external_src=True,
+                source_selection="config/sources.json",
+                no_cache=True,
+            )
+        )
+
+        assert not marker.exists()
+        assert "helper_b" in (wiki / "flows" / "api-run.md").read_text(
+            encoding="utf-8"
+        )
+
     def test_flow_regeneration_reuses_single_data_flow_context(
         self, tmp_path, monkeypatch, capsys
     ):
@@ -3350,8 +3864,7 @@ class TestSyncFlowRegeneration:
         bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
         capsys.readouterr()
         (proj / "pyproject.toml").write_text(
-            '[project]\nname = "p"\nversion = "0.1.0"\n'
-            'dependencies = ["requests"]\n',
+            '[project]\nname = "p"\nversion = "0.1.0"\ndependencies = ["requests"]\n',
             encoding="utf-8",
         )
         constants = "\n".join(f"CONFIG_{index} = {index}" for index in range(20))
@@ -3403,11 +3916,14 @@ class TestSyncFlowRegeneration:
             observation["module"] == "requests"
             for observation in runtime.dependency_observations["observations"]
         )
-        assert next(
-            observation
-            for observation in runtime.dependency_observations["observations"]
-            if observation["module"] == "requests"
-        )["line"] == 1
+        assert (
+            next(
+                observation
+                for observation in runtime.dependency_observations["observations"]
+                if observation["module"] == "requests"
+            )["line"]
+            == 1
+        )
         assert runtime.entrypoint_observations["observations"][0]["detector"][
             "id"
         ].startswith("builtin.")
@@ -3455,9 +3971,7 @@ class TestSyncFlowRegeneration:
             (wiki / SURFACE_INDEX_FILENAME).read_text(encoding="utf-8")
         )
         plugin_flow = next(
-            flow
-            for flow in surface["flows"]
-            if flow["id"] == "task-task-handler"
+            flow for flow in surface["flows"] if flow["id"] == "task-task-handler"
         )
         assert plugin_flow["category"] == "task"
         assert plugin_flow["entry_point"] == {
@@ -3465,9 +3979,7 @@ class TestSyncFlowRegeneration:
             "source_path": "svc.py",
             "label": "task-handler",
         }
-        assert plugin_flow["detector"] == (
-            "plugin:detector-plugin/worker@0.1.0"
-        )
+        assert plugin_flow["detector"] == ("plugin:detector-plugin/worker@0.1.0")
         assert plugin_flow["language"] == "python"
         assert plugin_flow["evidence"]["flow"] == {
             "step_count": 2,
@@ -3738,9 +4250,7 @@ class TestSyncGeneratedRelationshipSections:
             """),
         )
         monkeypatch.chdir(proj)
-        bootstrap_cmd.run(
-            _make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki))
-        )
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
 
         entity_path = wiki / "entities" / "User.md"
         original = entity_path.read_text(encoding="utf-8")
@@ -3768,18 +4278,14 @@ class TestSyncGeneratedRelationshipSections:
         state_before = load_knowledge_state(wiki)
         assert state_before.knowledge is not None
         knowledge_before = state_before.knowledge
-        pages = knowledge_before.extensions[
-            SECTION_OWNERSHIP_EXTENSION_KEY
-        ]["pages"]
+        pages = knowledge_before.extensions[SECTION_OWNERSHIP_EXTENSION_KEY]["pages"]
         user_sections = next(
             page["sections"]
             for page in pages
             if page["page_locator"] == "llm-wiki://entities/User"
         )
         description = next(
-            section
-            for section in user_sections
-            if section["title"] == "Description"
+            section for section in user_sections if section["title"] == "Description"
         )
         ledger_before = load_governance(wiki).ledger
         uid = next(
@@ -3851,18 +4357,24 @@ class TestSyncGeneratedRelationshipSections:
         )[1]
         assert before_relationships != after_relationships
         assert "No generated relationships detected" in after_relationships
-        assert review_scope_hash(
-            knowledge_after,
-            description["locator"],
-        ) == scope_hash_before
+        assert (
+            review_scope_hash(
+                knowledge_after,
+                description["locator"],
+            )
+            == scope_hash_before
+        )
         assert current_review_evidence(concept_after) == evidence_before
         current_ledger = load_governance(wiki).ledger
         assert current_ledger.review_events[event.event_id] == event
-        assert evaluate_review_event(
-            event,
-            current_ledger,
-            knowledge_after,
-        ).reasons == ()
+        assert (
+            evaluate_review_event(
+                event,
+                current_ledger,
+                knowledge_after,
+            ).reasons
+            == ()
+        )
 
     def test_changed_import_graph_updates_unchanged_module_local_maps(
         self, tmp_path, monkeypatch, capsys

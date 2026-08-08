@@ -17,6 +17,11 @@ from pathlib import Path
 from typing import Any
 
 from .. import __version__
+from ..config import AGENT_WORKTREE_DIR_PATTERNS, EXCLUDED_DIRS
+from ..extractors.common import (
+    BUNDLED_HELPER_IMPLEMENTATION_PATHS,
+    is_bundled_helper_implementation_path,
+)
 from .contracts import KNOWLEDGE_SCHEMA_VERSION
 from .knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
@@ -79,6 +84,11 @@ from .knowledge_model import (
     concept_kind_for_page_kind,
 )
 from .source_snapshot import SourceSnapshot
+from .source_selection import (
+    SourceSelectionError,
+    selection_may_contain_path,
+    with_source_selection_generation_input,
+)
 from .sync_manifest import EVIDENCE_NOT_RECORDED, MANIFEST_FILENAME, SyncManifest
 from .wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
@@ -256,7 +266,20 @@ def build_runtime_knowledge_plan(
         plugin_extractor_components=inputs.plugin_extractor_components,
         plugin_components=inputs.plugin_components,
     )
-    generation_inputs = _runtime_manifest_generation_inputs(inputs)
+    try:
+        generation_inputs = with_source_selection_generation_input(
+            _runtime_manifest_generation_inputs(inputs),
+            inputs.source_snapshot.source_selection_identity,
+            inputs.source_snapshot.source_selection_inputs,
+        )
+    except SourceSelectionError as exc:
+        raise KnowledgeGenerationError(exc.field, exc.message) from exc
+    next_manifest = inputs.next_manifest
+    if next_manifest is not None:
+        next_manifest = next_manifest.with_generation_state(
+            surfaces=next_manifest.surfaces,
+            generation_inputs=generation_inputs,
+        )
     if infrastructure_evidence_by_page(generation_inputs):
         extractor_components = (
             *extractor_components,
@@ -277,7 +300,7 @@ def build_runtime_knowledge_plan(
             surface_index_bytes=inputs.surface.serialized_bytes,
             surface_index_payload=None,
             source_content_hashes=source_hashes,
-            consumed_inputs=_runtime_consumed_inputs(inputs),
+            consumed_inputs=_runtime_consumed_inputs(inputs, generation_inputs),
             module_page_map=inputs.module_page_map,
             entity_occurrence_page_map=inputs.entity_occurrence_page_map,
             extractor_ref_by_source=extractor_ref_by_source,
@@ -301,10 +324,10 @@ def build_runtime_knowledge_plan(
                 inputs.previous_manifest,
             ),
             previous_manifest=inputs.previous_manifest,
-            next_manifest=inputs.next_manifest,
+            next_manifest=next_manifest,
             asset_paths=inputs.surface.existing_asset_paths,
             manifest_surfaces=inputs.manifest_surfaces,
-            manifest_generation_inputs=inputs.manifest_generation_inputs,
+            manifest_generation_inputs=generation_inputs,
             unknown_evidence_reason=inputs.unknown_evidence_reason,
             force_unknown_evidence=inputs.force_unknown_evidence,
             untrusted_evidence_page_paths=(inputs.untrusted_evidence_page_paths),
@@ -702,13 +725,85 @@ def _prepared_runtime_governance(
 def collect_runtime_repository_evidence(
     source_root: str | Path,
     target_wiki_dir: str | Path,
+    *,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> RepositoryEvidence:
-    """Collect Git evidence without recursively observing M1 output bytes."""
+    """Collect Git evidence for the evaluated source-selection boundary."""
 
+    source = Path(source_root).resolve()
     target = Path(target_wiki_dir).resolve()
+    included_paths: tuple[Path, ...] | None = None
+    selection_excludes: tuple[Path, ...] = ()
+    worktree_path_filter = None
+    if source_snapshot is not None:
+        if not isinstance(source_snapshot, SourceSnapshot):
+            raise TypeError("source_snapshot must be a SourceSnapshot or None")
+        if source_snapshot.root.resolve() != source:
+            raise ValueError("source_snapshot root must match source_root")
+        policy = source_snapshot.source_selection_policy
+        if policy is not None:
+            # Root pathspecs retain tracked deletions.  Policy excludes and the
+            # eight owned helper implementation paths narrow those roots to the
+            # same evaluated source boundary; package markers/locks alongside
+            # the helpers remain deliberately included.
+            selected_paths = {source / path for path in policy.include}
+            selected_paths.add(source / policy.path)
+            selected_paths.update(
+                source / path
+                for path, kinds in source_snapshot.captured_input_kinds.items()
+                if ConsumedInputKind.SELECTION.value in kinds
+            )
+            included_paths = tuple(sorted(selected_paths, key=lambda path: str(path)))
+            helper_excludes: set[Path] = set()
+            package_roots: set[Path] = set()
+            candidate_paths = set(policy.include) | set(
+                source_snapshot.selected_regular_paths
+            )
+            for selected_path in candidate_paths:
+                parts = Path(selected_path).parts
+                for index, part in enumerate(parts):
+                    if part == "llm_wiki_cli":
+                        package_roots.add(source.joinpath(*parts[: index + 1]))
+            if source.name == "llm_wiki_cli":
+                package_roots.add(source)
+            for package_root in package_roots:
+                for helper_path in BUNDLED_HELPER_IMPLEMENTATION_PATHS:
+                    relative = Path(helper_path).relative_to("llm_wiki_cli")
+                    candidate = package_root / relative
+                    if is_bundled_helper_implementation_path(candidate):
+                        helper_excludes.add(candidate)
+            selection_excludes = tuple(
+                source / path for path in policy.exclude
+            ) + tuple(sorted(helper_excludes, key=lambda path: str(path)))
+
+            def configured_worktree_path_filter(candidate: Path) -> bool:
+                try:
+                    relative = candidate.relative_to(source).as_posix()
+                except ValueError:
+                    return False
+                if relative == policy.path:
+                    return True
+                if Path(relative).name == ".gitignore":
+                    parent = Path(relative).parent.as_posix()
+                    try:
+                        if selection_may_contain_path(
+                            policy,
+                            "" if parent == "." else parent,
+                        ):
+                            return True
+                    except SourceSelectionError:
+                        return False
+                try:
+                    return source_snapshot.path_is_effectively_selected(relative)
+                except SourceSelectionError:
+                    return False
+
+            worktree_path_filter = configured_worktree_path_filter
     return collect_git_repository_evidence(
-        source_root,
-        excluded_worktree_paths=tuple(
+        source,
+        included_worktree_paths=included_paths,
+        excluded_worktree_paths=selection_excludes
+        + tuple(
             target / filename
             for filename in (
                 SURFACE_INDEX_FILENAME,
@@ -716,6 +811,14 @@ def collect_runtime_repository_evidence(
                 MANIFEST_FILENAME,
             )
         ),
+        excluded_worktree_globs=(
+            *(f"**/{name}/**" for name in sorted(EXCLUDED_DIRS)),
+            *(
+                "**/" + "/".join(pattern) + "/**"
+                for pattern in AGENT_WORKTREE_DIR_PATTERNS
+            ),
+        ),
+        worktree_path_filter=worktree_path_filter,
     )
 
 
@@ -1007,6 +1110,7 @@ def _manifest_extractor_refs(
 
 def _runtime_consumed_inputs(
     inputs: RuntimeKnowledgeInputs,
+    generation_inputs: Mapping[str, object],
 ) -> tuple[ConsumedInput, ...]:
     """Add explicitly selected inputs to the already captured source basis.
 
@@ -1028,14 +1132,6 @@ def _runtime_consumed_inputs(
         kind=ConsumedInputKind.PLUGIN,
         field="plugin_lock",
     )
-    generation_inputs = inputs.manifest_generation_inputs
-    if generation_inputs is None and inputs.next_manifest is not None:
-        generation_inputs = inputs.next_manifest.generation_inputs
-    if generation_inputs is None and inputs.previous_manifest is not None:
-        generation_inputs = inputs.previous_manifest.generation_inputs
-    if generation_inputs is None:
-        return tuple(consumed_by_path[path] for path in sorted(consumed_by_path))
-
     openapi = generation_inputs.get("openapi")
     if openapi is None:
         return tuple(consumed_by_path[path] for path in sorted(consumed_by_path))

@@ -23,6 +23,10 @@ force-add or change ignore/exclude rules. Read `wiki-reference`'s
 
 - The user asked to investigate dependency diagnostics, package visibility, or dependency hygiene.
 - Source and wiki paths are selected. For external source roots, use `--allow-external-src` on source-reading commands and keep output/wiki paths guarded.
+- Resolve the active source-selection profile once. When configured, replace
+  `<profile>` below with its exact repository-relative path and carry
+  `--source-selection <profile>` on every source-reading command; omit the
+  whole option only when no profile exists.
 - No manifest edits without source evidence. A dependency warning alone is not enough to change package metadata.
 - Before using native findings, inspect knowledge availability, stable reason,
   and `freshness_evaluated`. `ready`/live `current` means only unchanged since
@@ -40,8 +44,8 @@ force-add or change ignore/exclude rules. Read `wiki-reference`'s
 1. **Collect diagnostics.**
 
    ```bash
-   llm-wiki lint --strict --profile --src-dir . --wiki-dir docs/llm_wiki
-   llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki --format json
+   llm-wiki lint --strict --profile --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
+   llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki --format json --source-selection <profile>
    ```
 
    Save the JSON or profile output when the run is large. Include review JSON if the dependency finding came from `llm-wiki review` or a saved review report.
@@ -62,9 +66,9 @@ force-add or change ignore/exclude rules. Read `wiki-reference`'s
    refresh after the last edit and before strict validation:
 
    ```bash
-   llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
-   llm-wiki lint --strict --profile --src-dir . --wiki-dir docs/llm_wiki
-   llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki --format json
+   llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
+   llm-wiki lint --strict --profile --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
+   llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki --format json --source-selection <profile>
    ```
 
    The sync preserves supported semantic notes and re-anchors Markdown,

@@ -16,7 +16,11 @@ from llm_wiki_cli import cli
 from llm_wiki_cli.commands import context_cmd, mcp_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.config import write_config
-from llm_wiki_cli.services import knowledge_consumption, mcp_server
+from llm_wiki_cli.services import (
+    context_packet as context_packet_service,
+    knowledge_consumption,
+    mcp_server,
+)
 from llm_wiki_cli.services.documentation_queries import (
     DocumentationGraphQueryService,
     DocumentationQueryError,
@@ -31,6 +35,13 @@ from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
 from llm_wiki_cli.services.knowledge_observability import (
     BASIS_INCOMPATIBLE_HINTS,
 )
+from llm_wiki_cli.services.source_selection import (
+    SOURCE_SELECTION_SCHEMA_VERSION,
+    resolve_source_selection,
+    with_source_selection_generation_input,
+)
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
+from llm_wiki_cli.services.sync_manifest import SyncManifest
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 from tests.knowledge_fixtures import (
     fail_if_extraction_runs,
@@ -105,6 +116,20 @@ def _write_legacy_wiki(root: Path) -> Path:
     return wiki
 
 
+def _write_selection_profile(path: Path, include: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": [include],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
 def _guard_status_extraction(monkeypatch) -> None:
     monkeypatch.setattr(
         mcp_server,
@@ -113,7 +138,7 @@ def _guard_status_extraction(monkeypatch) -> None:
     )
     monkeypatch.setattr(
         mcp_server,
-        "get_inventory",
+        "get_inventory_result",
         fail_if_extraction_runs,
     )
     monkeypatch.setattr(
@@ -257,6 +282,248 @@ def test_mcp_knowledge_tools_and_status_share_compatibility_policy(
 
 
 class TestMcpWikiService:
+    @pytest.mark.parametrize(
+        ("method_name", "args"),
+        [
+            ("get_entity", ("User",)),
+            ("get_module", ("models",)),
+            ("get_flow", ("checkout",)),
+            ("get_architecture_page", ("dependencies",)),
+            ("search_wiki", ("User",)),
+            ("read_resource", ("llm-wiki://entities/User",)),
+            ("list_resources", ()),
+        ],
+    )
+    def test_direct_wiki_reads_reject_stale_persisted_selection(
+        self,
+        tmp_path,
+        method_name,
+        args,
+    ):
+        source = tmp_path / "source"
+        (source / "selected-a").mkdir(parents=True)
+        (source / "selected-b").mkdir()
+        (source / "selected-a" / "app.py").write_text(
+            "VALUE = 1\n", encoding="utf-8"
+        )
+        (source / "selected-b" / "app.py").write_text(
+            "VALUE = 2\n", encoding="utf-8"
+        )
+        profile_a = source / "config" / "a.json"
+        profile_b = source / "config" / "b.json"
+        _write_selection_profile(profile_a, "selected-a")
+        _write_selection_profile(profile_b, "selected-b")
+        policy_a = resolve_source_selection(source, "config/a.json")
+        assert policy_a is not None
+        snapshot_a = build_source_snapshot(source, selection_policy=policy_a)
+        wiki = _write_wiki(tmp_path)
+        SyncManifest(
+            generation_inputs=with_source_selection_generation_input(
+                {},
+                snapshot_a.source_selection_identity,
+                snapshot_a.source_selection_inputs,
+            )
+        ).save(wiki)
+        service = mcp_server.McpWikiService(
+            src_dir=str(source),
+            wiki_dir=str(wiki),
+            source_selection="config/b.json",
+        )
+
+        with pytest.raises(mcp_server.McpWikiError, match="llm-wiki sync"):
+            getattr(service, method_name)(*args)
+
+    def test_default_profile_path_is_pinned_for_downstream_reads(
+        self,
+        tmp_path,
+        monkeypatch,
+    ):
+        source = tmp_path / "source"
+        (source / "selected").mkdir(parents=True)
+        (source / "selected" / "app.py").write_text(
+            "VALUE = 1\n", encoding="utf-8"
+        )
+        profile = source / ".llm-wiki" / "source-selection.json"
+        _write_selection_profile(profile, "selected")
+        policy = resolve_source_selection(source)
+        assert policy is not None
+        snapshot = build_source_snapshot(source, selection_policy=policy)
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+        SyncManifest(
+            generation_inputs=with_source_selection_generation_input(
+                {},
+                snapshot.source_selection_identity,
+                snapshot.source_selection_inputs,
+            )
+        ).save(wiki)
+        overrides = []
+        default_reads = 0
+
+        def sequenced_resolver(root, override=None):
+            nonlocal default_reads
+            del root
+            overrides.append(override)
+            if override is None:
+                default_reads += 1
+                return policy if default_reads <= 2 else None
+            assert str(override) == policy.path
+            return policy
+
+        class QueryService:
+            @staticmethod
+            def callers(value):
+                return {"value": value}
+
+        def fake_builder(_src_dir, **kwargs):
+            downstream = sequenced_resolver(
+                source,
+                kwargs.get("source_selection"),
+            )
+            assert downstream is policy
+            return QueryService()
+
+        monkeypatch.setattr(
+            mcp_server,
+            "resolve_source_selection",
+            sequenced_resolver,
+        )
+        monkeypatch.setattr(
+            mcp_server,
+            "build_documentation_query_service",
+            fake_builder,
+        )
+        service = mcp_server.McpWikiService(
+            src_dir=str(source),
+            wiki_dir=str(wiki),
+        )
+
+        assert service.query_graph({"type": "callers", "value": "run"}) == {
+            "value": "run"
+        }
+        assert overrides == [None, None, policy.path]
+
+    @pytest.mark.parametrize("change", ("mutation", "removal", "addition"))
+    def test_source_selection_is_pinned_for_server_lifetime(
+        self,
+        tmp_path,
+        monkeypatch,
+        change,
+    ):
+        source = tmp_path / "source"
+        (source / "selected").mkdir(parents=True)
+        (source / "alternate").mkdir()
+        (source / "selected" / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        (source / "alternate" / "app.py").write_text("VALUE = 2\n", encoding="utf-8")
+
+        def write_policy(path, include):
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                        "include": [include],
+                        "exclude": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+        if change == "addition":
+            profile = source / ".llm-wiki" / "source-selection.json"
+            source_selection = None
+        else:
+            profile = source / "config" / "selection.json"
+            write_policy(profile, "selected")
+            source_selection = "config/selection.json"
+        service = mcp_server.McpWikiService(
+            src_dir=str(source),
+            wiki_dir=str(tmp_path / "wiki"),
+            source_selection=source_selection,
+        )
+        monkeypatch.setattr(
+            mcp_server,
+            "build_documentation_query_service",
+            lambda *args, **kwargs: pytest.fail(
+                "query builder must not run after selection drift"
+            ),
+        )
+
+        if change == "mutation":
+            write_policy(profile, "alternate")
+        elif change == "removal":
+            profile.unlink()
+        else:
+            write_policy(profile, "selected")
+
+        with pytest.raises(mcp_server.McpWikiError, match="changed during"):
+            service.query_graph({"type": "callers", "value": "run"})
+
+    def test_external_source_authorization_reaches_all_guarded_mcp_reads(
+        self,
+        tmp_path,
+        monkeypatch,
+    ):
+        source = tmp_path / "external-source"
+        source.mkdir()
+        calls = []
+
+        class QueryService:
+            def callers(self, value):
+                return {"value": value}
+
+            def get_concept(self, value):
+                return {"value": value}
+
+        def fake_query_builder(src_dir, **kwargs):
+            calls.append(("query", src_dir, kwargs))
+            return QueryService()
+
+        def fake_context_builder(src_dir, *args, **kwargs):
+            calls.append(("context", src_dir, kwargs))
+            return ({"budget": args[0], "used": 0, "files": {}}, [])
+
+        class Packet:
+            packet_id = "sha256:" + "0" * 64
+
+            def to_payload(self):
+                return {"external": True}
+
+        def fake_packet_builder(src_dir, wiki_dir, request, **kwargs):
+            calls.append(("packet", src_dir, kwargs))
+            return Packet()
+
+        monkeypatch.setattr(
+            mcp_server,
+            "build_documentation_query_service",
+            fake_query_builder,
+        )
+        monkeypatch.setattr(context_cmd, "_build_context", fake_context_builder)
+        monkeypatch.setattr(
+            context_packet_service,
+            "build_qualified_context",
+            fake_packet_builder,
+        )
+        service = mcp_server.McpWikiService(
+            src_dir=str(source),
+            wiki_dir=str(tmp_path / "wiki"),
+            allow_external_src=True,
+        )
+
+        service.query_graph({"type": "callers", "value": "run"})
+        service.get_concept("llm-wiki://entities/User")
+        service.get_context()
+        service.get_context_packet()
+
+        assert [name for name, _, _ in calls] == [
+            "query",
+            "query",
+            "context",
+            "packet",
+        ]
+        assert all(Path(src_dir) == source for _, src_dir, _ in calls)
+        assert all(options["allow_external_src"] is True for _, _, options in calls)
+
     def test_get_entity_reads_markdown_page(self, tmp_project):
         _write_wiki(tmp_project)
         service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
@@ -732,6 +999,7 @@ class TestMcpWikiService:
 
     def test_get_context_preserves_compact_typed_relationship_selection(
         self,
+        tmp_path,
         monkeypatch,
     ):
         refinements = {
@@ -803,7 +1071,7 @@ class TestMcpWikiService:
             )
 
         monkeypatch.setattr(context_cmd, "_build_context", fake_build_context)
-        service = mcp_server.McpWikiService()
+        service = mcp_server.McpWikiService(src_dir=str(tmp_path))
 
         result = service.get_context(
             focus=["all"],
@@ -843,6 +1111,7 @@ class TestMcpWikiService:
 
     def test_get_context_markdown_preserves_knowledge_status_and_warnings(
         self,
+        tmp_path,
         monkeypatch,
     ):
         status = {
@@ -871,7 +1140,7 @@ class TestMcpWikiService:
             )
 
         monkeypatch.setattr(context_cmd, "_build_context", fake_build_context)
-        service = mcp_server.McpWikiService()
+        service = mcp_server.McpWikiService(src_dir=str(tmp_path))
 
         result = service.get_context(
             format="markdown",
@@ -888,6 +1157,7 @@ class TestMcpWikiService:
 
     def test_get_context_legacy_response_remains_context_v1(
         self,
+        tmp_path,
         monkeypatch,
     ):
         def fake_build_context(_src_dir, budget, _fmt, _focus, _filters, **_kwargs):
@@ -901,7 +1171,7 @@ class TestMcpWikiService:
             )
 
         monkeypatch.setattr(context_cmd, "_build_context", fake_build_context)
-        service = mcp_server.McpWikiService()
+        service = mcp_server.McpWikiService(src_dir=str(tmp_path))
 
         result = service.get_context(
             budget_tokens=1000,
@@ -1070,6 +1340,7 @@ class TestMcpWikiService:
 
     def test_get_context_packet_revalidates_unchanged_and_changed_ids(
         self,
+        tmp_path,
         monkeypatch,
     ):
         from llm_wiki_cli.services import context_packet
@@ -1088,7 +1359,7 @@ class TestMcpWikiService:
             "build_qualified_context",
             lambda *_args, **_kwargs: Packet(next(packet_ids)),
         )
-        service = mcp_server.McpWikiService()
+        service = mcp_server.McpWikiService(src_dir=str(tmp_path))
 
         unchanged = service.get_context_packet(if_packet_id="sha256:" + "a" * 64)
         changed = service.get_context_packet(if_packet_id="sha256:" + "a" * 64)
@@ -1184,9 +1455,7 @@ class TestMcpWikiService:
             return mcp_server.lint_cmd.LintReport(
                 wiki_dir=str(wiki_dir),
                 src_dir=src_dir,
-                strict=bool(
-                    kwargs["strict"] or kwargs["knowledge_drift_report"]
-                ),
+                strict=bool(kwargs["strict"] or kwargs["knowledge_drift_report"]),
                 knowledge_drift_report=kwargs["knowledge_drift_report"],
             )
 
@@ -1210,6 +1479,7 @@ class TestMcpWikiService:
 
     def test_check_wiki_preserves_structured_freshness_guidance(
         self,
+        tmp_path,
         monkeypatch,
     ):
         reason = "generation-options-changed"
@@ -1237,7 +1507,7 @@ class TestMcpWikiService:
             "build_report",
             fake_build_report,
         )
-        service = mcp_server.McpWikiService()
+        service = mcp_server.McpWikiService(src_dir=str(tmp_path))
 
         json_result = service.check_wiki(
             format="json",
@@ -1587,9 +1857,7 @@ class TestMcpWikiService:
             tmp_path / "checkout",
             consumer="mcp",
         )
-        commit_knowledge_artifacts(
-            _knowledge_commit_plan(tree["wiki_root"], fixture)
-        )
+        commit_knowledge_artifacts(_knowledge_commit_plan(tree["wiki_root"], fixture))
         monkeypatch.chdir(tree["root"])
         real_options = context_cmd.runtime_generation_options
 
@@ -1668,9 +1936,7 @@ class TestMcpWikiService:
                 direction,
                 kinds,
             ):
-                calls["query"].append(
-                    ("related_concepts", locator, direction, kinds)
-                )
+                calls["query"].append(("related_concepts", locator, direction, kinds))
                 return bounded_result
 
             def list_concept_sections(
@@ -1679,9 +1945,7 @@ class TestMcpWikiService:
                 *,
                 ownership,
             ):
-                calls["query"].append(
-                    ("list_concept_sections", locator, ownership)
-                )
+                calls["query"].append(("list_concept_sections", locator, ownership))
                 return bounded_result
 
             def explain_evidence(self, locator):
@@ -1701,7 +1965,7 @@ class TestMcpWikiService:
         )
         monkeypatch.setattr(
             mcp_server,
-            "get_inventory",
+            "get_inventory_result",
             fail_if_extraction_runs,
         )
         service = mcp_server.McpWikiService(
@@ -1902,6 +2166,7 @@ class TestMcpWikiService:
     )
     def test_valid_missing_coordinates_delegate_to_normal_lookup(
         self,
+        tmp_path,
         monkeypatch,
         locator,
     ):
@@ -1917,7 +2182,7 @@ class TestMcpWikiService:
             "build_documentation_query_service",
             lambda *_args, **_kwargs: FakeQueryService(),
         )
-        service = mcp_server.McpWikiService()
+        service = mcp_server.McpWikiService(src_dir=str(tmp_path))
 
         result = service.get_concept(locator)
 
@@ -1936,6 +2201,7 @@ class TestMcpWikiService:
     @pytest.mark.parametrize("failure_point", ["builder", "query"])
     def test_knowledge_methods_map_api_and_query_errors(
         self,
+        tmp_path,
         monkeypatch,
         method_name,
         failure_point,
@@ -1976,7 +2242,7 @@ class TestMcpWikiService:
             "build_documentation_query_service",
             fake_builder,
         )
-        service = mcp_server.McpWikiService()
+        service = mcp_server.McpWikiService(src_dir=str(tmp_path))
         if method_name == "related_concepts":
             kwargs = {"direction": "both", "kinds": None}
         elif method_name == "list_concept_sections":
@@ -2021,6 +2287,7 @@ class TestMcpWikiService:
     )
     def test_knowledge_methods_preserve_non_ready_status_without_extraction(
         self,
+        tmp_path,
         monkeypatch,
         load_result,
         availability,
@@ -2044,10 +2311,10 @@ class TestMcpWikiService:
         )
         monkeypatch.setattr(
             mcp_server,
-            "get_inventory",
+            "get_inventory_result",
             fail_if_extraction_runs,
         )
-        service = mcp_server.McpWikiService()
+        service = mcp_server.McpWikiService(src_dir=str(tmp_path))
 
         concept = service.get_concept("llm-wiki://entities/User")
         sections = service.list_concept_sections(
@@ -2086,10 +2353,10 @@ class TestMcpWikiService:
         assert evidence["found"] is False
         assert evidence["evidence"] is None
         assert calls == [
-            (".", "docs/llm_wiki", 20, True),
-            (".", "docs/llm_wiki", 20, True),
-            (".", "docs/llm_wiki", 20, True),
-            (".", "docs/llm_wiki", 20, True),
+            (str(tmp_path), "docs/llm_wiki", 20, True),
+            (str(tmp_path), "docs/llm_wiki", 20, True),
+            (str(tmp_path), "docs/llm_wiki", 20, True),
+            (str(tmp_path), "docs/llm_wiki", 20, True),
         ]
 
 
@@ -2340,8 +2607,7 @@ class TestOriginSafety:
         assert mcp_server._default_port_for_scheme("https") == 443
         assert mcp_server._default_port_for_scheme("ftp") is None
         assert (
-            mcp_server._normalise_origin("HTTPS://[::1]:8765")
-            == "https://[::1]:8765"
+            mcp_server._normalise_origin("HTTPS://[::1]:8765") == "https://[::1]:8765"
         )
 
         for origin in (
@@ -2441,6 +2707,42 @@ class TestOriginSafety:
 
 
 class TestMcpCli:
+    def test_cli_preserves_external_source_authorization_in_server_config(
+        self,
+        tmp_path,
+        monkeypatch,
+    ):
+        project = tmp_path / "project"
+        external = tmp_path / "external"
+        project.mkdir()
+        external.mkdir()
+        (project / "docs" / "llm_wiki").mkdir(parents=True)
+        monkeypatch.chdir(project)
+        seen = {}
+        exports = {
+            "McpServerConfig": mcp_server.McpServerConfig,
+            "MCPDependencyError": mcp_server.MCPDependencyError,
+            "McpWikiError": mcp_server.McpWikiError,
+            "run_mcp_server": lambda config: seen.setdefault("config", config),
+        }
+        monkeypatch.setattr(
+            mcp_cmd,
+            "_mcp_service_export",
+            lambda name: exports[name],
+        )
+
+        mcp_cmd.run(
+            _args(
+                src_dir=str(external),
+                allow_external_src=True,
+                source_selection=None,
+            )
+        )
+
+        config = seen["config"]
+        assert Path(config.src_dir) == external
+        assert config.allow_external_src is True
+
     def test_mcp_help_does_not_require_sdk(self, monkeypatch, capsys):
         monkeypatch.setattr(sys, "argv", ["llm-wiki", "mcp", "--help"])
 
@@ -2493,6 +2795,40 @@ class TestMcpCli:
         mcp_server.run_mcp_server(
             mcp_server.McpServerConfig(
                 src_dir="source",
+                wiki_dir="wiki",
+            )
+        )
+
+        assert calls == ["stdio"]
+
+    def test_server_runner_accepts_opted_in_external_source(
+        self,
+        tmp_path,
+        monkeypatch,
+    ):
+        project = tmp_path / "project"
+        external = tmp_path / "external"
+        wiki = project / "wiki"
+        project.mkdir()
+        external.mkdir()
+        wiki.mkdir()
+        calls = []
+        monkeypatch.chdir(project)
+
+        class Server:
+            def run(self, *, transport):
+                calls.append(transport)
+
+        monkeypatch.setattr(
+            mcp_server,
+            "create_mcp_server",
+            lambda _config: Server(),
+        )
+
+        mcp_server.run_mcp_server(
+            mcp_server.McpServerConfig(
+                src_dir=str(external),
+                allow_external_src=True,
                 wiki_dir="wiki",
             )
         )

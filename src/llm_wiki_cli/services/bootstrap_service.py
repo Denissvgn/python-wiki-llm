@@ -51,6 +51,7 @@ class BootstrapRequest:
     helper_cache_dir: str | None = None
     include_tests: Iterable[str] | None = None
     trust_source_plugins: bool = False
+    source_selection: str | Path | None = None
 
 
 @dataclass(frozen=True)

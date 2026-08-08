@@ -41,6 +41,10 @@ from ..services.skills import (
     reference_skill_state,
     skills_install_dir,
 )
+from ..services.source_selection import (
+    SourceSelectionError,
+    resolve_source_selection,
+)
 from ..services.wiki_scaffold import (
     INITIAL_WIKI_INDEX_MARKDOWN,
     INITIAL_WIKI_LOG_MARKDOWN,
@@ -48,7 +52,12 @@ from ..services.wiki_scaffold import (
 from ..services.wiki_surface import iter_directory_kinds
 
 # Re-use hook builders from hook_cmd to avoid duplication
-from .hook_cmd import _build_ide_post_commit, _install_hook
+from .hook_cmd import (
+    HOOK_SIGNATURE,
+    _build_ide_post_commit,
+    _build_validation_pre_commit,
+    _install_hook,
+)
 
 
 @dataclass(frozen=True)
@@ -105,6 +114,7 @@ def _upgrade_schema(
     *,
     quality_hints: bool = True,
     issue_reporting: bool = False,
+    source_selection: str | Path | None = None,
 ) -> str:
     """Replace or migrate the agent schema constraint block.
 
@@ -115,6 +125,7 @@ def _upgrade_schema(
         wiki_dir,
         quality_hints=quality_hints,
         issue_reporting=issue_reporting,
+        source_selection=source_selection,
     )
     new_filename = SCHEMA_FILENAMES.get(agent)
 
@@ -201,7 +212,13 @@ def _upgrade_dirs(wiki_dir: str) -> StructureUpgradeResult:
     )
 
 
-def _upgrade_hooks(agent: str, wiki_dir: str, *, force: bool = False) -> None:
+def _upgrade_hooks(
+    agent: str,
+    wiki_dir: str,
+    *,
+    force: bool = False,
+    source_selection: str | Path | None = None,
+) -> None:
     """Reinstall git hooks for the resolved agent."""
     git_dir = Path(".git")
     if not git_dir.exists():
@@ -212,8 +229,28 @@ def _upgrade_hooks(agent: str, wiki_dir: str, *, force: bool = False) -> None:
     hooks_dir.mkdir(exist_ok=True)
 
     _install_hook(
-        hooks_dir, "post-commit", _build_ide_post_commit(wiki_dir), force=force
+        hooks_dir,
+        "post-commit",
+        _build_ide_post_commit(
+            wiki_dir,
+            source_selection=source_selection,
+        ),
+        force=force,
     )
+    validation_hook = hooks_dir / "pre-commit"
+    if validation_hook.exists() and HOOK_SIGNATURE in validation_hook.read_text(
+        encoding="utf-8",
+        errors="replace",
+    ):
+        _install_hook(
+            hooks_dir,
+            "pre-commit",
+            _build_validation_pre_commit(
+                wiki_dir,
+                source_selection=source_selection,
+            ),
+            force=True,
+        )
     print(f"  Hooks: prompt-generation mode ({agent})")
 
 
@@ -221,13 +258,32 @@ def run(args):
     wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     validate_path(wiki_dir, "--wiki-dir")
 
+    # Resolve quality_hints and reference-skill refresh:
+    # CLI flag > stored config > default (True)
+    stored = read_config(wiki_dir)
+    requested_selection = getattr(args, "source_selection", None)
+    stored_selection = stored.get("source_selection")
+    if stored_selection is not None and not isinstance(stored_selection, str):
+        print("Error: stored source_selection must be a string", file=sys.stderr)
+        raise SystemExit(2)
+    selection_override = (
+        requested_selection
+        if requested_selection is not None
+        else stored_selection
+    )
+    try:
+        selection_policy = resolve_source_selection(".", selection_override)
+    except SourceSelectionError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        raise SystemExit(2) from exc
+    source_selection = (
+        selection_policy.path if selection_policy is not None else None
+    )
+
     agent = _resolve_agent(args, wiki_dir)
     old_agent = _read_agent_config(wiki_dir)
     switching = old_agent and old_agent != agent
 
-    # Resolve quality_hints and reference-skill refresh:
-    # CLI flag > stored config > default (True)
-    stored = read_config(wiki_dir)
     cli_hints = getattr(args, "quality_hints", None)
     if cli_hints is not None:
         quality_hints = cli_hints
@@ -260,6 +316,7 @@ def run(args):
         old_agent,
         quality_hints=quality_hints,
         issue_reporting=issue_reporting,
+        source_selection=source_selection,
     )
     print(f"  Updated: {schema_file}")
     refreshed_skills = refresh_skill_blocks(agent, wiki_dir)
@@ -295,18 +352,23 @@ def run(args):
 
     # 3. Git hooks
     print("\n3. Git Hooks:")
-    _upgrade_hooks(agent, wiki_dir, force=getattr(args, "force", False))
+    _upgrade_hooks(
+        agent,
+        wiki_dir,
+        force=getattr(args, "force", False),
+        source_selection=source_selection,
+    )
 
     # 4. Persist agent config
-    write_config(
-        wiki_dir,
-        {
-            "agent": agent,
-            "quality_hints": quality_hints,
-            "reference_skill": reference_skill,
-            "issue_reporting": issue_reporting,
-        },
-    )
+    config: dict[str, object] = {
+        "agent": agent,
+        "quality_hints": quality_hints,
+        "reference_skill": reference_skill,
+        "issue_reporting": issue_reporting,
+    }
+    if source_selection is not None:
+        config["source_selection"] = source_selection
+    write_config(wiki_dir, config)
 
     # Warn if CLI agent executable missing
     executable = CLI_AGENTS.get(agent)

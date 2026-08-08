@@ -6,7 +6,17 @@ from pathlib import Path
 
 from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from ..services import team
-from ..services.extraction_service import get_inventory
+from ..services.extraction_service import get_docker_inventory, get_inventory_result
+from ..services.source_selection import (
+    resolve_source_selection,
+    validate_persisted_source_selection_identity,
+)
+from ..services.source_snapshot import (
+    SourceSnapshot,
+    build_source_snapshot,
+    capture_source_selection_inputs,
+)
+from ..services.sync_manifest import SyncManifest
 
 
 def _render_issues_text(title: str, issues: list[dict]) -> str:
@@ -56,6 +66,48 @@ def _run_init(args) -> None:
     print(f"Team config written to: {written}")
 
 
+def _preflight_team_source_selection(
+    src_dir: str,
+    wiki_dir: str | Path,
+    source_selection: str | Path | None,
+) -> SourceSnapshot:
+    policy = resolve_source_selection(src_dir, source_selection)
+    try:
+        manifest = SyncManifest.load(Path(wiki_dir))
+    except FileNotFoundError:
+        wiki_path = Path(wiki_dir)
+        generation_inputs = (
+            {}
+            if wiki_path.is_dir() and next(wiki_path.iterdir(), None) is not None
+            else None
+        )
+    else:
+        generation_inputs = manifest.generation_inputs
+    validate_persisted_source_selection_identity(
+        generation_inputs,
+        None if policy is None else policy.identity,
+        operation="team check",
+    )
+    selection_inputs = capture_source_selection_inputs(
+        src_dir,
+        source_selection=source_selection,
+        selection_policy=policy,
+    )
+    validate_persisted_source_selection_identity(
+        generation_inputs,
+        None if policy is None else policy.identity,
+        operation="team check",
+        live_selection_inputs=selection_inputs,
+    )
+    source_snapshot = build_source_snapshot(
+        src_dir,
+        source_selection=source_selection,
+        selection_policy=policy,
+        expected_selection_inputs=selection_inputs,
+    )
+    return source_snapshot
+
+
 def _run_check(args) -> None:
     src_dir = getattr(args, "src_dir", ".")
     wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
@@ -68,11 +120,30 @@ def _run_check(args) -> None:
         src_dir = str(src_root)
     validate_path(wiki_dir, "--wiki-dir")
 
+    source_selection = getattr(args, "source_selection", None)
+    source_snapshot = _preflight_team_source_selection(
+        src_dir,
+        wiki_dir,
+        source_selection,
+    )
     wiki_path = Path(wiki_dir)
     pages = list(wiki_path.rglob("*.md")) if wiki_path.exists() else []
-    inventory = get_inventory(src_dir)
+    inventory_result = get_inventory_result(
+        src_dir,
+        source_selection=source_selection,
+        source_snapshot=source_snapshot,
+    )
+    docker_inventory = get_docker_inventory(
+        src_dir,
+        source_snapshot=inventory_result.source_snapshot,
+    )
     issues = team.build_team_issues(
-        wiki_dir, src_dir, inventory, pages, require_config=True
+        wiki_dir,
+        src_dir,
+        inventory_result.inventory,
+        pages,
+        require_config=True,
+        docker_inventory=docker_inventory,
     )
     payload = {
         "ok": not issues,
@@ -90,13 +161,27 @@ def _run_resolve_conflicts(args) -> None:
     src_dir = getattr(args, "src_dir", ".")
     wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     output_format = getattr(args, "format", "text")
-    validate_path(src_dir, "--src-dir")
+    allow_external_src = bool(getattr(args, "allow_external_src", False))
+    src_root = validate_source_root(
+        src_dir,
+        "--src-dir",
+        allow_external=allow_external_src,
+    )
+    if allow_external_src:
+        src_dir = str(src_root)
     validate_path(wiki_dir, "--wiki-dir")
 
-    result = team.resolve_conflicts(
-        wiki_dir,
-        src_dir,
-        write=bool(getattr(args, "write", False)),
+    write = bool(getattr(args, "write", False))
+    source_selection = getattr(args, "source_selection", None)
+    result = (
+        team.resolve_conflicts(wiki_dir, src_dir, write=write)
+        if source_selection is None
+        else team.resolve_conflicts(
+            wiki_dir,
+            src_dir,
+            write=write,
+            source_selection=source_selection,
+        )
     )
     _print_payload(result, output_format, conflict=True)
     if result["unresolved"]:

@@ -33,6 +33,11 @@ section for the full policy.
   partial layout. The phrase 're-bootstrap' never authorizes replacement, and
   the compatibility `--overwrite` option is rejected.
 - The target repository is readable and the selected wiki directory (default `docs/llm_wiki`; substitute the project's configured `--wiki-dir` everywhere below) is writable.
+- Resolve the source-selection profile once before any source read. When an
+  explicit or discovered profile is active, substitute its repository-relative
+  path for `<profile>` and carry `--source-selection <profile>` on every
+  source-reading command below. When no profile exists, omit that whole option;
+  never replace a configured non-default profile with a broader scan.
 - If `--src-dir` points outside the current repository, the run uses `--allow-external-src` for source-reading commands: `prepare-extractors`, `bootstrap`, `lint`, `sync`, `ci-check`, and `team check`. The `--wiki-dir` remains project-root guarded.
 - Helper toolchain overrides are captured before preparation (for example `LLM_WIKI_GO=/usr/local/go/bin/go` or `LLM_WIKI_GHC=/path/to/ghc`) when the default executable on `PATH` is broken.
 - For `external_agent_docs`, consume the workspace packet/policy rather than
@@ -85,13 +90,13 @@ it from generated artifacts.
 2. **Prepare helpers through the CLI.**
 
    ```bash
-   llm-wiki prepare-extractors --src-dir .
+   llm-wiki prepare-extractors --src-dir . --source-selection <profile>
    ```
 
    For an external source root:
 
    ```bash
-   llm-wiki prepare-extractors --src-dir <repo> --allow-external-src
+   llm-wiki prepare-extractors --src-dir <repo> --allow-external-src --source-selection <profile>
    ```
 
    When selecting a non-default helper cache, pass
@@ -108,7 +113,7 @@ it from generated artifacts.
 3. **Run the deterministic bootstrap.**
 
    ```bash
-   llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki --depth full --format json
+   llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki --depth full --format json --source-selection <profile>
    ```
 
    For FastAPI projects, add `--api-contracts`; when the project already
@@ -158,10 +163,10 @@ it from generated artifacts.
    after the last semantic Markdown edit and before strict lint or CI, run:
 
    ```bash
-   llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
-   llm-wiki lint --strict --profile --src-dir . --wiki-dir docs/llm_wiki
-   llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki --format json
-   llm-wiki team check --src-dir . --wiki-dir docs/llm_wiki   # if team policy is configured
+   llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
+   llm-wiki lint --strict --profile --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
+   llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki --format json --source-selection <profile>
+   llm-wiki team check --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>   # if team policy is configured
    ```
 
    This second sync preserves supported semantic content while re-anchoring
@@ -190,7 +195,7 @@ it from generated artifacts.
    reader and keep `--wiki-dir` inside the project:
 
    ```bash
-   llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki
+   llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki --source-selection <profile>
    ```
 
 10. **Review, then use the permitted handoff.** Repeat the managed repository
@@ -206,4 +211,4 @@ it from generated artifacts.
 
 ## Context budget
 
-Prefer the bootstrap JSON summary, `index.md`, and the surface index (`.llm-wiki-surface.json`) for sizing the pass and mapping source files and symbols to page paths. Use `dependency_neighborhood` only for the page currently being ranked or edited — never query every source path when `dependency_evidence.most_depended_on` already contains the ranking. Reach for `llm-wiki context --budget 12000 --focus all --format json` only after the deterministic bootstrap, when top central pages need more source context than their generated pages provide. Do not use full source dumps for the long tail — backlog those pages with the minimum context needed for a later focused pass.
+Prefer the bootstrap JSON summary, `index.md`, and the surface index (`.llm-wiki-surface.json`) for sizing the pass and mapping source files and symbols to page paths. Use `dependency_neighborhood` only for the page currently being ranked or edited — never query every source path when `dependency_evidence.most_depended_on` already contains the ranking. Reach for `llm-wiki context --budget 12000 --focus all --format json --source-selection <profile>` only after the deterministic bootstrap, when top central pages need more source context than their generated pages provide. Do not use full source dumps for the long tail — backlog those pages with the minimum context needed for a later focused pass.
