@@ -509,6 +509,133 @@ class TestNoManifest:
 
 
 class TestSyncSurfaceIndex:
+    def test_immediate_sync_preserves_rich_bootstrap_artifacts_byte_for_byte(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj = tmp_path / "rich-project"
+        proj.mkdir()
+        (proj / "pyproject.toml").write_text(
+            textwrap.dedent("""\
+                [project]
+                name = "rich-project"
+                version = "0.1.0"
+
+                [project.scripts]
+                rich-project = "app:publish"
+            """),
+            encoding="utf-8",
+        )
+        for module, class_name in (
+            ("alpha", "Alpha"),
+            ("beta", "Beta"),
+            ("gamma", "Gamma"),
+        ):
+            (proj / f"{module}.py").write_text(
+                f"class {class_name}:\n    pass\n",
+                encoding="utf-8",
+            )
+        (proj / "app.py").write_text(
+            textwrap.dedent("""\
+                from alpha import Alpha
+                from beta import Beta
+                from gamma import Gamma
+
+                __all__ = ["publish"]
+
+
+                def publish(alpha: Alpha, beta: Beta, gamma: Gamma) -> Gamma:
+                    return gamma
+            """),
+            encoding="utf-8",
+        )
+        (proj / "Dockerfile").write_text(
+            'FROM python:3.12-slim\nENTRYPOINT ["python", "-m", "app"]\n',
+            encoding="utf-8",
+        )
+        wiki_dir = proj / "docs" / "llm_wiki"
+        monkeypatch.chdir(proj)
+
+        bootstrap_cmd.run(
+            _make_bootstrap_args(
+                src_dir=str(proj),
+                wiki_dir=str(wiki_dir),
+                skip_workflows=False,
+            )
+        )
+
+        artifact_paths = (
+            "index.md",
+            SURFACE_INDEX_FILENAME,
+            ".llm-wiki-knowledge.json",
+            MANIFEST_FILENAME,
+        )
+        before = {
+            relative_path: (wiki_dir / relative_path).read_bytes()
+            for relative_path in artifact_paths
+        }
+        index = before["index.md"].decode("utf-8")
+        rich_index_lines = (
+            "- [publish](workflows/publish.md) - entry: `app.publish`",
+            "- [api-publish](flows/api-publish.md) - entry: `publish`",
+            "- [Dockerfile](infrastructure/Dockerfile.md) - dockerfile",
+        )
+        for line in rich_index_lines:
+            assert line in index
+        surface = json.loads(before[SURFACE_INDEX_FILENAME])
+        flow = next(item for item in surface["flows"] if item["id"] == "api-publish")
+        assert flow["detector"] == "builtin"
+        assert flow["language"] == "python"
+        assert flow["evidence"]["flow"]["step_count"] >= 1
+        assert flow["evidence"]["data_flow"]["generated"] is True
+        capsys.readouterr()
+
+        sync_cmd.run(
+            _make_sync_args(
+                src_dir=str(proj),
+                wiki_dir=str(wiki_dir),
+                no_cache=True,
+            )
+        )
+
+        after = {
+            relative_path: (wiki_dir / relative_path).read_bytes()
+            for relative_path in artifact_paths
+        }
+        assert [
+            relative_path
+            for relative_path in artifact_paths
+            if after[relative_path] != before[relative_path]
+        ] == []
+        output = capsys.readouterr().out
+        assert "SKIP index.md (unchanged)" in output
+        assert "Surface index: unchanged" in output
+        assert "Knowledge index: unchanged" in output
+        assert "Manifest: unchanged" in output
+        assert "Wiki is up to date." in output
+
+        for initialized_surface in ("dependencies", "flows"):
+            sync_cmd.run(
+                _make_sync_args(
+                    src_dir=str(proj),
+                    wiki_dir=str(wiki_dir),
+                    initialize_surfaces=[(initialized_surface,)],
+                    no_cache=True,
+                )
+            )
+
+            initialized_index = (wiki_dir / "index.md").read_text(encoding="utf-8")
+            for line in rich_index_lines:
+                assert line in initialized_index
+            initialized_surface_payload = json.loads(
+                (wiki_dir / SURFACE_INDEX_FILENAME).read_bytes()
+            )
+            initialized_flow = next(
+                item
+                for item in initialized_surface_payload["flows"]
+                if item["id"] == "api-publish"
+            )
+            assert initialized_flow == flow
+
     def test_noop_sync_preserves_canonical_markdown_with_knowledge_sidecars(
         self, bootstrapped_project, capsys
     ):
@@ -3327,15 +3454,37 @@ class TestSyncFlowRegeneration:
         surface = json.loads(
             (wiki / SURFACE_INDEX_FILENAME).read_text(encoding="utf-8")
         )
-        assert {
-            "id": "task-task-handler",
-            "category": "task",
-            "entry_point": {
-                "symbol": "run",
-                "source_path": "svc.py",
-                "label": "task-handler",
-            },
-        } in surface["flows"]
+        plugin_flow = next(
+            flow
+            for flow in surface["flows"]
+            if flow["id"] == "task-task-handler"
+        )
+        assert plugin_flow["category"] == "task"
+        assert plugin_flow["entry_point"] == {
+            "symbol": "run",
+            "source_path": "svc.py",
+            "label": "task-handler",
+        }
+        assert plugin_flow["detector"] == (
+            "plugin:detector-plugin/worker@0.1.0"
+        )
+        assert plugin_flow["language"] == "python"
+        assert plugin_flow["evidence"]["flow"] == {
+            "step_count": 2,
+            "truncated": False,
+            "modules_touched": ["svc.py"],
+        }
+        data_flow = plugin_flow["evidence"]["data_flow"]
+        assert set(data_flow) == {
+            "generated",
+            "step_count",
+            "transfer_count",
+            "truncated",
+            "boundary_effects",
+            "gaps",
+        }
+        assert data_flow["generated"] is True
+        assert data_flow["step_count"] == 2
 
     def test_plugin_detector_failure_warns_once_during_sync(
         self, tmp_path, monkeypatch, capsys

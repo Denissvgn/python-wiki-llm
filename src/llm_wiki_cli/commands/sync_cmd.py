@@ -62,7 +62,10 @@ from ..services.inventory_cache import (
     InventoryCacheStats,
     format_cache_stats,
 )
-from ..services.infrastructure_inventory import get_yaml_infrastructure_inventory
+from ..services.infrastructure_inventory import (
+    get_yaml_infrastructure_inventory,
+    infrastructure_display_label,
+)
 from ..services.infrastructure_sync import (
     InfrastructureSyncError,
     InfrastructureSyncPlan,
@@ -168,6 +171,7 @@ from ..services.bootstrap_runtime import (
 )
 from ..services.extraction_service import (
     InventoryResult,
+    get_call_graph,
     get_inventory_result,
     get_docker_inventory,
     print_inventory_failures,
@@ -1439,6 +1443,7 @@ class _RuntimeGraphObservations:
     call_observations: dict
     dependency_observations: dict
     entrypoint_observations: dict
+    surface_flow_entries: list[dict]
     flows: list[dict]
     rendering_flows: list[dict]
     data_flows: list[dict]
@@ -1493,7 +1498,6 @@ class _PreparedSyncRun:
     source_snapshot: SourceSnapshot
     inventory: dict
     page_maps: _SyncPageMaps
-    entry_points: list[dict]
     diff: "SyncDiff"
     surface_plan: _SurfaceInitializationPlan
     repository_evidence: RepositoryEvidence
@@ -2238,6 +2242,18 @@ def _apply_sync_changes(
         entity_occurrence_page_cache=page_maps.entity_occurrence_page_cache,
         module_page_map=page_maps.module_page_map,
         preserve_semantic=options.preserve_semantic,
+        workflow_entries=_sync_workflow_index_entries(
+            options.wiki_dir,
+            inventory,
+        ),
+        flow_entries=_sync_flow_index_entries(
+            options.wiki_dir,
+            graph_observations,
+        ),
+        infra_entries=_sync_infrastructure_index_entries(
+            options.wiki_dir,
+            infrastructure_plan,
+        ),
     )
 
     _append_log(
@@ -2319,7 +2335,10 @@ def _detect_sync_entry_points(
     for warning in observations.pop("warnings", []):
         print(f"Warning: {warning}", flush=True)
     return _SyncEntryPointAnalysis(
-        entries=entry_points_from_detailed_observations(observations),
+        entries=entry_points_from_detailed_observations(
+            observations,
+            include_provenance=True,
+        ),
         observations=observations,
     )
 
@@ -2335,10 +2354,97 @@ def _selected_sync_flow_entries(
     return [dict(entry) for entry in selected]
 
 
+def _canonical_sync_surface_flow_targets(
+    options: _SyncRunOptions,
+    entry_points: list[dict],
+    surface_plan: _SurfaceInitializationPlan,
+) -> list[dict]:
+    """Select detected metadata for extant and about-to-be-created flow pages."""
+
+    flows_dir = options.wiki_dir / PageKind.FLOWS.value
+    target_ids = (
+        {path.stem for path in flows_dir.glob("*.md") if path.is_file()}
+        if flows_dir.exists()
+        else set()
+    )
+    target_ids.update(
+        str(entry["id"])
+        for entry in (*surface_plan.flow_entries, *surface_plan.new_flow_entries)
+        if entry.get("id")
+    )
+    return [
+        dict(entry)
+        for entry in entry_points
+        if str(entry.get("id")) in target_ids
+    ]
+
+
+def _canonical_surface_flow_entries(
+    inventory: Mapping[str, Mapping],
+    entry_points: list[dict],
+    rendering_flows: list[dict],
+    rendering_data_flows: list[dict],
+) -> list[dict]:
+    """Project sync observations into bootstrap's canonical flow metadata."""
+
+    if rendering_data_flows and len(rendering_data_flows) != len(entry_points):
+        raise ValueError(
+            "rendered data-flow observations must align with flow entry points"
+        )
+    entries: list[dict] = []
+    for index, (entry_point, flow) in enumerate(
+        zip(entry_points, rendering_flows, strict=True)
+    ):
+        data_flow = (
+            rendering_data_flows[index]
+            if index < len(rendering_data_flows)
+            else None
+        )
+        source_path = entry_point.get("file")
+        source_info = (
+            inventory.get(source_path, {}) if isinstance(source_path, str) else {}
+        )
+        flow_entry = {
+            "id": entry_point["id"],
+            "category": entry_point["category"],
+            "entry": entry_point["symbol"],
+            "file": source_path,
+            "label": entry_point.get("label"),
+            "detector": entry_point.get("detector", "unknown"),
+            "language": source_info.get("language") or "unknown",
+            "evidence": {
+                "flow": {
+                    "step_count": len(flow.get("steps", [])),
+                    "truncated": bool(flow.get("truncated")),
+                    "modules_touched": list(flow.get("modules_touched", [])),
+                },
+                "data_flow": (
+                    {
+                        "generated": True,
+                        "step_count": len(data_flow.get("steps", [])),
+                        "transfer_count": len(data_flow.get("transfers", [])),
+                        "truncated": bool(data_flow.get("truncated")),
+                        "boundary_effects": list(
+                            data_flow.get("boundaries", [])
+                        ),
+                        "gaps": list(data_flow.get("gaps", [])),
+                    }
+                    if data_flow is not None
+                    else None
+                ),
+            },
+        }
+        if entry_point.get("routes"):
+            flow_entry["routes"] = entry_point["routes"]
+        entries.append(flow_entry)
+    return entries
+
+
 def _build_sync_graph_observations(
     options: _SyncRunOptions,
     inventory: dict,
     source_snapshot: SourceSnapshot,
+    entry_points: list[dict],
     entrypoint_observations: dict,
     surface_plan: _SurfaceInitializationPlan,
     dependency_analysis: dict | None,
@@ -2349,6 +2455,11 @@ def _build_sync_graph_observations(
     call_edges = [dict(edge) for edge in resolve_call_edges(inventory)]
     call_observations = resolve_call_observations(inventory)
     flow_entries = _selected_sync_flow_entries(options, surface_plan)
+    surface_flow_entry_points = _canonical_sync_surface_flow_targets(
+        options,
+        entry_points,
+        surface_plan,
+    )
     rendering_flows = [build_flow(entry, call_edges) for entry in flow_entries]
     flows = [build_flow_detailed(entry, call_edges) for entry in flow_entries]
     generation_options = runtime_generation_options(
@@ -2364,13 +2475,13 @@ def _build_sync_graph_observations(
             call_edges,
             data_effect_observations=data_effect_observations,
         )
-        if data_flow_enabled and flows
+        if data_flow_enabled and surface_flow_entry_points
         else None
     )
     data_flows: list[dict] = []
     rendering_data_flows: list[dict] = []
     if data_flow_enabled:
-        for rendering_flow, flow in zip(rendering_flows, flows):
+        for rendering_flow, flow in zip(rendering_flows, flows, strict=True):
             # The versioned graph projection uses unknown locations instead of
             # legacy line-zero placeholders. Retain the old analyzer result
             # separately so regenerated Markdown remains byte-compatible.
@@ -2390,6 +2501,25 @@ def _build_sync_graph_observations(
                     context=context,
                 )
             )
+    surface_rendering_flows = rendering_flows
+    surface_rendering_data_flows = rendering_data_flows
+    if surface_flow_entry_points != flow_entries:
+        surface_rendering_flows = [
+            build_flow(entry, call_edges) for entry in surface_flow_entry_points
+        ]
+        surface_rendering_data_flows = (
+            [
+                analyze_data_flow(
+                    inventory,
+                    rendering_flow,
+                    call_edges,
+                    context=context,
+                )
+                for rendering_flow in surface_rendering_flows
+            ]
+            if data_flow_enabled
+            else []
+        )
     limitations: dict[str, tuple[str, ...]] = {}
     if not data_flow_enabled:
         limitations["data-flows"] = ("data-flow-analysis-disabled",)
@@ -2411,6 +2541,12 @@ def _build_sync_graph_observations(
             import_observations=import_observations,
         ),
         entrypoint_observations=entrypoint_observations,
+        surface_flow_entries=_canonical_surface_flow_entries(
+            inventory,
+            surface_flow_entry_points,
+            surface_rendering_flows,
+            surface_rendering_data_flows,
+        ),
         flows=flows,
         rendering_flows=rendering_flows,
         data_flows=data_flows,
@@ -2591,6 +2727,7 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
         options,
         inventory,
         source_snapshot,
+        entries,
         entrypoint_analysis.observations,
         surface_plan,
         surface_plan.dependency_analysis,
@@ -2609,7 +2746,6 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
         source_snapshot=source_snapshot,
         inventory=inventory,
         page_maps=maps,
-        entry_points=entries,
         diff=diff,
         surface_plan=surface_plan,
         repository_evidence=repository_evidence,
@@ -2910,6 +3046,18 @@ def _apply_prepared_sync(
             options.wiki_dir,
             prepared.manifest,
             preserve_semantic=options.preserve_semantic,
+            workflow_entries=_sync_workflow_index_entries(
+                options.wiki_dir,
+                prepared.inventory,
+            ),
+            flow_entries=_sync_flow_index_entries(
+                options.wiki_dir,
+                prepared.graph_observations,
+            ),
+            infra_entries=_sync_infrastructure_index_entries(
+                options.wiki_dir,
+                prepared.infrastructure_plan,
+            ),
         )
     else:
         _rebuild_index(
@@ -2922,6 +3070,18 @@ def _apply_prepared_sync(
             ),
             module_page_map=prepared.page_maps.module_page_map,
             preserve_semantic=options.preserve_semantic,
+            workflow_entries=_sync_workflow_index_entries(
+                options.wiki_dir,
+                prepared.inventory,
+            ),
+            flow_entries=_sync_flow_index_entries(
+                options.wiki_dir,
+                prepared.graph_observations,
+            ),
+            infra_entries=_sync_infrastructure_index_entries(
+                options.wiki_dir,
+                prepared.infrastructure_plan,
+            ),
         )
     if (
         prepared.diff.has_changes
@@ -2961,7 +3121,7 @@ def _finalize_prepared_sync(
         entity_page_cache=prepared.page_maps.entity_page_cache,
         entity_occurrence_page_cache=(prepared.page_maps.entity_occurrence_page_cache),
         module_page_map=prepared.page_maps.module_page_map,
-        entry_points=prepared.entry_points,
+        entry_points=prepared.graph_observations.surface_flow_entries,
         page_source_overrides=page_source_overrides,
     )
     next_manifest = None
@@ -3221,6 +3381,68 @@ def _preserve_index_custom_sections(old_md: str, new_md: str) -> str:
     return _service_preserve_index_custom_sections(old_md, new_md)
 
 
+def _overlay_live_index_metadata(
+    existing: list[dict],
+    live: Iterable[Mapping],
+    *,
+    key: str,
+) -> list[dict]:
+    """Retain existing page coverage while preferring canonical live metadata."""
+
+    live_by_id = {
+        str(entry[key]): dict(entry) for entry in live if entry.get(key) is not None
+    }
+    return [live_by_id.get(str(entry[key]), entry) for entry in existing]
+
+
+def _sync_workflow_index_entries(wiki_dir: Path, inventory: dict) -> list[dict]:
+    live_entries = [
+        {"name": name, "entry": workflow["entry"]}
+        for name, workflow in get_call_graph(inventory).items()
+    ]
+    return _overlay_live_index_metadata(
+        _list_existing_pages(wiki_dir / PageKind.WORKFLOWS.value, "entry"),
+        live_entries,
+        key="name",
+    )
+
+
+def _sync_flow_index_entries(
+    wiki_dir: Path,
+    graph_observations: _RuntimeGraphObservations,
+) -> list[dict]:
+    return _overlay_live_index_metadata(
+        _list_existing_flow_pages(wiki_dir / PageKind.FLOWS.value),
+        graph_observations.surface_flow_entries,
+        key="id",
+    )
+
+
+def _sync_infrastructure_index_entries(
+    wiki_dir: Path,
+    plan: InfrastructureSyncPlan,
+) -> list[dict]:
+    live_entries = []
+    for source_path, info in sorted(plan.inventory.items()):
+        record = plan.current_sources[source_path]
+        page_name = Path(str(record["page_path"])).stem
+        live_entries.append(
+            {
+                "name": page_name,
+                "type": info["type"],
+                "label": infrastructure_display_label(source_path, info),
+            }
+        )
+    return _overlay_live_index_metadata(
+        _list_existing_pages(
+            wiki_dir / PageKind.INFRASTRUCTURE.value,
+            "type",
+        ),
+        live_entries,
+        key="name",
+    )
+
+
 def _rebuild_index(
     wiki_dir: Path,
     inventory: dict,
@@ -3230,6 +3452,9 @@ def _rebuild_index(
     entity_occurrence_page_cache: dict[tuple[str, str, int], str] | None = None,
     module_page_map: dict[str, str] | None = None,
     preserve_semantic: bool = True,
+    workflow_entries: list[dict] | None = None,
+    flow_entries: list[dict] | None = None,
+    infra_entries: list[dict] | None = None,
 ) -> None:
     """Regenerate index.md from the live inventory."""
     if entity_page_cache is None:
@@ -3266,10 +3491,21 @@ def _rebuild_index(
                 seen.add(page_name)
 
     # Collect any existing semantic/user-facing entries from disk.
-    workflow_entries = _list_existing_pages(wiki_dir / "workflows", "entry")
+    if workflow_entries is None:
+        workflow_entries = _list_existing_pages(
+            wiki_dir / PageKind.WORKFLOWS.value,
+            "entry",
+        )
     guide_entries = _list_existing_pages(wiki_dir / "guides", "topic")
-    flow_entries = _list_existing_flow_pages(wiki_dir / "flows")
-    infra_entries = _list_existing_pages(wiki_dir / "infrastructure", "type")
+    if flow_entries is None:
+        flow_entries = _list_existing_flow_pages(
+            wiki_dir / PageKind.FLOWS.value
+        )
+    if infra_entries is None:
+        infra_entries = _list_existing_pages(
+            wiki_dir / PageKind.INFRASTRUCTURE.value,
+            "type",
+        )
     architecture_entries = _list_existing_architecture_pages(wiki_dir)
 
     index_path = wiki_dir / "index.md"
@@ -3300,6 +3536,9 @@ def _rebuild_surface_only_index(
     manifest: SyncManifest,
     *,
     preserve_semantic: bool = True,
+    workflow_entries: list[dict] | None = None,
+    flow_entries: list[dict] | None = None,
+    infra_entries: list[dict] | None = None,
 ) -> None:
     """Re-index only pages already present during source-deferred backfill."""
     entity_names = [
@@ -3330,20 +3569,28 @@ def _rebuild_surface_only_index(
         if path.is_file()
     ]
     index_path = wiki_dir / canonical_path(PageKind.INDEX)
+    if workflow_entries is None:
+        workflow_entries = _list_existing_pages(
+            wiki_dir / PageKind.WORKFLOWS.value,
+            "entry",
+        )
+    if flow_entries is None:
+        flow_entries = _list_existing_flow_pages(
+            wiki_dir / PageKind.FLOWS.value
+        )
+    if infra_entries is None:
+        infra_entries = _list_existing_pages(
+            wiki_dir / PageKind.INFRASTRUCTURE.value,
+            "type",
+        )
     new_index = _generate_index_md(
         entity_names,
         module_entries,
-        workflow_entries=_list_existing_pages(
-            wiki_dir / PageKind.WORKFLOWS.value, "entry"
-        )
-        or None,
+        workflow_entries=workflow_entries or None,
         guide_entries=_list_existing_pages(wiki_dir / PageKind.GUIDES.value, "topic")
         or None,
-        infra_entries=_list_existing_pages(
-            wiki_dir / PageKind.INFRASTRUCTURE.value, "type"
-        )
-        or None,
-        flow_entries=_list_existing_flow_pages(wiki_dir / PageKind.FLOWS.value) or None,
+        infra_entries=infra_entries or None,
+        flow_entries=flow_entries or None,
         architecture_entries=_list_existing_architecture_pages(wiki_dir) or None,
         api_contracts_present=(
             wiki_dir / canonical_path(PageKind.API_CONTRACTS)
