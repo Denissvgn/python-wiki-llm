@@ -16263,6 +16263,7 @@
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/knowledge_orchestration.py",
+            "src/llm_wiki_cli/services/wiki_surface.py",
             "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/api_contracts.py",
             "src/llm_wiki_cli/services/imports.py",
@@ -16271,7 +16272,6 @@
             "src/llm_wiki_cli/services/module_maps.py",
             "src/llm_wiki_cli/services/entrypoints.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/wiki_surface.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/paths.py",
             "src/llm_wiki_cli/services/wiki_surface_index.py",
@@ -16293,7 +16293,7 @@
             "src/llm_wiki_cli/services/team.py",
             "src/llm_wiki_cli/services/inventory_cache.py"
           ],
-          "step_count": 4259,
+          "step_count": 4262,
           "truncated": true
         }
       },
@@ -26916,7 +26916,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 6064,
+              "line": 6065,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -27017,7 +27017,7 @@
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/wiki_media.py"
           ],
-          "step_count": 4059,
+          "step_count": 4062,
           "truncated": true
         }
       },
@@ -48613,5 +48613,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:767a12f1daa925f81eaa6464a5308f319afb75b8e21d7c4c6ecd04ce8532a395"
+  "source_hash": "sha256:f827352f2f63ddcf34bae740f4671710dad874abc0a4390a01bef0ed4d4b18d5"
 }

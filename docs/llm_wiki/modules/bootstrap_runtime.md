@@ -41,7 +41,7 @@ artifacts only after the public Markdown surface has been written.
 | `.sync_manifest` | `SyncManifest`, `SyncManifestError` |
 | `.validation` | `portable_page_component`, `posix_path_text` |
 | `.wiki_lifecycle` | `WikiLifecycleState`, `classify_wiki_lifecycle`, `is_pristine_wiki_target`, `migration_guidance`, `sync_guidance` |
-| `.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `iter_page_kinds`, `mcp_uri` |
+| `.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `iter_directory_kinds`, `iter_page_kinds`, `mcp_uri` |
 | `.wiki_surface_index` | `evaluate_surface_index` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict`, `Counter`, `defaultdict`, `Counter` |
@@ -84,19 +84,19 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 696 | — | — |
-| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 954 | — | — |
-| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 2827 | — | — |
-| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4058 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4082 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4095 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4102 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4110 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4116 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4126 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4137 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4145 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4152 | — | — |
+| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 697 | — | — |
+| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 955 | — | — |
+| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 2828 | — | — |
+| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4059 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4083 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4096 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4103 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4111 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4117 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4127 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4138 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4146 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4153 | — | — |
 
 ## Functions
 
