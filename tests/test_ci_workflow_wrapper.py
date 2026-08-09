@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 from typing import TypedDict
 
@@ -13,7 +14,12 @@ import pytest
 
 ROOT = Path(__file__).parents[1]
 WRAPPER = ROOT / ".github" / "scripts" / "run-llm-wiki-ci-check.sh"
-PYTHON = ROOT / ".venv" / "bin" / "python"
+PYTHON = Path(sys.executable).resolve()
+
+pytestmark = pytest.mark.skipif(
+    os.name == "nt",
+    reason="The dedicated wrapper and its behavioral harness require POSIX Bash",
+)
 
 
 class WrapperCase(TypedDict):

@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import os
 import re
 import shlex
 import subprocess
 from pathlib import Path
 
+import pytest
 import yaml
 
 from tests import release_artifact_smoke
@@ -299,6 +301,10 @@ def test_wiki_integrity_uses_locked_runner_temporary_state_and_evidence() -> Non
         assert required in versions
 
 
+@pytest.mark.skipif(
+    os.name == "nt",
+    reason="The Ubuntu-only runner reservation probe requires POSIX Bash",
+)
 def test_runner_path_reservation_quarantines_all_collisions_before_failure(
     tmp_path: Path,
 ) -> None:
@@ -355,7 +361,23 @@ def test_wiki_integrity_always_uploads_the_bounded_evidence_bundle() -> None:
 
 
 def test_wiki_integrity_wrapper_executes_the_direct_candidate_gate() -> None:
-    assert WIKI_CI_WRAPPER.stat().st_mode & 0o111
+    if os.name == "nt":
+        index_entry = subprocess.run(
+            [
+                "git",
+                "ls-files",
+                "--stage",
+                "--",
+                WIKI_CI_WRAPPER.relative_to(ROOT).as_posix(),
+            ],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout
+        assert index_entry.split(maxsplit=1)[0] == "100755"
+    else:
+        assert WIKI_CI_WRAPPER.stat().st_mode & 0o111
     wrapper = WIKI_CI_WRAPPER.read_text(encoding="utf-8")
     assert wrapper.count('"${python_executable}" -m llm_wiki_cli.cli ci-check') == 1
     for required in (

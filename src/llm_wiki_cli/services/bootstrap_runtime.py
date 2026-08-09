@@ -147,6 +147,7 @@ from .wiki_surface import (
     PageKind,
     WikiSurfaceError,
     canonical_path,
+    iter_directory_kinds,
     iter_page_kinds,
     mcp_uri,
 )
@@ -4326,15 +4327,15 @@ def _start_bootstrap(state: _BootstrapRunState) -> None:
         flush=True,
     )
     _emit_bootstrap(state, f"Wiki output directory: {options.wiki_dir}", flush=True)
-    for subdir in [
-        "entities",
-        "modules",
-        "workflows",
-        "guides",
-        "infrastructure",
-        "flows",
-    ]:
-        (options.wiki_dir / subdir).mkdir(parents=True, exist_ok=True)
+    for surface in iter_directory_kinds():
+        if surface.directory is None:
+            continue
+        directory = options.wiki_dir / surface.directory
+        directory.mkdir(parents=True, exist_ok=True)
+        # Git cannot preserve an empty directory. Match init/upgrade so a
+        # freshly checked-out wiki retains every directory required by strict
+        # validation even when a surface currently has zero pages.
+        (directory / ".gitkeep").touch()
 
 
 def _extract_bootstrap_inventory(state: _BootstrapRunState):

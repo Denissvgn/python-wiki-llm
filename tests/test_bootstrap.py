@@ -31,7 +31,7 @@ from llm_wiki_cli.services.diagrams import (
 from llm_wiki_cli.services.entrypoints import build_flow, get_entry_points
 from llm_wiki_cli.services import knowledge_orchestration, plugins
 from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.wiki_surface import is_safe_page_id
+from llm_wiki_cli.services.wiki_surface import iter_directory_kinds, is_safe_page_id
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 # True when git is on PATH; used to guard git-dependent fixture steps.
@@ -423,6 +423,26 @@ def tmp_collision_project(tmp_path):
 
 
 class TestBootstrapCollisions:
+    def test_bootstrap_tracks_empty_surface_directories(self, tmp_project):
+        wiki_dir = tmp_project / "docs" / "llm_wiki"
+
+        bootstrap_cmd.run(
+            _make_args(
+                src_dir=".",
+                wiki_dir=str(wiki_dir),
+                source_adapter=True,
+            )
+        )
+
+        directory_names = {
+            surface.directory
+            for surface in iter_directory_kinds()
+            if surface.directory is not None
+        }
+        assert directory_names
+        for directory_name in directory_names:
+            assert (wiki_dir / directory_name / ".gitkeep").is_file()
+
     def test_bootstrap_json_summary_is_parseable_stdout(self, tmp_project, capsys):
         wiki_dir = tmp_project / "docs" / "llm_wiki"
         args = _make_args(
