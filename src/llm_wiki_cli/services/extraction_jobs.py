@@ -73,7 +73,7 @@ class ExtractionJobPlan:
 
 
 def extraction_job_request_from_args(args) -> ExtractionJobRequest:
-    """Build a request from parsed CLI arguments or compatible test namespaces."""
+    """Build a request from an argparse-compatible namespace."""
 
     resolved_jobs = max(1, int(getattr(args, "jobs", 1) or 1))
     raw_request = getattr(args, "requested_jobs", resolved_jobs)

@@ -256,6 +256,7 @@ def test_bootstrap_matches_pre_native_markdown_and_surface_v1_goldens(
 
     monkeypatch.chdir(project)
     monkeypatch.setattr(bootstrap_cmd, "date", FrozenDate)
+    source_snapshot = bootstrap_cmd.build_source_snapshot(project)
     bootstrap_cmd.run(_bootstrap_args(project, wiki_dir))
 
     expected_markdown = _markdown_tree_bytes(expected_wiki)
@@ -267,12 +268,69 @@ def test_bootstrap_matches_pre_native_markdown_and_surface_v1_goldens(
         "log.md",
         "modules/models.md",
     }
-    # Bootstrap records the resolved source root in its legacy log entry.
+    # Current bootstrap renders the same-root source with its portable label.
     assert expected_markdown["log.md"].count(_PROJECT_ROOT_TOKEN) == 1
     expected_markdown["log.md"] = expected_markdown["log.md"].replace(
         _PROJECT_ROOT_TOKEN,
-        str(project.resolve()).encode("utf-8"),
+        b".",
     )
+    historical_log_header = (
+        b"### feat: bootstrap wiki from existing codebase\n"
+        b"- Source: `.`\n"
+    )
+    current_log_header = (
+        "### Wiki bootstrap\n"
+        "- Source: `.`\n"
+        f"{bootstrap_cmd._source_snapshot_log_lines(source_snapshot)}"
+    ).encode("utf-8")
+    assert expected_markdown["log.md"].count(historical_log_header) == 1
+    expected_markdown["log.md"] = expected_markdown["log.md"].replace(
+        historical_log_header,
+        current_log_header,
+    )
+    expected_markdown["log.md"] = expected_markdown["log.md"].replace(
+        b"- User flows created:",
+        b"- Entry-point flows created:",
+    )
+    expected_markdown["log.md"] = expected_markdown["log.md"].replace(
+        b"- API contract pages created:",
+        b"- HTTP API contract pages created:",
+    )
+    expected_markdown["index.md"] = expected_markdown["index.md"].replace(
+        b"Use this landing page to choose the right wiki surface.",
+        b"This page is an exhaustive reference inventory of the selected source. "
+        b"Task-oriented guides are not yet available.",
+    )
+    expected_markdown["index.md"] = expected_markdown["index.md"].replace(
+        b"| User flows |",
+        b"| Entry-point flows |",
+    )
+    expected_markdown["index.md"] = expected_markdown["index.md"].replace(
+        b"| API contracts |",
+        b"| HTTP API contracts |",
+    )
+    semantic_starter_updates = {
+        "dependencies.md": (
+            b"_Document dynamic or conditional imports, intentional cycles, and "
+            b"the rationale behind notable dependencies. Replace this placeholder._",
+            b"This page reflects statically observed imports and declared "
+            b"dependencies. Dynamic or conditional imports and runtime-loaded "
+            b"integrations may not appear in the generated sections.",
+        ),
+        "load-order.md": (
+            b"_Document required initialization order, lazy imports, and side "
+            b"effects that must run before others. Replace this placeholder._",
+            b"This page presents a static dependency projection. Lazy imports, "
+            b"conditional initialization, and runtime side effects can change the "
+            b"effective order.",
+        ),
+    }
+    for path, (historical, current) in semantic_starter_updates.items():
+        assert expected_markdown[path].count(historical) == 1
+        expected_markdown[path] = expected_markdown[path].replace(
+            historical,
+            current,
+        )
     assert all(b"\r" not in content for content in expected_markdown.values())
     assert _markdown_tree_bytes(wiki_dir) == expected_markdown
 

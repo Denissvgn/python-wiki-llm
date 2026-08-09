@@ -19,6 +19,7 @@ def run(args) -> None:
         include_tests=getattr(args, "include_tests", None),
         parallel_jobs=getattr(args, "jobs", 1),
         job_request=extraction_job_request_from_args(args),
+        source_selection=getattr(args, "source_selection", None),
     )
     if getattr(args, "format", "text") == "json":
         print(json.dumps(report.to_payload(), indent=2, sort_keys=True))

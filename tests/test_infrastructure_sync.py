@@ -24,6 +24,7 @@ from llm_wiki_cli.services.infrastructure_sync import (
     build_infrastructure_page_map,
     build_infrastructure_sync_plan,
     validate_infrastructure_generation_input,
+    with_infrastructure_deselection_generation_input,
     with_infrastructure_generation_input,
 )
 from llm_wiki_cli.services.knowledge_evidence import is_valid_sha256
@@ -36,6 +37,7 @@ from llm_wiki_cli.services.section_ownership import (
     SectionOwnership,
     observe_page_sections,
 )
+from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 from llm_wiki_cli.services.wiki_surface import PageKind
 
@@ -703,6 +705,178 @@ def test_infrastructure_plan_preserves_absent_and_supported_prior_state(
     assert supported_plan.prior_sources == absent_plan.current_sources
     assert supported_plan.unchanged_sources == ("Dockerfile",)
     assert supported_plan.new_sources == ()
+    assert supported_plan.deselected_records == {}
+    assert not supported_plan.has_deselection_changes
+    assert supported_plan.next_state == generation_inputs["infrastructure"]
+    assert with_infrastructure_deselection_generation_input(
+        generation_inputs,
+        supported_plan,
+    ) == generation_inputs
+
+
+def test_infrastructure_plan_prunes_deselected_state_without_tombstones(
+    tmp_path: Path,
+) -> None:
+    project = tmp_path / "project"
+    selected = project / "selected"
+    excluded = project / "excluded"
+    selected.mkdir(parents=True)
+    excluded.mkdir()
+    (selected / "compose.yml").write_text(
+        "services:\n  api:\n    image: nginx\n",
+        encoding="utf-8",
+    )
+    (excluded / "Dockerfile").write_text("FROM alpine\n", encoding="utf-8")
+    broad_snapshot = build_source_snapshot(project)
+    broad_inventory = get_docker_inventory(
+        project,
+        source_snapshot=broad_snapshot,
+    )
+    broad_plan = build_infrastructure_sync_plan(broad_snapshot, broad_inventory)
+    generation_inputs = with_infrastructure_generation_input({}, broad_plan)
+    profile = project / ".llm-wiki" / "source-selection.json"
+    profile.parent.mkdir()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["selected"],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    selected_snapshot = build_source_snapshot(project)
+    selected_inventory = get_docker_inventory(
+        project,
+        source_snapshot=selected_snapshot,
+    )
+    plan = build_infrastructure_sync_plan(
+        selected_snapshot,
+        selected_inventory,
+        generation_inputs=generation_inputs,
+    )
+
+    assert set(plan.current_sources) == {"selected/compose.yml"}
+    assert set(plan.deselected_records) == {"excluded/Dockerfile"}
+    assert plan.removed_sources == ()
+    assert set(plan.next_state["sources"]) == {"selected/compose.yml"}
+    assert plan.next_state["tombstones"] == {}
+    assert plan.has_deselection_changes
+    assert set(plan.deselection_only_state["sources"]) == {
+        "selected/compose.yml"
+    }
+    assert plan.deselection_only_state["tombstones"] == {}
+    deselection_inputs = with_infrastructure_deselection_generation_input(
+        generation_inputs,
+        plan,
+    )
+    assert deselection_inputs["infrastructure"] == plan.deselection_only_state
+    assert plan.deselected_page_paths == (
+        broad_plan.current_sources["excluded/Dockerfile"]["page_path"],
+    )
+    assert plan.has_changes
+
+
+def test_deselection_only_state_does_not_advance_selected_source_changes(
+    tmp_path: Path,
+) -> None:
+    project = tmp_path / "project"
+    selected = project / "selected"
+    excluded = project / "excluded"
+    selected.mkdir(parents=True)
+    excluded.mkdir()
+    selected_source = selected / "Dockerfile"
+    selected_source.write_text("FROM alpine:3.20\n", encoding="utf-8")
+    (excluded / "Dockerfile").write_text("FROM busybox\n", encoding="utf-8")
+    broad_snapshot = build_source_snapshot(project)
+    broad_inventory = get_docker_inventory(
+        project,
+        source_snapshot=broad_snapshot,
+    )
+    broad_plan = build_infrastructure_sync_plan(broad_snapshot, broad_inventory)
+    generation_inputs = with_infrastructure_generation_input({}, broad_plan)
+    selected_source.write_text("FROM alpine:3.21\n", encoding="utf-8")
+    profile = project / ".llm-wiki" / "source-selection.json"
+    profile.parent.mkdir()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["selected"],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    snapshot = build_source_snapshot(project)
+    inventory = get_docker_inventory(project, source_snapshot=snapshot)
+
+    plan = build_infrastructure_sync_plan(
+        snapshot,
+        inventory,
+        generation_inputs=generation_inputs,
+    )
+
+    prior_record = broad_plan.current_sources["selected/Dockerfile"]
+    assert plan.current_sources["selected/Dockerfile"] != prior_record
+    assert plan.next_state["sources"]["selected/Dockerfile"] != prior_record
+    assert (
+        plan.deselection_only_state["sources"]["selected/Dockerfile"]
+        == prior_record
+    )
+    assert set(plan.deselection_only_state["sources"]) == {
+        "selected/Dockerfile"
+    }
+    assert plan.deselection_only_state["tombstones"] == {}
+
+
+def test_deselected_page_remains_when_a_current_source_owns_it(tmp_path: Path) -> None:
+    project = tmp_path / "project"
+    selected = project / "selected"
+    excluded = project / "excluded"
+    selected.mkdir(parents=True)
+    excluded.mkdir()
+    (selected / "Dockerfile").write_text("FROM alpine\n", encoding="utf-8")
+    (excluded / "compose.yml").write_text(
+        "services:\n  api:\n    image: nginx\n",
+        encoding="utf-8",
+    )
+    broad_snapshot = build_source_snapshot(project)
+    broad_inventory = get_docker_inventory(
+        project,
+        source_snapshot=broad_snapshot,
+    )
+    broad_plan = build_infrastructure_sync_plan(broad_snapshot, broad_inventory)
+    generation_inputs = with_infrastructure_generation_input({}, broad_plan)
+    shared_page = broad_plan.current_sources["selected/Dockerfile"]["page_path"]
+    generation_inputs["infrastructure"]["sources"]["excluded/compose.yml"][
+        "page_path"
+    ] = shared_page
+    profile = project / ".llm-wiki" / "source-selection.json"
+    profile.parent.mkdir()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["selected"],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    snapshot = build_source_snapshot(project)
+    inventory = get_docker_inventory(project, source_snapshot=snapshot)
+
+    plan = build_infrastructure_sync_plan(
+        snapshot,
+        inventory,
+        generation_inputs=generation_inputs,
+    )
+
+    assert set(plan.deselected_records) == {"excluded/compose.yml"}
+    assert plan.deselected_page_paths == ()
 
 
 def test_infrastructure_notes_are_the_only_semantic_section() -> None:

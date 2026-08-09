@@ -187,20 +187,71 @@ def load_events(
 
 
 def current_coverage(
-    src_dir: str = ".", wiki_dir: str | Path = DEFAULT_WIKI_DIR
+    src_dir: str = ".",
+    wiki_dir: str | Path = DEFAULT_WIKI_DIR,
+    *,
+    source_selection: str | Path | None = None,
 ) -> dict[str, Any]:
     from .bootstrap_runtime import (
         build_entity_occurrence_page_map,
         build_module_page_map,
     )
-    from .extraction_service import get_inventory
+    from .documentation_query_builder import validate_live_query_source_selection
+    from .extraction_service import (
+        InventoryRequest,
+        InventoryResult,
+        get_inventory_result,
+    )
     from .lint_service import (
         _collect_documented_entities,
         _collect_documented_modules,
     )
+    from .source_selection import resolve_source_selection
+    from .source_snapshot import (
+        build_source_snapshot,
+        capture_source_selection_inputs,
+    )
 
     wiki_path = Path(wiki_dir)
-    inventory = get_inventory(src_dir)
+    selection_policy = resolve_source_selection(src_dir, source_selection)
+    selection_inputs = capture_source_selection_inputs(
+        src_dir,
+        source_selection=source_selection,
+        selection_policy=selection_policy,
+    )
+    validate_live_query_source_selection(
+        source_root=Path(src_dir),
+        wiki_root=wiki_path,
+        live_identity=(
+            selection_policy.identity if selection_policy is not None else None
+        ),
+        live_selection_inputs=selection_inputs,
+        operation="Current coverage",
+    )
+    source_snapshot = build_source_snapshot(
+        src_dir,
+        source_selection=source_selection,
+        selection_policy=selection_policy,
+        expected_selection_inputs=selection_inputs,
+    )
+    collected = get_inventory_result(
+        InventoryRequest(
+            src_dir=src_dir,
+            source_selection=source_selection,
+            source_snapshot=source_snapshot,
+        )
+    )
+    if not isinstance(collected, InventoryResult) or collected.source_snapshot is None:
+        raise ValueError("coverage requires a captured source snapshot")
+    snapshot = collected.source_snapshot
+    validate_live_query_source_selection(
+        source_root=snapshot.root,
+        wiki_root=wiki_path,
+        live_identity=snapshot.source_selection_identity,
+        live_selection_inputs=snapshot.source_selection_inputs,
+        operation="Current coverage",
+    )
+    inventory = collected.inventory
     code_entities = set(build_entity_occurrence_page_map(inventory).values())
     code_modules = set(build_module_page_map(inventory).values())
     documented_entities = _collect_documented_entities(wiki_path)
@@ -224,6 +275,7 @@ def summarize_events(
     *,
     src_dir: str = ".",
     wiki_dir: str | Path = DEFAULT_WIKI_DIR,
+    source_selection: str | Path | None = None,
 ) -> dict[str, Any]:
     validations = [
         event
@@ -270,13 +322,23 @@ def summarize_events(
         if len(recent_failures) >= 5:
             break
 
+    coverage = (
+        current_coverage(src_dir, wiki_dir)
+        if source_selection is None
+        else current_coverage(
+            src_dir,
+            wiki_dir,
+            source_selection=source_selection,
+        )
+    )
+
     summary = {
         "accuracy": {
             "strict_validation_pass_percent": accuracy,
             "validations": len(validations),
             "failures": len(validation_failures),
         },
-        "coverage": current_coverage(src_dir=src_dir, wiki_dir=wiki_dir),
+        "coverage": coverage,
         "speed": {
             "average_successful_sync_ms": avg_sync_ms,
             "successful_syncs": len(successful_syncs),

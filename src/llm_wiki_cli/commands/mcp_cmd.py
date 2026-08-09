@@ -5,6 +5,8 @@ from __future__ import annotations
 import sys
 from typing import Any
 
+from ..config import validate_source_root
+
 
 _MCP_SERVICE_EXPORTS = frozenset(
     {
@@ -45,14 +47,24 @@ def run(args) -> None:
     wiki_error = _mcp_service_export("McpWikiError")
     runner = _mcp_service_export("run_mcp_server")
 
+    requested_source = getattr(args, "src_dir", ".")
+    allow_external = bool(getattr(args, "allow_external_src", False))
+    source_root = validate_source_root(
+        requested_source,
+        "--src-dir",
+        allow_external=allow_external,
+    )
+
     config = config_type(
-        src_dir=getattr(args, "src_dir", "."),
+        src_dir=str(source_root) if allow_external else requested_source,
+        allow_external_src=allow_external,
         wiki_dir=getattr(args, "wiki_dir", "docs/llm_wiki"),
         transport=getattr(args, "transport", "stdio"),
         host=getattr(args, "host", "127.0.0.1"),
         port=getattr(args, "port", 8765),
         path=getattr(args, "path", "/mcp"),
         allowed_origins=tuple(getattr(args, "allowed_origin", None) or ()),
+        source_selection=getattr(args, "source_selection", None),
     )
     try:
         runner(config)

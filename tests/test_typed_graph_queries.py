@@ -303,7 +303,9 @@ def test_python_api_wrapper_reuses_service_and_forwards_all_filters(tmp_path):
     assert actual == expected
 
 
-def test_mcp_method_validates_and_delegates_typed_graph_options(monkeypatch):
+def test_mcp_method_validates_and_delegates_typed_graph_options(
+    tmp_path, monkeypatch
+):
     calls = []
 
     class QueryService:
@@ -316,7 +318,10 @@ def test_mcp_method_validates_and_delegates_typed_graph_options(monkeypatch):
         "build_documentation_query_service",
         lambda *_args, **_kwargs: QueryService(),
     )
-    service = mcp_server.McpWikiService()
+    service = mcp_server.McpWikiService(
+        src_dir=str(tmp_path),
+        wiki_dir=str(tmp_path / "wiki"),
+    )
 
     result = service.traverse_typed_graph(
         USER_LOCATOR,

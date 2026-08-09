@@ -15,7 +15,15 @@ import pytest
 
 from llm_wiki_cli.commands import generate_prompt_cmd, trigger_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
-from llm_wiki_cli.services import circuit_breaker, plugins
+from llm_wiki_cli.services import circuit_breaker, extraction_service, plugins
+from llm_wiki_cli.services.source_selection import (
+    SOURCE_SELECTION_SCHEMA_VERSION,
+    SourceSelectionError,
+    resolve_source_selection,
+    with_source_selection_generation_input,
+)
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
+from llm_wiki_cli.services.sync_manifest import SyncManifest
 from llm_wiki_cli.services.wiki_git_policy import (
     WikiGitDisposition,
     WikiGitPolicy,
@@ -52,6 +60,50 @@ def _body_line_count(function) -> int:
     first_body_line = min(stmt.lineno for stmt in body)
     last_body_line = max(stmt.end_lineno or stmt.lineno for stmt in body)
     return last_body_line - first_body_line + 1
+
+
+def test_trigger_rejects_omitted_persisted_explicit_profile_before_git(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    selected = Path("selected")
+    selected.mkdir()
+    (selected / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+    profile = Path("config/sources.json")
+    profile.parent.mkdir()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["selected"],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    policy = resolve_source_selection(tmp_path, "config/sources.json")
+    assert policy is not None
+    snapshot = build_source_snapshot(tmp_path, selection_policy=policy)
+    wiki = Path("docs/llm_wiki")
+    wiki.mkdir(parents=True)
+    SyncManifest(
+        generation_inputs=with_source_selection_generation_input(
+            {},
+            snapshot.source_selection_identity,
+            snapshot.source_selection_inputs,
+        )
+    ).save(wiki)
+    monkeypatch.setattr(trigger_cmd, "_is_breaker_open", lambda: False)
+    monkeypatch.setattr(trigger_cmd, "_record_trigger_start", lambda *_args: None)
+
+    def fail_git(*_args, **_kwargs):
+        pytest.fail("persisted identity must be checked before reading Git diff")
+
+    monkeypatch.setattr(trigger_cmd, "_fetch_last_commit_diff", fail_git)
+
+    with pytest.raises(SourceSelectionError, match="persisted"):
+        trigger_cmd._run_sync(_make_args(src_dir="."))
 
 
 @pytest.fixture(autouse=True)
@@ -178,6 +230,121 @@ class TestTriggerDiffGuard:
         assert "too large" in out.lower() or "Diff too large" in out
 
 
+class TestTriggerExternalSource:
+    def test_opted_in_external_source_reaches_git_inventory_and_prompt(
+        self, tmp_project, monkeypatch
+    ):
+        external = tmp_project.parent / "external-source"
+        selected = external / "selected"
+        selected.mkdir(parents=True)
+        (selected / "app.py").write_text(
+            "def external_entry():\n    return 1\n",
+            encoding="utf-8",
+        )
+        profile = external / "selection.json"
+        profile.write_text(
+            json.dumps(
+                {
+                    "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                    "include": ["selected"],
+                    "exclude": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        seen = {
+            "git_cwd": None,
+            "inventory": None,
+            "agent_calls": 0,
+            "source_snapshot": None,
+        }
+        real_build_source_snapshot = trigger_cmd.build_source_snapshot
+        initial_snapshot = real_build_source_snapshot(
+            external,
+            source_selection="selection.json",
+        )
+        wiki = Path("docs/llm_wiki")
+        wiki.mkdir(parents=True)
+        SyncManifest(
+            generation_inputs=with_source_selection_generation_input(
+                {},
+                initial_snapshot.source_selection_identity,
+                initial_snapshot.source_selection_inputs,
+            )
+        ).save(wiki)
+
+        def capture_source_snapshot(src_dir, **kwargs):
+            snapshot = real_build_source_snapshot(src_dir, **kwargs)
+            seen["source_snapshot"] = snapshot
+            return snapshot
+
+        def fake_inventory(src_dir, **kwargs):
+            seen["inventory"] = (src_dir, kwargs)
+            return InventoryResult(
+                {
+                    "selected/app.py": {
+                        "language": "python",
+                        "classes": [],
+                        "functions": [{"name": "external_entry", "line": 1}],
+                    }
+                },
+                {},
+                source_snapshot=kwargs["source_snapshot"],
+            )
+
+        def fake_run(cmd, *args, **kwargs):
+            if cmd[:2] == ["git", "diff"]:
+                seen["git_cwd"] = kwargs.get("cwd")
+                diff = (
+                    "diff --git a/selected/app.py b/selected/app.py\n"
+                    "--- a/selected/app.py\n"
+                    "+++ b/selected/app.py\n"
+                    "@@ -1 +1 @@\n"
+                    "-def old(): pass\n"
+                    "+def external_entry(): return 1\n"
+                )
+                return subprocess.CompletedProcess(cmd, 0, stdout=diff, stderr="")
+            if cmd[:3] == ["git", "rev-parse", "--show-toplevel"]:
+                return subprocess.CompletedProcess(
+                    cmd,
+                    0,
+                    stdout=f"{external}\n",
+                    stderr="",
+                )
+            if cmd[0] == "claude":
+                seen["agent_calls"] += 1
+                return subprocess.CompletedProcess(cmd, 0)
+            raise AssertionError(f"unexpected command: {cmd}")
+
+        monkeypatch.setattr(
+            trigger_cmd,
+            "build_source_snapshot",
+            capture_source_snapshot,
+        )
+        monkeypatch.setattr(extraction_service, "get_inventory_result", fake_inventory)
+        monkeypatch.setattr(trigger_cmd.subprocess, "run", fake_run)
+
+        trigger_cmd.run(
+            _make_args(
+                src_dir=str(external),
+                allow_external_src=True,
+                source_selection="selection.json",
+            )
+        )
+
+        assert Path(seen["git_cwd"]) == external
+        inventory_src, inventory_kwargs = seen["inventory"]
+        assert Path(inventory_src) == external
+        assert inventory_kwargs["source_snapshot"] is seen["source_snapshot"]
+        assert "source_selection" not in inventory_kwargs
+        assert seen["agent_calls"] == 1
+        prompt = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
+        assert "selected/app.py" in prompt
+        assert str(external) in prompt
+        assert "--allow-external-src" in prompt
+        assert "--source-selection selection.json" in prompt
+
+
 class TestTriggerGitFailure:
     @patch("llm_wiki_cli.commands.trigger_cmd.subprocess.run")
     def test_records_failure_on_git_error(self, mock_run, tmp_project):
@@ -301,9 +468,7 @@ class TestTriggerPromptHandling:
         def fake_run(cmd, *args, **kwargs):
             calls.append(list(cmd))
             if cmd[:2] == ["git", "diff"]:
-                return subprocess.CompletedProcess(
-                    cmd, 0, stdout="diff\n", stderr=""
-                )
+                return subprocess.CompletedProcess(cmd, 0, stdout="diff\n", stderr="")
             raise AssertionError(f"agent must not run: {cmd}")
 
         with patch(

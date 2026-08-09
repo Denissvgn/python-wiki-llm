@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import shlex
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 
 _TEST_DIRECTORY_NAMES = frozenset({"test", "tests", "__tests__"})
@@ -60,3 +60,24 @@ def shell_quote(value: str | Path) -> str:
     if isinstance(value, Path):
         return shlex.quote(value.as_posix())
     return shlex.quote(str(value))
+
+
+def portable_source_root_label(
+    value: str | Path,
+    *,
+    base: str | Path | None = None,
+) -> str:
+    """Return a host-independent source-root label for generated artifacts."""
+
+    raw_value = str(value)
+    candidate = Path(value).expanduser()
+    foreign_windows = PureWindowsPath(raw_value)
+    if not candidate.is_absolute():
+        if PurePosixPath(raw_value).is_absolute() or foreign_windows.drive:
+            return "<external-source-root>"
+    anchor = Path.cwd() if base is None else Path(base).expanduser()
+    try:
+        relative = candidate.resolve().relative_to(anchor.resolve())
+    except (OSError, RuntimeError, ValueError):
+        return "<external-source-root>"
+    return "." if relative == Path() else relative.as_posix()

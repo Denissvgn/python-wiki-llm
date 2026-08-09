@@ -37,6 +37,10 @@ report a package, scope, or repository as “not affected”, patched, or cleare
   helper and plugin identity/status, and do not treat a failed, skipped, or
   unsupported extractor as empty dependency surface.
 - If `--src-dir` points outside the current working directory, pass `--allow-external-src` consistently to every source-reading command, including `prepare-extractors --src-dir <repo> --allow-external-src` and `team check --src-dir <repo> --allow-external-src` when team policy is checked. Keep report and output paths under the current project.
+- Resolve the active source-selection profile once. When configured, replace
+  `<profile>` below with its exact repository-relative path and keep
+  `--source-selection <profile>` on every source-reading command; omit the
+  whole option only when no profile exists.
 
 ## Steps
 
@@ -45,8 +49,8 @@ report a package, scope, or repository as “not affected”, patched, or cleare
    source root, exact command/options, helper/plugin status, and UTC run time.
 
    ```bash
-   llm-wiki prepare-extractors --src-dir .
-   llm-wiki extract --src-dir . --deep --read-only \
+   llm-wiki prepare-extractors --src-dir . --source-selection <profile>
+   llm-wiki extract --src-dir . --deep --read-only --source-selection <profile> \
      --output /tmp/dep-vuln-extract.json
    ```
 

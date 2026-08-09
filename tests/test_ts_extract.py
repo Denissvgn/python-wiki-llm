@@ -67,6 +67,16 @@ def _make_ts(tmp_path: Path, filename: str, content: str) -> Path:
     return p
 
 
+def _write_owned_package_sentinels(root: Path) -> None:
+    for rel_path in (
+        "src/llm_wiki_cli/__init__.py",
+        "src/llm_wiki_cli/cli.py",
+        "src/llm_wiki_cli/extractors/__init__.py",
+        "src/llm_wiki_cli/extractors/common.py",
+    ):
+        _make_ts(root, rel_path, "# package source\n")
+
+
 class TestTypeScriptWrapperFiltering:
     def test_full_scan_passes_gitignore_filtered_files_to_subprocess(
         self, tmp_path, monkeypatch
@@ -711,6 +721,52 @@ class TestTypeScriptExtractorWrapper:
 
         assert inv == {}
         mock_run.assert_not_called()
+
+    def test_normalization_filters_checkout_helper_but_not_unrelated_suffix(
+        self, tmp_path
+    ):
+        _write_owned_package_sentinels(tmp_path)
+        bundled = "src/llm_wiki_cli/extractors/ts_scripts/extract.js"
+        unrelated = "vendor/llm_wiki_cli/extractors/ts_scripts/extract.js"
+        _make_ts(tmp_path, bundled, "export function extract() {}\n")
+        _make_ts(tmp_path, unrelated, "export function consumer() {}\n")
+        inventory = {
+            bundled: {"classes": [], "functions": []},
+            unrelated: {"classes": [], "functions": []},
+        }
+
+        normalized = TypeScriptExtractor()._normalize_inventory(
+            str(tmp_path),
+            inventory,
+            BUNDLED_TS_SCRIPTS,
+        )
+
+        assert list(normalized) == [unrelated]
+
+    def test_relative_external_helper_suffix_fails_open_across_both_filter_stages(
+        self, tmp_path, monkeypatch
+    ):
+        external_root = tmp_path / "external-consumer"
+        relative_path = "src/llm_wiki_cli/extractors/ts_scripts/extract.js"
+        _make_ts(external_root, relative_path, "export function consumer() {}\n")
+        monkeypatch.chdir(Path(__file__).parents[1])
+        result = subprocess.CompletedProcess(
+            args=["node"],
+            returncode=0,
+            stdout=json.dumps(
+                {relative_path: {"classes": [], "functions": []}}
+            ),
+            stderr="",
+        )
+        extractor = TypeScriptExtractor()
+
+        loaded = extractor._load_inventory(result)
+        normalized = extractor._normalize_inventory(
+            str(external_root), loaded, BUNDLED_TS_SCRIPTS
+        )
+
+        assert list(loaded) == [relative_path]
+        assert list(normalized) == [relative_path]
 
     def test_windows_style_inventory_keys_are_normalized(self, tmp_path):
         _make_ts(tmp_path, "web/src/app.ts", "export class App {}")

@@ -408,3 +408,28 @@ def test_default_ci_does_not_install_or_prepare_ghc():
 
     assert "ghc" not in ci_lower
     assert "prepare-extractors --language haskell" not in ci_lower
+
+
+def test_wiki_integrity_uses_the_automatic_locked_routine_helper_plan():
+    workflow = yaml.safe_load(
+        (PROJECT_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    )
+    job = workflow["jobs"]["wiki-integrity"]
+    setup = next(
+        step
+        for step in job["steps"]
+        if step.get("name") == "Install the locked routine toolchain"
+    )["run"]
+    prepare = next(
+        step
+        for step in job["steps"]
+        if step.get("name") == "Prepare the automatically selected extractor helpers"
+    )["run"]
+
+    assert "--mode routine" in setup
+    assert "--mode qualification-go" not in setup
+    assert "-m llm_wiki_cli.cli prepare-extractors" in prepare
+    assert "--src-dir ." in prepare
+    assert '--cache-dir "${LLM_WIKI_CACHE_DIR}"' in prepare
+    assert "--language" not in prepare
+    assert "--source-selection" not in prepare

@@ -29,6 +29,32 @@ from llm_wiki_cli.services.extractor_helpers import (
     prepare_typescript,
     resolve_helper_cache_root,
 )
+from llm_wiki_cli.services.source_selection import SourceSelectionError
+
+
+def _write_fixture(root: Path, rel_path: str, content: str = "fixture\n") -> None:
+    path = root / rel_path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+
+
+def _write_self_like_helpers(root: Path) -> None:
+    package_prefix = "src/llm_wiki_cli"
+    for rel_path in (
+        "__init__.py",
+        "cli.py",
+        "extractors/__init__.py",
+        "extractors/common.py",
+        "extractors/ts_scripts/extract.js",
+        "extractors/go_scripts/main.go",
+        "extractors/rust_scripts/src/main.rs",
+        "extractors/haskell_scripts/Inventory.hs",
+        "extractors/haskell_scripts/Json.hs",
+        "extractors/haskell_scripts/Main.hs",
+        "extractors/haskell_scripts/Parser.hs",
+        "extractors/haskell_scripts/Paths.hs",
+    ):
+        _write_fixture(root, f"{package_prefix}/{rel_path}")
 
 
 @pytest.mark.parametrize(
@@ -264,6 +290,7 @@ def test_prepare_extractors_detects_languages_from_snapshot(
     (tmp_path / ".git").mkdir()
     (tmp_path / "app.ts").write_text("export class App {}\n", encoding="utf-8")
     (tmp_path / "main.go").write_text("package main\n", encoding="utf-8")
+    (tmp_path / "lib.rs").write_text("pub fn run() {}\n", encoding="utf-8")
     (tmp_path / "Main.hs").write_text("module Main where\n", encoding="utf-8")
     calls = []
 
@@ -280,6 +307,7 @@ def test_prepare_extractors_detects_languages_from_snapshot(
     assert [language for language, _cache_root in calls] == [
         "typescript",
         "go",
+        "rust",
         "haskell",
     ]
     assert "typescript: prepared" in capsys.readouterr().out
@@ -356,6 +384,42 @@ def test_prepare_extractors_detects_javascript_as_typescript_helper(
     assert "typescript: prepared" in capsys.readouterr().out
 
 
+def test_prepare_extractors_automatic_selection_ignores_self_helpers(
+    tmp_path, monkeypatch, capsys
+):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / ".git").mkdir()
+    _write_self_like_helpers(tmp_path)
+    _write_fixture(
+        tmp_path,
+        "integrations/obsidian/llm-wiki/main.js",
+        "export function activate() {}\n",
+    )
+    _write_fixture(
+        tmp_path,
+        "integrations/obsidian/llm-wiki/src/main.ts",
+        "export const plugin = true;\n",
+    )
+    calls = []
+
+    def fake_prepare(language, cache_root):
+        calls.append((language, cache_root))
+        return HelperPrepareResult(language, "prepared", "ok")
+
+    monkeypatch.setattr(prepare_extractors_cmd, "prepare_helper", fake_prepare)
+
+    prepare_extractors_cmd.run(
+        types.SimpleNamespace(src_dir=".", cache_dir=None, language=None)
+    )
+
+    assert [language for language, _cache_root in calls] == ["typescript"]
+    output = capsys.readouterr().out
+    assert "typescript: prepared" in output
+    assert "go: prepared" not in output
+    assert "rust: prepared" not in output
+    assert "haskell: prepared" not in output
+
+
 def test_prepare_extractors_repeated_language_forces_selection(
     tmp_path, monkeypatch, capsys
 ):
@@ -375,12 +439,63 @@ def test_prepare_extractors_repeated_language_forces_selection(
         types.SimpleNamespace(
             src_dir=".",
             cache_dir=None,
-            language=["go", "go", "rust"],
+            language=[
+                "typescript",
+                "go",
+                "rust",
+                "haskell",
+                "typescript",
+                "go",
+                "rust",
+                "haskell",
+            ],
         )
     )
 
-    assert calls == ["go", "rust"]
+    assert calls == ["typescript", "go", "rust", "haskell"]
     assert "already_current" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    "profile_text, expected",
+    [
+        ("{not-json}\n", "valid bounded JSON"),
+        (
+            json.dumps(
+                {
+                    "schema_version": "llm-wiki-source-selection/v1",
+                    "include": ["missing"],
+                    "exclude": [],
+                }
+            )
+            + "\n",
+            "select at least one readable regular file",
+        ),
+    ],
+)
+def test_prepare_extractors_explicit_language_still_validates_default_selection(
+    tmp_path,
+    monkeypatch,
+    profile_text,
+    expected,
+):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / ".git").mkdir()
+    profile = tmp_path / ".llm-wiki" / "source-selection.json"
+    profile.parent.mkdir()
+    profile.write_text(profile_text, encoding="utf-8")
+    monkeypatch.setattr(
+        prepare_extractors_cmd,
+        "prepare_helper",
+        lambda *_args, **_kwargs: pytest.fail(
+            "helpers must not be prepared before selection validation"
+        ),
+    )
+
+    with pytest.raises(SourceSelectionError, match=expected):
+        prepare_extractors_cmd.run(
+            types.SimpleNamespace(src_dir=".", cache_dir=None, language=["go"])
+        )
 
 
 def test_prepare_extractors_missing_cache_location_exits(tmp_path, monkeypatch, capsys):

@@ -117,9 +117,15 @@ class TestGetEntryPoints:
     def test_detects_api_exports(self, tmp_path):
         (tmp_path / "api.py").write_text(
             textwrap.dedent("""\
-            __all__ = ["extract_source", "MISSING"]
+            __all__ = ["extract_source", "_internal", "Service", "MISSING"]
 
             def extract_source():
+                pass
+
+            def _internal():
+                pass
+
+            class Service:
                 pass
         """)
         )
@@ -553,8 +559,8 @@ class TestGetEntryPoints:
                     "entry": legacy[0],
                     "detector": {
                         "id": "builtin.api-export",
-                        "version": "1",
-                        "reason": "symbol is a local definition listed in __all__",
+                        "version": "2",
+                        "reason": "non-private local function is listed in __all__",
                         "source_location": {
                             "source_path": "api.py",
                             "line": 3,

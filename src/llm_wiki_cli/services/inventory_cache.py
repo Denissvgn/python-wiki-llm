@@ -23,8 +23,8 @@ from .plugins import lock_path, plugin_store
 from .source_snapshot import SourceFile, SourceSnapshot
 
 CACHE_FILENAME = "llm-wiki-inventory-cache.json"
-CACHE_SCHEMA = "inventory-v1"
-CACHE_VERSION = 1
+CACHE_SCHEMA = "inventory-v2"
+CACHE_VERSION = 2
 ENV_CACHE_DIR = "LLM_WIKI_CACHE_DIR"
 
 
@@ -223,6 +223,7 @@ def build_inventory_cache_key(
         "extractor_fingerprint": _implementation_fingerprint(),
         "filter_fingerprint": _filter_fingerprint(),
         "gitignore_fingerprint": source_snapshot.gitignore_fingerprint,
+        "source_selection_identity": source_snapshot.source_selection_identity,
         "plugin_lock_fingerprint": _plugin_fingerprint(project_root),
     }
 

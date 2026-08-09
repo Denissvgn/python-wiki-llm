@@ -347,6 +347,216 @@ def _write_runtime_policy(
     )
 
 
+def _portable_source_selection_identity(
+    portable_policy: Mapping[str, Any],
+) -> dict[str, str] | None:
+    """Strictly decode the documentation run's optional selection identity."""
+
+    raw_identity = portable_policy.get("source_selection")
+    try:
+        identity = source_selection_identity_from_generation_inputs(
+            {"source_selection": raw_identity}
+            if raw_identity is not None
+            else {}
+        )
+    except SourceSelectionError as exc:
+        raise DocumentationIntegrityError(
+            f"Persisted documentation source selection is malformed: {exc}"
+        ) from exc
+    raw_origin = portable_policy.get("source_selection_origin")
+    if raw_origin not in {None, "default", "explicit"}:
+        raise DocumentationIntegrityError(
+            "Persisted documentation source-selection origin is unsupported."
+        )
+    if (identity is None) != (raw_origin is None):
+        raise DocumentationIntegrityError(
+            "Persisted documentation source-selection identity and origin disagree."
+        )
+    return identity
+
+
+def _resolve_bound_source_selection(
+    source_root: Path,
+    portable_policy: Mapping[str, Any],
+) -> SourceSelectionPolicy | None:
+    """Resolve the exact policy recorded by a prepared documentation run."""
+
+    identity = _portable_source_selection_identity(portable_policy)
+    origin = portable_policy.get("source_selection_origin")
+    requested_path = (
+        None
+        if identity is None or origin == "default"
+        else identity["path"]
+    )
+    try:
+        current = resolve_source_selection(source_root, requested_path)
+    except SourceSelectionError as exc:
+        raise DocumentationIntegrityError(
+            f"Bound documentation source selection is unavailable: {exc}"
+        ) from exc
+    current_identity = None if current is None else current.identity
+    if current_identity != identity:
+        raise DocumentationIntegrityError(
+            "Bound documentation source selection changed since prepare; request "
+            "an explicit refresh."
+        )
+    if current is not None and current.origin != origin:
+        raise DocumentationIntegrityError(
+            "Bound documentation source-selection origin changed since prepare."
+        )
+    return current
+
+
+def _bound_source_selection_argument(
+    portable_policy: Mapping[str, Any],
+) -> str | None:
+    """Return the pinned repository-relative selection path for a run."""
+
+    identity = _portable_source_selection_identity(portable_policy)
+    return None if identity is None else identity["path"]
+
+
+def _build_bound_source_snapshot(
+    source_root: Path,
+    portable_policy: Mapping[str, Any],
+    *,
+    include_tests: Iterable[str] | None = None,
+) -> SourceSnapshot:
+    """Capture selected run inputs while rejecting policy drift and fallback."""
+
+    selection_policy = _resolve_bound_source_selection(
+        source_root,
+        portable_policy,
+    )
+    try:
+        snapshot = build_source_snapshot(
+            source_root,
+            include_tests=include_tests,
+            selection_policy=selection_policy,
+        )
+    except (OSError, SourceSelectionError, TypeError, ValueError) as exc:
+        raise DocumentationIntegrityError(
+            f"Cannot capture the bound documentation source snapshot: {exc}"
+        ) from exc
+    expected_identity = _portable_source_selection_identity(portable_policy)
+    if snapshot.source_selection_identity != expected_identity:
+        raise DocumentationIntegrityError(
+            "Documentation source selection changed while its snapshot was captured."
+        )
+    return snapshot
+
+
+def _capture_bound_source_baseline(
+    source_root: Path,
+    portable_policy: Mapping[str, Any],
+    *,
+    source_snapshot: SourceSnapshot | None = None,
+) -> TreeBaseline:
+    """Preserve the broad legacy baseline when no selection is configured."""
+
+    if _portable_source_selection_identity(portable_policy) is None:
+        return source_tree_baseline(source_root)
+    snapshot = source_snapshot or _build_bound_source_snapshot(
+        source_root,
+        portable_policy,
+    )
+    return source_snapshot_tree_baseline(snapshot)
+
+
+def _compare_bound_source_baseline(
+    baseline: TreeBaseline,
+    source_root: Path,
+    portable_policy: Mapping[str, Any],
+) -> IntegrityDifference:
+    """Compare with the capture mode bound into the documentation run."""
+
+    if _portable_source_selection_identity(portable_policy) is None:
+        return compare_tree_baseline(baseline, source_root)
+    selection_policy = _resolve_bound_source_selection(
+        source_root,
+        portable_policy,
+    )
+    if selection_policy is None:
+        raise DocumentationIntegrityError(
+            "Configured documentation source selection is unavailable."
+        )
+    current_inputs = capture_source_selection_inputs(
+        source_root,
+        selection_policy=selection_policy,
+    )
+    assert current_inputs is not None
+    expected_control_hashes = {
+        path: digest
+        for path, digest in baseline.file_hashes.items()
+        if path == selection_policy.path or Path(path).name == ".gitignore"
+    }
+    raw_inputs = current_inputs.get("inputs")
+    if not isinstance(raw_inputs, list):
+        raise DocumentationIntegrityError(
+            "Captured documentation source-selection inputs are invalid."
+        )
+    current_control_hashes: dict[str, str] = {}
+    for item in raw_inputs:
+        if not isinstance(item, Mapping):
+            raise DocumentationIntegrityError(
+                "Captured documentation source-selection inputs are invalid."
+            )
+        path = item.get("path")
+        content_hash = item.get("content_hash")
+        if not isinstance(path, str) or not isinstance(content_hash, str):
+            raise DocumentationIntegrityError(
+                "Captured documentation source-selection inputs are invalid."
+            )
+        current_control_hashes[path] = content_hash
+    if expected_control_hashes != current_control_hashes:
+        return IntegrityDifference(
+            root_display=baseline.root_display,
+            added=tuple(
+                sorted(set(current_control_hashes) - set(expected_control_hashes))
+            ),
+            removed=tuple(
+                sorted(set(expected_control_hashes) - set(current_control_hashes))
+            ),
+            changed=tuple(
+                sorted(
+                    path
+                    for path in set(expected_control_hashes)
+                    & set(current_control_hashes)
+                    if expected_control_hashes[path] != current_control_hashes[path]
+                )
+            ),
+        )
+    return compare_source_snapshot_baseline(
+        baseline,
+        build_source_snapshot(
+            source_root,
+            selection_policy=selection_policy,
+            expected_selection_inputs=current_inputs,
+        ),
+    )
+
+
+def _capture_bound_source_plugin_baseline(source_root: Path) -> TreeBaseline:
+    try:
+        return source_plugin_tree_baseline(source_root)
+    except (OSError, DocumentationPolicyError) as exc:
+        raise DocumentationIntegrityError(
+            f"Cannot capture trusted source-plugin integrity: {exc}"
+        ) from exc
+
+
+def _compare_bound_source_plugin_baseline(
+    baseline: TreeBaseline,
+    source_root: Path,
+) -> IntegrityDifference:
+    try:
+        return compare_source_plugin_tree_baseline(baseline, source_root)
+    except (OSError, DocumentationPolicyError) as exc:
+        raise DocumentationIntegrityError(
+            f"Cannot compare trusted source-plugin integrity: {exc}"
+        ) from exc
+
+
 def _portable_bootstrap_summary(
     summary: Mapping[str, Any], *, workspace_root: Path
 ) -> dict[str, Any]:
@@ -424,6 +634,8 @@ def _read_json(path: Path) -> dict[str, Any]:
 def _load_bound_runtime_policy(
     workspace_root: Path,
     run: DocumentationRun,
+    *,
+    verify_source_selection: bool = True,
 ) -> dict[str, Path | None]:
     """Bind machine-local roots back to the validated portable run policy."""
 
@@ -512,6 +724,13 @@ def _load_bound_runtime_policy(
     if bool(run.source.get("available")) != (source_root is not None):
         raise DocumentationIntegrityError(
             "Runtime source root availability no longer matches the run contract."
+        )
+    if source_root is not None:
+        if verify_source_selection:
+            _resolve_bound_source_selection(source_root, run.policy)
+    elif _portable_source_selection_identity(run.policy) is not None:
+        raise DocumentationIntegrityError(
+            "Source-unavailable documentation run retained a source selection."
         )
     input_root = resolved["input_wiki_root"]
     expected_input = isinstance(run.baseline.get("input_wiki"), Mapping)
@@ -792,6 +1011,14 @@ __all__ = (
     '_assert_workspace_control_tree_safe',
     '_assert_safe_workspace_directory',
     '_write_runtime_policy',
+    '_portable_source_selection_identity',
+    '_resolve_bound_source_selection',
+    '_bound_source_selection_argument',
+    '_build_bound_source_snapshot',
+    '_capture_bound_source_baseline',
+    '_capture_bound_source_plugin_baseline',
+    '_compare_bound_source_baseline',
+    '_compare_bound_source_plugin_baseline',
     '_portable_bootstrap_summary',
     '_workspace_path',
     '_stage_event_path',

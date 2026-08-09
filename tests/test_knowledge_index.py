@@ -419,7 +419,7 @@ def test_standalone_validator_rejects_impossible_builder_output(
         model.concepts[0],
         concept_kind="example.invalid/custom",
     )
-    with pytest.raises(KnowledgeModelError, match="KNOW-106"):
+    with pytest.raises(KnowledgeModelError, match="knowledge-index construction"):
         validate_knowledge_index(
             replace(model, concepts=(custom_concept, *model.concepts[1:]))
         )

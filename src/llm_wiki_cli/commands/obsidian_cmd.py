@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 
-from ..config import DEFAULT_WIKI_DIR, validate_path
+from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from ..services.knowledge_consumption import load_knowledge_read_view
 from ..services.knowledge_projection import (
     KnowledgeProjection,
@@ -20,6 +20,7 @@ from ..services.obsidian import (
     install_obsidian_plugin,
     render_report_json,
     render_report_text,
+    validate_obsidian_export_source_selection,
 )
 
 
@@ -78,7 +79,19 @@ def run(args) -> None:
             wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
             src_dir = getattr(args, "src_dir", ".")
             validate_path(wiki_dir, "--wiki-dir")
-            validate_path(src_dir, "--src-dir")
+            allow_external = bool(getattr(args, "allow_external_src", False))
+            source_root = validate_source_root(
+                src_dir,
+                "--src-dir",
+                allow_external=allow_external,
+            )
+            if allow_external:
+                src_dir = str(source_root)
+            source_snapshot = validate_obsidian_export_source_selection(
+                src_dir=src_dir,
+                wiki_dir=wiki_dir,
+                source_selection=getattr(args, "source_selection", None),
+            )
             knowledge_projection = _knowledge_projection(args, wiki_dir)
             report = export_obsidian_vault(
                 src_dir=src_dir,
@@ -86,6 +99,7 @@ def run(args) -> None:
                 vault_dir=getattr(args, "vault_dir"),
                 notes_dir=getattr(args, "notes_dir", DEFAULT_NOTES_DIR),
                 dry_run=bool(getattr(args, "dry_run", False)),
+                source_selection=source_snapshot.source_selection_path,
                 knowledge_metadata=getattr(args, "knowledge_metadata", None),
                 knowledge_projection=knowledge_projection,
             )

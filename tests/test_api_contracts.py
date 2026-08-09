@@ -19,6 +19,8 @@ from llm_wiki_cli.services.api_contracts import (
     render_api_contracts_markdown,
     render_flow_api_contract_section,
 )
+from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
 
 def _inventory(root: Path, files: dict[str, str]) -> dict:
@@ -37,7 +39,7 @@ def _static_fixture(root: Path) -> dict:
     return _inventory(
         root,
         {
-            "routers/items.py": '''
+            "routers/items.py": """
 from fastapi import (
     APIRouter as Router,
     Body, Cookie, Depends, File, Form, Header, Path, Query, Request,
@@ -79,22 +81,22 @@ async def upsert(
     request: Request = None,
 ) -> Item:
     return payload
-''',
-            "routers/root.py": '''
+""",
+            "routers/root.py": """
 from fastapi import APIRouter
 from . import items
 
 root_router = APIRouter(prefix="/v1", tags=["root"])
 root_router.include_router(items.router, prefix="/catalog", tags=["public"])
-''',
-            "app.py": '''
+""",
+            "app.py": """
 from fastapi import FastAPI
 from routers.root import root_router as api_router
 
 app = FastAPI(root_path="/proxy")
 application = app
 application.include_router(api_router, prefix="/api")
-''',
+""",
             "models.py": "class Item: pass\nclass Error: pass\n",
         },
     )
@@ -102,7 +104,7 @@ application.include_router(api_router, prefix="/api")
 
 def test_raw_extractor_tracks_aliases_factory_scope_and_parameter_markers() -> None:
     declarations = extract_fastapi_declarations(
-        '''
+        """
 from fastapi import FastAPI as WebApp, Query as Q
 
 PREFIX = "/v1"
@@ -115,7 +117,7 @@ def create_app():
         return []
 
     return app
-''',
+""",
         filepath="app.py",
     )
 
@@ -139,13 +141,13 @@ def test_deep_python_inventory_retains_fastapi_only_application_module(
     inventory = _inventory(
         tmp_path,
         {
-            "app.py": '''
+            "app.py": """
 from fastapi import FastAPI
 from routes import router
 
 app = FastAPI()
 app.include_router(router)
-'''
+"""
         },
     )
 
@@ -191,13 +193,13 @@ def test_dynamic_pydantic_metadata_is_unknown_instead_of_asserted(
     inventory = _inventory(
         tmp_path,
         {
-            "models.py": '''
+            "models.py": """
 from pydantic import BaseModel, ConfigDict, Field
 
 class Item(BaseModel):
     model_config = ConfigDict(alias_generator=make_alias)
     quantity: int = Field(gt=compute_limit(), examples=[make_example()])
-'''
+"""
         },
     )
 
@@ -213,7 +215,9 @@ class Item(BaseModel):
     assert model["model_config"][0]["unknowns"][0]["expression"] == "make_alias"
 
 
-def test_static_contract_composes_nested_routers_and_wire_fields(tmp_path: Path) -> None:
+def test_static_contract_composes_nested_routers_and_wire_fields(
+    tmp_path: Path,
+) -> None:
     contracts = build_static_api_contracts(_static_fixture(tmp_path))
 
     assert contracts["source"] == "static"
@@ -256,16 +260,14 @@ def test_static_contract_composes_nested_routers_and_wire_fields(tmp_path: Path)
     assert responses["401"]["model"] == "Error"
     assert responses["404"]["content_types"] == ["application/problem+json"]
     assert "422" not in responses
-    assert {
-        item["field"] for item in operation["unknowns"]
-    } == {"parameter:ignored"}
+    assert {item["field"] for item in operation["unknowns"]} == {"parameter:ignored"}
 
 
 def test_repeated_router_mounts_emit_each_path_and_route_list(tmp_path: Path) -> None:
     inventory = _inventory(
         tmp_path,
         {
-            "app.py": '''
+            "app.py": """
 from fastapi import APIRouter, FastAPI
 
 router = APIRouter()
@@ -276,7 +278,7 @@ def health(): return {"ok": True}
 app = FastAPI()
 app.include_router(router, prefix="/one")
 app.include_router(router, prefix="/two")
-'''
+"""
         },
     )
     contracts = build_static_api_contracts(inventory)
@@ -299,13 +301,13 @@ def test_trace_decorator_is_a_first_class_http_operation(tmp_path: Path) -> None
     inventory = _inventory(
         tmp_path,
         {
-            "app.py": '''
+            "app.py": """
 from fastapi import FastAPI
 app = FastAPI()
 
 @app.trace("/diagnostics")
 def diagnostics(): pass
-'''
+"""
         },
     )
 
@@ -319,7 +321,7 @@ def test_router_cycle_dynamic_prefix_and_unresolved_include_are_diagnostic(
     inventory = _inventory(
         tmp_path,
         {
-            "app.py": '''
+            "app.py": """
 from fastapi import APIRouter, FastAPI
 
 left = APIRouter()
@@ -338,7 +340,7 @@ app = FastAPI()
 app.include_router(left)
 app.include_router(dynamic)
 app.include_router(missing_router)
-'''
+"""
         },
     )
     contracts = build_static_api_contracts(inventory)
@@ -357,20 +359,20 @@ def test_schema_hidden_and_test_source_operations_are_excluded_but_raw_retained(
     inventory = _inventory(
         tmp_path,
         {
-            "app.py": '''
+            "app.py": """
 from fastapi import FastAPI
 app = FastAPI()
 
 @app.get("/hidden", include_in_schema=False)
 def hidden(): pass
-''',
-            "tests/test_routes.py": '''
+""",
+            "tests/test_routes.py": """
 from fastapi import FastAPI
 app = FastAPI()
 
 @app.get("/test-only")
 def test_only(): pass
-''',
+""",
         },
     )
     contracts = build_static_api_contracts(inventory)
@@ -390,7 +392,7 @@ def test_syntax_only_extraction_never_executes_target_module(tmp_path: Path) -> 
     inventory = _inventory(
         tmp_path,
         {
-            "app.py": f'''
+            "app.py": f"""
 from fastapi import FastAPI
 from pathlib import Path
 
@@ -401,7 +403,7 @@ app = FastAPI()
 
 @app.get("/safe")
 def safe(): return True
-'''
+"""
         },
     )
 
@@ -478,7 +480,7 @@ def _reconciliation_inventory(root: Path) -> dict:
     return _inventory(
         root,
         {
-            "app.py": '''
+            "app.py": """
 from fastapi import Body, FastAPI, Path
 from models import Item
 
@@ -494,7 +496,7 @@ def get_item(item_id: int = Path(...), payload: Item = Body(...)) -> Item:
 
 @app.delete("/static-only")
 def static_only(): pass
-''',
+""",
             "models.py": "class Item: pass\n",
         },
     )
@@ -552,7 +554,7 @@ def test_conditional_declarations_remain_raw_and_are_not_asserted(
     inventory = _inventory(
         tmp_path,
         {
-            "app.py": '''
+            "app.py": """
 from fastapi import FastAPI
 
 if ENABLED:
@@ -560,7 +562,7 @@ if ENABLED:
 
     @app.get("/maybe")
     def maybe(): pass
-'''
+"""
         },
     )
 
@@ -576,7 +578,7 @@ def test_response_alias_and_description_are_normalized(tmp_path: Path) -> None:
     inventory = _inventory(
         tmp_path,
         {
-            "app.py": '''
+            "app.py": """
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse as HTML
 from models import Result as PublicResult
@@ -590,7 +592,7 @@ app = FastAPI()
     response_description="rendered",
 )
 def page(): pass
-''',
+""",
             "models.py": "class Result: pass\n",
         },
     )
@@ -646,24 +648,20 @@ def test_openapi_authority_omits_unrelated_static_diagnostics_and_exclusions(
     inventory = _inventory(
         tmp_path,
         {
-            "app.py": '''
+            "app.py": """
 from fastapi import APIRouter, FastAPI
 router = APIRouter(prefix=dynamic_prefix())
 @router.get("/static")
 def static_handler(): pass
 app = FastAPI()
 app.include_router(router)
-'''
+"""
         },
     )
     document = {
         "openapi": "3.1.0",
         "info": {"title": "runtime", "version": "1"},
-        "paths": {
-            "/runtime": {
-                "get": {"responses": {"200": {"description": "ok"}}}
-            }
-        },
+        "paths": {"/runtime": {"get": {"responses": {"200": {"description": "ok"}}}}},
     }
     (tmp_path / "openapi.json").write_text(json.dumps(document), encoding="utf-8")
 
@@ -718,8 +716,83 @@ def test_openapi_path_must_remain_inside_source_root(tmp_path: Path) -> None:
     outside.write_text(yaml.safe_dump(_openapi_document()), encoding="utf-8")
 
     with pytest.raises(ApiContractError, match="outside source root"):
-        build_api_contracts(
-            {}, openapi_file="../outside.yaml", source_root=source_root
+        build_api_contracts({}, openapi_file="../outside.yaml", source_root=source_root)
+
+
+def test_excluded_lexical_openapi_symlink_cannot_alias_selected_target(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "selected" / "openapi.yaml"
+    target.parent.mkdir(parents=True)
+    target.write_text(yaml.safe_dump(_openapi_document()), encoding="utf-8")
+    private = tmp_path / "selected" / "private"
+    private.mkdir()
+    alias = private / "openapi.yaml"
+    try:
+        alias.symlink_to(target)
+    except (NotImplementedError, OSError):
+        pytest.skip("symlinks unavailable")
+    profile = tmp_path / ".llm-wiki" / "source-selection.json"
+    profile.parent.mkdir()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["selected"],
+                "exclude": ["selected/private"],
+            }
+        ),
+        encoding="utf-8",
+    )
+    snapshot = build_source_snapshot(tmp_path)
+
+    with pytest.raises(ApiContractError, match="outside the selected source set"):
+        load_openapi_document(
+            "selected/private/openapi.yaml",
+            source_root=tmp_path,
+            source_snapshot=snapshot,
+        )
+
+
+@pytest.mark.parametrize(
+    ("relative", "gitignore"),
+    (
+        ("selected/ignored-openapi.yaml", "ignored-openapi.yaml\n"),
+        ("selected/build/openapi.yaml", ""),
+    ),
+)
+def test_configured_openapi_cannot_readmit_ignored_or_global_excluded_file(
+    tmp_path: Path,
+    relative: str,
+    gitignore: str,
+) -> None:
+    selected = tmp_path / "selected"
+    selected.mkdir()
+    (selected / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+    target = tmp_path / relative
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(yaml.safe_dump(_openapi_document()), encoding="utf-8")
+    if gitignore:
+        (selected / ".gitignore").write_text(gitignore, encoding="utf-8")
+    profile = tmp_path / ".llm-wiki" / "source-selection.json"
+    profile.parent.mkdir()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["selected"],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    snapshot = build_source_snapshot(tmp_path)
+
+    with pytest.raises(ApiContractError, match="not an effective selected input"):
+        load_openapi_document(
+            relative,
+            source_root=tmp_path,
+            source_snapshot=snapshot,
         )
 
 

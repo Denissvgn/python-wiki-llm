@@ -18,6 +18,10 @@ from ..services.schema import (
     build_schema_content as _build_schema_content,
     replace_schema_block,
 )
+from ..services.source_selection import (
+    SourceSelectionError,
+    resolve_source_selection,
+)
 from ..services.skills import (
     REFERENCE_SKILL_ID,
     SkillsError,
@@ -39,6 +43,24 @@ def run(args):
     wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     validate_path(wiki_dir, "--wiki-dir")
     stored = read_config(wiki_dir)
+    requested_selection = getattr(args, "source_selection", None)
+    stored_selection = stored.get("source_selection")
+    if stored_selection is not None and not isinstance(stored_selection, str):
+        print("Error: stored source_selection must be a string", file=sys.stderr)
+        raise SystemExit(2)
+    selection_override = (
+        requested_selection
+        if requested_selection is not None
+        else stored_selection
+    )
+    try:
+        selection_policy = resolve_source_selection(".", selection_override)
+    except SourceSelectionError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        raise SystemExit(2) from exc
+    source_selection = (
+        selection_policy.path if selection_policy is not None else None
+    )
     requested_agent = getattr(args, "agent", None)
     agent = requested_agent or str(stored.get("agent") or "generic")
     print(f"Initializing LLM Wiki with {agent} schema...")
@@ -105,6 +127,7 @@ def run(args):
             wiki_dir,
             quality_hints=quality_hints,
             issue_reporting=issue_reporting,
+            source_selection=source_selection,
         )
 
         if schema_path.exists():
@@ -150,14 +173,14 @@ def run(args):
                 )
 
     # 5. Persist the chosen agent so install-hook can read it
-    write_config(
-        base_dir,
-        {
-            "agent": agent,
-            "quality_hints": quality_hints,
-            "reference_skill": install_skill,
-            "issue_reporting": issue_reporting,
-        },
-    )
+    config: dict[str, object] = {
+        "agent": agent,
+        "quality_hints": quality_hints,
+        "reference_skill": install_skill,
+        "issue_reporting": issue_reporting,
+    }
+    if source_selection is not None:
+        config["source_selection"] = source_selection
+    write_config(base_dir, config)
 
     print("LLM Wiki initialized successfully.")

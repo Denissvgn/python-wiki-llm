@@ -24,6 +24,116 @@ from llm_wiki_cli.services.inventory_cache import (
     ENV_CACHE_DIR,
     InventoryCacheStats,
 )
+from llm_wiki_cli.services.lint_service import LintReport, _check_sync_manifest
+from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
+from llm_wiki_cli.services.sync_manifest import MANIFEST_VERSION, SyncManifest
+
+
+def test_lint_blocks_legacy_manifest_against_live_source_selection(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "source"
+    selected = source / "selected"
+    selected.mkdir(parents=True)
+    (selected / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+    profile = source / ".llm-wiki" / "source-selection.json"
+    profile.parent.mkdir()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["selected"],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    wiki = tmp_path / "wiki"
+    wiki.mkdir()
+    SyncManifest().save(wiki)
+    report = LintReport(str(wiki), str(source))
+
+    _check_sync_manifest(
+        report,
+        wiki,
+        str(source),
+        inventory={},
+        source_snapshot=build_source_snapshot(source),
+    )
+
+    assert [(issue.category, issue.reason_code) for issue in report.issues] == [
+        ("source-selection-mismatch", "source-selection-mismatch")
+    ]
+    assert "same source-selection profile" in (report.issues[0].hint or "")
+
+
+def test_default_lint_always_checks_selection_identity_without_strict_checks(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "source"
+    selected = source / "selected"
+    selected.mkdir(parents=True)
+    (selected / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+    profile = source / ".llm-wiki" / "source-selection.json"
+    profile.parent.mkdir()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["selected"],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    wiki = tmp_path / "wiki"
+    wiki.mkdir()
+    SyncManifest().save(wiki)
+
+    report = lint_cmd.build_report(
+        wiki,
+        str(source),
+        strict=False,
+        include_plugins=False,
+    )
+
+    assert report.strict is False
+    assert report.count("source-selection-mismatch") == 1
+    assert report.count("wiki_structure") == 0
+
+
+def test_lint_classifies_invalid_selection_identity_as_targeted_mismatch(
+    tmp_path: Path,
+) -> None:
+    wiki = tmp_path / "wiki"
+    wiki.mkdir()
+    payload = {
+        "version": MANIFEST_VERSION,
+        "sources": {},
+        "surfaces": {},
+        "generation_inputs": {
+            "source_selection": {
+                "schema_version": "llm-wiki-source-selection-identity/v1",
+                "path": ".llm-wiki/source-selection.json",
+                "fingerprint": "invalid",
+            }
+        },
+        "page_source_mappings": {},
+        "evidence_baselines": {},
+        "tombstones": {},
+    }
+    (wiki / ".llm-wiki-manifest.json").write_text(
+        json.dumps(payload),
+        encoding="utf-8",
+    )
+    report = LintReport(str(wiki), str(tmp_path))
+
+    _check_sync_manifest(report, wiki, str(tmp_path), inventory={})
+
+    assert [(issue.category, issue.reason_code) for issue in report.issues] == [
+        ("source-selection-mismatch", "source-selection-mismatch")
+    ]
 
 
 def _ready_knowledge_lint_summary():

@@ -30,7 +30,8 @@ from llm_wiki_cli.services.diagrams import (
 )
 from llm_wiki_cli.services.entrypoints import build_flow, get_entry_points
 from llm_wiki_cli.services import knowledge_orchestration, plugins
-from llm_wiki_cli.services.wiki_surface import is_safe_page_id
+from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+from llm_wiki_cli.services.wiki_surface import iter_directory_kinds, is_safe_page_id
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 # True when git is on PATH; used to guard git-dependent fixture steps.
@@ -76,6 +77,26 @@ def _assert_generated_diagram_budgets(markdown: str) -> None:
         assert nodes <= GENERATED_DIAGRAM_NODE_LIMIT
         assert len(lines) <= GENERATED_DIAGRAM_LINE_LIMIT
         assert len(body) <= GENERATED_DIAGRAM_CHAR_LIMIT
+
+
+def test_bootstrap_constraint_refresh_pins_selection_for_default_wiki(
+    tmp_project,
+):
+    init_cmd.run(
+        types.SimpleNamespace(
+            agent="generic",
+            wiki_dir="docs/llm_wiki",
+            no_skills=True,
+        )
+    )
+
+    bootstrap_cmd._update_agent_constraints(
+        "docs/llm_wiki",
+        source_selection="config/selection.json",
+    )
+
+    constraints = Path("AGENTS.md").read_text(encoding="utf-8")
+    assert "--source-selection config/selection.json" in constraints
 
 
 def _dense_module_dependency_summary():
@@ -230,6 +251,62 @@ def _write_diagram_style_plugin(root: Path, *, body: str) -> None:
     plugins.install_plugin(str(plugin_dir), root=root, yes=True)
 
 
+def _write_toy_extractor_plugin(root: Path) -> None:
+    plugin_dir = root / "vendor" / "toy-extractor-plugin"
+    plugin_dir.mkdir(parents=True)
+    module_name = "bootstrap_toy_" + "_".join(root.parts[-3:])
+    module_name = "".join(
+        character if character.isalnum() or character == "_" else "_"
+        for character in module_name
+    )
+    (plugin_dir / plugins.MANIFEST_FILENAME).write_text(
+        json.dumps(
+            {
+                "id": "bootstrap-toy-extractor",
+                "version": "0.1.0",
+                "llm_wiki_version": "*",
+                "components": [
+                    {
+                        "type": "extractor",
+                        "id": "toy",
+                        "language": "javascript",
+                        "entry_point": f"{module_name}:ToyExtractor",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (plugin_dir / f"{module_name}.py").write_text(
+        textwrap.dedent(
+            """\
+            from pathlib import Path
+
+
+            class ToyExtractor:
+                last_error = None
+
+                def extract(self, src_dir, only_files=None, deep=False):
+                    selected = set(only_files or ())
+                    files = sorted(Path(src_dir).glob("*.jscustom"))
+                    if only_files is not None:
+                        files = [path for path in files if path.name in selected]
+                    return {
+                        path.name: {
+                            "language": "javascript",
+                            "classes": [],
+                            "functions": [{"name": path.stem, "line": 1}],
+                            "imports": [],
+                        }
+                        for path in files
+                    }
+            """
+        ),
+        encoding="utf-8",
+    )
+    plugins.install_plugin(str(plugin_dir), root=root, yes=True)
+
+
 def test_bootstrap_run_stays_a_short_coordinator():
     assert _body_line_count(bootstrap_cmd.run) <= 40
 
@@ -346,6 +423,26 @@ def tmp_collision_project(tmp_path):
 
 
 class TestBootstrapCollisions:
+    def test_bootstrap_tracks_empty_surface_directories(self, tmp_project):
+        wiki_dir = tmp_project / "docs" / "llm_wiki"
+
+        bootstrap_cmd.run(
+            _make_args(
+                src_dir=".",
+                wiki_dir=str(wiki_dir),
+                source_adapter=True,
+            )
+        )
+
+        directory_names = {
+            surface.directory
+            for surface in iter_directory_kinds()
+            if surface.directory is not None
+        }
+        assert directory_names
+        for directory_name in directory_names:
+            assert (wiki_dir / directory_name / ".gitkeep").is_file()
+
     def test_bootstrap_json_summary_is_parseable_stdout(self, tmp_project, capsys):
         wiki_dir = tmp_project / "docs" / "llm_wiki"
         args = _make_args(
@@ -1268,6 +1365,48 @@ class TestBootstrapModulePages:
         assert "| Outbound | [service](../modules/service.md) |" in content
         assert "| python | 1 | 0 |" in content
 
+    def test_package_submodule_imports_drive_module_map_and_load_order(
+        self, tmp_path, monkeypatch
+    ):
+        package = tmp_path / "pkg"
+        commands = package / "commands"
+        services = package / "services"
+        commands.mkdir(parents=True)
+        services.mkdir()
+        (package / "cli.py").write_text(
+            "from .commands import build_cmd\n"
+            "from .services import runtime\n\n"
+            "def main():\n"
+            "    return build_cmd.run(), runtime.start()\n",
+            encoding="utf-8",
+        )
+        (commands / "build_cmd.py").write_text(
+            "def run():\n    return 1\n",
+            encoding="utf-8",
+        )
+        (services / "runtime.py").write_text(
+            "def start():\n    return 2\n",
+            encoding="utf-8",
+        )
+        monkeypatch.chdir(tmp_path)
+
+        bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
+
+        module = (tmp_path / "wiki" / "modules" / "cli.md").read_text(
+            encoding="utf-8"
+        )
+        load_order = (tmp_path / "wiki" / "load-order.md").read_text(
+            encoding="utf-8"
+        )
+        assert "| Outbound | [build_cmd](../modules/build_cmd.md) |" in module
+        assert "| Outbound | [runtime](../modules/runtime.md) |" in module
+        assert load_order.index("[build_cmd](modules/build_cmd.md)") < load_order.index(
+            "[cli](modules/cli.md)"
+        )
+        assert load_order.index("[runtime](modules/runtime.md)") < load_order.index(
+            "[cli](modules/cli.md)"
+        )
+
     def test_module_local_dependency_map_uses_note_without_blank_diagram(
         self, tmp_path, monkeypatch, capsys
     ):
@@ -1331,6 +1470,17 @@ class TestBootstrapModulePages:
         assert "../modules/storage.md" not in content
         assert "adapters-collision" not in content
         assert "storage-collision" not in content
+        assert "Complete inbound and outbound dependencies" not in content
+        assert (
+            "the diagram and table below group them by top-level package"
+            in content
+        )
+        assert "Counts report the number of module neighbors" in content
+        assert (
+            "All 5 module neighbor(s) are summarized by package because the "
+            "module-level view exceeds the 4-node limit."
+        ) in content
+        assert "Showing 4 local graph nodes" not in content
 
     def test_dense_module_dependency_map_bounds_only_visual_edges(self):
         summary, direct_edges, cycle_edge = _dense_module_dependency_summary()
@@ -1407,6 +1557,10 @@ class TestBootstrapModulePages:
             )
         )
         assert "collapsed to package relationships" in package_content
+        assert (
+            "Complete inbound and outbound dependencies remain in the tables below."
+            in package_content
+        )
         assert package_content.count("| Inbound |") == 6
         assert package_content.count("| Outbound |") == 5
 
@@ -1478,6 +1632,46 @@ class TestBootstrapModulePages:
             f"dependency edges; {character_limited.omitted_edges} omitted to "
             "keep the visualization within the generated-diagram limits."
         ) in character_content
+
+    def test_package_detail_table_only_message_describes_aggregates(
+        self, monkeypatch
+    ):
+        summary = {
+            "file": "pkg/service.py",
+            "detail": "package",
+            "inbound": [{"package": "adapters", "count": 2}],
+            "outbound": [{"package": "storage", "count": 3}],
+            "nodes": ["adapters", "pkg/service.py", "storage"],
+            "edges": [
+                ("adapters", "pkg/service.py"),
+                ("pkg/service.py", "storage"),
+            ],
+            "cycle_participation": False,
+            "cycle_edges": [],
+            "external": {},
+            "overflow": {},
+        }
+        monkeypatch.setattr(
+            bootstrap_cmd,
+            "_module_dependency_graph",
+            lambda *_args, **_kwargs: types.SimpleNamespace(
+                diagram=None,
+                total_edges=2,
+                shown_edges=0,
+                omitted_edges=2,
+                projection="none",
+            ),
+        )
+
+        content = "\n".join(
+            bootstrap_cmd._generate_module_dependency_section(summary, {}, {})
+        )
+
+        assert "0 of 2 package relationship edges" in content
+        assert "every module neighbor count by top-level package" in content
+        assert "Complete inbound and outbound dependencies" not in content
+        assert "| Inbound | `adapters` (2) |" in content
+        assert "| Outbound | `storage` (3) |" in content
 
     def test_entity_docstrings_escape_source_symbol_links(self):
         content = bootstrap_cmd._generate_entity_md(
@@ -1822,6 +2016,8 @@ class TestBootstrapIndex:
         assert "| Modules | 3 |" in index
         assert "| Workflows | 0 |" in index
         assert "| Guides | 0 |" in index
+        assert "| Entry-point flows | 0 | No pages |" in index
+        assert "| HTTP API contracts | 0 | No pages |" in index
         assert "| Dependency architecture | 2 |" in index
         assert "| Log | 1 | [Open log](log.md) |" in index
         assert "User" in index
@@ -1834,10 +2030,50 @@ class TestBootstrapIndex:
         bootstrap_cmd.run(args)
 
         index = (wiki_dir / "index.md").read_text(encoding="utf-8")
-        assert "Use this landing page to choose the right wiki surface." in index
+        assert (
+            "This page is an exhaustive reference inventory of the selected "
+            "source. Task-oriented guides are not yet available."
+        ) in index
         assert "## Log" in index
         assert "- [Architectural log](log.md)" in index
         assert (wiki_dir / "guides").exists()
+
+    def test_index_normalizes_module_summary_and_uses_precise_surface_labels(self):
+        index = bootstrap_cmd._generate_index_md(
+            [],
+            [
+                {
+                    "name": "context_service",
+                    "path": "pkg/context_service.py",
+                    "docstring": (
+                        "Returns priority-ranked, token-budgeted\n"
+                        "context for supported clients.\n\n"
+                        "Implementation details follow in a second paragraph."
+                    ),
+                },
+                {"name": "fallback", "path": "pkg/fallback.py", "docstring": ""},
+            ],
+            flow_entries=[{"id": "api-run", "entry": "run"}],
+            api_contracts_present=True,
+            log_present=False,
+        )
+
+        assert (
+            "[context_service](modules/context_service.md) - Returns "
+            "priority-ranked, token-budgeted context for supported clients."
+        ) in index
+        assert "Implementation details follow" not in index
+        assert "[fallback](modules/fallback.md) - `pkg/fallback.py`" in index
+        assert "| Entry-point flows | 1 | [Open section](#entry-point-flows) |" in index
+        assert (
+            "| HTTP API contracts | 1 | [Open contracts](api-contracts.md) |"
+            in index
+        )
+        assert "## Entry-point flows" in index
+        assert "## HTTP API contracts" in index
+        assert '<a id="user-flows"></a>' in index
+        assert '<a id="api-contracts"></a>' in index
+        assert "User Flows" not in index
 
 
 class TestBootstrapLog:
@@ -1847,7 +2083,56 @@ class TestBootstrapLog:
         bootstrap_cmd.run(args)
 
         log = (wiki_dir / "log.md").read_text(encoding="utf-8")
-        assert "bootstrap" in log.lower()
+        knowledge = load_knowledge_state(wiki_dir).knowledge
+        assert knowledge is not None
+        assert "### Wiki bootstrap" in log
+        assert "### feat:" not in log
+        assert "- Source: `.`" in log
+        assert f"- Generator version: `{bootstrap_cmd.__version__}`" in log
+        assert "- Source selection profile: none (default discovery)" in log
+        assert "- Source selection fingerprint: none" in log
+        assert (
+            f"- Source snapshot digest: "
+            f"`{knowledge.bundle.snapshot.source_snapshot_hash}`"
+        ) in log
+        assert "- Entry-point flows created:" in log
+        assert "- HTTP API contract pages created:" in log
+        assert str(tmp_project.resolve()) not in log
+
+    def test_configured_snapshot_log_provenance_uses_canonical_profile(self, tmp_project):
+        profile_path = tmp_project / "config" / "sources.json"
+        profile_path.parent.mkdir()
+        profile_path.write_text(
+            json.dumps(
+                {
+                    "schema_version": "llm-wiki-source-selection/v1",
+                    "include": ["main.py", "models.py"],
+                    "exclude": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        snapshot = bootstrap_cmd.build_source_snapshot(
+            tmp_project,
+            source_selection="config/sources.json",
+        )
+
+        lines = bootstrap_cmd._source_snapshot_log_lines(snapshot)
+        expected_digest = bootstrap_cmd.runtime_source_snapshot_hash(
+            snapshot,
+            generation_inputs={},
+        )
+
+        assert "- Source selection profile: `config/sources.json`" in lines
+        assert (
+            f"- Source selection fingerprint: "
+            f"`{snapshot.source_selection_fingerprint}`"
+        ) in lines
+        assert (
+            f"- Source snapshot digest: "
+            f"`{expected_digest}`"
+        ) in lines
+        assert str(tmp_project.resolve()) not in lines
 
 
 class TestBootstrapOverwrite:
@@ -2030,6 +2315,44 @@ class TestBootstrapSkipWorkflows:
         assert "](EventTarget)" not in content
         assert "> Emits to targets (`EventTarget`)." in content
         assert "[docs](https://example.test)" in content
+        assert "## Behavior" in content
+        assert "This workflow starts at `lib.emit_to`." in content
+        assert "No call-chain steps were detected by static analysis." in content
+        assert "belong in Behavior" in content
+        assert "placeholder" not in content.casefold()
+        assert "refine" not in content.casefold()
+
+    def test_workflow_regeneration_preserves_reviewed_behavior(self):
+        original = bootstrap_cmd._generate_workflow_md(
+            "dispatch",
+            {
+                "entry": "app.dispatch",
+                "modules_touched": ["app"],
+                "chain": ["app.dispatch", "app.prepare"],
+            },
+        )
+        reviewed = original.replace(
+            "This workflow starts at `app.dispatch`. The generated sequence is "
+            "a bounded static projection; runtime ordering, branching, and side "
+            "effects require source-level confirmation.",
+            "Dispatches a reviewed request through the primary path.",
+        )
+        regenerated = bootstrap_cmd._generate_workflow_md(
+            "dispatch",
+            {
+                "entry": "app.dispatch",
+                "modules_touched": ["app"],
+                "chain": ["app.dispatch", "app.finish"],
+            },
+        )
+
+        merged = bootstrap_cmd._preserve_level_two_section(
+            reviewed, regenerated, "Behavior"
+        )
+
+        assert "app.finish" in merged
+        assert "app.prepare" not in merged
+        assert "Dispatches a reviewed request through the primary path." in merged
 
 
 class TestBootstrapUpdatesAgentConstraints:
@@ -2379,6 +2702,91 @@ class TestBootstrapExternalSource:
         assert data["src_dir"] == str(source)
         assert (workspace / "docs" / "llm_wiki" / "modules" / "app.md").exists()
 
+    def test_managed_configured_external_bootstrap_uses_trusted_source_extractor(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys,
+    ) -> None:
+        workspace = tmp_path / "workspace"
+        source = tmp_path / "external-source"
+        workspace.mkdir()
+        source.mkdir()
+        (source / "app.jscustom").write_text("run\n", encoding="utf-8")
+        profile = source / "config" / "sources.json"
+        profile.parent.mkdir()
+        profile.write_text(
+            json.dumps(
+                {
+                    "schema_version": "llm-wiki-source-selection/v1",
+                    "include": ["app.jscustom"],
+                    "exclude": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        _write_toy_extractor_plugin(source)
+        monkeypatch.chdir(workspace)
+
+        bootstrap_cmd.run(
+            _make_args(
+                src_dir=str(source),
+                wiki_dir="wiki",
+                allow_external_src=True,
+                source_selection="config/sources.json",
+            )
+        )
+        capsys.readouterr()
+
+        wiki = workspace / "wiki"
+        assert (wiki / "modules" / "app.md").exists()
+        knowledge = load_knowledge_state(wiki).knowledge
+        assert knowledge is not None
+        assert [
+            (component.component_id, component.version)
+            for component in knowledge.bundle.producer.plugins
+        ] == [("bootstrap-toy-extractor", "0.1.0")]
+        log = (wiki / "log.md").read_text(encoding="utf-8")
+        assert (
+            f"- Source snapshot digest: "
+            f"`{knowledge.bundle.snapshot.source_snapshot_hash}`"
+        ) in log
+        assert "bootstrap-toy-extractor/toy" in (
+            wiki / ".llm-wiki-knowledge.json"
+        ).read_text(encoding="utf-8")
+
+    def test_managed_unconfigured_external_bootstrap_keeps_legacy_ambient_extractor(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys,
+    ) -> None:
+        workspace = tmp_path / "workspace"
+        source = tmp_path / "external-source"
+        workspace.mkdir()
+        source.mkdir()
+        (source / "app.jscustom").write_text("run\n", encoding="utf-8")
+        _write_toy_extractor_plugin(workspace)
+        monkeypatch.chdir(workspace)
+
+        bootstrap_cmd.run(
+            _make_args(
+                src_dir=str(source),
+                wiki_dir="wiki",
+                allow_external_src=True,
+            )
+        )
+        capsys.readouterr()
+
+        wiki = workspace / "wiki"
+        assert (wiki / "modules" / "app.md").exists()
+        knowledge = load_knowledge_state(wiki).knowledge
+        assert knowledge is not None
+        assert [
+            (component.component_id, component.version)
+            for component in knowledge.bundle.producer.plugins
+        ] == [("bootstrap-toy-extractor", "0.1.0")]
+
 
 class TestGenerateFlowMd:
     def test_renders_entry_modules_and_diagram(self):
@@ -2467,6 +2875,10 @@ class TestGenerateFlowMd:
         assert "-->>" in md  # external call rendered as a dashed arrow
         assert "truncated" in md
         assert "## Behavior" in md
+        assert "This flow starts at `run` and is classified as `api`." in md
+        assert "belong in Behavior" in md
+        assert "placeholder" not in md.casefold()
+        assert "refine" not in md.casefold()
 
         dense_data_flow = {
             "steps": [
@@ -2559,7 +2971,7 @@ class TestGenerateFlowMd:
             "transfer and boundary relationships (0 omitted)"
         ) in no_relationships_table
 
-    def test_no_calls_uses_placeholder(self):
+    def test_no_calls_uses_neutral_static_empty_state(self):
         flow = {
             "entry": {
                 "id": "api-x",
@@ -2573,8 +2985,10 @@ class TestGenerateFlowMd:
             "truncated": False,
         }
         md = bootstrap_cmd._generate_flow_md(flow, {"m.py": "m"})
-        assert "No outbound calls detected" in md
+        assert "No outbound calls were detected by static analysis." in md
         assert "sequenceDiagram" not in md
+        assert "manually" not in md.casefold()
+        assert "placeholder" not in md.casefold()
 
     def test_async_process_main_renders_dispatch_and_related_modules(self, tmp_path):
         _write_project_team_open_style_async_main(tmp_path)
@@ -2605,6 +3019,52 @@ class TestGenerateFlowMd:
         assert "**Related modules:**" in md
         assert "`asyncio.run(main_entry(...))`" in md
         assert "| __main__ | run | 11 | `asyncio.run(main_entry(...))` |" in md
+
+    def test_long_module_metadata_is_bounded_with_complete_linked_details(self):
+        touched_paths = [f"pkg/touched_{index:02d}.py" for index in range(18)]
+        related_paths = [f"pkg/related_{index:02d}.py" for index in range(18)]
+        page_map = {
+            path: Path(path).stem for path in [*touched_paths, *related_paths]
+        }
+        flow = {
+            "entry": {
+                "id": "api-run",
+                "category": "api",
+                "file": touched_paths[0],
+                "symbol": "run",
+                "label": "run",
+            },
+            "steps": [
+                {
+                    "depth": 0,
+                    "file": touched_paths[0],
+                    "symbol": "run",
+                    "kind": "entry",
+                }
+            ],
+            "modules_touched": touched_paths,
+            "related_modules": related_paths,
+            "truncated": False,
+        }
+
+        md = bootstrap_cmd._generate_flow_md(flow, page_map)
+        metadata_lines = [
+            line
+            for line in md.splitlines()
+            if line.startswith(("**Modules touched:**", "**Related modules:**"))
+        ]
+
+        assert len(metadata_lines) == 2
+        assert all(
+            len(line) <= bootstrap_cmd._FLOW_MODULE_HEADER_CHAR_LIMIT
+            for line in metadata_lines
+        )
+        assert "**Complete modules touched:**" in md
+        assert "**Complete related modules:**" in md
+        assert "touched_17.md)\n\n**Related modules:**" in md
+        for path in [*touched_paths, *related_paths]:
+            page = page_map[path]
+            assert f"[{page}](../modules/{page}.md)" in md
 
     def test_call_sequence_is_bounded_for_large_flows(self):
         flow = {
@@ -2837,12 +3297,12 @@ class TestBootstrapFlows:
         ]
         assert coverage["flows"]["observed"] >= coverage["flows"]["emitted"]
 
-    def test_index_lists_user_flows(self, tmp_path, monkeypatch, capsys):
+    def test_index_lists_entry_point_flows(self, tmp_path, monkeypatch, capsys):
         self._write_project(tmp_path)
         monkeypatch.chdir(tmp_path)
         bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
         index = (tmp_path / "wiki" / "index.md").read_text(encoding="utf-8")
-        assert "## User Flows" in index
+        assert "## Entry-point flows" in index
         assert "[api-run](flows/api-run.md)" in index
 
     def test_surface_index_counts_user_flows_and_dependencies(
@@ -3021,7 +3481,7 @@ class TestBootstrapFlows:
         bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki", skip_flows=True))
         assert list((tmp_path / "wiki" / "flows").glob("*.md")) == []
         index = (tmp_path / "wiki" / "index.md").read_text(encoding="utf-8")
-        assert "| User flows | 0 |" in index
+        assert "| Entry-point flows | 0 |" in index
         assert "[api-run](flows/api-run.md)" not in index
 
     def test_skip_flows_takes_precedence_over_skip_data_flow(
@@ -3123,8 +3583,12 @@ class TestGenerateDependenciesMd:
         assert "| [a](modules/a.md) |" in md
         assert "### python" in md
         assert "⚠️ **Undeclared:** `requests`" in md
-        assert md.rstrip().endswith("Replace this placeholder._")
+        assert md.rstrip().endswith(
+            "Dynamic or conditional imports and runtime-loaded integrations may "
+            "not appear in the generated sections."
+        )
         assert "## Notes" in md
+        assert "placeholder" not in md.casefold()
 
         nodes = [f"pkg/m{index}.py" for index in range(12)]
         edges = [
@@ -3248,6 +3712,8 @@ class TestGenerateLoadOrderMd:
         assert "## Factory / wiring" in md
         assert "`create_app`" in md
         assert "## Notes" in md
+        assert "This page presents a static dependency projection." in md
+        assert "placeholder" not in md.casefold()
 
     def test_cyclic_group_marked_indeterminate(self, tmp_path):
         inventory = {"a.py": _pymod(("b", "x")), "b.py": _pymod(("a", "y"))}
@@ -3262,6 +3728,27 @@ class TestGenerateLoadOrderMd:
         assert "*No import-time side effects detected.*" in md
         assert "*No factory or wiring functions detected.*" in md
         assert "Indeterminate (cyclic) groups" not in md
+
+    def test_language_entry_without_imports_is_rendered_in_load_order(self, tmp_path):
+        inventory = {
+            "bundle/main.js": {
+                "language": "javascript",
+                "module_calls": [
+                    {"name": "require", "target": "import_obsidian", "line": 1}
+                ],
+            },
+            "metadata": {},
+        }
+        analysis = analyze_dependencies(inventory, str(tmp_path))
+
+        md = bootstrap_cmd._generate_load_order_md(
+            analysis,
+            {"bundle/main.js": "bundle_main"},
+        )
+
+        assert "1. [bundle_main](modules/bundle_main.md)" in md
+        assert "[metadata]" not in md
+        assert "[bundle_main](modules/bundle_main.md) | `import_obsidian = require`" in md
 
 
 class TestBootstrapArchitecturePages:
@@ -3339,7 +3826,7 @@ class TestBootstrapArchitecturePages:
         ):
             assert "deep-analysis-disabled" in coverage[analyzer]["limitations"]
 
-    def test_deep_bootstrap_skips_pages_when_dependency_graph_is_empty(
+    def test_deep_bootstrap_documents_isolated_language_module_dependencies(
         self, tmp_path, monkeypatch, capsys
     ):
         (tmp_path / "service.js").write_text(
@@ -3363,10 +3850,21 @@ class TestBootstrapArchitecturePages:
 
         bootstrap_cmd.run(_make_args(src_dir=".", wiki_dir="wiki"))
 
-        assert not (tmp_path / "wiki" / "dependencies.md").exists()
-        assert not (tmp_path / "wiki" / "load-order.md").exists()
+        dependencies = (tmp_path / "wiki" / "dependencies.md").read_text(
+            encoding="utf-8"
+        )
+        load_order = (tmp_path / "wiki" / "load-order.md").read_text(
+            encoding="utf-8"
+        )
+        module = (tmp_path / "wiki" / "modules" / "service.md").read_text(
+            encoding="utf-8"
+        )
         index = (tmp_path / "wiki" / "index.md").read_text(encoding="utf-8")
-        assert "## Dependency Architecture" not in index
+        assert "| [service](modules/service.md) | 0 | 0 |" in dependencies
+        assert "1. [service](modules/service.md)" in load_order
+        assert "## Local dependency map" in module
+        assert "*No internal module dependencies detected.*" in module
+        assert "## Dependency Architecture" in index
 
     def test_json_summary_reports_dependencies(self, tmp_path, monkeypatch, capsys):
         self._write_project(tmp_path)

@@ -8,12 +8,27 @@ import sys
 import time
 from pathlib import Path
 
-from ..config import DEFAULT_WIKI_DIR, IDE_AGENTS, validate_path
+from ..config import (
+    DEFAULT_WIKI_DIR,
+    IDE_AGENTS,
+    validate_path,
+    validate_source_root,
+)
 from ..services import circuit_breaker
 from ..services.lockfile import LockAcquisitionError, WikiLock
 from ..services.metrics import record_event
 from ..services.plugins import PluginError
 from ..services.secure_file import write_private_text
+from ..services.source_selection import (
+    resolve_source_selection,
+    validate_persisted_source_selection_identity,
+)
+from ..services.source_snapshot import (
+    SourceSnapshot,
+    build_source_snapshot,
+    capture_source_selection_inputs,
+)
+from ..services.sync_manifest import SyncManifest
 from ..services.team import TeamConfigError, team_prompt_template_default
 from .generate_prompt_cmd import _build_prompt, _redact_prompt_artifact
 
@@ -48,22 +63,101 @@ def _run_sync(args):
     """Core sync logic, executed inside the concurrency lock."""
     wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     validate_path(wiki_dir, "--wiki-dir")
+    src_dir = _validated_trigger_source(args)
     started = time.monotonic()
 
     if _is_breaker_open():
         return
     _record_trigger_start(args, wiki_dir)
 
-    diff_text = _fetch_last_commit_diff(args, wiki_dir, started)
+    source_snapshot = _preflight_trigger_source_selection(args, src_dir, wiki_dir)
+    diff_text = _fetch_last_commit_diff(args, wiki_dir, src_dir, started)
+    diff_text = _filter_trigger_diff(
+        args,
+        wiki_dir,
+        src_dir,
+        started,
+        diff_text,
+        source_snapshot=source_snapshot,
+    )
     if diff_text is None or _skip_large_diff(args, wiki_dir, started, diff_text):
         return
 
-    prompt = _build_sync_prompt(args, wiki_dir, started, diff_text)
+    prompt = _build_sync_prompt(
+        args,
+        wiki_dir,
+        src_dir,
+        started,
+        diff_text,
+        source_snapshot=source_snapshot,
+    )
     if prompt is None or _skip_large_prompt(args, wiki_dir, started, prompt):
         return
 
     prompt_file = _write_prompt_file(prompt)
     _run_agent(args, wiki_dir, started, prompt_file)
+
+
+def _preflight_trigger_source_selection(
+    args,
+    src_dir: str,
+    wiki_dir: str,
+) -> SourceSnapshot:
+    wiki_path = Path(wiki_dir)
+    try:
+        manifest = SyncManifest.load(wiki_path)
+    except FileNotFoundError:
+        generation_inputs = (
+            {}
+            if wiki_path.is_dir() and next(wiki_path.iterdir(), None) is not None
+            else None
+        )
+    else:
+        generation_inputs = manifest.generation_inputs
+    source_selection = getattr(args, "source_selection", None)
+    policy = resolve_source_selection(src_dir, source_selection)
+    validate_persisted_source_selection_identity(
+        generation_inputs,
+        None if policy is None else policy.identity,
+        operation="trigger-agent",
+    )
+    selection_inputs = capture_source_selection_inputs(
+        src_dir,
+        source_selection=source_selection,
+        selection_policy=policy,
+    )
+    validate_persisted_source_selection_identity(
+        generation_inputs,
+        None if policy is None else policy.identity,
+        operation="trigger-agent",
+        live_selection_inputs=selection_inputs,
+    )
+    snapshot = build_source_snapshot(
+        src_dir,
+        source_selection=source_selection,
+        selection_policy=policy,
+        expected_selection_inputs=selection_inputs,
+    )
+    validate_persisted_source_selection_identity(
+        generation_inputs,
+        snapshot.source_selection_identity,
+        operation="trigger-agent",
+        live_selection_inputs=snapshot.source_selection_inputs,
+    )
+    return snapshot
+
+
+def _trigger_source_snapshot(
+    args,
+    src_dir: str,
+    diff_text: str | None,
+) -> SourceSnapshot | None:
+    if diff_text is None:
+        return None
+    return build_source_snapshot(
+        src_dir,
+        source_selection=getattr(args, "source_selection", None),
+    )
 
 
 def _record_trigger_start(args, wiki_dir) -> None:
@@ -135,7 +229,23 @@ def _is_breaker_open() -> bool:
     return True
 
 
-def _fetch_last_commit_diff(args, wiki_dir, started: float) -> str | None:
+def _validated_trigger_source(args) -> str:
+    requested = str(getattr(args, "src_dir", "."))
+    allow_external = bool(getattr(args, "allow_external_src", False))
+    source = validate_source_root(
+        requested,
+        "--src-dir",
+        allow_external=allow_external,
+    )
+    return str(source) if allow_external else requested
+
+
+def _fetch_last_commit_diff(
+    args,
+    wiki_dir,
+    src_dir: str,
+    started: float,
+) -> str | None:
     print("Fetching git diff...")
     try:
         git_diff_result = subprocess.run(
@@ -144,6 +254,7 @@ def _fetch_last_commit_diff(args, wiki_dir, started: float) -> str | None:
             text=True,
             check=True,
             timeout=30,
+            cwd=src_dir,
         )
     except subprocess.TimeoutExpired:
         print("Git diff timed out (30s). Aborting.")
@@ -164,6 +275,43 @@ def _fetch_last_commit_diff(args, wiki_dir, started: float) -> str | None:
     return None
 
 
+def _filter_trigger_diff(
+    args,
+    wiki_dir: str,
+    src_dir: str,
+    started: float,
+    diff_text: str | None,
+    *,
+    source_snapshot: SourceSnapshot | None = None,
+) -> str | None:
+    if diff_text is None:
+        return None
+    from ..services.extraction_service import filter_source_diff
+
+    source_selection = getattr(args, "source_selection", None)
+    snapshot = source_snapshot or build_source_snapshot(
+        src_dir,
+        source_selection=source_selection,
+    )
+    selected = filter_source_diff(
+        diff_text,
+        snapshot.source_selection_policy,
+        retained_roots=(Path(wiki_dir).as_posix(),),
+        source_snapshot=snapshot,
+    )
+    if selected.strip():
+        return selected
+    print("No selected source or wiki changes in the last commit. Aborting.")
+    _record_trigger_finish(
+        args,
+        wiki_dir,
+        started,
+        exit_code=0,
+        breaker_result="skipped",
+    )
+    return None
+
+
 def _skip_large_diff(args, wiki_dir, started: float, diff_text: str) -> bool:
     max_diff = getattr(args, "max_diff_lines", 1000)
     diff_lines = len(diff_text.splitlines())
@@ -179,7 +327,15 @@ def _skip_large_diff(args, wiki_dir, started: float, diff_text: str) -> bool:
     return True
 
 
-def _build_sync_prompt(args, wiki_dir, started: float, diff_text: str) -> str | None:
+def _build_sync_prompt(
+    args,
+    wiki_dir,
+    src_dir: str,
+    started: float,
+    diff_text: str,
+    *,
+    source_snapshot: SourceSnapshot | None = None,
+) -> str | None:
     print("Extracting current structure context...")
     from ..services.extraction_service import (
         get_call_graph,
@@ -187,7 +343,16 @@ def _build_sync_prompt(args, wiki_dir, started: float, diff_text: str) -> str | 
         print_inventory_failures,
     )
 
-    inventory_result = get_inventory_result(".", deep=True)
+    source_selection = getattr(args, "source_selection", None)
+    source_snapshot = source_snapshot or build_source_snapshot(
+        src_dir,
+        source_selection=source_selection,
+    )
+    inventory_result = get_inventory_result(
+        src_dir,
+        deep=True,
+        source_snapshot=source_snapshot,
+    )
     if inventory_result.failed:
         print_inventory_failures(inventory_result)
         _record_trigger_failure(args, wiki_dir, started, exit_code=1)
@@ -202,12 +367,17 @@ def _build_sync_prompt(args, wiki_dir, started: float, diff_text: str) -> str | 
         template = team_prompt_template_default()
         return _build_prompt(
             wiki_dir,
-            ".",
+            src_dir,
             template=template,
             diff_text=diff_text,
             ast_json=ast_json,
             graph_json=graph_json,
             cli_agent=True,
+            source_selection=source_selection,
+            source_snapshot=source_snapshot,
+            allow_external_src=bool(
+                getattr(args, "allow_external_src", False)
+            ),
         )
     except (PluginError, TeamConfigError) as exc:
         print(f"Invalid agent prompt configuration: {exc}")

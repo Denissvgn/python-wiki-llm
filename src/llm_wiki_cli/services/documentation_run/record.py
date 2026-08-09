@@ -8,6 +8,7 @@ from .schema import *
 from .workspace import *
 from .integrity import *
 from .refresh import *
+from ..markdown_sections import GENERATED_INDEX_INTROS
 
 def _validate_result_work_ids(
     result: DocumentationAgentResult,
@@ -347,7 +348,7 @@ def _verify_user_docs_gate(
     generic_phrases = (
         "Replace this placeholder",
         "Describe what",
-        "Use this landing page to choose the right wiki surface.",
+        *GENERATED_INDEX_INTROS,
     )
     if any(phrase in overview_text for phrase in generic_phrases):
         raise DocumentationTransitionError(
@@ -1260,7 +1261,13 @@ def _reconcile_documentation_native_evidence(
                     include_plugins=bool(
                         run.policy.get("source_plugins_trusted", False)
                     ),
+                    source_plugins_only=bool(
+                        run.policy.get("source_plugins_trusted", False)
+                    ),
                     require_live_freshness=True,
+                    source_selection=_bound_source_selection_argument(
+                        run.policy
+                    ),
                 )
         else:
             service = build_snapshot_documentation_query_service(

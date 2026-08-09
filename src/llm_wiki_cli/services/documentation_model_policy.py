@@ -1,7 +1,7 @@
 """Provider-neutral model routing for documentation-agent invocations.
 
 The deterministic package does not call a model provider.  This module gives a
-host supervisor a small, auditable policy for choosing a runner-owned model
+host supervisor a small, auditable policy for choosing a configured model route
 before it invokes a generic agent or creates a handoff.  Provider credentials,
 transport configuration, prompts, and responses are deliberately outside the
 contract.
@@ -85,7 +85,7 @@ class DocumentationModelPolicyError(ValueError):
 
 @dataclass(frozen=True)
 class DocumentationModelRoute:
-    """One runner-owned provider/model choice.
+    """One configured provider/model route.
 
     ``provider_id`` is a public configuration label such as ``anthropic-prod``
     or ``local-ollama``.  It is not an endpoint and must not contain a key.
@@ -546,7 +546,7 @@ class DocumentationModelRoutingRequest:
 
 @dataclass(frozen=True)
 class DocumentationModelSelection:
-    """Credential-free runner hint produced by a routing decision."""
+    """Credential-free model selection produced by a routing decision."""
 
     mode: str
     route_id: str
@@ -606,7 +606,7 @@ class DocumentationModelSelection:
         object.__setattr__(self, "signals", signals)
 
     def to_dict(self) -> dict[str, Any]:
-        """Return the fixed-field runner hint; it cannot carry credentials."""
+        """Return fixed-field model metadata that cannot carry credentials."""
         return {
             "schema_version": self.schema_version,
             "mode": self.mode,

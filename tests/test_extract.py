@@ -35,6 +35,7 @@ from llm_wiki_cli.services.extractor_helpers import typescript_dependencies_read
 from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
 from llm_wiki_cli.services.packages import discover_packages, stamp_inventory_packages
 from llm_wiki_cli.services import plugins
+from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
 PROJECT_ROOT = Path(__file__).parents[1]
@@ -226,6 +227,448 @@ class TestGetInventory:
         assert result.producer_plugin_components == ()
         assert result.plugin_lock_path is None
         assert result.plugin_lock_hash is None
+
+    @pytest.mark.parametrize(
+        (
+            "include_plugins",
+            "source_plugins_only",
+            "configured",
+            "same_root",
+            "expected_discovery",
+        ),
+        [
+            pytest.param(False, False, False, True, None, id="plugins-disabled"),
+            pytest.param(
+                True,
+                True,
+                True,
+                False,
+                "source-root",
+                id="explicit-source-plugins",
+            ),
+            pytest.param(
+                True,
+                False,
+                True,
+                False,
+                None,
+                id="configured-external-source",
+            ),
+            pytest.param(
+                True,
+                False,
+                True,
+                True,
+                "source-root",
+                id="configured-project-root",
+            ),
+            pytest.param(
+                True,
+                False,
+                False,
+                True,
+                "legacy",
+                id="unconfigured-legacy",
+            ),
+        ],
+    )
+    def test_inventory_request_plugin_authority_and_provenance_matrix(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        include_plugins: bool,
+        source_plugins_only: bool,
+        configured: bool,
+        same_root: bool,
+        expected_discovery: str | None,
+    ) -> None:
+        host = tmp_path / "host"
+        host.mkdir()
+        source = host if same_root else tmp_path / "external-source"
+        source.mkdir(exist_ok=True)
+        monkeypatch.chdir(host)
+        (source / "app.py").write_text("class App: pass\n", encoding="utf-8")
+        (source / "flow.toy").write_text("run\n", encoding="utf-8")
+        if configured:
+            profile = source / ".llm-wiki" / "source-selection.json"
+            profile.parent.mkdir()
+            profile.write_text(
+                json.dumps(
+                    {
+                        "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                        "include": ["app.py", "flow.toy"],
+                        "exclude": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+        entry_point = "authority_matrix_plugin:ToyExtractor"
+        component = {
+            "type": "extractor",
+            "id": "toy",
+            "language": "toy",
+            "entry_point": entry_point,
+            "plugin_id": "authority-matrix",
+            "plugin_version": "1.0.0",
+            "ref": "authority-matrix/toy",
+        }
+        calls: dict[str, list] = {
+            "configured": [],
+            "legacy": [],
+            "registry": [],
+            "parallel_safe": [],
+            "lock": [],
+            "legacy_load": [],
+            "source_load": [],
+        }
+
+        class ToyExtractor:
+            last_error = None
+
+            def extract(self, **_kwargs):
+                return {
+                    "flow.toy": {
+                        "language": "toy",
+                        "classes": [],
+                        "functions": [{"name": "run", "line": 1}],
+                    }
+                }
+
+        def configured_components(source_root):
+            resolved = Path(source_root).resolve()
+            calls["configured"].append(resolved)
+            return (component,), resolved
+
+        def legacy_components(source_root):
+            calls["legacy"].append(Path(source_root).resolve())
+            return (component,), host
+
+        def extractor_registry(*args, **kwargs):
+            calls["registry"].append((args, kwargs))
+            return {**extract_cmd.EXTRACTOR_REGISTRY, "toy": entry_point}
+
+        def parallel_safe(*args, **kwargs):
+            calls["parallel_safe"].append((args, kwargs))
+            return set()
+
+        def captured_lock(source_root, *, plugin_root="."):
+            calls["lock"].append(
+                (Path(source_root).resolve(), Path(plugin_root).resolve())
+            )
+            return ".llm-wiki/plugins.lock.json", "sha256:authority-matrix"
+
+        original_load_extractor = extract_cmd._load_extractor
+
+        def load_extractor(candidate_entry_point):
+            if candidate_entry_point == entry_point:
+                calls["legacy_load"].append(candidate_entry_point)
+                return ToyExtractor()
+            return original_load_extractor(candidate_entry_point)
+
+        def load_source_extractor(candidate_entry_point, plugin_root):
+            assert candidate_entry_point == entry_point
+            calls["source_load"].append(Path(plugin_root).resolve())
+            return ToyExtractor()
+
+        monkeypatch.setattr(
+            extract_cmd,
+            "_configured_runtime_plugin_components",
+            configured_components,
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_selected_runtime_plugin_components",
+            legacy_components,
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "get_extractor_registry",
+            extractor_registry,
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "parallel_safe_extractor_entry_points",
+            parallel_safe,
+        )
+        monkeypatch.setattr(extract_cmd, "_captured_plugin_lock", captured_lock)
+        monkeypatch.setattr(extract_cmd, "_load_extractor", load_extractor)
+        monkeypatch.setattr(
+            extract_cmd,
+            "_load_plugin_extractor",
+            load_source_extractor,
+        )
+
+        result = extract_cmd.get_inventory_result(
+            extract_cmd.InventoryRequest(
+                src_dir=source,
+                deep=True,
+                include_plugins=include_plugins,
+                source_plugins_only=source_plugins_only,
+            )
+        )
+
+        assert "app.py" in result.inventory
+        if expected_discovery is None:
+            assert "flow.toy" not in result.inventory
+            assert result.extractor_registry == extract_cmd.EXTRACTOR_REGISTRY
+            assert result.plugin_components == ()
+            assert result.producer_plugin_components == ()
+            assert result.plugin_lock_path is None
+            assert result.plugin_lock_hash is None
+            assert calls == {
+                "configured": [],
+                "legacy": [],
+                "registry": [],
+                "parallel_safe": [],
+                "lock": [],
+                "legacy_load": [],
+                "source_load": [],
+            }
+            return
+
+        assert result.inventory["flow.toy"]["language"] == "toy"
+        assert result.extractor_registry["toy"] == entry_point
+        assert result.plugin_components == (component,)
+        assert result.producer_plugin_components == (component,)
+        assert result.plugin_lock_path == ".llm-wiki/plugins.lock.json"
+        assert result.plugin_lock_hash == "sha256:authority-matrix"
+        assert result.source_snapshot is not None
+        assert set(result.source_snapshot.hashes_for(["flow.toy"])) == {"flow.toy"}
+        assert len(calls["registry"]) == 1
+        assert len(calls["parallel_safe"]) == 1
+        assert calls["lock"] == [(source.resolve(), source.resolve())]
+        if expected_discovery == "source-root":
+            assert calls["configured"] == [source.resolve()]
+            assert calls["legacy"] == []
+            assert calls["legacy_load"] == []
+            assert calls["source_load"] == [source.resolve()]
+            assert calls["registry"][0] == ((), {"root": source.resolve()})
+            assert calls["parallel_safe"][0] == ((), {"root": source.resolve()})
+        else:
+            assert expected_discovery == "legacy"
+            assert calls["configured"] == []
+            assert calls["legacy"] == [source.resolve()]
+            assert calls["legacy_load"] == [entry_point]
+            assert calls["source_load"] == []
+            assert calls["registry"][0] == ((), {})
+            assert calls["parallel_safe"][0] == ((), {})
+
+    def test_plugin_inventory_excludes_owned_helper_and_keeps_consumer_suffix(
+        self, tmp_path, monkeypatch
+    ):
+        for rel_path in (
+            "src/llm_wiki_cli/__init__.py",
+            "src/llm_wiki_cli/cli.py",
+            "src/llm_wiki_cli/extractors/__init__.py",
+            "src/llm_wiki_cli/extractors/common.py",
+        ):
+            path = tmp_path / rel_path
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("# package source\n", encoding="utf-8")
+        protected = "src/llm_wiki_cli/extractors/go_scripts/main.go"
+        ordinary = "flow.toy"
+        unrelated = "vendor/llm_wiki_cli/extractors/go_scripts/main.go"
+        for rel_path, content in (
+            (protected, "package main\n"),
+            (ordinary, "flow\n"),
+            (unrelated, "package consumer\n"),
+        ):
+            path = tmp_path / rel_path
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(content, encoding="utf-8")
+
+        entry_point = "plugin.extractor:CustomExtractor"
+        component = {
+            "type": "extractor",
+            "id": "custom",
+            "language": "custom",
+            "entry_point": entry_point,
+            "plugin_id": "custom-plugin",
+            "plugin_version": "1.0.0",
+            "ref": "custom-plugin/custom",
+        }
+
+        class PluginExtractor:
+            last_error = None
+
+            def extract(self, **_kwargs):
+                return {
+                    rel_path: {
+                        "language": "custom",
+                        "classes": [],
+                        "functions": [],
+                    }
+                    for rel_path in (protected, ordinary, unrelated)
+                }
+
+        monkeypatch.setattr(
+            extract_cmd,
+            "get_extractor_registry",
+            lambda: {"custom": entry_point},
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_selected_runtime_plugin_components",
+            lambda _source_root: ((component,), "."),
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_captured_plugin_lock",
+            lambda *_args, **_kwargs: (None, None),
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "parallel_safe_extractor_entry_points",
+            lambda: set(),
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_load_extractor",
+            lambda _entry_point: PluginExtractor(),
+        )
+
+        result = extract_cmd.get_inventory_result(str(tmp_path))
+
+        assert sorted(result.inventory) == [ordinary, unrelated]
+        assert result.source_snapshot is not None
+        assert protected not in result.source_snapshot.all_source_paths
+        assert protected not in result.source_snapshot.captured_content_hashes
+        assert ordinary in result.source_snapshot.all_source_paths
+        assert unrelated in result.source_snapshot.all_source_paths
+        assert set(result.source_snapshot.hashes_for([ordinary, unrelated])) == {
+            ordinary,
+            unrelated,
+        }
+
+    @pytest.mark.parametrize(
+        ("language", "selected_paths"),
+        (
+            ("python", ["selected/app.py"]),
+            ("custom", ["selected/README.md", "selected/source.custom"]),
+        ),
+    )
+    def test_configured_plugin_receives_only_finite_selected_paths(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        language: str,
+        selected_paths: list[str],
+    ) -> None:
+        # A configured profile preserves existing project-plugin authority only
+        # when the selected source is the active project root.
+        monkeypatch.chdir(tmp_path)
+        for rel_path in selected_paths:
+            path = tmp_path / rel_path
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("selected\n", encoding="utf-8")
+        outside = tmp_path / "outside" / (
+            "secret.py" if language == "python" else "secret.custom"
+        )
+        outside.parent.mkdir()
+        outside.write_text("SECRET = 'must-not-be-read'\n", encoding="utf-8")
+        extension = "py" if language == "python" else "custom"
+        ignored_rel = f"selected/ignored.{extension}"
+        build_rel = f"selected/build/secret.{extension}"
+        for rel_path in (ignored_rel, build_rel):
+            path = tmp_path / rel_path
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("SECRET = 'must-not-survive'\n", encoding="utf-8")
+        (tmp_path / "selected/.gitignore").write_text(
+            f"ignored.{extension}\n",
+            encoding="utf-8",
+        )
+        profile = tmp_path / ".llm-wiki" / "source-selection.json"
+        profile.parent.mkdir()
+        profile.write_text(
+            json.dumps(
+                {
+                    "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                    "include": ["selected"],
+                    "exclude": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        entry_point = f"plugin.extractor:{language.title()}Extractor"
+        component = {
+            "type": "extractor",
+            "id": language,
+            "language": language,
+            "entry_point": entry_point,
+            "plugin_id": "selection-test",
+            "plugin_version": "1.0.0",
+            "ref": f"selection-test/{language}",
+        }
+        calls: list[list[str] | None] = []
+
+        class SelectionAwarePlugin:
+            last_error = None
+
+            def extract(self, **kwargs):
+                only_files = kwargs.get("only_files")
+                calls.append(only_files)
+                result = {
+                    path: {
+                        "language": language,
+                        "classes": [],
+                        "functions": [],
+                    }
+                    for path in only_files or ()
+                }
+                for leaked_path in (ignored_rel, build_rel):
+                    result[leaked_path] = {
+                        "language": language,
+                        "classes": [],
+                        "functions": [],
+                    }
+                return result
+
+        monkeypatch.setattr(
+            extract_cmd,
+            "get_extractor_registry",
+            lambda *args, **kwargs: {language: entry_point},
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_configured_runtime_plugin_components",
+            lambda _root: ((component,), tmp_path),
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_captured_plugin_lock",
+            lambda *_args, **_kwargs: (None, None),
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "parallel_safe_extractor_entry_points",
+            lambda *args, **kwargs: set(),
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_load_plugin_extractor",
+            lambda _entry_point, _root: SelectionAwarePlugin(),
+        )
+
+        result = extract_cmd.get_inventory_result(str(tmp_path))
+
+        assert calls == [selected_paths]
+        assert sorted(result.inventory) == selected_paths
+        assert str(outside.relative_to(tmp_path)) not in result.inventory
+        assert ignored_rel not in result.inventory
+        assert build_rel not in result.inventory
+        assert result.source_snapshot is not None
+        assert ignored_rel not in result.source_snapshot.captured_content_hashes
+        assert build_rel not in result.source_snapshot.captured_content_hashes
+        assert result.source_snapshot.selected_regular_paths == frozenset(
+            selected_paths
+        )
+        assert not result.source_snapshot.path_is_effectively_selected(ignored_rel)
+        assert not result.source_snapshot.path_is_effectively_selected(build_rel)
+        assert result.source_snapshot.path_is_effectively_selected(
+            f"selected/deleted.{extension}"
+        )
 
     def test_empty_dir(self, tmp_path):
         inventory = get_inventory(str(tmp_path))

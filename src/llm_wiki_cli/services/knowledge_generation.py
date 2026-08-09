@@ -1,10 +1,11 @@
 """Shared in-memory generation planner for native knowledge artifacts.
 
 Bootstrap, sync, migration, and repair all need to construct the same three
-artifact commit from one evaluated run.  This module joins the existing
-KNOW-102 through KNOW-107 services without discovering pages, rereading source
-files, invoking extractors, or writing output.  The only filesystem reads are
-the target-state comparisons performed by :func:`build_knowledge_commit_plan`.
+artifact commit from one evaluated run.  This module joins envelope evaluation,
+surface indexing, knowledge indexing, and commit planning without discovering
+pages, rereading source files, invoking extractors, or writing output.  The only
+filesystem reads are the target-state comparisons performed by
+:func:`build_knowledge_commit_plan`.
 """
 
 from __future__ import annotations
@@ -158,7 +159,7 @@ class KnowledgeGenerationInputs:
 def build_knowledge_generation_plan(
     inputs: KnowledgeGenerationInputs,
 ) -> KnowledgeCommitPlan:
-    """Construct one validated KNOW-107 commit plan from evaluated inputs.
+    """Construct one validated atomic commit plan from evaluated inputs.
 
     The returned plan contains exact surface and knowledge bytes plus the
     manifest-last commit marker.  It performs no writes.  Existing target

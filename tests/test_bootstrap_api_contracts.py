@@ -106,6 +106,8 @@ def test_bootstrap_api_contracts_is_opt_in_and_links_matching_flow(
     assert "[http-create_item](flows/http-create_item.md)" in contract
     assert "## API contract" in flow
     assert "`POST /api/v1/items`" in flow
+    assert "| HTTP API contracts | 1 |" in index
+    assert "## HTTP API contracts" in index
     assert "[Production HTTP API inventory](api-contracts.md)" in index
     assert manifest["version"] == 5
     assert manifest["surfaces"]["flows"] == {
@@ -220,6 +222,12 @@ def test_openapi_implies_full_contract_surface_and_persists_generation_input(
     )
     assert consumed_openapi.kind is ConsumedInputKind.OPENAPI
     assert consumed_openapi.content_hash == openapi_input["sha256"]
+    knowledge = json.loads(
+        (wiki / ".llm-wiki-knowledge.json").read_text(encoding="utf-8")
+    )
+    snapshot_hash = knowledge["bundle"]["snapshot"]["source_snapshot_hash"]
+    log = (wiki / "log.md").read_text(encoding="utf-8")
+    assert f"- Source snapshot digest: `{snapshot_hash}`" in log
 
 
 def test_bootstrap_rejects_overwrite_without_touching_contract_semantics(
@@ -245,7 +253,7 @@ def test_bootstrap_rejects_overwrite_without_touching_contract_semantics(
     )
     flow_path.write_text(
         flow_path.read_text(encoding="utf-8").replace(
-            "_Describe what this flow does, when it is triggered, and its key side effects or outputs. Replace this placeholder._",
+            "This flow starts at `create_item` and is classified as `http`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.",
             "Creates one inventory item.",
         ),
         encoding="utf-8",

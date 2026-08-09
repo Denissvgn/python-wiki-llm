@@ -4,6 +4,7 @@ import hashlib
 import importlib
 import json
 import re
+import shlex
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -21,6 +22,7 @@ from ..config import (
 )
 from ..extractors.common import (
     LANGUAGE_EXTENSIONS,
+    filter_bundled_source_inventory,
     inventory_language_for_path,
     normalize_include_tests,
 )
@@ -73,8 +75,16 @@ from .plugins import (
     load_entry_point,
     lock_path,
     parallel_safe_extractor_entry_points,
+    runtime_project_plugins_enabled,
 )
 from .resource_diagnostics import format_resource_failure
+from .source_selection import (
+    SourceSelectionError,
+    SourceSelectionPolicy,
+    path_is_selected,
+    resolve_source_selection,
+    selection_may_contain_path,
+)
 from .source_snapshot import (
     SourceFile,
     SourceSnapshot,
@@ -96,10 +106,21 @@ def _instantiate_extractor(entry_point: str):
     return getattr(module, class_name)()
 
 
+def _instantiate_plugin_extractor(
+    entry_point: str,
+    plugin_root: str | Path,
+):
+    return load_entry_point(entry_point, root=plugin_root)()
+
+
 @lru_cache(maxsize=None)
 def _load_extractor(entry_point: str):
     """Instantiate an extractor from a ``"module.path:ClassName"`` string."""
     return _instantiate_extractor(entry_point)
+
+
+def _load_plugin_extractor(entry_point: str, plugin_root: str):
+    return _instantiate_plugin_extractor(entry_point, plugin_root)
 
 
 @dataclass(frozen=True)
@@ -126,6 +147,8 @@ class InventoryRequest:
     include_plugins: bool = True
     capture_data_effect_observations: bool = False
     capture_import_observations: bool = False
+    source_selection: str | Path | None = None
+    source_plugins_only: bool = False
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -220,6 +243,7 @@ class _ExtractionPlan:
     fresh_source_files: list[str]
     files_found: int
     kwargs: dict
+    plugin_root: str | None = None
 
 
 @dataclass(frozen=True)
@@ -249,6 +273,7 @@ class _InventoryBuildContext:
     plugin_components: tuple[dict, ...]
     plugin_lock_path: str | None
     plugin_lock_hash: str | None
+    plugin_root: str | Path
 
 
 @dataclass
@@ -262,11 +287,18 @@ def _run_extraction_plan(
     plan: _ExtractionPlan, *, fresh_instance: bool = False
 ) -> _ExtractionOutcome:
     try:
-        extractor = (
-            _instantiate_extractor(plan.entry_point)
-            if fresh_instance
-            else _load_extractor(plan.entry_point)
-        )
+        if plan.plugin_root is None:
+            extractor = (
+                _instantiate_extractor(plan.entry_point)
+                if fresh_instance
+                else _load_extractor(plan.entry_point)
+            )
+        else:
+            extractor = (
+                _instantiate_plugin_extractor(plan.entry_point, plan.plugin_root)
+                if fresh_instance
+                else _load_plugin_extractor(plan.entry_point, plan.plugin_root)
+            )
     except Exception as exc:
         return _ExtractionOutcome(
             plan.language,
@@ -355,6 +387,8 @@ _LEGACY_INVENTORY_REQUEST_FIELDS = (
     "include_plugins",
     "capture_data_effect_observations",
     "capture_import_observations",
+    "source_selection",
+    "source_plugins_only",
 )
 
 
@@ -435,6 +469,10 @@ def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
     inventory = _merge_inventory_results(
         context, planning.cached_by_language, extracted_by_language
     )
+    inventory = filter_bundled_source_inventory(
+        inventory, source_root=context.source_snapshot.root
+    )
+    inventory = _filter_selected_inventory(context.source_snapshot, inventory)
     statuses = _ordered_inventory_statuses(
         context.registry, planning.status_by_language
     )
@@ -448,6 +486,29 @@ def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
         inventory,
     )
     _save_inventory_cache(context, statuses)
+    return _completed_inventory_result(
+        context,
+        inventory=inventory,
+        statuses=statuses,
+        extraction_job_plan=extraction_job_plan,
+        selected_plugin_components=selected_plugin_components,
+        producer_plugin_components=producer_plugin_components,
+        evaluated_source_snapshot=evaluated_source_snapshot,
+        outcomes_by_language=outcomes_by_language,
+    )
+
+
+def _completed_inventory_result(
+    context: _InventoryBuildContext,
+    *,
+    inventory: dict,
+    statuses: dict[str, ExtractorStatus],
+    extraction_job_plan: ExtractionJobPlan,
+    selected_plugin_components: tuple[dict, ...],
+    producer_plugin_components: tuple[dict, ...],
+    evaluated_source_snapshot: SourceSnapshot,
+    outcomes_by_language: dict[str, _ExtractionOutcome],
+) -> InventoryResult:
     return InventoryResult(
         inventory=inventory,
         statuses=statuses,
@@ -533,6 +594,8 @@ def _snapshot_with_plugin_inventory_paths(
             if str(file_data.get("language", "")) in plugin_languages
         )
     except SourceSnapshotError:
+        if snapshot.source_selection_policy is not None:
+            raise
         # Extract remains backward compatible with virtual plugin records.
         # Knowledge generation will reject any uncommitted source path.
         return snapshot
@@ -579,26 +642,43 @@ def _build_extraction_job_plan(
 def _prepare_inventory_build_context(
     request: InventoryRequest,
 ) -> _InventoryBuildContext:
-    source_snapshot = request.source_snapshot or build_source_snapshot(
-        request.src_dir,
-        only_files=request.only_files,
-        include_tests=request.include_tests,
+    source_snapshot = _source_snapshot_for_inventory_request(request)
+    project_plugins_enabled = runtime_project_plugins_enabled(
+        source_snapshot.root,
+        source_selection_configured=(
+            source_snapshot.source_selection_policy is not None
+        ),
+        source_plugins_only=request.source_plugins_only,
+        include_plugins=request.include_plugins,
     )
-    if request.include_plugins:
-        registry = get_extractor_registry()
-        plugin_components, plugin_root = _selected_runtime_plugin_components(
-            request.src_dir
-        )
+    if project_plugins_enabled:
+        if (
+            source_snapshot.source_selection_policy is None
+            and not request.source_plugins_only
+        ):
+            plugin_components, plugin_root = _selected_runtime_plugin_components(
+                request.src_dir
+            )
+            registry = get_extractor_registry()
+            parallel_safe_plugin_entry_points = (
+                parallel_safe_extractor_entry_points()
+            )
+        else:
+            plugin_components, plugin_root = (
+                _configured_runtime_plugin_components(request.src_dir)
+            )
+            registry = get_extractor_registry(root=plugin_root)
+            parallel_safe_plugin_entry_points = (
+                parallel_safe_extractor_entry_points(root=plugin_root)
+            )
         plugin_lock_path, plugin_lock_hash = _captured_plugin_lock(
             request.src_dir,
             plugin_root=plugin_root,
         )
-        parallel_safe_plugin_entry_points = (
-            parallel_safe_extractor_entry_points()
-        )
     else:
         registry = dict(EXTRACTOR_REGISTRY)
         plugin_components = ()
+        plugin_root = request.src_dir
         plugin_lock_path = None
         plugin_lock_hash = None
         parallel_safe_plugin_entry_points = set()
@@ -626,7 +706,58 @@ def _prepare_inventory_build_context(
         plugin_components=plugin_components,
         plugin_lock_path=plugin_lock_path,
         plugin_lock_hash=plugin_lock_hash,
+        plugin_root=plugin_root,
     )
+
+
+def _source_snapshot_for_inventory_request(
+    request: InventoryRequest,
+) -> SourceSnapshot:
+    if request.source_snapshot is None:
+        return build_source_snapshot(
+            request.src_dir,
+            only_files=request.only_files,
+            include_tests=request.include_tests,
+            source_selection=request.source_selection,
+        )
+
+    snapshot = request.source_snapshot
+    requested_root = Path(request.src_dir).resolve()
+    if snapshot.root.resolve() != requested_root:
+        raise SourceSelectionError(
+            "source_snapshot",
+            "root must match the inventory request source root",
+        )
+    if request.source_selection is None:
+        return snapshot
+
+    requested_policy = resolve_source_selection(
+        requested_root,
+        request.source_selection,
+    )
+    requested_identity = (
+        requested_policy.identity if requested_policy is not None else None
+    )
+    if requested_identity != snapshot.source_selection_identity:
+        raise SourceSelectionError(
+            "source_selection",
+            "does not match the supplied source snapshot selection identity",
+        )
+    return snapshot
+
+
+def _filter_selected_inventory(
+    source_snapshot: SourceSnapshot,
+    inventory: dict,
+) -> dict:
+    policy = source_snapshot.source_selection_policy
+    if policy is None:
+        return inventory
+    return {
+        source_path: value
+        for source_path, value in inventory.items()
+        if source_path in source_snapshot.selected_regular_paths
+    }
 
 
 def _captured_plugin_lock(
@@ -681,6 +812,20 @@ def _selected_runtime_plugin_components(
         generation.extend(selected)
         source_selected = source_selected or bool(primary)
     return extractors + tuple(generation), (source_root if source_selected else ".")
+
+
+def _configured_runtime_plugin_components(
+    source_root: str | Path,
+) -> tuple[tuple[dict, ...], str | Path]:
+    """Use only plugins installed in the configured source boundary."""
+
+    components = tuple(
+        component
+        for component in iter_components(root=source_root)
+        if component.get("type")
+        in {"extractor", "diagram_style", "entrypoint_detector"}
+    )
+    return components, source_root
 
 
 def _source_files_by_path(source_snapshot: SourceSnapshot) -> dict[str, SourceFile]:
@@ -739,17 +884,21 @@ def _plan_language_extraction(
     cached_by_language: dict[str, dict],
 ) -> _ExtractionPlan | None:
     extensions = LANGUAGE_EXTENSIONS.get(language)
-    source_files = (
-        context.source_snapshot.language_paths(language)
-        if extensions is not None
-        else None
-    )
+    if extensions is not None:
+        source_files = context.source_snapshot.language_paths(language)
+    elif context.source_snapshot.source_selection_policy is not None:
+        source_files = sorted(context.source_snapshot.selected_regular_paths)
+        if context.request.only_files is not None:
+            requested = set(context.request.only_files)
+            source_files = [path for path in source_files if path in requested]
+    else:
+        source_files = None
     if extensions is not None and not source_files:
         status_by_language[language] = ExtractorStatus(language, "skipped", 0)
         return None
 
     files_found = len(source_files or [])
-    if extensions is None and context.request.only_files:
+    if extensions is None and source_files is None and context.request.only_files:
         files_found = len(context.request.only_files)
 
     is_builtin = extensions is not None and entry_point == EXTRACTOR_REGISTRY.get(
@@ -789,6 +938,19 @@ def _plan_language_extraction(
         files_found=files_found,
         kwargs=_build_extraction_kwargs(
             context, language, is_builtin, fresh_source_files
+        ),
+        plugin_root=(
+            str(Path(context.plugin_root).resolve())
+            if (
+                context.request.source_plugins_only
+                or context.source_snapshot.source_selection_policy is not None
+            )
+            and not is_builtin
+            and any(
+                component.get("entry_point") == entry_point
+                for component in context.plugin_components
+            )
+            else None
         ),
     )
 
@@ -864,7 +1026,11 @@ def _build_extraction_kwargs(
 ) -> dict:
     kwargs = {
         "src_dir": context.request.src_dir,
-        "only_files": context.request.only_files,
+        "only_files": (
+            fresh_source_files
+            if context.source_snapshot.source_selection_policy is not None
+            else context.request.only_files
+        ),
         "deep": context.request.deep,
     }
     if is_builtin:
@@ -1077,7 +1243,14 @@ def _should_save_inventory_cache(cache: InventoryCache) -> bool:
     )
 
 
-def get_inventory(src_dir, deep=False, only_files=None, include_empty=False):
+def get_inventory(
+    src_dir,
+    deep=False,
+    only_files=None,
+    include_empty=False,
+    *,
+    source_selection: str | Path | None = None,
+):
     """Backward-compatible inventory API returning only the inventory dict."""
     return get_inventory_result(
         InventoryRequest(
@@ -1085,6 +1258,7 @@ def get_inventory(src_dir, deep=False, only_files=None, include_empty=False):
             deep=deep,
             only_files=only_files,
             include_empty=include_empty,
+            source_selection=source_selection,
         )
     ).inventory
 
@@ -1103,9 +1277,16 @@ def infer_language_from_path(filepath: str) -> str | None:
 
 
 def languages_with_source(
-    src_dir: str, only_files: list[str] | None = None
+    src_dir: str,
+    only_files: list[str] | None = None,
+    *,
+    source_selection: str | Path | None = None,
 ) -> set[str]:
-    snapshot = build_source_snapshot(src_dir, only_files=only_files)
+    snapshot = build_source_snapshot(
+        src_dir,
+        only_files=only_files,
+        source_selection=source_selection,
+    )
     return {
         language
         for language, source_files in snapshot.files_by_language.items()
@@ -1119,6 +1300,7 @@ def _inventory_or_exit(
     deep: bool = False,
     only_files=None,
     include_empty: bool = False,
+    source_selection: str | Path | None = None,
 ) -> dict:
     result = get_inventory_result(
         InventoryRequest(
@@ -1126,6 +1308,7 @@ def _inventory_or_exit(
             deep=deep,
             only_files=only_files,
             include_empty=include_empty,
+            source_selection=source_selection,
         )
     )
     if result.failed:
@@ -1134,27 +1317,380 @@ def _inventory_or_exit(
     return result.inventory
 
 
-def _git_changed_files(src_dir: str) -> list[str] | None:
-    """Return list of files changed in the last commit, relative to *src_dir*.
+def _git_changed_files(
+    src_dir: str,
+) -> list[str] | None:
+    """Return files changed in the last commit, relative to *src_dir*.
 
     Returns None if git is unavailable or there are no commits.
     """
     try:
-        result = subprocess.run(
-            ["git", "diff", "--name-only", "HEAD~1..HEAD"],
+        repository = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
             capture_output=True,
             text=True,
             check=True,
             timeout=15,
             cwd=src_dir,
         )
-        return [line for line in result.stdout.splitlines() if line.strip()]
+        git_root = Path(repository.stdout.strip()).resolve()
+        source_root = Path(src_dir).resolve()
+        try:
+            source_prefix_path = source_root.relative_to(git_root)
+        except ValueError as exc:
+            raise SourceSnapshotError(
+                "source_root",
+                "must be contained by the Git repository used for changed-file "
+                "selection",
+            ) from exc
+        source_prefix = (
+            ""
+            if source_prefix_path.as_posix() == "."
+            else source_prefix_path.as_posix()
+        )
+        result = subprocess.run(
+            ["git", "diff", "--name-status", "-z", "HEAD~1..HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=15,
+            cwd=src_dir,
+        )
+        repository_paths = _git_name_status_paths(result.stdout)
+        paths = []
+        for repository_path in repository_paths:
+            if source_prefix:
+                prefix = source_prefix + "/"
+                if not repository_path.startswith(prefix):
+                    continue
+                path = repository_path[len(prefix) :]
+            else:
+                path = repository_path
+            if path:
+                paths.append(path)
+        # Return every path in source-root coordinates.  Policy, ignore, global
+        # exclusions, and selection-control changes are composed later against
+        # one fully evaluated SourceSnapshot.  Filtering here would discard an
+        # ancestor .gitignore or an out-of-include profile before it can trigger
+        # the required full re-evaluation.
+        return paths
     except (
         subprocess.CalledProcessError,
         subprocess.TimeoutExpired,
         FileNotFoundError,
     ):
         return None
+
+
+def _git_name_status_paths(output: str) -> list[str]:
+    """Decode NUL-delimited name-status output, retaining both rename sides."""
+
+    tokens = output.split("\0")
+    if tokens and tokens[-1] == "":
+        tokens.pop()
+    paths: list[str] = []
+    index = 0
+    while index < len(tokens):
+        status = tokens[index]
+        index += 1
+        if not status or status[0] not in "ACDMRTUXB":
+            raise SourceSnapshotError(
+                "git_diff",
+                "returned malformed name-status output",
+            )
+        path_count = 2 if status[0] in "RC" else 1
+        if index + path_count > len(tokens):
+            raise SourceSnapshotError(
+                "git_diff",
+                "returned truncated name-status output",
+            )
+        for path in tokens[index : index + path_count]:
+            if not path:
+                raise SourceSnapshotError(
+                    "git_diff",
+                    "returned an empty changed path",
+                )
+            if path not in paths:
+                paths.append(path)
+        index += path_count
+    return paths
+
+
+def _snapshot_path_is_selection_input(
+    snapshot: SourceSnapshot,
+    path: str,
+) -> bool:
+    if "selection" in snapshot.captured_input_kinds.get(path, ()):
+        return True
+    policy = snapshot.source_selection_policy
+    if policy is None:
+        return False
+    if path == policy.path:
+        return True
+    if Path(path).name != ".gitignore":
+        return False
+    parent = Path(path).parent.as_posix()
+    try:
+        return selection_may_contain_path(
+            policy,
+            "" if parent == "." else parent,
+        )
+    except SourceSelectionError:
+        return False
+
+
+def _partition_snapshot_git_changes(
+    changed: Iterable[str],
+    snapshot: SourceSnapshot,
+) -> tuple[list[str], bool]:
+    """Return selected source changes and whether a selection boundary changed."""
+    policy = snapshot.source_selection_policy
+    if policy is None:
+        return list(changed), False
+    selected: list[str] = []
+    boundary_changed = False
+    for path in changed:
+        if _snapshot_path_is_selection_input(snapshot, path):
+            boundary_changed = True
+            continue
+        try:
+            if (
+                snapshot.path_is_effectively_selected(path)
+                and path != snapshot.source_selection_path
+            ):
+                selected.append(path)
+        except SourceSelectionError:
+            continue
+    return selected, boundary_changed
+
+
+def filter_source_diff(
+    diff_text: str,
+    selection_policy: SourceSelectionPolicy | None,
+    *,
+    retained_roots: Iterable[str] = (),
+    source_snapshot: SourceSnapshot | None = None,
+) -> str:
+    """Drop configured-policy diff blocks that could disclose deselected files."""
+
+    if source_snapshot is not None:
+        selection_policy = source_snapshot.source_selection_policy
+    if selection_policy is None or not diff_text:
+        return diff_text
+    requested_retained_roots = tuple(retained_roots)
+    retained = tuple(
+        root.strip("/")
+        for root in requested_retained_roots
+        if root.strip("/")
+    )
+    source_prefix: str | None = None
+    if source_snapshot is not None:
+        try:
+            repository = subprocess.run(
+                ["git", "rev-parse", "--show-toplevel"],
+                capture_output=True,
+                text=True,
+                check=True,
+                timeout=15,
+                cwd=source_snapshot.root,
+            )
+            repository_root = Path(repository.stdout.strip()).resolve()
+            prefix_path = source_snapshot.root.resolve().relative_to(repository_root)
+            source_prefix = (
+                "" if prefix_path.as_posix() == "." else prefix_path.as_posix()
+            )
+            retained = _repository_relative_retained_roots(
+                requested_retained_roots,
+                repository_root=repository_root,
+            )
+        except (
+            OSError,
+            ValueError,
+            subprocess.CalledProcessError,
+            subprocess.TimeoutExpired,
+        ):
+            # A configured diff cannot be safely interpreted without proving its
+            # Git coordinate system.  In particular, a local wiki path must not
+            # become an alias for the same spelling in an external source repo.
+            return ""
+    blocks: list[list[str]] = []
+    current: list[str] = []
+    for line in diff_text.splitlines(keepends=True):
+        if line.startswith("diff --git "):
+            if current:
+                blocks.append(current)
+            current = [line]
+        elif current:
+            current.append(line)
+    if current:
+        blocks.append(current)
+
+    selected_blocks = [
+        block
+        for block in blocks
+        if _diff_block_is_selected(
+            block,
+            selection_policy,
+            retained,
+            source_snapshot=source_snapshot,
+            source_prefix=source_prefix,
+        )
+    ]
+    return "".join(line for block in selected_blocks for line in block)
+
+
+def _repository_relative_retained_roots(
+    retained_roots: Iterable[str],
+    *,
+    repository_root: Path,
+) -> tuple[str, ...]:
+    """Translate real retained paths into the source Git coordinate system."""
+
+    normalized: list[str] = []
+    for root in retained_roots:
+        if not root.strip("/"):
+            continue
+        candidate = Path(root)
+        if not candidate.is_absolute():
+            candidate = Path.cwd() / candidate
+        try:
+            relative = candidate.resolve().relative_to(repository_root)
+        except (OSError, ValueError):
+            continue
+        relative_text = relative.as_posix().strip("/")
+        if relative_text:
+            normalized.append(relative_text)
+    return tuple(dict.fromkeys(normalized))
+
+
+def _diff_block_is_selected(
+    block: list[str],
+    policy: SourceSelectionPolicy,
+    retained_roots: tuple[str, ...],
+    *,
+    source_snapshot: SourceSnapshot | None,
+    source_prefix: str | None,
+) -> bool:
+    paths = _git_diff_block_paths(block)
+    if not paths:
+        return False
+    try:
+        for repository_path in paths:
+            if any(
+                repository_path == root
+                or repository_path.startswith(root + "/")
+                for root in retained_roots
+            ):
+                continue
+            source_path = repository_path
+            if source_prefix:
+                prefix = source_prefix + "/"
+                if not repository_path.startswith(prefix):
+                    return False
+                source_path = repository_path[len(prefix) :]
+            if source_snapshot is not None and _snapshot_path_is_selection_input(
+                source_snapshot,
+                source_path,
+            ):
+                continue
+            if source_snapshot is not None:
+                if (
+                    source_snapshot.path_is_effectively_selected(source_path)
+                    and source_path != source_snapshot.source_selection_path
+                ):
+                    continue
+                return False
+            if source_path == policy.path or path_is_selected(policy, source_path):
+                continue
+            return False
+        return True
+    except SourceSelectionError:
+        return False
+
+
+def _git_diff_block_paths(block: list[str]) -> tuple[str, ...] | None:
+    try:
+        parts = shlex.split(block[0].rstrip("\r\n"), posix=True)
+    except ValueError:
+        return None
+    if len(parts) != 4 or parts[:2] != ["diff", "--git"]:
+        return None
+    paths = [
+        path
+        for value in parts[2:]
+        if (path := _git_diff_path(value)) is not None
+    ]
+    for line in block[1:]:
+        value: str | None = None
+        prefixed = False
+        if line.startswith(("--- ", "+++ ")):
+            value = line[4:].rstrip("\r\n")
+            prefixed = True
+        else:
+            for marker in ("rename from ", "rename to ", "copy from ", "copy to "):
+                if line.startswith(marker):
+                    value = line[len(marker) :].rstrip("\r\n")
+                    break
+        if value is None:
+            continue
+        decoded = _git_metadata_path(value, prefixed=prefixed)
+        if decoded is _INVALID_DIFF_PATH:
+            return None
+        if isinstance(decoded, str):
+            paths.append(decoded)
+    return tuple(paths)
+
+
+_INVALID_DIFF_PATH = object()
+
+
+def _git_metadata_path(
+    value: str,
+    *,
+    prefixed: bool,
+) -> str | None | object:
+    if value.startswith('"'):
+        try:
+            decoded = shlex.split(value, posix=True)
+        except ValueError:
+            return _INVALID_DIFF_PATH
+        if len(decoded) != 1:
+            return _INVALID_DIFF_PATH
+        value = decoded[0]
+    if value == "/dev/null":
+        return None
+    if prefixed:
+        return _git_diff_path(value) or _INVALID_DIFF_PATH
+    return value or _INVALID_DIFF_PATH
+
+
+def _git_diff_path(value: str) -> str | None:
+    if value == "/dev/null":
+        return None
+    if value.startswith(("a/", "b/")):
+        return value[2:]
+    return None
+
+
+def _build_extract_source_snapshot(
+    src_root: Path,
+    *,
+    only_files: Iterable[str] | None,
+    include_tests: Iterable[str],
+    selection_policy: SourceSelectionPolicy | None,
+) -> SourceSnapshot:
+    if selection_policy is None:
+        return build_source_snapshot(
+            str(src_root),
+            only_files=only_files,
+            include_tests=include_tests,
+        )
+    return build_source_snapshot(
+        str(src_root),
+        only_files=only_files,
+        include_tests=include_tests,
+        selection_policy=selection_policy,
+    )
 
 
 def _compact_summary_names(items: Iterable, key: str | None = None) -> list[str]:
@@ -1359,6 +1895,9 @@ def build_extract_payload(
     allow_external_src: bool = False,
     read_only: bool = False,
     include_plugins: bool = True,
+    source_plugins_only: bool = False,
+    source_selection: str | Path | None = None,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> ExtractPayloadResult:
     """Build the stable extract JSON payload without printing or exiting."""
     src_root = validate_source_root(
@@ -1374,12 +1913,42 @@ def build_extract_payload(
     if changed and paths:
         raise ValueError("--changed and --paths are mutually exclusive.")
 
+    supplied_snapshot = source_snapshot
+    if supplied_snapshot is not None:
+        supplied_snapshot = _source_snapshot_for_inventory_request(
+            InventoryRequest(
+                src_dir=src_root,
+                source_snapshot=supplied_snapshot,
+                source_selection=source_selection,
+            )
+        )
+        selection_policy = supplied_snapshot.source_selection_policy
+    else:
+        selection_policy = resolve_source_selection(src_root, source_selection)
+    include_test_languages = normalize_include_tests(include_tests)
     only_files = None
     changed_file_count: int | None = None
     no_changed_files = False
+    changed_boundary_snapshot: SourceSnapshot | None = None
 
     if changed:
         only_files = _git_changed_files(str(src_root))
+        if only_files is not None and selection_policy is not None:
+            changed_count = len(only_files)
+            evaluated_snapshot = supplied_snapshot or _build_extract_source_snapshot(
+                src_root,
+                only_files=None,
+                include_tests=include_test_languages,
+                selection_policy=selection_policy,
+            )
+            only_files, boundary_changed = _partition_snapshot_git_changes(
+                only_files,
+                evaluated_snapshot,
+            )
+            if boundary_changed:
+                only_files = None
+                changed_file_count = changed_count
+                changed_boundary_snapshot = evaluated_snapshot
         if only_files is not None:
             changed_file_count = len(only_files)
         if only_files == []:
@@ -1391,10 +1960,11 @@ def build_extract_payload(
         empty_output = {"schema_version": EXTRACT_SCHEMA_VERSION, "inventory": {}}
         dependency_analysis = None
         if deep:
-            source_snapshot = build_source_snapshot(
-                str(src_root),
+            source_snapshot = supplied_snapshot or _build_extract_source_snapshot(
+                src_root,
                 only_files=(),
-                include_tests=normalize_include_tests(include_tests),
+                include_tests=include_test_languages,
+                selection_policy=selection_policy,
             )
             dependency_analysis = analyze_dependencies(
                 {},
@@ -1402,7 +1972,10 @@ def build_extract_payload(
                 source_snapshot=source_snapshot,
             )
             empty_output["api_contracts"] = build_api_contracts(
-                {}, openapi_file=openapi_file, source_root=src_root
+                {},
+                openapi_file=openapi_file,
+                source_root=src_root,
+                source_snapshot=source_snapshot,
             )
             empty_output["dependencies"] = _dependency_extract_block(
                 dependency_analysis
@@ -1423,11 +1996,15 @@ def build_extract_payload(
             dependency_analysis=dependency_analysis,
         )
 
-    include_test_languages = normalize_include_tests(include_tests)
-    source_snapshot = build_source_snapshot(
-        str(src_root),
-        only_files=only_files,
-        include_tests=include_test_languages,
+    source_snapshot = (
+        changed_boundary_snapshot
+        or supplied_snapshot
+        or _build_extract_source_snapshot(
+            src_root,
+            only_files=only_files,
+            include_tests=include_test_languages,
+            selection_policy=selection_policy,
+        )
     )
     result = get_inventory_result(
         InventoryRequest(
@@ -1440,6 +2017,7 @@ def build_extract_payload(
             include_tests=include_test_languages,
             capture_data_effect_observations=deep,
             include_plugins=include_plugins,
+            source_plugins_only=source_plugins_only,
         )
     )
     if result.failed:
@@ -1460,6 +2038,7 @@ def build_extract_payload(
             inventory,
             openapi_file=openapi_file,
             source_root=src_root,
+            source_snapshot=source_snapshot,
         )
         if deep
         else None
@@ -1469,11 +2048,31 @@ def build_extract_payload(
     # before any summary collapse.
     entrypoint_warnings: list[str] = []
     if deep:
+        generation_plugins_enabled = runtime_project_plugins_enabled(
+            src_root,
+            source_selection_configured=(
+                source_snapshot.source_selection_policy is not None
+            ),
+            source_plugins_only=source_plugins_only,
+            include_plugins=include_plugins,
+        )
         entrypoint_result = detect_entry_points(
             inventory,
-            console_scripts=read_console_scripts(str(src_root)),
+            console_scripts=read_console_scripts(
+                str(src_root),
+                source_snapshot=source_snapshot,
+            ),
             root=str(src_root),
-            fallback_root=Path.cwd(),
+            fallback_root=(
+                None
+                if (
+                    source_plugins_only
+                    or source_snapshot.source_selection_policy is not None
+                )
+                and src_root.resolve() != Path.cwd().resolve()
+                else Path.cwd()
+            ),
+            include_plugins=generation_plugins_enabled,
         )
         entrypoints = entrypoint_result.entries
         entrypoints = attach_routes_to_entry_points(entrypoints, api_contracts or {})
@@ -1594,6 +2193,7 @@ def run(args):
     helper_cache_dir: str | None = getattr(args, "helper_cache_dir", None)
     include_tests = getattr(args, "include_tests", None)
     openapi_file: str | None = getattr(args, "openapi_file", None)
+    source_selection = getattr(args, "source_selection", None)
 
     if changed and paths:
         print("Error: --changed and --paths are mutually exclusive.", file=sys.stderr)
@@ -1620,6 +2220,7 @@ def run(args):
             openapi_file=openapi_file,
             allow_external_src=allow_external_src,
             read_only=read_only,
+            source_selection=source_selection,
         )
     except ExtractorFailureError as exc:
         print_inventory_failures(exc.result)

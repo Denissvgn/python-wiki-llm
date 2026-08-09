@@ -23,7 +23,7 @@ from .bootstrap_runtime import (
     build_module_page_map,
 )
 from .filesystem_guard import fresh_no_follow_stat
-from .extraction_service import get_inventory as get_inventory
+from .extraction_service import InventoryRequest, get_inventory, get_inventory_result
 from . import wiki_surface
 from .io import first_unsafe_path_component, read_md, write_md
 from .knowledge_projection import (
@@ -32,6 +32,17 @@ from .knowledge_projection import (
     projection_concept_summary,
     projection_json_value,
     validate_projection_summaries,
+)
+from .documentation_queries import DocumentationQueryError
+from .documentation_query_builder import validate_live_query_source_selection
+from .source_selection import (
+    SourceSelectionError,
+    resolve_source_selection,
+)
+from .source_snapshot import (
+    SourceSnapshot,
+    build_source_snapshot,
+    capture_source_selection_inputs,
 )
 from .validation import (
     path_is_within as shared_path_is_within,
@@ -96,6 +107,48 @@ class ObsidianError(ValueError):
     """Raised for invalid Obsidian export/check requests."""
 
 
+def validate_obsidian_export_source_selection(
+    *,
+    src_dir: str | Path,
+    wiki_dir: str | Path,
+    source_selection: str | Path | None,
+) -> SourceSnapshot:
+    """Freeze and validate the live profile before any persisted wiki read."""
+
+    try:
+        selection_policy = resolve_source_selection(src_dir, source_selection)
+        selection_inputs = capture_source_selection_inputs(
+            src_dir,
+            source_selection=source_selection,
+            selection_policy=selection_policy,
+        )
+        validate_live_query_source_selection(
+            source_root=Path(src_dir),
+            wiki_root=Path(wiki_dir),
+            live_identity=(
+                selection_policy.identity if selection_policy is not None else None
+            ),
+            live_selection_inputs=selection_inputs,
+            operation="Obsidian export",
+        )
+        snapshot = build_source_snapshot(
+            src_dir,
+            source_selection=source_selection,
+            selection_policy=selection_policy,
+            expected_selection_inputs=selection_inputs,
+        )
+        validate_live_query_source_selection(
+            source_root=snapshot.root,
+            wiki_root=Path(wiki_dir),
+            live_identity=snapshot.source_selection_identity,
+            live_selection_inputs=snapshot.source_selection_inputs,
+            operation="Obsidian export",
+        )
+    except (DocumentationQueryError, SourceSelectionError) as exc:
+        raise ObsidianError(f"source selection failed: {exc}") from exc
+    return snapshot
+
+
 @dataclass(frozen=True)
 class WikiPage:
     kind: str
@@ -150,6 +203,7 @@ def export_obsidian_vault(
     vault_dir: str | Path,
     notes_dir: str | Path = DEFAULT_NOTES_DIR,
     dry_run: bool = False,
+    source_selection: str | Path | None = None,
     knowledge_metadata: str | None = None,
     knowledge_projection: KnowledgeProjection | None = None,
 ) -> ObsidianReport:
@@ -163,6 +217,13 @@ def export_obsidian_vault(
     _validate_no_authority_overlap(wiki, vault, "vault_dir")
     _validate_no_authority_overlap(wiki, notes, "notes_dir")
 
+    source_snapshot = validate_obsidian_export_source_selection(
+        src_dir=src_dir,
+        wiki_dir=wiki,
+        source_selection=source_selection,
+    )
+    source_selection = source_snapshot.source_selection_path
+
     page_content: dict[str, str] = {}
     pages = collect_wiki_pages(wiki, content_cache=page_content)
     canonical_map = {page.canonical_rel: page for page in pages}
@@ -174,7 +235,13 @@ def export_obsidian_vault(
         knowledge_projection=knowledge_projection,
     )
     if projection is None:
-        _merge_inventory_relationships(related, pages, src_dir)
+        _merge_inventory_relationships(
+            related,
+            pages,
+            src_dir,
+            source_selection=source_selection,
+            source_snapshot=source_snapshot,
+        )
     else:
         _merge_source_coordinate_relationships(related, pages)
         _preflight_no_alias_paths(
@@ -702,7 +769,12 @@ def _build_related_links(
 
 
 def _merge_inventory_relationships(
-    related: dict[str, set[str]], pages: list[WikiPage], src_dir: str
+    related: dict[str, set[str]],
+    pages: list[WikiPage],
+    src_dir: str,
+    *,
+    source_selection: str | Path | None = None,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> None:
     """Restore the legacy source-inventory relationship projection.
 
@@ -711,7 +783,25 @@ def _merge_inventory_relationships(
     """
 
     try:
-        inventory = get_inventory(src_dir, deep=True)
+        if source_snapshot is not None:
+            inventory = get_inventory_result(
+                InventoryRequest(
+                    src_dir=src_dir,
+                    deep=True,
+                    source_selection=source_selection,
+                    source_snapshot=source_snapshot,
+                )
+            ).inventory
+        elif source_selection is None:
+            inventory = get_inventory(src_dir, deep=True)
+        else:
+            inventory = get_inventory(
+                src_dir,
+                deep=True,
+                source_selection=source_selection,
+            )
+    except SourceSelectionError as exc:
+        raise ObsidianError(f"source selection failed: {exc}") from exc
     except Exception:
         return
 

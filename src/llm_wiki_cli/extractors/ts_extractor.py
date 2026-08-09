@@ -220,6 +220,11 @@ class TypeScriptExtractor:
         self, src_dir: str, inventory: dict, helper_root: Path
     ) -> dict:
         inventory = filter_bundled_inventory(inventory, helper_root)
+        inventory = filter_bundled_inventory(
+            inventory,
+            _TS_SCRIPTS_DIR,
+            source_root=src_dir,
+        )
         src_root = Path(src_dir).resolve()
         normalized_inventory: dict = {}
         for fp, data in inventory.items():

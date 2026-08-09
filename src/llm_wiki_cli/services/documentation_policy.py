@@ -14,7 +14,7 @@ import stat
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, Iterator
+from typing import TYPE_CHECKING, Any, Iterable, Iterator
 from urllib.parse import urlsplit
 
 from .filesystem_guard import (
@@ -27,6 +27,14 @@ from .filesystem_guard import (
     windows_object_identity,
     _windows_path_handle_metadata,
 )
+from .source_selection import (
+    SourceSelectionError,
+    SourceSelectionPolicy,
+    resolve_source_selection,
+)
+
+if TYPE_CHECKING:
+    from .source_snapshot import SourceSnapshot
 
 
 AGENT_POLICY_FILENAMES = frozenset(
@@ -135,6 +143,7 @@ class DocumentationMutationPolicy:
     capture_root: Path | None
     allowed_write_roots: tuple[Path, ...]
     forbidden_write_roots: tuple[Path, ...]
+    source_selection_policy: SourceSelectionPolicy | None = None
     trust_source_plugins: bool = False
     live_service_url: str | None = None
     live_service_access_mode: str = "unspecified"
@@ -170,6 +179,16 @@ class DocumentationMutationPolicy:
             "agent_integration_writes": False,
             "target_cache_writes": False,
             "source_plugins_trusted": self.trust_source_plugins,
+            "source_selection": (
+                dict(self.source_selection_policy.identity)
+                if self.source_selection_policy is not None
+                else None
+            ),
+            "source_selection_origin": (
+                self.source_selection_policy.origin
+                if self.source_selection_policy is not None
+                else None
+            ),
             "live_service": {
                 "configured": self.live_service_url is not None,
                 "access_mode": self.live_service_access_mode,
@@ -184,6 +203,7 @@ def resolve_documentation_policy(
     workspace_root: str | Path,
     *,
     source_root: str | Path | None = None,
+    source_selection: str | Path | None = None,
     input_wiki_root: str | Path | None = None,
     helper_cache_root: str | Path | None = None,
     capture_root: str | Path | None = None,
@@ -196,6 +216,24 @@ def resolve_documentation_policy(
 
     workspace = _resolve_path(workspace_root)
     source = _resolve_optional_root(source_root, "source root")
+    if source is None and source_selection is not None:
+        raise DocumentationPolicyError(
+            "A source-selection path requires an available source root."
+        )
+    if source is None and trust_source_plugins:
+        raise DocumentationPolicyError(
+            "Trusting source plugins requires an available source root."
+        )
+    try:
+        selection_policy = (
+            resolve_source_selection(source, source_selection)
+            if source is not None
+            else None
+        )
+    except SourceSelectionError as exc:
+        raise DocumentationPolicyError(
+            f"Invalid documentation source selection: {exc}"
+        ) from exc
     input_wiki = _resolve_optional_root(input_wiki_root, "input wiki root")
     helper_cache = _resolve_optional_path(helper_cache_root)
     capture = _resolve_optional_path(capture_root)
@@ -239,6 +277,7 @@ def resolve_documentation_policy(
         capture_root=capture,
         allowed_write_roots=allowed_roots,
         forbidden_write_roots=forbidden_roots,
+        source_selection_policy=selection_policy,
         trust_source_plugins=trust_source_plugins,
         live_service_url=live_service_url,
         live_service_access_mode=live_service_access_mode,
@@ -336,6 +375,140 @@ def source_tree_baseline(root: str | Path) -> TreeBaseline:
         root,
         display="source",
         excluded_directories=SOURCE_BASELINE_EXCLUDED_DIRS,
+    )
+
+
+def source_snapshot_tree_baseline(snapshot: SourceSnapshot) -> TreeBaseline:
+    """Build a source baseline from the shared snapshot's selected inputs."""
+
+    from .source_snapshot import SourceSnapshot
+
+    if not isinstance(snapshot, SourceSnapshot):
+        raise DocumentationPolicyError(
+            "source snapshot baseline requires a SourceSnapshot instance."
+        )
+    file_hashes = snapshot.hashes_for()
+    return TreeBaseline(
+        root_display="source",
+        tree_hash=_hash_labeled_hashes(file_hashes),
+        file_hashes=file_hashes,
+    )
+
+
+def compare_source_snapshot_baseline(
+    baseline: TreeBaseline,
+    snapshot: SourceSnapshot,
+) -> IntegrityDifference:
+    """Compare an exact selected-input baseline with a fresh shared snapshot."""
+
+    current = source_snapshot_tree_baseline(snapshot)
+    before = baseline.file_hashes
+    after = current.file_hashes
+    return IntegrityDifference(
+        root_display=baseline.root_display,
+        added=tuple(sorted(set(after) - set(before))),
+        removed=tuple(sorted(set(before) - set(after))),
+        changed=tuple(
+            sorted(
+                path for path in set(before) & set(after) if before[path] != after[path]
+            )
+        ),
+    )
+
+
+def source_plugin_tree_baseline(root: str | Path) -> TreeBaseline:
+    """Capture the exact project plugin store and lockfile without broadening source.
+
+    Trusted plugins are executable inputs, but they are not selected application
+    source.  Keep their integrity commitment separate from the source snapshot so
+    source-selection evidence and cache identity remain unchanged.
+    """
+
+    source_root = Path(root)
+    plugin_home = source_root / ".llm-wiki"
+    store = plugin_home / "plugins"
+    lock = plugin_home / "plugins.lock.json"
+    file_hashes: dict[str, str] = {}
+    if not os.path.lexists(plugin_home):
+        return TreeBaseline(
+            root_display="source_plugins",
+            tree_hash=_hash_labeled_hashes(file_hashes),
+            file_hashes=file_hashes,
+        )
+    home_stat = _lstat(plugin_home, context="source plugin home")
+    _assert_safe_directory(plugin_home, home_stat, context="source plugin home")
+
+    if os.path.lexists(store):
+        try:
+            hidden_sources = sorted(
+                path.relative_to(store).as_posix()
+                for path in store.rglob("*.py")
+                if "__pycache__" in path.relative_to(store).parts
+            )
+        except OSError as exc:
+            raise DocumentationPolicyError(
+                f"Cannot inspect source plugin store: {exc}"
+            ) from exc
+        if hidden_sources:
+            raise DocumentationPolicyError(
+                "source plugin Python source must not be stored under the "
+                f"reserved __pycache__ directory: {hidden_sources[0]}"
+            )
+        store_baseline = capture_tree_baseline(
+            store,
+            display="source_plugin_store",
+            excluded_directories=(
+                ".mypy_cache",
+                ".pytest_cache",
+                ".ruff_cache",
+                "__pycache__",
+            ),
+        )
+        file_hashes.update(
+            {
+                f"plugins/{path}": digest
+                for path, digest in store_baseline.file_hashes.items()
+            }
+        )
+    if os.path.lexists(lock):
+        lock_stat = _lstat(lock, context="source plugin lock")
+        _assert_safe_regular_file(lock, lock_stat)
+        if lock_stat.st_size > DEFAULT_MAX_BASELINE_FILE_BYTES:
+            raise DocumentationPolicyError(
+                "source plugin lock exceeds the per-file baseline byte limit"
+            )
+        file_hashes["plugins.lock.json"] = _hash_file(
+            lock,
+            inspected=lock_stat,
+            max_bytes=DEFAULT_MAX_BASELINE_FILE_BYTES,
+        )
+    if len(file_hashes) > DEFAULT_MAX_BASELINE_FILES:
+        raise DocumentationPolicyError(
+            "source plugins exceed the bounded baseline file limit"
+        )
+    return TreeBaseline(
+        root_display="source_plugins",
+        tree_hash=_hash_labeled_hashes(file_hashes),
+        file_hashes=dict(sorted(file_hashes.items())),
+    )
+
+
+def compare_source_plugin_tree_baseline(
+    baseline: TreeBaseline,
+    root: str | Path,
+) -> IntegrityDifference:
+    current = source_plugin_tree_baseline(root)
+    before = baseline.file_hashes
+    after = current.file_hashes
+    return IntegrityDifference(
+        root_display="source_plugins",
+        added=tuple(sorted(set(after) - set(before))),
+        removed=tuple(sorted(set(before) - set(after))),
+        changed=tuple(
+            sorted(
+                path for path in set(before) & set(after) if before[path] != after[path]
+            )
+        ),
     )
 
 
@@ -835,10 +1008,14 @@ __all__ = [
     "SOURCE_BASELINE_EXCLUDED_DIRS",
     "TreeBaseline",
     "capture_tree_baseline",
+    "compare_source_plugin_tree_baseline",
+    "compare_source_snapshot_baseline",
     "compare_tree_baseline",
     "hash_bytes",
     "hash_file",
     "input_wiki_tree_baseline",
     "resolve_documentation_policy",
+    "source_snapshot_tree_baseline",
+    "source_plugin_tree_baseline",
     "source_tree_baseline",
 ]

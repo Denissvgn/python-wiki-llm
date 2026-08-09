@@ -459,6 +459,8 @@ def _validate_policy_contract(
             "agent_integration_writes",
             "target_cache_writes",
             "source_plugins_trusted",
+            "source_selection",
+            "source_selection_origin",
             "live_service",
         },
         required={
@@ -484,6 +486,30 @@ def _validate_policy_contract(
     if not isinstance(policy.get("source_plugins_trusted"), bool):
         raise DocumentationSchemaError(
             "Run policy source_plugins_trusted must be a boolean."
+        )
+    raw_selection = policy.get("source_selection")
+    raw_selection_origin = policy.get("source_selection_origin")
+    if raw_selection_origin not in {None, "default", "explicit"}:
+        raise DocumentationSchemaError(
+            "Run policy source_selection_origin is unsupported."
+        )
+    try:
+        selection_identity = source_selection_identity_from_generation_inputs(
+            {"source_selection": raw_selection}
+            if raw_selection is not None
+            else {}
+        )
+    except SourceSelectionError as exc:
+        raise DocumentationSchemaError(
+            f"Run policy source_selection is malformed: {exc}"
+        ) from exc
+    if (selection_identity is None) != (raw_selection_origin is None):
+        raise DocumentationSchemaError(
+            "Run policy source-selection identity and origin must be present together."
+        )
+    if not source.get("available") and selection_identity is not None:
+        raise DocumentationSchemaError(
+            "Source-unavailable runs cannot persist a source selection."
         )
     allowed_roots = policy.get("allowed_write_roots")
     if (
@@ -705,6 +731,9 @@ def _validate_integrity_anchor_contract(payload: Mapping[str, Any]) -> None:
     source = payload.get("source", {})
     if isinstance(source, Mapping) and source.get("available") is True:
         expected.add("source_baseline")
+    policy = payload.get("policy", {})
+    if isinstance(policy, Mapping) and policy.get("source_plugins_trusted") is True:
+        expected.add("source_plugins_baseline")
     if set(anchors) != expected:
         raise DocumentationSchemaError(
             "Run integrity_anchors do not match the baseline evidence contract."
@@ -736,6 +765,13 @@ def _validate_optional_run_collections(payload: Mapping[str, Any]) -> None:
     required_evidence["source_baseline"] = (
         f"{RUN_CONTROL_DIR}/evidence/source-baseline.json"
         if source.get("available") is True
+        else ""
+    )
+    policy = payload.get("policy", {})
+    required_evidence["source_plugins_baseline"] = (
+        f"{RUN_CONTROL_DIR}/evidence/source-plugins-baseline.json"
+        if isinstance(policy, Mapping)
+        and policy.get("source_plugins_trusted") is True
         else ""
     )
     strategy = payload.get("baseline_strategy")

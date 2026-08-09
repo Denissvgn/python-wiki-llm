@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from ..config import DEFAULT_WIKI_DIR, validate_path
+from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from ..services.metrics import load_events, summarize_events
 
 
@@ -112,11 +112,23 @@ def run(args) -> None:
     last: str = getattr(args, "last", "30d")
     output_format: str = getattr(args, "format", "text")
 
-    validate_path(src_dir, "--src-dir")
+    allow_external = bool(getattr(args, "allow_external_src", False))
+    source_root = validate_source_root(
+        src_dir,
+        "--src-dir",
+        allow_external=allow_external,
+    )
+    if allow_external:
+        src_dir = str(source_root)
     validate_path(wiki_dir, "--wiki-dir")
 
     events = load_events(last=last)
-    summary = summarize_events(events, src_dir=src_dir, wiki_dir=wiki_dir)
+    summary = summarize_events(
+        events,
+        src_dir=src_dir,
+        wiki_dir=wiki_dir,
+        source_selection=getattr(args, "source_selection", None),
+    )
 
     if output_format == "json":
         print(json.dumps(summary, indent=2, sort_keys=True))

@@ -25,6 +25,7 @@ _SAFE_PLACEHOLDERS = {
     "<name>": "contract_symbol",
     "<entrypoint>": "contract-entrypoint",
     "<helper-cache>": ".cache/contract-helpers",
+    "<profile>": "config/contract-profile.json",
 }
 _PLACEHOLDER_RE = re.compile(r"<[^>\n]+>")
 _JSON_OBJECT_RE = re.compile(r"\{[^{}\n]+\}")

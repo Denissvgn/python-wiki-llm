@@ -2,8 +2,8 @@
 
 The bootstrap, sync, and migration commands already own source discovery,
 inventory extraction, Markdown generation, and surface evaluation.  This
-module adapts those exact in-memory results to the pure KNOW-109/110 planner
-and applies the shared KNOW-107 commit protocol.  It performs no discovery or
+module adapts those exact in-memory results to the pure generation planner and
+applies the shared atomic commit protocol.  It performs no discovery or
 extraction of its own.
 """
 
@@ -17,6 +17,11 @@ from pathlib import Path
 from typing import Any
 
 from .. import __version__
+from ..config import AGENT_WORKTREE_DIR_PATTERNS, EXCLUDED_DIRS
+from ..extractors.common import (
+    BUNDLED_HELPER_IMPLEMENTATION_PATHS,
+    is_bundled_helper_implementation_path,
+)
 from .contracts import KNOWLEDGE_SCHEMA_VERSION
 from .knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
@@ -36,6 +41,7 @@ from .knowledge_envelope import (
     build_producer_record,
     collect_git_repository_evidence,
     hash_generation_options,
+    hash_source_snapshot,
     plugin_producer_inputs,
 )
 from .knowledge_evidence import (
@@ -79,6 +85,11 @@ from .knowledge_model import (
     concept_kind_for_page_kind,
 )
 from .source_snapshot import SourceSnapshot
+from .source_selection import (
+    SourceSelectionError,
+    selection_may_contain_path,
+    with_source_selection_generation_input,
+)
 from .sync_manifest import EVIDENCE_NOT_RECORDED, MANIFEST_FILENAME, SyncManifest
 from .wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
@@ -155,6 +166,15 @@ class RuntimeKnowledgeInputs:
     graph_evidence_limit: int = 20
     governance: GovernanceLedger | None = None
     governance_moves: Mapping[str, str] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class CommittedRuntimeProvenance:
+    """Exact runtime provenance recovered from an intact committed projection."""
+
+    source_snapshot_hash: str
+    generation_options_hash: str
+    generator_version: str
 
 
 @dataclass(frozen=True)
@@ -256,7 +276,20 @@ def build_runtime_knowledge_plan(
         plugin_extractor_components=inputs.plugin_extractor_components,
         plugin_components=inputs.plugin_components,
     )
-    generation_inputs = _runtime_manifest_generation_inputs(inputs)
+    try:
+        generation_inputs = with_source_selection_generation_input(
+            _runtime_manifest_generation_inputs(inputs),
+            inputs.source_snapshot.source_selection_identity,
+            inputs.source_snapshot.source_selection_inputs,
+        )
+    except SourceSelectionError as exc:
+        raise KnowledgeGenerationError(exc.field, exc.message) from exc
+    next_manifest = inputs.next_manifest
+    if next_manifest is not None:
+        next_manifest = next_manifest.with_generation_state(
+            surfaces=next_manifest.surfaces,
+            generation_inputs=generation_inputs,
+        )
     if infrastructure_evidence_by_page(generation_inputs):
         extractor_components = (
             *extractor_components,
@@ -268,7 +301,8 @@ def build_runtime_knowledge_plan(
         generation_option_allowlist=inputs.generation_option_allowlist,
         inventory_complete=inputs.inventory_complete,
     )
-    return build_knowledge_generation_plan(
+    return _stabilize_revision_only_noop(
+        inputs,
         KnowledgeGenerationInputs(
             wiki_dir=inputs.target_wiki_dir,
             inventory=inputs.inventory,
@@ -277,7 +311,12 @@ def build_runtime_knowledge_plan(
             surface_index_bytes=inputs.surface.serialized_bytes,
             surface_index_payload=None,
             source_content_hashes=source_hashes,
-            consumed_inputs=_runtime_consumed_inputs(inputs),
+            consumed_inputs=runtime_consumed_inputs(
+                inputs.source_snapshot,
+                generation_inputs=generation_inputs,
+                plugin_lock_path=inputs.plugin_lock_path,
+                plugin_lock_hash=inputs.plugin_lock_hash,
+            ),
             module_page_map=inputs.module_page_map,
             entity_occurrence_page_map=inputs.entity_occurrence_page_map,
             extractor_ref_by_source=extractor_ref_by_source,
@@ -301,10 +340,10 @@ def build_runtime_knowledge_plan(
                 inputs.previous_manifest,
             ),
             previous_manifest=inputs.previous_manifest,
-            next_manifest=inputs.next_manifest,
+            next_manifest=next_manifest,
             asset_paths=inputs.surface.existing_asset_paths,
             manifest_surfaces=inputs.manifest_surfaces,
-            manifest_generation_inputs=inputs.manifest_generation_inputs,
+            manifest_generation_inputs=generation_inputs,
             unknown_evidence_reason=inputs.unknown_evidence_reason,
             force_unknown_evidence=inputs.force_unknown_evidence,
             untrusted_evidence_page_paths=(inputs.untrusted_evidence_page_paths),
@@ -318,8 +357,44 @@ def build_runtime_knowledge_plan(
             graph_analyzer_limitations=inputs.graph_analyzer_limitations,
             graph_evidence_limit=inputs.graph_evidence_limit,
             governance=governance,
+        ),
+    )
+
+
+def _stabilize_revision_only_noop(
+    runtime_inputs: RuntimeKnowledgeInputs,
+    plan_inputs: KnowledgeGenerationInputs,
+) -> KnowledgeCommitPlan:
+    """Keep a validated artifact set stable across an output-only Git commit."""
+
+    candidate = build_knowledge_generation_plan(plan_inputs)
+    current_revision = runtime_inputs.repository_evidence.evaluated_revision
+    if current_revision is None:
+        return candidate
+    previous = _previous_committed_artifacts(
+        runtime_inputs.target_wiki_dir,
+        runtime_inputs.previous_manifest,
+    )
+    if previous is None:
+        return candidate
+    previous_revision = previous.knowledge.bundle.repository.evaluated_revision
+    normalized_current = (
+        current_revision
+        if current_revision.startswith("git:")
+        else f"git:{current_revision}"
+    )
+    if previous_revision == "unknown" or normalized_current == previous_revision:
+        return candidate
+    stabilized = build_knowledge_generation_plan(
+        replace(
+            plan_inputs,
+            repository_evidence=replace(
+                runtime_inputs.repository_evidence,
+                evaluated_revision=previous_revision,
+            ),
         )
     )
+    return stabilized if not stabilized.changed else candidate
 
 
 def build_runtime_live_evaluation(
@@ -530,6 +605,26 @@ def committed_governance_bundle_id(
     return governance_bundle_id_from_knowledge(validated.knowledge)
 
 
+def committed_runtime_provenance(
+    wiki_dir: str | Path,
+    manifest: SyncManifest | None,
+) -> CommittedRuntimeProvenance | None:
+    """Return source and generator identity from an intact committed projection."""
+
+    validated = _previous_committed_artifacts(wiki_dir, manifest)
+    if validated is None:
+        return None
+    return CommittedRuntimeProvenance(
+        source_snapshot_hash=(
+            validated.knowledge.bundle.snapshot.source_snapshot_hash
+        ),
+        generation_options_hash=(
+            validated.knowledge.bundle.snapshot.generation_options_hash
+        ),
+        generator_version=validated.knowledge.bundle.producer.tool.version,
+    )
+
+
 def _previous_committed_producer(
     wiki_dir: str | Path,
     manifest: SyncManifest | None,
@@ -702,13 +797,85 @@ def _prepared_runtime_governance(
 def collect_runtime_repository_evidence(
     source_root: str | Path,
     target_wiki_dir: str | Path,
+    *,
+    source_snapshot: SourceSnapshot | None = None,
 ) -> RepositoryEvidence:
-    """Collect Git evidence without recursively observing M1 output bytes."""
+    """Collect Git evidence for the evaluated source-selection boundary."""
 
+    source = Path(source_root).resolve()
     target = Path(target_wiki_dir).resolve()
+    included_paths: tuple[Path, ...] | None = None
+    selection_excludes: tuple[Path, ...] = ()
+    worktree_path_filter = None
+    if source_snapshot is not None:
+        if not isinstance(source_snapshot, SourceSnapshot):
+            raise TypeError("source_snapshot must be a SourceSnapshot or None")
+        if source_snapshot.root.resolve() != source:
+            raise ValueError("source_snapshot root must match source_root")
+        policy = source_snapshot.source_selection_policy
+        if policy is not None:
+            # Root pathspecs retain tracked deletions.  Policy excludes and the
+            # eight owned helper implementation paths narrow those roots to the
+            # same evaluated source boundary; package markers/locks alongside
+            # the helpers remain deliberately included.
+            selected_paths = {source / path for path in policy.include}
+            selected_paths.add(source / policy.path)
+            selected_paths.update(
+                source / path
+                for path, kinds in source_snapshot.captured_input_kinds.items()
+                if ConsumedInputKind.SELECTION.value in kinds
+            )
+            included_paths = tuple(sorted(selected_paths, key=lambda path: str(path)))
+            helper_excludes: set[Path] = set()
+            package_roots: set[Path] = set()
+            candidate_paths = set(policy.include) | set(
+                source_snapshot.selected_regular_paths
+            )
+            for selected_path in candidate_paths:
+                parts = Path(selected_path).parts
+                for index, part in enumerate(parts):
+                    if part == "llm_wiki_cli":
+                        package_roots.add(source.joinpath(*parts[: index + 1]))
+            if source.name == "llm_wiki_cli":
+                package_roots.add(source)
+            for package_root in package_roots:
+                for helper_path in BUNDLED_HELPER_IMPLEMENTATION_PATHS:
+                    relative = Path(helper_path).relative_to("llm_wiki_cli")
+                    candidate = package_root / relative
+                    if is_bundled_helper_implementation_path(candidate):
+                        helper_excludes.add(candidate)
+            selection_excludes = tuple(
+                source / path for path in policy.exclude
+            ) + tuple(sorted(helper_excludes, key=lambda path: str(path)))
+
+            def configured_worktree_path_filter(candidate: Path) -> bool:
+                try:
+                    relative = candidate.relative_to(source).as_posix()
+                except ValueError:
+                    return False
+                if relative == policy.path:
+                    return True
+                if Path(relative).name == ".gitignore":
+                    parent = Path(relative).parent.as_posix()
+                    try:
+                        if selection_may_contain_path(
+                            policy,
+                            "" if parent == "." else parent,
+                        ):
+                            return True
+                    except SourceSelectionError:
+                        return False
+                try:
+                    return source_snapshot.path_is_effectively_selected(relative)
+                except SourceSelectionError:
+                    return False
+
+            worktree_path_filter = configured_worktree_path_filter
     return collect_git_repository_evidence(
-        source_root,
-        excluded_worktree_paths=tuple(
+        source,
+        included_worktree_paths=included_paths,
+        excluded_worktree_paths=selection_excludes
+        + tuple(
             target / filename
             for filename in (
                 SURFACE_INDEX_FILENAME,
@@ -716,6 +883,14 @@ def collect_runtime_repository_evidence(
                 MANIFEST_FILENAME,
             )
         ),
+        excluded_worktree_globs=(
+            *(f"**/{name}/**" for name in sorted(EXCLUDED_DIRS)),
+            *(
+                "**/" + "/".join(pattern) + "/**"
+                for pattern in AGENT_WORKTREE_DIR_PATTERNS
+            ),
+        ),
+        worktree_path_filter=worktree_path_filter,
     )
 
 
@@ -773,6 +948,26 @@ def runtime_generation_options(
         "preserve_semantic": bool(preserve_semantic),
         "workflows_enabled": workflows_enabled,
     }
+
+
+def runtime_generation_options_hash(
+    generation_options: Mapping[str, Any],
+    *,
+    inventory_complete: bool = True,
+) -> str:
+    """Hash the canonical runtime generation policy used by knowledge output."""
+
+    prepared = prepare_runtime_generation_options(
+        generation_options,
+        generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS,
+        generation_option_allowlist=tuple(RUNTIME_GENERATION_OPTION_DEFAULTS),
+        inventory_complete=inventory_complete,
+    )
+    return hash_generation_options(
+        prepared.values,
+        defaults=prepared.defaults,
+        allowlist=prepared.allowlist,
+    )
 
 
 def persist_runtime_generation_policy(
@@ -1005,8 +1200,12 @@ def _manifest_extractor_refs(
     return frozenset(refs)
 
 
-def _runtime_consumed_inputs(
-    inputs: RuntimeKnowledgeInputs,
+def runtime_consumed_inputs(
+    source_snapshot: SourceSnapshot,
+    *,
+    generation_inputs: Mapping[str, object],
+    plugin_lock_path: str | None = None,
+    plugin_lock_hash: str | None = None,
 ) -> tuple[ConsumedInput, ...]:
     """Add explicitly selected inputs to the already captured source basis.
 
@@ -1018,24 +1217,20 @@ def _runtime_consumed_inputs(
     more specific classification replaces the generic YAML classification.
     """
 
+    if not isinstance(source_snapshot, SourceSnapshot):
+        raise TypeError("source_snapshot must be a SourceSnapshot")
+    if not isinstance(generation_inputs, Mapping):
+        raise TypeError("generation_inputs must be a mapping")
     consumed_by_path = {
-        item.path: item for item in inputs.source_snapshot.to_consumed_inputs()
+        item.path: item for item in source_snapshot.to_consumed_inputs()
     }
     _merge_explicit_consumed_input(
         consumed_by_path,
-        path=inputs.plugin_lock_path,
-        content_hash=inputs.plugin_lock_hash,
+        path=plugin_lock_path,
+        content_hash=plugin_lock_hash,
         kind=ConsumedInputKind.PLUGIN,
         field="plugin_lock",
     )
-    generation_inputs = inputs.manifest_generation_inputs
-    if generation_inputs is None and inputs.next_manifest is not None:
-        generation_inputs = inputs.next_manifest.generation_inputs
-    if generation_inputs is None and inputs.previous_manifest is not None:
-        generation_inputs = inputs.previous_manifest.generation_inputs
-    if generation_inputs is None:
-        return tuple(consumed_by_path[path] for path in sorted(consumed_by_path))
-
     openapi = generation_inputs.get("openapi")
     if openapi is None:
         return tuple(consumed_by_path[path] for path in sorted(consumed_by_path))
@@ -1065,6 +1260,25 @@ def _runtime_consumed_inputs(
         field="manifest_generation_inputs.openapi",
     )
     return tuple(consumed_by_path[path] for path in sorted(consumed_by_path))
+
+
+def runtime_source_snapshot_hash(
+    source_snapshot: SourceSnapshot,
+    *,
+    generation_inputs: Mapping[str, object],
+    plugin_lock_path: str | None = None,
+    plugin_lock_hash: str | None = None,
+) -> str:
+    """Hash the exact source basis consumed by runtime knowledge generation."""
+
+    return hash_source_snapshot(
+        runtime_consumed_inputs(
+            source_snapshot,
+            generation_inputs=generation_inputs,
+            plugin_lock_path=plugin_lock_path,
+            plugin_lock_hash=plugin_lock_hash,
+        )
+    )
 
 
 def _merge_explicit_consumed_input(
@@ -1107,6 +1321,7 @@ def _merge_explicit_consumed_input(
 
 
 __all__ = [
+    "CommittedRuntimeProvenance",
     "RUNTIME_GENERATION_INPUT_KEY",
     "RUNTIME_GENERATION_OPTION_DEFAULTS",
     "PreparedRuntimeGenerationOptions",
@@ -1116,8 +1331,12 @@ __all__ = [
     "build_runtime_live_evaluation",
     "collect_runtime_repository_evidence",
     "committed_governance_bundle_id",
+    "committed_runtime_provenance",
     "finalize_runtime_knowledge",
     "persist_runtime_generation_policy",
     "prepare_runtime_generation_options",
+    "runtime_consumed_inputs",
     "runtime_generation_options",
+    "runtime_generation_options_hash",
+    "runtime_source_snapshot_hash",
 ]

@@ -6,7 +6,7 @@ or qualify a calibration cohort.  The module preserves bounded source-backed
 evidence in a portable census, emits an evidence-only shadow record beside the
 frozen v1 worklist, and applies the calibration plan's terminal decision
 precedence to already-produced gate records.  Agent inference, holdout custody,
-admission authority, enforced isolation, and provider execution remain runner
+admission authority, enforced isolation, and provider execution remain host
 responsibilities outside the core package.
 """
 
@@ -232,7 +232,7 @@ def build_flow_evidence_census(
 
 
 def validate_flow_evidence_census(payload: Mapping[str, Any]) -> None:
-    """Validate the deterministic census invariants used by later runners."""
+    """Validate census invariants required by downstream calibration stages."""
 
     if payload.get("schema_version") != P0_FLOW_CENSUS_SCHEMA_VERSION:
         raise DocumentationCalibrationError("Unsupported flow-census schema_version.")

@@ -33,6 +33,7 @@ from llm_wiki_cli.services.knowledge_observability import KnowledgePhaseDuration
 from llm_wiki_cli.services.knowledge_verification import (
     attach_machine_verification_read_view,
 )
+from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 from tests.knowledge_fixtures import (
     DoctorExitFixture,
@@ -301,6 +302,35 @@ def test_strict_mode_escalates_indeterminate_drift(tmp_path: Path) -> None:
     assert normal.status is doctor_service.DoctorStatus.DEGRADED
     assert strict.status is doctor_service.DoctorStatus.UNHEALTHY
     assert strict.unhealthy_reasons == ("freshness-indeterminate",)
+
+
+def test_source_selection_mismatch_is_always_unhealthy(tmp_path: Path) -> None:
+    lint = _lint_for_fixture(tmp_path, doctor_exit_fixtures()[0])
+    lint.issues.append(
+        lint_service.LintIssue(
+            category="source-selection-mismatch",
+            message="live source selection differs from the manifest",
+            reason_code="source-selection-mismatch",
+        )
+    )
+
+    normal = doctor_service.compose_doctor_report(
+        lint,
+        strict=False,
+        wiki_dir=str(tmp_path),
+        src_dir=str(tmp_path),
+    )
+    strict = doctor_service.compose_doctor_report(
+        lint,
+        strict=True,
+        wiki_dir=str(tmp_path),
+        src_dir=str(tmp_path),
+    )
+
+    assert normal.status is doctor_service.DoctorStatus.UNHEALTHY
+    assert strict.status is doctor_service.DoctorStatus.UNHEALTHY
+    assert normal.unhealthy_reasons == ("source-selection-mismatch",)
+    assert strict.unhealthy_reasons == ("source-selection-mismatch",)
 
 
 def test_degraded_availability_and_expired_review_each_return_exit_one(
@@ -594,6 +624,59 @@ def test_service_composes_the_real_strict_lint_operation(
     assert payload["schema_version"] == DOCTOR_SCHEMA_VERSION
     assert payload["status"] == "healthy"
     assert payload["exit_code"] == 0
+
+
+def test_default_doctor_rejects_live_profile_change_end_to_end(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    selected = Path("selected")
+    outside = Path("outside")
+    selected.mkdir()
+    outside.mkdir()
+    (selected / "app.py").write_text("class App: pass\n", encoding="utf-8")
+    (outside / "secret.py").write_text(
+        "class Secret: pass\n", encoding="utf-8"
+    )
+    profile = Path(".llm-wiki/source-selection.json")
+    profile.parent.mkdir()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["selected", "outside"],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    bootstrap_cmd.run(
+        types.SimpleNamespace(
+            src_dir=".",
+            wiki_dir="docs/llm_wiki",
+            overwrite=False,
+            depth="full",
+            skip_workflows=True,
+        )
+    )
+    capsys.readouterr()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["selected"],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    report = doctor_service.build_doctor_report()
+
+    assert report.status is doctor_service.DoctorStatus.UNHEALTHY
+    assert "source-selection-mismatch" in report.unhealthy_reasons
 
 
 def test_doctor_disables_project_plugin_loading_by_default(

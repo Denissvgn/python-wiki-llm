@@ -22,6 +22,7 @@ from typing import Any
 
 from .imports import build_module_path_resolver
 from .plugins import PluginError, entrypoint_detector_components, load_entry_point
+from .source_snapshot import SourceSnapshot
 from .validation import positive_int_or_none, resolved_paths_equal
 
 # ── Entry-point categories ────────────────────────────────────────────
@@ -49,7 +50,7 @@ _DEFAULT_FLOW_DEPTH = 6
 DEFAULT_FLOW_DEPTH = _DEFAULT_FLOW_DEPTH
 FLOW_OBSERVATIONS_SCHEMA = "llm-wiki-flow-observations/v1"
 _ENTRY_POINT_OBSERVATIONS_SCHEMA = "llm-wiki-entrypoint-observations/v1"
-_BUILTIN_DETECTOR_VERSION = "1"
+_BUILTIN_DETECTOR_VERSION = "2"
 
 
 @dataclass(frozen=True)
@@ -101,12 +102,16 @@ def _iter_callables(inventory: dict):
 
 
 def _detect_api(inventory: dict) -> list[dict]:
-    """Public API entry points: ``__all__`` exports that resolve to a local def."""
+    """Public API entry points: non-private local functions exported by ``__all__``."""
     entries: list[dict] = []
     for filepath, data in inventory.items():
-        local = _local_symbols(data)
+        local_functions = {
+            fn["name"]
+            for fn in data.get("functions", [])
+            if not fn["name"].startswith("_")
+        }
         for name in data.get("all_exports", []):
-            if name in local:
+            if name in local_functions:
                 entries.append(_entry(CATEGORY_API, filepath, name))
     return entries
 
@@ -641,9 +646,31 @@ def _parse_scripts_section(text: str) -> list[dict]:
     return scripts
 
 
-def read_console_scripts(project_root: str = ".") -> list[dict]:
+def read_console_scripts(
+    project_root: str = ".",
+    *,
+    source_snapshot: SourceSnapshot | None = None,
+) -> list[dict]:
     """Read ``[project.scripts]`` from ``pyproject.toml`` (best-effort)."""
-    pyproject = Path(project_root) / "pyproject.toml"
+    root = Path(project_root).resolve()
+    if source_snapshot is None:
+        pyproject = root / "pyproject.toml"
+    else:
+        if source_snapshot.root.resolve() != root:
+            raise ValueError(
+                "source_snapshot root must match the console-script project root"
+            )
+        marker = next(
+            (
+                item
+                for item in source_snapshot.package_markers
+                if item.rel_path == "pyproject.toml"
+            ),
+            None,
+        )
+        if marker is None:
+            return []
+        pyproject = marker.abs_path
     try:
         text = pyproject.read_text(encoding="utf-8")
     except OSError:
@@ -778,7 +805,7 @@ def _builtin_detector_details(
 
     if category == CATEGORY_API:
         detector_id = "builtin.api-export"
-        reason = "symbol is a local definition listed in __all__"
+        reason = "non-private local function is listed in __all__"
     elif decorator is not None:
         detector_id = f"builtin.{category}-decorator"
         reason = f"callable uses the {decorator} decorator"

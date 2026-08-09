@@ -44,7 +44,19 @@ from .knowledge_artifacts import (
 from .knowledge_envelope import KnowledgeEnvelopeError, hash_markdown_snapshot
 from .knowledge_model import ComputedFreshness
 from .knowledge_observability import knowledge_freshness_hint
-from .source_snapshot import build_source_snapshot
+from .source_selection import (
+    SOURCE_SELECTION_GENERATION_INPUT_KEY,
+    SOURCE_SELECTION_INPUTS_GENERATION_INPUT_KEY,
+    SourceSelectionError,
+    resolve_source_selection,
+    source_selection_identity_from_generation_inputs,
+    source_selection_inputs_from_generation_inputs,
+)
+from .source_snapshot import (
+    SourceSnapshot,
+    build_source_snapshot,
+    capture_source_selection_inputs,
+)
 from .sync_manifest import (
     LEGACY_MANIFEST_VERSION,
     MANIFEST_VERSION,
@@ -105,7 +117,13 @@ FRESHNESS_POLICIES = frozenset(
 
 _HASH_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 _OPENAPI_GENERATION_INPUT_FIELDS = frozenset({"path", "sha256", "format"})
-_SUPPORTED_GENERATION_INPUTS = frozenset({"openapi"})
+_SUPPORTED_GENERATION_INPUTS = frozenset(
+    {
+        "openapi",
+        SOURCE_SELECTION_GENERATION_INPUT_KEY,
+        SOURCE_SELECTION_INPUTS_GENERATION_INPUT_KEY,
+    }
+)
 _GENERATED_MARKER_RE = re.compile(
     r"<!--\s*Auto-generated\b.*?-->|"
     r"_Auto-generated from `[^`]+`(?: in `[^`]+`)?\._",
@@ -625,6 +643,7 @@ def adopt_documentation_wiki_snapshot(
     workspace_wiki_dir: str | Path,
     *,
     source_root: str | Path | None = None,
+    source_selection: str | Path | None = None,
     freshness_policy: str = "require-current",
 ) -> DocumentationWikiSnapshot:
     """Validate and copy an existing LLM Wiki into an isolated workspace.
@@ -638,6 +657,7 @@ def adopt_documentation_wiki_snapshot(
         input_wiki_dir,
         workspace_wiki_dir,
         source_root=source_root,
+        source_selection=source_selection,
         freshness_policy=freshness_policy,
         trust_source_plugins=False,
         helper_cache_dir=None,
@@ -649,6 +669,7 @@ def _adopt_documentation_wiki_snapshot_with_runtime(
     workspace_wiki_dir: str | Path,
     *,
     source_root: str | Path | None,
+    source_selection: str | Path | None,
     freshness_policy: str,
     trust_source_plugins: bool,
     helper_cache_dir: str | Path | None,
@@ -671,6 +692,7 @@ def _adopt_documentation_wiki_snapshot_with_runtime(
             input_root,
             workspace_root,
             source_root=resolved_source_root,
+            source_selection=source_selection,
             freshness_policy=freshness_policy,
             root_descriptor=root_descriptor,
             trust_source_plugins=trust_source_plugins,
@@ -683,6 +705,7 @@ def _adopt_validated_wiki_snapshot(
     workspace_root: Path,
     *,
     source_root: Path | None,
+    source_selection: str | Path | None,
     freshness_policy: str,
     root_descriptor: int | None,
     trust_source_plugins: bool,
@@ -721,6 +744,7 @@ def _adopt_validated_wiki_snapshot(
     ) = _resolve_metadata_freshness(
         metadata,
         source_root=source_root,
+        source_selection=source_selection,
         trust_source_plugins=trust_source_plugins,
         helper_cache_dir=helper_cache_dir,
     )
@@ -2374,6 +2398,15 @@ def _validate_generation_inputs(generation_inputs: Mapping[str, Any]) -> None:
             category="manifest_schema_invalid",
             path=MANIFEST_FILENAME,
         )
+    try:
+        source_selection_identity_from_generation_inputs(generation_inputs)
+    except SourceSelectionError as exc:
+        raise DocumentationWikiInputError(
+            f"Manifest source-selection identity is invalid: {exc}.",
+            category="manifest_schema_invalid",
+            path=MANIFEST_FILENAME,
+            diagnostics=(f"field={exc.field}",),
+        ) from exc
     if "openapi" not in generation_inputs:
         return
 
@@ -2984,6 +3017,7 @@ def _resolve_metadata_freshness(
     metadata: _ValidatedWikiMetadata,
     *,
     source_root: Path | None,
+    source_selection: str | Path | None,
     trust_source_plugins: bool,
     helper_cache_dir: str | Path | None,
 ) -> tuple[
@@ -3047,6 +3081,7 @@ def _resolve_metadata_freshness(
                 source_root=source_root,
                 trust_source_plugins=trust_source_plugins,
                 helper_cache_dir=helper_cache_dir,
+                source_selection=source_selection,
             )
             freshness_diagnostics = _basis_incompatible_diagnostics(
                 evaluated.report
@@ -3099,6 +3134,7 @@ def _resolve_metadata_freshness(
         metadata.manifest_payload,
         legacy=metadata.legacy_index_only,
         source_root=source_root,
+        source_selection=source_selection,
     )
     return freshness, source_mismatches, diagnostics, ()
 
@@ -3140,6 +3176,7 @@ def _resolve_freshness(
     *,
     legacy: bool,
     source_root: Path | None,
+    source_selection: str | Path | None,
 ) -> tuple[str, tuple[str, ...], list[str]]:
     diagnostics: list[str] = []
     if source_root is None:
@@ -3152,20 +3189,52 @@ def _resolve_freshness(
         )
         return "unverified", (), diagnostics
     sources = manifest["sources"]
+    generation_inputs = manifest.get("generation_inputs", {})
+    selection_policy = resolve_source_selection(source_root, source_selection)
+    selection_inputs = capture_source_selection_inputs(
+        source_root,
+        source_selection=source_selection,
+        selection_policy=selection_policy,
+    )
+    live_identity = (
+        None if selection_policy is None else selection_policy.identity
+    )
+    selection_mismatches: list[str] = []
+    if source_selection_identity_from_generation_inputs(
+        generation_inputs
+    ) != live_identity:
+        selection_mismatches.append("generation_input_changed:source_selection")
+    if source_selection_inputs_from_generation_inputs(
+        generation_inputs
+    ) != selection_inputs:
+        selection_mismatches.append(
+            "generation_input_changed:source_selection_inputs"
+        )
+    if selection_mismatches:
+        diagnostics.append(
+            "source_stale: source-selection boundary inputs differ"
+        )
+        return "verified_stale", tuple(selection_mismatches), diagnostics
     include_tests = (
         ("go",)
         if any(PurePosixPath(path).name.endswith("_test.go") for path in sources)
         else ()
     )
-    current_source_paths = set(
-        build_source_snapshot(
-            source_root,
-            include_tests=include_tests,
-        ).all_source_paths
+    source_snapshot = build_source_snapshot(
+        source_root,
+        include_tests=include_tests,
+        source_selection=source_selection,
+        selection_policy=selection_policy,
+        expected_selection_inputs=selection_inputs,
     )
+    current_source_paths = set(source_snapshot.all_source_paths)
     manifest_source_paths = set(sources)
-    generation_inputs = manifest.get("generation_inputs", {})
-    if not sources and not current_source_paths and not generation_inputs:
+    if (
+        not sources
+        and not current_source_paths
+        and not generation_inputs
+        and source_snapshot.source_selection_identity is None
+    ):
         diagnostics.append(
             "empty_manifest_sources: source freshness cannot be established from an "
             "empty manifest"
@@ -3187,7 +3256,13 @@ def _resolve_freshness(
             if mismatch == f"missing:{relative_path}":
                 mismatch = f"removed:{relative_path}"
             mismatches.append(mismatch)
-    mismatches.extend(_compare_generation_inputs(source_root, generation_inputs))
+    mismatches.extend(
+        _compare_generation_inputs(
+            source_root,
+            generation_inputs,
+            source_snapshot=source_snapshot,
+        )
+    )
     if mismatches:
         diagnostics.append(
             f"source_stale: {len(mismatches)} source inventory item(s) differ"
@@ -3203,22 +3278,41 @@ def _resolve_freshness(
 def _compare_generation_inputs(
     source_root: Path,
     generation_inputs: Mapping[str, Any],
+    *,
+    source_snapshot: SourceSnapshot,
 ) -> list[str]:
+    mismatches: list[str] = []
+    if source_selection_identity_from_generation_inputs(
+        generation_inputs
+    ) != source_snapshot.source_selection_identity:
+        mismatches.append("generation_input_changed:source_selection")
+    if source_selection_inputs_from_generation_inputs(
+        generation_inputs
+    ) != source_snapshot.source_selection_inputs:
+        mismatches.append("generation_input_changed:source_selection_inputs")
     openapi = generation_inputs.get("openapi")
     if not isinstance(openapi, Mapping):
-        return []
+        return mismatches
     relative_path = str(openapi["path"])
+    try:
+        openapi_selected = source_snapshot.path_is_effectively_selected(relative_path)
+    except SourceSelectionError:
+        openapi_selected = False
+    if not openapi_selected:
+        mismatches.append(f"generation_input_deselected:openapi:{relative_path}")
+        return mismatches
     mismatch = _compare_source_file(
         source_root,
         relative_path,
         str(openapi["sha256"]),
     )
     if mismatch is None:
-        return []
+        return mismatches
     reason, _, _ = mismatch.partition(":")
     if reason == "missing":
         reason = "removed"
-    return [f"generation_input_{reason}:openapi:{relative_path}"]
+    mismatches.append(f"generation_input_{reason}:openapi:{relative_path}")
+    return mismatches
 
 
 def _compare_source_file(

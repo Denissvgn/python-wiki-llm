@@ -22,6 +22,30 @@ from .knowledge_evidence import hash_json, sha256_bytes
 
 SECTION_ORDER_DOMAIN = "llm-wiki-markdown-section-order/v1"
 MIXED_TABLE_DOMAIN = "llm-wiki-mixed-table-projection/v1"
+LEGACY_GENERATED_INDEX_INTRO = (
+    "Use this landing page to choose the right wiki surface."
+)
+GENERATED_INDEX_INTRO_WITH_GUIDES = (
+    "Guides lead supported tasks. The generated indexes are exhaustive reference "
+    "inventories of the selected source."
+)
+GENERATED_INDEX_INTRO_WITHOUT_GUIDES = (
+    "This page is an exhaustive reference inventory of the selected source. "
+    "Task-oriented guides are not yet available."
+)
+GENERATED_INDEX_INTROS = frozenset(
+    {
+        LEGACY_GENERATED_INDEX_INTRO,
+        GENERATED_INDEX_INTRO_WITH_GUIDES,
+        GENERATED_INDEX_INTRO_WITHOUT_GUIDES,
+    }
+)
+GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING = (
+    "Entry-point flows <!-- llm-wiki-generated:index:entry-point-flows -->"
+)
+GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING = (
+    "HTTP API contracts <!-- llm-wiki-generated:index:http-api-contracts -->"
+)
 
 _ATX_HEADING_RE = re.compile(r"^ {0,3}(#{1,6})(?:[ \t]+(.*)|[ \t]*)$")
 _FENCE_OPEN_RE = re.compile(r"^ {0,3}((?:`{3,})|(?:~{3,}))(.*)$")
@@ -36,16 +60,18 @@ _INDEX_GENERATED_HEADINGS = frozenset(
         "Workflows",
         "Guides",
         "User Flows",
+        GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING,
         "Infrastructure",
         "Architecture",
         "Dependency Architecture",
         "API Contracts",
+        GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING,
         "Log",
     )
 )
 _INDEX_GENERATED_INTROS = {
     ("Catalog of project modules and entities.",),
-    ("Use this landing page to choose the right wiki surface.",),
+    *((intro,) for intro in GENERATED_INDEX_INTROS),
 }
 
 

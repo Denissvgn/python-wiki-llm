@@ -298,7 +298,7 @@ class TestE2EFlows:
         assert "## Behavior" in api_flow
 
         index = (proj / "docs" / "llm_wiki" / "index.md").read_text(encoding="utf-8")
-        assert "## User Flows" in index
+        assert "## Entry-point flows" in index
         assert "[api-process](flows/api-process.md)" in index
 
         # Strict lint on the freshly bootstrapped wiki passes with zero issues.

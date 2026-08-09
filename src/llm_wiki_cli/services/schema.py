@@ -10,6 +10,7 @@ import re
 from pathlib import Path
 
 from .io import read_md, write_md
+from .paths import shell_quote
 
 # Marker boundaries used to wrap the entire generated block
 CONSTRAINT_START = "# --- LLM Wiki Maintainer Constraints ---"
@@ -38,7 +39,15 @@ ALL_SCHEMA_FILES: list[str] = [
     ".opencode/instructions.md",
 ]
 
-_SYNC_INSTRUCTIONS = """\
+def _source_selection_args(source_selection: str | Path | None) -> str:
+    if source_selection is None:
+        return ""
+    return f" --source-selection {shell_quote(str(source_selection))}"
+
+
+def _sync_instructions(source_selection: str | Path | None) -> str:
+    source_selection_args = _source_selection_args(source_selection)
+    return f"""\
 
 ## How to sync the wiki in this agent session
 Generated hooks create a prompt file for human review instead of starting an
@@ -52,7 +61,7 @@ agent automatically on commit. You are responsible for keeping the wiki current:
    classification, semantic-only edit guardrails, failure modes).
 2. **When extractor helpers are missing** for TypeScript/JavaScript, Go, Rust, or Haskell projects:
    ```
-   llm-wiki prepare-extractors --src-dir .
+   llm-wiki prepare-extractors --src-dir .{source_selection_args}
    ```
    Then repeat the sync or lint command. Do not run npm/go/cargo/ghc helper setup
    manually; `prepare-extractors` owns that cache. Toolchain fallbacks and
@@ -60,7 +69,7 @@ agent automatically on commit. You are responsible for keeping the wiki current:
    helpers and toolchains" section.
 3. **To build a full update prompt manually**, run in the terminal:
    ```
-   llm-wiki generate-prompt
+   llm-wiki generate-prompt{source_selection_args}
    ```
    This builds a diff + AST prompt in `.git/llm-wiki-prompt.txt`. Open that file
    and paste its contents into this chat when a reviewed prompt is useful.
@@ -72,7 +81,7 @@ the wiki pages whose source has changed. Use it for every update after the first
 bootstrap:
 
 ```
-llm-wiki sync --jobs 1
+llm-wiki sync --jobs 1{source_selection_args}
 ```
 
 - **When to use:** after pulling new code, after a rebase, or whenever you suspect
@@ -88,11 +97,11 @@ llm-wiki sync --jobs 1
   **seed a baseline manifest** from the current source state without modifying
   pages. Subsequent runs then work incrementally.
 - Sync has a large-diff guard to prevent accidental mass rewrites. Use
-  `llm-wiki sync --force` only after confirming the broad update is expected.
+  `llm-wiki sync --force{source_selection_args}` only after confirming the broad update is expected.
 - After the deterministic sync, complete the semantic pass. If canonical
-  Markdown changed, run the same owning `llm-wiki sync --jobs 1` again so the
+  Markdown changed, run the same owning `llm-wiki sync --jobs 1{source_selection_args}` again so the
   surface, knowledge, Markdown, and manifest snapshot are re-anchored; then run
-  `llm-wiki lint --strict --jobs 1` and apply the review rules under "Quality
+  `llm-wiki lint --strict --jobs 1{source_selection_args}` and apply the review rules under "Quality
   checks". Skip the second sync only when no canonical Markdown changed. A
   validation fix that edits Markdown restarts at the owning sync. Passing lint is not enough:
   affected pages must not retain generic `_Auto-generated from ..._` text or
@@ -100,7 +109,7 @@ llm-wiki sync --jobs 1
 
 ## Large codebases
 For broad repository-wide work, run one serialized
-`llm-wiki context --budget 8000 --src-dir . --format markdown --focus changed --read-only`
+`llm-wiki context --budget 8000 --src-dir . --format markdown --focus changed --read-only{source_selection_args}`
 scan, then read only the source and wiki pages it selects. For a narrow task
 with supplied files or a supplied diff, skip the full context scan and use the
 wiki index only to navigate to relevant pages. The budget and focus options
@@ -140,8 +149,13 @@ around it silently:
 
 
 def _wiki_instructions(
-    wiki_dir: str, skills_dir: str, *, issue_reporting: bool = False
+    wiki_dir: str,
+    skills_dir: str,
+    *,
+    issue_reporting: bool = False,
+    source_selection: str | Path | None = None,
 ) -> str:
+    source_selection_args = _source_selection_args(source_selection)
     issue_reporting_instructions = (
         _issue_reporting_instructions(wiki_dir) if issue_reporting else ""
     )
@@ -149,7 +163,7 @@ def _wiki_instructions(
 
 ## Before you start
 - For broad repository-wide work, run one serialized
-  `llm-wiki context --budget 8000 --src-dir . --format markdown --focus changed --read-only`
+  `llm-wiki context --budget 8000 --src-dir . --format markdown --focus changed --read-only{source_selection_args}`
   scan, then read only the source and wiki pages it selects.
 - For a narrow task with supplied files or a supplied diff, skip the full
   context scan. Use `{wiki_dir}/index.md` only to navigate to relevant entity,
@@ -304,7 +318,7 @@ node classes, and class colors, but they cannot inject arbitrary Markdown,
 labels, hrefs, or raw Mermaid content.
 
 ## When you change code
-- First run `llm-wiki sync --jobs 1 --wiki-dir {wiki_dir} --src-dir .` after
+- First run `llm-wiki sync --jobs 1 --wiki-dir {wiki_dir} --src-dir .{source_selection_args}` after
   code changes. Sync uses the manifest, persistent inventory cache, and
   collision-aware page naming to update only affected wiki pages.
 - If this wiki was bootstrapped from a trusted source root outside the current
@@ -314,7 +328,7 @@ labels, hrefs, or raw Mermaid content.
 - If sync repairs only the manifest (its stored hashes were invalid, and no
   pages were modified), run the same sync command again before linting.
 - If sync stops on a large diff, inspect the affected files. Use
-  `llm-wiki sync --force --jobs 1 --wiki-dir {wiki_dir} --src-dir .` only when
+  `llm-wiki sync --force --jobs 1 --wiki-dir {wiki_dir} --src-dir .{source_selection_args}` only when
   the broad update is intentional.
 - Then inspect the pages sync created or updated. Sync produces deterministic
   AST/docstring skeletons; you are responsible for the semantic pass.
@@ -346,7 +360,7 @@ labels, hrefs, or raw Mermaid content.
   extraction for assurance conclusions, and keep findings in a separate
   redacted infrastructure-review report.
 - After the last canonical Markdown edit, run
-  `llm-wiki sync --jobs 1 --wiki-dir {wiki_dir} --src-dir .` again before
+  `llm-wiki sync --jobs 1 --wiki-dir {wiki_dir} --src-dir .{source_selection_args}` again before
   strict lint or CI. This owning refresh preserves supported semantic prose and
   persists the Markdown, surface, knowledge, and manifest snapshot. Skip it only
   when no Markdown changed; if a validation fix edits Markdown, restart here.
@@ -359,7 +373,7 @@ Page filenames **must** match the conventions enforced by `llm-wiki lint`:
 
 - Treat `{wiki_dir}/index.md` as the source of truth for existing page names.
   Do not guess links from raw class names or filenames when collisions are
-  possible. If in doubt, run `llm-wiki extract --src-dir .` and match the
+  possible. If in doubt, run `llm-wiki extract --src-dir .{source_selection_args}` and match the
   source path to the existing index entry.
 - **Entity pages** (`entities/`): Use the class name as the file stem when it is
   unique (e.g., class `MyClass` → `MyClass.md`). When two classes in different
@@ -395,24 +409,24 @@ Page filenames **must** match the conventions enforced by `llm-wiki lint`:
 ## Quality checks
 - Strict validation follows the final owning sync after any semantic Markdown
   edit. A generated-only no-op does not need a second sync.
-- Your wiki changes are **structurally valid** when `llm-wiki lint --strict --jobs 1 --wiki-dir {wiki_dir} --src-dir .` exits 0.
+- Your wiki changes are **structurally valid** when `llm-wiki lint --strict --jobs 1 --wiki-dir {wiki_dir} --src-dir .{source_selection_args}` exits 0.
 - For a trusted source root outside the current working directory, run
-  `llm-wiki lint --strict --jobs 1 --wiki-dir {wiki_dir} --src-dir <repo> --allow-external-src`;
+  `llm-wiki lint --strict --jobs 1 --wiki-dir {wiki_dir} --src-dir <repo> --allow-external-src{source_selection_args}`;
   `--wiki-dir` still uses the project-root write guard.
 - Lint passing is not enough: affected pages must also have semantic
   explanations, not only generated skeletons or copied docstrings.
 - Run lint after the owning refresh for every wiki update. If fixing a reported
   issue changes Markdown, run the owning sync again before re-running lint.
-- Run `llm-wiki lint --profile --cache-stats --wiki-dir {wiki_dir} --src-dir .`
+- Run `llm-wiki lint --profile --cache-stats --wiki-dir {wiki_dir} --src-dir .{source_selection_args}`
   when lint is slow or extractor failures need machine-readable diagnostics.
 - Treat Import cycles, undeclared dependencies, and unused dependencies as
   warning diagnostics that require review even when lint exits 0. Before
   acting on one, read the `wiki-reference` skill's "Dependency reconciliation"
   section — manifest scoping, import aliases, Go `// indirect`, and lockfile
   `versions` metadata rules live there.
-- Run `llm-wiki extract --src-dir .` to see the live AST inventory when you need detail.
+- Run `llm-wiki extract --src-dir .{source_selection_args}` to see the live AST inventory when you need detail.
 - If TypeScript/JavaScript, Go, Rust, or Haskell extraction reports a missing prepared helper, run
-  `llm-wiki prepare-extractors --src-dir .` once and repeat the failed command.
+  `llm-wiki prepare-extractors --src-dir .{source_selection_args}` once and repeat the failed command.
   Toolchain fallbacks (`LLM_WIKI_GO`, `LLM_WIKI_GHC`), helper/inventory cache
   separation, Go test-file inclusion, and per-language extraction contracts
   (including the Haskell helper and inventory schema) are documented in the
@@ -443,6 +457,7 @@ def build_schema_content(
     *,
     quality_hints: bool = True,
     issue_reporting: bool = False,
+    source_selection: str | Path | None = None,
 ) -> str:
     """Build the full constraint block for the given agent and wiki directory."""
     from .skills import skills_install_dir
@@ -451,6 +466,7 @@ def build_schema_content(
         wiki_dir,
         skills_install_dir(agent).as_posix(),
         issue_reporting=issue_reporting,
+        source_selection=source_selection,
     )
     preambles = {
         "claude": f"# Project Wiki\n\nThis project uses an LLM Wiki at `{wiki_dir}/` for persistent architectural memory.\nFollow the scope-aware guidance below.\n\n",
@@ -462,9 +478,61 @@ def build_schema_content(
         f"# Agent Instructions — LLM Wiki Project\n\nThis project uses `{wiki_dir}/` for architectural memory.\n\n",
     )
     hints = _QUALITY_HINTS if quality_hints else ""
-    extra = _SYNC_INSTRUCTIONS
+    extra = _sync_instructions(source_selection)
     body = preamble + instructions + hints + extra
     return f"{CONSTRAINT_START}\n{body.strip()}\n{CONSTRAINT_END}\n"
+
+
+_SOURCE_READING_RECIPE_COMMANDS = frozenset(
+    {
+        "ci-check",
+        "context",
+        "extract",
+        "generate-prompt",
+        "lint",
+        "prepare-extractors",
+        "sync",
+    }
+)
+
+
+def pin_source_selection_command_recipes(
+    content: str,
+    source_selection: str | Path | None,
+) -> str:
+    """Pin source-reading recipes inside one generated constraint block.
+
+    This adapter exists for bootstrap, which refreshes an already generated
+    block without knowing the user's agent-schema preferences. Unconfigured
+    blocks remain byte-for-byte unchanged.
+    """
+
+    selection_args = _source_selection_args(source_selection)
+    if not selection_args:
+        return content
+
+    def pin(command: str) -> str:
+        parts = command.split(None, 2)
+        if (
+            len(parts) < 2
+            or parts[0] != "llm-wiki"
+            or parts[1] not in _SOURCE_READING_RECIPE_COMMANDS
+            or (len(parts) == 2 and parts[1] != "generate-prompt")
+            or "--source-selection" in command
+        ):
+            return command
+        return command + selection_args
+
+    content = re.sub(
+        r"`(llm-wiki [^`\n]+)`",
+        lambda match: f"`{pin(match.group(1))}`",
+        content,
+    )
+    return re.sub(
+        r"(?m)^(\s*)(llm-wiki [^\n]+)$",
+        lambda match: match.group(1) + pin(match.group(2)),
+        content,
+    )
 
 
 def strip_wiki_block(content: str) -> str:

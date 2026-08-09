@@ -9,7 +9,7 @@ from collections.abc import Iterable, Mapping
 from copy import deepcopy
 from dataclasses import dataclass, field, replace
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from ..extractors.common import LANGUAGE_EXTENSIONS, inventory_language_for_path
 from .io import write_json_atomic
@@ -22,12 +22,22 @@ from .knowledge_evidence import (
     is_valid_sha256,
     semantic_hash_for_file,
 )
+from .source_selection import (
+    SourceSelectionError,
+    SourceSelectionPolicy,
+    path_is_selected,
+    source_selection_identity_from_generation_inputs,
+    source_selection_inputs_from_generation_inputs,
+)
 from .validation import (
     portable_page_component,
     require_exact_fields,
     require_mapping,
     require_repository_relative_path,
 )
+
+if TYPE_CHECKING:
+    from .source_snapshot import SourceSnapshot
 
 MANIFEST_FILENAME = ".llm-wiki-manifest.json"
 MANIFEST_VERSION = 5
@@ -55,6 +65,16 @@ class SyncManifestError(ValueError):
         self.message = message
         self.code = code
         super().__init__(f"{field}: {message}")
+
+
+@dataclass(frozen=True)
+class SourceSelectionPruneResult:
+    """Manifest state removed because it falls outside a selected source set."""
+
+    manifest: SyncManifest
+    deselected_source_paths: tuple[str, ...]
+    deselected_page_paths: tuple[str, ...]
+    deselected_surface_page_paths: tuple[str, ...] = ()
 
 
 def _validate_reason(value: object, field_name: str) -> str:
@@ -1079,6 +1099,26 @@ class SyncManifest:
         return cls.from_payload(data)
 
     def _validate_operational_state(self) -> None:
+        try:
+            selection_identity = source_selection_identity_from_generation_inputs(
+                self.generation_inputs
+            )
+            selection_inputs = source_selection_inputs_from_generation_inputs(
+                self.generation_inputs
+            )
+        except SourceSelectionError as exc:
+            raise SyncManifestError(exc.field, exc.message) from exc
+        if (selection_identity is None) != (selection_inputs is None):
+            missing_field = (
+                "generation_inputs.source_selection_inputs"
+                if selection_inputs is None
+                else "generation_inputs.source_selection"
+            )
+            raise SyncManifestError(
+                missing_field,
+                "must be present exactly when the paired source-selection state is present",
+            )
+
         for filepath in self.sources:
             _validate_repository_path(filepath, f"sources.{filepath}")
 
@@ -1301,13 +1341,13 @@ class SyncManifest:
         """Build current state and reconcile retained prior page evidence.
 
         No evidence is inferred from page text. Callers may supply already
-        evaluated KNOW-102 bases keyed by canonical page path. Without one, a
+        evaluated evidence bases keyed by canonical page path. Without one, a
         compatible prior basis is retained or the page is explicitly unknown.
         ``source_content_hashes`` lets orchestration reuse hashes captured by
         its source snapshot; when omitted, the compatibility path reads and
         hashes each source as before. Rebuilding always clears artifact hashes;
-        KNOW-107 installs a complete commitment only after both projections
-        have been written.
+        the atomic commit protocol installs a complete commitment only after
+        both projections have been written.
         """
 
         sources: dict[str, dict] = {}
@@ -1549,6 +1589,91 @@ class SyncManifest:
         return manifest
 
 
+def prune_manifest_for_source_selection(
+    manifest: SyncManifest,
+    policy: SourceSelectionPolicy | None,
+    *,
+    source_snapshot: SourceSnapshot | None = None,
+) -> SourceSelectionPruneResult:
+    """Erase prior source/page state excluded by the current selection policy.
+
+    The compatibility path is deliberately identity preserving: without a
+    configured policy the exact manifest object is returned. With a policy,
+    artifact commitments are invalidated only when state is actually pruned.
+    """
+
+    if not isinstance(manifest, SyncManifest):
+        raise SyncManifestError("manifest", "must be a SyncManifest")
+    if policy is None:
+        return SourceSelectionPruneResult(manifest, (), ())
+
+    if source_snapshot is not None:
+        snapshot_policy = source_snapshot.source_selection_policy
+        if (
+            snapshot_policy is None
+            or snapshot_policy.source_root != policy.source_root
+            or snapshot_policy.identity != policy.identity
+        ):
+            raise SyncManifestError(
+                "source_selection",
+                "source snapshot must match the pruning selection policy",
+            )
+
+    def is_selected(source_path: str) -> bool:
+        if not path_is_selected(policy, source_path):
+            return False
+        return source_snapshot is None or source_snapshot.path_is_effectively_selected(
+            source_path
+        )
+
+    source_paths = set(manifest.sources)
+    source_paths.update(
+        mapping.source_path for mapping in manifest.page_source_mappings.values()
+    )
+    deselected_sources = tuple(
+        sorted(path for path in source_paths if not is_selected(path))
+    )
+    if not deselected_sources:
+        return SourceSelectionPruneResult(manifest, (), ())
+
+    deselected_source_set = set(deselected_sources)
+    retained_mappings = {
+        page_path: mapping
+        for page_path, mapping in manifest.page_source_mappings.items()
+        if mapping.source_path not in deselected_source_set
+    }
+    deselected_pages = tuple(
+        sorted(set(manifest.page_source_mappings) - set(retained_mappings))
+    )
+    deselected_page_set = set(deselected_pages)
+    pruned = replace(
+        manifest,
+        sources={
+            source_path: source
+            for source_path, source in manifest.sources.items()
+            if source_path not in deselected_source_set
+        },
+        page_source_mappings=retained_mappings,
+        evidence_baselines={
+            page_path: baseline
+            for page_path, baseline in manifest.evidence_baselines.items()
+            if page_path not in deselected_page_set
+        },
+        tombstones={
+            page_path: tombstone
+            for page_path, tombstone in manifest.tombstones.items()
+            if page_path not in deselected_page_set
+        },
+        artifact_hashes=None,
+    )
+    pruned._validate_operational_state()
+    return SourceSelectionPruneResult(
+        pruned,
+        deselected_sources,
+        deselected_pages,
+    )
+
+
 __all__ = [
     "EVIDENCE_NOT_RECORDED",
     "LEGACY_EVIDENCE_UNAVAILABLE",
@@ -1559,6 +1684,7 @@ __all__ = [
     "MANIFEST_VERSION",
     "PRODUCER_BASIS_INCOMPATIBLE",
     "SOURCE_MAPPING_CHANGED",
+    "SourceSelectionPruneResult",
     "TOMBSTONE_SOURCE_MISSING",
     "TOMBSTONE_UNKNOWN_PROVENANCE",
     "ManifestArtifactHashes",
@@ -1568,5 +1694,6 @@ __all__ = [
     "SyncManifest",
     "SyncManifestError",
     "generated_semantics_for_file",
+    "prune_manifest_for_source_selection",
     "retained_concept_page_paths",
 ]

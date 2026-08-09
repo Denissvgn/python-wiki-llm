@@ -147,6 +147,32 @@ class ModulePathResolver:
         candidate_stems = _candidate_stems(module, importer_filepath)
         return self._candidate_matches(candidate_stems, importer_filepath)
 
+    def import_candidates(
+        self,
+        module: str,
+        name: str,
+        importer_filepath: str,
+        *,
+        import_type: str | None = None,
+    ) -> set[str]:
+        """Resolve one extractor import record to its internal module files.
+
+        Python emits ``from package import child`` as a package module plus an
+        imported name.  When ``child`` is itself a module, resolving only the
+        package loses the real dependency (and commonly finds nothing because
+        empty package initializers are omitted from the structural inventory).
+        Prefer an existing child module for Python ``from`` imports, then fall
+        back to the package/module so ordinary symbol imports keep their
+        established resolution.  Purely dotted legacy records retain the same
+        child-module interpretation even when they predate the ``type`` field.
+        """
+        if _is_python_from_import(module, name, import_type):
+            child_module = _python_from_import_child(module, name)
+            child_candidates = self.candidates(child_module, importer_filepath)
+            if child_candidates:
+                return child_candidates
+        return self.candidates(module, importer_filepath)
+
     def _candidate_matches(
         self, candidate_stems: set[str], importer_filepath: str
     ) -> set[str]:
@@ -265,6 +291,27 @@ def _suffix_candidates(path_no_suffix: str) -> set[str]:
 
 def _normalize_module(module: str) -> str:
     return module.strip().strip('"').strip("'").replace("\\", "/")
+
+
+def _is_python_from_import(
+    module: str,
+    name: str,
+    import_type: str | None,
+) -> bool:
+    """Return whether an import record can name a Python child module."""
+    if not module or not name or name == "*":
+        return False
+    return import_type == "from" or (
+        import_type is None and set(module.strip()) == {"."}
+    )
+
+
+def _python_from_import_child(module: str, name: str) -> str:
+    """Join the two parts of ``from <module> import <name>`` as a module."""
+    clean_module = module.strip()
+    clean_name = name.strip()
+    separator = "" if set(clean_module) == {"."} else "."
+    return f"{clean_module}{separator}{clean_name}"
 
 
 def _candidate_stems(module: str, importer_filepath: str) -> set[str]:

@@ -5,8 +5,18 @@ import stat
 import sys
 from pathlib import Path
 
-from ..config import DEFAULT_WIKI_DIR, get_agent_config_path, read_config, validate_path
+from ..config import (
+    DEFAULT_WIKI_DIR,
+    get_agent_config_path,
+    read_config,
+    validate_path,
+    write_config,
+)
 from ..services.paths import shell_quote
+from ..services.source_selection import (
+    SourceSelectionError,
+    resolve_source_selection,
+)
 
 HOOK_SIGNATURE = "LLM Wiki"
 
@@ -20,7 +30,11 @@ def _read_agent_config(wiki_dir: str) -> str | None:
     return None
 
 
-def _build_post_commit(agent: str, wiki_dir: str) -> str:
+def _build_post_commit(
+    agent: str,
+    wiki_dir: str,
+    source_selection: str | Path | None = None,
+) -> str:
     """Build the managed post-commit hook.
 
     The ``agent`` argument is retained for callers from older versions; managed
@@ -28,11 +42,16 @@ def _build_post_commit(agent: str, wiki_dir: str) -> str:
     agent process.
     """
     _ = agent
-    return _build_ide_post_commit(wiki_dir)
+    return _build_ide_post_commit(wiki_dir, source_selection=source_selection)
 
 
-def _build_ide_post_commit(wiki_dir: str) -> str:
+def _build_ide_post_commit(
+    wiki_dir: str,
+    *,
+    source_selection: str | Path | None = None,
+) -> str:
     quoted_wiki_dir = shell_quote(wiki_dir)
+    selection_args = _source_selection_args(source_selection)
     return f"""#!/bin/sh
 
 # LLM Wiki Prompt Post-Commit Hook
@@ -49,7 +68,7 @@ else
     CLI="llm-wiki"
 fi
 
-"$CLI" generate-prompt --wiki-dir {quoted_wiki_dir} --output .git/llm-wiki-prompt.txt
+"$CLI" generate-prompt --wiki-dir {quoted_wiki_dir}{selection_args} --output .git/llm-wiki-prompt.txt
 
 echo ""
 echo "+--------------------------------------------------------------+"
@@ -64,8 +83,13 @@ fi
 """
 
 
-def _build_validation_pre_commit(wiki_dir: str) -> str:
+def _build_validation_pre_commit(
+    wiki_dir: str,
+    *,
+    source_selection: str | Path | None = None,
+) -> str:
     quoted_wiki_dir = shell_quote(wiki_dir)
+    selection_args = _source_selection_args(source_selection)
     return f"""#!/bin/sh
 
 # LLM Wiki Strict Validation Pre-Commit Hook
@@ -81,8 +105,14 @@ else
     CLI="llm-wiki"
 fi
 
-"$CLI" lint --strict --wiki-dir {quoted_wiki_dir} --src-dir .
+"$CLI" lint --strict --wiki-dir {quoted_wiki_dir} --src-dir .{selection_args}
 """
+
+
+def _source_selection_args(source_selection: str | Path | None) -> str:
+    if source_selection is None:
+        return ""
+    return f" --source-selection {shell_quote(source_selection)}"
 
 
 def _install_hook(
@@ -119,6 +149,28 @@ def run(args):
 
     wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     validate_path(wiki_dir, "--wiki-dir")
+    stored = read_config(wiki_dir)
+    requested_selection = getattr(args, "source_selection", None)
+    stored_selection = stored.get("source_selection")
+    if stored_selection is not None and not isinstance(stored_selection, str):
+        print("Error: stored source_selection must be a string", file=sys.stderr)
+        raise SystemExit(2)
+    selection_override = (
+        requested_selection
+        if requested_selection is not None
+        else stored_selection
+    )
+    try:
+        selection_policy = resolve_source_selection(".", selection_override)
+    except SourceSelectionError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        raise SystemExit(2) from exc
+    source_selection = (
+        selection_policy.path if selection_policy is not None else None
+    )
+    if requested_selection is not None:
+        stored["source_selection"] = source_selection
+        write_config(wiki_dir, stored)
 
     # Resolve agent only for user-facing status. Managed hooks no longer launch
     # CLI agents directly.
@@ -129,26 +181,37 @@ def run(args):
     _install_hook(
         hooks_dir,
         "post-commit",
-        _build_ide_post_commit(wiki_dir),
+        _build_ide_post_commit(
+            wiki_dir,
+            source_selection=source_selection,
+        ),
         force=getattr(args, "force", False),
     )
     if getattr(args, "enable_validation", False):
         _install_hook(
             hooks_dir,
             "pre-commit",
-            _build_validation_pre_commit(wiki_dir),
+            _build_validation_pre_commit(
+                wiki_dir,
+                source_selection=source_selection,
+            ),
             force=getattr(args, "force", False),
         )
     if agent:
         print(f"  Agent preference: {agent} (prompt-generation hook)")
     else:
         print("  Agent preference: not configured (prompt-generation hook)")
+    manual_command = (
+        "  llm-wiki generate-prompt --wiki-dir "
+        + shell_quote(wiki_dir)
+        + _source_selection_args(source_selection)
+    )
     print(
         "\nPrompt hook installed. After each commit, a prompt file will be generated at\n"
         "  .git/llm-wiki-prompt.txt\n"
         "Review it, then paste it into your agent chat to sync the wiki.\n"
         "You can also generate it manually at any time:\n"
-        "  llm-wiki generate-prompt"
+        + manual_command
     )
 
     print("\nHook installation complete.")

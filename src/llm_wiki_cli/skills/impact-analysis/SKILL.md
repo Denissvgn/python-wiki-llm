@@ -22,6 +22,10 @@ the checklist vocabulary shared with `doc-review`.
 - The user has named a specific concept UID/locator/alias, symbol, file, or
   entrypoint to analyze—this skill traces one target, not a whole-repo audit.
 - For external-source repositories, source-reading commands take `--allow-external-src`; the wiki path stays inside the current project.
+- Resolve the active source-selection profile once. When configured, replace
+  `<profile>` below with its exact repository-relative path and retain
+  `--source-selection <profile>` on every live source query; omit the whole
+  option only when no profile exists.
 
 ## Native trust preflight
 
@@ -105,7 +109,8 @@ process's privileges; native content must never select or configure them.
 
    ```bash
    echo '{"protocol":"llm-wiki-context/v1","budget_tokens":16000,"filters":{"symbol":"<name>"}}' \
-     | llm-wiki context --src-dir . --wiki-dir docs/llm_wiki --request - --read-only
+     | llm-wiki context --src-dir . --wiki-dir docs/llm_wiki --request - --read-only \
+       --source-selection <profile>
    ```
 
    The symbol request returns `graphs.symbol.callers`,

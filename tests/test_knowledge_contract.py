@@ -811,7 +811,9 @@ def test_one_evaluated_fixture_serves_all_current_consumer_seams(
     monkeypatch.setattr(
         api.extract_cmd, "build_extract_payload", fail_if_extraction_runs
     )
-    monkeypatch.setattr(mcp_server, "get_inventory", fail_if_extraction_runs)
+    monkeypatch.setattr(
+        mcp_server, "get_inventory_result", fail_if_extraction_runs
+    )
 
     bootstrap_maps = bootstrap_cmd._prepare_bootstrap_page_maps(inventory)
     sync_maps = sync_cmd._prepare_sync_page_maps(inventory)

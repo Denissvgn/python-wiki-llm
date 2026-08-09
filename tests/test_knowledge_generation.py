@@ -50,6 +50,11 @@ from llm_wiki_cli.services.knowledge_orchestration import (
     prepare_runtime_generation_options,
     runtime_generation_options,
 )
+from llm_wiki_cli.services.source_selection import (
+    SOURCE_SELECTION_IDENTITY_SCHEMA_VERSION,
+    SOURCE_SELECTION_SCHEMA_VERSION,
+    SourceSelectionPolicy,
+)
 from llm_wiki_cli.services.source_snapshot import SourceSnapshot
 from llm_wiki_cli.services.sync_manifest import TOMBSTONE_SOURCE_MISSING
 from llm_wiki_cli.services.wiki_surface_index import SurfaceIndexEvaluation
@@ -183,6 +188,116 @@ def _runtime_input_case(
         ),
         source_snapshot,
         fixture,
+    )
+
+
+def _with_source_selection(
+    runtime: RuntimeKnowledgeInputs,
+    snapshot: SourceSnapshot,
+    *,
+    raw_content: bytes,
+) -> tuple[RuntimeKnowledgeInputs, SourceSnapshot]:
+    source_prefix = next(iter(runtime.inventory)).split("/", 1)[0]
+    profile_path = ".llm-wiki/source-selection.json"
+    policy = SourceSelectionPolicy(
+        schema_version=SOURCE_SELECTION_SCHEMA_VERSION,
+        include=(source_prefix,),
+        exclude=(),
+        source_root=snapshot.root,
+        path=profile_path,
+        origin="default",
+        raw_content_hash=sha256_bytes(raw_content),
+    )
+    selected_snapshot = replace(
+        snapshot,
+        captured_content_hashes={
+            **snapshot.captured_content_hashes,
+            profile_path: policy.raw_content_hash,
+        },
+        captured_input_kinds={
+            **snapshot.captured_input_kinds,
+            profile_path: (ConsumedInputKind.SELECTION.value,),
+        },
+        source_selection_policy=policy,
+    )
+    return replace(runtime, source_snapshot=selected_snapshot), selected_snapshot
+
+
+def test_runtime_writer_overwrites_stale_selection_identity_in_next_manifest(
+    tmp_path: Path,
+) -> None:
+    runtime, snapshot, _fixture = _runtime_input_case(
+        tmp_path,
+        inventory_complete=True,
+    )
+    configured, selected_snapshot = _with_source_selection(
+        runtime,
+        snapshot,
+        raw_content=b"first formatting",
+    )
+    prior_plan = build_runtime_knowledge_plan(runtime)
+    stale_manifest = prior_plan.committed_manifest.with_generation_state(
+        surfaces=prior_plan.committed_manifest.surfaces,
+        generation_inputs={
+            "preserved": {"value": True},
+            "source_selection": {
+                "schema_version": SOURCE_SELECTION_IDENTITY_SCHEMA_VERSION,
+                "path": "old/source-selection.json",
+                "fingerprint": sha256_bytes(b"stale policy"),
+            },
+        },
+    )
+
+    selected_plan = build_runtime_knowledge_plan(
+        replace(configured, next_manifest=stale_manifest)
+    )
+    selected_inputs = selected_plan.committed_manifest.generation_inputs
+    assert selected_inputs["preserved"] == {"value": True}
+    assert selected_inputs["source_selection"] == (
+        selected_snapshot.source_selection_identity
+    )
+
+    broad_plan = build_runtime_knowledge_plan(
+        replace(runtime, next_manifest=stale_manifest)
+    )
+    assert "source_selection" not in broad_plan.committed_manifest.generation_inputs
+
+
+def test_selection_raw_bytes_affect_knowledge_while_identity_stays_semantic(
+    tmp_path: Path,
+) -> None:
+    runtime, snapshot, _fixture = _runtime_input_case(
+        tmp_path,
+        inventory_complete=True,
+    )
+    first, first_snapshot = _with_source_selection(
+        runtime,
+        snapshot,
+        raw_content=b'{"include":["src"]}',
+    )
+    second, second_snapshot = _with_source_selection(
+        runtime,
+        snapshot,
+        raw_content=b'{ "include": [ "src" ] }\n',
+    )
+
+    first_plan = build_runtime_knowledge_plan(first)
+    second_plan = build_runtime_knowledge_plan(second)
+    first_knowledge = parse_knowledge_index(
+        json.loads(first_plan.knowledge_index.content)
+    )
+    second_knowledge = parse_knowledge_index(
+        json.loads(second_plan.knowledge_index.content)
+    )
+
+    assert first_snapshot.source_selection_identity == (
+        second_snapshot.source_selection_identity
+    )
+    assert first_plan.committed_manifest.generation_inputs["source_selection"] == (
+        second_plan.committed_manifest.generation_inputs["source_selection"]
+    )
+    assert first_knowledge.bundle.snapshot.source_snapshot_hash != (
+        second_knowledge.bundle.snapshot.source_snapshot_hash
     )
 
 

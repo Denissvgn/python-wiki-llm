@@ -254,6 +254,13 @@ def test_spec_only_change_bypasses_clean_source_return_and_updates_page(
     assert "Revised contract summary" in (wiki / "api-contracts.md").read_text(
         encoding="utf-8"
     )
+    knowledge = json.loads(
+        (wiki / ".llm-wiki-knowledge.json").read_text(encoding="utf-8")
+    )
+    snapshot_hash = knowledge["bundle"]["snapshot"]["source_snapshot_hash"]
+    assert f"- Source snapshot digest: `{snapshot_hash}`" in (
+        wiki / "log.md"
+    ).read_text(encoding="utf-8")
     assert "UPDATED api-contracts.md" in capsys.readouterr().out
     assert spec.is_file()
 

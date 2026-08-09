@@ -1,10 +1,12 @@
 """Tests for commands/init_cmd.py"""
 
+import json
 import types
 from pathlib import Path
 
 from llm_wiki_cli.commands import init_cmd
 from llm_wiki_cli.config import read_config, write_config
+from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 
 
 def _make_args(**kwargs):
@@ -179,6 +181,35 @@ class TestInitPersistsAgentConfig:
         config = read_config("my_docs/wiki")
         assert config["agent"] == "opencode"
         assert not (Path("my_docs/wiki/.llm-wiki-agent")).exists()
+
+    def test_explicit_profile_is_pinned_in_schema_and_local_config(
+        self, tmp_project
+    ):
+        profile = Path("config/team selection.json")
+        profile.parent.mkdir()
+        profile.write_text(
+            json.dumps(
+                {
+                    "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                    "include": ["src"],
+                    "exclude": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        Path("src").mkdir()
+        Path("src/app.py").write_text("VALUE = 1\n", encoding="utf-8")
+
+        init_cmd.run(
+            _make_args(
+                agent="generic",
+                source_selection=profile.as_posix(),
+            )
+        )
+
+        schema = Path("AGENTS.md").read_text(encoding="utf-8")
+        assert "--source-selection 'config/team selection.json'" in schema
+        assert read_config("docs/llm_wiki")["source_selection"] == profile.as_posix()
 
 
 class TestInitQualityHints:

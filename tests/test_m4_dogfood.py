@@ -51,6 +51,7 @@ def _copy_repo(source: Path, target: Path) -> None:
             "__pycache__",
             "build",
             "dist",
+            "reports",
             "*.egg-info",
         ),
     )
@@ -75,6 +76,21 @@ def _file_hashes(root: Path) -> dict[str, str]:
             continue
         hashes[rel] = hashlib.sha256(path.read_bytes()).hexdigest()
     return hashes
+
+
+def test_copy_repo_excludes_internal_report_state(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "selected.py").write_text("VALUE = 1\n", encoding="utf-8")
+    report = source / "reports" / "internal" / "ledger.jsonl"
+    report.parent.mkdir(parents=True)
+    report.write_text("{}\n", encoding="utf-8")
+
+    target = tmp_path / "target"
+    _copy_repo(source, target)
+
+    assert (target / "selected.py").is_file()
+    assert not (target / "reports").exists()
 
 
 def _mermaid_body_measurements(

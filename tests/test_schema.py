@@ -1,5 +1,7 @@
 """Tests for schema block replacement."""
 
+from pathlib import Path
+
 from llm_wiki_cli.services.schema import (
     CONSTRAINT_END,
     CONSTRAINT_START,
@@ -52,6 +54,45 @@ def test_agent_schema_mentions_current_sync_and_lint_runtime():
     assert "semantic pass" in content
     assert "Lint passing is not enough" in content
     assert "_Auto-generated from ..._" in content
+
+
+def test_agent_schema_pins_configured_source_selection_in_maintenance_recipes():
+    profile = "config/team selection.json"
+    content = build_schema_content(
+        "generic",
+        "docs/llm_wiki",
+        source_selection=profile,
+    )
+    selection_arg = "--source-selection 'config/team selection.json'"
+
+    for recipe in (
+        "llm-wiki context --budget 8000 --src-dir . --format markdown --focus changed --read-only",
+        "llm-wiki extract --src-dir .",
+        "llm-wiki generate-prompt",
+        "llm-wiki lint --strict --jobs 1",
+        "llm-wiki prepare-extractors --src-dir .",
+        "llm-wiki sync --jobs 1",
+    ):
+        recipe_lines = [line for line in content.splitlines() if recipe in line]
+        assert recipe_lines
+        assert all(selection_arg in line for line in recipe_lines)
+
+
+def test_bundled_sync_skill_preserves_profile_and_uses_selected_diffs_only():
+    skill_root = (
+        Path(__file__).parents[1]
+        / "src"
+        / "llm_wiki_cli"
+        / "skills"
+        / "wiki-sync"
+    )
+    skill = (skill_root / "SKILL.md").read_text(encoding="utf-8")
+    reference = (skill_root / "reference.md").read_text(encoding="utf-8")
+
+    assert "--source-selection <profile>" in skill
+    assert "--source-selection <profile>" in reference
+    assert "never run an unrestricted `git diff` or `git diff --stat`" in skill
+    assert "never read an unrestricted diff or stat" in reference
 
 
 def test_agent_schema_is_scope_and_resource_aware():

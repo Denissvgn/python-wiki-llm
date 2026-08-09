@@ -33,6 +33,45 @@ def test_indexed_resolver_handles_common_import_shapes():
     }
 
 
+def test_import_resolver_prefers_python_from_import_child_modules():
+    inventory = {
+        "src/pkg/cli.py": {"language": "python"},
+        "src/pkg/commands/__init__.py": {"language": "python"},
+        "src/pkg/commands/build.py": {"language": "python"},
+        "src/pkg/config.py": {"language": "python"},
+    }
+    resolver = build_module_path_resolver(inventory)
+
+    assert resolver.import_candidates(
+        ".commands",
+        "build",
+        "src/pkg/cli.py",
+        import_type="from",
+    ) == {"src/pkg/commands/build.py"}
+    assert resolver.import_candidates(
+        ".config",
+        "SETTING",
+        "src/pkg/cli.py",
+        import_type="from",
+    ) == {"src/pkg/config.py"}
+
+
+def test_import_resolver_does_not_treat_plain_import_alias_as_submodule():
+    inventory = {
+        "src/pkg/cli.py": {"language": "python"},
+        "src/pkg/runtime.py": {"language": "python"},
+        "src/pkg/runtime/alias.py": {"language": "python"},
+    }
+    resolver = build_module_path_resolver(inventory)
+
+    assert resolver.import_candidates(
+        ".runtime",
+        "alias",
+        "src/pkg/cli.py",
+        import_type="import",
+    ) == {"src/pkg/runtime.py"}
+
+
 def test_generic_resolver_scopes_python_imports_to_python_modules():
     inventory = {
         "rlm/gateway.py": {"language": "python"},

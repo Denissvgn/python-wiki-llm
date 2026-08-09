@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any
@@ -55,6 +55,14 @@ from .knowledge_loader import (
     load_knowledge_state,
 )
 from .knowledge_model import ComputedFreshness, EvidenceState, KnowledgeLoadState
+from .source_selection import (
+    SourceSelectionError,
+    resolve_source_selection,
+    source_selection_identity_from_generation_inputs,
+    source_selection_inputs_from_generation_inputs,
+    validate_persisted_source_selection_identity,
+)
+from .source_snapshot import build_source_snapshot, capture_source_selection_inputs
 from .sync_manifest import SyncManifest
 from .wiki_surface_index import SURFACE_INDEX_FILENAME, evaluate_surface_index
 
@@ -509,12 +517,44 @@ def knowledge_status_payload(
 def load_snapshot_knowledge_observability(
     wiki_dir: str | Path,
     *,
-    src_dir: str | Path = ".",
+    src_dir: str | Path | None = None,
+    source_selection: str | Path | None = None,
 ) -> SnapshotKnowledgeObservability:
-    """Load status without source extraction or live freshness evaluation."""
+    """Load status without extraction while checking current selection identity."""
 
     started = time.perf_counter()
     wiki_root = Path(wiki_dir)
+    effective_src_dir: str | Path = "." if src_dir is None else src_dir
+    source_snapshot = None
+    if src_dir is not None or source_selection is not None:
+        try:
+            selection_policy = resolve_source_selection(
+                effective_src_dir,
+                source_selection,
+            )
+            selection_inputs = capture_source_selection_inputs(
+                effective_src_dir,
+                source_selection=source_selection,
+                selection_policy=selection_policy,
+            )
+            manifest = SyncManifest.load(wiki_root)
+            validate_persisted_source_selection_identity(
+                manifest.generation_inputs,
+                selection_policy.identity if selection_policy is not None else None,
+                operation="knowledge status",
+                live_selection_inputs=selection_inputs,
+            )
+            source_snapshot = build_source_snapshot(
+                effective_src_dir,
+                source_selection=source_selection,
+                selection_policy=selection_policy,
+                expected_selection_inputs=selection_inputs,
+            )
+        except FileNotFoundError:
+            if selection_policy is not None:
+                return _snapshot_result(_degraded_snapshot_view(), started)
+        except (OSError, SourceSelectionError, TypeError, UnicodeError, ValueError):
+            return _snapshot_result(_degraded_snapshot_view(), started)
     if not _knowledge_projection_declared(wiki_root):
         view = build_knowledge_read_view(
             KnowledgeLoadResult(
@@ -531,7 +571,7 @@ def load_snapshot_knowledge_observability(
         surface_evaluation = evaluate_surface_index(
             wiki_root,
             {},
-            src_dir=src_dir,
+            src_dir=effective_src_dir,
             entry_points=(),
         )
     except (OSError, TypeError, UnicodeError, ValueError):
@@ -548,8 +588,48 @@ def load_snapshot_knowledge_observability(
     except (OSError, TypeError, UnicodeError, ValueError):
         view = _degraded_snapshot_view(surface_evaluation.payload)
     else:
+        if source_snapshot is not None:
+            load_result = _with_current_source_selection(
+                load_result,
+                source_snapshot.source_selection_identity,
+                source_snapshot.source_selection_inputs,
+            )
         view = build_knowledge_read_view(load_result, snapshot_only=True)
     return _snapshot_result(view, started)
+
+
+def _with_current_source_selection(
+    load_result: KnowledgeLoadResult,
+    current_identity: Mapping[str, str] | None,
+    current_inputs: Mapping[str, object] | None,
+) -> KnowledgeLoadResult:
+    manifest = load_result.manifest_basis
+    if manifest is None or load_result.status is not KnowledgeLoadState.VALID:
+        return load_result
+    recorded = source_selection_identity_from_generation_inputs(
+        manifest.generation_inputs
+    )
+    recorded_inputs = source_selection_inputs_from_generation_inputs(
+        manifest.generation_inputs
+    )
+    if recorded == current_identity and recorded_inputs == current_inputs:
+        return load_result
+    issue = KnowledgeLoadIssue(
+        code="source-selection-mismatch",
+        artifact_path=".llm-wiki-manifest.json",
+        field="generation_inputs.source_selection_inputs",
+        message=(
+            "Persisted knowledge was generated from a different source-selection "
+            "boundary; re-run sync with the intended profile."
+        ),
+    )
+    return replace(
+        load_result,
+        status=KnowledgeLoadState.DEGRADED,
+        knowledge=None,
+        issues=(*load_result.issues, issue),
+        underlying_status=KnowledgeLoadState.MIXED_SNAPSHOT,
+    )
 
 
 def _snapshot_result(

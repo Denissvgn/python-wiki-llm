@@ -12,6 +12,7 @@ from typing import Any
 
 import pytest
 
+from llm_wiki_cli.services.documentation_policy import DocumentationPolicyError
 from llm_wiki_cli.services.documentation_run import (
     DocumentationAgentResult,
     DocumentationIntegrityError,
@@ -664,7 +665,6 @@ def test_prepare_rejects_symlinked_workspace_root_before_target_write(tmp_path: 
         ("link_mode", "file", "link mode"),
         ("helper_cache_root", "helper", "runtime path changed"),
         ("capture_root", "capture", "runtime path changed"),
-        ("trust_source_plugins", True, "trust decision"),
     ],
 )
 def test_resume_rejects_changed_lifecycle_options_without_refresh(
@@ -693,6 +693,35 @@ def test_resume_rejects_changed_lifecycle_options_without_refresh(
 
     with pytest.raises(DocumentationRunError, match=message):
         prepare_documentation_run(workspace, **changed)
+
+    assert load_documentation_run(workspace).run_id == original.run_id
+
+
+def test_resume_rejects_source_plugin_trust_without_source_root(tmp_path: Path):
+    input_wiki = tmp_path / "input"
+    input_wiki.mkdir()
+    (input_wiki / "index.md").write_text("# Input\n", encoding="utf-8")
+    workspace = tmp_path / "workspace"
+    original = prepare_documentation_run(
+        workspace,
+        baseline_strategy="adopt_existing_wiki",
+        input_wiki_root=input_wiki,
+        freshness_policy="allow-unverified",
+        site_name="Resume Contract",
+    )
+
+    with pytest.raises(
+        DocumentationPolicyError,
+        match="requires an available source root",
+    ):
+        prepare_documentation_run(
+            workspace,
+            baseline_strategy="adopt_existing_wiki",
+            input_wiki_root=input_wiki,
+            freshness_policy="allow-unverified",
+            site_name="Resume Contract",
+            trust_source_plugins=True,
+        )
 
     assert load_documentation_run(workspace).run_id == original.run_id
 

@@ -10,7 +10,10 @@ import pytest
 
 from llm_wiki_cli.commands import extract_cmd
 from llm_wiki_cli.commands.bootstrap_cmd import execute_bootstrap
-from llm_wiki_cli.services import documentation_native
+from llm_wiki_cli.services import (
+    documentation_native,
+    source_snapshot as source_snapshot_module,
+)
 from llm_wiki_cli.services.bootstrap_service import BootstrapRequest
 from llm_wiki_cli.services.documentation_native import (
     DocumentationNativeError,
@@ -26,6 +29,8 @@ from llm_wiki_cli.services.knowledge_loader import (
     load_knowledge_state,
 )
 from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
+from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 from llm_wiki_cli.services.sync_manifest import (
     MANIFEST_FILENAME,
     SyncManifest,
@@ -262,6 +267,175 @@ def test_freshness_reports_exact_openapi_generation_input_drift(tmp_path):
     assert not freshness.current
     assert mismatch in freshness.source_mismatches
     assert mismatch in freshness.reasons
+
+
+def test_selection_mismatch_is_explicit_and_refresh_updates_identity(
+    tmp_path,
+    monkeypatch,
+):
+    source, wiki = _bootstrap_native(tmp_path)
+    knowledge, manifest = _loaded_native(wiki)
+    (source / "pyproject.toml").write_text(
+        '[project.scripts]\nexcluded-command = "app:run"\n',
+        encoding="utf-8",
+    )
+    profile = source / ".llm-wiki" / "source-selection.json"
+    profile.parent.mkdir()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["app.py"],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    observed_console_scripts = []
+    real_read_console_scripts = documentation_native.read_console_scripts
+
+    def selected_console_scripts(project_root, *, source_snapshot=None):
+        scripts = real_read_console_scripts(
+            project_root,
+            source_snapshot=source_snapshot,
+        )
+        observed_console_scripts.append((source_snapshot, scripts))
+        return scripts
+
+    monkeypatch.setattr(
+        documentation_native,
+        "read_console_scripts",
+        selected_console_scripts,
+    )
+
+    with pytest.raises(DocumentationNativeError, match="source-selection"):
+        evaluate_documentation_native_freshness(
+            knowledge=knowledge,
+            manifest=manifest,
+            source_root=source,
+        )
+
+    refresh_documentation_native_projection(
+        source_root=source,
+        wiki_root=wiki,
+    )
+    refreshed_knowledge, refreshed_manifest = _loaded_native(wiki)
+    assert refreshed_manifest.generation_inputs["source_selection"] == (
+        build_source_snapshot(source).source_selection_identity
+    )
+    current = evaluate_documentation_native_freshness(
+        knowledge=refreshed_knowledge,
+        manifest=refreshed_manifest,
+        source_root=source,
+    )
+    assert current.current
+    assert observed_console_scripts
+    assert all(snapshot is not None for snapshot, _ in observed_console_scripts)
+    assert all(scripts == [] for _, scripts in observed_console_scripts)
+
+
+def test_selection_control_change_is_explicit_native_freshness_mismatch(
+    tmp_path,
+):
+    source, wiki = _bootstrap_native(tmp_path)
+    profile = source / ".llm-wiki" / "source-selection.json"
+    profile.parent.mkdir()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["app.py"],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    refresh_documentation_native_projection(source_root=source, wiki_root=wiki)
+    knowledge, manifest = _loaded_native(wiki)
+    (source / ".gitignore").write_text("not-present.py\n", encoding="utf-8")
+
+    with pytest.raises(DocumentationNativeError, match="source-selection inputs"):
+        evaluate_documentation_native_freshness(
+            knowledge=knowledge,
+            manifest=manifest,
+            source_root=source,
+        )
+
+
+@pytest.mark.parametrize("operation", ["evaluate", "refresh"])
+def test_native_control_broadening_rejects_before_new_source_hash(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    operation: str,
+) -> None:
+    source, wiki = _bootstrap_native(tmp_path)
+    secret = source / "secret.py"
+    secret.write_text("MUST_NOT_READ = True\n", encoding="utf-8")
+    ignore = source / ".gitignore"
+    ignore.write_text("secret.py\n", encoding="utf-8")
+    profile = source / ".llm-wiki" / "source-selection.json"
+    profile.parent.mkdir()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["app.py", "secret.py"],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    refresh_documentation_native_projection(source_root=source, wiki_root=wiki)
+    knowledge, manifest = _loaded_native(wiki)
+    ignore.write_text("", encoding="utf-8")
+    real_hash = source_snapshot_module._sha256_file
+
+    def guarded_hash(path: Path) -> str:
+        if path == secret:
+            pytest.fail("newly admitted source must not be hashed before rejection")
+        return real_hash(path)
+
+    monkeypatch.setattr(source_snapshot_module, "_sha256_file", guarded_hash)
+
+    with pytest.raises(DocumentationNativeError, match="source-selection inputs"):
+        if operation == "evaluate":
+            evaluate_documentation_native_freshness(
+                knowledge=knowledge,
+                manifest=manifest,
+                source_root=source,
+            )
+        else:
+            refresh_documentation_native_projection(
+                source_root=source,
+                wiki_root=wiki,
+            )
+
+
+def test_refresh_does_not_read_persisted_openapi_after_selection_excludes_it(
+    tmp_path,
+) -> None:
+    source, wiki = _bootstrap_native_with_openapi(tmp_path)
+    profile = source / ".llm-wiki" / "source-selection.json"
+    profile.parent.mkdir()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["app.py"],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        DocumentationNativeError,
+        match="OpenAPI file is outside the selected source set",
+    ):
+        refresh_documentation_native_projection(
+            source_root=source,
+            wiki_root=wiki,
+        )
 
 
 def test_refresh_preserves_markdown_and_is_current_and_idempotent(tmp_path):

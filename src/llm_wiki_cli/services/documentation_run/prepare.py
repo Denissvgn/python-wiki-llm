@@ -14,6 +14,7 @@ def prepare_documentation_run(
     *,
     baseline_strategy: str = "bootstrap_source",
     source_root: str | Path | None = None,
+    source_selection: str | Path | None = None,
     input_wiki_root: str | Path | None = None,
     freshness_policy: str = "require-current",
     site_name: str,
@@ -43,6 +44,7 @@ def prepare_documentation_run(
             workspace,
             baseline_strategy=baseline_strategy,
             source_root=source_root,
+            source_selection=source_selection,
             input_wiki_root=input_wiki_root,
             freshness_policy=freshness_policy,
             site_name=site_name,
@@ -99,6 +101,7 @@ def _prepare_documentation_run_impl(
     *,
     baseline_strategy: str = "bootstrap_source",
     source_root: str | Path | None = None,
+    source_selection: str | Path | None = None,
     input_wiki_root: str | Path | None = None,
     freshness_policy: str = "require-current",
     site_name: str,
@@ -186,6 +189,7 @@ def _prepare_documentation_run_impl(
     policy = resolve_documentation_policy(
         workspace_root,
         source_root=source_root,
+        source_selection=source_selection,
         input_wiki_root=input_wiki_root,
         helper_cache_root=helper_cache_root,
         capture_root=capture_root,
@@ -237,7 +241,11 @@ def _prepare_documentation_run_impl(
     continuation_archive: str | None = None
     if run_path.is_file() and refresh:
         prior_run = load_documentation_run(workspace_root)
-        _load_bound_runtime_policy(workspace_root, prior_run)
+        _load_bound_runtime_policy(
+            workspace_root,
+            prior_run,
+            verify_source_selection=False,
+        )
         continuation_snapshot = _capture_refresh_continuation(workspace_root, prior_run)
         continuation_archive = _archive_owned_run(
             workspace_root,
@@ -252,7 +260,10 @@ def _prepare_documentation_run_impl(
     )
     _write_runtime_policy(workspace_root, policy)
     source_baseline = None
+    source_plugins_baseline = None
+    source_snapshot: SourceSnapshot | None = None
     source_baseline_path: Path | None = None
+    source_plugins_baseline_path: Path | None = None
     source = {
         "available": False,
         "display_identifier": "source_unavailable",
@@ -260,12 +271,32 @@ def _prepare_documentation_run_impl(
         "revision_kind": "unavailable",
     }
     if policy.source_root is not None:
-        source_baseline = source_tree_baseline(policy.source_root)
+        source_snapshot = _build_bound_source_snapshot(
+            policy.source_root,
+            policy.to_portable_dict(),
+        )
+        source_baseline = _capture_bound_source_baseline(
+            policy.source_root,
+            policy.to_portable_dict(),
+            source_snapshot=source_snapshot,
+        )
         source = source_identity(policy.source_root, source_baseline)
         source_baseline_path = _workspace_path(
             workspace_root, f"{RUN_CONTROL_DIR}/evidence/source-baseline.json"
         )
         _write_json(source_baseline_path, source_baseline.to_dict())
+        if policy.trust_source_plugins:
+            source_plugins_baseline = _capture_bound_source_plugin_baseline(
+                policy.source_root
+            )
+            source_plugins_baseline_path = _workspace_path(
+                workspace_root,
+                f"{RUN_CONTROL_DIR}/evidence/source-plugins-baseline.json",
+            )
+            _write_json(
+                source_plugins_baseline_path,
+                source_plugins_baseline.to_dict(),
+            )
 
     skills = _export_documentation_skills(workspace_root)
     run_id = _new_run_id()
@@ -279,6 +310,9 @@ def _prepare_documentation_run_impl(
     native_refresh_evidence: dict[str, Any] | None = None
     continuation_paths: tuple[str, ...] = ()
     wiki_root = workspace_root / "wiki"
+    selection_argument = _bound_source_selection_argument(
+        policy.to_portable_dict()
+    )
 
     if baseline_strategy == "bootstrap_source":
         from ..bootstrap_runtime import execute_bootstrap
@@ -294,6 +328,7 @@ def _prepare_documentation_run_impl(
                 if policy.helper_cache_root is not None
                 else None,
                 trust_source_plugins=policy.trust_source_plugins,
+                source_selection=selection_argument,
             )
         )
         bootstrap_summary = _portable_bootstrap_summary(
@@ -322,6 +357,7 @@ def _prepare_documentation_run_impl(
             freshness_policy=freshness_policy,
             trust_source_plugins=policy.trust_source_plugins,
             helper_cache_dir=policy.helper_cache_root,
+            source_selection=selection_argument,
         )
         wiki_input_evidence = snapshot.to_dict()
         imported_pages = list(
@@ -366,6 +402,7 @@ def _prepare_documentation_run_impl(
                     if policy.helper_cache_root is not None
                     else None,
                     trust_source_plugins=policy.trust_source_plugins,
+                    source_selection=selection_argument,
                 ),
                 workspace_root=workspace_root,
             )
@@ -461,11 +498,27 @@ def _prepare_documentation_run_impl(
         )
 
     if source_baseline is not None:
-        difference = compare_tree_baseline(source_baseline, policy.source_root or "")
+        assert policy.source_root is not None
+        difference = _compare_bound_source_baseline(
+            source_baseline,
+            policy.source_root,
+            policy.to_portable_dict(),
+        )
         if not difference.ok:
             raise DocumentationIntegrityError(
                 "Source tree changed while preparing the deterministic baseline: "
                 f"{difference.to_dict()}"
+            )
+    if source_plugins_baseline is not None:
+        assert policy.source_root is not None
+        difference = _compare_bound_source_plugin_baseline(
+            source_plugins_baseline,
+            policy.source_root,
+        )
+        if not difference.ok:
+            raise DocumentationIntegrityError(
+                "Trusted source plugins changed while preparing the deterministic "
+                f"baseline: {difference.to_dict()}"
             )
 
     if (
@@ -479,6 +532,7 @@ def _prepare_documentation_run_impl(
             source_root=policy.source_root,
             trust_source_plugins=policy.trust_source_plugins,
             helper_cache_root=policy.helper_cache_root,
+            source_selection=selection_argument,
         )
 
     wiki_baseline = capture_tree_baseline(wiki_root, display="workspace_wiki")
@@ -497,6 +551,10 @@ def _prepare_documentation_run_impl(
     if source_baseline_path is not None:
         integrity_anchors["source_baseline"] = hash_bytes(
             source_baseline_path.read_bytes()
+        )
+    if source_plugins_baseline_path is not None:
+        integrity_anchors["source_plugins_baseline"] = hash_bytes(
+            source_plugins_baseline_path.read_bytes()
         )
 
     worklist = build_documentation_worklist(
@@ -592,6 +650,15 @@ def _prepare_documentation_run_impl(
             "source_baseline": f"{RUN_CONTROL_DIR}/evidence/source-baseline.json"
             if source_baseline is not None
             else "",
+            **(
+                {
+                    "source_plugins_baseline": (
+                        f"{RUN_CONTROL_DIR}/evidence/source-plugins-baseline.json"
+                    )
+                }
+                if source_plugins_baseline is not None
+                else {}
+            ),
             "bootstrap": f"{RUN_CONTROL_DIR}/evidence/bootstrap.json"
             if baseline_strategy == "bootstrap_source"
             else "",

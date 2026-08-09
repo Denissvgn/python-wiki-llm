@@ -1,11 +1,14 @@
 """Tests for commands/hook_cmd.py"""
 
+import json
 import types
 from pathlib import Path
 
 import pytest
 
 from llm_wiki_cli.commands import hook_cmd
+from llm_wiki_cli.config import read_config
+from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 
 
 def _make_args(**kwargs):
@@ -211,3 +214,42 @@ class TestValidationHook:
         hook_text = Path(".git/hooks/pre-commit").read_text(encoding="utf-8")
         assert "lint --strict" in hook_text
         assert "--wiki-dir docs/llm_wiki" in hook_text
+
+    def test_explicit_profile_is_pinned_in_both_hooks_and_local_config(
+        self, tmp_project, capsys: pytest.CaptureFixture[str]
+    ):
+        profile = Path("config/team selection.json")
+        profile.parent.mkdir()
+        profile.write_text(
+            json.dumps(
+                {
+                    "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                    "include": ["src"],
+                    "exclude": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        Path("src").mkdir()
+        Path("src/app.py").write_text("VALUE = 1\n", encoding="utf-8")
+
+        hook_cmd.run(
+            _make_args(
+                enable_validation=True,
+                wiki_dir="my docs/wiki",
+                source_selection=profile.as_posix(),
+            )
+        )
+
+        selection_arg = "--source-selection 'config/team selection.json'"
+        assert selection_arg in Path(".git/hooks/post-commit").read_text(
+            encoding="utf-8"
+        )
+        assert selection_arg in Path(".git/hooks/pre-commit").read_text(
+            encoding="utf-8"
+        )
+        assert read_config("my docs/wiki")["source_selection"] == profile.as_posix()
+        assert (
+            "llm-wiki generate-prompt --wiki-dir 'my docs/wiki' " + selection_arg
+            in capsys.readouterr().out
+        )

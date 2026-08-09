@@ -15,6 +15,7 @@ import pytest
 
 from llm_wiki_cli.services import documentation_wiki_input as wiki_input_module
 from llm_wiki_cli.services import filesystem_guard as filesystem_guard_module
+from llm_wiki_cli.services import source_snapshot as source_snapshot_module
 from llm_wiki_cli.services.documentation_wiki_input import (
     DocumentationWikiInputError,
     DocumentationWikiSnapshot,
@@ -32,6 +33,12 @@ from llm_wiki_cli.services.knowledge_freshness import (
 from llm_wiki_cli.services.knowledge_index import serialize_knowledge_index
 from llm_wiki_cli.services.knowledge_model import ComputedFreshness
 from llm_wiki_cli.services.knowledge_observability import knowledge_freshness_hint
+from llm_wiki_cli.services.source_selection import (
+    SOURCE_SELECTION_IDENTITY_SCHEMA_VERSION,
+    SOURCE_SELECTION_SCHEMA_VERSION,
+    with_source_selection_generation_input,
+)
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME, SyncManifest
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 from tests.knowledge_fixtures import one_module_two_entities_fixture
@@ -732,6 +739,113 @@ def test_empty_manifest_with_supported_source_addition_is_verified_stale(
     assert snapshot.source_mismatches == ("added:app.py",)
 
 
+def test_changed_selection_identity_is_stale_when_source_bytes_match(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "source"
+    wiki = tmp_path / "wiki"
+    source_bytes = b"def current():\n    return 1\n"
+    _write(source / "selected" / "app.py", source_bytes)
+    _write(
+        source / ".llm-wiki" / "source-selection.json",
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["selected"],
+                "exclude": [],
+            }
+        ),
+    )
+    _write(wiki / "index.md", "# Index\n")
+    source_snapshot = build_source_snapshot(source)
+    _write_current_metadata(
+        wiki,
+        {"selected/app.py": _sha256(source_bytes)},
+        generation_inputs=with_source_selection_generation_input(
+            {},
+            {
+                "schema_version": SOURCE_SELECTION_IDENTITY_SCHEMA_VERSION,
+                "path": ".llm-wiki/source-selection.json",
+                "fingerprint": _sha256(b"different semantic policy"),
+            },
+            source_snapshot.source_selection_inputs,
+        ),
+    )
+
+    with pytest.raises(DocumentationWikiInputError) as exc_info:
+        adopt_documentation_wiki_snapshot(
+            wiki,
+            tmp_path / "refused" / "wiki",
+            source_root=source,
+        )
+    assert exc_info.value.category == "freshness_not_current"
+
+    snapshot = adopt_documentation_wiki_snapshot(
+        wiki,
+        tmp_path / "limited" / "wiki",
+        source_root=source,
+        freshness_policy="allow-unverified",
+    )
+    assert snapshot.freshness == "verified_stale"
+    assert snapshot.source_mismatches == ("generation_input_changed:source_selection",)
+
+
+def test_selection_control_broadening_is_stale_before_new_source_hash(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "source"
+    wiki = tmp_path / "wiki"
+    keep_bytes = b"KEEP = True\n"
+    _write(source / "selected" / "keep.py", keep_bytes)
+    secret = source / "selected" / "secret.py"
+    _write(secret, b"MUST_NOT_READ = True\n")
+    ignore = source / "selected" / ".gitignore"
+    _write(ignore, "secret.py\n")
+    _write(
+        source / ".llm-wiki" / "source-selection.json",
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["selected"],
+                "exclude": [],
+            }
+        ),
+    )
+    _write(wiki / "index.md", "# Index\n")
+    initial = build_source_snapshot(source)
+    _write_current_metadata(
+        wiki,
+        {"selected/keep.py": _sha256(keep_bytes)},
+        generation_inputs=with_source_selection_generation_input(
+            {},
+            initial.source_selection_identity,
+            initial.source_selection_inputs,
+        ),
+    )
+    ignore.write_text("", encoding="utf-8")
+    real_hash = source_snapshot_module._sha256_file
+
+    def guarded_hash(path: Path) -> str:
+        if path == secret:
+            pytest.fail("newly admitted source must not be hashed before rejection")
+        return real_hash(path)
+
+    monkeypatch.setattr(source_snapshot_module, "_sha256_file", guarded_hash)
+
+    adopted = adopt_documentation_wiki_snapshot(
+        wiki,
+        tmp_path / "limited" / "wiki",
+        source_root=source,
+        freshness_policy="allow-unverified",
+    )
+
+    assert adopted.freshness == "verified_stale"
+    assert adopted.source_mismatches == (
+        "generation_input_changed:source_selection_inputs",
+    )
+
+
 def test_current_openapi_generation_input_can_verify_without_language_sources(
     tmp_path: Path,
 ) -> None:
@@ -760,6 +874,78 @@ def test_current_openapi_generation_input_can_verify_without_language_sources(
 
     assert snapshot.freshness == "verified_current"
     assert snapshot.source_mismatches == ()
+
+
+@pytest.mark.parametrize("boundary", ("policy", "gitignore", "global"))
+def test_deselected_openapi_generation_input_is_never_read(
+    tmp_path: Path,
+    monkeypatch,
+    boundary: str,
+) -> None:
+    source = tmp_path / "source"
+    wiki = tmp_path / "wiki"
+    selected_bytes = b"VALUE = 1\n"
+    openapi_bytes = b"openapi: 3.1.0\ninfo: {title: Secret, version: '1'}\npaths: {}\n"
+    _write(source / "selected" / "app.py", selected_bytes)
+    relative_openapi = {
+        "policy": "outside/openapi.yaml",
+        "gitignore": "selected/contracts/openapi.yaml",
+        "global": "selected/build/openapi.yaml",
+    }[boundary]
+    _write(source / relative_openapi, openapi_bytes)
+    if boundary == "gitignore":
+        _write(source / "selected" / ".gitignore", "contracts/openapi.yaml\n")
+    _write(
+        source / ".llm-wiki" / "source-selection.json",
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["selected"],
+                "exclude": [],
+            }
+        ),
+    )
+    source_snapshot = build_source_snapshot(source)
+    _write(wiki / "index.md", "# Index\n")
+    _write_current_metadata(
+        wiki,
+        {"selected/app.py": _sha256(selected_bytes)},
+        generation_inputs=with_source_selection_generation_input(
+            {
+                "openapi": {
+                    "path": relative_openapi,
+                    "sha256": _sha256(openapi_bytes),
+                    "format": "yaml",
+                },
+            },
+            source_snapshot.source_selection_identity,
+            source_snapshot.source_selection_inputs,
+        ),
+    )
+    real_compare = wiki_input_module._compare_source_file
+
+    def reject_deselected_read(root, relative_path, expected_hash):
+        if relative_path == relative_openapi:
+            pytest.fail("deselected OpenAPI input must not be opened")
+        return real_compare(root, relative_path, expected_hash)
+
+    monkeypatch.setattr(
+        wiki_input_module,
+        "_compare_source_file",
+        reject_deselected_read,
+    )
+
+    snapshot = adopt_documentation_wiki_snapshot(
+        wiki,
+        tmp_path / "limited" / "wiki",
+        source_root=source,
+        freshness_policy="allow-unverified",
+    )
+
+    assert snapshot.freshness == "verified_stale"
+    assert snapshot.source_mismatches == (
+        f"generation_input_deselected:openapi:{relative_openapi}",
+    )
 
 
 def test_changed_openapi_generation_input_makes_unchanged_sources_stale(
@@ -1303,9 +1489,9 @@ def test_invalid_v5_native_artifact_state_fails_closed_before_copy(
     elif mutation == "surface-knowledge-parity":
         surface = json.loads(plan.surface_index.content)
         surface["pages"][0]["title"] += " changed"
-        surface_bytes = (
-            json.dumps(surface, indent=2, sort_keys=True) + "\n"
-        ).encode("utf-8")
+        surface_bytes = (json.dumps(surface, indent=2, sort_keys=True) + "\n").encode(
+            "utf-8"
+        )
         knowledge = json.loads(plan.knowledge_index.content)
         knowledge["bundle"]["snapshot"]["surface_index_hash"] = sha256_bytes(
             surface_bytes

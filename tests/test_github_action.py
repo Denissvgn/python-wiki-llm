@@ -178,7 +178,14 @@ def test_action_metadata_defines_the_public_inputs_and_composite_steps() -> None
     action = _yaml(ACTION_PATH)
 
     assert action["runs"]["using"] == "composite"
-    assert set(action["inputs"]) == {"wiki-dir", "src-dir", "strict", "fail-on"}
+    assert set(action["inputs"]) == {
+        "wiki-dir",
+        "src-dir",
+        "source-selection",
+        "strict",
+        "fail-on",
+    }
+    assert action["inputs"]["source-selection"]["default"] == ""
     assert action["inputs"]["strict"]["default"] == "true"
     assert action["inputs"]["fail-on"]["default"] == "unhealthy"
     steps = action["runs"]["steps"]
@@ -213,6 +220,10 @@ def test_action_couples_to_doctor_json_without_scraping_text() -> None:
 
     assert "llm-wiki doctor" in doctor["run"]
     assert "--format json" in doctor["run"]
+    assert doctor["env"]["INPUT_SOURCE_SELECTION"] == (
+        "${{ inputs.source-selection }}"
+    )
+    assert '--source-selection "${INPUT_SOURCE_SELECTION}"' in doctor["run"]
     assert "render_summary.py" in summary["run"]
     assert summary["env"]["DOCTOR_EXIT_CODE"] == (
         "${{ steps.doctor.outputs.exit-code }}"
@@ -583,6 +594,7 @@ def test_readme_documents_the_ci_gate_inputs_and_thresholds() -> None:
     assert "integrations/github-action" in section
     assert "wiki-dir:" in section
     assert "src-dir:" in section
+    assert "source-selection:" in section
     assert "strict:" in section
     assert "fail-on:" in section
     assert "fail-on: unhealthy" in section

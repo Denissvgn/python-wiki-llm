@@ -196,6 +196,34 @@ def test_detects_landing_flow_architecture_and_user_profile_signals(tmp_path):
     )
 
 
+@pytest.mark.parametrize(
+    "current_intro",
+    [
+        "Guides lead supported tasks. The generated indexes are exhaustive "
+        "reference inventories of the selected source.",
+        "This page is an exhaustive reference inventory of the selected source. "
+        "Task-oriented guides are not yet available.",
+    ],
+)
+def test_detects_current_generated_landing_copy_as_semantic_work(
+    tmp_path,
+    current_intro,
+):
+    wiki = _base_wiki(tmp_path)
+    index_path = wiki / "index.md"
+    index_path.write_text(
+        index_path.read_text(encoding="utf-8").replace(
+            "Use this landing page to choose the right wiki surface.",
+            current_intro,
+        ),
+        encoding="utf-8",
+    )
+
+    worklist = build_documentation_worklist(wiki)
+
+    assert "generic_landing_context" in _by_path(worklist)["index.md"].signals
+
+
 def test_detects_copied_docstring_only_prose(tmp_path):
     wiki = tmp_path / "wiki"
     _write(wiki / "index.md", "# Product\n\nA useful product overview.\n")

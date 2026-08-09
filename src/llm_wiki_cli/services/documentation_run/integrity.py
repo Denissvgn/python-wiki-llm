@@ -472,6 +472,8 @@ def _verify_initial_integrity_anchors(
     expected_anchor_keys = {"generated_ownership"}
     if run.source.get("available") is True:
         expected_anchor_keys.add("source_baseline")
+    if run.policy.get("source_plugins_trusted") is True:
+        expected_anchor_keys.add("source_plugins_baseline")
     if set(run.integrity_anchors) != expected_anchor_keys:
         raise DocumentationIntegrityError(
             "Documentation run is missing its immutable baseline integrity anchors; "
@@ -545,6 +547,54 @@ def _verify_initial_integrity_anchors(
         ):
             raise DocumentationIntegrityError(
                 "Anchored source baseline no longer matches the run source fingerprint."
+            )
+    if run.policy.get("source_plugins_trusted") is True:
+        plugin_path = _workspace_path(
+            workspace_root,
+            run.evidence["source_plugins_baseline"],
+        )
+        plugin_payload = _read_json(plugin_path)
+        _require_exact_fields(
+            plugin_payload,
+            allowed={
+                "root_display",
+                "tree_hash",
+                "file_count",
+                "file_hashes",
+                "excluded_directories",
+            },
+            required={
+                "root_display",
+                "tree_hash",
+                "file_count",
+                "file_hashes",
+                "excluded_directories",
+            },
+            label="anchored source plugin baseline",
+        )
+        plugin_hashes = plugin_payload.get("file_hashes")
+        plugin_count = plugin_payload.get("file_count")
+        if (
+            plugin_payload.get("root_display") != "source_plugins"
+            or not isinstance(plugin_hashes, Mapping)
+            or isinstance(plugin_count, bool)
+            or not isinstance(plugin_count, int)
+            or plugin_count != len(plugin_hashes)
+            or any(
+                not isinstance(path, str)
+                or not path
+                or not isinstance(digest, str)
+                or not re.fullmatch(r"sha256:[0-9a-f]{64}", digest)
+                for path, digest in plugin_hashes.items()
+            )
+        ):
+            raise DocumentationIntegrityError(
+                "Anchored source plugin baseline structure is malformed."
+            )
+        plugin_tree_hash = _tree_hash_from_file_hashes(plugin_hashes)
+        if plugin_payload.get("tree_hash") != plugin_tree_hash:
+            raise DocumentationIntegrityError(
+                "Anchored source plugin baseline tree hash is inconsistent."
             )
 
     generated_path = _workspace_path(
@@ -635,11 +685,37 @@ def _verify_read_only_inputs(
             baseline = TreeBaseline.from_dict(
                 _read_json(_workspace_path(workspace_root, source_evidence))
             )
-            difference = compare_tree_baseline(baseline, source_root)
+            difference = _compare_bound_source_baseline(
+                baseline,
+                source_root,
+                run.policy,
+            )
             checks.append({"check": "source_integrity", **difference.to_dict()})
             if not difference.ok:
                 raise DocumentationIntegrityError(
                     f"Read-only source integrity changed: {difference.to_dict()}"
+                )
+    plugin_evidence = run.evidence.get("source_plugins_baseline")
+    if run.policy.get("source_plugins_trusted") is True:
+        if not plugin_evidence or source_root is None:
+            raise DocumentationIntegrityError(
+                "Trusted source-plugin run lost its required integrity evidence."
+            )
+        if source_root.exists():
+            plugin_baseline = TreeBaseline.from_dict(
+                _read_json(_workspace_path(workspace_root, plugin_evidence))
+            )
+            plugin_difference = _compare_bound_source_plugin_baseline(
+                plugin_baseline,
+                source_root,
+            )
+            checks.append(
+                {"check": "source_plugin_integrity", **plugin_difference.to_dict()}
+            )
+            if not plugin_difference.ok:
+                raise DocumentationIntegrityError(
+                    "Read-only trusted source plugins changed: "
+                    f"{plugin_difference.to_dict()}"
                 )
     input_root = runtime_paths.get("input_wiki_root")
     input_info = run.baseline.get("input_wiki")
@@ -677,6 +753,7 @@ def _run_wiki_validation_pair(
     runtime_paths = _load_bound_runtime_policy(workspace_root, run)
     source_root = runtime_paths.get("source_root")
     helper_cache_root = runtime_paths.get("helper_cache_root")
+    source_selection = _bound_source_selection_argument(run.policy)
     wiki_root = workspace_root / run.paths["wiki"]
     results: dict[str, dict[str, Any]] = {}
 
@@ -698,6 +775,10 @@ def _run_wiki_validation_pair(
                         str(helper_cache_root) if helper_cache_root else None
                     ),
                     include_plugins=run.policy.get("source_plugins_trusted", False),
+                    source_plugins_only=run.policy.get(
+                        "source_plugins_trusted", False
+                    ),
+                    source_selection=source_selection,
                 )
                 report_payload = report_to_dict(report, include_execution=True)
                 report_payload["wiki_dir"] = "wiki"

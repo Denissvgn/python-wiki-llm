@@ -34,6 +34,7 @@ from .documentation_queries import (
     DocumentationGraphQueryService,
     DocumentationQueryError,
 )
+from .documentation_query_builder import validate_live_query_source_selection
 from .extraction_jobs import ExtractionJobPlan, ExtractionJobRequest
 from .extraction_service import InventoryResult
 from .knowledge_consumption import KnowledgeReadView
@@ -50,10 +51,12 @@ from .knowledge_envelope import (
 from .knowledge_model import ComputedFreshness
 from .knowledge_observability import knowledge_freshness_disclosure
 from .knowledge_verification import verification_summaries_for_concepts
+from .plugins import runtime_plugin_fallback_root
 from .source_snapshot import (
     SourceSnapshot,
     SourceSnapshotError,
     build_source_snapshot,
+    capture_source_selection_inputs,
 )
 from .validation import require_repository_relative_path
 from .wiki_surface_index import SurfaceIndexEvaluation, evaluate_surface_index
@@ -483,6 +486,7 @@ def capture_context_read(
     read_only: bool = True,
     job_request: ExtractionJobRequest | None = None,
     plan_reporter: Callable[[ExtractionJobPlan], None] | None = None,
+    source_selection: str | Path | None = None,
 ) -> CapturedContextRead:
     """Capture one source inventory, wiki surface, and knowledge read view.
 
@@ -506,7 +510,37 @@ def capture_context_read(
     except PathValidationError:
         raise
 
-    wiki_anchor_before = _wiki_anchor(wiki_root)
+    try:
+        selection_policy = context_service.resolve_source_selection(
+            source_root,
+            source_selection,
+        )
+        selection_inputs = capture_source_selection_inputs(
+            source_root,
+            source_selection=source_selection,
+            selection_policy=selection_policy,
+        )
+        validate_live_query_source_selection(
+            source_root=source_root,
+            wiki_root=wiki_root,
+            live_identity=(
+                selection_policy.identity if selection_policy is not None else None
+            ),
+            live_selection_inputs=selection_inputs,
+            operation="qualified context packet",
+        )
+    except (DocumentationQueryError, context_service.SourceSelectionError) as exc:
+        raise context_service.ProtocolRequestError(
+            str(exc),
+            "source_selection",
+        ) from exc
+    source_snapshot = build_source_snapshot(
+        source_root,
+        source_selection=source_selection,
+        selection_policy=selection_policy,
+        expected_selection_inputs=selection_inputs,
+    )
+
     collected = context_service.get_inventory(
         str(source_root),
         deep=True,
@@ -514,6 +548,8 @@ def capture_context_read(
         job_request=job_request,
         plan_reporter=plan_reporter,
         include_plugins=False,
+        source_selection=source_selection,
+        source_snapshot=source_snapshot,
     )
     if not isinstance(collected, InventoryResult):
         raise ContextPacketUnavailableError(
@@ -536,16 +572,37 @@ def capture_context_read(
         )
     source_anchor = _source_anchor(source_snapshot)
     _assert_source_unchanged(source_snapshot, source_anchor)
+    try:
+        validate_live_query_source_selection(
+            source_root=source_root,
+            wiki_root=wiki_root,
+            live_identity=source_snapshot.source_selection_identity,
+            live_selection_inputs=source_snapshot.source_selection_inputs,
+            operation="qualified context packet",
+        )
+    except DocumentationQueryError as exc:
+        raise context_service.ProtocolRequestError(
+            str(exc),
+            "source_selection",
+        ) from exc
+    wiki_anchor_before = _wiki_anchor(wiki_root)
 
     try:
         entrypoints = tuple(
             context_service.get_entry_points(
                 inventory,
                 console_scripts=context_service.read_console_scripts(
-                    str(source_root)
+                    str(source_root),
+                    source_snapshot=source_snapshot,
                 ),
                 root=source_root,
-                fallback_root=Path.cwd(),
+                fallback_root=runtime_plugin_fallback_root(
+                    source_root,
+                    source_selection_configured=(
+                        source_snapshot.source_selection_policy is not None
+                    ),
+                ),
+                include_plugins=False,
             )
         )
         call_edges = tuple(
@@ -599,7 +656,23 @@ def capture_context_read(
         raise ContextPacketSourceMutationError("wiki")
     _assert_source_unchanged(source_snapshot, source_anchor)
 
-    changed = context_service._git_changed_files(str(source_root))
+    changed = context_service._selected_git_changed_files(
+        str(source_root),
+        source_snapshot,
+    )
+    try:
+        validate_live_query_source_selection(
+            source_root=source_root,
+            wiki_root=wiki_root,
+            live_identity=source_snapshot.source_selection_identity,
+            live_selection_inputs=source_snapshot.source_selection_inputs,
+            operation="qualified context packet",
+        )
+    except DocumentationQueryError as exc:
+        raise context_service.ProtocolRequestError(
+            str(exc),
+            "source_selection",
+        ) from exc
     return CapturedContextRead(
         source_root=source_root,
         wiki_root=wiki_root,
@@ -727,6 +800,7 @@ def build_qualified_context(
     read_only: bool = True,
     job_request: ExtractionJobRequest | None = None,
     plan_reporter: Callable[[ExtractionJobPlan], None] | None = None,
+    source_selection: str | Path | None = None,
 ) -> QualifiedContextPacket:
     """Build a canonical packet in memory from one coordinated read view."""
 
@@ -747,6 +821,7 @@ def build_qualified_context(
         read_only=read_only,
         job_request=job_request,
         plan_reporter=plan_reporter,
+        source_selection=source_selection,
     )
     payload, warnings = build_context_from_captured_read(captured, normalized)
     response = context_service._protocol_success_payload(
@@ -863,6 +938,7 @@ def reconcile_context_packet(
     read_only: bool = True,
     job_request: ExtractionJobRequest | None = None,
     plan_reporter: Callable[[ExtractionJobPlan], None] | None = None,
+    source_selection: str | Path | None = None,
 ) -> ContextPacketReconciliation:
     """Validate first, then compare every packet facet with a fresh read."""
 
@@ -876,6 +952,7 @@ def reconcile_context_packet(
         read_only=read_only,
         job_request=job_request,
         plan_reporter=plan_reporter,
+        source_selection=source_selection,
     )
     live_payload = live_packet.to_payload()
     facets = _reconciliation_facets(packet_payload, live_payload)
@@ -2140,7 +2217,11 @@ def _source_snapshot_anchor_payload(snapshot: SourceSnapshot) -> dict[str, Any]:
 
 def _assert_source_unchanged(snapshot: SourceSnapshot, expected_anchor: str) -> None:
     try:
-        current = build_source_snapshot(snapshot.root)
+        current = build_source_snapshot(
+            snapshot.root,
+            selection_policy=snapshot.source_selection_policy,
+            expected_selection_inputs=snapshot.source_selection_inputs,
+        )
         missing_built_in_paths = set(snapshot.captured_content_hashes) - set(
             current.captured_content_hashes
         )
@@ -2156,7 +2237,10 @@ def _assert_source_unchanged(snapshot: SourceSnapshot, expected_anchor: str) -> 
 
 
 def _assert_selection_unchanged(captured: CapturedContextRead) -> None:
-    changed = context_service._git_changed_files(str(captured.source_root))
+    changed = context_service._selected_git_changed_files(
+        str(captured.source_root),
+        captured.source_snapshot,
+    )
     current = None if changed is None else tuple(changed)
     if current != captured.changed_files:
         raise ContextPacketSourceMutationError("source-selection")

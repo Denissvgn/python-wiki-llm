@@ -6,14 +6,28 @@ import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from ..config import DEFAULT_WIKI_DIR, validate_path
+from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from ..services.bootstrap_runtime import (
     build_entity_occurrence_page_map,
     build_entity_page_map,
     build_module_page_map,
 )
-from ..services.extraction_service import get_inventory
+from ..services.extraction_service import filter_source_diff, get_inventory_result
 from ..services.entrypoints import get_entry_points, read_console_scripts
+from ..services.plugins import (
+    runtime_plugin_fallback_root,
+    runtime_project_plugins_enabled,
+)
+from ..services.source_selection import (
+    resolve_source_selection,
+    validate_persisted_source_selection_identity,
+)
+from ..services.source_snapshot import (
+    SourceSnapshot,
+    build_source_snapshot,
+    capture_source_selection_inputs,
+)
+from ..services.sync_manifest import SyncManifest
 from ..services.wiki_surface import PageKind, collect_wiki_pages
 from ..services.wiki_surface_index import (
     SURFACE_INDEX_FILENAME,
@@ -61,7 +75,7 @@ class ReviewFinding:
     suggested_follow_up: str
 
 
-def _read_patch(args) -> str:
+def _read_patch(args, *, src_dir: str | None = None) -> str:
     patch = getattr(args, "patch", None)
     if patch:
         if patch == "-":
@@ -83,7 +97,12 @@ def _read_patch(args) -> str:
 
     try:
         result = subprocess.run(
-            cmd, capture_output=True, text=True, check=True, timeout=30
+            cmd,
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=30,
+            cwd=src_dir or getattr(args, "src_dir", "."),
         )
         return result.stdout
     except (
@@ -210,13 +229,30 @@ def _build_surface_index_pages(
     module_page_map: dict[str, str],
     entity_page_map: dict[tuple[str, str], str],
     entity_occurrence_page_map: dict[tuple[str, str, int], str],
+    source_snapshot: SourceSnapshot | None = None,
 ) -> list[dict]:
-    console_scripts = read_console_scripts(src_dir)
+    console_scripts = read_console_scripts(
+        src_dir,
+        source_snapshot=source_snapshot,
+    )
     entry_points = get_entry_points(
         inventory,
         console_scripts=console_scripts,
         root=src_dir,
-        fallback_root=Path.cwd(),
+        fallback_root=runtime_plugin_fallback_root(
+            src_dir,
+            source_selection_configured=(
+                source_snapshot is not None
+                and source_snapshot.source_selection_policy is not None
+            ),
+        ),
+        include_plugins=runtime_project_plugins_enabled(
+            src_dir,
+            source_selection_configured=(
+                source_snapshot is not None
+                and source_snapshot.source_selection_policy is not None
+            ),
+        ),
     )
     payload = build_surface_index(
         wiki_dir,
@@ -238,6 +274,7 @@ def _surface_index_pages(
     module_page_map: dict[str, str],
     entity_page_map: dict[tuple[str, str], str],
     entity_occurrence_page_map: dict[tuple[str, str, int], str],
+    source_snapshot: SourceSnapshot | None = None,
 ) -> list[dict]:
     pages = _load_surface_index_pages(wiki_dir)
     if pages is not None:
@@ -249,6 +286,7 @@ def _surface_index_pages(
         module_page_map,
         entity_page_map,
         entity_occurrence_page_map,
+        source_snapshot,
     )
 
 
@@ -259,6 +297,7 @@ def _flow_pages_by_source(
     module_page_map: dict[str, str],
     entity_page_map: dict[tuple[str, str], str],
     entity_occurrence_page_map: dict[tuple[str, str, int], str],
+    source_snapshot: SourceSnapshot | None = None,
 ) -> dict[str, list[str]]:
     pages_by_source: dict[str, list[str]] = {}
     for page in _surface_index_pages(
@@ -268,6 +307,7 @@ def _flow_pages_by_source(
         module_page_map,
         entity_page_map,
         entity_occurrence_page_map,
+        source_snapshot,
     ):
         if page.get("kind") != PageKind.FLOWS.value:
             continue
@@ -312,10 +352,61 @@ def _related_pages_for_source(
     return pages
 
 
+def _preflight_review_source_selection(
+    src_dir: str,
+    wiki_dir: Path,
+    source_selection: str | Path | None,
+) -> SourceSnapshot:
+    policy = resolve_source_selection(src_dir, source_selection)
+    try:
+        manifest = SyncManifest.load(wiki_dir)
+    except FileNotFoundError:
+        generation_inputs = (
+            {}
+            if wiki_dir.is_dir() and next(wiki_dir.iterdir(), None) is not None
+            else None
+        )
+    else:
+        generation_inputs = manifest.generation_inputs
+    selection_inputs = capture_source_selection_inputs(
+        src_dir,
+        source_selection=source_selection,
+        selection_policy=policy,
+    )
+    validate_persisted_source_selection_identity(
+        generation_inputs,
+        None if policy is None else policy.identity,
+        operation="review",
+        live_selection_inputs=selection_inputs,
+    )
+    source_snapshot = build_source_snapshot(
+        src_dir,
+        source_selection=source_selection,
+        selection_policy=policy,
+        expected_selection_inputs=selection_inputs,
+    )
+    return source_snapshot
+
+
 def build_findings(
-    diff_text: str, *, src_dir: str = ".", wiki_dir: str = DEFAULT_WIKI_DIR
+    diff_text: str,
+    *,
+    src_dir: str = ".",
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    source_selection: str | Path | None = None,
 ) -> list[ReviewFinding]:
     wiki_path = Path(wiki_dir)
+    source_snapshot = _preflight_review_source_selection(
+        src_dir,
+        wiki_path,
+        source_selection,
+    )
+    diff_text = filter_source_diff(
+        diff_text,
+        source_snapshot.source_selection_policy,
+        retained_roots=(wiki_path.as_posix(),),
+        source_snapshot=source_snapshot,
+    )
     changed = _changed_paths(diff_text)
     changed_set = {path.replace("\\", "/") for path in changed}
     wiki_changed = {
@@ -324,7 +415,11 @@ def build_findings(
         if path.startswith(f"{wiki_path.as_posix()}/")
     }
 
-    inventory = get_inventory(src_dir, deep=True)
+    inventory = get_inventory_result(
+        src_dir,
+        deep=True,
+        source_snapshot=source_snapshot,
+    ).inventory
     module_page_map = build_module_page_map(inventory)
     entity_page_map = build_entity_page_map(inventory)
     entity_occurrence_page_map = build_entity_occurrence_page_map(
@@ -337,6 +432,7 @@ def build_findings(
         module_page_map,
         entity_page_map,
         entity_occurrence_page_map,
+        source_snapshot,
     )
     symbol_pages = _symbol_reference_pages(wiki_path)
     imports_by_file = _added_imports_by_file(diff_text)
@@ -492,11 +588,29 @@ def run(args) -> None:
     src_dir: str = getattr(args, "src_dir", ".")
     wiki_dir: str = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     output_format: str = getattr(args, "format", "markdown")
-    validate_path(src_dir, "--src-dir")
+    allow_external = bool(getattr(args, "allow_external_src", False))
+    source_root = validate_source_root(
+        src_dir,
+        "--src-dir",
+        allow_external=allow_external,
+    )
+    if allow_external:
+        src_dir = str(source_root)
     validate_path(wiki_dir, "--wiki-dir")
 
-    diff_text = _read_patch(args)
-    findings = build_findings(diff_text, src_dir=src_dir, wiki_dir=wiki_dir)
+    _preflight_review_source_selection(
+        src_dir,
+        Path(wiki_dir),
+        getattr(args, "source_selection", None),
+    )
+
+    diff_text = _read_patch(args, src_dir=src_dir)
+    findings = build_findings(
+        diff_text,
+        src_dir=src_dir,
+        wiki_dir=wiki_dir,
+        source_selection=getattr(args, "source_selection", None),
+    )
     if output_format == "json":
         print(render_json(findings), end="")
     else:

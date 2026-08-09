@@ -5,12 +5,22 @@ import subprocess
 import sys
 from pathlib import Path
 
-from ..config import DEFAULT_WIKI_DIR, validate_path
+from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
+from ..services.documentation_query_builder import (
+    validate_live_query_source_selection,
+)
 from ..services.metrics import record_event, resolve_agent
+from ..services.extraction_service import filter_source_diff
 from ..services.paths import shell_quote
 from ..services.plugins import PluginError, render_prompt_template
 from ..services.redaction import redact_credentials
 from ..services.secure_file import write_private_text
+from ..services.source_selection import resolve_source_selection
+from ..services.source_snapshot import (
+    SourceSnapshot,
+    build_source_snapshot,
+    capture_source_selection_inputs,
+)
 from ..services.team import TeamConfigError, team_prompt_template_default
 from ..services.wiki_git_policy import (
     WikiGitDisposition,
@@ -42,7 +52,7 @@ _DEPENDENCY_FILES = {
 _SOURCE_EXTS = (".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs")
 
 
-def _git_diff() -> str:
+def _git_diff(src_dir: str = ".") -> str:
     try:
         result = subprocess.run(
             ["git", "diff", "HEAD~1..HEAD"],
@@ -50,14 +60,19 @@ def _git_diff() -> str:
             text=True,
             check=True,
             timeout=30,
+            cwd=src_dir,
         )
         return result.stdout
     except (
         subprocess.CalledProcessError,
         subprocess.TimeoutExpired,
-        FileNotFoundError,
+        OSError,
     ):
         return ""
+
+
+def _prompt_git_diff(src_dir: str) -> str:
+    return _git_diff() if src_dir == "." else _git_diff(src_dir)
 
 
 def _changed_paths(diff_text: str) -> list[str]:
@@ -187,6 +202,146 @@ def _rich_prompt_context(
     return rich_context, rich_context_block
 
 
+def _source_selection_args(source_selection: str | Path | None) -> str:
+    if source_selection is None:
+        return ""
+    return f" --source-selection {shell_quote(str(source_selection))}"
+
+
+def _external_source_args(allow_external_src: bool) -> str:
+    return " --allow-external-src" if allow_external_src else ""
+
+
+def _diff_recipe(
+    source_selection: str | Path | None,
+    *,
+    src_dir: str = ".",
+    allow_external_src: bool = False,
+) -> str:
+    git_prefix = (
+        f"git -C {shell_quote(src_dir)} diff"
+        if allow_external_src
+        else "git diff"
+    )
+    if source_selection is None:
+        return f"""# Diff size and paths; use targeted diffs for only the affected files
+{git_prefix} --stat HEAD~1..HEAD
+{git_prefix} HEAD~1..HEAD -- path/to/affected-file"""
+    return f"""# The configured source-selection profile is authoritative.
+# Never run an unrestricted Git diff; inspect only paths emitted above.
+{git_prefix} HEAD~1..HEAD -- path/from-selected-inventory"""
+
+
+def _diff_guidance(source_selection: str | Path | None) -> str:
+    if source_selection is None:
+        return "`git diff --stat`, targeted per-file diffs"
+    return "targeted diffs for paths emitted by the selected inventory"
+
+
+def _selected_prompt_diff(
+    diff_text: str,
+    *,
+    src_dir: str,
+    wiki_dir: str,
+    source_selection: str | Path | None,
+    source_snapshot: SourceSnapshot | None = None,
+) -> str:
+    snapshot = source_snapshot or build_source_snapshot(
+        src_dir, source_selection=source_selection
+    )
+    return filter_source_diff(
+        diff_text,
+        snapshot.source_selection_policy,
+        retained_roots=(Path(wiki_dir).as_posix(),),
+        source_snapshot=snapshot,
+    )
+
+
+def _resolved_prompt_selection_and_diff(
+    diff_text: str,
+    *,
+    src_dir: str,
+    wiki_dir: str,
+    source_selection: str | Path | None,
+    source_snapshot: SourceSnapshot | None,
+) -> tuple[str | Path | None, str]:
+    snapshot = source_snapshot or build_source_snapshot(
+        src_dir,
+        source_selection=source_selection,
+    )
+    resolved_selection = snapshot.source_selection_path
+    return resolved_selection, _selected_prompt_diff(
+        diff_text,
+        src_dir=src_dir,
+        wiki_dir=wiki_dir,
+        source_selection=resolved_selection,
+        source_snapshot=snapshot,
+    )
+
+
+def _validated_prompt_snapshot(
+    *,
+    src_dir: str,
+    wiki_dir: str,
+    source_selection: str | Path | None,
+    source_snapshot: SourceSnapshot | None = None,
+) -> SourceSnapshot:
+    if source_snapshot is not None:
+        snapshot = source_snapshot
+    else:
+        policy = resolve_source_selection(src_dir, source_selection)
+        selection_inputs = capture_source_selection_inputs(
+            src_dir,
+            source_selection=source_selection,
+            selection_policy=policy,
+        )
+        validate_live_query_source_selection(
+            source_root=Path(src_dir).resolve(),
+            wiki_root=Path(wiki_dir),
+            live_identity=None if policy is None else policy.identity,
+            live_selection_inputs=selection_inputs,
+            operation="Prompt generation",
+        )
+        snapshot = build_source_snapshot(
+            src_dir,
+            source_selection=source_selection,
+            selection_policy=policy,
+            expected_selection_inputs=selection_inputs,
+        )
+    validate_live_query_source_selection(
+        source_root=snapshot.root,
+        wiki_root=Path(wiki_dir),
+        live_identity=snapshot.source_selection_identity,
+        live_selection_inputs=snapshot.source_selection_inputs,
+        operation="Prompt generation",
+    )
+    return snapshot
+
+
+def _validated_prompt_selection_and_diff(
+    *,
+    src_dir: str,
+    wiki_dir: str,
+    source_selection: str | Path | None,
+    source_snapshot: SourceSnapshot | None,
+    diff_text: str | None,
+) -> tuple[str | Path | None, str]:
+    snapshot = _validated_prompt_snapshot(
+        src_dir=src_dir,
+        wiki_dir=wiki_dir,
+        source_selection=source_selection,
+        source_snapshot=source_snapshot,
+    )
+    selected_diff = _prompt_git_diff(src_dir) if diff_text is None else diff_text
+    return _resolved_prompt_selection_and_diff(
+        selected_diff,
+        src_dir=src_dir,
+        wiki_dir=wiki_dir,
+        source_selection=source_selection,
+        source_snapshot=snapshot,
+    )
+
+
 def _template_values(
     *,
     wiki_dir: str,
@@ -199,6 +354,8 @@ def _template_values(
     graph_json: str | None,
     cli_agent: bool,
     policy: WikiGitPolicy,
+    source_selection: str | Path | None,
+    allow_external_src: bool,
 ) -> dict[str, str]:
     included = policy.disposition is WikiGitDisposition.INCLUDED
     return {
@@ -211,6 +368,9 @@ def _template_values(
         "ast_json": ast_json or "",
         "graph_json": graph_json or "",
         "cli_agent": "true" if cli_agent else "false",
+        "source_selection": str(source_selection or ""),
+        "source_selection_args": _source_selection_args(source_selection),
+        "external_source_args": _external_source_args(allow_external_src),
         "wiki_git_disposition": policy.disposition.value,
         "wiki_git_reason": policy.reason,
         "wiki_git_handoff_eligible": "true" if included else "false",
@@ -236,27 +396,25 @@ one.
 
 ```bash
 # Start with the compact changed-file inventory
-llm-wiki extract --src-dir {quoted_src_dir} --changed --summary
+llm-wiki extract --src-dir {quoted_src_dir}{external_source_args}{source_selection_args} --changed --summary
 
-# Diff size and paths; use targeted diffs for only the affected files
-git diff --stat HEAD~1..HEAD
-git diff HEAD~1..HEAD -- path/to/affected-file
+{diff_recipe}
 
 # Update generated pages only after scoping the change
-llm-wiki sync --jobs 1 --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}
+llm-wiki sync --jobs 1 --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}{external_source_args}{source_selection_args}
 
 # Current wiki health — shows what's already broken vs. what you need to fix
-llm-wiki lint --jobs 1 --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}
+llm-wiki lint --jobs 1 --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}{external_source_args}{source_selection_args}
 ```
 
 For full detail (methods, params, docstrings) on a specific file:
 ```bash
-llm-wiki extract --src-dir {quoted_src_dir} --paths path/to/file.py
+llm-wiki extract --src-dir {quoted_src_dir}{external_source_args}{source_selection_args} --paths path/to/file.py
 ```
 
 ## Semantic Pass
 
-Use the sync output plus `git diff --stat`, targeted per-file diffs, and
+Use the sync output plus {diff_guidance}, and
 `extract --changed --summary` to identify pages that were created or updated.
 Inspect those affected entity/module pages and enrich any generated skeletons
 before you stop. Do not run an unconditional repository-wide context scan for
@@ -298,8 +456,8 @@ for user-facing changes. Skip for pure refactors, test-only, or doc-only commits
 After making your changes, run:
 
 ```bash
-llm-wiki sync --jobs 1 --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}
-llm-wiki lint --strict --jobs 1 --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}
+llm-wiki sync --jobs 1 --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}{external_source_args}{source_selection_args}
+llm-wiki lint --strict --jobs 1 --wiki-dir {quoted_wiki_dir} --src-dir {quoted_src_dir}{external_source_args}{source_selection_args}
 ```
 
 The final sync preserves supported semantic prose and re-anchors the canonical
@@ -318,12 +476,22 @@ def _render_default_prompt(
     change_type: str,
     rich_context_block: str,
     cli_agent: bool,
+    source_selection: str | Path | None = None,
+    allow_external_src: bool = False,
 ) -> str:
     return _DEFAULT_PROMPT_TEMPLATE.format(
         subagent_suffix=" subagent" if cli_agent else "",
         wiki_dir=wiki_dir,
         quoted_wiki_dir=shell_quote(wiki_dir),
         quoted_src_dir=shell_quote(src_dir),
+        source_selection_args=_source_selection_args(source_selection),
+        external_source_args=_external_source_args(allow_external_src),
+        diff_recipe=_diff_recipe(
+            source_selection,
+            src_dir=src_dir,
+            allow_external_src=allow_external_src,
+        ),
+        diff_guidance=_diff_guidance(source_selection),
         rich_context_block=rich_context_block,
         change_type=change_type,
         change_type_guidance=_change_type_guidance(change_type),
@@ -384,6 +552,8 @@ def _render_prompt_body(
     change_type: str,
     rich_context_block: str,
     cli_agent: bool,
+    source_selection: str | Path | None,
+    allow_external_src: bool,
 ) -> str:
     if template:
         return render_prompt_template(template, values)
@@ -393,6 +563,8 @@ def _render_prompt_body(
         change_type=change_type,
         rich_context_block=rich_context_block,
         cli_agent=cli_agent,
+        source_selection=source_selection,
+        allow_external_src=allow_external_src,
     )
 
 
@@ -407,11 +579,18 @@ def _build_prompt(
     graph_json: str | None = None,
     cli_agent: bool = False,
     policy: WikiGitPolicy | None = None,
+    source_selection: str | Path | None = None,
+    source_snapshot: SourceSnapshot | None = None,
+    allow_external_src: bool = False,
 ) -> str:
-    if diff_text is None:
-        diff_text = _git_diff()
-    if policy is None:
-        policy = classify_wiki_git_policy(wiki_dir, cwd=Path.cwd())
+    policy = policy or classify_wiki_git_policy(wiki_dir, cwd=Path.cwd())
+    resolved_source_selection, diff_text = _validated_prompt_selection_and_diff(
+        src_dir=src_dir,
+        wiki_dir=wiki_dir,
+        source_selection=source_selection,
+        source_snapshot=source_snapshot,
+        diff_text=diff_text,
+    )
     effective_type = resolve_change_type(change_type, diff_text)
     rich_context, rich_context_block = _rich_prompt_context(
         diff_text=diff_text,
@@ -430,15 +609,18 @@ def _build_prompt(
         graph_json=graph_json,
         cli_agent=cli_agent,
         policy=policy,
+        source_selection=resolved_source_selection,
+        allow_external_src=allow_external_src,
     )
     body = _render_prompt_body(
-        template=template,
-        values=values,
+        template=template, values=values,
         wiki_dir=wiki_dir,
         src_dir=src_dir,
         change_type=effective_type,
         rich_context_block=rich_context_block,
         cli_agent=cli_agent,
+        source_selection=resolved_source_selection,
+        allow_external_src=allow_external_src,
     )
     return body.rstrip() + "\n\n" + _render_repository_handoff(policy, wiki_dir) + "\n"
 
@@ -454,7 +636,14 @@ def run(args) -> None:
     wiki_dir: str = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     src_dir: str = getattr(args, "src_dir", ".")
     validate_path(wiki_dir, "--wiki-dir")
-    validate_path(src_dir, "--src-dir")
+    allow_external = bool(getattr(args, "allow_external_src", False))
+    source_root = validate_source_root(
+        src_dir,
+        "--src-dir",
+        allow_external=allow_external,
+    )
+    if allow_external:
+        src_dir = str(source_root)
     output: str = getattr(args, "output", _DEFAULT_PROMPT_FILE)
     print_only: bool = getattr(args, "print_prompt", False)
     change_type: str = getattr(args, "change_type", "auto")
@@ -467,19 +656,38 @@ def run(args) -> None:
             raise SystemExit(1)
 
     policy = classify_wiki_git_policy(wiki_dir, cwd=Path.cwd())
+    source_selection = getattr(args, "source_selection", None)
+    source_snapshot = _validated_prompt_snapshot(
+        src_dir=src_dir,
+        wiki_dir=wiki_dir,
+        source_selection=source_selection,
+    )
+    diff_text = _prompt_git_diff(src_dir)
+    source_selection = source_snapshot.source_selection_path
     try:
         prompt = _build_prompt(
             wiki_dir,
             src_dir,
             change_type=change_type,
             template=template,
+            diff_text=diff_text,
             policy=policy,
+            source_selection=source_selection,
+            source_snapshot=source_snapshot,
+            allow_external_src=allow_external,
         )
     except PluginError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         raise SystemExit(1)
     prompt = _redact_prompt_artifact(prompt)
-    effective_type = resolve_change_type(change_type, _git_diff())
+    selected_diff = _selected_prompt_diff(
+        diff_text,
+        src_dir=src_dir,
+        wiki_dir=wiki_dir,
+        source_selection=source_selection,
+        source_snapshot=source_snapshot,
+    )
+    effective_type = resolve_change_type(change_type, selected_diff)
     agent, mode = resolve_agent(None, wiki_dir)
 
     if print_only:

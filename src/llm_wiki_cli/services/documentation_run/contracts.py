@@ -206,6 +206,7 @@ _PACKET_FORBIDDEN_KEY_SUFFIXES = frozenset(
 
 _CONTROL_SNAPSHOT_EVIDENCE_KEYS = (
     "source_baseline",
+    "source_plugins_baseline",
     "bootstrap",
     "wiki_input",
     "workspace_refresh",

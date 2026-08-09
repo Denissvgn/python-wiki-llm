@@ -16,6 +16,12 @@
         "sha256": "5c2c3b16caefa1d968a94c1daca04a7ca301a496d9b086e17ad77bb81393f053",
         "url": "https://go.dev/dl/go1.26.5.linux-amd64.tar.gz"
       },
+      "platform_artifacts": {
+        "darwin_arm64": {
+          "sha256": "efb87ff28af9a188d0536ef5d42e63dd52ba8263cd7344a993cc48dd11dedb6a",
+          "url": "https://go.dev/dl/go1.26.5.darwin-arm64.tar.gz"
+        }
+      },
       "version": "1.26.5",
       "version_output": "go version go1.26.5"
     },
@@ -34,6 +40,12 @@
         "url": "https://nodejs.org/dist/v24.18.0/node-v24.18.0-linux-x64.tar.xz"
       },
       "checksum_manifest_sha256": "3927bab574a00ca0560c9583fe19655ba19603a1c5851414e4325d34ac50e469",
+      "platform_artifacts": {
+        "darwin_arm64": {
+          "sha256": "4477b9f78efb77744cf5eb57a0e9594dba66466b38b4e93fa9f35cb907a095a6",
+          "url": "https://nodejs.org/dist/v24.18.0/node-v24.18.0-darwin-arm64.tar.xz"
+        }
+      },
       "version": "24.18.0",
       "version_output": "v24.18.0"
     },

@@ -7,7 +7,12 @@ from pathlib import Path
 
 import pytest
 
-from llm_wiki_cli.extractors.common import discover_source_files
+from llm_wiki_cli.extractors.common import (
+    discover_source_files,
+    filter_bundled_inventory,
+    filter_bundled_source_inventory,
+    is_bundled_helper_implementation_path,
+)
 from llm_wiki_cli.services.knowledge_envelope import ConsumedInputKind
 from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
 from llm_wiki_cli.services.source_snapshot import (
@@ -19,6 +24,66 @@ from llm_wiki_cli.services.source_snapshot import (
 
 def _paths(snapshot, language: str) -> list[str]:
     return snapshot.language_paths(language)
+
+
+_BUNDLED_HELPER_IMPLEMENTATIONS = (
+    "extractors/ts_scripts/extract.js",
+    "extractors/go_scripts/main.go",
+    "extractors/rust_scripts/src/main.rs",
+    "extractors/haskell_scripts/Inventory.hs",
+    "extractors/haskell_scripts/Json.hs",
+    "extractors/haskell_scripts/Main.hs",
+    "extractors/haskell_scripts/Parser.hs",
+    "extractors/haskell_scripts/Paths.hs",
+)
+_BUNDLED_HELPER_MARKERS = (
+    "extractors/go_scripts/go.mod",
+    "extractors/rust_scripts/Cargo.lock",
+    "extractors/rust_scripts/Cargo.toml",
+    "extractors/ts_scripts/package-lock.json",
+    "extractors/ts_scripts/package.json",
+)
+_BUNDLED_HELPER_SELECTION_INPUTS = (
+    "extractors/rust_scripts/.gitignore",
+    "extractors/ts_scripts/.gitignore",
+)
+
+
+def _write_file(root: Path, rel_path: str, content: str = "fixture\n") -> Path:
+    path = root / rel_path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+    return path
+
+
+def _write_owned_llm_wiki_package(root: Path, prefix: str = "src") -> Path:
+    package_root = root / prefix / "llm_wiki_cli"
+    for rel_path in (
+        "__init__.py",
+        "cli.py",
+        "extractors/__init__.py",
+        "extractors/common.py",
+        "extractors/go_extractor.py",
+        "extractors/haskell_extractor.py",
+        "extractors/rust_extractor.py",
+        "extractors/ts_extractor.py",
+    ):
+        _write_file(package_root, rel_path, "# package source\n")
+    for rel_path in _BUNDLED_HELPER_IMPLEMENTATIONS:
+        _write_file(package_root, rel_path)
+    for rel_path in _BUNDLED_HELPER_MARKERS:
+        _write_file(package_root, rel_path)
+    _write_file(
+        package_root,
+        "extractors/ts_scripts/.gitignore",
+        "node_modules/\n",
+    )
+    _write_file(
+        package_root,
+        "extractors/rust_scripts/.gitignore",
+        "target/\n",
+    )
+    return package_root
 
 
 def test_build_source_snapshot_stays_decomposed():
@@ -59,6 +124,568 @@ def test_groups_builtin_language_files(tmp_path):
         "view.tsx",
         "widget.jsx",
     )
+
+
+@pytest.mark.parametrize(
+    "layout",
+    (
+        "editable/src",
+        "copied/package",
+        "noneditable/lib/python3.13/site-packages",
+    ),
+)
+def test_bundled_helper_classifier_uses_owned_package_identity_across_layouts(
+    tmp_path, layout
+):
+    package_root = _write_owned_llm_wiki_package(tmp_path, layout)
+
+    for rel_path in _BUNDLED_HELPER_IMPLEMENTATIONS:
+        assert is_bundled_helper_implementation_path(package_root / rel_path)
+
+    assert not is_bundled_helper_implementation_path(
+        package_root / "extractors/go_extractor.py"
+    )
+    assert not is_bundled_helper_implementation_path(
+        package_root / "tools/go_scripts/main.go"
+    )
+
+
+def test_bundled_helper_classifier_normalizes_windows_paths_with_explicit_root():
+    package_root = r"C:\wheel\site-packages\llm_wiki_cli"
+
+    for rel_path in _BUNDLED_HELPER_IMPLEMENTATIONS:
+        windows_rel_path = rel_path.replace("/", "\\")
+        assert is_bundled_helper_implementation_path(
+            rf"{package_root}\{windows_rel_path}",
+            package_root=package_root,
+        )
+
+    assert not is_bundled_helper_implementation_path(
+        rf"{package_root}\extractors\go_extractor.py",
+        package_root=package_root,
+    )
+    assert not is_bundled_helper_implementation_path(
+        rf"{package_root}\tools\go_scripts\main.go",
+        package_root=package_root,
+    )
+
+
+@pytest.mark.parametrize(
+    ("package_root", "candidate"),
+    (
+        (
+            r"C:\Wheel\Site-Packages\LLM_WIKI_CLI",
+            r"c:/wheel/site-packages/llm_wiki_cli/EXTRACTORS/GO_SCRIPTS/MAIN.GO",
+        ),
+        (
+            r"\\Server\Share\Site-Packages\LLM_WIKI_CLI",
+            r"//server/share/site-packages/llm_wiki_cli/extractors/go_scripts/main.go",
+        ),
+    ),
+)
+def test_bundled_helper_classifier_casefolds_windows_drive_and_unc_identity(
+    package_root, candidate
+):
+    assert is_bundled_helper_implementation_path(
+        candidate,
+        package_root=package_root,
+    )
+
+
+def test_bundled_helper_classifier_keeps_posix_identity_case_sensitive():
+    package_root = "/opt/site-packages/llm_wiki_cli"
+
+    assert not is_bundled_helper_implementation_path(
+        "/opt/site-packages/LLM_WIKI_CLI/extractors/go_scripts/main.go",
+        package_root=package_root,
+    )
+
+
+def test_posix_path_literal_backslashes_are_not_reinterpreted_as_separators(
+    tmp_path,
+):
+    literal_component = r"extractors\go_scripts\main.go"
+    if len(Path(literal_component).parts) != 1:
+        pytest.skip("literal backslash filename is a POSIX-only contract")
+    package_root = _write_owned_llm_wiki_package(tmp_path)
+    literal_path = _write_file(
+        package_root,
+        literal_component,
+        "package consumer\n",
+    )
+
+    assert not is_bundled_helper_implementation_path(literal_path)
+    assert is_bundled_helper_implementation_path(
+        str(literal_path),
+        package_root=package_root,
+    )
+    assert build_source_snapshot(tmp_path).language_paths("go") == [
+        rf"src/llm_wiki_cli/{literal_component}"
+    ]
+
+
+def test_exact_helper_suffix_without_owned_package_sentinels_is_not_bundled(
+    tmp_path,
+):
+    consumer_source = _write_file(
+        tmp_path,
+        "vendor/llm_wiki_cli/extractors/go_scripts/main.go",
+        "package main\n",
+    )
+
+    assert not is_bundled_helper_implementation_path(consumer_source)
+    snapshot = build_source_snapshot(tmp_path)
+    assert snapshot.language_paths("go") == [
+        "vendor/llm_wiki_cli/extractors/go_scripts/main.go"
+    ]
+    assert discover_source_files(str(tmp_path), (".go",), language="go") == [
+        "vendor/llm_wiki_cli/extractors/go_scripts/main.go"
+    ]
+
+
+def test_relative_classifier_input_never_uses_ambient_cwd_for_ownership(
+    tmp_path, monkeypatch
+):
+    relative_path = "src/llm_wiki_cli/extractors/go_scripts/main.go"
+    owned_root = tmp_path / "owned"
+    package_root = _write_owned_llm_wiki_package(owned_root)
+    unrelated_root = tmp_path / "unrelated"
+    _write_file(unrelated_root, relative_path, "package consumer\n")
+
+    monkeypatch.chdir(owned_root)
+    assert not is_bundled_helper_implementation_path(relative_path)
+    monkeypatch.chdir(unrelated_root)
+    assert not is_bundled_helper_implementation_path(relative_path)
+
+    absolute_helper = package_root / "extractors/go_scripts/main.go"
+    assert is_bundled_helper_implementation_path(
+        absolute_helper.as_posix(),
+        package_root=package_root,
+    )
+
+
+def test_self_like_helper_tree_excludes_only_implementations_from_snapshot(
+    tmp_path,
+):
+    package_root = _write_owned_llm_wiki_package(tmp_path)
+    _write_file(
+        package_root,
+        "extractors/ts_scripts/node_modules/dependency/index.js",
+        "export const ignored = true;\n",
+    )
+    _write_file(
+        package_root,
+        "extractors/rust_scripts/target/debug/generated.rs",
+        "pub fn ignored() {}\n",
+    )
+
+    snapshot = build_source_snapshot(tmp_path)
+    helper_prefix = "src/llm_wiki_cli/"
+    helper_implementations = {
+        helper_prefix + path for path in _BUNDLED_HELPER_IMPLEMENTATIONS
+    }
+    helper_markers = [helper_prefix + path for path in _BUNDLED_HELPER_MARKERS]
+    helper_selection = {
+        helper_prefix + path for path in _BUNDLED_HELPER_SELECTION_INPUTS
+    }
+
+    for language in ("typescript", "go", "rust", "haskell"):
+        assert snapshot.language_paths(language) == []
+    assert helper_implementations.isdisjoint(snapshot.all_source_paths)
+    assert helper_implementations.isdisjoint(snapshot.captured_content_hashes)
+    assert [
+        marker.rel_path
+        for marker in snapshot.package_markers
+        if marker.rel_path.startswith(helper_prefix + "extractors/")
+    ] == helper_markers
+    assert {
+        path
+        for path, kinds in snapshot.captured_input_kinds.items()
+        if kinds == ("selection",)
+    } == helper_selection
+    assert all(
+        snapshot.captured_input_kinds[path] == ("package",)
+        for path in helper_markers
+    )
+    assert "src/llm_wiki_cli/extractors/go_extractor.py" in snapshot.all_source_paths
+    assert not any("node_modules" in path for path in snapshot.captured_content_hashes)
+    assert not any("/target/" in path for path in snapshot.captured_content_hashes)
+
+
+def test_self_like_helpers_do_not_hide_obsidian_or_ordinary_language_sources(
+    tmp_path,
+):
+    _write_owned_llm_wiki_package(tmp_path)
+    _write_file(
+        tmp_path,
+        "integrations/obsidian/llm-wiki/main.js",
+        "export function activate() {}\n",
+    )
+    _write_file(
+        tmp_path,
+        "integrations/obsidian/llm-wiki/src/main.ts",
+        "export const plugin = true;\n",
+    )
+    _write_file(tmp_path, "services/worker/main.go", "package worker\n")
+    _write_file(tmp_path, "crates/domain/src/lib.rs", "pub fn domain() {}\n")
+    _write_file(tmp_path, "hls-analysis/app/Main.hs", "module Main where\n")
+
+    snapshot = build_source_snapshot(tmp_path)
+
+    assert snapshot.language_paths("typescript") == [
+        "integrations/obsidian/llm-wiki/main.js",
+        "integrations/obsidian/llm-wiki/src/main.ts",
+    ]
+    assert snapshot.language_paths("go") == ["services/worker/main.go"]
+    assert snapshot.language_paths("rust") == ["crates/domain/src/lib.rs"]
+    assert snapshot.language_paths("haskell") == ["hls-analysis/app/Main.hs"]
+
+
+def test_only_files_cannot_re_admit_bundled_helper_implementations(tmp_path):
+    package_root = _write_owned_llm_wiki_package(tmp_path)
+    selected = [
+        f"src/llm_wiki_cli/{rel_path}"
+        for rel_path in _BUNDLED_HELPER_IMPLEMENTATIONS
+    ]
+    selected.append("integrations/obsidian/llm-wiki/main.js")
+    _write_file(
+        tmp_path,
+        "integrations/obsidian/llm-wiki/main.js",
+        "export function activate() {}\n",
+    )
+
+    snapshot = build_source_snapshot(tmp_path, only_files=selected)
+
+    assert snapshot.language_paths("typescript") == [
+        "integrations/obsidian/llm-wiki/main.js"
+    ]
+    for language in ("go", "rust", "haskell"):
+        assert snapshot.language_paths(language) == []
+    assert not any(
+        is_bundled_helper_implementation_path(
+            tmp_path / path,
+            package_root=package_root,
+        )
+        for path in snapshot.all_source_paths
+    )
+    assert [
+        marker.rel_path
+        for marker in snapshot.package_markers
+        if "/extractors/" in marker.rel_path
+    ] == [f"src/llm_wiki_cli/{path}" for path in _BUNDLED_HELPER_MARKERS]
+    assert {
+        path
+        for path, kinds in snapshot.captured_input_kinds.items()
+        if kinds == ("selection",)
+    } == {
+        f"src/llm_wiki_cli/{path}"
+        for path in _BUNDLED_HELPER_SELECTION_INPUTS
+    }
+
+    extended = snapshot.with_captured_inventory_paths(selected[:-1])
+    assert extended.all_source_paths == snapshot.all_source_paths
+    assert extended.captured_content_hashes == snapshot.captured_content_hashes
+
+
+def test_protected_helper_symlink_to_ordinary_source_never_uses_helper_spelling(
+    tmp_path,
+):
+    _write_owned_llm_wiki_package(tmp_path)
+    helper_rel_path = "src/llm_wiki_cli/extractors/go_scripts/main.go"
+    helper = tmp_path / helper_rel_path
+    ordinary_rel_path = "services/worker/main.go"
+    ordinary = _write_file(tmp_path, ordinary_rel_path, "package worker\n")
+    helper.unlink()
+    try:
+        helper.symlink_to(ordinary)
+    except OSError as exc:
+        pytest.skip(f"symlinks unavailable: {exc}")
+
+    snapshot = build_source_snapshot(tmp_path)
+    helper_only = build_source_snapshot(tmp_path, only_files=[helper_rel_path])
+    discovered = discover_source_files(str(tmp_path), (".go",), language="go")
+    discovered_helper_only = discover_source_files(
+        str(tmp_path),
+        (".go",),
+        language="go",
+        only_files=[helper_rel_path],
+    )
+    extended = snapshot.with_captured_inventory_paths([helper_rel_path])
+
+    assert snapshot.language_paths("go") == [ordinary_rel_path]
+    assert discovered == [ordinary_rel_path]
+    assert helper_only.language_paths("go") == []
+    assert discovered_helper_only == []
+    assert helper_rel_path not in extended.all_source_paths
+    assert helper_rel_path not in extended.captured_content_hashes
+
+
+def test_ordinary_symlink_to_bundled_helper_remains_excluded_everywhere(tmp_path):
+    package_root = _write_owned_llm_wiki_package(tmp_path)
+    helper = package_root / "extractors/go_scripts/main.go"
+    alias_rel_path = "services/worker/main.go"
+    alias = tmp_path / alias_rel_path
+    alias.parent.mkdir(parents=True)
+    try:
+        alias.symlink_to(helper)
+    except OSError as exc:
+        pytest.skip(f"symlinks unavailable: {exc}")
+
+    snapshot = build_source_snapshot(tmp_path)
+    alias_only = build_source_snapshot(tmp_path, only_files=[alias_rel_path])
+    discovered = discover_source_files(str(tmp_path), (".go",), language="go")
+    discovered_alias_only = discover_source_files(
+        str(tmp_path),
+        (".go",),
+        language="go",
+        only_files=[alias_rel_path],
+    )
+    extended = snapshot.with_captured_inventory_paths([alias_rel_path])
+
+    assert snapshot.language_paths("go") == []
+    assert alias_only.language_paths("go") == []
+    assert discovered == []
+    assert discovered_alias_only == []
+    assert alias_rel_path not in extended.all_source_paths
+    assert alias_rel_path not in extended.captured_content_hashes
+
+
+@pytest.mark.parametrize(
+    ("language", "extensions", "rel_path"),
+    (
+        ("typescript", (".js", ".ts"), "extractors/ts_scripts/extract.js"),
+        ("go", (".go",), "extractors/go_scripts/main.go"),
+        ("rust", (".rs",), "extractors/rust_scripts/src/main.rs"),
+        ("haskell", (".hs",), "extractors/haskell_scripts/Main.hs"),
+    ),
+)
+def test_lower_level_discovery_excludes_owned_helpers_even_with_only_files(
+    tmp_path, language, extensions, rel_path
+):
+    _write_owned_llm_wiki_package(tmp_path)
+    full_rel_path = f"src/llm_wiki_cli/{rel_path}"
+
+    assert discover_source_files(
+        str(tmp_path), extensions, language=language
+    ) == []
+    assert discover_source_files(
+        str(tmp_path),
+        extensions,
+        language=language,
+        only_files=[full_rel_path],
+    ) == []
+
+
+def test_nested_helper_gitignore_content_remains_selection_fingerprint_input(
+    tmp_path,
+):
+    package_root = _write_owned_llm_wiki_package(tmp_path)
+    first = build_source_snapshot(tmp_path)
+    nested_gitignore = package_root / "extractors/ts_scripts/.gitignore"
+    nested_gitignore.write_text("node_modules/\ncoverage/\n", encoding="utf-8")
+
+    second = build_source_snapshot(tmp_path)
+    rel_path = "src/llm_wiki_cli/extractors/ts_scripts/.gitignore"
+
+    assert first.captured_input_kinds[rel_path] == ("selection",)
+    assert second.captured_input_kinds[rel_path] == ("selection",)
+    assert second.gitignore_fingerprint != first.gitignore_fingerprint
+    assert (
+        second.captured_content_hashes[rel_path]
+        != first.captured_content_hashes[rel_path]
+    )
+
+
+def test_helper_implementation_and_package_marker_have_distinct_freshness(
+    tmp_path,
+):
+    package_root = _write_owned_llm_wiki_package(tmp_path)
+    implementation = package_root / "extractors/go_scripts/main.go"
+    marker = package_root / "extractors/go_scripts/go.mod"
+    marker_rel_path = "src/llm_wiki_cli/extractors/go_scripts/go.mod"
+    first = build_source_snapshot(tmp_path)
+
+    implementation.write_text("package main\nfunc main() {}\n", encoding="utf-8")
+    after_implementation = build_source_snapshot(tmp_path)
+    marker.write_text("module example.com/changed\n", encoding="utf-8")
+    after_marker = build_source_snapshot(tmp_path)
+
+    assert (
+        after_implementation.captured_content_hashes
+        == first.captured_content_hashes
+    )
+    assert after_implementation.gitignore_fingerprint == first.gitignore_fingerprint
+    assert after_marker.captured_input_kinds[marker_rel_path] == ("package",)
+    assert (
+        after_marker.captured_content_hashes[marker_rel_path]
+        != after_implementation.captured_content_hashes[marker_rel_path]
+    )
+    assert after_marker.gitignore_fingerprint == first.gitignore_fingerprint
+
+
+def test_post_extraction_filter_handles_distinct_package_and_checkout_roots(
+    tmp_path,
+):
+    installed_package = _write_owned_llm_wiki_package(
+        tmp_path / "installed", "lib/python3.13/site-packages"
+    )
+    checkout_package = _write_owned_llm_wiki_package(tmp_path / "checkout")
+    running_scripts = installed_package / "extractors/go_scripts"
+    scanned_helper = checkout_package / "extractors/go_scripts/main.go"
+    running_helper = running_scripts / "main.go"
+    ordinary = _write_file(
+        tmp_path / "checkout", "services/worker/main.go", "package worker\n"
+    )
+    unrelated_suffix = _write_file(
+        tmp_path / "checkout",
+        "vendor/llm_wiki_cli/extractors/go_scripts/main.go",
+        "package consumer\n",
+    )
+    checkout_root = tmp_path / "checkout"
+    scanned_relative = scanned_helper.relative_to(checkout_root).as_posix()
+    scanned_windows_relative = scanned_relative.replace("/", "\\")
+    ordinary_relative = ordinary.relative_to(checkout_root).as_posix()
+    unrelated_relative = unrelated_suffix.relative_to(checkout_root).as_posix()
+    inventory = {
+        scanned_helper.as_posix(): {"classes": [], "functions": []},
+        scanned_relative: {"classes": [], "functions": []},
+        scanned_windows_relative: {"classes": [], "functions": []},
+        running_helper.as_posix(): {"classes": [], "functions": []},
+        ordinary_relative: {"classes": [], "functions": []},
+        unrelated_relative: {"classes": [], "functions": []},
+    }
+
+    filtered = filter_bundled_inventory(
+        inventory,
+        running_scripts,
+        source_root=checkout_root,
+    )
+
+    assert scanned_helper.as_posix() not in filtered
+    assert scanned_relative not in filtered
+    assert scanned_windows_relative not in filtered
+    assert running_helper.as_posix() not in filtered
+    assert ordinary_relative in filtered
+    assert unrelated_relative in filtered
+
+
+def test_post_filter_explicit_installed_root_is_additive_to_scanned_ownership(
+    tmp_path,
+):
+    installed_package = _write_owned_llm_wiki_package(
+        tmp_path / "installed", "lib/python3.13/site-packages"
+    )
+    checkout_root = tmp_path / "checkout"
+    _write_owned_llm_wiki_package(checkout_root)
+    bundled = "src/llm_wiki_cli/extractors/go_scripts/main.go"
+    unrelated = "vendor/llm_wiki_cli/extractors/go_scripts/main.go"
+    _write_file(checkout_root, unrelated, "package consumer\n")
+    inventory = {
+        bundled: {"classes": [], "functions": []},
+        unrelated: {"classes": [], "functions": []},
+    }
+
+    filtered = filter_bundled_inventory(
+        inventory,
+        installed_package / "extractors/go_scripts",
+        source_root=checkout_root,
+        package_root=installed_package,
+    )
+
+    assert list(filtered) == [unrelated]
+
+
+def test_post_filter_trusts_absolute_scripts_path_with_literal_backslash(
+    tmp_path, monkeypatch
+):
+    literal_backslash = len(Path(r"cache\go_scripts").parts) == 1
+    scripts_component = (
+        r"cache\go_scripts" if literal_backslash else "cache/go_scripts"
+    )
+    ordinary_component = (
+        r"services\worker" if literal_backslash else "services/worker"
+    )
+    scripts_dir = tmp_path / scripts_component
+    scripts_dir.mkdir(parents=True)
+    absolute_helper = _write_file(scripts_dir, "main.go", "package main\n")
+    ordinary_dir = tmp_path / ordinary_component
+    ordinary_dir.mkdir(parents=True)
+    absolute_ordinary = _write_file(
+        ordinary_dir,
+        "main.go",
+        "package worker\n",
+    )
+    relative_helper = r"cache\go_scripts/main.go"
+    monkeypatch.chdir(tmp_path)
+    inventory = {
+        absolute_helper.as_posix(): {"identity": "absolute"},
+        absolute_ordinary.as_posix(): {"identity": "ordinary"},
+        relative_helper: {"identity": "relative"},
+    }
+
+    filtered = filter_bundled_inventory(inventory, scripts_dir)
+
+    assert filtered == {
+        absolute_ordinary.as_posix(): {"identity": "ordinary"},
+        "cache/go_scripts/main.go": {"identity": "relative"},
+    }
+    assert ordinary_component in next(
+        key for key, value in filtered.items() if value["identity"] == "ordinary"
+    )
+
+
+def test_final_source_filter_preserves_virtual_nul_key(tmp_path):
+    key = "virtual\0record"
+    payload = {"language": "custom", "classes": [], "functions": []}
+    inventory = {key: payload}
+
+    filtered = filter_bundled_source_inventory(
+        inventory,
+        source_root=tmp_path,
+    )
+
+    assert filtered == inventory
+    assert filtered[key] is payload
+
+
+def test_post_extraction_filter_handles_windows_drive_keys_on_posix(tmp_path):
+    running_package = _write_owned_llm_wiki_package(
+        tmp_path / "installed", "lib/python3.13/site-packages"
+    )
+    running_scripts = running_package / "extractors/go_scripts"
+    source_root = r"C:\checkout"
+    package_root = rf"{source_root}\src\llm_wiki_cli"
+    bundled_absolute = rf"{package_root}\extractors\go_scripts\main.go"
+    bundled_relative = r"src\llm_wiki_cli\extractors\go_scripts\main.go"
+    bundled_with_dot_segments = (
+        rf"{package_root}\extractors\go_scripts\..\go_scripts\main.go"
+    )
+    ordinary = rf"{source_root}\services\worker\main.go"
+    unrelated_suffix = (
+        rf"{source_root}\vendor\llm_wiki_cli\extractors\go_scripts\main.go"
+    )
+    inventory = {
+        path: {"classes": [], "functions": []}
+        for path in (
+            bundled_absolute,
+            bundled_relative,
+            bundled_with_dot_segments,
+            ordinary,
+            unrelated_suffix,
+        )
+    }
+
+    filtered = filter_bundled_inventory(
+        inventory,
+        running_scripts,
+        source_root=source_root,
+        package_root=package_root,
+    )
+
+    assert sorted(filtered) == [
+        "C:/checkout/services/worker/main.go",
+        "C:/checkout/vendor/llm_wiki_cli/extractors/go_scripts/main.go",
+    ]
 
 
 def test_javascript_sources_keep_default_exclusions(tmp_path):

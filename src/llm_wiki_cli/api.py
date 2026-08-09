@@ -538,6 +538,7 @@ def bootstrap_wiki(
     helper_cache_dir: str | None = None,
     include_tests: list[str] | None = None,
     trust_source_plugins: bool = False,
+    source_selection: str | Path | None = None,
 ) -> BootstrapResult:
     """Build a first-use deterministic wiki through the typed service boundary.
 
@@ -563,6 +564,7 @@ def bootstrap_wiki(
         helper_cache_dir=helper_cache_dir,
         include_tests=include_tests,
         trust_source_plugins=trust_source_plugins,
+        source_selection=source_selection,
     )
     try:
         return bootstrap_cmd.execute_bootstrap(request)
@@ -586,6 +588,7 @@ def extract_source(
     include_empty: bool = False,
     allow_external_src: bool = False,
     read_only: bool = True,
+    source_selection: str | Path | None = None,
 ) -> ExtractSourceResult:
     """Return the stable ``llm-wiki extract`` JSON payload as a dict."""
     try:
@@ -599,6 +602,7 @@ def extract_source(
             include_empty=include_empty,
             allow_external_src=allow_external_src,
             read_only=read_only,
+            source_selection=source_selection,
         )
     except PathValidationError as exc:
         if _caused_by(exc, OSError):
@@ -623,6 +627,7 @@ def build_context(
     prefer_fresh: bool = False,
     allow_external_src: bool = False,
     read_only: bool = True,
+    source_selection: str | Path | None = None,
 ) -> ContextPayload | MarkdownContextResult:
     """Return a supported context payload without depending on CLI internals."""
     focus_values = _normalise_focus(focus)
@@ -647,6 +652,7 @@ def build_context(
             allow_external_src=allow_external_src,
             read_only=read_only,
             wiki_dir=wiki_dir,
+            source_selection=source_selection,
         )
     except PathValidationError as exc:
         if _caused_by(exc, OSError):
@@ -683,6 +689,7 @@ def build_qualified_context(
     *,
     allow_external_src: bool = False,
     read_only: bool = True,
+    source_selection: str | Path | None = None,
 ) -> QualifiedContextPacket:
     """Build a canonical in-memory qualified-context packet."""
 
@@ -693,6 +700,7 @@ def build_qualified_context(
             request,
             allow_external_src=allow_external_src,
             read_only=read_only,
+            source_selection=source_selection,
         )
     except PathValidationError as exc:
         if _caused_by(exc, OSError):
@@ -756,6 +764,7 @@ def reconcile_context_packet(
     wiki_dir: str = DEFAULT_WIKI_DIR,
     allow_external_src: bool = False,
     read_only: bool = True,
+    source_selection: str | Path | None = None,
 ) -> ContextPacketReconciliation:
     """Reconcile packet facets against one fresh official read."""
 
@@ -766,6 +775,7 @@ def reconcile_context_packet(
             wiki_dir,
             allow_external_src=allow_external_src,
             read_only=read_only,
+            source_selection=source_selection,
         )
     except PathValidationError as exc:
         if _caused_by(exc, OSError):
@@ -819,6 +829,7 @@ def doctor(
     wiki_dir: str = DEFAULT_WIKI_DIR,
     strict: bool = False,
     allow_external_src: bool = False,
+    source_selection: str | Path | None = None,
 ) -> DoctorResult:
     """Return the stable read-only knowledge health report."""
 
@@ -827,6 +838,7 @@ def doctor(
         src_dir,
         strict=strict,
         allow_external_src=allow_external_src,
+        source_selection=source_selection,
     )
     return cast(DoctorResult, report.to_payload())
 
@@ -839,6 +851,7 @@ def build_documentation_query_service(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
+    source_selection: str | Path | None = None,
 ) -> DocumentationGraphQueryService:
     """Build a supported graph query service over derived documentation data."""
     try:
@@ -853,7 +866,9 @@ def build_documentation_query_service(
             wiki_root=wiki_root,
             limit=limit,
             read_only=read_only,
+            source_selection=source_selection,
             extract_payload_builder=extract_cmd.build_extract_payload,
+            source_snapshot_builder=extract_cmd.build_source_snapshot,
             call_edge_resolver=extract_cmd.resolve_call_edges,
             flow_builder=build_flow,
             surface_evaluator=evaluate_surface_index,
@@ -888,6 +903,7 @@ def flow_for_entrypoint(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
+    source_selection: str | Path | None = None,
 ) -> FlowForEntrypointResult:
     """Return a bounded user-flow query result for an entry point."""
     return cast(
@@ -900,6 +916,7 @@ def flow_for_entrypoint(
                 limit=limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
+                source_selection=source_selection,
             ).flow_for_entrypoint(id_or_symbol)
         ),
     )
@@ -915,6 +932,7 @@ def data_flow_for_entrypoint(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
+    source_selection: str | Path | None = None,
 ) -> DataFlowForEntrypointResult:
     """Return a bounded data-flow query result for an entry point."""
     return cast(
@@ -927,6 +945,7 @@ def data_flow_for_entrypoint(
                 limit=limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
+                source_selection=source_selection,
             ).data_flow_for_entrypoint(id_or_symbol)
         ),
     )
@@ -942,6 +961,7 @@ def callers(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
+    source_selection: str | Path | None = None,
 ) -> CallersResult:
     """Return bounded callers for one callable symbol."""
     return cast(
@@ -954,6 +974,7 @@ def callers(
                 limit=limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
+                source_selection=source_selection,
             ).callers(symbol)
         ),
     )
@@ -969,6 +990,7 @@ def callees(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
+    source_selection: str | Path | None = None,
 ) -> CalleesResult:
     """Return bounded callees for one callable symbol."""
     return cast(
@@ -981,6 +1003,7 @@ def callees(
                 limit=limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
+                source_selection=source_selection,
             ).callees(symbol)
         ),
     )
@@ -996,6 +1019,7 @@ def dependency_neighborhood(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
+    source_selection: str | Path | None = None,
 ) -> DependencyNeighborhoodResult:
     """Return bounded dependency neighbors for one source path."""
     return cast(
@@ -1008,6 +1032,7 @@ def dependency_neighborhood(
                 limit=limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
+                source_selection=source_selection,
             ).dependency_neighborhood(path)
         ),
     )
@@ -1023,6 +1048,7 @@ def pages_for_symbol(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
+    source_selection: str | Path | None = None,
 ) -> PagesForSymbolResult:
     """Return wiki surface pages related to one symbol."""
     return cast(
@@ -1035,6 +1061,7 @@ def pages_for_symbol(
                 limit=limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
+                source_selection=source_selection,
             ).pages_for_symbol(symbol)
         ),
     )
@@ -1050,6 +1077,7 @@ def get_concept(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
+    source_selection: str | Path | None = None,
 ) -> ConceptResult:
     """Return one concept by current coordinate, durable UID, or alias."""
     return cast(
@@ -1062,6 +1090,7 @@ def get_concept(
                 limit=limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
+                source_selection=source_selection,
             ).get_concept(locator_or_exact_route)
         ),
     )
@@ -1078,6 +1107,7 @@ def list_concept_sections(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
+    source_selection: str | Path | None = None,
 ) -> ConceptSectionsResult:
     """Return bounded document-order sections for one exact concept."""
     return cast(
@@ -1090,6 +1120,7 @@ def list_concept_sections(
                 limit=limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
+                source_selection=source_selection,
             ).list_concept_sections(
                 locator_or_exact_route,
                 ownership=ownership,
@@ -1110,6 +1141,7 @@ def related_concepts(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
+    source_selection: str | Path | None = None,
 ) -> RelatedConceptsResult:
     """Return bounded knowledge relationships for one exact concept identity."""
     return cast(
@@ -1122,6 +1154,7 @@ def related_concepts(
                 limit=limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
+                source_selection=source_selection,
             ).related_concepts(
                 locator_or_exact_route,
                 direction=direction,
@@ -1146,6 +1179,7 @@ def traverse_typed_graph(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
+    source_selection: str | Path | None = None,
 ) -> TypedGraphTraversalResult:
     """Traverse persisted typed relationships for one exact concept."""
     return cast(
@@ -1158,6 +1192,7 @@ def traverse_typed_graph(
                 limit=limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
+                source_selection=source_selection,
             ).traverse_typed_graph(
                 locator_or_exact_route,
                 direction=direction,
@@ -1180,6 +1215,7 @@ def explain_evidence(
     limit: int = 20,
     allow_external_src: bool = False,
     read_only: bool = True,
+    source_selection: str | Path | None = None,
 ) -> EvidenceExplanationResult:
     """Return stored and computed evidence for one exact concept identity."""
     return cast(
@@ -1192,6 +1228,7 @@ def explain_evidence(
                 limit=limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
+                source_selection=source_selection,
             ).explain_evidence(locator_or_exact_route)
         ),
     )
@@ -1254,8 +1291,13 @@ def _query_service(
     limit: int,
     allow_external_src: bool,
     read_only: bool,
+    source_selection: str | Path | None,
 ) -> DocumentationGraphQueryService:
     if service is not None:
+        if source_selection is not None:
+            raise InvalidRequestError(
+                "source_selection cannot be combined with a prebuilt query service"
+            )
         return service
     return build_documentation_query_service(
         src_dir,
@@ -1263,6 +1305,7 @@ def _query_service(
         limit=limit,
         allow_external_src=allow_external_src,
         read_only=read_only,
+        source_selection=source_selection,
     )
 
 

@@ -11,6 +11,7 @@ from ..services.extractor_helpers import (
     resolve_helper_cache_root,
 )
 from ..services.source_snapshot import build_source_snapshot
+from ..services.source_selection import resolve_source_selection
 
 
 def _dedupe_languages(values: list[str] | None) -> list[str]:
@@ -25,8 +26,15 @@ def _dedupe_languages(values: list[str] | None) -> list[str]:
     return result
 
 
-def _languages_from_snapshot(src_dir: str) -> list[str]:
-    snapshot = build_source_snapshot(src_dir)
+def _languages_from_snapshot(
+    src_dir: str,
+    *,
+    source_selection: str | Path | None = None,
+) -> list[str]:
+    snapshot = build_source_snapshot(
+        src_dir,
+        source_selection=source_selection,
+    )
     return [
         language
         for language in SUPPORTED_HELPERS
@@ -43,6 +51,7 @@ def run(args) -> None:
     src_dir: str = getattr(args, "src_dir", ".")
     cache_dir: str | None = getattr(args, "cache_dir", None)
     selected_languages = _dedupe_languages(getattr(args, "language", None))
+    source_selection = getattr(args, "source_selection", None)
     allow_external_src = bool(getattr(args, "allow_external_src", False))
 
     src_root = validate_source_root(
@@ -50,6 +59,19 @@ def run(args) -> None:
     )
     if allow_external_src:
         src_dir = str(src_root)
+    if selected_languages and source_selection is not None:
+        print(
+            "Error: --source-selection cannot be combined with --language; "
+            "explicit helper languages already override automatic source planning.",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
+    if selected_languages:
+        default_policy = resolve_source_selection(src_dir)
+        if default_policy is not None:
+            # Explicit helper languages remain authoritative, but the discovered
+            # project boundary is still a fail-closed contract input.
+            build_source_snapshot(src_dir, selection_policy=default_policy)
     cache_root = resolve_helper_cache_root(src_dir, cache_dir)
     if cache_root is None:
         print(
@@ -58,7 +80,10 @@ def run(args) -> None:
         )
         sys.exit(1)
 
-    languages = selected_languages or _languages_from_snapshot(src_dir)
+    languages = selected_languages or _languages_from_snapshot(
+        src_dir,
+        source_selection=source_selection,
+    )
     if not languages:
         print(
             "No TypeScript/JavaScript, Go, Rust, or Haskell source files found. "

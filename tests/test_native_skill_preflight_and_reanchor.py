@@ -496,10 +496,16 @@ def test_shared_agent_instructions_include_native_preflight_and_final_reanchor()
     assert semantic_edit < final_reanchor < quality_checks
 
 
-def test_generated_update_prompt_reanchors_after_semantic_pass_before_strict_lint() -> None:
+def test_generated_update_prompt_reanchors_after_semantic_pass_before_strict_lint(
+    tmp_path: Path,
+) -> None:
+    source_root = tmp_path / "project"
+    wiki_root = source_root / "docs" / "llm_wiki"
+    source_root.mkdir()
+    (source_root / "app.py").write_text("def changed(): ...\n", encoding="utf-8")
     prompt = generate_prompt_cmd._build_prompt(
-        "docs/llm_wiki",
-        ".",
+        str(wiki_root),
+        str(source_root),
         change_type="bugfix",
         diff_text="diff --git a/app.py b/app.py\n+def changed(): ...\n",
     )

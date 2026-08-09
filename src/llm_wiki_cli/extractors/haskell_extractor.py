@@ -193,6 +193,11 @@ class HaskellExtractor:
         return filter_bundled_inventory(inventory, _HASKELL_SCRIPTS_DIR)
 
     def _normalize_inventory(self, src_dir: str, inventory: dict) -> dict:
+        inventory = filter_bundled_inventory(
+            inventory,
+            _HASKELL_SCRIPTS_DIR,
+            source_root=src_dir,
+        )
         src_root = Path(src_dir).resolve()
         normalized_inventory: dict = {}
         for fp, data in inventory.items():

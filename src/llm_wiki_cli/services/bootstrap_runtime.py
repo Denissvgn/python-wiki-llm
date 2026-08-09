@@ -13,6 +13,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any, TextIO
 
+from .. import __version__
 from ..config import DEFAULT_WIKI_DIR as _DEFAULT_WIKI_DIR
 from ..config import (
     validate_path,
@@ -97,12 +98,17 @@ from .knowledge_orchestration import (
     finalize_runtime_knowledge,
     persist_runtime_generation_policy,
     runtime_generation_options,
+    runtime_source_snapshot_hash,
 )
 from .markdown_sections import (
+    GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING,
+    GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING,
+    GENERATED_INDEX_INTRO_WITH_GUIDES,
+    GENERATED_INDEX_INTRO_WITHOUT_GUIDES,
     preserve_level_two_section_exact as _service_preserve_level_two_section_exact,
 )
 from .module_maps import build_module_dependency_maps
-from .paths import normalize_source_path
+from .paths import normalize_source_path, portable_source_root_label
 from .relationships import build_entity_relationship_summaries
 from .schema import (
     ALL_SCHEMA_FILES as _AGENT_SCHEMA_FILES,
@@ -113,12 +119,19 @@ from .schema import (
 from .schema import (
     CONSTRAINT_START as _CONSTRAINT_START,
 )
+from .schema import pin_source_selection_command_recipes
 from .source_snapshot import (
+    SourceSnapshot,
     build_source_snapshot,
     format_unsupported_source_summary,
     unsupported_source_summary,
 )
-from .sync_manifest import SyncManifest
+from .source_selection import (
+    SourceSelectionError,
+    resolve_source_selection,
+    validate_persisted_source_selection_identity,
+)
+from .sync_manifest import SyncManifest, SyncManifestError
 from .validation import (
     portable_page_component,
     posix_path_text as shared_posix_path_text,
@@ -134,6 +147,7 @@ from .wiki_surface import (
     PageKind,
     WikiSurfaceError,
     canonical_path,
+    iter_directory_kinds,
     iter_page_kinds,
     mcp_uri,
 )
@@ -149,7 +163,11 @@ from .extraction_service import (
 )
 
 _SURFACE_LABELS = {entry.kind: entry.label for entry in iter_page_kinds()}
+_INDEX_FLOW_LABEL = "Entry-point flows"
+_INDEX_API_CONTRACTS_LABEL = "HTTP API contracts"
 _SOURCE_DOC_LINK_RE = re.compile(r"(!)?\[([^\]]+)\]\(([^)]+)\)")
+_FLOW_MODULE_HEADER_CHAR_LIMIT = 240
+_FLOW_MODULE_PREVIEW_LIMIT = 4
 _HASKELL_DECLARATION_LABELS = {
     "data": "Data",
     "newtype": "Newtype",
@@ -199,16 +217,31 @@ def _source_doc_first_line(value: object) -> str:
     return _sanitize_source_doc_markdown(value).split("\n")[0] if value else ""
 
 
+def _source_doc_first_paragraph(value: object) -> str:
+    """Return a whitespace-normalized first paragraph from extracted prose."""
+    sanitized = _sanitize_source_doc_markdown(value).strip()
+    if not sanitized:
+        return ""
+    paragraph = re.split(r"\n[ \t]*\n", sanitized, maxsplit=1)[0]
+    return " ".join(paragraph.split())
+
+
 def _generated_diagram_style(
     surface: str,
     *,
     root: str | Path = ".",
     fallback_root: str | Path | None = None,
+    include_plugins: bool = True,
     **context: Any,
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {"surface": surface}
     payload.update(context)
-    return resolve_diagram_style(payload, root=root, fallback_root=fallback_root)
+    return resolve_diagram_style(
+        payload,
+        root=root,
+        fallback_root=fallback_root,
+        include_plugins=include_plugins,
+    )
 
 
 def _module_name_from_path(filepath: str) -> str:
@@ -1226,10 +1259,18 @@ def _append_module_dependency_tables(
 
     overflow = summary.get("overflow", {}) or {}
     if overflow.get("omitted_count"):
-        lines.append(
-            f"> Showing {overflow.get('node_limit')} local graph nodes; "
-            f"{overflow.get('omitted_count')} neighbor(s) are summarized by package."
-        )
+        if summary.get("detail") == "package":
+            lines.append(
+                f"> All {overflow.get('total_neighbor_count')} module neighbor(s) "
+                "are summarized by package because the module-level view exceeds "
+                f"the {overflow.get('node_limit')}-node limit."
+            )
+        else:
+            lines.append(
+                f"> Showing {overflow.get('node_limit')} local graph nodes; "
+                f"{overflow.get('omitted_count')} neighbor(s) are summarized by "
+                "package."
+            )
         lines.append("")
 
 
@@ -1256,12 +1297,20 @@ def _generate_module_dependency_section(
         lines.append(rendered.diagram)
         if rendered.projection == "package":
             lines.append("")
-            lines.append(
-                "> Module-level visualization was collapsed to package "
-                "relationships to keep the diagram within the generated-diagram "
-                "limits. Complete inbound and outbound dependencies remain in the "
-                "tables below."
-            )
+            if summary.get("detail") == "package":
+                lines.append(
+                    "> Module-level dependencies exceed the generated-diagram "
+                    "limits, so the diagram and table below group them by top-level "
+                    "package. Counts report the number of module neighbors in each "
+                    "package."
+                )
+            else:
+                lines.append(
+                    "> Module-level visualization was collapsed to package "
+                    "relationships to keep the diagram within the "
+                    "generated-diagram limits. Complete inbound and outbound "
+                    "dependencies remain in the tables below."
+                )
         elif rendered.omitted_edges:
             lines.append("")
             lines.append(
@@ -1272,12 +1321,21 @@ def _generate_module_dependency_section(
                 "outbound dependencies remain in the tables below."
             )
     elif rendered:
-        lines.append(
-            f"> Diagram shows 0 of {rendered.total_edges} local dependency edges; "
-            f"{rendered.omitted_edges} omitted because its fixed nodes, links, "
-            "or style exceed the generated-diagram limits. Complete inbound and "
-            "outbound dependencies remain in the tables below."
-        )
+        if summary.get("detail") == "package":
+            lines.append(
+                f"> Diagram shows 0 of {rendered.total_edges} package relationship "
+                f"edges; {rendered.omitted_edges} omitted because its fixed nodes, "
+                "links, or style exceed the generated-diagram limits. The grouped "
+                "tables below retain every module neighbor count by top-level "
+                "package."
+            )
+        else:
+            lines.append(
+                f"> Diagram shows 0 of {rendered.total_edges} local dependency "
+                f"edges; {rendered.omitted_edges} omitted because its fixed nodes, "
+                "links, or style exceed the generated-diagram limits. Complete "
+                "inbound and outbound dependencies remain in the tables below."
+            )
     else:
         lines.append("*No internal module dependencies detected.*")
     lines.append("")
@@ -1981,9 +2039,9 @@ def _append_surface_overview(
                 _overview_target(guide_count, _SURFACE_LABELS[PageKind.GUIDES]),
             ),
             _overview_row(
-                _SURFACE_LABELS[PageKind.FLOWS],
+                _INDEX_FLOW_LABEL,
                 flow_count,
-                _overview_target(flow_count, _SURFACE_LABELS[PageKind.FLOWS]),
+                _overview_target(flow_count, _INDEX_FLOW_LABEL),
             ),
             _overview_row(
                 _SURFACE_LABELS[PageKind.INFRASTRUCTURE],
@@ -1993,7 +2051,7 @@ def _append_surface_overview(
                 ),
             ),
             _overview_row(
-                _SURFACE_LABELS[PageKind.API_CONTRACTS],
+                _INDEX_API_CONTRACTS_LABEL,
                 1 if api_contracts_present else 0,
                 f"[Open contracts]({canonical_path(PageKind.API_CONTRACTS)})"
                 if api_contracts_present
@@ -2032,7 +2090,7 @@ def _append_index_modules(lines: list[str], module_entries: list[dict]) -> None:
     lines.append(f"## {_SURFACE_LABELS[PageKind.MODULES]}")
     lines.append("")
     for entry in sorted(module_entries, key=lambda e: e["name"]):
-        desc = _source_doc_first_line(entry.get("docstring"))
+        desc = _source_doc_first_paragraph(entry.get("docstring"))
         source_path = entry.get("path")
         suffix = f" - {desc}" if desc else f" - `{source_path}`" if source_path else ""
         path = canonical_path(PageKind.MODULES, entry["name"])
@@ -2066,16 +2124,24 @@ def _append_index_guides(lines: list[str], guide_entries: list[dict] | None) -> 
     lines.append("")
 
 
-def _append_index_user_flows(lines: list[str], flow_entries: list[dict] | None) -> None:
-    """Append the grouped "User Flows" section to *lines* (in place).
+def _append_index_entry_point_flows(
+    lines: list[str], flow_entries: list[dict] | None
+) -> None:
+    """Append the grouped entry-point flow section to *lines* (in place).
 
     Tolerates minimal entries (``{"id"}``) so ``sync`` can re-index existing flow
     pages without re-running entry-point detection.
     """
     if not flow_entries:
         return
-    lines.append("## User Flows")
-    lines.append("")
+    lines.extend(
+        [
+            '<a id="entry-point-flows"></a>',
+            '<a id="user-flows"></a>',
+            f"## {GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING}",
+            "",
+        ]
+    )
     for category in sorted({_flow_index_category(f) for f in flow_entries}):
         lines.append(f"**{category}**")
         lines.append("")
@@ -2111,8 +2177,14 @@ def _append_index_api_contracts(
 ) -> None:
     if not api_contracts_present:
         return
-    lines.append(f"## {_SURFACE_LABELS[PageKind.API_CONTRACTS]}")
-    lines.append("")
+    lines.extend(
+        [
+            '<a id="http-api-contracts"></a>',
+            '<a id="api-contracts"></a>',
+            f"## {GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING}",
+            "",
+        ]
+    )
     lines.append(
         f"- [Production HTTP API inventory]({canonical_path(PageKind.API_CONTRACTS)})"
     )
@@ -2185,7 +2257,11 @@ def _generate_index_md(
     lines = [
         "# LLM Wiki Index",
         "",
-        "Use this landing page to choose the right wiki surface.",
+        (
+            GENERATED_INDEX_INTRO_WITH_GUIDES
+            if guide_entries
+            else GENERATED_INDEX_INTRO_WITHOUT_GUIDES
+        ),
         "",
     ]
 
@@ -2205,7 +2281,7 @@ def _generate_index_md(
     _append_index_modules(lines, module_entries)
     _append_index_workflows(lines, workflow_entries)
     _append_index_guides(lines, guide_entries)
-    _append_index_user_flows(lines, flow_entries)
+    _append_index_entry_point_flows(lines, flow_entries)
     _append_index_infrastructure(lines, infra_entries)
     _append_index_api_contracts(lines, api_contracts_present=api_contracts_present)
     _append_index_architecture(lines, architecture_entries)
@@ -2236,7 +2312,7 @@ def _generate_workflow_md(
     wf: dict,
     module_page_map: Mapping[str, str] | None = None,
 ) -> str:
-    """Generate a skeleton workflow page from call-graph data."""
+    """Generate a workflow page from call-graph data."""
     entry = wf["entry"]
     modules = _workflow_module_refs(wf, module_page_map)
     chain = wf.get("chain", [])
@@ -2257,19 +2333,29 @@ def _generate_workflow_md(
     lines.append("## Sequence")
     lines.append("")
     lines.append(
-        "<!-- Auto-detected call chain. Refine order and conditions after review. -->"
+        "<!-- Auto-generated static call-chain projection. Reviewed runtime "
+        "ordering, branching, and side effects belong in Behavior. -->"
     )
     if chain:
         for i, step in enumerate(chain, 1):
             lines.append(f"{i}. `{step}`")
     else:
-        lines.append("*No detailed chain extracted — refine manually.*")
+        lines.append("*No call-chain steps were detected by static analysis.*")
     lines.append("")
 
     lines.append("## Touches")
     lines.append("")
     for label, page in modules:
         lines.append(f"- [{label}](../modules/{page}.md)")
+    lines.append("")
+
+    lines.append("## Behavior")
+    lines.append("")
+    lines.append(
+        f"This workflow starts at `{entry}`. The generated sequence is a bounded "
+        "static projection; runtime ordering, branching, and side effects require "
+        "source-level confirmation."
+    )
     lines.append("")
 
     return "\n".join(lines)
@@ -2305,6 +2391,48 @@ def _flow_related_module_refs(
         for path in flow.get("related_modules", [])
     ]
     return sorted(set(refs), key=lambda item: item[0])
+
+
+def _flow_module_link(ref: tuple[str, str]) -> str:
+    label, page = ref
+    return f"[{label}](../modules/{page}.md)"
+
+
+def _append_flow_module_summary(
+    lines: list[str], label: str, refs: list[tuple[str, str]]
+) -> None:
+    """Render compact flow metadata and retain a complete linked list when long."""
+    if not refs:
+        return
+    links = [_flow_module_link(ref) for ref in refs]
+    prefix = f"**{label}:** "
+    joined = ", ".join(links)
+    if len(prefix) + len(joined) <= _FLOW_MODULE_HEADER_CHAR_LIMIT:
+        lines.append(prefix + joined)
+        return
+
+    preview: list[str] = []
+    for link in links[:_FLOW_MODULE_PREVIEW_LIMIT]:
+        candidate = [*preview, link]
+        remaining = len(links) - len(candidate)
+        suffix = f", and {remaining} more" if remaining else ""
+        if (
+            len(prefix) + len(", ".join(candidate)) + len(suffix)
+            > _FLOW_MODULE_HEADER_CHAR_LIMIT
+        ):
+            break
+        preview = candidate
+
+    if preview:
+        remaining = len(links) - len(preview)
+        suffix = f", and {remaining} more" if remaining else ""
+        lines.append(prefix + ", ".join(preview) + suffix)
+    else:
+        noun = "module" if len(links) == 1 else "modules"
+        lines.append(f"{prefix}{len(links)} {noun}; complete list below.")
+
+    lines.extend(["", f"**Complete {label.casefold()}:**", ""])
+    lines.extend(f"- {link}" for link in links)
 
 
 def _flow_interactions(flow: dict) -> list[dict]:
@@ -2599,23 +2727,18 @@ def _generate_flow_md(
     if entry.get("file"):
         stem = page_map.get(entry["file"], _module_name_from_path(entry["file"]))
         lines.append(f"**Source:** [{stem}](../modules/{stem}.md)")
-    if modules:
-        joined = ", ".join(
-            f"[{label}](../modules/{page}.md)" for label, page in modules
-        )
-        lines.append(f"**Modules touched:** {joined}")
-    if related_modules:
-        joined = ", ".join(
-            f"[{label}](../modules/{page}.md)" for label, page in related_modules
-        )
-        lines.append(f"**Related modules:** {joined}")
+    _append_flow_module_summary(lines, "Modules touched", modules)
+    if modules and related_modules:
+        lines.append("")
+    _append_flow_module_summary(lines, "Related modules", related_modules)
     lines.append("")
 
     lines.append("## Call sequence")
     lines.append("")
     lines.append(
         "<!-- Auto-generated from static call edges. Dashed arrows are external "
-        "or unresolved calls. Refine order and conditions after review. -->"
+        "or unresolved calls. Reviewed runtime conditions and side effects belong "
+        "in Behavior. -->"
     )
     if interactions:
         rendered_sequence = _bounded_sequence_diagram(interactions)
@@ -2638,7 +2761,7 @@ def _generate_flow_md(
                 "interaction and generated-diagram limits."
             )
     else:
-        lines.append("*No outbound calls detected — describe the behavior manually.*")
+        lines.append("*No outbound calls were detected by static analysis.*")
     if flow.get("truncated"):
         lines.append("")
         lines.append("> Trace truncated at the depth limit; deeper calls are omitted.")
@@ -2663,8 +2786,10 @@ def _generate_flow_md(
     lines.append("## Behavior")
     lines.append("")
     lines.append(
-        "_Describe what this flow does, when it is triggered, and its key side "
-        "effects or outputs. Replace this placeholder._"
+        f"This flow starts at `{entry['symbol']}` and is classified as "
+        f"`{entry['category']}`. The generated call and data-flow sections are "
+        "bounded static projections; runtime conditions and side effects require "
+        "source-level confirmation."
     )
     lines.append("")
 
@@ -2676,7 +2801,7 @@ def _preserve_level_two_section(existing: str, generated: str, heading: str) -> 
     return _service_preserve_level_two_section_exact(existing, generated, heading)
 
 
-# ── Architecture pages: dependencies + load order (Epic 2.4) ──────────
+# ── Architecture pages: dependencies + load order ──────────
 
 def _dependency_module_link(filepath: str, module_page_map: Mapping[str, str]) -> str:
     """Markdown link from an architecture page (wiki root) to a module page."""
@@ -2886,7 +3011,7 @@ def _format_package_list(packages: list[str]) -> str:
 
 
 def _append_external_dependencies(lines: list[str], reconciliation: dict) -> None:
-    """Append the per-language external-dependency section (DL-205) to *lines*."""
+    """Append the per-language external-dependency section to *lines*."""
     lines.append("## External dependencies")
     lines.append("")
     languages = reconciliation.get("languages", {})
@@ -2925,7 +3050,7 @@ def _generate_dependencies_md(
 
     Sections: a linked internal-module Mermaid ``flowchart`` (cyclic edges
     thickened), import **Cycles**, a **Fan-in / Fan-out** table, **External
-    dependencies** grouped by language, and a ``## Notes`` semantic placeholder.
+    dependencies** grouped by language, and semantic ``## Notes``.
     Deterministic; degrades cleanly with no cycles or no external deps.
     """
     page_map = module_page_map or {}
@@ -3009,8 +3134,9 @@ def _generate_dependencies_md(
     lines.append("## Notes")
     lines.append("")
     lines.append(
-        "_Document dynamic or conditional imports, intentional cycles, and the "
-        "rationale behind notable dependencies. Replace this placeholder._"
+        "This page reflects statically observed imports and declared dependencies. "
+        "Dynamic or conditional imports and runtime-loaded integrations may not "
+        "appear in the generated sections."
     )
     lines.append("")
     return "\n".join(lines)
@@ -3032,7 +3158,7 @@ def _generate_load_order_md(
     Sections: the topological **Load order** (numbered, dependency-first),
     **Module-level side effects**, a heuristic **Factory / wiring** table,
     **Indeterminate (cyclic) groups** whose order cannot be resolved, and a
-    ``## Notes`` placeholder. Deterministic; degrades cleanly when empty.
+    semantic ``## Notes``. Deterministic; degrades cleanly when empty.
     """
     page_map = module_page_map or {}
     load_order = analysis["load_order"]
@@ -3107,8 +3233,9 @@ def _generate_load_order_md(
     lines.append("## Notes")
     lines.append("")
     lines.append(
-        "_Document required initialization order, lazy imports, and side effects "
-        "that must run before others. Replace this placeholder._"
+        "This page presents a static dependency projection. Lazy imports, "
+        "conditional initialization, and runtime side effects can change the "
+        "effective order."
     )
     lines.append("")
     return "\n".join(lines)
@@ -3948,6 +4075,7 @@ class _BootstrapRunOptions:
     helper_cache_dir: str | None
     include_tests: Iterable[str] | None
     trust_source_plugins: bool
+    source_selection: str | Path | None
     progress_stream: TextIO
 
 
@@ -4089,6 +4217,7 @@ def _bootstrap_run_options_from_args(args) -> _BootstrapRunOptions:
         helper_cache_dir=getattr(args, "helper_cache_dir", None),
         include_tests=getattr(args, "include_tests", None),
         trust_source_plugins=True,
+        source_selection=getattr(args, "source_selection", None),
         progress_stream=sys.stderr if json_mode else sys.stdout,
     )
 
@@ -4135,6 +4264,7 @@ def _bootstrap_run_options_from_request(
         helper_cache_dir=request.helper_cache_dir,
         include_tests=request.include_tests,
         trust_source_plugins=request.trust_source_plugins,
+        source_selection=request.source_selection,
         progress_stream=progress_stream,
     )
 
@@ -4166,7 +4296,17 @@ def _bootstrap_plugin_roots(
     state: _BootstrapRunState,
 ) -> tuple[str | Path, str | Path | None]:
     if state.options.trust_source_plugins:
-        return state.options.src_dir_for_scan, Path.cwd()
+        source_root = Path(state.options.src_dir_for_scan).resolve()
+        fallback_root = (
+            None
+            if (
+                state.options.source_adapter
+                or state.source_snapshot.source_selection_policy is not None
+            )
+            and source_root != Path.cwd().resolve()
+            else Path.cwd()
+        )
+        return source_root, fallback_root
     # A new workspace wiki contains no installed plugins.  Pointing plugin
     # discovery there keeps the deterministic service path inert without
     # changing the managed bootstrap default.
@@ -4187,15 +4327,15 @@ def _start_bootstrap(state: _BootstrapRunState) -> None:
         flush=True,
     )
     _emit_bootstrap(state, f"Wiki output directory: {options.wiki_dir}", flush=True)
-    for subdir in [
-        "entities",
-        "modules",
-        "workflows",
-        "guides",
-        "infrastructure",
-        "flows",
-    ]:
-        (options.wiki_dir / subdir).mkdir(parents=True, exist_ok=True)
+    for surface in iter_directory_kinds():
+        if surface.directory is None:
+            continue
+        directory = options.wiki_dir / surface.directory
+        directory.mkdir(parents=True, exist_ok=True)
+        # Git cannot preserve an empty directory. Match init/upgrade so a
+        # freshly checked-out wiki retains every directory required by strict
+        # validation even when a surface currently has zero pages.
+        (directory / ".gitkeep").touch()
 
 
 def _extract_bootstrap_inventory(state: _BootstrapRunState):
@@ -4204,6 +4344,7 @@ def _extract_bootstrap_inventory(state: _BootstrapRunState):
     state.source_snapshot = build_source_snapshot(
         options.src_dir_for_scan,
         include_tests=options.include_tests,
+        source_selection=options.source_selection,
     )
     inventory_result = get_inventory_result(
         options.src_dir_for_scan,
@@ -4214,6 +4355,11 @@ def _extract_bootstrap_inventory(state: _BootstrapRunState):
         include_plugins=options.trust_source_plugins,
         capture_data_effect_observations=options.deep,
         capture_import_observations=options.deep,
+        source_plugins_only=options.trust_source_plugins
+        and (
+            options.source_adapter
+            or state.source_snapshot.source_selection_policy is not None
+        ),
     )
     if inventory_result.failed:
         print_inventory_failures(inventory_result, file=options.progress_stream)
@@ -4533,14 +4679,27 @@ def _write_bootstrap_workflow_pages(
             state.skipped_files.append(_path_text(wf_path))
             _emit_bootstrap(state, f"  SKIP workflow (exists): {wf_name}")
         else:
+            workflow_markdown = _generate_workflow_md(
+                wf_name, wf_data, module_page_map
+            )
+            if wf_path.exists():
+                workflow_markdown = _preserve_level_two_section(
+                    read_md(wf_path), workflow_markdown, "Behavior"
+                )
             _write_bootstrap_file(
                 state,
                 wf_path,
-                _generate_workflow_md(wf_name, wf_data, module_page_map),
+                workflow_markdown,
             )
             workflows_created += 1
             _emit_bootstrap(state, f"  CREATE workflow: {wf_name}")
-        workflow_entries.append({"name": wf_name, "entry": wf_data["entry"]})
+        workflow_entries.append(
+            {
+                "name": wf_name,
+                "entry": wf_data["entry"],
+                "source_path": wf_data["entry_module_path"],
+            }
+        )
     return _WorkflowResult(workflow_entries, workflows_created)
 
 
@@ -4554,6 +4713,7 @@ def _build_bootstrap_api_contracts(
         inventory,
         openapi_file=state.options.openapi_file,
         source_root=state.options.src_dir_for_scan,
+        source_snapshot=state.source_snapshot,
     )
     _emit_bootstrap(
         state,
@@ -4625,12 +4785,15 @@ def _write_bootstrap_flow_pages(
         return _FlowResult(flow_entries, flows_created, data_flow_summary)
 
     _emit_bootstrap(state, "Generating user-flow pages...", flush=True)
-    console_scripts = read_console_scripts(state.options.src_dir_for_scan)
+    console_scripts = read_console_scripts(
+        state.options.src_dir_for_scan,
+        source_snapshot=state.source_snapshot,
+    )
     entrypoint_observations = get_detailed_entry_points(
         inventory,
         console_scripts=console_scripts,
         root=state.options.src_dir_for_scan,
-        fallback_root=Path.cwd(),
+        fallback_root=_bootstrap_plugin_roots(state)[1],
         include_plugins=state.options.trust_source_plugins,
         include_warnings=True,
     )
@@ -5023,6 +5186,10 @@ def _append_bootstrap_log(
     dependency_result: _DependencyResult,
     api_contract_result: _ApiContractResult,
     cross_reference_count: int,
+    *,
+    generation_inputs: Mapping[str, object],
+    plugin_lock_path: str | None,
+    plugin_lock_hash: str | None,
 ) -> None:
     log_path = state.options.wiki_dir / "log.md"
     github_actions_count = _infrastructure_type_count(
@@ -5030,18 +5197,25 @@ def _append_bootstrap_log(
     )
     kubernetes_count = _infrastructure_type_count(infrastructure_result, "kubernetes")
     runtime_config_count = _runtime_config_count(infrastructure_result)
+    provenance_lines = _source_snapshot_log_lines(
+        state.source_snapshot,
+        generation_inputs=generation_inputs,
+        plugin_lock_path=plugin_lock_path,
+        plugin_lock_hash=plugin_lock_hash,
+    )
     log_entry = (
         f"\n## {date.today().isoformat()}\n\n"
-        f"### feat: bootstrap wiki from existing codebase\n"
-        f"- Source: `{state.options.src_dir_for_scan}`\n"
+        f"### Wiki bootstrap\n"
+        f"- Source: `{portable_source_root_label(state.options.src_dir_for_scan)}`\n"
+        f"{provenance_lines}"
         f"- Depth: `{state.options.depth}`\n"
         f"- Entities created: {entity_result.entities_created}\n"
         f"- Modules created: {entity_result.modules_created}\n"
         f"- Workflows created: {workflow_result.created}\n"
-        f"- User flows created: {flow_result.created}\n"
+        f"- Entry-point flows created: {flow_result.created}\n"
         f"- Infrastructure created: {infrastructure_result.created}\n"
         f"- Architecture pages created: {dependency_result.created}\n"
-        f"- API contract pages created: {api_contract_result.created}\n"
+        f"- HTTP API contract pages created: {api_contract_result.created}\n"
         f"- API operations tracked: "
         f"{len((api_contract_result.contracts or {}).get('operations', []))}\n"
         f"- Total classes tracked: {len(entity_result.all_entity_names)}\n"
@@ -5061,6 +5235,35 @@ def _append_bootstrap_log(
             log_path,
             "# Architectural Log\n\nAppend-only chronological log.\n" + log_entry,
         )
+
+
+def _source_snapshot_log_lines(
+    snapshot: SourceSnapshot,
+    *,
+    generation_inputs: Mapping[str, object] | None = None,
+    plugin_lock_path: str | None = None,
+    plugin_lock_hash: str | None = None,
+) -> str:
+    """Render portable public provenance for an evaluated source snapshot."""
+
+    if not isinstance(snapshot, SourceSnapshot):
+        raise TypeError("snapshot must be a SourceSnapshot")
+    profile = snapshot.source_selection_path
+    fingerprint = snapshot.source_selection_fingerprint
+    profile_text = f"`{profile}`" if profile is not None else "none (default discovery)"
+    fingerprint_text = f"`{fingerprint}`" if fingerprint is not None else "none"
+    digest = runtime_source_snapshot_hash(
+        snapshot,
+        generation_inputs={} if generation_inputs is None else generation_inputs,
+        plugin_lock_path=plugin_lock_path,
+        plugin_lock_hash=plugin_lock_hash,
+    )
+    return (
+        f"- Generator version: `{__version__}`\n"
+        f"- Source selection profile: {profile_text}\n"
+        f"- Source selection fingerprint: {fingerprint_text}\n"
+        f"- Source snapshot digest: `{digest}`\n"
+    )
 
 
 def _emit_bootstrap_complete(
@@ -5090,7 +5293,9 @@ def _emit_bootstrap_complete(
 def _update_bootstrap_agent_constraints(state: _BootstrapRunState) -> None:
     if not state.options.source_adapter:
         _update_agent_constraints(
-            str(state.options.wiki_dir), file=state.options.progress_stream
+            str(state.options.wiki_dir),
+            source_selection=state.source_snapshot.source_selection_path,
+            file=state.options.progress_stream,
         )
 
 
@@ -5315,6 +5520,10 @@ def _finalize_bootstrap_artifacts(
     inventory_result: InventoryResult,
     page_maps: _BootstrapPageMaps,
     result: _BootstrapGenerationResult,
+    *,
+    previous_manifest: SyncManifest | None,
+    surfaces: Mapping[str, Mapping[str, object]],
+    generation_inputs: Mapping[str, object],
 ) -> KnowledgeCommitResult:
     inventory = inventory_result.inventory
     surface = evaluate_surface_index(
@@ -5325,13 +5534,7 @@ def _finalize_bootstrap_artifacts(
         entity_occurrence_page_cache=page_maps.entity_occurrence_page_name_cache,
         module_page_map=page_maps.module_page_map,
         entry_points=result.flow.entries,
-    )
-    previous_manifest = _load_previous_bootstrap_manifest(state.options.wiki_dir)
-    surfaces, generation_inputs = _bootstrap_manifest_generation_state(
-        state,
-        result.api_contract,
-        result.infrastructure,
-        previous_manifest=previous_manifest,
+        workflow_entries=result.workflow.entries,
     )
     _emit_bootstrap(state, "Writing generated knowledge artifacts...", flush=True)
     _emit_bootstrap(state, "Writing sync manifest...", flush=True)
@@ -5346,6 +5549,7 @@ def _finalize_bootstrap_artifacts(
             repository_evidence=collect_runtime_repository_evidence(
                 state.options.src_dir_for_scan,
                 state.options.wiki_dir,
+                source_snapshot=state.source_snapshot,
             ),
             inventory_complete=state.options.deep,
             previous_manifest=previous_manifest,
@@ -5588,6 +5792,13 @@ def _finalize_bootstrap(
     result: _BootstrapGenerationResult,
 ) -> BootstrapResult:
     inventory = inventory_result.inventory
+    previous_manifest = _load_previous_bootstrap_manifest(state.options.wiki_dir)
+    surfaces, generation_inputs = _bootstrap_manifest_generation_state(
+        state,
+        result.api_contract,
+        result.infrastructure,
+        previous_manifest=previous_manifest,
+    )
     _write_bootstrap_index(
         state,
         result.entity,
@@ -5607,6 +5818,9 @@ def _finalize_bootstrap(
         result.dependency,
         result.api_contract,
         result.cross_reference_count,
+        generation_inputs=generation_inputs,
+        plugin_lock_path=inventory_result.plugin_lock_path,
+        plugin_lock_hash=inventory_result.plugin_lock_hash,
     )
     _update_bootstrap_agent_constraints(state)
     artifacts = _finalize_bootstrap_artifacts(
@@ -5614,6 +5828,9 @@ def _finalize_bootstrap(
         inventory_result,
         page_maps,
         result,
+        previous_manifest=previous_manifest,
+        surfaces=surfaces,
+        generation_inputs=generation_inputs,
     )
     _emit_bootstrap_complete(
         state,
@@ -5701,6 +5918,34 @@ def _preflight_public_bootstrap(options: _BootstrapRunOptions) -> None:
         )
 
 
+def _preflight_bootstrap_source_selection(options: _BootstrapRunOptions) -> None:
+    """Protect private workspace refreshes from configured-to-broad downgrade."""
+
+    try:
+        previous = SyncManifest.load(options.wiki_dir)
+    except FileNotFoundError:
+        return
+    except (OSError, json.JSONDecodeError, SyncManifestError) as exc:
+        raise BootstrapContractError(
+            "Cannot validate the existing wiki's persisted source-selection "
+            f"boundary: {exc}"
+        ) from exc
+    try:
+        policy = resolve_source_selection(
+            options.src_dir_for_scan,
+            options.source_selection,
+        )
+        validate_persisted_source_selection_identity(
+            previous.generation_inputs,
+            None if policy is None else policy.identity,
+            operation="documentation workspace refresh",
+            explicit_path_authorized=options.source_selection is not None,
+            allow_same_path_update=True,
+        )
+    except SourceSelectionError as exc:
+        raise BootstrapContractError(str(exc)) from exc
+
+
 def _execute_bootstrap_options(
     options: _BootstrapRunOptions,
     *,
@@ -5708,6 +5953,7 @@ def _execute_bootstrap_options(
 ) -> BootstrapResult:
     if not _workspace_refresh_authorized:
         _preflight_public_bootstrap(options)
+    _preflight_bootstrap_source_selection(options)
     try:
         _preflight_bootstrap_governance(options.wiki_dir)
     except (GovernanceError, InfrastructureSyncError) as exc:
@@ -5820,7 +6066,12 @@ def run(args):
         raise SystemExit(2) from exc
 
 
-def _update_agent_constraints(wiki_dir: str, *, file=None) -> None:
+def _update_agent_constraints(
+    wiki_dir: str,
+    *,
+    source_selection: str | Path | None = None,
+    file=None,
+) -> None:
     """Replace docs/llm_wiki path references inside the constraint block
     in any existing agent schema files to match the actual wiki_dir."""
     stream = file or sys.stdout
@@ -5829,11 +6080,12 @@ def _update_agent_constraints(wiki_dir: str, *, file=None) -> None:
     default_path = Path(_DEFAULT_WIKI_DIR)
     # Nothing to do if the resolved paths are the same or wiki_dir already
     # contains the default string (handles the relative == relative case)
-    if wiki_path == default_path or wiki_dir == _DEFAULT_WIKI_DIR:
+    default_wiki_dir = wiki_path == default_path or wiki_dir == _DEFAULT_WIKI_DIR
+    if default_wiki_dir and source_selection is None:
         return
     # Also skip if the resolved absolute paths are equivalent
     try:
-        if wiki_path.resolve() == default_path.resolve():
+        if wiki_path.resolve() == default_path.resolve() and source_selection is None:
             return
     except OSError:
         pass
@@ -5851,7 +6103,15 @@ def _update_agent_constraints(wiki_dir: str, *, file=None) -> None:
         start_idx = text.index(_CONSTRAINT_START)
         end_idx = text.index(_CONSTRAINT_END, start_idx) + len(_CONSTRAINT_END)
         block = text[start_idx:end_idx]
-        new_block = block.replace(_DEFAULT_WIKI_DIR, wiki_dir)
+        new_block = (
+            block
+            if default_wiki_dir
+            else block.replace(_DEFAULT_WIKI_DIR, wiki_dir)
+        )
+        new_block = pin_source_selection_command_recipes(
+            new_block,
+            source_selection,
+        )
         if new_block != block:
             write_md(p, text[:start_idx] + new_block + text[end_idx:])
             updated.append(filename)

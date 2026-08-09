@@ -2,11 +2,11 @@
 
 Builds a module-file → module-file dependency graph from a structural
 inventory's ``imports`` records, detects import cycles via strongly-connected
-components, computes fan-in/fan-out metrics (Epic 2.1), and reconciles each
+components, computes fan-in/fan-out metrics, and reconciles each
 file's external imports against its language's declared dependency manifest —
 Python (``pyproject.toml``), TypeScript/JS (``package.json``), Go (``go.mod``),
 Rust (``Cargo.toml``), and Haskell (``*.cabal``/``stack.yaml``/``flake.nix``) —
-to surface undeclared and unused packages (Epic 2.2). Analogous to
+to surface undeclared and unused packages. Analogous to
 :mod:`llm_wiki_cli.services.entrypoints`: deterministic, performs no LLM calls,
 imports only stdlib (plus the bundled ``tomli`` backport) and
 :mod:`llm_wiki_cli.services.imports`, and takes the inventory as plain data
@@ -17,8 +17,9 @@ The same module-path resolver that backs call-edge resolution
 (:func:`extract_cmd.resolve_call_edges`) is reused here, so import→file
 resolution stays consistent across the codebase. Imports that resolve to no
 internal file (stdlib, third-party, unresolvable relatives) are collected in an
-``unresolved`` bucket; the Epic 2.2 classifiers consume that bucket so an import
-already resolved to an internal file is never double-counted as external.
+``unresolved`` bucket; the external dependency classifiers consume that bucket
+so an import already resolved to an internal file is never double-counted as
+external.
 
 Reconciliation is *language-partitioned*: each language pairs a manifest parser
 with an import→package classifier behind a shared dispatcher. A language with
@@ -58,7 +59,12 @@ except ModuleNotFoundError:  # pragma: no cover - exercised on Python 3.9/3.10
         tomllib = None  # type: ignore[assignment]
 
 
-# ── Internal dependency graph (DL-101) ────────────────────────────────
+# Internal dependency graph
+
+
+_DEPENDENCY_MODULE_LANGUAGES: frozenset[str] = frozenset(
+    {"python", "typescript", "javascript", "go", "rust", "haskell"}
+)
 
 
 def _build_symbol_file_index(inventory: dict) -> dict[str, set[str]]:
@@ -103,7 +109,12 @@ def _resolve_internal_targets(
     """
     module = imp.get("module", "") or ""
     name = imp.get("name", "") or ""
-    targets = resolver.candidates(_resolve_target_module(module, name), filepath)
+    targets = resolver.import_candidates(
+        module,
+        name,
+        filepath,
+        import_type=imp.get("type"),
+    )
     if len(targets) > 1:
         narrowed = targets & symbol_index.get(name, set())
         if narrowed:
@@ -126,9 +137,11 @@ def build_dependency_graph(
 
     Returns ``{"edges": [(from_file, to_file), ...], "nodes": [...],
     "unresolved": [{"file", "module", "name"}, ...]}`` with every list stably
-    ordered. A file that imports nothing internal still appears as an isolated
-    node. Slim/non-Python entries (no ``imports``) contribute no edges and never
-    raise.
+    ordered. A supported code-language inventory entry that has no ``imports``
+    field still appears as an isolated node. Entries that explicitly provide an
+    ``imports`` field retain the legacy node contract regardless of language;
+    unknown, untyped, and non-mapping entries without that field contribute no
+    nodes or edges and never raise.
     """
     resolver = build_module_path_resolver(
         inventory,
@@ -142,9 +155,17 @@ def build_dependency_graph(
     nodes: set[str] = set()
 
     for filepath, data in inventory.items():
-        if not isinstance(data, dict) or "imports" not in data:
+        if not isinstance(data, Mapping):
+            continue
+        language = data.get("language")
+        supported_language = (
+            isinstance(language, str) and language in _DEPENDENCY_MODULE_LANGUAGES
+        )
+        if "imports" not in data and not supported_language:
             continue
         nodes.add(filepath)
+        if "imports" not in data:
+            continue
         for imp in data.get("imports", []):
             targets = _resolve_internal_targets(imp, filepath, resolver, symbol_index)
             if not targets:
@@ -444,7 +465,7 @@ def build_external_dependency_observations(analysis: Mapping) -> list[dict]:
     return observations
 
 
-# ── Cycle detection (DL-102) ──────────────────────────────────────────
+# Cycle detection
 
 
 def _build_adjacency(graph: dict) -> tuple[dict[str, list[str]], set[str], set[str]]:
@@ -527,7 +548,7 @@ def detect_cycles(graph: dict) -> list[list[str]]:
     return cycles
 
 
-# ── Fan-in / fan-out metrics (DL-103) ─────────────────────────────────
+# Fan-in / fan-out metrics
 
 
 def dependency_metrics(graph: dict) -> dict:
@@ -557,7 +578,7 @@ def dependency_metrics(graph: dict) -> dict:
     return {"metrics": metrics, "most_depended_on": most_depended_on}
 
 
-# ══ Load / startup order (Epic 2.3) ═══════════════════════════════════════
+# ══ Load / startup order ═══════════════════════════════════════
 
 
 def _condense(
@@ -653,7 +674,7 @@ def _factory_kind(name: str) -> str:
 def detect_side_effects(inventory: dict) -> dict:
     """List import-time side effects and factory/wiring functions per module.
 
-    Reads the deep extractor's ``module_calls`` (DL-301) to report each module's
+    Reads the deep extractor's ``module_calls`` to report each module's
     top-level side effects, and flags top-level functions whose names match the
     app-factory / dependency-wiring heuristics (``create_app``, ``configure``,
     ``setup``, ``wire``, ``register_*``, …). Returns ``{"side_effects":
@@ -681,7 +702,7 @@ def detect_side_effects(inventory: dict) -> dict:
     return {"side_effects": side_effects, "factories": factories, "best_effort": True}
 
 
-# ══ External dependency reconciliation (Epic 2.2) ═════════════════════════
+# ══ External dependency reconciliation ═════════════════════════
 #
 # Each language pairs a *manifest parser* (declared dependencies) with an
 # *import classifier* (import string → external package name, or ``None`` to
@@ -737,7 +758,7 @@ class _LanguagePlugin:
     classify: Callable[[str, str, str, "Optional[_Manifest]"], "Optional[str]"]
 
 
-# ── Python (DL-201) ───────────────────────────────────────────────────
+# Python import classification
 
 
 # Import top-level name → distribution name where they differ. Keys are the
@@ -1100,7 +1121,20 @@ def _python_scope_root(project_root: Path, path: Path) -> str:
     return "" if rel.as_posix() == "." else rel.as_posix()
 
 
-def _discover_python_local_modules(project_root: Path) -> frozenset[str]:
+def _discover_python_local_modules(
+    project_root: Path,
+    source_snapshot: SourceSnapshot,
+) -> frozenset[str]:
+    if source_snapshot.source_selection_policy is not None:
+        modules: set[str] = set()
+        for source_file in source_snapshot.files_by_language.get("python", ()):
+            parts = Path(source_file.rel_path).parts
+            if len(parts) == 1 and source_file.suffix == ".py":
+                modules.add(Path(parts[0]).stem)
+            elif len(parts) == 2 and parts[1] == "__init__.py":
+                modules.add(parts[0])
+        return frozenset(sorted(modules))
+
     modules: set[str] = set()
     try:
         children = list(project_root.iterdir())
@@ -1153,7 +1187,12 @@ def _parse_requirements_file(path: Path) -> tuple[set[str], set[str]]:
     return required, optional
 
 
-def _python_package_import_roots(path: Path, data: dict) -> frozenset[str]:
+def _python_package_import_roots(
+    path: Path,
+    data: dict,
+    project_root: Path,
+    source_snapshot: SourceSnapshot,
+) -> frozenset[str]:
     roots: set[str] = set()
     tool = data.get("tool", {})
     setuptools = tool.get("setuptools", {}) if isinstance(tool, dict) else {}
@@ -1167,8 +1206,33 @@ def _python_package_import_roots(path: Path, data: dict) -> frozenset[str]:
     else:
         wheres = [""]
 
+    selected_python_paths = {
+        source_file.rel_path
+        for source_file in source_snapshot.files_by_language.get("python", ())
+    }
+    configured = source_snapshot.source_selection_policy is not None
     for where in wheres or [""]:
         base = (path.parent / where).resolve()
+        if configured:
+            try:
+                base_rel_path = base.relative_to(project_root)
+            except ValueError:
+                continue
+            base_rel = (
+                "" if base_rel_path.as_posix() == "." else base_rel_path.as_posix()
+            )
+            base_init = f"{base_rel}/__init__.py" if base_rel else "__init__.py"
+            if base_init in selected_python_paths:
+                roots.add(base.name)
+            prefix = f"{base_rel}/" if base_rel else ""
+            for selected_path in selected_python_paths:
+                if not selected_path.startswith(prefix):
+                    continue
+                remainder = selected_path[len(prefix) :]
+                parts = remainder.split("/")
+                if len(parts) == 2 and parts[1] == "__init__.py":
+                    roots.add(parts[0])
+            continue
         if not base.is_dir():
             continue
         if (base / "__init__.py").is_file():
@@ -1189,6 +1253,8 @@ def _python_import_name_from_distribution(name: str) -> str:
 
 def _parse_python_pyproject(
     path: Path,
+    project_root: Path,
+    source_snapshot: SourceSnapshot,
 ) -> tuple[set[str], set[str], dict[str, str], str, frozenset[str]]:
     data = _load_toml(path)
     if data is None:
@@ -1223,7 +1289,12 @@ def _parse_python_pyproject(
         if isinstance(override, dict)
         else {}
     )
-    import_roots = _python_package_import_roots(path, data)
+    import_roots = _python_package_import_roots(
+        path,
+        data,
+        project_root,
+        source_snapshot,
+    )
     if project_name and not import_roots:
         fallback = _python_import_name_from_distribution(project_name)
         import_roots = frozenset({fallback}) if fallback else frozenset()
@@ -1249,7 +1320,7 @@ def _parse_python_manifest(
                 manifest_aliases,
                 project_name,
                 import_roots,
-            ) = _parse_python_pyproject(path)
+            ) = _parse_python_pyproject(path, project_root, source_snapshot)
             scoped_aliases[root].update(manifest_aliases)
             distribution = _normalize_python(project_name)
             if distribution:
@@ -1283,7 +1354,10 @@ def _parse_python_manifest(
         optional,
         aliases=local_aliases,
         scopes=scopes,
-        internal_modules=_discover_python_local_modules(project_root),
+        internal_modules=_discover_python_local_modules(
+            project_root,
+            source_snapshot,
+        ),
     )
 
 
@@ -1321,7 +1395,7 @@ def _classify_python(
     return _normalize_python(aliases.get(top, top))
 
 
-# ── TypeScript / JavaScript (DL-202) ──────────────────────────────────
+# TypeScript / JavaScript import classification
 
 
 _NODE_BUILTINS: frozenset[str] = frozenset(
@@ -1487,7 +1561,7 @@ def _classify_ts(
     return pkg.lower()
 
 
-# ── Go (DL-203) ───────────────────────────────────────────────────────
+# Go import classification
 
 
 _GO_MANIFEST_EXCLUDED_DIRS: frozenset[str] = frozenset(
@@ -1687,7 +1761,7 @@ def _path_under(path: str, prefix: str) -> bool:
     return shared_path_is_under(path, prefix)
 
 
-# ── Rust (DL-204) ─────────────────────────────────────────────────────
+# Rust import classification
 
 
 _RUST_INTERNAL_ROOTS: frozenset[str] = frozenset(
@@ -1701,20 +1775,34 @@ def _normalize_rust(name: str) -> str:
 
 
 def _parse_rust_manifest(
-    project_root: Path, _source_snapshot: SourceSnapshot
+    project_root: Path, source_snapshot: SourceSnapshot
 ) -> Optional[_Manifest]:
-    data = _load_toml(project_root / "Cargo.toml")
-    if data is None:
-        return None
-
-    def _keys(section: str) -> set[str]:
+    def _keys(data: dict, section: str) -> set[str]:
         block = data.get(section, {})
         # The dependency-table *key* is the name used in ``use`` (``package =``
         # only renames the published crate), so reconcile against the key.
         return {_normalize_rust(k) for k in block} if isinstance(block, dict) else set()
 
-    required = _keys("dependencies")
-    optional = _keys("dev-dependencies") | _keys("build-dependencies")
+    paths = (
+        _snapshot_package_marker_paths(
+            project_root,
+            source_snapshot,
+            lambda name: name == "Cargo.toml",
+        )
+        if source_snapshot.source_selection_policy is not None
+        else [project_root / "Cargo.toml"]
+    )
+    required: set[str] = set()
+    optional: set[str] = set()
+    for path in paths:
+        current_data = _load_toml(path)
+        if current_data is None:
+            continue
+        required.update(_keys(current_data, "dependencies"))
+        optional.update(_keys(current_data, "dev-dependencies"))
+        optional.update(_keys(current_data, "build-dependencies"))
+    if not required and not optional:
+        return None
     return _Manifest(frozenset(required), frozenset(optional))
 
 
@@ -1730,7 +1818,7 @@ def _classify_rust(
     return _normalize_rust(crate)
 
 
-# ── Haskell (DL-205) ──────────────────────────────────────────────────
+# Haskell import classification
 
 
 _HASKELL_MANIFEST_EXCLUDED_DIRS: frozenset[str] = frozenset(
@@ -2121,7 +2209,7 @@ def _load_toml(path: Path) -> Optional[dict]:
     return data if isinstance(data, dict) else None
 
 
-# ── Dispatcher + reconciliation (DL-201, DL-205) ──────────────────────
+# Language dispatch and reconciliation
 
 
 _PLUGINS: tuple[_LanguagePlugin, ...] = (
@@ -2188,7 +2276,7 @@ def classify_imports(
     """Group each file's external imports by language and package.
 
     Routes the graph's ``unresolved`` imports (those that resolve to no internal
-    file — DL-101) through their file's per-language classifier, dropping
+    file) through their file's per-language classifier, dropping
     relative, stdlib/builtin, and intra-module imports. Returns
     ``{language: {package: [importing_files]}}`` with every collection sorted.
 
@@ -2437,8 +2525,21 @@ def _go_sum_versions(
     source_snapshot: SourceSnapshot | None = None,
 ) -> dict[str, dict[str, str]]:
     versions: dict[str, dict[str, str]] = {}
-    for go_mod in _walk_go_manifest_files(project_root, source_snapshot):
-        go_sum = go_mod.parent / "go.sum"
+    if (
+        source_snapshot is not None
+        and source_snapshot.source_selection_policy is not None
+    ):
+        go_sums = _snapshot_package_marker_paths(
+            project_root,
+            source_snapshot,
+            lambda name: name == "go.sum",
+        )
+    else:
+        go_sums = [
+            go_mod.parent / "go.sum"
+            for go_mod in _walk_go_manifest_files(project_root, source_snapshot)
+        ]
+    for go_sum in go_sums:
         try:
             lines = go_sum.read_text(encoding="utf-8").splitlines()
         except (OSError, UnicodeDecodeError):
@@ -2454,23 +2555,38 @@ def _go_sum_versions(
     return versions
 
 
-def _cargo_lock_versions(project_root: Path) -> dict[str, dict[str, str]]:
-    data = _load_toml(project_root / "Cargo.lock")
-    if data is None:
-        return {}
-    packages = data.get("package")
-    if not isinstance(packages, list):
-        return {}
+def _cargo_lock_versions(
+    project_root: Path,
+    source_snapshot: SourceSnapshot | None = None,
+) -> dict[str, dict[str, str]]:
+    if (
+        source_snapshot is not None
+        and source_snapshot.source_selection_policy is not None
+    ):
+        paths = _snapshot_package_marker_paths(
+            project_root,
+            source_snapshot,
+            lambda name: name == "Cargo.lock",
+        )
+    else:
+        paths = [project_root / "Cargo.lock"]
     versions: dict[str, dict[str, str]] = {}
-    for package in packages:
-        if not isinstance(package, dict):
+    for path in paths:
+        data = _load_toml(path)
+        if data is None:
             continue
-        name = package.get("name")
-        version = package.get("version")
-        if isinstance(name, str) and isinstance(version, str):
-            _keep_highest_version(
-                versions, _normalize_rust(name), version, "Cargo.lock"
-            )
+        packages = data.get("package")
+        if not isinstance(packages, list):
+            continue
+        for package in packages:
+            if not isinstance(package, dict):
+                continue
+            name = package.get("name")
+            version = package.get("version")
+            if isinstance(name, str) and isinstance(version, str):
+                _keep_highest_version(
+                    versions, _normalize_rust(name), version, "Cargo.lock"
+                )
     return versions
 
 
@@ -2509,9 +2625,20 @@ def _poetry_lock_versions(
     source_snapshot: SourceSnapshot | None = None,
 ) -> dict[str, dict[str, str]]:
     versions: dict[str, dict[str, str]] = {}
+    if (
+        source_snapshot is not None
+        and source_snapshot.source_selection_policy is not None
+    ):
+        paths = _snapshot_package_marker_paths(
+            project_root,
+            source_snapshot,
+            lambda name: name == "poetry.lock",
+        )
+    else:
+        paths = []
     if source_snapshot is None:
         directories = _lockfile_dirs(project_root, _PYTHON_MANIFEST_EXCLUDED_DIRS)
-    else:
+    elif source_snapshot.source_selection_policy is None:
         directories = sorted(
             {
                 path.parent
@@ -2522,8 +2649,11 @@ def _poetry_lock_versions(
             },
             key=lambda path: path.relative_to(project_root).as_posix(),
         )
-    for directory in directories:
-        data = _load_toml(directory / "poetry.lock")
+    else:
+        directories = []
+    paths.extend(directory / "poetry.lock" for directory in directories)
+    for path in paths:
+        data = _load_toml(path)
         if data is None:
             continue
         packages = data.get("package")
@@ -2561,8 +2691,21 @@ def _package_lock_versions(
     source_snapshot: SourceSnapshot | None = None,
 ) -> dict[str, dict[str, str]]:
     versions: dict[str, dict[str, str]] = {}
-    for package_json in _walk_ts_manifest_files(project_root, source_snapshot):
-        lockfile = package_json.parent / "package-lock.json"
+    if (
+        source_snapshot is not None
+        and source_snapshot.source_selection_policy is not None
+    ):
+        lockfiles = _snapshot_package_marker_paths(
+            project_root,
+            source_snapshot,
+            lambda name: name == "package-lock.json",
+        )
+    else:
+        lockfiles = [
+            package_json.parent / "package-lock.json"
+            for package_json in _walk_ts_manifest_files(project_root, source_snapshot)
+        ]
+    for lockfile in lockfiles:
         try:
             data = json.loads(lockfile.read_text(encoding="utf-8"))
         except (OSError, UnicodeDecodeError, ValueError):
@@ -2601,8 +2744,21 @@ def _pnpm_lock_versions(
     source_snapshot: SourceSnapshot | None = None,
 ) -> dict[str, dict[str, str]]:
     versions: dict[str, dict[str, str]] = {}
-    for package_json in _walk_ts_manifest_files(project_root, source_snapshot):
-        lockfile = package_json.parent / "pnpm-lock.yaml"
+    if (
+        source_snapshot is not None
+        and source_snapshot.source_selection_policy is not None
+    ):
+        lockfiles = _snapshot_package_marker_paths(
+            project_root,
+            source_snapshot,
+            lambda name: name == "pnpm-lock.yaml",
+        )
+    else:
+        lockfiles = [
+            package_json.parent / "pnpm-lock.yaml"
+            for package_json in _walk_ts_manifest_files(project_root, source_snapshot)
+        ]
+    for lockfile in lockfiles:
         try:
             lines = lockfile.read_text(encoding="utf-8").splitlines()
         except (OSError, UnicodeDecodeError):
@@ -2642,7 +2798,7 @@ def _lockfile_versions(
 ) -> dict[str, dict[str, dict[str, str]]]:
     return {
         "go": _go_sum_versions(project_root, source_snapshot),
-        "rust": _cargo_lock_versions(project_root),
+        "rust": _cargo_lock_versions(project_root, source_snapshot),
         "python": _python_lock_versions(project_root, source_snapshot),
         "typescript": _typescript_lock_versions(project_root, source_snapshot),
     }
@@ -2762,7 +2918,7 @@ def reconcile_dependencies(
     }
 
 
-# ══ Aggregation + scale guard (Epic 2.4) ══════════════════════════════════
+# ══ Aggregation + scale guard ══════════════════════════════════
 
 
 def analyze_dependencies(
@@ -2817,7 +2973,7 @@ def package_dependency_graph(graph: dict) -> dict:
 
     Every module node maps to its :func:`top_level_package`; intra-package edges
     are dropped and parallel inter-package edges de-duplicated, bounding the
-    diagram for large repositories (DL-404). Returns the same
+    diagram for large repositories. Returns the same
     ``{"nodes", "edges"}`` shape as :func:`build_dependency_graph` (minus
     ``unresolved``), stably sorted.
     """
