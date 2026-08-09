@@ -301,7 +301,8 @@ def build_runtime_knowledge_plan(
         generation_option_allowlist=inputs.generation_option_allowlist,
         inventory_complete=inputs.inventory_complete,
     )
-    return build_knowledge_generation_plan(
+    return _stabilize_revision_only_noop(
+        inputs,
         KnowledgeGenerationInputs(
             wiki_dir=inputs.target_wiki_dir,
             inventory=inputs.inventory,
@@ -356,8 +357,44 @@ def build_runtime_knowledge_plan(
             graph_analyzer_limitations=inputs.graph_analyzer_limitations,
             graph_evidence_limit=inputs.graph_evidence_limit,
             governance=governance,
+        ),
+    )
+
+
+def _stabilize_revision_only_noop(
+    runtime_inputs: RuntimeKnowledgeInputs,
+    plan_inputs: KnowledgeGenerationInputs,
+) -> KnowledgeCommitPlan:
+    """Keep a validated artifact set stable across an output-only Git commit."""
+
+    candidate = build_knowledge_generation_plan(plan_inputs)
+    current_revision = runtime_inputs.repository_evidence.evaluated_revision
+    if current_revision is None:
+        return candidate
+    previous = _previous_committed_artifacts(
+        runtime_inputs.target_wiki_dir,
+        runtime_inputs.previous_manifest,
+    )
+    if previous is None:
+        return candidate
+    previous_revision = previous.knowledge.bundle.repository.evaluated_revision
+    normalized_current = (
+        current_revision
+        if current_revision.startswith("git:")
+        else f"git:{current_revision}"
+    )
+    if previous_revision == "unknown" or normalized_current == previous_revision:
+        return candidate
+    stabilized = build_knowledge_generation_plan(
+        replace(
+            plan_inputs,
+            repository_evidence=replace(
+                runtime_inputs.repository_evidence,
+                evaluated_revision=previous_revision,
+            ),
         )
     )
+    return stabilized if not stabilized.changed else candidate
 
 
 def build_runtime_live_evaluation(

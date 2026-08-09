@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import subprocess
 import textwrap
 import types
@@ -13,6 +14,8 @@ from llm_wiki_cli.commands import bootstrap_cmd, sync_cmd
 from llm_wiki_cli.services import bootstrap_runtime, knowledge_orchestration
 from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
 from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+from llm_wiki_cli.services.knowledge_model import WorkingTreeState
+from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.services.sync_manifest import SyncManifest
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 
@@ -41,6 +44,18 @@ def _wiki_bytes(wiki_dir: Path) -> dict[str, bytes]:
         for path in sorted(wiki_dir.rglob("*"))
         if path.is_file()
     }
+
+
+def _git(project: Path, *args: str) -> str:
+    result = subprocess.run(
+        ["git", *args],
+        cwd=project,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    return result.stdout.strip()
 
 
 def _new_project(tmp_path: Path, *, name: str = "project") -> tuple[Path, Path]:
@@ -110,6 +125,130 @@ def _bootstrap_rich_project(
         )
     )
     return project, wiki_dir
+
+
+def test_wiki_only_commits_do_not_rewrite_repository_revision(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    project, wiki_dir = _new_project(tmp_path)
+    _git(project, "config", "--local", "user.name", "Sync Fixture")
+    _git(
+        project,
+        "config",
+        "--local",
+        "user.email",
+        "sync-fixture@example.invalid",
+    )
+    (project / "pyproject.toml").write_text(
+        '[project]\nname = "project"\nversion = "0.1.0"\n',
+        encoding="utf-8",
+    )
+    (project / "app.py").write_text(
+        "def value():\n    return 1\n",
+        encoding="utf-8",
+    )
+    profile = project / ".llm-wiki" / "source-selection.json"
+    profile.parent.mkdir()
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+                "include": ["pyproject.toml", "app.py"],
+                "exclude": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    _git(
+        project,
+        "add",
+        "pyproject.toml",
+        "app.py",
+        str(profile.relative_to(project)),
+    )
+    _git(project, "commit", "--quiet", "-m", "add selected source")
+    first_source_revision = _git(project, "rev-parse", "HEAD")
+    monkeypatch.chdir(project)
+    bootstrap_cmd.run(
+        _bootstrap_args(src_dir=str(project), wiki_dir=str(wiki_dir))
+    )
+    first_tree = _wiki_bytes(wiki_dir)
+    first_knowledge = load_knowledge_state(wiki_dir).knowledge
+    assert first_knowledge is not None
+    assert first_knowledge.bundle.repository.evaluated_revision == (
+        f"git:{first_source_revision}"
+    )
+
+    _git(project, "add", "docs/llm_wiki")
+    _git(project, "commit", "--quiet", "-m", "add generated wiki")
+    assert _git(project, "rev-parse", "HEAD") != first_source_revision
+    capsys.readouterr()
+
+    sync_cmd.run(_sync_args(src_dir=str(project), wiki_dir=str(wiki_dir)))
+
+    assert _wiki_bytes(wiki_dir) == first_tree
+    assert "Wiki is up to date." in capsys.readouterr().out
+
+    (project / "app.py").write_text(
+        "def value():\n    return 2\n",
+        encoding="utf-8",
+    )
+    _git(project, "add", "app.py")
+    _git(project, "commit", "--quiet", "-m", "update selected source")
+    second_source_revision = _git(project, "rev-parse", "HEAD")
+
+    sync_cmd.run(_sync_args(src_dir=str(project), wiki_dir=str(wiki_dir)))
+
+    second_knowledge = load_knowledge_state(wiki_dir).knowledge
+    assert second_knowledge is not None
+    assert second_knowledge.bundle.repository.evaluated_revision == (
+        f"git:{second_source_revision}"
+    )
+    second_tree = _wiki_bytes(wiki_dir)
+    _git(project, "add", "docs/llm_wiki")
+    _git(project, "commit", "--quiet", "-m", "refresh generated wiki")
+    capsys.readouterr()
+
+    sync_cmd.run(_sync_args(src_dir=str(project), wiki_dir=str(wiki_dir)))
+
+    assert _wiki_bytes(wiki_dir) == second_tree
+    assert "Wiki is up to date." in capsys.readouterr().out
+
+    (project / "app.py").write_text(
+        "def value():\n    return 3\n",
+        encoding="utf-8",
+    )
+    dirty_base_revision = _git(project, "rev-parse", "HEAD")
+    sync_cmd.run(_sync_args(src_dir=str(project), wiki_dir=str(wiki_dir)))
+    dirty_knowledge = load_knowledge_state(wiki_dir).knowledge
+    assert dirty_knowledge is not None
+    assert dirty_knowledge.bundle.repository.evaluated_revision == (
+        f"git:{dirty_base_revision}"
+    )
+    assert dirty_knowledge.bundle.repository.working_tree is WorkingTreeState.DIRTY
+
+    _git(project, "add", "app.py", "docs/llm_wiki")
+    _git(project, "commit", "--quiet", "-m", "commit source and wiki together")
+    clean_source_revision = _git(project, "rev-parse", "HEAD")
+    sync_cmd.run(_sync_args(src_dir=str(project), wiki_dir=str(wiki_dir)))
+    clean_knowledge = load_knowledge_state(wiki_dir).knowledge
+    assert clean_knowledge is not None
+    assert clean_knowledge.bundle.repository.evaluated_revision == (
+        f"git:{clean_source_revision}"
+    )
+    assert clean_knowledge.bundle.repository.working_tree is WorkingTreeState.CLEAN
+    reanchored_tree = _wiki_bytes(wiki_dir)
+
+    _git(project, "add", "docs/llm_wiki")
+    _git(project, "commit", "--quiet", "-m", "re-anchor generated wiki")
+    capsys.readouterr()
+
+    sync_cmd.run(_sync_args(src_dir=str(project), wiki_dir=str(wiki_dir)))
+
+    assert _wiki_bytes(wiki_dir) == reanchored_tree
+    assert "Wiki is up to date." in capsys.readouterr().out
 
 
 def test_generator_version_upgrade_regenerates_managed_modules_and_converges(
