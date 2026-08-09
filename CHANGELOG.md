@@ -45,6 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   repeated synchronization.
 - Fail closed on malformed or colliding CI evidence while retaining valid
   diagnostics and the original integrity-check failure status.
+- Keep optional MCP installs on the compatible `pydantic-settings` 2.14
+  release line so server startup remains warning-free in fresh environments.
 
 ## [1.5.1] - 2026-08-04
 

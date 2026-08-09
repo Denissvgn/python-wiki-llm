@@ -8,6 +8,7 @@ import re
 import shlex
 import subprocess
 import sys
+import tarfile
 from pathlib import Path, PurePosixPath
 
 import yaml
@@ -484,7 +485,14 @@ def test_wiki_integrity_always_uploads_the_bounded_evidence_bundle() -> None:
     }
 
 
-def test_wiki_integrity_wrapper_executes_the_direct_candidate_gate() -> None:
+def _wiki_ci_wrapper_mode() -> int:
+    source_archive = os.environ.get("LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE")
+    if source_archive:
+        member_name = WIKI_CI_WRAPPER.relative_to(ROOT).as_posix()
+        with tarfile.open(source_archive, mode="r:") as archive:
+            member = archive.getmember(member_name)
+        assert member.isfile()
+        return member.mode
     if os.name == "nt":
         index_entry = subprocess.run(
             [
@@ -500,8 +508,38 @@ def test_wiki_integrity_wrapper_executes_the_direct_candidate_gate() -> None:
             text=True,
         ).stdout
         assert index_entry.split(maxsplit=1)[0] == "100755"
-    else:
-        assert WIKI_CI_WRAPPER.stat().st_mode & 0o111
+        return 0o755
+    return WIKI_CI_WRAPPER.stat().st_mode
+
+
+def test_wiki_integrity_wrapper_mode_prefers_the_frozen_archive(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    archive_path = tmp_path / "candidate-source.tar"
+    member_name = WIKI_CI_WRAPPER.relative_to(ROOT).as_posix()
+
+    def set_distinct_archive_mode(member: tarfile.TarInfo) -> tarfile.TarInfo:
+        member.mode = 0o711
+        return member
+
+    with tarfile.open(archive_path, mode="w:") as archive:
+        archive.add(
+            WIKI_CI_WRAPPER,
+            arcname=member_name,
+            recursive=False,
+            filter=set_distinct_archive_mode,
+        )
+    monkeypatch.setenv(
+        "LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE",
+        str(archive_path),
+    )
+
+    assert _wiki_ci_wrapper_mode() == 0o711
+
+
+def test_wiki_integrity_wrapper_executes_the_direct_candidate_gate() -> None:
+    assert _wiki_ci_wrapper_mode() & 0o111
     wrapper = WIKI_CI_WRAPPER.read_text(encoding="utf-8")
     assert (
         wrapper.count('"${python_executable}" -I -m llm_wiki_cli.cli ci-check')
