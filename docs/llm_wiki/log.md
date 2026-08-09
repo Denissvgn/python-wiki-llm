@@ -157,3 +157,19 @@ Append-only chronological log.
 - Infrastructure moved: 0
 - Infrastructure removed: 0
 - Unsupported infrastructure YAML: 2
+
+## 2026-08-09
+
+### Wiki sync
+- Source: `.`
+- Generator version: `1.6.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:d49228e211fceda86434e5dde2be92e68e2626748cecf60991a40674f5df33ee`
+- Pages created: 0
+- Pages updated: 0
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1042
+- Pages deprecated: 0
+- Semantic fields preserved: 0
+- Moved entities: none
