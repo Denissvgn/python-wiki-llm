@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import json
 import re
 import shlex
+import subprocess
+import sys
 from pathlib import Path
 
+import pytest
 import yaml
 
 
@@ -21,6 +25,16 @@ def _named_step(action: dict, name: str) -> dict:
 
 def _run_text(action: dict) -> str:
     return "\n".join(str(step.get("run", "")) for step in action["runs"]["steps"])
+
+
+def _embedded_plan_parser(action: dict) -> str:
+    run = _named_step(action, "Plan the automatically selected extractor helpers")[
+        "run"
+    ]
+    marker = "<<'PY'\n"
+    start = run.index(marker) + len(marker)
+    end = run.index("\nPY\n", start)
+    return run[start:end]
 
 
 def test_full_integrity_action_has_bounded_portable_inputs() -> None:
@@ -111,32 +125,178 @@ def test_full_integrity_action_uses_its_own_locked_implementation() -> None:
     assert "python -m pip install --no-cache-dir" in install
     assert '"${GITHUB_ACTION_PATH}/../.."' in install
 
-    setup = _named_step(action, "Install the locked routine toolchain")["run"]
-    assert shlex.split(setup) == [
-        "${GITHUB_ACTION_PATH}/../../.github/scripts/setup-llm-wiki-ci-toolchains.sh",
-        "--mode",
-        "routine",
-        "--install-root",
-        "${RUNNER_TEMP}/llm-wiki-toolchains",
-        "--lock",
-        "${GITHUB_ACTION_PATH}/../../release/toolchain-lock.json",
-        "--python",
-        "${{ steps.setup-python.outputs.python-path }}",
-    ]
+    setup_contracts = (
+        (
+            "Install the locked TypeScript and JavaScript extractor toolchain",
+            "typescript",
+            "routine",
+        ),
+        ("Install the locked Go extractor toolchain", "go", "extractor-go"),
+        ("Install the locked Rust extractor toolchain", "rust", "extractor-rust"),
+        (
+            "Install the locked Haskell extractor toolchain",
+            "haskell",
+            "extractor-haskell",
+        ),
+    )
+    for name, output, mode in setup_contracts:
+        step = _named_step(action, name)
+        assert step["if"] == f"steps.extractor-plan.outputs.{output} == 'true'"
+        assert shlex.split(step["run"]) == [
+            (
+                "${GITHUB_ACTION_PATH}/../../.github/scripts/"
+                "setup-llm-wiki-ci-toolchains.sh"
+            ),
+            "--mode",
+            mode,
+            "--install-root",
+            "${RUNNER_TEMP}/llm-wiki-toolchains",
+            "--lock",
+            "${GITHUB_ACTION_PATH}/../../release/toolchain-lock.json",
+            "--python",
+            "${{ steps.setup-python.outputs.python-path }}",
+        ]
 
-    versions = _named_step(action, "Record locked routine toolchain versions")["run"]
+    versions_step = _named_step(
+        action, "Record selected locked extractor toolchain versions"
+    )
+    assert (
+        versions_step["env"]
+        | {
+            "PLAN_TYPESCRIPT": "${{ steps.extractor-plan.outputs.typescript }}",
+            "PLAN_GO": "${{ steps.extractor-plan.outputs.go }}",
+            "PLAN_RUST": "${{ steps.extractor-plan.outputs.rust }}",
+            "PLAN_HASKELL": "${{ steps.extractor-plan.outputs.haskell }}",
+        }
+        == versions_step["env"]
+    )
+    versions = versions_step["run"]
     for required in (
         'qualification_helper="${GITHUB_ACTION_PATH}/../../release/qualification.py"',
         'toolchain_lock="${GITHUB_ACTION_PATH}/../../release/toolchain-lock.json"',
-        "--key toolchains.node.version_output",
-        "--key toolchains.npm.version_output",
-        'actual_node="$(node --version)"',
-        'actual_npm="$(npm --version)"',
-        'tee "${LLM_WIKI_EVIDENCE_DIR}/locked-toolchain-versions.txt"',
-        'test "${actual_node}" = "${expected_node}"',
-        'test "${actual_npm}" = "${expected_npm}"',
+        'evidence_path="${LLM_WIKI_EVIDENCE_DIR}/locked-toolchain-versions.txt"',
+        'case "${selected}" in',
+        "true|false)",
+        "record_exact_version()",
+        "lock_value toolchains.node.version_output",
+        "lock_value toolchains.npm.version_output",
+        "lock_value toolchains.go.version_output",
+        "lock_value toolchains.rust.version_output",
+        "lock_value toolchains.haskell.version_output",
+        '"$(node --version)"',
+        '"$(npm --version)"',
+        'actual_go_full="$("${LLM_WIKI_GO}" version)"',
+        '"$(cargo --version)"',
+        '"$("${LLM_WIKI_GHC}" --numeric-version)"',
+        'test "${actual}" = "${expected}"',
+        'tee -a "${evidence_path}"',
     ):
         assert required in versions
+
+
+def test_full_integrity_action_plans_helpers_with_a_fail_closed_contract() -> None:
+    action = _action()
+    plan = _named_step(action, "Plan the automatically selected extractor helpers")
+    assert plan["id"] == "extractor-plan"
+    assert plan["env"]["INPUT_SRC_DIR"] == "${{ inputs.src-dir }}"
+    for required in (
+        'plan_path="${LLM_WIKI_EVIDENCE_DIR}/extractor-plan.json"',
+        "-m llm_wiki_cli.cli prepare-extractors",
+        '--src-dir "${INPUT_SRC_DIR}"',
+        "--plan",
+        "--format json",
+        '"${plan_path}" "${GITHUB_OUTPUT}"',
+        'expected_schema = "llm-wiki-prepare-extractors-plan/v1"',
+        'supported = ("typescript", "go", "rust", "haskell")',
+        "object_pairs_hook=lambda value: value",
+        '["schema", "languages"]',
+        "len(raw) > 4096",
+        'selected = "true" if language in languages else "false"',
+    ):
+        assert required in plan["run"]
+
+
+@pytest.mark.parametrize(
+    ("languages", "expected"),
+    (
+        ([], "typescript=false\ngo=false\nrust=false\nhaskell=false\n"),
+        (
+            ["typescript", "rust", "haskell"],
+            "typescript=true\ngo=false\nrust=true\nhaskell=true\n",
+        ),
+        (
+            ["typescript", "go", "rust", "haskell"],
+            "typescript=true\ngo=true\nrust=true\nhaskell=true\n",
+        ),
+    ),
+)
+def test_embedded_plan_parser_emits_only_fixed_boolean_outputs(
+    tmp_path: Path,
+    languages: list[str],
+    expected: str,
+) -> None:
+    plan_path = tmp_path / "plan.json"
+    output_path = tmp_path / "outputs"
+    plan_path.write_text(
+        json.dumps(
+            {
+                "schema": "llm-wiki-prepare-extractors-plan/v1",
+                "languages": languages,
+            },
+            separators=(",", ":"),
+        ),
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [sys.executable, "-I", "-", str(plan_path), str(output_path)],
+        input=_embedded_plan_parser(_action()),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert output_path.read_text(encoding="utf-8") == expected
+
+
+@pytest.mark.parametrize(
+    "payload",
+    (
+        "[]",
+        '{"languages":[],"schema":"llm-wiki-prepare-extractors-plan/v1"}',
+        '{"schema":"wrong","languages":[]}',
+        '{"schema":"llm-wiki-prepare-extractors-plan/v1","languages":[],"extra":0}',
+        '{"schema":"llm-wiki-prepare-extractors-plan/v1","languages":["go","typescript"]}',
+        '{"schema":"llm-wiki-prepare-extractors-plan/v1","languages":["go","go"]}',
+        '{"schema":"llm-wiki-prepare-extractors-plan/v1","languages":["python"]}',
+        '{"schema":"llm-wiki-prepare-extractors-plan/v1","languages":[true]}',
+        (
+            '{"schema":"llm-wiki-prepare-extractors-plan/v1",'
+            '"schema":"llm-wiki-prepare-extractors-plan/v1","languages":[]}'
+        ),
+        '{"schema":"llm-wiki-prepare-extractors-plan/v1","languages":[NaN]}',
+    ),
+)
+def test_embedded_plan_parser_rejects_malformed_or_ambiguous_contracts(
+    tmp_path: Path,
+    payload: str,
+) -> None:
+    plan_path = tmp_path / "plan.json"
+    output_path = tmp_path / "outputs"
+    plan_path.write_text(payload, encoding="utf-8")
+
+    result = subprocess.run(
+        [sys.executable, "-I", "-", str(plan_path), str(output_path)],
+        input=_embedded_plan_parser(_action()),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert "invalid extractor-helper plan:" in result.stderr
+    assert not output_path.exists()
 
 
 def test_full_integrity_action_preserves_default_selection_and_gate_exit() -> None:
@@ -144,6 +304,16 @@ def test_full_integrity_action_preserves_default_selection_and_gate_exit() -> No
     run_text = _run_text(action)
     assert "${{ inputs." not in run_text
     assert "--source-selection" not in run_text
+
+    plan = _named_step(action, "Plan the automatically selected extractor helpers")
+    assert plan["env"]["INPUT_SRC_DIR"] == "${{ inputs.src-dir }}"
+    for required in (
+        "-m llm_wiki_cli.cli prepare-extractors",
+        '--src-dir "${INPUT_SRC_DIR}"',
+        "--plan",
+        "--format json",
+    ):
+        assert required in plan["run"]
 
     prepare = _named_step(
         action, "Prepare the automatically selected extractor helpers"
@@ -184,11 +354,22 @@ def test_full_integrity_action_preserves_default_selection_and_gate_exit() -> No
     assert "set +e" not in validation["run"]
 
     step_names = [step["name"] for step in action["runs"]["steps"]]
-    assert step_names.index(
+    plan_index = step_names.index("Plan the automatically selected extractor helpers")
+    prepare_index = step_names.index(
         "Prepare the automatically selected extractor helpers"
-    ) < step_names.index(
+    )
+    validation_index = step_names.index(
         "Validate committed wiki (native drift diagnostics are advisory)"
     )
+    assert plan_index < prepare_index < validation_index
+    for setup_name in (
+        "Install the locked TypeScript and JavaScript extractor toolchain",
+        "Install the locked Go extractor toolchain",
+        "Install the locked Rust extractor toolchain",
+        "Install the locked Haskell extractor toolchain",
+        "Record selected locked extractor toolchain versions",
+    ):
+        assert plan_index < step_names.index(setup_name) < prepare_index
 
 
 def test_full_integrity_action_reserves_and_always_uploads_bounded_evidence() -> None:
@@ -217,8 +398,7 @@ def test_full_integrity_action_reserves_and_always_uploads_bounded_evidence() ->
     assert upload["if"] == "always()"
     artifact_name = upload["with"]["name"]
     assert artifact_name == (
-        "llm-wiki-ci-${{ github.job }}-"
-        "${{ strategy.job-index || 0 }}-${{ github.sha }}"
+        "llm-wiki-ci-${{ github.job }}-${{ strategy.job-index || 0 }}-${{ github.sha }}"
     )
 
     def resolved_artifact_name(*, job: str, matrix_index: int | None) -> str:
@@ -248,6 +428,7 @@ def test_full_integrity_action_reserves_and_always_uploads_bounded_evidence() ->
         "${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.md",
         "${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.json",
         "${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.invalid.txt",
+        "${{ runner.temp }}/llm-wiki-evidence/extractor-plan.json",
         "${{ runner.temp }}/llm-wiki-evidence/prepare-extractors.log",
         "${{ runner.temp }}/llm-wiki-evidence/locked-toolchain-versions.txt",
     }
