@@ -75,27 +75,23 @@ def test_full_integrity_action_has_bounded_portable_inputs() -> None:
         assert expected_environment.items() <= step["env"].items()
 
 
-def test_full_integrity_action_is_pinned_credential_free_and_read_only() -> None:
+def test_full_integrity_action_is_pinned_caller_checkout_owned_and_read_only() -> None:
     action = _action()
     steps = action["runs"]["steps"]
     assert [step["uses"] for step in steps if "uses" in step] == [
-        "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
         "actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1",
         "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
     ]
 
     source = ACTION_PATH.read_text(encoding="utf-8")
     for reviewed_line in (
-        "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0",
         "actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0",
         "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2",
     ):
         assert source.count(reviewed_line) == 1
+    assert "actions/checkout@" not in source
     for use in re.findall(r"^\s*uses:\s*(\S+)", source, flags=re.MULTILINE):
         assert re.fullmatch(r"[^@]+@[0-9a-f]{40}", use)
-
-    checkout = _named_step(action, "Check out the candidate without credentials")
-    assert checkout["with"] == {"persist-credentials": False}
 
     serialized = yaml.safe_dump(action).lower()
     for prohibited in (

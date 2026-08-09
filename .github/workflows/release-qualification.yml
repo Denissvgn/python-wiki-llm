@@ -1036,6 +1036,7 @@ jobs:
     name: RD-10 hosted composite Action
     needs: freeze
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     steps:
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
@@ -1048,6 +1049,14 @@ jobs:
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.13"
+      - name: Bind RD-10 runner-temporary paths
+        run: |
+          {
+            printf 'RD10_EVIDENCE_DIR=%s\n' \
+              "${RUNNER_TEMP}/rd-10-evidence"
+            printf 'FULL_INTEGRITY_PLUGIN_MARKER=%s\n' \
+              "${RUNNER_TEMP}/full-integrity-plugin-executed"
+          } >> "${GITHUB_ENV}"
       - name: Verify and extract qualification harnesses
         env:
           EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
@@ -1112,16 +1121,189 @@ jobs:
         run: |
           test "${STRICT_OUTCOME}" = failure
           test "${FAIL_ON_OUTCOME}" = failure
-          mkdir -p evidence
+          mkdir -p "${RD10_EVIDENCE_DIR}"
           printf '%s\n' \
             '{"context_health":"PASS","fail_on_invalid":"PASS","schema_version":"agent-wiki-release-action-result/v1","strict_invalid":"PASS"}' \
-            > evidence/action-result.json
+            > "${RD10_EVIDENCE_DIR}/action-result.json"
+      - name: Create a clean frozen-source full-integrity fixture
+        run: |
+          set -euo pipefail
+          plugin_dir="candidate/.llm-wiki/plugins/hostile-rd10-plugin"
+          mkdir -p "${plugin_dir}"
+          cat > "${plugin_dir}/llm-wiki-plugin.json" <<'JSON'
+          {
+            "id": "hostile-rd10-plugin",
+            "version": "0.1.0",
+            "llm_wiki_version": "*",
+            "components": [
+              {
+                "type": "lint_rule",
+                "id": "marker",
+                "entry_point": "hostile_rd10_plugin:check"
+              }
+            ]
+          }
+          JSON
+          cat > "${plugin_dir}/hostile_rd10_plugin.py" <<'PY'
+          import os
+          from pathlib import Path
+
+          Path(os.environ["TARGET_PLUGIN_EXECUTION_MARKER"]).write_text(
+              "executed\n", encoding="utf-8"
+          )
+
+          def check(*_args):
+              return []
+          PY
+          cat > candidate/.llm-wiki/plugins.lock.json <<'JSON'
+          {
+            "version": 1,
+            "plugins": {
+              "hostile-rd10-plugin": {
+                "id": "hostile-rd10-plugin",
+                "version": "0.1.0",
+                "llm_wiki_version": "*",
+                "description": "RD-10 plugin-disable sentinel",
+                "source": "qualification-fixture",
+                "installed_at": "1970-01-01T00:00:00Z",
+                "components": [
+                  {
+                    "type": "lint_rule",
+                    "id": "marker",
+                    "entry_point": "hostile_rd10_plugin:check"
+                  }
+                ]
+              }
+            }
+          }
+          JSON
+
+          test ! -e "${FULL_INTEGRITY_PLUGIN_MARKER}"
+          test ! -e .git
+          mv -- incoming "${RUNNER_TEMP}/rd-10-frozen-inputs"
+          git init --quiet
+          git config user.name "Release qualification"
+          git config user.email "release-qualification@example.invalid"
+          git add --all -- candidate
+          git commit --quiet -m "Create frozen-source RD-10 fixture"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+      - name: Run full integrity gate from the frozen candidate
+        uses: ./candidate/integrations/wiki-integrity
+        env:
+          TARGET_PLUGIN_EXECUTION_MARKER: ${{ runner.temp }}/full-integrity-plugin-executed
+        with:
+          src-dir: candidate
+          wiki-dir: candidate/docs/llm_wiki
+      - name: Validate fixed full-integrity evidence
+        run: |
+          set -euo pipefail
+          test ! -e "${FULL_INTEGRITY_PLUGIN_MARKER}"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          python -I - \
+            "${RUNNER_TEMP}/llm-wiki-evidence" \
+            "${RD10_EVIDENCE_DIR}/full-integrity-action-result.json" <<'PY'
+          import hashlib
+          import json
+          import pathlib
+          import sys
+
+          evidence = pathlib.Path(sys.argv[1])
+          result_path = pathlib.Path(sys.argv[2])
+          expected_files = {
+              "extractor-plan.json",
+              "llm-wiki-ci-report.json",
+              "llm-wiki-ci-report.md",
+              "locked-toolchain-versions.txt",
+              "prepare-extractors.log",
+          }
+          actual_files = {path.name for path in evidence.iterdir()}
+          if actual_files != expected_files:
+              raise SystemExit(
+                  f"full-integrity evidence mismatch: {sorted(actual_files)}"
+              )
+          for name in sorted(expected_files):
+              path = evidence / name
+              if path.is_symlink() or not path.is_file() or path.stat().st_size == 0:
+                  raise SystemExit(f"invalid full-integrity evidence file: {name}")
+
+          plan = json.loads((evidence / "extractor-plan.json").read_text("utf-8"))
+          if plan != {
+              "schema": "llm-wiki-prepare-extractors-plan/v1",
+              "languages": ["typescript"],
+          }:
+              raise SystemExit(f"unexpected extractor plan: {plan!r}")
+
+          report = json.loads(
+              (evidence / "llm-wiki-ci-report.json").read_text("utf-8")
+          )
+          expected_report = {
+              "issue_count": 0,
+              "issues": [],
+              "knowledge_drift_gate": False,
+              "knowledge_drift_report": True,
+              "ok": True,
+              "src_dir": "candidate",
+              "strict": True,
+              "wiki_dir": "candidate/docs/llm_wiki",
+          }
+          for key, expected in expected_report.items():
+              if report.get(key) != expected:
+                  raise SystemExit(
+                      f"unexpected full-integrity report {key}: {report.get(key)!r}"
+                  )
+
+          versions = {}
+          for line in (evidence / "locked-toolchain-versions.txt").read_text(
+              "utf-8"
+          ).splitlines():
+              key, separator, value = line.partition(": ")
+              if not separator or key in versions:
+                  raise SystemExit(f"invalid toolchain evidence line: {line!r}")
+              versions[key] = value
+          for key, expected in {
+              "typescript selected": "true",
+              "go selected": "false",
+              "rust selected": "false",
+              "haskell selected": "false",
+          }.items():
+              if versions.get(key) != expected:
+                  raise SystemExit(f"unexpected selection evidence {key}")
+          for tool in ("node", "npm"):
+              if not versions.get(f"{tool} expected") or (
+                  versions.get(f"{tool} expected") != versions.get(f"{tool} actual")
+              ):
+                  raise SystemExit(f"{tool} version evidence does not match")
+
+          digests = {
+              name: hashlib.sha256((evidence / name).read_bytes()).hexdigest()
+              for name in sorted(expected_files)
+          }
+          result_path.parent.mkdir(parents=True, exist_ok=True)
+          result_path.write_text(
+              json.dumps(
+                  {
+                      "evidence_sha256": digests,
+                      "extractor_plan": ["typescript"],
+                      "full_integrity": "PASS",
+                      "plugin_disabled": "PASS",
+                      "schema_version": (
+                          "agent-wiki-release-full-integrity-action-result/v1"
+                      ),
+                      "worktree": "clean",
+                  },
+                  sort_keys=True,
+                  separators=(",", ":"),
+              )
+              + "\n",
+              encoding="utf-8",
+          )
+          PY
       - name: Upload gate evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: evidence-rd-10
-          path: evidence/
+          path: ${{ runner.temp }}/rd-10-evidence/
           if-no-files-found: error
           retention-days: 14
 

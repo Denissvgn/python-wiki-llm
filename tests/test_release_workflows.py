@@ -887,6 +887,116 @@ def test_qualification_has_every_gate_and_fail_closed_discovery() -> None:
     assert "--allow-non-go-exit-zero" not in publish_text
 
 
+def test_rd10_qualifies_both_composite_actions_from_the_frozen_candidate() -> None:
+    workflow = _yaml("release-qualification.yml")
+    job = workflow["jobs"]["action"]
+    assert job["name"] == "RD-10 hosted composite Action"
+    assert job["needs"] == "freeze"
+    assert job["timeout-minutes"] == 60
+    assert "env" not in job
+
+    bind_paths = _named_step(job, "Bind RD-10 runner-temporary paths")["run"]
+    assert '"${RUNNER_TEMP}/rd-10-evidence"' in bind_paths
+    assert '"${RUNNER_TEMP}/full-integrity-plugin-executed"' in bind_paths
+    assert '} >> "${GITHUB_ENV}"' in bind_paths
+
+    context = _named_step(job, "Run context health gate")
+    assert context["uses"] == "./candidate/integrations/github-action"
+    assert context["with"] == {
+        "wiki-dir": "candidate/.action-selftest/wiki",
+        "src-dir": "candidate/tests/fixtures/context-health-action/source",
+        "strict": "true",
+        "fail-on": "unhealthy",
+    }
+    for name in ("Reject invalid strict", "Reject invalid fail-on"):
+        invalid = _named_step(job, name)
+        assert invalid["uses"] == "./candidate/integrations/github-action"
+        assert invalid["continue-on-error"] is True
+    invalid_assertion = _named_step(
+        job, "Assert both invalid inputs failed closed"
+    )["run"]
+    assert 'test "${STRICT_OUTCOME}" = failure' in invalid_assertion
+    assert 'test "${FAIL_ON_OUTCOME}" = failure' in invalid_assertion
+    assert '"${RD10_EVIDENCE_DIR}/action-result.json"' in invalid_assertion
+
+    fixture = _named_step(
+        job, "Create a clean frozen-source full-integrity fixture"
+    )["run"]
+    for required in (
+        "candidate/.llm-wiki/plugins/hostile-rd10-plugin",
+        "candidate/.llm-wiki/plugins.lock.json",
+        'Path(os.environ["TARGET_PLUGIN_EXECUTION_MARKER"])',
+        'mv -- incoming "${RUNNER_TEMP}/rd-10-frozen-inputs"',
+        "git init --quiet",
+        "git add --all -- candidate",
+        'git commit --quiet -m "Create frozen-source RD-10 fixture"',
+        'test -z "$(git status --porcelain=v1 --untracked-files=all)"',
+    ):
+        assert required in fixture
+
+    full_integrity = _named_step(
+        job, "Run full integrity gate from the frozen candidate"
+    )
+    assert full_integrity == {
+        "name": "Run full integrity gate from the frozen candidate",
+        "uses": "./candidate/integrations/wiki-integrity",
+        "env": {
+            "TARGET_PLUGIN_EXECUTION_MARKER": (
+                "${{ runner.temp }}/full-integrity-plugin-executed"
+            )
+        },
+        "with": {
+            "src-dir": "candidate",
+            "wiki-dir": "candidate/docs/llm_wiki",
+        },
+    }
+
+    validation = _named_step(job, "Validate fixed full-integrity evidence")[
+        "run"
+    ]
+    for required in (
+        'test ! -e "${FULL_INTEGRITY_PLUGIN_MARKER}"',
+        'test -z "$(git status --porcelain=v1 --untracked-files=all)"',
+        '"${RD10_EVIDENCE_DIR}/full-integrity-action-result.json"',
+        '"extractor-plan.json"',
+        '"llm-wiki-ci-report.json"',
+        '"llm-wiki-ci-report.md"',
+        '"locked-toolchain-versions.txt"',
+        '"prepare-extractors.log"',
+        '"schema": "llm-wiki-prepare-extractors-plan/v1"',
+        '"languages": ["typescript"]',
+        '"knowledge_drift_gate": False',
+        '"knowledge_drift_report": True',
+        '"ok": True',
+        '"typescript selected": "true"',
+        '"go selected": "false"',
+        '"rust selected": "false"',
+        '"haskell selected": "false"',
+        '"plugin_disabled": "PASS"',
+        '"worktree": "clean"',
+    ):
+        assert required in validation
+    validator = validation.split("<<'PY'\n", 1)[1].rsplit("\nPY", 1)[0]
+    compile(validator, "release-qualification-rd10-validator", "exec")
+
+    upload = _named_step(job, "Upload gate evidence")
+    assert upload["if"] == "always()"
+    assert upload["with"] == {
+        "name": "evidence-rd-10",
+        "path": "${{ runner.temp }}/rd-10-evidence/",
+        "if-no-files-found": "error",
+        "retention-days": 14,
+    }
+    assert "action" in workflow["jobs"]["bundle"]["needs"]
+    assert "action" in workflow["jobs"]["decision"]["needs"]
+    bundle = _named_step(
+        job=workflow["jobs"]["bundle"], name="Build versioned release bundle"
+    )
+    assert '--evidence "RD-10:action=incoming/gates/evidence-rd-10"' in bundle[
+        "run"
+    ]
+
+
 def test_locked_toolchain_archives_and_oci_digests_are_the_executed_inputs() -> None:
     workflow = _yaml("release-qualification.yml")
     toolchains = "\n".join(
