@@ -4,6 +4,7 @@ from . import (
     extract_cmd as extract_cmd,
     lint_cmd as lint_cmd,
     hook_cmd as hook_cmd,
+    install_ci_cmd as install_ci_cmd,
     trigger_cmd as trigger_cmd,
     generate_prompt_cmd as generate_prompt_cmd,
     release_cmd as release_cmd,

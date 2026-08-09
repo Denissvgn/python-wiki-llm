@@ -32,6 +32,7 @@ EXPECTED_SUBCOMMANDS = (
     "generate-prompt",
     "init",
     "install",
+    "install-ci",
     "install-hook",
     "knowledge",
     "lint",
