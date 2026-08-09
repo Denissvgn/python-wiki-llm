@@ -463,13 +463,14 @@ are never modified.
 The installed workflow checks out the project without persisted credentials
 and calls the release's reusable full-integrity action with read-only
 permissions. That action installs the CLI from its immutable action checkout,
-discovers helper languages through the canonical source-selection profile,
-installs their checksum-verified toolchains in runner-temporary storage, and
-prepares detected TypeScript/JavaScript, Go, Rust, and Haskell helpers. Python
-extraction is built in and needs no external helper. The action then runs the
-strict `ci-check` gate with advisory native-drift diagnostics, verifies that the
-project worktree stayed clean, and uploads a fixed, allowlisted set of
-validation and toolchain evidence even when validation fails.
+discovers helper languages through default source-selection discovery (using
+`.llm-wiki/source-selection.json` when present), installs their
+checksum-verified toolchains in runner-temporary storage, and prepares detected
+TypeScript/JavaScript, Go, Rust, and Haskell helpers. Python extraction is built
+in and needs no external helper. The action then runs the strict `ci-check` gate
+with advisory native-drift diagnostics, verifies that the project worktree
+stayed clean, and uploads a fixed, allowlisted set of validation and toolchain
+evidence even when validation fails.
 
 The portable gate disables project-local Python plugins so pull-request content
 is never imported or executed. A project that intentionally depends on trusted
