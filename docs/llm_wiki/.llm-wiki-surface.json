@@ -18,18 +18,18 @@
     "by_kind": {
       "api-contracts": 0,
       "dependencies": 1,
-      "entities": 457,
-      "flows": 415,
+      "entities": 459,
+      "flows": 421,
       "guides": 6,
       "index": 1,
       "infrastructure": 0,
       "load-order": 1,
       "log": 1,
-      "modules": 145,
+      "modules": 147,
       "workflows": 12
     },
     "dependency_architecture": 2,
-    "total": 1039
+    "total": 1049
   },
   "dependency_pages": {
     "count": 2,
@@ -10936,6 +10936,80 @@
       "category": "api",
       "detector": "builtin",
       "entry_point": {
+        "label": "install_ci_workflow",
+        "source_path": "src/llm_wiki_cli/services/ci_installer.py",
+        "symbol": "install_ci_workflow"
+      },
+      "evidence": {
+        "data_flow": {
+          "boundary_effects": [
+            {
+              "confidence": "unknown",
+              "kind": "filesystem_read",
+              "line": 323,
+              "step": "install_ci_workflow",
+              "step_index": 1,
+              "target": "target.read_bytes"
+            }
+          ],
+          "gaps": [
+            {
+              "kind": "unresolved_call",
+              "line": 63,
+              "step": "normalize_action_ref",
+              "target": "isinstance"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 63,
+              "step": "normalize_action_ref",
+              "target": "_ACTION_REF_RE.fullmatch"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 65,
+              "step": "normalize_action_ref",
+              "target": "value.lower"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 256,
+              "step": "require_repository_relative_path",
+              "target": "isinstance"
+            },
+            {
+              "kind": "step_limit",
+              "line": 0,
+              "step": "install_ci_workflow",
+              "target": "first 12 steps"
+            }
+          ],
+          "generated": true,
+          "step_count": 12,
+          "transfer_count": 11,
+          "truncated": false
+        },
+        "flow": {
+          "modules_touched": [
+            "src/llm_wiki_cli/services/ci_installer.py",
+            "src/llm_wiki_cli/services/validation.py",
+            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_cli/services/wiki_lifecycle.py",
+            "src/llm_wiki_cli/services/wiki_surface.py",
+            "src/llm_wiki_cli/config.py"
+          ],
+          "step_count": 402,
+          "truncated": false
+        }
+      },
+      "id": "api-install_ci_workflow",
+      "language": "python"
+    },
+    {
+      "category": "api",
+      "detector": "builtin",
+      "entry_point": {
         "label": "is_canonical_uuid",
         "source_path": "src/llm_wiki_cli/services/validation.py",
         "symbol": "is_canonical_uuid"
@@ -11375,6 +11449,101 @@
         }
       },
       "id": "api-is_table_separator",
+      "language": "python"
+    },
+    {
+      "category": "api",
+      "detector": "builtin",
+      "entry_point": {
+        "label": "is_unmodified_managed_workflow",
+        "source_path": "src/llm_wiki_cli/services/ci_installer.py",
+        "symbol": "is_unmodified_managed_workflow"
+      },
+      "evidence": {
+        "data_flow": {
+          "boundary_effects": [],
+          "gaps": [
+            {
+              "kind": "unresolved_call",
+              "line": 231,
+              "step": "_normalize_newlines",
+              "target": "content.decode"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 234,
+              "step": "_normalize_newlines",
+              "target": "text.replace('\\r\\n', '\\n').replace('\\r', '\\n').encode"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 234,
+              "step": "_normalize_newlines",
+              "target": "text.replace('\\r\\n', '\\n').replace"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 234,
+              "step": "_normalize_newlines",
+              "target": "text.replace"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 243,
+              "step": "is_unmodified_managed_workflow",
+              "target": "normalized.decode"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 244,
+              "step": "is_unmodified_managed_workflow",
+              "target": "_MANAGED_HEADER_RE.match"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 247,
+              "step": "is_unmodified_managed_workflow",
+              "target": "text[match.end():].encode"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 247,
+              "step": "is_unmodified_managed_workflow",
+              "target": "match.end"
+            },
+            {
+              "kind": "external_call",
+              "line": 248,
+              "step": "is_unmodified_managed_workflow",
+              "target": "hashlib.sha256(body).hexdigest"
+            },
+            {
+              "kind": "external_call",
+              "line": 248,
+              "step": "is_unmodified_managed_workflow",
+              "target": "hashlib.sha256"
+            },
+            {
+              "kind": "step_limit",
+              "line": 0,
+              "step": "is_unmodified_managed_workflow",
+              "target": "first 12 steps"
+            }
+          ],
+          "generated": true,
+          "step_count": 12,
+          "transfer_count": 11,
+          "truncated": false
+        },
+        "flow": {
+          "modules_touched": [
+            "src/llm_wiki_cli/services/ci_installer.py"
+          ],
+          "step_count": 14,
+          "truncated": false
+        }
+      },
+      "id": "api-is_unmodified_managed_workflow",
       "language": "python"
     },
     {
@@ -13854,6 +14023,53 @@
         }
       },
       "id": "api-nonnegative_int_or_none",
+      "language": "python"
+    },
+    {
+      "category": "api",
+      "detector": "builtin",
+      "entry_point": {
+        "label": "normalize_action_ref",
+        "source_path": "src/llm_wiki_cli/services/ci_installer.py",
+        "symbol": "normalize_action_ref"
+      },
+      "evidence": {
+        "data_flow": {
+          "boundary_effects": [],
+          "gaps": [
+            {
+              "kind": "unresolved_call",
+              "line": 63,
+              "step": "normalize_action_ref",
+              "target": "isinstance"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 63,
+              "step": "normalize_action_ref",
+              "target": "_ACTION_REF_RE.fullmatch"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 65,
+              "step": "normalize_action_ref",
+              "target": "value.lower"
+            }
+          ],
+          "generated": true,
+          "step_count": 5,
+          "transfer_count": 4,
+          "truncated": false
+        },
+        "flow": {
+          "modules_touched": [
+            "src/llm_wiki_cli/services/ci_installer.py"
+          ],
+          "step_count": 5,
+          "truncated": false
+        }
+      },
+      "id": "api-normalize_action_ref",
       "language": "python"
     },
     {
@@ -18294,6 +18510,66 @@
       "category": "api",
       "detector": "builtin",
       "entry_point": {
+        "label": "render_managed_workflow",
+        "source_path": "src/llm_wiki_cli/services/ci_installer.py",
+        "symbol": "render_managed_workflow"
+      },
+      "evidence": {
+        "data_flow": {
+          "boundary_effects": [],
+          "gaps": [
+            {
+              "kind": "unresolved_call",
+              "line": 63,
+              "step": "normalize_action_ref",
+              "target": "isinstance"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 63,
+              "step": "normalize_action_ref",
+              "target": "_ACTION_REF_RE.fullmatch"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 65,
+              "step": "normalize_action_ref",
+              "target": "value.lower"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 256,
+              "step": "require_repository_relative_path",
+              "target": "isinstance"
+            },
+            {
+              "kind": "step_limit",
+              "line": 0,
+              "step": "render_managed_workflow",
+              "target": "first 12 steps"
+            }
+          ],
+          "generated": true,
+          "step_count": 12,
+          "transfer_count": 11,
+          "truncated": false
+        },
+        "flow": {
+          "modules_touched": [
+            "src/llm_wiki_cli/services/ci_installer.py",
+            "src/llm_wiki_cli/services/validation.py"
+          ],
+          "step_count": 81,
+          "truncated": false
+        }
+      },
+      "id": "api-render_managed_workflow",
+      "language": "python"
+    },
+    {
+      "category": "api",
+      "detector": "builtin",
+      "entry_point": {
         "label": "replace_generated_section",
         "source_path": "src/llm_wiki_cli/services/section_ownership.py",
         "symbol": "replace_generated_section"
@@ -20875,6 +21151,129 @@
       "detector": "builtin",
       "entry_point": {
         "label": "run",
+        "source_path": "src/llm_wiki_cli/commands/install_ci_cmd.py",
+        "symbol": "run"
+      },
+      "evidence": {
+        "data_flow": {
+          "boundary_effects": [
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 21,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 25,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 30,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 31,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 35,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 36,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "filesystem_read",
+              "line": 323,
+              "step": "install_ci_workflow",
+              "step_index": 2,
+              "target": "target.read_bytes"
+            }
+          ],
+          "gaps": [
+            {
+              "kind": "unresolved_call",
+              "line": 63,
+              "step": "normalize_action_ref",
+              "target": "isinstance"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 63,
+              "step": "normalize_action_ref",
+              "target": "_ACTION_REF_RE.fullmatch"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 65,
+              "step": "normalize_action_ref",
+              "target": "value.lower"
+            },
+            {
+              "kind": "step_limit",
+              "line": 0,
+              "step": "run",
+              "target": "first 12 steps"
+            },
+            {
+              "kind": "truncated_flow",
+              "line": 0,
+              "step": "run",
+              "target": "depth limit"
+            }
+          ],
+          "generated": true,
+          "step_count": 12,
+          "transfer_count": 11,
+          "truncated": true
+        },
+        "flow": {
+          "modules_touched": [
+            "src/llm_wiki_cli/commands/install_ci_cmd.py",
+            "src/llm_wiki_cli/services/ci_installer.py",
+            "src/llm_wiki_cli/services/validation.py",
+            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_cli/services/wiki_lifecycle.py",
+            "src/llm_wiki_cli/services/wiki_surface.py",
+            "src/llm_wiki_cli/config.py"
+          ],
+          "step_count": 384,
+          "truncated": true
+        }
+      },
+      "id": "api-run-install_ci_cmd",
+      "language": "python"
+    },
+    {
+      "category": "api",
+      "detector": "builtin",
+      "entry_point": {
+        "label": "run",
         "source_path": "src/llm_wiki_cli/commands/knowledge_cmd.py",
         "symbol": "run"
       },
@@ -20955,7 +21354,7 @@
           "truncated": true
         }
       },
-      "id": "api-run",
+      "id": "api-run-knowledge_cmd",
       "language": "python"
     },
     {
@@ -27175,7 +27574,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 77,
+              "line": 78,
               "step": "run",
               "step_index": 1,
               "target": "report_path.write_text"
@@ -27183,7 +27582,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 79,
+              "line": 80,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -27191,7 +27590,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 80,
+              "line": 81,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -27307,7 +27706,7 @@
             "src/llm_wiki_cli/services/team.py",
             "src/llm_wiki_cli/services/metrics.py"
           ],
-          "step_count": 2581,
+          "step_count": 2583,
           "truncated": true
         }
       },
@@ -28311,6 +28710,129 @@
         }
       },
       "id": "cli-install",
+      "language": "python"
+    },
+    {
+      "category": "cli",
+      "detector": "builtin",
+      "entry_point": {
+        "label": "install-ci",
+        "source_path": "src/llm_wiki_cli/commands/install_ci_cmd.py",
+        "symbol": "run"
+      },
+      "evidence": {
+        "data_flow": {
+          "boundary_effects": [
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 21,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 25,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 30,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 31,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 35,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 36,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "filesystem_read",
+              "line": 323,
+              "step": "install_ci_workflow",
+              "step_index": 2,
+              "target": "target.read_bytes"
+            }
+          ],
+          "gaps": [
+            {
+              "kind": "unresolved_call",
+              "line": 63,
+              "step": "normalize_action_ref",
+              "target": "isinstance"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 63,
+              "step": "normalize_action_ref",
+              "target": "_ACTION_REF_RE.fullmatch"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 65,
+              "step": "normalize_action_ref",
+              "target": "value.lower"
+            },
+            {
+              "kind": "step_limit",
+              "line": 0,
+              "step": "run",
+              "target": "first 12 steps"
+            },
+            {
+              "kind": "truncated_flow",
+              "line": 0,
+              "step": "run",
+              "target": "depth limit"
+            }
+          ],
+          "generated": true,
+          "step_count": 12,
+          "transfer_count": 11,
+          "truncated": true
+        },
+        "flow": {
+          "modules_touched": [
+            "src/llm_wiki_cli/commands/install_ci_cmd.py",
+            "src/llm_wiki_cli/services/ci_installer.py",
+            "src/llm_wiki_cli/services/validation.py",
+            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_cli/services/wiki_lifecycle.py",
+            "src/llm_wiki_cli/services/wiki_surface.py",
+            "src/llm_wiki_cli/config.py"
+          ],
+          "step_count": 384,
+          "truncated": true
+        }
+      },
+      "id": "cli-install-ci",
       "language": "python"
     },
     {
@@ -29353,7 +29875,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 63,
+              "line": 89,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -29361,7 +29883,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 77,
+              "line": 102,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -29369,7 +29891,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 88,
+              "line": 117,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -29377,7 +29899,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 94,
+              "line": 128,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -29385,7 +29907,15 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 97,
+              "line": 134,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 137,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -29393,7 +29923,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 24,
+              "line": 28,
               "step": "_dedupe_languages",
               "step_index": 4,
               "target": "result.append"
@@ -29401,7 +29931,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 25,
+              "line": 29,
               "step": "_dedupe_languages",
               "step_index": 4,
               "target": "seen.add"
@@ -29410,31 +29940,31 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 51,
+              "line": 75,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "unresolved_call",
-              "line": 52,
+              "line": 76,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "unresolved_call",
-              "line": 53,
+              "line": 77,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "unresolved_call",
-              "line": 54,
+              "line": 78,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "unresolved_call",
-              "line": 55,
+              "line": 79,
               "step": "run",
               "target": "getattr"
             },
@@ -29468,7 +29998,7 @@
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/extractor_helpers.py"
           ],
-          "step_count": 857,
+          "step_count": 871,
           "truncated": true
         }
       },
@@ -30579,7 +31109,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 172,
+              "line": 210,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -30587,7 +31117,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 175,
+              "line": 213,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -30595,7 +31125,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 176,
+              "line": 214,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -30603,7 +31133,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 179,
+              "line": 217,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -30611,7 +31141,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 182,
+              "line": 220,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -30619,7 +31149,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 185,
+              "line": 223,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -30627,7 +31157,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 192,
+              "line": 230,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -30635,7 +31165,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 194,
+              "line": 232,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -30644,7 +31174,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 165,
+              "line": 203,
               "step": "run",
               "target": "getattr"
             },
@@ -30696,9 +31226,10 @@
             "src/llm_wiki_cli/config.py",
             "src/llm_wiki_cli/services/io.py",
             "src/llm_wiki_cli/services/schema.py",
-            "src/llm_wiki_cli/services/skills.py"
+            "src/llm_wiki_cli/services/skills.py",
+            "src/llm_wiki_cli/services/ci_installer.py"
           ],
-          "step_count": 172,
+          "step_count": 229,
           "truncated": false
         }
       },
@@ -31396,7 +31927,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2249,
+              "line": 2301,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -31404,7 +31935,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2252,
+              "line": 2304,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -31412,7 +31943,7 @@
             {
               "confidence": "unknown",
               "kind": "environment_read",
-              "line": 2255,
+              "line": 2307,
               "step": "main",
               "step_index": 1,
               "target": "os.environ.get"
@@ -31420,7 +31951,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2257,
+              "line": 2309,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -31428,7 +31959,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2260,
+              "line": 2312,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -31437,49 +31968,49 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 160,
+              "line": 162,
               "step": "_build_parser",
               "target": "argparse.ArgumentParser"
             },
             {
               "kind": "unresolved_call",
-              "line": 161,
+              "line": 163,
               "step": "_build_parser",
               "target": "parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 164,
+              "line": 166,
               "step": "_build_parser",
               "target": "parser.add_subparsers"
             },
             {
               "kind": "unresolved_call",
-              "line": 241,
+              "line": 244,
               "step": "_add_init_command",
               "target": "subparsers.add_parser"
             },
             {
               "kind": "unresolved_call",
-              "line": 244,
+              "line": 247,
               "step": "_add_init_command",
               "target": "init_parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 250,
+              "line": 253,
               "step": "_add_init_command",
               "target": "init_parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 255,
+              "line": 258,
               "step": "_add_init_command",
               "target": "init_parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 261,
+              "line": 264,
               "step": "_add_init_command",
               "target": "init_parser.add_argument"
             },
@@ -31500,7 +32031,7 @@
             "src/llm_wiki_cli/cli.py",
             "src/llm_wiki_cli/services/resource_diagnostics.py"
           ],
-          "step_count": 521,
+          "step_count": 531,
           "truncated": false
         }
       },
@@ -31817,6 +32348,8 @@
         "entities/InputFile.md",
         "entities/InputResourceBudget.md",
         "entities/InputTree.md",
+        "entities/InstallCiError.md",
+        "entities/InstallCiResult.md",
         "entities/IntegrityDifference.md",
         "entities/InvalidRequestError.md",
         "entities/InvalidSurfaceJson.md",
@@ -32221,6 +32754,7 @@
         "flows/api-identity_coordinate_key.md",
         "flows/api-infrastructure_evidence_by_page.md",
         "flows/api-input_wiki_tree_baseline.md",
+        "flows/api-install_ci_workflow.md",
         "flows/api-is_canonical_uuid.md",
         "flows/api-is_placeholder_description.md",
         "flows/api-is_portable_path_component.md",
@@ -32228,6 +32762,7 @@
         "flows/api-is_pristine_wiki_target.md",
         "flows/api-is_supported_relationship_kind.md",
         "flows/api-is_table_separator.md",
+        "flows/api-is_unmodified_managed_workflow.md",
         "flows/api-is_valid_sha256.md",
         "flows/api-knowledge_freshness_disclosure.md",
         "flows/api-knowledge_freshness_hint.md",
@@ -32261,6 +32796,7 @@
         "flows/api-move_windows_path_write_through.md",
         "flows/api-natural_key_for.md",
         "flows/api-nonnegative_int_or_none.md",
+        "flows/api-normalize_action_ref.md",
         "flows/api-normalize_claim_evidence_records.md",
         "flows/api-normalize_entity_observation.md",
         "flows/api-normalize_legacy_portable_relative_path.md",
@@ -32318,6 +32854,7 @@
         "flows/api-render_api_contracts_markdown.md",
         "flows/api-render_doctor_text.md",
         "flows/api-render_flow_api_contract_section.md",
+        "flows/api-render_managed_workflow.md",
         "flows/api-replace_generated_section.md",
         "flows/api-replace_section_body.md",
         "flows/api-replace_windows_file_write_through.md",
@@ -32364,7 +32901,8 @@
         "flows/api-resolved_paths_equal.md",
         "flows/api-retained_concept_page_paths.md",
         "flows/api-review_scope_hash.md",
-        "flows/api-run.md",
+        "flows/api-run-install_ci_cmd.md",
+        "flows/api-run-knowledge_cmd.md",
         "flows/api-run_verification.md",
         "flows/api-runtime_consumed_inputs.md",
         "flows/api-runtime_generation_options.md",
@@ -32457,6 +32995,7 @@
         "flows/cli-extract.md",
         "flows/cli-generate-prompt.md",
         "flows/cli-init.md",
+        "flows/cli-install-ci.md",
         "flows/cli-install-hook.md",
         "flows/cli-install.md",
         "flows/cli-knowledge.md",
@@ -32512,6 +33051,7 @@
         "modules/calibration___init__.md",
         "modules/calibration_contracts.md",
         "modules/ci_check_cmd.md",
+        "modules/ci_installer.md",
         "modules/circuit_breaker.md",
         "modules/cli.md",
         "modules/common.md",
@@ -32558,6 +33098,7 @@
         "modules/infrastructure_inventory.md",
         "modules/infrastructure_sync.md",
         "modules/init_cmd.md",
+        "modules/install_ci_cmd.md",
         "modules/install_cmd.md",
         "modules/integrity.md",
         "modules/inventory_cache.md",
@@ -35180,6 +35721,31 @@
       "title": "_InputTree"
     },
     {
+      "canonical_path": "entities/InstallCiError.md",
+      "id": "InstallCiError",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/InstallCiError",
+      "outgoing_internal_links": [
+        "modules/ci_installer.md",
+        "modules/install_ci_cmd.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/ci_installer.py",
+      "title": "InstallCiError"
+    },
+    {
+      "canonical_path": "entities/InstallCiResult.md",
+      "id": "InstallCiResult",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/InstallCiResult",
+      "outgoing_internal_links": [
+        "modules/ci_installer.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/ci_installer.py",
+      "title": "InstallCiResult"
+    },
+    {
       "canonical_path": "entities/IntegrityDifference.md",
       "id": "IntegrityDifference",
       "kind": "entities",
@@ -37722,12 +38288,12 @@
       "outgoing_internal_links": [
         "modules/api_contracts.md",
         "modules/bootstrap_runtime.md",
+        "modules/ci_installer.md",
         "modules/context_service.md",
         "modules/documentation_native.md",
         "modules/documentation_policy.md",
         "modules/documentation_query_builder.md",
         "modules/documentation_run_dependencies.md",
-        "modules/documentation_wiki_input.md",
         "modules/hook_cmd.md",
         "modules/init_cmd.md",
         "modules/source_selection.md",
@@ -37975,6 +38541,7 @@
       "mcp_uri": "llm-wiki://entities/SyncManifestError",
       "outgoing_internal_links": [
         "modules/bootstrap_runtime.md",
+        "modules/ci_installer.md",
         "modules/documentation_query_builder.md",
         "modules/documentation_wiki_input.md",
         "modules/knowledge_artifacts.md",
@@ -38384,6 +38951,7 @@
       "mcp_uri": "llm-wiki://entities/WikiLifecycleState",
       "outgoing_internal_links": [
         "modules/bootstrap_runtime.md",
+        "modules/ci_installer.md",
         "modules/lint_service.md",
         "modules/sync_cmd.md",
         "modules/wiki_lifecycle.md"
@@ -38871,6 +39439,27 @@
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/commands/ci_check_cmd.py",
       "title": "ci_check_cmd Module"
+    },
+    {
+      "canonical_path": "modules/ci_installer.md",
+      "id": "ci_installer",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/ci_installer",
+      "outgoing_internal_links": [
+        "entities/InstallCiError.md",
+        "entities/InstallCiResult.md",
+        "modules/ci_installer.md",
+        "modules/install_ci_cmd.md",
+        "modules/io.md",
+        "modules/source_selection.md",
+        "modules/sync_manifest.md",
+        "modules/uninstall_cmd.md",
+        "modules/validation.md",
+        "modules/wiki_lifecycle.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/ci_installer.py",
+      "title": "ci_installer Module"
     },
     {
       "canonical_path": "modules/circuit_breaker.md",
@@ -39717,6 +40306,21 @@
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/commands/init_cmd.py",
       "title": "init_cmd Module"
+    },
+    {
+      "canonical_path": "modules/install_ci_cmd.md",
+      "id": "install_ci_cmd",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/install_ci_cmd",
+      "outgoing_internal_links": [
+        "modules/ci_installer.md",
+        "modules/cli.md",
+        "modules/config.md",
+        "modules/install_ci_cmd.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/commands/install_ci_cmd.py",
+      "title": "install_ci_cmd Module"
     },
     {
       "canonical_path": "modules/install_cmd.md",
@@ -41073,6 +41677,7 @@
       "kind": "modules",
       "mcp_uri": "llm-wiki://modules/uninstall_cmd",
       "outgoing_internal_links": [
+        "modules/ci_installer.md",
         "modules/cli.md",
         "modules/config.md",
         "modules/io.md",
@@ -41214,6 +41819,7 @@
       "outgoing_internal_links": [
         "entities/WikiLifecycleState.md",
         "modules/bootstrap_runtime.md",
+        "modules/ci_installer.md",
         "modules/config.md",
         "modules/lint_service.md",
         "modules/sync_cmd.md",
@@ -41550,8 +42156,10 @@
       "kind": "guides",
       "mcp_uri": "llm-wiki://guides/integrations",
       "outgoing_internal_links": [
+        "flows/cli-install-ci.md",
         "flows/cli-obsidian.md",
         "flows/process-render_summary.md",
+        "modules/ci_installer.md",
         "modules/llm-wiki_main.md",
         "modules/obsidian.md",
         "modules/obsidian_cmd.md",
@@ -43903,6 +44511,24 @@
       "title": "input_wiki_tree_baseline"
     },
     {
+      "canonical_path": "flows/api-install_ci_workflow.md",
+      "id": "api-install_ci_workflow",
+      "kind": "flows",
+      "mcp_uri": "llm-wiki://flows/api-install_ci_workflow",
+      "outgoing_internal_links": [
+        "modules/ci_installer.md",
+        "modules/config.md",
+        "modules/io.md",
+        "modules/source_selection.md",
+        "modules/validation.md",
+        "modules/wiki_lifecycle.md",
+        "modules/wiki_surface.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/ci_installer.py",
+      "title": "install_ci_workflow"
+    },
+    {
       "canonical_path": "flows/api-is_canonical_uuid.md",
       "id": "api-is_canonical_uuid",
       "kind": "flows",
@@ -43986,6 +44612,18 @@
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/services/markdown_sections.py",
       "title": "is_table_separator"
+    },
+    {
+      "canonical_path": "flows/api-is_unmodified_managed_workflow.md",
+      "id": "api-is_unmodified_managed_workflow",
+      "kind": "flows",
+      "mcp_uri": "llm-wiki://flows/api-is_unmodified_managed_workflow",
+      "outgoing_internal_links": [
+        "modules/ci_installer.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/ci_installer.py",
+      "title": "is_unmodified_managed_workflow"
     },
     {
       "canonical_path": "flows/api-is_valid_sha256.md",
@@ -44514,6 +45152,18 @@
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/services/validation.py",
       "title": "nonnegative_int_or_none"
+    },
+    {
+      "canonical_path": "flows/api-normalize_action_ref.md",
+      "id": "api-normalize_action_ref",
+      "kind": "flows",
+      "mcp_uri": "llm-wiki://flows/api-normalize_action_ref",
+      "outgoing_internal_links": [
+        "modules/ci_installer.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/ci_installer.py",
+      "title": "normalize_action_ref"
     },
     {
       "canonical_path": "flows/api-normalize_claim_evidence_records.md",
@@ -45453,6 +46103,19 @@
       "title": "render_flow_api_contract_section"
     },
     {
+      "canonical_path": "flows/api-render_managed_workflow.md",
+      "id": "api-render_managed_workflow",
+      "kind": "flows",
+      "mcp_uri": "llm-wiki://flows/api-render_managed_workflow",
+      "outgoing_internal_links": [
+        "modules/ci_installer.md",
+        "modules/validation.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/ci_installer.py",
+      "title": "render_managed_workflow"
+    },
+    {
       "canonical_path": "flows/api-replace_generated_section.md",
       "id": "api-replace_generated_section",
       "kind": "flows",
@@ -46017,10 +46680,29 @@
       "title": "review_scope_hash"
     },
     {
-      "canonical_path": "flows/api-run.md",
-      "id": "api-run",
+      "canonical_path": "flows/api-run-install_ci_cmd.md",
+      "id": "api-run-install_ci_cmd",
       "kind": "flows",
-      "mcp_uri": "llm-wiki://flows/api-run",
+      "mcp_uri": "llm-wiki://flows/api-run-install_ci_cmd",
+      "outgoing_internal_links": [
+        "modules/ci_installer.md",
+        "modules/config.md",
+        "modules/install_ci_cmd.md",
+        "modules/io.md",
+        "modules/source_selection.md",
+        "modules/validation.md",
+        "modules/wiki_lifecycle.md",
+        "modules/wiki_surface.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/commands/install_ci_cmd.py",
+      "title": "run"
+    },
+    {
+      "canonical_path": "flows/api-run-knowledge_cmd.md",
+      "id": "api-run-knowledge_cmd",
+      "kind": "flows",
+      "mcp_uri": "llm-wiki://flows/api-run-knowledge_cmd",
       "outgoing_internal_links": [
         "modules/concept_identity.md",
         "modules/io.md",
@@ -47533,6 +48215,25 @@
       "title": "init"
     },
     {
+      "canonical_path": "flows/cli-install-ci.md",
+      "id": "cli-install-ci",
+      "kind": "flows",
+      "mcp_uri": "llm-wiki://flows/cli-install-ci",
+      "outgoing_internal_links": [
+        "modules/ci_installer.md",
+        "modules/config.md",
+        "modules/install_ci_cmd.md",
+        "modules/io.md",
+        "modules/source_selection.md",
+        "modules/validation.md",
+        "modules/wiki_lifecycle.md",
+        "modules/wiki_surface.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/commands/install_ci_cmd.py",
+      "title": "install-ci"
+    },
+    {
       "canonical_path": "flows/cli-install-hook.md",
       "id": "cli-install-hook",
       "kind": "flows",
@@ -48057,6 +48758,7 @@
       "kind": "flows",
       "mcp_uri": "llm-wiki://flows/cli-uninstall",
       "outgoing_internal_links": [
+        "modules/ci_installer.md",
         "modules/config.md",
         "modules/io.md",
         "modules/services_schema.md",
@@ -48314,6 +49016,7 @@
         "modules/calibration___init__.md",
         "modules/calibration_contracts.md",
         "modules/ci_check_cmd.md",
+        "modules/ci_installer.md",
         "modules/circuit_breaker.md",
         "modules/cli.md",
         "modules/common.md",
@@ -48360,6 +49063,7 @@
         "modules/infrastructure_inventory.md",
         "modules/infrastructure_sync.md",
         "modules/init_cmd.md",
+        "modules/install_ci_cmd.md",
         "modules/install_cmd.md",
         "modules/integrity.md",
         "modules/inventory_cache.md",
@@ -48471,6 +49175,7 @@
         "modules/calibration___init__.md",
         "modules/calibration_contracts.md",
         "modules/ci_check_cmd.md",
+        "modules/ci_installer.md",
         "modules/circuit_breaker.md",
         "modules/cli.md",
         "modules/common.md",
@@ -48517,6 +49222,7 @@
         "modules/infrastructure_inventory.md",
         "modules/infrastructure_sync.md",
         "modules/init_cmd.md",
+        "modules/install_ci_cmd.md",
         "modules/install_cmd.md",
         "modules/integrity.md",
         "modules/inventory_cache.md",
@@ -48613,5 +49319,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:a33fd8e790755fd539925e690ce199876a76268c1f95d86dec7d1f8fc0a9dc22"
+  "source_hash": "sha256:663233418d930375ace022da1b33a979769af3ac37ebbc587eaba2e3a1eb8452"
 }

@@ -367,6 +367,17 @@ Generate the initial wiki from an existing codebase:
 llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki
 ```
 
+Install the full read-only GitHub Actions integrity gate from an immutable
+released commit:
+
+```bash
+llm-wiki install-ci --action-ref "$RELEASE_COMMIT_SHA"
+```
+
+`RELEASE_COMMIT_SHA` must be the complete 40-character commit published for the
+release. Branch names, tags, and abbreviated SHAs are rejected so a project
+cannot silently change the code that validates its wiki.
+
 Validate the wiki:
 
 ```bash
@@ -433,6 +444,43 @@ publication approval, or a new default.
 
 ## Automation
 
+### Install the full integrity gate
+
+After `bootstrap` has created a managed wiki, install its dedicated workflow:
+
+```bash
+llm-wiki install-ci --action-ref "$RELEASE_COMMIT_SHA" --dry-run
+llm-wiki install-ci --action-ref "$RELEASE_COMMIT_SHA"
+```
+
+The command writes only
+`.github/workflows/llm-wiki-integrity.yml`. Rerunning it with the same inputs is
+an exact no-op, while an older unmodified workflow installed by this command is
+updated safely. An unmanaged or locally modified workflow is preserved and
+reported as a conflict unless `--force` is supplied; unrelated workflow files
+are never modified.
+
+The installed workflow checks out the project without persisted credentials
+and calls the release's reusable full-integrity action with read-only
+permissions. That action installs the CLI from its immutable action checkout,
+discovers helper languages through default source-selection discovery (using
+`.llm-wiki/source-selection.json` when present), installs their
+checksum-verified toolchains in runner-temporary storage, and prepares detected
+TypeScript/JavaScript, Go, Rust, and Haskell helpers. Python extraction is built
+in and needs no external helper. The action then runs the strict `ci-check` gate
+with advisory native-drift diagnostics, verifies that the project worktree
+stayed clean, and uploads a fixed, allowlisted set of validation and toolchain
+evidence even when validation fails.
+
+The portable gate disables project-local Python plugins so pull-request content
+is never imported or executed. A project that intentionally depends on trusted
+extractor, generation, or lint plugins must use a separately reviewed trusted
+workflow instead of this pull-request gate.
+
+Installation does not bootstrap or synchronize the wiki, change branch
+protection, install hooks, push commits, or add repository secrets. Those
+remain explicit maintainer actions.
+
 `llm-wiki install-hook` installs a `post-commit` hook that generates
 `.git/llm-wiki-prompt.txt` with `llm-wiki generate-prompt` and prints a reminder
 to paste that prompt into your agent chat. Generated hooks never launch CLI
@@ -488,9 +536,9 @@ llm-wiki install-hook --force
 
 ### CI gate
 
-The bundled composite GitHub Action runs the knowledge health check on a pull
-request, writes its structured results as a job-summary table, and applies a
-configurable failure threshold:
+The lighter context-health composite action runs the knowledge health check on
+a pull request, writes its structured results as a job-summary table, and
+applies a configurable failure threshold:
 
 ```yaml
 - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -827,12 +875,16 @@ binaries outside the lint/extract hot path.
 
 ```bash
 llm-wiki prepare-extractors --src-dir .
+llm-wiki prepare-extractors --src-dir . --plan --format json
 llm-wiki prepare-extractors --language typescript --language go --language haskell
 llm-wiki prepare-extractors --cache-dir .cache/llm-wiki-helpers
 ```
 
 When `--language` is omitted, only helper languages detected in `--src-dir` are
-prepared. Helper cache resolution follows `--cache-dir`, then
+prepared. `--plan` validates the same source-selection boundary and reports the
+detected helper languages without creating a cache or invoking a toolchain;
+`--format json` emits the versioned machine-readable plan used by portable CI.
+Helper cache resolution follows `--cache-dir`, then
 `LLM_WIKI_CACHE_DIR`, then `.git/llm-wiki-extractors/`. If Go is installed in a
 nonstandard location or the `go` on `PATH` cannot run, set
 `LLM_WIKI_GO=/path/to/go` before running `prepare-extractors`. If GHC is
@@ -997,6 +1049,8 @@ exits nonzero on validation failure. Native freshness/drift is disabled unless
 nonblocking. Structured output discloses the report mode through
 `knowledge_drift_report`; the legacy `knowledge_drift_gate` compatibility field
 is always `false`.
+`--no-plugins` disables project-local extractor, generation, and lint plugins;
+the portable integrity workflow always uses this fail-closed mode.
 For trusted source trees outside the runner workspace, pass
 `--allow-external-src`; same-owner or system-administrator-owned symlinks are
 disclosed with a warning, symlinks owned by another user are rejected, and
@@ -1859,8 +1913,10 @@ llm-wiki uninstall --remove-wiki
 does not run source extraction or live freshness evaluation; a ready snapshot
 therefore reports freshness as not evaluated rather than current.
 
-`uninstall` removes project integration artifacts. It does not uninstall the
-CLI itself. To remove the Python package, run `pip uninstall agent-wiki-cli`.
+`uninstall` removes project integration artifacts, including an unmodified
+workflow created by `install-ci`. A locally modified or unmanaged workflow is
+preserved. The command does not uninstall the CLI itself; remove the Python
+package separately with `pip uninstall agent-wiki-cli`.
 
 ## Security Model
 

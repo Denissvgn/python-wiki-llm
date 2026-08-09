@@ -40,20 +40,29 @@ def _ns(**kwargs):
 
 
 def _copy_repo(source: Path, target: Path) -> None:
+    source = source.resolve()
+    common_ignore = shutil.ignore_patterns(
+        ".git",
+        ".venv",
+        ".pytest_cache",
+        ".ruff_cache",
+        "__pycache__",
+        "build",
+        "dist",
+        "reports",
+        "*.egg-info",
+    )
+
+    def ignore(directory: str, names: list[str]) -> set[str]:
+        ignored = set(common_ignore(directory, names))
+        if Path(directory).resolve() == source / "docs":
+            ignored.add("llm_wiki")
+        return ignored
+
     shutil.copytree(
         source,
         target,
-        ignore=shutil.ignore_patterns(
-            ".git",
-            ".venv",
-            ".pytest_cache",
-            ".ruff_cache",
-            "__pycache__",
-            "build",
-            "dist",
-            "reports",
-            "*.egg-info",
-        ),
+        ignore=ignore,
     )
 
 
@@ -78,10 +87,18 @@ def _file_hashes(root: Path) -> dict[str, str]:
     return hashes
 
 
-def test_copy_repo_excludes_internal_report_state(tmp_path: Path) -> None:
+def test_copy_repo_excludes_generated_wiki_and_internal_report_state(
+    tmp_path: Path,
+) -> None:
     source = tmp_path / "source"
     source.mkdir()
     (source / "selected.py").write_text("VALUE = 1\n", encoding="utf-8")
+    public_doc = source / "docs" / "guide.md"
+    public_doc.parent.mkdir()
+    public_doc.write_text("# Guide\n", encoding="utf-8")
+    wiki = source / "docs" / "llm_wiki" / "index.md"
+    wiki.parent.mkdir()
+    wiki.write_text("# Generated wiki\n", encoding="utf-8")
     report = source / "reports" / "internal" / "ledger.jsonl"
     report.parent.mkdir(parents=True)
     report.write_text("{}\n", encoding="utf-8")
@@ -90,6 +107,8 @@ def test_copy_repo_excludes_internal_report_state(tmp_path: Path) -> None:
     _copy_repo(source, target)
 
     assert (target / "selected.py").is_file()
+    assert (target / "docs" / "guide.md").is_file()
+    assert not (target / "docs" / "llm_wiki").exists()
     assert not (target / "reports").exists()
 
 

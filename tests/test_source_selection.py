@@ -1316,6 +1316,7 @@ def test_committed_profile_freezes_intended_product_census():
             "pyproject.toml",
             "src/llm_wiki_cli",
             "integrations/github-action",
+            "integrations/wiki-integrity",
             "integrations/obsidian/llm-wiki",
         ],
         "exclude": [],
@@ -1325,13 +1326,13 @@ def test_committed_profile_freezes_intended_product_census():
     assert {
         language: len(files) for language, files in snapshot.files_by_language.items()
     } == {
-        "python": 155,
+        "python": 157,
         "typescript": 2,
         "go": 0,
         "rust": 0,
         "haskell": 0,
     }
-    assert len(snapshot.all_source_paths) == 157
+    assert len(snapshot.all_source_paths) == 159
     assert snapshot.language_paths("typescript") == [
         "integrations/obsidian/llm-wiki/main.js",
         "integrations/obsidian/llm-wiki/src/main.ts",
@@ -1340,7 +1341,8 @@ def test_committed_profile_freezes_intended_product_census():
         "python"
     )
     assert [item.rel_path for item in snapshot.yaml_candidates] == [
-        "integrations/github-action/action.yml"
+        "integrations/github-action/action.yml",
+        "integrations/wiki-integrity/action.yml",
     ]
     assert all(not path.startswith("tests/") for path in snapshot.all_source_paths)
     assert all(not path.startswith("release/") for path in snapshot.all_source_paths)

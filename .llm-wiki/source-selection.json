@@ -4,6 +4,7 @@
     "pyproject.toml",
     "src/llm_wiki_cli",
     "integrations/github-action",
+    "integrations/wiki-integrity",
     "integrations/obsidian/llm-wiki"
   ],
   "exclude": []

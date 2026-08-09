@@ -7,6 +7,8 @@ import os
 import re
 import shlex
 import subprocess
+import sys
+import tarfile
 from pathlib import Path, PurePosixPath
 
 import yaml
@@ -264,16 +266,24 @@ def test_wiki_integrity_installs_and_invokes_the_candidate_contract() -> None:
     assert setup_python["with"] == {"python-version": "3.13"}
     source = _wiki_integrity_source()
     assert "${pythonLocation}" not in source
-    assert source.count("${{ steps.setup-python.outputs.python-path }}") == 5
+    assert source.count("${{ steps.setup-python.outputs.python-path }}") == 6
 
     install = _named_step(job, "Install the candidate package")
-    assert install["run"] == "python -m pip install --no-cache-dir ."
+    assert shlex.split(install["run"]) == [
+        "${{ steps.setup-python.outputs.python-path }}",
+        "-I",
+        "-m",
+        "pip",
+        "install",
+        "--no-cache-dir",
+        ".",
+    ]
 
     prepare = _named_step(job, "Prepare the automatically selected extractor helpers")[
         "run"
     ]
     assert '"${{ steps.setup-python.outputs.python-path }}"' in prepare
-    assert "-m llm_wiki_cli.cli prepare-extractors" in prepare
+    assert "-I -m llm_wiki_cli.cli prepare-extractors" in prepare
     assert "--src-dir ." in prepare
     assert '--cache-dir "${LLM_WIKI_CACHE_DIR}"' in prepare
     assert 'tee "${LLM_WIKI_EVIDENCE_DIR}/prepare-extractors.log"' in prepare
@@ -319,6 +329,44 @@ def test_wiki_integrity_installs_and_invokes_the_candidate_contract() -> None:
     ):
         assert prohibited not in policy_text.lower()
     assert re.search(r"\b(?:bootstrap|sync|doctor)\b", policy_text) is None
+
+
+def test_isolated_wiki_integrity_python_rejects_candidate_module_shadows(
+    tmp_path: Path,
+) -> None:
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    marker = tmp_path / "candidate-shadow-executed"
+    hostile_source = (
+        "import os\n"
+        "from pathlib import Path\n"
+        'Path(os.environ["SHADOW_MARKER"]).write_text("executed\\n")\n'
+        'raise RuntimeError("candidate module shadow executed")\n'
+    )
+    (candidate / "pip.py").write_text(hostile_source, encoding="utf-8")
+    (candidate / "sitecustomize.py").write_text(hostile_source, encoding="utf-8")
+    candidate_cli = candidate / "llm_wiki_cli"
+    candidate_cli.mkdir()
+    (candidate_cli / "__init__.py").write_text(hostile_source, encoding="utf-8")
+    (candidate_cli / "cli.py").write_text(hostile_source, encoding="utf-8")
+
+    environment = os.environ.copy()
+    environment["SHADOW_MARKER"] = str(marker)
+    commands = (
+        [sys.executable, "-I", "-m", "pip", "--version"],
+        [sys.executable, "-I", "-m", "llm_wiki_cli.cli", "--help"],
+    )
+    for command in commands:
+        result = subprocess.run(
+            command,
+            cwd=candidate,
+            env=environment,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        assert not marker.exists()
 
 
 def test_wiki_integrity_uses_locked_runner_temporary_state_and_evidence() -> None:
@@ -437,7 +485,14 @@ def test_wiki_integrity_always_uploads_the_bounded_evidence_bundle() -> None:
     }
 
 
-def test_wiki_integrity_wrapper_executes_the_direct_candidate_gate() -> None:
+def _wiki_ci_wrapper_mode() -> int:
+    source_archive = os.environ.get("LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE")
+    if source_archive:
+        member_name = WIKI_CI_WRAPPER.relative_to(ROOT).as_posix()
+        with tarfile.open(source_archive, mode="r:") as archive:
+            member = archive.getmember(member_name)
+        assert member.isfile()
+        return member.mode
     if os.name == "nt":
         index_entry = subprocess.run(
             [
@@ -453,16 +508,50 @@ def test_wiki_integrity_wrapper_executes_the_direct_candidate_gate() -> None:
             text=True,
         ).stdout
         assert index_entry.split(maxsplit=1)[0] == "100755"
-    else:
-        assert WIKI_CI_WRAPPER.stat().st_mode & 0o111
+        return 0o755
+    return WIKI_CI_WRAPPER.stat().st_mode
+
+
+def test_wiki_integrity_wrapper_mode_prefers_the_frozen_archive(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    archive_path = tmp_path / "candidate-source.tar"
+    member_name = WIKI_CI_WRAPPER.relative_to(ROOT).as_posix()
+
+    def set_distinct_archive_mode(member: tarfile.TarInfo) -> tarfile.TarInfo:
+        member.mode = 0o711
+        return member
+
+    with tarfile.open(archive_path, mode="w:") as archive:
+        archive.add(
+            WIKI_CI_WRAPPER,
+            arcname=member_name,
+            recursive=False,
+            filter=set_distinct_archive_mode,
+        )
+    monkeypatch.setenv(
+        "LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE",
+        str(archive_path),
+    )
+
+    assert _wiki_ci_wrapper_mode() == 0o711
+
+
+def test_wiki_integrity_wrapper_executes_the_direct_candidate_gate() -> None:
+    assert _wiki_ci_wrapper_mode() & 0o111
     wrapper = WIKI_CI_WRAPPER.read_text(encoding="utf-8")
-    assert wrapper.count('"${python_executable}" -m llm_wiki_cli.cli ci-check') == 1
+    assert (
+        wrapper.count('"${python_executable}" -I -m llm_wiki_cli.cli ci-check')
+        == 1
+    )
     for required in (
         '--src-dir "${src_dir}"',
         '--wiki-dir "${wiki_dir}"',
         '--helper-cache-dir "${helper_cache_dir}"',
         '--jobs "${jobs}"',
         "--knowledge-drift-report",
+        "--no-plugins",
         "--format json",
         '--report "${MARKDOWN_REPORT}"',
     ):
@@ -834,6 +923,116 @@ def test_qualification_has_every_gate_and_fail_closed_discovery() -> None:
 
     publish_text = (WORKFLOWS / "publish.yml").read_text(encoding="utf-8")
     assert "--allow-non-go-exit-zero" not in publish_text
+
+
+def test_rd10_qualifies_both_composite_actions_from_the_frozen_candidate() -> None:
+    workflow = _yaml("release-qualification.yml")
+    job = workflow["jobs"]["action"]
+    assert job["name"] == "RD-10 hosted composite Action"
+    assert job["needs"] == "freeze"
+    assert job["timeout-minutes"] == 60
+    assert "env" not in job
+
+    bind_paths = _named_step(job, "Bind RD-10 runner-temporary paths")["run"]
+    assert '"${RUNNER_TEMP}/rd-10-evidence"' in bind_paths
+    assert '"${RUNNER_TEMP}/full-integrity-plugin-executed"' in bind_paths
+    assert '} >> "${GITHUB_ENV}"' in bind_paths
+
+    context = _named_step(job, "Run context health gate")
+    assert context["uses"] == "./candidate/integrations/github-action"
+    assert context["with"] == {
+        "wiki-dir": "candidate/.action-selftest/wiki",
+        "src-dir": "candidate/tests/fixtures/context-health-action/source",
+        "strict": "true",
+        "fail-on": "unhealthy",
+    }
+    for name in ("Reject invalid strict", "Reject invalid fail-on"):
+        invalid = _named_step(job, name)
+        assert invalid["uses"] == "./candidate/integrations/github-action"
+        assert invalid["continue-on-error"] is True
+    invalid_assertion = _named_step(
+        job, "Assert both invalid inputs failed closed"
+    )["run"]
+    assert 'test "${STRICT_OUTCOME}" = failure' in invalid_assertion
+    assert 'test "${FAIL_ON_OUTCOME}" = failure' in invalid_assertion
+    assert '"${RD10_EVIDENCE_DIR}/action-result.json"' in invalid_assertion
+
+    fixture = _named_step(
+        job, "Create a clean frozen-source full-integrity fixture"
+    )["run"]
+    for required in (
+        "candidate/.llm-wiki/plugins/hostile-rd10-plugin",
+        "candidate/.llm-wiki/plugins.lock.json",
+        'Path(os.environ["TARGET_PLUGIN_EXECUTION_MARKER"])',
+        'mv -- incoming "${RUNNER_TEMP}/rd-10-frozen-inputs"',
+        "git init --quiet",
+        "git add --all -- candidate",
+        'git commit --quiet -m "Create frozen-source RD-10 fixture"',
+        'test -z "$(git status --porcelain=v1 --untracked-files=all)"',
+    ):
+        assert required in fixture
+
+    full_integrity = _named_step(
+        job, "Run full integrity gate from the frozen candidate"
+    )
+    assert full_integrity == {
+        "name": "Run full integrity gate from the frozen candidate",
+        "uses": "./candidate/integrations/wiki-integrity",
+        "env": {
+            "TARGET_PLUGIN_EXECUTION_MARKER": (
+                "${{ runner.temp }}/full-integrity-plugin-executed"
+            )
+        },
+        "with": {
+            "src-dir": "candidate",
+            "wiki-dir": "candidate/docs/llm_wiki",
+        },
+    }
+
+    validation = _named_step(job, "Validate fixed full-integrity evidence")[
+        "run"
+    ]
+    for required in (
+        'test ! -e "${FULL_INTEGRITY_PLUGIN_MARKER}"',
+        'test -z "$(git status --porcelain=v1 --untracked-files=all)"',
+        '"${RD10_EVIDENCE_DIR}/full-integrity-action-result.json"',
+        '"extractor-plan.json"',
+        '"llm-wiki-ci-report.json"',
+        '"llm-wiki-ci-report.md"',
+        '"locked-toolchain-versions.txt"',
+        '"prepare-extractors.log"',
+        '"schema": "llm-wiki-prepare-extractors-plan/v1"',
+        '"languages": ["typescript"]',
+        '"knowledge_drift_gate": False',
+        '"knowledge_drift_report": True',
+        '"ok": True',
+        '"typescript selected": "true"',
+        '"go selected": "false"',
+        '"rust selected": "false"',
+        '"haskell selected": "false"',
+        '"plugin_disabled": "PASS"',
+        '"worktree": "clean"',
+    ):
+        assert required in validation
+    validator = validation.split("<<'PY'\n", 1)[1].rsplit("\nPY", 1)[0]
+    compile(validator, "release-qualification-rd10-validator", "exec")
+
+    upload = _named_step(job, "Upload gate evidence")
+    assert upload["if"] == "always()"
+    assert upload["with"] == {
+        "name": "evidence-rd-10",
+        "path": "${{ runner.temp }}/rd-10-evidence/",
+        "if-no-files-found": "error",
+        "retention-days": 14,
+    }
+    assert "action" in workflow["jobs"]["bundle"]["needs"]
+    assert "action" in workflow["jobs"]["decision"]["needs"]
+    bundle = _named_step(
+        job=workflow["jobs"]["bundle"], name="Build versioned release bundle"
+    )
+    assert '--evidence "RD-10:action=incoming/gates/evidence-rd-10"' in bundle[
+        "run"
+    ]
 
 
 def test_locked_toolchain_archives_and_oci_digests_are_the_executed_inputs() -> None:

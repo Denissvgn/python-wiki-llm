@@ -8,6 +8,7 @@ from .commands import (
     doctor_cmd,
     generate_prompt_cmd,
     hook_cmd,
+    install_ci_cmd,
     init_cmd,
     install_cmd,
     knowledge_cmd,
@@ -122,6 +123,7 @@ _COMMAND_MODULES = {
     "prepare-extractors": prepare_extractors_cmd,
     "ci-check": ci_check_cmd,
     "install-hook": hook_cmd,
+    "install-ci": install_ci_cmd,
     "install": install_cmd,
     "knowledge": knowledge_cmd,
     "plugins": plugins_cmd,
@@ -173,6 +175,7 @@ def _register_commands(subparsers):
     _add_prepare_extractors_command(subparsers)
     _add_ci_check_command(subparsers)
     _add_install_hook_command(subparsers)
+    _add_install_ci_command(subparsers)
     _add_install_command(subparsers)
     _add_knowledge_command(subparsers)
     _add_plugins_command(subparsers)
@@ -436,6 +439,17 @@ def _add_prepare_extractors_command(subparsers):
         choices=["typescript", "go", "rust", "haskell"],
         help="Helper language to prepare; may be repeated",
     )
+    prepare_parser.add_argument(
+        "--plan",
+        action="store_true",
+        help="Print the selected helper languages without preparing or writing them",
+    )
+    prepare_parser.add_argument(
+        "--format",
+        choices=("text", "json"),
+        default="text",
+        help="Plan output format (default: text; requires --plan for JSON)",
+    )
     _add_source_selection_argument(prepare_parser)
 
 
@@ -473,6 +487,11 @@ def _add_ci_check_command(subparsers):
             "(default: disabled)"
         ),
     )
+    ci_parser.add_argument(
+        "--no-plugins",
+        action="store_true",
+        help="Disable project-local extractor, generation, and lint plugins",
+    )
     _add_helper_cache_argument(ci_parser)
     _add_include_tests_argument(ci_parser)
     _add_source_selection_argument(ci_parser)
@@ -505,6 +524,39 @@ def _add_install_hook_command(subparsers):
         help="Also install a pre-commit hook that runs `llm-wiki lint --strict`",
     )
     _add_source_selection_argument(hook_parser)
+
+
+def _add_install_ci_command(subparsers):
+    install_ci_parser = subparsers.add_parser(
+        "install-ci",
+        help="Install a portable LLM Wiki integrity workflow",
+    )
+    install_ci_parser.add_argument(
+        "--action-ref",
+        required=True,
+        metavar="SHA",
+        help="Immutable 40-hex commit for the reusable integrity action",
+    )
+    install_ci_parser.add_argument(
+        "--src-dir",
+        default=".",
+        help="Project-relative source directory evaluated by the wiki (default: .)",
+    )
+    install_ci_parser.add_argument(
+        "--wiki-dir",
+        default=DEFAULT_WIKI_DIR,
+        help="Managed wiki directory (default: docs/llm_wiki)",
+    )
+    install_ci_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate and preview the workflow without writing it",
+    )
+    install_ci_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Replace a workflow not recognized as unmodified llm-wiki output",
+    )
 
 
 def _add_install_command(subparsers):

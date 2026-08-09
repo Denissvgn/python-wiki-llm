@@ -2,7 +2,11 @@ import shutil
 from pathlib import Path
 
 from ..config import DEFAULT_WIKI_DIR, validate_path
-from ..services.io import read_md, write_md
+from ..services.ci_installer import (
+    MANAGED_WORKFLOW_PATH,
+    is_unmodified_managed_workflow,
+)
+from ..services.io import first_unsafe_path_component, read_md, write_md
 from ..services.schema import (
     ALL_SCHEMA_FILES as AGENT_SCHEMA_FILES,
     CONSTRAINT_END as CONSTRAINT_END,
@@ -161,6 +165,40 @@ def _remove_runtime_artifacts(dry_run: bool = False) -> int:
     return removed
 
 
+def _remove_ci_workflow(dry_run: bool = False) -> int:
+    """Remove the dedicated CI workflow only when its checksum proves ownership."""
+
+    path = Path(MANAGED_WORKFLOW_PATH)
+    unsafe = first_unsafe_path_component(path)
+    if unsafe is not None:
+        print(f"  SKIP {path} (unsafe or not a regular managed workflow)")
+        return 0
+    if not path.exists() and not path.is_symlink():
+        return 0
+    if not path.is_file():
+        print(f"  SKIP {path} (unsafe or not a regular managed workflow)")
+        return 0
+    try:
+        content = path.read_bytes()
+    except OSError:
+        print(f"  SKIP {path} (cannot verify managed ownership)")
+        return 0
+    if not is_unmodified_managed_workflow(content):
+        print(f"  SKIP {path} (locally modified or not managed by llm-wiki)")
+        return 0
+
+    if dry_run:
+        print(f"  WOULD REMOVE: {path}")
+    else:
+        try:
+            path.unlink()
+        except OSError as exc:
+            print(f"  SKIP {path} (cannot remove managed workflow: {exc})")
+            return 0
+        print(f"  REMOVED: {path}")
+    return 1
+
+
 def run(args):
     wiki_dir_arg = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     validate_path(str(wiki_dir_arg), "--wiki-dir")
@@ -234,6 +272,12 @@ def run(args):
     if not skill_found:
         print("  Not found.")
 
+    # Dedicated CI workflow installed by `llm-wiki install-ci`.
+    print("\n6. Managed CI Workflow:")
+    ci_workflow_count = _remove_ci_workflow(dry_run=True)
+    if ci_workflow_count == 0:
+        print("  Nothing removable.")
+
     wiki_targeted = remove_wiki and wiki_dir.exists()
     total = (
         hooks_count
@@ -241,6 +285,7 @@ def run(args):
         + (1 if wiki_targeted else 0)
         + artifact_count
         + skill_count
+        + ci_workflow_count
     )
     if total == 0:
         print("\nNothing to uninstall. Project is clean.")
@@ -274,6 +319,9 @@ def run(args):
     removed_total += r
 
     r = _remove_reference_skill()
+    removed_total += r
+
+    r = _remove_ci_workflow()
     removed_total += r
 
     print(f"\nUninstall complete. {removed_total} item(s) removed.")

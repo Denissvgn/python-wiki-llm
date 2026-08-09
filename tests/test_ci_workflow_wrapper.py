@@ -43,7 +43,7 @@ fi
 if [[ "$*" == *"MAX_LINES = int"* && "${FAKE_SUMMARY_FAIL:-0}" == "1" ]]; then
   exit 88
 fi
-if [[ "${1:-}" == "-m" ]]; then
+if [[ "$*" == *"-I -m llm_wiki_cli.cli ci-check"* ]]; then
   if [[ "${FAKE_DELETE_RAW:-0}" == "1" ]]; then
     find "${FAKE_REPORT_DIR}" -name '.llm-wiki-ci-report.raw.*' -delete
   elif [[ -n "${FAKE_STDOUT_FILE:-}" ]]; then
@@ -254,9 +254,10 @@ def test_explicit_interpreter_runs_cli_and_parses_json(
 
     assert result.returncode == 0, result.stderr
     invocations = Path(wrapper_case["invocations"]).read_text(encoding="utf-8")
-    assert "-m llm_wiki_cli.cli ci-check" in invocations
+    assert "-I -m llm_wiki_cli.cli ci-check" in invocations
     assert "json.loads" in invocations
     assert "--jobs 1 --knowledge-drift-report --format json" in invocations
+    assert "--no-plugins" in invocations
 
 
 def test_explicit_interpreter_path_with_spaces_is_used_consistently(
@@ -271,8 +272,53 @@ def test_explicit_interpreter_path_with_spaces_is_used_consistently(
     assert result.returncode == 0, result.stderr
     invocations = Path(wrapper_case["invocations"]).read_text(encoding="utf-8")
     assert "llm-wiki-ci-python-v1" in invocations
-    assert "-m llm_wiki_cli.cli ci-check" in invocations
+    assert "-I -m llm_wiki_cli.cli ci-check" in invocations
     assert "json.loads" in invocations
+
+
+def test_candidate_package_cannot_shadow_installed_cli(
+    wrapper_case: WrapperCase,
+) -> None:
+    repo = wrapper_case["repo"]
+    candidate_package = repo / "llm_wiki_cli"
+    candidate_package.mkdir()
+    (candidate_package / "__init__.py").write_text("", encoding="utf-8")
+    (candidate_package / "cli.py").write_text(
+        """from __future__ import annotations
+
+import json
+import os
+import pathlib
+import sys
+
+pathlib.Path(os.environ["SHADOW_MARKER"]).write_text("executed\\n", encoding="utf-8")
+report = pathlib.Path(sys.argv[sys.argv.index("--report") + 1])
+report.write_text("# Forged report\\n", encoding="utf-8")
+print(json.dumps({"forged": True}))
+""",
+        encoding="utf-8",
+    )
+    _git(repo, "add", "llm_wiki_cli")
+    _git(
+        repo,
+        "-c",
+        "user.name=CI Test",
+        "-c",
+        "user.email=ci@example.invalid",
+        "commit",
+        "-qm",
+        "hostile shadow fixture",
+    )
+    marker = repo.parent / "candidate-shadow-executed"
+
+    result = _run(
+        wrapper_case,
+        python=PYTHON,
+        environment={"SHADOW_MARKER": str(marker)},
+    )
+
+    assert result.returncode != 0
+    assert not marker.exists()
 
 
 def test_success_preserves_only_valid_json_and_reports_clean_tree(
@@ -340,7 +386,7 @@ def test_symlinked_report_directory_fails_before_candidate_execution(
     assert result.returncode != 0
     assert "report directory must be a real directory" in result.stderr
     invocations = wrapper_case["invocations"].read_text(encoding="utf-8")
-    assert "-m llm_wiki_cli.cli ci-check" not in invocations
+    assert "-I -m llm_wiki_cli.cli ci-check" not in invocations
 
 
 @pytest.mark.parametrize("output", ['{"ok": true}\n', "not json\n", "", None])

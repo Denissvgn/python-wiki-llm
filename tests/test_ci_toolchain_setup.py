@@ -1,4 +1,4 @@
-"""Hermetic contracts for the routine CI toolchain setup."""
+"""Hermetic contracts for the CI toolchain setup."""
 
 from __future__ import annotations
 
@@ -30,6 +30,8 @@ pytestmark = pytest.mark.skipif(
 NODE_VERSION = "91.2.3"
 NPM_VERSION = "91.4.5"
 GO_VERSION = "91.6.7"
+CARGO_VERSION_OUTPUT = "cargo 91.8.9 (fixture 2099-01-01)"
+GHC_VERSION = "91.10.11"
 GO_PLATFORM = (
     "darwin/arm64" if platform.system() == "Darwin" else "linux/amd64"
 )
@@ -120,6 +122,64 @@ printf '%s\\n' 'go version go{GO_VERSION} {GO_PLATFORM}'
         _add_tar_file(archive, "go/bin/go", go, mode=0o755)
 
 
+def _write_fake_rust_archive(path: Path) -> None:
+    install = f"""#!/usr/bin/env bash
+set -euo pipefail
+prefix=""
+for argument in "$@"; do
+  case "${{argument}}" in
+    --prefix=*) prefix="${{argument#--prefix=}}" ;;
+    --disable-ldconfig) ;;
+    *) printf 'unexpected fixture Rust install argument: %s\\n' "${{argument}}" >&2; exit 64 ;;
+  esac
+done
+test -n "${{prefix}}"
+mkdir -p -- "${{prefix}}/bin"
+cat > "${{prefix}}/bin/cargo" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+test "${{1:-}}" = --version
+printf '%s\\n' '{CARGO_VERSION_OUTPUT}'
+EOF
+cat > "${{prefix}}/bin/rustc" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\\n' 'rustc fixture'
+EOF
+chmod 0755 "${{prefix}}/bin/cargo" "${{prefix}}/bin/rustc"
+"""
+    with tarfile.open(path, "w:xz") as archive:
+        _add_tar_file(archive, "rust-fixture/install.sh", install, mode=0o755)
+
+
+def _write_fake_ghc_archive(path: Path) -> None:
+    configure = """#!/usr/bin/env bash
+set -euo pipefail
+prefix=""
+for argument in "$@"; do
+  case "${argument}" in
+    --prefix=*) prefix="${argument#--prefix=}" ;;
+    *) printf 'unexpected fixture GHC configure argument: %s\n' "${argument}" >&2; exit 64 ;;
+  esac
+done
+test -n "${prefix}"
+cat > Makefile <<EOF
+install:
+\tmkdir -p "$prefix/bin"
+\tcp ghc-shim "$prefix/bin/ghc"
+\tchmod 0755 "$prefix/bin/ghc"
+EOF
+"""
+    ghc = f"""#!/usr/bin/env bash
+set -euo pipefail
+test "${{1:-}}" = --numeric-version
+printf '%s\\n' '{GHC_VERSION}'
+"""
+    with tarfile.open(path, "w:xz") as archive:
+        _add_tar_file(archive, "ghc-fixture/configure", configure, mode=0o755)
+        _add_tar_file(archive, "ghc-fixture/ghc-shim", ghc, mode=0o755)
+
+
 @pytest.fixture
 def fake_lock(tmp_path: Path) -> Path:
     downloads = tmp_path / "downloads"
@@ -127,9 +187,15 @@ def fake_lock(tmp_path: Path) -> Path:
     node = downloads / "node.tar.xz"
     npm = downloads / "npm.tgz"
     go = downloads / "go.tar.gz"
+    rust_channel = downloads / "rust-channel.toml"
+    rust = downloads / "rust.tar.xz"
+    ghc = downloads / "ghc.tar.xz"
     _write_fake_node_archive(node)
     _write_fake_npm_archive(npm)
     _write_fake_go_archive(go)
+    rust_channel.write_text("manifest-version = 2\n", encoding="utf-8")
+    _write_fake_rust_archive(rust)
+    _write_fake_ghc_archive(ghc)
 
     node_artifact = {"url": node.as_uri(), "sha256": _sha256(node)}
     go_artifact = {"url": go.as_uri(), "sha256": _sha256(go)}
@@ -152,6 +218,20 @@ def fake_lock(tmp_path: Path) -> Path:
                 "platform_artifacts": {"darwin_arm64": go_artifact},
                 "version": GO_VERSION,
                 "version_output": f"go version go{GO_VERSION}",
+            },
+            "rust": {
+                "artifact": {"url": rust.as_uri(), "sha256": _sha256(rust)},
+                "checksum_manifest": {
+                    "url": rust_channel.as_uri(),
+                    "sha256": _sha256(rust_channel),
+                },
+                "version": "91.8.9",
+                "version_output": CARGO_VERSION_OUTPUT,
+            },
+            "haskell": {
+                "artifact": {"url": ghc.as_uri(), "sha256": _sha256(ghc)},
+                "version": GHC_VERSION,
+                "version_output": GHC_VERSION,
             },
         },
     }
@@ -230,6 +310,51 @@ def _local_arguments(
 
 def _assert_success(completed: subprocess.CompletedProcess[str]) -> None:
     assert completed.returncode == 0, (completed.stdout, completed.stderr)
+
+
+def _with_fake_uname(
+    tmp_path: Path,
+    environment: dict[str, str],
+    *,
+    system: str,
+    machine: str,
+) -> dict[str, str]:
+    fixture_bin = tmp_path / f"uname-{system}-{machine}"
+    fixture_bin.mkdir()
+    uname = fixture_bin / "uname"
+    uname.write_text(
+        f"""#!/usr/bin/env bash
+set -euo pipefail
+case "${{1:-}}" in
+  -s) printf '%s\\n' '{system}' ;;
+  -m) printf '%s\\n' '{machine}' ;;
+  *) printf 'unexpected fixture uname invocation: %s\\n' "$*" >&2; exit 64 ;;
+esac
+""",
+        encoding="utf-8",
+    )
+    uname.chmod(0o755)
+    return {
+        **environment,
+        "PATH": os.pathsep.join([str(fixture_bin), environment["PATH"]]),
+    }
+
+
+def _github_environment(tmp_path: Path) -> tuple[Path, Path, Path, dict[str, str]]:
+    runner_temp = tmp_path / "runner"
+    runner_temp.mkdir()
+    github_path = tmp_path / "github-path"
+    github_env = tmp_path / "github-env"
+    github_path.touch()
+    github_env.touch()
+    environment = {
+        **os.environ,
+        "GITHUB_ACTIONS": "true",
+        "GITHUB_PATH": str(github_path),
+        "GITHUB_ENV": str(github_env),
+        "RUNNER_TEMP": str(runner_temp),
+    }
+    return runner_temp, github_path, github_env, environment
 
 
 def test_routine_local_setup_uses_lock_and_writes_sourceable_environment(
@@ -348,6 +473,7 @@ def test_qualification_go_is_isolated_and_exports_exact_go_path(
     [
         ("routine", "node/bin", None),
         ("qualification-go", "go/bin", "LLM_WIKI_GO="),
+        ("extractor-go", "go/bin", "LLM_WIKI_GO="),
     ],
 )
 def test_github_setup_persists_tools_across_steps(
@@ -432,11 +558,137 @@ def test_github_setup_persists_tools_across_steps(
 
 
 @pytest.mark.parametrize(
+    ("mode", "target_name", "environment_name", "command", "expected_output"),
+    [
+        (
+            "extractor-rust",
+            "rust",
+            None,
+            ("cargo", "--version"),
+            f"{CARGO_VERSION_OUTPUT}\n",
+        ),
+        (
+            "extractor-haskell",
+            "haskell",
+            "LLM_WIKI_GHC",
+            ("ghc", "--numeric-version"),
+            f"{GHC_VERSION}\n",
+        ),
+    ],
+)
+def test_linux_extractor_compiler_setup_persists_exact_tool_across_steps(
+    fake_lock: Path,
+    setup_harness: SetupHarness,
+    tmp_path: Path,
+    mode: str,
+    target_name: str,
+    environment_name: str | None,
+    command: tuple[str, str],
+    expected_output: str,
+) -> None:
+    runner_temp, github_path, github_env, environment = _github_environment(tmp_path)
+    environment = _with_fake_uname(
+        tmp_path,
+        environment,
+        system="Linux",
+        machine="x86_64",
+    )
+    install_root = runner_temp / "extractor-toolchains"
+
+    completed = _run_setup(
+        setup_harness,
+        "--mode",
+        mode,
+        "--install-root",
+        install_root,
+        "--lock",
+        fake_lock,
+        "--python",
+        setup_harness.python,
+        environment=environment,
+        github_actions=True,
+    )
+
+    _assert_success(completed)
+    expected_bin = install_root / target_name / "bin"
+    assert github_path.read_text(encoding="utf-8") == f"{expected_bin}\n"
+    persisted_environment = github_env.read_text(encoding="utf-8")
+    if environment_name is None:
+        assert persisted_environment == ""
+    else:
+        expected_binary = expected_bin / command[0]
+        assert persisted_environment == (
+            f"{environment_name}={expected_binary}\n"
+        )
+
+    cross_step_environment = {
+        **os.environ,
+        "PATH": os.pathsep.join([str(expected_bin), os.environ["PATH"]]),
+    }
+    if environment_name is not None:
+        name, value = persisted_environment.rstrip("\n").split("=", maxsplit=1)
+        cross_step_environment[name] = value
+    cross_step = subprocess.run(
+        command,
+        env=cross_step_environment,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert cross_step.returncode == 0, (cross_step.stdout, cross_step.stderr)
+    assert cross_step.stdout == expected_output
+
+
+@pytest.mark.parametrize("mode", ["extractor-rust", "extractor-haskell"])
+def test_non_linux_extractor_compiler_modes_fail_closed_before_download(
+    fake_lock: Path,
+    setup_harness: SetupHarness,
+    tmp_path: Path,
+    mode: str,
+) -> None:
+    payload = json.loads(fake_lock.read_text(encoding="utf-8"))
+    toolchain = "rust" if mode == "extractor-rust" else "haskell"
+    payload["toolchains"][toolchain]["artifact"]["url"] = (
+        "file:///must-not-download"
+    )
+    fake_lock.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    runner_temp, github_path, github_env, environment = _github_environment(tmp_path)
+    environment = _with_fake_uname(
+        tmp_path,
+        environment,
+        system="Darwin",
+        machine="arm64",
+    )
+    install_root = runner_temp / "extractor-toolchains"
+
+    completed = _run_setup(
+        setup_harness,
+        "--mode",
+        mode,
+        "--install-root",
+        install_root,
+        "--lock",
+        fake_lock,
+        "--python",
+        setup_harness.python,
+        environment=environment,
+        github_actions=True,
+    )
+
+    assert completed.returncode != 0
+    assert f"no locked {mode} artifact for Darwin/arm64" in completed.stderr
+    assert not install_root.exists()
+    assert github_path.read_text(encoding="utf-8") == ""
+    assert github_env.read_text(encoding="utf-8") == ""
+
+
+@pytest.mark.parametrize(
     ("mode", "toolchain", "target_name"),
     [
         ("routine", "node", "node"),
         ("routine", "npm", "node"),
         ("qualification-go", "go", "go"),
+        ("extractor-go", "go", "go"),
     ],
 )
 def test_corrupt_locked_download_fails_before_install_or_environment_publish(
@@ -482,6 +734,7 @@ def test_corrupt_locked_download_fails_before_install_or_environment_publish(
         ("routine", "node", "v0.0.0"),
         ("routine", "npm", "0.0.0"),
         ("qualification-go", "go", "go version go0.0.0"),
+        ("extractor-go", "go", "go version go0.0.0"),
     ],
 )
 def test_exact_version_mismatch_fails_before_environment_publish(
@@ -516,6 +769,104 @@ def test_exact_version_mismatch_fails_before_environment_publish(
     assert completed.returncode != 0
     assert not (install_root / ("node" if mode == "routine" else "go")).exists()
     assert not environment_file.exists()
+
+
+@pytest.mark.parametrize(
+    ("mode", "toolchain", "lock_member", "target_name"),
+    [
+        ("extractor-rust", "rust", "checksum_manifest", "rust"),
+        ("extractor-rust", "rust", "artifact", "rust"),
+        ("extractor-haskell", "haskell", "artifact", "haskell"),
+    ],
+)
+def test_extractor_compiler_digest_mismatch_never_publishes_partial_install(
+    fake_lock: Path,
+    setup_harness: SetupHarness,
+    tmp_path: Path,
+    mode: str,
+    toolchain: str,
+    lock_member: str,
+    target_name: str,
+) -> None:
+    payload = json.loads(fake_lock.read_text(encoding="utf-8"))
+    payload["toolchains"][toolchain][lock_member]["sha256"] = "0" * 64
+    fake_lock.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    runner_temp, github_path, github_env, environment = _github_environment(tmp_path)
+    environment = _with_fake_uname(
+        tmp_path,
+        environment,
+        system="Linux",
+        machine="x86_64",
+    )
+    install_root = runner_temp / "extractor-toolchains"
+
+    completed = _run_setup(
+        setup_harness,
+        "--mode",
+        mode,
+        "--install-root",
+        install_root,
+        "--lock",
+        fake_lock,
+        "--python",
+        setup_harness.python,
+        environment=environment,
+        github_actions=True,
+    )
+
+    assert completed.returncode != 0
+    assert "digest mismatch" in completed.stderr
+    assert not (install_root / target_name).exists()
+    assert github_path.read_text(encoding="utf-8") == ""
+    assert github_env.read_text(encoding="utf-8") == ""
+
+
+@pytest.mark.parametrize(
+    ("mode", "toolchain", "target_name"),
+    [
+        ("extractor-rust", "rust", "rust"),
+        ("extractor-haskell", "haskell", "haskell"),
+    ],
+)
+def test_extractor_compiler_version_mismatch_removes_install_before_publish(
+    fake_lock: Path,
+    setup_harness: SetupHarness,
+    tmp_path: Path,
+    mode: str,
+    toolchain: str,
+    target_name: str,
+) -> None:
+    payload = json.loads(fake_lock.read_text(encoding="utf-8"))
+    payload["toolchains"][toolchain]["version_output"] = "wrong-version"
+    fake_lock.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    runner_temp, github_path, github_env, environment = _github_environment(tmp_path)
+    environment = _with_fake_uname(
+        tmp_path,
+        environment,
+        system="Linux",
+        machine="x86_64",
+    )
+    install_root = runner_temp / "extractor-toolchains"
+
+    completed = _run_setup(
+        setup_harness,
+        "--mode",
+        mode,
+        "--install-root",
+        install_root,
+        "--lock",
+        fake_lock,
+        "--python",
+        setup_harness.python,
+        environment=environment,
+        github_actions=True,
+    )
+
+    assert completed.returncode != 0
+    assert "version mismatch" in completed.stderr
+    assert not (install_root / target_name).exists()
+    assert github_path.read_text(encoding="utf-8") == ""
+    assert github_env.read_text(encoding="utf-8") == ""
 
 
 def test_post_move_install_failure_is_transactional_and_retryable(
@@ -823,13 +1174,16 @@ def test_setup_source_treats_lock_and_checksum_verifier_as_authoritative() -> No
     assert "toolchains.node.version_output" in script
     assert "toolchains.npm.version_output" in script
     assert "toolchains.go.version_output" in script
+    assert "toolchains.rust.checksum_manifest" in script
+    assert "toolchains.rust.version_output" in script
+    assert "toolchains.haskell.version_output" in script
     assert "https://" not in script
     assert not re.search(r"\b[0-9a-f]{64}\b", script)
     for match in re.findall(r'"sha256": "([0-9a-f]{64})"', serialized_values):
         assert match not in script
 
 
-def test_setup_has_no_privileged_or_rd07_only_dependency_surface() -> None:
+def test_setup_has_no_privileged_or_qualification_only_dependency_surface() -> None:
     script = SETUP_SCRIPT.read_text(encoding="utf-8").lower()
 
     for forbidden in (
@@ -844,7 +1198,7 @@ def test_setup_has_no_privileged_or_rd07_only_dependency_surface() -> None:
         "clippy",
         "govulncheck",
         "rustup",
-        "ghc",
+        "sudo",
     ):
         assert forbidden not in script
     assert re.search(r"(^|\n)\s*uses:\s*", script) is None

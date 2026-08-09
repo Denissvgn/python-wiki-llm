@@ -28,6 +28,7 @@ from llm_wiki_cli.commands.sync_cmd import MANIFEST_FILENAME
 from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
 from llm_wiki_cli.services.extractor_helpers import (
     ENV_CACHE_DIR,
+    resolve_helper_cache_root,
     typescript_dependencies_ready,
 )
 from llm_wiki_cli.services.knowledge_evidence import (
@@ -1025,10 +1026,9 @@ class TestMigrateIntegration:
             f"# Project\n\n**Location:** `{src_file}:1`\n",
         )
 
-        monkeypatch.setenv(
-            ENV_CACHE_DIR,
-            str(Path(__file__).parents[1] / ".git"),
-        )
+        helper_root = resolve_helper_cache_root(Path(__file__).resolve().parents[1])
+        assert helper_root is not None
+        monkeypatch.setenv(ENV_CACHE_DIR, str(helper_root.parent))
         os.chdir(proj)
         migrate_cmd.run(_make_args())
 

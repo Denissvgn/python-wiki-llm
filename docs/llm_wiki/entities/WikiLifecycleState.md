@@ -32,19 +32,22 @@ flowchart LR
     n2["str"]
     n3["src/llm_wiki_cli/commands/sync_cmd.py"]
     n4["src/llm_wiki_cli/services/bootstrap_runtime.py"]
-    n5["src/llm_wiki_cli/services/lint_service.py"]
-    n6["classify_wiki_lifecycle (src/llm_wiki_cli/services/wiki_lifecycle.py)"]
+    n5["src/llm_wiki_cli/services/ci_installer.py"]
+    n6["src/llm_wiki_cli/services/lint_service.py"]
+    n7["classify_wiki_lifecycle (src/llm_wiki_cli/services/wiki_lifecycle.py)"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
     n4 --> n0
     n5 --> n0
     n6 --> n0
+    n7 --> n0
     click n0 "../modules/wiki_lifecycle.md"
     click n3 "../modules/sync_cmd.md"
     click n4 "../modules/bootstrap_runtime.md"
-    click n5 "../modules/lint_service.md"
-    click n6 "../modules/wiki_lifecycle.md"
+    click n5 "../modules/ci_installer.md"
+    click n6 "../modules/lint_service.md"
+    click n7 "../modules/wiki_lifecycle.md"
 ```
 
 ### Summary
@@ -66,5 +69,6 @@ flowchart LR
 |---|---|---|
 | `sync_cmd` | import | [sync_cmd](../modules/sync_cmd.md) |
 | `bootstrap_runtime` | import | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
+| `ci_installer` | import | [ci_installer](../modules/ci_installer.md) |
 | `lint_service` | import | [lint_service](../modules/lint_service.md) |
 | `classify_wiki_lifecycle` | type_reference | [wiki_lifecycle](../modules/wiki_lifecycle.md) |

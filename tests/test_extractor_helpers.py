@@ -313,6 +313,122 @@ def test_prepare_extractors_detects_languages_from_snapshot(
     assert "typescript: prepared" in capsys.readouterr().out
 
 
+def test_prepare_extractors_json_plan_is_profile_aware_canonical_and_no_write(
+    tmp_path, monkeypatch, capsys
+):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / ".git").mkdir()
+    _write_fixture(tmp_path, "selected/Main.hs", "module Main where\n")
+    _write_fixture(tmp_path, "selected/lib.rs", "pub fn run() {}\n")
+    _write_fixture(tmp_path, "selected/main.go", "package main\n")
+    _write_fixture(tmp_path, "selected/client.js", "export const client = {};\n")
+    _write_fixture(tmp_path, "outside/ignored.go", "package ignored\n")
+    _write_fixture(
+        tmp_path,
+        ".llm-wiki/source-selection.json",
+        json.dumps(
+            {
+                "schema_version": "llm-wiki-source-selection/v1",
+                "include": ["selected"],
+                "exclude": [],
+            }
+        )
+        + "\n",
+    )
+    before = {
+        path.relative_to(tmp_path).as_posix(): path.read_bytes()
+        for path in tmp_path.rglob("*")
+        if path.is_file()
+    }
+    monkeypatch.setattr(
+        prepare_extractors_cmd,
+        "resolve_helper_cache_root",
+        lambda *_args, **_kwargs: pytest.fail("plan must not resolve a cache"),
+    )
+    monkeypatch.setattr(
+        prepare_extractors_cmd,
+        "prepare_helper",
+        lambda *_args, **_kwargs: pytest.fail("plan must not prepare helpers"),
+    )
+
+    prepare_extractors_cmd.run(
+        types.SimpleNamespace(
+            src_dir=".",
+            cache_dir=None,
+            language=None,
+            source_selection=None,
+            plan=True,
+            format="json",
+        )
+    )
+
+    output = capsys.readouterr().out
+    assert output == (
+        '{"schema":"llm-wiki-prepare-extractors-plan/v1",'
+        '"languages":["typescript","go","rust","haskell"]}\n'
+    )
+    assert len(output.splitlines()) == 1
+    assert json.loads(output) == {
+        "schema": prepare_extractors_cmd.PREPARE_EXTRACTORS_PLAN_SCHEMA,
+        "languages": prepare_extractors_cmd._languages_from_snapshot("."),
+    }
+    after = {
+        path.relative_to(tmp_path).as_posix(): path.read_bytes()
+        for path in tmp_path.rglob("*")
+        if path.is_file()
+    }
+    assert after == before
+
+
+def test_prepare_extractors_text_plan_canonicalizes_explicit_languages(
+    tmp_path, monkeypatch, capsys
+):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(
+        prepare_extractors_cmd,
+        "resolve_helper_cache_root",
+        lambda *_args, **_kwargs: pytest.fail("plan must not resolve a cache"),
+    )
+    monkeypatch.setattr(
+        prepare_extractors_cmd,
+        "prepare_helper",
+        lambda *_args, **_kwargs: pytest.fail("plan must not prepare helpers"),
+    )
+
+    prepare_extractors_cmd.run(
+        types.SimpleNamespace(
+            src_dir=".",
+            cache_dir=None,
+            language=["rust", "typescript", "rust"],
+            plan=True,
+            format="text",
+        )
+    )
+
+    assert capsys.readouterr().out == (
+        "Extractor helper plan (llm-wiki-prepare-extractors-plan/v1)\n"
+        "languages: typescript, rust\n"
+    )
+
+
+def test_prepare_extractors_json_format_requires_plan(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+
+    with pytest.raises(SystemExit) as exc:
+        prepare_extractors_cmd.run(
+            types.SimpleNamespace(
+                src_dir=".",
+                cache_dir=None,
+                language=["go"],
+                plan=False,
+                format="json",
+            )
+        )
+
+    assert exc.value.code == 2
+    assert "--format is only available with --plan" in capsys.readouterr().err
+
+
 def test_prepare_extractors_rejects_external_source_without_opt_in(
     tmp_path, monkeypatch
 ):

@@ -99,7 +99,7 @@ sequenceDiagram
     p4->>p14: windows_current_user_sid
 ```
 
-> Call sequence diagram shows 30 of 2580 interactions; 2550 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2582 interactions; 2552 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -182,9 +182,9 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_write | `report_path.write_text` | `run` | 77 |
-| output | `print` | `run` | 79 |
+| filesystem_write | `report_path.write_text` | `run` | 78 |
 | output | `print` | `run` | 80 |
+| output | `print` | `run` | 81 |
 
 ### Static analysis gaps
 

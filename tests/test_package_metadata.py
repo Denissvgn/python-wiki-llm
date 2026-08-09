@@ -76,6 +76,15 @@ def test_jsonschema_is_a_dev_only_dependency():
     )
 
 
+def test_mcp_extra_stays_on_compatible_dependency_lines():
+    data = _pyproject()
+
+    assert data["project"]["optional-dependencies"]["mcp"] == [
+        "mcp>=1.27,<2; python_version >= '3.10'",
+        "pydantic-settings>=2.5.2,<2.15; python_version >= '3.10'",
+    ]
+
+
 def test_build_backend_requirement_is_a_dev_only_dependency():
     data = _pyproject()
     backend_requirement = data["build-system"]["requires"][0]
@@ -186,7 +195,7 @@ def test_project_distribution_name_is_pypi_safe_name():
 
 def test_project_version_is_release_target():
     data = _pyproject()
-    assert data["project"]["version"] == "1.5.1"
+    assert data["project"]["version"] == "1.6.0"
 
 
 def test_standalone_guide_is_installed_as_canonical_shared_documentation():
@@ -428,7 +437,7 @@ def test_wiki_integrity_uses_the_automatic_locked_routine_helper_plan():
 
     assert "--mode routine" in setup
     assert "--mode qualification-go" not in setup
-    assert "-m llm_wiki_cli.cli prepare-extractors" in prepare
+    assert "-I -m llm_wiki_cli.cli prepare-extractors" in prepare
     assert "--src-dir ." in prepare
     assert '--cache-dir "${LLM_WIKI_CACHE_DIR}"' in prepare
     assert "--language" not in prepare

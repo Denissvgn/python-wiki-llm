@@ -1,8 +1,8 @@
 {
   "artifact_hashes": {
-    "evaluated_envelope_hash": "sha256:df743858a9e0510ea022267c6a01511a59c77042c769d8310165b601a5b09204",
-    "knowledge_index_hash": "sha256:5f4dd0edbb90bb5c9f9ce18dfe4bce83affcb618686b8ef17b48d61eb81633c7",
-    "surface_index_hash": "sha256:994eade534c29d3b716017c8d0602b491c489ea038a218e0714440956c4b8443"
+    "evaluated_envelope_hash": "sha256:2a4360dbe6fe9408680df2a1e232fd2de008dcf5e33eab2e4ca2e2a884e5329a",
+    "knowledge_index_hash": "sha256:a5fab5ecb55a90b4bc76711e6075e7394255d676b2aef1811cd85f07294feb47",
+    "surface_index_hash": "sha256:59e76d7ac3c6a0ce7c53eb8f56a650a9615e3b167d63e3eed22d8d7b5afe2c2d"
   },
   "evidence_baselines": {
     "entities/Actor.md": {
@@ -1942,6 +1942,26 @@
         "scope": "entity",
         "source_content_hash": "sha256:df6cf74c82938e2e04b628bacf9184b5e204b380ebd2f8609fe9b4dad63e3246",
         "source_path": "src/llm_wiki_cli/services/documentation_wiki_input.py"
+      },
+      "state": "known"
+    },
+    "entities/InstallCiError.md": {
+      "basis": {
+        "concept_observation_hash": "sha256:64ee74bde604e10fe82cc423aacd1473ba7d40f2c48ee656c11141f933694aa9",
+        "extractor_ref": "llm-wiki/extractor/python",
+        "scope": "entity",
+        "source_content_hash": "sha256:759160cbee770c839299ad0086ee85f5ef410ac0ce28a048502c0fafaa47b20e",
+        "source_path": "src/llm_wiki_cli/services/ci_installer.py"
+      },
+      "state": "known"
+    },
+    "entities/InstallCiResult.md": {
+      "basis": {
+        "concept_observation_hash": "sha256:6d5c68b7ba75203e7fc0fab32f077c9aa553ae688eb61e818892298f42910159",
+        "extractor_ref": "llm-wiki/extractor/python",
+        "scope": "entity",
+        "source_content_hash": "sha256:759160cbee770c839299ad0086ee85f5ef410ac0ce28a048502c0fafaa47b20e",
+        "source_path": "src/llm_wiki_cli/services/ci_installer.py"
       },
       "state": "known"
     },
@@ -4670,8 +4690,18 @@
         "concept_observation_hash": "sha256:4dcfa5f70da49557f78bb94c982fae2ab81b33475f0ddd224ded9964f71b7b03",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:b9658ccf689cbbc29a19d21b787fb362e5c2f38af77ce096ad5cfcb069539331",
+        "source_content_hash": "sha256:e5e18444931fb9c1af48ba4f2888d844836ff3c61956d3c21e5f9f8cadb156de",
         "source_path": "src/llm_wiki_cli/commands/ci_check_cmd.py"
+      },
+      "state": "known"
+    },
+    "modules/ci_installer.md": {
+      "basis": {
+        "concept_observation_hash": "sha256:861ebd64ade769e89a107bb7a333aeaea8e2d5c4ec14cf1bd5490e0a3ba3d712",
+        "extractor_ref": "llm-wiki/extractor/python",
+        "scope": "module",
+        "source_content_hash": "sha256:759160cbee770c839299ad0086ee85f5ef410ac0ce28a048502c0fafaa47b20e",
+        "source_path": "src/llm_wiki_cli/services/ci_installer.py"
       },
       "state": "known"
     },
@@ -4687,10 +4717,10 @@
     },
     "modules/cli.md": {
       "basis": {
-        "concept_observation_hash": "sha256:91513bf4767e540f596275aa5553579d366cb5980e6988e5109774cf51457b6f",
+        "concept_observation_hash": "sha256:ce1f45546c4fb63f0e90c736bfb07427b8b506bec9b1fd2742b6ce632d10a753",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:143ad3fffc53a91ca0941eae033ed898795f31c7d35206b554ccf0d76d2b4019",
+        "source_content_hash": "sha256:8dcae6e900830e604c45cb84fdd9c31be5ecdb391093bf7c341beb5ed3024324",
         "source_path": "src/llm_wiki_cli/cli.py"
       },
       "state": "known"
@@ -5135,6 +5165,16 @@
       },
       "state": "known"
     },
+    "modules/install_ci_cmd.md": {
+      "basis": {
+        "concept_observation_hash": "sha256:08798b8c31a74e7cb1c62c71c0bdd1d4c87b5717d1c146889c08cc361669d2ea",
+        "extractor_ref": "llm-wiki/extractor/python",
+        "scope": "module",
+        "source_content_hash": "sha256:ca6580e8a56701541cddbef5f857e6326fe91349adfdd8da1c362049fe2792a1",
+        "source_path": "src/llm_wiki_cli/commands/install_ci_cmd.py"
+      },
+      "state": "known"
+    },
     "modules/install_cmd.md": {
       "basis": {
         "concept_observation_hash": "sha256:8b1a65ef69b638779de412e752ae51e21d4ae2133cda45c9814bc98a2cac1590",
@@ -5547,10 +5587,10 @@
     },
     "modules/prepare_extractors_cmd.md": {
       "basis": {
-        "concept_observation_hash": "sha256:480b062258096d3c86d3a1af5fc9a3488749351c29f3bcc76cc96833932735dc",
+        "concept_observation_hash": "sha256:251e697eecbf39fb79ab169981d90064a86e7c24e766c73ee4534c9f7b69eeb6",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:8ccc1a04e6f615f722f5dd67315bfd5394101aab8e5a2f41a8b2f1ebc88fa71c",
+        "source_content_hash": "sha256:216702deee0ab5cd175de27cf4d8181ed67dca451f777555f1a6ff9344333f9e",
         "source_path": "src/llm_wiki_cli/commands/prepare_extractors_cmd.py"
       },
       "state": "known"
@@ -5897,10 +5937,10 @@
     },
     "modules/uninstall_cmd.md": {
       "basis": {
-        "concept_observation_hash": "sha256:be99c439b2c1a3b93d563a65ff13839e9aa29e987fc21f4a3280954c7d039095",
+        "concept_observation_hash": "sha256:e72b0d33223c9b23e1d2b9db6e9e96efde8070c6e14a82e6192b8d59959de771",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:f3baedab91443c38c0be3354216087162e28cc28bce10219b32ae18e41afca1e",
+        "source_content_hash": "sha256:a93987d4aee9517d79ed399272e3a9f7ca30ae8f304b09caf039c6e4c00afbdc",
         "source_path": "src/llm_wiki_cli/commands/uninstall_cmd.py"
       },
       "state": "known"
@@ -6029,10 +6069,11 @@
   "generation_inputs": {
     "infrastructure": {
       "discovery": {
-        "candidate_count": 1,
+        "candidate_count": 2,
         "roots": [
           ".",
-          "integrations/github-action"
+          "integrations/github-action",
+          "integrations/wiki-integrity"
         ],
         "supported_count": 0,
         "unsupported_yaml": [
@@ -6040,9 +6081,14 @@
             "path": "integrations/github-action/action.yml",
             "reason": "unrecognized-yaml",
             "source_content_hash": "sha256:235e0d2ecc34ddd4e3de9814872de8317681b86e3ea86a81780b37ea5c56c72e"
+          },
+          {
+            "path": "integrations/wiki-integrity/action.yml",
+            "reason": "unrecognized-yaml",
+            "source_content_hash": "sha256:5efec7d7397a580a1baa28cf8399ebaaee8983a73a2414cab0f2cc63b88d2566"
           }
         ],
-        "unsupported_yaml_count": 1
+        "unsupported_yaml_count": 2
       },
       "schema_version": "llm-wiki-infrastructure-sync/v1",
       "sources": {},
@@ -6055,7 +6101,7 @@
       "workflows_enabled": true
     },
     "source_selection": {
-      "fingerprint": "sha256:2c48c3b2d79e72886d75ba19ca924753afd8ec68e31f48ae0e52d8a1f233b1a8",
+      "fingerprint": "sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a",
       "path": ".llm-wiki/source-selection.json",
       "schema_version": "llm-wiki-source-selection-identity/v1"
     },
@@ -6066,7 +6112,7 @@
           "path": ".gitignore"
         },
         {
-          "content_hash": "sha256:11206674887e94857167c1633249eebab6fbeadc6874965f0516d7d7a565db8c",
+          "content_hash": "sha256:9f9ebbceb71c96e96032a3f297025125de71294285fde83454c802a3f94fad30",
           "path": ".llm-wiki/source-selection.json"
         },
         {
@@ -7249,6 +7295,18 @@
       "occurrence": 1,
       "scope": "entity",
       "source_path": "src/llm_wiki_cli/services/documentation_wiki_input.py"
+    },
+    "entities/InstallCiError.md": {
+      "entity_name": "InstallCiError",
+      "occurrence": 1,
+      "scope": "entity",
+      "source_path": "src/llm_wiki_cli/services/ci_installer.py"
+    },
+    "entities/InstallCiResult.md": {
+      "entity_name": "InstallCiResult",
+      "occurrence": 1,
+      "scope": "entity",
+      "source_path": "src/llm_wiki_cli/services/ci_installer.py"
     },
     "entities/IntegrityDifference.md": {
       "entity_name": "IntegrityDifference",
@@ -8868,6 +8926,10 @@
       "scope": "module",
       "source_path": "src/llm_wiki_cli/commands/ci_check_cmd.py"
     },
+    "modules/ci_installer.md": {
+      "scope": "module",
+      "source_path": "src/llm_wiki_cli/services/ci_installer.py"
+    },
     "modules/circuit_breaker.md": {
       "scope": "module",
       "source_path": "src/llm_wiki_cli/services/circuit_breaker.py"
@@ -9051,6 +9113,10 @@
     "modules/init_cmd.md": {
       "scope": "module",
       "source_path": "src/llm_wiki_cli/commands/init_cmd.py"
+    },
+    "modules/install_ci_cmd.md": {
+      "scope": "module",
+      "source_path": "src/llm_wiki_cli/commands/install_ci_cmd.py"
     },
     "modules/install_cmd.md": {
       "scope": "module",
@@ -10298,6 +10364,7 @@
             "_add_helper_cache_argument": "—",
             "_add_include_tests_argument": "—",
             "_add_init_command": "—",
+            "_add_install_ci_command": "—",
             "_add_install_command": "—",
             "_add_install_hook_command": "—",
             "_add_jobs_argument": "—",
@@ -10336,10 +10403,10 @@
           }
         }
       },
-      "hash": "sha256:143ad3fffc53a91ca0941eae033ed898795f31c7d35206b554ccf0d76d2b4019",
+      "hash": "sha256:8dcae6e900830e604c45cb84fdd9c31be5ecdb391093bf7c341beb5ed3024324",
       "language": "python",
       "module_page": "cli",
-      "semantic_hash": "sha256:69750b5d776d9d7535eebdc150be2903b5f224b6ffe00c5f1731566333f7b6f5"
+      "semantic_hash": "sha256:b1f7d071c6e131295912bc97390e8eeeae3c43bc9a7d586e88772bf21b0734c0"
     },
     "src/llm_wiki_cli/commands/bump_cmd.py": {
       "entities": [],
@@ -10375,10 +10442,10 @@
           }
         }
       },
-      "hash": "sha256:b9658ccf689cbbc29a19d21b787fb362e5c2f38af77ce096ad5cfcb069539331",
+      "hash": "sha256:e5e18444931fb9c1af48ba4f2888d844836ff3c61956d3c21e5f9f8cadb156de",
       "language": "python",
       "module_page": "ci_check_cmd",
-      "semantic_hash": "sha256:3d77c127aec308446eea5e8a166cffe788a4146aa62422c7837779156788379b"
+      "semantic_hash": "sha256:e499cb7febf13d41ad2c1c2b3deb6d570d1543660840bbedeac6e593491efab6"
     },
     "src/llm_wiki_cli/commands/docs_cmd.py": {
       "entities": [],
@@ -10535,6 +10602,25 @@
       "language": "python",
       "module_page": "init_cmd",
       "semantic_hash": "sha256:f358cc19422faddbb8fabaee797c619acd3c856fee469daee5ef20bb29525ab9"
+    },
+    "src/llm_wiki_cli/commands/install_ci_cmd.py": {
+      "entities": [],
+      "entity_page_occurrences": [],
+      "entity_pages": {},
+      "generated_semantics": {
+        "entities": {},
+        "module": {
+          "classes": {},
+          "description": "CLI adapter for installing the portable LLM Wiki integrity workflow.",
+          "functions": {
+            "run": "—"
+          }
+        }
+      },
+      "hash": "sha256:ca6580e8a56701541cddbef5f857e6326fe91349adfdd8da1c362049fe2792a1",
+      "language": "python",
+      "module_page": "install_ci_cmd",
+      "semantic_hash": "sha256:6fcae1eb9228d48a51891fc0b57bf82f27d633b38ac339c1dd408a5d5023d110"
     },
     "src/llm_wiki_cli/commands/install_cmd.py": {
       "entities": [],
@@ -10905,17 +10991,19 @@
           "classes": {},
           "description": "_Auto-generated from `src/llm_wiki_cli/commands/prepare_extractors_cmd.py`._",
           "functions": {
+            "_canonical_plan_languages": "—",
             "_dedupe_languages": "—",
             "_format_result": "—",
             "_languages_from_snapshot": "—",
+            "_print_plan": "—",
             "run": "—"
           }
         }
       },
-      "hash": "sha256:8ccc1a04e6f615f722f5dd67315bfd5394101aab8e5a2f41a8b2f1ebc88fa71c",
+      "hash": "sha256:216702deee0ab5cd175de27cf4d8181ed67dca451f777555f1a6ff9344333f9e",
       "language": "python",
       "module_page": "prepare_extractors_cmd",
-      "semantic_hash": "sha256:ed9a713e0cc063921c2677fc573ef4b2d9e63e49efb88c8789a96064ead93f61"
+      "semantic_hash": "sha256:a99e5ff2d8fc2fe05104fa927ddacad28d4413428a329f43b97a9dde780b7388"
     },
     "src/llm_wiki_cli/commands/release_cmd.py": {
       "entities": [],
@@ -11608,6 +11696,7 @@
           "functions": {
             "_clean_agent_schemas": "Remove the LLM Wiki constraint block from agent schema files.",
             "_confirm": "Ask for y/n confirmation.",
+            "_remove_ci_workflow": "Remove the dedicated CI workflow only when its checksum proves ownership.",
             "_remove_hooks": "Remove llm-wiki hooks, but only if they contain our signature.",
             "_remove_reference_skill": "Remove installed wiki-reference skill copies, but only unmodified ones.",
             "_remove_runtime_artifacts": "Remove local runtime artifacts created by llm-wiki.",
@@ -11616,10 +11705,10 @@
           }
         }
       },
-      "hash": "sha256:f3baedab91443c38c0be3354216087162e28cc28bce10219b32ae18e41afca1e",
+      "hash": "sha256:a93987d4aee9517d79ed399272e3a9f7ca30ae8f304b09caf039c6e4c00afbdc",
       "language": "python",
       "module_page": "uninstall_cmd",
-      "semantic_hash": "sha256:e6acfd6912ebd0913ed0767b4e56a140e6bc790ebc15eb9cf40eed94949864ac"
+      "semantic_hash": "sha256:f23da8fefbda3687dcc616e14895b3408fec4927101c45dff04d361e786b18d8"
     },
     "src/llm_wiki_cli/commands/upgrade_cmd.py": {
       "entities": [
@@ -14366,6 +14455,74 @@
       "language": "python",
       "module_page": "host_broker",
       "semantic_hash": "sha256:f2aca53d646d4aad961a758e6a94bc551dda19dfea74b4bb6ca4c8c5a6285b52"
+    },
+    "src/llm_wiki_cli/services/ci_installer.py": {
+      "entities": [
+        "InstallCiError",
+        "InstallCiResult"
+      ],
+      "entity_page_occurrences": [
+        {
+          "name": "InstallCiError",
+          "occurrence": 1,
+          "page": "InstallCiError"
+        },
+        {
+          "name": "InstallCiResult",
+          "occurrence": 1,
+          "page": "InstallCiResult"
+        }
+      ],
+      "entity_pages": {
+        "InstallCiError": "InstallCiError",
+        "InstallCiResult": "InstallCiResult"
+      },
+      "generated_semantics": {
+        "entities": {
+          "InstallCiError": {
+            "attributes": {},
+            "description": "Raised when a portable CI workflow cannot be installed safely.",
+            "methods": {}
+          },
+          "InstallCiResult": {
+            "attributes": {
+              "action_ref": "—",
+              "dry_run": "—",
+              "operation": "—",
+              "path": "—"
+            },
+            "description": "Outcome of one workflow installation attempt.",
+            "methods": {
+              "changed": "—"
+            }
+          }
+        },
+        "module": {
+          "classes": {
+            "InstallCiError": "Raised when a portable CI workflow cannot be installed safely.",
+            "InstallCiResult": "Outcome of one workflow installation attempt."
+          },
+          "description": "Portable installation of the managed LLM Wiki integrity workflow.",
+          "functions": {
+            "_normalize_newlines": "—",
+            "_portable_project_path": "—",
+            "_project_directory": "—",
+            "_validate_default_selection_contract": "Prove the managed wiki can use default source-selection discovery.",
+            "_validate_workflow_target": "—",
+            "_validated_project_path": "—",
+            "_without_github_expression": "—",
+            "_workflow_body": "—",
+            "install_ci_workflow": "Create or safely update the repository's managed integrity workflow.",
+            "is_unmodified_managed_workflow": "Return whether bytes carry a valid installer ownership checksum.",
+            "normalize_action_ref": "Return a canonical immutable Git commit for the reusable action.",
+            "render_managed_workflow": "Render deterministic workflow bytes with a self-verifying owner marker."
+          }
+        }
+      },
+      "hash": "sha256:759160cbee770c839299ad0086ee85f5ef410ac0ce28a048502c0fafaa47b20e",
+      "language": "python",
+      "module_page": "ci_installer",
+      "semantic_hash": "sha256:b820413744cefa222784f263a4be8ee8f80c529999f0013ec8f1d7f84b9e7bc4"
     },
     "src/llm_wiki_cli/services/circuit_breaker.py": {
       "entities": [],

@@ -2,7 +2,16 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [uninstall_cmd](../modules/uninstall_cmd.md)
-**Modules touched:** [config](../modules/config.md), [io](../modules/io.md), [services_schema](../modules/services_schema.md), [skills](../modules/skills.md), [uninstall_cmd](../modules/uninstall_cmd.md)
+**Modules touched:** [ci_installer](../modules/ci_installer.md), [config](../modules/config.md), [io](../modules/io.md), [services_schema](../modules/services_schema.md), and 2 more
+
+**Complete modules touched:**
+
+- [ci_installer](../modules/ci_installer.md)
+- [config](../modules/config.md)
+- [io](../modules/io.md)
+- [services_schema](../modules/services_schema.md)
+- [skills](../modules/skills.md)
+- [uninstall_cmd](../modules/uninstall_cmd.md)
 
 ## Call sequence
 
@@ -55,7 +64,7 @@ sequenceDiagram
     p0-->>p11: exists
 ```
 
-> Call sequence diagram shows 30 of 171 interactions; 141 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 228 interactions; 198 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -137,8 +146,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 165 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | validate_path | 166 | `validate_path(str(...), '--wiki-dir')` |
+| run | getattr | 203 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | validate_path | 204 | `validate_path(str(...), '--wiki-dir')` |
 | validate_path | PathValidationError | 128 | `PathValidationError(...)` |
 | validate_path | resolve | 131 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | cwd | 131 | `Path.cwd(data not statically known)` |
@@ -146,27 +155,27 @@ flowchart LR
 | validate_path | cwd | 132 | `Path.cwd(data not statically known)` |
 | validate_path | relative_to | 134 | `resolved.relative_to(cwd)` |
 | validate_path | PathValidationError | 136 | `PathValidationError(...)` |
-| run | str | 166 | `str(wiki_dir_arg)` |
-| run | Path | 167 | `Path(wiki_dir_arg)` |
+| run | str | 204 | `str(wiki_dir_arg)` |
+| run | Path | 205 | `Path(wiki_dir_arg)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 172 |
-| output | `print` | `run` | 175 |
-| output | `print` | `run` | 176 |
-| output | `print` | `run` | 179 |
-| output | `print` | `run` | 182 |
-| output | `print` | `run` | 185 |
-| output | `print` | `run` | 192 |
-| output | `print` | `run` | 194 |
+| output | `print` | `run` | 210 |
+| output | `print` | `run` | 213 |
+| output | `print` | `run` | 214 |
+| output | `print` | `run` | 217 |
+| output | `print` | `run` | 220 |
+| output | `print` | `run` | 223 |
+| output | `print` | `run` | 230 |
+| output | `print` | `run` | 232 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 165 |
+| unresolved_call | `run` | `getattr` | 203 |
 | unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 131 |
 | external_call | `validate_path` | `Path.cwd` | 131 |
 | external_call | `validate_path` | `Path.cwd().resolve` | 132 |

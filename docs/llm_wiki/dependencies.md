@@ -25,15 +25,15 @@ flowchart TD
 
 | Module | Fan-in | Fan-out |
 |--------|--------|---------|
-| [validation](modules/validation.md) | 49 | 0 |
-| [config](modules/config.md) | 45 | 2 |
+| [validation](modules/validation.md) | 50 | 0 |
+| [config](modules/config.md) | 46 | 2 |
 | [source_snapshot](modules/source_snapshot.md) | 33 | 5 |
 | [wiki_surface](modules/wiki_surface.md) | 30 | 1 |
+| [source_selection](modules/source_selection.md) | 29 | 2 |
 | [services_contracts](modules/services_contracts.md) | 28 | 0 |
-| [source_selection](modules/source_selection.md) | 28 | 2 |
-| [io](modules/io.md) | 25 | 1 |
+| [io](modules/io.md) | 26 | 1 |
+| [sync_manifest](modules/sync_manifest.md) | 24 | 6 |
 | [knowledge_evidence](modules/knowledge_evidence.md) | 23 | 1 |
-| [sync_manifest](modules/sync_manifest.md) | 23 | 6 |
 | [knowledge_model](modules/knowledge_model.md) | 22 | 8 |
 | [wiki_surface_index](modules/wiki_surface_index.md) | 21 | 5 |
 | [extraction_service](modules/extraction_service.md) | 18 | 20 |
@@ -85,6 +85,7 @@ flowchart TD
 | [redaction](modules/redaction.md) | 4 | 0 |
 | [section_ownership](modules/section_ownership.md) | 4 | 5 |
 | [team](modules/team.md) | 4 | 9 |
+| [wiki_lifecycle](modules/wiki_lifecycle.md) | 4 | 4 |
 | [bootstrap_service](modules/bootstrap_service.md) | 3 | 0 |
 | [calibration_contracts](modules/calibration_contracts.md) | 3 | 5 |
 | [controller](modules/controller.md) | 3 | 12 |
@@ -95,11 +96,11 @@ flowchart TD
 | [documentation_run___init__](modules/documentation_run___init__.md) | 3 | 11 |
 | [record](modules/record.md) | 3 | 7 |
 | [knowledge_index](modules/knowledge_index.md) | 3 | 11 |
-| [wiki_lifecycle](modules/wiki_lifecycle.md) | 3 | 4 |
 | [wiki_scaffold](modules/wiki_scaffold.md) | 3 | 0 |
 | [generate_prompt_cmd](modules/generate_prompt_cmd.md) | 2 | 12 |
 | [hook_cmd](modules/hook_cmd.md) | 2 | 3 |
 | [broker](modules/broker.md) | 2 | 5 |
+| [ci_installer](modules/ci_installer.md) | 2 | 5 |
 | [diagrams](modules/diagrams.md) | 2 | 2 |
 | [doctor_service](modules/doctor_service.md) | 2 | 12 |
 | [documentation_native](modules/documentation_native.md) | 2 | 23 |
@@ -122,6 +123,7 @@ flowchart TD
 | [docs_cmd](modules/docs_cmd.md) | 1 | 5 |
 | [doctor_cmd](modules/doctor_cmd.md) | 1 | 3 |
 | [init_cmd](modules/init_cmd.md) | 1 | 7 |
+| [install_ci_cmd](modules/install_ci_cmd.md) | 1 | 2 |
 | [install_cmd](modules/install_cmd.md) | 1 | 3 |
 | [knowledge_cmd](modules/knowledge_cmd.md) | 1 | 11 |
 | [mcp_cmd](modules/mcp_cmd.md) | 1 | 2 |
@@ -138,7 +140,7 @@ flowchart TD
 | [sync_cmd](modules/sync_cmd.md) | 1 | 29 |
 | [team_cmd](modules/team_cmd.md) | 1 | 6 |
 | [trigger_cmd](modules/trigger_cmd.md) | 1 | 12 |
-| [uninstall_cmd](modules/uninstall_cmd.md) | 1 | 4 |
+| [uninstall_cmd](modules/uninstall_cmd.md) | 1 | 5 |
 | [upgrade_cmd](modules/upgrade_cmd.md) | 1 | 8 |
 | [planner](modules/planner.md) | 1 | 3 |
 | [fastapi_contracts](modules/fastapi_contracts.md) | 1 | 0 |
@@ -164,7 +166,7 @@ flowchart TD
 | [render_summary](modules/render_summary.md) | 0 | 0 |
 | [llm-wiki_main](modules/llm-wiki_main.md) | 0 | 0 |
 | [src_main](modules/src_main.md) | 0 | 0 |
-| [cli](modules/cli.md) | 0 | 33 |
+| [cli](modules/cli.md) | 0 | 34 |
 | [eval_lite___init__](modules/eval_lite___init__.md) | 0 | 1 |
 | [detectors](modules/detectors.md) | 0 | 0 |
 | [styles](modules/styles.md) | 0 | 0 |
