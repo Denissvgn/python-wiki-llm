@@ -38,8 +38,6 @@ sequenceDiagram
     participant p14 as Path
     participant p15 as is_absolute
     participant p16 as is_dir
-    participant p17 as abspath
-    participant p18 as windows_current_user_sid
     p0-->>p1: getattr
     p0-->>p1: getattr
     p0->>p2: _dedupe_languages
@@ -49,6 +47,9 @@ sequenceDiagram
     p0-->>p1: getattr
     p0-->>p1: getattr
     p0-->>p6: bool
+    p0-->>p1: getattr
+    p0-->>p6: bool
+    p0-->>p1: getattr
     p0-->>p1: getattr
     p0->>p7: validate_source_root
     p7->>p8: validate_path
@@ -67,12 +68,9 @@ sequenceDiagram
     p7->>p9: PathValidationError
     p7-->>p16: is_dir
     p7->>p9: PathValidationError
-    p7-->>p14: Path
-    p7-->>p17: abspath
-    p7->>p18: windows_current_user_sid
 ```
 
-> Call sequence diagram shows 30 of 856 interactions; 826 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 870 interactions; 840 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -92,7 +90,7 @@ flowchart LR
     s9["9. getattr"]
     s10["10. bool"]
     s11["11. getattr"]
-    s12["12. validate_source_root"]
+    s12["12. bool"]
     s1 -. "getattr(args, 'src_dir', '.')" .-> s2
     s1 -. "getattr(args, 'cache_dir', None)" .-> s3
     s1 -->|"_dedupe_languages(getattr(...))"| s4
@@ -103,7 +101,7 @@ flowchart LR
     s1 -. "getattr(args, 'source_selection', None)" .-> s9
     s1 -. "bool(getattr(...))" .-> s10
     s1 -. "getattr(args, 'allow_external_src', False)" .-> s11
-    s1 -->|"validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)"| s12
+    s1 -. "bool(getattr(...))" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
     b1["output print"]
@@ -114,13 +112,14 @@ flowchart LR
     s1 -. "output print" .-> b3
     b4["output print"]
     s1 -. "output print" .-> b4
-    b5["mutation result.append"]
-    s4 -. "mutation result.append" .-> b5
-    b6["mutation seen.add"]
-    s4 -. "mutation seen.add" .-> b6
+    b5["output print"]
+    s1 -. "output print" .-> b5
+    b6["mutation result.append"]
+    s4 -. "mutation result.append" .-> b6
+    b7["mutation seen.add"]
+    s4 -. "mutation seen.add" .-> b7
     click s1 "../modules/prepare_extractors_cmd.md"
     click s4 "../modules/prepare_extractors_cmd.md"
-    click s12 "../modules/config.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -129,13 +128,14 @@ flowchart LR
     class b4 boundary
     class b5 boundary
     class b6 boundary
+    class b7 boundary
 ```
 
 ### Step data
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `run` | `args` | `sys`, `sys` | - | `none` |
+| `run` | `args` | `sys`, `sys`, `sys` | - | `none`, `none` |
 | `getattr` | - | - | - | - |
 | `getattr` | - | - | - | - |
 | `_dedupe_languages` | `values: list[str] \| None` | - | - | `[...]`, `result` |
@@ -146,45 +146,46 @@ flowchart LR
 | `getattr` | - | - | - | - |
 | `bool` | - | - | - | - |
 | `getattr` | - | - | - | - |
-| `validate_source_root` | `path: str`, `label: str`, `allow_external: bool` | `sys`, `os`, `WindowsSecurityGuardError`, `sys` | - | `validate_path(...)`, `resolved` |
+| `bool` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 51 | `getattr(args, 'src_dir', '.')` |
-| run | getattr | 52 | `getattr(args, 'cache_dir', None)` |
-| run | _dedupe_languages | 53 | `_dedupe_languages(getattr(...))` |
-| _dedupe_languages | set | 20 | `set(data not statically known)` |
-| _dedupe_languages | append | 24 | `result.append(value)` |
-| _dedupe_languages | add | 25 | `seen.add(value)` |
-| run | getattr | 53 | `getattr(args, 'language', None)` |
-| run | getattr | 54 | `getattr(args, 'source_selection', None)` |
-| run | bool | 55 | `bool(getattr(...))` |
-| run | getattr | 55 | `getattr(args, 'allow_external_src', False)` |
-| run | validate_source_root | 57 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
+| run | getattr | 75 | `getattr(args, 'src_dir', '.')` |
+| run | getattr | 76 | `getattr(args, 'cache_dir', None)` |
+| run | _dedupe_languages | 77 | `_dedupe_languages(getattr(...))` |
+| _dedupe_languages | set | 24 | `set(data not statically known)` |
+| _dedupe_languages | append | 28 | `result.append(value)` |
+| _dedupe_languages | add | 29 | `seen.add(value)` |
+| run | getattr | 77 | `getattr(args, 'language', None)` |
+| run | getattr | 78 | `getattr(args, 'source_selection', None)` |
+| run | bool | 79 | `bool(getattr(...))` |
+| run | getattr | 79 | `getattr(args, 'allow_external_src', False)` |
+| run | bool | 80 | `bool(getattr(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 63 |
-| output | `print` | `run` | 77 |
-| output | `print` | `run` | 88 |
-| output | `print` | `run` | 94 |
-| output | `print` | `run` | 97 |
-| mutation | `result.append` | `_dedupe_languages` | 24 |
-| mutation | `seen.add` | `_dedupe_languages` | 25 |
+| output | `print` | `run` | 89 |
+| output | `print` | `run` | 102 |
+| output | `print` | `run` | 117 |
+| output | `print` | `run` | 128 |
+| output | `print` | `run` | 134 |
+| output | `print` | `run` | 137 |
+| mutation | `result.append` | `_dedupe_languages` | 28 |
+| mutation | `seen.add` | `_dedupe_languages` | 29 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 51 |
-| unresolved_call | `run` | `getattr` | 52 |
-| unresolved_call | `run` | `getattr` | 53 |
-| unresolved_call | `run` | `getattr` | 54 |
-| unresolved_call | `run` | `getattr` | 55 |
+| unresolved_call | `run` | `getattr` | 75 |
+| unresolved_call | `run` | `getattr` | 76 |
+| unresolved_call | `run` | `getattr` | 77 |
+| unresolved_call | `run` | `getattr` | 78 |
+| unresolved_call | `run` | `getattr` | 79 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

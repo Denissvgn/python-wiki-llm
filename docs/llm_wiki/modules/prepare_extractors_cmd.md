@@ -19,6 +19,7 @@ any requested preparation fails.
 | `..services.source_selection` | `resolve_source_selection` |
 | `..services.source_snapshot` | `build_source_snapshot` |
 | `__future__` | `annotations` |
+| `json` | `json` |
 | `pathlib` | `Path` |
 | `sys` | `sys` |
 
@@ -65,6 +66,8 @@ flowchart LR
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `_dedupe_languages` | `(values: list[str] \| None) -> list[str]` | — | — |
+| `_canonical_plan_languages` | `(values: list[str]) -> list[str]` | — | — |
 | `_languages_from_snapshot` | `(src_dir: str, *, source_selection: str \| Path \| None = None) -> list[str]` | — | — |
+| `_print_plan` | `(languages: list[str], output_format: str) -> None` | — | — |
 | `_format_result` | `(result: HelperPrepareResult) -> str` | — | — |
 | `run` | `(args) -> None` | — | — |

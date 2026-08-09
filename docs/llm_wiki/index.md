@@ -6,11 +6,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 457 | [Open section](#entities) |
-| Modules | 145 | [Open section](#modules) |
+| Entities | 459 | [Open section](#entities) |
+| Modules | 147 | [Open section](#modules) |
 | Workflows | 12 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
-| Entry-point flows | 415 | [Open section](#entry-point-flows) |
+| Entry-point flows | 421 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -212,6 +212,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [InputFile](entities/InputFile.md)
 - [InputResourceBudget](entities/InputResourceBudget.md)
 - [InputTree](entities/InputTree.md)
+- [InstallCiError](entities/InstallCiError.md)
+- [InstallCiResult](entities/InstallCiResult.md)
 - [IntegrityDifference](entities/IntegrityDifference.md)
 - [InvalidRequestError](entities/InvalidRequestError.md)
 - [InvalidSurfaceJson](entities/InvalidSurfaceJson.md)
@@ -488,6 +490,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [calibration___init__](modules/calibration___init__.md) - Isolated calibration services.
 - [calibration_contracts](modules/calibration_contracts.md) - Deterministic evidence contracts for standalone documentation calibration.
 - [ci_check_cmd](modules/ci_check_cmd.md) - `src/llm_wiki_cli/commands/ci_check_cmd.py`
+- [ci_installer](modules/ci_installer.md) - Portable installation of the managed LLM Wiki integrity workflow.
 - [circuit_breaker](modules/circuit_breaker.md) - `src/llm_wiki_cli/services/circuit_breaker.py`
 - [cli](modules/cli.md) - `src/llm_wiki_cli/cli.py`
 - [common](modules/common.md) - Shared helpers for source-file extractor discovery and filtering.
@@ -534,6 +537,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [infrastructure_inventory](modules/infrastructure_inventory.md) - Inventory helpers for non-Docker infrastructure YAML files.
 - [infrastructure_sync](modules/infrastructure_sync.md) - Deterministic infrastructure discovery and incremental sync planning.
 - [init_cmd](modules/init_cmd.md) - `src/llm_wiki_cli/commands/init_cmd.py`
+- [install_ci_cmd](modules/install_ci_cmd.md) - CLI adapter for installing the portable LLM Wiki integrity workflow.
 - [install_cmd](modules/install_cmd.md) - `src/llm_wiki_cli/commands/install_cmd.py`
 - [integrity](modules/integrity.md) - Documentation-run integrity services.
 - [inventory_cache](modules/inventory_cache.md) - Persistent inventory cache used by lint and CI validation.
@@ -796,6 +800,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-identity_coordinate_key](flows/api-identity_coordinate_key.md) - entry: `identity_coordinate_key`
 - [api-infrastructure_evidence_by_page](flows/api-infrastructure_evidence_by_page.md) - entry: `infrastructure_evidence_by_page`
 - [api-input_wiki_tree_baseline](flows/api-input_wiki_tree_baseline.md) - entry: `input_wiki_tree_baseline`
+- [api-install_ci_workflow](flows/api-install_ci_workflow.md) - entry: `install_ci_workflow`
 - [api-is_canonical_uuid](flows/api-is_canonical_uuid.md) - entry: `is_canonical_uuid`
 - [api-is_placeholder_description](flows/api-is_placeholder_description.md) - entry: `is_placeholder_description`
 - [api-is_portable_path_component](flows/api-is_portable_path_component.md) - entry: `is_portable_path_component`
@@ -803,6 +808,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-is_pristine_wiki_target](flows/api-is_pristine_wiki_target.md) - entry: `is_pristine_wiki_target`
 - [api-is_supported_relationship_kind](flows/api-is_supported_relationship_kind.md) - entry: `is_supported_relationship_kind`
 - [api-is_table_separator](flows/api-is_table_separator.md) - entry: `is_table_separator`
+- [api-is_unmodified_managed_workflow](flows/api-is_unmodified_managed_workflow.md) - entry: `is_unmodified_managed_workflow`
 - [api-is_valid_sha256](flows/api-is_valid_sha256.md) - entry: `is_valid_sha256`
 - [api-knowledge_freshness_disclosure](flows/api-knowledge_freshness_disclosure.md) - entry: `knowledge_freshness_disclosure`
 - [api-knowledge_freshness_hint](flows/api-knowledge_freshness_hint.md) - entry: `knowledge_freshness_hint`
@@ -836,6 +842,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-move_windows_path_write_through](flows/api-move_windows_path_write_through.md) - entry: `move_windows_path_write_through`
 - [api-natural_key_for](flows/api-natural_key_for.md) - entry: `natural_key_for`
 - [api-nonnegative_int_or_none](flows/api-nonnegative_int_or_none.md) - entry: `nonnegative_int_or_none`
+- [api-normalize_action_ref](flows/api-normalize_action_ref.md) - entry: `normalize_action_ref`
 - [api-normalize_claim_evidence_records](flows/api-normalize_claim_evidence_records.md) - entry: `normalize_claim_evidence_records`
 - [api-normalize_entity_observation](flows/api-normalize_entity_observation.md) - entry: `normalize_entity_observation`
 - [api-normalize_legacy_portable_relative_path](flows/api-normalize_legacy_portable_relative_path.md) - entry: `normalize_legacy_portable_relative_path`
@@ -893,6 +900,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-render_api_contracts_markdown](flows/api-render_api_contracts_markdown.md) - entry: `render_api_contracts_markdown`
 - [api-render_doctor_text](flows/api-render_doctor_text.md) - entry: `render_doctor_text`
 - [api-render_flow_api_contract_section](flows/api-render_flow_api_contract_section.md) - entry: `render_flow_api_contract_section`
+- [api-render_managed_workflow](flows/api-render_managed_workflow.md) - entry: `render_managed_workflow`
 - [api-replace_generated_section](flows/api-replace_generated_section.md) - entry: `replace_generated_section`
 - [api-replace_section_body](flows/api-replace_section_body.md) - entry: `replace_section_body`
 - [api-replace_windows_file_write_through](flows/api-replace_windows_file_write_through.md) - entry: `replace_windows_file_write_through`
@@ -939,7 +947,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-resolved_paths_equal](flows/api-resolved_paths_equal.md) - entry: `resolved_paths_equal`
 - [api-retained_concept_page_paths](flows/api-retained_concept_page_paths.md) - entry: `retained_concept_page_paths`
 - [api-review_scope_hash](flows/api-review_scope_hash.md) - entry: `review_scope_hash`
-- [api-run](flows/api-run.md) - entry: `run`
+- [api-run-install_ci_cmd](flows/api-run-install_ci_cmd.md) - entry: `run`
+- [api-run-knowledge_cmd](flows/api-run-knowledge_cmd.md) - entry: `run`
 - [api-run_verification](flows/api-run_verification.md) - entry: `run_verification`
 - [api-runtime_consumed_inputs](flows/api-runtime_consumed_inputs.md) - entry: `runtime_consumed_inputs`
 - [api-runtime_generation_options](flows/api-runtime_generation_options.md) - entry: `runtime_generation_options`
@@ -1036,6 +1045,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [cli-generate-prompt](flows/cli-generate-prompt.md) - entry: `run`
 - [cli-init](flows/cli-init.md) - entry: `run`
 - [cli-install](flows/cli-install.md) - entry: `run`
+- [cli-install-ci](flows/cli-install-ci.md) - entry: `run`
 - [cli-install-hook](flows/cli-install-hook.md) - entry: `run`
 - [cli-knowledge](flows/cli-knowledge.md) - entry: `run`
 - [cli-lint](flows/cli-lint.md) - entry: `run`
