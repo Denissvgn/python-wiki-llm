@@ -137,15 +137,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| evaluated_envelope_to_payload | isinstance | 1131 | `isinstance(envelope, EvaluatedEnvelope)` |
-| evaluated_envelope_to_payload | TypeError | 1132 | `TypeError('envelope must be an EvaluatedEnvelope')` |
-| evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1134 | `KnowledgeEnvelopeError('schema_version', ...)` |
-| evaluated_envelope_to_payload | _validated_bundle_payload | 1138 | `_validated_bundle_payload(envelope.bundle)` |
-| _validated_bundle_payload | dict | 1822 | `dict(bundle.snapshot.extensions)` |
-| _validated_bundle_payload | pop | 1823 | `snapshot_extensions.pop(GOVERNANCE_HASH_EXTENSION_KEY, None)` |
-| _validated_bundle_payload | replace | 1824 | `replace(bundle, snapshot=replace(...))` |
-| _validated_bundle_payload | replace | 1826 | `replace(bundle.snapshot, extensions=snapshot_extensions)` |
-| _validated_bundle_payload | knowledge_index_to_payload | 1832 | `knowledge_index_to_payload(KnowledgeIndex(...))` |
+| evaluated_envelope_to_payload | isinstance | 1138 | `isinstance(envelope, EvaluatedEnvelope)` |
+| evaluated_envelope_to_payload | TypeError | 1139 | `TypeError('envelope must be an EvaluatedEnvelope')` |
+| evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1141 | `KnowledgeEnvelopeError('schema_version', ...)` |
+| evaluated_envelope_to_payload | _validated_bundle_payload | 1145 | `_validated_bundle_payload(envelope.bundle)` |
+| _validated_bundle_payload | dict | 1927 | `dict(bundle.snapshot.extensions)` |
+| _validated_bundle_payload | pop | 1928 | `snapshot_extensions.pop(GOVERNANCE_HASH_EXTENSION_KEY, None)` |
+| _validated_bundle_payload | replace | 1929 | `replace(bundle, snapshot=replace(...))` |
+| _validated_bundle_payload | replace | 1931 | `replace(bundle.snapshot, extensions=snapshot_extensions)` |
+| _validated_bundle_payload | knowledge_index_to_payload | 1937 | `knowledge_index_to_payload(KnowledgeIndex(...))` |
 | knowledge_index_to_payload | isinstance | 641 | `isinstance(model, KnowledgeIndex)` |
 | knowledge_index_to_payload | TypeError | 642 | `TypeError('model must be a KnowledgeIndex')` |
 
@@ -153,16 +153,16 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1823 |
+| mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1928 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `evaluated_envelope_to_payload` | `isinstance` | 1131 |
-| unresolved_call | `evaluated_envelope_to_payload` | `TypeError` | 1132 |
-| external_call | `_validated_bundle_payload` | `replace` | 1824 |
-| external_call | `_validated_bundle_payload` | `replace` | 1826 |
+| unresolved_call | `evaluated_envelope_to_payload` | `isinstance` | 1138 |
+| unresolved_call | `evaluated_envelope_to_payload` | `TypeError` | 1139 |
+| external_call | `_validated_bundle_payload` | `replace` | 1929 |
+| external_call | `_validated_bundle_payload` | `replace` | 1931 |
 | unresolved_call | `knowledge_index_to_payload` | `isinstance` | 641 |
 | unresolved_call | `knowledge_index_to_payload` | `TypeError` | 642 |
 | step_limit | `evaluated_envelope_to_payload` | `first 12 steps` | 0 |

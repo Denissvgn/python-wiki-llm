@@ -157,10 +157,10 @@ flowchart LR
 | _validated_bundle | isinstance | 387 | `isinstance(envelope, EvaluatedEnvelope)` |
 | _validated_bundle | KnowledgeIndexBuildError | 388 | `KnowledgeIndexBuildError('envelope', 'must be an already evaluated envelope')` |
 | _validated_bundle | evaluated_envelope_to_payload | 393 | `evaluated_envelope_to_payload(envelope)` |
-| evaluated_envelope_to_payload | isinstance | 1131 | `isinstance(envelope, EvaluatedEnvelope)` |
-| evaluated_envelope_to_payload | TypeError | 1132 | `TypeError('envelope must be an EvaluatedEnvelope')` |
-| evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1134 | `KnowledgeEnvelopeError('schema_version', ...)` |
-| evaluated_envelope_to_payload | _validated_bundle_payload | 1138 | `_validated_bundle_payload(envelope.bundle)` |
+| evaluated_envelope_to_payload | isinstance | 1138 | `isinstance(envelope, EvaluatedEnvelope)` |
+| evaluated_envelope_to_payload | TypeError | 1139 | `TypeError('envelope must be an EvaluatedEnvelope')` |
+| evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1141 | `KnowledgeEnvelopeError('schema_version', ...)` |
+| evaluated_envelope_to_payload | _validated_bundle_payload | 1145 | `_validated_bundle_payload(envelope.bundle)` |
 
 ### Boundary effects
 
@@ -169,7 +169,7 @@ flowchart LR
 | mutation | `relationships.extend` | `build_knowledge_index` | 225 |
 | mutation | `joined.append` | `_validate_and_join_inputs` | 345 |
 | mutation | `joined.sort` | `_validate_and_join_inputs` | 366 |
-| mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1823 |
+| mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1928 |
 
 ### Static analysis gaps
 
@@ -178,8 +178,8 @@ flowchart LR
 | unresolved_call | `_validate_and_join_inputs` | `isinstance` | 286 |
 | unresolved_call | `_validate_and_join_inputs` | `TypeError` | 287 |
 | unresolved_call | `_validated_bundle` | `isinstance` | 387 |
-| unresolved_call | `evaluated_envelope_to_payload` | `isinstance` | 1131 |
-| unresolved_call | `evaluated_envelope_to_payload` | `TypeError` | 1132 |
+| unresolved_call | `evaluated_envelope_to_payload` | `isinstance` | 1138 |
+| unresolved_call | `evaluated_envelope_to_payload` | `TypeError` | 1139 |
 | step_limit | `build_knowledge_index` | `first 12 steps` | 0 |
 | truncated_flow | `build_knowledge_index` | `depth limit` | 0 |
 

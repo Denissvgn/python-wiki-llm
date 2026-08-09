@@ -67,13 +67,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_configured_public_identity | isinstance | 678 | `isinstance(value, str)` |
-| validate_configured_public_identity | KnowledgeEnvelopeError | 679 | `KnowledgeEnvelopeError('configured_public_identity', 'must be a qualified public namespace path')` |
-| validate_configured_public_identity | strip | 684 | `value.strip(data not statically known)` |
-| validate_configured_public_identity | fullmatch | 685 | `_REPOSITORY_IDENTITY_RE.fullmatch(value)` |
-| validate_configured_public_identity | endswith | 686 | `value.casefold().endswith('.git')` |
-| validate_configured_public_identity | casefold | 686 | `value.casefold(data not statically known)` |
-| validate_configured_public_identity | KnowledgeEnvelopeError | 688 | `KnowledgeEnvelopeError('configured_public_identity', "must be a normalized public namespace path without scheme, credentials, port, query, fragment, dot segment, or '.git' suffix")` |
+| validate_configured_public_identity | isinstance | 685 | `isinstance(value, str)` |
+| validate_configured_public_identity | KnowledgeEnvelopeError | 686 | `KnowledgeEnvelopeError('configured_public_identity', 'must be a qualified public namespace path')` |
+| validate_configured_public_identity | strip | 691 | `value.strip(data not statically known)` |
+| validate_configured_public_identity | fullmatch | 692 | `_REPOSITORY_IDENTITY_RE.fullmatch(value)` |
+| validate_configured_public_identity | endswith | 693 | `value.casefold().endswith('.git')` |
+| validate_configured_public_identity | casefold | 693 | `value.casefold(data not statically known)` |
+| validate_configured_public_identity | KnowledgeEnvelopeError | 695 | `KnowledgeEnvelopeError('configured_public_identity', "must be a normalized public namespace path without scheme, credentials, port, query, fragment, dot segment, or '.git' suffix")` |
 
 ### Boundary effects
 
@@ -83,11 +83,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `validate_configured_public_identity` | `isinstance` | 678 |
-| unresolved_call | `validate_configured_public_identity` | `value.strip` | 684 |
-| unresolved_call | `validate_configured_public_identity` | `_REPOSITORY_IDENTITY_RE.fullmatch` | 685 |
-| unresolved_call | `validate_configured_public_identity` | `value.casefold().endswith` | 686 |
-| unresolved_call | `validate_configured_public_identity` | `value.casefold` | 686 |
+| unresolved_call | `validate_configured_public_identity` | `isinstance` | 685 |
+| unresolved_call | `validate_configured_public_identity` | `value.strip` | 691 |
+| unresolved_call | `validate_configured_public_identity` | `_REPOSITORY_IDENTITY_RE.fullmatch` | 692 |
+| unresolved_call | `validate_configured_public_identity` | `value.casefold().endswith` | 693 |
+| unresolved_call | `validate_configured_public_identity` | `value.casefold` | 693 |
 
 ## Behavior
 

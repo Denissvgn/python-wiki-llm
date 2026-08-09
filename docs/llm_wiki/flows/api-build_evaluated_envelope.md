@@ -130,17 +130,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_evaluated_envelope | isinstance | 885 | `isinstance(inputs, EnvelopeInputs)` |
-| build_evaluated_envelope | TypeError | 886 | `TypeError('inputs must be an EnvelopeInputs')` |
-| build_evaluated_envelope | isinstance | 887 | `isinstance(inputs.repository, RepositoryRecord)` |
-| build_evaluated_envelope | KnowledgeEnvelopeError | 888 | `KnowledgeEnvelopeError('repository', 'must be a pre-evaluated RepositoryRecord')` |
-| build_evaluated_envelope | _extensions_copy | 892 | `_extensions_copy(inputs.repository.extensions, 'repository.extensions')` |
-| _extensions_copy | isinstance | 1650 | `isinstance(value, Mapping)` |
-| _extensions_copy | KnowledgeEnvelopeError | 1651 | `KnowledgeEnvelopeError(field_name, 'must be an object')` |
-| _extensions_copy | any | 1652 | `any(...)` |
-| _extensions_copy | isinstance | 1652 | `isinstance(key, str)` |
-| _extensions_copy | KnowledgeEnvelopeError | 1653 | `KnowledgeEnvelopeError(field_name, 'must use string extension keys')` |
-| _extensions_copy | _reject_machine_local_paths | 1654 | `_reject_machine_local_paths(value, field_name)` |
+| build_evaluated_envelope | isinstance | 892 | `isinstance(inputs, EnvelopeInputs)` |
+| build_evaluated_envelope | TypeError | 893 | `TypeError('inputs must be an EnvelopeInputs')` |
+| build_evaluated_envelope | isinstance | 894 | `isinstance(inputs.repository, RepositoryRecord)` |
+| build_evaluated_envelope | KnowledgeEnvelopeError | 895 | `KnowledgeEnvelopeError('repository', 'must be a pre-evaluated RepositoryRecord')` |
+| build_evaluated_envelope | _extensions_copy | 899 | `_extensions_copy(inputs.repository.extensions, 'repository.extensions')` |
+| _extensions_copy | isinstance | 1755 | `isinstance(value, Mapping)` |
+| _extensions_copy | KnowledgeEnvelopeError | 1756 | `KnowledgeEnvelopeError(field_name, 'must be an object')` |
+| _extensions_copy | any | 1757 | `any(...)` |
+| _extensions_copy | isinstance | 1757 | `isinstance(key, str)` |
+| _extensions_copy | KnowledgeEnvelopeError | 1758 | `KnowledgeEnvelopeError(field_name, 'must use string extension keys')` |
+| _extensions_copy | _reject_machine_local_paths | 1759 | `_reject_machine_local_paths(value, field_name)` |
 
 ### Boundary effects
 
@@ -150,12 +150,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `build_evaluated_envelope` | `isinstance` | 885 |
-| unresolved_call | `build_evaluated_envelope` | `TypeError` | 886 |
-| unresolved_call | `build_evaluated_envelope` | `isinstance` | 887 |
-| unresolved_call | `_extensions_copy` | `isinstance` | 1650 |
-| unresolved_call | `_extensions_copy` | `any` | 1652 |
-| unresolved_call | `_extensions_copy` | `isinstance` | 1652 |
+| unresolved_call | `build_evaluated_envelope` | `isinstance` | 892 |
+| unresolved_call | `build_evaluated_envelope` | `TypeError` | 893 |
+| unresolved_call | `build_evaluated_envelope` | `isinstance` | 894 |
+| unresolved_call | `_extensions_copy` | `isinstance` | 1755 |
+| unresolved_call | `_extensions_copy` | `any` | 1757 |
+| unresolved_call | `_extensions_copy` | `isinstance` | 1757 |
 | step_limit | `build_evaluated_envelope` | `first 12 steps` | 0 |
 | truncated_flow | `build_evaluated_envelope` | `depth limit` | 0 |
 

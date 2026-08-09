@@ -102,17 +102,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| hash_component_configuration | isinstance | 850 | `isinstance(configuration, Mapping)` |
-| hash_component_configuration | KnowledgeEnvelopeError | 851 | `KnowledgeEnvelopeError('configuration', 'must be an object')` |
-| hash_component_configuration | _reject_machine_local_paths | 852 | `_reject_machine_local_paths(configuration, 'configuration')` |
-| _reject_machine_local_paths | set | 1593 | `set(data not statically known)` |
-| _reject_machine_local_paths | walk | 1637 | `walk(value, field_name)` |
-| hash_component_configuration | _hash_structured | 853 | `_hash_structured(COMPONENT_CONFIGURATION_DOMAIN, {...}, 'configuration')` |
-| _hash_structured | values | 1484 | `payload.values(data not statically known)` |
-| _hash_structured | _validate_json_tree | 1485 | `_validate_json_tree(value, field_name)` |
-| _validate_json_tree | set | 1506 | `set(data not statically known)` |
-| _validate_json_tree | walk | 1547 | `walk(value, field_name)` |
-| _hash_structured | sha256_bytes | 1486 | `sha256_bytes(canonical_json_bytes(...))` |
+| hash_component_configuration | isinstance | 857 | `isinstance(configuration, Mapping)` |
+| hash_component_configuration | KnowledgeEnvelopeError | 858 | `KnowledgeEnvelopeError('configuration', 'must be an object')` |
+| hash_component_configuration | _reject_machine_local_paths | 859 | `_reject_machine_local_paths(configuration, 'configuration')` |
+| _reject_machine_local_paths | set | 1698 | `set(data not statically known)` |
+| _reject_machine_local_paths | walk | 1742 | `walk(value, field_name)` |
+| hash_component_configuration | _hash_structured | 860 | `_hash_structured(COMPONENT_CONFIGURATION_DOMAIN, {...}, 'configuration')` |
+| _hash_structured | values | 1589 | `payload.values(data not statically known)` |
+| _hash_structured | _validate_json_tree | 1590 | `_validate_json_tree(value, field_name)` |
+| _validate_json_tree | set | 1611 | `set(data not statically known)` |
+| _validate_json_tree | walk | 1652 | `walk(value, field_name)` |
+| _hash_structured | sha256_bytes | 1591 | `sha256_bytes(canonical_json_bytes(...))` |
 
 ### Boundary effects
 
@@ -122,10 +122,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `hash_component_configuration` | `isinstance` | 850 |
-| unresolved_call | `_reject_machine_local_paths` | `walk` | 1637 |
-| unresolved_call | `_hash_structured` | `payload.values` | 1484 |
-| unresolved_call | `_validate_json_tree` | `walk` | 1547 |
+| unresolved_call | `hash_component_configuration` | `isinstance` | 857 |
+| unresolved_call | `_reject_machine_local_paths` | `walk` | 1742 |
+| unresolved_call | `_hash_structured` | `payload.values` | 1589 |
+| unresolved_call | `_validate_json_tree` | `walk` | 1652 |
 | step_limit | `hash_component_configuration` | `first 12 steps` | 0 |
 
 ## Behavior

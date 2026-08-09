@@ -1,6 +1,6 @@
 # _GitCommandResult
 
-**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:76`
+**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:78`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_envelope](../modules/knowledge_envelope.md)
@@ -32,12 +32,15 @@ _Auto-generated from `_GitCommandResult` in `src/llm_wiki_cli/services/knowledge
 flowchart LR
     n0["_GitCommandResult (src/llm_wiki_cli/services/knowledge_envelope.py)"]
     n1["_parse_local_remote_config (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n2["_run_git_result (src/llm_wiki_cli/services/knowledge_envelope.py)"]
+    n2["_run_effective_git_config (src/llm_wiki_cli/services/knowledge_envelope.py)"]
+    n3["_run_git_result (src/llm_wiki_cli/services/knowledge_envelope.py)"]
     n1 --> n0
     n2 --> n0
+    n3 --> n0
     click n0 "../modules/knowledge_envelope.md"
     click n1 "../modules/knowledge_envelope.md"
     click n2 "../modules/knowledge_envelope.md"
+    click n3 "../modules/knowledge_envelope.md"
 ```
 
 ### Summary
@@ -51,6 +54,9 @@ flowchart LR
 | Reference | Kind | Source |
 |---|---|---|
 | `_parse_local_remote_config` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
+| `_run_effective_git_config` | call | [knowledge_envelope](../modules/knowledge_envelope.md) |
+| `_run_effective_git_config` | call | [knowledge_envelope](../modules/knowledge_envelope.md) |
+| `_run_effective_git_config` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
 | `_run_git_result` | call | [knowledge_envelope](../modules/knowledge_envelope.md) |
 | `_run_git_result` | call | [knowledge_envelope](../modules/knowledge_envelope.md) |
 | `_run_git_result` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |

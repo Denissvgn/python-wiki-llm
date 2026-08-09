@@ -117,36 +117,36 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| plugin_producer_inputs | enumerate | 1005 | `enumerate(components)` |
-| plugin_producer_inputs | isinstance | 1006 | `isinstance(component, Mapping)` |
-| plugin_producer_inputs | KnowledgeEnvelopeError | 1007 | `KnowledgeEnvelopeError(..., 'must be an object')` |
-| plugin_producer_inputs | get | 1011 | `component.get('plugin_id')` |
-| plugin_producer_inputs | isinstance | 1013 | `isinstance(plugin_id, str)` |
-| plugin_producer_inputs | fullmatch | 1014 | `_COMPONENT_ID_RE.fullmatch(plugin_id)` |
-| plugin_producer_inputs | KnowledgeEnvelopeError | 1016 | `KnowledgeEnvelopeError(..., 'must be a normalized stable plugin ID')` |
-| plugin_producer_inputs | get | 1020 | `component.get('plugin_version')` |
-| plugin_producer_inputs | isinstance | 1021 | `isinstance(version, str)` |
-| plugin_producer_inputs | KnowledgeEnvelopeError | 1022 | `KnowledgeEnvelopeError(..., 'must be a string when available')` |
-| plugin_producer_inputs | isinstance | 1026 | `isinstance(version, str)` |
+| plugin_producer_inputs | enumerate | 1012 | `enumerate(components)` |
+| plugin_producer_inputs | isinstance | 1013 | `isinstance(component, Mapping)` |
+| plugin_producer_inputs | KnowledgeEnvelopeError | 1014 | `KnowledgeEnvelopeError(..., 'must be an object')` |
+| plugin_producer_inputs | get | 1018 | `component.get('plugin_id')` |
+| plugin_producer_inputs | isinstance | 1020 | `isinstance(plugin_id, str)` |
+| plugin_producer_inputs | fullmatch | 1021 | `_COMPONENT_ID_RE.fullmatch(plugin_id)` |
+| plugin_producer_inputs | KnowledgeEnvelopeError | 1023 | `KnowledgeEnvelopeError(..., 'must be a normalized stable plugin ID')` |
+| plugin_producer_inputs | get | 1027 | `component.get('plugin_version')` |
+| plugin_producer_inputs | isinstance | 1028 | `isinstance(version, str)` |
+| plugin_producer_inputs | KnowledgeEnvelopeError | 1029 | `KnowledgeEnvelopeError(..., 'must be a string when available')` |
+| plugin_producer_inputs | isinstance | 1033 | `isinstance(version, str)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `results.append` | `plugin_producer_inputs` | 1117 |
+| mutation | `results.append` | `plugin_producer_inputs` | 1124 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `plugin_producer_inputs` | `enumerate` | 1005 |
-| unresolved_call | `plugin_producer_inputs` | `isinstance` | 1006 |
-| unresolved_call | `plugin_producer_inputs` | `component.get` | 1011 |
+| unresolved_call | `plugin_producer_inputs` | `enumerate` | 1012 |
 | unresolved_call | `plugin_producer_inputs` | `isinstance` | 1013 |
-| unresolved_call | `plugin_producer_inputs` | `_COMPONENT_ID_RE.fullmatch` | 1014 |
-| unresolved_call | `plugin_producer_inputs` | `component.get` | 1020 |
-| unresolved_call | `plugin_producer_inputs` | `isinstance` | 1021 |
-| unresolved_call | `plugin_producer_inputs` | `isinstance` | 1026 |
+| unresolved_call | `plugin_producer_inputs` | `component.get` | 1018 |
+| unresolved_call | `plugin_producer_inputs` | `isinstance` | 1020 |
+| unresolved_call | `plugin_producer_inputs` | `_COMPONENT_ID_RE.fullmatch` | 1021 |
+| unresolved_call | `plugin_producer_inputs` | `component.get` | 1027 |
+| unresolved_call | `plugin_producer_inputs` | `isinstance` | 1028 |
+| unresolved_call | `plugin_producer_inputs` | `isinstance` | 1033 |
 | step_limit | `plugin_producer_inputs` | `first 12 steps` | 0 |
 
 ## Behavior

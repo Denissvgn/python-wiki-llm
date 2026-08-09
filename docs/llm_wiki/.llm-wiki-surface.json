@@ -2439,37 +2439,37 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 885,
+              "line": 892,
               "step": "build_evaluated_envelope",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 886,
+              "line": 893,
               "step": "build_evaluated_envelope",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 887,
+              "line": 894,
               "step": "build_evaluated_envelope",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1650,
+              "line": 1755,
               "step": "_extensions_copy",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1652,
+              "line": 1757,
               "step": "_extensions_copy",
               "target": "any"
             },
             {
               "kind": "unresolved_call",
-              "line": 1652,
+              "line": 1757,
               "step": "_extensions_copy",
               "target": "isinstance"
             },
@@ -3103,7 +3103,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1823,
+              "line": 1928,
               "step": "_validated_bundle_payload",
               "step_index": 12,
               "target": "snapshot_extensions.pop"
@@ -3130,13 +3130,13 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 1131,
+              "line": 1138,
               "step": "evaluated_envelope_to_payload",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1132,
+              "line": 1139,
               "step": "evaluated_envelope_to_payload",
               "target": "TypeError"
             },
@@ -3547,7 +3547,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1680,
+              "line": 1785,
               "step": "_build_component",
               "step_index": 2,
               "target": "limitations.add"
@@ -3555,7 +3555,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1704,
+              "line": 1809,
               "step": "_build_component",
               "step_index": 2,
               "target": "limitations.add"
@@ -3564,25 +3564,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1664,
+              "line": 1769,
               "step": "_build_component",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1670,
+              "line": 1775,
               "step": "_build_component",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1671,
+              "line": 1776,
               "step": "_build_component",
               "target": "_COMPONENT_ID_RE.fullmatch"
             },
             {
               "kind": "unresolved_call",
-              "line": 1727,
+              "line": 1832,
               "step": "_validated_limitations",
               "target": "isinstance"
             },
@@ -3801,31 +3801,31 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 607,
+              "line": 614,
               "step": "build_repository_record",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 612,
+              "line": 619,
               "step": "build_repository_record",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 678,
+              "line": 685,
               "step": "validate_configured_public_identity",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 684,
+              "line": 691,
               "step": "validate_configured_public_identity",
               "target": "value.strip"
             },
             {
               "kind": "unresolved_call",
-              "line": 685,
+              "line": 692,
               "step": "validate_configured_public_identity",
               "target": "_REPOSITORY_IDENTITY_RE.fullmatch"
             },
@@ -5234,7 +5234,7 @@
             {
               "confidence": "unknown",
               "kind": "process",
-              "line": 1199,
+              "line": 1206,
               "step": "_run_git_result",
               "step_index": 4,
               "target": "subprocess.run"
@@ -5243,19 +5243,19 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1192,
+              "line": 1199,
               "step": "_run_git_result",
               "target": "os.environ.items"
             },
             {
               "kind": "unresolved_call",
-              "line": 1192,
+              "line": 1199,
               "step": "_run_git_result",
               "target": "key.startswith"
             },
             {
               "kind": "unresolved_call",
-              "line": 1216,
+              "line": 1223,
               "step": "_run_git_result",
               "target": "result.stdout.strip"
             },
@@ -5276,7 +5276,7 @@
             "src/llm_wiki_cli/services/knowledge_envelope.py",
             "src/llm_wiki_cli/services/validation.py"
           ],
-          "step_count": 146,
+          "step_count": 165,
           "truncated": false
         }
       },
@@ -5403,7 +5403,7 @@
             "src/llm_wiki_cli/services/knowledge_envelope.py",
             "src/llm_wiki_cli/services/validation.py"
           ],
-          "step_count": 205,
+          "step_count": 224,
           "truncated": true
         }
       },
@@ -6523,12 +6523,6 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 179,
-              "step": "consumed_inputs_from_captured_hashes",
-              "target": "isinstance"
-            },
-            {
-              "kind": "unresolved_call",
               "line": 181,
               "step": "consumed_inputs_from_captured_hashes",
               "target": "isinstance"
@@ -6537,23 +6531,29 @@
               "kind": "unresolved_call",
               "line": 183,
               "step": "consumed_inputs_from_captured_hashes",
+              "target": "isinstance"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 185,
+              "step": "consumed_inputs_from_captured_hashes",
               "target": "any"
             },
             {
               "kind": "unresolved_call",
-              "line": 183,
+              "line": 185,
               "step": "consumed_inputs_from_captured_hashes",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 188,
+              "line": 190,
               "step": "consumed_inputs_from_captured_hashes",
               "target": "any"
             },
             {
               "kind": "unresolved_call",
-              "line": 188,
+              "line": 190,
               "step": "consumed_inputs_from_captured_hashes",
               "target": "isinstance"
             },
@@ -8177,7 +8177,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1823,
+              "line": 1928,
               "step": "_validated_bundle_payload",
               "step_index": 5,
               "target": "snapshot_extensions.pop"
@@ -8186,25 +8186,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1131,
+              "line": 1138,
               "step": "evaluated_envelope_to_payload",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1132,
+              "line": 1139,
               "step": "evaluated_envelope_to_payload",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 1824,
+              "line": 1929,
               "step": "_validated_bundle_payload",
               "target": "replace"
             },
             {
               "kind": "external_call",
-              "line": 1826,
+              "line": 1931,
               "step": "_validated_bundle_payload",
               "target": "replace"
             },
@@ -9972,19 +9972,19 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 863,
+              "line": 870,
               "step": "hash_aggregate_inputs",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1484,
+              "line": 1589,
               "step": "_hash_structured",
               "target": "payload.values"
             },
             {
               "kind": "unresolved_call",
-              "line": 1547,
+              "line": 1652,
               "step": "_validate_json_tree",
               "target": "walk"
             },
@@ -10073,25 +10073,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 850,
+              "line": 857,
               "step": "hash_component_configuration",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1637,
+              "line": 1742,
               "step": "_reject_machine_local_paths",
               "target": "walk"
             },
             {
               "kind": "unresolved_call",
-              "line": 1484,
+              "line": 1589,
               "step": "_hash_structured",
               "target": "payload.values"
             },
             {
               "kind": "unresolved_call",
-              "line": 1547,
+              "line": 1652,
               "step": "_validate_json_tree",
               "target": "walk"
             },
@@ -10145,7 +10145,7 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 1170,
+              "line": 1177,
               "step": "hash_evaluated_envelope",
               "target": "serialize_evaluated_envelope(envelope).encode"
             },
@@ -10157,13 +10157,13 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 1131,
+              "line": 1138,
               "step": "evaluated_envelope_to_payload",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1132,
+              "line": 1139,
               "step": "evaluated_envelope_to_payload",
               "target": "TypeError"
             },
@@ -10362,31 +10362,31 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 818,
+              "line": 825,
               "step": "hash_generation_options",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 820,
+              "line": 827,
               "step": "hash_generation_options",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1551,
+              "line": 1656,
               "step": "_normalized_allowlist",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1563,
+              "line": 1668,
               "step": "_normalized_allowlist",
               "target": "any"
             },
             {
               "kind": "unresolved_call",
-              "line": 1563,
+              "line": 1668,
               "step": "_normalized_allowlist",
               "target": "isinstance"
             },
@@ -10428,19 +10428,19 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 756,
+              "line": 763,
               "step": "hash_inventory",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 759,
+              "line": 766,
               "step": "hash_inventory",
               "target": "inventory.items"
             },
             {
               "kind": "unresolved_call",
-              "line": 760,
+              "line": 767,
               "step": "hash_inventory",
               "target": "isinstance"
             },
@@ -10560,7 +10560,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 791,
+              "line": 798,
               "step": "hash_markdown_snapshot",
               "step_index": 1,
               "target": "seen.add"
@@ -10568,7 +10568,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 796,
+              "line": 803,
               "step": "hash_markdown_snapshot",
               "step_index": 1,
               "target": "records.append"
@@ -10576,7 +10576,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 802,
+              "line": 809,
               "step": "hash_markdown_snapshot",
               "step_index": 1,
               "target": "records.sort"
@@ -10585,13 +10585,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 775,
+              "line": 782,
               "step": "hash_markdown_snapshot",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 779,
+              "line": 786,
               "step": "hash_markdown_snapshot",
               "target": "pages.items"
             },
@@ -10664,7 +10664,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 737,
+              "line": 744,
               "step": "hash_source_snapshot",
               "step_index": 1,
               "target": "seen_paths.add"
@@ -10672,7 +10672,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 738,
+              "line": 745,
               "step": "hash_source_snapshot",
               "step_index": 1,
               "target": "records.append"
@@ -10680,7 +10680,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 745,
+              "line": 752,
               "step": "hash_source_snapshot",
               "step_index": 1,
               "target": "records.sort"
@@ -10689,19 +10689,19 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 726,
+              "line": 733,
               "step": "hash_source_snapshot",
               "target": "enumerate"
             },
             {
               "kind": "unresolved_call",
-              "line": 727,
+              "line": 734,
               "step": "hash_source_snapshot",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1484,
+              "line": 1589,
               "step": "_hash_structured",
               "target": "payload.values"
             },
@@ -14453,61 +14453,61 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 700,
+              "line": 707,
               "step": "normalize_vcs_remote",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 702,
+              "line": 709,
               "step": "normalize_vcs_remote",
               "target": "value.strip"
             },
             {
               "kind": "unresolved_call",
-              "line": 703,
+              "line": 710,
               "step": "normalize_vcs_remote",
               "target": "any"
             },
             {
               "kind": "unresolved_call",
-              "line": 703,
+              "line": 710,
               "step": "normalize_vcs_remote",
               "target": "ord"
             },
             {
               "kind": "unresolved_call",
-              "line": 705,
+              "line": 712,
               "step": "normalize_vcs_remote",
               "target": "value.startswith"
             },
             {
               "kind": "unresolved_call",
-              "line": 706,
+              "line": 713,
               "step": "normalize_vcs_remote",
               "target": "_WINDOWS_DRIVE_PREFIX_RE.match"
             },
             {
               "kind": "unresolved_call",
-              "line": 707,
+              "line": 714,
               "step": "normalize_vcs_remote",
               "target": "_MALFORMED_PERCENT_RE.search"
             },
             {
               "kind": "external_call",
-              "line": 1329,
+              "line": 1434,
               "step": "_normalize_scheme_remote",
               "target": "urlsplit"
             },
             {
               "kind": "unresolved_call",
-              "line": 1334,
+              "line": 1439,
               "step": "_normalize_scheme_remote",
               "target": "parsed.scheme.casefold"
             },
             {
               "kind": "unresolved_call",
-              "line": 1337,
+              "line": 1442,
               "step": "_normalize_scheme_remote",
               "target": "parsed.netloc.rsplit"
             },
@@ -15725,7 +15725,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1117,
+              "line": 1124,
               "step": "plugin_producer_inputs",
               "step_index": 1,
               "target": "results.append"
@@ -15734,21 +15734,9 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1005,
+              "line": 1012,
               "step": "plugin_producer_inputs",
               "target": "enumerate"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 1006,
-              "step": "plugin_producer_inputs",
-              "target": "isinstance"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 1011,
-              "step": "plugin_producer_inputs",
-              "target": "component.get"
             },
             {
               "kind": "unresolved_call",
@@ -15758,25 +15746,37 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 1014,
-              "step": "plugin_producer_inputs",
-              "target": "_COMPONENT_ID_RE.fullmatch"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 1020,
+              "line": 1018,
               "step": "plugin_producer_inputs",
               "target": "component.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 1021,
+              "line": 1020,
               "step": "plugin_producer_inputs",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1026,
+              "line": 1021,
+              "step": "plugin_producer_inputs",
+              "target": "_COMPONENT_ID_RE.fullmatch"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 1027,
+              "step": "plugin_producer_inputs",
+              "target": "component.get"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 1028,
+              "step": "plugin_producer_inputs",
+              "target": "isinstance"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 1033,
               "step": "plugin_producer_inputs",
               "target": "isinstance"
             },
@@ -17587,7 +17587,7 @@
             "src/llm_wiki_cli/services/team.py",
             "src/llm_wiki_cli/services/documentation_review.py"
           ],
-          "step_count": 5426,
+          "step_count": 5436,
           "truncated": true
         }
       },
@@ -17803,7 +17803,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4399,
+          "step_count": 4418,
           "truncated": true
         }
       },
@@ -21204,7 +21204,7 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 818,
+              "line": 825,
               "step": "hash_generation_options",
               "target": "isinstance"
             },
@@ -21247,7 +21247,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 737,
+              "line": 744,
               "step": "hash_source_snapshot",
               "step_index": 2,
               "target": "seen_paths.add"
@@ -21255,7 +21255,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 738,
+              "line": 745,
               "step": "hash_source_snapshot",
               "step_index": 2,
               "target": "records.append"
@@ -21263,7 +21263,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 745,
+              "line": 752,
               "step": "hash_source_snapshot",
               "step_index": 2,
               "target": "records.sort"
@@ -21272,19 +21272,19 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 726,
+              "line": 733,
               "step": "hash_source_snapshot",
               "target": "enumerate"
             },
             {
               "kind": "unresolved_call",
-              "line": 727,
+              "line": 734,
               "step": "hash_source_snapshot",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1484,
+              "line": 1589,
               "step": "_hash_structured",
               "target": "payload.values"
             },
@@ -21795,37 +21795,37 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 678,
+              "line": 685,
               "step": "validate_configured_public_identity",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 684,
+              "line": 691,
               "step": "validate_configured_public_identity",
               "target": "value.strip"
             },
             {
               "kind": "unresolved_call",
-              "line": 685,
+              "line": 692,
               "step": "validate_configured_public_identity",
               "target": "_REPOSITORY_IDENTITY_RE.fullmatch"
             },
             {
               "kind": "unresolved_call",
-              "line": 686,
+              "line": 693,
               "step": "validate_configured_public_identity",
               "target": "value.casefold().endswith"
             },
             {
               "kind": "unresolved_call",
-              "line": 686,
+              "line": 693,
               "step": "validate_configured_public_identity",
               "target": "value.casefold"
             },
             {
               "kind": "unresolved_call",
-              "line": 1309,
+              "line": 1414,
               "step": "_remote_mapping",
               "target": "isinstance"
             },
@@ -22002,7 +22002,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1823,
+              "line": 1928,
               "step": "_validated_bundle_payload",
               "step_index": 8,
               "target": "snapshot_extensions.pop"
@@ -22017,25 +22017,25 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 1131,
+              "line": 1138,
               "step": "evaluated_envelope_to_payload",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1132,
+              "line": 1139,
               "step": "evaluated_envelope_to_payload",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 1824,
+              "line": 1929,
               "step": "_validated_bundle_payload",
               "target": "replace"
             },
             {
               "kind": "external_call",
-              "line": 1826,
+              "line": 1931,
               "step": "_validated_bundle_payload",
               "target": "replace"
             },
@@ -24390,31 +24390,31 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 678,
+              "line": 685,
               "step": "validate_configured_public_identity",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 684,
+              "line": 691,
               "step": "validate_configured_public_identity",
               "target": "value.strip"
             },
             {
               "kind": "unresolved_call",
-              "line": 685,
+              "line": 692,
               "step": "validate_configured_public_identity",
               "target": "_REPOSITORY_IDENTITY_RE.fullmatch"
             },
             {
               "kind": "unresolved_call",
-              "line": 686,
+              "line": 693,
               "step": "validate_configured_public_identity",
               "target": "value.casefold().endswith"
             },
             {
               "kind": "unresolved_call",
-              "line": 686,
+              "line": 693,
               "step": "validate_configured_public_identity",
               "target": "value.casefold"
             }
@@ -27017,7 +27017,7 @@
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/wiki_media.py"
           ],
-          "step_count": 4062,
+          "step_count": 4063,
           "truncated": true
         }
       },
@@ -29051,7 +29051,7 @@
             "src/llm_wiki_cli/services/knowledge_generation.py",
             "src/llm_wiki_cli/services/infrastructure_sync.py"
           ],
-          "step_count": 3171,
+          "step_count": 3190,
           "truncated": true
         }
       },
@@ -30300,7 +30300,7 @@
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/wiki_media.py"
           ],
-          "step_count": 5478,
+          "step_count": 5497,
           "truncated": true
         }
       },
@@ -48613,5 +48613,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:f827352f2f63ddcf34bae740f4671710dad874abc0a4390a01bef0ed4d4b18d5"
+  "source_hash": "sha256:a33fd8e790755fd539925e690ce199876a76268c1f95d86dec7d1f8fc0a9dc22"
 }

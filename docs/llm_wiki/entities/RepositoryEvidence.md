@@ -1,6 +1,6 @@
 # RepositoryEvidence
 
-**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:231`
+**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:233`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_envelope](../modules/knowledge_envelope.md)

@@ -124,7 +124,7 @@ flowchart LR
 | prepare_runtime_generation_options | PreparedRuntimeGenerationOptions | 228 | `PreparedRuntimeGenerationOptions(values=values, defaults=defaults, allowlist=allowlist)` |
 | runtime_generation_options_hash | tuple | 963 | `tuple(RUNTIME_GENERATION_OPTION_DEFAULTS)` |
 | runtime_generation_options_hash | hash_generation_options | 966 | `hash_generation_options(prepared.values, defaults=prepared.defaults, allowlist=prepared.allowlist)` |
-| hash_generation_options | isinstance | 818 | `isinstance(values, Mapping)` |
+| hash_generation_options | isinstance | 825 | `isinstance(values, Mapping)` |
 
 ### Boundary effects
 
@@ -137,7 +137,7 @@ flowchart LR
 | unresolved_call | `prepare_runtime_generation_options` | `isinstance` | 219 |
 | unresolved_call | `prepare_runtime_generation_options` | `TypeError` | 220 |
 | unresolved_call | `prepare_runtime_generation_options` | `dict.fromkeys` | 226 |
-| unresolved_call | `hash_generation_options` | `isinstance` | 818 |
+| unresolved_call | `hash_generation_options` | `isinstance` | 825 |
 | step_limit | `runtime_generation_options_hash` | `first 12 steps` | 0 |
 
 ## Behavior

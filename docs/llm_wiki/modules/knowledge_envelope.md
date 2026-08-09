@@ -59,14 +59,14 @@ flowchart LR
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [_GitCommandResult](../entities/GitCommandResult.md) | Class | 76 | — | — |
-| [KnowledgeEnvelopeError](../entities/KnowledgeEnvelopeError.md) | Class | 86 | `ValueError` | Field-specific validation failure while constructing an envelope. |
-| [ConsumedInputKind](../entities/ConsumedInputKind.md) | Enum | 95 | `str`, `Enum` | Known classes of repository/configuration input consumed by a run. |
-| [ConsumedInput](../entities/ConsumedInput.md) | Class | 121 | — | One already captured repository-relative content commitment. |
-| [ProducerComponentInput](../entities/ProducerComponentInput.md) | Class | 215 | — | Safe, already selected producer metadata. |
-| [RepositoryEvidence](../entities/RepositoryEvidence.md) | Class | 231 | — | Already collected local VCS evidence; raw remotes are never serialized. |
-| [EnvelopeInputs](../entities/EnvelopeInputs.md) | Class | 243 | — | Complete in-memory inputs for one evaluated envelope. |
-| [EvaluatedEnvelope](../entities/EvaluatedEnvelope.md) | Class | 263 | — | Version-tagged evaluated basis committed through manifest v5. |
+| [_GitCommandResult](../entities/GitCommandResult.md) | Class | 78 | — | — |
+| [KnowledgeEnvelopeError](../entities/KnowledgeEnvelopeError.md) | Class | 88 | `ValueError` | Field-specific validation failure while constructing an envelope. |
+| [ConsumedInputKind](../entities/ConsumedInputKind.md) | Enum | 97 | `str`, `Enum` | Known classes of repository/configuration input consumed by a run. |
+| [ConsumedInput](../entities/ConsumedInput.md) | Class | 123 | — | One already captured repository-relative content commitment. |
+| [ProducerComponentInput](../entities/ProducerComponentInput.md) | Class | 217 | — | Safe, already selected producer metadata. |
+| [RepositoryEvidence](../entities/RepositoryEvidence.md) | Class | 233 | — | Already collected local VCS evidence; raw remotes are never serialized. |
+| [EnvelopeInputs](../entities/EnvelopeInputs.md) | Class | 245 | — | Complete in-memory inputs for one evaluated envelope. |
+| [EvaluatedEnvelope](../entities/EvaluatedEnvelope.md) | Class | 265 | — | Version-tagged evaluated basis committed through manifest v5. |
 
 ## Functions
 
@@ -95,6 +95,8 @@ flowchart LR
 | `hash_evaluated_envelope` | `(envelope: EvaluatedEnvelope) -> str` | — | Hash the exact canonical evaluated-envelope bytes. |
 | `_run_git` | `(root: Path, *args: str, preserve_empty: bool = False) -> str \| None` | — | — |
 | `_run_git_result` | `(root: Path, *args: str, preserve_output: bool = False) -> _GitCommandResult` | — | — |
+| `_run_effective_git_config` | `(root: Path, key: str, *, value_type: str \| None = None) -> _GitCommandResult` | — | Read one allowlisted scalar without exposing operational Git commands. |
+| `_effective_line_ending_overrides` | `(root: Path) -> tuple[str, ...] \| None` | — | Project only validated effective EOL settings into isolated status. |
 | `_parse_local_remote_config` | `(result: _GitCommandResult) -> tuple[dict[str, str \| None], bool]` | — | — |
 | `_local_config_values` | `(root: Path, key: str) -> tuple[bool, tuple[str, ...]]` | — | — |
 | `_is_full_git_oid` | `(value: object) -> bool` | — | — |

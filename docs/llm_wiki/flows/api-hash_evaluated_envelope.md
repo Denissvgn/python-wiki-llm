@@ -131,17 +131,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| hash_evaluated_envelope | sha256_bytes | 1170 | `sha256_bytes(...)` |
+| hash_evaluated_envelope | sha256_bytes | 1177 | `sha256_bytes(...)` |
 | sha256_bytes | hexdigest | 197 | `hashlib.sha256(value).hexdigest(data not statically known)` |
 | sha256_bytes | sha256 | 197 | `hashlib.sha256(value)` |
-| hash_evaluated_envelope | encode | 1170 | `serialize_evaluated_envelope(envelope).encode('utf-8')` |
-| hash_evaluated_envelope | serialize_evaluated_envelope | 1170 | `serialize_evaluated_envelope(envelope)` |
-| serialize_evaluated_envelope | formatted_json_text | 1157 | `formatted_json_text(evaluated_envelope_to_payload(...))` |
+| hash_evaluated_envelope | encode | 1177 | `serialize_evaluated_envelope(envelope).encode('utf-8')` |
+| hash_evaluated_envelope | serialize_evaluated_envelope | 1177 | `serialize_evaluated_envelope(envelope)` |
+| serialize_evaluated_envelope | formatted_json_text | 1164 | `formatted_json_text(evaluated_envelope_to_payload(...))` |
 | formatted_json_text | dumps | 177 | `json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
-| serialize_evaluated_envelope | evaluated_envelope_to_payload | 1157 | `evaluated_envelope_to_payload(envelope)` |
-| evaluated_envelope_to_payload | isinstance | 1131 | `isinstance(envelope, EvaluatedEnvelope)` |
-| evaluated_envelope_to_payload | TypeError | 1132 | `TypeError('envelope must be an EvaluatedEnvelope')` |
-| evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1134 | `KnowledgeEnvelopeError('schema_version', ...)` |
+| serialize_evaluated_envelope | evaluated_envelope_to_payload | 1164 | `evaluated_envelope_to_payload(envelope)` |
+| evaluated_envelope_to_payload | isinstance | 1138 | `isinstance(envelope, EvaluatedEnvelope)` |
+| evaluated_envelope_to_payload | TypeError | 1139 | `TypeError('envelope must be an EvaluatedEnvelope')` |
+| evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1141 | `KnowledgeEnvelopeError('schema_version', ...)` |
 
 ### Boundary effects
 
@@ -153,10 +153,10 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 197 |
 | external_call | `sha256_bytes` | `hashlib.sha256` | 197 |
-| unresolved_call | `hash_evaluated_envelope` | `serialize_evaluated_envelope(envelope).encode` | 1170 |
+| unresolved_call | `hash_evaluated_envelope` | `serialize_evaluated_envelope(envelope).encode` | 1177 |
 | external_call | `formatted_json_text` | `json.dumps` | 177 |
-| unresolved_call | `evaluated_envelope_to_payload` | `isinstance` | 1131 |
-| unresolved_call | `evaluated_envelope_to_payload` | `TypeError` | 1132 |
+| unresolved_call | `evaluated_envelope_to_payload` | `isinstance` | 1138 |
+| unresolved_call | `evaluated_envelope_to_payload` | `TypeError` | 1139 |
 | step_limit | `hash_evaluated_envelope` | `first 12 steps` | 0 |
 | truncated_flow | `hash_evaluated_envelope` | `depth limit` | 0 |
 

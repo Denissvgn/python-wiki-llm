@@ -119,13 +119,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| hash_inventory | isinstance | 756 | `isinstance(inventory, Mapping)` |
-| hash_inventory | KnowledgeEnvelopeError | 757 | `KnowledgeEnvelopeError('inventory', 'must be an object')` |
-| hash_inventory | items | 759 | `inventory.items(data not statically known)` |
-| hash_inventory | isinstance | 760 | `isinstance(source_path, str)` |
-| hash_inventory | KnowledgeEnvelopeError | 761 | `KnowledgeEnvelopeError('inventory', 'must use string source keys')` |
-| hash_inventory | _repository_relative_path | 762 | `_repository_relative_path(source_path, 'inventory.source_path')` |
-| _repository_relative_path | require_repository_relative_path | 1381 | `require_repository_relative_path(value, text_error=KnowledgeEnvelopeError(...), posix_error=KnowledgeEnvelopeError(...), normalized_error=KnowledgeEnvelopeError(...))` |
+| hash_inventory | isinstance | 763 | `isinstance(inventory, Mapping)` |
+| hash_inventory | KnowledgeEnvelopeError | 764 | `KnowledgeEnvelopeError('inventory', 'must be an object')` |
+| hash_inventory | items | 766 | `inventory.items(data not statically known)` |
+| hash_inventory | isinstance | 767 | `isinstance(source_path, str)` |
+| hash_inventory | KnowledgeEnvelopeError | 768 | `KnowledgeEnvelopeError('inventory', 'must use string source keys')` |
+| hash_inventory | _repository_relative_path | 769 | `_repository_relative_path(source_path, 'inventory.source_path')` |
+| _repository_relative_path | require_repository_relative_path | 1486 | `require_repository_relative_path(value, text_error=KnowledgeEnvelopeError(...), posix_error=KnowledgeEnvelopeError(...), normalized_error=KnowledgeEnvelopeError(...))` |
 | require_repository_relative_path | isinstance | 256 | `isinstance(value, str)` |
 | require_repository_relative_path | strip | 258 | `value.strip(data not statically known)` |
 | require_repository_relative_path | any | 260 | `any(...)` |
@@ -139,9 +139,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `hash_inventory` | `isinstance` | 756 |
-| unresolved_call | `hash_inventory` | `inventory.items` | 759 |
-| unresolved_call | `hash_inventory` | `isinstance` | 760 |
+| unresolved_call | `hash_inventory` | `isinstance` | 763 |
+| unresolved_call | `hash_inventory` | `inventory.items` | 766 |
+| unresolved_call | `hash_inventory` | `isinstance` | 767 |
 | unresolved_call | `require_repository_relative_path` | `isinstance` | 256 |
 | unresolved_call | `require_repository_relative_path` | `value.strip` | 258 |
 | unresolved_call | `require_repository_relative_path` | `any` | 260 |

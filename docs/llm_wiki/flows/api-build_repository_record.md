@@ -118,17 +118,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_repository_record | RepositoryEvidence | 606 | `RepositoryEvidence(data not statically known)` |
-| build_repository_record | isinstance | 607 | `isinstance(current.remotes_evaluated, bool)` |
-| build_repository_record | KnowledgeEnvelopeError | 608 | `KnowledgeEnvelopeError('remotes_evaluated', 'must be a boolean')` |
-| build_repository_record | isinstance | 612 | `isinstance(current.upstream_remote_evaluated, bool)` |
-| build_repository_record | KnowledgeEnvelopeError | 613 | `KnowledgeEnvelopeError('upstream_remote_evaluated', 'must be a boolean')` |
-| build_repository_record | select_repository_identity | 622 | `select_repository_identity(configured_public_identity=configured_public_identity, vcs_remotes=current.remotes, upstream_remote=current.upstream_remote)` |
-| select_repository_identity | validate_configured_public_identity | 649 | `validate_configured_public_identity(configured_public_identity)` |
-| validate_configured_public_identity | isinstance | 678 | `isinstance(value, str)` |
-| validate_configured_public_identity | KnowledgeEnvelopeError | 679 | `KnowledgeEnvelopeError('configured_public_identity', 'must be a qualified public namespace path')` |
-| validate_configured_public_identity | strip | 684 | `value.strip(data not statically known)` |
-| validate_configured_public_identity | fullmatch | 685 | `_REPOSITORY_IDENTITY_RE.fullmatch(value)` |
+| build_repository_record | RepositoryEvidence | 613 | `RepositoryEvidence(data not statically known)` |
+| build_repository_record | isinstance | 614 | `isinstance(current.remotes_evaluated, bool)` |
+| build_repository_record | KnowledgeEnvelopeError | 615 | `KnowledgeEnvelopeError('remotes_evaluated', 'must be a boolean')` |
+| build_repository_record | isinstance | 619 | `isinstance(current.upstream_remote_evaluated, bool)` |
+| build_repository_record | KnowledgeEnvelopeError | 620 | `KnowledgeEnvelopeError('upstream_remote_evaluated', 'must be a boolean')` |
+| build_repository_record | select_repository_identity | 629 | `select_repository_identity(configured_public_identity=configured_public_identity, vcs_remotes=current.remotes, upstream_remote=current.upstream_remote)` |
+| select_repository_identity | validate_configured_public_identity | 656 | `validate_configured_public_identity(configured_public_identity)` |
+| validate_configured_public_identity | isinstance | 685 | `isinstance(value, str)` |
+| validate_configured_public_identity | KnowledgeEnvelopeError | 686 | `KnowledgeEnvelopeError('configured_public_identity', 'must be a qualified public namespace path')` |
+| validate_configured_public_identity | strip | 691 | `value.strip(data not statically known)` |
+| validate_configured_public_identity | fullmatch | 692 | `_REPOSITORY_IDENTITY_RE.fullmatch(value)` |
 
 ### Boundary effects
 
@@ -138,11 +138,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `build_repository_record` | `isinstance` | 607 |
-| unresolved_call | `build_repository_record` | `isinstance` | 612 |
-| unresolved_call | `validate_configured_public_identity` | `isinstance` | 678 |
-| unresolved_call | `validate_configured_public_identity` | `value.strip` | 684 |
-| unresolved_call | `validate_configured_public_identity` | `_REPOSITORY_IDENTITY_RE.fullmatch` | 685 |
+| unresolved_call | `build_repository_record` | `isinstance` | 614 |
+| unresolved_call | `build_repository_record` | `isinstance` | 619 |
+| unresolved_call | `validate_configured_public_identity` | `isinstance` | 685 |
+| unresolved_call | `validate_configured_public_identity` | `value.strip` | 691 |
+| unresolved_call | `validate_configured_public_identity` | `_REPOSITORY_IDENTITY_RE.fullmatch` | 692 |
 | step_limit | `build_repository_record` | `first 12 steps` | 0 |
 
 ## Behavior

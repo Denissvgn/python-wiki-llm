@@ -137,33 +137,33 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| serialize_evaluated_envelope | formatted_json_text | 1157 | `formatted_json_text(evaluated_envelope_to_payload(...))` |
+| serialize_evaluated_envelope | formatted_json_text | 1164 | `formatted_json_text(evaluated_envelope_to_payload(...))` |
 | formatted_json_text | dumps | 177 | `json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
-| serialize_evaluated_envelope | evaluated_envelope_to_payload | 1157 | `evaluated_envelope_to_payload(envelope)` |
-| evaluated_envelope_to_payload | isinstance | 1131 | `isinstance(envelope, EvaluatedEnvelope)` |
-| evaluated_envelope_to_payload | TypeError | 1132 | `TypeError('envelope must be an EvaluatedEnvelope')` |
-| evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1134 | `KnowledgeEnvelopeError('schema_version', ...)` |
-| evaluated_envelope_to_payload | _validated_bundle_payload | 1138 | `_validated_bundle_payload(envelope.bundle)` |
-| _validated_bundle_payload | dict | 1822 | `dict(bundle.snapshot.extensions)` |
-| _validated_bundle_payload | pop | 1823 | `snapshot_extensions.pop(GOVERNANCE_HASH_EXTENSION_KEY, None)` |
-| _validated_bundle_payload | replace | 1824 | `replace(bundle, snapshot=replace(...))` |
-| _validated_bundle_payload | replace | 1826 | `replace(bundle.snapshot, extensions=snapshot_extensions)` |
+| serialize_evaluated_envelope | evaluated_envelope_to_payload | 1164 | `evaluated_envelope_to_payload(envelope)` |
+| evaluated_envelope_to_payload | isinstance | 1138 | `isinstance(envelope, EvaluatedEnvelope)` |
+| evaluated_envelope_to_payload | TypeError | 1139 | `TypeError('envelope must be an EvaluatedEnvelope')` |
+| evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1141 | `KnowledgeEnvelopeError('schema_version', ...)` |
+| evaluated_envelope_to_payload | _validated_bundle_payload | 1145 | `_validated_bundle_payload(envelope.bundle)` |
+| _validated_bundle_payload | dict | 1927 | `dict(bundle.snapshot.extensions)` |
+| _validated_bundle_payload | pop | 1928 | `snapshot_extensions.pop(GOVERNANCE_HASH_EXTENSION_KEY, None)` |
+| _validated_bundle_payload | replace | 1929 | `replace(bundle, snapshot=replace(...))` |
+| _validated_bundle_payload | replace | 1931 | `replace(bundle.snapshot, extensions=snapshot_extensions)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1823 |
+| mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1928 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `formatted_json_text` | `json.dumps` | 177 |
-| unresolved_call | `evaluated_envelope_to_payload` | `isinstance` | 1131 |
-| unresolved_call | `evaluated_envelope_to_payload` | `TypeError` | 1132 |
-| external_call | `_validated_bundle_payload` | `replace` | 1824 |
-| external_call | `_validated_bundle_payload` | `replace` | 1826 |
+| unresolved_call | `evaluated_envelope_to_payload` | `isinstance` | 1138 |
+| unresolved_call | `evaluated_envelope_to_payload` | `TypeError` | 1139 |
+| external_call | `_validated_bundle_payload` | `replace` | 1929 |
+| external_call | `_validated_bundle_payload` | `replace` | 1931 |
 | step_limit | `serialize_evaluated_envelope` | `first 12 steps` | 0 |
 | truncated_flow | `serialize_evaluated_envelope` | `depth limit` | 0 |
 
