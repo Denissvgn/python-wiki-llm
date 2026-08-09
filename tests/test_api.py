@@ -2086,7 +2086,8 @@ def test_section_query_python_api_and_mcp_results_are_identical(
         service=query_service,
     )
     mcp_result = mcp_server.McpWikiService(
-        src_dir=str(tmp_path)
+        src_dir=str(tmp_path),
+        wiki_dir=str(tmp_path / "wiki"),
     ).list_concept_sections(
         "llm-wiki://entities/User",
         ownership="unknown",

@@ -2751,6 +2751,7 @@ class TestProtocolRun:
     def test_request_empty_inventory_reports_zero_file_bounds(
         self, tmp_path, capsys, monkeypatch
     ):
+        monkeypatch.chdir(tmp_path)
         monkeypatch.setattr(context_cmd, "get_inventory", lambda *args, **kwargs: {})
         request = _write_request(tmp_path, _protocol_request())
 
@@ -2770,6 +2771,7 @@ class TestProtocolRun:
     def test_request_language_filter_excludes_nonmatching_inventory(
         self, tmp_path, capsys, monkeypatch
     ):
+        monkeypatch.chdir(tmp_path)
         inventory = {
             "api.py": {
                 "language": "python",
@@ -2798,6 +2800,7 @@ class TestProtocolRun:
     def test_request_module_filter_matches_path_and_module(
         self, tmp_path, capsys, monkeypatch
     ):
+        monkeypatch.chdir(tmp_path)
         inventory = {
             "src/api/users.py": {
                 "language": "python",

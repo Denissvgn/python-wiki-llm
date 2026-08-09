@@ -1071,7 +1071,10 @@ class TestMcpWikiService:
             )
 
         monkeypatch.setattr(context_cmd, "_build_context", fake_build_context)
-        service = mcp_server.McpWikiService(src_dir=str(tmp_path))
+        service = mcp_server.McpWikiService(
+            src_dir=str(tmp_path),
+            wiki_dir=str(tmp_path / "wiki"),
+        )
 
         result = service.get_context(
             focus=["all"],
@@ -1140,7 +1143,10 @@ class TestMcpWikiService:
             )
 
         monkeypatch.setattr(context_cmd, "_build_context", fake_build_context)
-        service = mcp_server.McpWikiService(src_dir=str(tmp_path))
+        service = mcp_server.McpWikiService(
+            src_dir=str(tmp_path),
+            wiki_dir=str(tmp_path / "wiki"),
+        )
 
         result = service.get_context(
             format="markdown",
@@ -1171,7 +1177,10 @@ class TestMcpWikiService:
             )
 
         monkeypatch.setattr(context_cmd, "_build_context", fake_build_context)
-        service = mcp_server.McpWikiService(src_dir=str(tmp_path))
+        service = mcp_server.McpWikiService(
+            src_dir=str(tmp_path),
+            wiki_dir=str(tmp_path / "wiki"),
+        )
 
         result = service.get_context(
             budget_tokens=1000,
@@ -1209,6 +1218,7 @@ class TestMcpWikiService:
 
     def test_get_context_packet_returns_fresh_packet_and_forwards_bounds(
         self,
+        tmp_path,
         monkeypatch,
     ):
         from llm_wiki_cli.services import context_packet
@@ -1239,9 +1249,10 @@ class TestMcpWikiService:
             return Packet()
 
         monkeypatch.setattr(context_packet, "build_qualified_context", fake_build)
+        wiki_dir = tmp_path / "wiki"
         service = mcp_server.McpWikiService(
             src_dir="source-root",
-            wiki_dir="docs/llm_wiki",
+            wiki_dir=str(wiki_dir),
         )
 
         result = service.get_context_packet(
@@ -1260,7 +1271,7 @@ class TestMcpWikiService:
         }
         assert seen == {
             "src_dir": "source-root",
-            "wiki_dir": "docs/llm_wiki",
+            "wiki_dir": wiki_dir.as_posix(),
             "request": {
                 "protocol": "llm-wiki-context/v1",
                 "budget_tokens": 4096,
@@ -1359,7 +1370,10 @@ class TestMcpWikiService:
             "build_qualified_context",
             lambda *_args, **_kwargs: Packet(next(packet_ids)),
         )
-        service = mcp_server.McpWikiService(src_dir=str(tmp_path))
+        service = mcp_server.McpWikiService(
+            src_dir=str(tmp_path),
+            wiki_dir=str(tmp_path / "wiki"),
+        )
 
         unchanged = service.get_context_packet(if_packet_id="sha256:" + "a" * 64)
         changed = service.get_context_packet(if_packet_id="sha256:" + "a" * 64)
@@ -1507,7 +1521,10 @@ class TestMcpWikiService:
             "build_report",
             fake_build_report,
         )
-        service = mcp_server.McpWikiService(src_dir=str(tmp_path))
+        service = mcp_server.McpWikiService(
+            src_dir=str(tmp_path),
+            wiki_dir=str(tmp_path / "wiki"),
+        )
 
         json_result = service.check_wiki(
             format="json",
@@ -2182,7 +2199,10 @@ class TestMcpWikiService:
             "build_documentation_query_service",
             lambda *_args, **_kwargs: FakeQueryService(),
         )
-        service = mcp_server.McpWikiService(src_dir=str(tmp_path))
+        service = mcp_server.McpWikiService(
+            src_dir=str(tmp_path),
+            wiki_dir=str(tmp_path / "wiki"),
+        )
 
         result = service.get_concept(locator)
 
@@ -2242,7 +2262,10 @@ class TestMcpWikiService:
             "build_documentation_query_service",
             fake_builder,
         )
-        service = mcp_server.McpWikiService(src_dir=str(tmp_path))
+        service = mcp_server.McpWikiService(
+            src_dir=str(tmp_path),
+            wiki_dir=str(tmp_path / "wiki"),
+        )
         if method_name == "related_concepts":
             kwargs = {"direction": "both", "kinds": None}
         elif method_name == "list_concept_sections":
@@ -2314,7 +2337,11 @@ class TestMcpWikiService:
             "get_inventory_result",
             fail_if_extraction_runs,
         )
-        service = mcp_server.McpWikiService(src_dir=str(tmp_path))
+        wiki_dir = tmp_path / "wiki"
+        service = mcp_server.McpWikiService(
+            src_dir=str(tmp_path),
+            wiki_dir=str(wiki_dir),
+        )
 
         concept = service.get_concept("llm-wiki://entities/User")
         sections = service.list_concept_sections(
@@ -2353,10 +2380,10 @@ class TestMcpWikiService:
         assert evidence["found"] is False
         assert evidence["evidence"] is None
         assert calls == [
-            (str(tmp_path), "docs/llm_wiki", 20, True),
-            (str(tmp_path), "docs/llm_wiki", 20, True),
-            (str(tmp_path), "docs/llm_wiki", 20, True),
-            (str(tmp_path), "docs/llm_wiki", 20, True),
+            (str(tmp_path), wiki_dir.as_posix(), 20, True),
+            (str(tmp_path), wiki_dir.as_posix(), 20, True),
+            (str(tmp_path), wiki_dir.as_posix(), 20, True),
+            (str(tmp_path), wiki_dir.as_posix(), 20, True),
         ]
 
 
