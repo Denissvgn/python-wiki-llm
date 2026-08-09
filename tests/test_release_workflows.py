@@ -8,7 +8,6 @@ import shlex
 import subprocess
 from pathlib import Path
 
-import pytest
 import yaml
 
 from tests import release_artifact_smoke
@@ -301,15 +300,25 @@ def test_wiki_integrity_uses_locked_runner_temporary_state_and_evidence() -> Non
         assert required in versions
 
 
-@pytest.mark.skipif(
-    os.name == "nt",
-    reason="The Ubuntu-only runner reservation probe requires POSIX Bash",
-)
 def test_runner_path_reservation_quarantines_all_collisions_before_failure(
     tmp_path: Path,
 ) -> None:
     _workflow, job = _wiki_integrity_job()
     path_binding = _named_step(job, "Bind runner-temporary wiki paths")["run"]
+    if os.name == "nt":
+        # This job executes only on Ubuntu. Windows validates the fail-closed
+        # reservation logic statically without adding a release-lane skip.
+        for required in (
+            'cache_dir="${RUNNER_TEMP}/llm-wiki-cache"',
+            'evidence_dir="${RUNNER_TEMP}/llm-wiki-evidence"',
+            "if ${occupied}; then",
+            "/bin/mv --",
+            "/bin/rm -rf --",
+            '[[ ! -e "${reserved_dir}" && ! -L "${reserved_dir}" ]]',
+            "exit 1",
+        ):
+            assert required in path_binding
+        return
     runner_temp = tmp_path / "runner-temp"
     runner_temp.mkdir()
     cache_dir = runner_temp / "llm-wiki-cache"

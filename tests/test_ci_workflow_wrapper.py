@@ -16,11 +16,6 @@ ROOT = Path(__file__).parents[1]
 WRAPPER = ROOT / ".github" / "scripts" / "run-llm-wiki-ci-check.sh"
 PYTHON = Path(sys.executable).resolve()
 
-pytestmark = pytest.mark.skipif(
-    os.name == "nt",
-    reason="The dedicated wrapper and its behavioral harness require POSIX Bash",
-)
-
 
 class WrapperCase(TypedDict):
     repo: Path
