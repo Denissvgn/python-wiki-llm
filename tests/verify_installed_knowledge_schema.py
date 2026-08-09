@@ -81,7 +81,7 @@ def _verify_contents(wheel: Path, sdist: Path) -> None:
         raw_sdist_names = {member.name for member in archive.getmembers()}
     _validate_member_names(raw_sdist_names)
     roots = {Path(name).parts[0] for name in raw_sdist_names if Path(name).parts}
-    if roots != {"agent_wiki_cli-1.5.1"}:
+    if roots != {"agent_wiki_cli-1.6.0"}:
         raise RuntimeError(f"sdist has an unexpected root: {sorted(roots)}")
     sdist_names = {
         Path(*Path(name).parts[1:]).as_posix()

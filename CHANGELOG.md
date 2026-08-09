@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-08-09
+
+### Added
+
+- A committed, source-selected LLM Wiki for this repository, including curated
+  task guides, architecture notes, module and entity references, workflows,
+  entry-point flows, and portable provenance.
+- A read-only `LLM Wiki integrity` GitHub Actions job that prepares the locked
+  TypeScript extractor helper, runs the strict integrity check, preserves the
+  original command status, verifies a clean worktree, and uploads bounded JSON,
+  Markdown, preparation, and toolchain evidence.
+- A committed source-selection profile and explicit helper-selection policy for
+  reproducible local and hosted wiki maintenance.
+
+### Changed
+
+- Wiki bootstrap and sync now maintain deterministic generated surfaces,
+  preserve human-owned semantic sections, retire stale generated flows and
+  workflows safely, and keep dependency and runtime-basis projections current.
+- Source selection and source-plugin trust are independent, with exact selected
+  inputs bound into the managed snapshot and integrity artifacts.
+- Repository revision evidence is scoped to the selected source so wiki-only
+  commits converge without obscuring selected-source changes.
+
+### Fixed
+
+- Make managed wiki generation portable across fresh checkouts, Windows path
+  semantics and line-ending configuration, external source roots, and
+  host-specific filesystem layouts.
+- Keep generated dependency order, workflow metadata, public log provenance,
+  hidden artifact hashes, and semantic ownership mutually consistent across
+  repeated synchronization.
+- Fail closed on malformed or colliding CI evidence while retaining valid
+  diagnostics and the original integrity-check failure status.
+
 ## [1.5.1] - 2026-08-04
 
 ### Fixed
@@ -637,7 +672,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Test suite** — 89 unit + integration tests with pytest
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.5.1...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.5.1...v1.6.0
 [1.5.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.3.1...v1.4.0
