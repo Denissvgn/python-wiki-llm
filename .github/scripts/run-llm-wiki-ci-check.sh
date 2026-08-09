@@ -19,7 +19,8 @@ Usage:
     --knowledge-drift-report
 
 The selected Python is used both to invoke `llm_wiki_cli.cli` and to parse its
-JSON output. The bounded result summary is written to GITHUB_STEP_SUMMARY.
+JSON output. Project-local plugins are disabled, and the bounded result summary
+is written to GITHUB_STEP_SUMMARY.
 EOF
 }
 
@@ -215,7 +216,8 @@ set +e
   --report "${MARKDOWN_REPORT}" \
   --jobs "${jobs}" \
   --knowledge-drift-report \
-  --format json > "${raw_output}"
+  --format json \
+  --no-plugins > "${raw_output}"
 cli_exit=$?
 ci_completed=true
 set -e

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import types
 from pathlib import Path
 
@@ -17,6 +18,7 @@ from llm_wiki_cli.commands.lint_cmd import (
     LintReport,
 )
 from llm_wiki_cli.config import PathValidationError
+from llm_wiki_cli.services import plugins
 from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
 
 
@@ -79,6 +81,7 @@ def test_ci_check_uses_inventory_cache_options(tmp_path, monkeypatch, capsys):
         seen["parallel_jobs"] = kwargs["parallel_jobs"]
         seen["job_request"] = kwargs["job_request"]
         seen["knowledge_drift_report"] = kwargs["knowledge_drift_report"]
+        seen["include_plugins"] = kwargs["include_plugins"]
         kwargs["plan_reporter"](ExtractionJobPlan())
         events.append("work")
         return LintReport(
@@ -113,11 +116,94 @@ def test_ci_check_uses_inventory_cache_options(tmp_path, monkeypatch, capsys):
     assert seen["parallel_jobs"] == 1
     assert seen["job_request"].requested_jobs == 1
     assert seen["knowledge_drift_report"] is False
+    assert seen["include_plugins"] is True
     assert events == ["report", "work"]
     assert payload["knowledge_drift_gate"] is False
     assert payload["knowledge_drift_report"] is False
     assert payload["execution"] == _empty_execution_payload()
     assert captured.err.count("Extractor plan:") == 1
+
+
+def test_ci_check_no_plugins_never_imports_target_plugin_code(
+    tmp_path,
+    monkeypatch,
+    capsys,
+):
+    project = tmp_path / "project"
+    project.mkdir()
+    monkeypatch.chdir(project)
+    (project / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+
+    wiki = project / "docs" / "llm_wiki"
+    for directory in ("entities", "modules", "workflows"):
+        (wiki / directory).mkdir(parents=True, exist_ok=True)
+    (wiki / "index.md").write_text("# LLM Wiki Index\n", encoding="utf-8")
+    (wiki / "log.md").write_text("# Architectural Log\n", encoding="utf-8")
+
+    marker = tmp_path / "target-plugin-executed"
+    monkeypatch.setenv("TARGET_PLUGIN_EXECUTION_MARKER", str(marker))
+    plugin_source = project / "vendor" / "hostile-ci-plugin"
+    plugin_source.mkdir(parents=True)
+    (plugin_source / plugins.MANIFEST_FILENAME).write_text(
+        json.dumps(
+            {
+                "id": "hostile-ci-plugin",
+                "version": "0.1.0",
+                "llm_wiki_version": "*",
+                "components": [
+                    {
+                        "type": "lint_rule",
+                        "id": "marker",
+                        "entry_point": "hostile_ci_plugin:check",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (plugin_source / "hostile_ci_plugin.py").write_text(
+        "import os\n"
+        "from pathlib import Path\n"
+        "Path(os.environ['TARGET_PLUGIN_EXECUTION_MARKER']).write_text(\n"
+        "    'executed\\n', encoding='utf-8'\n"
+        ")\n"
+        "def check(*_args):\n"
+        "    return []\n",
+        encoding="utf-8",
+    )
+    plugins.install_plugin(str(plugin_source), yes=True)
+    real_build_report = ci_check_cmd.build_report
+    seen = {}
+
+    def recording_build_report(wiki_dir, src_dir, **kwargs):
+        seen["include_plugins"] = kwargs["include_plugins"]
+        return real_build_report(wiki_dir, src_dir, **kwargs)
+
+    monkeypatch.setattr(ci_check_cmd, "build_report", recording_build_report)
+    monkeypatch.setattr(ci_check_cmd, "record_validation_event", lambda **kwargs: None)
+
+    args = cli._build_parser().parse_args(
+        [
+            "ci-check",
+            "--src-dir",
+            ".",
+            "--wiki-dir",
+            "docs/llm_wiki",
+            "--report",
+            str(tmp_path / "report.md"),
+            "--no-plugins",
+        ]
+    )
+    assert args.no_plugins is True
+
+    with pytest.raises(SystemExit) as exc_info:
+        ci_check_cmd.run(args)
+
+    assert exc_info.value.code == 1
+    assert seen["include_plugins"] is False
+    assert not marker.exists()
+    assert "hostile_ci_plugin" not in sys.modules
+    capsys.readouterr()
 
 
 def test_ci_check_passes_explicit_native_drift_report_mode(

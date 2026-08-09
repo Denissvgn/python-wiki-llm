@@ -389,7 +389,7 @@ def test_full_integrity_action_preserves_default_selection_and_gate_exit() -> No
         assert plan_index < step_names.index(setup_name) < prepare_index
 
 
-def test_full_integrity_action_reserves_and_always_uploads_bounded_evidence() -> None:
+def test_full_integrity_action_reserves_and_always_uploads_allowlisted_evidence() -> None:
     action = _action()
     path_binding = _named_step(action, "Bind runner-temporary wiki paths")["run"]
     for required in (
@@ -410,7 +410,9 @@ def test_full_integrity_action_reserves_and_always_uploads_bounded_evidence() ->
         assert required in path_binding
 
     steps = action["runs"]["steps"]
-    upload = _named_step(action, "Upload bounded wiki integrity evidence")
+    upload = _named_step(
+        action, "Upload fixed allowlisted wiki integrity evidence"
+    )
     assert upload == steps[-1]
     assert upload["if"] == "always()"
     artifact_name = upload["with"]["name"]

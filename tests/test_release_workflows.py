@@ -466,6 +466,7 @@ def test_wiki_integrity_wrapper_executes_the_direct_candidate_gate() -> None:
         '--helper-cache-dir "${helper_cache_dir}"',
         '--jobs "${jobs}"',
         "--knowledge-drift-report",
+        "--no-plugins",
         "--format json",
         '--report "${MARKDOWN_REPORT}"',
     ):

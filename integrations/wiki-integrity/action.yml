@@ -1,5 +1,5 @@
 name: LLM Wiki full integrity gate
-description: Validate a committed LLM Wiki with locked toolchains and bounded evidence.
+description: Validate a committed LLM Wiki with locked toolchains and fixed allowlisted evidence.
 
 inputs:
   wiki-dir:
@@ -356,7 +356,7 @@ runs:
         --jobs 1
         --knowledge-drift-report
 
-    - name: Upload bounded wiki integrity evidence
+    - name: Upload fixed allowlisted wiki integrity evidence
       if: always()
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:

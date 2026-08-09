@@ -69,6 +69,7 @@ def run(args) -> None:
         include_tests=include_tests,
         job_request=job_request,
         plan_reporter=print_extraction_job_plan,
+        include_plugins=not bool(getattr(args, "no_plugins", False)),
         source_selection=source_selection,
     )
     duration_ms = int((time.monotonic() - started) * 1000)

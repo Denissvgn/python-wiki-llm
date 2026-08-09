@@ -487,6 +487,11 @@ def _add_ci_check_command(subparsers):
             "(default: disabled)"
         ),
     )
+    ci_parser.add_argument(
+        "--no-plugins",
+        action="store_true",
+        help="Disable project-local extractor, generation, and lint plugins",
+    )
     _add_helper_cache_argument(ci_parser)
     _add_include_tests_argument(ci_parser)
     _add_source_selection_argument(ci_parser)

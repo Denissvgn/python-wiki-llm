@@ -257,6 +257,7 @@ def test_explicit_interpreter_runs_cli_and_parses_json(
     assert "-I -m llm_wiki_cli.cli ci-check" in invocations
     assert "json.loads" in invocations
     assert "--jobs 1 --knowledge-drift-report --format json" in invocations
+    assert "--no-plugins" in invocations
 
 
 def test_explicit_interpreter_path_with_spaces_is_used_consistently(
