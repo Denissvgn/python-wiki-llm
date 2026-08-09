@@ -11,15 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- A committed, source-selected LLM Wiki for this repository, including curated
-  task guides, architecture notes, module and entity references, workflows,
+- Portable CI adoption for initialized managed wikis through
+  `llm-wiki install-ci`, which installs a dedicated full-integrity GitHub
+  Actions workflow from an immutable action commit without modifying unrelated
+  automation.
+- A reusable full-integrity GitHub composite action that installs
+  checksum-verified toolchains as needed, prepares detected
+  TypeScript/JavaScript, Go, Rust, and Haskell extractor helpers, runs the
+  strict integrity check with project-local plugins disabled, preserves the
+  original command status, verifies a clean worktree, and uploads a fixed,
+  allowlisted set of validation and toolchain evidence.
+- Source-selected managed wikis with committed selection profiles, curated task
+  guides, architecture notes, module and entity references, workflows,
   entry-point flows, and portable provenance.
-- A read-only `LLM Wiki integrity` GitHub Actions job that prepares the locked
-  TypeScript extractor helper, runs the strict integrity check, preserves the
-  original command status, verifies a clean worktree, and uploads bounded JSON,
-  Markdown, preparation, and toolchain evidence.
-- A committed source-selection profile and explicit helper-selection policy for
-  reproducible local and hosted wiki maintenance.
 
 ### Changed
 
