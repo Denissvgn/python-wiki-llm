@@ -56,6 +56,47 @@ def _managed_project(
     return root
 
 
+def _symlink_or_emulate_unsafe_component(
+    path: Path,
+    target: Path,
+    *,
+    monkeypatch: pytest.MonkeyPatch,
+    fallback_content: bytes | None = None,
+) -> None:
+    """Exercise a real link or deterministically inject the guard result.
+
+    The path-guard suites own native symlink and reparse-point detection.  These
+    installer tests own the service's fail-closed response and must not add a
+    hosted skip merely because the test account cannot create symlinks.
+    """
+
+    try:
+        path.symlink_to(target)
+        return
+    except OSError:
+        if path.is_symlink():
+            path.unlink()
+        elif path.exists():
+            raise AssertionError("failed symlink creation left an unexpected path")
+
+    if fallback_content is not None:
+        path.write_bytes(fallback_content)
+
+    real_guard = ci_installer.first_unsafe_path_component
+
+    def injected_guard(candidate, *args, **kwargs):
+        candidate_path = Path(candidate)
+        if candidate_path == path:
+            return candidate_path
+        return real_guard(candidate, *args, **kwargs)
+
+    monkeypatch.setattr(
+        ci_installer,
+        "first_unsafe_path_component",
+        injected_guard,
+    )
+
+
 @pytest.mark.parametrize(
     "value",
     [
@@ -259,17 +300,18 @@ def test_install_preserves_unrelated_workflows_and_refuses_target_directory(tmp_
         )
 
 
-def test_install_refuses_a_symlinked_workflow_target(tmp_path):
+def test_install_refuses_a_symlinked_workflow_target(tmp_path, monkeypatch):
     root = _managed_project(tmp_path)
     target = root / MANAGED_WORKFLOW_PATH
     target.parent.mkdir(parents=True)
     victim = root / "victim.yml"
     original = b"name: Victim\n"
     victim.write_bytes(original)
-    try:
-        target.symlink_to(victim)
-    except OSError:
-        pytest.skip("Symlinks are unavailable to this test account.")
+    _symlink_or_emulate_unsafe_component(
+        target,
+        victim,
+        monkeypatch=monkeypatch,
+    )
 
     with pytest.raises(InstallCiError, match="symlink|unsafe path component"):
         install_ci_workflow(
@@ -329,17 +371,19 @@ def test_install_rejects_a_malformed_managed_manifest(tmp_path):
     assert not (root / MANAGED_WORKFLOW_PATH).exists()
 
 
-def test_install_rejects_a_symlinked_managed_manifest(tmp_path):
+def test_install_rejects_a_symlinked_managed_manifest(tmp_path, monkeypatch):
     root = _managed_project(tmp_path)
     manifest = root / "docs/llm_wiki" / MANIFEST_FILENAME
     victim = root / "manifest-victim.json"
     original = manifest.read_bytes()
     victim.write_bytes(original)
     manifest.unlink()
-    try:
-        manifest.symlink_to(victim)
-    except OSError:
-        pytest.skip("Symlinks are unavailable to this test account.")
+    _symlink_or_emulate_unsafe_component(
+        manifest,
+        victim,
+        monkeypatch=monkeypatch,
+        fallback_content=original,
+    )
 
     with pytest.raises(InstallCiError, match="regular file"):
         install_ci_workflow(action_ref=ACTION_REF, project_root=root)
