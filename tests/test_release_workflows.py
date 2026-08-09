@@ -7,6 +7,7 @@ import os
 import re
 import shlex
 import subprocess
+import sys
 from pathlib import Path, PurePosixPath
 
 import yaml
@@ -264,16 +265,24 @@ def test_wiki_integrity_installs_and_invokes_the_candidate_contract() -> None:
     assert setup_python["with"] == {"python-version": "3.13"}
     source = _wiki_integrity_source()
     assert "${pythonLocation}" not in source
-    assert source.count("${{ steps.setup-python.outputs.python-path }}") == 5
+    assert source.count("${{ steps.setup-python.outputs.python-path }}") == 6
 
     install = _named_step(job, "Install the candidate package")
-    assert install["run"] == "python -m pip install --no-cache-dir ."
+    assert shlex.split(install["run"]) == [
+        "${{ steps.setup-python.outputs.python-path }}",
+        "-I",
+        "-m",
+        "pip",
+        "install",
+        "--no-cache-dir",
+        ".",
+    ]
 
     prepare = _named_step(job, "Prepare the automatically selected extractor helpers")[
         "run"
     ]
     assert '"${{ steps.setup-python.outputs.python-path }}"' in prepare
-    assert "-m llm_wiki_cli.cli prepare-extractors" in prepare
+    assert "-I -m llm_wiki_cli.cli prepare-extractors" in prepare
     assert "--src-dir ." in prepare
     assert '--cache-dir "${LLM_WIKI_CACHE_DIR}"' in prepare
     assert 'tee "${LLM_WIKI_EVIDENCE_DIR}/prepare-extractors.log"' in prepare
@@ -319,6 +328,44 @@ def test_wiki_integrity_installs_and_invokes_the_candidate_contract() -> None:
     ):
         assert prohibited not in policy_text.lower()
     assert re.search(r"\b(?:bootstrap|sync|doctor)\b", policy_text) is None
+
+
+def test_isolated_wiki_integrity_python_rejects_candidate_module_shadows(
+    tmp_path: Path,
+) -> None:
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    marker = tmp_path / "candidate-shadow-executed"
+    hostile_source = (
+        "import os\n"
+        "from pathlib import Path\n"
+        'Path(os.environ["SHADOW_MARKER"]).write_text("executed\\n")\n'
+        'raise RuntimeError("candidate module shadow executed")\n'
+    )
+    (candidate / "pip.py").write_text(hostile_source, encoding="utf-8")
+    (candidate / "sitecustomize.py").write_text(hostile_source, encoding="utf-8")
+    candidate_cli = candidate / "llm_wiki_cli"
+    candidate_cli.mkdir()
+    (candidate_cli / "__init__.py").write_text(hostile_source, encoding="utf-8")
+    (candidate_cli / "cli.py").write_text(hostile_source, encoding="utf-8")
+
+    environment = os.environ.copy()
+    environment["SHADOW_MARKER"] = str(marker)
+    commands = (
+        [sys.executable, "-I", "-m", "pip", "--version"],
+        [sys.executable, "-I", "-m", "llm_wiki_cli.cli", "--help"],
+    )
+    for command in commands:
+        result = subprocess.run(
+            command,
+            cwd=candidate,
+            env=environment,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        assert not marker.exists()
 
 
 def test_wiki_integrity_uses_locked_runner_temporary_state_and_evidence() -> None:

@@ -428,7 +428,7 @@ def test_wiki_integrity_uses_the_automatic_locked_routine_helper_plan():
 
     assert "--mode routine" in setup
     assert "--mode qualification-go" not in setup
-    assert "-m llm_wiki_cli.cli prepare-extractors" in prepare
+    assert "-I -m llm_wiki_cli.cli prepare-extractors" in prepare
     assert "--src-dir ." in prepare
     assert '--cache-dir "${LLM_WIKI_CACHE_DIR}"' in prepare
     assert "--language" not in prepare
