@@ -107,17 +107,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| runtime_generation_options | surface_value | 877 | `surface_value('flows', 'categories', None)` |
-| runtime_generation_options | isinstance | 880 | `isinstance(raw_categories, (...))` |
-| runtime_generation_options | sorted | 879 | `sorted(...)` |
-| runtime_generation_options | str | 879 | `str(value)` |
-| runtime_generation_options | _runtime_policy_from_generation_inputs | 883 | `_runtime_policy_from_generation_inputs(generation_inputs)` |
-| _runtime_policy_from_generation_inputs | isinstance | 965 | `isinstance(raw_policy, Mapping)` |
-| _runtime_policy_from_generation_inputs | KnowledgeGenerationError | 966 | `KnowledgeGenerationError(..., 'must be an object')` |
-| _runtime_policy_from_generation_inputs | dict | 970 | `dict(raw_policy)` |
-| _runtime_policy_from_generation_inputs | _validate_runtime_policy | 971 | `_validate_runtime_policy(policy)` |
-| _validate_runtime_policy | set | 976 | `set(policy)` |
-| _validate_runtime_policy | sorted | 978 | `sorted(...)` |
+| runtime_generation_options | surface_value | 914 | `surface_value('flows', 'categories', None)` |
+| runtime_generation_options | isinstance | 917 | `isinstance(raw_categories, (...))` |
+| runtime_generation_options | sorted | 916 | `sorted(...)` |
+| runtime_generation_options | str | 916 | `str(value)` |
+| runtime_generation_options | _runtime_policy_from_generation_inputs | 920 | `_runtime_policy_from_generation_inputs(generation_inputs)` |
+| _runtime_policy_from_generation_inputs | isinstance | 1002 | `isinstance(raw_policy, Mapping)` |
+| _runtime_policy_from_generation_inputs | KnowledgeGenerationError | 1003 | `KnowledgeGenerationError(..., 'must be an object')` |
+| _runtime_policy_from_generation_inputs | dict | 1007 | `dict(raw_policy)` |
+| _runtime_policy_from_generation_inputs | _validate_runtime_policy | 1008 | `_validate_runtime_policy(policy)` |
+| _validate_runtime_policy | set | 1013 | `set(policy)` |
+| _validate_runtime_policy | sorted | 1015 | `sorted(...)` |
 
 ### Boundary effects
 
@@ -127,11 +127,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `runtime_generation_options` | `surface_value` | 877 |
-| unresolved_call | `runtime_generation_options` | `isinstance` | 880 |
-| unresolved_call | `runtime_generation_options` | `sorted` | 879 |
-| unresolved_call | `_runtime_policy_from_generation_inputs` | `isinstance` | 965 |
-| unresolved_call | `_validate_runtime_policy` | `sorted` | 978 |
+| unresolved_call | `runtime_generation_options` | `surface_value` | 914 |
+| unresolved_call | `runtime_generation_options` | `isinstance` | 917 |
+| unresolved_call | `runtime_generation_options` | `sorted` | 916 |
+| unresolved_call | `_runtime_policy_from_generation_inputs` | `isinstance` | 1002 |
+| unresolved_call | `_validate_runtime_policy` | `sorted` | 1015 |
 | step_limit | `runtime_generation_options` | `first 12 steps` | 0 |
 
 ## Behavior

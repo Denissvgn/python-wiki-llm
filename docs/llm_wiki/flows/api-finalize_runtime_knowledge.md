@@ -2,7 +2,7 @@
 
 **Entry point:** `finalize_runtime_knowledge` (`api`)
 **Source:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [infrastructure_sync](../modules/infrastructure_sync.md), [io](../modules/io.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 16 more
+**Modules touched:** [concept_identity](../modules/concept_identity.md), [infrastructure_sync](../modules/infrastructure_sync.md), [io](../modules/io.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 15 more
 
 **Complete modules touched:**
 
@@ -19,7 +19,6 @@
 - [knowledge_links](../modules/knowledge_links.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
-- [markdown_sections](../modules/markdown_sections.md)
 - [section_ownership](../modules/section_ownership.md)
 - [source_selection](../modules/source_selection.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -86,7 +85,7 @@ sequenceDiagram
     p20-->>p21: hexdigest
 ```
 
-> Call sequence diagram shows 30 of 1478 interactions; 1448 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1161 interactions; 1131 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -143,12 +142,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| finalize_runtime_knowledge | isinstance | 611 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
-| finalize_runtime_knowledge | TypeError | 612 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
-| finalize_runtime_knowledge | Path | 613 | `Path(inputs.target_wiki_dir)` |
-| finalize_runtime_knowledge | getattr | 615 | `getattr(inputs.previous_manifest.artifact_hashes, 'governance_hash', None)` |
-| finalize_runtime_knowledge | exists | 624 | `(root / GOVERNANCE_FILENAME).exists(data not statically known)` |
-| finalize_runtime_knowledge | commit_knowledge_artifacts | 628 | `commit_knowledge_artifacts(build_runtime_knowledge_plan(...), dry_run=dry_run, fault_injector=fault_injector)` |
+| finalize_runtime_knowledge | isinstance | 648 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
+| finalize_runtime_knowledge | TypeError | 649 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
+| finalize_runtime_knowledge | Path | 650 | `Path(inputs.target_wiki_dir)` |
+| finalize_runtime_knowledge | getattr | 652 | `getattr(inputs.previous_manifest.artifact_hashes, 'governance_hash', None)` |
+| finalize_runtime_knowledge | exists | 661 | `(root / GOVERNANCE_FILENAME).exists(data not statically known)` |
+| finalize_runtime_knowledge | commit_knowledge_artifacts | 665 | `commit_knowledge_artifacts(build_runtime_knowledge_plan(...), dry_run=dry_run, fault_injector=fault_injector)` |
 | commit_knowledge_artifacts | isinstance | 405 | `isinstance(plan, KnowledgeCommitPlan)` |
 | commit_knowledge_artifacts | TypeError | 406 | `TypeError('plan must be a KnowledgeCommitPlan')` |
 | commit_knowledge_artifacts | isinstance | 407 | `isinstance(dry_run, bool)` |
@@ -163,10 +162,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `finalize_runtime_knowledge` | `isinstance` | 611 |
-| unresolved_call | `finalize_runtime_knowledge` | `TypeError` | 612 |
-| unresolved_call | `finalize_runtime_knowledge` | `getattr` | 615 |
-| unresolved_call | `finalize_runtime_knowledge` | `(root / GOVERNANCE_FILENAME).exists` | 624 |
+| unresolved_call | `finalize_runtime_knowledge` | `isinstance` | 648 |
+| unresolved_call | `finalize_runtime_knowledge` | `TypeError` | 649 |
+| unresolved_call | `finalize_runtime_knowledge` | `getattr` | 652 |
+| unresolved_call | `finalize_runtime_knowledge` | `(root / GOVERNANCE_FILENAME).exists` | 661 |
 | unresolved_call | `commit_knowledge_artifacts` | `isinstance` | 405 |
 | unresolved_call | `commit_knowledge_artifacts` | `TypeError` | 406 |
 | unresolved_call | `commit_knowledge_artifacts` | `isinstance` | 407 |

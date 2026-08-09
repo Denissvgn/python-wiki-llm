@@ -1,8 +1,8 @@
 {
   "artifact_hashes": {
-    "evaluated_envelope_hash": "sha256:ee5cdddd1358f9a6ae553d1794742649bf3d2857916390cc31df6b048e41a00c",
-    "knowledge_index_hash": "sha256:0cfd03be37cbb5671e05b818e0a9b9ce12ec983956e2a21ece1ef3c2de1e49c5",
-    "surface_index_hash": "sha256:f5b503149877d3cf24f36a9c472008f3fe58188dd2633f072a7d9755c7f88c68"
+    "evaluated_envelope_hash": "sha256:cdeef92dfd2d3074e3fa6d41bad650d47c9c041c7d7f093d137e050e652a8a7a",
+    "knowledge_index_hash": "sha256:32f11178dbbeeaa16f913a050359d9c5520f17caa7106add0ff6a2b64f7389dc",
+    "surface_index_hash": "sha256:78b99b921a38c3673220104d7c08db2102d4aee48efedadaec94795b32a93c41"
   },
   "evidence_baselines": {
     "entities/Actor.md": {
@@ -350,7 +350,7 @@
         "concept_observation_hash": "sha256:b8ca2483732b7b98696a8ae369cfae52c9de72d3eecb36a9d8bac1f8320eb048",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:e4090f9a7814f8f0d53741cfdcf30097290385b6d7e4083b1614126b23552657",
+        "source_content_hash": "sha256:a32db0c7e9629b5f010db8a01f6e863c8c511f126b21dc8bc66a195e87f83cda",
         "source_path": "src/llm_wiki_cli/services/knowledge_orchestration.py"
       },
       "state": "known"
@@ -3260,7 +3260,7 @@
         "concept_observation_hash": "sha256:00078022ae7838f0d97e16f97d96bda7e4b4188c211b2b5fe65ba5bff579590e",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:e4090f9a7814f8f0d53741cfdcf30097290385b6d7e4083b1614126b23552657",
+        "source_content_hash": "sha256:a32db0c7e9629b5f010db8a01f6e863c8c511f126b21dc8bc66a195e87f83cda",
         "source_path": "src/llm_wiki_cli/services/knowledge_orchestration.py"
       },
       "state": "known"
@@ -3630,7 +3630,7 @@
         "concept_observation_hash": "sha256:ef9cd2245a1238d330307238ee0bd289caedbaaa8a68a574ab588f2d5820cc3c",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:e4090f9a7814f8f0d53741cfdcf30097290385b6d7e4083b1614126b23552657",
+        "source_content_hash": "sha256:a32db0c7e9629b5f010db8a01f6e863c8c511f126b21dc8bc66a195e87f83cda",
         "source_path": "src/llm_wiki_cli/services/knowledge_orchestration.py"
       },
       "state": "known"
@@ -3640,7 +3640,7 @@
         "concept_observation_hash": "sha256:5fd1f21aa1b32dbb5f4bd8307879fa69a7571e1af3a7aeb0835e4c1211f5a041",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:e4090f9a7814f8f0d53741cfdcf30097290385b6d7e4083b1614126b23552657",
+        "source_content_hash": "sha256:a32db0c7e9629b5f010db8a01f6e863c8c511f126b21dc8bc66a195e87f83cda",
         "source_path": "src/llm_wiki_cli/services/knowledge_orchestration.py"
       },
       "state": "known"
@@ -5317,10 +5317,10 @@
     },
     "modules/knowledge_orchestration.md": {
       "basis": {
-        "concept_observation_hash": "sha256:919e441a5c8555035b16075ddc662a3fbb4ce21d69d234ebae3c7f99a77a6c25",
+        "concept_observation_hash": "sha256:ba8c781c27c3b8a95428544de5e75c645974827f7a073305502206df5e1fda63",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:e4090f9a7814f8f0d53741cfdcf30097290385b6d7e4083b1614126b23552657",
+        "source_content_hash": "sha256:a32db0c7e9629b5f010db8a01f6e863c8c511f126b21dc8bc66a195e87f83cda",
         "source_path": "src/llm_wiki_cli/services/knowledge_orchestration.py"
       },
       "state": "known"
@@ -21788,6 +21788,7 @@
             "_runtime_live_concept_bases": "—",
             "_runtime_manifest_generation_inputs": "—",
             "_runtime_policy_from_generation_inputs": "—",
+            "_stabilize_revision_only_noop": "Keep a validated artifact set stable across an output-only Git commit.",
             "_validate_runtime_policy": "—",
             "build_runtime_knowledge_plan": "Build a commit plan from one command's already evaluated run state.",
             "build_runtime_live_evaluation": "Adapt one existing inventory/snapshot run to the freshness boundary.",
@@ -21804,10 +21805,10 @@
           }
         }
       },
-      "hash": "sha256:e4090f9a7814f8f0d53741cfdcf30097290385b6d7e4083b1614126b23552657",
+      "hash": "sha256:a32db0c7e9629b5f010db8a01f6e863c8c511f126b21dc8bc66a195e87f83cda",
       "language": "python",
       "module_page": "knowledge_orchestration",
-      "semantic_hash": "sha256:aa73363eccc612985de0f2d70a61e7a057256671724151be7f86964d3e77c91f"
+      "semantic_hash": "sha256:9198ce17d9f7fd23e6a483bf7a07b355e4f9dac066882741375d7ced9ab57be6"
     },
     "src/llm_wiki_cli/services/knowledge_projection.py": {
       "entities": [

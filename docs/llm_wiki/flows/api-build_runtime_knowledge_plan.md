@@ -85,7 +85,7 @@ sequenceDiagram
     p20-->>p1: isinstance
 ```
 
-> Call sequence diagram shows 30 of 2366 interactions; 2336 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1739 interactions; 1709 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -135,7 +135,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `build_runtime_knowledge_plan` | `inputs: RuntimeKnowledgeInputs` | `RuntimeKnowledgeInputs`, `SourceSelectionError`, `__version__`, `KNOWLEDGE_SCHEMA_VERSION`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION` | - | `build_knowledge_generation_plan(...)` |
+| `build_runtime_knowledge_plan` | `inputs: RuntimeKnowledgeInputs` | `RuntimeKnowledgeInputs`, `SourceSelectionError`, `__version__`, `KNOWLEDGE_SCHEMA_VERSION`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION` | - | `_stabilize_revision_only_noop(...)` |
 | `isinstance` | - | - | - | - |
 | `TypeError` | - | - | - | - |
 | `_prepared_runtime_governance` | `inputs: RuntimeKnowledgeInputs` | `GOVERNANCE_FILENAME` | - | `None`, `reconcile_concepts(...)` |
@@ -155,11 +155,11 @@ flowchart LR
 | build_runtime_knowledge_plan | isinstance | 262 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
 | build_runtime_knowledge_plan | TypeError | 263 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
 | build_runtime_knowledge_plan | _prepared_runtime_governance | 264 | `_prepared_runtime_governance(inputs)` |
-| _prepared_runtime_governance | Path | 710 | `Path(inputs.target_wiki_dir)` |
-| _prepared_runtime_governance | committed_governance_bundle_id | 711 | `committed_governance_bundle_id(root, inputs.previous_manifest)` |
-| committed_governance_bundle_id | _previous_committed_artifacts | 565 | `_previous_committed_artifacts(wiki_dir, manifest)` |
-| _previous_committed_artifacts | Path | 539 | `Path(wiki_dir)` |
-| _previous_committed_artifacts | validate_knowledge_artifacts | 541 | `validate_knowledge_artifacts(surface_index_bytes=..., knowledge_index_bytes=..., manifest=manifest)` |
+| _prepared_runtime_governance | Path | 747 | `Path(inputs.target_wiki_dir)` |
+| _prepared_runtime_governance | committed_governance_bundle_id | 748 | `committed_governance_bundle_id(root, inputs.previous_manifest)` |
+| committed_governance_bundle_id | _previous_committed_artifacts | 602 | `_previous_committed_artifacts(wiki_dir, manifest)` |
+| _previous_committed_artifacts | Path | 576 | `Path(wiki_dir)` |
+| _previous_committed_artifacts | validate_knowledge_artifacts | 578 | `validate_knowledge_artifacts(surface_index_bytes=..., knowledge_index_bytes=..., manifest=manifest)` |
 | validate_knowledge_artifacts | validate_surface_index_bytes | 205 | `validate_surface_index_bytes(surface_index_bytes)` |
 | validate_surface_index_bytes | _decode_json_object | 174 | `_decode_json_object(surface_index_bytes, 'surface_index_bytes')` |
 | validate_surface_index_bytes | _validate_surface_payload | 178 | `_validate_surface_payload(surface_payload)` |
@@ -168,7 +168,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `references.append` | `_prepared_runtime_governance` | 743 |
+| mutation | `references.append` | `_prepared_runtime_governance` | 780 |
 
 ### Static analysis gaps
 

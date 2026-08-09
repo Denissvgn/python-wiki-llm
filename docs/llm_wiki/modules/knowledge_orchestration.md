@@ -79,6 +79,7 @@ flowchart LR
 | `_runtime_manifest_generation_inputs` | `(inputs: RuntimeKnowledgeInputs) -> Mapping[str, object]` | — | — |
 | `_infrastructure_extractor_component` | `() -> ProducerComponentInput` | — | — |
 | `build_runtime_knowledge_plan` | `(inputs: RuntimeKnowledgeInputs) -> KnowledgeCommitPlan` | — | Build a commit plan from one command's already evaluated run state. |
+| `_stabilize_revision_only_noop` | `(runtime_inputs: RuntimeKnowledgeInputs, plan_inputs: KnowledgeGenerationInputs) -> KnowledgeCommitPlan` | — | Keep a validated artifact set stable across an output-only Git commit. |
 | `build_runtime_live_evaluation` | `(inputs: RuntimeLiveEvaluationInputs) -> LiveKnowledgeEvaluation` | — | Adapt one existing inventory/snapshot run to the freshness boundary. |
 | `_runtime_live_concept_bases` | `(knowledge: KnowledgeIndex, manifest: SyncManifest, inventory: Mapping[str, Mapping[str, Any]], source_hashes: Mapping[str, str], extractor_ref_by_source: Mapping[str, str], *, infrastructure_bases_by_source: Mapping[str, ConceptObservationBasis], inventory_complete: bool) -> dict[str, ConceptObservationBasis]` | — | — |
 | `_previous_committed_artifacts` | `(wiki_dir: str \| Path, manifest: SyncManifest \| None) -> ValidatedKnowledgeArtifacts \| None` | — | Return the validated prior artifact set without consulting Markdown. |

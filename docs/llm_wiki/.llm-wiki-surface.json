@@ -3867,7 +3867,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 743,
+              "line": 780,
               "step": "_prepared_runtime_governance",
               "step_index": 4,
               "target": "references.append"
@@ -3927,7 +3927,7 @@
             "src/llm_wiki_cli/services/wiki_media.py",
             "src/llm_wiki_cli/services/markdown_sections.py"
           ],
-          "step_count": 2367,
+          "step_count": 1740,
           "truncated": true
         }
       },
@@ -3948,67 +3948,67 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 375,
+              "line": 412,
               "step": "build_runtime_live_evaluation",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 376,
+              "line": 413,
               "step": "build_runtime_live_evaluation",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 377,
+              "line": 414,
               "step": "build_runtime_live_evaluation",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 378,
+              "line": 415,
               "step": "build_runtime_live_evaluation",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 379,
+              "line": 416,
               "step": "build_runtime_live_evaluation",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 380,
+              "line": 417,
               "step": "build_runtime_live_evaluation",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 381,
+              "line": 418,
               "step": "build_runtime_live_evaluation",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 382,
+              "line": 419,
               "step": "build_runtime_live_evaluation",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 383,
+              "line": 420,
               "step": "build_runtime_live_evaluation",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 384,
+              "line": 421,
               "step": "build_runtime_live_evaluation",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 385,
+              "line": 422,
               "step": "build_runtime_live_evaluation",
               "target": "isinstance"
             },
@@ -5297,7 +5297,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 785,
+              "line": 822,
               "step": "collect_runtime_repository_evidence",
               "step_index": 1,
               "target": "selected_paths.add"
@@ -5305,7 +5305,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 786,
+              "line": 823,
               "step": "collect_runtime_repository_evidence",
               "step_index": 1,
               "target": "selected_paths.update"
@@ -5313,7 +5313,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 801,
+              "line": 838,
               "step": "collect_runtime_repository_evidence",
               "step_index": 1,
               "target": "package_roots.add"
@@ -5321,7 +5321,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 803,
+              "line": 840,
               "step": "collect_runtime_repository_evidence",
               "step_index": 1,
               "target": "package_roots.add"
@@ -5329,7 +5329,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 809,
+              "line": 846,
               "step": "collect_runtime_repository_evidence",
               "step_index": 1,
               "target": "helper_excludes.add"
@@ -5338,43 +5338,43 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 768,
+              "line": 805,
               "step": "collect_runtime_repository_evidence",
               "target": "Path(source_root).resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 769,
+              "line": 806,
               "step": "collect_runtime_repository_evidence",
               "target": "Path(target_wiki_dir).resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 774,
+              "line": 811,
               "step": "collect_runtime_repository_evidence",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 775,
+              "line": 812,
               "step": "collect_runtime_repository_evidence",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 776,
+              "line": 813,
               "step": "collect_runtime_repository_evidence",
               "target": "source_snapshot.root.resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 777,
+              "line": 814,
               "step": "collect_runtime_repository_evidence",
               "target": "ValueError"
             },
             {
               "kind": "unresolved_call",
-              "line": 788,
+              "line": 825,
               "step": "collect_runtime_repository_evidence",
               "target": "source_snapshot.captured_input_kinds.items"
             },
@@ -8741,25 +8741,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 611,
+              "line": 648,
               "step": "finalize_runtime_knowledge",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 612,
+              "line": 649,
               "step": "finalize_runtime_knowledge",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 615,
+              "line": 652,
               "step": "finalize_runtime_knowledge",
               "target": "getattr"
             },
             {
               "kind": "unresolved_call",
-              "line": 624,
+              "line": 661,
               "step": "finalize_runtime_knowledge",
               "target": "(root / GOVERNANCE_FILENAME).exists"
             },
@@ -8831,10 +8831,9 @@
             "src/llm_wiki_cli/services/source_selection.py",
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
-            "src/llm_wiki_cli/services/knowledge_links.py",
-            "src/llm_wiki_cli/services/markdown_sections.py"
+            "src/llm_wiki_cli/services/knowledge_links.py"
           ],
-          "step_count": 1479,
+          "step_count": 1162,
           "truncated": true
         }
       },
@@ -15672,25 +15671,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 978,
+              "line": 1015,
               "step": "_validate_runtime_policy",
               "target": "sorted"
             },
             {
               "kind": "unresolved_call",
-              "line": 983,
+              "line": 1020,
               "step": "_validate_runtime_policy",
               "target": "min"
             },
             {
               "kind": "unresolved_call",
-              "line": 990,
+              "line": 1027,
               "step": "_validate_runtime_policy",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 996,
+              "line": 1033,
               "step": "_validate_runtime_policy",
               "target": "isinstance"
             }
@@ -17588,7 +17587,7 @@
             "src/llm_wiki_cli/services/team.py",
             "src/llm_wiki_cli/services/documentation_review.py"
           ],
-          "step_count": 5424,
+          "step_count": 5426,
           "truncated": true
         }
       },
@@ -17797,7 +17796,6 @@
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/io.py",
             "src/llm_wiki_cli/services/concept_identity.py",
-            "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/context_service.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
             "src/llm_wiki_cli/services/knowledge_freshness.py",
@@ -17805,7 +17803,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4448,
+          "step_count": 4399,
           "truncated": true
         }
       },
@@ -21042,31 +21040,31 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1183,
+              "line": 1220,
               "step": "runtime_consumed_inputs",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1184,
+              "line": 1221,
               "step": "runtime_consumed_inputs",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 1185,
+              "line": 1222,
               "step": "runtime_consumed_inputs",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1186,
+              "line": 1223,
               "step": "runtime_consumed_inputs",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 1188,
+              "line": 1225,
               "step": "runtime_consumed_inputs",
               "target": "source_snapshot.to_consumed_inputs"
             },
@@ -21122,31 +21120,31 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 877,
+              "line": 914,
               "step": "runtime_generation_options",
               "target": "surface_value"
             },
             {
               "kind": "unresolved_call",
-              "line": 880,
+              "line": 917,
               "step": "runtime_generation_options",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 879,
+              "line": 916,
               "step": "runtime_generation_options",
               "target": "sorted"
             },
             {
               "kind": "unresolved_call",
-              "line": 965,
+              "line": 1002,
               "step": "_runtime_policy_from_generation_inputs",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 978,
+              "line": 1015,
               "step": "_validate_runtime_policy",
               "target": "sorted"
             },
@@ -29051,10 +29049,9 @@
             "src/llm_wiki_cli/services/section_ownership.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/knowledge_generation.py",
-            "src/llm_wiki_cli/services/infrastructure_sync.py",
-            "src/llm_wiki_cli/services/knowledge_links.py"
+            "src/llm_wiki_cli/services/infrastructure_sync.py"
           ],
-          "step_count": 3213,
+          "step_count": 3171,
           "truncated": true
         }
       },
@@ -30303,7 +30300,7 @@
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/wiki_media.py"
           ],
-          "step_count": 5476,
+          "step_count": 5478,
           "truncated": true
         }
       },
@@ -43475,7 +43472,6 @@
         "modules/knowledge_links.md",
         "modules/knowledge_model.md",
         "modules/knowledge_orchestration.md",
-        "modules/markdown_sections.md",
         "modules/section_ownership.md",
         "modules/source_selection.md",
         "modules/sync_manifest.md",
@@ -45376,7 +45372,6 @@
         "modules/section_ownership.md",
         "modules/source_selection.md",
         "modules/source_snapshot.md",
-        "modules/sync_manifest.md",
         "modules/validation.md",
         "modules/verification_contracts.md",
         "modules/wiki_media.md",
@@ -47715,7 +47710,6 @@
         "modules/knowledge_governance.md",
         "modules/knowledge_graph.md",
         "modules/knowledge_index.md",
-        "modules/knowledge_links.md",
         "modules/knowledge_loader.md",
         "modules/knowledge_model.md",
         "modules/knowledge_orchestration.md",
@@ -48619,5 +48613,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:d3b2b2b6905b9727b6b2f1b79477109351df84b086b12e4f5e65c2274dcec916"
+  "source_hash": "sha256:767a12f1daa925f81eaa6464a5308f319afb75b8e21d7c4c6ecd04ce8532a395"
 }

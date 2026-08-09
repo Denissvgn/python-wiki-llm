@@ -66,8 +66,9 @@ flowchart LR
     n4["refresh_documentation_native_projection (src/llm_wiki_cli/services/documentation_native.py)"]
     n5["_prepared_runtime_governance (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n6["_runtime_manifest_generation_inputs (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n7["build_runtime_knowledge_plan (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n8["finalize_runtime_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n7["_stabilize_revision_only_noop (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n8["build_runtime_knowledge_plan (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n9["finalize_runtime_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -76,6 +77,7 @@ flowchart LR
     n6 --> n0
     n7 --> n0
     n8 --> n0
+    n9 --> n0
     click n0 "../modules/knowledge_orchestration.md"
     click n1 "../modules/migrate_cmd.md"
     click n2 "../modules/sync_cmd.md"
@@ -85,6 +87,7 @@ flowchart LR
     click n6 "../modules/knowledge_orchestration.md"
     click n7 "../modules/knowledge_orchestration.md"
     click n8 "../modules/knowledge_orchestration.md"
+    click n9 "../modules/knowledge_orchestration.md"
 ```
 
 ### Summary
@@ -104,5 +107,6 @@ flowchart LR
 | `refresh_documentation_native_projection` | call | [documentation_native](../modules/documentation_native.md) |
 | `_prepared_runtime_governance` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
 | `_runtime_manifest_generation_inputs` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
+| `_stabilize_revision_only_noop` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
 | `build_runtime_knowledge_plan` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
 | `finalize_runtime_knowledge` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |

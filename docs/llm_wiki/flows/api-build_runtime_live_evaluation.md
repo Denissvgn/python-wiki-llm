@@ -122,17 +122,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_runtime_live_evaluation | isinstance | 375 | `isinstance(inputs, RuntimeLiveEvaluationInputs)` |
-| build_runtime_live_evaluation | TypeError | 376 | `TypeError('inputs must be a RuntimeLiveEvaluationInputs')` |
-| build_runtime_live_evaluation | isinstance | 377 | `isinstance(inputs.knowledge, KnowledgeIndex)` |
-| build_runtime_live_evaluation | TypeError | 378 | `TypeError('inputs.knowledge must be a KnowledgeIndex')` |
-| build_runtime_live_evaluation | isinstance | 379 | `isinstance(inputs.manifest, SyncManifest)` |
-| build_runtime_live_evaluation | TypeError | 380 | `TypeError('inputs.manifest must be a SyncManifest')` |
-| build_runtime_live_evaluation | isinstance | 381 | `isinstance(inputs.source_snapshot, SourceSnapshot)` |
-| build_runtime_live_evaluation | TypeError | 382 | `TypeError('inputs.source_snapshot must be a SourceSnapshot')` |
-| build_runtime_live_evaluation | isinstance | 383 | `isinstance(inputs.inventory, Mapping)` |
-| build_runtime_live_evaluation | TypeError | 384 | `TypeError('inputs.inventory must be a mapping')` |
-| build_runtime_live_evaluation | isinstance | 385 | `isinstance(inputs.infrastructure_inventory, Mapping)` |
+| build_runtime_live_evaluation | isinstance | 412 | `isinstance(inputs, RuntimeLiveEvaluationInputs)` |
+| build_runtime_live_evaluation | TypeError | 413 | `TypeError('inputs must be a RuntimeLiveEvaluationInputs')` |
+| build_runtime_live_evaluation | isinstance | 414 | `isinstance(inputs.knowledge, KnowledgeIndex)` |
+| build_runtime_live_evaluation | TypeError | 415 | `TypeError('inputs.knowledge must be a KnowledgeIndex')` |
+| build_runtime_live_evaluation | isinstance | 416 | `isinstance(inputs.manifest, SyncManifest)` |
+| build_runtime_live_evaluation | TypeError | 417 | `TypeError('inputs.manifest must be a SyncManifest')` |
+| build_runtime_live_evaluation | isinstance | 418 | `isinstance(inputs.source_snapshot, SourceSnapshot)` |
+| build_runtime_live_evaluation | TypeError | 419 | `TypeError('inputs.source_snapshot must be a SourceSnapshot')` |
+| build_runtime_live_evaluation | isinstance | 420 | `isinstance(inputs.inventory, Mapping)` |
+| build_runtime_live_evaluation | TypeError | 421 | `TypeError('inputs.inventory must be a mapping')` |
+| build_runtime_live_evaluation | isinstance | 422 | `isinstance(inputs.infrastructure_inventory, Mapping)` |
 
 ### Boundary effects
 
@@ -142,17 +142,17 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 375 |
-| unresolved_call | `build_runtime_live_evaluation` | `TypeError` | 376 |
-| unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 377 |
-| unresolved_call | `build_runtime_live_evaluation` | `TypeError` | 378 |
-| unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 379 |
-| unresolved_call | `build_runtime_live_evaluation` | `TypeError` | 380 |
-| unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 381 |
-| unresolved_call | `build_runtime_live_evaluation` | `TypeError` | 382 |
-| unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 383 |
-| unresolved_call | `build_runtime_live_evaluation` | `TypeError` | 384 |
-| unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 385 |
+| unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 412 |
+| unresolved_call | `build_runtime_live_evaluation` | `TypeError` | 413 |
+| unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 414 |
+| unresolved_call | `build_runtime_live_evaluation` | `TypeError` | 415 |
+| unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 416 |
+| unresolved_call | `build_runtime_live_evaluation` | `TypeError` | 417 |
+| unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 418 |
+| unresolved_call | `build_runtime_live_evaluation` | `TypeError` | 419 |
+| unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 420 |
+| unresolved_call | `build_runtime_live_evaluation` | `TypeError` | 421 |
+| unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 422 |
 | step_limit | `build_runtime_live_evaluation` | `first 12 steps` | 0 |
 
 ## Behavior

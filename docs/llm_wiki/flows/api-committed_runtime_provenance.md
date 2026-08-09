@@ -137,9 +137,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| committed_runtime_provenance | _previous_committed_artifacts | 577 | `_previous_committed_artifacts(wiki_dir, manifest)` |
-| _previous_committed_artifacts | Path | 539 | `Path(wiki_dir)` |
-| _previous_committed_artifacts | validate_knowledge_artifacts | 541 | `validate_knowledge_artifacts(surface_index_bytes=..., knowledge_index_bytes=..., manifest=manifest)` |
+| committed_runtime_provenance | _previous_committed_artifacts | 614 | `_previous_committed_artifacts(wiki_dir, manifest)` |
+| _previous_committed_artifacts | Path | 576 | `Path(wiki_dir)` |
+| _previous_committed_artifacts | validate_knowledge_artifacts | 578 | `validate_knowledge_artifacts(surface_index_bytes=..., knowledge_index_bytes=..., manifest=manifest)` |
 | validate_knowledge_artifacts | validate_surface_index_bytes | 205 | `validate_surface_index_bytes(surface_index_bytes)` |
 | validate_surface_index_bytes | _decode_json_object | 174 | `_decode_json_object(surface_index_bytes, 'surface_index_bytes')` |
 | _decode_json_object | isinstance | 502 | `isinstance(content, bytes)` |
