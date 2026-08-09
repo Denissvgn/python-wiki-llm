@@ -168,13 +168,99 @@ llm-wiki lint --src-dir /path/to/repo --wiki-dir docs/llm_wiki \
   --allow-external-src --source-selection config/public-sources.json
 ```
 
-Carry the same `--source-selection` argument through helper preparation,
-bootstrap, sync, lint, CI, context, review, MCP, and other source-reading wiki
-operations. Generated hooks and agent instructions preserve the resolved path.
+When using a non-default profile, carry the same `--source-selection` argument
+through helper preparation, bootstrap, sync, lint, CI, context, review, MCP,
+and other source-reading wiki operations. Generated hooks and agent
+instructions preserve the resolved path.
 A managed wiki records the profile and its applicable selection-control inputs;
 if either changes, read consumers fail with sync guidance until an authorized
 `llm-wiki sync` converges the wiki. When no profile exists, the legacy broad
 source-discovery behavior is preserved.
+
+### Maintaining this repository's wiki
+
+This repository's maintained wiki is `docs/llm_wiki`. Its canonical source
+boundary is the committed `.llm-wiki/source-selection.json`, which selects
+`pyproject.toml`, `src/llm_wiki_cli`, `integrations/github-action`, and
+`integrations/obsidian/llm-wiki`. The commands below intentionally use default
+discovery for that profile. They also keep the default Go policy by omitting
+`--include-tests go`.
+
+On a fresh checkout, install the locked routine Node/npm toolchain into an
+empty ignored directory and source the generated environment. Reuse that
+environment on later runs; after a toolchain-lock update, choose a new empty
+ignored install directory.
+
+```bash
+.github/scripts/setup-llm-wiki-ci-toolchains.sh \
+  --mode routine \
+  --install-root .git/llm-wiki-ci-toolchains \
+  --python .venv/bin/python
+source .git/llm-wiki-ci-toolchains.env
+
+export LLM_WIKI_CACHE_DIR="${PWD}/.git"
+expected_node="$(
+  .venv/bin/python -I release/qualification.py lock-value \
+    --lock release/toolchain-lock.json \
+    --key toolchains.node.version_output
+)"
+expected_npm="$(
+  .venv/bin/python -I release/qualification.py lock-value \
+    --lock release/toolchain-lock.json \
+    --key toolchains.npm.version_output
+)"
+test "$(node --version)" = "${expected_node}"
+test "$(npm --version)" = "${expected_npm}"
+
+.venv/bin/llm-wiki prepare-extractors \
+  --src-dir . \
+  --cache-dir "${LLM_WIKI_CACHE_DIR}"
+```
+
+After a selected source changes, commit that source change first so the wiki
+can record its stable source revision. Then run an owning sync, review the
+generated pages and maintainer-owned semantic sections, and run a final owning
+sync after the last semantic edit. Validate that final state before staging the
+reviewed Markdown and the generated `.llm-wiki-manifest.json`,
+`.llm-wiki-surface.json`, and `.llm-wiki-knowledge.json` artifacts.
+
+```bash
+.venv/bin/llm-wiki sync \
+  --src-dir . \
+  --wiki-dir docs/llm_wiki \
+  --helper-cache-dir "${LLM_WIKI_CACHE_DIR}" \
+  --jobs 1
+
+# Review the generated diff and maintain only the semantic sections you own.
+
+.venv/bin/llm-wiki sync \
+  --src-dir . \
+  --wiki-dir docs/llm_wiki \
+  --helper-cache-dir "${LLM_WIKI_CACHE_DIR}" \
+  --jobs 1
+
+.venv/bin/llm-wiki ci-check \
+  --src-dir . \
+  --wiki-dir docs/llm_wiki \
+  --helper-cache-dir "${LLM_WIKI_CACHE_DIR}" \
+  --jobs 1 \
+  --knowledge-drift-report \
+  --format json \
+  --report .git/llm-wiki-ci-report.md
+
+git status --porcelain=v1 --untracked-files=all -- docs/llm_wiki
+```
+
+Stage only the reviewed wiki pages and those three generated hidden artifacts,
+then commit them separately from the selected-source change. Run the final sync
+and `ci-check` once more from that clean commit; both must leave
+`docs/llm_wiki` unchanged before the maintenance cycle is complete.
+
+`ci-check` is the blocking integrity result. `--knowledge-drift-report` adds
+native freshness diagnostics for review, but those diagnostics are advisory.
+Ordinary wiki maintenance updates the committed projection artifacts through
+`sync`; it does not run `llm-wiki knowledge init` or create a governance
+ledger.
 
 Haskell `.hs` and `.lhs` files are discovered as supported built-in source
 files. Normal CLI extraction invokes the prepared Haskell helper to emit
