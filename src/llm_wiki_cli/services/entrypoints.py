@@ -50,7 +50,7 @@ _DEFAULT_FLOW_DEPTH = 6
 DEFAULT_FLOW_DEPTH = _DEFAULT_FLOW_DEPTH
 FLOW_OBSERVATIONS_SCHEMA = "llm-wiki-flow-observations/v1"
 _ENTRY_POINT_OBSERVATIONS_SCHEMA = "llm-wiki-entrypoint-observations/v1"
-_BUILTIN_DETECTOR_VERSION = "1"
+_BUILTIN_DETECTOR_VERSION = "2"
 
 
 @dataclass(frozen=True)
@@ -102,12 +102,16 @@ def _iter_callables(inventory: dict):
 
 
 def _detect_api(inventory: dict) -> list[dict]:
-    """Public API entry points: ``__all__`` exports that resolve to a local def."""
+    """Public API entry points: non-private local functions exported by ``__all__``."""
     entries: list[dict] = []
     for filepath, data in inventory.items():
-        local = _local_symbols(data)
+        local_functions = {
+            fn["name"]
+            for fn in data.get("functions", [])
+            if not fn["name"].startswith("_")
+        }
         for name in data.get("all_exports", []):
-            if name in local:
+            if name in local_functions:
                 entries.append(_entry(CATEGORY_API, filepath, name))
     return entries
 
@@ -801,7 +805,7 @@ def _builtin_detector_details(
 
     if category == CATEGORY_API:
         detector_id = "builtin.api-export"
-        reason = "symbol is a local definition listed in __all__"
+        reason = "non-private local function is listed in __all__"
     elif decorator is not None:
         detector_id = f"builtin.{category}-decorator"
         reason = f"callable uses the {decorator} decorator"

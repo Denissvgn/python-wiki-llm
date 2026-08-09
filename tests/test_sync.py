@@ -260,31 +260,9 @@ def bootstrapped_project(tmp_path):
     os.chdir(proj)
 
     bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
-    # Write manifest so sync can run
-    _write_manifest_from_bootstrap(proj, wiki_dir)
 
     yield proj, wiki_dir
     os.chdir(old_cwd)
-
-
-def _write_manifest_from_bootstrap(proj: Path, wiki_dir: Path) -> None:
-    """Write a .llm-wiki-manifest.json for the current state of proj."""
-    from llm_wiki_cli.commands.extract_cmd import get_inventory
-    from llm_wiki_cli.commands.sync_cmd import (
-        SyncManifest,
-        _collision_maps,
-        _page_name_for_module,
-    )
-
-    inventory = get_inventory(str(proj), deep=True)
-    colliding_stems, colliding_cls, entity_page_cache = _collision_maps(
-        inventory, str(proj)
-    )
-    module_page_map = {fp: _page_name_for_module(fp) for fp in inventory}
-    manifest = SyncManifest.build_from_inventory(
-        inventory, str(proj), entity_page_cache, module_page_map
-    )
-    manifest.save(wiki_dir)
 
 
 # ── Tests ─────────────────────────────────────────────────────────────────────
@@ -673,7 +651,50 @@ class TestSyncSurfaceIndex:
         data = json.loads(surface_path.read_text(encoding="utf-8"))
         assert data["schema_version"] == "llm-wiki-surface-index/v1"
         assert data["counts"]["by_kind"]["entities"] == 1
+        assert "Surface index: created" in capsys.readouterr().out
+        repaired_tree = {
+            path.relative_to(wiki_dir).as_posix(): path.read_bytes()
+            for path in sorted(wiki_dir.rglob("*"))
+            if path.is_file()
+        }
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
+        assert {
+            path.relative_to(wiki_dir).as_posix(): path.read_bytes()
+            for path in sorted(wiki_dir.rglob("*"))
+            if path.is_file()
+        } == repaired_tree
         assert "Wiki is up to date." in capsys.readouterr().out
+
+    def test_sync_recreates_missing_log_and_converges(
+        self, bootstrapped_project, capsys
+    ):
+        proj, wiki_dir = bootstrapped_project
+        log_path = wiki_dir / "log.md"
+        log_path.unlink()
+        capsys.readouterr()
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
+        assert log_path.is_file()
+        assert "[Architectural log](log.md)" in (
+            wiki_dir / "index.md"
+        ).read_text(encoding="utf-8")
+        assert "Sync complete:" in capsys.readouterr().out
+        tree_after = {
+            path.relative_to(wiki_dir).as_posix(): path.read_bytes()
+            for path in sorted(wiki_dir.rglob("*"))
+            if path.is_file()
+        }
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
+        assert {
+            path.relative_to(wiki_dir).as_posix(): path.read_bytes()
+            for path in sorted(wiki_dir.rglob("*"))
+            if path.is_file()
+        } == tree_after
 
     def test_sync_links_new_guide_page_without_source_changes(
         self, bootstrapped_project, capsys
@@ -700,7 +721,9 @@ class TestSyncSurfaceIndex:
         sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
 
         out = capsys.readouterr().out
-        assert "Wiki is up to date." in out
+        assert "Sync complete:" in out
+        assert "Wiki is up to date." not in out
+        assert "APPEND log.md" in out
         index = (wiki_dir / "index.md").read_text(encoding="utf-8")
         assert "| Guides | 1 | [Open section](#guides) |" in index
         assert "[Operator onboarding](guides/operator-onboarding.md)" in index
@@ -1549,9 +1572,7 @@ class TestSourceSelectionNarrowing:
             encoding="utf-8",
         )
         capsys.readouterr()
-        sync_cmd.run(
-            _make_sync_args(src_dir=".", wiki_dir=str(wiki), no_cache=True)
-        )
+        sync_cmd.run(_make_sync_args(src_dir=".", wiki_dir=str(wiki), no_cache=True))
 
         first_output = capsys.readouterr().out
         assert not flow_page.exists()
@@ -1573,9 +1594,7 @@ class TestSourceSelectionNarrowing:
             for path in sorted(wiki.rglob("*"))
             if path.is_file()
         }
-        sync_cmd.run(
-            _make_sync_args(src_dir=".", wiki_dir=str(wiki), no_cache=True)
-        )
+        sync_cmd.run(_make_sync_args(src_dir=".", wiki_dir=str(wiki), no_cache=True))
         second_bytes = {
             path.relative_to(wiki).as_posix(): path.read_bytes()
             for path in sorted(wiki.rglob("*"))
@@ -1636,9 +1655,7 @@ class TestSourceSelectionNarrowing:
             encoding="utf-8",
         )
         capsys.readouterr()
-        sync_cmd.run(
-            _make_sync_args(src_dir=".", wiki_dir=str(wiki), no_cache=True)
-        )
+        sync_cmd.run(_make_sync_args(src_dir=".", wiki_dir=str(wiki), no_cache=True))
 
         narrowed = SyncManifest.load(wiki)
         assert set(narrowed.sources) == {"selected/keep.py"}
@@ -1666,9 +1683,7 @@ class TestSourceSelectionNarrowing:
             if path.is_file()
         }
         capsys.readouterr()
-        sync_cmd.run(
-            _make_sync_args(src_dir=".", wiki_dir=str(wiki), no_cache=True)
-        )
+        sync_cmd.run(_make_sync_args(src_dir=".", wiki_dir=str(wiki), no_cache=True))
         second_bytes = {
             path.relative_to(wiki).as_posix(): path.read_bytes()
             for path in sorted(wiki.rglob("*"))
@@ -2310,7 +2325,11 @@ class TestSyncSafetyGuards:
             return sync_cmd.SyncResult()
 
         monkeypatch.setattr(sync_cmd, "_apply_diff", fake_apply)
-        monkeypatch.setattr(sync_cmd, "_rebuild_index", lambda *args, **kwargs: None)
+        monkeypatch.setattr(
+            sync_cmd,
+            "_rebuild_index",
+            lambda *args, **kwargs: "unchanged",
+        )
         monkeypatch.setattr(sync_cmd, "_append_log", lambda *args, **kwargs: None)
         monkeypatch.setattr(
             sync_cmd,
@@ -2342,6 +2361,15 @@ class TestSyncSafetyGuards:
         payload = json.loads(manifest_path.read_text(encoding="utf-8"))
         for info in payload["sources"].values():
             info["hash"] = "sha256:" + "0" * 64
+        for baseline in payload["evidence_baselines"].values():
+            basis = baseline.get("basis")
+            if not isinstance(basis, dict):
+                continue
+            source_path = basis.get("source_path")
+            if source_path in payload["sources"]:
+                basis["source_content_hash"] = payload["sources"][source_path][
+                    "hash"
+                ]
         manifest_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
         entity_path = wiki_dir / "entities" / "User.md"
         module_path = wiki_dir / "modules" / "models.md"
@@ -3199,9 +3227,19 @@ class TestDiffOutput:
         sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
 
         log_after = (wiki_dir / "log.md").read_text(encoding="utf-8")
+        knowledge = load_knowledge_state(wiki_dir).knowledge
+        assert knowledge is not None
         assert len(log_after) > len(log_before)
-        assert "incremental sync" in log_after
+        assert "### Wiki sync" in log_after
+        assert "### feat:" not in log_after
         assert "- Source: `.`" in log_after
+        assert f"- Generator version: `{bootstrap_cmd.__version__}`" in log_after
+        assert "- Source selection profile: none (default discovery)" in log_after
+        assert "- Source selection fingerprint: none" in log_after
+        assert (
+            f"- Source snapshot digest: "
+            f"`{knowledge.bundle.snapshot.source_snapshot_hash}`"
+        ) in log_after
         assert str(proj.resolve()) not in log_after
 
 
@@ -3226,15 +3264,20 @@ class TestSyncFlowReindex:
 
         index = (wiki / "index.md").read_text(encoding="utf-8")
         assert "## Surface Overview" in index
-        assert "| User flows | 2 |" in index
+        assert "| Entry-point flows | 2 |" in index
         assert "| Dependency architecture | 0 |" in index
         assert "| Log | 1 | [Open log](log.md) |" in index
-        assert "## User Flows" in index
+        assert "## Entry-point flows" in index
         assert "**api**" in index
         assert "**process**" in index
         assert "[api-run](flows/api-run.md)" in index
         assert "[process-cli](flows/process-cli.md)" in index
         assert "## Dependency Architecture" not in index
+
+        sync_cmd._rebuild_index(wiki, self._inventory(), str(tmp_path))
+        rebuilt = (wiki / "index.md").read_text(encoding="utf-8")
+        assert rebuilt.count("exhaustive reference inventory") == 1
+        assert "## Notes" not in rebuilt
 
     def test_rebuild_index_includes_existing_guide_pages(self, tmp_path):
         wiki = tmp_path / "wiki"
@@ -3251,6 +3294,8 @@ class TestSyncFlowReindex:
         assert "| Guides | 1 | [Open section](#guides) |" in index
         assert "## Guides" in index
         assert "[Operator onboarding](guides/operator-onboarding.md)" in index
+        assert "Guides lead supported tasks." in index
+        assert "guides are not yet available" not in index
 
     def test_rebuild_index_links_existing_architecture_pages(self, tmp_path):
         wiki = tmp_path / "wiki"
@@ -3302,6 +3347,34 @@ class TestSyncFlowReindex:
         assert "Remember the deployment checklist." in index
         assert "## Custom Notes" in index
         assert "Keep the payment flow review link here." in index
+
+    def test_rebuild_index_preserves_custom_sections_named_like_new_indexes(
+        self, tmp_path
+    ):
+        wiki = tmp_path / "wiki"
+        wiki.mkdir()
+        (wiki / "index.md").write_text(
+            textwrap.dedent("""\
+                # Old Index
+
+                ## Entry-point flows
+
+                Human routing notes.
+
+                ## HTTP API contracts
+
+                Human contract notes.
+            """),
+            encoding="utf-8",
+        )
+
+        sync_cmd._rebuild_index(
+            wiki, self._inventory(), str(tmp_path), preserve_semantic=True
+        )
+
+        index = (wiki / "index.md").read_text(encoding="utf-8")
+        assert "Human routing notes." in index
+        assert "Human contract notes." in index
 
     def test_rebuild_index_no_preserve_semantic_drops_custom_index_sections(
         self, tmp_path
@@ -3409,6 +3482,39 @@ class TestSyncIndexCustomSections:
 
 
 class TestSyncFlowRegeneration:
+    def _hide_api_run_detector_result(self, monkeypatch):
+        real_detect = sync_cmd._detect_sync_entry_points
+
+        def detect_without_api_run(*args, **kwargs):
+            analysis = real_detect(*args, **kwargs)
+            observations = [
+                observation
+                for observation in analysis.observations["observations"]
+                if observation["entry"].get("id") != "api-run"
+            ]
+            coverage = dict(analysis.observations["coverage"])
+            omitted = int(coverage.get("omitted", 0))
+            coverage.update(
+                observed=len(observations) + omitted,
+                emitted=len(observations),
+            )
+            return sync_cmd._SyncEntryPointAnalysis(
+                entries=[
+                    entry for entry in analysis.entries if entry.get("id") != "api-run"
+                ],
+                observations={
+                    **analysis.observations,
+                    "observations": observations,
+                    "coverage": coverage,
+                },
+            )
+
+        monkeypatch.setattr(
+            sync_cmd,
+            "_detect_sync_entry_points",
+            detect_without_api_run,
+        )
+
     def _write_svc(self, proj, callee):
         (proj / "svc.py").write_text(
             textwrap.dedent(f"""\
@@ -3457,6 +3563,215 @@ class TestSyncFlowRegeneration:
         """)
         )
 
+    def _write_workflow_sources(self, proj, modules, *, docstring):
+        for module in modules:
+            symbol = module.upper()
+            (proj / f"{module}.py").write_text(
+                f"def {symbol}():\n    return {module!r}\n",
+                encoding="utf-8",
+            )
+        imports = "\n".join(
+            f"from {module} import {module.upper()}" for module in modules
+        )
+        params = ", ".join(
+            f"{module}_value: {module.upper()}" for module in modules
+        )
+        calls = ", ".join(f"{module.upper()}()" for module in modules)
+        (proj / "orchestrator.py").write_text(
+            f'{imports}\n\n\ndef orchestrate({params}):\n    """{docstring}"""\n'
+            f"    return ({calls})\n",
+            encoding="utf-8",
+        )
+
+    def test_prunes_prior_generated_flow_after_detector_change_and_converges(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        generated = wiki / "flows" / "api-run.md"
+        authored = wiki / "flows" / "operator-notes.md"
+        authored_text = "# Operator notes\n\nThis page is maintained by the operator.\n"
+        authored.write_text(authored_text, encoding="utf-8")
+
+        # Refresh the managed surface index so both pages are present in the
+        # exact prior state used to decide ownership on the next sync.
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        prior_surface = json.loads(
+            (wiki / SURFACE_INDEX_FILENAME).read_text(encoding="utf-8")
+        )
+        prior_sources = {
+            page["canonical_path"]: page["source_path"]
+            for page in prior_surface["pages"]
+            if page["canonical_path"] in {"flows/api-run.md", "flows/operator-notes.md"}
+        }
+        assert prior_sources == {
+            "flows/api-run.md": "svc.py",
+            "flows/operator-notes.md": None,
+        }
+
+        self._hide_api_run_detector_result(monkeypatch)
+        capsys.readouterr()
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        first_output = capsys.readouterr().out
+        assert not generated.exists()
+        assert authored.read_text(encoding="utf-8") == authored_text
+        assert "1 generated surface page(s)" in first_output
+        for artifact in (
+            wiki / "index.md",
+            wiki / SURFACE_INDEX_FILENAME,
+            wiki / KNOWLEDGE_INDEX_FILENAME,
+        ):
+            assert "api-run" not in artifact.read_text(encoding="utf-8")
+
+        first_bytes = {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in sorted(wiki.rglob("*"))
+            if path.is_file()
+        }
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        second_bytes = {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in sorted(wiki.rglob("*"))
+            if path.is_file()
+        }
+        assert second_bytes == first_bytes
+        assert "Wiki is up to date." in capsys.readouterr().out
+
+    def test_stale_generated_flow_with_authored_behavior_requires_force(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        flow_page = wiki / "flows" / "api-run.md"
+        flow_page.write_text(
+            sync_cmd._replace_section_body(
+                flow_page.read_text(encoding="utf-8"),
+                "Behavior",
+                "Operators call this path only after validating the workspace.",
+            ),
+            encoding="utf-8",
+        )
+        before = {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in sorted(wiki.rglob("*"))
+            if path.is_file()
+        }
+        self._hide_api_run_detector_result(monkeypatch)
+        capsys.readouterr()
+
+        with pytest.raises(SystemExit) as exc:
+            sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        assert exc.value.code == 2
+        assert {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in sorted(wiki.rglob("*"))
+            if path.is_file()
+        } == before
+        error = capsys.readouterr().err
+        assert "human-authored Behavior" in error
+        assert "Archive or remove" in error
+        assert "--force" in error
+
+        sync_cmd.run(
+            _make_sync_args(
+                src_dir=str(proj),
+                wiki_dir=str(wiki),
+                force=True,
+            )
+        )
+        assert not flow_page.exists()
+
+    def test_prior_source_association_without_generated_shape_is_retained(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        flow_page = wiki / "flows" / "api-run.md"
+        authored = "# API runbook\n\nThis whole page is operator-owned.\n"
+        flow_page.write_text(authored, encoding="utf-8")
+        self._hide_api_run_detector_result(monkeypatch)
+        capsys.readouterr()
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        assert flow_page.read_text(encoding="utf-8") == authored
+        surface = json.loads(
+            (wiki / SURFACE_INDEX_FILENAME).read_text(encoding="utf-8")
+        )
+        page = next(
+            page
+            for page in surface["pages"]
+            if page["canonical_path"] == "flows/api-run.md"
+        )
+        assert page["source_path"] is None
+
+    def test_stale_surface_removals_count_toward_surface_safety_limit(self, tmp_path):
+        plan = sync_cmd._SurfaceInitializationPlan(
+            surfaces={},
+            policy_changed=False,
+            flow_entries=(),
+            new_flow_entries=(),
+            excluded_flow_tests=0,
+            dependency_inventory={},
+            dependency_analysis=None,
+            dependency_target_pages=(),
+            new_dependency_pages=(),
+            requested_surfaces=frozenset(),
+        )
+
+        message = sync_cmd._large_surface_message(
+            plan,
+            tmp_path,
+            removed_pages=sync_cmd.MAX_SURFACE_CREATED_PAGES + 1,
+        )
+
+        assert message is not None
+        assert "remove" in message
+        assert "exceeds the safety limit" in message
+
+    def test_legacy_generated_surface_starters_are_neutral(self):
+        legacy_flow = textwrap.dedent("""\
+            # run
+
+            **Entry point:** `run` (`api`)
+
+            ## Call sequence
+
+            <!-- Auto-generated from static call edges. Dashed arrows are external
+            or unresolved calls. Refine order and conditions after review. -->
+
+            ## Behavior
+
+            _Describe what this flow does, when it is triggered, and its key side effects or outputs. Replace this placeholder._
+        """)
+        legacy_workflow = textwrap.dedent("""\
+            # run_flow
+
+            **Entry point:** `run`
+
+            ## Sequence
+
+            <!-- Auto-detected call chain. Refine order and conditions after review. -->
+        """)
+
+        assert sync_cmd._has_generated_surface_shape(
+            sync_cmd.PageKind.FLOWS, legacy_flow
+        )
+        assert sync_cmd._has_neutral_generated_behavior(
+            sync_cmd.PageKind.FLOWS, legacy_flow
+        )
+        assert sync_cmd._has_generated_surface_shape(
+            sync_cmd.PageKind.WORKFLOWS, legacy_workflow
+        )
+        assert sync_cmd._has_neutral_generated_behavior(
+            sync_cmd.PageKind.WORKFLOWS, legacy_workflow
+        )
+
     def test_regenerates_changed_flow_and_preserves_behavior(
         self, tmp_path, monkeypatch, capsys
     ):
@@ -3483,6 +3798,215 @@ class TestSyncFlowRegeneration:
         assert "helper_b" in updated  # diagram regenerated
         assert "helper_a" not in updated  # old call removed
         assert "Runs the primary path." in updated  # human Behavior preserved
+
+    def test_regenerates_live_workflow_and_preserves_authored_behavior(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        self._write_workflow_sources(
+            proj,
+            ("a", "b", "c"),
+            docstring="First workflow docs.",
+        )
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(
+            _make_bootstrap_args(
+                src_dir=str(proj),
+                wiki_dir=str(wiki),
+                skip_workflows=False,
+            )
+        )
+        workflow = wiki / "workflows" / "orchestrate.md"
+        original = workflow.read_text(encoding="utf-8")
+        workflow.write_text(
+            sync_cmd._replace_section_body(
+                original,
+                "Behavior",
+                "Coordinates the reviewed release workflow.",
+            ),
+            encoding="utf-8",
+        )
+        self._write_workflow_sources(
+            proj,
+            ("a", "b", "d"),
+            docstring="Second workflow docs.",
+        )
+        capsys.readouterr()
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        updated = workflow.read_text(encoding="utf-8")
+        assert "Second workflow docs." in updated
+        assert "[d](../modules/d.md)" in updated
+        assert "[c](../modules/c.md)" not in updated
+        assert "Coordinates the reviewed release workflow." in updated
+        tree_after = {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in sorted(wiki.rglob("*"))
+            if path.is_file()
+        }
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        assert {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in sorted(wiki.rglob("*"))
+            if path.is_file()
+        } == tree_after
+
+    def test_creates_newly_live_workflow_and_converges(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        self._write_workflow_sources(
+            proj,
+            ("a", "b"),
+            docstring="Below the workflow threshold.",
+        )
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(
+            _make_bootstrap_args(
+                src_dir=str(proj),
+                wiki_dir=str(wiki),
+                skip_workflows=False,
+            )
+        )
+        workflow = wiki / "workflows" / "orchestrate.md"
+        assert not workflow.exists()
+        self._write_workflow_sources(
+            proj,
+            ("a", "b", "c"),
+            docstring="Now a generated workflow.",
+        )
+        capsys.readouterr()
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        assert workflow.is_file()
+        assert "Now a generated workflow." in workflow.read_text(encoding="utf-8")
+        assert "[orchestrate](workflows/orchestrate.md)" in (
+            wiki / "index.md"
+        ).read_text(encoding="utf-8")
+        assert "CREATED workflow: orchestrate" in capsys.readouterr().out
+        tree_after = {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in sorted(wiki.rglob("*"))
+            if path.is_file()
+        }
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        assert {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in sorted(wiki.rglob("*"))
+            if path.is_file()
+        } == tree_after
+
+    def test_surface_initialization_preserves_deferred_generated_ownership(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        self._write_workflow_sources(
+            proj,
+            ("a", "b", "c"),
+            docstring="Managed workflow.",
+        )
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(
+            _make_bootstrap_args(
+                src_dir=str(proj),
+                wiki_dir=str(wiki),
+                skip_workflows=False,
+            )
+        )
+        flow = wiki / "flows" / "api-run.md"
+        workflow = wiki / "workflows" / "orchestrate.md"
+        assert flow.is_file()
+        assert workflow.is_file()
+
+        (proj / "svc.py").write_text(
+            "def run():\n    return helper_b()\n\ndef helper_b():\n    return 2\n",
+            encoding="utf-8",
+        )
+        self._write_workflow_sources(
+            proj,
+            ("a", "b"),
+            docstring="Below the workflow threshold.",
+        )
+        capsys.readouterr()
+
+        sync_cmd.run(
+            _make_sync_args(
+                src_dir=str(proj),
+                wiki_dir=str(wiki),
+                initialize_surfaces=[("dependencies",)],
+            )
+        )
+
+        assert flow.is_file()
+        assert workflow.is_file()
+        initialized_surface = json.loads(
+            (wiki / SURFACE_INDEX_FILENAME).read_text(encoding="utf-8")
+        )
+        source_by_page = {
+            page["canonical_path"]: page["source_path"]
+            for page in initialized_surface["pages"]
+        }
+        assert source_by_page["flows/api-run.md"] == "svc.py"
+        assert source_by_page["workflows/orchestrate.md"] == "orchestrator.py"
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        assert not flow.exists()
+        assert not workflow.exists()
+
+    def test_live_authored_flow_collision_is_not_regenerated(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        flow = wiki / "flows" / "api-run.md"
+        authored = (
+            "# Operator runbook\n\n"
+            "This page intentionally owns the detector-compatible page id.\n"
+        )
+        flow.write_text(authored, encoding="utf-8")
+        capsys.readouterr()
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        assert flow.read_text(encoding="utf-8") == authored
+
+    def test_neutral_flow_behavior_tracks_changed_entry_symbol(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        (proj / "svc.py").write_text(
+            "def run():\n    return 1\n\ndef run2():\n    return 2\n",
+            encoding="utf-8",
+        )
+        (proj / "pyproject.toml").write_text(
+            '[project]\nname = "p"\nversion = "0.1.0"\n'
+            '[project.scripts]\ntool = "svc:run"\n',
+            encoding="utf-8",
+        )
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        flow = wiki / "flows" / "process-tool.md"
+        assert "starts at `run`" in flow.read_text(encoding="utf-8")
+        (proj / "pyproject.toml").write_text(
+            '[project]\nname = "p"\nversion = "0.1.0"\n'
+            '[project.scripts]\ntool = "svc:run2"\n',
+            encoding="utf-8",
+        )
+        capsys.readouterr()
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        updated = flow.read_text(encoding="utf-8")
+        assert "starts at `run2`" in updated
+        assert "starts at `run`" not in updated
 
     def test_regenerates_data_flow_for_changed_call_argument(
         self, tmp_path, monkeypatch, capsys
@@ -3597,6 +4121,7 @@ class TestSyncFlowRegeneration:
         bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
         before = load_knowledge_state(wiki).knowledge
         assert before is not None
+        log_before = (wiki / "log.md").read_text(encoding="utf-8")
         lock = plugins.lock_path(proj)
         lock_payload = json.loads(lock.read_text(encoding="utf-8"))
         lock_payload["plugins"]["diagram-style-plugin"]["version"] = "0.2.0"
@@ -3618,6 +4143,255 @@ class TestSyncFlowRegeneration:
         assert after.bundle.snapshot.generation_options_hash == (
             before.bundle.snapshot.generation_options_hash
         )
+        log_after = (wiki / "log.md").read_text(encoding="utf-8")
+        assert len(log_after) > len(log_before)
+        assert (
+            f"- Source snapshot digest: "
+            f"`{after.bundle.snapshot.source_snapshot_hash}`"
+        ) in log_after[len(log_before) :]
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        assert (wiki / "log.md").read_text(encoding="utf-8") == log_after
+
+    def test_package_manifest_only_change_refreshes_module_dependency_facts(
+        self,
+        tmp_path,
+        monkeypatch,
+        capsys,
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        (proj / "app.py").write_text(
+            "import requests\n\n\ndef fetch():\n    return requests.get('https://example.invalid')\n",
+            encoding="utf-8",
+        )
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        module = wiki / "modules" / "app.md"
+        assert "| python | 1 | 1 |" in module.read_text(encoding="utf-8")
+        (proj / "pyproject.toml").write_text(
+            '[project]\nname = "p"\nversion = "0.1.0"\n'
+            'dependencies = ["requests"]\n',
+            encoding="utf-8",
+        )
+        capsys.readouterr()
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        updated = module.read_text(encoding="utf-8")
+        assert "| python | 1 | 0 |" in updated
+        output = capsys.readouterr().out
+        assert "UPDATE module local dependency map: app" in output
+        log_after = (wiki / "log.md").read_text(encoding="utf-8")
+        assert "- Pages updated: 0" not in log_after.rsplit("### Wiki sync", 1)[1]
+        tree_after = {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in sorted(wiki.rglob("*"))
+            if path.is_file()
+        }
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        assert {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in sorted(wiki.rglob("*"))
+            if path.is_file()
+        } == tree_after
+
+    def test_surface_initialization_refreshes_package_only_generated_facts(
+        self,
+        tmp_path,
+        monkeypatch,
+        capsys,
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        (proj / "app.py").write_text(
+            "import requests\n\n\ndef fetch():\n"
+            "    return requests.get('https://example.invalid')\n",
+            encoding="utf-8",
+        )
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        module = wiki / "modules" / "app.md"
+        assert "| python | 1 | 1 |" in module.read_text(encoding="utf-8")
+        (proj / "pyproject.toml").write_text(
+            '[project]\nname = "p"\nversion = "0.1.0"\n'
+            'dependencies = ["requests"]\n',
+            encoding="utf-8",
+        )
+        capsys.readouterr()
+
+        sync_cmd.run(
+            _make_sync_args(
+                src_dir=str(proj),
+                wiki_dir=str(wiki),
+                initialize_surfaces=[("flows",)],
+            )
+        )
+
+        assert "| python | 1 | 0 |" in module.read_text(encoding="utf-8")
+        assert "UPDATE module local dependency map: app" in capsys.readouterr().out
+        tree_after = {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in sorted(wiki.rglob("*"))
+            if path.is_file()
+        }
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        assert "| python | 1 | 0 |" in module.read_text(encoding="utf-8")
+        assert {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in sorted(wiki.rglob("*"))
+            if path.is_file()
+        } == tree_after
+
+    def test_missing_runtime_provenance_forces_package_fact_refresh(
+        self,
+        tmp_path,
+        monkeypatch,
+        capsys,
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        (proj / "app.py").write_text(
+            "import requests\n\n\ndef fetch():\n"
+            "    return requests.get('https://example.invalid')\n",
+            encoding="utf-8",
+        )
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        module = wiki / "modules" / "app.md"
+        assert "| python | 1 | 1 |" in module.read_text(encoding="utf-8")
+        (wiki / KNOWLEDGE_INDEX_FILENAME).unlink()
+        (proj / "pyproject.toml").write_text(
+            '[project]\nname = "p"\nversion = "0.1.0"\n'
+            'dependencies = ["requests"]\n',
+            encoding="utf-8",
+        )
+        capsys.readouterr()
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        assert (wiki / KNOWLEDGE_INDEX_FILENAME).is_file()
+        assert "| python | 1 | 0 |" in module.read_text(encoding="utf-8")
+        output = capsys.readouterr().out
+        assert "UPDATE module" in output
+        assert "app" in output
+        tree_after = {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in sorted(wiki.rglob("*"))
+            if path.is_file()
+        }
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        assert {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in sorted(wiki.rglob("*"))
+            if path.is_file()
+        } == tree_after
+
+    def test_no_preserve_semantic_index_write_is_logged_and_reported(
+        self,
+        tmp_path,
+        monkeypatch,
+        capsys,
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        index = wiki / "index.md"
+        index.write_text(
+            index.read_text(encoding="utf-8")
+            + "\n## Team notes\n\nReviewed operator guidance.\n",
+            encoding="utf-8",
+        )
+        log_before = (wiki / "log.md").read_text(encoding="utf-8")
+        capsys.readouterr()
+
+        sync_cmd.run(
+            _make_sync_args(
+                src_dir=str(proj),
+                wiki_dir=str(wiki),
+                no_preserve_semantic=True,
+            )
+        )
+
+        assert "Reviewed operator guidance." not in index.read_text(encoding="utf-8")
+        log_after = (wiki / "log.md").read_text(encoding="utf-8")
+        assert len(log_after) > len(log_before)
+        assert "Wiki is up to date." not in capsys.readouterr().out
+
+        sync_cmd.run(
+            _make_sync_args(
+                src_dir=str(proj),
+                wiki_dir=str(wiki),
+                no_preserve_semantic=True,
+            )
+        )
+
+        assert (wiki / "log.md").read_text(encoding="utf-8") == log_after
+
+    def test_missing_surface_index_blocks_generated_orphan_repair(
+        self,
+        tmp_path,
+        monkeypatch,
+        capsys,
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        (wiki / SURFACE_INDEX_FILENAME).unlink()
+        before = {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in sorted(wiki.rglob("*"))
+            if path.is_file()
+        }
+        capsys.readouterr()
+
+        with pytest.raises(SystemExit) as exc:
+            sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        assert exc.value.code == 2
+        assert "surface index is missing" in capsys.readouterr().err
+        assert {
+            path.relative_to(wiki).as_posix(): path.read_bytes()
+            for path in sorted(wiki.rglob("*"))
+            if path.is_file()
+        } == before
+
+    def test_generator_upgrade_appends_provenance_without_source_change(
+        self,
+        tmp_path,
+        monkeypatch,
+        capsys,
+    ):
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        monkeypatch.chdir(proj)
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+        before = load_knowledge_state(wiki).knowledge
+        assert before is not None
+        log_before = (wiki / "log.md").read_text(encoding="utf-8")
+        capsys.readouterr()
+        monkeypatch.setattr(sync_cmd, "__version__", "9.8.7")
+        monkeypatch.setattr(bootstrap_cmd, "__version__", "9.8.7")
+        monkeypatch.setattr(knowledge_orchestration, "__version__", "9.8.7")
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        after = load_knowledge_state(wiki).knowledge
+        assert after is not None
+        assert after.bundle.producer.tool.version == "9.8.7"
+        assert after.bundle.snapshot.source_snapshot_hash == (
+            before.bundle.snapshot.source_snapshot_hash
+        )
+        log_after = (wiki / "log.md").read_text(encoding="utf-8")
+        assert len(log_after) > len(log_before)
+        assert "- Generator version: `9.8.7`" in log_after[len(log_before) :]
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        assert (wiki / "log.md").read_text(encoding="utf-8") == log_after
 
     def test_removed_source_does_not_bind_tombstone_to_upgraded_same_id_extractor(
         self,
@@ -3845,9 +4619,7 @@ class TestSyncFlowRegeneration:
 
         assert not marker.exists()
         assert not source_marker.exists()
-        assert "helper_b" in (wiki / "flows" / "api-run.md").read_text(
-            encoding="utf-8"
-        )
+        assert "helper_b" in (wiki / "flows" / "api-run.md").read_text(encoding="utf-8")
 
     def test_flow_regeneration_reuses_single_data_flow_context(
         self, tmp_path, monkeypatch, capsys

@@ -21,6 +21,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping, Sequence
 
 from .io import read_md
+from .markdown_sections import GENERATED_INDEX_INTROS
 from .validation import (
     nonnegative_int_or_none,
     normalize_legacy_portable_relative_path,
@@ -629,7 +630,7 @@ def _is_placeholder_text(text: str) -> bool:
 def _index_needs_context(content: str) -> bool:
     return (
         "# LLM Wiki Index" in content
-        and "Use this landing page to choose the right wiki surface." in content
+        and any(intro in content for intro in GENERATED_INDEX_INTROS)
     )
 
 

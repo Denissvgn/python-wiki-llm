@@ -885,10 +885,10 @@ class TestMigrateIntegration:
         migrate_cmd.run(_make_args())
 
         index = (wiki / "index.md").read_text(encoding="utf-8")
-        assert "## User Flows" in index
+        assert "## Entry-point flows" in index
         assert "- [api-run](flows/api-run.md)" in index
         assert "## Dependency Architecture" in index
-        assert "## API contracts" in index
+        assert "## HTTP API contracts" in index
         assert "[Production HTTP API inventory](api-contracts.md)" in index
         assert "- [Dependencies](dependencies.md)" in index
         assert "- [Load order](load-order.md)" in index
@@ -918,7 +918,7 @@ class TestMigrateIntegration:
         migrate_cmd.run(_make_args())
 
         index = (wiki / "index.md").read_text(encoding="utf-8")
-        assert "## User Flows" not in index
+        assert "## Entry-point flows" not in index
         assert "flows/.gitkeep" not in index
 
     def test_rerun_uses_archived_pages_to_repair_legacy_links(self, tmp_path, capsys):

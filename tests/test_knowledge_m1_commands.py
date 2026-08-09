@@ -256,6 +256,7 @@ def test_bootstrap_matches_pre_native_markdown_and_surface_v1_goldens(
 
     monkeypatch.chdir(project)
     monkeypatch.setattr(bootstrap_cmd, "date", FrozenDate)
+    source_snapshot = bootstrap_cmd.build_source_snapshot(project)
     bootstrap_cmd.run(_bootstrap_args(project, wiki_dir))
 
     expected_markdown = _markdown_tree_bytes(expected_wiki)
@@ -272,6 +273,41 @@ def test_bootstrap_matches_pre_native_markdown_and_surface_v1_goldens(
     expected_markdown["log.md"] = expected_markdown["log.md"].replace(
         _PROJECT_ROOT_TOKEN,
         b".",
+    )
+    historical_log_header = (
+        b"### feat: bootstrap wiki from existing codebase\n"
+        b"- Source: `.`\n"
+    )
+    current_log_header = (
+        "### Wiki bootstrap\n"
+        "- Source: `.`\n"
+        f"{bootstrap_cmd._source_snapshot_log_lines(source_snapshot)}"
+    ).encode("utf-8")
+    assert expected_markdown["log.md"].count(historical_log_header) == 1
+    expected_markdown["log.md"] = expected_markdown["log.md"].replace(
+        historical_log_header,
+        current_log_header,
+    )
+    expected_markdown["log.md"] = expected_markdown["log.md"].replace(
+        b"- User flows created:",
+        b"- Entry-point flows created:",
+    )
+    expected_markdown["log.md"] = expected_markdown["log.md"].replace(
+        b"- API contract pages created:",
+        b"- HTTP API contract pages created:",
+    )
+    expected_markdown["index.md"] = expected_markdown["index.md"].replace(
+        b"Use this landing page to choose the right wiki surface.",
+        b"This page is an exhaustive reference inventory of the selected source. "
+        b"Task-oriented guides are not yet available.",
+    )
+    expected_markdown["index.md"] = expected_markdown["index.md"].replace(
+        b"| User flows |",
+        b"| Entry-point flows |",
+    )
+    expected_markdown["index.md"] = expected_markdown["index.md"].replace(
+        b"| API contracts |",
+        b"| HTTP API contracts |",
     )
     semantic_starter_updates = {
         "dependencies.md": (

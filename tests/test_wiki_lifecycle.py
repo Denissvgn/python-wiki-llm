@@ -6,7 +6,7 @@ import pytest
 
 from llm_wiki_cli.config import AGENT_CHOICES
 from llm_wiki_cli.commands import lint_cmd
-from llm_wiki_cli.services import wiki_lifecycle
+from llm_wiki_cli.services import wiki_lifecycle, wiki_scaffold
 from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME
 from llm_wiki_cli.services.wiki_lifecycle import (
     WikiLifecycleState,
@@ -47,6 +47,13 @@ def _write_init_scaffold(root, *, agent: bool = False):
             + "\n",
             encoding="utf-8",
         )
+
+
+def test_wiki_scaffold_public_prose_uses_neutral_content_wording():
+    docstring = wiki_scaffold.__doc__ or ""
+
+    assert "pristine scaffold content" in docstring
+    assert "placeholder" not in docstring.casefold()
 
 
 def test_wiki_lifecycle_classifies_first_use_targets(tmp_path):

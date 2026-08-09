@@ -18,6 +18,10 @@ from llm_wiki_cli.services.section_ownership import (
     section_ownership_extension,
     validate_section_ownership,
 )
+from llm_wiki_cli.services.markdown_sections import (
+    GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING,
+    GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING,
+)
 from llm_wiki_cli.services.wiki_surface import PageKind
 
 
@@ -126,7 +130,15 @@ def test_guides_are_semantic_and_index_custom_is_semantic_only_when_preserved():
         section.semantic_hash == section.exact_hash for section in guide.sections
     )
 
-    markdown = "# Index\n## Modules\ngenerated\n## Team notes\nhuman\n"
+    markdown = (
+        "# Index\n"
+        "## Modules\ngenerated\n"
+        f"## {GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING}\ngenerated\n"
+        f"## {GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING}\ngenerated\n"
+        "## Entry-point flows\nhuman routing\n"
+        "## HTTP API contracts\nhuman contract notes\n"
+        "## Team notes\nhuman\n"
+    )
     preserved = observe_page_sections(
         markdown,
         "llm-wiki://index",
@@ -141,9 +153,16 @@ def test_guides_are_semantic_and_index_custom_is_semantic_only_when_preserved():
     assert [section.ownership for section in preserved.sections] == [
         SectionOwnership.UNKNOWN,
         SectionOwnership.GENERATED,
+        SectionOwnership.GENERATED,
+        SectionOwnership.GENERATED,
+        SectionOwnership.SEMANTIC,
+        SectionOwnership.SEMANTIC,
         SectionOwnership.SEMANTIC,
     ]
-    assert unpreserved.sections[-1].ownership is SectionOwnership.UNKNOWN
+    assert all(
+        section.ownership is SectionOwnership.UNKNOWN
+        for section in unpreserved.sections[-3:]
+    )
 
 
 def test_only_first_behavior_and_notes_sections_are_semantic():

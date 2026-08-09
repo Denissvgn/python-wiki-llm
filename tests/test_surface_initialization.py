@@ -232,6 +232,9 @@ def test_flow_policy_persists_and_later_sync_does_not_expand_scope(
     assert (wiki / "flows" / "http-production_endpoint.md").is_file()
     assert not (wiki / "flows" / "http-test_endpoint.md").exists()
     assert not (wiki / "flows" / "api-public_api.md").exists()
+    log = (wiki / "log.md").read_text(encoding="utf-8")
+    assert "### Wiki surface initialization" in log
+    assert "### feat:" not in log
     manifest = json.loads((wiki / MANIFEST_FILENAME).read_text(encoding="utf-8"))
     assert manifest["version"] == 5
     assert manifest["surfaces"]["flows"] == {
@@ -312,7 +315,7 @@ def test_dependency_initialization_is_selective_and_preserves_semantic_pages(
     }
 
 
-def test_surface_only_sync_preserves_evidence_state_and_commits_artifact_hashes(
+def test_surface_only_sync_repairs_invalid_evidence_state_and_commits_artifact_hashes(
     optional_surface_project,
 ):
     project, wiki = optional_surface_project
@@ -352,7 +355,18 @@ def test_surface_only_sync_preserves_evidence_state_and_commits_artifact_hashes(
 
     after = SyncManifest.load(wiki)
     assert after.page_source_mappings == before.page_source_mappings
-    assert after.evidence_baselines == before.evidence_baselines
+    assert set(after.evidence_baselines) == set(before.evidence_baselines)
+    assert all(
+        baseline.is_known and baseline.basis is not None
+        for baseline in after.evidence_baselines.values()
+    )
+    repaired_basis = after.evidence_baselines[page_path].basis
+    assert repaired_basis is not None
+    assert repaired_basis.source_path == mapping.source_path
+    assert repaired_basis.source_content_hash == after.sources[mapping.source_path][
+        "hash"
+    ]
+    assert repaired_basis.concept_observation_hash != basis.concept_observation_hash
     assert after.tombstones == before.tombstones
     assert after.artifact_hashes is not None
 
@@ -506,7 +520,10 @@ def test_dependency_policy_change_does_not_regenerate_existing_pages_from_deferr
     dependencies = wiki / "dependencies.md"
     load_order = wiki / "load-order.md"
     before = (dependencies.read_bytes(), load_order.read_bytes())
-    (project / "new_dependency.py").write_text("import core\n", encoding="utf-8")
+    (project / "new_dependency.py").write_text(
+        "import core\n\n\ndef use_core():\n    return core.helper()\n",
+        encoding="utf-8",
+    )
 
     sync_cmd.run(
         _sync_args(

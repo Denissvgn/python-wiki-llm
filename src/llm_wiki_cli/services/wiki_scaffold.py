@@ -1,8 +1,8 @@
 """Canonical bytes for a pristine wiki scaffold.
 
-Bootstrap may replace these placeholders during first adoption.  Any other
-content under the target wiki directory belongs to an existing or partial wiki
-and must be handled by sync or migration instead.
+Bootstrap may replace the pristine scaffold content during first adoption. Any
+other content under the target wiki directory belongs to an existing or partial
+wiki and must be handled by sync or migration instead.
 """
 
 from __future__ import annotations

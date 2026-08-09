@@ -8,6 +8,7 @@ from .schema import *
 from .workspace import *
 from .integrity import *
 from .refresh import *
+from ..markdown_sections import GENERATED_INDEX_INTROS
 
 def _validate_result_work_ids(
     result: DocumentationAgentResult,
@@ -347,7 +348,7 @@ def _verify_user_docs_gate(
     generic_phrases = (
         "Replace this placeholder",
         "Describe what",
-        "Use this landing page to choose the right wiki surface.",
+        *GENERATED_INDEX_INTROS,
     )
     if any(phrase in overview_text for phrase in generic_phrases):
         raise DocumentationTransitionError(

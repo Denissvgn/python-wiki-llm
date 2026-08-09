@@ -21,6 +21,8 @@ from .contracts import (
 )
 from .knowledge_evidence import hash_json, sha256_bytes
 from .markdown_sections import (
+    GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING,
+    GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING,
     SECTION_ORDER_DOMAIN,
     MarkdownSection,
     MarkdownSectionDocument,
@@ -144,10 +146,12 @@ _INDEX_GENERATED_HEADINGS = frozenset(
         "Workflows",
         "Guides",
         "User Flows",
+        GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING,
         "Infrastructure",
         "Architecture",
         "Dependency Architecture",
         "API Contracts",
+        GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING,
         "Log",
     )
 )

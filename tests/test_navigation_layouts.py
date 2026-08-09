@@ -157,13 +157,14 @@ def test_sync_rebuild_index_preserves_layout_navigation(navigation_wiki):
     assert "[User](entities/User.md)" in index
     assert "[models](modules/models.md)" in index
     if navigation_wiki.name == "legacy":
-        assert "## User Flows" not in index
+        assert "## Entry-point flows" not in index
         assert "## Dependency Architecture" not in index
         assert "flows/api-run.md" not in index
         assert "dependencies.md" not in index
         assert "load-order.md" not in index
     else:
-        assert "## User Flows" in index
+        assert "## Entry-point flows" in index
+        assert "## User Flows" not in index
         assert "[api-run](flows/api-run.md)" in index
         assert "## Dependency Architecture" in index
         assert "[Dependencies](dependencies.md)" in index

@@ -84,6 +84,13 @@ FORBIDDEN_INTERNAL_PROSE: Mapping[str, ForbiddenProse] = {
         ),
         "Numbered milestone labels expose internal delivery sequencing.",
     ),
+    "numbered-delivery-epic": ForbiddenProse(
+        re.compile(
+            rf"\b[Ee]pic{_PROSE_GAP}"
+            rf"(?:\#(?:{_PROSE_GAP})?)?[0-9]+(?:\.[0-9]+)*\b"
+        ),
+        "Numbered epic labels expose internal delivery sequencing.",
+    ),
     "closure-review": ForbiddenProse(
         re.compile(rf"\b[Cc]losure{_PROSE_GAP}review\b"),
         "This phrase identifies an internal completion checkpoint.",
@@ -100,7 +107,8 @@ _SOURCE_IDENTITY_RULES = frozenset(
     {"delivery-stage-label", "internal-task-id"}
 )
 _SELECTED_SOURCE_INTERNAL_IDENTIFIER = re.compile(
-    r"\b(?:KNOW|DL|NKC)-\d+\b|\bM\d+\b"
+    r"\b(?:KNOW|DL|NKC)-\d+\b|\bM\d+\b|"
+    r"(?i:\bEpic\s+\d+(?:\.\d+)*\b)"
 )
 _RUNTIME_DOC_INTERNAL_PROSE = re.compile(
     r"\btests?\s*/\s*runners?\b",
@@ -1050,6 +1058,9 @@ def test_archive_inventory_rejects_non_file_member_types(tmp_path):
         ("Milestone 4 adds governance.", "numbered-delivery-milestone"),
         ("Milestone #4 adds governance.", "numbered-delivery-milestone"),
         ("Delivery milestone #\nIV is next.", "numbered-delivery-milestone"),
+        ("Epic 2 adds dependency analysis.", "numbered-delivery-epic"),
+        ("Epic 2.4 adds aggregation.", "numbered-delivery-epic"),
+        ("Epic\n2.4 adds aggregation.", "numbered-delivery-epic"),
         ("Start the closure review.", "closure-review"),
         ("P0\ncalibration is now complete.", "priority-calibration-name"),
         ("P0  \ncalibration is now complete.", "priority-calibration-name"),

@@ -41,6 +41,7 @@ from .knowledge_envelope import (
     build_producer_record,
     collect_git_repository_evidence,
     hash_generation_options,
+    hash_source_snapshot,
     plugin_producer_inputs,
 )
 from .knowledge_evidence import (
@@ -165,6 +166,15 @@ class RuntimeKnowledgeInputs:
     graph_evidence_limit: int = 20
     governance: GovernanceLedger | None = None
     governance_moves: Mapping[str, str] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class CommittedRuntimeProvenance:
+    """Exact runtime provenance recovered from an intact committed projection."""
+
+    source_snapshot_hash: str
+    generation_options_hash: str
+    generator_version: str
 
 
 @dataclass(frozen=True)
@@ -300,7 +310,12 @@ def build_runtime_knowledge_plan(
             surface_index_bytes=inputs.surface.serialized_bytes,
             surface_index_payload=None,
             source_content_hashes=source_hashes,
-            consumed_inputs=_runtime_consumed_inputs(inputs, generation_inputs),
+            consumed_inputs=runtime_consumed_inputs(
+                inputs.source_snapshot,
+                generation_inputs=generation_inputs,
+                plugin_lock_path=inputs.plugin_lock_path,
+                plugin_lock_hash=inputs.plugin_lock_hash,
+            ),
             module_page_map=inputs.module_page_map,
             entity_occurrence_page_map=inputs.entity_occurrence_page_map,
             extractor_ref_by_source=extractor_ref_by_source,
@@ -551,6 +566,26 @@ def committed_governance_bundle_id(
     if validated is None:
         return None
     return governance_bundle_id_from_knowledge(validated.knowledge)
+
+
+def committed_runtime_provenance(
+    wiki_dir: str | Path,
+    manifest: SyncManifest | None,
+) -> CommittedRuntimeProvenance | None:
+    """Return source and generator identity from an intact committed projection."""
+
+    validated = _previous_committed_artifacts(wiki_dir, manifest)
+    if validated is None:
+        return None
+    return CommittedRuntimeProvenance(
+        source_snapshot_hash=(
+            validated.knowledge.bundle.snapshot.source_snapshot_hash
+        ),
+        generation_options_hash=(
+            validated.knowledge.bundle.snapshot.generation_options_hash
+        ),
+        generator_version=validated.knowledge.bundle.producer.tool.version,
+    )
 
 
 def _previous_committed_producer(
@@ -878,6 +913,26 @@ def runtime_generation_options(
     }
 
 
+def runtime_generation_options_hash(
+    generation_options: Mapping[str, Any],
+    *,
+    inventory_complete: bool = True,
+) -> str:
+    """Hash the canonical runtime generation policy used by knowledge output."""
+
+    prepared = prepare_runtime_generation_options(
+        generation_options,
+        generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS,
+        generation_option_allowlist=tuple(RUNTIME_GENERATION_OPTION_DEFAULTS),
+        inventory_complete=inventory_complete,
+    )
+    return hash_generation_options(
+        prepared.values,
+        defaults=prepared.defaults,
+        allowlist=prepared.allowlist,
+    )
+
+
 def persist_runtime_generation_policy(
     generation_inputs: Mapping[str, object],
     *,
@@ -1108,9 +1163,12 @@ def _manifest_extractor_refs(
     return frozenset(refs)
 
 
-def _runtime_consumed_inputs(
-    inputs: RuntimeKnowledgeInputs,
+def runtime_consumed_inputs(
+    source_snapshot: SourceSnapshot,
+    *,
     generation_inputs: Mapping[str, object],
+    plugin_lock_path: str | None = None,
+    plugin_lock_hash: str | None = None,
 ) -> tuple[ConsumedInput, ...]:
     """Add explicitly selected inputs to the already captured source basis.
 
@@ -1122,13 +1180,17 @@ def _runtime_consumed_inputs(
     more specific classification replaces the generic YAML classification.
     """
 
+    if not isinstance(source_snapshot, SourceSnapshot):
+        raise TypeError("source_snapshot must be a SourceSnapshot")
+    if not isinstance(generation_inputs, Mapping):
+        raise TypeError("generation_inputs must be a mapping")
     consumed_by_path = {
-        item.path: item for item in inputs.source_snapshot.to_consumed_inputs()
+        item.path: item for item in source_snapshot.to_consumed_inputs()
     }
     _merge_explicit_consumed_input(
         consumed_by_path,
-        path=inputs.plugin_lock_path,
-        content_hash=inputs.plugin_lock_hash,
+        path=plugin_lock_path,
+        content_hash=plugin_lock_hash,
         kind=ConsumedInputKind.PLUGIN,
         field="plugin_lock",
     )
@@ -1161,6 +1223,25 @@ def _runtime_consumed_inputs(
         field="manifest_generation_inputs.openapi",
     )
     return tuple(consumed_by_path[path] for path in sorted(consumed_by_path))
+
+
+def runtime_source_snapshot_hash(
+    source_snapshot: SourceSnapshot,
+    *,
+    generation_inputs: Mapping[str, object],
+    plugin_lock_path: str | None = None,
+    plugin_lock_hash: str | None = None,
+) -> str:
+    """Hash the exact source basis consumed by runtime knowledge generation."""
+
+    return hash_source_snapshot(
+        runtime_consumed_inputs(
+            source_snapshot,
+            generation_inputs=generation_inputs,
+            plugin_lock_path=plugin_lock_path,
+            plugin_lock_hash=plugin_lock_hash,
+        )
+    )
 
 
 def _merge_explicit_consumed_input(
@@ -1203,6 +1284,7 @@ def _merge_explicit_consumed_input(
 
 
 __all__ = [
+    "CommittedRuntimeProvenance",
     "RUNTIME_GENERATION_INPUT_KEY",
     "RUNTIME_GENERATION_OPTION_DEFAULTS",
     "PreparedRuntimeGenerationOptions",
@@ -1212,8 +1294,12 @@ __all__ = [
     "build_runtime_live_evaluation",
     "collect_runtime_repository_evidence",
     "committed_governance_bundle_id",
+    "committed_runtime_provenance",
     "finalize_runtime_knowledge",
     "persist_runtime_generation_policy",
     "prepare_runtime_generation_options",
+    "runtime_consumed_inputs",
     "runtime_generation_options",
+    "runtime_generation_options_hash",
+    "runtime_source_snapshot_hash",
 ]

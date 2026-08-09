@@ -185,12 +185,35 @@ class TestBuildDependencyGraph:
         inventory = {
             "a.py": _mod(_imp("b")),
             "b.py": _mod(),
-            "Dockerfile": {"language": "docker"},  # no "imports" key
+            "Dockerfile": {"language": "docker"},
             "weird": "not-a-dict",
         }
         graph = build_dependency_graph(inventory)
         assert graph["nodes"] == ["a.py", "b.py"]
         assert graph["edges"] == [("a.py", "b.py")]
+
+    def test_language_entry_without_imports_is_an_isolated_node(self):
+        inventory = {
+            "bundle/main.js": {
+                "language": "javascript",
+                "module_calls": [{"name": "require", "line": 1}],
+            },
+            "metadata": {"module_calls": []},
+            "empty-language": {"language": "   "},
+            "unknown-language": {"language": "custom-plugin-language"},
+        }
+
+        graph = build_dependency_graph(inventory)
+
+        assert graph == {
+            "edges": [],
+            "nodes": ["bundle/main.js"],
+            "unresolved": [],
+        }
+        assert topological_order(graph) == {
+            "order": ["bundle/main.js"],
+            "cycle_groups": [],
+        }
 
     def test_missing_imports_field_never_raises(self):
         # Entirely empty entries must not raise and must not appear as nodes.

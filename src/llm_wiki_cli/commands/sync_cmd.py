@@ -27,6 +27,7 @@ from datetime import date
 from pathlib import Path
 from typing import Callable, Iterable, Mapping, Optional
 
+from .. import __version__
 from ..config import validate_path, validate_source_root
 from ..services.api_contracts import (
     ApiContractError,
@@ -95,8 +96,11 @@ from ..services.knowledge_orchestration import (
     RuntimeKnowledgeInputs,
     collect_runtime_repository_evidence,
     committed_governance_bundle_id,
+    committed_runtime_provenance,
     finalize_runtime_knowledge,
     runtime_generation_options,
+    runtime_generation_options_hash,
+    runtime_source_snapshot_hash,
 )
 from ..services.markdown_sections import (
     format_table_row as _service_format_table_row,
@@ -180,10 +184,12 @@ from ..services.bootstrap_runtime import (
     _generate_index_md,
     _generate_load_order_md,
     _generate_module_md,
+    _generate_workflow_md,
     _generate_infrastructure_md,
     _generated_diagram_style,
     _module_name_from_path,
     _page_name_for_module,
+    _source_snapshot_log_lines,
     build_entity_occurrence_page_map,
     build_entity_page_map,
     build_module_page_map,
@@ -224,6 +230,34 @@ _DEPRECATION_HEADER = (
     "> ⚠️ **Stale:** Source no longer found in codebase. "
     "Run `llm-wiki lint` to audit.\n\n"
 )
+_GENERATED_FLOW_MARKER = "<!-- Auto-generated from static call edges."
+_GENERATED_WORKFLOW_MARKER = "<!-- Auto-generated static call-chain projection."
+_LEGACY_GENERATED_WORKFLOW_MARKER = "<!-- Auto-detected call chain."
+_LEGACY_NEUTRAL_FLOW_BEHAVIOR = (
+    "_Describe what this flow does, when it is triggered, and its key side "
+    "effects or outputs. Replace this placeholder._"
+)
+_NEUTRAL_FLOW_BEHAVIOR_RE = re.compile(
+    r"This flow starts at `[^`]+` and is classified as `[^`]+`\. "
+    r"The generated call and data-flow sections are bounded static projections; "
+    r"runtime conditions and side effects require source-level confirmation\."
+)
+_NEUTRAL_WORKFLOW_BEHAVIOR_RE = re.compile(
+    r"This workflow starts at `[^`]+`\. The generated sequence is a bounded "
+    r"static projection; runtime ordering, branching, and side effects require "
+    r"source-level confirmation\."
+)
+_GENERATED_ENTRY_POINT_RE = re.compile(
+    r"(?m)^\*\*Entry point:\*\* `([^`\r\n]+)`"
+)
+
+
+class GeneratedSurfacePruneError(ValueError):
+    """A stale generated page cannot be removed without explicit authority."""
+
+
+class SyncRuntimeRefreshError(ValueError):
+    """A runtime-basis transition cannot be applied in the requested mode."""
 
 
 def _cache_options_from_args(args) -> InventoryCacheOptions:
@@ -458,9 +492,7 @@ def _governance_moves_for_sync(
     ):
         add(PageKind.ENTITIES, old_page, new_page)
 
-    for _filepath, (old_page, new_page) in sorted(
-        diff.renamed_module_pages.items()
-    ):
+    for _filepath, (old_page, new_page) in sorted(diff.renamed_module_pages.items()):
         add(PageKind.MODULES, old_page, new_page)
 
     for entity_name, (old_filepath, new_filepath) in sorted(
@@ -472,8 +504,7 @@ def _governance_moves_for_sync(
         old_entity_pages = old_source.get("entity_pages")
         old_page = (
             str(old_entity_pages[entity_name])
-            if isinstance(old_entity_pages, Mapping)
-            and entity_name in old_entity_pages
+            if isinstance(old_entity_pages, Mapping) and entity_name in old_entity_pages
             else entity_name
         )
         new_page = entity_page_cache.get((entity_name, new_filepath))
@@ -562,6 +593,21 @@ class SyncResult:
     skipped: int = 0
     deprecated: int = 0
     preserved_semantic: int = 0
+
+
+def _record_page_write_state(result: SyncResult | None, state: str) -> None:
+    """Fold one deterministic Markdown write state into command page counters."""
+
+    if result is None:
+        return
+    if state == "created":
+        result.created += 1
+    elif state == "updated":
+        result.updated += 1
+    elif state == "unchanged":
+        result.skipped += 1
+    else:
+        raise ValueError(f"unsupported page write state: {state!r}")
 
 
 def _collision_maps(
@@ -883,15 +929,11 @@ def _apply_entity_page(
             root=ctx.src_dir,
             fallback_root=runtime_plugin_fallback_root(
                 ctx.src_dir,
-                source_selection_configured=(
-                    ctx.source_selection_policy is not None
-                ),
+                source_selection_configured=(ctx.source_selection_policy is not None),
             ),
             include_plugins=runtime_project_plugins_enabled(
                 ctx.src_dir,
-                source_selection_configured=(
-                    ctx.source_selection_policy is not None
-                ),
+                source_selection_configured=(ctx.source_selection_policy is not None),
             ),
             entity=relationship_summary.get("name"),
             file=relationship_summary.get("file"),
@@ -949,15 +991,11 @@ def _apply_module_page(
             root=ctx.src_dir,
             fallback_root=runtime_plugin_fallback_root(
                 ctx.src_dir,
-                source_selection_configured=(
-                    ctx.source_selection_policy is not None
-                ),
+                source_selection_configured=(ctx.source_selection_policy is not None),
             ),
             include_plugins=runtime_project_plugins_enabled(
                 ctx.src_dir,
-                source_selection_configured=(
-                    ctx.source_selection_policy is not None
-                ),
+                source_selection_configured=(ctx.source_selection_policy is not None),
             ),
             file=filepath,
         )
@@ -1107,9 +1145,8 @@ def _deprecate_removed_files(
         old_info = ctx.manifest.sources.get(filepath)
         if old_info is None:
             old_info = _removed_source_info_from_mappings(ctx.manifest, filepath)
-        if (
-            ctx.source_selection_policy is not None
-            and not path_is_selected(ctx.source_selection_policy, filepath)
+        if ctx.source_selection_policy is not None and not path_is_selected(
+            ctx.source_selection_policy, filepath
         ):
             _remove_deselected_file_pages(ctx, filepath, old_info, result)
             continue
@@ -1138,11 +1175,7 @@ def _remove_deselected_file_pages(
     """Remove generated pages whose still-existing source left the policy set."""
 
     raw_entities = old_info.get("entities", [])
-    entity_names = (
-        raw_entities
-        if isinstance(raw_entities, list | tuple)
-        else ()
-    )
+    entity_names = raw_entities if isinstance(raw_entities, list | tuple) else ()
     for entity_name in entity_names:
         page_name = _removed_entity_page_name(
             ctx.wiki_dir,
@@ -1158,9 +1191,7 @@ def _remove_deselected_file_pages(
             result.deprecated += 1
             print(f"  REMOVE deselected entity: {page_name}")
 
-    module_name = str(
-        old_info.get("module_page") or _module_name_from_path(filepath)
-    )
+    module_name = str(old_info.get("module_page") or _module_name_from_path(filepath))
     if module_name in ctx.current_module_pages:
         return
     module_page = ctx.wiki_dir / "modules" / f"{module_name}.md"
@@ -1613,11 +1644,18 @@ class _SurfaceInitializationPlan:
     new_api_contract_page: bool = False
     generation_inputs: dict[str, object] = field(default_factory=dict)
     generation_inputs_changed: bool = False
+    managed_flow_page_paths: frozenset[str] = frozenset()
+    managed_workflow_page_paths: frozenset[str] = frozenset()
+    new_workflow_page_paths: tuple[str, ...] = ()
+    managed_surface_index: bool = False
+    prior_surface_source_overrides: tuple[tuple[str, str], ...] = ()
+    prior_flow_entries: tuple[dict, ...] = ()
 
     @property
     def created_pages(self) -> int:
         return (
             len(self.new_flow_entries)
+            + len(self.new_workflow_page_paths)
             + len(self.new_dependency_pages)
             + int(self.new_api_contract_page)
         )
@@ -1641,11 +1679,28 @@ class _PreparedSyncRun:
     inventory: dict
     page_maps: _SyncPageMaps
     diff: "SyncDiff"
+    application_diff: "SyncDiff"
     surface_plan: _SurfaceInitializationPlan
     repository_evidence: RepositoryEvidence
     graph_observations: _RuntimeGraphObservations
     infrastructure_plan: InfrastructureSyncPlan
     source_selection_prune: SourceSelectionPruneResult
+    runtime_provenance_changed: bool
+    generator_refresh_required: bool
+    runtime_basis_refresh: bool
+    log_missing: bool
+
+
+@dataclass(frozen=True)
+class _GeneratedSurfaceTransition:
+    """Prior ownership proof and generated pages that cross the live boundary."""
+
+    retired_page_paths: tuple[str, ...] = ()
+    managed_flow_page_paths: frozenset[str] = frozenset()
+    managed_workflow_page_paths: frozenset[str] = frozenset()
+    managed_surface_index: bool = False
+    prior_source_overrides: tuple[tuple[str, str], ...] = ()
+    prior_flow_entries: tuple[dict, ...] = ()
 
 
 def _selection_pruning_has_changes(prepared: _PreparedSyncRun) -> bool:
@@ -1654,6 +1709,37 @@ def _selection_pruning_has_changes(prepared: _PreparedSyncRun) -> bool:
         or prepared.source_selection_prune.deselected_page_paths
         or prepared.source_selection_prune.deselected_surface_page_paths
         or prepared.infrastructure_plan.deselected_records
+    )
+
+
+def _applied_sync_has_changes(
+    options: _SyncRunOptions,
+    prepared: _PreparedSyncRun,
+    result: SyncResult,
+) -> bool:
+    """Return whether this command mode actually changed public wiki state."""
+
+    page_changes = bool(
+        result.created
+        or result.updated
+        or result.metadata_only
+        or result.deprecated
+    )
+    if options.initialize_surfaces:
+        return bool(
+            prepared.surface_plan.has_work
+            or _selection_pruning_has_changes(prepared)
+            or prepared.log_missing
+            or page_changes
+        )
+    return bool(
+        prepared.diff.has_changes
+        or prepared.surface_plan.has_work
+        or prepared.infrastructure_plan.has_changes
+        or _selection_pruning_has_changes(prepared)
+        or prepared.runtime_provenance_changed
+        or prepared.log_missing
+        or page_changes
     )
 
 
@@ -1876,22 +1962,37 @@ def _build_surface_initialization_plan(
 
 
 def _large_surface_message(
-    plan: _SurfaceInitializationPlan, wiki_dir: Path
+    plan: _SurfaceInitializationPlan,
+    wiki_dir: Path,
+    *,
+    removed_pages: int = 0,
 ) -> str | None:
     created = plan.created_pages
-    if created > MAX_SURFACE_CREATED_PAGES:
+    affected = created + removed_pages
+    if affected > MAX_SURFACE_CREATED_PAGES:
+        if removed_pages:
+            action = (
+                f"affect {affected} page(s) ({created} create, {removed_pages} remove)"
+            )
+        else:
+            action = f"create {created} page(s)"
         return (
-            f"surface initialization would create {created} page(s), which exceeds "
+            f"surface update would {action}, which exceeds "
             f"the safety limit of {MAX_SURFACE_CREATED_PAGES}."
         )
     current_pages = len(collect_wiki_pages(wiki_dir))
     if current_pages >= MIN_PAGES_FOR_SURFACE_RATIO_GUARD:
-        ratio = created / current_pages
+        ratio = affected / current_pages
         if ratio > MAX_SURFACE_CREATED_RATIO:
             percent = int(ratio * 100)
             limit = int(MAX_SURFACE_CREATED_RATIO * 100)
+            action = (
+                f"affect {affected} page(s) ({created} create, {removed_pages} remove)"
+                if removed_pages
+                else f"create {created} page(s)"
+            )
             return (
-                f"surface initialization would create {created} page(s) against "
+                f"surface update would {action} against "
                 f"{current_pages} current wiki page(s) ({percent}%), which exceeds "
                 f"the {limit}% safety limit."
             )
@@ -1899,15 +2000,22 @@ def _large_surface_message(
 
 
 def _exit_if_large_unforced_surface_plan(
-    options: _SyncRunOptions, plan: _SurfaceInitializationPlan
+    options: _SyncRunOptions,
+    plan: _SurfaceInitializationPlan,
+    *,
+    removed_pages: int = 0,
 ) -> None:
-    message = _large_surface_message(plan, options.wiki_dir)
+    message = _large_surface_message(
+        plan,
+        options.wiki_dir,
+        removed_pages=removed_pages,
+    )
     if not message or options.force or options.dry_run:
         return
     print(f"Error: {message}", file=sys.stderr)
     print(
         "Preview with `llm-wiki sync --dry-run`, then re-run with --force "
-        "if the initialization is intentional.",
+        "if the surface update is intentional.",
         file=sys.stderr,
     )
     sys.exit(1)
@@ -1916,6 +2024,7 @@ def _exit_if_large_unforced_surface_plan(
 def _print_dry_run_plan(
     options: _SyncRunOptions,
     diff: "SyncDiff",
+    application_diff: "SyncDiff",
     plan: _SurfaceInitializationPlan,
     infrastructure_plan: InfrastructureSyncPlan,
     source_selection_prune: SourceSelectionPruneResult,
@@ -1923,6 +2032,7 @@ def _print_dry_run_plan(
     *,
     seed_manifest: bool,
     repair_only: bool,
+    runtime_provenance_changed: bool,
 ) -> None:
     print("\nSync dry-run plan:")
     source_label = (
@@ -1938,9 +2048,12 @@ def _print_dry_run_plan(
         "  source selection pruning: "
         f"{len(source_selection_prune.deselected_source_paths)} source(s), "
         f"{len(source_selection_prune.deselected_page_paths)} concept page(s), "
-        f"{len(source_selection_prune.deselected_surface_page_paths)} "
-        "generated surface page(s), "
         f"{len(infrastructure_plan.deselected_records)} infrastructure record(s)"
+    )
+    print(
+        "  generated surface retirement: "
+        f"{len(source_selection_prune.deselected_surface_page_paths)} "
+        "generated surface page(s)"
     )
     infrastructure_label = (
         "deferred infrastructure sources"
@@ -1968,6 +2081,7 @@ def _print_dry_run_plan(
         f"  flows: {len(plan.new_flow_entries)} create "
         f"({category_text}); {plan.excluded_flow_tests} test candidate(s) excluded"
     )
+    print(f"  workflows: {len(plan.new_workflow_page_paths)} create")
     print(
         f"  dependency architecture: {len(plan.new_dependency_pages)} create "
         f"({', '.join(plan.new_dependency_pages) or 'none'}); "
@@ -1998,6 +2112,14 @@ def _print_dry_run_plan(
     print(f"  policy updates: {', '.join(policy_names) or 'none'}")
     if seed_manifest:
         print("  manifest: seed from the current source inventory")
+    print(
+        "  runtime provenance: "
+        f"{'update' if runtime_provenance_changed else 'unchanged'}"
+    )
+    generator_refresh_count = len(
+        _affected_source_files(application_diff) - _affected_source_files(diff)
+    )
+    print(f"  generator refresh sources: {generator_refresh_count}")
     ancillary = [
         "index.md",
         "log.md",
@@ -2007,18 +2129,25 @@ def _print_dry_run_plan(
     ]
     print(f"  ancillary files considered: {', '.join(ancillary)}")
     source_requires_force = (
-        not options.initialize_surfaces
+        (not options.initialize_surfaces or generator_refresh_count > 0)
         and not seed_manifest
         and not repair_only
         and (
-            _large_diff_message(diff, manifest) is not None
-            or _large_infrastructure_message(infrastructure_plan) is not None
+            _large_diff_message(application_diff, manifest) is not None
+            or (
+                not options.initialize_surfaces
+                and _large_infrastructure_message(infrastructure_plan) is not None
+            )
         )
     )
     surface_requires_force = (
         not seed_manifest
-        and not repair_only
-        and _large_surface_message(plan, options.wiki_dir) is not None
+        and _large_surface_message(
+            plan,
+            options.wiki_dir,
+            removed_pages=len(source_selection_prune.deselected_surface_page_paths),
+        )
+        is not None
     )
     requires_force = source_requires_force or surface_requires_force
     print(f"  requires --force: {'yes' if requires_force else 'no'}")
@@ -2313,6 +2442,24 @@ def _compute_sync_diff(
     return diff
 
 
+def _generator_refresh_diff(diff: "SyncDiff", inventory: Mapping[str, Mapping]) -> "SyncDiff":
+    """Return an apply-only diff that regenerates every live managed concept page."""
+
+    refresh = deepcopy(diff)
+    already_targeted = {
+        *refresh.new_files,
+        *refresh.changed_files,
+        *refresh.metadata_only_files,
+    }
+    refresh.changed_files.extend(
+        source_path
+        for source_path in sorted(inventory)
+        if source_path not in already_targeted
+    )
+    refresh.unchanged_files = []
+    return refresh
+
+
 def _mark_pending_repair_sources_changed(
     manifest: SyncManifest,
     inventory: Mapping[str, Mapping],
@@ -2359,9 +2506,13 @@ def _exit_if_large_unforced_diff(
     manifest: "SyncManifest",
     inventory_result: InventoryResult,
     infrastructure_plan: InfrastructureSyncPlan,
+    *,
+    include_infrastructure: bool = True,
 ) -> None:
     large_diff_message = _large_diff_message(diff, manifest) or (
         _large_infrastructure_message(infrastructure_plan)
+        if include_infrastructure
+        else None
     )
     if not large_diff_message or options.force:
         return
@@ -2388,7 +2539,11 @@ def _apply_sync_changes(
     graph_observations: _RuntimeGraphObservations,
     infrastructure_plan: InfrastructureSyncPlan,
     source_snapshot: SourceSnapshot,
+    inventory_result: InventoryResult,
     source_selection_prune: SourceSelectionPruneResult,
+    *,
+    log_diff: SyncDiff | None = None,
+    apply_infrastructure: bool = True,
 ) -> "SyncResult":
     generated_sections = _build_generated_section_context(
         options,
@@ -2416,13 +2571,20 @@ def _apply_sync_changes(
         page_maps,
         result,
     )
-    _apply_infrastructure_plan(
-        options,
-        infrastructure_plan,
-        result,
-        page_maps=page_maps,
-        source_snapshot=source_snapshot,
-    )
+    if apply_infrastructure:
+        _apply_infrastructure_plan(
+            options,
+            infrastructure_plan,
+            result,
+            page_maps=page_maps,
+            source_snapshot=source_snapshot,
+        )
+    else:
+        _apply_deselected_infrastructure_pages(
+            options,
+            infrastructure_plan,
+            result,
+        )
 
     _apply_surface_page_changes(
         options,
@@ -2431,9 +2593,10 @@ def _apply_sync_changes(
         surface_plan,
         graph_observations=graph_observations,
         source_snapshot=source_snapshot,
+        result=result,
     )
 
-    _rebuild_index(
+    index_state = _rebuild_index(
         options.wiki_dir,
         inventory,
         options.src_dir,
@@ -2449,20 +2612,34 @@ def _apply_sync_changes(
             options.wiki_dir,
             graph_observations,
         ),
-        infra_entries=_sync_infrastructure_index_entries(
-            options.wiki_dir,
-            infrastructure_plan,
+        infra_entries=(
+            _sync_infrastructure_index_entries(
+                options.wiki_dir,
+                infrastructure_plan,
+            )
+            if apply_infrastructure
+            else _initialization_infrastructure_index_entries(
+                options.wiki_dir,
+                infrastructure_plan,
+            )
         ),
     )
+    _record_page_write_state(result, index_state)
 
     _append_log(
         options.wiki_dir,
         options.src_dir,
-        diff,
+        log_diff or diff,
         result,
+        source_snapshot=source_snapshot,
+        generation_inputs=surface_plan.generation_inputs,
+        plugin_lock_path=inventory_result.plugin_lock_path,
+        plugin_lock_hash=inventory_result.plugin_lock_hash,
         surface_plan=surface_plan,
         infrastructure_plan=infrastructure_plan,
         source_selection_prune=source_selection_prune,
+        source_changes_applied=True,
+        infrastructure_changes_applied=apply_infrastructure,
     )
     return result
 
@@ -2521,7 +2698,7 @@ def _apply_source_selection_prune(
         if path.is_file():
             path.unlink()
             result.deprecated += 1
-            print(f"  REMOVE deselected generated surface page: {relative}")
+            print(f"  REMOVE retired generated surface page: {relative}")
 
 
 def _planned_generated_surface_prune(
@@ -2529,18 +2706,29 @@ def _planned_generated_surface_prune(
     source_snapshot: SourceSnapshot,
     inventory: Mapping[str, Mapping],
     graph_observations: _RuntimeGraphObservations,
-) -> tuple[str, ...]:
-    """Return prior generated flow/workflow pages absent from the live boundary."""
+    *,
+    force: bool = False,
+    defer_detector_retirement: bool = False,
+) -> _GeneratedSurfaceTransition:
+    """Prove managed live workflows and generated pages absent from the live set."""
 
-    if source_snapshot.source_selection_policy is None:
-        return ()
     surface_path = wiki_dir / SURFACE_INDEX_FILENAME
     if not surface_path.is_file():
-        return ()
+        orphaned = _generated_surface_pages_without_index(wiki_dir)
+        if orphaned:
+            displayed = ", ".join(orphaned[:5])
+            if len(orphaned) > 5:
+                displayed += f", and {len(orphaned) - 5} more"
+            raise GeneratedSurfacePruneError(
+                "cannot prove generated flow/workflow ownership because the prior "
+                f"surface index is missing: {displayed}. Restore "
+                f"{SURFACE_INDEX_FILENAME} from version control before syncing."
+            )
+        return _GeneratedSurfaceTransition()
     try:
         payload = json.loads(surface_path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-        raise ValueError(
+        raise GeneratedSurfacePruneError(
             "cannot prove generated flow/workflow ownership from the prior "
             "surface index"
         ) from exc
@@ -2548,11 +2736,34 @@ def _planned_generated_surface_prune(
         not isinstance(payload, Mapping)
         or payload.get("schema_version") != WIKI_SURFACE_INDEX_SCHEMA_VERSION
         or not isinstance(payload.get("pages"), list)
+        or not isinstance(payload.get("flows"), list)
     ):
-        raise ValueError(
+        raise GeneratedSurfacePruneError(
             "cannot prove generated flow/workflow ownership from the prior "
             "surface index"
         )
+    prior_flow_entries: list[dict] = []
+    for index, raw_flow in enumerate(payload["flows"]):
+        if not isinstance(raw_flow, Mapping) or not isinstance(
+            raw_flow.get("id"), str
+        ):
+            raise GeneratedSurfacePruneError(
+                f"surface index flows[{index}] has invalid generated metadata"
+            )
+        prior_entry = deepcopy(dict(raw_flow))
+        raw_entry_point = raw_flow.get("entry_point")
+        if isinstance(raw_entry_point, Mapping):
+            symbol = raw_entry_point.get("symbol")
+            label = raw_entry_point.get("label")
+            source_path = raw_entry_point.get("source_path")
+            prior_entry["entry"] = symbol or label or ""
+            if symbol is not None:
+                prior_entry["symbol"] = symbol
+            if label is not None:
+                prior_entry["label"] = label
+            if source_path is not None:
+                prior_entry["source_path"] = source_path
+        prior_flow_entries.append(prior_entry)
 
     live_paths = {
         canonical_path(PageKind.WORKFLOWS, name)
@@ -2564,9 +2775,15 @@ def _planned_generated_surface_prune(
         if entry.get("id")
     )
     deselected: set[str] = set()
+    managed_flows: set[str] = set()
+    managed_workflows: set[str] = set()
+    authored_behavior: list[str] = []
+    prior_source_overrides: dict[str, str] = {}
     for index, raw_page in enumerate(payload["pages"]):
         if not isinstance(raw_page, Mapping):
-            raise ValueError(f"surface index pages[{index}] must be an object")
+            raise GeneratedSurfacePruneError(
+                f"surface index pages[{index}] must be an object"
+            )
         kind = raw_page.get("kind")
         if kind not in {PageKind.WORKFLOWS.value, PageKind.FLOWS.value}:
             continue
@@ -2578,25 +2795,132 @@ def _planned_generated_surface_prune(
         canonical = raw_page.get("canonical_path")
         page_id = raw_page.get("id")
         if not isinstance(source_path, str) or not isinstance(canonical, str):
-            raise ValueError(
+            raise GeneratedSurfacePruneError(
                 f"surface index pages[{index}] has invalid generated ownership"
             )
         try:
             expected = canonical_path(PageKind(kind), str(page_id))
-            source_selected = source_snapshot.path_is_effectively_selected(
-                source_path
-            )
+            source_selected = source_snapshot.path_is_effectively_selected(source_path)
         except (SourceSelectionError, ValueError, WikiSurfaceError) as exc:
-            raise ValueError(
+            raise GeneratedSurfacePruneError(
                 f"surface index pages[{index}] has invalid generated ownership"
             ) from exc
         if canonical != expected:
-            raise ValueError(
+            raise GeneratedSurfacePruneError(
                 f"surface index pages[{index}] has a noncanonical generated path"
             )
-        if not source_selected or canonical not in live_paths:
-            deselected.add(canonical)
-    return tuple(sorted(deselected))
+        page_path = wiki_dir / canonical
+        if page_path.is_symlink():
+            raise GeneratedSurfacePruneError(
+                f"refusing to inspect symlinked stale generated page: {canonical}"
+            )
+        if not page_path.is_file():
+            continue
+        try:
+            markdown = read_md(page_path)
+        except (OSError, UnicodeError) as exc:
+            raise GeneratedSurfacePruneError(
+                f"cannot inspect stale generated page: {canonical}"
+            ) from exc
+        page_kind = PageKind(kind)
+        if not _has_generated_surface_shape(page_kind, markdown):
+            # A source association can arise from an authored page whose id
+            # happens to match a detected entry point.  Shape evidence keeps
+            # that collision from becoming deletion authority.
+            continue
+        if source_selected:
+            prior_source_overrides[canonical] = source_path
+        if source_selected and canonical in live_paths:
+            if page_kind is PageKind.FLOWS:
+                managed_flows.add(canonical)
+            else:
+                managed_workflows.add(canonical)
+            continue
+        if source_selected and defer_detector_retirement:
+            continue
+        if not _has_neutral_generated_behavior(page_kind, markdown):
+            authored_behavior.append(canonical)
+            if not force:
+                continue
+        deselected.add(canonical)
+    if authored_behavior and not force:
+        displayed = ", ".join(authored_behavior[:5])
+        if len(authored_behavior) > 5:
+            displayed += f", and {len(authored_behavior) - 5} more"
+        raise GeneratedSurfacePruneError(
+            "refusing to remove stale generated page(s) with human-authored "
+            f"Behavior: {displayed}. Archive or remove the pages explicitly, "
+            "or re-run with `llm-wiki sync --force` to authorize removal."
+        )
+    return _GeneratedSurfaceTransition(
+        retired_page_paths=tuple(sorted(deselected)),
+        managed_flow_page_paths=frozenset(managed_flows),
+        managed_workflow_page_paths=frozenset(managed_workflows),
+        managed_surface_index=True,
+        prior_source_overrides=tuple(sorted(prior_source_overrides.items())),
+        prior_flow_entries=tuple(prior_flow_entries),
+    )
+
+
+def _generated_surface_pages_without_index(wiki_dir: Path) -> tuple[str, ...]:
+    """Return recognizable generated flow/workflow pages lacking ownership state."""
+
+    generated: list[str] = []
+    for kind in (PageKind.FLOWS, PageKind.WORKFLOWS):
+        directory = wiki_dir / kind.value
+        if directory.is_symlink():
+            raise GeneratedSurfacePruneError(
+                f"refusing to inspect symlinked generated surface: {kind.value}"
+            )
+        if not directory.is_dir():
+            continue
+        for path in sorted(directory.glob("*.md")):
+            relative = path.relative_to(wiki_dir).as_posix()
+            if path.is_symlink():
+                raise GeneratedSurfacePruneError(
+                    f"refusing to inspect symlinked generated page: {relative}"
+                )
+            try:
+                markdown = read_md(path)
+            except (OSError, UnicodeError) as exc:
+                raise GeneratedSurfacePruneError(
+                    f"cannot inspect generated page without a surface index: "
+                    f"{relative}"
+                ) from exc
+            if _has_generated_surface_shape(kind, markdown):
+                generated.append(relative)
+    return tuple(generated)
+
+
+def _has_generated_surface_shape(kind: PageKind, markdown: str) -> bool:
+    if "**Entry point:** `" not in markdown:
+        return False
+    if kind is PageKind.FLOWS:
+        return (
+            _GENERATED_FLOW_MARKER in markdown
+            and _section_body(markdown, "Call sequence") is not None
+        )
+    if kind is PageKind.WORKFLOWS:
+        return (
+            _GENERATED_WORKFLOW_MARKER in markdown
+            or _LEGACY_GENERATED_WORKFLOW_MARKER in markdown
+        ) and _section_body(markdown, "Sequence") is not None
+    return False
+
+
+def _has_neutral_generated_behavior(kind: PageKind, markdown: str) -> bool:
+    body = _section_body(markdown, "Behavior")
+    if body is None or not body.strip():
+        return True
+    normalized = " ".join(body.split())
+    if normalized == _LEGACY_NEUTRAL_FLOW_BEHAVIOR:
+        return True
+    pattern = (
+        _NEUTRAL_FLOW_BEHAVIOR_RE
+        if kind is PageKind.FLOWS
+        else _NEUTRAL_WORKFLOW_BEHAVIOR_RE
+    )
+    return pattern.fullmatch(normalized) is not None
 
 
 def _apply_surface_page_changes(
@@ -2607,6 +2931,7 @@ def _apply_surface_page_changes(
     *,
     graph_observations: _RuntimeGraphObservations | None = None,
     source_snapshot: SourceSnapshot | None = None,
+    result: SyncResult | None = None,
 ) -> None:
     initializing = bool(options.initialize_surfaces)
     generation_options = runtime_generation_options(
@@ -2614,6 +2939,21 @@ def _apply_surface_page_changes(
         generation_inputs=surface_plan.generation_inputs,
         include_tests=options.include_tests,
         preserve_semantic=options.preserve_semantic,
+    )
+    _regenerate_workflow_pages(
+        options,
+        inventory,
+        page_maps.module_page_map,
+        workflows_enabled=(
+            bool(generation_options["workflows_enabled"]) and not initializing
+        ),
+        managed_page_paths=surface_plan.managed_workflow_page_paths,
+        new_page_paths=frozenset(surface_plan.new_workflow_page_paths),
+        result=result,
+    )
+    new_flow_page_paths = frozenset(
+        canonical_path(PageKind.FLOWS, str(entry["id"]))
+        for entry in surface_plan.new_flow_entries
     )
     _regenerate_flow_pages(
         options,
@@ -2639,6 +2979,9 @@ def _apply_surface_page_changes(
             else None
         ),
         source_snapshot=source_snapshot,
+        managed_page_paths=surface_plan.managed_flow_page_paths,
+        new_page_paths=new_flow_page_paths,
+        result=result,
     )
     _regenerate_dependency_pages(
         options,
@@ -2652,8 +2995,14 @@ def _apply_surface_page_changes(
             else surface_plan.dependency_target_pages
         ),
         detail=str(generation_options["dependency_graph_detail"]),
+        result=result,
     )
-    _regenerate_api_contracts_page(options, page_maps, surface_plan)
+    _regenerate_api_contracts_page(
+        options,
+        page_maps,
+        surface_plan,
+        result=result,
+    )
 
 
 def _detect_sync_entry_points(
@@ -2726,11 +3075,7 @@ def _canonical_sync_surface_flow_targets(
         for entry in (*surface_plan.flow_entries, *surface_plan.new_flow_entries)
         if entry.get("id")
     )
-    return [
-        dict(entry)
-        for entry in entry_points
-        if str(entry.get("id")) in target_ids
-    ]
+    return [dict(entry) for entry in entry_points if str(entry.get("id")) in target_ids]
 
 
 def _canonical_surface_flow_entries(
@@ -2750,9 +3095,7 @@ def _canonical_surface_flow_entries(
         zip(entry_points, rendering_flows, strict=True)
     ):
         data_flow = (
-            rendering_data_flows[index]
-            if index < len(rendering_data_flows)
-            else None
+            rendering_data_flows[index] if index < len(rendering_data_flows) else None
         )
         source_path = entry_point.get("file")
         source_info = (
@@ -2778,9 +3121,7 @@ def _canonical_surface_flow_entries(
                         "step_count": len(data_flow.get("steps", [])),
                         "transfer_count": len(data_flow.get("transfers", [])),
                         "truncated": bool(data_flow.get("truncated")),
-                        "boundary_effects": list(
-                            data_flow.get("boundaries", [])
-                        ),
+                        "boundary_effects": list(data_flow.get("boundaries", [])),
                         "gaps": list(data_flow.get("gaps", [])),
                     }
                     if data_flow is not None
@@ -2878,9 +3219,7 @@ def _build_sync_graph_observations(
     if not data_flow_enabled:
         limitations["data-flows"] = ("data-flow-analysis-disabled",)
     if dependency_analysis is None:
-        limitations["external-dependencies"] = (
-            "dependency-analysis-not-evaluated",
-        )
+        limitations["external-dependencies"] = ("dependency-analysis-not-evaluated",)
     elif surface_plan.excluded_dependency_tests:
         limitations["external-dependencies"] = (
             "dependency-analysis-excludes-test-sources",
@@ -2947,6 +3286,7 @@ def _print_surface_summary(plan: _SurfaceInitializationPlan) -> None:
     print(
         "Surface initialization: "
         f"{len(plan.new_flow_entries)} flow page(s), "
+        f"{len(plan.new_workflow_page_paths)} workflow page(s), "
         f"{len(plan.new_dependency_pages)} dependency page(s), "
         f"{int(plan.new_api_contract_page)} API-contract page(s), "
         f"policy {'updated' if plan.policy_changed else 'unchanged'}."
@@ -3032,6 +3372,10 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
     if manifest is None and not seed_manifest:
         return None
 
+    prior_runtime_provenance = committed_runtime_provenance(
+        options.wiki_dir,
+        manifest,
+    )
     baseline_manifest = manifest or SyncManifest()
     _validate_persisted_source_selection(options, manifest)
     _preflight_sync_governance(options.wiki_dir, baseline_manifest)
@@ -3127,34 +3471,165 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
                 surface_plan,
                 infrastructure_plan,
             )
+    evaluated_generation_options = runtime_generation_options(
+        surfaces=surface_plan.surfaces,
+        generation_inputs=surface_plan.generation_inputs,
+        include_tests=options.include_tests,
+        preserve_semantic=options.preserve_semantic,
+    )
+    current_source_snapshot_hash = runtime_source_snapshot_hash(
+        source_snapshot,
+        generation_inputs=surface_plan.generation_inputs,
+        plugin_lock_path=inventory_result.plugin_lock_path,
+        plugin_lock_hash=inventory_result.plugin_lock_hash,
+    )
+    current_generation_options_hash = runtime_generation_options_hash(
+        evaluated_generation_options,
+    )
+    generator_refresh_required = bool(
+        not seed_manifest
+        and (
+            prior_runtime_provenance is None
+            or prior_runtime_provenance.generator_version != __version__
+        )
+    )
+    runtime_provenance_changed = bool(
+        not seed_manifest
+        and (
+            prior_runtime_provenance is None
+            or prior_runtime_provenance.source_snapshot_hash
+            != current_source_snapshot_hash
+            or prior_runtime_provenance.generation_options_hash
+            != current_generation_options_hash
+            or generator_refresh_required
+        )
+    )
+    runtime_basis_refresh = bool(
+        options.initialize_surfaces
+        and runtime_provenance_changed
+        and not diff.has_changes
+        and not repair_only
+        and not seed_manifest
+    )
+    if (
+        options.initialize_surfaces
+        and generator_refresh_required
+        and not runtime_basis_refresh
+        and not repair_only
+        and not seed_manifest
+    ):
+        raise SyncRuntimeRefreshError(
+            "cannot initialize optional surfaces while a generator transition "
+            "is pending; "
+            "run a normal `llm-wiki sync` first"
+        )
+    graph_options = options
+    graph_plan = surface_plan
+    if options.initialize_surfaces:
+        graph_options = replace(options, initialize_surfaces=frozenset())
+        refreshed_manifest = manifest.with_generation_state(
+            surfaces=surface_plan.surfaces,
+            generation_inputs=surface_plan.generation_inputs,
+        )
+        refreshed_plan = _build_surface_initialization_plan(
+            graph_options,
+            refreshed_manifest,
+            inventory,
+            entries,
+            source_changed=False,
+            api_contracts=contracts,
+            generation_inputs=surface_plan.generation_inputs,
+            source_snapshot=source_snapshot,
+        )
+        graph_plan = refreshed_plan
+        if runtime_basis_refresh:
+            surface_plan = replace(
+                refreshed_plan,
+                surfaces=surface_plan.surfaces,
+                policy_changed=surface_plan.policy_changed,
+                generation_inputs=surface_plan.generation_inputs,
+                generation_inputs_changed=surface_plan.generation_inputs_changed,
+                requested_surfaces=options.initialize_surfaces,
+            )
+            graph_plan = surface_plan
     graph_observations = _build_sync_graph_observations(
-        options,
+        graph_options,
         inventory,
         source_snapshot,
         entries,
         entrypoint_analysis.observations,
-        surface_plan,
-        surface_plan.dependency_analysis,
+        graph_plan,
+        graph_plan.dependency_analysis,
         data_effect_observations=inventory_result.data_effect_observations,
         import_observations=inventory_result.import_observations,
+    )
+    generated_surface_transition = (
+        _planned_generated_surface_prune(
+            options.wiki_dir,
+            source_snapshot,
+            inventory,
+            graph_observations,
+            force=options.force,
+            defer_detector_retirement=bool(
+                options.initialize_surfaces and not runtime_basis_refresh
+            ),
+        )
+        if not seed_manifest
+        else _GeneratedSurfaceTransition()
+    )
+    live_workflow_paths = {
+        canonical_path(PageKind.WORKFLOWS, name)
+        for name in get_call_graph(inventory)
+    }
+    new_workflow_page_paths = (
+        tuple(
+            sorted(
+                path
+                for path in live_workflow_paths
+                if (
+                    not (options.wiki_dir / path).is_file()
+                    or path in generated_surface_transition.retired_page_paths
+                )
+            )
+        )
+        if (
+            generated_surface_transition.managed_surface_index
+            and bool(evaluated_generation_options["workflows_enabled"])
+            and (not options.initialize_surfaces or runtime_basis_refresh)
+        )
+        else ()
+    )
+    surface_plan = replace(
+        surface_plan,
+        managed_flow_page_paths=(
+            generated_surface_transition.managed_flow_page_paths
+        ),
+        managed_workflow_page_paths=(
+            generated_surface_transition.managed_workflow_page_paths
+        ),
+        new_workflow_page_paths=new_workflow_page_paths,
+        managed_surface_index=generated_surface_transition.managed_surface_index,
+        prior_surface_source_overrides=(
+            generated_surface_transition.prior_source_overrides
+        ),
+        prior_flow_entries=generated_surface_transition.prior_flow_entries,
     )
     source_selection_prune = replace(
         source_selection_prune,
         deselected_surface_page_paths=(
-            _planned_generated_surface_prune(
-                options.wiki_dir,
-                source_snapshot,
-                inventory,
-                graph_observations,
-            )
-            if source_selection_prune.deselected_source_paths
-            else ()
+            generated_surface_transition.retired_page_paths
         ),
     )
     repository_evidence = collect_runtime_repository_evidence(
         options.src_dir,
         options.wiki_dir,
         source_snapshot=source_snapshot,
+    )
+    application_diff = (
+        _generator_refresh_diff(diff, inventory)
+        if generator_refresh_required
+        and (not options.initialize_surfaces or runtime_basis_refresh)
+        else diff
     )
     return _PreparedSyncRun(
         manifest=manifest,
@@ -3165,11 +3640,16 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
         inventory=inventory,
         page_maps=maps,
         diff=diff,
+        application_diff=application_diff,
         surface_plan=surface_plan,
         repository_evidence=repository_evidence,
         graph_observations=graph_observations,
         infrastructure_plan=infrastructure_plan,
         source_selection_prune=source_selection_prune,
+        runtime_provenance_changed=runtime_provenance_changed,
+        generator_refresh_required=generator_refresh_required,
+        runtime_basis_refresh=runtime_basis_refresh,
+        log_missing=not (options.wiki_dir / canonical_path(PageKind.LOG)).is_file(),
     )
 
 
@@ -3251,15 +3731,14 @@ def _write_current_infrastructure_page(
         if options.preserve_semantic
         else None
     )
-    existing = read_md(existing_path) if existing_path and existing_path.is_file() else None
+    existing = (
+        read_md(existing_path) if existing_path and existing_path.is_file() else None
+    )
     generated = _generate_infrastructure_md(
         source_path,
         plan.inventory[source_path],
         module_page_map,
-        {
-            source: dict(details)
-            for source, details in unsupported_sources.items()
-        },
+        {source: dict(details) for source, details in unsupported_sources.items()},
     )
     merged = _merge_infrastructure_notes(existing, generated)
     state = _write_md_if_changed(path, merged)
@@ -3400,7 +3879,9 @@ def _apply_current_infrastructure_plan(
 ) -> None:
     unsupported_sources = unsupported_source_summary(source_snapshot)
     for old_path, new_path in plan.moved_sources.items():
-        old_page = _infrastructure_page_path(options.wiki_dir, plan.prior_sources[old_path])
+        old_page = _infrastructure_page_path(
+            options.wiki_dir, plan.prior_sources[old_path]
+        )
         new_page = _write_current_infrastructure_page(
             options,
             plan,
@@ -3484,18 +3965,39 @@ def _apply_prepared_sync(
             result,
         )
         return result
-    if prepared.diff.has_changes and not options.initialize_surfaces:
+    if (
+        prepared.diff.has_changes or prepared.runtime_provenance_changed
+    ) and not options.initialize_surfaces:
         return _apply_sync_changes(
             options,
             prepared.manifest,
             prepared.inventory,
-            prepared.diff,
+            prepared.application_diff,
             prepared.page_maps,
             prepared.surface_plan,
             prepared.graph_observations,
             prepared.infrastructure_plan,
             prepared.source_snapshot,
+            prepared.inventory_result,
             prepared.source_selection_prune,
+            log_diff=prepared.diff,
+        )
+    if prepared.runtime_basis_refresh:
+        application_options = replace(options, initialize_surfaces=frozenset())
+        return _apply_sync_changes(
+            application_options,
+            prepared.manifest,
+            prepared.inventory,
+            prepared.application_diff,
+            prepared.page_maps,
+            prepared.surface_plan,
+            prepared.graph_observations,
+            prepared.infrastructure_plan,
+            prepared.source_snapshot,
+            prepared.inventory_result,
+            prepared.source_selection_prune,
+            log_diff=prepared.diff,
+            apply_infrastructure=False,
         )
     result = SyncResult()
     _apply_source_selection_prune(
@@ -3525,27 +4027,29 @@ def _apply_prepared_sync(
         prepared.surface_plan,
         graph_observations=prepared.graph_observations,
         source_snapshot=prepared.source_snapshot,
+        result=result,
     )
     if options.initialize_surfaces:
-        _rebuild_surface_only_index(
+        index_state = _rebuild_surface_only_index(
             options.wiki_dir,
             prepared.manifest,
             preserve_semantic=options.preserve_semantic,
-            workflow_entries=_sync_workflow_index_entries(
-                options.wiki_dir,
-                prepared.inventory,
+            workflow_entries=_list_existing_workflow_pages(
+                options.wiki_dir / PageKind.WORKFLOWS.value
             ),
-            flow_entries=_sync_flow_index_entries(
-                options.wiki_dir,
+            flow_entries=_initialization_flow_entries(
+                options,
                 prepared.graph_observations,
+                prepared.surface_plan,
             ),
-            infra_entries=_sync_infrastructure_index_entries(
+            infra_entries=_initialization_infrastructure_index_entries(
                 options.wiki_dir,
                 prepared.infrastructure_plan,
             ),
+            log_present=True,
         )
     else:
-        _rebuild_index(
+        index_state = _rebuild_index(
             options.wiki_dir,
             prepared.inventory,
             options.src_dir,
@@ -3568,20 +4072,22 @@ def _apply_prepared_sync(
                 prepared.infrastructure_plan,
             ),
         )
-    if (
-        prepared.diff.has_changes
-        or prepared.surface_plan.has_work
-        or prepared.infrastructure_plan.has_changes
-        or _selection_pruning_has_changes(prepared)
-    ):
+    _record_page_write_state(result, index_state)
+    if _applied_sync_has_changes(options, prepared, result):
         _append_log(
             options.wiki_dir,
             options.src_dir,
             prepared.diff,
             result,
+            source_snapshot=prepared.source_snapshot,
+            generation_inputs=prepared.surface_plan.generation_inputs,
+            plugin_lock_path=prepared.inventory_result.plugin_lock_path,
+            plugin_lock_hash=prepared.inventory_result.plugin_lock_hash,
             surface_plan=prepared.surface_plan,
             infrastructure_plan=prepared.infrastructure_plan,
             source_selection_prune=prepared.source_selection_prune,
+            source_changes_applied=not bool(options.initialize_surfaces),
+            infrastructure_changes_applied=not bool(options.initialize_surfaces),
         )
     return result
 
@@ -3595,12 +4101,30 @@ def _finalize_prepared_sync(
     dry_run: bool = False,
 ) -> KnowledgeCommitResult:
     target = target_wiki_dir or options.wiki_dir
+    source_deferred_initialization = bool(
+        options.initialize_surfaces and not prepared.runtime_basis_refresh
+    )
     page_source_overrides = None
-    if options.initialize_surfaces and not prepared.repair_only:
+    retained_surface_source_overrides: dict[str, str] = {}
+    if source_deferred_initialization and not prepared.repair_only:
+        retained_surface_source_overrides = (
+            _retained_initialization_source_overrides(
+                options,
+                prepared.surface_plan,
+            )
+        )
         page_source_overrides = {
             page_path: mapping.source_path
             for page_path, mapping in prepared.manifest.page_source_mappings.items()
         }
+        page_source_overrides.update(retained_surface_source_overrides)
+    surface_entry_points = prepared.graph_observations.surface_flow_entries
+    if source_deferred_initialization:
+        surface_entry_points = _initialization_flow_entries(
+            options,
+            prepared.graph_observations,
+            prepared.surface_plan,
+        )
     surface = evaluate_surface_index(
         options.wiki_dir,
         prepared.inventory,
@@ -3608,15 +4132,19 @@ def _finalize_prepared_sync(
         entity_page_cache=prepared.page_maps.entity_page_cache,
         entity_occurrence_page_cache=(prepared.page_maps.entity_occurrence_page_cache),
         module_page_map=prepared.page_maps.module_page_map,
-        entry_points=prepared.graph_observations.surface_flow_entries,
+        entry_points=surface_entry_points,
         workflow_entries=_sync_workflow_index_entries(
             options.wiki_dir,
             prepared.inventory,
+        )
+        if not source_deferred_initialization
+        else _list_existing_workflow_pages(
+            options.wiki_dir / PageKind.WORKFLOWS.value
         ),
         page_source_overrides=page_source_overrides,
     )
     next_manifest = None
-    if options.initialize_surfaces and not prepared.repair_only:
+    if source_deferred_initialization and not prepared.repair_only:
         next_manifest = prepared.manifest.with_generation_state(
             surfaces=prepared.surface_plan.surfaces,
             generation_inputs=prepared.surface_plan.generation_inputs,
@@ -3667,9 +4195,7 @@ def _finalize_prepared_sync(
             ),
             flows=prepared.graph_observations.flows,
             data_flows=prepared.graph_observations.data_flows,
-            external_dependencies=(
-                prepared.graph_observations.external_dependencies
-            ),
+            external_dependencies=(prepared.graph_observations.external_dependencies),
             graph_analyzer_limitations=(
                 prepared.graph_observations.analyzer_limitations
             ),
@@ -3697,8 +4223,8 @@ def _finalize_prepared_sync(
         if _selection_pruning_has_changes(prepared):
             _print_selection_prune_summary(prepared)
             print(
-                "Only pages excluded by the current source selection were "
-                "removed; run `llm-wiki sync` again to apply other source changes."
+                "Only boundary-excluded or retired generated pages were removed; "
+                "run `llm-wiki sync` again to apply other source changes."
             )
         else:
             print(
@@ -3725,15 +4251,27 @@ def _finalize_prepared_sync(
         deferred = len(_affected_source_files(prepared.diff))
         if deferred:
             print(f"Deferred source changes: {deferred} file(s).")
-        elif not prepared.surface_plan.has_work:
+        deferred_infrastructure = max(
+            0,
+            prepared.infrastructure_plan.affected_count
+            - len(prepared.infrastructure_plan.deselected_records),
+        )
+        if deferred_infrastructure:
+            print(
+                "Deferred infrastructure changes: "
+                f"{deferred_infrastructure} source(s)."
+            )
+        if prepared.runtime_basis_refresh:
+            print(
+                "Runtime-dependent wiki refresh: "
+                f"{result.created} created, {result.updated} updated, "
+                f"{result.metadata_only} metadata-only, "
+                f"{result.deprecated} retired."
+            )
+        elif not _applied_sync_has_changes(options, prepared, result):
             print("Requested optional surfaces are up to date.")
     else:
-        if (
-            prepared.diff.has_changes
-            or prepared.surface_plan.has_work
-            or prepared.infrastructure_plan.has_changes
-            or _selection_pruning_has_changes(prepared)
-        ):
+        if _applied_sync_has_changes(options, prepared, result):
             _print_sync_summary(
                 result,
                 prepared.diff,
@@ -3752,17 +4290,24 @@ def _finalize_prepared_sync(
 def _print_selection_prune_summary(prepared: _PreparedSyncRun) -> None:
     if not _selection_pruning_has_changes(prepared):
         return
-    print(
-        "Source selection pruning: "
-        f"{len(prepared.source_selection_prune.deselected_source_paths)} "
-        "source(s), "
-        f"{len(prepared.source_selection_prune.deselected_page_paths)} "
-        "concept page(s), "
-        f"{len(prepared.source_selection_prune.deselected_surface_page_paths)} "
-        "generated surface page(s), "
-        f"{len(prepared.infrastructure_plan.deselected_records)} "
-        "infrastructure record(s)."
+    selection_changed = bool(
+        prepared.source_selection_prune.deselected_source_paths
+        or prepared.source_selection_prune.deselected_page_paths
+        or prepared.infrastructure_plan.deselected_records
     )
+    if selection_changed:
+        print(
+            "Source selection pruning: "
+            f"{len(prepared.source_selection_prune.deselected_source_paths)} "
+            "source(s), "
+            f"{len(prepared.source_selection_prune.deselected_page_paths)} "
+            "concept page(s), "
+            f"{len(prepared.infrastructure_plan.deselected_records)} "
+            "infrastructure record(s)."
+        )
+    retired = len(prepared.source_selection_prune.deselected_surface_page_paths)
+    if retired:
+        print(f"Generated surface retirement: {retired} generated surface page(s).")
 
 
 def _print_sync_artifact_actions(result: KnowledgeCommitResult) -> None:
@@ -3795,12 +4340,14 @@ def _run_sync_dry_run(
     _print_dry_run_plan(
         options,
         prepared.diff,
+        prepared.application_diff,
         prepared.surface_plan,
         prepared.infrastructure_plan,
         prepared.source_selection_prune,
         prepared.manifest,
         seed_manifest=prepared.seed_manifest,
         repair_only=prepared.repair_only,
+        runtime_provenance_changed=prepared.runtime_provenance_changed,
     )
     with tempfile.TemporaryDirectory(prefix="llm-wiki-sync-preview-") as temp_dir:
         staged_wiki = Path(temp_dir) / "wiki"
@@ -3861,11 +4408,52 @@ def _unsafe_dry_run_symlink(wiki_dir: Path) -> str | None:
     return None
 
 
+def _enforce_sync_write_safety(
+    options: _SyncRunOptions,
+    prepared: _PreparedSyncRun,
+) -> None:
+    """Apply broad-change guards before a prepared sync can mutate the wiki."""
+
+    if (
+        (
+            not options.initialize_surfaces
+            or (
+                prepared.runtime_basis_refresh
+                and prepared.generator_refresh_required
+            )
+        )
+        and not prepared.seed_manifest
+        and not prepared.repair_only
+    ):
+        _exit_if_large_unforced_diff(
+            options,
+            prepared.application_diff,
+            prepared.manifest,
+            prepared.inventory_result,
+            prepared.infrastructure_plan,
+            include_infrastructure=not bool(options.initialize_surfaces),
+        )
+    if not prepared.seed_manifest:
+        _exit_if_large_unforced_surface_plan(
+            options,
+            prepared.surface_plan,
+            removed_pages=len(
+                prepared.source_selection_prune.deselected_surface_page_paths
+            ),
+        )
+
+
 def run(args) -> None:
     options = _sync_run_options_from_args(args)
     try:
         prepared = _prepare_sync_run(options)
-    except (ApiContractError, GovernanceError, InfrastructureSyncError) as exc:
+    except (
+        ApiContractError,
+        GeneratedSurfacePruneError,
+        GovernanceError,
+        InfrastructureSyncError,
+        SyncRuntimeRefreshError,
+    ) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(2)
     if prepared is None:
@@ -3874,20 +4462,7 @@ def run(args) -> None:
     if options.dry_run:
         _run_sync_dry_run(options, prepared)
         return
-    if (
-        not options.initialize_surfaces
-        and not prepared.seed_manifest
-        and not prepared.repair_only
-    ):
-        _exit_if_large_unforced_diff(
-            options,
-            prepared.diff,
-            prepared.manifest,
-            prepared.inventory_result,
-            prepared.infrastructure_plan,
-        )
-    if not prepared.seed_manifest and not prepared.repair_only:
-        _exit_if_large_unforced_surface_plan(options, prepared.surface_plan)
+    _enforce_sync_write_safety(options, prepared)
     result = _apply_prepared_sync(options, prepared)
     _finalize_prepared_sync(options, prepared, result)
 
@@ -3923,7 +4498,7 @@ def _sync_workflow_index_entries(wiki_dir: Path, inventory: dict) -> list[dict]:
         for name, workflow in get_call_graph(inventory).items()
     ]
     return _overlay_live_index_metadata(
-        _list_existing_pages(wiki_dir / PageKind.WORKFLOWS.value, "entry"),
+        _list_existing_workflow_pages(wiki_dir / PageKind.WORKFLOWS.value),
         live_entries,
         key="name",
     )
@@ -3932,12 +4507,61 @@ def _sync_workflow_index_entries(wiki_dir: Path, inventory: dict) -> list[dict]:
 def _sync_flow_index_entries(
     wiki_dir: Path,
     graph_observations: _RuntimeGraphObservations,
+    *,
+    source_overrides: Mapping[str, str] | None = None,
 ) -> list[dict]:
-    return _overlay_live_index_metadata(
+    entries = _overlay_live_index_metadata(
         _list_existing_flow_pages(wiki_dir / PageKind.FLOWS.value),
         graph_observations.surface_flow_entries,
         key="id",
     )
+    if source_overrides:
+        for entry in entries:
+            page_path = canonical_path(PageKind.FLOWS, str(entry["id"]))
+            source_path = source_overrides.get(page_path)
+            if source_path is not None:
+                entry["source_path"] = source_path
+    return entries
+
+
+def _retained_initialization_source_overrides(
+    options: _SyncRunOptions,
+    plan: _SurfaceInitializationPlan,
+) -> dict[str, str]:
+    """Keep prior generated ownership for surfaces deferred by initialization."""
+
+    overrides = dict(plan.prior_surface_source_overrides)
+    if "flows" in options.initialize_surfaces:
+        for page_path in plan.managed_flow_page_paths:
+            overrides.pop(page_path, None)
+    return overrides
+
+
+def _initialization_flow_entries(
+    options: _SyncRunOptions,
+    graph_observations: _RuntimeGraphObservations,
+    plan: _SurfaceInitializationPlan,
+) -> list[dict]:
+    """Retain prior rich flow metadata unless flow initialization replaces it."""
+
+    entries = _overlay_live_index_metadata(
+        _list_existing_flow_pages(options.wiki_dir / PageKind.FLOWS.value),
+        plan.prior_flow_entries,
+        key="id",
+    )
+    if "flows" in options.initialize_surfaces:
+        entries = _overlay_live_index_metadata(
+            entries,
+            graph_observations.surface_flow_entries,
+            key="id",
+        )
+    overrides = _retained_initialization_source_overrides(options, plan)
+    for entry in entries:
+        page_path = canonical_path(PageKind.FLOWS, str(entry["id"]))
+        source_path = overrides.get(page_path)
+        if source_path is not None:
+            entry["source_path"] = source_path
+    return entries
 
 
 def _sync_infrastructure_index_entries(
@@ -3955,9 +4579,7 @@ def _sync_infrastructure_index_entries(
                 "label": infrastructure_display_label(source_path, info),
             }
         )
-    deselected_names = {
-        Path(relative).stem for relative in plan.deselected_page_paths
-    }
+    deselected_names = {Path(relative).stem for relative in plan.deselected_page_paths}
     existing = [
         entry
         for entry in _list_existing_pages(
@@ -3973,6 +4595,38 @@ def _sync_infrastructure_index_entries(
     )
 
 
+def _initialization_infrastructure_index_entries(
+    wiki_dir: Path,
+    plan: InfrastructureSyncPlan,
+) -> list[dict]:
+    """Retain the persisted infrastructure metadata while source work is deferred."""
+
+    existing = _list_existing_pages(
+        wiki_dir / PageKind.INFRASTRUCTURE.value,
+        "type",
+    )
+    existing_by_name = {str(entry["name"]): entry for entry in existing}
+    prior_entries: list[dict] = []
+    for record in plan.prior_sources.values():
+        page_path = record.get("page_path")
+        adapter = record.get("adapter")
+        if not isinstance(page_path, str) or not isinstance(adapter, str):
+            continue
+        absolute = wiki_dir / page_path
+        if not absolute.is_file():
+            continue
+        name = Path(page_path).stem
+        disk_entry = existing_by_name.get(name, {})
+        prior_entries.append(
+            {
+                "name": name,
+                "label": disk_entry.get("label") or _markdown_title(absolute),
+                "type": adapter,
+            }
+        )
+    return _overlay_live_index_metadata(existing, prior_entries, key="name")
+
+
 def _rebuild_index(
     wiki_dir: Path,
     inventory: dict,
@@ -3985,7 +4639,7 @@ def _rebuild_index(
     workflow_entries: list[dict] | None = None,
     flow_entries: list[dict] | None = None,
     infra_entries: list[dict] | None = None,
-) -> None:
+) -> str:
     """Regenerate index.md from the live inventory."""
     if entity_page_cache is None:
         _, _, entity_page_cache = _collision_maps(inventory, src_dir)
@@ -4028,9 +4682,7 @@ def _rebuild_index(
         )
     guide_entries = _list_existing_pages(wiki_dir / "guides", "topic")
     if flow_entries is None:
-        flow_entries = _list_existing_flow_pages(
-            wiki_dir / PageKind.FLOWS.value
-        )
+        flow_entries = _list_existing_flow_pages(wiki_dir / PageKind.FLOWS.value)
     if infra_entries is None:
         infra_entries = _list_existing_pages(
             wiki_dir / PageKind.INFRASTRUCTURE.value,
@@ -4059,6 +4711,7 @@ def _rebuild_index(
         print("  SKIP index.md (unchanged)")
     else:
         print("  WRITE index.md")
+    return write_state
 
 
 def _rebuild_surface_only_index(
@@ -4069,7 +4722,8 @@ def _rebuild_surface_only_index(
     workflow_entries: list[dict] | None = None,
     flow_entries: list[dict] | None = None,
     infra_entries: list[dict] | None = None,
-) -> None:
+    log_present: bool | None = None,
+) -> str:
     """Re-index only pages already present during source-deferred backfill."""
     entity_names = [
         path.stem
@@ -4086,8 +4740,11 @@ def _rebuild_surface_only_index(
             semantics.get("module") if isinstance(semantics, Mapping) else None
         )
         if isinstance(module_semantics, Mapping):
-            description_by_module_page[page] = str(
-                module_semantics.get("description") or ""
+            description = str(module_semantics.get("description") or "")
+            description_by_module_page[page] = (
+                ""
+                if description == f"_Auto-generated from `{filepath}`._"
+                else description
             )
     module_entries = [
         {
@@ -4100,18 +4757,14 @@ def _rebuild_surface_only_index(
     ]
     index_path = wiki_dir / canonical_path(PageKind.INDEX)
     if workflow_entries is None:
-        workflow_entries = _list_existing_pages(
-            wiki_dir / PageKind.WORKFLOWS.value,
-            "entry",
+        workflow_entries = _list_existing_workflow_pages(
+            wiki_dir / PageKind.WORKFLOWS.value
         )
     if flow_entries is None:
-        flow_entries = _list_existing_flow_pages(
-            wiki_dir / PageKind.FLOWS.value
-        )
+        flow_entries = _list_existing_flow_pages(wiki_dir / PageKind.FLOWS.value)
     if infra_entries is None:
-        infra_entries = _list_existing_pages(
-            wiki_dir / PageKind.INFRASTRUCTURE.value,
-            "type",
+        infra_entries = _list_existing_infrastructure_pages(
+            wiki_dir / PageKind.INFRASTRUCTURE.value
         )
     new_index = _generate_index_md(
         entity_names,
@@ -4125,7 +4778,9 @@ def _rebuild_surface_only_index(
         api_contracts_present=(
             wiki_dir / canonical_path(PageKind.API_CONTRACTS)
         ).is_file(),
-        log_present=(wiki_dir / canonical_path(PageKind.LOG)).is_file(),
+        log_present=(wiki_dir / canonical_path(PageKind.LOG)).is_file()
+        if log_present is None
+        else log_present,
     )
     if preserve_semantic and index_path.exists():
         new_index = _preserve_index_custom_sections(read_md(index_path), new_index)
@@ -4134,6 +4789,7 @@ def _rebuild_surface_only_index(
         print("  SKIP index.md (unchanged)")
     else:
         print("  WRITE index.md")
+    return state
 
 
 def _list_existing_pages(directory: Path, extra_key: str) -> list[dict]:
@@ -4174,18 +4830,83 @@ def _list_existing_architecture_pages(wiki_dir: Path) -> list[dict]:
     ]
 
 
-def _list_existing_flow_pages(directory: Path) -> list[dict]:
-    """Return ``{"id", "category"}`` dicts for existing flow pages.
+def _generated_page_entry(path: Path) -> str:
+    """Return a generated flow/workflow entry point without interpreting prose."""
+
+    try:
+        match = _GENERATED_ENTRY_POINT_RE.search(read_md(path))
+    except (OSError, UnicodeError):
+        return ""
+    return match.group(1) if match is not None else ""
+
+
+def _generated_page_code_field(path: Path, label: str) -> str:
+    """Return one exact backtick-delimited generated metadata field."""
+
+    pattern = re.compile(rf"(?m)^\*\*{re.escape(label)}:\*\* `([^`\r\n]+)`$")
+    try:
+        match = pattern.search(read_md(path))
+    except (OSError, UnicodeError):
+        return ""
+    return match.group(1) if match is not None else ""
+
+
+def _list_existing_workflow_pages(directory: Path) -> list[dict]:
+    """Return disk-backed workflow metadata used by source-deferred indexing."""
+
+    if not directory.exists():
+        return []
+    return [
+        {
+            "name": path.stem,
+            "label": _markdown_title(path),
+            "entry": _generated_page_entry(path),
+        }
+        for path in sorted(directory.glob("*.md"))
+    ]
+
+
+def _list_existing_infrastructure_pages(directory: Path) -> list[dict]:
+    """Return disk-backed infrastructure metadata during source deferral."""
+
+    if not directory.exists():
+        return []
+    return [
+        {
+            "name": path.stem,
+            "label": _markdown_title(path),
+            "type": _generated_page_code_field(path, "Type"),
+        }
+        for path in sorted(directory.glob("*.md"))
+    ]
+
+
+def _list_existing_flow_pages(
+    directory: Path,
+    *,
+    source_overrides: Mapping[str, str] | None = None,
+) -> list[dict]:
+    """Return disk-backed flow metadata for generated index reconstruction.
 
     ``category`` is derived from the entry-point id prefix so the index can be
     regrouped without re-running entry-point detection.
     """
     if not directory.exists():
         return []
-    return [
-        {"id": p.stem, "category": p.stem.split("-", 1)[0]}
-        for p in sorted(directory.glob("*.md"))
-    ]
+    entries = []
+    for path in sorted(directory.glob("*.md")):
+        entry = {
+            "id": path.stem,
+            "category": path.stem.split("-", 1)[0],
+            "entry": _generated_page_entry(path),
+        }
+        if source_overrides is not None:
+            page_path = canonical_path(PageKind.FLOWS, path.stem)
+            source_path = source_overrides.get(page_path)
+            if source_path is not None:
+                entry["source_path"] = source_path
+        entries.append(entry)
+    return entries
 
 
 def _preserve_flow_behavior(old_md: str, new_md: str) -> str:
@@ -4216,6 +4937,64 @@ def _api_operations_for_flow(
     return matches
 
 
+def _regenerate_workflow_pages(
+    options: _SyncRunOptions,
+    inventory: dict,
+    module_page_map: dict[str, str],
+    *,
+    workflows_enabled: bool,
+    managed_page_paths: frozenset[str],
+    new_page_paths: frozenset[str],
+    result: SyncResult | None = None,
+) -> int:
+    """Refresh proven generated workflows and create explicitly planned pages."""
+
+    if not workflows_enabled:
+        return 0
+    workflows = get_call_graph(inventory)
+    if not workflows:
+        return 0
+    workflows_dir = options.wiki_dir / PageKind.WORKFLOWS.value
+    regenerated = 0
+    for name, workflow in workflows.items():
+        relative = canonical_path(PageKind.WORKFLOWS, name)
+        path = options.wiki_dir / relative
+        exists = path.exists() or path.is_symlink()
+        if exists and relative not in managed_page_paths:
+            continue
+        if not exists and relative not in new_page_paths:
+            continue
+        if path.is_symlink():
+            raise GeneratedSurfacePruneError(
+                f"refusing to regenerate symlinked workflow page: {relative}"
+            )
+        old_markdown = read_md(path) if path.is_file() else None
+        new_markdown = _generate_workflow_md(name, workflow, module_page_map)
+        if (
+            options.preserve_semantic
+            and old_markdown is not None
+            and not _has_neutral_generated_behavior(
+                PageKind.WORKFLOWS,
+                old_markdown,
+            )
+        ):
+            new_markdown = _preserve_level_two_section_exact(
+                old_markdown,
+                new_markdown,
+                "Behavior",
+            )
+        if not workflows_dir.exists():
+            workflows_dir.mkdir(parents=True, exist_ok=True)
+        state = _write_md_if_changed(path, new_markdown)
+        _record_page_write_state(result, state)
+        if state != "unchanged":
+            print(f"  {state.upper()} workflow: {name}")
+            regenerated += 1
+    if regenerated:
+        print(f"Regenerated {regenerated} workflow page(s).")
+    return regenerated
+
+
 def _regenerate_flow_pages(
     options: _SyncRunOptions,
     inventory: dict,
@@ -4229,6 +5008,9 @@ def _regenerate_flow_pages(
     evaluated_flows: list[dict] | None = None,
     evaluated_data_flows: list[dict] | None = None,
     source_snapshot: SourceSnapshot | None = None,
+    managed_page_paths: frozenset[str] = frozenset(),
+    new_page_paths: frozenset[str] = frozenset(),
+    result: SyncResult | None = None,
 ) -> int:
     """Regenerate flow pages from the current inventory, preserving Behavior.
 
@@ -4276,6 +5058,17 @@ def _regenerate_flow_pages(
     }
     regenerated = 0
     for entry_point in entry_points:
+        flow_path = flows_dir / f"{entry_point['id']}.md"
+        relative = canonical_path(PageKind.FLOWS, str(entry_point["id"]))
+        exists = flow_path.exists() or flow_path.is_symlink()
+        if exists and relative not in managed_page_paths:
+            continue
+        if not exists and relative not in new_page_paths:
+            continue
+        if flow_path.is_symlink():
+            raise GeneratedSurfacePruneError(
+                f"refusing to regenerate symlinked flow page: {relative}"
+            )
         flow = flow_by_id.get(str(entry_point.get("id"))) or build_flow(
             entry_point, edges
         )
@@ -4317,10 +5110,12 @@ def _regenerate_flow_pages(
                 api_contracts, entry_point
             ),
         )
-        flow_path = flows_dir / f"{entry_point['id']}.md"
         if options.preserve_semantic and flow_path.exists():
-            new_md = _preserve_flow_behavior(read_md(flow_path), new_md)
+            existing = read_md(flow_path)
+            if not _has_neutral_generated_behavior(PageKind.FLOWS, existing):
+                new_md = _preserve_flow_behavior(existing, new_md)
         state = _write_md_if_changed(flow_path, new_md)
+        _record_page_write_state(result, state)
         if state != "unchanged":
             print(f"  {state.upper()} flow: {entry_point['id']}")
             regenerated += 1
@@ -4333,6 +5128,8 @@ def _regenerate_api_contracts_page(
     options: _SyncRunOptions,
     page_maps: _SyncPageMaps,
     plan: _SurfaceInitializationPlan,
+    *,
+    result: SyncResult | None = None,
 ) -> int:
     """Regenerate the canonical mixed API surface while preserving Notes."""
     if not plan.api_contract_target or plan.api_contracts is None:
@@ -4352,6 +5149,7 @@ def _regenerate_api_contracts_page(
     if options.preserve_semantic and path.exists():
         new_md = _preserve_notes(read_md(path), new_md)
     state = _write_md_if_changed(path, new_md)
+    _record_page_write_state(result, state)
     if state == "unchanged":
         return 0
     print(f"  {state.upper()} {path.name}")
@@ -4372,6 +5170,7 @@ def _regenerate_dependency_pages(
     source_snapshot: SourceSnapshot | None = None,
     target_pages: Iterable[str] | None = None,
     detail: str = "auto",
+    result: SyncResult | None = None,
 ) -> int:
     """Regenerate dependencies.md / load-order.md, preserving ``## Notes``.
 
@@ -4436,6 +5235,7 @@ def _regenerate_dependency_pages(
         if options.preserve_semantic and path.exists():
             new_md = _preserve_notes(read_md(path), new_md)
         state = _write_md_if_changed(path, new_md)
+        _record_page_write_state(result, state)
         if state != "unchanged":
             print(f"  {state.upper()} {path.name}")
             regenerated += 1
@@ -4450,9 +5250,15 @@ def _append_log(
     diff: SyncDiff,
     result: SyncResult,
     *,
+    source_snapshot: SourceSnapshot,
+    generation_inputs: Mapping[str, object],
+    plugin_lock_path: str | None,
+    plugin_lock_hash: str | None,
     surface_plan: _SurfaceInitializationPlan | None = None,
     infrastructure_plan: InfrastructureSyncPlan | None = None,
     source_selection_prune: SourceSelectionPruneResult | None = None,
+    source_changes_applied: bool = True,
+    infrastructure_changes_applied: bool = True,
 ) -> None:
     log_path = wiki_dir / "log.md"
     today = date.today().isoformat()
@@ -4461,7 +5267,7 @@ def _append_log(
             f"`{cls}` ({old} → {new})"
             for cls, (old, new) in diff.moved_entities.items()
         )
-        if diff.moved_entities
+        if source_changes_applied and diff.moved_entities
         else "none"
     )
     surface_lines = ""
@@ -4479,6 +5285,8 @@ def _append_log(
         surface_lines = (
             f"- Flow pages initialized: {len(surface_plan.new_flow_entries)} "
             f"({category_text})\n"
+            "- Workflow pages created: "
+            f"{len(surface_plan.new_workflow_page_paths)}\n"
             "- Dependency pages initialized: "
             f"{len(surface_plan.new_dependency_pages)}\n"
             "- Surface policy updated: "
@@ -4489,12 +5297,16 @@ def _append_log(
                 f"- Source files deferred: {len(_affected_source_files(diff))}\n"
             )
     operation = (
-        "surface initialization"
+        "Wiki surface initialization"
         if surface_plan is not None and surface_plan.requested_surfaces
-        else "incremental sync"
+        else "Wiki sync"
     )
     infrastructure_lines = ""
-    if infrastructure_plan is not None and infrastructure_plan.has_changes:
+    if (
+        infrastructure_changes_applied
+        and infrastructure_plan is not None
+        and infrastructure_plan.has_changes
+    ):
         infrastructure_lines = (
             f"- Infrastructure added: {len(infrastructure_plan.new_sources)}\n"
             f"- Infrastructure changed: {len(infrastructure_plan.changed_sources)}\n"
@@ -4507,20 +5319,33 @@ def _append_log(
     if source_selection_prune is not None and (
         source_selection_prune.deselected_source_paths
         or source_selection_prune.deselected_page_paths
-        or source_selection_prune.deselected_surface_page_paths
     ):
         selection_lines = (
             "- Sources removed by selection: "
             f"{len(source_selection_prune.deselected_source_paths)}\n"
             "- Concept pages removed by selection: "
             f"{len(source_selection_prune.deselected_page_paths)}\n"
-            "- Generated surface pages removed by selection: "
+        )
+    surface_retirement_lines = ""
+    if (
+        source_selection_prune is not None
+        and source_selection_prune.deselected_surface_page_paths
+    ):
+        surface_retirement_lines = (
+            "- Generated surface pages retired: "
             f"{len(source_selection_prune.deselected_surface_page_paths)}\n"
         )
+    provenance_lines = _source_snapshot_log_lines(
+        source_snapshot,
+        generation_inputs=generation_inputs,
+        plugin_lock_path=plugin_lock_path,
+        plugin_lock_hash=plugin_lock_hash,
+    )
     entry = (
         f"\n## {today}\n\n"
-        f"### feat: {operation}\n"
+        f"### {operation}\n"
         f"- Source: `{portable_source_root_label(src_dir)}`\n"
+        f"{provenance_lines}"
         f"- Pages created: {result.created}\n"
         f"- Pages updated: {result.updated}\n"
         f"- Pages metadata-only: {result.metadata_only}\n"
@@ -4531,6 +5356,7 @@ def _append_log(
         f"{surface_lines}"
         f"{infrastructure_lines}"
         f"{selection_lines}"
+        f"{surface_retirement_lines}"
     )
     if log_path.exists():
         existing_log = read_md(log_path)

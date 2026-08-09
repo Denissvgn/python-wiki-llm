@@ -2,11 +2,11 @@
 
 Builds a module-file → module-file dependency graph from a structural
 inventory's ``imports`` records, detects import cycles via strongly-connected
-components, computes fan-in/fan-out metrics (Epic 2.1), and reconciles each
+components, computes fan-in/fan-out metrics, and reconciles each
 file's external imports against its language's declared dependency manifest —
 Python (``pyproject.toml``), TypeScript/JS (``package.json``), Go (``go.mod``),
 Rust (``Cargo.toml``), and Haskell (``*.cabal``/``stack.yaml``/``flake.nix``) —
-to surface undeclared and unused packages (Epic 2.2). Analogous to
+to surface undeclared and unused packages. Analogous to
 :mod:`llm_wiki_cli.services.entrypoints`: deterministic, performs no LLM calls,
 imports only stdlib (plus the bundled ``tomli`` backport) and
 :mod:`llm_wiki_cli.services.imports`, and takes the inventory as plain data
@@ -17,8 +17,9 @@ The same module-path resolver that backs call-edge resolution
 (:func:`extract_cmd.resolve_call_edges`) is reused here, so import→file
 resolution stays consistent across the codebase. Imports that resolve to no
 internal file (stdlib, third-party, unresolvable relatives) are collected in an
-``unresolved`` bucket; the Epic 2.2 classifiers consume that bucket so an import
-already resolved to an internal file is never double-counted as external.
+``unresolved`` bucket; the external dependency classifiers consume that bucket
+so an import already resolved to an internal file is never double-counted as
+external.
 
 Reconciliation is *language-partitioned*: each language pairs a manifest parser
 with an import→package classifier behind a shared dispatcher. A language with
@@ -59,6 +60,11 @@ except ModuleNotFoundError:  # pragma: no cover - exercised on Python 3.9/3.10
 
 
 # Internal dependency graph
+
+
+_DEPENDENCY_MODULE_LANGUAGES: frozenset[str] = frozenset(
+    {"python", "typescript", "javascript", "go", "rust", "haskell"}
+)
 
 
 def _build_symbol_file_index(inventory: dict) -> dict[str, set[str]]:
@@ -131,9 +137,11 @@ def build_dependency_graph(
 
     Returns ``{"edges": [(from_file, to_file), ...], "nodes": [...],
     "unresolved": [{"file", "module", "name"}, ...]}`` with every list stably
-    ordered. A file that imports nothing internal still appears as an isolated
-    node. Slim/non-Python entries (no ``imports``) contribute no edges and never
-    raise.
+    ordered. A supported code-language inventory entry that has no ``imports``
+    field still appears as an isolated node. Entries that explicitly provide an
+    ``imports`` field retain the legacy node contract regardless of language;
+    unknown, untyped, and non-mapping entries without that field contribute no
+    nodes or edges and never raise.
     """
     resolver = build_module_path_resolver(
         inventory,
@@ -147,9 +155,17 @@ def build_dependency_graph(
     nodes: set[str] = set()
 
     for filepath, data in inventory.items():
-        if not isinstance(data, dict) or "imports" not in data:
+        if not isinstance(data, Mapping):
+            continue
+        language = data.get("language")
+        supported_language = (
+            isinstance(language, str) and language in _DEPENDENCY_MODULE_LANGUAGES
+        )
+        if "imports" not in data and not supported_language:
             continue
         nodes.add(filepath)
+        if "imports" not in data:
+            continue
         for imp in data.get("imports", []):
             targets = _resolve_internal_targets(imp, filepath, resolver, symbol_index)
             if not targets:
@@ -562,7 +578,7 @@ def dependency_metrics(graph: dict) -> dict:
     return {"metrics": metrics, "most_depended_on": most_depended_on}
 
 
-# ══ Load / startup order (Epic 2.3) ═══════════════════════════════════════
+# ══ Load / startup order ═══════════════════════════════════════
 
 
 def _condense(
@@ -686,7 +702,7 @@ def detect_side_effects(inventory: dict) -> dict:
     return {"side_effects": side_effects, "factories": factories, "best_effort": True}
 
 
-# ══ External dependency reconciliation (Epic 2.2) ═════════════════════════
+# ══ External dependency reconciliation ═════════════════════════
 #
 # Each language pairs a *manifest parser* (declared dependencies) with an
 # *import classifier* (import string → external package name, or ``None`` to
@@ -2902,7 +2918,7 @@ def reconcile_dependencies(
     }
 
 
-# ══ Aggregation + scale guard (Epic 2.4) ══════════════════════════════════
+# ══ Aggregation + scale guard ══════════════════════════════════
 
 
 def analyze_dependencies(
