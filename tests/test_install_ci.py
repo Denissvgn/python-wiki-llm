@@ -214,6 +214,30 @@ def test_unmanaged_target_requires_force(tmp_path):
     assert is_unmodified_managed_workflow(target.read_bytes())
 
 
+def test_unreadable_target_fails_without_mutation(tmp_path, monkeypatch):
+    root = _managed_project(tmp_path)
+    target = root / MANAGED_WORKFLOW_PATH
+    target.parent.mkdir(parents=True)
+    original = b"name: Existing project workflow\n"
+    target.write_bytes(original)
+    real_read_bytes = Path.read_bytes
+
+    def guarded_read_bytes(path):
+        if path == target:
+            raise OSError("injected read failure")
+        return real_read_bytes(path)
+
+    monkeypatch.setattr(Path, "read_bytes", guarded_read_bytes)
+
+    with pytest.raises(InstallCiError, match="injected read failure"):
+        install_ci_workflow(
+            action_ref=ACTION_REF,
+            project_root=root,
+            force=True,
+        )
+    assert real_read_bytes(target) == original
+
+
 def test_install_preserves_unrelated_workflows_and_refuses_target_directory(tmp_path):
     root = _managed_project(tmp_path)
     unrelated = root / ".github/workflows/ci.yml"

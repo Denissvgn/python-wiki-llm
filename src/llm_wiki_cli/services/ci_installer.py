@@ -309,7 +309,12 @@ def install_ci_workflow(
         wiki_dir=wiki_path,
     )
     target = _validate_workflow_target(root)
-    existing = target.read_bytes() if target.exists() else None
+    try:
+        existing = target.read_bytes() if target.exists() else None
+    except OSError as exc:
+        raise InstallCiError(
+            f"cannot read managed workflow {MANAGED_WORKFLOW_PATH}: {exc}"
+        ) from exc
     normalized_existing = (
         _normalize_newlines(existing) if existing is not None else None
     )
