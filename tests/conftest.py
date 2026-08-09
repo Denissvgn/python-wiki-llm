@@ -12,10 +12,14 @@ import pytest
 # True when git is on PATH; used to skip/stub git-dependent steps
 _GIT_AVAILABLE = shutil.which("git") is not None
 
-# The dedicated CI wrapper is an Ubuntu/POSIX shell boundary. It is exercised
-# dynamically by the Linux and macOS lanes; Windows still validates its static
-# workflow contract without collecting the Bash-only behavioral module.
-collect_ignore = ["test_ci_workflow_wrapper.py"] if os.name == "nt" else []
+# The dedicated CI wrapper and toolchain setup are Ubuntu/Darwin Bash
+# boundaries. Linux and macOS exercise them dynamically; Windows still
+# validates their static contracts without collecting the Bash-only modules.
+collect_ignore = (
+    ["test_ci_toolchain_setup.py", "test_ci_workflow_wrapper.py"]
+    if os.name == "nt"
+    else []
+)
 
 
 @dataclass(frozen=True)

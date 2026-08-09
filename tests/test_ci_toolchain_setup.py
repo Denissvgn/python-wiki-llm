@@ -185,11 +185,24 @@ def _run_setup(
     harness: SetupHarness,
     *arguments: object,
     environment: dict[str, str] | None = None,
+    github_actions: bool = False,
 ) -> subprocess.CompletedProcess[str]:
+    command_environment = dict(
+        os.environ if environment is None else environment
+    )
+    if not github_actions:
+        for name in (
+            "GITHUB_ACTIONS",
+            "GITHUB_ENV",
+            "GITHUB_PATH",
+            "RUNNER_TEMP",
+            "pythonLocation",
+        ):
+            command_environment.pop(name, None)
     return subprocess.run(
         ["bash", str(harness.script), *(str(value) for value in arguments)],
         cwd=harness.root,
-        env=environment,
+        env=command_environment,
         check=False,
         capture_output=True,
         text=True,
@@ -371,6 +384,7 @@ def test_github_setup_persists_tools_across_steps(
         "--python",
         setup_harness.python,
         environment=environment,
+        github_actions=True,
     )
 
     _assert_success(completed)
