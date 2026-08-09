@@ -65,10 +65,8 @@ def normalize_action_ref(value: object) -> str:
     return value.lower()
 
 
-def _portable_project_path(value: object, *, label: str, allow_root: bool) -> str:
-    if value == "." and allow_root:
-        return "."
-    path = require_repository_relative_path(
+def _validated_project_path(value: object, *, label: str) -> str:
+    return require_repository_relative_path(
         value,
         text_error=InstallCiError(f"{label} must be a non-empty project-relative path"),
         posix_error=InstallCiError(f"{label} must use portable POSIX path spelling"),
@@ -88,9 +86,21 @@ def _portable_project_path(value: object, *, label: str, allow_root: bool) -> st
             f"{label} must be portable across supported filesystems"
         ),
     )
+
+
+def _without_github_expression(path: str, *, label: str) -> str:
     if "${{" in path:
         raise InstallCiError(f"{label} must not contain a GitHub Actions expression")
     return path
+
+
+def _portable_project_path(value: object, *, label: str, allow_root: bool) -> str:
+    if value == "." and allow_root:
+        return "."
+    return _without_github_expression(
+        _validated_project_path(value, label=label),
+        label=label,
+    )
 
 
 def _project_directory(
